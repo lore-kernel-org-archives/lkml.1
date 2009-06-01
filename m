@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbZFATm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbZFATqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755845AbZFATm0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 15:42:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbZFATmR
+	id S1756585AbZFATqo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 15:46:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbZFATqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 15:42:17 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:21497 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753149AbZFATmQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 15:42:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=bOGeBuQApGGKkGFahzOAVWuLiLRftiMCjvqlwxmjLNu/DVG6ZMmnX1Ib2dDYYurMID
-         Oh0X8H9qKg/IkTRaLFBVKryKZvZS7POiGYmr9XR5h530CdNn1CJM2ypU8+hf4r8i7zCL
-         XsHkp/IdgTgBJIQBTDqmLjLAVcNirZof0AxWU=
+	Mon, 1 Jun 2009 15:46:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44463 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752685AbZFATqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 15:46:36 -0400
+Date: Mon, 1 Jun 2009 21:46:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Steven Rostedt <srostedt@redhat.com>
+Subject: Re: linux-next: manual merge of the kmemcheck tree with the
+	tracing tree
+Message-ID: <20090601194624.GA29610@elte.hu>
+References: <20090601175539.67317265.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Mon, 1 Jun 2009 12:41:58 -0700
-Message-ID: <43e72e890906011241u24b82cc3gc06bf7be4f43075e@mail.gmail.com>
-Subject: EXPORT_SYMBOL_GPL recursive for shim and/or wrappers
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Pavel Roskin <proski@gnu.org>, Aaditya.Rai@atheros.com,
-       Prem.Kumar@atheros.com, Stephen.Chen@atheros.com,
-       Rahul.Sridhar@atheros.com, Allen.Tsai@atheros.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090601175539.67317265.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The intention behind EXPORT_SYMBOL_GPL seems clear to me -- prevent
-proprietary drivers from using GPL-only symbols. Something that to me
-is clear but perhaps not to others is the the extent to which this
-reaches for proprietary modules. As I interpret it proprietary modules
-could _not_ make use of wrappers or shims which export new symbols
-with EXPORT_SYMBOL but that those modules were themselves using
-EXPORT_SYMBOL_GPL. That is create non-gpl-compatible wrapper symbols
-for GPL-compatible-only symbols.
 
-There is a cases though where the intent behind "shim" or "wrappers"
-may actually not be to circumvent the GPL-compatible requirement of
-code built using EXPORT_SYMBOL_GPL and although I believe it would
-still constitute a violation I'd like feedback or more clarity on this
-from others. The case would be where the "shim" or "wrapper" provides
-realistic APIs for a framework of abstraction for different buses. In
-that case the bus-agnostic API layer does make use of
-EXPORT_SYMBOL_GPL for USB for example but may not make use of it for
-other buses. In any case the intent here would then not to circumvent
-the GPL-compatible requirement but to simply implement a bus-agnostic
-API.
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Does EXPORT_SYMBOL_GPL imply that modules which make use of these
-symbols must also use EXPORT_SYMBOL_GPL for their own symbols? If so
-then it would be clear of the recursive nature of intent.
+> Hi all,
+> 
+> Today's linux-next merge of the kmemcheck tree got a conflict in
+> kernel/trace/ring_buffer.c between commit
+> aa20ae8444fc6c318272c643f856d8d8ad3e198d ("ring-buffer: move big if
+> statement down") from the tracing tree and commits
+> 9b7ff384ee76ced9638ab236db588a6f13916336 ("trace: annotate bitfields in
+> struct ring_buffer_event") and 3467e18b1cf34c7d316af5717e7053ce845d014e
+> ("kmemcheck: make bitfield annotations be valid C") from the kmemcheck
+> tree.
+> 
+> I fixed it up (see below) and can carry the fix as necessary.
 
-To me the recursive nature is clear, but just wanted to ask. I also
-don't see this documented in Documentation/ or in the header files,
-but perhaps it should be there if such a patch is welcomed.
+Would be nice if you indicated whether you cross-checked it against 
+tip:master, which had most of these conflicts resolved already (for 
+weeks).
 
-  Luis
+( this has relevance for the x86 and tracing tree conflicts - 
+  kmemleak is not in -tip)
+
+	Ingo
