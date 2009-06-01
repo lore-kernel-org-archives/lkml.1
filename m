@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZFAVc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbZFAVdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbZFAVc7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 17:32:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbZFAVcs
+	id S1753793AbZFAVdS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 17:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZFAVcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 17:32:48 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45199
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750819AbZFAVcs (ORCPT
+	Mon, 1 Jun 2009 17:32:55 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:33187 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752578AbZFAVcy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 17:32:48 -0400
-Date: Mon, 01 Jun 2009 14:32:48 -0700 (PDT)
-Message-Id: <20090601.143248.258478440.davem@davemloft.net>
-To: marcel@holtmann.org
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1243867942.3015.18.camel@localhost.localdomain>
-References: <20090601.032500.54712490.davem@davemloft.net>
-	<1243867942.3015.18.camel@localhost.localdomain>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Jun 2009 17:32:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=QTnfx6YuZDTQJsnZHvhIkYUenkHQ7QU24lnCQczyBnbCfdTdWBTap2IPTpKJwCI1Er
+         irPj2XDlF7WW+Nz6t4xkuSUW3j1qi8GmT+H/CaToC5QWlavUoTEOv7nmF6Bl4iy4ey+E
+         OhrgZ9AQ5LweDDyc+pGYPWB4t7vqmFGeCPUZw=
+From: Alexander Potashev <aspotashev@gmail.com>
+To: Jiri Kosina <trivial@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Alexander Potashev <aspotashev@gmail.com>
+Subject: [PATCH] Use KERN_INFO instead of KERN_ERR for init message
+Date: Tue,  2 Jun 2009 01:33:01 +0400
+Message-Id: <1243891981-12118-1-git-send-email-aspotashev@gmail.com>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcel Holtmann <marcel@holtmann.org>
-Date: Mon, 01 Jun 2009 16:52:21 +0200
+Signed-off-by: Alexander Potashev <aspotashev@gmail.com>
+---
+ drivers/dca/dca-core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
->> Things are really winding down, and the bug fix rate is down
->> to at best a trickle.  It might be time to do that final
->> release soon :-)
-> 
-> can you give me quick update on this pull request:
-> 
-> 	http://marc.info/?l=linux-netdev&m=124341070008320&w=2
+diff --git a/drivers/dca/dca-core.c b/drivers/dca/dca-core.c
+index 25b743a..e7c0b9c 100644
+--- a/drivers/dca/dca-core.c
++++ b/drivers/dca/dca-core.c
+@@ -276,7 +276,7 @@ EXPORT_SYMBOL_GPL(dca_unregister_notify);
+ 
+ static int __init dca_init(void)
+ {
+-	printk(KERN_ERR "dca service started, version %s\n", DCA_VERSION);
++	printk(KERN_INFO "dca service started, version %s\n", DCA_VERSION);
+ 	return dca_sysfs_init();
+ }
+ 
+-- 
+1.6.2.3
 
-Sorry that I overlooked this.
-
-Unfortunately, I almost entirely use patchwork to manage my
-work queue.  So if you're pull request doesn't attach a patch
-it's possible that it'll get lost in my inbox.  So I suggest
-attaching a patch to your pull requests, at least for bug
-fix work, just like John Linville does for wireless.
-
-That also let's me quickly review your work in-place in my
-mailbox before I even type the git pull command, which helps
-me a lot.
-
-Anyways, I've pulled in your tree, thanks.
