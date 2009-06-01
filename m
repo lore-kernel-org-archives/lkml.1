@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZFAVnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754359AbZFAVn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbZFAVnQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 17:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbZFAVnC
+	id S1754359AbZFAVn2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 17:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754128AbZFAVnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 17:43:02 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57636 "EHLO mx2.mail.elte.hu"
+	Mon, 1 Jun 2009 17:43:17 -0400
+Received: from kroah.org ([198.145.64.141]:56445 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751565AbZFAVnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 17:43:01 -0400
-Date: Mon, 1 Jun 2009 23:42:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
-       Zhao Lei <zhaolei@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/5] tracing/workqueue updates
-Message-ID: <20090601214232.GB5786@elte.hu>
-References: <1243876637-6616-1-git-send-email-fweisbec@gmail.com>
+	id S1754007AbZFAVnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 17:43:16 -0400
+Date: Mon, 1 Jun 2009 14:39:37 -0700
+From: Greg KH <greg@kroah.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@ftp.linux.org.uk>, Pavel Roskin <proski@gnu.org>,
+       Aaditya.Rai@atheros.com, Prem.Kumar@atheros.com,
+       Stephen.Chen@atheros.com, Rahul.Sridhar@atheros.com,
+       Allen.Tsai@atheros.com
+Subject: Re: EXPORT_SYMBOL_GPL recursive for shim and/or wrappers
+Message-ID: <20090601213937.GA29774@kroah.com>
+References: <43e72e890906011241u24b82cc3gc06bf7be4f43075e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1243876637-6616-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <43e72e890906011241u24b82cc3gc06bf7be4f43075e@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 01, 2009 at 12:41:58PM -0700, Luis R. Rodriguez wrote:
+> Does EXPORT_SYMBOL_GPL imply that modules which make use of these
+> symbols must also use EXPORT_SYMBOL_GPL for their own symbols? If so
+> then it would be clear of the recursive nature of intent.
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+I have had a group of lawyers and law-students study this very topic a
+lot in the past.  It comes down to "intent".  If you are creating a
+"shim" kernel module to merely export the symbols into the "non-gpl"
+namespace, the "intent" of such a piece of code is to obviously
+circumvent the original "intent" of the GPL-only marking.
 
-> Hi Ingo,
-> 
-> The following patches are fixes and cleanup for the workqueue tracer.
-> 
-> One of them makes the worklet search patch faster.
-> Some of them fix and sanitize the histogram output and the others clean and
-> standardize the code.
-> 
-> Thanks.
-> 
-> The following changes since commit c5f0530c4bb2ec77a805cfcf23db09b3e5ab09d4:
->   Ingo Molnar (1):
->         Merge branch 'tracing/core' into tracing/workqueues
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/workqueue
-> 
-> Anton Blanchard (2):
->       tracing/events: use %pf in workqueue trace events
->       tracing/events: rename worklet_execute to worklet_entry and worklet_complete to worklet_exit
-> 
-> Zhaolei (3):
->       tracing/workqueue: get rid of searching last executed worklet in probe_worklet_complete()
->       tracing/workqueue: fix list header and function name format
->       tracing/workqueue: cleanup for trace_workqueue.c
-> 
->  Documentation/trace/workqueue.txt |   12 ++--
->  include/trace/events/workqueue.h  |    8 +-
->  kernel/trace/trace_workqueue.c    |  124 +++++++++++++++++-------------------
->  3 files changed, 69 insertions(+), 75 deletions(-)
+This argument was successfully used to cause at least one company to
+stop doing this very thing.
 
-Pulled, thanks Frederic!
+Now if you try to explicitly document this somehow, well, I think you
+fall into the old "try to explicitly define everything" problem, which
+is counterproductive as people try to work around such definitions.  I
+say leave it as-is, and let my lawyers have fun if anyone tries to abuse
+it :)
 
-	Ingo
+thanks,
+
+greg k-h
