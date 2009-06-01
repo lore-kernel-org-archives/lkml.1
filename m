@@ -1,137 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbZFAPgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbZFAPj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759301AbZFAPgp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 11:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759010AbZFAPfv
+	id S1754961AbZFAPj6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 11:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbZFAPjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 11:35:51 -0400
-Received: from fmmailgate02.web.de ([217.72.192.227]:59846 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758973AbZFAPft (ORCPT
+	Mon, 1 Jun 2009 11:39:51 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:55962 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752560AbZFAPju (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 11:35:49 -0400
-From: Goswin von Brederlow <goswin-v-b@web.de>
-To: Jan Kara <jack@suse.cz>
-Cc: Goswin von Brederlow <goswin-v-b@web.de>, Pavel Machek <pavel@ucw.cz>,
-       LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 03/11] vfs: Add better VFS support for page_mkwrite when blocksize < pagesize
-References: <1243429268-3028-1-git-send-email-jack@suse.cz>
-	<1243429268-3028-4-git-send-email-jack@suse.cz>
-	<20090530112324.GD1395@ucw.cz> <20090601094402.GA14373@duck.suse.cz>
-	<87y6scqjd7.fsf@frosties.localdomain>
-	<20090601140030.GF14373@duck.suse.cz>
-	<87zlcsxb97.fsf@frosties.localdomain>
-	<20090601150218.GI14373@duck.suse.cz>
-Date: Mon, 01 Jun 2009 17:35:49 +0200
-In-Reply-To: <20090601150218.GI14373@duck.suse.cz> (Jan Kara's message of
-	"Mon, 1 Jun 2009 17:02:18 +0200")
-Message-ID: <87zlcsdl0q.fsf@frosties.localdomain>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
+	Mon, 1 Jun 2009 11:39:50 -0400
+Message-ID: <4A23F6B5.6010000@oracle.com>
+Date: Mon, 01 Jun 2009 08:41:41 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Provags-ID: V01U2FsdGVkX1+1wB8wKmdhTxvRR2iKcQZvrE3D2AcBhhohXNhY
-	CGKFMBDKpiuQf79qE9UrK1tT1riJ5r4wxzQUGjiCzC6uzh2gDa
-	qygM4stfo=
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Corentin Chary <corentincj@iksaif.net>, Len Brown <lenb@kernel.org>
+Subject: [PATCH] eeepc: fix kconfig problem
+References: <20090601200510.7b5334ab.sfr@canb.auug.org.au>
+In-Reply-To: <20090601200510.7b5334ab.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=windows-1251
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt007.oracle.com [141.146.116.16]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4A23F5FD.0127:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara <jack@suse.cz> writes:
+Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since 20090529:
 
-> On Mon 01-06-09 16:46:28, Goswin von Brederlow wrote:
->> Jan Kara <jack@suse.cz> writes:
->> > On Mon 01-06-09 13:33:08, Goswin von Brederlow wrote:
->> >> Jan Kara <jack@suse.cz> writes:
->> >> 
->> >> > On Sat 30-05-09 13:23:24, Pavel Machek wrote:
->> >> >> Hi!
->> >> >> 
->> >> >> > On filesystems where blocksize < pagesize the situation is more complicated.
->> >> >> > Think for example that blocksize = 1024, pagesize = 4096 and a process does:
->> >> >> >   ftruncate(fd, 0);
->> >> >> >   pwrite(fd, buf, 1024, 0);
->> >> >> >   map = mmap(NULL, 4096, PROT_WRITE, MAP_SHARED, fd, 0);
->> >> >> >   map[0] = 'a';  ----> page_mkwrite() for index 0 is called
->> >> >> >   ftruncate(fd, 10000); /* or even pwrite(fd, buf, 1, 10000) */
->> >> >> >   fsync(fd); ----> writepage() for index 0 is called
->> >> >> > 
->> >> >> > At the moment page_mkwrite() is called, filesystem can allocate only one block
->> >> >> > for the page because i_size == 1024. Otherwise it would create blocks beyond
->> >> >> > i_size which is generally undesirable. But later at writepage() time, we would
->> >> >> > like to have blocks allocated for the whole page (and in principle we have to
->> >> >> > allocate them because user could have filled the page with data after the
->> >> >> > second ftruncate()). This patch introduces a framework which allows filesystems
->> >> >> > to handle this with a reasonable effort.
->> >> >> 
->> >> >> What happens when you do above sequence on today's kernels? Oops? 3000
->> >> >> bytes of random junk in file? ...?
->> >> >   Depends on the filesystem. For example on ext4, you'll see a WARN_ON and the data
->> >> > won't be written. Some filesystems may just try to map blocks and possibly
->> >> > hit deadlock or something like that. Filesystems like ext2 / ext3 /
->> >> > reiserfs generally don't care because so far they allocate blocks on writepage
->> >> > time (which has the problem that you can write data via mmap and kernel
->> >> > will later discard them because it hits ENOSPC or quota limit). That's
->> >> > actually what I was trying to fix originally.
->> >> >
->> >> > 										Honza
->> >> 
->> >> man mmap:
->> >>        A file is mapped in multiples of the page size.  For a file that is not
->> >>        a  multiple  of  the  page  size,  the  remaining memory is zeroed when
->> >>        mapped, and writes to that region are not written out to the file.  The
->> >>        effect  of changing the size of the underlying file of a mapping on the
->> >>        pages that correspond to added  or  removed  regions  of  the  file  is
->> >>        unspecified.
->> >> 
->> >> Whatever happens happens. The above code is just wrong, as in
->> >> unspecified behaviour.
->> >> What happens if you ftruncate() before mmap()?
->> >   OK, I admit I didn't realize mmap() has so weak requirements. Doing mmap
->> > after ftruncate() should work fine because before you write via that new
->> > mmap page_mkwrite() will be called anyway.
->> 
->> But the ftruncate would only allocate a block at position 10000. The
->> file still has a big hole from 1024-4095.
->   ftruncate() actually allocates no blocks. It just updates file size (at
-> least for most filesystems). The hole is created as you write.
->
->> >   So what we could alternatively do is that we just discard dirty bits from
->> > buffers that don't have underlying blocks allocated. That would satisfy the
->> > specification as well. But I have to say I'm a bit afraid of discarding
->> > dirty bits like that. Also we'd have to handle the case where someone does
->> > mremap() after ftruncate().
->> >   What other memory management people think?
->> 
->> As said above the file still has a big hole after ftruncate. So not
->> having underlying blocks allocated can't be the deciding factor.
->   I'm not sure I understand here. Do you mean that we should not decide
-> about discarding dirty bits depending on whether the buffers have
-> underlying blocks or not? In my opinion that should be correct option
-> because from what the man page says, user is not guaranteed what happens
-> when the file size is extended to 10000 and he tries to write from offset
-> 1024 (old i_size) further... Anyway, I'm not defending doing that :-) I'm
-> just trying to understand what you mean.
 
-I mean that the file can lack underlying blocks below its old
-i_size. So that can't be the deciding factor.
+Resend.  linux-next still needs this patch.
 
->> If possible I would make ftruncate() after mmap() work just like
->> ftruncate() before mmap(). That is write any dirty page completly up
->> to the current filesize. Allocate disk blocks for the file as needed
->> (you need to do that anyway). Wouldn't it be more work to remember the
->   This is the thing my patches try to achieve :). At truncate time (or
-> generally just before i_size is extended), we check the last page and
-> propagate dirty bits to buffers inside old i_size (and clear the ones
-> beyond old i_size). We also writeprotect the page so that if someone tries
-> to write to it via mmap in future, we get page fault, page_mkwrite() is
-> called and a filesystem allocates all blocks it needs with the new i_size.
+Len, what mailing list(s) should drivers/platform/x86/ patches
+be sent to?
 
-Sounds right.
 
->> filesize at the time of the mmap() to limit updates to that than using
->> the current file size?
->   Yes, that would be more work. But I never intended to do this...
+---
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-MfG
-        Goswin
+EEEPC_LAPTOP selects HOTPLUG_PCI.  This causes failures (build error below)
+when CONFIG_HOTPLUG is not enabled, so additionally select HOTPLUG since
+kconfig 'select' doesn't follow its dependency chain.
+Also, only select HOTPLUG_PCI if PCI is already enabled.
+
+drivers/pci/hotplug/fakephp.c:55: error: implicit declaration of function 'pci_rescan_bus'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: Corentin Chary <corentincj@iksaif.net>
+---
+ drivers/platform/x86/Kconfig |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- linux-next-20090518.orig/drivers/platform/x86/Kconfig
++++ linux-next-20090518/drivers/platform/x86/Kconfig
+@@ -354,7 +354,8 @@ config EEEPC_LAPTOP
+ 	select BACKLIGHT_CLASS_DEVICE
+ 	select HWMON
+ 	select RFKILL
+-	select HOTPLUG_PCI
++	select HOTPLUG
++	select HOTPLUG_PCI if PCI
+ 	---help---
+ 	  This driver supports the Fn-Fx keys on Eee PC laptops.
+ 	  It also adds the ability to switch camera/wlan on/off.
