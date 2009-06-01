@@ -1,83 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbZFAHVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbZFAH1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754285AbZFAHVf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 03:21:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbZFAHV2
+	id S1754965AbZFAH1o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 03:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbZFAH1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 03:21:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42053 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751772AbZFAHV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 03:21:27 -0400
-Subject: [GIT PULL] headers_check fixes
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 01 Jun 2009 12:50:41 +0530
-Message-Id: <1243840841.3170.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Jun 2009 03:27:36 -0400
+Received: from mail-px0-f191.google.com ([209.85.216.191]:50811 "EHLO
+	mail-px0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752436AbZFAH1f convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 03:27:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=DIVzOdLOCihfll8zz8PQYzKO7C7igB2gMFDzIpEbXgBF7s2NDVQni12lRa9F39mRV/
+         OVwEgw13gSx2Hb6Fn1Pz3R6yzhgVYiAwkfA4SP8Psu4/IGEiSg3QI7Jixe+R+CM3go3/
+         3yA8YVdFhHJ8h8u32IMdxOEwqkgCakg4wwdrI=
+MIME-Version: 1.0
+In-Reply-To: <d364733c0905312349m6b5c8664h6cc7701a576c6b7d@mail.gmail.com>
+References: <d364733c0905312349m6b5c8664h6cc7701a576c6b7d@mail.gmail.com>
+Date: Mon, 1 Jun 2009 15:27:37 +0800
+Message-ID: <d82e647a0906010027qe1b3465we5724aa4ed35436@mail.gmail.com>
+Subject: Re: new implementation of mutex
+From: Ming Lei <tom.leiming@gmail.com>
+To: =?GB2312?B?0Lu42Q==?= <xiegang112@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+2009/6/1 Ð»¸Ù <xiegang112@gmail.com>:
+> I debug it and find the debug_locks = 0.  Is this why there is no
+> warning message and how turn it on? (I also had CONFIG_LOCKDEP_SUPPORT
+> on.)
 
-Please pull headers_check fixes:
+Please confirm CONFIG_PROVE_LOCKING is enabled.
 
-The following changes since commit 3218911f839b6c85acbf872ad264ea69aa4d89ad:
-  Linus Torvalds (1):
-        Merge git://git.infradead.org/~dwmw2/mtd-2.6.30
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/headers-check-2.6.git master
-
-Jaswinder Singh Rajput (2):
-      headers_check fix: linux/auto_fs.h
-      headers_check fix: linux/net_dropmon.h
-
- include/linux/auto_fs.h     |    3 +--
- include/linux/net_dropmon.h |    1 +
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-Complete diff:
-
-diff --git a/include/linux/auto_fs.h b/include/linux/auto_fs.h
-index 6326585..7b09c83 100644
---- a/include/linux/auto_fs.h
-+++ b/include/linux/auto_fs.h
-@@ -14,13 +14,12 @@
- #ifndef _LINUX_AUTO_FS_H
- #define _LINUX_AUTO_FS_H
- 
-+#include <linux/types.h>
- #ifdef __KERNEL__
- #include <linux/fs.h>
- #include <linux/limits.h>
--#include <linux/types.h>
- #include <linux/ioctl.h>
- #else
--#include <asm/types.h>
- #include <sys/ioctl.h>
- #endif /* __KERNEL__ */
- 
-diff --git a/include/linux/net_dropmon.h b/include/linux/net_dropmon.h
-index 0217fb8..0e2e100 100644
---- a/include/linux/net_dropmon.h
-+++ b/include/linux/net_dropmon.h
-@@ -1,6 +1,7 @@
- #ifndef __NET_DROPMON_H
- #define __NET_DROPMON_H
- 
-+#include <linux/types.h>
- #include <linux/netlink.h>
- 
- struct net_dm_drop_point {
-
-
+Thanks,
+-- 
+Lei Ming
