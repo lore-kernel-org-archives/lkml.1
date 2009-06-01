@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbZFAPeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbZFAPfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758749AbZFAPeo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 11:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbZFAPdU
+	id S1758950AbZFAPfz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 11:35:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbZFAPdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 11:33:20 -0400
-Received: from smtp.citrix.com ([66.165.176.89]:54264 "EHLO SMTP.CITRIX.COM"
+	Mon, 1 Jun 2009 11:33:38 -0400
+Received: from smtp.citrix.com ([66.165.176.89]:62354 "EHLO SMTP.CITRIX.COM"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753126AbZFAPdO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 11:33:14 -0400
+	id S1754107AbZFAPdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 11:33:37 -0400
 X-IronPort-AV: E=Sophos;i="4.41,284,1241409600"; 
-   d="scan'208";a="4484694"
+   d="scan'208";a="4484695"
 From: Ian Campbell <ian.campbell@citrix.com>
 To: <linux-kernel@vger.kernel.org>
 CC: Ian Campbell <ian.campbell@citrix.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Olaf Kirch <okir@suse.de>,
-       Greg KH <gregkh@suse.de>, Tony Luck <tony.luck@intel.com>,
        Becky Bruce <beckyb@kernel.crashing.org>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Kumar Gala <galak@kernel.crashing.org>, <x86@kernel.org>,
-       <linux-ia64@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 06/11] swiotlb: use dma_to_phys and phys_to_dma
-Date: Mon, 1 Jun 2009 16:32:58 +0100
-Message-ID: <1243870383-12954-7-git-send-email-ian.campbell@citrix.com>
+       Kumar Gala <galak@kernel.crashing.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 08/11] swiotlb: support HIGHMEM in swiotlb_bus_to_virt
+Date: Mon, 1 Jun 2009 16:33:00 +0100
+Message-ID: <1243870383-12954-9-git-send-email-ian.campbell@citrix.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
 References: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
@@ -33,115 +32,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These new architecture-specific interfaces subsume the existing __weak
-function hooks.
+Rather than supplying a __weak hook which architectures which support
+highmem can overide simply provide a version of swiotlb_bus_to_virt
+which works with high memory. Make it conditional since it is a more
+expensive variant than the non-highmem version.
+
+Acutal function contents taken from the PowerPC swiotlb patchset by
+Becky Bruce.
 
 Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Olaf Kirch <okir@suse.de>
-Cc: Greg KH <gregkh@suse.de>
-Cc: Tony Luck <tony.luck@intel.com>
 Cc: Becky Bruce <beckyb@kernel.crashing.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: x86@kernel.org
-Cc: linux-ia64@vger.kernel.org
 Cc: linuxppc-dev@ozlabs.org
 ---
- arch/x86/kernel/pci-swiotlb.c |   10 ----------
- include/linux/swiotlb.h       |    5 -----
- lib/swiotlb.c                 |   18 ++++--------------
- 3 files changed, 4 insertions(+), 29 deletions(-)
+ lib/swiotlb.c |   11 ++++++++++-
+ 1 files changed, 10 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-index a1712f2..e89cf99 100644
---- a/arch/x86/kernel/pci-swiotlb.c
-+++ b/arch/x86/kernel/pci-swiotlb.c
-@@ -23,16 +23,6 @@ void *swiotlb_alloc(unsigned order, unsigned long nslabs)
- 	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
- }
- 
--dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
--{
--	return paddr;
--}
--
--phys_addr_t swiotlb_bus_to_phys(struct device *hwdev, dma_addr_t baddr)
--{
--	return baddr;
--}
--
- int __weak swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
- {
- 	return 0;
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index cb1a663..954feec 100644
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -27,11 +27,6 @@ swiotlb_init(void);
- extern void *swiotlb_alloc_boot(size_t bytes, unsigned long nslabs);
- extern void *swiotlb_alloc(unsigned order, unsigned long nslabs);
- 
--extern dma_addr_t swiotlb_phys_to_bus(struct device *hwdev,
--				      phys_addr_t address);
--extern phys_addr_t swiotlb_bus_to_phys(struct device *hwdev,
--				       dma_addr_t address);
--
- extern int swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size);
- 
- extern void
 diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index bffe6d7..baa1991 100644
+index d37499b..d2b296a 100644
 --- a/lib/swiotlb.c
 +++ b/lib/swiotlb.c
-@@ -124,25 +124,15 @@ void * __weak swiotlb_alloc(unsigned order, unsigned long nslabs)
- 	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
+@@ -130,9 +130,18 @@ static dma_addr_t swiotlb_virt_to_bus(struct device *hwdev,
+ 	return phys_to_dma(hwdev, virt_to_phys(address));
  }
  
--dma_addr_t __weak swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
--{
--	return paddr;
--}
--
--phys_addr_t __weak swiotlb_bus_to_phys(struct device *hwdev, dma_addr_t baddr)
--{
--	return baddr;
--}
--
- static dma_addr_t swiotlb_virt_to_bus(struct device *hwdev,
- 				      volatile void *address)
+-void * __weak swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t address)
++static void *swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t address)
  {
--	return swiotlb_phys_to_bus(hwdev, virt_to_phys(address));
-+	return phys_to_dma(hwdev, virt_to_phys(address));
++#ifdef CONFIG_HIGHMEM
++	unsigned long pfn = PFN_DOWN(dma_to_phys(hwdev, address));
++	void *pageaddr = page_address(pfn_to_page(pfn));
++
++	if (pageaddr != NULL)
++		return pageaddr + (address % PAGE_SIZE);
++	return NULL;
++#else
+ 	return phys_to_virt(dma_to_phys(hwdev, address));
++#endif
  }
  
- void * __weak swiotlb_bus_to_virt(struct device *hwdev, dma_addr_t address)
- {
--	return phys_to_virt(swiotlb_bus_to_phys(hwdev, address));
-+	return phys_to_virt(dma_to_phys(hwdev, address));
- }
- 
- int __weak swiotlb_arch_address_needs_mapping(struct device *hwdev,
-@@ -646,7 +636,7 @@ dma_addr_t swiotlb_map_page(struct device *dev, struct page *page,
- 			    struct dma_attrs *attrs)
- {
- 	phys_addr_t phys = page_to_phys(page) + offset;
--	dma_addr_t dev_addr = swiotlb_phys_to_bus(dev, phys);
-+	dma_addr_t dev_addr = phys_to_dma(dev, phys);
- 	void *map;
- 
- 	BUG_ON(dir == DMA_NONE);
-@@ -817,7 +807,7 @@ swiotlb_map_sg_attrs(struct device *hwdev, struct scatterlist *sgl, int nelems,
- 
- 	for_each_sg(sgl, sg, nelems, i) {
- 		phys_addr_t paddr = sg_phys(sg);
--		dma_addr_t dev_addr = swiotlb_phys_to_bus(hwdev, paddr);
-+		dma_addr_t dev_addr = phys_to_dma(hwdev, paddr);
- 
- 		if (range_needs_mapping(paddr, sg->length) ||
- 		    address_needs_mapping(hwdev, dev_addr, sg->length)) {
+ static void swiotlb_print_info(unsigned long bytes)
 -- 
 1.5.6.5
 
