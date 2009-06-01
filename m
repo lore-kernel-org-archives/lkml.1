@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbZFATza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757588AbZFAT4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757541AbZFATza (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 15:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZFATzW
+	id S1757588AbZFAT4i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 15:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbZFAT4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 15:55:22 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:56355 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755482AbZFATzV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 15:55:21 -0400
+	Mon, 1 Jun 2009 15:56:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37966 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752449AbZFAT43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 15:56:29 -0400
+Date: Mon, 1 Jun 2009 21:56:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@linux.intel.com>, linux-fsdevel@vger.kernel.org,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/2] hrtimer: export ktime_add_safe
+Message-ID: <20090601195600.GF29610@elte.hu>
+References: <20090529150929.8912.33879.sendpatchset@localhost.localdomain> <20090529150938.8912.3443.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <200905302137.57644.bzolnier@gmail.com>
-References: <20090529145018.ff547ea1.sfr@canb.auug.org.au>
-	 <200905302137.57644.bzolnier@gmail.com>
-Date: Mon, 1 Jun 2009 15:55:22 -0400
-Message-ID: <7e0fb38c0906011255o25f2e852r6ba469c8345e8c77@mail.gmail.com>
-Subject: Re: linux-next: Tree for May 29 (__rdmsr_on_cpu() OOPS)
-From: Eric Paris <eparis@parisplace.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090529150938.8912.3443.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 30, 2009 at 3:37 PM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
 
-> [ Borislav, feel free to fold it into the above change or replace by
->  a more complete one if needed (there may be more rv fields needing
->  initialization). ]
->
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] x86: MSR: fix __rdmsr_on_cpu() OOPS
->
-> {rd,wr}msr_on_cpu() need to explicitly initalize rv.msrs
-> (since rv is allocated on the stack).
->
-> Cc: Borislav Petkov <borislav.petkov@amd.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+* Artem Bityutskiy <Artem.Bityutskiy@nokia.com> wrote:
 
-Still broken in 0601, none of my systems will even boot without this patch.
-
-Tested-by: Eric Paris <eparis@redhat.com>
-
+> From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+> Subject: [PATCH 1/2] hrtimer: export ktime_add_safe
+> 
+> We want to use hrtimers in UBIFS (for write-buffer write-back timer).
+> We need the 'hrtimer_set_expires_range_ns()', which is an in-line
+> function which uses 'ktime_add_safe()'.
+> 
+> Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 > ---
->  arch/x86/lib/msr.c |    2 ++
->  1 file changed, 2 insertions(+)
->
-> Index: b/arch/x86/lib/msr.c
-> ===================================================================
-> --- a/arch/x86/lib/msr.c
-> +++ b/arch/x86/lib/msr.c
-> @@ -44,6 +44,7 @@ int rdmsr_on_cpu(unsigned int cpu, u32 m
->        int err;
->        struct msr_info rv;
->
-> +       rv.msrs   = NULL;
->        rv.msr_no = msr_no;
->        err = smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 1);
->        *l = rv.reg.l;
-> @@ -58,6 +59,7 @@ int wrmsr_on_cpu(unsigned int cpu, u32 m
->        int err;
->        struct msr_info rv;
->
-> +       rv.msrs   = NULL;
->        rv.msr_no = msr_no;
->        rv.reg.l = l;
->        rv.reg.h = h;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+>  kernel/hrtimer.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+> index cb8a15c..18f6906 100644
+> --- a/kernel/hrtimer.c
+> +++ b/kernel/hrtimer.c
+> @@ -332,6 +332,8 @@ ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs)
+>  	return res;
+>  }
+>  
+> +EXPORT_SYMBOL_GPL(ktime_add_safe);
+> +
+
+Feel free to queue this up in your tree - it's trivial enough.
+
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
