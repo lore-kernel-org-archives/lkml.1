@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757038AbZFAT6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757855AbZFAUAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757038AbZFAT6S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 15:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755248AbZFAT6D
+	id S1757855AbZFAUAA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 16:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755248AbZFAT7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 15:58:03 -0400
-Received: from newpeace.netnation.com ([204.174.223.7]:55781 "EHLO
-	peace.netnation.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754754AbZFAT6D (ORCPT
+	Mon, 1 Jun 2009 15:59:51 -0400
+Received: from mo-p00-ob.rzone.de ([81.169.146.162]:59781 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754128AbZFAT7u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 15:58:03 -0400
-Date: Mon, 1 Jun 2009 12:58:01 -0700
-From: Simon Kirby <sim@netnation.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-nfs@vger.kernel.org
-Subject: Re: [Oops] EXT3 / journal / possibly NFS-tickled issues
-Message-ID: <20090601195801.GA23986@hostway.ca>
-References: <20090529231455.GA14665@hostway.ca>
+	Mon, 1 Jun 2009 15:59:50 -0400
+X-RZG-AUTH: :I2ANY0W6W/eA95XfH/xfO6gOxLxTty/udEMngcJ/VAKW226lDNJVyuUJITI8Ob4x
+X-RZG-CLASS-ID: mo00
+Message-ID: <4A243334.3020402@hartkopp.net>
+Date: Mon, 01 Jun 2009 21:59:48 +0200
+From: Oliver Hartkopp <oliver@hartkopp.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090529231455.GA14665@hostway.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Marcel Holtmann <marcel@holtmann.org>, David Miller <davem@davemloft.net>
+CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+References: <20090601.032500.54712490.davem@davemloft.net> <1243867942.3015.18.camel@localhost.localdomain>
+In-Reply-To: <1243867942.3015.18.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29, 2009 at 04:14:55PM -0700, Simon Kirby wrote:
-
-> Hello!  Happy Friday...
+Marcel Holtmann wrote:
+> Hi Dave,
 > 
-> We have a Linux HA NFS "NAS" setup (with heartbeat et al) that has been
-> backended with about 40 TB of storage.  LVM and AOE are in use, and
-> there are about 40 1 TB EXT3 file systems.  The kernel is vanilla amd64
-> 2.6.28.10 except that I've built DRBD (unused) and newer AOE into it
-> (sorry).
+>> Things are really winding down, and the bug fix rate is down
+>> to at best a trickle.  It might be time to do that final
+>> release soon :-)
+> 
+> can you give me quick update on this pull request:
+> 
+> 	http://marc.info/?l=linux-netdev&m=124341070008320&w=2
+> 
+> Regards
+> 
+> Marcel
 
-Ok, I have now seen "EXT3 Inode ...: orphan list check failed!" on four
-separate HA pairs (8 different boxes), the other three without AOE (using
-DRBD instead).  One of them has never crashed or failed over, and has had
-the FS mounted since mkfs.ext3 was run.  They are running 2.6.28.7.
+Just to make clear that this patch does not only fix a "lockdep warning":
 
-I will try to set up a test box and reproduce this without DRBD or AOE,
-but with AOE used in one case and DRBD in another, I think the problem
-may be unrelated to them.  The common pattern here is lots of I/O via
-knfsd (NFSv3).
+Without this patch dialup networking via mobile phones via bluetooth does not
+work anymore ...
 
-I did not see this message on kernel 2.6.27 and older kernels.
-Hopefully I can get a reproducible case easily enough.  Is anyone else
-seeing this error?
+Best regards,
+Oliver
 
-Simon-
