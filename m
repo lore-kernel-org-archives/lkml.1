@@ -1,178 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbZFASoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbZFASsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755665AbZFASoy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 14:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZFASor
+	id S1753327AbZFASsF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 14:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZFASry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 14:44:47 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34701 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbZFASoq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 14:44:46 -0400
-Date: Mon, 1 Jun 2009 20:51:47 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, hugh@veritas.com, riel@redhat.com,
-       akpm@linux-foundation.org, chris.mason@oracle.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090601185147.GT1065@one.firstfloor.org>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090601120537.GF5018@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 1 Jun 2009 14:47:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55493 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751351AbZFASrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 14:47:53 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH] Driver Core: Add platform device arch data V2
+Date: Mon, 1 Jun 2009 20:47:58 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, paul@pwsan.com, khilman@deeprootsystems.com,
+       gregkh@suse.de, stern@rowland.harvard.edu,
+       linux-pm@lists.linux-foundation.org
+References: <20090601101614.10720.93804.sendpatchset@rx1.opensource.se>
+In-Reply-To: <20090601101614.10720.93804.sendpatchset@rx1.opensource.se>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090601120537.GF5018@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200906012047.59726.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 01, 2009 at 02:05:38PM +0200, Nick Piggin wrote:
-> On Thu, May 28, 2009 at 03:45:20PM +0200, Andi Kleen wrote:
-> > On Thu, May 28, 2009 at 02:08:54PM +0200, Nick Piggin wrote:
-> > > Then the data can not have been consumed, by DMA or otherwise? What
-> > 
-> > When the data was consumed we get a different machine check
-> > (or a different error if it was consumed by a IO device)
-> > 
-> > This code right now just handles the case of "CPU detected a page is broken
-> > is wrong, but hasn't consumed it yet"
+On Monday 01 June 2009, Magnus Damm wrote:
+> From: Magnus Damm <damm@igel.co.jp>
 > 
-> OK. Out of curiosity, how often do you expect to see uncorrectable ECC
-> errors?
-
-That's a difficult question. It depends on a lot of factors, e.g. 
-how much memory you have (but memory sizes are growing all the time), 
-how many machines you have (large clusters tend to turn infrequent errors 
-into frequent ones), how well your cooling and power supply works etc.
-
-I can't give you a single number at this point, sorry.
-
-> > > > > > +	/*
-> > > > > > +	 * remove_from_page_cache assumes (mapping && !mapped)
-> > > > > > +	 */
-> > > > > > +	if (page_mapping(p) && !page_mapped(p)) {
-> > > > > > +		remove_from_page_cache(p);
-> > > > > > +		page_cache_release(p);
-> > > > > > +	}
-> > > > > 
-> > > > > remove_mapping would probably be a better idea. Otherwise you can
-> > > > > probably introduce pagecache removal vs page fault races whi
-> > > > > will make the kernel bug.
-> > > > 
-> > > > Can you be more specific about the problems?
-> > > 
-> > > Hmm, actually now that we hold the page lock over __do_fault (at least
-> > > for pagecache pages), this may not be able to trigger the race I was
-> > > thinking of (page becoming mapped). But I think still it is better
-> > > to use remove_mapping which is the standard way to remove such a page.
-> > 
-> > I had this originally, but Fengguang redid it because there was
-> > trouble with the reference count. remove_mapping always expects it to
-> > be 2, which we cannot guarantee.
+> Allow architecture specific data in struct platform_device V2.
+> The structure pdev_archdata is added to struct platform_device,
+> similar to struct dev_archdata in struct device.
 > 
-> OK, but it should still definitely use truncate code.
-
-It does -- see other email.
-
+> Useful for architecture code that needs to keep extra data
+> associated with each platform device. This data shall not
+> be accessed by platform drivers, only architecture code.
 > 
-> > > > > > +	if (mapping) {
-> > > > > > +		/*
-> > > > > > +		 * Truncate does the same, but we're not quite the same
-> > > > > > +		 * as truncate. Needs more checking, but keep it for now.
-> > > > > > +		 */
-> > > > > 
-> > > > > What's different about truncate? It would be good to reuse as much as possible.
-> > > > 
-> > > > Truncating removes the block on disk (we don't). Truncating shrinks
-> > > > the end of the file (we don't). It's more "temporal hole punch"
-> > > > Probably from the VM point of view it's very similar, but it's
-> > > > not the same.
-> > > 
-> > > Right, I just mean the pagecache side of the truncate. So you should
-> > > use truncate_inode_pages_range here.
-> > 
-> > Why?  I remember I was trying to use that function very early on but
-> > there was some problem.  For once it does its own locking which
-> > would conflict with ours.
+> Needed for platform device runtime PM.
+
+What exactly do you need this data for?
+
+Rafael
+
+
+> Signed-off-by: Magnus Damm <damm@igel.co.jp>
+> ---
 > 
-> Just extract the part where it has the page locked into a common
-> function.
-
-That doesn't do some stuff we want to do, like try_to_release_buffers
-And there's the page count problem with remove_mapping
-
-That could be probably fixed, but to be honest I'm uncomfortable
-fiddling with truncate internals.
-
-
+>  Applies to next-20090529.
+> 
+>  Changes since V1:
+>  - post to lkml, keep linux-pm cc:ed
+>  - add struct pdev_archdata to asm-generic
+>  - add struct pdev_archdata to non-generic architectures
+>  - drop Kconfig bits
+> 
+>  arch/arm/include/asm/device.h        |    3 +++
+>  arch/ia64/include/asm/device.h       |    3 +++
+>  arch/microblaze/include/asm/device.h |    3 +++
+>  arch/powerpc/include/asm/device.h    |    3 +++
+>  arch/sparc/include/asm/device.h      |    3 +++
+>  arch/x86/include/asm/device.h        |    3 +++
+>  include/asm-generic/device.h         |    3 +++
+>  include/linux/platform_device.h      |    3 +++
+>  8 files changed, 24 insertions(+)
+> 
+> --- 0001/arch/arm/include/asm/device.h
+> +++ work/arch/arm/include/asm/device.h	2009-06-01 12:19:51.000000000 +0900
+> @@ -12,4 +12,7 @@ struct dev_archdata {
+>  #endif
+>  };
 >  
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif
+> --- 0001/arch/ia64/include/asm/device.h
+> +++ work/arch/ia64/include/asm/device.h	2009-06-01 12:18:11.000000000 +0900
+> @@ -15,4 +15,7 @@ struct dev_archdata {
+>  #endif
+>  };
+>  
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_IA64_DEVICE_H */
+> --- 0001/arch/microblaze/include/asm/device.h
+> +++ work/arch/microblaze/include/asm/device.h	2009-06-01 12:19:32.000000000 +0900
+> @@ -16,6 +16,9 @@ struct dev_archdata {
+>  	struct device_node	*of_node;
+>  };
+>  
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_MICROBLAZE_DEVICE_H */
+>  
+>  
+> --- 0001/arch/powerpc/include/asm/device.h
+> +++ work/arch/powerpc/include/asm/device.h	2009-06-01 12:16:28.000000000 +0900
+> @@ -30,4 +30,7 @@ dev_archdata_get_node(const struct dev_a
+>  	return ad->of_node;
+>  }
+>  
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_POWERPC_DEVICE_H */
+> --- 0001/arch/sparc/include/asm/device.h
+> +++ work/arch/sparc/include/asm/device.h	2009-06-01 12:18:57.000000000 +0900
+> @@ -32,4 +32,7 @@ dev_archdata_get_node(const struct dev_a
+>  	return ad->prom_node;
+>  }
+>  
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_SPARC_DEVICE_H */
+> --- 0001/arch/x86/include/asm/device.h
+> +++ work/arch/x86/include/asm/device.h	2009-06-01 12:17:28.000000000 +0900
+> @@ -13,4 +13,7 @@ struct dma_map_ops *dma_ops;
+>  #endif
+>  };
+>  
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_X86_DEVICE_H */
+> --- 0001/include/asm-generic/device.h
+> +++ work/include/asm-generic/device.h	2009-06-01 12:16:20.000000000 +0900
+> @@ -9,4 +9,7 @@
+>  struct dev_archdata {
+>  };
+>  
+> +struct pdev_archdata {
+> +};
+> +
+>  #endif /* _ASM_GENERIC_DEVICE_H */
+> --- 0001/include/linux/platform_device.h
+> +++ work/include/linux/platform_device.h	2009-06-01 12:14:43.000000000 +0900
+> @@ -22,6 +22,9 @@ struct platform_device {
+>  	struct resource	* resource;
+>  
+>  	struct platform_device_id	*id_entry;
+> +
+> +	/* arch specific additions */
+> +	struct pdev_archdata	archdata;
+>  };
+>  
+>  #define platform_get_device_id(pdev)	((pdev)->id_entry)
 > 
-> > Is there anything concretely wrong with the current code?
 > 
-> 
-> /*
->  * Truncate does the same, but we're not quite the same
->  * as truncate. Needs more checking, but keep it for now.
->  */
-> 
-> I guess that it duplicates this tricky truncate code and also
-> says it is different (but AFAIKS it is doing exactly the same
-> thing).
-
-It's not, there are various differences (like the reference count)
-
-> > > Well, the dirty data has never been corrupted before (ie. the data
-> > > in pagecache has been OK). It was just unable to make it back to
-> > > backing store. So a program could retry the write/fsync/etc or
-> > > try to write the data somewhere else.
-> > 
-> > In theory it could, but in practice it is very unlikely it would.
-> 
-> very unlikely to try rewriting the page again or taking evasive
-> action to save the data somewhere else? I think that's a bold
-> assumption.
-> 
-> At the very least, having a prompt "IO error, check your hotplug
-> device / network connection / etc and try again" I don't think
-> sounds unreasonable at all.
-
-I'm not sure what you're suggesting here. Are you suggesting
-corrupted dirty page should return a different errno than a traditional 
-IO error?
-
-I don't think having a different errno for this would be a good
-idea. Programs expect EIO on IO error and not something else.
-And from the POV of the program it's an IO error.
-
-Or are you suggesting there should be a mechanism where
-an application could query about more details about a given
-error it retrieved before? I think the later would be useful
-in some cases, but probably hard to implement. Definitely
-out of scope for this effort.
-
-> > > Just seems overengineered. We could rewrite any if/switch statement like
-> > > that (and actually the compiler probably will if it is beneficial).
-> > 
-> > The reason I like it is that it separates the functions cleanly,
-> > without that there would be a dispatcher from hell. Yes it's a bit
-> > ugly that there is a lot of manual bit checking around now too,
-> > but as you go into all the corner cases originally clean code
-> > always tends to get more ugly (and this is a really ugly problem)
-> 
-> Well... it is just writing another dispatcher from hell in a
-> different way really, isn't it? How is it so much better than
-> a simple switch or if/elseif/else statement?
-
-switch () wouldn't work, it relies on the order.
-
-if () would work, but it would be larger and IMHO much harder
-to read than the table. I prefer the table, which is a reasonably
-clean mechanism to do that.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
