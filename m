@@ -1,81 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758098AbZFANpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbZFAOAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758098AbZFANpZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 09:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbZFANpP
+	id S1752891AbZFAOAj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 10:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZFAOAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 09:45:15 -0400
-Received: from fias.uni-frankfurt.de ([141.2.248.1]:33354 "EHLO
-	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753659AbZFANpO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 09:45:14 -0400
-From: Jan Scholz <scholz@fias.uni-frankfurt.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jan Scholz <scholz@fias.uni-frankfurt.de>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [regression, bisected] adb trackpad disappears after suspend to ram
-References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de>
-	<1243549422.17903.10.camel@pasglop>
-	<87tz34n97p.fsf@scholz.fias.uni-frankfurt.de>
-	<200905292010.10615.rjw@sisk.pl>
-Date: Mon, 01 Jun 2009 15:44:51 +0200
-In-Reply-To: <200905292010.10615.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Fri, 29 May 2009 20:10:09 +0200")
-Message-ID: <87fxekxe3w.fsf@scholz.fias.uni-frankfurt.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.94 (gnu/linux)
+	Mon, 1 Jun 2009 10:00:30 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34948 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751175AbZFAOAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 10:00:30 -0400
+Date: Mon, 1 Jun 2009 16:00:30 +0200
+From: Jan Kara <jack@suse.cz>
+To: Goswin von Brederlow <goswin-v-b@web.de>
+Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
+       npiggin@suse.de, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 03/11] vfs: Add better VFS support for page_mkwrite
+	when blocksize < pagesize
+Message-ID: <20090601140030.GF14373@duck.suse.cz>
+References: <1243429268-3028-1-git-send-email-jack@suse.cz> <1243429268-3028-4-git-send-email-jack@suse.cz> <20090530112324.GD1395@ucw.cz> <20090601094402.GA14373@duck.suse.cz> <87y6scqjd7.fsf@frosties.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87y6scqjd7.fsf@frosties.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Mon 01-06-09 13:33:08, Goswin von Brederlow wrote:
+> Jan Kara <jack@suse.cz> writes:
+> 
+> > On Sat 30-05-09 13:23:24, Pavel Machek wrote:
+> >> Hi!
+> >> 
+> >> > On filesystems where blocksize < pagesize the situation is more complicated.
+> >> > Think for example that blocksize = 1024, pagesize = 4096 and a process does:
+> >> >   ftruncate(fd, 0);
+> >> >   pwrite(fd, buf, 1024, 0);
+> >> >   map = mmap(NULL, 4096, PROT_WRITE, MAP_SHARED, fd, 0);
+> >> >   map[0] = 'a';  ----> page_mkwrite() for index 0 is called
+> >> >   ftruncate(fd, 10000); /* or even pwrite(fd, buf, 1, 10000) */
+> >> >   fsync(fd); ----> writepage() for index 0 is called
+> >> > 
+> >> > At the moment page_mkwrite() is called, filesystem can allocate only one block
+> >> > for the page because i_size == 1024. Otherwise it would create blocks beyond
+> >> > i_size which is generally undesirable. But later at writepage() time, we would
+> >> > like to have blocks allocated for the whole page (and in principle we have to
+> >> > allocate them because user could have filled the page with data after the
+> >> > second ftruncate()). This patch introduces a framework which allows filesystems
+> >> > to handle this with a reasonable effort.
+> >> 
+> >> What happens when you do above sequence on today's kernels? Oops? 3000
+> >> bytes of random junk in file? ...?
+> >   Depends on the filesystem. For example on ext4, you'll see a WARN_ON and the data
+> > won't be written. Some filesystems may just try to map blocks and possibly
+> > hit deadlock or something like that. Filesystems like ext2 / ext3 /
+> > reiserfs generally don't care because so far they allocate blocks on writepage
+> > time (which has the problem that you can write data via mmap and kernel
+> > will later discard them because it hits ENOSPC or quota limit). That's
+> > actually what I was trying to fix originally.
+> >
+> > 										Honza
+> 
+> man mmap:
+>        A file is mapped in multiples of the page size.  For a file that is not
+>        a  multiple  of  the  page  size,  the  remaining memory is zeroed when
+>        mapped, and writes to that region are not written out to the file.  The
+>        effect  of changing the size of the underlying file of a mapping on the
+>        pages that correspond to added  or  removed  regions  of  the  file  is
+>        unspecified.
+> 
+> Whatever happens happens. The above code is just wrong, as in
+> unspecified behaviour.
+> What happens if you ftruncate() before mmap()?
+  OK, I admit I didn't realize mmap() has so weak requirements. Doing mmap
+after ftruncate() should work fine because before you write via that new
+mmap page_mkwrite() will be called anyway.
+  So what we could alternatively do is that we just discard dirty bits from
+buffers that don't have underlying blocks allocated. That would satisfy the
+specification as well. But I have to say I'm a bit afraid of discarding
+dirty bits like that. Also we'd have to handle the case where someone does
+mremap() after ftruncate().
+  What other memory management people think?
 
-> On Friday 29 May 2009, Jan Scholz wrote:
->> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->> 
->> >> We are too late in the cycle to revert this commit and it really is needed to
->> >> fix a more serious issue.  Nevertheless knowing that it caused the problem to
->> >> appear on your system is also important.
->> >> 
->> >> Ben, do you have an idea what may be going on here?  Does __disable_irq() mask
->> >> the interrupt on this platform?
->> >
->> > I suppose so :-) I'll have to check what's going on, it's not
->> > immediately clear to me.
->> >
->> > Cheers,
->> > Ben.
->> >
->> >> 
->> >> I'd like to see a boot log, preferably containing a suspend-resume in which
->> >> the problem was reproduced.
->> 
->> Here is a log from booting, through several suspend cycles, until the
->> trackpad disappeared. The first few suspends were done while X was
->> running but from the console. As you can tell from lines like
->>    May 28 23:51:26 [kernel] adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
->> the trackpad was still present. The last suspend was done from within X,
->> here the trackpad did not make it.
->>    May 28 23:58:09 [kernel] adb devices: [2]: 2 c4 [7]: 7 1f
->> However, there have been cases, although not in this log, were the
->> trackpad has been alive even when suspending from within X.
->
-> This means the problem is probably timing-related.
->
-> Can you please try to comment out suspend_device_irqs() and
-> resume_device_irqs()  in drivers/base/power/main.c and see if that changes
-> anything?  It's not entirely safe (well, that's why the calls are there after
-> all), but hopefully the box won't hang during this test.
->
-
-Tried that against v2.6.30-rc7 and it seems to fix the issue. I did ~10
-suspend-resume cycles from the console (which worked just like before)
-and ~20 cycles from within X and the trackpad is still alive.
-
-Best,
-   Jan Scholz
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
