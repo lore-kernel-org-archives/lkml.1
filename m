@@ -1,95 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751615AbZFAQzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbZFAQzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751615AbZFAQzS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 12:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbZFAQyv
+	id S1758227AbZFAQzg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 12:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755606AbZFAQyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 12:54:51 -0400
-Received: from bear.ext.ti.com ([192.94.94.41]:40299 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755629AbZFAQyt convert rfc822-to-8bit (ORCPT
+	Mon, 1 Jun 2009 12:54:54 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:58547 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756180AbZFAQyw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 12:54:49 -0400
-From: "Paulraj, Sandeep" <s-paulraj@ti.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Grosen, Mark" <mgrosen@ti.com>
-Date: Mon, 1 Jun 2009 11:54:37 -0500
-Subject: RE: New Driver for DaVinci DM355/DM365/DM6446
-Thread-Topic: New Driver for DaVinci DM355/DM365/DM6446
-Thread-Index: Acni1uO9tINC0AwzS4G9qkfBNWiuygAAkqlA
-Message-ID: <C9D59C82B94F474B872F2092A87F261481797F62@dlee07.ent.ti.com>
-References: <C9D59C82B94F474B872F2092A87F261481797D4B@dlee07.ent.ti.com>
- <20090601133436.06a4a4a0@pedra.chehab.org>
-In-Reply-To: <20090601133436.06a4a4a0@pedra.chehab.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 1 Jun 2009 12:54:52 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [KVM PATCH v3 1/3] kvm: fix potential coalesced_mmio leak on shutdown
+To: avi@redhat.com
+Cc: chrisw@sous-sol.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Mon, 01 Jun 2009 12:54:45 -0400
+Message-ID: <20090601165445.18202.2291.stgit@dev.haskins.net>
+In-Reply-To: <20090601165134.18202.87598.stgit@dev.haskins.net>
+References: <20090601165134.18202.87598.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+It would appear that we are invoking kfree() on the wrong pointer in the
+destructor for the coalesced_mmio device.  This could result in a potential
+leak during shutdown.  This works today because the kvm_io_device is
+the first element of the private structure, but this could change in
+the future, so lets clean this up.
 
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
-> -----Original Message-----
-> From: Mauro Carvalho Chehab [mailto:mchehab@infradead.org]
-> Sent: Monday, June 01, 2009 12:35 PM
-> To: Paulraj, Sandeep
-> Cc: linux-media@vger.kernel.org; linux-kernel@vger.kernel.org; Grosen,
-> Mark
-> Subject: Re: New Driver for DaVinci DM355/DM365/DM6446
-> 
-> Em Mon, 1 Jun 2009 09:56:40 -0500
-> "Paulraj, Sandeep" <s-paulraj@ti.com> escreveu:
-> 
-> >
-> > Hello,
-> >
-> > WE have a module(H3A) on Davinci DM6446,DM355 and DM365.
-> >
-> > Customers require a way to collect the data required to perform the Auto
-> Exposure (AE), Auto Focus(AF), and Auto White balance (AWB) in hardware as
-> opposed to software. This is primarily for performance reasons as there is
-> not enough software processing MIPS (to do 3A statistics) available in
-> > an imaging/video system.
-> >
-> > Including this block in hardware reduces the load on the processor and
-> bandwidth to the memory as the data is collected on the fly from the
-> imager.
-> >
-> > This modules collects statistics and we currently implement it as a
-> character driver.
-> >
-> > Which mailing list would be the most appropriate mailing list to submit
-> patches for review?
-> 
-> You should send they to:
-> 	LMML <linux-media@vger.kernel.org>
-> 
-> If you are proposing API changes, please submit they first.
-[Sandeep] WE don't propose any API changes. This module for which we want to submit patches is a TI proprietary IP. We currently implement this as a character device and have a few IOCTL's.
-We do not follow the V4L2 framework and do not use any V4L2 IOCTLs.
+ virt/kvm/coalesced_mmio.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-Can we continue to use it as a character driver?
-> 
-> >
-> > Thanks,
-> > Sandeep
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-media"
-> in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-> 
-> 
-> Cheers,
-> Mauro
+diff --git a/virt/kvm/coalesced_mmio.c b/virt/kvm/coalesced_mmio.c
+index 5ae620d..03ea280 100644
+--- a/virt/kvm/coalesced_mmio.c
++++ b/virt/kvm/coalesced_mmio.c
+@@ -80,7 +80,10 @@ static void coalesced_mmio_write(struct kvm_io_device *this,
+ 
+ static void coalesced_mmio_destructor(struct kvm_io_device *this)
+ {
+-	kfree(this);
++	struct kvm_coalesced_mmio_dev *dev =
++		(struct kvm_coalesced_mmio_dev *)this->private;
++
++	kfree(dev);
+ }
+ 
+ int kvm_coalesced_mmio_init(struct kvm *kvm)
 
