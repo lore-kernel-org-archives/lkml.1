@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbZFATwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756965AbZFATxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756900AbZFATwo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 15:52:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756557AbZFATwe
+	id S1756965AbZFATxs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 15:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbZFATxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 15:52:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40846 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756805AbZFATwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 15:52:33 -0400
-Date: Mon, 1 Jun 2009 21:51:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Ondrej Zary <linux@rainbow-software.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH] Fix floppy hibernation
-Message-ID: <20090601195159.GC29610@elte.hu>
-References: <200905301804.26762.linux@rainbow-software.org> <20090601114342.GA2454@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090601114342.GA2454@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 1 Jun 2009 15:53:41 -0400
+Received: from mta.netezza.com ([12.148.248.132]:55936 "EHLO netezza.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753827AbZFATxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 15:53:41 -0400
+Subject: Re: [PATCH] coredump: Retry writes where appropriate
+From: Paul Smith <paul@mad-scientist.net>
+Reply-To: paul@mad-scientist.net
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
+In-Reply-To: <20090601200232.078aacbb@lxorguk.ukuu.org.uk>
+References: <1243748019.7369.319.camel@homebase.localnet>
+	 <20090531111851.07eb1df3@lxorguk.ukuu.org.uk>
+	 <20090601161234.GA10486@redhat.com>
+	 <1243877766.8547.38.camel@psmith-ubeta.netezza.com>
+	 <20090601184934.1fc54411@lxorguk.ukuu.org.uk>
+	 <1243881544.8547.66.camel@psmith-ubeta.netezza.com>
+	 <20090601200232.078aacbb@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Organization: GNU's Not Unix!
+Date: Mon, 01 Jun 2009 15:51:39 -0400
+Message-Id: <1243885899.8547.95.camel@psmith-ubeta.netezza.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Jun 2009 19:51:40.0131 (UTC) FILETIME=[616DAB30:01C9E2F2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-06-01 at 20:02 +0100, Alan Cox wrote:
+> > If a program seems to be unresponsive the user could ^C, without
+> > realizing that it was really dumping core.  Now when they are asked to
+> > produce the core so the problem can be debugged, they can't do it.  Or,
+> 
+> and get their prompt back, which is probably why they are banging ^C. If
+> they didn't want their prompt back at that point they'd still be
+> wondering why nothing was occuring at the point it said (core dumped)
 
-* Pavel Machek <pavel@ucw.cz> wrote:
+True.  My concern is that non-interactive, non-user controlled processes
+seem to be getting thrown out with the bathwater here in the search for
+the ultimate ease-of-use for interactive users.  SIGINT is not just a
+user signal.
 
-> On Sat 2009-05-30 18:04:25, Ondrej Zary wrote:
-> > Hello,
-> > floppy driver was always missing hibernation support. After resume, floppy did
-> > not work (until a couple of disk reinserts and retries), producing errors like
-> > this:
-> > end_request: I/O error, dev fd0, sector 0
-> > 
-> > Ingo Molnar tried to fix it in 2006: http://lkml.org/lkml/2006/11/12/92
-> > 
-> > 
-> > 
-> > 
-> > Based on Ingo Molnar's patch from 2006, this makes the floppy work after
-> > resume from hibernation, at least on my machine.
-> > 
-> > 
-> > Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+If it's interactive, can't the user ^Z (SIGSTOP) the process being
+dumped, then kill -9 %1?  Does SIGSTOP stop a process that's dumping
+core?  If this works it's not as simple as ^C, but I find myself doing
+that all the time for processes which are catching SIGINT, as Oleg
+points out.
 
-nice patch ... thanks for picking up what i left unfinished.
+Saying that SIGSTOP stops a core dump, SIGCONT continues it, SIGKILL
+cancels it, and everything else is ignored would be just fine with me.
 
-	Ingo
+Yes, you need a shell with job control but... at some point we have to
+just say it is what it is!  Core dumps are not just annoying time/disk
+space wasters, they have real value; a good core dump can save tens of
+thousands of dollars or more in support and development costs.  We need
+(a way for) them to be reliable, even if it costs some interactive
+ease-of-use.
+
+Anyway, that's my opinion :-)
+
+
