@@ -1,59 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755809AbZFAQy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751615AbZFAQzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755809AbZFAQy6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 12:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbZFAQyo
+	id S1751615AbZFAQzS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 12:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbZFAQyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 12:54:44 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:48466 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774AbZFAQyn (ORCPT
+	Mon, 1 Jun 2009 12:54:51 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:40299 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755629AbZFAQyt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 12:54:43 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v3 0/3] mmio/pio cleanup
-To: avi@redhat.com
-Cc: chrisw@sous-sol.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 01 Jun 2009 12:54:40 -0400
-Message-ID: <20090601165134.18202.87598.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
+	Mon, 1 Jun 2009 12:54:49 -0400
+From: "Paulraj, Sandeep" <s-paulraj@ti.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Grosen, Mark" <mgrosen@ti.com>
+Date: Mon, 1 Jun 2009 11:54:37 -0500
+Subject: RE: New Driver for DaVinci DM355/DM365/DM6446
+Thread-Topic: New Driver for DaVinci DM355/DM365/DM6446
+Thread-Index: Acni1uO9tINC0AwzS4G9qkfBNWiuygAAkqlA
+Message-ID: <C9D59C82B94F474B872F2092A87F261481797F62@dlee07.ent.ti.com>
+References: <C9D59C82B94F474B872F2092A87F261481797D4B@dlee07.ent.ti.com>
+ <20090601133436.06a4a4a0@pedra.chehab.org>
+In-Reply-To: <20090601133436.06a4a4a0@pedra.chehab.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(This is v3 of the series, applies to kvm.git/master:7ff90748)
-
-This is in prep for some more substantial mmio/pio work for iosignalfd,
-coming later.
-
-[ Changelog:
-
-  v3:
-      *) Addressed feedback from Chris Wright w.r.t. patch 2/3
-      *) Rebased to kvm.git/master:7ff90748
-
-]
-
----
-
-Gregory Haskins (3):
-      kvm: do not register i8254 PIO regions until we are initialized
-      kvm: cleanup io_device code
-      kvm: fix potential coalesced_mmio leak on shutdown
 
 
- arch/x86/kvm/i8254.c      |   53 +++++++++++++++++++++++++++++----------------
- arch/x86/kvm/i8259.c      |   20 ++++++++++++-----
- arch/x86/kvm/lapic.c      |   22 +++++++++++++------
- arch/x86/kvm/x86.c        |    2 +-
- virt/kvm/coalesced_mmio.c |   26 ++++++++++++++--------
- virt/kvm/ioapic.c         |   22 +++++++++++++------
- virt/kvm/iodev.h          |   29 +++++++++++++++++--------
- virt/kvm/kvm_main.c       |    2 +-
- 8 files changed, 117 insertions(+), 59 deletions(-)
+> -----Original Message-----
+> From: Mauro Carvalho Chehab [mailto:mchehab@infradead.org]
+> Sent: Monday, June 01, 2009 12:35 PM
+> To: Paulraj, Sandeep
+> Cc: linux-media@vger.kernel.org; linux-kernel@vger.kernel.org; Grosen,
+> Mark
+> Subject: Re: New Driver for DaVinci DM355/DM365/DM6446
+> 
+> Em Mon, 1 Jun 2009 09:56:40 -0500
+> "Paulraj, Sandeep" <s-paulraj@ti.com> escreveu:
+> 
+> >
+> > Hello,
+> >
+> > WE have a module(H3A) on Davinci DM6446,DM355 and DM365.
+> >
+> > Customers require a way to collect the data required to perform the Auto
+> Exposure (AE), Auto Focus(AF), and Auto White balance (AWB) in hardware as
+> opposed to software. This is primarily for performance reasons as there is
+> not enough software processing MIPS (to do 3A statistics) available in
+> > an imaging/video system.
+> >
+> > Including this block in hardware reduces the load on the processor and
+> bandwidth to the memory as the data is collected on the fly from the
+> imager.
+> >
+> > This modules collects statistics and we currently implement it as a
+> character driver.
+> >
+> > Which mailing list would be the most appropriate mailing list to submit
+> patches for review?
+> 
+> You should send they to:
+> 	LMML <linux-media@vger.kernel.org>
+> 
+> If you are proposing API changes, please submit they first.
+[Sandeep] WE don't propose any API changes. This module for which we want to submit patches is a TI proprietary IP. We currently implement this as a character device and have a few IOCTL's.
+We do not follow the V4L2 framework and do not use any V4L2 IOCTLs.
 
--- 
-Signature
+Can we continue to use it as a character driver?
+> 
+> >
+> > Thanks,
+> > Sandeep
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-media"
+> in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
+> 
+> 
+> Cheers,
+> Mauro
+
