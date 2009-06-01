@@ -1,76 +1,429 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752173AbZFAEBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752559AbZFAEC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752173AbZFAEBB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 00:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750710AbZFAEAw
+	id S1752559AbZFAEC5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 00:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbZFAECu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 00:00:52 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:48601 "EHLO smtps.tip.net.au"
+	Mon, 1 Jun 2009 00:02:50 -0400
+Received: from sh.osrg.net ([192.16.179.4]:48276 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750790AbZFAEAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 00:00:52 -0400
-Date: Mon, 1 Jun 2009 14:00:44 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Vladimir Barinov <vova.barinov@gmail.com>,
-       Lothar Wassmann <LW@KARO-electronics.de>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: linux-next: manual merge of the mtd tree with Linus' tree
-Message-Id: <20090601140044.4786a99f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	id S1750992AbZFAECs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 00:02:48 -0400
+Date: Mon, 1 Jun 2009 13:02:42 +0900
+To: arnd@arndb.de
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <200905282104.55818.arnd@arndb.de>
+References: <200905282104.55818.arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090601130319A.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 01 Jun 2009 13:02:43 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Thu, 28 May 2009 21:04:55 +0100
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-Today's linux-next merge of the mtd tree got a conflict in
-drivers/mtd/nand/mxc_nand.c between commit
-8541c1180a355c4da283fc6b03a92c0233823c1b ("mtd: MXC NAND driver fixes
-(v5)") from Linus' tree and commit
-ccd93854d44710adaa02cecf0ef5f24ab383dd20 ("[MTD] Remove mtd->
-{suspend,resume} calls from board drivers") from the mtd tree.
+> This adds a version of the dma-mapping API to asm-generic that can be
+> used by most architectures that only need a linear mapping.
+> 
+> An architecture using this still needs to provide definitions for
+> dma_get_cache_alignment, dma_cache_sync and a new dma_coherent_dev
+> function as well as out-of-line versions of dma_alloc_coherent and
+> dma_free_coherent.
+> 
+> Thanks to Fujita-san for an endless supply of feedback.
+> 
+> Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> 
+> ---
+>  include/asm-generic/dma-mapping-linear.h |  336 ++++++++++++++++++++++++++++++
+>  1 files changed, 336 insertions(+), 0 deletions(-)
+>  create mode 100644 include/asm-generic/dma-mapping-linear.h
+> 
+> ---
+> 
+> I've added this version to
+> git://git.kernel.org/pub/scm/linux/kernel/git/arnd/asm-generic#next
+> 
+> I also have patches to convert the existing architectures to use
+> it, but I plan to submit those to the arch maintainers once asm-generic
+> series has been merged.
 
-I fixed it up (see below) and can carry the fix for a while.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+IMO, this need to be merged with some users. We don't want to merge
+something that nobody wants to use.
 
-diff --cc drivers/mtd/nand/mxc_nand.c
-index 40c2608,65040de..0000000
---- a/drivers/mtd/nand/mxc_nand.c
-+++ b/drivers/mtd/nand/mxc_nand.c
-@@@ -1021,11 -1015,9 +1021,10 @@@ static int mxcnd_suspend(struct platfor
-  	int ret = 0;
-  
-  	DEBUG(MTD_DEBUG_LEVEL0, "MXC_ND : NAND suspend\n");
- -
- -	/* Disable the NFC clock */
- -	clk_disable(nfc_clk);	/* FIXME */
- +	if (mtd) {
-- 		ret = mtd->suspend(mtd);
- +		/* Disable the NFC clock */
- +		clk_disable(host->clk);
- +	}
-  
-  	return ret;
-  }
-@@@ -1038,12 -1028,8 +1037,11 @@@ static int mxcnd_resume(struct platform
-  	int ret = 0;
-  
-  	DEBUG(MTD_DEBUG_LEVEL0, "MXC_ND : NAND resume\n");
- -	/* Enable the NFC clock */
- -	clk_enable(nfc_clk);	/* FIXME */
- +
- +	if (mtd) {
- +		/* Enable the NFC clock */
- +		clk_enable(host->clk);
-- 		mtd->resume(mtd);
- +	}
-  
-  	return ret;
-  }
+
+> Please ack if you are happy with this version.
+> 
+> diff --git a/include/asm-generic/dma-mapping-linear.h b/include/asm-generic/dma-mapping-linear.h
+> new file mode 100644
+> index 0000000..c3b987d
+> --- /dev/null
+> +++ b/include/asm-generic/dma-mapping-linear.h
+> @@ -0,0 +1,336 @@
+> +#ifndef __ASM_GENERIC_DMA_MAPPING_H
+> +#define __ASM_GENERIC_DMA_MAPPING_H
+> +
+> +#include <linux/mm.h>
+> +#include <linux/device.h>
+> +#include <linux/dma-debug.h>
+> +#include <linux/scatterlist.h>
+> +#include <asm/cacheflush.h>
+> +#include <asm/io.h>
+> +
+> +/**
+> + * dma_alloc_coherent - allocate consistent memory for DMA
+> + * @dev: valid struct device pointer, or NULL for ISA and EISA-like devices
+> + * @size: required memory size
+> + * @handle: bus-specific DMA address
+> + *
+> + * Allocate some uncached, unbuffered memory for a device for
+> + * performing DMA.  This function allocates pages, and will
+> + * return the CPU-viewed address, and sets @handle to be the
+> + * device-viewed address.
+> + */
+> +extern void *
+> +dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
+> +		   gfp_t flag);
+> +
+> +/**
+> + * dma_free_coherent - free memory allocated by dma_alloc_coherent
+> + * @dev: valid struct device pointer, or NULL for ISA and EISA-like devices
+> + * @size: size of memory originally requested in dma_alloc_coherent
+> + * @cpu_addr: CPU-view address returned from dma_alloc_coherent
+> + * @handle: device-view address returned from dma_alloc_coherent
+> + *
+> + * Free (and unmap) a DMA buffer previously allocated by
+> + * dma_alloc_coherent().
+> + *
+> + * References to memory and mappings associated with cpu_addr/handle
+> + * during and after this call executing are illegal.
+> + */
+> +extern void
+> +dma_free_coherent(struct device *dev, size_t size, void *cpu_addr,
+> +		  dma_addr_t dma_handle);
+> +
+> +#define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
+> +#define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
+> +
+> +/**
+> + * dma_map_single - map a single buffer for streaming DMA
+> + * @dev: valid struct device pointer, or NULL for ISA and EISA-like devices
+> + * @cpu_addr: CPU direct mapped address of buffer
+> + * @size: size of buffer to map
+> + * @dir: DMA transfer direction
+> + *
+> + * Ensure that any data held in the cache is appropriately discarded
+> + * or written back.
+> + *
+> + * The device owns this memory once this call has completed.  The CPU
+> + * can regain ownership by calling dma_unmap_single() or dma_sync_single().
+> + */
+> +static inline dma_addr_t
+> +dma_map_single(struct device *dev, void *ptr, size_t size,
+> +	       enum dma_data_direction direction)
+> +{
+> +	dma_addr_t dma_addr = virt_to_bus(ptr);
+> +	BUG_ON(!valid_dma_direction(direction));
+> +
+> +	if (!dma_coherent_dev(dev))
+> +		dma_cache_sync(dev, ptr, size, direction);
+
+Where can I find dma_coherent_dev?
+
+I don't fancy this since this is architecture-specific stuff (not
+generic things).
+
+
+> +	debug_dma_map_page(dev, virt_to_page(ptr),
+> +			   (unsigned long)ptr & ~PAGE_MASK, size,
+> +			   direction, dma_addr, true);
+> +
+> +	return dma_addr;
+> +}
+> +
+> +/**
+> + * dma_unmap_single - unmap a single buffer previously mapped
+> + * @dev: valid struct device pointer, or NULL for ISA and EISA-like devices
+> + * @handle: DMA address of buffer
+> + * @size: size of buffer to map
+> + * @dir: DMA transfer direction
+> + *
+> + * Unmap a single streaming mode DMA translation.  The handle and size
+> + * must match what was provided in the previous dma_map_single() call.
+> + * All other usages are undefined.
+> + *
+> + * After this call, reads by the CPU to the buffer are guaranteed to see
+> + * whatever the device wrote there.
+> + */
+> +static inline void
+> +dma_unmap_single(struct device *dev, dma_addr_t dma_addr, size_t size,
+> +		 enum dma_data_direction direction)
+> +{
+> +	debug_dma_unmap_page(dev, dma_addr, size, direction, true);
+> +}
+> +
+> +/**
+> + * dma_map_sg - map a set of SG buffers for streaming mode DMA
+> + * @dev: valid struct device pointer, or NULL for ISA and EISA-like devices
+> + * @sg: list of buffers
+> + * @nents: number of buffers to map
+> + * @dir: DMA transfer direction
+> + *
+> + * Map a set of buffers described by scatterlist in streaming
+> + * mode for DMA.  This is the scatter-gather version of the
+> + * above pci_map_single interface.  Here the scatter gather list
+> + * elements are each tagged with the appropriate dma address
+> + * and length.  They are obtained via sg_dma_{address,length}(SG).
+> + *
+> + * NOTE: An implementation may be able to use a smaller number of
+> + *       DMA address/length pairs than there are SG table elements.
+> + *       (for example via virtual mapping capabilities)
+> + *       The routine returns the number of addr/length pairs actually
+> + *       used, at most nents.
+> + *
+> + * Device ownership issues as mentioned above for pci_map_single are
+> + * the same here.
+> + */
+> +static inline int
+> +dma_map_sg(struct device *dev, struct scatterlist *sglist, int nents,
+> +	   enum dma_data_direction direction)
+> +{
+> +	struct scatterlist *sg;
+> +	int i, sync;
+> +
+> +	BUG_ON(!valid_dma_direction(direction));
+> +	WARN_ON(nents == 0 || sglist[0].length == 0);
+> +
+> +	sync = !dma_coherent_dev(dev);
+> +
+> +	for_each_sg(sglist, sg, nents, i) {
+> +		BUG_ON(!sg_page(sg));
+> +
+> +		sg->dma_address = page_to_bus(sg_page(sg)) + sg->offset;
+> +		sg_dma_len(sg) = sg->length;
+> +		if (sync)
+> +			dma_cache_sync(dev, sg_virt(sg), sg->length, direction);
+> +	}
+> +
+> +	debug_dma_map_sg(dev, sg, nents, i, direction);
+> +
+> +	return nents;
+> +}
+> +
+> +/**
+> + * dma_unmap_sg - unmap a set of SG buffers mapped by dma_map_sg
+> + * @dev: valid struct device pointer, or NULL for ISA and EISA-like devices
+> + * @sg: list of buffers
+> + * @nents: number of buffers to map
+> + * @dir: DMA transfer direction
+> + *
+> + * Unmap a set of streaming mode DMA translations.
+> + * Again, CPU read rules concerning calls here are the same as for
+> + * pci_unmap_single() above.
+> + */
+> +static inline void
+> +dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
+> +	     enum dma_data_direction direction)
+> +{
+> +	debug_dma_unmap_sg(dev, sg, nhwentries, direction);
+> +}
+> +
+> +/**
+> + * dma_map_page - map a portion of a page for streaming DMA
+> + * @dev: valid struct device pointer, or NULL for ISA and EISA-like devices
+> + * @page: page that buffer resides in
+> + * @offset: offset into page for start of buffer
+> + * @size: size of buffer to map
+> + * @dir: DMA transfer direction
+> + *
+> + * Ensure that any data held in the cache is appropriately discarded
+> + * or written back.
+> + *
+> + * The device owns this memory once this call has completed.  The CPU
+> + * can regain ownership by calling dma_unmap_page() or dma_sync_single().
+> + */
+> +static inline dma_addr_t
+> +dma_map_page(struct device *dev, struct page *page, unsigned long offset,
+> +	     size_t size, enum dma_data_direction direction)
+> +{
+> +	return dma_map_single(dev, page_address(page) + offset,
+> +			      size, direction);
+> +}
+> +
+> +/**
+> + * dma_unmap_page - unmap a buffer previously mapped through dma_map_page()
+> + * @dev: valid struct device pointer, or NULL for ISA and EISA-like devices
+> + * @handle: DMA address of buffer
+> + * @size: size of buffer to map
+> + * @dir: DMA transfer direction
+> + *
+> + * Unmap a single streaming mode DMA translation.  The handle and size
+> + * must match what was provided in the previous dma_map_single() call.
+> + * All other usages are undefined.
+> + *
+> + * After this call, reads by the CPU to the buffer are guaranteed to see
+> + * whatever the device wrote there.
+> + */
+> +static inline void
+> +dma_unmap_page(struct device *dev, dma_addr_t dma_address, size_t size,
+> +	       enum dma_data_direction direction)
+> +{
+> +	dma_unmap_single(dev, dma_address, size, direction);
+> +}
+> +
+> +/**
+> + * dma_sync_single_for_cpu
+> + * @dev: valid struct device pointer, or NULL for ISA and EISA-like devices
+> + * @handle: DMA address of buffer
+> + * @size: size of buffer to map
+> + * @dir: DMA transfer direction
+> + *
+> + * Make physical memory consistent for a single streaming mode DMA
+> + * translation after a transfer.
+> + *
+> + * If you perform a dma_map_single() but wish to interrogate the
+> + * buffer using the cpu, yet do not wish to teardown the DMA mapping,
+> + * you must call this function before doing so.  At the next point you
+> + * give the DMA address back to the card, you must first perform a
+> + * dma_sync_single_for_device, and then the device again owns the
+> + * buffer.
+> + */
+> +static inline void
+> +dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, size_t size,
+> +			enum dma_data_direction direction)
+> +{
+> +	debug_dma_sync_single_for_cpu(dev, dma_handle, size, direction);
+> +}
+> +
+> +static inline void
+> +dma_sync_single_range_for_cpu(struct device *dev, dma_addr_t dma_handle,
+> +			      unsigned long offset, size_t size,
+> +			      enum dma_data_direction direction)
+> +{
+> +	debug_dma_sync_single_range_for_cpu(dev, dma_handle,
+> +					    offset, size, direction);
+> +}
+
+This looks wrong. You put dma_coherent_dev hook in sync_*_for_device
+but why you don't need it sync_*_for_cpu. It's architecture
+specific. Some need both, some need either, and some need nothing.
+
+
+> +/**
+> + * dma_sync_sg_for_cpu
+> + * @dev: valid struct device pointer, or NULL for ISA and EISA-like devices
+> + * @sg: list of buffers
+> + * @nents: number of buffers to map
+> + * @dir: DMA transfer direction
+> + *
+> + * Make physical memory consistent for a set of streaming
+> + * mode DMA translations after a transfer.
+> + *
+> + * The same as dma_sync_single_for_* but for a scatter-gather list,
+> + * same rules and usage.
+> + */
+> +static inline void
+> +dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nents,
+> +		    enum dma_data_direction direction)
+> +{
+> +	debug_dma_sync_sg_for_cpu(dev, sg, nents, direction);
+> +}
+> +
+> +static inline void
+> +dma_sync_single_for_device(struct device *dev, dma_addr_t dma_handle,
+> +			   size_t size, enum dma_data_direction direction)
+> +{
+> +	if (!dma_coherent_dev(dev))
+> +		dma_cache_sync(dev, bus_to_virt(dma_handle), size, direction);
+> +	debug_dma_sync_single_for_device(dev, dma_handle, size, direction);
+> +}
+> +
+> +static inline void
+> +dma_sync_single_range_for_device(struct device *dev, dma_addr_t dma_handle,
+> +				 unsigned long offset, size_t size,
+> +				 enum dma_data_direction direction)
+> +{
+> +	if (!dma_coherent_dev(dev))
+> +		dma_cache_sync(dev, bus_to_virt(dma_handle), size, direction);
+> +	debug_dma_sync_single_range_for_device(dev, dma_handle,
+> +					       offset, size, direction);
+> +}
+> +
+> +static inline void
+> +dma_sync_sg_for_device(struct device *dev, struct scatterlist *sglist,
+> +		       int nents, enum dma_data_direction direction)
+> +{
+> +	struct scatterlist *sg;
+> +	int i;
+> +
+> +	if (!dma_coherent_dev(dev))
+> +		for_each_sg(sglist, sg, nents, i)
+> +			dma_cache_sync(dev, sg_virt(sg), sg->length, direction);
+> +
+> +	debug_dma_sync_sg_for_device(dev, sg, nents, direction);
+> +}
+> +
+> +static inline int
+> +dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+> +{
+> +	return 0;
+> +}
+> +
+> +/*
+> + * Return whether the given device DMA address mask can be supported
+> + * properly.  For example, if your device can only drive the low 24-bits
+> + * during bus mastering, then you would pass 0x00ffffff as the mask
+> + * to this function.
+> + */
+> +static inline int
+> +dma_supported(struct device *dev, u64 mask)
+> +{
+> +	/*
+> +	 * we fall back to GFP_DMA when the mask isn't all 1s,
+> +	 * so we can't guarantee allocations that must be
+> +	 * within a tighter range than GFP_DMA.
+> +	 */
+> +	if (mask < 0x00ffffff)
+> +		return 0;
+
+I think that this is pretty architecture specific.
+
+
+> +
+> +	return 1;
+> +}
+> +
+> +static inline int
+> +dma_set_mask(struct device *dev, u64 dma_mask)
+> +{
+> +	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
+> +		return -EIO;
+> +
+> +	*dev->dma_mask = dma_mask;
+> +
+> +	return 0;
+> +}
+> +
+> +static inline int
+> +dma_is_consistent(struct device *dev, dma_addr_t dma_addr)
+> +{
+> +	return dma_coherent_dev(dev);
+> +}
+> +
+> +#endif /* __ASM_GENERIC_DMA_MAPPING_H */
+> -- 
+> 1.6.3.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
