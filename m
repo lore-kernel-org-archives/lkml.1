@@ -1,23 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbZFAEvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751789AbZFAE7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbZFAEvu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 00:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbZFAEvk
+	id S1751789AbZFAE7J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 00:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbZFAE6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 00:51:40 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45531
+	Mon, 1 Jun 2009 00:58:55 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55995
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751058AbZFAEvk (ORCPT
+	by vger.kernel.org with ESMTP id S1750921AbZFAE6y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 00:51:40 -0400
-Date: Sun, 31 May 2009 21:51:40 -0700 (PDT)
-Message-Id: <20090531.215140.214511212.davem@davemloft.net>
-To: jie.yang@atheros.com
-Cc: pyunyh@gmail.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH net-next]atl1c: fix spelling error
+	Mon, 1 Jun 2009 00:58:54 -0400
+Date: Sun, 31 May 2009 21:58:55 -0700 (PDT)
+Message-Id: <20090531.215855.142666346.davem@davemloft.net>
+To: nix@esperi.org.uk
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: 2.6.30rc7: ksoftirqd CPU saturation (x86-64 only, not x86-32)
+ (e1000e-related?)
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <12438220782521-git-send-email-jie.yang@atheros.com>
-References: <12438220782521-git-send-email-jie.yang@atheros.com>
+In-Reply-To: <87ljoczu3p.fsf@hades.wkstn.nix>
+References: <87prdozxns.fsf@hades.wkstn.nix>
+	<20090531170350.1355b3f1.akpm@linux-foundation.org>
+	<87ljoczu3p.fsf@hades.wkstn.nix>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -26,28 +30,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: <jie.yang@atheros.com>
-Date: Mon, 1 Jun 2009 10:07:58 +0800
+From: Nix <nix@esperi.org.uk>
+Date: Mon, 01 Jun 2009 01:16:26 +0100
 
-> Fix spelling error
-> 
-> Signed-off-by: Jie Yang <jie.yang@atheros.com>
- ...
-> @@ -1115,7 +1115,7 @@ static int atl1c_stop_mac(struct atl1c_hw *hw)
->  
->  	AT_READ_REG(hw, REG_TXQ_CTRL, &data);
->  	data &= ~TXQ_CTRL_EN;
-> -	AT_WRITE_REG(hw, REG_TWSI_CTRL, data);
-> +	AT_WRITE_REG(hw, REG_TXQ_CTRL, data);
->  
->  	for (timeout = 0; timeout < AT_HW_MAX_IDLE_DELAY; timeout++) {
->  		AT_READ_REG(hw, REG_IDLE_STATUS, &data);
+> I plan to try out 2.6.29 (and back to 2.6.25 or thereabouts) tomorrow
+> and see if it ever worked: if it did I'll bisect for it (rendered tricky
+> by the out-of-tree e1000e driver, but doable: it would be easier if I
+> had a clue where the e1000-devel git tree is, if anywhere, but I still
+> have no idea despite considerable searching).
 
-A spelling error would occur on human language text.
-
-That's not what this is.
-
-The code is referring to the wrong register, so it's a bug not a
-spelling error.
-
-Please fix your commit message and resubmit.
+Why are you using the out-of-tree e1000e driver?  What's wrong
+with the one in the tree? :-)
