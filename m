@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbZFAEme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752398AbZFAEqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751805AbZFAEme (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 00:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbZFAEm0
+	id S1752398AbZFAEqb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 00:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbZFAEqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 00:42:26 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50663 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750785AbZFAEm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 00:42:26 -0400
-Date: Mon, 1 Jun 2009 14:42:18 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Neil Brown <neilb@suse.de>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, raz ben yehuda <raziebe@gmail.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>
-Subject: Re: linux-next: md tree build failure
-Message-Id: <20090601144218.26810ec8.sfr@canb.auug.org.au>
-In-Reply-To: <20090525061552.GH11363@kernel.dk>
-References: <20090525153346.758483fc.sfr@canb.auug.org.au>
-	<20090525061552.GH11363@kernel.dk>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Mon, 1 Jun 2009 00:46:23 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51211
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751093AbZFAEqX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 00:46:23 -0400
+Date: Sun, 31 May 2009 21:46:23 -0700 (PDT)
+Message-Id: <20090531.214623.76344831.davem@davemloft.net>
+To: riel@redhat.com
+Cc: research@subreption.com, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu, linux-mm@kvack.org, torvalds@osdl.org,
+       alan@lxorguk.ukuu.org.uk, linux-crypto@vger.kernel.org,
+       herbert@gondor.apana.org.au
+Subject: Re: [PATCH] Use kzfree in crypto API context initialization and
+ key/iv handling
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4A22967C.3080304@redhat.com>
+References: <20090531025720.GC9033@oblivion.subreption.com>
+	<20090530.230213.73434433.davem@davemloft.net>
+	<4A22967C.3080304@redhat.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__1_Jun_2009_14_42_18_+1000_P=l2AjSGjUIoIYFf"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__1_Jun_2009_14_42_18_+1000_P=l2AjSGjUIoIYFf
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Rik van Riel <riel@redhat.com>
+Date: Sun, 31 May 2009 10:38:52 -0400
 
-On Mon, 25 May 2009 08:15:52 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> On Mon, May 25 2009, Stephen Rothwell wrote:
-> >=20
-> > Today's linux-next build (powerpc ppc64_defconfig) failed like this:
-> >=20
-> > drivers/md/raid0.c: In function 'create_strip_zones':
-> > drivers/md/raid0.c:243: error: 'struct request_queue' has no member nam=
-ed 'hardsect_size'
-> >=20
-> > Caused by commit e1defc4ff0cf57aca6c5e3ff99fa503f5943c1f1 ("block: Do
-> > away with the notion of hardsect_size") from the block tree interacting
-> > with commit 131e4477401ae76a9cbe8539e4b7819e04cfba36 ("md: raid0: chunk
-> > size check in raid0_run") from the md tree.
->=20
-> Martin, this is starting to look like a disaster :-(
+> David Miller wrote:
+>> From: "Larry H." <research@subreption.com>
+>> Date: Sat, 30 May 2009 19:57:20 -0700
+>> 
+>>> [PATCH] Use kzfree in crypto API context initialization and key/iv
+>>> handling
+>> Thanks for not CC:ing the crypto list, and also not CC:'ing the
+>> crypto maintainer.
+>> Your submissions leave a lot to be desired, on every level.
+> 
+> That's a pretty roundabout way of saying "I have no
+> technical objections" :)
 
-So, is anything happening about these?  I still get these (and the dm)
-build failures.
+One of those "levels" was technical.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__1_Jun_2009_14_42_18_+1000_P=l2AjSGjUIoIYFf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkojXCoACgkQjjKRsyhoI8w+5ACfbbSBLbF5GX39Rzq2Zs9g5w6M
-U4kAnjEXlCc7YO617HlJsxWP02nbUlG1
-=2VAE
------END PGP SIGNATURE-----
-
---Signature=_Mon__1_Jun_2009_14_42_18_+1000_P=l2AjSGjUIoIYFf--
+I don't even want to think about what this does to IPSEC rule creation
+rates, that that matters heavily for cell phone networks where
+hundreds of thousands of nodes come in and out of the server and each
+such entry requires creating 4 IPSEC rules.
