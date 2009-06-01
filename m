@@ -1,47 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZFARuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752545AbZFAR5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbZFARuE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 13:50:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750871AbZFARtv
+	id S1752545AbZFAR5a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 13:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbZFAR5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 13:49:51 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36905 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750985AbZFARtv (ORCPT
+	Mon, 1 Jun 2009 13:57:18 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35565 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842AbZFAR5S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 13:49:51 -0400
-Date: Mon, 1 Jun 2009 18:49:34 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: paul@mad-scientist.net
-Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] coredump: Retry writes where appropriate
-Message-ID: <20090601184934.1fc54411@lxorguk.ukuu.org.uk>
-In-Reply-To: <1243877766.8547.38.camel@psmith-ubeta.netezza.com>
-References: <1243748019.7369.319.camel@homebase.localnet>
-	<20090531111851.07eb1df3@lxorguk.ukuu.org.uk>
-	<20090601161234.GA10486@redhat.com>
-	<1243877766.8547.38.camel@psmith-ubeta.netezza.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Mon, 1 Jun 2009 13:57:18 -0400
+Date: Mon, 1 Jun 2009 14:57:14 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: "Paulraj, Sandeep" <s-paulraj@ti.com>
+Cc: "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Grosen, Mark" <mgrosen@ti.com>
+Subject: Re: New Driver for DaVinci DM355/DM365/DM6446
+Message-ID: <20090601145714.36158fe8@pedra.chehab.org>
+In-Reply-To: <C9D59C82B94F474B872F2092A87F261481797F62@dlee07.ent.ti.com>
+References: <C9D59C82B94F474B872F2092A87F261481797D4B@dlee07.ent.ti.com>
+	<20090601133436.06a4a4a0@pedra.chehab.org>
+	<C9D59C82B94F474B872F2092A87F261481797F62@dlee07.ent.ti.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On the other hand, IMO all other signals, including SIGINT and SIGQUIT,
-> should be ignored during core dumping.  Allowing SIGKILL gives a method
-> for getting rid of core dumps in the relatively rare situation where
-> people want/need to do so, and I don't see any real benefit to adding
-> more signals to the list of things you can't do if you want robust
-> cores.  Isn't one enough?
+Em Mon, 1 Jun 2009 11:54:37 -0500
+"Paulraj, Sandeep" <s-paulraj@ti.com> escreveu:
 
-I also want usability. SIGINT/SIGQUIT are never sent except by user
-requests to terminate a process so they can safely be allowed. If the
-alternatives are the status quo or SIGKILL only then I'd favour the
-status quo particularly having experienced the alternatives on some old
-Unix systems.
+> 
+> 
+> > -----Original Message-----
+> > From: Mauro Carvalho Chehab [mailto:mchehab@infradead.org]
+> > Sent: Monday, June 01, 2009 12:35 PM
+> > To: Paulraj, Sandeep
+> > Cc: linux-media@vger.kernel.org; linux-kernel@vger.kernel.org; Grosen,
+> > Mark
+> > Subject: Re: New Driver for DaVinci DM355/DM365/DM6446
+> > 
+> > Em Mon, 1 Jun 2009 09:56:40 -0500
+> > "Paulraj, Sandeep" <s-paulraj@ti.com> escreveu:
+> > 
+> > >
+> > > Hello,
+> > >
+> > > WE have a module(H3A) on Davinci DM6446,DM355 and DM365.
+> > >
+> > > Customers require a way to collect the data required to perform the Auto
+> > Exposure (AE), Auto Focus(AF), and Auto White balance (AWB) in hardware as
+> > opposed to software. This is primarily for performance reasons as there is
+> > not enough software processing MIPS (to do 3A statistics) available in
+> > > an imaging/video system.
+> > >
+> > > Including this block in hardware reduces the load on the processor and
+> > bandwidth to the memory as the data is collected on the fly from the
+> > imager.
+> > >
+> > > This modules collects statistics and we currently implement it as a
+> > character driver.
+> > >
+> > > Which mailing list would be the most appropriate mailing list to submit
+> > patches for review?
+> > 
+> > You should send they to:
+> > 	LMML <linux-media@vger.kernel.org>
+> > 
+> > If you are proposing API changes, please submit they first.
+> [Sandeep] WE don't propose any API changes. This module for which we want to submit patches is a TI proprietary IP. We currently implement this as a character device and have a few IOCTL's.
+> We do not follow the V4L2 framework and do not use any V4L2 IOCTLs.
+> 
+> Can we continue to use it as a character driver?
 
-Alan
+In this case, I don't see why you want it to be upstream.
+
+
+
+Cheers,
+Mauro
