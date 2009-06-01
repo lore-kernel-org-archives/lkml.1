@@ -1,79 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757895AbZFAQqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZFAQs3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757895AbZFAQqc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 12:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbZFAQqP
+	id S1756214AbZFAQs3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 12:48:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZFAQsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 12:46:15 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:59599 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774AbZFAQqO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 12:46:14 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: michal.simek@petalogix.com
-Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
-Date: Mon, 1 Jun 2009 17:45:58 +0100
-User-Agent: KMail/1.11.90 (Linux/2.6.30-5-generic; KDE/4.2.85; x86_64; ; )
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       lethal@linux-sh.org, chris@zankel.net,
-       John Williams <john.williams@petalogix.com>
-References: <200905282104.55818.arnd@arndb.de> <200906011111.28521.arnd@arndb.de> <4A23D2C7.6070400@petalogix.com>
-In-Reply-To: <4A23D2C7.6070400@petalogix.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 1 Jun 2009 12:48:19 -0400
+Received: from mga11.intel.com ([192.55.52.93]:46449 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751770AbZFAQsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 12:48:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,285,1241420400"; 
+   d="scan'208";a="695452104"
+Date: Mon, 1 Jun 2009 09:48:18 -0700 (Pacific Daylight Time)
+From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+To: Nix <nix@esperi.org.uk>
+cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       netdev@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [E1000-devel] 2.6.30rc7: ksoftirqd CPU saturation (x86-64 only,
+ not x86-32) (e1000e-related?)
+In-Reply-To: <87prdozxns.fsf@hades.wkstn.nix>
+Message-ID: <alpine.WNT.1.10.0906010941170.656@jbrandeb-MOBL1.amr.corp.intel.com>
+References: <87prdozxns.fsf@hades.wkstn.nix>
+User-Agent: Alpine 1.10 (WNT 962 2008-03-14)
+ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+X-X-Sender: amr/jbrandeb@imapmail.glb.intel.com
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906011745.59793.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+mYFbeRz08gr0tcDXeMSxOBKpV/0Xp0yZJN9S
- TNMT63Aj/SlZ8SG8QHHlMSR5ZxAXMMMGF5fHKQ6MpQhBmBKvzA
- rYbRLSLPCWsWfBAdUFzJg==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 June 2009, Michal Simek wrote:
 
-> Microblaze have it but it is not cleared(checked) and not in mainline -
-> I want to look at it when mmu is in mainline.
-> As I wrote before  you can use Microblaze as tested arch.
 
-Ok. It should become really easy once the asm-generic version is there.
-Do you know if all DMA capable devices on microblaze are coherent
-(or if all of them are noncoherent)?
+On Sun, 31 May 2009, Nix wrote:
+> I've just compiled a 64-bit kernel for a couple of quad-core Nehalems
+> (one L5520, one Core i7) for the first time. Both were using 32-bit
+> kernels happily before, and one (the Core i7) is happy afterwards: but
+> the other sees two ksoftirqd threads saturating the CPU (well, half of
+> it, this being a 4-core box).
 
-If it is indeed coherent, the below code should be enough, otherwise
-you need to add some cache flushes in the functions below.
+<snip>
 
-	Arnd <><
+> So, not particularly informative.
+> 
+> CPUs 3 and 5 seem to be receiving the lion's share of the local timer
+> interrupts and networking interrupts (this box has twin e1000es):
+> 
+>        CPU0  CPU1    CPU2   CPU3   CPU4   CPU5   CPU6  CPU7
+>   0:     33     0       0   2377      0      0      0     0   IO-APIC-edge      timer
+>   1:      0     0       0      2      0      0      0     0   IO-APIC-edge      i8042
+>   3:      0     0       0      3      0      0      0     0   IO-APIC-edge
+>   4:      0     0       0    372      0      0      0     0   IO-APIC-edge      serial
+>   8:      0     0       0     52      0      0      0     0   IO-APIC-edge      rtc0
+>  12:      0     0       0      4      0      0      0     0   IO-APIC-edge      i8042
+>  16:      0     0       0      0      0      0      0     0   IO-APIC-fasteoi   uhci_hcd:usb3
+>  18:      0     0       0      0      0      0      2     0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb8
+>  19:      0     0       0      0      0      0      0     0   IO-APIC-fasteoi   uhci_hcd:usb5, uhci_hcd:usb7
+>  20:      0     0       0      0      0      0      0     0   IO-APIC-fasteoi   acpi
+>  21:      0     0       0      0     70      0      0     0   IO-APIC-fasteoi   uhci_hcd:usb4, firewire_ohci
+>  22:      0     0       0      0      0    228      0     0   IO-APIC-fasteoi   HDA Intel
+>  23:      0     0       0      0     67      0      0     0   IO-APIC-fasteoi   ehci_hcd:usb2, uhci_hcd:usb6
+>  39:      0     0   22405      0      0      0      0     0   IO-APIC-fasteoi   arcmsr
+>  48:      0     0       0      0      0      0      0     0  DMAR_MSI-edge      dmar0
+>  56:      0     0       0   3961      0      0      0     0   PCI-MSI-edge      ahci
+>  57:      0     0       0   7654      0      0      0     0   PCI-MSI-edge      gordianet-rx-0
+>  58:      0     0       0      0   8065      0      0     0   PCI-MSI-edge      gordianet-tx-0
+>  59:      0     0       0      0      3      0      0     0   PCI-MSI-edge      gordianet
+>  60:      0     0       0      0      0   3576      0     0   PCI-MSI-edge      fastnet-rx-0
+>  61:      0     0       0      0      0   2555      0     0   PCI-MSI-edge      fastnet-tx-0
+>  62:      0     0       0      0      0      0      2     0   PCI-MSI-edge      fastnet
 
----
-#ifndef _ASM_MICROBLAZE_DMA_MAPPING_H
-#define _ASM_MICROBLAZE_DMA_MAPPING_H
+where is the e1000e interrupt here?  I was expecting to see eth0/eth1
 
-static inline int
-__dma_coherent_dev(struct device *dev)
-{
-	return 1;
-}
+> NMI:      0     0       0      0      0      0      0     0   Non-maskable interrupts
+> LOC:   8437  2263    6528  60480  13987 113384  16365 57641   Local timer interrupts
+> SPU:      0     0       0      0      0      0      0     0   Spurious interrupts
+> RES:   3790    55    6780     18   2370    115    893   161   Rescheduling interrupts
+> CAL:     83   176     144    155    174    179    173   169   Function call interrupts
+> TLB:    125     9     138      4    282     22    310    22   TLB shootdowns
+> TRM:      0     0       0      0      0      0      0     0   Thermal event interrupts
+> THR:      0     0       0      0      0      0      0     0   Threshold APIC interrupts
+> ERR:      0
+> MIS:      0
+> 
+> I'd not expect that level of e1000e interrupt activity to flood the
+> ksoftirqds like this, and in 32-bit mode it doesn't.
+> 
+> So, anyone know what's going on, or how I could find out?
 
-static inline void
-dma_cache_sync(struct device *dev, void *cpu_addr, size_t size,
-	       enum dma_data_direction direction)
-{
-}
+when you went into 64 bit mode your kernel enabled the IOMMU/DMAR, which 
+means that map/unmap cycles are taking many more cycles per packet, 
+accounting for the increased CPU utilization.  you can disable at boot 
+with intel_iommu=off to see if it goes back to previous behavior.
 
-static inline int dma_get_cache_alignment(void)
-{
-	return 1 << L1_CACHE_SHIFT;
-}
+There is no DMAR/IOMMU in 32 bit mode, AFAIK.
 
-#include <asm-generic/dma-mapping-linear.h>
-
-#endif _ASM_MICROBLAZE_DMA_MAPPING_H
+Hope this helps,
+ Jesse
