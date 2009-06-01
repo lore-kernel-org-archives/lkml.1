@@ -1,180 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbZFAP0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755131AbZFAPd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755606AbZFAP0i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 11:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbZFAP00
+	id S1755131AbZFAPd0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 11:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752367AbZFAPdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 11:26:26 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37648 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752488AbZFAP0Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 11:26:24 -0400
-Date: Mon, 1 Jun 2009 16:27:32 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, slapin@ossfans.org,
-       maxim.osipov@siemens.com, dmitry.baryshkov@siemens.com,
-       oliver.fendt@siemens.com,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH 09/10] ieee802154: add serial dongle driver
-Message-ID: <20090601162732.4a070c43@lxorguk.ukuu.org.uk>
-In-Reply-To: <1243868091-5315-10-git-send-email-dbaryshkov@gmail.com>
-References: <1243868091-5315-1-git-send-email-dbaryshkov@gmail.com>
-	<1243868091-5315-2-git-send-email-dbaryshkov@gmail.com>
-	<1243868091-5315-3-git-send-email-dbaryshkov@gmail.com>
-	<1243868091-5315-4-git-send-email-dbaryshkov@gmail.com>
-	<1243868091-5315-5-git-send-email-dbaryshkov@gmail.com>
-	<1243868091-5315-6-git-send-email-dbaryshkov@gmail.com>
-	<1243868091-5315-7-git-send-email-dbaryshkov@gmail.com>
-	<1243868091-5315-8-git-send-email-dbaryshkov@gmail.com>
-	<1243868091-5315-9-git-send-email-dbaryshkov@gmail.com>
-	<1243868091-5315-10-git-send-email-dbaryshkov@gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Jun 2009 11:33:07 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:6975 "EHLO SMTP02.CITRIX.COM"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751803AbZFAPdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 11:33:06 -0400
+X-IronPort-AV: E=Sophos;i="4.41,284,1241409600"; 
+   d="scan'208";a="53320379"
+From: Ian Campbell <ian.campbell@citrix.com>
+To: <linux-kernel@vger.kernel.org>
+CC: Ian Campbell <ian.campbell@citrix.com>,
+       Becky Bruce <beckyb@kernel.crashing.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Kumar Gala <galak@kernel.crashing.org>, Olaf Kirch <okir@suse.de>,
+       Tony Luck <tony.luck@intel.com>, <linux-ia64@vger.kernel.org>,
+       <linuxppc-dev@ozlabs.org>, <x86@kernel.org>
+Subject: [PATCH 00/11] swiotlb: Introduce architecture-specific APIs to replace __weak functions (v2)
+Date: Mon, 1 Jun 2009 16:32:52 +0100
+Message-ID: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
+X-Mailer: git-send-email 1.5.6.5
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	zbdev->pending_data = kzalloc(zbdev->pending_size, GFP_KERNEL);
-> +	if (!zbdev->pending_data) {
-> +		printk(KERN_ERR "%s(): unable to allocate memory\n", __func__);
-> +		zbdev->pending_id = 0;
-> +		zbdev->pending_size = 0;
-> +		return -ENOMEM;
-> +	}
-> +	memcpy(zbdev->pending_data, buf, len);
-> +
-> +	return _send_pending_data(zbdev);
+This series:
+* removes the swiotlb_(arch_)_phys_to_bus and bus_to_phys __weak
+  hooks, replacing them with an architecture-specific phys_to_dma and
+  dma_to_phys interface. These are used by both PowerPC and Xen to
+  provide the correct mapping from physical to DMA addresses.
+* removes the swiotlb_address_needs_mapping and
+  swiotlb_range_needs_mapping __weak functions as well as
+  is_buffer_dma_capable (which should never have been a generic
+  function). All three are replaced by a single architecture-specific
+  interface which meets the needs of both PowerPC and Xen.
+* removes the swiotlb_virt_to_bus __weak function and replaces it with
+  a CONFIG_HIGHMEM compatible version when high memory is in use. This
+  is needed for 32 bit PowerPC swiotlb support.
+* removes the swiotlb_alloc* __weak functions and replaces them with
+  swiotlb_init_with_buffer which allows the use of a caller allocated
+  buffer (and emergency pool).
 
-Where do you check that the tty has enough space ?
+I think these new interfaces are cleaner than the existing __weak
+functions and isolate the swiotlb code from architecture internals.
 
+This series does not contain any Xen or PowerPC specific changes, those
+will follow in separate postings. The complete patchset has been boot
+tested under Xen and native-x86 and compiled for IA64 and PowerPC
 
-> +	case STATE_WAIT_COMMAND:
-> +		if (is_command(c)) {
-> +			zbdev->id = c;
-> +			zbdev->state = STATE_WAIT_PARAM1;
-> +		} else {
-> +			cleanup(zbdev);
-> +			printk(KERN_ERR "%s, unexpected command id: %x\n", __func__, c);
+Changes since v1: 
+- Fixed compile error in swiotlb_dma_to_virt highmem version. Moved
+  #ifdef into function to avoid prototype drift.
+- checkpatch fixes.
+- missed a swiotlb_arch_range_needs_mapping in swiotlb.h and x86
+  pci-swiotlb.c and swiotlb_bus_to_phys/phys_to_bus implementations in
+  x86.
+- additionally replaced __weak swiotlb_alloc* with
+  swiotlb_init_with_buffer.
 
-In all these ERR cases what stops a remote device from having fun spewing
-garbage at you and filling the log ?
-
->
-> +	 * channels 0-10 are not valid for us */
-> +	BUG_ON(channel < 11 || channel > 26);
-> +	/* ...  but our crappy firmware numbers channels from 1 to 16
-> +	 * which is a mystery. We suould enforce that using PIB API
-> +	 * but additional checking here won't kill, and gcc will
-> +	 * optimize this stuff anyway. */
-> +	BUG_ON((channel - 10) < 1 && (channel - 10) > 16);
-
-Shouldn't be driver specific hacks in the ldisc surely - or is the ldisc
-only applicable to a specific single bit of hardware ?
-
-> + minor = tty->index + tty->driver->minor_start;
-> +	zbdev->dev->parent = class_find_device(tty_class, NULL, &minor, dev_minor_match);
-> +
-
-That sort of thing shouldn't be buried in the depths of a driver. I'm not
-entirely averse to that sort of thing but it belongs in a helper in the
-tty layer.
-
-> +	zbdev->tty = tty;
-
-Refcounting ?
-
-> +	cleanup(zbdev);
-> +
-> +	tty->disc_data = zbdev;
-> +	tty->receive_room = MAX_DATA_SIZE;
-> +	tty->low_latency = 1;
-
-You can't go around mashing driver internal values - many drivers don't
-support low_latency mode and this will make them crash.
-
-> +
-> +	/* FIXME: why is this needed. Note don't use ldisc_ref here as the
-> +	   open path is before the ldisc is referencable */
-> +
-
-[Because otherwise after a SET_LDISC there may be bits from the old stuff
- left over - this one will go away as I finish the ldisc switching
- rewrite that is in the ttydev tree]
-
-> +/*
-> + * Called when the tty is put into another line discipline or it hangs up. We
-> + * have to wait for any cpu currently executing in any of the other zb_tty_*
-> + * routines to finish before we can call zb_tty_close and free the
-> + * zb_serial_dev struct. This routine must be called from process context, not
-> + * interrupt or softirq context.
-> + */
-> +static void
-> +ieee802154_tty_close(struct tty_struct *tty)
-> +{
-> +	struct zb_device *zbdev;
-> +
-> +	zbdev = tty->disc_data;
-> +	if (NULL == zbdev) {
-> +		printk(KERN_WARNING "%s: match is not found\n", __func__);
-> +		return;
-> +	}
-> +
-> +	tty->disc_data = NULL;
-> +	zbdev->tty = NULL;
-
-Again you want a refcount on these I suspect. You may actually be safe
-anyway but it would be cleaner to take/drop refs.
-
-
-
-> +static int
-> +ieee802154_tty_ioctl(struct tty_struct *tty, struct file *file, unsigned int cmd, unsigned long arg)
-> +{
-> +	struct zb_device *zbdev;
-> +	struct ifreq ifr;
-> +	int err;
-> +	void __user *argp = (void __user *) arg;
-> +
-> +	pr_debug("cmd = 0x%x\n", cmd);
-> +	memset(&ifr, 0, sizeof(ifr));
-> +
-> +	zbdev = tty->disc_data;
-> +	if (NULL == zbdev) {
-> +		pr_debug("match is not found\n");
-> +		return -EINVAL;
-> +	}
-
-If that is NULL it's a serious bug so WARN on it I think
-
-> +	default:
-> +		pr_debug("Unknown ioctl cmd: %u\n", cmd);
-> +		return -EINVAL;
-
-This will break default ioctl processing. You probably want to call into
-some of the generic handlers at this point depending upon your hardware.
-Either way -EINVAL is wrong.
-
-> +	}
-> +	return 0;
-
-Unreachable
-
-> +static void
-> +ieee802154_tty_receive(struct tty_struct *tty, const unsigned char *buf, char *cflags, int count)
-> +{
-> +	struct zb_device *zbdev;
-> +	int i;
-> +
-> +	/* Debug info */
-> +	printk(KERN_INFO "%lu %s, received %d bytes:", jiffies, __func__, count);
-> +	for (i = 0; i < count; ++i)
-> +		printk(KERN_CONT " 0x%02X", buf[i]);
-> +	printk(KERN_CONT "\n");
-
-I don't think the above is meant to be there....
-
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Cc: Becky Bruce <beckyb@kernel.crashing.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Greg KH <gregkh@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Cc: Olaf Kirch <okir@suse.de>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: linux-ia64@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org
+Cc: x86@kernel.org
