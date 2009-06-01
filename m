@@ -1,86 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753980AbZFAGtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbZFAGyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753980AbZFAGtR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 02:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbZFAGtI
+	id S1754701AbZFAGyI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 02:54:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZFAGx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 02:49:08 -0400
-Received: from mail-px0-f123.google.com ([209.85.216.123]:54662 "EHLO
-	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752457AbZFAGtH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 02:49:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=eOVMqfQHrRoGWnRL2HSUBk/C7eGxQdU9kzcYXTj0Hi/Rpskl5+VVEsZ4WO6TAseTII
-         Ny2WDtyYuxY66eQUYVpEJgHk6cQN4qWddPFiNoropYgHSoHqGBt/Wf2fm0nlGFP3eMhb
-         SP8BC89hl05JxdLBzouEqzPFn33SWuDN6u6UI=
-MIME-Version: 1.0
-Date: Mon, 1 Jun 2009 14:49:09 +0800
-Message-ID: <d364733c0905312349m6b5c8664h6cc7701a576c6b7d@mail.gmail.com>
-Subject: new implementation of mutex
-From: =?GB2312?B?0Lu42Q==?= <xiegang112@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 1 Jun 2009 02:53:57 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53820 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751719AbZFAGx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 02:53:56 -0400
+Subject: Re: [PATCH 1/2 -tip] headers_check fix: linux/auto_fs.h
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <1242795274.3260.4.camel@localhost.localdomain>
+References: <1242795274.3260.4.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 01 Jun 2009 12:23:25 +0530
+Message-Id: <1243839205.3170.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is new implementaion in newer kernel (my kernel version is
-2.6.27). Compared to the old implementaion which uses binary
-semaphore, there are some new features:
- - 'struct mutex' semantics are well-defined and are enforced if
-   CONFIG_DEBUG_MUTEXES is turned on. Semaphores on the other hand have
-   virtually no debugging code or instrumentation. The mutex subsystem
-   checks and enforces the following rules:
+On Wed, 2009-05-20 at 10:24 +0530, Jaswinder Singh Rajput wrote:
+> fix the following 'make headers_check' warnings:
+> 
+>   usr/include/linux/auto_fs.h:17: include of <linux/types.h> is preferred over <asm/types.h>
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
 
-   * - only one task can hold the mutex at a time
-   * - only the owner can unlock the mutex
-   * - multiple unlocks are not permitted
-   * - recursive locking is not permitted
-   * - a mutex object must be initialized via the API
-   * - a mutex object must not be initialized via memset or copying
-   * - task may not exit with mutex held
-   * - memory areas where held locks reside must not be freed
-   * - held mutexes must not be reinitialized
-   * - mutexes may not be used in hardware or software interrupt
-   *   contexts such as tasklets and timers
+I prepared headers-check tree and applied these patches on :
 
-But in my test, I try to lock mutex in one thread, and unlock it in
-the other thread. There is nothing wrong happens. It works just like
-semaphore. I have had CONFIG_DEBUG_MUTEXES turned on.
-The two threads are mostly like this:
-struct mutex mutex;
+git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/headers-check-2.6.git
 
-static int mysthread1(void * data){
-  int i;
-  i= 5;
-  while(i -- > 0){
-                mutex_lock(&mutex);
-    printk("this is thread1\n");
-    msleep(5000);
-  }
-        return 0;
-}
+I will send headers-check patches to Linus on next merge window.
 
-static int mysthread2(void * data){
-  int i;
-  i= 5;
-  while(i -- > 0){
-    printk("this is thread2\n");
-    msleep(5000);
-                mutex_lock(&mutex);
-  }
-        return 0;
-}
-
-I debug it and find the debug_locks = 0.  Is this why there is no
-warning message and how turn it on? (I also had CONFIG_LOCKDEP_SUPPORT
-on.)
+Thanks,
+--
+JSR
 
 
--- 
-Xie Gang
+
