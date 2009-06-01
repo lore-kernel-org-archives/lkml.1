@@ -1,66 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbZFAOQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbZFAOQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752794AbZFAOQq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 10:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbZFAOQL
+	id S1754201AbZFAOQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 10:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbZFAOQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 10:16:11 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:48151 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751077AbZFAOQH (ORCPT
+	Mon, 1 Jun 2009 10:16:20 -0400
+Received: from ottmail.xandros.com ([142.46.212.35]:46025 "EHLO
+	ottmail.xandros.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751897AbZFAOQS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 10:16:07 -0400
-From: Matthew Garrett <mjg@redhat.com>
-To: linux-acpi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-       Mario Limonciello <mario_limonciello@dell.com>,
-       Matthew Garrett <mjg@redhat.com>
-Subject: [PATCH 1/3] dell-wmi: Mask off upper bytes of event response
-Date: Mon,  1 Jun 2009 15:14:35 +0100
-Message-Id: <1243865677-25425-1-git-send-email-mjg@redhat.com>
-X-Mailer: git-send-email 1.6.2.2
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 78.86.230.144
-X-SA-Exim-Mail-From: mjg@redhat.com
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Mon, 1 Jun 2009 10:16:18 -0400
+Date: Mon, 1 Jun 2009 10:13:32 -0400
+From: Woody Suwalski <woodys@xandros.com>
+To: Len Brown <lenb@kernel.org>
+cc: Randy Dunlap <randy.dunlap@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Zorael <zorael@gmail.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Message-ID: <4A23E20C.3090807@xandros.com>
+In-Reply-To: <alpine.LFD.2.00.0905292113150.4293@localhost.localdomain>
+References: <fcd863fc0905181109h372e5967t9d179b820a62132d@mail.gmail.com>
+References: <4A1464C9.9030603@xandros.com>
+References: <4A1475D5.6080602@oracle.com>
+References: <alpine.LFD.2.00.0905292113150.4293@localhost.localdomain>
+Subject: Re: [i915] Kernel does not compile when set to use i915 kernel mode-setting per default (CONFIG_DRM_I915_KMS=y)
+x-scalix-Hops: 1
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII";
+	format="flowed"
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mario Limonciello <mario_limonciello@dell.com>
+Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
+> Subject: [PATCH] ACPI, i915: build fix (v2)
+>
+> drivers/built-in.o: In function `intel_opregion_init':
+> (.text+0x9d540): undefined reference to `acpi_video_register'
+>
+> v2: move under DRM_I915 from DRM_I915_KMS
+>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+> as applied.
+> thanks,
+> -Len
+>
+>  drivers/gpu/drm/Kconfig |   14 +++++++-------
+>  1 files changed, 7 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+> index 4cd35d8..f5d46e7 100644
+> --- a/drivers/gpu/drm/Kconfig
+> +++ b/drivers/gpu/drm/Kconfig
+> @@ -67,12 +67,18 @@ config DRM_I830
+>  	  will load the correct one.
+>  
+>  config DRM_I915
+> +	tristate "i915 driver"
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+>  	select FB_CFB_IMAGEBLIT
+>  	select FB
+>  	select FRAMEBUFFER_CONSOLE if !EMBEDDED
+> -	tristate "i915 driver"
+> +	# i915 depends on ACPI_VIDEO when ACPI is enabled
+> +	# but for select to work, need to select ACPI_VIDEO's dependencies, ick
+> +	select VIDEO_OUTPUT_CONTROL if ACPI
+> +	select BACKLIGHT_CLASS_DEVICE if ACPI
+> +	select INPUT if ACPI
+> +	select ACPI_VIDEO if ACPI
+>  	help
+>  	  Choose this option if you have a system that has Intel 830M, 845G,
+>  	  852GM, 855GM 865G or 915G integrated graphics.  If M is selected, the
+> @@ -84,12 +90,6 @@ config DRM_I915
+>  config DRM_I915_KMS
+>  	bool "Enable modesetting on intel by default"
+>  	depends on DRM_I915
+> -	# i915 KMS depends on ACPI_VIDEO when ACPI is enabled
+> -	# but for select to work, need to select ACPI_VIDEO's dependencies, ick
+> -	select VIDEO_OUTPUT_CONTROL if ACPI
+> -	select BACKLIGHT_CLASS_DEVICE if ACPI
+> -	select INPUT if ACPI
+> -	select ACPI_VIDEO if ACPI
+>  	help
+>  	  Choose this option if you want kernel modesetting enabled by default,
+>  	  and you have a new enough userspace to support this. Running old
+>   
+Confirmed fixed - tried 2 builds based on -rc7, all OK.
 
-From: Mario Limonciello <mario_limonciello@dell.com>
+Thanks, Woody
 
-In debugging with some future machines that actually contain BIOS level
-support for dell-wmi, I've determined that the upper half of the data
-that comes back from wmi_get_event_data may sometimes contain extra
-information that isn't currently relevant when pulling scan codes out of
-the data.  This causes dell-wmi to improperly respond to these events.
 
-Signed-off-by: Mario Limonciello <mario_limonciello@dell.com>
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
----
- drivers/platform/x86/dell-wmi.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/platform/x86/dell-wmi.c b/drivers/platform/x86/dell-wmi.c
-index 2fab941..8a0d39e 100644
---- a/drivers/platform/x86/dell-wmi.c
-+++ b/drivers/platform/x86/dell-wmi.c
-@@ -122,7 +122,12 @@ static void dell_wmi_notify(u32 value, void *context)
- 
- 	if (obj && obj->type == ACPI_TYPE_BUFFER) {
- 		int *buffer = (int *)obj->buffer.pointer;
--		key = dell_wmi_get_entry_by_scancode(buffer[1]);
-+		/*
-+		 *  The upper bytes of the event may contain
-+		 *  additional information, so mask them off for the
-+		 *  scancode lookup
-+		 */
-+		key = dell_wmi_get_entry_by_scancode(buffer[1] & 0xFFFF);
- 		if (key) {
- 			input_report_key(dell_wmi_input_dev, key->keycode, 1);
- 			input_sync(dell_wmi_input_dev);
 -- 
-1.6.2.2
+Woody Suwalski, Xandros, Ottawa, Canada, 1-613-842-3498 x414
 
