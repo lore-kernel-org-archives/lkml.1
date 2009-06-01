@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752505AbZFAVec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbZFAVfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752505AbZFAVec (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 17:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZFAVeY
+	id S1754255AbZFAVfk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 17:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbZFAVfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 17:34:24 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38370 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751033AbZFAVeY (ORCPT
+	Mon, 1 Jun 2009 17:35:33 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57298 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751772AbZFAVfd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 17:34:24 -0400
-Date: Mon, 1 Jun 2009 23:41:25 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, Nick Piggin <npiggin@suse.de>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090601214125.GX1065@one.firstfloor.org>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601140553.GA1979@localhost> <Pine.LNX.4.64.0906012138170.27344@sister.anvils>
+	Mon, 1 Jun 2009 17:35:33 -0400
+Date: Mon, 1 Jun 2009 22:34:55 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: paul@mad-scientist.net
+Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH] coredump: Retry writes where appropriate
+Message-ID: <20090601223455.00609acc@lxorguk.ukuu.org.uk>
+In-Reply-To: <1243885899.8547.95.camel@psmith-ubeta.netezza.com>
+References: <1243748019.7369.319.camel@homebase.localnet>
+	<20090531111851.07eb1df3@lxorguk.ukuu.org.uk>
+	<20090601161234.GA10486@redhat.com>
+	<1243877766.8547.38.camel@psmith-ubeta.netezza.com>
+	<20090601184934.1fc54411@lxorguk.ukuu.org.uk>
+	<1243881544.8547.66.camel@psmith-ubeta.netezza.com>
+	<20090601200232.078aacbb@lxorguk.ukuu.org.uk>
+	<1243885899.8547.95.camel@psmith-ubeta.netezza.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0906012138170.27344@sister.anvils>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Maybe we should start out, as you have, with most of the hwpoison
-> code located in one file (rather like with migrate.c?); but hope
-> to refactor things and distribute it over time.
+> If it's interactive, can't the user ^Z (SIGSTOP)
 
-That's the plan.
+^Z is SIGTSTP but that would be one way to implement it although I think
+it might need a bit more work than just setting masks.
 
+> Yes, you need a shell with job control but... at some point we have to
+> just say it is what it is!  Core dumps are not just annoying time/disk
+> space wasters, they have real value; a good core dump can save tens of
+> thousands of dollars or more in support and development costs.  We need
+> (a way for) them to be reliable, even if it costs some interactive
+> ease-of-use.
 > 
-> How seriously does the hwpoison work interfere with the assumptions
-> in other sourcefiles?  If it's playing tricks liable to confuse
+> Anyway, that's my opinion :-)
 
-I hope only minimally. It can come in at any time (that's the partly
-tricky part), but in general it tries to be very conservative and
-non intrusive and just calls code used elsewhere.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+And there we get into policy and preference rather than technical debate
+- no right answers 8(
