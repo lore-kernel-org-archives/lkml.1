@@ -1,84 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbZFAWyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbZFAWyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755522AbZFAWyb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 18:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZFAWyX
+	id S1756738AbZFAWyn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 18:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbZFAWy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 18:54:23 -0400
-Received: from iabervon.org ([66.92.72.58]:43025 "EHLO iabervon.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751718AbZFAWyX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 18:54:23 -0400
-Date: Mon, 1 Jun 2009 18:54:23 -0400 (EDT)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Christoph Hellwig <hch@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@redhat.com>
-Subject: Re: fishy code in arch/x86/kernel/tsc.c:time_cpufreq_notifier()
-In-Reply-To: <20090601142104.GA15907@infradead.org>
-Message-ID: <alpine.LNX.2.00.0906011749170.2147@iabervon.org>
-References: <20090601142104.GA15907@infradead.org>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Mon, 1 Jun 2009 18:54:26 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:51782 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754055AbZFAWyZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 18:54:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=UtZDDFex8L+fJ5gcD0cLs+0IQhZ8rCSpbyLUoDZSE9xm/ma4fpE1V6zZMQFb0a8F2V
+         Ud6eq8ilFlm1I3KLza11BqiAlPqTT6UGro9f2TaFbDmS8Di1+orFcOoEdRIAB7iQHvdy
+         kWf/3O27GH5M79Yfh2PwM8c8EdlhRTld5ts5Y=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1243121915-10775-1-git-send-email-vapier@gentoo.org>
+References: <1243121915-10775-1-git-send-email-vapier@gentoo.org>
+Date: Mon, 1 Jun 2009 18:54:27 -0400
+Message-ID: <8bd0f97a0906011554l54216e73v6fe9eb54a0eadb80@mail.gmail.com>
+Subject: Re: [PATCH] fix detection of CONFIG_FRAME_WARN=0
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>,
+       Sam Ravnborg <sam@ravnborg.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Jun 2009, Christoph Hellwig wrote:
+On Sat, May 23, 2009 at 19:38, Mike Frysinger wrote:
+> The checking of CONFIG_FRAME_WARN in the top level Makefile forgot to
+> actually derefence the variable thus leading to an always true check.
 
-> Just notice the following error from gcc 4.4:
-> 
-> arch/x86/kernel/tsc.c: In function 'time_cpufreq_notifier':
-> arch/x86/kernel/tsc.c:634: warning: 'dummy' may be used uninitialized in this function
-> 
-> dummy is only used in the following way in this function:
-> 
-> 	lpj = &dummy;
-> 
-> and then dummy might be overriden in the following odd way:
-> 
-> 	if (!(freq->flags & CPUFREQ_CONST_LOOPS))
-> #ifdef CONFIG_SMP
-> 		lpj = &cpu_data(freq->cpu).loops_per_jiffy;
-> #else
-> 	lpj = &boot_cpu_data.loops_per_jiffy;
-> #endif
-
-This is misindented; the if applies to both CONFIG_SMP and otherwise. For 
-that matter, cpu_data(anything) == boot_cpu_data if !CONFIG_SMP. So the 
-current code is equivalent to:
-
-	if (!(freq->flags & CPUFREQ_CONST_LOOPS))
-		lpj = &cpu_data(freq->cpu).loops_per_jiffy;
-
-> and then is used in
-> 
-> 	if (!ref_freq) {
-> 		ref_freq = freq->old;
-> 		loops_per_jiffy_ref = *lpj;
-> 		tsc_khz_ref = tsc_khz;
-> 	}
-> 
-> to me that looks like it can indeed be used unitialized for the case
-> where we do have CONFIG_SMP set, freq->flags & CPUFREQ_CONST_LOOPS is
-> true and ref_freq is false.
-> 
-> Can that case actually happen?
-
-Looks to me like loops_per_jiffy_ref is only used to compute a new value 
-for *lpj. So the case that matters is if this function can be called the 
-first time with freq->flags & CPUFREQ_CONST_LOOPS and then without; 
-otherwise, the uninitialized values only contribute to a dead assignment 
-(and the junk in the static variable).
-
-I'd guess that, if freq->flags & CPUFREQ_CONST_LOOPS, no processor's 
-loops_per_jiffy should get scaled, so the current code is essentially 
-correct, although it's hard to read and far too hard for the compiler to 
-analyze.
-
-Probably the right answer is to move the *lpj = ... in with 
-mark_tsc_unstable and drop the earlier if and dummy.
-
-	-Daniel
-*This .sig left intentionally blank*
+Andrew: could you pick this up ?
+-mike
