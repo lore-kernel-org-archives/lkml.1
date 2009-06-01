@@ -1,102 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZFAQs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755809AbZFAQy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbZFAQs3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 12:48:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZFAQsT
+	id S1755809AbZFAQy6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 12:54:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbZFAQyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 12:48:19 -0400
-Received: from mga11.intel.com ([192.55.52.93]:46449 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751770AbZFAQsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 12:48:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,285,1241420400"; 
-   d="scan'208";a="695452104"
-Date: Mon, 1 Jun 2009 09:48:18 -0700 (Pacific Daylight Time)
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: Nix <nix@esperi.org.uk>
-cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>,
-       netdev@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [E1000-devel] 2.6.30rc7: ksoftirqd CPU saturation (x86-64 only,
- not x86-32) (e1000e-related?)
-In-Reply-To: <87prdozxns.fsf@hades.wkstn.nix>
-Message-ID: <alpine.WNT.1.10.0906010941170.656@jbrandeb-MOBL1.amr.corp.intel.com>
-References: <87prdozxns.fsf@hades.wkstn.nix>
-User-Agent: Alpine 1.10 (WNT 962 2008-03-14)
-ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-X-X-Sender: amr/jbrandeb@imapmail.glb.intel.com
+	Mon, 1 Jun 2009 12:54:44 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:48466 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752774AbZFAQyn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 12:54:43 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [KVM PATCH v3 0/3] mmio/pio cleanup
+To: avi@redhat.com
+Cc: chrisw@sous-sol.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Mon, 01 Jun 2009 12:54:40 -0400
+Message-ID: <20090601165134.18202.87598.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(This is v3 of the series, applies to kvm.git/master:7ff90748)
+
+This is in prep for some more substantial mmio/pio work for iosignalfd,
+coming later.
+
+[ Changelog:
+
+  v3:
+      *) Addressed feedback from Chris Wright w.r.t. patch 2/3
+      *) Rebased to kvm.git/master:7ff90748
+
+]
+
+---
+
+Gregory Haskins (3):
+      kvm: do not register i8254 PIO regions until we are initialized
+      kvm: cleanup io_device code
+      kvm: fix potential coalesced_mmio leak on shutdown
 
 
-On Sun, 31 May 2009, Nix wrote:
-> I've just compiled a 64-bit kernel for a couple of quad-core Nehalems
-> (one L5520, one Core i7) for the first time. Both were using 32-bit
-> kernels happily before, and one (the Core i7) is happy afterwards: but
-> the other sees two ksoftirqd threads saturating the CPU (well, half of
-> it, this being a 4-core box).
+ arch/x86/kvm/i8254.c      |   53 +++++++++++++++++++++++++++++----------------
+ arch/x86/kvm/i8259.c      |   20 ++++++++++++-----
+ arch/x86/kvm/lapic.c      |   22 +++++++++++++------
+ arch/x86/kvm/x86.c        |    2 +-
+ virt/kvm/coalesced_mmio.c |   26 ++++++++++++++--------
+ virt/kvm/ioapic.c         |   22 +++++++++++++------
+ virt/kvm/iodev.h          |   29 +++++++++++++++++--------
+ virt/kvm/kvm_main.c       |    2 +-
+ 8 files changed, 117 insertions(+), 59 deletions(-)
 
-<snip>
-
-> So, not particularly informative.
-> 
-> CPUs 3 and 5 seem to be receiving the lion's share of the local timer
-> interrupts and networking interrupts (this box has twin e1000es):
-> 
->        CPU0  CPU1    CPU2   CPU3   CPU4   CPU5   CPU6  CPU7
->   0:     33     0       0   2377      0      0      0     0   IO-APIC-edge      timer
->   1:      0     0       0      2      0      0      0     0   IO-APIC-edge      i8042
->   3:      0     0       0      3      0      0      0     0   IO-APIC-edge
->   4:      0     0       0    372      0      0      0     0   IO-APIC-edge      serial
->   8:      0     0       0     52      0      0      0     0   IO-APIC-edge      rtc0
->  12:      0     0       0      4      0      0      0     0   IO-APIC-edge      i8042
->  16:      0     0       0      0      0      0      0     0   IO-APIC-fasteoi   uhci_hcd:usb3
->  18:      0     0       0      0      0      0      2     0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb8
->  19:      0     0       0      0      0      0      0     0   IO-APIC-fasteoi   uhci_hcd:usb5, uhci_hcd:usb7
->  20:      0     0       0      0      0      0      0     0   IO-APIC-fasteoi   acpi
->  21:      0     0       0      0     70      0      0     0   IO-APIC-fasteoi   uhci_hcd:usb4, firewire_ohci
->  22:      0     0       0      0      0    228      0     0   IO-APIC-fasteoi   HDA Intel
->  23:      0     0       0      0     67      0      0     0   IO-APIC-fasteoi   ehci_hcd:usb2, uhci_hcd:usb6
->  39:      0     0   22405      0      0      0      0     0   IO-APIC-fasteoi   arcmsr
->  48:      0     0       0      0      0      0      0     0  DMAR_MSI-edge      dmar0
->  56:      0     0       0   3961      0      0      0     0   PCI-MSI-edge      ahci
->  57:      0     0       0   7654      0      0      0     0   PCI-MSI-edge      gordianet-rx-0
->  58:      0     0       0      0   8065      0      0     0   PCI-MSI-edge      gordianet-tx-0
->  59:      0     0       0      0      3      0      0     0   PCI-MSI-edge      gordianet
->  60:      0     0       0      0      0   3576      0     0   PCI-MSI-edge      fastnet-rx-0
->  61:      0     0       0      0      0   2555      0     0   PCI-MSI-edge      fastnet-tx-0
->  62:      0     0       0      0      0      0      2     0   PCI-MSI-edge      fastnet
-
-where is the e1000e interrupt here?  I was expecting to see eth0/eth1
-
-> NMI:      0     0       0      0      0      0      0     0   Non-maskable interrupts
-> LOC:   8437  2263    6528  60480  13987 113384  16365 57641   Local timer interrupts
-> SPU:      0     0       0      0      0      0      0     0   Spurious interrupts
-> RES:   3790    55    6780     18   2370    115    893   161   Rescheduling interrupts
-> CAL:     83   176     144    155    174    179    173   169   Function call interrupts
-> TLB:    125     9     138      4    282     22    310    22   TLB shootdowns
-> TRM:      0     0       0      0      0      0      0     0   Thermal event interrupts
-> THR:      0     0       0      0      0      0      0     0   Threshold APIC interrupts
-> ERR:      0
-> MIS:      0
-> 
-> I'd not expect that level of e1000e interrupt activity to flood the
-> ksoftirqds like this, and in 32-bit mode it doesn't.
-> 
-> So, anyone know what's going on, or how I could find out?
-
-when you went into 64 bit mode your kernel enabled the IOMMU/DMAR, which 
-means that map/unmap cycles are taking many more cycles per packet, 
-accounting for the increased CPU utilization.  you can disable at boot 
-with intel_iommu=off to see if it goes back to previous behavior.
-
-There is no DMAR/IOMMU in 32 bit mode, AFAIK.
-
-Hope this helps,
- Jesse
+-- 
+Signature
