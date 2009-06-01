@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbZFALhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757843AbZFALjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757146AbZFALhv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 07:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZFALhn
+	id S1757843AbZFALjk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 07:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbZFALjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 07:37:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45361 "EHLO hera.kernel.org"
+	Mon, 1 Jun 2009 07:39:33 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43602 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755472AbZFALhn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 07:37:43 -0400
-Message-ID: <4A23BD20.5030500@kernel.org>
-Date: Mon, 01 Jun 2009 20:36:00 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: JBeulich@novell.com, andi@firstfloor.org, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org, x86@kernel.org,
-       ink@jurassic.park.msu.ru, rth@twiddle.net, linux@arm.linux.org.uk,
-       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
-       jesper.nilsson@axis.com, dhowells@redhat.com,
-       ysato@users.sourceforge.jp, tony.luck@intel.com, takata@linux-m32r.org,
-       geert@linux-m68k.org, monstr@monstr.eu, ralf@linux-mips.org,
-       kyle@mcmartin.ca, benh@kernel.crashing.org, paulus@samba.org,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, lethal@linux-sh.org,
-       jdike@addtoit.com, chris@zankel.net, rusty@rustcorp.com.au,
-       jens.axboe@oracle.com, davej@redhat.com, jeremy@xensource.com,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 3/7] percpu: clean up percpu variable definitions
-References: <1243846708-805-1-git-send-email-tj@kernel.org>	<1243846708-805-4-git-send-email-tj@kernel.org> <20090601.024006.98975069.davem@davemloft.net>
-In-Reply-To: <20090601.024006.98975069.davem@davemloft.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 01 Jun 2009 11:36:03 +0000 (UTC)
+	id S1754804AbZFALjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 07:39:33 -0400
+Date: Mon, 1 Jun 2009 13:39:33 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Russ Anderson <rja@sgi.com>, hugh@veritas.com, riel@redhat.com,
+       akpm@linux-foundation.org, chris.mason@oracle.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
+Message-ID: <20090601113933.GD5018@wotan.suse.de>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090528165625.GA17572@sgi.com> <20090530064244.GJ1065@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090530064244.GJ1065@one.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Tejun Heo <tj@kernel.org>
-> Date: Mon,  1 Jun 2009 17:58:24 +0900
+On Sat, May 30, 2009 at 08:42:44AM +0200, Andi Kleen wrote:
+> Sorry for late answer, email slipped out earlier.
 > 
->> --- a/arch/cris/include/asm/mmu_context.h
->> +++ b/arch/cris/include/asm/mmu_context.h
->> @@ -17,7 +17,7 @@ extern void switch_mm(struct mm_struct *prev, struct mm_struct *next,
->>   * registers like cr3 on the i386
->>   */
->>  
->> -extern volatile DEFINE_PER_CPU(pgd_t *,current_pgd); /* defined in arch/cris/mm/fault.c */
->> +DECLARE_PER_CPU(pgd_t *,current_pgd); /* defined in arch/cris/mm/fault.c */
->>  
->>  static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
->>  {
+> On Thu, May 28, 2009 at 11:56:25AM -0500, Russ Anderson wrote:
+> > > I changed it to 
+> > > 
+> > >  "MCE: Unable to determine user space address during error handling\n")
+> > > 
+> > > Still not perfect, but hopefully better.
+> > 
+> > Is it even worth having a message at all?  Does the fact that page_address_in_vma()
 > 
-> Yes volatile sucks, but might this break something?
+> I like having a message so that I can see when it happens.
 > 
-> Whether the volatile is actually needed or not, it's bad to have this
-> kind of potential behavior changing nugget hidden in this seemingly
-> inocuous change.  Especially if you're the poor soul who ends up
-> having to debug it :-/
+> > failed change the behavior in any way?  (Does tk->addr == 0 matter?)  From
+> 
+> It just doesn't report an address to the user (or rather 0)
+> 
+> > If the message is for developers/debugging, it would be nice to have more
+> 
+> It's not really for debugging only, it's a legitimate case. Typically
+> when the process unmaps or remaps in parallel. Of course when it currently
+> unmaps you could argue it doesn't need the data anymore and doesn't
+> need to be killed (that's true), but that doesn't work for mremap()ing.
+> I considered at some point to loop, but that would risk live lock.
+> So it just prints and reports nothing.
+> 
+> The only ugly part is the ambiguity of reporting a 0 address (in theory
+> there could be real memory 0 on virtual 0), but that didn't seem to be
+> enough an issue to fix.
 
-You're right.  Aieee... how do I feed volatile to the DEFINE macro.
-I'll think of something.
+Just isn't really something we typically give a dmesg for.
 
-Thanks.
+Surely you can test it out these cases with debugging code or printks
+and then take them out of production code?
 
--- 
-tejun
