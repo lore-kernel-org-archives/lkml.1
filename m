@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbZFAJNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715AbZFAJRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756326AbZFAJNl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 05:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbZFAJNe
+	id S1755715AbZFAJRS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 05:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbZFAJRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 05:13:34 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37618 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753023AbZFAJNe convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 05:13:34 -0400
-Date: Mon, 1 Jun 2009 10:14:40 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: parport_pc: Fix subscription bugs
-Message-ID: <20090601101440.203c000a@lxorguk.ukuu.org.uk>
-In-Reply-To: <200906011100.34086.mb@bu3sch.de>
-References: <200906011100.34086.mb@bu3sch.de>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Mon, 1 Jun 2009 05:17:10 -0400
+Received: from sh.osrg.net ([192.16.179.4]:60048 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752553AbZFAJRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 05:17:09 -0400
+Date: Mon, 1 Jun 2009 18:16:56 +0900
+To: rmk+lkml@arm.linux.org.uk
+Cc: fujita.tomonori@lab.ntt.co.jp, arnd@arndb.de, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090601082943.GA5550@flint.arm.linux.org.uk>
+References: <20090601075114.GA29107@flint.arm.linux.org.uk>
+	<20090601170847V.fujita.tomonori@lab.ntt.co.jp>
+	<20090601082943.GA5550@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090601181723U.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 01 Jun 2009 18:16:57 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Jun 2009 11:00:33 +0200
-Michael Buesch <mb@bu3sch.de> wrote:
+On Mon, 1 Jun 2009 09:29:43 +0100
+Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-> This patch fixes array subscription bugs in the parport_pc driver.
+> On Mon, Jun 01, 2009 at 05:08:09PM +0900, FUJITA Tomonori wrote:
+> > This adds a version of the dma-mapping API to asm-generic that can be
+> > used by most architectures that only need a linear mapping.
 > 
-> drivers/parport/parport_pc.c: In function ‘parport_irq_probe’:
-> drivers/parport/parport_pc.c:1589: warning: array subscript is above array bounds
-> drivers/parport/parport_pc.c: In function ‘parport_pc_probe_port’:
-> drivers/parport/parport_pc.c:1579: warning: array subscript is above array bounds
+> It depends what is meant by "linear mapping".
 > 
-> The patch also fixes a few other array bugs, which the compiler was
-> unable to find. Coding style violations are also fixed.
+> If that's just a way of saying "all that needs to be done for the
+> DMA streaming APIs is to flush the cache" then the vast majority of
+> ARMs fall into that category.
 
-Which makes it very hard to see what you are actually changing and
-whether it is a bug. It certainly looks like one but the changes muddled
-in with a random subset of format fixes (even in the area patched only
-some style is fixed) looks pretty clunky - surely a for() loop would be
-far cleaner.
+I guess that his definition is 'no dynamic remapping'.
 
 
-But yes agreed - its a bug, it wants fixing and style can be sorted later.
+> The DMA bounce code is a broken design concept that really needs to
+> be put to death.
+
+You are talking about arch/arm/common/dmabounce.c? If so, it sounds
+more interesting (to me at least). It's kinda swiotlb per device,
+right? What you want to do for arch/arm/common/dmabounce.c?
