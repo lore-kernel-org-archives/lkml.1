@@ -1,58 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbZFAF6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbZFAGJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbZFAF6x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 01:58:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZFAF6f
+	id S1753692AbZFAGJc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 02:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752148AbZFAGJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 01:58:35 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49296 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751559AbZFAF6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 01:58:34 -0400
-Subject: Re: [RESEND][PATCH 1/2 -tip] headers_check fix: linux/auto_fs.h
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1242795274.3260.4.camel@localhost.localdomain>
-References: <1242795274.3260.4.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 01 Jun 2009 11:20:16 +0530
-Message-Id: <1243835416.3170.0.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Mon, 1 Jun 2009 02:09:25 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49583 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751878AbZFAGJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 02:09:24 -0400
+Message-ID: <4A2370E5.6000407@cn.fujitsu.com>
+Date: Mon, 01 Jun 2009 14:10:45 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       "Paul E . McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>
+Subject: Re: [RFC PATCH 1/2] tracing/stat: introduce new hashlist mode
+References: <1243834679-19132-1-git-send-email-fweisbec@gmail.com> <1243834679-19132-2-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1243834679-19132-2-git-send-email-fweisbec@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-20 at 10:24 +0530, Jaswinder Singh Rajput wrote:
-> fix the following 'make headers_check' warnings:
+Frederic Weisbecker wrote:
+> Until now, the stat tracing was only able to gather the pointers
+> to entries from a tracer, sort them and eventually pass these
+> pointers to the tracer output handler.
 > 
->   usr/include/linux/auto_fs.h:17: include of <linux/types.h> is preferred over <asm/types.h>
+> It has two drawbacks:
 > 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  include/linux/auto_fs.h |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
+> - if the tracer concurrently releases a pointer, this one may be
+>   dereference later in the output callback. There are ways to keep
+>   track of these pointers but it ends up with extra code from the
+>   tracers.
 > 
-> diff --git a/include/linux/auto_fs.h b/include/linux/auto_fs.h
-> index 6326585..7b09c83 100644
-> --- a/include/linux/auto_fs.h
-> +++ b/include/linux/auto_fs.h
-> @@ -14,13 +14,12 @@
->  #ifndef _LINUX_AUTO_FS_H
->  #define _LINUX_AUTO_FS_H
->  
-> +#include <linux/types.h>
->  #ifdef __KERNEL__
->  #include <linux/fs.h>
->  #include <linux/limits.h>
-> -#include <linux/types.h>
->  #include <linux/ioctl.h>
->  #else
-> -#include <asm/types.h>
->  #include <sys/ioctl.h>
->  #endif /* __KERNEL__ */
->  
+> - the tracer has to handle its entries itself, through its own
+>   hashlist, list or whatever.
+> 
 
+indeed
+
+> This patch introduces a new mode for the stat tracers. Those can now
+> ask the tracing stat Api to handle their entries, which includes the
+> memory allocation, the access, the synchronization, the lookup, etc...
+> 
+> This is done through an internal hashlist that is built according
+> to the number and size of entries provided by the tracer.
+> 
+
+But hashlist may not be suitable for all stat tracers?
+
+> A tracer can choose between this new mode and the old one by using
+> the HASH_NODES flag in struct tracer_stat.
+> 
+
+What's the advantages of the old mode towards this new mode?
+I think it's better to move all existing stat tracers to
+this new mode, and remove the old mode totally, if we want
+this new mode.
+
+> Instead of providing a pair of iterator callbacks, they just need
+> to fill up the hlist_size and node_size fields.
+> 
+> Then using a unique id for each stat entries (usually a simple address
+> to a traced thing), they can access to an entry using the two new pairs:
+> 
+> - get_stat_entry() which retrieve the entry and locks it against
+>   concurrent updates
+> - put_stat_entry() which unlocks the entry
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+>  kernel/trace/trace_stat.c |  329 ++++++++++++++++++++++++++++++++++++++++++++-
+>  kernel/trace/trace_stat.h |   27 ++++-
+>  2 files changed, 353 insertions(+), 3 deletions(-)
