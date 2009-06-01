@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbZFATqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZFATuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756585AbZFATqo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 15:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbZFATqh
+	id S1756223AbZFATuF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 15:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbZFATtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 15:46:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44463 "EHLO mx2.mail.elte.hu"
+	Mon, 1 Jun 2009 15:49:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47238 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752685AbZFATqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 15:46:36 -0400
-Date: Mon, 1 Jun 2009 21:46:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: linux-next: manual merge of the kmemcheck tree with the
-	tracing tree
-Message-ID: <20090601194624.GA29610@elte.hu>
-References: <20090601175539.67317265.sfr@canb.auug.org.au>
+	id S1753456AbZFATty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 15:49:54 -0400
+Message-ID: <4A2430A4.1080908@redhat.com>
+Date: Mon, 01 Jun 2009 22:48:52 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090601175539.67317265.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       =?ISO-8859-1?Q?Christi?= =?ISO-8859-1?Q?an_Borntr=E4ger?= 
+	<borntraeger@de.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       KVM list <kvm@vger.kernel.org>
+Subject: Re: [PATCH] KVM: add localversion to avoid confusion and conflicts
+References: <1243581494.3212.1.camel@localhost.localdomain> <200905290948.34482.borntraeger@de.ibm.com> <1243586626.4379.15.camel@localhost.localdomain> <20090601192624.GA32428@goodmis.org>
+In-Reply-To: <20090601192624.GA32428@goodmis.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Steven Rostedt wrote:
+>
+>> This patch is only for KVM tree and not for linus tree.
+>>
+>> Lets assume 100 developers are working on kvm tree and they use kvm tree
+>> on 2 PCs. So count becomes 200.
+>>
+>> Like in my case I have dozen of kernel trees so I keep on swapping
+>> config between kernels. And I also need to test config from various
+>> users. So this count is countless.
+>> I think this is the biggest point for adding localversion in -tip.
+>> It seems Ingo is busy in perfcounter stuff otherwise he will explain you
+>> more advantages.
+>>
+>> In the least case, Can you differentiate between 1 and 200 ?
+>>
+>> So by adding this patch we can save lot of developer's time.
+>>     
+>
+> No this patch wastes a lot of developers time. If we accept it, than any
+> patch that is added after it will need to be rebased before going to
+> Linus. Unless KVM is made up of a bunch of branches like tip is, this will become
+> more of a hassle than a benefit.
+>   
 
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+kvm.git for-linus branches are rebased anyway, since I fold patches that 
+fix or revert other patches.  I also (rarely) delay some patches in my 
+tree but submit others that came later.
 
-> Hi all,
-> 
-> Today's linux-next merge of the kmemcheck tree got a conflict in
-> kernel/trace/ring_buffer.c between commit
-> aa20ae8444fc6c318272c643f856d8d8ad3e198d ("ring-buffer: move big if
-> statement down") from the tracing tree and commits
-> 9b7ff384ee76ced9638ab236db588a6f13916336 ("trace: annotate bitfields in
-> struct ring_buffer_event") and 3467e18b1cf34c7d316af5717e7053ce845d014e
-> ("kmemcheck: make bitfield annotations be valid C") from the kmemcheck
-> tree.
-> 
-> I fixed it up (see below) and can carry the fix as necessary.
+localversion would show up in linux-next, not sure if that's a problem.  
+On the other hand, I'm not sure what it's worth.
 
-Would be nice if you indicated whether you cross-checked it against 
-tip:master, which had most of these conflicts resolved already (for 
-weeks).
 
-( this has relevance for the x86 and tracing tree conflicts - 
-  kmemleak is not in -tip)
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
-	Ingo
