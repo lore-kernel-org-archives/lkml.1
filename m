@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbZFAJdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755752AbZFAJdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756647AbZFAJdI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 05:33:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbZFAJc4
+	id S1755752AbZFAJdY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 05:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbZFAJdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 05:32:56 -0400
-Received: from sh.osrg.net ([192.16.179.4]:49251 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753621AbZFAJcz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 05:32:55 -0400
-Date: Mon, 1 Jun 2009 18:32:44 +0900
-To: rmk+lkml@arm.linux.org.uk
-Cc: fujita.tomonori@lab.ntt.co.jp, arnd@arndb.de, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090601092259.GB5550@flint.arm.linux.org.uk>
-References: <20090601082943.GA5550@flint.arm.linux.org.uk>
-	<20090601181723U.fujita.tomonori@lab.ntt.co.jp>
-	<20090601092259.GB5550@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 1 Jun 2009 05:33:04 -0400
+Received: from mail201.messagelabs.com ([216.82.254.211]:39562 "EHLO
+	mail201.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756732AbZFAJdD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 05:33:03 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Luis.Galdos@digi.com
+X-Msg-Ref: server-6.tower-201.messagelabs.com!1243848784!27503047!1
+X-StarScan-Version: 6.0.0; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Message-ID: <4A23A04A.2030004@digi.com>
+Date: Mon, 1 Jun 2009 11:32:58 +0200
+From: Luis Galdos <luis.galdos@digi.com>
+User-Agent: Icedove 1.5.0.14eol (X11/20090105)
+MIME-Version: 1.0
+To: Pierre Ossman <pierre@ossman.eu>
+CC: Dan Williams <dcbw@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: [LIBERTAS-SDIO]  Support for single transfer blocks?
+References: <4A08392F.70108@digi.com>	<20090512231150.bc0c65c6.akpm@linux-foundation.org>	<1242223408.11182.34.camel@localhost.localdomain> <20090513182846.044fc461@mjolnir.ossman.eu>
+In-Reply-To: <20090513182846.044fc461@mjolnir.ossman.eu>
+Content-Type: text/plain; charset="ISO-8859-15"; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090601183323V.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 01 Jun 2009 18:32:44 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Jun 2009 10:22:59 +0100
-Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-
-> On Mon, Jun 01, 2009 at 06:16:56PM +0900, FUJITA Tomonori wrote:
-> > On Mon, 1 Jun 2009 09:29:43 +0100
-> > Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> > 
-> > > On Mon, Jun 01, 2009 at 05:08:09PM +0900, FUJITA Tomonori wrote:
-> > > > This adds a version of the dma-mapping API to asm-generic that can be
-> > > > used by most architectures that only need a linear mapping.
-> > > 
-> > > It depends what is meant by "linear mapping".
-> > > 
-> > > If that's just a way of saying "all that needs to be done for the
-> > > DMA streaming APIs is to flush the cache" then the vast majority of
-> > > ARMs fall into that category.
-> > 
-> > I guess that his definition is 'no dynamic remapping'.
+Pierre Ossman wrote:
+>>> On Mon, 11 May 2009 16:41:51 +0200 Luis Galdos <luis.galdos@digi.com> wrote:
+>>>> * The transfer of Ethernet-frames works only if the "complete" frame is smaller than the 
+>>>> block size of the SDIO-host. By larger packages, the SD8686 doesn't generate the expected 
+>>>> IRQ (cause it expected a multiple transfer) and the driver detects a timeout.
+>>>>
 > 
-> ... which as I say is what ARM does for the streaming mappings.
+> Unfortunately, the libertas chip cannot support your host as it
+> requires everything to be done in a single transaction. So I'm afraid
+> you'll have to look at another host controller or another wifi chip.
+Thanks a lot for this info, this confirms my expectation. And sorry for the delayed 
+feedback (I was on vacations).
 
-Ok, then we agree.
+
+> Rgds
+Regards,
 
 
-> > > The DMA bounce code is a broken design concept that really needs to
-> > > be put to death.
-> > 
-> > You are talking about arch/arm/common/dmabounce.c? If so, it sounds
-> > more interesting (to me at least). It's kinda swiotlb per device,
-> > right? What you want to do for arch/arm/common/dmabounce.c?
-> 
-> Yes.
-> 
-> It's a nasty hack which leads to OOMs on various platforms since it
-> causes additional memory pressure from parts of the kernel which we
-> don't expect, and also causes additional difficulty with allocating
-> and freeing DMA memory from IRQ context.  There's an unsolved bug in
-> the kernel bugzilla for this which I see no hope of ever being resolved.
-> 
-> I _really_ wish that dmabounce never existed.  It's a right royal
-> pain in the preverbial.
-
-Can ARM replace the dmabounce with swiotlb?
+-- 
+Luis Galdos
