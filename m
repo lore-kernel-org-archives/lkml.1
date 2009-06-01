@@ -1,123 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbZFAPC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbZFAO4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752539AbZFAPC0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 11:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbZFAPCS
+	id S1758547AbZFAO4a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 10:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757290AbZFAOzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 11:02:18 -0400
-Received: from cantor.suse.de ([195.135.220.2]:48366 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752150AbZFAPCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 11:02:17 -0400
-Date: Mon, 1 Jun 2009 17:02:18 +0200
-From: Jan Kara <jack@suse.cz>
-To: Goswin von Brederlow <goswin-v-b@web.de>
-Cc: Jan Kara <jack@suse.cz>, Pavel Machek <pavel@ucw.cz>,
-       LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 03/11] vfs: Add better VFS support for page_mkwrite
-	when blocksize < pagesize
-Message-ID: <20090601150218.GI14373@duck.suse.cz>
-References: <1243429268-3028-1-git-send-email-jack@suse.cz> <1243429268-3028-4-git-send-email-jack@suse.cz> <20090530112324.GD1395@ucw.cz> <20090601094402.GA14373@duck.suse.cz> <87y6scqjd7.fsf@frosties.localdomain> <20090601140030.GF14373@duck.suse.cz> <87zlcsxb97.fsf@frosties.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87zlcsxb97.fsf@frosties.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 1 Jun 2009 10:55:22 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:35420 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753890AbZFAOzP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 10:55:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=Y1QZIAAoDT3/DRP3M+IYb/MSDvHOyiHDvVHc1zYsOnmSENOBJHQqJe6KquFyNYbfRi
+         E8taASuI8Gwx1F+Rw/736LDqxRNqloai1y8SFWCyzG6umzVAFfEQDar9ItFXNrVdh+lT
+         iA1brxSKKKbNqp4/B4zTqJtKlUkfpQ7bDIyIA=
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org, slapin@ossfans.org,
+       maxim.osipov@siemens.com, dmitry.baryshkov@siemens.com,
+       oliver.fendt@siemens.com,
+       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: [PATCH 02/10] Add constants for the ieee 802.15.4/ZigBee stack
+Date: Mon,  1 Jun 2009 18:54:43 +0400
+Message-Id: <1243868091-5315-3-git-send-email-dbaryshkov@gmail.com>
+X-Mailer: git-send-email 1.6.2.4
+In-Reply-To: <1243868091-5315-2-git-send-email-dbaryshkov@gmail.com>
+References: <1243868091-5315-1-git-send-email-dbaryshkov@gmail.com>
+ <1243868091-5315-2-git-send-email-dbaryshkov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 01-06-09 16:46:28, Goswin von Brederlow wrote:
-> Jan Kara <jack@suse.cz> writes:
-> > On Mon 01-06-09 13:33:08, Goswin von Brederlow wrote:
-> >> Jan Kara <jack@suse.cz> writes:
-> >> 
-> >> > On Sat 30-05-09 13:23:24, Pavel Machek wrote:
-> >> >> Hi!
-> >> >> 
-> >> >> > On filesystems where blocksize < pagesize the situation is more complicated.
-> >> >> > Think for example that blocksize = 1024, pagesize = 4096 and a process does:
-> >> >> >   ftruncate(fd, 0);
-> >> >> >   pwrite(fd, buf, 1024, 0);
-> >> >> >   map = mmap(NULL, 4096, PROT_WRITE, MAP_SHARED, fd, 0);
-> >> >> >   map[0] = 'a';  ----> page_mkwrite() for index 0 is called
-> >> >> >   ftruncate(fd, 10000); /* or even pwrite(fd, buf, 1, 10000) */
-> >> >> >   fsync(fd); ----> writepage() for index 0 is called
-> >> >> > 
-> >> >> > At the moment page_mkwrite() is called, filesystem can allocate only one block
-> >> >> > for the page because i_size == 1024. Otherwise it would create blocks beyond
-> >> >> > i_size which is generally undesirable. But later at writepage() time, we would
-> >> >> > like to have blocks allocated for the whole page (and in principle we have to
-> >> >> > allocate them because user could have filled the page with data after the
-> >> >> > second ftruncate()). This patch introduces a framework which allows filesystems
-> >> >> > to handle this with a reasonable effort.
-> >> >> 
-> >> >> What happens when you do above sequence on today's kernels? Oops? 3000
-> >> >> bytes of random junk in file? ...?
-> >> >   Depends on the filesystem. For example on ext4, you'll see a WARN_ON and the data
-> >> > won't be written. Some filesystems may just try to map blocks and possibly
-> >> > hit deadlock or something like that. Filesystems like ext2 / ext3 /
-> >> > reiserfs generally don't care because so far they allocate blocks on writepage
-> >> > time (which has the problem that you can write data via mmap and kernel
-> >> > will later discard them because it hits ENOSPC or quota limit). That's
-> >> > actually what I was trying to fix originally.
-> >> >
-> >> > 										Honza
-> >> 
-> >> man mmap:
-> >>        A file is mapped in multiples of the page size.  For a file that is not
-> >>        a  multiple  of  the  page  size,  the  remaining memory is zeroed when
-> >>        mapped, and writes to that region are not written out to the file.  The
-> >>        effect  of changing the size of the underlying file of a mapping on the
-> >>        pages that correspond to added  or  removed  regions  of  the  file  is
-> >>        unspecified.
-> >> 
-> >> Whatever happens happens. The above code is just wrong, as in
-> >> unspecified behaviour.
-> >> What happens if you ftruncate() before mmap()?
-> >   OK, I admit I didn't realize mmap() has so weak requirements. Doing mmap
-> > after ftruncate() should work fine because before you write via that new
-> > mmap page_mkwrite() will be called anyway.
-> 
-> But the ftruncate would only allocate a block at position 10000. The
-> file still has a big hole from 1024-4095.
-  ftruncate() actually allocates no blocks. It just updates file size (at
-least for most filesystems). The hole is created as you write.
+IEEE 802.15.4/ZigBee stack requires several constants to be defined/adjusted.
 
-> >   So what we could alternatively do is that we just discard dirty bits from
-> > buffers that don't have underlying blocks allocated. That would satisfy the
-> > specification as well. But I have to say I'm a bit afraid of discarding
-> > dirty bits like that. Also we'd have to handle the case where someone does
-> > mremap() after ftruncate().
-> >   What other memory management people think?
-> 
-> As said above the file still has a big hole after ftruncate. So not
-> having underlying blocks allocated can't be the deciding factor.
-  I'm not sure I understand here. Do you mean that we should not decide
-about discarding dirty bits depending on whether the buffers have
-underlying blocks or not? In my opinion that should be correct option
-because from what the man page says, user is not guaranteed what happens
-when the file size is extended to 10000 and he tries to write from offset
-1024 (old i_size) further... Anyway, I'm not defending doing that :-) I'm
-just trying to understand what you mean.
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Signed-off-by: Sergey Lapin <slapin@ossfans.org>
+---
+ include/linux/if.h       |    2 ++
+ include/linux/if_arp.h   |    2 ++
+ include/linux/if_ether.h |    2 ++
+ include/linux/socket.h   |    6 +++++-
+ net/core/dev.c           |    6 ++++--
+ net/core/sock.c          |    3 +++
+ 6 files changed, 18 insertions(+), 3 deletions(-)
 
-> If possible I would make ftruncate() after mmap() work just like
-> ftruncate() before mmap(). That is write any dirty page completly up
-> to the current filesize. Allocate disk blocks for the file as needed
-> (you need to do that anyway). Wouldn't it be more work to remember the
-  This is the thing my patches try to achieve :). At truncate time (or
-generally just before i_size is extended), we check the last page and
-propagate dirty bits to buffers inside old i_size (and clear the ones
-beyond old i_size). We also writeprotect the page so that if someone tries
-to write to it via mmap in future, we get page fault, page_mkwrite() is
-called and a filesystem allocates all blocks it needs with the new i_size.
-
-> filesize at the time of the mmap() to limit updates to that than using
-> the current file size?
-  Yes, that would be more work. But I never intended to do this...
-
-									Honza
+diff --git a/include/linux/if.h b/include/linux/if.h
+index 1108f3e..3f574b8 100644
+--- a/include/linux/if.h
++++ b/include/linux/if.h
+@@ -68,6 +68,8 @@
+ #define IFF_MASTER_ARPMON 0x100		/* bonding master, ARP mon in use */
+ #define IFF_WAN_HDLC	0x200		/* WAN HDLC device		*/
+ 
++#define IFF_IEEE802154_COORD 0x100	/* IEEE802.15.4 PAN coordinator */
++
+ #define IF_GET_IFACE	0x0001		/* for querying only */
+ #define IF_GET_PROTO	0x0002
+ 
+diff --git a/include/linux/if_arp.h b/include/linux/if_arp.h
+index 5ff8980..b554300 100644
+--- a/include/linux/if_arp.h
++++ b/include/linux/if_arp.h
+@@ -86,6 +86,8 @@
+ #define ARPHRD_IEEE80211 801		/* IEEE 802.11			*/
+ #define ARPHRD_IEEE80211_PRISM 802	/* IEEE 802.11 + Prism2 header  */
+ #define ARPHRD_IEEE80211_RADIOTAP 803	/* IEEE 802.11 + radiotap header */
++#define ARPHRD_IEEE802154	  804
++#define ARPHRD_IEEE802154_PHY	  805
+ 
+ #define ARPHRD_PHONET	820		/* PhoNet media type		*/
+ #define ARPHRD_PHONET_PIPE 821		/* PhoNet pipe header		*/
+diff --git a/include/linux/if_ether.h b/include/linux/if_ether.h
+index cfe4fe1..0a08e92 100644
+--- a/include/linux/if_ether.h
++++ b/include/linux/if_ether.h
+@@ -106,6 +106,8 @@
+ #define ETH_P_DSA	0x001B		/* Distributed Switch Arch.	*/
+ #define ETH_P_TRAILER	0x001C		/* Trailer switch tagging	*/
+ #define ETH_P_PHONET	0x00F5		/* Nokia Phonet frames          */
++#define ETH_P_IEEE802154 0x00F6		/* IEEE802.15.4 frame		*/
++#define ETH_P_IEEE802154_MAC 0x00F7	/* IEEE802.15.4 MAC frame	*/
+ 
+ /*
+  *	This is an Ethernet frame header.
+diff --git a/include/linux/socket.h b/include/linux/socket.h
+index 421afb4..09d792e 100644
+--- a/include/linux/socket.h
++++ b/include/linux/socket.h
+@@ -194,7 +194,9 @@ struct ucred {
+ #define AF_RXRPC	33	/* RxRPC sockets 		*/
+ #define AF_ISDN		34	/* mISDN sockets 		*/
+ #define AF_PHONET	35	/* Phonet sockets		*/
+-#define AF_MAX		36	/* For now.. */
++#define AF_IEEE802154	36	/* IEEE802154 sockets		*/
++#define AF_ZIGBEE	37	/* ZIGBEE sockets		*/
++#define AF_MAX		38	/* For now.. */
+ 
+ /* Protocol families, same as address families. */
+ #define PF_UNSPEC	AF_UNSPEC
+@@ -233,6 +235,8 @@ struct ucred {
+ #define PF_RXRPC	AF_RXRPC
+ #define PF_ISDN		AF_ISDN
+ #define PF_PHONET	AF_PHONET
++#define PF_IEEE802154	AF_IEEE802154
++#define PF_ZIGBEE	AF_ZIGBEE
+ #define PF_MAX		AF_MAX
+ 
+ /* Maximum queue length specifiable by listen.  */
+diff --git a/net/core/dev.c b/net/core/dev.c
+index e2e9e4a..4119dfc 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -268,7 +268,8 @@ static const unsigned short netdev_lock_type[] =
+ 	 ARPHRD_IRDA, ARPHRD_FCPP, ARPHRD_FCAL, ARPHRD_FCPL,
+ 	 ARPHRD_FCFABRIC, ARPHRD_IEEE802_TR, ARPHRD_IEEE80211,
+ 	 ARPHRD_IEEE80211_PRISM, ARPHRD_IEEE80211_RADIOTAP, ARPHRD_PHONET,
+-	 ARPHRD_PHONET_PIPE, ARPHRD_VOID, ARPHRD_NONE};
++	 ARPHRD_PHONET_PIPE, ARPHRD_IEEE802154, ARPHRD_IEEE802154_PHY,
++	 ARPHRD_VOID, ARPHRD_NONE};
+ 
+ static const char *netdev_lock_name[] =
+ 	{"_xmit_NETROM", "_xmit_ETHER", "_xmit_EETHER", "_xmit_AX25",
+@@ -285,7 +286,8 @@ static const char *netdev_lock_name[] =
+ 	 "_xmit_IRDA", "_xmit_FCPP", "_xmit_FCAL", "_xmit_FCPL",
+ 	 "_xmit_FCFABRIC", "_xmit_IEEE802_TR", "_xmit_IEEE80211",
+ 	 "_xmit_IEEE80211_PRISM", "_xmit_IEEE80211_RADIOTAP", "_xmit_PHONET",
+-	 "_xmit_PHONET_PIPE", "_xmit_VOID", "_xmit_NONE"};
++	 "_xmit_PHONET_PIPE", "_xmit_IEEE802154", "_xmit_IEEE802154_PHY",
++	 "_xmit_VOID", "_xmit_NONE"};
+ 
+ static struct lock_class_key netdev_xmit_lock_key[ARRAY_SIZE(netdev_lock_type)];
+ static struct lock_class_key netdev_addr_lock_key[ARRAY_SIZE(netdev_lock_type)];
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 7dbf3ff..72d593b 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -155,6 +155,7 @@ static const char *af_family_key_strings[AF_MAX+1] = {
+   "sk_lock-27"       , "sk_lock-28"          , "sk_lock-AF_CAN"      ,
+   "sk_lock-AF_TIPC"  , "sk_lock-AF_BLUETOOTH", "sk_lock-IUCV"        ,
+   "sk_lock-AF_RXRPC" , "sk_lock-AF_ISDN"     , "sk_lock-AF_PHONET"   ,
++  "sk_lock-AF_IEEE802154", "sk_lock-AF_ZIGBEE",
+   "sk_lock-AF_MAX"
+ };
+ static const char *af_family_slock_key_strings[AF_MAX+1] = {
+@@ -170,6 +171,7 @@ static const char *af_family_slock_key_strings[AF_MAX+1] = {
+   "slock-27"       , "slock-28"          , "slock-AF_CAN"      ,
+   "slock-AF_TIPC"  , "slock-AF_BLUETOOTH", "slock-AF_IUCV"     ,
+   "slock-AF_RXRPC" , "slock-AF_ISDN"     , "slock-AF_PHONET"   ,
++  "slock-AF_IEEE802154", "slock-AF_ZIGBEE",
+   "slock-AF_MAX"
+ };
+ static const char *af_family_clock_key_strings[AF_MAX+1] = {
+@@ -185,6 +187,7 @@ static const char *af_family_clock_key_strings[AF_MAX+1] = {
+   "clock-27"       , "clock-28"          , "clock-AF_CAN"      ,
+   "clock-AF_TIPC"  , "clock-AF_BLUETOOTH", "clock-AF_IUCV"     ,
+   "clock-AF_RXRPC" , "clock-AF_ISDN"     , "clock-AF_PHONET"   ,
++  "clock-AF_IEEE802154", "clock-AF_ZIGBEE",
+   "clock-AF_MAX"
+ };
+ 
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+1.6.2.4
+
