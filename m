@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbZFAUdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbZFAUeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbZFAUdM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 16:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbZFAUc6
+	id S1758229AbZFAUeS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 16:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbZFAUeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 16:32:58 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56123 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753327AbZFAUc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 16:32:57 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Bug #13372] Oops in usb-serial with keyspan adapter
-Date: Mon, 1 Jun 2009 22:33:09 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       USB <linux-usb@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0905311046340.31316-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0905311046340.31316-100000@netrider.rowland.org>
+	Mon, 1 Jun 2009 16:34:00 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:32567 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753459AbZFAUd7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 16:33:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=XNDEoE7UoUem2SsT0QNhSg6RAr31+pNUShRzmXH29GbRyFOAz+51eEb+lNvUsAigkl
+         wUCbV2mv1rWDB18SEBMV4EGEvm7EL3w0obQZIflS+fOEfKo+r/4MRA+dFeQDJdPcaSc9
+         VlK2dmoqNWkrbMcgoE/mfyQJMa4zSqJDyvGc4=
+Date: Tue, 2 Jun 2009 00:33:48 +0400
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: =?iso-8859-1?Q?G=E1bor?= Stefanik <netrolller.3d@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, slapin@ossfans.org,
+       maxim.osipov@siemens.com, dmitry.baryshkov@siemens.com,
+       oliver.fendt@siemens.com
+Subject: Re: [PATCH 10/10] ieee802154: add at86rf230/rf231 spi driver
+Message-ID: <20090601203348.GC7143@doriath.ww600.siemens.net>
+References: <1243868091-5315-3-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-4-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-5-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-6-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-7-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-8-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-9-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-10-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-11-git-send-email-dbaryshkov@gmail.com> <69e28c910906010921r56cf7017gc858cb7ba819c385@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200906012233.10128.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <69e28c910906010921r56cf7017gc858cb7ba819c385@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 31 May 2009, Alan Stern wrote:
-> On Sat, 30 May 2009, Rafael J. Wysocki wrote:
+On Mon, Jun 01, 2009 at 06:21:37PM +0200, Gábor Stefanik wrote:
+> On Mon, Jun 1, 2009 at 4:54 PM, Dmitry Eremin-Solenikov
+> <dbaryshkov@gmail.com> wrote:
+> > Add a driver handling AT86RF230/RF231 line of chips. Only basic
+> > features are currently implemented (no extended mode operation, etc.)
+> > Also the RF230 chip is not really supported yet.
+> >
+> > Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> > Signed-off-by: Sergey Lapin <slapin@ossfans.org>
+> > ---
+> >  drivers/ieee802154/Kconfig     |    5 +
+> >  drivers/ieee802154/Makefile    |    1 +
+> >  drivers/ieee802154/at86rf230.c |  971 ++++++++++++++++++++++++++++++++++++++++
 > 
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.29.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13372
-> > Subject		: Oops in usb-serial with keyspan adapter
-> > Submitter	: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Date		: 2009-05-18 0:07 (13 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124260532924736&w=4
-> > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
-> > Patch		: http://patchwork.kernel.org/patch/26603/
-> 
-> That URL points to a patch for a different problem.  The "Oops in
-> usb-serial with keyspan adapter" has been fixed by commit
-> 0a3c8549ea7e94d74a41096d42bc6cdf43d183bf.
+> Shouldn't this go into drivers/net/ieee802154 instead?
 
-Thanks, I've closed the bug.
+I thought about drivers/net as about ip (well, more or less) network
+drivers. We have drivers/atm or drivers/bluetooth (and bluetooth is
+802.15.1...). So we've used just drivers/ieee802154. If you say so,
+we will move to drivers/net.
 
-Best,
-Rafael
+-- 
+With best wishes
+Dmitry
+
