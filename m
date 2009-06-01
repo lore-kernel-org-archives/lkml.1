@@ -1,119 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbZFASlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbZFASnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753341AbZFASlY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 14:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbZFASlR
+	id S1755303AbZFASnQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 14:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbZFASnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 14:41:17 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:60660 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751964AbZFASlQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 14:41:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Wdrrp3tItqd6vJQuWWU3Ns8VufuCkOH/xxiXY/zEglD2ohMNME76ijUjYl845TTfDO
-         tMtrnNvwaCJgIknkZdJVjeZMZatuNKF4xPaoH+AyPxM9fRAQ3VoEOdqNVcKUb3wUyi1P
-         h5vtn4e2cWUp5QZMrL1rDk6i8nGtT6qJqZs/A=
+	Mon, 1 Jun 2009 14:43:01 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60019 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751346AbZFASnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 14:43:00 -0400
+Date: Mon, 1 Jun 2009 18:42:32 GMT
+From: tip-bot for Mike Galbraith <efault@gmx.de>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter tools: Guard against record damaging existing files
+Message-ID: <tip-229c4eedcedcdadf70411120ba34bc37554a74bd@git.kernel.org>
+Git-Commit-ID: 229c4eedcedcdadf70411120ba34bc37554a74bd
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Date: Mon, 1 Jun 2009 20:41:16 +0200
-Message-ID: <d32c60160906011141y22299f2cwd3df46f6e26cf33d@mail.gmail.com>
-Subject: [PATCH] Update security bugs policy in Documentation/SecurityBugs
-From: Linus Turdvals <turdvals@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
-Cc: rdunlap@xenotime.net, security@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 01 Jun 2009 18:42:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch updates the security bugs handling policy in
-Documentation/SecurityBugs, to match with the current practices
-and philosophy of the Linux kernel security team.
+Commit-ID:  229c4eedcedcdadf70411120ba34bc37554a74bd
+Gitweb:     http://git.kernel.org/tip/229c4eedcedcdadf70411120ba34bc37554a74bd
+Author:     Mike Galbraith <efault@gmx.de>
+AuthorDate: Thu, 28 May 2009 16:28:53 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 1 Jun 2009 20:10:24 +0200
 
-Please apply to avoid the masturbating monkeys in the security
-circus from reporting misleading bugs with no security impact
-whatsoever.
+perf_counter tools: Guard against record damaging existing files
 
-Signed-off-by: Linus Turdvalds <turdvals@gmail.com>
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
---- tricky/Documentation/SecurityBugs
-+++ honest/Documentation/SecurityBugs
-@@ -1,7 +1,20 @@
- Linux kernel developers take security very seriously.  As such, we'd
- like to know when a security bug is found so that it can be fixed and
--disclosed as quickly as possible.  Please report security bugs to the
--Linux kernel security team.
-+disclosed as quickly as possible.
-+
-+Unfortunately, since we do not believe in security bugs, your report
-+could be classified as a reliability or performance problem. In such
-+cases we will still fix the issue, but no specific disclosure will
-+follow. Shall the reporter feel tempted to find references to said
-+fix, he will require substantial amounts of time to walk through
-+the commit logs in the affected git tree.
-+
-+Please report security bugs to the Linux kernel security team. We
-+will provide the information to select members of the vendor-sec
-+mailing list and Red Hat employees. The Linux kernel security team
-+does not take any responsibility if said information is leaked or
-+made available to third-parties through insecure communication
-+channels.
 
- 1) Contact
+---
+ Documentation/perf_counter/builtin-record.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-@@ -11,28 +24,46 @@ who will help verify the bug report and
- It is possible that the security team will bring in extra help from
- area maintainers to understand and fix the security vulnerability.
-
-+The Linux kernel security team does not have a PGP public key at
-+the moment, since information wants to be free.
-+
- As it is with any bug, the more information provided the easier it
- will be to diagnose and fix.  Please review the procedure outlined in
- REPORTING-BUGS if you are unclear about what information is helpful.
- Any exploit code is very helpful and will not be released without
- consent from the reporter unless it has already been made public.
-+Please do not send us binary-only exploit code, because we have no
-+idea about how to unpack it.
-
- 2) Disclosure
-
- The goal of the Linux kernel security team is to work with the
- bug submitter to bug resolution as well as disclosure.  We prefer
--to fully disclose the bug as soon as possible.  It is reasonable to
-+to _not_ disclose the bug as soon as possible.  It is reasonable to
- delay disclosure when the bug or the fix is not yet fully understood,
--the solution is not well-tested or for vendor coordination.  However, we
--expect these delays to be short, measurable in days, not weeks or months.
-+the solution is not well-tested, for vendor coordination or any other
-+reason the team finds compelling, without any explanation required.
-+However, we expect these delays to be short, measurable in days,
-+not weeks or months. Please note that the vulnerability window might be
-+measurable in years if the issue went unnoticed for such amounts of time.
- A disclosure date is negotiated by the security team working with the
- bug submitter as well as vendors.  However, the kernel security team
--holds the final say when setting a disclosure date.  The timeframe for
-+holds the final say when setting a disclosure date. Once you report a
-+security bug to the team, you lose all rights to the process and who
-+will manage or have access to the information. The timeframe for
- disclosure is from immediate (esp. if it's already publically known)
- to a few weeks.  As a basic default policy, we expect report date to
--disclosure date to be on the order of 7 days.
-+disclosure date to be on the order of 30 days.
-
- 3) Non-disclosure agreements
-
- The Linux kernel security team is not a formal body and therefore unable
- to enter any non-disclosure agreements.
-+
-+4) Enforcement of these terms
-+
-+The Linux kernel security team can absolutely ignore the terms herein,
-+without explanations required. This document does not provide legally
-+enforceable terms by any means, nor necessarily expresses the practices
-+and philosophy of the current security team.
-+
+diff --git a/Documentation/perf_counter/builtin-record.c b/Documentation/perf_counter/builtin-record.c
+index 23d1224..96bfb7c 100644
+--- a/Documentation/perf_counter/builtin-record.c
++++ b/Documentation/perf_counter/builtin-record.c
+@@ -340,7 +340,7 @@ static int __cmd_record(int argc, const char **argv)
+ 	assert(nr_cpus <= MAX_NR_CPUS);
+ 	assert(nr_cpus >= 0);
+ 
+-	output = open(output_name, O_CREAT|O_RDWR, S_IRWXU);
++	output = open(output_name, O_CREAT|O_EXCL|O_RDWR, S_IRWXU);
+ 	if (output < 0) {
+ 		perror("failed to create output file");
+ 		exit(-1);
