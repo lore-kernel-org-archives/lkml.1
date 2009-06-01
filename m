@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbZFATCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753327AbZFATCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755662AbZFATCT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 15:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbZFATCH
+	id S1753327AbZFATCb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 15:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865AbZFATCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 15:02:07 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42067 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbZFATCF (ORCPT
+	Mon, 1 Jun 2009 15:02:15 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55833 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754803AbZFATCO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 15:02:05 -0400
-Date: Mon, 1 Jun 2009 16:02:01 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
-Cc: "Paulraj, Sandeep" <s-paulraj@ti.com>,
-       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Grosen, Mark" <mgrosen@ti.com>
-Subject: Re: New Driver for DaVinci DM355/DM365/DM6446
-Message-ID: <20090601160201.4f3bdd56@pedra.chehab.org>
-In-Reply-To: <A24693684029E5489D1D202277BE8944405CFFE6@dlee02.ent.ti.com>
-References: <C9D59C82B94F474B872F2092A87F261481797D4B@dlee07.ent.ti.com>
-	<A24693684029E5489D1D202277BE8944405CFFE6@dlee02.ent.ti.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Mon, 1 Jun 2009 15:02:14 -0400
+Date: Mon, 1 Jun 2009 21:09:14 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: paul@mad-scientist.net, Oleg Nesterov <oleg@redhat.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH] coredump: Retry writes where appropriate
+Message-ID: <20090601190914.GV1065@one.firstfloor.org>
+References: <1243748019.7369.319.camel@homebase.localnet> <20090531111851.07eb1df3@lxorguk.ukuu.org.uk> <20090601161234.GA10486@redhat.com> <1243877766.8547.38.camel@psmith-ubeta.netezza.com> <20090601184934.1fc54411@lxorguk.ukuu.org.uk> <1243881544.8547.66.camel@psmith-ubeta.netezza.com> <20090601200232.078aacbb@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090601200232.078aacbb@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, 1 Jun 2009 13:38:37 -0500
-"Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com> escreveu:
-
-> > From: linux-media-owner@vger.kernel.org [linux-media-owner@vger.kernel.org] On Behalf Of Paulraj, Sandeep
-> > Sent: Monday, June 01, 2009 5:56 PM
-> > To: linux-media@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org; Grosen, Mark
-> > Subject: New Driver for DaVinci DM355/DM365/DM6446
-> > 
-> > Hello,
-> > 
-> > WE have a module(H3A) on Davinci DM6446,DM355 and DM365.
-> > 
-> > Customers require a way to collect the data required to perform the Auto Exposure (AE), Auto Focus(AF), and Auto White balance (AWB) in hardware as opposed to software. > This is primarily for performance reasons as there is not enough software processing MIPS (to do 3A statistics) available in
-> > an imaging/video system.
-> > 
-> > Including this block in hardware reduces the load on the processor and bandwidth to the memory as the data is collected on the fly from the imager.
-> > 
-> > This modules collects statistics and we currently implement it as a character driver.
+On Mon, Jun 01, 2009 at 08:02:32PM +0100, Alan Cox wrote:
+> > If a program seems to be unresponsive the user could ^C, without
+> > realizing that it was really dumping core.  Now when they are asked to
+> > produce the core so the problem can be debugged, they can't do it.  Or,
 > 
-> This also exists in OMAP3 chips, and is part of the ISP module.
-> 
-> I maintain, along with Sakari Ailus, a V4L2 camera driver, which is currently just shared through a gitorious repository:
-> 
-> http://gitorious.org/omap3camera
-> 
-> The way we offer an interface for the user to be able to request this statistics is with the usage of private IOCTLs declared inside the same V4L2 capturing device driver.
-> 
-> So, that way we have a V4L2 driver which has a private call, instead of having it separately from the capture driver.
+> and get their prompt back, which is probably why they are banging ^C. If
+> they didn't want their prompt back at that point they'd still be
+> wondering why nothing was occuring at the point it said (core dumped)
 
-This seems to be a much better approach, provided that the private IOCTL's will
-be properly documented on a public document. If there are enough usage for
-they, we may even add them as an optional part of V4L2 API.
+Maybe we need a background core dump?
 
+-Andi
 
-
-Cheers,
-Mauro
+-- 
+ak@linux.intel.com -- Speaking for myself only.
