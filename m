@@ -1,220 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758418AbZFAPgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbZFAPgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758418AbZFAPgc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 11:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbZFAPdk
+	id S1759301AbZFAPgp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 11:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759010AbZFAPfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 11:33:40 -0400
-Received: from smtp.citrix.com ([66.165.176.89]:62354 "EHLO SMTP.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755548AbZFAPdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 11:33:39 -0400
-X-IronPort-AV: E=Sophos;i="4.41,284,1241409600"; 
-   d="scan'208";a="4484699"
-From: Ian Campbell <ian.campbell@citrix.com>
-To: <linux-kernel@vger.kernel.org>
-CC: Ian Campbell <ian.campbell@citrix.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Olaf Kirch <okir@suse.de>,
-       Greg KH <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 11/11] swiotlb: allow initialisation with pre-allocated bounce-buffer
-Date: Mon, 1 Jun 2009 16:33:03 +0100
-Message-ID: <1243870383-12954-12-git-send-email-ian.campbell@citrix.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
-References: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
+	Mon, 1 Jun 2009 11:35:51 -0400
+Received: from fmmailgate02.web.de ([217.72.192.227]:59846 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758973AbZFAPft (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 11:35:49 -0400
+From: Goswin von Brederlow <goswin-v-b@web.de>
+To: Jan Kara <jack@suse.cz>
+Cc: Goswin von Brederlow <goswin-v-b@web.de>, Pavel Machek <pavel@ucw.cz>,
+       LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
+       linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 03/11] vfs: Add better VFS support for page_mkwrite when blocksize < pagesize
+References: <1243429268-3028-1-git-send-email-jack@suse.cz>
+	<1243429268-3028-4-git-send-email-jack@suse.cz>
+	<20090530112324.GD1395@ucw.cz> <20090601094402.GA14373@duck.suse.cz>
+	<87y6scqjd7.fsf@frosties.localdomain>
+	<20090601140030.GF14373@duck.suse.cz>
+	<87zlcsxb97.fsf@frosties.localdomain>
+	<20090601150218.GI14373@duck.suse.cz>
+Date: Mon, 01 Jun 2009 17:35:49 +0200
+In-Reply-To: <20090601150218.GI14373@duck.suse.cz> (Jan Kara's message of
+	"Mon, 1 Jun 2009 17:02:18 +0200")
+Message-ID: <87zlcsdl0q.fsf@frosties.localdomain>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+X-Provags-ID: V01U2FsdGVkX1+1wB8wKmdhTxvRR2iKcQZvrE3D2AcBhhohXNhY
+	CGKFMBDKpiuQf79qE9UrK1tT1riJ5r4wxzQUGjiCzC6uzh2gDa
+	qygM4stfo=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This allows the generic swiotlb code to be used by users with unusual
-requirements for the buffer allocation by allowing them to provide
-their own swiotlb buffer.
+Jan Kara <jack@suse.cz> writes:
 
-Also:
-- swiotlb_init_with_default_size is unused so collapse into
-  swiotlb_init.
-- move declarations of swiotlb_late_init_with_default_size out of *.c
-  into linux/swiotlb.h where they belong
-- Make io_tlb_nslabs and io_tlb_overflow non-static since callers of the
-  new interface will want to access them.
+> On Mon 01-06-09 16:46:28, Goswin von Brederlow wrote:
+>> Jan Kara <jack@suse.cz> writes:
+>> > On Mon 01-06-09 13:33:08, Goswin von Brederlow wrote:
+>> >> Jan Kara <jack@suse.cz> writes:
+>> >> 
+>> >> > On Sat 30-05-09 13:23:24, Pavel Machek wrote:
+>> >> >> Hi!
+>> >> >> 
+>> >> >> > On filesystems where blocksize < pagesize the situation is more complicated.
+>> >> >> > Think for example that blocksize = 1024, pagesize = 4096 and a process does:
+>> >> >> >   ftruncate(fd, 0);
+>> >> >> >   pwrite(fd, buf, 1024, 0);
+>> >> >> >   map = mmap(NULL, 4096, PROT_WRITE, MAP_SHARED, fd, 0);
+>> >> >> >   map[0] = 'a';  ----> page_mkwrite() for index 0 is called
+>> >> >> >   ftruncate(fd, 10000); /* or even pwrite(fd, buf, 1, 10000) */
+>> >> >> >   fsync(fd); ----> writepage() for index 0 is called
+>> >> >> > 
+>> >> >> > At the moment page_mkwrite() is called, filesystem can allocate only one block
+>> >> >> > for the page because i_size == 1024. Otherwise it would create blocks beyond
+>> >> >> > i_size which is generally undesirable. But later at writepage() time, we would
+>> >> >> > like to have blocks allocated for the whole page (and in principle we have to
+>> >> >> > allocate them because user could have filled the page with data after the
+>> >> >> > second ftruncate()). This patch introduces a framework which allows filesystems
+>> >> >> > to handle this with a reasonable effort.
+>> >> >> 
+>> >> >> What happens when you do above sequence on today's kernels? Oops? 3000
+>> >> >> bytes of random junk in file? ...?
+>> >> >   Depends on the filesystem. For example on ext4, you'll see a WARN_ON and the data
+>> >> > won't be written. Some filesystems may just try to map blocks and possibly
+>> >> > hit deadlock or something like that. Filesystems like ext2 / ext3 /
+>> >> > reiserfs generally don't care because so far they allocate blocks on writepage
+>> >> > time (which has the problem that you can write data via mmap and kernel
+>> >> > will later discard them because it hits ENOSPC or quota limit). That's
+>> >> > actually what I was trying to fix originally.
+>> >> >
+>> >> > 										Honza
+>> >> 
+>> >> man mmap:
+>> >>        A file is mapped in multiples of the page size.  For a file that is not
+>> >>        a  multiple  of  the  page  size,  the  remaining memory is zeroed when
+>> >>        mapped, and writes to that region are not written out to the file.  The
+>> >>        effect  of changing the size of the underlying file of a mapping on the
+>> >>        pages that correspond to added  or  removed  regions  of  the  file  is
+>> >>        unspecified.
+>> >> 
+>> >> Whatever happens happens. The above code is just wrong, as in
+>> >> unspecified behaviour.
+>> >> What happens if you ftruncate() before mmap()?
+>> >   OK, I admit I didn't realize mmap() has so weak requirements. Doing mmap
+>> > after ftruncate() should work fine because before you write via that new
+>> > mmap page_mkwrite() will be called anyway.
+>> 
+>> But the ftruncate would only allocate a block at position 10000. The
+>> file still has a big hole from 1024-4095.
+>   ftruncate() actually allocates no blocks. It just updates file size (at
+> least for most filesystems). The hole is created as you write.
+>
+>> >   So what we could alternatively do is that we just discard dirty bits from
+>> > buffers that don't have underlying blocks allocated. That would satisfy the
+>> > specification as well. But I have to say I'm a bit afraid of discarding
+>> > dirty bits like that. Also we'd have to handle the case where someone does
+>> > mremap() after ftruncate().
+>> >   What other memory management people think?
+>> 
+>> As said above the file still has a big hole after ftruncate. So not
+>> having underlying blocks allocated can't be the deciding factor.
+>   I'm not sure I understand here. Do you mean that we should not decide
+> about discarding dirty bits depending on whether the buffers have
+> underlying blocks or not? In my opinion that should be correct option
+> because from what the man page says, user is not guaranteed what happens
+> when the file size is extended to 10000 and he tries to write from offset
+> 1024 (old i_size) further... Anyway, I'm not defending doing that :-) I'm
+> just trying to understand what you mean.
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Olaf Kirch <okir@suse.de>
-Cc: Greg KH <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/ia64/hp/common/hwsw_iommu.c |    3 --
- arch/ia64/hp/common/sba_iommu.c  |    2 -
- include/linux/swiotlb.h          |   14 ++++++++
- lib/swiotlb.c                    |   64 +++++++++++++++++++++----------------
- 4 files changed, 50 insertions(+), 33 deletions(-)
+I mean that the file can lack underlying blocks below its old
+i_size. So that can't be the deciding factor.
 
-diff --git a/arch/ia64/hp/common/hwsw_iommu.c b/arch/ia64/hp/common/hwsw_iommu.c
-index e4a80d8..d557779 100644
---- a/arch/ia64/hp/common/hwsw_iommu.c
-+++ b/arch/ia64/hp/common/hwsw_iommu.c
-@@ -19,9 +19,6 @@
- 
- extern struct dma_map_ops sba_dma_ops, swiotlb_dma_ops;
- 
--/* swiotlb declarations & definitions: */
--extern int swiotlb_late_init_with_default_size (size_t size);
--
- /*
-  * Note: we need to make the determination of whether or not to use
-  * the sw I/O TLB based purely on the device structure.  Anything else
-diff --git a/arch/ia64/hp/common/sba_iommu.c b/arch/ia64/hp/common/sba_iommu.c
-index 56ceb68..eeb5b49 100644
---- a/arch/ia64/hp/common/sba_iommu.c
-+++ b/arch/ia64/hp/common/sba_iommu.c
-@@ -46,8 +46,6 @@
- 
- #include <asm/acpi-ext.h>
- 
--extern int swiotlb_late_init_with_default_size (size_t size);
--
- #define PFX "IOC: "
- 
- /*
-diff --git a/include/linux/swiotlb.h b/include/linux/swiotlb.h
-index b5b2245..7c6f4c1 100644
---- a/include/linux/swiotlb.h
-+++ b/include/linux/swiotlb.h
-@@ -21,8 +21,22 @@ struct scatterlist;
-  */
- #define IO_TLB_SHIFT 11
- 
-+/*
-+ * number of IO TLB slabs.
-+ */
-+extern unsigned long io_tlb_nslabs;
-+
-+/*
-+ * size of emergency overflow buffer.
-+ */
-+extern unsigned long io_tlb_overflow;
-+
- extern void
- swiotlb_init(void);
-+extern void
-+swiotlb_init_with_buffer(unsigned long bytes, void *buffer, void *emergency);
-+extern int
-+swiotlb_late_init_with_default_size(size_t size);
- 
- extern void
- *swiotlb_alloc_coherent(struct device *hwdev, size_t size,
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 6076bb7..2449669 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -70,14 +70,14 @@ static char *io_tlb_start, *io_tlb_end;
-  * The number of IO TLB blocks (in groups of 64) betweeen io_tlb_start and
-  * io_tlb_end.  This is command line adjustable via setup_io_tlb_npages.
-  */
--static unsigned long io_tlb_nslabs;
-+unsigned long io_tlb_nslabs;
- 
- /*
-  * When the IOMMU overflows we return a fallback buffer. This sets the size.
-  */
--static unsigned long io_tlb_overflow = 32*1024;
-+unsigned long io_tlb_overflow = 32*1024;
- 
--void *io_tlb_overflow_buffer;
-+static void *io_tlb_overflow_buffer;
- 
- /*
-  * This is a free list describing the number of free entries available from
-@@ -148,14 +148,40 @@ static void swiotlb_print_info(unsigned long bytes)
- 	       (unsigned long long)pend);
- }
- 
-+void __init
-+swiotlb_init_with_buffer(unsigned long bytes, void *buffer, void *overflow)
-+{
-+	unsigned long i;
-+
-+	io_tlb_start = buffer;
-+	io_tlb_end = io_tlb_start + bytes;
-+
-+	io_tlb_overflow_buffer = overflow;
-+
-+	/*
-+	 * Allocate and initialize the free list array.  This array is used
-+	 * to find contiguous free memory regions of size up to IO_TLB_SEGSIZE
-+	 * between io_tlb_start and io_tlb_end.
-+	 */
-+	io_tlb_list = alloc_bootmem(io_tlb_nslabs * sizeof(int));
-+	for (i = 0; i < io_tlb_nslabs; i++)
-+		io_tlb_list[i] = IO_TLB_SEGSIZE - OFFSET(i, IO_TLB_SEGSIZE);
-+	io_tlb_index = 0;
-+	io_tlb_orig_addr = alloc_bootmem(io_tlb_nslabs * sizeof(phys_addr_t));
-+
-+	swiotlb_print_info(bytes);
-+}
-+
- /*
-  * Statically reserve bounce buffer space and initialize bounce buffer data
-  * structures for the software IO TLB used to implement the DMA API.
-  */
- void __init
--swiotlb_init_with_default_size(size_t default_size)
-+swiotlb_init(void)
- {
--	unsigned long i, bytes;
-+	unsigned long bytes;
-+	void *buffer, *overflow;
-+	size_t default_size = 64 * (1<<20);	/* default to 64MB */
- 
- 	if (!io_tlb_nslabs) {
- 		io_tlb_nslabs = (default_size >> IO_TLB_SHIFT);
-@@ -167,36 +193,18 @@ swiotlb_init_with_default_size(size_t default_size)
- 	/*
- 	 * Get IO TLB memory from the low pages
- 	 */
--	io_tlb_start = alloc_bootmem_low_pages(bytes);
--	if (!io_tlb_start)
-+	buffer = alloc_bootmem_low_pages(bytes);
-+	if (!buffer)
- 		panic("Cannot allocate SWIOTLB buffer");
--	io_tlb_end = io_tlb_start + bytes;
--
--	/*
--	 * Allocate and initialize the free list array.  This array is used
--	 * to find contiguous free memory regions of size up to IO_TLB_SEGSIZE
--	 * between io_tlb_start and io_tlb_end.
--	 */
--	io_tlb_list = alloc_bootmem(io_tlb_nslabs * sizeof(int));
--	for (i = 0; i < io_tlb_nslabs; i++)
-- 		io_tlb_list[i] = IO_TLB_SEGSIZE - OFFSET(i, IO_TLB_SEGSIZE);
--	io_tlb_index = 0;
--	io_tlb_orig_addr = alloc_bootmem(io_tlb_nslabs * sizeof(phys_addr_t));
- 
- 	/*
- 	 * Get the overflow emergency buffer
- 	 */
--	io_tlb_overflow_buffer = alloc_bootmem_low(io_tlb_overflow);
--	if (!io_tlb_overflow_buffer)
-+	overflow = alloc_bootmem_low(io_tlb_overflow);
-+	if (!overflow)
- 		panic("Cannot allocate SWIOTLB overflow buffer!\n");
- 
--	swiotlb_print_info(bytes);
--}
--
--void __init
--swiotlb_init(void)
--{
--	swiotlb_init_with_default_size(64 * (1<<20));	/* default to 64MB */
-+	swiotlb_init_with_buffer(bytes, buffer, overflow);
- }
- 
- /*
--- 
-1.5.6.5
+>> If possible I would make ftruncate() after mmap() work just like
+>> ftruncate() before mmap(). That is write any dirty page completly up
+>> to the current filesize. Allocate disk blocks for the file as needed
+>> (you need to do that anyway). Wouldn't it be more work to remember the
+>   This is the thing my patches try to achieve :). At truncate time (or
+> generally just before i_size is extended), we check the last page and
+> propagate dirty bits to buffers inside old i_size (and clear the ones
+> beyond old i_size). We also writeprotect the page so that if someone tries
+> to write to it via mmap in future, we get page fault, page_mkwrite() is
+> called and a filesystem allocates all blocks it needs with the new i_size.
 
+Sounds right.
+
+>> filesize at the time of the mmap() to limit updates to that than using
+>> the current file size?
+>   Yes, that would be more work. But I never intended to do this...
+
+MfG
+        Goswin
