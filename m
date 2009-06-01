@@ -1,111 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758302AbZFAO4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757022AbZFAPGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758302AbZFAO4H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 10:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbZFAOzS
+	id S1757022AbZFAPGZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 11:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZFAPGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 10:55:18 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:41670 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753041AbZFAOzN (ORCPT
+	Mon, 1 Jun 2009 11:06:18 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:36112 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752159AbZFAPGS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 10:55:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=S8k/1+PYXUMSu9GmGcS7fEvM5nVvFOYoNYuavgfK+RvLtDpeNaXw62xYsIH1BD0j5D
-         wRE798A+nd2gxzsiV27J7JRuzxLmGssmxVM63ZrL6kI1mVkfOvwjRW+vRual4lmXqd8i
-         IYIwpIM9y6Nt4QM93JrfxsJwFY48zEV5CKuWQ=
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org, slapin@ossfans.org,
-       maxim.osipov@siemens.com, dmitry.baryshkov@siemens.com,
-       oliver.fendt@siemens.com,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-Subject: [PATCH 01/10] crc-itu-t: add bit-reversed calculation
-Date: Mon,  1 Jun 2009 18:54:42 +0400
-Message-Id: <1243868091-5315-2-git-send-email-dbaryshkov@gmail.com>
-X-Mailer: git-send-email 1.6.2.4
-In-Reply-To: <1243868091-5315-1-git-send-email-dbaryshkov@gmail.com>
-References: <1243868091-5315-1-git-send-email-dbaryshkov@gmail.com>
+	Mon, 1 Jun 2009 11:06:18 -0400
+Date: Mon, 1 Jun 2009 11:06:17 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Christoph Hellwig <hch@infradead.org>
+cc: Li Zefan <lizf@cn.fujitsu.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/irq: use softirq_to_name instead of
+ __print_symbolic
+In-Reply-To: <20090601143626.GA26981@infradead.org>
+Message-ID: <alpine.DEB.2.00.0906011045460.14994@gandalf.stny.rr.com>
+References: <4A2396C7.3000700@cn.fujitsu.com> <20090601143626.GA26981@infradead.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
 
-Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
----
- include/linux/crc-itu-t.h |   10 ++++++++++
- lib/crc-itu-t.c           |   18 ++++++++++++++++++
- 2 files changed, 28 insertions(+), 0 deletions(-)
+On Mon, 1 Jun 2009, Christoph Hellwig wrote:
 
-diff --git a/include/linux/crc-itu-t.h b/include/linux/crc-itu-t.h
-index 84920f3..7b2b7ba 100644
---- a/include/linux/crc-itu-t.h
-+++ b/include/linux/crc-itu-t.h
-@@ -6,6 +6,9 @@
-  *   Poly  0x0x1021 (x^16 + x^12 + x^15 + 1)
-  *   Init  0
-  *
-+ * The bit-reversed buffer variants may be non-standard, but some firmware
-+ * loaders require them.
-+ *
-  * This source code is licensed under the GNU General Public License,
-  * Version 2. See the file COPYING for more details.
-  */
-@@ -14,15 +17,22 @@
- #define CRC_ITU_T_H
- 
- #include <linux/types.h>
-+#include <linux/bitrev.h>
- 
- extern u16 const crc_itu_t_table[256];
- 
- extern u16 crc_itu_t(u16 crc, const u8 *buffer, size_t len);
-+extern u16 crc_itu_t_bitreversed(u16 crc, const u8 *buffer, size_t len);
- 
- static inline u16 crc_itu_t_byte(u16 crc, const u8 data)
- {
- 	return (crc << 8) ^ crc_itu_t_table[((crc >> 8) ^ data) & 0xff];
- }
- 
-+static inline u16 crc_itu_t_bitreversed_byte(u16 crc, const u8 data)
-+{
-+	return (crc << 8) ^ crc_itu_t_table[((crc >> 8) ^ bitrev8(data)) & 0xff];
-+}
-+
- #endif /* CRC_ITU_T_H */
- 
-diff --git a/lib/crc-itu-t.c b/lib/crc-itu-t.c
-index a63472b..5562fdd 100644
---- a/lib/crc-itu-t.c
-+++ b/lib/crc-itu-t.c
-@@ -64,6 +64,24 @@ u16 crc_itu_t(u16 crc, const u8 *buffer, size_t len)
- }
- EXPORT_SYMBOL(crc_itu_t);
- 
-+/**
-+ * crc_itu_t_bitreversed - Compute the CRC-ITU-T for the data buffer;
-+ * the buffer content is assumed to be bit-reversed
-+ *
-+ * @crc:     previous CRC value
-+ * @buffer:  data pointer
-+ * @len:     number of bytes in the buffer
-+ *
-+ * Returns the updated CRC value
-+ */
-+u16 crc_itu_t_bitreversed(u16 crc, const u8 *buffer, size_t len)
-+{
-+	while (len--)
-+		crc = crc_itu_t_bitreversed_byte(crc, *buffer++);
-+	return crc;
-+}
-+EXPORT_SYMBOL(crc_itu_t_bitreversed);
-+
- MODULE_DESCRIPTION("CRC ITU-T V.41 calculations");
- MODULE_LICENSE("GPL");
- 
--- 
-1.6.2.4
+> On Mon, Jun 01, 2009 at 04:52:23PM +0800, Li Zefan wrote:
+> > It's great to boost recording of softirq events, but why not simply
+> > use softirq_to_name in TP_printk()?
+> 
+> Because userspace programs using the binary trace buffer have no chance to
+> retrieve the values from softirq_to_name.
+> 
+> > The above commit has 2 flaws:
+> > 
+> >   - we waste memory defining local static struct trace_print_flags array
+> >     in each softirq TRACE_EVENT
+> 
+> That could be solved by declaring the array manually and just passing
+> the address to __print_symbolic.  Steve, would that work?  (also for
+> __print_flags)
+
+I added the code to make it an array, but we still need to allocate it for 
+every trace call. Otherwise, how do we export the information to 
+userspace. One trace event (currently) has no way of depending on another 
+trace event. If two trace events want the same array, currently they both 
+must allocate it. I haven't looked too deeply into seeing how to manage 
+that. It's not that much memory duplicated. I hate to make the code even 
+more complex just to save a couple of hundred of bytes.
+
+> 
+> >   - if someone adds/removes a softirq, he may not know show_softirq_name()
+> >     needs to be updated
+> 
+> Just make sure you have the translation defined next to the actual
+> flags.  This is what I do in the XFS tracer:
+> 
+> typedef enum xfs_alloctype
+> {
+> 	XFS_ALLOCTYPE_ANY_AG,           /* allocate anywhere, use rotor */
+> 	XFS_ALLOCTYPE_FIRST_AG,         /* ... start at ag 0 */
+> 	XFS_ALLOCTYPE_START_AG,         /* anywhere, start in this a.g. */
+> 	XFS_ALLOCTYPE_THIS_AG,          /* anywhere in this a.g. */
+> 	XFS_ALLOCTYPE_START_BNO,	/* near this block else anywhere */
+> 	XFS_ALLOCTYPE_NEAR_BNO,		/* in this a.g. and near this block */
+> 	XFS_ALLOCTYPE_THIS_BNO		/* at exactly this block */
+> } xfs_alloctype_t;
+> 
+> #define XFS_ALLOC_TYPES \
+> 	{ XFS_ALLOCTYPE_ANY_AG,         "ANY_AG" }, \
+> 	{ XFS_ALLOCTYPE_FIRST_AG,       "FIRST_AG" }, \
+> 	{ XFS_ALLOCTYPE_START_AG,       "START_AG" }, \
+> 	{ XFS_ALLOCTYPE_THIS_AG,	"THIS_AG" }, \
+> 	{ XFS_ALLOCTYPE_START_BNO,	"START_BNO" }, \
+> 	{ XFS_ALLOCTYPE_NEAR_BNO,	"NEAR_BNO" }, \
+> 	{ XFS_ALLOCTYPE_THIS_BNO,	"THIS_BNO" }
+> 
+> > Another issue with the above commit, that the output of softirq events
+> > becomes:
+> > 
+> >   X-1701  [000]  1595.220739: softirq_entry: softirq=1 action=TIMER_SOFTIRQ
+> > 
+> > Compared to the original output:
+> > 
+> >   X-1701  [000]  1595.220739: softirq_entry: softirq=1 action=TIMER
+> 
+> Which is trivially fixable, see above :)
+
+Hmm, I thought I fixed that already. Perhaps it is in the code that Ingo 
+has not pulled.
+
+-- Steve
 
