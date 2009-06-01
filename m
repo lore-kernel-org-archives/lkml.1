@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZFAS70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbZFATCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbZFAS70 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 14:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbZFAS67
+	id S1755662AbZFATCT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 15:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbZFATCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 14:58:59 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41162 "EHLO
+	Mon, 1 Jun 2009 15:02:07 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42067 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755917AbZFAS66 (ORCPT
+	with ESMTP id S1751346AbZFATCF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 14:58:58 -0400
-Date: Mon, 1 Jun 2009 15:58:54 -0300
+	Mon, 1 Jun 2009 15:02:05 -0400
+Date: Mon, 1 Jun 2009 16:02:01 -0300
 From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: "Paulraj, Sandeep" <s-paulraj@ti.com>
-Cc: "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
+To: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
+Cc: "Paulraj, Sandeep" <s-paulraj@ti.com>,
+       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "Grosen, Mark" <mgrosen@ti.com>
 Subject: Re: New Driver for DaVinci DM355/DM365/DM6446
-Message-ID: <20090601155854.38350ab5@pedra.chehab.org>
-In-Reply-To: <C9D59C82B94F474B872F2092A87F2614817980B0@dlee07.ent.ti.com>
+Message-ID: <20090601160201.4f3bdd56@pedra.chehab.org>
+In-Reply-To: <A24693684029E5489D1D202277BE8944405CFFE6@dlee02.ent.ti.com>
 References: <C9D59C82B94F474B872F2092A87F261481797D4B@dlee07.ent.ti.com>
-	<20090601133436.06a4a4a0@pedra.chehab.org>
-	<C9D59C82B94F474B872F2092A87F261481797F62@dlee07.ent.ti.com>
-	<20090601145714.36158fe8@pedra.chehab.org>
-	<C9D59C82B94F474B872F2092A87F2614817980B0@dlee07.ent.ti.com>
+	<A24693684029E5489D1D202277BE8944405CFFE6@dlee02.ent.ti.com>
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -34,31 +32,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, 1 Jun 2009 13:39:17 -0500
-"Paulraj, Sandeep" <s-paulraj@ti.com> escreveu:
+Em Mon, 1 Jun 2009 13:38:37 -0500
+"Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com> escreveu:
 
-> > > [Sandeep] WE don't propose any API changes. This module for which we  
-> > want to submit patches is a TI proprietary IP. We currently implement this
-> > as a character device and have a few IOCTL's.  
-> > > We do not follow the V4L2 framework and do not use any V4L2 IOCTLs.
-> > >
-> > > Can we continue to use it as a character driver?  
+> > From: linux-media-owner@vger.kernel.org [linux-media-owner@vger.kernel.org] On Behalf Of Paulraj, Sandeep
+> > Sent: Monday, June 01, 2009 5:56 PM
+> > To: linux-media@vger.kernel.org
+> > Cc: linux-kernel@vger.kernel.org; Grosen, Mark
+> > Subject: New Driver for DaVinci DM355/DM365/DM6446
 > > 
-> > In this case, I don't see why you want it to be upstream.  
-> [Sandeep] TI customers and TI itself want to see this driver part of open source trees. Considering this we would like to submit our patches to the linux-media mailing list.
-> IS this OK?
+> > Hello,
+> > 
+> > WE have a module(H3A) on Davinci DM6446,DM355 and DM365.
+> > 
+> > Customers require a way to collect the data required to perform the Auto Exposure (AE), Auto Focus(AF), and Auto White balance (AWB) in hardware as opposed to software. > This is primarily for performance reasons as there is not enough software processing MIPS (to do 3A statistics) available in
+> > an imaging/video system.
+> > 
+> > Including this block in hardware reduces the load on the processor and bandwidth to the memory as the data is collected on the fly from the imager.
+> > 
+> > This modules collects statistics and we currently implement it as a character driver.
+> 
+> This also exists in OMAP3 chips, and is part of the ISP module.
+> 
+> I maintain, along with Sakari Ailus, a V4L2 camera driver, which is currently just shared through a gitorious repository:
+> 
+> http://gitorious.org/omap3camera
+> 
+> The way we offer an interface for the user to be able to request this statistics is with the usage of private IOCTLs declared inside the same V4L2 capturing device driver.
+> 
+> So, that way we have a V4L2 driver which has a private call, instead of having it separately from the capture driver.
 
-If you're just providing a character API with some protocol protected by IP,
-you're not providing the source code of the driver, but something else. 
-
-It is not ok to provide such driver. 
-
-Also, even if you disclosure your protocol, it makes no sense to create another
-API for userspace communication, for features that already exists or can easily
-expand to accommodate your needs. 
-
-So, you should really use the V4L2 API for the driver, expanding it where
-required, if you want it to be considered for upstream addition.
+This seems to be a much better approach, provided that the private IOCTL's will
+be properly documented on a public document. If there are enough usage for
+they, we may even add them as an optional part of V4L2 API.
 
 
 
