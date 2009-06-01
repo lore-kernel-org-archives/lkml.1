@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZFAS2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbZFASiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630AbZFAS2g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 14:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbZFAS23
+	id S1753403AbZFASiv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 14:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZFASil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 14:28:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39090 "EHLO mx2.redhat.com"
+	Mon, 1 Jun 2009 14:38:41 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:45883 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750780AbZFAS23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 14:28:29 -0400
-Date: Mon, 1 Jun 2009 20:23:05 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: paul@mad-scientist.net, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] coredump: Retry writes where appropriate
-Message-ID: <20090601182305.GA16372@redhat.com>
-References: <1243748019.7369.319.camel@homebase.localnet> <20090531111851.07eb1df3@lxorguk.ukuu.org.uk> <20090601161234.GA10486@redhat.com> <20090601174159.48acf3f5@lxorguk.ukuu.org.uk> <20090601171119.GA13970@redhat.com> <20090601184608.6379440c@lxorguk.ukuu.org.uk>
+	id S1751897AbZFASil convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 14:38:41 -0400
+From: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
+To: "Paulraj, Sandeep" <s-paulraj@ti.com>,
+       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Grosen, Mark" <mgrosen@ti.com>
+Date: Mon, 1 Jun 2009 13:38:37 -0500
+Subject: RE: New Driver for DaVinci DM355/DM365/DM6446
+Thread-Topic: New Driver for DaVinci DM355/DM365/DM6446
+Thread-Index: AcniyStmw6uMN6wQR1S5so7ZtS4AbAAHeNT8
+Message-ID: <A24693684029E5489D1D202277BE8944405CFFE6@dlee02.ent.ti.com>
+References: <C9D59C82B94F474B872F2092A87F261481797D4B@dlee07.ent.ti.com>
+In-Reply-To: <C9D59C82B94F474B872F2092A87F261481797D4B@dlee07.ent.ti.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090601184608.6379440c@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/01, Alan Cox wrote:
->
-> > > If you are on the command line then SIGINT/SIGQUIT would be the obvious
-> > > ones for this ?
-> >
-> > Not sure I understand. Do you mean we should treat the tty signals
-> > specially ?
->
-> Yes
->
-> > Personally, I don't think we should. If we decide that only SIGKILL
-> > interrupts the coredumping, then I think ^C should not interrupt.
->
-> Wait until you have a remote session over ssh that core dumps a 2GB core.
-> Then you'll understand why being able to ^C or ^\ it is useful.
+> From: linux-media-owner@vger.kernel.org [linux-media-owner@vger.kernel.org] On Behalf Of Paulraj, Sandeep
+> Sent: Monday, June 01, 2009 5:56 PM
+> To: linux-media@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org; Grosen, Mark
+> Subject: New Driver for DaVinci DM355/DM365/DM6446
+> 
+> Hello,
+> 
+> WE have a module(H3A) on Davinci DM6446,DM355 and DM365.
+> 
+> Customers require a way to collect the data required to perform the Auto Exposure (AE), Auto Focus(AF), and Auto White balance (AWB) in hardware as opposed to software. > This is primarily for performance reasons as there is not enough software processing MIPS (to do 3A statistics) available in
+> an imaging/video system.
+> 
+> Including this block in hardware reduces the load on the processor and bandwidth to the memory as the data is collected on the fly from the imager.
+> 
+> This modules collects statistics and we currently implement it as a character driver.
 
-Sure. But you have the same problem with
+This also exists in OMAP3 chips, and is part of the ISP module.
 
-	$ perl -e '$SIG{INT} = $SIG{QUIT} = IGNORE; sleep'
-	^C^C^C^\^\^\
+I maintain, along with Sakari Ailus, a V4L2 camera driver, which is currently just shared through a gitorious repository:
 
-over ssh.
+http://gitorious.org/omap3camera
 
-And what if the coredumping task already has the pending SIGINT/SIGQUIT
-or blocks/ignores them?
+The way we offer an interface for the user to be able to request this statistics is with the usage of private IOCTLs declared inside the same V4L2 capturing device driver.
 
-But don't get me wrong, I do agree this is useful, and this can be
-implemented. But in this case, imho kill(SIGINT) should work as well,
-not just ^C.
+So, that way we have a V4L2 driver which has a private call, instead of having it separately from the capture driver.
 
-
-In short, I agree in advance with any authoritative decision. But
-if we add more power to ^C (compared to kill), this should be a
-separate patch imho.
-
-Oleg.
-
+Regards,
+Sergio
+> 
+> Which mailing list would be the most appropriate mailing list to submit patches for review?
+> 
+> Thanks,
+> Sandeep
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
