@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbZFARSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759051AbZFARSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758996AbZFARSg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 13:18:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757518AbZFARR3
+	id S1759051AbZFARSs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 13:18:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758158AbZFARRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 13:17:29 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:47405 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755510AbZFARR2 (ORCPT
+	Mon, 1 Jun 2009 13:17:33 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:13342 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758108AbZFARRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 13:17:28 -0400
+	Mon, 1 Jun 2009 13:17:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=NRmIrZ461eadBI0on6muK9hfRfyZwKIASkApupJs8H381EvNkkHoOKSpogBq6noiLE
-         LarafmLripsYAEd3B+RUIVRq7Gp+MzEmOcTZTFDaq1wGe8lzX+kpX+BXwnbPZD8UI2/i
-         c54PFCHS1PEs9CuxQhsjulPKqnu47jzz/cDEc=
+        b=QFd8a3uyttEoAsCvCP9LWbX+QFQqlqP8vHg1ZuiTqsqMkGGj8NXOd5PH1ZgWsT/dnY
+         uPzLSOzW4vcfpwOjcr280NMiFLRdavQmOmIcyt95PgkvNy00oAYBZ7J4cBx8/1Wp7HzH
+         TOFDgCo0O/kKuIr/jfN6hIqgfJ4wtH5BswDis=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
@@ -23,9 +23,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 4/5] tracing/workqueue: fix list header and function name format
-Date: Mon,  1 Jun 2009 19:17:16 +0200
-Message-Id: <1243876637-6616-5-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 5/5] tracing/workqueue: cleanup for trace_workqueue.c
+Date: Mon,  1 Jun 2009 19:17:17 +0200
+Message-Id: <1243876637-6616-6-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1243876637-6616-1-git-send-email-fweisbec@gmail.com>
 References: <1243876637-6616-1-git-send-email-fweisbec@gmail.com>
@@ -35,53 +35,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Zhaolei <zhaolei@cn.fujitsu.com>
 
-Fix list header of workqueue trace,
-and use %pf to print the function name only(ignore the offsets).
+1: Make function's order in source same with definition in struct tracer_stat
+2: Remove ";" after workqueue_stat_file_release()
+3: Remove redundant blank in struct tracer_stat workqueue_stats
+4: add "static" prefix for some function and struct
 
-Before patch:
- # CPU INSERTED EXECUTED    MAX us   AVG us   TASKNAME:PID
- #  |     |        |           |      ` |     -WORKFUNC
- #  |     |        |           |        |          |
-     0        1        1     1053     1053   `-flush_async_commits+0x0/0x90
- ...
-
-After patch:
- # CPU INSERTED EXECUTED   MAX us   AVG us   TASKNAME:PID
- #  |     |        |         |        |      `-WORKFUNC
- #  |     |        |         |        |           |
-     0        1        1     1155     1155   `-flush_async_commits
- ...
-
-[ Impact: fix and clarify workqueue stats output ]
+[ Impact: reorganize code, cleanup ]
 
 Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- kernel/trace/trace_workqueue.c |   14 ++++++++------
- 1 files changed, 8 insertions(+), 6 deletions(-)
+ kernel/trace/trace_workqueue.c |   65 +++++++++++++++++++--------------------
+ 1 files changed, 32 insertions(+), 33 deletions(-)
 
 diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
-index fa70ea2..cb6429e 100644
+index cb6429e..ae98be4 100644
 --- a/kernel/trace/trace_workqueue.c
 +++ b/kernel/trace/trace_workqueue.c
-@@ -402,7 +402,7 @@ static int workqueue_stat_show(struct seq_file *s, void *p)
- 			avg_time = 0;
- 		}
- 
--		seq_printf(s, "  %3d   %6d   %6u   %6llu   %6llu   %c-%pF\n",
-+		seq_printf(s, "  %3d   %6d   %6u   %6llu   %6llu   %c-%pf\n",
- 			cws->cpu,
- 			wfstat->inserted,
- 			wfstat->executed,
-@@ -450,11 +450,13 @@ static void workqueue_stat_file_open(void)
- 		/**/
- static int workqueue_stat_headers(struct seq_file *s)
+@@ -81,7 +81,7 @@ static int wq_file_ref;
+  * Update record when insert a work into workqueue
+  * Caller need to hold cpu_workqueue_stats spin_lock
+  */
+-int do_worklet_enqueue(struct cpu_workqueue_stats *cws,
++static int do_worklet_enqueue(struct cpu_workqueue_stats *cws,
+ 			 struct work_struct *work)
  {
--	seq_printf(s, "# CPU INSERTED EXECUTED    MAX us   AVG us"
--			"   TASKNAME:PID\n");
--	seq_printf(s, "#  |     |        |           |      ` |"
--			"     -WORKFUNC\n");
--	seq_printf(s, "#  |     |        |           |        |          |\n");
+ 	struct workfunc_stats *wfstat;
+@@ -415,6 +415,27 @@ static int workqueue_stat_show(struct seq_file *s, void *p)
+ 	return 0;
+ }
+ 
++static int workqueue_stat_headers(struct seq_file *s)
++{
 +	seq_printf(s,
 +		"# CPU INSERTED EXECUTED   MAX us   AVG us   TASKNAME:PID\n");
 +	seq_printf(s,
@@ -89,8 +74,81 @@ index fa70ea2..cb6429e 100644
 +	seq_printf(s,
 +		"#  |     |        |         |        |           |\n");
 +
- 	return 0;
++	return 0;
++}
++
++static void workqueue_stat_file_open(void)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&free_wq_lock, flags);
++	wq_file_ref++;
++	spin_unlock_irqrestore(&free_wq_lock, flags);
++}
++
+ /*
+  * Here we are sure that we have no more readers on our stat file
+  * and that further readers will block until we return from this function.
+@@ -436,42 +457,20 @@ static void workqueue_stat_file_release(void)
+ 	}
+ 
+ 	spin_unlock_irqrestore(&free_wq_lock, flags);
+-};
+-
+-static void workqueue_stat_file_open(void)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&free_wq_lock, flags);
+-	wq_file_ref++;
+-	spin_unlock_irqrestore(&free_wq_lock, flags);
+-}
+-
+-		/**/
+-static int workqueue_stat_headers(struct seq_file *s)
+-{
+-	seq_printf(s,
+-		"# CPU INSERTED EXECUTED   MAX us   AVG us   TASKNAME:PID\n");
+-	seq_printf(s,
+-		"#  |     |        |         |        |      `-WORKFUNC\n");
+-	seq_printf(s,
+-		"#  |     |        |         |        |           |\n");
+-
+-	return 0;
  }
+ 
+-struct tracer_stat workqueue_stats __read_mostly = {
+-	.name		 = "workqueues",
+-	.stat_start	 = workqueue_stat_start,
+-	.stat_next	 = workqueue_stat_next,
+-	.stat_show	 = workqueue_stat_show,
+-	.stat_headers	 = workqueue_stat_headers,
+-	.file_open	 = workqueue_stat_file_open,
+-	.file_open	 = workqueue_stat_file_release,
++static struct tracer_stat workqueue_stats __read_mostly = {
++	.name		= "workqueues",
++	.stat_start	= workqueue_stat_start,
++	.stat_next	= workqueue_stat_next,
++	.stat_show	= workqueue_stat_show,
++	.stat_headers	= workqueue_stat_headers,
++	.file_open	= workqueue_stat_file_open,
++	.file_open	= workqueue_stat_file_release,
+ };
+ 
+ 
+-int __init stat_workqueue_init(void)
++static int __init stat_workqueue_init(void)
+ {
+ 	if (register_stat_tracer(&workqueue_stats)) {
+ 		pr_warning("Unable to register workqueue stat tracer\n");
+@@ -486,7 +485,7 @@ fs_initcall(stat_workqueue_init);
+  * Workqueues are created very early, just after pre-smp initcalls.
+  * So we must register our tracepoints at this stage.
+  */
+-int __init trace_workqueue_early_init(void)
++static int __init trace_workqueue_early_init(void)
+ {
+ 	int ret, cpu;
  
 -- 
 1.6.2.3
