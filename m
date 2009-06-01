@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756607AbZFARCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZFARET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756607AbZFARCR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 13:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbZFARCI
+	id S1756916AbZFARET (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 13:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbZFAREM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 13:02:08 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:57477 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753114AbZFARCH (ORCPT
+	Mon, 1 Jun 2009 13:04:12 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:53984 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751670AbZFAREL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 13:02:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=bmNIkiWWJjSxo6TGf+Sznxs9nDDcljwFuitC4OWEt05o+5IbSz6Pm1zXeVuJoP+26A
-         zjmbkfszOswGJF2I5t7u0ZOGSxWV6M8SeKum4BOGRnimGMxyc97SR69SDwZgs67SaeT1
-         MdehMft9hqbvEMwl3YasYl/Ufc/r84T4EbgOw=
-Message-ID: <4A240993.8030409@gmail.com>
-Date: Mon, 01 Jun 2009 19:02:11 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1pre) Gecko/20090525 SUSE/3.0b2-10.1 Thunderbird/3.0b3pre
+	Mon, 1 Jun 2009 13:04:11 -0400
+Message-ID: <4A2409C3.2000804@zytor.com>
+Date: Mon, 01 Jun 2009 10:02:59 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: sam@ravnborg.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] scripts: allow docproc invocation from external
-References: <1243785934-13936-1-git-send-email-jirislaby@gmail.com> <4A23FC2C.4060602@oracle.com>
-In-Reply-To: <4A23FC2C.4060602@oracle.com>
-Content-Type: text/plain; charset=windows-1251
+To: Borislav Petkov <petkovbb@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com,
+       mingo@elte.hu, norsk5@yahoo.com, tglx@linutronix.de, mchehab@redhat.com,
+       aris@redhat.com, edt@aei.ca, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com
+CC: Sam Ravnborg <sam@ravnborg.org>, "H.J. Lu" <hjl.tools@gmail.com>
+Subject: Re: [PATCH 0/4] amd64_edac: misc fixes
+References: <1242845037-1029-1-git-send-email-borislav.petkov@amd.com> <20090528164720.0af5752b.akpm@linux-foundation.org> <20090529103329.GB23530@aftab> <20090529130115.a44efaee.akpm@linux-foundation.org> <20090530081954.GA21954@liondog.tnic> <20090530014007.3c1e22d5.akpm@linux-foundation.org> <4A218761.5080607@zytor.com> <20090601145326.GA28260@liondog.tnic> <4A2407D1.5050706@zytor.com>
+In-Reply-To: <4A2407D1.5050706@zytor.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/01/2009 06:05 PM, Randy Dunlap wrote:
-> Jiri Slaby wrote:
->> - getcwd returns path without a slash at the end, add the slash
+H. Peter Anvin wrote:
 > 
-> Hi Jiri,
+> Yes, we would have to do something like that.
 > 
-> This part (above) fixes a bug, right?
-
-Yes, but the bug is not triggered when building from a kernel tree.
-
->> - add KBUILD_SRC env support, so that we can specify path for
->>   kernel (to know where scripts/kernel-doc resides) and SRCTREE
->>   (for searching files referenced in .tmpl) separately
+> However, if you're doing that you shouldn't use typeof() there...
+> instead this should be turned into an inline function with explicit
+> 64-bit types.
 > 
-> Can you explain your usage a bit more so that I can understand some
-> justification for this change?  (not that I'm objecting to it)
+> It would be good if we could get Kbuild to export some kind of macro
+> that we can use to test binutils version, so we can do something like:
+> 
+> #if BINUTILS_VERSION >= KERNEL_VERSION(2,18,50)
+> /* Do the right thing */
+> #else
+> /* Do the wrong thing */
+> #endif
+> 
 
-Sure, I have out-of-kernel drivers (which I plan to merge, but keep
-out-of-tree development anyway) and have this in a makefile:
-%.xml: %.tmpl
-        KBUILD_SRC=$(KSRC) $(KDIR)/scripts/basic/docproc doc $^ > $@
-so that I can build documentation from a .tmpl file for those drivers.
-SRCTREE defaults to cwd, so it finds sources referenced from the .tmpl
-file in current location. What didn't work is execution of
-scripts/kernel-doc. This is now executed with KBUILD_SRC prepended,
-which is what it should be.
+The other option, and perhaps a better option, is to key it on the
+version of gcc; then we can use the gcc intrinsics __builtin_popcount(),
+__builtin_popcountl() and __builtin_popcountll(), which should produce
+better code since gcc can schedule them appropriately.
+
+Probably also means passing -msse4.2 to gcc while hoping that that
+doesn't enable any #TS-generating instructions (SSE 4.2 is mostly a
+collection of integer instructions).
+
+(H.J., any comments?)
+
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
