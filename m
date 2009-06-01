@@ -1,112 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbZFASjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbZFASkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754878AbZFASjv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 14:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbZFASjn
+	id S1754995AbZFASkn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 14:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752045AbZFASkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 14:39:43 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:54600 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752088AbZFASjn convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 14:39:43 -0400
-From: "Paulraj, Sandeep" <s-paulraj@ti.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Grosen, Mark" <mgrosen@ti.com>
-Date: Mon, 1 Jun 2009 13:39:17 -0500
-Subject: RE: New Driver for DaVinci DM355/DM365/DM6446
-Thread-Topic: New Driver for DaVinci DM355/DM365/DM6446
-Thread-Index: Acni4m5u0t4NpCjIRdqK9JtMNngzawAAgmSg
-Message-ID: <C9D59C82B94F474B872F2092A87F2614817980B0@dlee07.ent.ti.com>
-References: <C9D59C82B94F474B872F2092A87F261481797D4B@dlee07.ent.ti.com>
-	<20090601133436.06a4a4a0@pedra.chehab.org>
-	<C9D59C82B94F474B872F2092A87F261481797F62@dlee07.ent.ti.com>
- <20090601145714.36158fe8@pedra.chehab.org>
-In-Reply-To: <20090601145714.36158fe8@pedra.chehab.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Mon, 1 Jun 2009 14:40:37 -0400
+Received: from mta.netezza.com ([12.148.248.132]:63714 "EHLO netezza.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751480AbZFASkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 14:40:36 -0400
+Subject: Re: [PATCH] coredump: Retry writes where appropriate
+From: Paul Smith <paul@mad-scientist.net>
+Reply-To: paul@mad-scientist.net
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
+In-Reply-To: <20090601184934.1fc54411@lxorguk.ukuu.org.uk>
+References: <1243748019.7369.319.camel@homebase.localnet>
+	 <20090531111851.07eb1df3@lxorguk.ukuu.org.uk>
+	 <20090601161234.GA10486@redhat.com>
+	 <1243877766.8547.38.camel@psmith-ubeta.netezza.com>
+	 <20090601184934.1fc54411@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Organization: GNU's Not Unix!
+Date: Mon, 01 Jun 2009 14:39:04 -0400
+Message-Id: <1243881544.8547.66.camel@psmith-ubeta.netezza.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Jun 2009 18:39:04.0410 (UTC) FILETIME=[3D3763A0:01C9E2E8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro,
-      Please see inline
+On Mon, 2009-06-01 at 18:49 +0100, Alan Cox wrote:
+> > On the other hand, IMO all other signals, including SIGINT and SIGQUIT,
+> > should be ignored during core dumping.  Allowing SIGKILL gives a method
+> > for getting rid of core dumps in the relatively rare situation where
+> > people want/need to do so, and I don't see any real benefit to adding
+> > more signals to the list of things you can't do if you want robust
+> > cores.  Isn't one enough?
+> 
+> I also want usability. SIGINT/SIGQUIT are never sent except by user
+> requests to terminate a process so they can safely be allowed. If the
+> alternatives are the status quo or SIGKILL only then I'd favour the
+> status quo particularly having experienced the alternatives on some old
+> Unix systems.
 
-> -----Original Message-----
-> From: Mauro Carvalho Chehab [mailto:mchehab@infradead.org]
-> Sent: Monday, June 01, 2009 1:57 PM
-> To: Paulraj, Sandeep
-> Cc: linux-media@vger.kernel.org; linux-kernel@vger.kernel.org; Grosen,
-> Mark
-> Subject: Re: New Driver for DaVinci DM355/DM365/DM6446
-> 
-> Em Mon, 1 Jun 2009 11:54:37 -0500
-> "Paulraj, Sandeep" <s-paulraj@ti.com> escreveu:
-> 
-> >
-> >
-> > > -----Original Message-----
-> > > From: Mauro Carvalho Chehab [mailto:mchehab@infradead.org]
-> > > Sent: Monday, June 01, 2009 12:35 PM
-> > > To: Paulraj, Sandeep
-> > > Cc: linux-media@vger.kernel.org; linux-kernel@vger.kernel.org; Grosen,
-> > > Mark
-> > > Subject: Re: New Driver for DaVinci DM355/DM365/DM6446
-> > >
-> > > Em Mon, 1 Jun 2009 09:56:40 -0500
-> > > "Paulraj, Sandeep" <s-paulraj@ti.com> escreveu:
-> > >
-> > > >
-> > > > Hello,
-> > > >
-> > > > WE have a module(H3A) on Davinci DM6446,DM355 and DM365.
-> > > >
-> > > > Customers require a way to collect the data required to perform the
-> Auto
-> > > Exposure (AE), Auto Focus(AF), and Auto White balance (AWB) in
-> hardware as
-> > > opposed to software. This is primarily for performance reasons as
-> there is
-> > > not enough software processing MIPS (to do 3A statistics) available in
-> > > > an imaging/video system.
-> > > >
-> > > > Including this block in hardware reduces the load on the processor
-> and
-> > > bandwidth to the memory as the data is collected on the fly from the
-> > > imager.
-> > > >
-> > > > This modules collects statistics and we currently implement it as a
-> > > character driver.
-> > > >
-> > > > Which mailing list would be the most appropriate mailing list to
-> submit
-> > > patches for review?
-> > >
-> > > You should send they to:
-> > > 	LMML <linux-media@vger.kernel.org>
-> > >
-> > > If you are proposing API changes, please submit they first.
-> > [Sandeep] WE don't propose any API changes. This module for which we
-> want to submit patches is a TI proprietary IP. We currently implement this
-> as a character device and have a few IOCTL's.
-> > We do not follow the V4L2 framework and do not use any V4L2 IOCTLs.
-> >
-> > Can we continue to use it as a character driver?
-> 
-> In this case, I don't see why you want it to be upstream.
-[Sandeep] TI customers and TI itself want to see this driver part of open source trees. Considering this we would like to submit our patches to the linux-media mailing list.
-IS this OK?
-> 
-> 
-> 
-> Cheers,
-> Mauro
+SIGINT/SIGQUIT are sent all the time in situations where the user might
+not want the core dump to be canceled.  This is what I meant by "wanted
+to actually interrupt the core"; it implies the user knows that a core
+is being dumped and explicitly decides they do not want to have that
+happen in this situation and takes some affirmative action to stop it.
+
+If a program seems to be unresponsive the user could ^C, without
+realizing that it was really dumping core.  Now when they are asked to
+produce the core so the problem can be debugged, they can't do it.  Or,
+a worker process might appear unresponsive due to a core being dumped
+and the parent would decide to shoot it with SIGINT based on various
+timeouts etc.  Again we have no core available.
+
+If the user has problems with coredumps there are all sorts of ways to
+manage that.  You can disable core dumps altogether via ulimit.  You can
+set core_pattern to dump to a fully-qualified pathname on faster media
+instead of whatever working directory you're using.
+
+Or, with this change, you can kill -9 the PID that's dumping core.
+
+These things seem to me to provide a lot of usability features.
+
+On the other hand there's no way to ensure full, reliable core dumps
+with today's behavior.
 
