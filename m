@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757644AbZFALdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbZFAL2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757644AbZFALdS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 07:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbZFALdJ
+	id S1756159AbZFAL2e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 07:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbZFAL21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 07:33:09 -0400
-Received: from fmmailgate02.web.de ([217.72.192.227]:33492 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755509AbZFALdJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 07:33:09 -0400
-From: Goswin von Brederlow <goswin-v-b@web.de>
-To: Jan Kara <jack@suse.cz>
-Cc: Pavel Machek <pavel@ucw.cz>, LKML <linux-kernel@vger.kernel.org>,
-       npiggin@suse.de, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 03/11] vfs: Add better VFS support for page_mkwrite when blocksize < pagesize
-References: <1243429268-3028-1-git-send-email-jack@suse.cz>
-	<1243429268-3028-4-git-send-email-jack@suse.cz>
-	<20090530112324.GD1395@ucw.cz> <20090601094402.GA14373@duck.suse.cz>
-Date: Mon, 01 Jun 2009 13:33:08 +0200
-In-Reply-To: <20090601094402.GA14373@duck.suse.cz> (Jan Kara's message of
-	"Mon, 1 Jun 2009 11:44:02 +0200")
-Message-ID: <87y6scqjd7.fsf@frosties.localdomain>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Provags-ID: V01U2FsdGVkX19Ya5GPdrr4HdsMMnmD0/7lK3/YqnXEUaTBU+Vz
-	jn38m0YMTvuPpNxxyR8uQ3vhNMBXXNstaUKwBZYt7QXy4P0SiE
-	CJuA+eCkY=
+	Mon, 1 Jun 2009 07:28:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48294 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752676AbZFAL20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 07:28:26 -0400
+Subject: Re: [PATCH 2/2 -tip] drm/i915: intel_lvds.c fix section mismatch
+ warning
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Airlie <airlied@linux.ie>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Jarod Wilson <jarod@redhat.com>, drm list <dri-devel@lists.sf.net>,
+       Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, mjg@redhat.com
+In-Reply-To: <20090601115334.37059eed@jbarnes-x200>
+References: <1242800768.3260.21.camel@localhost.localdomain>
+	 <200905281100.21386.jarod@redhat.com>
+	 <1243577795.3159.27.camel@localhost.localdomain>
+	 <200905290934.14675.jarod@redhat.com>
+	 <1243607316.3210.4.camel@localhost.localdomain>
+	 <20090601115334.37059eed@jbarnes-x200>
+Content-Type: text/plain
+Date: Mon, 01 Jun 2009 16:55:33 +0530
+Message-Id: <1243855533.21289.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara <jack@suse.cz> writes:
+On Mon, 2009-06-01 at 11:53 +0100, Jesse Barnes wrote:
+> On Fri, 29 May 2009 19:58:36 +0530
+> Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> 
+> > Hi Andrew,
+> > 
+> > On Fri, 2009-05-29 at 09:34 -0400, Jarod Wilson wrote:
+> > > On Friday 29 May 2009 02:16:35 Jaswinder Singh Rajput wrote:
+> > > > I am not sure where this patch should go.
+> > > > 
+> > > > So I am also mailing to Andrew and Dave, it they find this useful
+> > > > then they can add in their tree.
+> > > 
+> > > Dave is on vacation a bit longer, iirc. Not entirely sure where else
+> > > this might go either. I'm sure *someone* will pick it up sooner or
+> > > later... In any case, thanks for the fix for my flub.
+> > > 
+> > > Acked-by: Jarod Wilson <jarod@redhat.com>
+> > > 
+> > 
+> > Can you accept this patch with Jarod Ack as Dave is on vacation and
+> > Ingo is still busy with perfcounter ;-)
+> 
+> It doesn't sound urgent, or are you seeing crashes due to this?  If so
+> I can queue it up to Linus (I'm taking critical fixes while Dave is
+> away, though I think he's back now actually).
+> 
 
-> On Sat 30-05-09 13:23:24, Pavel Machek wrote:
->> Hi!
->> 
->> > On filesystems where blocksize < pagesize the situation is more complicated.
->> > Think for example that blocksize = 1024, pagesize = 4096 and a process does:
->> >   ftruncate(fd, 0);
->> >   pwrite(fd, buf, 1024, 0);
->> >   map = mmap(NULL, 4096, PROT_WRITE, MAP_SHARED, fd, 0);
->> >   map[0] = 'a';  ----> page_mkwrite() for index 0 is called
->> >   ftruncate(fd, 10000); /* or even pwrite(fd, buf, 1, 10000) */
->> >   fsync(fd); ----> writepage() for index 0 is called
->> > 
->> > At the moment page_mkwrite() is called, filesystem can allocate only one block
->> > for the page because i_size == 1024. Otherwise it would create blocks beyond
->> > i_size which is generally undesirable. But later at writepage() time, we would
->> > like to have blocks allocated for the whole page (and in principle we have to
->> > allocate them because user could have filled the page with data after the
->> > second ftruncate()). This patch introduces a framework which allows filesystems
->> > to handle this with a reasonable effort.
->> 
->> What happens when you do above sequence on today's kernels? Oops? 3000
->> bytes of random junk in file? ...?
->   Depends on the filesystem. For example on ext4, you'll see a WARN_ON and the data
-> won't be written. Some filesystems may just try to map blocks and possibly
-> hit deadlock or something like that. Filesystems like ext2 / ext3 /
-> reiserfs generally don't care because so far they allocate blocks on writepage
-> time (which has the problem that you can write data via mmap and kernel
-> will later discard them because it hits ENOSPC or quota limit). That's
-> actually what I was trying to fix originally.
->
-> 										Honza
+Ok, then better wait for Dave :-)
 
-man mmap:
-       A file is mapped in multiples of the page size.  For a file that is not
-       a  multiple  of  the  page  size,  the  remaining memory is zeroed when
-       mapped, and writes to that region are not written out to the file.  The
-       effect  of changing the size of the underlying file of a mapping on the
-       pages that correspond to added  or  removed  regions  of  the  file  is
-       unspecified.
+--
+JSR
 
-Whatever happens happens. The above code is just wrong, as in
-unspecified behaviour.
-
-What happens if you ftruncate() before mmap()?
-
-MfG
-        Goswin
