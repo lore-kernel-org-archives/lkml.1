@@ -1,87 +1,351 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbZFAQgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbZFAQgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbZFAQgS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 12:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbZFAQgJ
+	id S1758108AbZFAQgb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 12:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755529AbZFAQgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 12:36:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54978 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754758AbZFAQgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 12:36:09 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jan Scholz <scholz@fias.uni-frankfurt.de>
-Subject: Re: [regression, bisected] adb trackpad disappears after suspend to ram
-Date: Mon, 1 Jun 2009 18:36:14 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de> <200905292010.10615.rjw@sisk.pl> <87fxekxe3w.fsf@scholz.fias.uni-frankfurt.de>
-In-Reply-To: <87fxekxe3w.fsf@scholz.fias.uni-frankfurt.de>
+	Mon, 1 Jun 2009 12:36:21 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:58884 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757088AbZFAQgU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 12:36:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Wv3mEADndvg6hTBmhgfP6i1wG2JnQT/0yJx+rI59ALDGkQx7b2+va+LjlNSN5BepdO
+         1NTBfc8ePPJEzwwrpkMgaezFfjGPKKKdWMzUiZEzybO5xyBcq16CNH4JeJdM3smgpBL3
+         /SWALK968O22nDWG8NxpJc2NFfqDtgY6OH3UU=
+Date: Mon, 1 Jun 2009 18:36:18 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Hellwig <hch@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] tracing/events: introduce __dynamic_array()
+Message-ID: <20090601163616.GB5988@nowhere>
+References: <4A2384B1.90100@cn.fujitsu.com> <4A2384D2.3080403@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906011836.15507.rjw@sisk.pl>
+In-Reply-To: <4A2384D2.3080403@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 June 2009, Jan Scholz wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Mon, Jun 01, 2009 at 03:35:46PM +0800, Li Zefan wrote:
+> __string() is limited:
 > 
-> > On Friday 29 May 2009, Jan Scholz wrote:
-> >> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> >> 
-> >> >> We are too late in the cycle to revert this commit and it really is needed to
-> >> >> fix a more serious issue.  Nevertheless knowing that it caused the problem to
-> >> >> appear on your system is also important.
-> >> >> 
-> >> >> Ben, do you have an idea what may be going on here?  Does __disable_irq() mask
-> >> >> the interrupt on this platform?
-> >> >
-> >> > I suppose so :-) I'll have to check what's going on, it's not
-> >> > immediately clear to me.
-> >> >
-> >> > Cheers,
-> >> > Ben.
-> >> >
-> >> >> 
-> >> >> I'd like to see a boot log, preferably containing a suspend-resume in which
-> >> >> the problem was reproduced.
-> >> 
-> >> Here is a log from booting, through several suspend cycles, until the
-> >> trackpad disappeared. The first few suspends were done while X was
-> >> running but from the console. As you can tell from lines like
-> >>    May 28 23:51:26 [kernel] adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
-> >> the trackpad was still present. The last suspend was done from within X,
-> >> here the trackpad did not make it.
-> >>    May 28 23:58:09 [kernel] adb devices: [2]: 2 c4 [7]: 7 1f
-> >> However, there have been cases, although not in this log, were the
-> >> trackpad has been alive even when suspending from within X.
-> >
-> > This means the problem is probably timing-related.
-> >
-> > Can you please try to comment out suspend_device_irqs() and
-> > resume_device_irqs()  in drivers/base/power/main.c and see if that changes
-> > anything?  It's not entirely safe (well, that's why the calls are there after
-> > all), but hopefully the box won't hang during this test.
-> >
+>   - it's a char array, but we may want to define array with other types
+>   - a source string should be available, but we may just know the string size
 > 
-> Tried that against v2.6.30-rc7 and it seems to fix the issue. I did ~10
-> suspend-resume cycles from the console (which worked just like before)
-> and ~20 cycles from within X and the trackpad is still alive.
+> We introduce __dynamic_array() to break those limitations, and __string()
+> becomes a wrapper of it. As a side effect, now __get_str() can be used
+> in TP_fast_assign but not only TP_print.
+> 
+> Take XFS for example, we have the string length in the dirent, but the
+> string itself is not NULL-terminated, so __dynamic_array() can be used:
+> 
+> TRACE_EVENT(xfs_dir2,
+> 	TP_PROTO(struct xfs_da_args *args),
+> 	TP_ARGS(args),
+> 
+> 	TP_STRUCT__entry(
+> 		__field(int, namelen)
+> 		__dynamic_array(char, name, args->namelen + 1)
+> 		...
+> 	),
+> 
+> 	TP_fast_assign(
+> 		char *name = __get_str(name);
+> 
+> 		if (args->namelen)
+> 			memcpy(name, args->name, args->namelen);
+> 		name[args->namelen] = '\0';
+> 
+> 		__entry->namelen = args->namelen;
+> 	),
+> 
+> 	TP_printk("name %.*s namelen %d",
+> 		  __entry->namelen ? __get_str(name) : NULL
+> 		  __entry->namelen)
+> );
+> 
+> [ Impact: allow defining dynamic size arrays ]
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-So, it seems we lose and interrupt during resume and that confuses the
-ADB controller driver or something like this.  Do you use the keyboard or
-the trackpad as a wake-up device?
 
-Please additionally try to go back to the original code, put
-'sleepy_trackpad = 1' at the beginning of do_adb_reset_bus() in
-drivers/macintosh/adb.c and see if the problem is reproducible with that.
 
-Best,
-Rafael
+Very nice patch, as the previous one.
+
+Thanks!
+Frederic.
+
+
+> ---
+>  include/trace/ftrace.h             |  122 ++++++++++++++++++++++++++----------
+>  kernel/trace/trace_events_filter.c |    6 +-
+>  2 files changed, 91 insertions(+), 37 deletions(-)
+> 
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index ee92682..b5478da 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -18,14 +18,17 @@
+>  
+>  #include <linux/ftrace_event.h>
+>  
+> +#undef __field
+> +#define __field(type, item)		type	item;
+> +
+>  #undef __array
+>  #define __array(type, item, len)	type	item[len];
+>  
+> -#undef __field
+> -#define __field(type, item)		type	item;
+> +#undef __dynamic_array
+> +#define __dynamic_array(type, item, len) unsigned short __data_loc_##item;
+>  
+>  #undef __string
+> -#define __string(item, src)		unsigned short	__str_loc_##item;
+> +#define __string(item, src) __dynamic_array(char, item, -1)
+>  
+>  #undef TP_STRUCT__entry
+>  #define TP_STRUCT__entry(args...) args
+> @@ -35,7 +38,7 @@
+>  	struct ftrace_raw_##name {				\
+>  		struct trace_entry	ent;			\
+>  		tstruct						\
+> -		char			__str_data[0];		\
+> +		char			__data[0];		\
+>  	};							\
+>  	static struct ftrace_event_call event_##name
+>  
+> @@ -47,30 +50,31 @@
+>   *
+>   * Include the following:
+>   *
+> - * struct ftrace_str_offsets_<call> {
+> - *	int				<str1>;
+> - *	int				<str2>;
+> + * struct ftrace_data_offsets_<call> {
+> + *	int				<item1>;
+> + *	int				<item2>;
+>   *	[...]
+>   * };
+>   *
+> - * The __string() macro will create each int <str>, this is to
+> - * keep the offset of each string from the beggining of the event
+> - * once we perform the strlen() of the src strings.
+> - *
+> + * The __dynamic_array() macro will create each int <item>, this is
+> + * to keep the offset of each array from the beginning of the event.
+>   */
+>  
+> +#undef __field
+> +#define __field(type, item);
+> +
+>  #undef __array
+>  #define __array(type, item, len)
+>  
+> -#undef __field
+> -#define __field(type, item);
+> +#undef __dynamic_array
+> +#define __dynamic_array(type, item, len)	int item;
+>  
+>  #undef __string
+> -#define __string(item, src)	int item;
+> +#define __string(item, src) __dynamic_array(char, item, -1)
+>  
+>  #undef TRACE_EVENT
+>  #define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
+> -	struct ftrace_str_offsets_##call {				\
+> +	struct ftrace_data_offsets_##call {				\
+>  		tstruct;						\
+>  	};
+>  
+> @@ -119,8 +123,12 @@
+>  #undef TP_printk
+>  #define TP_printk(fmt, args...) fmt "\n", args
+>  
+> +#undef __get_dynamic_array
+> +#define __get_dynamic_array(field)	\
+> +		((void *)__entry + __entry->__data_loc_##field)
+> +
+>  #undef __get_str
+> -#define __get_str(field)	((char *)__entry + __entry->__str_loc_##field)
+> +#define __get_str(field) (char *)__get_dynamic_array(field)
+>  
+>  #undef __print_flags
+>  #define __print_flags(flag, delim, flag_array...)			\
+> @@ -207,16 +215,19 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+>  	if (!ret)							\
+>  		return 0;
+>  
+> -#undef __string
+> -#define __string(item, src)						       \
+> -	ret = trace_seq_printf(s, "\tfield:__str_loc " #item ";\t"	       \
+> +#undef __dynamic_array
+> +#define __dynamic_array(type, item, len)				       \
+> +	ret = trace_seq_printf(s, "\tfield:__data_loc " #item ";\t"	       \
+>  			       "offset:%u;\tsize:%u;\n",		       \
+>  			       (unsigned int)offsetof(typeof(field),	       \
+> -					__str_loc_##item),		       \
+> -			       (unsigned int)sizeof(field.__str_loc_##item));  \
+> +					__data_loc_##item),		       \
+> +			       (unsigned int)sizeof(field.__data_loc_##item)); \
+>  	if (!ret)							       \
+>  		return 0;
+>  
+> +#undef __string
+> +#define __string(item, src) __dynamic_array(char, item, -1)
+> +
+>  #undef __entry
+>  #define __entry REC
+>  
+> @@ -260,11 +271,14 @@ ftrace_format_##call(struct trace_seq *s)				\
+>  	if (ret)							\
+>  		return ret;
+>  
+> +#undef __dynamic_array
+> +#define __dynamic_array(type, item, len)				       \
+> +	ret = trace_define_field(event_call, "__data_loc" "[" #type "]", #item,\
+> +				offsetof(typeof(field), __data_loc_##item),    \
+> +				 sizeof(field.__data_loc_##item), 0);
+> +
+>  #undef __string
+> -#define __string(item, src)						       \
+> -	ret = trace_define_field(event_call, "__str_loc", #item,	       \
+> -				offsetof(typeof(field), __str_loc_##item),     \
+> -				 sizeof(field.__str_loc_##item), 0);
+> +#define __string(item, src) __dynamic_array(char, item, -1)
+>  
+>  #undef TRACE_EVENT
+>  #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+> @@ -289,6 +303,43 @@ ftrace_define_fields_##call(void)					\
+>  #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+>  
+>  /*
+> + * remember the offset of each array from the beginning of the event.
+> + */
+> +
+> +#undef __entry
+> +#define __entry entry
+> +
+> +#undef __field
+> +#define __field(type, item)
+> +
+> +#undef __array
+> +#define __array(type, item, len)
+> +
+> +#undef __dynamic_array
+> +#define __dynamic_array(type, item, len)				\
+> +	__data_offsets->item = __data_size +				\
+> +			       offsetof(typeof(*entry), __data);	\
+> +	__data_size += (len) * sizeof(type);
+> +
+> +#undef __string
+> +#define __string(item, src) __dynamic_array(char, item, strlen(src) + 1)       \
+> +
+> +#undef TRACE_EVENT
+> +#define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
+> +static inline int ftrace_get_offsets_##call(				\
+> +	struct ftrace_data_offsets_##call *__data_offsets, proto)       \
+> +{									\
+> +	int __data_size = 0;						\
+> +	struct ftrace_raw_##call __maybe_unused *entry;			\
+> +									\
+> +	tstruct;							\
+> +									\
+> +	return __data_size;						\
+> +}
+> +
+> +#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+> +
+> +/*
+>   * Stage 4 of the trace events.
+>   *
+>   * Override the macros in <trace/trace_events.h> to include the following:
+> @@ -432,15 +483,15 @@ static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
+>  #undef __array
+>  #define __array(type, item, len)
+>  
+> +#undef __dynamic_array
+> +#define __dynamic_array(type, item, len)				\
+> +	__entry->__data_loc_##item = __data_offsets.item;
+> +
+>  #undef __string
+> -#define __string(item, src)						\
+> -	__str_offsets.item = __str_size +				\
+> -			     offsetof(typeof(*entry), __str_data);	\
+> -	__str_size += strlen(src) + 1;
+> +#define __string(item, src) __dynamic_array(char, item, -1)       	\
+>  
+>  #undef __assign_str
+>  #define __assign_str(dst, src)						\
+> -	__entry->__str_loc_##dst = __str_offsets.dst;			\
+>  	strcpy(__get_str(dst), src);
+>  
+>  #undef TRACE_EVENT
+> @@ -451,26 +502,29 @@ static struct ftrace_event_call event_##call;				\
+>  									\
+>  static void ftrace_raw_event_##call(proto)				\
+>  {									\
+> -	struct ftrace_str_offsets_##call __maybe_unused __str_offsets;	\
+> +	struct ftrace_data_offsets_##call __maybe_unused __data_offsets;\
+>  	struct ftrace_event_call *event_call = &event_##call;		\
+>  	struct ring_buffer_event *event;				\
+>  	struct ftrace_raw_##call *entry;				\
+>  	unsigned long irq_flags;					\
+> -	int __str_size = 0;						\
+> +	int __data_size;						\
+>  	int pc;								\
+>  									\
+>  	local_save_flags(irq_flags);					\
+>  	pc = preempt_count();						\
+>  									\
+> -	tstruct;							\
+> +	__data_size = ftrace_get_offsets_##call(&__data_offsets, args); \
+>  									\
+>  	event = trace_current_buffer_lock_reserve(event_##call.id,	\
+> -				 sizeof(struct ftrace_raw_##call) + __str_size,\
+> +				 sizeof(*entry) + __data_size,		\
+>  				 irq_flags, pc);			\
+>  	if (!event)							\
+>  		return;							\
+>  	entry	= ring_buffer_event_data(event);			\
+>  									\
+> +									\
+> +	tstruct								\
+> +									\
+>  	{ assign; }							\
+>  									\
+>  	if (!filter_current_check_discard(event_call, entry, event))	\
+> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+> index 35d10df..ffd461a 100644
+> --- a/kernel/trace/trace_events_filter.c
+> +++ b/kernel/trace/trace_events_filter.c
+> @@ -478,12 +478,12 @@ enum {
+>  
+>  static int is_string_field(const char *type)
+>  {
+> +	if (strstr(type, "__data_loc") && strstr(type, "char"))
+> +		return FILTER_DYN_STRING;
+> +
+>  	if (strchr(type, '[') && strstr(type, "char"))
+>  		return FILTER_STATIC_STRING;
+>  
+> -	if (!strcmp(type, "__str_loc"))
+> -		return FILTER_DYN_STRING;
+> -
+>  	return 0;
+>  }
+>  
+> -- 
+> 1.5.4.rc3
+> 
+> 
+
