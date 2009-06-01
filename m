@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbZFAVjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZFAVnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754716AbZFAVjZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 17:39:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbZFAVjS
+	id S1754708AbZFAVnQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 17:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbZFAVnC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 17:39:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34209 "EHLO mx2.redhat.com"
+	Mon, 1 Jun 2009 17:43:02 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57636 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752138AbZFAVjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 17:39:17 -0400
-Date: Mon, 1 Jun 2009 23:34:43 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: PATCH? tracehook_report_clone: fix false positives
-Message-ID: <20090601213443.GA26291@redhat.com>
-References: <20090528113601.GA18725@redhat.com> <20090528114100.GA18744@redhat.com> <20090528212418.2F605FC2BD@magilla.sf.frob.com> <20090529122411.GC19812@redhat.com> <20090530185212.GA10677@redhat.com> <20090601002226.480CEFC3C7@magilla.sf.frob.com> <20090601200723.GA22204@redhat.com> <20090601205056.16307FC3C7@magilla.sf.frob.com>
+	id S1751565AbZFAVnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 17:43:01 -0400
+Date: Mon, 1 Jun 2009 23:42:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+       Zhao Lei <zhaolei@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/5] tracing/workqueue updates
+Message-ID: <20090601214232.GB5786@elte.hu>
+References: <1243876637-6616-1-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090601205056.16307FC3C7@magilla.sf.frob.com>
+In-Reply-To: <1243876637-6616-1-git-send-email-fweisbec@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/01, Roland McGrath wrote:
->
-> > Oh, I never thought about attach && SIGCONT interaction...
-> >
-> > But, tracehook_report_clone() has the same problems?
->
-> I don't follow.
->
-> > And if we move sigaddset to ptrace_task_init(), we should not worry about
-> > SIGCONT? Without CLONE_THREAD the new task is not visible to user-space yet.
-> > Even if we clone a sub-thread, ptrace_init_task() runs under ->siglock.
-> > If SIGCONT is already pending, copy_process() won't succeed.
->
-> It could be pending and blocked.
 
-Yes, I missed that, thanks.
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> > Or do you mean something else?
->
-> Sorry, I don't think I understood what your question was.
-> I just pointed out that the element of PTRACE_ATTACH semantics
-> that would be changed unintentionally if you just replaced its
-> send_sig_info() call with ptrace_init_task() using sigaddset().
+> Hi Ingo,
+> 
+> The following patches are fixes and cleanup for the workqueue tracer.
+> 
+> One of them makes the worklet search patch faster.
+> Some of them fix and sanitize the histogram output and the others clean and
+> standardize the code.
+> 
+> Thanks.
+> 
+> The following changes since commit c5f0530c4bb2ec77a805cfcf23db09b3e5ab09d4:
+>   Ingo Molnar (1):
+>         Merge branch 'tracing/core' into tracing/workqueues
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/workqueue
+> 
+> Anton Blanchard (2):
+>       tracing/events: use %pf in workqueue trace events
+>       tracing/events: rename worklet_execute to worklet_entry and worklet_complete to worklet_exit
+> 
+> Zhaolei (3):
+>       tracing/workqueue: get rid of searching last executed worklet in probe_worklet_complete()
+>       tracing/workqueue: fix list header and function name format
+>       tracing/workqueue: cleanup for trace_workqueue.c
+> 
+>  Documentation/trace/workqueue.txt |   12 ++--
+>  include/trace/events/workqueue.h  |    8 +-
+>  kernel/trace/trace_workqueue.c    |  124 +++++++++++++++++-------------------
+>  3 files changed, 69 insertions(+), 75 deletions(-)
 
-I suspect you misread my previous question.
+Pulled, thanks Frederic!
 
-I didn't mean PTRACE_ATTACH should use ptrace_init_task). I just meant that
-perhaps it makes sense to move sigaddset() from tracehook_finish_clone()
-to tracehook_finish_clone()->ptrace_init_task().
-
-As you correctly pointed out, this sigaddset() is not the same as
-send_sig_info(), but the same is true for tracehook_finish_clone() too.
-
-Oleg.
-
+	Ingo
