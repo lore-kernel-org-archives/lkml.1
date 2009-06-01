@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbZFAUD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbZFAUIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758085AbZFAUD4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 16:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757661AbZFAUDc
+	id S1756894AbZFAUIO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 16:08:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752670AbZFAUH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 16:03:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49326 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756980AbZFAUDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 16:03:31 -0400
-From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH 4/4] inotify/dnotify: should_send_event shouldn't match on
-	FS_EVENT_ON_CHILD
-To: linux-kernel@vger.kernel.org
-Cc: viro@ZenIV.linux.org.uk, hch@lst.de, eparis@redhat.com
-Date: Mon, 01 Jun 2009 16:03:31 -0400
-Message-ID: <20090601200330.16582.26737.stgit@paris.rdu.redhat.com>
-In-Reply-To: <20090601200314.16582.70992.stgit@paris.rdu.redhat.com>
-References: <20090601200314.16582.70992.stgit@paris.rdu.redhat.com>
-User-Agent: StGIT/0.14.3
+	Mon, 1 Jun 2009 16:07:59 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:42065 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752542AbZFAUH7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 16:07:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pVIPwJgO7iuMWn+F0mw7OXseS662svoRfBgMrl9iHLutzZW/AIeaq93n09HIOVat/V
+         9dmytFakvzZExKz7+N2hdy2yCA20AXYiDX70jGtWtJiK4AbUfuMmp1XDDg+KaUEu8fMb
+         SINf3baJ4GlpH3s8Jjss8PrlTcyrAoM4Oc+yE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4A23F6B5.6010000@oracle.com>
+References: <20090601200510.7b5334ab.sfr@canb.auug.org.au>
+	 <4A23F6B5.6010000@oracle.com>
+Date: Mon, 1 Jun 2009 22:07:58 +0200
+Message-ID: <71cd59b00906011307s54e8df13h475d4689e7025d4e@mail.gmail.com>
+Subject: Re: [PATCH] eeepc: fix kconfig problem
+From: Corentin Chary <corentin.chary@gmail.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-inotify and dnotify will both indicate that they want any event which came
-from a child inode.  The fix is to mask off FS_EVENT_ON_CHILD when deciding
-if inotify or dnotify is interested in a given event.
+2009/6/1 Randy Dunlap <randy.dunlap@oracle.com>:
+> Stephen Rothwell wrote:
+>> Hi all,
+>>
+>> Changes since 20090529:
+>
+>
+> Resend.  linux-next still needs this patch.
+>
+> Len, what mailing list(s) should drivers/platform/x86/ patches
+> be sent to?
+>
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
+Hi,
+I believe the right list is linux-acpi.
+Sorry, I forgot to join your patch to the last series I sent to Len.
+Len, could you add this patch  ?
+Thanks
 
- fs/notify/dnotify/dnotify.c          |    1 +
- fs/notify/inotify/inotify_fsnotify.c |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/fs/notify/dnotify/dnotify.c b/fs/notify/dnotify/dnotify.c
-index ec459b6..98a7516 100644
---- a/fs/notify/dnotify/dnotify.c
-+++ b/fs/notify/dnotify/dnotify.c
-@@ -153,6 +153,7 @@ static bool dnotify_should_send_event(struct fsnotify_group *group,
- 	if (!entry)
- 		return false;
- 
-+	mask = (mask & ~FS_EVENT_ON_CHILD);
- 	send = (mask & entry->mask);
- 
- 	fsnotify_put_mark(entry); /* matches fsnotify_find_mark_entry */
-diff --git a/fs/notify/inotify/inotify_fsnotify.c b/fs/notify/inotify/inotify_fsnotify.c
-index 160da54..7ef75b8 100644
---- a/fs/notify/inotify/inotify_fsnotify.c
-+++ b/fs/notify/inotify/inotify_fsnotify.c
-@@ -95,6 +95,7 @@ static bool inotify_should_send_event(struct fsnotify_group *group, struct inode
- 	if (!entry)
- 		return false;
- 
-+	mask = (mask & ~FS_EVENT_ON_CHILD);
- 	send = (entry->mask & mask);
- 
- 	/* find took a reference */
-
+-- 
+Corentin Chary
+http://xf.iksaif.net - http://uffs.org
