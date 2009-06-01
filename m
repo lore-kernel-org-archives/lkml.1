@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756354AbZFAWIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbZFAWJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756354AbZFAWIZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 18:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbZFAWIS
+	id S1756825AbZFAWJR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 18:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbZFAWJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 18:08:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35553 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752578AbZFAWIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 18:08:18 -0400
-Date: Tue, 2 Jun 2009 00:08:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing: fix config options
-Message-ID: <20090601220807.GD5786@elte.hu>
-References: <20090528204128.571984478@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090528204128.571984478@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 1 Jun 2009 18:09:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39732 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751211AbZFAWJD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 18:09:03 -0400
+Date: Mon, 1 Jun 2009 15:08:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       joerg.roedel@amd.com
+Subject: Re: [PATCH 3/4] dma-debug: add dma_debug_driver kernel command line
+Message-Id: <20090601150813.84c932f4.akpm@linux-foundation.org>
+In-Reply-To: <1243523971-12681-4-git-send-email-joerg.roedel@amd.com>
+References: <1243523971-12681-1-git-send-email-joerg.roedel@amd.com>
+	<1243523971-12681-4-git-send-email-joerg.roedel@amd.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 28 May 2009 17:19:30 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+> This patch add the dma_debug_driver= boot parameter to enable the driver
+> filter for early boot.
+> 
 
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/ftrace-1 tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace-1
-> 
-> 
-> Steven Rostedt (2):
->       tracing: fix config options to not show when automatically selected
->       tracing: combine the default tracers into one config
-> 
-> ----
->  kernel/trace/Kconfig |   60 +++++++++++++++++++++++++-------------------------
->  1 files changed, 30 insertions(+), 30 deletions(-)
+Please always update Documentation/kernel-parameters.txt when adding
+new boot options.
 
-Pulled, thanks Steve!
+> +static int __init parse_dma_debug_driver(char *str)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < NAME_MAX_LEN - 1; ++i, ++str) {
+> +		current_driver_name[i] = *str;
+> +		if (*str == ' ' || *str == '\t' || isspace(*str) || *str == 0)
 
-	Ingo
+The comparisons with ' ' and '\t' are unneeded, surely?
+
+> +			break;
+> +	}
+> +	current_driver_name[i] = 0;
+> +
+> +	if (current_driver_name[0])
+> +		printk(KERN_INFO "DMA-API: enable driver filter for "
+> +				 "driver [%s]\n", current_driver_name);
+> +
+> +
+> +	return 1;
+> +}
+> +__setup("dma_debug_driver=", parse_dma_debug_driver);
+
+The whole thing seems a bit overdone - take a look at some other __setup
+functions, see what they're doing.  None of them bother looking for
+spaces in the input - higher level code took care of that.
+
+It's conventional for the name of a __setup function to end in "_setup".
