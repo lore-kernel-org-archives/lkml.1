@@ -1,61 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbZFAOga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbZFAOgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756517AbZFAOga (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 10:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbZFAOgM
+	id S1755969AbZFAOgl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 10:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbZFAOg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 10:36:12 -0400
-Received: from mx0.towertech.it ([213.215.222.73]:40097 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754327AbZFAOgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 10:36:11 -0400
-Date: Mon, 1 Jun 2009 16:36:09 +0200
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: wizant.keidel@online.de
-Cc: p_gortmaker@yahoo.com, linux-kernel@vger.kernel.org
-Subject: Re: RTC-driver kernel 2.6.xxx missing Symbols
-Message-ID: <20090601163609.096e4129@i1501.lan.towertech.it>
-In-Reply-To: <4A23D43B.3030900@online.de>
-References: <4A23D43B.3030900@online.de>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-X-This-Is-A-Real-Message: Yes
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Jun 2009 10:36:29 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56542 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756352AbZFAOg2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 10:36:28 -0400
+Date: Mon, 1 Jun 2009 10:36:26 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/irq: use softirq_to_name instead of
+	__print_symbolic
+Message-ID: <20090601143626.GA26981@infradead.org>
+References: <4A2396C7.3000700@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A2396C7.3000700@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 01 Jun 2009 15:14:35 +0200
-Juergen Keidel <wizant.keidel@online.de> wrote:
+On Mon, Jun 01, 2009 at 04:52:23PM +0800, Li Zefan wrote:
+> It's great to boost recording of softirq events, but why not simply
+> use softirq_to_name in TP_printk()?
 
-> ello,
-> The actual kernel has a new reworked rtc driving system. before, I think
-> 2.6.5, the driver was rtc (rtc.c in drivers/char from  Paul Gortmaker,
-> which exported the function rtc_control, rtc_register, rtc_unregister.
-> These functions are very useful for drivers wich need acces to the rtc.
-> The new rtc-system (rtc-cmos) is missing these functions.
-> As I found out, some drivers especially within the sound area are using
-> the functionality, so they won't load anymore!
-> (sound/core/rtctimer.c)
-> Is there a way around with the new system or is it planned to reactivate
-> these functionality.
+Because userspace programs using the binary trace buffer have no chance to
+retrieve the values from softirq_to_name.
 
- There's an equivalent functionality which allows any in-kernel user to register
- and receive timing interrupts.
+> The above commit has 2 flaws:
+> 
+>   - we waste memory defining local static struct trace_print_flags array
+>     in each softirq TRACE_EVENT
 
- That said, I think it would be better to use other timing sources.
+That could be solved by declaring the array manually and just passing
+the address to __print_symbolic.  Steve, would that work?  (also for
+__print_flags)
 
- Except rtctimer.c, which other driver is using it? When I searched for it,
- rtctimer was the only user and I believe its usage is not widespread.
+>   - if someone adds/removes a softirq, he may not know show_softirq_name()
+>     needs to be updated
 
--- 
+Just make sure you have the translation defined next to the actual
+flags.  This is what I do in the XFS tracer:
 
- Best regards,
+typedef enum xfs_alloctype
+{
+	XFS_ALLOCTYPE_ANY_AG,           /* allocate anywhere, use rotor */
+	XFS_ALLOCTYPE_FIRST_AG,         /* ... start at ag 0 */
+	XFS_ALLOCTYPE_START_AG,         /* anywhere, start in this a.g. */
+	XFS_ALLOCTYPE_THIS_AG,          /* anywhere in this a.g. */
+	XFS_ALLOCTYPE_START_BNO,	/* near this block else anywhere */
+	XFS_ALLOCTYPE_NEAR_BNO,		/* in this a.g. and near this block */
+	XFS_ALLOCTYPE_THIS_BNO		/* at exactly this block */
+} xfs_alloctype_t;
 
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
+#define XFS_ALLOC_TYPES \
+	{ XFS_ALLOCTYPE_ANY_AG,         "ANY_AG" }, \
+	{ XFS_ALLOCTYPE_FIRST_AG,       "FIRST_AG" }, \
+	{ XFS_ALLOCTYPE_START_AG,       "START_AG" }, \
+	{ XFS_ALLOCTYPE_THIS_AG,	"THIS_AG" }, \
+	{ XFS_ALLOCTYPE_START_BNO,	"START_BNO" }, \
+	{ XFS_ALLOCTYPE_NEAR_BNO,	"NEAR_BNO" }, \
+	{ XFS_ALLOCTYPE_THIS_BNO,	"THIS_BNO" }
 
-  http://www.towertech.it
+> Another issue with the above commit, that the output of softirq events
+> becomes:
+> 
+>   X-1701  [000]  1595.220739: softirq_entry: softirq=1 action=TIMER_SOFTIRQ
+> 
+> Compared to the original output:
+> 
+>   X-1701  [000]  1595.220739: softirq_entry: softirq=1 action=TIMER
+
+Which is trivially fixable, see above :)
 
