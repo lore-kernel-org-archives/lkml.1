@@ -1,150 +1,273 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbZFAOF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751817AbZFAOGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752519AbZFAOF0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 10:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZFAOFP
+	id S1751817AbZFAOGW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 10:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZFAOGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 10:05:15 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46830 "EHLO mx1.suse.de"
+	Mon, 1 Jun 2009 10:06:15 -0400
+Received: from mga03.intel.com ([143.182.124.21]:8352 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751008AbZFAOFO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 10:05:14 -0400
-Subject: [PATCH] x86: clean up vdso-layout.lds.S
-From: Petr Tesarik <ptesarik@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
-Content-Type: text/plain
-Organization: SUSE LINUX
-Date: Mon, 01 Jun 2009 16:05:15 +0200
-Message-Id: <1243865115.24278.8.camel@nathan.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	id S1751058AbZFAOGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 10:06:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,284,1241420400"; 
+   d="scan'208";a="149227841"
+Date: Mon, 1 Jun 2009 22:05:53 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
+	in the VM v3
+Message-ID: <20090601140553.GA1979@localhost>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090601115046.GE5018@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The handling of various sections in the VDSO linker script
-looks pretty haphazard. This patch cleans it up in this
-regards:
+On Mon, Jun 01, 2009 at 07:50:46PM +0800, Nick Piggin wrote:
+> On Thu, May 28, 2009 at 09:54:28PM +0800, Wu Fengguang wrote:
+> > On Thu, May 28, 2009 at 08:23:57PM +0800, Nick Piggin wrote:
+> > > On Thu, May 28, 2009 at 05:59:34PM +0800, Wu Fengguang wrote:
+> > > > Hi Nick,
+> > > >
+> > > > > > +     /*
+> > > > > > +      * remove_from_page_cache assumes (mapping && !mapped)
+> > > > > > +      */
+> > > > > > +     if (page_mapping(p) && !page_mapped(p)) {
+> > > > > > +             remove_from_page_cache(p);
+> > > > > > +             page_cache_release(p);
+> > > > > > +     }
+> > > > >
+> > > > > remove_mapping would probably be a better idea. Otherwise you can
+> > > > > probably introduce pagecache removal vs page fault races which
+> > > > > will make the kernel bug.
+> > > >
+> > > > We use remove_mapping() at first, then discovered that it made strong
+> > > > assumption on page_count=2.
+> > > >
+> > > > I guess it is safe from races since we are locking the page?
+> > >
+> > > Yes it probably should (although you will lose get_user_pages data, but
+> > > I guess that's the aim anyway).
+> >
+> > Yes. We (and truncate) rely heavily on this logic:
+> >
+> >         retry:
+> >                 lock_page(page);
+> >                 if (page->mapping == NULL)
+> >                         goto retry;
+> >                 // do something on page
+> >                 unlock_page(page);
+> >
+> > So that we can steal/isolate a page under its page lock.
+> >
+> > The truncate code does wait on writeback page, but we would like to
+> > isolate the page ASAP, so as to avoid someone to find it in the page
+> > cache (or swap cache) and then access its content.
+> >
+> > I see no obvious problems to isolate a writeback page from page cache
+> > or swap cache. But also I'm not sure it won't break some assumption
+> > in some corner of the kernel.
+>
+> The problem is that then you have lost synchronization in the
+> pagecache. Nothing then prevents a new page from being put
+> in there and trying to do IO to or from the same device as the
+> currently running writeback.
 
- - re-order sections to more closely match the result of
-   a normal shared link
- - discard sections which are not useful to user-space
- - issue a linker error if a section is encountered which
-   is known not to work
- - check that the .got section is empty, except for the
-   three entries defined by the ABI
+[ I'm not setting mine mind to get rid of wait_on_page_writeback(),
+  however I'm curious about the consequences of not doing it :)     ]
 
-Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
+You are right in that IO can happen for a new page at the same file offset.
+But I have analyzed that in another email:
 
----
- Makefile          |    5 ++--
- vdso-layout.lds.S |   57 +++++++++++++++++++++++++++++++++++++++++++++---------
- 2 files changed, 51 insertions(+), 11 deletions(-)
+: The reason truncate_inode_pages_range() has to wait on writeback page
+: is to ensure data integrity. Otherwise if there comes two events:
+:         truncate page A at offset X
+:         populate page B at offset X
+: If A and B are all writeback pages, then B can hit disk first and then
+: be overwritten by A. Which corrupts the data at offset X from user's POV.
+:
+: But for hwpoison, there are no such worries. If A is poisoned, we do
+: our best to isolate it as well as intercepting its IO. If the interception
+: fails, it will trigger another machine check before hitting the disk.
+:
+: After all, poisoned A means the data at offset X is already corrupted.
+: It doesn't matter if there comes another B page.
 
-diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
-index 16a9020..8c7f06a 100644
---- a/arch/x86/vdso/Makefile
-+++ b/arch/x86/vdso/Makefile
-@@ -23,7 +23,8 @@ $(obj)/vdso.o: $(obj)/vdso.so
- 
- targets += vdso.so vdso.so.dbg vdso.lds $(vobjs-y)
- 
--export CPPFLAGS_vdso.lds += -P -C
-+vdso-cppflags = -P -C
-+export CPPFLAGS_vdso.lds += -m64 $(vdso-cppflags)
- 
- VDSO_LDFLAGS_vdso.lds = -m elf_x86_64 -Wl,-soname=linux-vdso.so.1 \
- 		      	-Wl,-z,max-page-size=4096 -Wl,-z,common-page-size=4096
-@@ -68,7 +69,7 @@ vdso32.so-$(VDSO32-y)		+= sysenter
- 
- vdso32-images			= $(vdso32.so-y:%=vdso32-%.so)
- 
--CPPFLAGS_vdso32.lds = $(CPPFLAGS_vdso.lds)
-+CPPFLAGS_vdso32.lds = -m32 $(vdso-cppflags)
- VDSO_LDFLAGS_vdso32.lds = -m elf_i386 -Wl,-soname=linux-gate.so.1
- 
- # This makes sure the $(obj) subdirectory exists even though vdso32/
-diff --git a/arch/x86/vdso/vdso-layout.lds.S b/arch/x86/vdso/vdso-layout.lds.S
-index 634a2cf..1f4b215 100644
---- a/arch/x86/vdso/vdso-layout.lds.S
-+++ b/arch/x86/vdso/vdso-layout.lds.S
-@@ -22,16 +22,15 @@ SECTIONS
- 	.eh_frame	: { KEEP (*(.eh_frame)) }	:text
- 
- 	.dynamic	: { *(.dynamic) }		:text	:dynamic
-+	.got		: { *(.got.plt) *(.got) }	:text
- 
--	.rodata		: { *(.rodata*) }		:text
-+	.rodata		: {
-+		*(.rodata .rodata.* .gnu.linkonce.r.*)
-+	}
- 	.data		: {
--	      *(.data*)
--	      *(.sdata*)
--	      *(.got.plt) *(.got)
--	      *(.gnu.linkonce.d.*)
--	      *(.bss*)
--	      *(.dynbss*)
--	      *(.gnu.linkonce.b.*)
-+		*(.data .data.* .gnu.linkonce.d.*)
-+		*(.bss .bss.* .gnu.linkonce.b.*)
-+		*(COMMON)
- 	}
- 
- 	.altinstructions	: { *(.altinstructions) }
-@@ -43,9 +42,49 @@ SECTIONS
- 	 */
- 	. = ALIGN(0x100);
- 
--	.text		: { *(.text*) }			:text	=0x90909090
-+	.text		: {
-+		*(.text .text.* .gnu.linkonce.t.*)
-+	}						:text	=0x90909090
-+
-+	/* We would need a more sophisticated dynamic linker for the
-+	 * vDSO to make the following sections work.  Put them into
-+	 * a special section and raise a link-time error if they get
-+	 * used.
-+	 */
-+	.broken		: {
-+		/* Code in the Procedure Linkage Table will segfault */
-+		*(.plt)
-+
-+		/* Relocation will not be done, so any pointers will
-+		 * still point to the prelinked address, which is wrong
-+		 */
-+		*(.data.rel.ro*)
-+		*(.gnu.linkonce.d.rel.ro.*)
-+
-+		/* Initialization/termination won't work this way */
-+		*(.init) *(.fini)
-+		*(.preinit_array) *(.init_array*)
-+		*(.fini_array*)
-+
-+		/* Thread-local data cannot be defined like this */
-+		*(.tdata .tdata.* .gnu.linkonce.td.*)
-+		*(.tbss .tbss.* .gnu.linkonce.tb.*)
-+		*(.tcommon)
-+	}
-+
-+	/* These sections are not useful */
-+	/DISCARD/	: {
-+		*(.gnu.warning.*)
-+		*(.note.GNU-stack)
-+	}
- }
- 
-+ASSERT(!SIZEOF(.broken), "VDSO contains sections that don't work properly");
-+
-+/* Check that GOT has only the three entries defined by the ABI */
-+ASSERT(SIZEOF(.got) == 3*__SIZEOF_POINTER__,
-+	"Found extra GOT entries. Check your use of external vars.");
-+
- /*
-  * Very old versions of ld do not recognize this name token; use the constant.
-  */
+Does that make sense?
 
+In fact even under the assumption that page won't be truncated during
+writeback, nowhere except the end_writeback_io handlers can actually
+safely take advantage of this assumption. There are no much such
+handlers, so it's relatively easy to check them out one by one.
+
+> > > But I just don't like this one file having all that required knowledge
+> >
+> > Yes that's a big problem.
+> >
+> > One major complexity involves classify the page into different known
+> > types, by testing page flags, page_mapping, page_mapped, etc. This
+> > is not avoidable.
+>
+> No.
+
+If you don't know kind of page it is, how do we know to properly
+isolate it? Or do you mean the current classifying code can be
+simplified? Yeah that's kind of possible.
+
+>
+> > Another major complexity is on calling the isolation routines to
+> > remove references from
+> >         - PTE
+> >         - page cache
+> >         - swap cache
+> >         - LRU list
+> > They more or less made some assumptions on their operating environment
+> > that we have to take care of.  Unfortunately these complexities are
+> > also not easily resolvable.
+> >
+> > > (and few comments) of all the files in mm/. If you want to get rid
+> >
+> > I promise I'll add more comments :)
+>
+> OK, but they should still go in their relevant files. Or as best as
+> possible. Right now it's just silly to have all this here when much
+> of it could be moved out to filemap.c, swap_state.c, page_alloc.c, etc.
+
+OK, I'll bear that point in mind.
+
+> > > of the page and don't care what it's count or dirtyness is, then
+> > > truncate_inode_pages_range is the correct API to use.
+> > >
+> > > (or you could extract out some of it so you can call it directly on
+> > > individual locked pages, if that helps).
+> >
+> > The patch to move over to truncate_complete_page() would like this.
+> > It's not a big win indeed.
+>
+> No I don't mean to do this, but to move the truncate_inode_pages
+> code for truncating a single, locked, page into another function
+> in mm/truncate.c and then call that from here.
+
+It seems to me that truncate_complete_page() is already the code
+you want to move ;-) Or you mean more code around the call site of
+truncate_complete_page()?
+
+                        lock_page(page);
+
+                        wait_on_page_writeback(page);
+We could do this.
+
+                        if (page_mapped(page)) {
+                                unmap_mapping_range(mapping,
+                                  (loff_t)page->index<<PAGE_CACHE_SHIFT,
+                                  PAGE_CACHE_SIZE, 0);
+                        }
+We need a rather complex unmap logic.
+
+                        if (page->index > next)
+                                next = page->index;
+                        next++;
+                        truncate_complete_page(mapping, page);
+                        unlock_page(page);
+
+Now it's obvious that reusing more code than truncate_complete_page()
+is not easy (or natural).
+
+> > ---
+> >  mm/memory-failure.c |   14 ++++++--------
+> >  1 file changed, 6 insertions(+), 8 deletions(-)
+> >
+> > --- sound-2.6.orig/mm/memory-failure.c
+> > +++ sound-2.6/mm/memory-failure.c
+> > @@ -327,20 +327,18 @@ static int me_pagecache_clean(struct pag
+> >  	if (!isolate_lru_page(p))
+> >  		page_cache_release(p);
+> >
+> > -	if (page_has_private(p))
+> > -		do_invalidatepage(p, 0);
+> > -	if (page_has_private(p) && !try_to_release_page(p, GFP_NOIO))
+> > -		Dprintk(KERN_ERR "MCE %#lx: failed to release buffers\n",
+> > -			page_to_pfn(p));
+> > -
+> >  	/*
+> >  	 * remove_from_page_cache assumes (mapping && !mapped)
+> >  	 */
+> >  	if (page_mapping(p) && !page_mapped(p)) {
+> > -		remove_from_page_cache(p);
+> > -		page_cache_release(p);
+> > +                ClearPageMlocked(p);
+> > +                truncate_complete_page(p->mapping, p)
+> >  	}
+> >
+> > +	if (page_has_private(p) && !try_to_release_page(p, GFP_NOIO))
+> > +		Dprintk(KERN_ERR "MCE %#lx: failed to release buffers\n",
+> > +			page_to_pfn(p));
+> > +
+> >  	return RECOVERED;
+> >  }
+> >
+> >
+> > > OK this is the point I was missing.
+> > >
+> > > Should all be commented and put into mm/swap_state.c (or somewhere that
+> > > Hugh prefers).
+> >
+> > But I doubt Hugh will welcome moving that bits into swap*.c ;)
+>
+> Why not? If he has to look at it anyway, he probably rather looks
+> at fewer files :)
+
+Heh. OK if that's more convenient - not a big issue for me really.
+
+> > > > Clean swap cache pages can be directly isolated. A later page fault will bring
+> > > > in the known good data from disk.
+> > >
+> > > OK, but why do you ClearPageUptodate if it is just to be deleted from
+> > > swapcache anyway?
+> >
+> > The ClearPageUptodate() is kind of a careless addition, in the hope
+> > that it will stop some random readers. Need more investigations.
+>
+> OK. But it just muddies the waters in the meantime, so maybe take
+> such things out until there is a case for them.
+
+OK.
+
+> > > > > You haven't waited on writeback here AFAIKS, and have you
+> > > > > *really* verified it is safe to call delete_from_swap_cache?
+> > > >
+> > > > Good catch. I'll soon submit patches for handling the under
+> > > > read/write IO pages. In this patchset they are simply ignored.
+> > >
+> > > Well that's quite important ;) I would suggest you just wait_on_page_writeback.
+> > > It is simple and should work. _Unless_ you can show it is a big problem that
+> > > needs equivalently big mes to fix ;)
+> >
+> > Yes we could do wait_on_page_writeback() if necessary. The downside is,
+> > keeping writeback page in page cache opens a small time window for
+> > some one to access the page.
+>
+> AFAIKS there already is such a window? You're doing lock_page and such.
+
+You know I'm such a crazy guy - I'm going to do try_lock_page() for
+intercepting under read IOs 8-)
+
+> No, it seems rather insane to do something like this here that no other
+> code in the mm ever does.
+
+Yes it's kind of insane.  I'm interested in reasoning it out though.
+
+Thanks,
+Fengguang
 
