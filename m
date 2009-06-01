@@ -1,87 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbZFABwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbZFACJD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480AbZFABwS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 21:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbZFABwG
+	id S1754067AbZFACJD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 22:09:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbZFACIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 21:52:06 -0400
-Received: from mga11.intel.com ([192.55.52.93]:14839 "EHLO mga11.intel.com"
+	Sun, 31 May 2009 22:08:52 -0400
+Received: from sh.osrg.net ([192.16.179.4]:54703 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753323AbZFABwE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 21:52:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,281,1241420400"; 
-   d="scan'208";a="462106418"
-Message-ID: <4A2333CF.2040601@intel.com>
-Date: Mon, 01 Jun 2009 09:50:07 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
-MIME-Version: 1.0
-To: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>
-CC: Grant Grundler <grundler@parisc-linux.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "marc.c.dionne@gmail.com" <marc.c.dionne@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] PCI: use fixed-up device class when configuring device
-References: <1243441505-5477-1-git-send-email-yu.zhao@intel.com> <20090529171956.GE28355@lackof.org>
-In-Reply-To: <20090529171956.GE28355@lackof.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753549AbZFACIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 22:08:51 -0400
+Date: Mon, 1 Jun 2009 11:08:26 +0900
+To: jirislaby@gmail.com
+Cc: fujita.tomonori@lab.ntt.co.jp, mchehab@redhat.com,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] vino: replace dma_sync_single with
+ dma_sync_single_for_cpu
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4A1E28E6.2090807@gmail.com>
+References: <20090528100938I.fujita.tomonori@lab.ntt.co.jp>
+	<4A1E28E6.2090807@gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090601110831E.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 01 Jun 2009 11:08:28 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jesse,
+On Thu, 28 May 2009 08:02:14 +0200
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-Can you please take this fix for 2.6.30 RC if possible? It fixes a 
-regression introduced by the SR-IOV patch series.
+> On 05/28/2009 03:10 AM, FUJITA Tomonori wrote:
+> > This replaces dma_sync_single() with dma_sync_single_for_cpu() because
+> > dma_sync_single() is an obsolete API; include/linux/dma-mapping.h says:
+> > 
+> > /* Backwards compat, remove in 2.7.x */
+> > #define dma_sync_single		dma_sync_single_for_cpu
+> > #define dma_sync_sg		dma_sync_sg_for_cpu
+> > 
+> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > ---
+> >  drivers/media/video/vino.c |    6 +++---
+> >  1 files changed, 3 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/drivers/media/video/vino.c b/drivers/media/video/vino.c
+> > index 43e0998..97b082f 100644
+> > --- a/drivers/media/video/vino.c
+> > +++ b/drivers/media/video/vino.c
+> > @@ -868,9 +868,9 @@ static void vino_sync_buffer(struct vino_framebuffer *fb)
+> >  	dprintk("vino_sync_buffer():\n");
+> >  
+> >  	for (i = 0; i < fb->desc_table.page_count; i++)
+> > -		dma_sync_single(NULL,
+> > -				fb->desc_table.dma_cpu[VINO_PAGE_RATIO * i],
+> > -				PAGE_SIZE, DMA_FROM_DEVICE);
+> > +		dma_sync_single_for_cpu(NULL,
+> > +					fb->desc_table.dma_cpu[VINO_PAGE_RATIO * i],
+> > +					PAGE_SIZE, DMA_FROM_DEVICE);
+> 
+> Shouldn't be there sync_for_device in vino_dma_setup (or somewhere)
+> then? If I understand the API correctly this won't (and didn't) work on
+> some platforms.
 
-Thanks,
-Yu
+Yeah, you might be right.
 
-Grant Grundler wrote:
-> On Thu, May 28, 2009 at 12:25:05AM +0800, Yu Zhao wrote:
->> The device class may be changed after the early fixup. Need to
->> re-read the class value from pci_dev when configuring the device.
->> Otherwise some devices such as JMicron SATA controller won't work.
-> 
-> I looked at pci_setup_device() and was thinking pci_fixup_device()
-> should be called before pci_cfg_space_size() and thus avoid having
-> to setup local "class" variable twice. pci_cfg_space_size() only
-> seems to care if the device is a PCI_CLASS_BRIDGE_HOST (or not).
-> 
-> But dev->class has to be set up in any case and the current order
-> makes more sense to me.
-> 
-> Reviewed-by: Grant Grundler <grundler@parisc-linux.org>
-> 
-> thanks,
-> grant
-> 
->> Tested-by: Marc Dionne <marc.c.dionne@gmail.com>
->> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
->> ---
->>  drivers/pci/probe.c |    2 ++
->>  1 files changed, 2 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
->> index e3c3e08..f1ae247 100644
->> --- a/drivers/pci/probe.c
->> +++ b/drivers/pci/probe.c
->> @@ -745,6 +745,8 @@ int pci_setup_device(struct pci_dev *dev)
->>  
->>  	/* Early fixups, before probing the BARs */
->>  	pci_fixup_device(pci_fixup_early, dev);
->> +	/* device class may be changed after fixup */
->> +	class = dev->class >> 8;
->>  
->>  	switch (dev->hdr_type) {		    /* header type */
->>  	case PCI_HEADER_TYPE_NORMAL:		    /* standard header */
->> -- 
->> 1.6.1
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+However, looks like this driver does only DMA_FROM_DEVICE transfer and
+cpu doesn't modify the DMA buffer.
 
+So we don't need to worry that the hardware gets old data. And it's
+not possible that we write back old data in cache to the main memory
+after DMA. It means that the driver doesn't need
+sync_single_for_device(), I think.
+
+Note that this patch doesn't break the driver (this patch doesn't
+change anything). If this patch doesn't work, then this driver is
+already broken.
+
+
+> The same for other drivers who don't free the buffer after the sync but
+> recycle it instead.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
