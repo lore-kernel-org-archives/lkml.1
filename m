@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbZFAINm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbZFAIPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756490AbZFAINm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 04:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbZFAINe
+	id S1756275AbZFAIPb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 04:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZFAIPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 04:13:34 -0400
-Received: from web32604.mail.mud.yahoo.com ([68.142.207.231]:24373 "HELO
-	web32604.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755771AbZFAINd (ORCPT
+	Mon, 1 Jun 2009 04:15:24 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59264 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752581AbZFAIPX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 04:13:33 -0400
-Message-ID: <295883.87002.qm@web32604.mail.mud.yahoo.com>
-X-YMail-OSG: J1fX_pIVM1krhHM9xCCpIAnw6mtG9QvuAwfD7HrapYFjWqd8dpDDwPyuwco24x8EQB.OHPXMJTr5EvpsOY9U88SsSNL81uy_rGc.fV2HvHDJ8lDl0MmSAYHVjBQGHdArg7Req3IGQdAHJ.wOrF_XCpSun1uPzyq6OwQ.2HyMRbnM5slOkXUhPZntGvx47tpw9ENdzcFCspk5bGD8GVFnPnCnAvPlgjd6YUSrltsTlEBZD2zVK3X472oUF24URPPIqZNmaV.oQy6lUot23ftYiD1EeG9plCFjC.1dT9qHTAqzFC9W
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.10
-References: <THxQaUP0K2D.A.QkF.UVbIKB@chimera> <PkPeJtNB3KO.A.4QG.tVbIKB@chimera>
-Date: Mon, 1 Jun 2009 01:13:35 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: [Bug #13178] Booting very slow
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Stephen Hemminger <shemminger@vyatta.com>
-In-Reply-To: <PkPeJtNB3KO.A.4QG.tVbIKB@chimera>
+	Mon, 1 Jun 2009 04:15:23 -0400
+To: Tobias Doerffel <tobias.doerffel@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: add specific support for Intel Atom architecture
+From: Andi Kleen <andi@firstfloor.org>
+References: <1243638699-15194-1-git-send-email-tobias.doerffel@gmail.com>
+Date: Mon, 01 Jun 2009 10:15:24 +0200
+In-Reply-To: <1243638699-15194-1-git-send-email-tobias.doerffel@gmail.com> (Tobias Doerffel's message of "Sat, 30 May 2009 01:11:39 +0200")
+Message-ID: <87r5y4cqub.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tobias Doerffel <tobias.doerffel@gmail.com> writes:
 
------ Original Message ----
+> This adds another option when selecting CPU family so the kernel can
+> be optimized for Intel Atom CPUs. If GCC supports tuning options for
+> Intel Atom they will be used.
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-> Cc: Kernel Testers List <kernel-testers@vger.kernel.org>; Jesse Barnes <jbarnes@virtuousgeek.org>; Martin Knoblauch <spamtrap@knobisoft.de>; Stephen Hemminger <shemminger@vyatta.com>
-> Sent: Saturday, May 30, 2009 9:55:37 PM
-> Subject: [Bug #13178] Booting very slow
-> 
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.28 and 2.6.29.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=13178
-> Subject        : Booting very slow
-> Submitter    : Martin Knoblauch 
-> Date        : 2009-04-24 12:45 (37 days old)
-> References    : http://marc.info/?l=linux-kernel&m=124057716231773&w=4
+You seem to have ignored the earlier review feedback?
 
- We (HP and myself) are trying to track it down.
+Like
 
-Cheers
-Martin
+> diff --git a/arch/x86/include/asm/module.h b/arch/x86/include/asm/module.h
+> index 47d6274..e959c4a 100644
+> --- a/arch/x86/include/asm/module.h
+> +++ b/arch/x86/include/asm/module.h
+> @@ -28,6 +28,8 @@ struct mod_arch_specific {};
+>  #define MODULE_PROC_FAMILY "586MMX "
+>  #elif defined CONFIG_MCORE2
+>  #define MODULE_PROC_FAMILY "CORE2 "
+> +#elif defined CONFIG_MATOM
+> +#define MODULE_PROC_FAMILY "ATOM "
 
+This is not needed because Atom is compatible to CORE2 (except for
+one instruction the kernel doesn't use)
+
++	cflags-$(CONFIG_MATOM) += $(call cc-option,-march=atom) \
++		$(call cc-option,-mtune=atom,$(call cc-option,-mtune=generic))
+
+It's doubtful that tune=generic is the best fallback for Atom, likely
+tune=p5 is better
+
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
