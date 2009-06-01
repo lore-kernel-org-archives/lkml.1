@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756415AbZFAXmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbZFAXqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756415AbZFAXmw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 19:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZFAXmp
+	id S1755851AbZFAXqG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 19:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbZFAXp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 19:42:45 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:43356 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753076AbZFAXmp (ORCPT
+	Mon, 1 Jun 2009 19:45:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38744 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752505AbZFAXp4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 19:42:45 -0400
-Message-ID: <4A246772.1090304@ct.jp.nec.com>
-Date: Tue, 02 Jun 2009 08:42:42 +0900
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
-       k-ueda@ct.jp.nec.com
-Subject: [PATCH block#for-2.6.31] block: fix a possible oops on elv_abort_queue()
-Content-Type: text/plain; charset=ISO-2022-JP
+	Mon, 1 Jun 2009 19:45:56 -0400
+Date: Mon, 1 Jun 2009 16:45:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Fix floppy hibernation
+Message-Id: <20090601164520.281cc4c8.akpm@linux-foundation.org>
+In-Reply-To: <200905301804.26762.linux@rainbow-software.org>
+References: <200905301804.26762.linux@rainbow-software.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+On Sat, 30 May 2009 18:04:25 +0200
+Ondrej Zary <linux@rainbow-software.org> wrote:
 
-I found one more mis-conversion to the 'request is always dequeued
-when completing' model in elv_abort_queue() during code inspection.
-Although I haven't hit any problem caused by this mis-conversion yet
-and just done compile/boot test, please apply if you have no problem.
+> Hello,
+> floppy driver was always missing hibernation support. After resume, floppy did
+> not work (until a couple of disk reinserts and retries), producing errors like
+> this:
+> end_request: I/O error, dev fd0, sector 0
+> 
+> Ingo Molnar tried to fix it in 2006: http://lkml.org/lkml/2006/11/12/92
+> 
+> 
+> 
+> 
+> Based on Ingo Molnar's patch from 2006, this makes the floppy work after
+> resume from hibernation, at least on my machine.
+> 
+> 
+> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+> 
+> --- linux-2.6.29.4-orig/drivers/block/floppy.c	2009-05-30 14:38:29.000000000 +0200
+> +++ linux/drivers/block/floppy.c	2009-05-30 17:50:32.000000000 +0200
+> @@ -4148,6 +4148,24 @@
+>  {
+>  }
+>  
+> +static int floppy_resume(struct platform_device *dev)
+> +{
+> +	int i;
+> +
+> +	for (i = 0; i < N_FDC; i++)
+> +		if (FDCS->address != -1)
+> +			user_reset_fdc(-1, FD_RESET_ALWAYS, 0);
+> +
+> +	return 0;
+> +}
 
+hm, how does this work?
 
-Request must be dequeued when it completes.
-However, elv_abort_queue() completes requests without dequeueing.
-This will cause oops in the __blk_end_request_all().
-This patch fixes the oops.
+FDCS is a revolting should-not-exist macro which assumes the presence
+of a local variable called `fdc'.
 
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
----
- block/elevator.c |    5 +++++
- 1 file changed, 5 insertions(+)
+So I think the loop control variable here should be called `fdc', not `i'.
 
-Index: linux-2.6-block/block/elevator.c
-===================================================================
---- linux-2.6-block.orig/block/elevator.c
-+++ linux-2.6-block/block/elevator.c
-@@ -813,6 +813,11 @@ void elv_abort_queue(struct request_queu
- 		rq = list_entry_rq(q->queue_head.next);
- 		rq->cmd_flags |= REQ_QUIET;
- 		trace_block_rq_abort(q, rq);
-+		/*
-+		 * Mark this request as started so we don't trigger
-+		 * any debug logic in the end I/O path.
-+		 */
-+		blk_start_request(rq);
- 		__blk_end_request_all(rq, -EIO);
- 	}
- }
+It's pretty amazing that something like this still exists in a core
+driver.  Someone please save us!
+
