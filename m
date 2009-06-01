@@ -1,88 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbZFACJD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754413AbZFACKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754067AbZFACJD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 22:09:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbZFACIw
+	id S1754413AbZFACKP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 22:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753969AbZFACKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 22:08:52 -0400
-Received: from sh.osrg.net ([192.16.179.4]:54703 "EHLO sh.osrg.net"
+	Sun, 31 May 2009 22:10:03 -0400
+Received: from mail.atheros.com ([12.36.123.2]:18389 "EHLO mail.atheros.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753549AbZFACIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 22:08:51 -0400
-Date: Mon, 1 Jun 2009 11:08:26 +0900
-To: jirislaby@gmail.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mchehab@redhat.com,
-       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] vino: replace dma_sync_single with
- dma_sync_single_for_cpu
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4A1E28E6.2090807@gmail.com>
-References: <20090528100938I.fujita.tomonori@lab.ntt.co.jp>
-	<4A1E28E6.2090807@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090601110831E.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 01 Jun 2009 11:08:28 +0900 (JST)
+	id S1753924AbZFACKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 22:10:01 -0400
+From: <jie.yang@atheros.com>
+To: <davem@davemloft.net>
+CC: <pyunyh@gmail.com>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, Jie Yang <jie.yang@atheros.com>
+Subject: [PATCH net-next]atl1c: fix spelling error
+Date: Mon, 1 Jun 2009 10:07:58 +0800
+Message-ID: <12438220782521-git-send-email-jie.yang@atheros.com>
+X-Mailer: git-send-email 1.5.2.2
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 28 May 2009 08:02:14 +0200
-Jiri Slaby <jirislaby@gmail.com> wrote:
+Fix spelling error
 
-> On 05/28/2009 03:10 AM, FUJITA Tomonori wrote:
-> > This replaces dma_sync_single() with dma_sync_single_for_cpu() because
-> > dma_sync_single() is an obsolete API; include/linux/dma-mapping.h says:
-> > 
-> > /* Backwards compat, remove in 2.7.x */
-> > #define dma_sync_single		dma_sync_single_for_cpu
-> > #define dma_sync_sg		dma_sync_sg_for_cpu
-> > 
-> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > ---
-> >  drivers/media/video/vino.c |    6 +++---
-> >  1 files changed, 3 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/drivers/media/video/vino.c b/drivers/media/video/vino.c
-> > index 43e0998..97b082f 100644
-> > --- a/drivers/media/video/vino.c
-> > +++ b/drivers/media/video/vino.c
-> > @@ -868,9 +868,9 @@ static void vino_sync_buffer(struct vino_framebuffer *fb)
-> >  	dprintk("vino_sync_buffer():\n");
-> >  
-> >  	for (i = 0; i < fb->desc_table.page_count; i++)
-> > -		dma_sync_single(NULL,
-> > -				fb->desc_table.dma_cpu[VINO_PAGE_RATIO * i],
-> > -				PAGE_SIZE, DMA_FROM_DEVICE);
-> > +		dma_sync_single_for_cpu(NULL,
-> > +					fb->desc_table.dma_cpu[VINO_PAGE_RATIO * i],
-> > +					PAGE_SIZE, DMA_FROM_DEVICE);
-> 
-> Shouldn't be there sync_for_device in vino_dma_setup (or somewhere)
-> then? If I understand the API correctly this won't (and didn't) work on
-> some platforms.
-
-Yeah, you might be right.
-
-However, looks like this driver does only DMA_FROM_DEVICE transfer and
-cpu doesn't modify the DMA buffer.
-
-So we don't need to worry that the hardware gets old data. And it's
-not possible that we write back old data in cache to the main memory
-after DMA. It means that the driver doesn't need
-sync_single_for_device(), I think.
-
-Note that this patch doesn't break the driver (this patch doesn't
-change anything). If this patch doesn't work, then this driver is
-already broken.
-
-
-> The same for other drivers who don't free the buffer after the sync but
-> recycle it instead.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Signed-off-by: Jie Yang <jie.yang@atheros.com>
+---
+diff --git a/drivers/net/atl1c/atl1c_main.c b/drivers/net/atl1c/atl1c_main.c
+index 598c294..8475ff4 100644
+--- a/drivers/net/atl1c/atl1c_main.c
++++ b/drivers/net/atl1c/atl1c_main.c
+@@ -1115,7 +1115,7 @@ static int atl1c_stop_mac(struct atl1c_hw *hw)
+ 
+ 	AT_READ_REG(hw, REG_TXQ_CTRL, &data);
+ 	data &= ~TXQ_CTRL_EN;
+-	AT_WRITE_REG(hw, REG_TWSI_CTRL, data);
++	AT_WRITE_REG(hw, REG_TXQ_CTRL, data);
+ 
+ 	for (timeout = 0; timeout < AT_HW_MAX_IDLE_DELAY; timeout++) {
+ 		AT_READ_REG(hw, REG_IDLE_STATUS, &data);
