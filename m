@@ -1,51 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbZFAIuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbZFAIvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753709AbZFAIuO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 04:50:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZFAIuD
+	id S1756000AbZFAIvR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 04:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbZFAIvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 04:50:03 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56393 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752419AbZFAIuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 04:50:03 -0400
-Date: Mon, 1 Jun 2009 10:50:01 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: GeunSik Lim <leemgs1@gmail.com>
-Cc: Jiri Kosina <trivial@kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] ftrace:fix description of trace directory
-In-Reply-To: <1243813869.20635.34.camel@centos51>
-Message-ID: <alpine.LNX.2.00.0906011049450.11359@wotan.suse.de>
-References: <1243813869.20635.34.camel@centos51>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Mon, 1 Jun 2009 04:51:07 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49241 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754271AbZFAIvG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 04:51:06 -0400
+Message-ID: <4A2396C7.3000700@cn.fujitsu.com>
+Date: Mon, 01 Jun 2009 16:52:23 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing/irq: use softirq_to_name instead of __print_symbolic
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Jun 2009, GeunSik Lim wrote:
+| commit c2adae0970ca1db8adb92fb56ae3bcabd916e8bd
+| Author: Steven Rostedt <srostedt@redhat.com>
+| Date:   Wed May 20 19:56:19 2009 -0400
+|
+|    tracing: convert irq events to use __print_symbolic
+|
+|    The recording of the names at trace time is inefficient. This patch
+|    implements the softirq event recording to only record the vector
+|    and then use the __print_symbolic interface to print out the names.
+|
+|    [ Impact: faster recording of softirq events ]
 
-> ---
->  Documentation/trace/ftrace.txt |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
-> index fd9a3e6..608770c 100644
-> --- a/Documentation/trace/ftrace.txt
-> +++ b/Documentation/trace/ftrace.txt
-> @@ -1825,4 +1825,4 @@ an error.
->  -----------
->  
->  More details can be found in the source code, in the
-> -kernel/tracing/*.c files.
-> +kernel/trace/*.c files.
+It's great to boost recording of softirq events, but why not simply
+use softirq_to_name in TP_printk()?
 
-Applied to trivial queue, thanks.
+The above commit has 2 flaws:
 
+  - we waste memory defining local static struct trace_print_flags array
+    in each softirq TRACE_EVENT
+  - if someone adds/removes a softirq, he may not know show_softirq_name()
+    needs to be updated
+
+Another issue with the above commit, that the output of softirq events
+becomes:
+
+  X-1701  [000]  1595.220739: softirq_entry: softirq=1 action=TIMER_SOFTIRQ
+
+Compared to the original output:
+
+  X-1701  [000]  1595.220739: softirq_entry: softirq=1 action=TIMER
+
+[ Impact: reserve the original output format of softirq events ]
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ include/trace/events/irq.h |   17 ++---------------
+ 1 files changed, 2 insertions(+), 15 deletions(-)
+
+diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
+index 683fb36..2ff9998 100644
+--- a/include/trace/events/irq.h
++++ b/include/trace/events/irq.h
+@@ -7,19 +7,6 @@
+ #undef TRACE_SYSTEM
+ #define TRACE_SYSTEM irq
+ 
+-#define softirq_name(sirq) { sirq, #sirq }
+-#define show_softirq_name(val)						\
+-	__print_symbolic(val,						\
+-			 softirq_name(HI_SOFTIRQ),			\
+-			 softirq_name(TIMER_SOFTIRQ),			\
+-			 softirq_name(NET_TX_SOFTIRQ),			\
+-			 softirq_name(NET_RX_SOFTIRQ),			\
+-			 softirq_name(BLOCK_SOFTIRQ),			\
+-			 softirq_name(TASKLET_SOFTIRQ),			\
+-			 softirq_name(SCHED_SOFTIRQ),			\
+-			 softirq_name(HRTIMER_SOFTIRQ),			\
+-			 softirq_name(RCU_SOFTIRQ))
+-
+ /**
+  * irq_handler_entry - called immediately before the irq action handler
+  * @irq: irq number
+@@ -107,7 +94,7 @@ TRACE_EVENT(softirq_entry,
+ 	),
+ 
+ 	TP_printk("softirq=%d action=%s", __entry->vec,
+-		  show_softirq_name(__entry->vec))
++		  softirq_to_name[__entry->vec])
+ );
+ 
+ /**
+@@ -136,7 +123,7 @@ TRACE_EVENT(softirq_exit,
+ 	),
+ 
+ 	TP_printk("softirq=%d action=%s", __entry->vec,
+-		  show_softirq_name(__entry->vec))
++		  softirq_to_name[__entry->vec])
+ );
+ 
+ #endif /*  _TRACE_IRQ_H */
 -- 
-Jiri Kosina
-SUSE Labs
+1.5.4.rc3
+
