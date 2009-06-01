@@ -1,37 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbZFAHzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbZFAH7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755996AbZFAHzs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 03:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbZFAHzl
+	id S1755673AbZFAH7A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 03:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752957AbZFAH6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 03:55:41 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:55147 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752472AbZFAHzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 03:55:40 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 1 Jun 2009 03:58:52 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43202 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752560AbZFAH6w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 03:58:52 -0400
+Date: Mon, 1 Jun 2009 08:58:14 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: David Miller <davem@davemloft.net>, riel@redhat.com,
+       research@subreption.com, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu, linux-mm@kvack.org, torvalds@osdl.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] Use kzfree in crypto API context initialization and
+ key/iv handling
+Message-ID: <20090601085814.3e010533@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090601044837.GA9220@gondor.apana.org.au>
+References: <20090531025720.GC9033@oblivion.subreption.com>
+	<20090530.230213.73434433.davem@davemloft.net>
+	<4A22967C.3080304@redhat.com>
+	<20090531.214623.76344831.davem@davemloft.net>
+	<20090601044837.GA9220@gondor.apana.org.au>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18979.35192.995732.609215@cargo.ozlabs.ibm.com>
-Date: Mon, 1 Jun 2009 17:55:36 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf_counter: Provide functions for locking and pinning the context for a task
-In-Reply-To: <18979.34748.755674.596386@cargo.ozlabs.ibm.com>
-References: <18979.34748.755674.596386@cargo.ozlabs.ibm.com>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops, forgot to put sequence numbers on these patches.  They are:
+On Mon, 1 Jun 2009 14:48:37 +1000
+Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
-[PATCH 1/4] perf_counter: Provide functions for locking and pinning the
-context for a task
-[PATCH 2/4] perf_counter: Allow software counters to count while task is
-not running
-[PATCH 3/4] perf_counter: Fix cpu migration counter
-[PATCH 4/4] perf_counter: Remove unused prev_state field
+> On Sun, May 31, 2009 at 09:46:23PM -0700, David Miller wrote:
+> > 
+> > I don't even want to think about what this does to IPSEC rule creation
+> > rates, that that matters heavily for cell phone networks where
+> > hundreds of thousands of nodes come in and out of the server and each
+> > such entry requires creating 4 IPSEC rules.
+> 
+> I completely agree.  The zeroing of metadata is gratuitous.
 
-Paul.
+Zeroing long term keys makes sense but for the short lifepsan keys used on
+the wire its a bit pointless irrespective of speed (I suspect done
+properly the performance impact would be close to nil anyway)
+
