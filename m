@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752205AbZFAFHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752025AbZFAFNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752205AbZFAFHj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 01:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbZFAFHb
+	id S1752025AbZFAFNe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 01:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbZFAFN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 01:07:31 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:41231 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750752AbZFAFHa (ORCPT
+	Mon, 1 Jun 2009 01:13:26 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:53566 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751368AbZFAFNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 01:07:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:references
-         :in-reply-to:mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=blz6W/y7KaN9Ctc6IZTQhawIkqtKo/y/C6lknbRw3RDnPdBwtxv1Y9IAfHo75IPMln
-         MLInToTtU0GVoxtjr3BRHlvZRkc0l5dGFm2e1ATnXHliLVW0DbUw1mU8tale4J75ibKl
-         evKLPRQMy0GLbjahpcvlQ3C22wheir1kXIYpc=
-From: Marek Vasut <marek.vasut@gmail.com>
-Organization: Hack&Dev
-To: alsa-devel@alsa-project.org
-Subject: Re: [alsa-devel]  [PATCH] Support NVIDIA 8 channel HDMI audio
-Date: Mon, 1 Jun 2009 07:07:30 +0200
-User-Agent: KMail/1.9.9
-Cc: "Wei Ni" <wni@nvidia.com>, "Takashi Iwai" <tiwai@suse.de>,
-       Peer Chen <pchen@nvidia.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Pavel Hofman <pavel.hofman@insite.cz>, akpm <akpm@linux-foundation.org>
-References: <15F501D1A78BD343BE8F4D8DB854566B058A63E9@hkemmail01.nvidia.com>
-In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B058A63E9@hkemmail01.nvidia.com>
+	Mon, 1 Jun 2009 01:13:25 -0400
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Neil Brown <neilb@suse.de>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       raz ben yehuda <raziebe@gmail.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>
+Subject: Re: linux-next: md tree build failure
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <20090525153346.758483fc.sfr@canb.auug.org.au>
+	<20090525061552.GH11363@kernel.dk>
+	<20090601144218.26810ec8.sfr@canb.auug.org.au>
+Date: Mon, 01 Jun 2009 01:13:11 -0400
+In-Reply-To: <20090601144218.26810ec8.sfr@canb.auug.org.au> (Stephen
+	Rothwell's message of "Mon, 1 Jun 2009 14:42:18 +1000")
+Message-ID: <yq163fga654.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906010707.30788.marek.vasut@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+X-Source-IP: abhmt009.oracle.com [141.146.116.18]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4A236369.014D:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 of June 2009 04:51:16 Wei Ni wrote:
-> Hi, Takashi
-> I'm a Nvidia engineer, we wish to support 8 channel HDMI audio for
-> MCP78/7A.
->
-> I attached the patch file, it based on the latest sound git tree,
-> please check it.
->
+>>>>> "Stephen" == Stephen Rothwell <sfr@canb.auug.org.au> writes:
 
-Hi,
-can you please run scripts/checkpatch.pl on the patches you submit? I'd help a 
-lot, thanks.
+>> > Caused by commit e1defc4ff0cf57aca6c5e3ff99fa503f5943c1f1 ("block:
+>> > Do away with the notion of hardsect_size") from the block tree
+>> > interacting with commit 131e4477401ae76a9cbe8539e4b7819e04cfba36
+>> > ("md: raid0: chunk size check in raid0_run") from the md tree.
 
-btw. here's the output (shortened):
+Stephen> So, is anything happening about these?  I still get these (and
+Stephen> the dm) build failures.
 
-total: 47 errors, 15 warnings, 349 lines checked
-
-0001-Support-NVIDIA-8-channel-HDMI-audio.patch has style problems, please 
-review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
-
->  <<0001-Support-NVIDIA-8-channel-HDMI-audio.patch>>
->
-> Thanks
-> Wei.
->
-> ---------------------------------------------------------------------------
->-------- This email message is for the sole use of the intended recipient(s)
-> and may contain confidential information.  Any unauthorized review, use,
-> disclosure or distribution is prohibited.  If you are not the intended
-> recipient, please contact the sender by reply email and destroy all copies
-> of the original message.
-> ---------------------------------------------------------------------------
->--------
+There's a replacement DM patch kit brewing that will hopefully come your
+way shortly.  It replaces the patches currently in Alasdair's tree.
+Mike sent the kit out for review last week and I'm currently testing it.
 
 
+I don't know what Neil's plans are.  Neil: Do you want to rebase your
+tree, fix up the conflicting patches or how would you like to handle
+this?
+
+-- 
+Martin K. Petersen	Oracle Linux Engineering
