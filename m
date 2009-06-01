@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757855AbZFAUAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbZFAUDY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757855AbZFAUAA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 16:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755248AbZFAT7v
+	id S1757839AbZFAUDY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 16:03:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753622AbZFAUDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 15:59:51 -0400
-Received: from mo-p00-ob.rzone.de ([81.169.146.162]:59781 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754128AbZFAT7u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 15:59:50 -0400
-X-RZG-AUTH: :I2ANY0W6W/eA95XfH/xfO6gOxLxTty/udEMngcJ/VAKW226lDNJVyuUJITI8Ob4x
-X-RZG-CLASS-ID: mo00
-Message-ID: <4A243334.3020402@hartkopp.net>
-Date: Mon, 01 Jun 2009 21:59:48 +0200
-From: Oliver Hartkopp <oliver@hartkopp.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 1 Jun 2009 16:03:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49307 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752573AbZFAUDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 16:03:16 -0400
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH 1/4] fsnotify: move events should indicate the event was on a
+	child
+To: linux-kernel@vger.kernel.org
+Cc: viro@ZenIV.linux.org.uk, hch@lst.de, eparis@redhat.com
+Date: Mon, 01 Jun 2009 16:03:14 -0400
+Message-ID: <20090601200314.16582.70992.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-To: Marcel Holtmann <marcel@holtmann.org>, David Miller <davem@davemloft.net>
-CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-References: <20090601.032500.54712490.davem@davemloft.net> <1243867942.3015.18.camel@localhost.localdomain>
-In-Reply-To: <1243867942.3015.18.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcel Holtmann wrote:
-> Hi Dave,
-> 
->> Things are really winding down, and the bug fix rate is down
->> to at best a trickle.  It might be time to do that final
->> release soon :-)
-> 
-> can you give me quick update on this pull request:
-> 
-> 	http://marc.info/?l=linux-netdev&m=124341070008320&w=2
-> 
-> Regards
-> 
-> Marcel
+fsnotify tells its listeners explicitly when an event happened on the given
+inode verses on the child of the given inode.  (see __fsnotify_parent)
+However, the semantics of fsnotify_move() are such that we deliver events
+directly to the two parent directories in question (old_dir and new_dir)
+directly without using the __fsnotify_parent() call.  fsnotify should be
+adding FS_EVENT_ON_CHILD for the notifications to these parents.
 
-Just to make clear that this patch does not only fix a "lockdep warning":
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
 
-Without this patch dialup networking via mobile phones via bluetooth does not
-work anymore ...
+ include/linux/fsnotify.h |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
 
-Best regards,
-Oliver
+diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
+index bdf626b..c2e8066 100644
+--- a/include/linux/fsnotify.h
++++ b/include/linux/fsnotify.h
+@@ -83,12 +83,11 @@ static inline void fsnotify_move(struct inode *old_dir, struct inode *new_dir,
+ 	struct inode *source = moved->d_inode;
+ 	u32 in_cookie = inotify_get_cookie();
+ 	u32 fs_cookie = fsnotify_get_cookie();
+-	__u32 old_dir_mask = 0;
+-	__u32 new_dir_mask = 0;
++	__u32 old_dir_mask = (FS_EVENT_ON_CHILD | FS_MOVED_FROM);
++	__u32 new_dir_mask = (FS_EVENT_ON_CHILD | FS_MOVED_TO);
+ 
+-	if (old_dir == new_dir) {
+-		old_dir_mask = FS_DN_RENAME;
+-	}
++	if (old_dir == new_dir)
++		old_dir_mask |= FS_DN_RENAME;
+ 
+ 	if (isdir) {
+ 		isdir = IN_ISDIR;
+@@ -96,9 +95,6 @@ static inline void fsnotify_move(struct inode *old_dir, struct inode *new_dir,
+ 		new_dir_mask |= FS_IN_ISDIR;
+ 	}
+ 
+-	old_dir_mask |= FS_MOVED_FROM;
+-	new_dir_mask |= FS_MOVED_TO;
+-
+ 	inotify_inode_queue_event(old_dir, IN_MOVED_FROM|isdir, in_cookie, old_name,
+ 				  source);
+ 	inotify_inode_queue_event(new_dir, IN_MOVED_TO|isdir, in_cookie, new_name,
 
