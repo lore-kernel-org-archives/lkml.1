@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbZFAFOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbZFAFXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753534AbZFAFOA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 01:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbZFAFNw
+	id S1754239AbZFAFXk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 01:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbZFAFXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 01:13:52 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:49263 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751311AbZFAFNw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 01:13:52 -0400
-Date: Mon, 1 Jun 2009 14:01:02 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: balbir@linux.vnet.ibm.com
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>,
-       KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC] Low overhead patches for the memory cgroup controller
- (v2)
-Message-Id: <20090601140102.c55bdf03.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090601132505.2fe9c870.nishimura@mxp.nes.nec.co.jp>
-References: <b7dd123f0a15fff62150bc560747d7f0.squirrel@webmail-b.css.fujitsu.com>
-	<20090517041543.GA5156@balbir.in.ibm.com>
-	<20090601132505.2fe9c870.nishimura@mxp.nes.nec.co.jp>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
+	Mon, 1 Jun 2009 01:23:32 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:36625 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750949AbZFAFXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 01:23:31 -0400
+Message-ID: <52785.192.168.10.89.1243833774.squirrel@dbdmail.itg.ti.com>
+Date: Mon, 1 Jun 2009 10:52:54 +0530 (IST)
+Subject: Re: [resending-2] [PATCH] [MTD] [NAND] Add OMAP2 / OMAP3 NAND 
+     driver
+From: "vimal singh" <vimalsingh@ti.com>
+To: dedekind@infradead.org
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > @@ -1114,9 +1125,24 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
-> >  		css_put(&mem->css);
-> >  		return;
-> >  	}
-> > +
-> >  	pc->mem_cgroup = mem;
-> >  	smp_wmb();
-> > -	pc->flags = pcg_default_flags[ctype];
-> > +	switch (ctype) {
-> > +	case MEM_CGROUP_CHARGE_TYPE_CACHE:
-> > +	case MEM_CGROUP_CHARGE_TYPE_SHMEM:
-> > +		SetPageCgroupCache(pc);
-> > +		SetPageCgroupUsed(pc);
-> > +		break;
-> > +	case MEM_CGROUP_CHARGE_TYPE_MAPPED:
-> > +		SetPageCgroupUsed(pc);
-> > +		break;
-> > +	default:
-> > +		break;
-> > +	}
-> > +
-> > +	if (mem == root_mem_cgroup)
-> > +		SetPageCgroupRoot(pc);
-> >  
-> >  	mem_cgroup_charge_statistics(mem, pc, true);
-> >  
-> Shouldn't we set PCG_LOCK ?
-> unlock_page_cgroup() will be called after this.
-> 
-Ah, lock_page_cgroup() has already set it.
-please ignore this comment.
+On Fri, May 15, 2009 at 6:38 PM, Artem Bityutskiy <dedekind@infradead.org> wrote:
+> On Thu, 2009-04-30 at 15:03 +0530, vimal singh wrote:
+>> This driver is present in the OMAP tree, now pushing it to MTD.
+>>
+>> Original author(s):
+>>        Jian Zhang <jzhang@ti.com>
+>>
+>> Signed-off-by: Vimal Singh <vimalsingh@ti.com>
+>> ---
+>>  drivers/mtd/nand/Kconfig  |    6
+>>  drivers/mtd/nand/Makefile |    1
+>>  drivers/mtd/nand/omap2.c  |  776
+++++++++++++++++++++++++++++++++++++++++++++++
+>>  3 files changed, 783 insertions(+)
+>
+> Hi Thomas,
+>
+> would you please find a little time and Ack/Nack this
+> please?
 
-Sorry for noise.
+Artem,
+This patch is still pending. This patch has already been reviewed by you and
+Andrew Morton. Seems like Thomas is not finding time to review this. What
+should be the next step about this?
 
-Daisuke Nishimura.
+Andrew has already given his signed-off for this patch:
+http://lists.infradead.org/pipermail/linux-mtd/2009-May/025562.html
+
+-- 
+Regards,
+Vimal
 
