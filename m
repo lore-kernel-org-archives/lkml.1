@@ -1,112 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbZFACqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZFAC4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754489AbZFACqS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 31 May 2009 22:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbZFACqK
+	id S1754858AbZFAC4v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 31 May 2009 22:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbZFAC4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 31 May 2009 22:46:10 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53575 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753549AbZFACqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 31 May 2009 22:46:09 -0400
-Message-ID: <4A23402B.1020601@cn.fujitsu.com>
-Date: Mon, 01 Jun 2009 10:42:51 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: rusty@rustcorp.com.au, mingo@elte.hu, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [PATCH 2/2] cpuhotplug: introduce try_get_online_cpus()
-References: <4A1F9CEE.5090305@cn.fujitsu.com> <20090529133118.1c7b16c2.akpm@linux-foundation.org>
-In-Reply-To: <20090529133118.1c7b16c2.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 31 May 2009 22:56:41 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:37170 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753073AbZFAC4k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 31 May 2009 22:56:40 -0400
+Message-Id: <6.0.0.20.2.20090601115104.0739dac0@172.19.0.2>
+X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
+Date: Mon, 01 Jun 2009 11:51:56 +0900
+To: Wu Fengguang <fengguang.wu@intel.com>
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: Re: [PATCH] readahead:add blk_run_backing_dev
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
+In-Reply-To: <20090601023758.GA8795@localhost>
+References: <6.0.0.20.2.20090522102551.0705aea0@172.19.0.2>
+ <20090522023323.GA10864@localhost>
+ <20090526164252.0741b392.akpm@linux-foundation.org>
+ <6.0.0.20.2.20090527092105.076be238@172.19.0.2>
+ <20090527020909.GB17658@localhost>
+ <6.0.0.20.2.20090527110937.0770c420@172.19.0.2>
+ <20090527023638.GA27079@localhost>
+ <6.0.0.20.2.20090527114200.076aab00@172.19.0.2>
+ <20090527025721.GA11153@localhost>
+ <6.0.0.20.2.20090527120248.076abe38@172.19.0.2>
+ <20090601023758.GA8795@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> 
->> ---
->> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
->> index 2643d84..98f5c4b 100644
->> --- a/include/linux/cpu.h
->> +++ b/include/linux/cpu.h
->> @@ -104,6 +104,7 @@ extern struct sysdev_class cpu_sysdev_class;
->>  
->>  extern void get_online_cpus(void);
->>  extern void put_online_cpus(void);
->> +extern int try_get_online_cpus(void);
->>  #define hotcpu_notifier(fn, pri) {				\
->>  	static struct notifier_block fn##_nb __cpuinitdata =	\
->>  		{ .notifier_call = fn, .priority = pri };	\
->> @@ -117,6 +118,7 @@ int cpu_down(unsigned int cpu);
->>  
->>  #define get_online_cpus()	do { } while (0)
->>  #define put_online_cpus()	do { } while (0)
->> +#define try_get_online_cpus()	(1)
->>  #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
->>  /* These aren't inline functions due to a GCC bug. */
->>  #define register_hotcpu_notifier(nb)	({ (void)(nb); 0; })
->> diff --git a/kernel/cpu.c b/kernel/cpu.c
->> index 62198ec..e948f19 100644
->> --- a/kernel/cpu.c
->> +++ b/kernel/cpu.c
->> @@ -66,6 +66,15 @@ void put_online_cpus(void)
->>  }
->>  EXPORT_SYMBOL_GPL(put_online_cpus);
->>  
->> +int try_get_online_cpus(void)
->> +{
->> +	might_sleep();
->> +	if (cpu_hotplug.active_writer == current)
->> +		return 1;
->> +	return down_read_trylock(&cpu_hotplug.rwlock);
->> +
->> +}
->> +EXPORT_SYMBOL_GPL(try_get_online_cpus);
-> 
-> It's strange to add a might_sleep() to a function which doesn't sleep.
 
-It might sleep indeed. I prefer to add a might_sleep()/cond_sched()
-for a sleepable function.
+At 11:37 09/06/01, Wu Fengguang wrote:
+>On Wed, May 27, 2009 at 11:06:37AM +0800, Hisashi Hifumi wrote:
+>> 
+>> At 11:57 09/05/27, Wu Fengguang wrote:
+>> >On Wed, May 27, 2009 at 10:47:47AM +0800, Hisashi Hifumi wrote:
+>> >> 
+>> >> At 11:36 09/05/27, Wu Fengguang wrote:
+>> >> >On Wed, May 27, 2009 at 10:21:53AM +0800, Hisashi Hifumi wrote:
+>> >> >>
+>> >> >> At 11:09 09/05/27, Wu Fengguang wrote:
+>> >> >> >On Wed, May 27, 2009 at 08:25:04AM +0800, Hisashi Hifumi wrote:
+>> >> >> >>
+>> >> >> >> At 08:42 09/05/27, Andrew Morton wrote:
+>> >> >> >> >On Fri, 22 May 2009 10:33:23 +0800
+>> >> >> >> >Wu Fengguang <fengguang.wu@intel.com> wrote:
+>> >> >> >> >
+>> >> >> >> >> > I tested above patch, and I got same performance number.
+>> >> >> >> >> > I wonder why if (PageUptodate(page)) check is there...
+>> >> >> >> >>
+>> >> >> >> >> Thanks!  This is an interesting micro timing behavior that
+>> >> >> >> >> demands some research work.  The above check is to confirm if it's
+>> >> >> >> >> the PageUptodate() case that makes the difference. So why that case
+>> >> >> >> >> happens so frequently so as to impact the performance? Will it also
+>> >> >> >> >> happen in NFS?
+>> >> >> >> >>
+>> >> >> >> >> The problem is readahead IO pipeline is not running smoothly, 
+>which is
+>> >> >> >> >> undesirable and not well understood for now.
+>> >> >> >> >
+>> >> >> >> >The patch causes a remarkably large performance increase.  A 9%
+>> >> >> >> >reduction in time for a linear read? I'd be surprised if the workload
+>> >> >> >>
+>> >> >> >> Hi Andrew.
+>> >> >> >> Yes, I tested this with dd.
+>> >> >> >>
+>> >> >> >> >even consumed 9% of a CPU, so where on earth has the kernel gone to?
+>> >> >> >> >
+>> >> >> >> >Have you been able to reproduce this in your testing?
+>> >> >> >>
+>> >> >> >> Yes, this test on my environment is reproducible.
+>> >> >> >
+>> >> >> >Hisashi, does your environment have some special configurations?
+>> >> >>
+>> >> >> Hi.
+>> >> >> My testing environment is as follows:
+>> >> >> Hardware: HP DL580
+>> >> >> CPU:Xeon 3.2GHz *4 HT enabled
+>> >> >> Memory:8GB
+>> >> >> Storage: Dothill SANNet2 FC (7Disks RAID-0 Array)
+>> >> >
+>> >> >This is a big hardware RAID. What's the readahead size?
+>> >> >
+>> >> >The numbers look too small for a 7 disk RAID:
+>> >> >
+>> >> >        > #dd if=testdir/testfile of=/dev/null bs=16384
+>> >> >        >
+>> >> >        > -2.6.30-rc6
+>> >> >        > 1048576+0 records in
+>> >> >        > 1048576+0 records out
+>> >> >        > 17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
+>> >> >        >
+>> >> >        > -2.6.30-rc6-patched
+>> >> >        > 1048576+0 records in
+>> >> >        > 1048576+0 records out
+>> >> >        > 17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
+>> >> >
+>> >> >I'd suggest you to configure the array properly before coming back to
+>> >> >measuring the impact of this patch.
+>> >> 
+>> >> 
+>> >> I created 16GB file to this disk array, and mounted to testdir, dd to 
+>> >this directory.
+>> >
+>> >I mean, you should get >300MB/s throughput with 7 disks, and you
+>> >should seek ways to achieve that before testing out this patch :-)
+>> 
+>> Throughput number of storage array is very from one product to another.
+>> On my hardware environment I think this number is valid and
+>> my patch is effective.
+>
+>What's your readahead size? Is it large enough to cover the stripe width?
 
-> 
-> The patch adds no callers to this function.  This is significant
-> because it would be quite interesting to find out which subsystem(s)
-> you've found to have this deadlock.  I do think that we should look at
-> alternative (non-trylocky) ways of fixing them.
-> 
-
-This problem exist in cgroup/cpuset. and Max Krasnyansky fix it:
-(non-trylocky way)
- *
- * The rebuild_sched_domains() and partition_sched_domains()
- * routines must nest cgroup_lock() inside get_online_cpus(),
- * but such cpuset changes as these must nest that locking the
- * other way, holding cgroup_lock() for much of the code.
- *
- * So in order to avoid an ABBA deadlock, the cpuset code handling
- * these user changes delegates the actual sched domain rebuilding
- * to a separate workqueue thread, which ends up processing the
- * above do_rebuild_sched_domains() function.
- */
-static void async_rebuild_sched_domains(void)
-{
-	queue_work(cpuset_wq, &rebuild_sched_domains_work);
-}
-
-
-get_online_cpus() is so a coarsely granular lock, and
-try_get_online_cpus() fails rarely. The kernel indeed needs
-try_get_online_cpus().
-
-Paul will use it: 
-http://lkml.org/lkml/2009/5/22/332
-
-Lai
-
+Do you mean strage's readahead size?
 
