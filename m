@@ -1,60 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbZFAUMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbZFAUNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757959AbZFAUMo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 16:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756216AbZFAUMg
+	id S1757584AbZFAUNN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 16:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756907AbZFAUM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 16:12:36 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55933 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754823AbZFAUMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 16:12:36 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Angel <angel@pearlgates.net>
-Subject: Re: [Bug #12947] r128: system hangs when X is started with DRI enabled
-Date: Mon, 1 Jun 2009 22:13:04 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "DRI" <dri-devel@lists.sourceforge.net>,
-       "Jos van der Ende" <seraph@xs4all.nl>,
-       "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>
-References: <THxQaUP0K2D.A.QkF.UVbIKB@chimera> <PkPeJtNB3KO.A.CSH.sWbIKB@chimera> <20090531105227.178e5397.angel@pearlgates.net>
-In-Reply-To: <20090531105227.178e5397.angel@pearlgates.net>
+	Mon, 1 Jun 2009 16:12:59 -0400
+Received: from tomts45-srv.bellnexxia.net ([209.226.175.112]:45556 "EHLO
+	tomts45-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757156AbZFAUM7 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 16:12:59 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AokUACzTI0rR4q+G/2dsb2JhbACBL4x8kiesKYN4BQ
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [41.219.137.100]
+From: =?ISO-8859-1?B?qUlyaXNo?= Alert <pcoates@bellnet.ca>
+Reply-To: wills.spencer1@btinternet.com
+To: <Info@I-W-A.net>
+Subject: Irish....Winner
+Date: Mon, 1 Jun 2009 16:12:50 -0400
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906012213.04940.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090601201300.IGTF1557.tomts45-srv.bellnexxia.net@toip37-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 31 May 2009, Angel wrote:
-> On Sat, 30 May 2009 21:55:34 +0200 (CEST)
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.28 and 2.6.29.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> > be listed and let me know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12947
-> > Subject		: r128: system hangs when X is started with DRI enabled
-> > Submitter	: Jos van der Ende <seraph@xs4all.nl>
-> > Date		: 2009-03-26 16:14 (66 days old)
-> 
-> 
-> We've found a working bug fix for 2.6.29 which I expect will be included in the next bug fix release. However, 2.6.30-rc[1-7] (which already includes this fix) introduced a new problem which we're still working on.
-> 
-> The bug fix in question is this one:
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=42beefc00
+You have just been awarded,£1,350,000 GBP in the Online,send us your
+Names........
+Address......
+Sex/Tel......
 
-Thanks, closed.
-
-Best,
-Rafael
