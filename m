@@ -1,173 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbZFAMFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbZFAMPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757513AbZFAMFp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 08:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbZFAMFi
+	id S1757290AbZFAMPV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 08:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbZFAMPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 08:05:38 -0400
-Received: from cantor.suse.de ([195.135.220.2]:44248 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752375AbZFAMFh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 08:05:37 -0400
-Date: Mon, 1 Jun 2009 14:05:38 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: hugh@veritas.com, riel@redhat.com, akpm@linux-foundation.org,
-       chris.mason@oracle.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, fengguang.wu@intel.com
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090601120537.GF5018@wotan.suse.de>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090528134520.GH1065@one.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+	Mon, 1 Jun 2009 08:15:01 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:53832 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752867AbZFAMPA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 08:15:00 -0400
+Message-ID: <4A23C642.7010002@novell.com>
+Date: Mon, 01 Jun 2009 08:14:58 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Mark McLoughlin <markmc@redhat.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Davide Libenzi <davidel@xmailserver.org>,
+       mtosatti@redhat.com
+Subject: Re: [KVM PATCH v4 3/3] kvm: add iosignalfd support
+References: <20090526191010.20860.75372.stgit@dev.haskins.net>	 <20090526191539.20860.1385.stgit@dev.haskins.net>	 <4A1D01F8.8080508@redhat.com> <4A1D285C.9050008@novell.com>	 <4A1D2DD8.2050709@redhat.com> <1243445144.16318.15.camel@blaa>	 <4A1D7AFD.40004@novell.com> <1243446484.4852.13.camel@blaa>	 <4A1DA653.4050109@gmail.com> <1243501772.4046.36.camel@blaa> <4A1E7FA0.8060300@novell.com> <4A2249C5.5000809@redhat.com>
+In-Reply-To: <4A2249C5.5000809@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigA2DDC7D7670C6491DFD5279F"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 28, 2009 at 03:45:20PM +0200, Andi Kleen wrote:
-> On Thu, May 28, 2009 at 02:08:54PM +0200, Nick Piggin wrote:
-> > Then the data can not have been consumed, by DMA or otherwise? What
-> 
-> When the data was consumed we get a different machine check
-> (or a different error if it was consumed by a IO device)
-> 
-> This code right now just handles the case of "CPU detected a page is broken
-> is wrong, but hasn't consumed it yet"
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigA2DDC7D7670C6491DFD5279F
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-OK. Out of curiosity, how often do you expect to see uncorrectable ECC
-errors?
+Avi Kivity wrote:
+> Gregory Haskins wrote:
+>> This is closer to how the original series worked, but Avi asked for a
+>> data-match token and thus the cookie was born.  I think the rationale =
+is
+>> that we can't predict whether the same eventfd will be registered more=
 
- 
-> > about transient kernel references to the (pagecache/anonymous) page
-> > (such as, find_get_page for read(2), or get_user_pages callers).	
-> 
-> There are always races, after all the CPU could be just about 
-> right now to consume. If we lose the race there will be just
-> another machine check that stops the consumption of bad data.
-> The hardware takes care of that.
-> 
-> The code here doesn't try to be a 100% coverage of all
-> cases (that's obviously impossible), just to handle
-> common page types. I also originally had ideas for more handlers,
-> but found out how hard it is to test, so I burried a lot of fancy
-> ideas :-)
-> 
-> If there are left over references we complain at least.
+>> than once, and thus we need a way to further qualify it.  However, to
+>> your point, I cannot think of a valid use case for having the same fd
+>> registered to the same address more than once, so perhaps your fd/addr=
 
-Well I don't know about that, because you'd probably have races
-between lookups and taking reference. But nevermind.
+>> tuple is sufficient and we can drop the cookie (or, really, rename it =
+to
+>> "trigger" ;)
+>>
+>> Avi?
+>>  =20
+>
+> This is just how virtio works.  To kick ring N of device X, it writes
+> N to a port specific to X.
+>
+> If we lose N, then we don't know which ring was kicked and have to
+> check them all.
+>
+> May we can rename cookie to data_match to make it explicit.  If the
+> data doesn't match, the eventfd isn't kicked.
+>
+> (Mark, same as we have arbitrary ring->MSI mappings (allowing one MSI
+> to notify multiple rings), perhaps we should have the same capability
+> for the other direction?  So the guest could kick mulitple rings with
+> one write, or just one ring, according to personal preference.
+>
+I think we are all on the same page here, actually (more or less).  I
+think the confusion was my own when you initially asked for a data-match
+token, and I gave you "cookie".  "cookie" as I implemented it was really
+only used to match up the eventfd during de-assign, not the actual
+signal event.  I think what you are talking about here is the same as
+what Mark and I have been calling "trigger".  I agree that we need this
+interface to be able to properly sort something like virtio, and I will
+be including this in the next release.
 
- 
-> > > > > +	/*
-> > > > > +	 * remove_from_page_cache assumes (mapping && !mapped)
-> > > > > +	 */
-> > > > > +	if (page_mapping(p) && !page_mapped(p)) {
-> > > > > +		remove_from_page_cache(p);
-> > > > > +		page_cache_release(p);
-> > > > > +	}
-> > > > 
-> > > > remove_mapping would probably be a better idea. Otherwise you can
-> > > > probably introduce pagecache removal vs page fault races whi
-> > > > will make the kernel bug.
-> > > 
-> > > Can you be more specific about the problems?
-> > 
-> > Hmm, actually now that we hold the page lock over __do_fault (at least
-> > for pagecache pages), this may not be able to trigger the race I was
-> > thinking of (page becoming mapped). But I think still it is better
-> > to use remove_mapping which is the standard way to remove such a page.
-> 
-> I had this originally, but Fengguang redid it because there was
-> trouble with the reference count. remove_mapping always expects it to
-> be 2, which we cannot guarantee.
+OTOH, what I was proposing above is that my misguided attempt at
+"cookie" for deassign is redundant with simply looking at the
+eventfd/addr tuple.  We can simply key off of those items to match up
+the iosignalfd to close, and therefore lets get rid of the cookie field.
 
-OK, but it should still definitely use truncate code.
+Sorry for the confusion.  Let me know if you still think this isn't right=
+=2E
 
-> > > > > +	if (mapping) {
-> > > > > +		/*
-> > > > > +		 * Truncate does the same, but we're not quite the same
-> > > > > +		 * as truncate. Needs more checking, but keep it for now.
-> > > > > +		 */
-> > > > 
-> > > > What's different about truncate? It would be good to reuse as much as possible.
-> > > 
-> > > Truncating removes the block on disk (we don't). Truncating shrinks
-> > > the end of the file (we don't). It's more "temporal hole punch"
-> > > Probably from the VM point of view it's very similar, but it's
-> > > not the same.
-> > 
-> > Right, I just mean the pagecache side of the truncate. So you should
-> > use truncate_inode_pages_range here.
-> 
-> Why?  I remember I was trying to use that function very early on but
-> there was some problem.  For once it does its own locking which
-> would conflict with ours.
-
-Just extract the part where it has the page locked into a common
-function.
+-Greg
 
 
-> Also we already do a lot of the stuff it does (like unmapping).
+--------------enigA2DDC7D7670C6491DFD5279F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-That's OK, it will not try to unmap again if it sees !page_mapped.
- 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-> Is there anything concretely wrong with the current code?
+iEYEARECAAYFAkojxkIACgkQlOSOBdgZUxknLACeK3mBSbEfAxoelRRmw3EIbgWB
+UMIAnidYFGKLnD3xmUxAXdqpq+1ALrnb
+=He0U
+-----END PGP SIGNATURE-----
 
-
-/*
- * Truncate does the same, but we're not quite the same
- * as truncate. Needs more checking, but keep it for now.
- */
-
-I guess that it duplicates this tricky truncate code and also
-says it is different (but AFAIKS it is doing exactly the same
-thing).
-
-
-
-> > Well, the dirty data has never been corrupted before (ie. the data
-> > in pagecache has been OK). It was just unable to make it back to
-> > backing store. So a program could retry the write/fsync/etc or
-> > try to write the data somewhere else.
-> 
-> In theory it could, but in practice it is very unlikely it would.
-
-very unlikely to try rewriting the page again or taking evasive
-action to save the data somewhere else? I think that's a bold
-assumption.
-
-At the very least, having a prompt "IO error, check your hotplug
-device / network connection / etc and try again" I don't think
-sounds unreasonable at all.
-
-
-> > It kind of wants a new error code, but I can't imagine the difficulty
-> > in doing that...
-> 
-> I don't think it's a good idea to change programs for this normally,
-> most wouldn't anyways. Even kernel programmers have trouble with
-> memory suddenly going bad, for user space programmers it would
-> be pure voodoo.
- 
-No, I mean as something to distinguish it between the  case of IO
-device going bad (in which case the userspace program has a number
-of things it might try to do). 
-
-
-> > Just seems overengineered. We could rewrite any if/switch statement like
-> > that (and actually the compiler probably will if it is beneficial).
-> 
-> The reason I like it is that it separates the functions cleanly,
-> without that there would be a dispatcher from hell. Yes it's a bit
-> ugly that there is a lot of manual bit checking around now too,
-> but as you go into all the corner cases originally clean code
-> always tends to get more ugly (and this is a really ugly problem)
-
-Well... it is just writing another dispatcher from hell in a
-different way really, isn't it? How is it so much better than
-a simple switch or if/elseif/else statement?
-
+--------------enigA2DDC7D7670C6491DFD5279F--
