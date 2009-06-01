@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbZFALmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbZFALnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757788AbZFALmh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 07:42:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756326AbZFALm3
+	id S1757909AbZFALnz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 07:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755928AbZFALns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 07:42:29 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:58192 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756159AbZFALm2 (ORCPT
+	Mon, 1 Jun 2009 07:43:48 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46151 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753312AbZFALns (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 07:42:28 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
-Date: Mon, 1 Jun 2009 12:42:21 +0100
-User-Agent: KMail/1.11.90 (Linux/2.6.30-5-generic; KDE/4.2.85; x86_64; ; )
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <20090601082943.GA5550@flint.arm.linux.org.uk> <200906011141.33463.arnd@arndb.de> <20090601105851.GB25391@flint.arm.linux.org.uk>
-In-Reply-To: <20090601105851.GB25391@flint.arm.linux.org.uk>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 1 Jun 2009 07:43:48 -0400
+Date: Mon, 1 Jun 2009 13:43:42 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] Fix floppy hibernation
+Message-ID: <20090601114342.GA2454@elf.ucw.cz>
+References: <200905301804.26762.linux@rainbow-software.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906011242.22026.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18GK8WP2LsHTxx+zdHMR6N9Fz2qwwtx9F9gdgQ
- xXms3zO65ToeXjLy1084xbhCqTJnoucvqsultkTqyebYaYpaNl
- AOf8KCYLgcTKLMNPX2upWlK9Bs00GTb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905301804.26762.linux@rainbow-software.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 June 2009, Russell King wrote:
-
-> I didn't say "for all architectures".  I said that the end conditions
-> need to be the same no matter how DMA is done.
+On Sat 2009-05-30 18:04:25, Ondrej Zary wrote:
+> Hello,
+> floppy driver was always missing hibernation support. After resume, floppy did
+> not work (until a couple of disk reinserts and retries), producing errors like
+> this:
+> end_request: I/O error, dev fd0, sector 0
 > 
-> And yes, it does matter with some cache types.  VIPT aliasing caches
-> and VIVT caches both need to ensure that condition is met, otherwise
-> userspace doesn't see the data.
+> Ingo Molnar tried to fix it in 2006: http://lkml.org/lkml/2006/11/12/92
+> 
+> 
+> 
+> 
+> Based on Ingo Molnar's patch from 2006, this makes the floppy work after
+> resume from hibernation, at least on my machine.
+> 
+> 
+> Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Ok, thanks for the explanation.
 
-> While we can hand-wave and say "some other part of the code should
-> handle this" I've had that disucssion several times, and that's where
-> this requirement eventually was stated.  And, really, I'm not going
-> to re-discuss it yet again - I really don't have time or motivation
-> at present to be involved in yet another hand-waving egotistical
-> debate over it.
-
-I was not trying to start a debate over this, just being curious.
-
-	Arnd <><
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
