@@ -1,38 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757663AbZFAU0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758324AbZFAU0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757663AbZFAU0J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 16:26:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZFAUZ6
+	id S1758324AbZFAU0d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 16:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZFAU00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 16:25:58 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42606 "EHLO mx2.redhat.com"
+	Mon, 1 Jun 2009 16:26:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56056 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753304AbZFAUZ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 16:25:57 -0400
-Date: Mon, 1 Jun 2009 22:20:33 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Paul Smith <paul@mad-scientist.net>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] coredump: Retry writes where appropriate
-Message-ID: <20090601202033.GA23475@redhat.com>
-References: <1243748019.7369.319.camel@homebase.localnet> <20090531111851.07eb1df3@lxorguk.ukuu.org.uk> <20090601161234.GA10486@redhat.com> <1243877766.8547.38.camel@psmith-ubeta.netezza.com> <20090601184934.1fc54411@lxorguk.ukuu.org.uk> <1243881544.8547.66.camel@psmith-ubeta.netezza.com> <20090601200232.078aacbb@lxorguk.ukuu.org.uk> <1243885899.8547.95.camel@psmith-ubeta.netezza.com>
+	id S1752553AbZFAU0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 16:26:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [Bug #13306] hibernate slow on _second_ run
+Date: Mon, 1 Jun 2009 22:26:45 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <4to6E2myxvG.A.muC.aIbIKB@chimera> <LEcEO2518_I.A.qkE.kJbIKB@chimera> <1243764129.19302.37.camel@johannes.local>
+In-Reply-To: <1243764129.19302.37.camel@johannes.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1243885899.8547.95.camel@psmith-ubeta.netezza.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906012226.46086.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/01, Paul Smith wrote:
->
-> If it's interactive, can't the user ^Z (SIGSTOP) the process being
-> dumped,
+On Sunday 31 May 2009, Johannes Berg wrote:
+> On Sat, 2009-05-30 at 21:37 +0200, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.29.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13306
+> > Subject		: hibernate slow on _second_ run
+> > Submitter	: Johannes Berg <johannes@sipsolutions.net>
+> > Date		: 2009-05-14 09:34 (17 days old)
+> 
+> I'm trying to get an ftrace profile that covers the point in question,
+> but it might take me a couple of days.
 
-No, this is very hard to implement.
+Did it work?
 
-Oleg.
-
+Rafael
