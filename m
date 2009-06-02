@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760155AbZFBHMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760245AbZFBHM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760155AbZFBHMo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 03:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757594AbZFBHLt
+	id S1760245AbZFBHM4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 03:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbZFBHLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 03:11:49 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:46613 "EHLO smtp.gentoo.org"
+	Tue, 2 Jun 2009 03:11:50 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:46624 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756459AbZFBHLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 03:11:46 -0400
+	id S1757238AbZFBHLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 03:11:47 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org, Cliff Cai <cliff.cai@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 04/11] Blackfin SPORT UART: fix overrun errors
-Date: Tue,  2 Jun 2009 03:11:33 -0400
-Message-Id: <1243926700-30485-4-git-send-email-vapier@gentoo.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org,
+       Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 05/11] Blackfin Serial Driver: fix error while transferring large files
+Date: Tue,  2 Jun 2009 03:11:34 -0400
+Message-Id: <1243926700-30485-5-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1243926700-30485-1-git-send-email-vapier@gentoo.org>
 References: <1243926700-30485-1-git-send-email-vapier@gentoo.org>
@@ -23,100 +23,78 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cliff Cai <cliff.cai@analog.com>
+From: Sonic Zhang <sonic.zhang@analog.com>
 
-Push the ty_flip_buffer_push() call from the IRQ handler to a timer so as
-to improve performance and decrease likelihood of overruns.
+Ignore receiving data if new position is in the same line of current
+buffer tail and is small.  This should decrease overruns.
 
-URL: http://blackfin.uclinux.org/gf/tracker/3911
-Signed-off-by: Cliff Cai <cliff.cai@analog.com>
+Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- drivers/serial/bfin_sport_uart.c |   31 ++++++++++++++++++++++++-------
- 1 files changed, 24 insertions(+), 7 deletions(-)
+ drivers/serial/bfin_5xx.c |   31 +++++++++++++++++++++++++++++--
+ 1 files changed, 29 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/serial/bfin_sport_uart.c b/drivers/serial/bfin_sport_uart.c
-index 34b4ae0..fa80411 100644
---- a/drivers/serial/bfin_sport_uart.c
-+++ b/drivers/serial/bfin_sport_uart.c
-@@ -88,7 +88,8 @@ unsigned short bfin_uart_pin_req_sport1[] =
- struct sport_uart_port {
- 	struct uart_port	port;
- 	char			*name;
--
-+	struct timer_list	rx_timer;
-+	int			once;
- 	int			tx_irq;
- 	int			rx_irq;
- 	int			err_irq;
-@@ -116,9 +117,10 @@ static inline void tx_one_byte(struct sport_uart_port *up, unsigned int value)
- 	SPORT_PUT_TX(up, value);
- }
+diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
+index d86123e..65a4c07 100644
+--- a/drivers/serial/bfin_5xx.c
++++ b/drivers/serial/bfin_5xx.c
+@@ -477,6 +477,15 @@ void bfin_serial_rx_dma_timeout(struct bfin_serial_port *uart)
  
--static inline unsigned int rx_one_byte(struct sport_uart_port *up)
-+static inline unsigned char rx_one_byte(struct sport_uart_port *up)
+ 	spin_lock_irqsave(&uart->port.lock, flags);
+ 
++	/* 2D DMA RX buffer ring is used. Because curr_y_count and
++	 * curr_x_count can't be read as an atomic operation,
++	 * curr_y_count should be read before curr_x_count. When
++	 * curr_x_count is read, curr_y_count may already indicate
++	 * next buffer line. But, the position calculated here is
++	 * still indicate the old line. The wrong position data may
++	 * be smaller than current buffer tail, which cause garbages
++	 * are received if it is not prohibit.
++	 */
+ 	uart->rx_dma_nrows = get_dma_curr_ycount(uart->rx_dma_channel);
+ 	x_pos = get_dma_curr_xcount(uart->rx_dma_channel);
+ 	uart->rx_dma_nrows = DMA_RX_YCOUNT - uart->rx_dma_nrows;
+@@ -487,7 +496,11 @@ void bfin_serial_rx_dma_timeout(struct bfin_serial_port *uart)
+ 		x_pos = 0;
+ 
+ 	pos = uart->rx_dma_nrows * DMA_RX_XCOUNT + x_pos;
+-	if (pos != uart->rx_dma_buf.tail) {
++	/* Ignore receiving data if new position is in the same line of
++	 * current buffer tail and small.
++	 */
++	if (pos > uart->rx_dma_buf.tail ||
++		uart->rx_dma_nrows < (uart->rx_dma_buf.tail/DMA_RX_XCOUNT)) {
+ 		uart->rx_dma_buf.head = pos;
+ 		bfin_serial_dma_rx_chars(uart);
+ 		uart->rx_dma_buf.tail = uart->rx_dma_buf.head;
+@@ -532,11 +545,25 @@ static irqreturn_t bfin_serial_dma_rx_int(int irq, void *dev_id)
  {
--	unsigned int value, extract;
-+	unsigned int value;
-+	unsigned char extract;
- 	u32 tmp_mask1, tmp_mask2, tmp_shift, tmp;
+ 	struct bfin_serial_port *uart = dev_id;
+ 	unsigned short irqstat;
++	int pos;
  
- 	value = SPORT_GET_RX32(up);
-@@ -175,11 +177,19 @@ static int sport_uart_setup(struct sport_uart_port *up, int sclk, int baud_rate)
- 	return 0;
- }
- 
-+static void rx_push(unsigned long data)
-+{
-+	struct sport_uart_port *up = (struct sport_uart_port *)data;
-+	struct tty_struct *tty = up->port.info->port.tty;
-+	tty_flip_buffer_push(tty);
-+	add_timer(&up->rx_timer);
-+}
+ 	spin_lock(&uart->port.lock);
+ 	irqstat = get_dma_curr_irqstat(uart->rx_dma_channel);
+ 	clear_dma_irqstat(uart->rx_dma_channel);
+-	bfin_serial_dma_rx_chars(uart);
 +
- static irqreturn_t sport_uart_rx_irq(int irq, void *dev_id)
- {
- 	struct sport_uart_port *up = dev_id;
- 	struct tty_struct *tty = up->port.info->port.tty;
--	unsigned int ch;
-+	unsigned char ch;
- 
- 	do {
- 		ch = rx_one_byte(up);
-@@ -190,8 +200,10 @@ static irqreturn_t sport_uart_rx_irq(int irq, void *dev_id)
- 		else
- 			tty_insert_flip_char(tty, ch, TTY_NORMAL);
- 	} while (SPORT_GET_STAT(up) & RXNE);
--	tty_flip_buffer_push(tty);
--
-+	if (up->once == 0) {
-+		add_timer(&up->rx_timer);
-+		up->once = 1;
++	uart->rx_dma_nrows = get_dma_curr_ycount(uart->rx_dma_channel);
++	uart->rx_dma_nrows = DMA_RX_YCOUNT - uart->rx_dma_nrows;
++	if (uart->rx_dma_nrows == DMA_RX_YCOUNT)
++		uart->rx_dma_nrows = 0;
++
++	pos = uart->rx_dma_nrows * DMA_RX_XCOUNT;
++	if (pos > uart->rx_dma_buf.tail ||
++		uart->rx_dma_nrows < (uart->rx_dma_buf.tail/DMA_RX_XCOUNT)) {
++		uart->rx_dma_buf.head = pos;
++		bfin_serial_dma_rx_chars(uart);
++		uart->rx_dma_buf.tail = uart->rx_dma_buf.head;
 +	}
++
+ 	spin_unlock(&uart->port.lock);
+ 
  	return IRQ_HANDLED;
- }
- 
-@@ -257,7 +269,10 @@ static int sport_startup(struct uart_port *port)
- 		printk(KERN_ERR "Unable to request interrupt %s\n", buffer);
- 		goto fail2;
- 	}
--
-+	init_timer(&up->rx_timer);
-+	up->rx_timer.data = (unsigned long)up;
-+	up->rx_timer.expires = jiffies + 5;
-+	up->rx_timer.function = (void *)rx_push;
- 	if (port->line) {
- 		if (peripheral_request_list(bfin_uart_pin_req_sport1, DRV_NAME))
- 			goto fail3;
-@@ -384,6 +399,8 @@ static void sport_stop_rx(struct uart_port *port)
- {
- 	struct sport_uart_port *up = (struct sport_uart_port *)port;
- 
-+	del_timer(&up->rx_timer);
-+	up->once = 0;
- 	pr_debug("%s enter\n", __func__);
- 	/* Disable sport to stop rx */
- 	SPORT_PUT_RCR1(up, (SPORT_GET_RCR1(up) & ~RSPEN));
 -- 
 1.6.3.1
 
