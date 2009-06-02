@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756063AbZFBKOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbZFBKPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756063AbZFBKOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 06:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbZFBKOF
+	id S1757913AbZFBKPg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 06:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbZFBKP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 06:14:05 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:40735 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752292AbZFBKOD (ORCPT
+	Tue, 2 Jun 2009 06:15:28 -0400
+Received: from epgaterelay.rtebb.net ([63.168.32.110]:49463 "EHLO
+	epgate.rtebb.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755645AbZFBKP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 06:14:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=Q6n8rsK+14kAiGgBTnvGsxfUVLLZTU3m6byAYHVT8ofF02fGsstsJpG/JGT/CauQDq
-         SXfLRDq+bGC6I0/mvoecfK+ew3wmhF0z0U4qdnMNZO2BbxZfeRywFzfM31YRjfae5QMz
-         pE3iuxMAL44nI35gjhTtkygoT5EbOeV/JB0wg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 1/2] ide-tape: change IDE_AFLAG_IGNORE_DSC non-atomically
-Date: Tue, 2 Jun 2009 12:18:33 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-rc6-next-20090522-05935-g4d19128; KDE/4.2.3; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1243926308-32385-1-git-send-email-petkovbb@gmail.com> <1243926308-32385-2-git-send-email-petkovbb@gmail.com>
-In-Reply-To: <1243926308-32385-2-git-send-email-petkovbb@gmail.com>
+	Tue, 2 Jun 2009 06:15:27 -0400
+X-Greylist: delayed 4820 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Jun 2009 06:15:27 EDT
+X-Propel-Return-Path: <info@w.bank.org>
+From: "Mrs Linda Kershaw" <info@w.bank.org>
+Reply-To: fedexcustomscara@btinternet.com
+Subject: CHECK OF $800.000.00(APPROVED)
+Date: Tue, 2 Jun 2009 02:55:08 -0600
+Message-Id: <20090602085438.M55992@w.bank.org>
+X-Mailer: OpenWebMail 2.53 
+X-OriginatingIP: 41.191.108.130 (ktleigh811)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200906021218.33787.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset=iso-8859-1
+X-RTEBB-MailScanner-Information: Please contact the ISP for more information
+X-RTEBB-MailScanner: Not scanned: please contact your Internet E-Mail Service
+	Provider for details
+X-RTEBB-MailScanner-From: info@w.bank.org
+To: undisclosed-recipients:;
+X-Propel-ID: skqAr9629be0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+CONGRATULATION!!!
 
-Hi,
+Congratulations to you as we bring your notice the results of the world
+Bank promo and your email Address was selected through a computer ballot
+system drawn We are happy to inform you that your email won $800.000.00
+United States Dollars. I have been waiting for you since to contact me for
+your Confirmable Bank Draft of $800.000.00 United States Dollars, but I
+did not hear from you since that time. Then I went and deposited the Draft
+with FEDEX EXPRESS DELIVERY,West Africa, I travelled out of the country
+for a 3 Months Course and I will not come back till end of August 2009.
 
-On Tuesday 02 June 2009 09:05:07 Borislav Petkov wrote:
-> There are two sites where the flag is being changed: ide_retry_pc
-> and idetape_do_request. Both codepaths are protected by hwif->busy
-> (ide_lock_port) and therefore we shouldn't need the atomic accesses. The
-> only problem would be the compiler reordering the accesses, therefore the
-> optimization barrier.
-> 
-> Spotted-by: Jiri Slaby <jirislaby@gmail.com>
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+What you have to do now is to contact the FEDEX EXPRESS DELIVERY as soon
+as possible to know when they will deliver your package to you because of
+the expiring date. For your information,I have paid for the delivering
+Charges,Insurance premium and Clearance Certificate Fee of the Cheque
+showing that it is not a Drug Money or meant to sponsor Terrorist attack
+in your Country.Again, I would have paid for the security keeping fee but
+they said no because they don't know when you will contact them and in
+case of demurrage.You have to contact the FEDEX EXPRESS INTERNATIONAL with
+the following informations:
 
-[...]
+First name:
+Last Name:
+Telephone:
+Nationality::
+Age:
+Occupation:
+address:
 
-> --- a/drivers/ide/ide-tape.c
-> +++ b/drivers/ide/ide-tape.c
-> @@ -656,15 +656,24 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
->  
->  	if ((drive->dev_flags & IDE_DFLAG_DSC_OVERLAP) == 0 &&
->  	    (rq->cmd[13] & REQ_IDETAPE_PC2) == 0)
-> -		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
-> +		drive->atapi_flags |= IDE_AFLAG_IGNORE_DSC;
->  
->  	if (drive->dev_flags & IDE_DFLAG_POST_RESET) {
-> -		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
-> +		drive->atapi_flags |= IDE_AFLAG_IGNORE_DSC;
->  		drive->dev_flags &= ~IDE_DFLAG_POST_RESET;
->  	}
->  
-> -	if (!test_and_clear_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags) &&
-> -	    (stat & ATA_DSC) == 0) {
-> +	/*
-> +	 * This is a precaution for IDE_AFLAG_IGNORE_DSC being conditionally set
-> +	 * above. We don't need a stronger enforcement of ordering because the
-> +	 * read below cannot precede the earlier write out-of-order since it is
-> +	 * to the same location. Also, since we have the ide port locked during
-> +	 * the ->do_request(), we only have to be aware of gcc reordering stuff.
-> +	 */
-> +	barrier();
+Dispatch Director: Mr. Humphrey Hill
+Email Address: fedexcustomscara@btinternet.com
+Tel: +234-8051471138
 
-Are you seeing a real problem with gcc here?  No sane compiler should need
-a barrier() here (we would probably need zillions of them in kernel if it
-really does).
+You are advice  to contact them as soon as you receive this mail to avoid
+any further delay and remember to pay them their Security Keeping fee of
+$250 US Dollars for their immediate action.You should also let me know
+through email as soon as you receive your Draft.
+
+Yours Faithfully,
+Mr Linda Kershaw
