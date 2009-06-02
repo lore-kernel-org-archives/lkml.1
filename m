@@ -1,82 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbZFBNkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755014AbZFBNms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755553AbZFBNkb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 09:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbZFBNkY
+	id S1755014AbZFBNms (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 09:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbZFBNmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 09:40:24 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49229 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752522AbZFBNkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 09:40:24 -0400
-Date: Tue, 2 Jun 2009 15:40:24 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602134024.GA19390@wotan.suse.de>
-References: <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org> <20090602125713.GG1392@wotan.suse.de> <20090602132538.GK1065@one.firstfloor.org> <20090602132441.GC6262@wotan.suse.de> <20090602134126.GM1065@one.firstfloor.org>
+	Tue, 2 Jun 2009 09:42:42 -0400
+Received: from dallas.jonmasters.org ([72.29.103.172]:49969 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751970AbZFBNml (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 09:42:41 -0400
+Subject: Re: [RFC PATCH 1/1] smi_detector: A System Management Interrupt
+ detector
+From: Jon Masters <jonathan@jonmasters.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, rostedt@goodmis.org
+In-Reply-To: <20090602075450.GA12411@elte.hu>
+References: <20090531163117.502167374@jonmasters.org>
+	 <20090531163343.771922592@jonmasters.org>
+	 <20090601205720.825d3048.akpm@linux-foundation.org>
+	 <20090602075450.GA12411@elte.hu>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Tue, 02 Jun 2009 09:41:50 -0400
+Message-Id: <1243950111.31439.35.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090602134126.GM1065@one.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 03:41:26PM +0200, Andi Kleen wrote:
-> On Tue, Jun 02, 2009 at 03:24:41PM +0200, Nick Piggin wrote:
-> > On Tue, Jun 02, 2009 at 03:25:38PM +0200, Andi Kleen wrote:
-> > > The reason this code double checks is that someone could have 
-> > > a reference (remember we can come in any time) we cannot kill immediately.
+On Tue, 2009-06-02 at 09:54 +0200, Ingo Molnar wrote:
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Sun, 31 May 2009 12:31:18 -0400 Jon Masters <jonathan@jonmasters.org> wrote:
 > > 
-> > Can't kill what? The page is gone from pagecache. It may remain
-> > other kernel references, but I don't see why this code will
-> > consider this as a failure (and not, for example, a raised error
-> > count).
-> 
-> It's a failure because the page was still used and not successfully
-> isolated.
-
-But you're predicating success on page_count, so there can be
-other users anyway. You do check page_count later and emit
-a different message in this case, but even that isn't enough
-to tell you if it has no more users.
-
-I wouldn't have thought it's worth the complication, but
-there is nothing preventing you using my truncate function
-and also keeping this error check to test afterwards.
- 
-
-> > +        * remove_from_page_cache assumes (mapping && !mapped)
-> > +        */
-> > +       if (page_mapping(p) && !page_mapped(p)) {
-> 
-> Ok you're right. That one is not needed. I will remove it.
-> 
+> > > This patch introduces a new SMI (System Management Interrupt) detector module
+> > > that can be used to detect high latencies within the system. It was originally
+> > > written for use in the RT kernel, but has wider applications.
 > > > 
-> > > User page tables was on the todo list, these are actually relatively
-> > > easy. The biggest issue is to detect them.
-> > > 
-> > > Metadata would likely need file system callbacks, which I would like to 
-> > > avoid at this point.
 > > 
-> > So I just don't know why you argue the point that you have lots
-> > of large holes left.
-> 
-> I didn't argue that. My point was just that I currently don't have
-> data what holes are the worst on given workloads. If I figure out at
-> some point that writeback pages are a significant part of some important
-> workload I would be interested in tackling them.
-> That said I think that's unlikely, but I'm not ruling it out.
+> > Neat-looking code.
+> > 
+> > AFACIT it can be used on any platform.  Suppose that powerpcs or ia64s
+> > also mysteriously go to lunch like PC's do - I think the code will work
+> > for them too?  In which case the "smi" name is excessively specific. 
+> > Not a big deal though.
 
-Well, it sounds like maybe there is a sane way to do them with your
-IO interception... but anyway let's not worry about this right
-now ;)
+Yeah, you're right.
+
+> Yes, i wondered about that too - this is really a generic method 
+> that detects and measures hardware latencies.
+
+Indeed. I guess SMIs were the main example, but sure they're not the
+only one around. So I'll rename it to hwlat or something, clean it up
+according to Andrew's comments, and repost later.
+
+Jon.
+
+
