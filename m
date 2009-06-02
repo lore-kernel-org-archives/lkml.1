@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbZFBRa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757741AbZFBRlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756023AbZFBRa2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 13:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbZFBRaR
+	id S1757741AbZFBRlG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 13:41:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbZFBRkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 13:30:17 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:26313 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754887AbZFBRaQ (ORCPT
+	Tue, 2 Jun 2009 13:40:55 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:60892 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753864AbZFBRky (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 13:30:16 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Alex Chiang <achiang@hp.com>
-Subject: Re: [PATCH 08/10] ACPI: simplify acpi_pci_irq_add_prt() API
-Date: Tue, 2 Jun 2009 11:30:15 -0600
-User-Agent: KMail/1.9.10
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-References: <20090602152351.7346.48697.stgit@bob.kio> <20090602152516.7346.24236.stgit@bob.kio>
-In-Reply-To: <20090602152516.7346.24236.stgit@bob.kio>
+	Tue, 2 Jun 2009 13:40:54 -0400
+Date: Tue, 2 Jun 2009 23:10:42 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org, lizf@cn.fujitsu.com,
+       balbir@linux.vnet.ibm.com, kamezawa.hiroyu@jp.fujitsu.com,
+       lkml <linux-kernel@vger.kernel.org>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       libcg-devel <libcg-devel@lists.sourceforge.net>
+Subject: Re: +
+	cgroups-forbid-noprefix-if-mounting-more-than-just-cpuset-subsystem.
+	patch added to -mm tree
+Message-ID: <20090602174042.GD16753@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <200906020602.n5262wcu008560@imap1.linux-foundation.org> <20090602090944.GB16753@linux.vnet.ibm.com> <6599ad830906020908s7cb6afe6pd83ca35b82d148a4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906021130.15951.bjorn.helgaas@hp.com>
+In-Reply-To: <6599ad830906020908s7cb6afe6pd83ca35b82d148a4@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 June 2009 09:25:16 am Alex Chiang wrote:
-> A PCI domain cannot change as you descend down subordinate buses, which
-> makes the 'segment' argument to acpi_pci_irq_add_prt() useless.
+On Tue, Jun 02, 2009 at 09:08:04AM -0700, Paul Menage wrote:
+> On Tue, Jun 2, 2009 at 2:09 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> >
+> > I am not sure if this is a good idea. For libcgroup, we would then be
+> > adding a special case for just cpuset. I would rather that we allow it
+> > either for all the subsystems or none of them.
+> >
 > 
-> Change the interface to take a struct pci_bus *, from whence we can derive
-> the bus number and segment. Reducing the number of arguments makes life
-> simpler for callers.
+> libcgroup shouldn't be using the noprefix option. Its only intentded
+> use is to allow the legacy "cpuset" filesystem type to be mounted and
+> to see the same fileset as it had before the cgroups transition.
+> 
 
-Nice patch.
+It does not. But if some user is using that option, we need to be in a
+position to handle it.
 
-> diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-> index 25ddbb6..aa67f72 100644
-> --- a/drivers/acpi/pci_root.c
-> +++ b/drivers/acpi/pci_root.c
-> @@ -537,8 +537,9 @@ static int __devinit acpi_pci_root_add(struct acpi_device *device)
->  	 */
->  	status = acpi_get_handle(device->handle, METHOD_NAME__PRT, &handle);
->  	if (ACPI_SUCCESS(status))
-> -		result = acpi_pci_irq_add_prt(device->handle, root->id.segment,
-> -					      root->id.bus);
-> +		result = acpi_pci_irq_add_prt(device->handle,
-> +					      pci_find_bus(root->id.segment,
-> +							   root->id.bus));
+I am quite happy not supporting the noprefix option in the library if it
+is fine.
 
-I think you can just do this:
-
-	acpi_pci_irq_add_prt(device->handle, root->bus);
-
-Bjorn
+Thanks,
+-- 
+regards,
+Dhaval
