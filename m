@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759920AbZFBIO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759874AbZFBIPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759920AbZFBIO5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 04:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757549AbZFBIOp
+	id S1759874AbZFBIPR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 04:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759976AbZFBIOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 04:14:45 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:23934 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757308AbZFBIOo (ORCPT
+	Tue, 2 Jun 2009 04:14:50 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:21235 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757469AbZFBIOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 04:14:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:sender:reply-to:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=IebQyEG3S/NP3MG6DLRYnwhGqXQmYT80PEapW+j0hJoBBxcN6acxJVnX7p4M5/elF8
-         +JgyZJfRL8M0NAlFU0ToinPLPQAThIC+OXVsU9B8FqWpNMUMIim0oPzjK02P4Qpcjull
-         Z+97uGY1++hqTZR68LV1INZvivWA/Uw/570HQ=
+	Tue, 2 Jun 2009 04:14:45 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=PnTruJqzMs9iRjNwWa9YtrgZEd22fgEe5M7BTpkCh8wHVUrF00xoQqixRImv1lnIV
+	J5GNgIyzb2ib3oMWeOVtA==
+Date: Tue, 2 Jun 2009 01:14:40 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/3 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
+In-Reply-To: <20090602075836.GB16201@wotan.suse.de>
+Message-ID: <alpine.DEB.2.00.0906020104480.27792@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0906011828040.6936@chino.kir.corp.google.com> <alpine.DEB.2.00.0906011830490.6936@chino.kir.corp.google.com> <20090601225602.3482cd0d.akpm@linux-foundation.org> <alpine.DEB.2.00.0906020016060.24915@chino.kir.corp.google.com>
+ <1243928095.23657.5633.camel@twins> <20090602075836.GB16201@wotan.suse.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Reply-To: Tobias_Mueller@twam.info
-In-Reply-To: <4A24965C.2020901@cosmicpenguin.net>
-References: <17be05570905230453i591eb83bnb359f6365c109718@mail.gmail.com>
-	 <20090526151621.a7446c60.akpm@linux-foundation.org>
-	 <17be05570905301105h395689ja33afa96e7751381@mail.gmail.com>
-	 <20090601165457.a1cc1025.akpm@linux-foundation.org>
-	 <20090601200821.62b04e43@mycelium.queued.net>
-	 <4A24965C.2020901@cosmicpenguin.net>
-Date: Tue, 2 Jun 2009 10:14:45 +0200
-X-Google-Sender-Auth: c486ddf2d798700c
-Message-ID: <17be05570906020114k7f2a3096h48335d509951cf90@mail.gmail.com>
-Subject: Re: [PATCH v2 001/001] gpio: AMD CS5535/CS5536 GPIO driver
-From: =?UTF-8?Q?Tobias_M=C3=BCller?= <Tobias_Mueller@twam.info>
-To: jordan@cosmicpenguin.net
-Cc: Andres Salomon <dilinger@collabora.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, david-b@pacbell.net,
-       gardner.ben@gmail.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/2 Jordan Crouse <jordan@cosmicpenguin.net>:
-> Andres Salomon wrote:
->> As far as Tobias's driver, one major difference between our drivers is
->> that mine doesn't grab the entire PCI device.  This is because other
->> drivers (ie, the MFGPT driver) will want to share the PCI device.
->
-> Also SMBUS. In fact, they *must* share the PCI device if they all want to
-> play well together, so that alone would probably push us toward Andre's
-> patch, once it gets clean.
+On Tue, 2 Jun 2009, Nick Piggin wrote:
 
-I had SMBUS and my driver tested in parallel and there I didn't found any
-problems. But I would be fine if we would use Andre's patch. I haven't know
-about, so that's why I tried my own. :)
+> > I would really prefer if we do as Andrew suggests. Both will fix this
+> > problem, so I don't see it as a different topic at all.
+> 
+> Well, his patch, as it stands, is a good one. Because we do have
+> potential higher order GFP_NOFAIL.
+> 
 
-I see some other problem's on Andre's patch:
-- He allows the use of PIN 23 which is reserved
-- No special handling is done for 28, which is a GPIO, but
-  serves as Power Button as well
-- OUT_AUX1/OUT_AUX2 should be disabled by default
-  if pin is configured as in output
-- IN_AUX should be disabled by default is pin is
-  configured as in input
+There's currently an inconsistency in the definition of __GFP_NOFAIL and 
+its implementation.  The clearly defined purpose of the flag is:
 
-And, if I request a GPIO by userspace via sysfs, on my system it's an
-input pin by default. So my driver initializes a GPIO as an input by default.
-But I don't know if this is default or system specific. I didn't found anything
-about this in the gpio docs.
+ * __GFP_NOFAIL: The VM implementation _must_ retry infinitely: the caller
+ * cannot handle allocation failures.
 
-So maybe we should decide whether we take Andre's or my approach
-and then adjust it.
+Yet __GFP_NOFAIL allocations may fail if no progress is made via direct 
+reclaim and order > PAGE_ALLOC_COSTLY_ORDER.  That's the behavior in the 
+git HEAD and Mel's allocator rework in mmotm.
 
-Tobias
+I've been addressing this implicitly by requiring __GFP_NOFAIL to always 
+abide by the definition: we simply can never return NULL because the 
+caller can't handle it (and, by definition, shouldn't even be responsible 
+for considering it).
+
+With my patch, we kill a memory hogging task that will free some memory so 
+the allocation will succeed (or multiple tasks if insufficient contiguous 
+memory is available).  Kernel allocations use __GFP_NOFAIL, so the fault 
+of this memory freeing is entirely on the caller, not the page allocator.
+
+My preference for handling this is to merge my patch (obviously :), and 
+then hopefully deprecate __GFP_NOFAIL as much as possible although I don't 
+suspect it could be eradicated forever.
