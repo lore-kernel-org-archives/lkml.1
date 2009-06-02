@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759827AbZFBGFF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759375AbZFBGJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759827AbZFBGFF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 02:05:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756756AbZFBGE4
+	id S1759375AbZFBGJz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 02:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757757AbZFBGJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 02:04:56 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:55598
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755361AbZFBGE4 (ORCPT
+	Tue, 2 Jun 2009 02:09:47 -0400
+Received: from straum.hexapodia.org ([64.81.70.185]:40462 "EHLO
+	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757709AbZFBGJr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 02:04:56 -0400
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH] update kernel's scripts/bloat-o-meter from busybox
-Date: Tue, 2 Jun 2009 01:04:55 -0500
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; x86_64; ; )
-Cc: Robin Getz <rgetz@blackfin.uclinux.org>, Sam Ravnborg <sam@ravnborg.org>,
-       "Bernhard Reutner-Fischer" <rep.dot.nop@gmail.com>,
-       Denis Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org,
-       Mike Frysinger <vapier@gentoo.org>
-References: <200906011526.01108.rgetz@blackfin.uclinux.org> <200906011657.20251.rgetz@blackfin.uclinux.org> <1243891040.22069.117.camel@calx>
-In-Reply-To: <1243891040.22069.117.camel@calx>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Jun 2009 02:09:47 -0400
+Date: Mon, 1 Jun 2009 23:09:48 -0700
+From: Andy Isaacson <adi@hexapodia.org>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Joerg Schilling <Joerg.Schilling@fokus.fraunhofer.de>
+Subject: Re: [Bug #13179] CD-R: wodim intermittent failures
+Message-ID: <20090602060948.GY28124@hexapodia.org>
+References: <4to6E2myxvG.A.muC.aIbIKB@chimera> <LEcEO2518_I.A.I5E.BKbIKB@chimera> <4A24ADB9.6010903@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906020104.56471.rob@landley.net>
+In-Reply-To: <4A24ADB9.6010903@gmail.com>
+User-Agent: Mutt/1.4.2.3i
+X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
+X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
+X-Domestic-Surveillance: money launder bomb tax evasion
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 01 June 2009 16:17:20 Matt Mackall wrote:
-> > > > I think Rob had been sending early patches both places, but
-> > > > somewhere along the line things never made it to lkml.
-> > >
-> > > I probably dropped them on the ground during a busy spell.
+On Mon, Jun 01, 2009 at 10:42:33PM -0600, Robert Hancock wrote:
+> Rafael J. Wysocki wrote:
+> >This message has been generated automatically as a part of a report
+> >of recent regressions.
 > >
-> > Sorry - I didn't mean to sound like I was trying to blame anyone.
->
-> And I'm just making sure Rob doesn't feel blamed. He did send me
-> patches, and they didn't go anywhere.
+> >The following bug entry is on the current list of known regressions
+> >from 2.6.29.  Please verify if it still should be listed and let me know
+> >(either way).
+> >
+> >
+> >Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13179
+> >Subject		: CD-R: wodim intermittent failures
+> >Submitter	: Andy Isaacson <adi@hexapodia.org>
+> >Date		: 2009-04-21 1:52 (40 days old)
+> >References	: http://marc.info/?l=linux-kernel&m=124027879214231&w=4
+> 
+> Last I heard the reporter was going to attempt a bisect, that was a 
+> while ago. I don't really have any suggestions other than that.
 
-Oh go ahead and blame me, I'm used to it. :)
+I've been having trouble reliably bisecting; sometimes seemingly-bad
+kernels work OK and other times thought-OK kernels fail even though I've
+stopped Gnome and HAL.
 
-Rob
--- 
-Latency is more important than throughput. It's that simple. - Linus Torvalds
+At this point I'm suspecting intermittent hardware failure and am
+getting set up to test on a similar machine.
+
+-andy
