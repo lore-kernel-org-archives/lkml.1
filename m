@@ -1,116 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753768AbZFBMsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbZFBMt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753768AbZFBMsi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 08:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbZFBMsa
+	id S1753196AbZFBMt0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 08:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbZFBMtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 08:48:30 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:51391 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751439AbZFBMsa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 08:48:30 -0400
-Date: Tue, 2 Jun 2009 14:55:38 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, hugh@veritas.com, riel@redhat.com,
-       akpm@linux-foundation.org, chris.mason@oracle.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602125538.GH1065@one.firstfloor.org>
-References: <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090601120537.GF5018@wotan.suse.de> <20090601185147.GT1065@one.firstfloor.org> <20090602121031.GC1392@wotan.suse.de> <20090602123450.GF1065@one.firstfloor.org> <20090602123720.GF1392@wotan.suse.de>
-Mime-Version: 1.0
+	Tue, 2 Jun 2009 08:49:18 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:55799 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751970AbZFBMtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 08:49:17 -0400
+Date: Tue, 2 Jun 2009 14:49:19 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LKML-SCSI <linux-scsi@vger.kernel.org>
+Subject: Re: [andrew.patterson@hp.com: [PATCH v6] cciss: add cciss driver
+	sysfs entries]
+Message-ID: <20090602124918.GI11363@kernel.dk>
+References: <20090529145530.GD4846@beardog.cca.cpqcorp.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090602123720.GF1392@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090529145530.GD4846@beardog.cca.cpqcorp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 02:37:20PM +0200, Nick Piggin wrote:
-> Because I don't see any difference (see my previous patch). I
-> still don't know what it is supposed to be doing differently.
-> So if you reinvent your own that looks close enough to truncate
-> to warrant a comment to say /* this is close to truncate but
-> not quite */, then yes I insist that you say exactly why it is
-> not quite like truncate ;)
+On Fri, May 29 2009, Mike Miller (OS Dev) wrote:
+> I fat fingered Andrew & Jens' addresses. Sorry for nay duplicates.
 
-I will just delete that comment because it apparently causes so 
-much confusion.
-
-> 
->  
-> > > I'm suggesting that EIO is traditionally for when the data still
-> > > dirty in pagecache and was not able to get back to backing
-> > > store. Do you deny that?
-> > 
-> > Yes. That is exactly the case when memory-failure triggers EIO
-> > 
-> > Memory error on a dirty file mapped page.
-> 
-> But it is no longer dirty, and the problem was not that the data
-> was unable to be written back.
-
-Sorry I don't understand. What do you mean with "no longer dirty"
-
-Of course it's still dirty, just has to be discarded because it's 
-corrupted.
-
-> > > And I think the application might try to handle the case of a
-> > > page becoming corrupted differently. Do you deny that?
-> > 
-> > You mean a clean file-mapped page? In this case there is no EIO,
-> > memory-failure just drops the page and it is reloaded.
-> > 
-> > If the page is dirty we trigger EIO which as you said above is the 
-> > right reaction.
-> 
-> No I mean the difference between the case of dirty page unable to
-> be written to backing sotre, and the case of dirty page becoming
-> corrupted.
-
-Nick, I have really a hard time following you here.
-
-What exactly do you want? 
-
-A new errno? Or something else? If yes what precisely?
-
-I currently don't see any sane way to report this to the application
-through write().  That is because adding a new errno for something
-is incredibly hard and often impossible, and that's certainly
-the case here.
-
-The application can detect it if it maps the 
-shared page and waits for a SIGBUS, but not through write().
-
-But I doubt there will be really any apps that do anything differently
-here anyways. A clever app could retry a few times if it still
-has a copy of the data, but that might even make sense on normal
-IO errors (e.g. on a SAN).
-
-> 
-> 
-> > > OK, given the range of errors that APIs are defined to return,
-> > > then maybe EIO is the best option. I don't suppose it is possible
-> > > to expand them to return something else?
-> > 
-> > Expand the syscalls to return other errnos on specific
-> > kinds of IO error?
-> >  
-> > Of course that's possible, but it has the problem that you 
-> > would need to fix all the applications that expect EIO for
-> > IO error. The later I consider infeasible.
-> 
-> They would presumably exit or do some default thing, which I
-> think would be fine.
-
-No it's not fine if they would handle EIO. e.g. consider
-a sophisticated database which likely has sophisticated
-IO error mechanisms too (e.g. only abort the current commit)
-
--Andi
+Applied, along with the other pending cciss patches.
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Jens Axboe
+
