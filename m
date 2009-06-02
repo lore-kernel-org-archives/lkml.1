@@ -1,164 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757798AbZFBOPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbZFBOQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757798AbZFBOPz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 10:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbZFBOPD
+	id S1757965AbZFBOQu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 10:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754269AbZFBOQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 10:15:03 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:54352 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754623AbZFBOO5 (ORCPT
+	Tue, 2 Jun 2009 10:16:42 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:32797 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753308AbZFBOQl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 10:14:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=gVq2AG8V+Oxfh4zG0GvofwOftRnCUC+QX/xuIDwoHuuCuuJAwcTTNSYbp/BjQBsE0Q
-         t850FMeAWAGkOXgf5x+mPZuDAPIiZLRK732aw3HL8+vDuqLP83HT8VbtOaRmrzq4Il7M
-         eUgC8+n0YbI1jyHagmgnlBIy603f/en3K6sw4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 3/3] drivers/ide/ide-core: Unsplit constant strings for pr_<level> and dev_<level>
-Date: Tue, 2 Jun 2009 16:19:40 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-rc6-next-20090522-05935-g4d19128; KDE/4.2.3; i686; ; )
-Cc: Joe Perches <joe@perches.com>, Borislav Petkov <petkovbb@gmail.com>,
-       Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <cover.1243062772.git.joe@perches.com> <57f9dd5c33bcdd863793a3ee95ab050e8456bab4.1243062772.git.joe@perches.com> <4A19399B.8060207@ru.mvista.com>
-In-Reply-To: <4A19399B.8060207@ru.mvista.com>
+	Tue, 2 Jun 2009 10:16:41 -0400
+Date: Tue, 2 Jun 2009 19:46:06 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: poornima nayak <mpnayak@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com,
+       davej@redhat.com, ego@in.ibm.com
+Subject: Re: Performance regression in 2.6.30-rc1
+Message-ID: <20090602141606.GU5077@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <1243940419.6885.48.camel@localhost.localdomain>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200906021619.40387.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1243940419.6885.48.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 24 May 2009 14:12:11 Sergei Shtylyov wrote:
-> Hello.
+* Poornima Nayak <mpnayak@linux.vnet.ibm.com> [2009-06-02 16:30:19]:
+
+> Hi 
 > 
-> Joe Perches wrote:
+> By executing kernbench on 2.6.30-rc1 we observed there is a performance
+> regression in 2.6.30-rc1. Then git-bisect was done between v2.6.29 and
+> v2.6.30-rc5, after 13 iterations identified the attached patch is
+> causing regression.
 > 
-> > Signed-off-by: Joe Perches <joe@perches.com>
-> >   
-> [...]
-> > diff --git a/drivers/ide/ide-acpi.c b/drivers/ide/ide-acpi.c
-> > index f323a60..560b9c4 100644
-> > --- a/drivers/ide/ide-acpi.c
-> > +++ b/drivers/ide/ide-acpi.c
-> > @@ -435,8 +435,8 @@ void ide_acpi_get_timing(ide_hwif_t *hwif)
-> >  	if (!out_obj->buffer.length || !out_obj->buffer.pointer ||
-> >  	    out_obj->buffer.length != sizeof(struct GTM_buffer)) {
-> >  		kfree(output.pointer);
-> > -		pr_err("%s: unexpected _GTM length (0x%x)[should be 0x%zx] or "
-> > -		       "addr (0x%p)\n",
-> > +		pr_err(
-> > +	"%s: unexpected _GTM length (0x%x)[should be 0x%zx] or addr (0x%p)\n",
-> >   
+> Performance data of 2.6.29 without applying the attached patch.
+> param-version
+> testname
+> elapsed-avg
+> elapsed-std
+> 2.6.29'
+> pm_kernbench.Version-none-threads=2-sched_mc=2
+>              221.1
+>               0.81
+> 2.6.29'
+> pm_kernbench.Version-none-threads=4-sched_mc=0
+>             115.09
+>                0.6
+> 2.6.29'
+> pm_kernbench.Version-none-threads=4-sched_mc=2
+>             109.05
+>               0.25
+> 2.6.29'
+> pm_kernbench.Version-none-threads=8-sched_mc=2
+>               60.4
+>               0.38
+> 2.6.29'
+> pm_kernbench.Version-none-threads=8-sched_mc=0
+>              65.23
+>               0.34
+> 2.6.29'
+> pm_kernbench.Version-none-threads=2-sched_mc=0
+>             231.61
+>               0.59
 > 
->    Oh no... do you really think somebody will search for this message 
-> using strings like "should be"?
-
-Well, I don't know but the error message should be improved regardless
-by splitting it on separate messages for separate error conditions
-(wrong length vs wrong addr).
-
-> >  		       __func__, out_obj->buffer.length,
-> >  		       sizeof(struct GTM_buffer), out_obj->buffer.pointer);
-> >  		return;
-> > diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-> > index 46cf46e..1e9e2d6 100644
-> > --- a/drivers/ide/ide-atapi.c
-> > +++ b/drivers/ide/ide-atapi.c
-> > @@ -60,11 +60,13 @@ int ide_check_atapi_device(ide_drive_t *drive, const char *s)
-> >  		dev_err(&drive->gendev, "%s: the removable flag is not set\n",
-> >  			s);
-> >  	else if (drive->media == ide_floppy && drq_type == 3)
-> > -		dev_err(&drive->gendev, "%s: sorry, DRQ type (0x%02x) not "
-> > -			"supported\n", s, drq_type);
-> > +		dev_err(&drive->gendev,
-> > +			"%s: sorry, DRQ type (0x%02x) not supported\n",
-> >   
+> Performance data of 2.6.29 after applying the attached patch.
+> param-version
+> testname
+> elapsed-avg
+> elapsed-std
+> 2.6.29'
+> pm_kernbench.Version-thir-bisect-threads=2-sched_mc=0
+>             203.77
+>               0.48
+> 2.6.29'
+> pm_kernbench.Version-thir-bisect-threads=8-sched_mc=0
+>              64.38
+>               0.25
+> 2.6.29'
+> pm_kernbench.Version-thir-bisect-threads=4-sched_mc=0
+>             102.46
+>                0.1
+> 2.6.29'
+> pm_kernbench.Version-thir-bisect-threads=8-sched_mc=2
+>              59.94
+>               0.46
+> 2.6.29'
+> pm_kernbench.Version-thir-bisect-threads=4-sched_mc=2
+>             106.84
+>               0.28
+> 2.6.29'
+> pm_kernbench.Version-thir-bisect-threads=2-sched_mc=2
+>             199.44
+>               0.44
 > 
->    Same question. I think the user will search for "sorry, DRQ type".
+> Performance issue here is when sched_mc_power_savings is set 2 and
+> kernbench is triggered with 4 threads the value of 'elapsed time' is
+> more then sched_mc_power_savings is set to 0. Expectation is elapsed
+> time should be less when sched_mc_power_savings set 2 compared to
+> sched_mc_power_savings set to 0.
 
-Lets just make it something like:
+Hi Poornima,
 
-"%s: unsupported DRQ type (0x%02x)\n"
+The table seems to be mangled.  Can you please resend and also sort
+the results so that sched_mc=0,2 for the same number of threads come
+together.  It is difficult to follow the results.
 
-> > +			s, drq_type);
-> >  	else if (packet_size != 0)
-> > -		dev_err(&drive->gendev, "%s: packet size (0x%02x) is not 12 "
-> > -			"bytes\n", s, packet_size);
-> > +		dev_err(&drive->gendev,
-> > +			"%s: packet size (0x%02x) is not 12 bytes\n",
-> >   
+Also there seem to be a 10% improvement at each run level with the
+patch.  So why are you claiming this as a performance regression?
+
+sched_mc 2 over 0 is 4 sec more only in the 4 threaded case, but
+overall improvement in other scenarios.
+
+I assume you have run this on a 8 core box.
+
+Also did you see this code being invoked on the test machine.  Did you
+see the "Capping off P-state tranision latency" print.  This patch may
+be affecting the ondemand governor, but I an unable to related this to
+performance impact.
+
+--Vaidy
+
+
 > 
->    When the message is broken by the format specifier, turning it into 
-> one liner can hardly help seraching...
+> Regds
+> Poornima
 
-"%s: wrong packet size (0x%02x)\n"
-
-> > @@ -439,8 +440,7 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
-> >  	if (pc->flags & PC_FLAG_DMA_IN_PROGRESS) {
-> >  		pc->flags &= ~PC_FLAG_DMA_IN_PROGRESS;
-> >  		dev_err(&drive->gendev,
-> > -			"The device wants to issue more interrupts "
-> > -			"in DMA mode\n");
-> > +	"The device wants to issue more interrupts in DMA mode\n");
-> >   
+> diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> index 4b1c319..89c676d 100644
+> --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> +++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> @@ -680,6 +680,18 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  			    perf->states[i].transition_latency * 1000;
+>  	}
 > 
->    Oh noes, the indentation...
+> +	/* Check for high latency (>20uS) from buggy BIOSes, like on T42 */
+> +	if (perf->control_register.space_id == ACPI_ADR_SPACE_FIXED_HARDWARE &&
+> +	    policy->cpuinfo.transition_latency > 20 * 1000) {
+> +		static int print_once;
+> +		policy->cpuinfo.transition_latency = 20 * 1000;
+> +		if (!print_once) {
+> +			print_once = 1;
+> +			printk(KERN_INFO "Capping off P-state tranision latency"
+> +				" at 20 uS\n");
+> +		}
+> +	}
+> +
+>  	data->max_freq = perf->states[0].core_frequency * 1000;
+>  	/* table init */
+>  	for (i=0; i<perf->state_count; i++) {
 
-We even know the device name so:
-
-"wants to issue more IRQs in DMA mode\n"
-
-should suffice.
-
-> > @@ -509,14 +509,12 @@ static u8 ide_wait_ireason(ide_drive_t *drive, u8 ireason)
-> >  	while (retries-- && ((ireason & ATAPI_COD) == 0 ||
-> >  			     (ireason & ATAPI_IO))) {
-> >  		dev_err(&drive->gendev,
-> > -			"(IO,CoD != (0,1) while issuing "
-> > -			"a packet command, retrying\n");
-> > +	"(IO,CoD != (0,1) while issuing a packet command, retrying\n");
-> >   
-> 
->    Sigh...
-> 
-> >  		udelay(100);
-> >  		ireason = ide_read_ireason(drive);
-> >  		if (retries == 0) {
-> >  			dev_err(&drive->gendev,
-> > -				"(IO,CoD != (0,1) while issuing "
-> > -				"a packet command, ignoring\n");
-> > +	"(IO,CoD != (0,1) while issuing a packet command, ignoring\n");
-> >   
-> 
->    Sigh...
-
-I guess that by "Sigh" you meant:
-
-"while issuing a packet command" should go away
-
-;)
-
-> > @@ -547,8 +545,7 @@ static ide_startstop_t ide_transfer_pc(ide_drive_t *drive)
-> >  
-> >  	if (ide_wait_stat(&startstop, drive, ATA_DRQ, ATA_BUSY, WAIT_READY)) {
-> >  		dev_err(&drive->gendev,
-> > -			"Strange, packet command initiated yet "
-> > -			"DRQ isn't asserted\n");
-> > +	"Strange, packet command initiated yet DRQ isn't asserted\n");
-> >   
-> 
->    Sigh...
-
-"DRQ isn't asserted\n" should be enough here
-
-Seems like most (all?) other error messages can be improved in similar way.
