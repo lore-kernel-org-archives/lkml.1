@@ -1,82 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbZFBAck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757573AbZFBAex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbZFBAck (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 20:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755578AbZFBAcX
+	id S1757573AbZFBAex (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 20:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757192AbZFBAeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 20:32:23 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:39799 "EHLO smtps.tip.net.au"
+	Mon, 1 Jun 2009 20:34:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36887 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754204AbZFBAcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 20:32:22 -0400
-Date: Tue, 2 Jun 2009 10:32:16 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: manual merge of the kmemcheck tree with the tracing
- tree
-Message-Id: <20090602103216.dab209a1.sfr@canb.auug.org.au>
-In-Reply-To: <1243866799.18138.9.camel@localhost.localdomain>
-References: <20090601175539.67317265.sfr@canb.auug.org.au>
-	<1243866799.18138.9.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__2_Jun_2009_10_32_16_+1000_P_KUxx2GG9st.TqK"
+	id S1754521AbZFBAe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 20:34:29 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip v9 4/7] kprobes: cleanup fix_riprel() using insn decoder
+	on x86
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Date: Mon, 01 Jun 2009 20:37:37 -0400
+Message-ID: <20090602003736.29255.7206.stgit@localhost.localdomain>
+In-Reply-To: <20090602003709.29255.48248.stgit@localhost.localdomain>
+References: <20090602003709.29255.48248.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__2_Jun_2009_10_32_16_+1000_P_KUxx2GG9st.TqK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Cleanup fix_riprel() in arch/x86/kernel/kprobes.c by using x86 instruction
+decoder.
 
-Hi Steve,
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
 
-On Mon, 01 Jun 2009 10:33:19 -0400 Steven Rostedt <srostedt@redhat.com> wro=
-te:
->
-> >  +	/*
-> >  +	 * The actual tail page has moved forward.
-> >  +	 */
-> >  +	if (tail < BUF_PAGE_SIZE) {
-> >  +		/* Mark the rest of the page with padding */
-> >  +		event =3D __rb_page_index(tail_page, tail);
-> > ++		kmemcheck_annotate_bitfield(event, bitfield);
->=20
-> Is this...
+ arch/x86/kernel/kprobes.c |  128 ++++++++-------------------------------------
+ 1 files changed, 23 insertions(+), 105 deletions(-)
 
-Just this (since the code was outdented and moved slightly).
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index 41d524f..ebac470 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -108,50 +108,6 @@ static const u32 twobyte_is_boostable[256 / 32] = {
+ 	/*      -----------------------------------------------         */
+ 	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+ };
+-static const u32 onebyte_has_modrm[256 / 32] = {
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-	/*      -----------------------------------------------         */
+-	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 00 */
+-	W(0x10, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 10 */
+-	W(0x20, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 20 */
+-	W(0x30, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 30 */
+-	W(0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 40 */
+-	W(0x50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 50 */
+-	W(0x60, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0) | /* 60 */
+-	W(0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 70 */
+-	W(0x80, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 80 */
+-	W(0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 90 */
+-	W(0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* a0 */
+-	W(0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* b0 */
+-	W(0xc0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* c0 */
+-	W(0xd0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1) , /* d0 */
+-	W(0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* e0 */
+-	W(0xf0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1)   /* f0 */
+-	/*      -----------------------------------------------         */
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-};
+-static const u32 twobyte_has_modrm[256 / 32] = {
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-	/*      -----------------------------------------------         */
+-	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1) | /* 0f */
+-	W(0x10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0) , /* 1f */
+-	W(0x20, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1) | /* 2f */
+-	W(0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 3f */
+-	W(0x40, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 4f */
+-	W(0x50, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 5f */
+-	W(0x60, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 6f */
+-	W(0x70, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1) , /* 7f */
+-	W(0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 8f */
+-	W(0x90, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 9f */
+-	W(0xa0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1) | /* af */
+-	W(0xb0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1) , /* bf */
+-	W(0xc0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* cf */
+-	W(0xd0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* df */
+-	W(0xe0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* ef */
+-	W(0xf0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)   /* ff */
+-	/*      -----------------------------------------------         */
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-};
+ #undef W
+ 
+ struct kretprobe_blackpoint kretprobe_blacklist[] = {
+@@ -344,68 +300,30 @@ static int __kprobes is_IF_modifier(kprobe_opcode_t *insn)
+ static void __kprobes fix_riprel(struct kprobe *p)
+ {
+ #ifdef CONFIG_X86_64
+-	u8 *insn = p->ainsn.insn;
+-	s64 disp;
+-	int need_modrm;
+-
+-	/* Skip legacy instruction prefixes.  */
+-	while (1) {
+-		switch (*insn) {
+-		case 0x66:
+-		case 0x67:
+-		case 0x2e:
+-		case 0x3e:
+-		case 0x26:
+-		case 0x64:
+-		case 0x65:
+-		case 0x36:
+-		case 0xf0:
+-		case 0xf3:
+-		case 0xf2:
+-			++insn;
+-			continue;
+-		}
+-		break;
+-	}
++	struct insn insn;
++	kernel_insn_init(&insn, p->ainsn.insn);
+ 
+-	/* Skip REX instruction prefix.  */
+-	if (is_REX_prefix(insn))
+-		++insn;
+-
+-	if (*insn == 0x0f) {
+-		/* Two-byte opcode.  */
+-		++insn;
+-		need_modrm = test_bit(*insn,
+-				      (unsigned long *)twobyte_has_modrm);
+-	} else
+-		/* One-byte opcode.  */
+-		need_modrm = test_bit(*insn,
+-				      (unsigned long *)onebyte_has_modrm);
+-
+-	if (need_modrm) {
+-		u8 modrm = *++insn;
+-		if ((modrm & 0xc7) == 0x05) {
+-			/* %rip+disp32 addressing mode */
+-			/* Displacement follows ModRM byte.  */
+-			++insn;
+-			/*
+-			 * The copied instruction uses the %rip-relative
+-			 * addressing mode.  Adjust the displacement for the
+-			 * difference between the original location of this
+-			 * instruction and the location of the copy that will
+-			 * actually be run.  The tricky bit here is making sure
+-			 * that the sign extension happens correctly in this
+-			 * calculation, since we need a signed 32-bit result to
+-			 * be sign-extended to 64 bits when it's added to the
+-			 * %rip value and yield the same 64-bit result that the
+-			 * sign-extension of the original signed 32-bit
+-			 * displacement would have given.
+-			 */
+-			disp = (u8 *) p->addr + *((s32 *) insn) -
+-			       (u8 *) p->ainsn.insn;
+-			BUG_ON((s64) (s32) disp != disp); /* Sanity check.  */
+-			*(s32 *)insn = (s32) disp;
+-		}
++	if (insn_rip_relative(&insn)) {
++		s64 newdisp;
++		u8 *disp;
++		insn_get_displacement(&insn);
++		/*
++		 * The copied instruction uses the %rip-relative addressing
++		 * mode.  Adjust the displacement for the difference between
++		 * the original location of this instruction and the location
++		 * of the copy that will actually be run.  The tricky bit here
++		 * is making sure that the sign extension happens correctly in
++		 * this calculation, since we need a signed 32-bit result to
++		 * be sign-extended to 64 bits when it's added to the %rip
++		 * value and yield the same 64-bit result that the sign-
++		 * extension of the original signed 32-bit displacement would
++		 * have given.
++		 */
++		newdisp = (u8 *) p->addr + (s64) insn.displacement.value -
++			  (u8 *) p->ainsn.insn;
++		BUG_ON((s64) (s32) newdisp != newdisp); /* Sanity check.  */
++		disp = (u8 *) p->ainsn.insn + INSN_DISPLACEMENT_OFFS(&insn);
++		*(s32 *) disp = (s32) newdisp;
+ 	}
+ #endif
+ }
 
-> > @@@ -1311,12 -1289,9 +1313,13 @@@
-> >   		return NULL;
-> >  =20
-> >   	event =3D __rb_page_index(tail_page, tail);
-> > + 	kmemcheck_annotate_bitfield(event, bitfield);
->=20
-> and this the only changes you needed to fix?
 
-This one git merged on its own.
+-- 
+Masami Hiramatsu
 
-The "++" is the clue.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
---Signature=_Tue__2_Jun_2009_10_32_16_+1000_P_KUxx2GG9st.TqK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkokcxAACgkQjjKRsyhoI8yQuACgtCg5JrwVNt9QEyfD+Xcq6mcf
-9KAAoLub4gy2VH/yrnd0e3QRLw+FGBiJ
-=Z0/H
------END PGP SIGNATURE-----
-
---Signature=_Tue__2_Jun_2009_10_32_16_+1000_P_KUxx2GG9st.TqK--
+e-mail: mhiramat@redhat.com
