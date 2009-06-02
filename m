@@ -1,149 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756576AbZFBQyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757736AbZFBQ56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756576AbZFBQyD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 12:54:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754313AbZFBQxz
+	id S1757736AbZFBQ56 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 12:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZFBQ5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 12:53:55 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:35405 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753603AbZFBQxy convert rfc822-to-8bit (ORCPT
+	Tue, 2 Jun 2009 12:57:49 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:39562 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753555AbZFBQ5s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 12:53:54 -0400
+	Tue, 2 Jun 2009 12:57:48 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 2 Jun 2009 09:51:42 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Al Viro <viro@ZenIV.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Eric W. Biederman" <ebiederm@maxwell.aristanetworks.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 18/23] vfs: Teach epoll to use file_hotplug_lock
+In-Reply-To: <1243893048-17031-18-git-send-email-ebiederm@xmission.com>
+Message-ID: <alpine.DEB.1.10.0906020944540.12866@makko.or.mcafeemobile.com>
+References: <m1oct739xu.fsf@fess.ebiederm.org> <1243893048-17031-18-git-send-email-ebiederm@xmission.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-In-Reply-To: <4A1FFEFB.6050104@drewtech.com>
-References: <c8284b5b0905281440hd2e4993re3d0d8c590713fa0@mail.gmail.com>
-	 <4A1FFEFB.6050104@drewtech.com>
-Date: Tue, 2 Jun 2009 09:53:54 -0700
-X-Google-Sender-Auth: 106f8b3eb4eb94e1
-Message-ID: <c8284b5b0906020953o7c112b4hc264b5520cc3aed1@mail.gmail.com>
-Subject: Re: [PATCH] New AT91 MCI Driver that supports both MCI slots used at 
-	the same time
-From: Rob Emanuele <poorarm@shoreis.com>
-To: Joey Oravec <joravec@drewtech.com>
-Cc: nicolas.ferre@atmel.com, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings Joey,
+On Mon, 1 Jun 2009, Eric W. Biederman wrote:
 
-On Fri, May 29, 2009 at 8:27 AM, Joey Oravec <joravec@drewtech.com> wrote:
-> Rob Emanuele wrote:
->>
->> This patch creates a new AT91 Multimedia Card Interface (MCI) driver
->> that supports using both MCI slots at the same time.  I'm looking for
->> others to test this patch on other boards within the same family of
->> chips.
->>
->> This driver is a port the Atmel AVR32 MCI driver which uses similar
->> silicon.
->>
->
-> I made all necessary adjustments to test this on my at91sam9261.
-> Unfortunately it didn't want to initialize my card so I wasn't able to try
-> some of the failures that I experience with the existing driver. I sent you
-> a private email with the logs.
->
+> From: Eric W. Biederman <ebiederm@maxwell.aristanetworks.com>
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+> ---
+>  fs/eventpoll.c |   39 ++++++++++++++++++++++++++++++++-------
+>  1 files changed, 32 insertions(+), 7 deletions(-)
 
-I'll have a further look at your logs and see if I can distingush why
-the driver does not initialize for for you.  Unfortunately the only
-hardware I have access to is a AT91SAM9G20-EK Rev. B and a
-AT91SAM9XE-EK (maybe Rev A  which is also the same board as what is
-used for the AT91SAM9620).  Either way I'll try to be as much help as
-I can.  I will provide in my next version of the patch a full
-board-sam9g20-dualslot.c file to show how I am initializing the board.
+This patchset gives me the willies for the amount of changes and possible 
+impact on many subsystems.
+Without having looked at the details, are you aware that epoll does not 
+act like poll/select, and fds are not automatically removed (as in, 
+dequeued from the poll wait queue) in any foreseeable amount of time after 
+a POLLERR is received?
+As far as the usespace API goes, they have the right to remain there.
 
->> +config MMC_AT91GEN2
->> +       tristate "Atmel AT91 Multimedia Card Interface support 2nd gen"
->> +       depends on ARCH_AT91
->> +       help
->>
->
-> On linux-arm-kernel I've detailed a lot of problems involving
-> WRITE_MULTIPLE_BLOCK using the at91 mmc/sd controller. In the end you might
-> need to exclude certain processors or else have a gigantic warning. You can
-> talk to me offline for details on my testing.
 
-I will look into this as it might be important to some of the errors I
-see.  If you can point me to those messages in one of the archives,
-I'd appreciate it.
 
->
->> +struct at91_mmc_slot_pdata {
->> +        unsigned int            bus_width;
->> +        int                     detect_pin;
->> +        int                     wp_pin;
->> +        int                     vcc_pin;
->> +};
->>
->
-> Notice in 2.6.29 that at91_mci and most other structures call it "det_pin"
-> rather than "detect_pin"
->
+- Davide
 
-I changed the pin name for my next patch.
 
->> +       if (host->need_reset) {
->> +               at91_mci_write(host, AT91_MCI_CR, AT91_MCI_SWRST);
->> +               at91_mci_write(host, AT91_MCI_CR, AT91_MCI_MCIEN);
->> +               at91_mci_write(host, AT91_MCI_MR, host->mode_reg);
->> +               host->need_reset = false;
->> +       }
->>
->
-> In my experience some at91s need a reset after every single command,
-> otherwise bad things happen. I think the need_reset logic is too
-> conservative in this driver.
->
-
-I'll try this and probably make it an option to always reset before
-each command.
-
->> +               /*
->> +                * WRPROOF and RDPROOF prevent overruns/underruns by
->> +                * stopping the clock when the FIFO is full/empty.
->> +                * This state is not expected to last for long.
->> +                */
->> +               host->mode_reg = (AT91_MCI_CLKDIV & clkdiv) |
->> AT91_MCI_WRPROOF
->> +                                       | AT91_MCI_RDPROOF;
->>
->
-> These registers are not in all at91 chips especially the at91sam9261.
-
-I'll look into this but will not be able to test every case.
-
->
->> +       if (pdata->slot[0].bus_width) {
->> +               ret = at91mci_init_slot(host, &pdata->slot[0],
->> +                               AT91_MCI_SDCSEL & 0x0, 0);
->> +               if (!ret)
->> +                       nr_slots++;
->> +       }
->> +       if (pdata->slot[1].bus_width) {
->> +               ret = at91mci_init_slot(host, &pdata->slot[1],
->> +                               AT91_MCI_SDCSEL & 0x1, 1);
->> +               if (!ret)
->> +                       nr_slots++;
->> +       }
->> +
->> +       if (!nr_slots)
->> +               goto err_init_slot;
->>
->
-> The original pdata had "wire4" which worked (but defaulted to 1-wire) as
-> default uninitialized. With this new variable it's easy to register
-> mmc_slot_pdata with bus_width set to zero. The difference bit me when
-> testing and at least deserves a printk if not a change.
->
-
-I'm happy to add a printk saying that the port was disabled by a bus
-width of zero.
-
-Thanks for you interest in this work,
-
-Rob
