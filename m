@@ -1,91 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbZFBADQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbZFBAFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbZFBADQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 20:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZFBADJ
+	id S1755851AbZFBAFr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 20:05:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbZFBAFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 20:03:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59269 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753373AbZFBADI (ORCPT
+	Mon, 1 Jun 2009 20:05:40 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41223 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754204AbZFBAFk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 20:03:08 -0400
-Date: Mon, 1 Jun 2009 17:02:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tobias_Mueller@twam.info
-Cc: david-b@pacbell.net, jordan@cosmicpenguin.net, gardner.ben@gmail.com,
-       linux-kernel@vger.kernel.org, Andres Salomon <dilinger@queued.net>
-Subject: Re: [PATCH v2 001/001] gpio: AMD CS5535/CS5536 GPIO driver
-Message-Id: <20090601170255.c10d744c.akpm@linux-foundation.org>
-In-Reply-To: <17be05570905301105h395689ja33afa96e7751381@mail.gmail.com>
-References: <17be05570905230453i591eb83bnb359f6365c109718@mail.gmail.com>
-	<20090526151621.a7446c60.akpm@linux-foundation.org>
-	<17be05570905301105h395689ja33afa96e7751381@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 1 Jun 2009 20:05:40 -0400
+Date: Mon, 1 Jun 2009 19:11:37 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: serue@us.ibm.com, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] TOMOYO: Add garbage collector support. (v2)
+Message-ID: <20090602001137.GA20880@hallyn.com>
+References: <alpine.LRH.2.00.0905151146320.5937@tundra.namei.org> <200905162107.HCE17153.HLSFMtOOFVFOJQ@I-love.SAKURA.ne.jp> <200905250037.n4P0bFwe057503@www262.sakura.ne.jp> <200905250039.n4P0dSIE058041@www262.sakura.ne.jp> <200905250041.n4P0fVCT058575@www262.sakura.ne.jp> <200906012227.FDE64040.MVQLOStOHFOFFJ@I-love.SAKURA.ne.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906012227.FDE64040.MVQLOStOHFOFFJ@I-love.SAKURA.ne.jp>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 30 May 2009 20:05:52 +0200
-Tobias M__ller <Tobias_Mueller@twam.info> wrote:
-
-> From: Tobias Mueller <Tobias_Mueller@twam.info>
+Quoting Tetsuo Handa (penguin-kernel@I-love.SAKURA.ne.jp):
+> Hello.
 > 
-> A GPIO driver for AMD Geode Companion Device CS5535/CS5536
-> using the GPIO framework as a replacement for old cs5535-gpio driver.
+> Serge E. Hallyn wrote:
+> > So yes, you might be able to get more review of your patch
+> > if you split it up into:
+> > 
+> > 	1. move allocations outside of semaphore
+> > 	2. add proper refcounting
+> > 	3. get rid of ->is_deleted
+> 
+> I'm ready to post part (1) and part (2).
+> But I'm not sure whether part (3) is worth to implement or not.
 >
-> ...
->
-> +/* base address of gpio I/O*/
-> +static u32 iobase;
+> If we don't use is_deleted flag, we will need two "struct list_head"s,
+> one is for readers and writers, the other is for GC.
+> 
+> struct something {
+> 	struct {
+> 		struct list_head list;
+> 		atomic_t users;
+> 	} entry;
+> 	int data;
+> 	bool is_deleted;
+> } *p;
+> 
+> If we remove p from the list using list_del() (or list_del_rcu()) instead of
+> setting p->is_deleted to true, we have to somehow remember the element pointed
+> by p so that that element is reachable from the GC's list.
+> We can't wait for p->entry.users to become 0 inside writer function (which is
+> called only when modifying lists). Only GC function (which is called
+> repeatedly) can check whether p->entry.users == 0 or not because the element
+> pointed by p is long-lived. We need to remember the location of the element
+> pointed by p .
 
-Formally this should have type resource_size_t, I think.  Or `void
-__iomem *'.  But given the limited applicability of this driver
-(geode-only), I guess u32 is OK.
+?
 
-> +static int gpiobase;
-> +module_param_named(gpiobase, gpiobase, int, 0444);
-> +MODULE_PARM_DESC(gpiobase, "The GPIO number base. -1 means dynamic");
-> +
-> +static ulong mask;
+Can't you just move the deleted item from the live list to some dead
+list, using the same ->list list_head?
 
-hm, ulong isn't a particularly popular "type" in the kernel.  But I
-guess it's stable enough.
+> We can allocate memory when adding p to GC's list, but allocating memory at
+> list_del() (or list_del_rcu()) time could fail. It is not a good thing that
+> removing an element from the reader's list fails because of -ENOMEM. We already
+> have a way (i.e. is_deleted flag) to avoid -ENOMEM.
+> 
+> We can add another "struct list_head" to each element which is used by GC.
+> But that approach consumes more memory than is_deleted flag.
 
-> +module_param_named(mask, mask, ulong, 0444);
-> +MODULE_PARM_DESC(mask, "GPIO channel mask.");
-> +
-> +/* gets the regiter offset for the GPIO bank.
-> + *      low (0-15) stats at 0x00, high (16-31) starts at 0x80 */
->
-> ...
->
-> +#define gpio_cs5535_suspend NULL
-> +#define gpio_cs5535_resume NULL
-> +
-> +static struct pci_driver gpio_cs5535_driver = {
-> +	.name           = "gpio_cs5535",
-> +	.id_table       = gpio_cs5535_pci_tbl,
-> +	.probe          = gpio_cs5535_probe,
-> +	.remove         = gpio_cs5535_remove,
-> +	.suspend        = gpio_cs5535_suspend,
-> +	.resume         = gpio_cs5535_resume,
-> +};
+?
 
-What are the implications of not having suspend/resume support?
+See above.
 
-> +static int __init gpio_cs5535_init(void)
-> +{
-> +	return pci_register_driver(&gpio_cs5535_driver);
-> +}
-> +module_init(gpio_cs5535_init)
-> +
-> +static void __exit gpio_cs5535_exit(void)
-> +{
-> +	pci_unregister_driver(&gpio_cs5535_driver);
-> +}
-> +module_exit(gpio_cs5535_exit);
-
+-serge
