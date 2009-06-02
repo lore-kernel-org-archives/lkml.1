@@ -1,181 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbZFBUvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbZFBUxC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918AbZFBUvs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 16:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZFBUvk
+	id S1753576AbZFBUxC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 16:53:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZFBUwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 16:51:40 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:35148 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751894AbZFBUvj (ORCPT
+	Tue, 2 Jun 2009 16:52:53 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:35452 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbZFBUwv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 16:51:39 -0400
-Message-ID: <4A259155.3000909@oracle.com>
-Date: Tue, 02 Jun 2009 13:53:41 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 2 Jun 2009 16:52:51 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>, Al Viro <viro@ZenIV.linux.org.uk>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       Hugh Dickins <hugh@veritas.com>, Tejun Heo <tj@kernel.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 04/23] vfs: Introduce infrastructure for revoking a file
+References: <m1oct739xu.fsf@fess.ebiederm.org>
+	<1243893048-17031-4-git-send-email-ebiederm@xmission.com>
+	<20090602071411.GE31556@wotan.suse.de>
+	<alpine.LFD.2.01.0906021005190.3351@localhost.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 02 Jun 2009 13:52:46 -0700
+In-Reply-To: <alpine.LFD.2.01.0906021005190.3351@localhost.localdomain> (Linus Torvalds's message of "Tue\, 2 Jun 2009 10\:06\:00 -0700 \(PDT\)")
+Message-ID: <m1y6sas6ht.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Reza Mostafid <m.r.mostafid@gmail.com>
-CC: linux-kernel@vger.kernel.org, x86 maintainers <x86@kernel.org>
-Subject: Re: kernel panic despite enabling math-emulation
-References: <47a46110905302240w36d78bcbne506210dd7e9c1d2@mail.gmail.com>
-In-Reply-To: <47a46110905302240w36d78bcbne506210dd7e9c1d2@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt003.oracle.com [141.146.116.12]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4A25909A.0014:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: torvalds@linux-foundation.org, ebiederm@aristanetworks.com, hch@infradead.org, akpm@linux-foundation.org, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, adobriyan@gmail.com, tj@kernel.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk, npiggin@suse.de
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reza Mostafid wrote:
-> I am trying to build a stripped down v2.6.* kernel to run on a single
-> chip 386 processor.
-> As I understand it, the math emulation library must be enabled (
-> compiled into the kernel )
-> to cater for the absence of a proper HW FPU.
-> 
-> I am doing the builds on a more modern x86 desktop machine running Fedora 8
-> ( based on 2.6.23.1 kernel ) using the source from Fedora 8 ( i.e.
-> with the F8 patches
->   applied against a 2.6.23.1 kernel )
-> 
-> As a first step, after building the kernel with
-> 'CONFIG_MATH_EMULATION=y' I tried to test
-> this feature on my build machine ( which does have an FPU ), by
-> supplying the 'no387'
-> boot parameter in order to simulate a non-existing FPU.
-> 
-> Running the math-emu enabled kernel in this way causes a kernel panic
-> which happens before
-> spawning 'init' and early-user space initialization.
-> 
-> I have observed this condition with several 2.6.* kernel versions and
-> several Intel/AMD boxes.
-> 
-> Using the 'earlyprintk=vga' bootparameter and some printk statements
-> sprinkled in the
-> appropriate corners of the code ( i.e. '__init' function 'no387()' in
-> bug.c ) I was able to
-> observe that in all three cases the 'no387()' code snippet executes
-> its stuff without hick ups
-> when the 'no388' boot parameter is processed
-> 
->  37 static int __init no_387(char *s)
->  38 {
->  39         boot_cpu_data.hard_math = 0;
->  40         write_cr0(0xE | read_cr0());
->  41         return 1;
->  42 }
->  43
->  44 __setup("no387", no_387);
-> 
-> The kernel freeze happens as a result of a panic in 'fpu_entry.c' (
-> here I have reproduced code
-> and line no.s from the file as it exists in v2.6.23.1 under
-> 'arch/i386/math-emu' )
-> 
-> 179   else if ( FPU_CS == __KERNEL_CS )
-> 180     {
-> 181       printk("math_emulate: %04x:%08lx\n",FPU_CS,FPU_EIP);
-> 182       panic("Math emulation needed in kernel");
-> 183     }
-> 184   else
-> 
-> In all cases the following lines are the last outputs to the console:
-> 
->   math_emulate: <some FPU_CS value>:<some FPU_EIP value>
->   Kernel panic-not syncing: Math emulation needed in kernel
-> 
-> So it appears that even with math emulation enabled the logic of the
-> code in 'fpu_entry.c' takes
-> the kernel into the above 'else', i.e. the kernel thinks that there is
-> no 'math emulation'.
-> 
-> Searching the web I was able to find references to this problem in
-> several threads but no apparent
-> solution to it.
-> 
-> Math-emulation albeit not a widely used feature, should have been
-> around long enough for someone to
-> have stumbled upon such an obvious problem.
-> 
-> Q1) Am I overlooking anything?
-> 
->  or
-> 
-> Q2) Is this a problem in the code?
-> 
->  and finally
-> 
-> Q3) Any suggestions for how I could get a 2.6 kernel to actually run
-> with the math-emu?
-> 
-> 
-> 
-> Regards
-> 
-> 
-> Reza Mostafid
-> 
-> 
-> 
-> ==========================================================================================================
-> 
-> Here is a reproduction of the steps I took:
-> 
-> 
-> i)   I downloaded the source rpms for the Fedora distro I am running (
-> Fedora Core 8 which runs
->      a modified version of the 2.6.23.1 kernel ).
-> 
-> ii)  I compiled the Fedora kernel version thus obtained ( using the
-> supplied distro .config ) and
->      it boots fine
-> 
-> iii) I then change a single parameter of the original configuration,
-> i.e. enable math-emulation and
->      I observed the problem ( kernel panics with the 'no387' param
-> supplied )
-> 
-> iv)  I then reproduced the same problem booting a 'kernel.org' vanilla
-> 2.6.23.1 kernel with the same
->      configuration and observed the same problem.
-> 
-> v)   Finally several different versions of the 'kernel.org' vanilla
-> source were compiled with the same
->      configuration ( the FC8 distro '.config' with just the 'math-emu'
-> enabled ) on three different PCs.
->      Each time the same problem: Each math-emu enabled kernel boots
-> fine, until you supply the 'no387'
->      option, in which case all of them hang at the same place.
-> 
-> 
-> Configuration used as base:    That of the Fedora 8 distro
-> 
-> Parameter changed:             CONFIG_MATH_EMULATION=y
-> 
-> Kernels tested:
-> 
-> 2.6.23.1 source rpm for Fedora 8
-> 2.6.23.1 'vanilla' from 'kernel.org'
-> 2.6.11.12 'vanilla' from 'kernel.org'
-> 2.6.12.6  'vanilla' from 'kernel.org'
-> 2.6.28.8  'vanilla' from 'kernel.org'
-> 
-> CPUs/machines problem was observed on:
-> 
-> Intel Celeron 331 ( Netburst type P4 )
-> AMD Semperon
-> AMD Athlon
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
+> On Tue, 2 Jun 2009, Nick Piggin wrote:
+>>
+>> Why is it called hotplug? Does it have anything to do with hardware?
+>> Because every concurrently changed software data structure in the
+>> kernel can be "hot"-modified, right?
+>> 
+>> Wouldn't file_revoke_lock be more appropriate?
+>
+> I agree, "hotplug" just sounds crazy. It's "open" and "revoke", not 
+> "plug" and "unplug".
 
-I can easily reproduce this on a Pentium M running 2.6.30-rc7,
-although it's a bit difficult to get a backtrace of it.
+I guess this shows my bias in triggering this code path from pci
+hotunplug.  Instead of with some system call.
 
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+I'm not married to the name.  I wanted file_lock but that is already
+used, and I did call the method revoke.
+
+The only place where hotplug gives a useful hint is that it makes it
+clear we really are disconnecting the file descriptor from what lies
+below it.  We can't do some weird thing like keep the underlying object.
+Because the underlying object is gone.
+
+Eric
