@@ -1,172 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbZFBTcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZFBTlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753918AbZFBTcj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 15:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZFBTca
+	id S1753411AbZFBTlY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 15:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbZFBTlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 15:32:30 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:55717 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752795AbZFBTcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 15:32:18 -0400
-Date: Tue, 2 Jun 2009 12:32:16 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: mingo@elte.hu, mingo@redhat.com
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
-       x86@kernel.org, ebiederm@xmission.com, yinghai@kernel.org,
-       lcm@us.ibm.com
-Subject: [RESEND] [PATCH v2] [BUGFIX] x86/x86_64: fix CPU offlining
-	triggered "active" device IRQ interrruption
-Message-ID: <20090602193216.GC7282@us.ibm.com>
+	Tue, 2 Jun 2009 15:41:16 -0400
+Received: from h155.mvista.com ([63.81.120.155]:28537 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750776AbZFBTlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 15:41:15 -0400
+Message-ID: <4A2580AA.7090308@ru.mvista.com>
+Date: Tue, 02 Jun 2009 23:42:34 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] ide: add struct ide_port_ops
+References: <200802232116.31811.bzolnier@gmail.com>
+In-Reply-To: <200802232116.31811.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bartlomiej Zolnierkiewicz wrote:
 
-Impact: Eliminates an issue that can leave the system in an
-        unusable state.
+> * Move hooks for port/host specific methods from ide_hwif_t to
+>   'struct ide_port_ops'.
 
-This patch addresses an issue where device generated IRQs
-are no longer seen by the kernel following IRQ affinity
-migration while the device is generating IRQs at a high rate.
+> * Add 'const struct ide_port_ops *port_ops' to 'struct ide_port_info'
+>   and ide_hwif_t.
 
-I have been able to consistently reproduce the problem on
-some of our systems by running the following script (VICTIM_IRQ
-specifies the IRQ for the aic94xx device) while a single instance
-of the command
-  # while true; do find / -exec file {} \;; done
-is keeping the filesystem activity and IRQ rate reasonably high.
+> * Update host drivers and core code accordingly.
 
-#!/bin/sh
+> While at it:
 
-SYS_CPU_DIR=/sys/devices/system/cpu
-VICTIM_IRQ=25
-IRQ_MASK=f0
+> * Rename ata66_*() cable detect functions to *_cable_detect() to match
+>   the standard naming. (Suggested by Sergei Shtylyov)
 
-iteration=0
-while true; do
-  echo $iteration
-  echo $IRQ_MASK > /proc/irq/$VICTIM_IRQ/smp_affinity
-  for cpudir in $SYS_CPU_DIR/cpu[1-9] $SYS_CPU_DIR/cpu??; do
-    echo 0 > $cpudir/online
-  done
-  for cpudir in $SYS_CPU_DIR/cpu[1-9] $SYS_CPU_DIR/cpu??; do
-    echo 1 > $cpudir/online
-  done
-  iteration=`expr $iteration + 1`
-done
+> Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-The root cause is a known issue already addressed for some
-code paths [e.g. ack_apic_level() and the now obsolete
-migrate_irq_remapped_level_desc()] where the ioapic can
-misbehave when the I/O redirection table register is written
-while the Remote IRR bit is set.
+    Noticed an issue in pdc202xx_old.c:
 
-The proposed fix uses the same avoidance method and much
-of same code that the Interrupt Remapping code previously
-used to avoid the same problem.
+> Index: b/drivers/ide/pci/pdc202xx_old.c
+> ===================================================================
+> --- a/drivers/ide/pci/pdc202xx_old.c
+> +++ b/drivers/ide/pci/pdc202xx_old.c
+> @@ -115,7 +115,7 @@ static void pdc202xx_set_pio_mode(ide_dr
+>  	pdc202xx_set_mode(drive, XFER_PIO_0 + pio);
+>  }
+>  
+> -static u8 __devinit pdc2026x_old_cable_detect(ide_hwif_t *hwif)
+> +static u8 __devinit pdc2026x_cable_detect(ide_hwif_t *hwif)
+>  {
+>  	struct pci_dev *dev = to_pci_dev(hwif->dev);
+>  	u16 CIS, mask = hwif->channel ? (1 << 11) : (1 << 10);
+> @@ -226,26 +226,6 @@ somebody_else:
+>  	return (dma_stat & 4) == 4;	/* return 1 if INTR asserted */
+>  }
+>  
+> -static void pdc202xx_dma_lost_irq(ide_drive_t *drive)
+> -{
+> -	ide_hwif_t *hwif = HWIF(drive);
+> -
+> -	if (hwif->resetproc != NULL)
+> -		hwif->resetproc(drive);
+> -
+> -	ide_dma_lost_irq(drive);
+> -}
+> -
+> -static void pdc202xx_dma_timeout(ide_drive_t *drive)
+> -{
+> -	ide_hwif_t *hwif = HWIF(drive);
+> -
+> -	if (hwif->resetproc != NULL)
+> -		hwif->resetproc(drive);
+> -
+> -	ide_dma_timeout(drive);
+> -}
+> -
+>  static void pdc202xx_reset_host (ide_hwif_t *hwif)
+>  {
+>  	unsigned long high_16	= hwif->extra_base - 16;
+> @@ -271,6 +251,18 @@ static void pdc202xx_reset (ide_drive_t 
+>  	ide_set_max_pio(drive);
+>  }
+>  
+> +static void pdc202xx_dma_lost_irq(ide_drive_t *drive)
+> +{
+> +	pdc202xx_reset(drive);
+> +	ide_dma_lost_irq(drive);
+> +}
+> +
+> +static void pdc202xx_dma_timeout(ide_drive_t *drive)
+> +{
+> +	pdc202xx_reset(drive);
+> +	ide_dma_timeout(drive);
+> +}
+> +
 
-Successfully tested with Ingo's linux-2.6-tip (32 and 64-bit
-builds) on the IBM x460, x3550 M2, x3850, and x3950 M2.
+    Oops, missed this illegetimate change while reviewing: PDC20246 doesn't 
+have the resetproc() method, hence this switch to direct calling of 
+pdc202xx_reset() directly was wrong...
 
-v2: modified to integrate with Yinghai Lu's
-    "irq: change ->set_affinity() to return status" changes
-    to intersecting/related code.
+>  static unsigned int __devinit init_chipset_pdc202xx(struct pci_dev *dev,
+>  							const char *name)
+>  {
+> @@ -281,17 +273,6 @@ static void __devinit init_hwif_pdc202xx
+>  {
+>  	struct pci_dev *dev = to_pci_dev(hwif->dev);
+>  
+> -	hwif->set_pio_mode = &pdc202xx_set_pio_mode;
+> -	hwif->set_dma_mode = &pdc202xx_set_mode;
+> -
+> -	hwif->quirkproc = &pdc202xx_quirkproc;
+> -
+> -	if (dev->device != PCI_DEVICE_ID_PROMISE_20246) {
+> -		hwif->resetproc = &pdc202xx_reset;
+> -
+> -		hwif->cable_detect = pdc2026x_old_cable_detect;
+> -	}
+> -
+>  	if (hwif->dma_base == 0)
+>  		return;
+>  
+> @@ -357,6 +338,20 @@ static void __devinit pdc202ata4_fixup_i
+>  	 IDE_HFLAG_ABUSE_SET_DMA_MODE | \
+>  	 IDE_HFLAG_OFF_BOARD)
+>  
+> +static const struct ide_port_ops pdc20246_port_ops = {
+> +	.set_pio_mode		= pdc202xx_set_pio_mode,
+> +	.set_dma_mode		= pdc202xx_set_mode,
+> +	.quirkproc		= pdc202xx_quirkproc,
+> +};
+> +
+> +static const struct ide_port_ops pdc2026x_port_ops = {
+> +	.set_pio_mode		= pdc202xx_set_pio_mode,
+> +	.set_dma_mode		= pdc202xx_set_mode,
+> +	.quirkproc		= pdc202xx_quirkproc,
+> +	.resetproc		= pdc202xx_reset,
+> +	.cable_detect		= pdc2026x_cable_detect,
+> +};
+> +
+>  #define DECLARE_PDC2026X_DEV(name_str, udma, extra_flags) \
+>  	{ \
+>  		.name		= name_str, \
+> @@ -364,6 +359,7 @@ static void __devinit pdc202ata4_fixup_i
+>  		.init_hwif	= init_hwif_pdc202xx, \
+>  		.init_dma	= init_dma_pdc202xx, \
+>  		.extra		= 48, \
+> +		.port_ops	= &pdc2026x_port_ops, \
+>  		.host_flags	= IDE_HFLAGS_PDC202XX | extra_flags, \
+>  		.pio_mask	= ATA_PIO4, \
+>  		.mwdma_mask	= ATA_MWDMA2, \
+> @@ -376,6 +372,7 @@ static const struct ide_port_info pdc202
+>  		.init_chipset	= init_chipset_pdc202xx,
+>  		.init_hwif	= init_hwif_pdc202xx,
+>  		.init_dma	= init_dma_pdc202xx,
+> +		.port_ops	= &pdc20246_port_ops,
+>  		.extra		= 16,
+>  		.host_flags	= IDE_HFLAGS_PDC202XX,
+>  		.pio_mask	= ATA_PIO4,
 
-Signed-off-by: Gary Hade <garyhade@us.ibm.com>
-
----
- arch/x86/kernel/apic/io_apic.c |   68 ++++++++++++++++++++++++++++++-
- 1 file changed, 67 insertions(+), 1 deletion(-)
-
-Index: linux-2.6-tip/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6-tip.orig/arch/x86/kernel/apic/io_apic.c	2009-05-14 14:11:00.000000000 -0700
-+++ linux-2.6-tip/arch/x86/kernel/apic/io_apic.c	2009-05-14 14:11:32.000000000 -0700
-@@ -2296,7 +2296,8 @@ set_desc_affinity(struct irq_desc *desc,
- }
-
- static int
--set_ioapic_affinity_irq_desc(struct irq_desc *desc, const struct cpumask *mask)
-+set_ioapic_irq_affinity_desc(struct irq_desc *desc,
-+			     const struct cpumask *mask)
- {
- 	struct irq_cfg *cfg;
- 	unsigned long flags;
-@@ -2320,6 +2321,71 @@ set_ioapic_affinity_irq_desc(struct irq_
- 	return ret;
- }
-
-+static void
-+delayed_irq_move(struct work_struct *work)
-+{
-+	unsigned int irq;
-+	struct irq_desc *desc;
-+
-+	for_each_irq_desc(irq, desc) {
-+		if (desc->status & IRQ_MOVE_PENDING) {
-+			unsigned long flags;
-+
-+			spin_lock_irqsave(&desc->lock, flags);
-+			if (!desc->chip->set_affinity ||
-+			    !(desc->status & IRQ_MOVE_PENDING)) {
-+				desc->status &= ~IRQ_MOVE_PENDING;
-+				spin_unlock_irqrestore(&desc->lock, flags);
-+				continue;
-+			}
-+			desc->chip->set_affinity(irq, desc->pending_mask);
-+			spin_unlock_irqrestore(&desc->lock, flags);
-+		}
-+	}
-+}
-+
-+static DECLARE_DELAYED_WORK(delayed_irq_move_work, delayed_irq_move);
-+
-+static int
-+set_ioapic_irq_affinity_level_desc(struct irq_desc *desc)
-+{
-+	struct irq_cfg *cfg = desc->chip_data;
-+	int ret = -1;
-+
-+	mask_IO_APIC_irq_desc(desc);
-+	if (io_apic_level_ack_pending(cfg)) {
-+		/*
-+		 * Interrupt in progress. Migrating irq now will change
-+		 * the vector information in the IO-APIC RTE which will
-+		 * confuse the EOI broadcast performed by cpu.
-+		 * So, we delay the IRQ migration.
-+		 */
-+		schedule_delayed_work(&delayed_irq_move_work, 1);
-+		ret = 0;
-+		goto unmask;
-+	}
-+
-+	/* Interrupt not in progress.  We can change the vector
-+	 * information in the IO-APIC RTE. */
-+	ret = set_ioapic_irq_affinity_desc(desc, desc->pending_mask);
-+	desc->status &= ~IRQ_MOVE_PENDING;
-+unmask:
-+	unmask_IO_APIC_irq_desc(desc);
-+	return ret;
-+}
-+
-+static int
-+set_ioapic_affinity_irq_desc(struct irq_desc *desc,
-+			     const struct cpumask *mask)
-+{
-+	if (desc->status & IRQ_LEVEL) {
-+		desc->status |= IRQ_MOVE_PENDING;
-+		cpumask_copy(desc->pending_mask, mask);
-+		return set_ioapic_irq_affinity_level_desc(desc);
-+	}
-+	return set_ioapic_irq_affinity_desc(desc, mask);
-+}
-+
- static int
- set_ioapic_affinity_irq(unsigned int irq, const struct cpumask *mask)
- {
-
+MBR, Sergei
