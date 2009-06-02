@@ -1,88 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760682AbZFBHPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759664AbZFBHRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760682AbZFBHPh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 03:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757990AbZFBHP3
+	id S1759664AbZFBHRo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 03:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZFBHRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 03:15:29 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:61813 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757361AbZFBHP3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 03:15:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=sDCsbwn4Kph6h1apaJwAfXzH+zuAhvLhwFNxIcL6O6kPdBlX/pnWnVyV1PH2mHpvPT
-         NFRUC9U8Zp00qE2Qgw4Fa2tzoLsElLS4XHAcXIkkFmwlUeyuZpj57aOQleplnk9Y2i6Y
-         EPOC8GtOFq/CWr1cPdKe2YbXaNN7xtOZgEozM=
-MIME-Version: 1.0
-In-Reply-To: <20090601215034.7352ddca.akpm@linux-foundation.org>
-References: <200906011357.09966.florian@openwrt.org>
-	 <20090601215034.7352ddca.akpm@linux-foundation.org>
-Date: Tue, 2 Jun 2009 09:15:29 +0200
-X-Google-Sender-Auth: 26a2fe37e5854ca9
-Message-ID: <10f740e80906020015t2d63fdadmaa1fa6bc204ec33a@mail.gmail.com>
-Subject: Re: [PATCH 1/9] kernel: export sound/core/pcm_timer.c gcd 
-	implementation
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Florian Fainelli <florian@openwrt.org>, linux-kernel@vger.kernel.org,
-       Takashi Iwai <tiwai@suse.de>, linux-mips@linux-mips.org,
-       Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Jun 2009 03:17:37 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:32849 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751717AbZFBHRg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 03:17:36 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [PATCH] kgdbts: unify/generalize gdb breakpoint adjustment
+Date: Tue,  2 Jun 2009 03:17:30 -0400
+Message-Id: <1243927050-30685-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 2, 2009 at 06:50, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Mon, 1 Jun 2009 13:57:09 +0200 Florian Fainelli <florian@openwrt.org> wrote:
->
->> This patch exports the gcd implementation from
->> sound/core/pcm_timer.c into include/linux/kernel.h.
->> AR7 uses it in its clock routines.
->>
->> ...
->>
->> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
->> index 883cd44..878a27a 100644
->> --- a/include/linux/kernel.h
->> +++ b/include/linux/kernel.h
->> @@ -147,6 +147,22 @@ extern int _cond_resched(void);
->>               (__x < 0) ? -__x : __x;         \
->>       })
->>
->> +/* Greatest common divisor */
->> +static inline unsigned long gcd(unsigned long a, unsigned long b)
->> +{
->> +        unsigned long r;
->> +        if (a < b) {
->> +                r = a;
->> +                a = b;
->> +                b = r;
->> +        }
->> +        while ((r = a % b) != 0) {
->> +                a = b;
->> +                b = r;
->> +        }
->> +        return b;
->> +}
->
-> a) the name's a bit sucky.   Is there some convention for this name?
+The Blackfin arch, like the x86 arch, needs to adjust the PC manually
+after a breakpoint is hit as normally this is handled by the remote gdb.
+However, rather than starting another arch ifdef mess, create a common
+GDB_ADJUSTS_BREAK_OFFSET define for any arch to opt-in via their kgdb.h.
 
-Well, `gcd' is a quite common acronym, probably almost as well known as `min'
-and `max'...
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ arch/blackfin/include/asm/kgdb.h |    1 +
+ arch/x86/include/asm/kgdb.h      |    1 +
+ drivers/misc/kgdbts.c            |   14 ++++++--------
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-Gr{oetje,eeting}s,
+diff --git a/arch/blackfin/include/asm/kgdb.h b/arch/blackfin/include/asm/kgdb.h
+index c8b256d..8d5fe42 100644
+--- a/arch/blackfin/include/asm/kgdb.h
++++ b/arch/blackfin/include/asm/kgdb.h
+@@ -107,6 +107,7 @@ static inline void arch_kgdb_breakpoint(void)
+ }
+ #define BREAK_INSTR_SIZE	2
+ #define CACHE_FLUSH_IS_SAFE	1
++#define GDB_ADJUSTS_BREAK_OFFSET
+ #define HW_INST_WATCHPOINT_NUM	6
+ #define HW_WATCHPOINT_NUM	8
+ #define TYPE_INST_WATCHPOINT	0
+diff --git a/arch/x86/include/asm/kgdb.h b/arch/x86/include/asm/kgdb.h
+index e6c6c80..30671a8 100644
+--- a/arch/x86/include/asm/kgdb.h
++++ b/arch/x86/include/asm/kgdb.h
+@@ -75,5 +75,6 @@ static inline void arch_kgdb_breakpoint(void)
+ }
+ #define BREAK_INSTR_SIZE	1
+ #define CACHE_FLUSH_IS_SAFE	1
++#define GDB_ADJUSTS_BREAK_OFFSET
+ 
+ #endif /* _ASM_X86_KGDB_H */
+diff --git a/drivers/misc/kgdbts.c b/drivers/misc/kgdbts.c
+index e4ff50b..faff9cb 100644
+--- a/drivers/misc/kgdbts.c
++++ b/drivers/misc/kgdbts.c
+@@ -291,10 +291,10 @@ static int check_and_rewind_pc(char *put_str, char *arg)
+ 		 NUMREGBYTES);
+ 	gdb_regs_to_pt_regs(kgdbts_gdb_regs, &kgdbts_regs);
+ 	v2printk("Stopped at IP: %lx\n", instruction_pointer(&kgdbts_regs));
+-#ifdef CONFIG_X86
+-	/* On x86 a breakpoint stop requires it to be decremented */
+-	if (addr + 1 == kgdbts_regs.ip)
+-		offset = -1;
++#ifdef GDB_ADJUSTS_BREAK_OFFSET
++	/* On some arches, a breakpoint stop requires it to be decremented */
++	if (addr + BREAK_INSTR_SIZE == instruction_pointer(&kgdbts_regs))
++		offset = -BREAK_INSTR_SIZE;
+ #endif
+ 	if (strcmp(arg, "silent") &&
+ 		instruction_pointer(&kgdbts_regs) + offset != addr) {
+@@ -302,10 +302,8 @@ static int check_and_rewind_pc(char *put_str, char *arg)
+ 			   instruction_pointer(&kgdbts_regs) + offset, addr);
+ 		return 1;
+ 	}
+-#ifdef CONFIG_X86
+-	/* On x86 adjust the instruction pointer if needed */
+-	kgdbts_regs.ip += offset;
+-#endif
++	/* Readjust the instruction pointer if needed */
++	instruction_pointer(&kgdbts_regs) += offset;
+ 	return 0;
+ }
+ 
+-- 
+1.6.3.1
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
