@@ -1,78 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbZFBSNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758441AbZFBSUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758854AbZFBSNp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 14:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbZFBSNh
+	id S1758441AbZFBSUh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 14:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbZFBSU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 14:13:37 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:53166 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753706AbZFBSNg convert rfc822-to-8bit (ORCPT
+	Tue, 2 Jun 2009 14:20:29 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:27767 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752528AbZFBSU2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 14:13:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=qgE8HRNGrlIkUIHsl6OVieZmOc+1hfdlbLEDaRzPHM8thWglUS9UmYrtDjVYf1SICO
-         ayriTfEznkzcy4HRIEyUQ3wWR3OHzu7V8KNeH/IVVgl1r8MjeQO3q1adIncYep8JczWJ
-         F/CqKQRlHdmWePFRWITrdJwt4WAyzlv0amIsg=
-MIME-Version: 1.0
-In-Reply-To: <20090602162008.GH3914@think>
-References: <4A0B62F7.5030802@goop.org> <20090525091527.GA7535@elte.hu>
-	 <4A1C3805.7060404@goop.org> <20090528061702.GB6920@wotan.suse.de>
-	 <20090530102330.GC16913@elte.hu> <20090602141802.GC3914@think>
-	 <a36005b50906020749p22b89693k5c4ae171d18966a7@mail.gmail.com>
-	 <20090602150339.GF3914@think>
-	 <a36005b50906020822m33917c6fn5061af562b54c6c2@mail.gmail.com>
-	 <20090602162008.GH3914@think>
-Date: Tue, 2 Jun 2009 21:13:37 +0300
-X-Google-Sender-Auth: caac9f48d55b4616
-Message-ID: <84144f020906021113j12c3a8fbt40dd37ab780847ca@mail.gmail.com>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native 
-	kernels
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Chris Mason <chris.mason@oracle.com>, Ulrich Drepper <drepper@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Jun 2009 14:20:28 -0400
+Date: Tue, 2 Jun 2009 13:20:51 -0500
+From: scameron@beardog.cca.cpqcorp.net
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, mikem@beardog.cca.cpqcorp.net
+Subject: Re: [PATCH 2/2] cciss: Fix SCSI device reset handler
+Message-ID: <20090602182051.GR30160@beardog.cca.cpqcorp.net>
+References: <20090527203007.GA30160@beardog.cca.cpqcorp.net> <20090529124208.531839fe.akpm@linux-foundation.org> <20090602125011.GJ11363@kernel.dk> <20090602105114.fe754481.akpm@linux-foundation.org> <20090602175814.GO11363@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090602175814.GO11363@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Chris,
 
-On Tue, Jun 2, 2009 at 8:03 AM, Chris Mason <chris.mason@oracle.com> wrote:
->>> The best place to fix xen is in the kernel.
+On Tue, Jun 02, 2009 at 07:58:14PM +0200, Jens Axboe wrote:
+> On Tue, Jun 02 2009, Andrew Morton wrote:
+> > On Tue, 2 Jun 2009 14:50:11 +0200
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Fri, May 29 2009, Andrew Morton wrote:
+> > > > On Wed, 27 May 2009 15:30:07 -0500
+> > > > scameron@beardog.cca.cpqcorp.net wrote:
+> > > > 
+> > > > > +static int wait_for_device_to_become_ready(ctlr_info_t *h,
+> > > > > +	unsigned char lunaddr[])
+> > > > > +{
+> > > > > +	int rc;
+> > > > > +	int count = 0;
+> > > > > +	int waittime = HZ;
+> > > > > +	CommandList_struct *c;
+> > > > > +
+> > > > > +	c = cmd_alloc(h, 1);
+> > > > > +	if (!c) {
+> > > > > +		printk(KERN_WARNING "cciss%d: out of memory in "
+> > > > > +			"wait_for_device_to_become_ready.\n", h->ctlr);
+> > > > > +		return IO_ERROR;
+> > > > > +	}
+> > > > > +
+> > > > > +	/* Send test unit ready until device ready, or give up. */
+> > > > > +	while (count < 20) {
+> > > > > +
+> > > > > +		/* Wait for a bit.  do this first, because if we send
+> > > > > +		 * the TUR right away, the reset will just abort it.
+> > > > > +		 */
+> > > > > +		set_current_state(TASK_INTERRUPTIBLE);
+> > > > > +		schedule_timeout(waittime);
+> > > > 
+> > > > That's schedule_timeout_interruptible().
+> > > > 
+> > > > The problem with interruptible sleeps of this nature is that they are
+> > > > no-ops if the calling process happens to have signal_pending().  I
+> > > > suspect that this condition will break your driver.
+> > > > 
+> > > > If so, switching to schedule_timeout_uninterruptible() will unbreak it.
+> > > 
+> > > I added Stephens patch and your fixup.
+> > 
+> > My cciss-fix-scsi-device-reset-handler-fix.patch was a simple cleanup -
+> > it uses schedule_timeout_interruptible().
+> > 
+> > I believe that this should be changed to
+> > schedule_timeout_uninterruptible() for the above reasons, but the cciss
+> > guys fell asleep on me.
+> 
+> It's an improvement, none the less. And I bet it should just be
+> uninterruptible sleep, unless it has a good reason to accept signals.
+> Mike? Stephen?
+> 
+> -- 
+> Jens Axboe
+> 
 
-On Tue, Jun 02, 2009 at 08:22:57AM -0700, Ulrich Drepper wrote:
->> No.  The best way to fix things is _on the way into the kernel_.
+Sorry for the slow reply.
 
-On Tue, Jun 2, 2009 at 7:20 PM, Chris Mason <chris.mason@oracle.com> wrote:
-> It all depends on which parts are causing problems.  A 1% performance
-> hit, under a CONFIG_ that can be disabled?  If maintainers are focusing
-> on details like this for long term and active projects, we're doing
-> something very wrong.
+No good reason that I know to accept signals, I'll defer to your
+judgement on that.  When I wrote that schedule_timeout_... line,
+I was vaguely wondering if it was quite right.
 
-The fact that CONFIG_PARAVIRT can be disabled doesn't really help. As
-a matter of fact, I'd argue that one of the primary reasons
-CONFIG_SLUB regression is still there is because people can just
-disable it and use CONFIG_SLAB instead.
+That being said, I'm working on a set of patches to make the cciss
+SCSI error handling stuff work with interrupts enabled, which
+means making similar changes to sendcmd_withirq() as I already
+did to sendcmd() among some other stuff.   I didn't notice until
+just a few days ago that since sometime in 2.4 kernels you no longer 
+need to do the SCSI error handling with interrupts disabled as
+in 2.2 kernels.  Mike asked me why we did it with interrupts
+disabled, and I went looking in the docs to try to find where
+it said we needed to do that, and... oh, that requirement is
+gone.
 
-So I think we have some evidence to suggest that people have less
-incentive to fix things once something is merged to the kernel. And I
-don't mean the authors of the code here but basically _everyone_
-involved in kernel development. It usually takes effort from variety
-of people to get everything ironed out because, lets face it, we can't
-expect a handful of people to test out every configuration let alone
-fix them.
+So, if I rewrite the stuff to work with interrupts enabled, 
+would that change which kind of schedule_timeout() should be used?
+Or is that unrelated, and it depends whether you plan to do
+something with signals?  I'm not all that clear when to use
+one vs. tha other.
 
-                        Pekka
+-- steve
