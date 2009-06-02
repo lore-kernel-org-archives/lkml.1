@@ -1,65 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZFBMi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753592AbZFBMk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432AbZFBMi5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 08:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZFBMiu
+	id S1753592AbZFBMk6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 08:40:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbZFBMkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 08:38:50 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:47837 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752157AbZFBMit (ORCPT
+	Tue, 2 Jun 2009 08:40:51 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59977 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752075AbZFBMku (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 08:38:49 -0400
-From: Markus <M4rkusXXL@web.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Seagate Barracuda 7200.11 ST31500341AS fw SD17
-Date: Tue, 2 Jun 2009 14:38:50 +0200
-User-Agent: KMail/1.9.10
-Cc: Kay Diederichs <kay.diederichs@uni-konstanz.de>
-References: <200906021258.20346.M4rkusXXL@web.de> <200906021337.03123.M4rkusXXL@web.de> <4A2517AD.1080509@uni-konstanz.de>
-In-Reply-To: <4A2517AD.1080509@uni-konstanz.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 2 Jun 2009 08:40:50 -0400
+Date: Tue, 2 Jun 2009 14:47:57 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
+Message-ID: <20090602124757.GG1065@one.firstfloor.org>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906021438.50228.M4rkusXXL@web.de>
-X-Provags-ID: V01U2FsdGVkX1808DWqKWW6XzizclQPaLwpLPrvbH0eGeQtC2Uw
-	BwtwEt4TScMBRtbgzXEO12BgedHbwwr8RDEkex3+2MA5W5Khms
-	feZ7BH3gQ=
+In-Reply-To: <20090602120042.GB1392@wotan.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Diederichs wrote:
-> Markus schrieb:
-> > Rui Santos wrote:
-> >>> I have some Seagate Barracuda 7200.11 ST31500341AS 1.5TB drives. 
-They 
-> >>> use the firmware SD17.
-> >> Seagate recommends firmware SD1A for that HD.
-> >> However, I do not know if it will solve your problem. Jut try it...
+On Tue, Jun 02, 2009 at 02:00:42PM +0200, Nick Piggin wrote:
+> > On Mon, Jun 01, 2009 at 01:50:46PM +0200, Nick Piggin wrote:
+> > > > Another major complexity is on calling the isolation routines to
+> > > > remove references from
+> > > >         - PTE
+> > > >         - page cache
+> > > >         - swap cache
+> > > >         - LRU list
+> > > > They more or less made some assumptions on their operating environment
+> > > > that we have to take care of.  Unfortunately these complexities are
+> > > > also not easily resolvable.
+> > > > 
+> > > > > (and few comments) of all the files in mm/. If you want to get rid
+> > > > 
+> > > > I promise I'll add more comments :)
+> > > 
+> > > OK, but they should still go in their relevant files. Or as best as
+> > > possible. Right now it's just silly to have all this here when much
+> > > of it could be moved out to filemap.c, swap_state.c, page_alloc.c, etc.
 > > 
-> >>> This drive+fw is blacklisted in the kernel, but there is no 
-firmware 
-> >>> upgrade for these drives. (Only very few serial numbers are able 
-to 
-> >>> upgrade.)
-> > 
-> > I cant upgrade the firmware because the flash-utility will abort due 
-> > to "not affected serial number". I tried SD1B, the very newest 
-version.
-> > Cant find the SD1A for my drives.
-> > 
-> > Markus
+> > Can you be more specific what that "all this" is? 
 > 
-> I think you might have tried the wrong firmware file.
-> ST31500341AS needs 
+> The functions which take action in response to a bad page being 
+> detected. They belong with the subsystem that the page belongs
+> to. I'm amazed this is causing so much argument or confusion
+> because it is how the rest of mm/ code is arranged. OK, Hugh has
+> a point about ifdefs, but OTOH we have lots of ifdefs like this.
+
+Well we're already calling into that subsystem, just not with
+a single function call.
+
+> > > > > of the page and don't care what it's count or dirtyness is, then
+> > > > > truncate_inode_pages_range is the correct API to use.
+> > > > >
+> > > > > (or you could extract out some of it so you can call it directly on
+> > > > > individual locked pages, if that helps).
+> > > >  
+> > > > The patch to move over to truncate_complete_page() would like this.
+> > > > It's not a big win indeed.
+> > > 
+> > > No I don't mean to do this, but to move the truncate_inode_pages
+> > > code for truncating a single, locked, page into another function
+> > > in mm/truncate.c and then call that from here.
+> > 
+> > I took a look at that.  First there's no direct equivalent of
+> > me_pagecache_clean/dirty in truncate.c and to be honest I don't
+> > see a clean way to refactor any of the existing functions to 
+> > do the same.
 > 
-http://www.seagate.com/staticfiles/support/downloads/firmware/Brinks-4D8H-SD1B.ISO
+> With all that writing you could have just done it. It's really
 
-I tried that one (compared md5sum). It does not work. It only works 
-for "ST31500341AS,  9JU138-300 or -336, SD15 through SD1A ONLY!"
-So the utility fails and says the specific model could not be found.
+I would have done it if it made sense to me, but so far it hasn't.
 
-Markus
+The problem with your suggestion is that you do the big picture,
+but seem to skip over a lot of details. But details matter.
+
+> not a big deal and just avoids duplicating code. I attached an
+> (untested) patch.
+
+Thanks. But the function in the patch is not doing the same what
+the me_pagecache_clean/dirty are doing. For once there is no error
+checking, as in the second try_to_release_page()
+
+Then it doesn't do all the IO error and missing mapping handling.
+
+The page_mapped() check is useless because the pages are not 
+mapped here etc.
+
+We could probably call truncate_complete_page(), but then
+we would also need to duplicate most of the checking outside
+the function anyways and there wouldn't be any possibility
+to share the clean/dirty variants. If you insist I can
+do it, but I think it would be significantly worse code
+than before and I'm reluctant to do that.
+
+I don't also really see what the big deal is of just
+calling these few functions directly. After all we're not
+truncating here and they're all already called from other files.
+
+> > > No, it seems rather insane to do something like this here that no other
+> > > code in the mm ever does.
+> > 
+> > Just because the rest of the VM doesn't do it doesn't mean it might make sense.
+> 
+> It is going to be possible to do it somehow surely, but it is insane
+> to try to add such constraints to the VM to close a few small windows
+
+We don't know currently if they are small. If they are small I would
+agree with you, but that needs numbers. That said fancy writeback handling
+is currently not on my agenda.
+
+> if you already have other large ones.
+
+That's unclear too.
+
+-Andi
+
