@@ -1,92 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbZFBV0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753781AbZFBViB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185AbZFBV0p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 17:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZFBV0h
+	id S1753781AbZFBViB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 17:38:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751237AbZFBVhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 17:26:37 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34541 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750871AbZFBV0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 17:26:36 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>, Frans Pop <elendil@planet.nl>
-Subject: Re: [PATCH] usb: avoid PM error messages during resume if a device was disconnected
-Date: Tue, 2 Jun 2009 23:26:33 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: linux-usb@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0903241004160.3162-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0903241004160.3162-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Tue, 2 Jun 2009 17:37:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41089 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752824AbZFBVhx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 17:37:53 -0400
+Date: Tue, 2 Jun 2009 14:32:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, andi@firstfloor.org, ying.huang@intel.com,
+       W.Li@Sun.COM, michaele@au1.ibm.com, mingo@elte.hu,
+       heicars2@linux.vnet.ibm.com, mschwid2@linux.vnet.ibm.com,
+       rusty@rustcorp.com.au, xiyou.wangcong@gmail.com, sam@ravnborg.org,
+       jdike@addtoit.com
+Subject: Re: [PATCH 1/4] kernel: constructor support
+Message-Id: <20090602143202.6cfcc4ce.akpm@linux-foundation.org>
+In-Reply-To: <20090602114400.740271397@linux.vnet.ibm.com>
+References: <20090602114359.129247921@linux.vnet.ibm.com>
+	<20090602114400.740271397@linux.vnet.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906022326.34491.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First, sorry for the delayed response.  Frans has just reminded me about this
-thread.
+On Tue, 02 Jun 2009 13:44:00 +0200
+Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
 
-On Tuesday 24 March 2009, Alan Stern wrote:
-> On Mon, 23 Mar 2009, Frans Pop wrote:
+> From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
 > 
-> > > Or do you think maybe it would be better to move this test up into the
-> > > PM core?  After all, other subsystems will face the same issue.  I
-> > > think that would be the best approach.  Yes?
-> > 
-> > I did look at that option, but implementing it in the USB subsystem seemed
-> > more logical to me, for example as other subsystems possibly would want to
-> > display an info message.
+> Call constructors (gcc-generated initcall-like functions) during
+> kernel start and module load. Constructors are e.g. used for gcov data
+> initialization.
 > 
-> They still can...
+> Disable constructor support for usermode Linux to prevent conflicts
+> with host glibc.
 > 
-> > And is -ENODEV safe to ignore in all cases? Would there be other errors that
-> > should be ignored too?
-> 
-> In general, the PM core ignores _all_ errors during resume -- in the
-> sense that it doesn't try to recover from them or do anything to handle
-> them.  All it does is put a message in the log.
-> 
-> So your question becomes: For which errors should a message be added to 
-> the system log?  The most logical answer seems to be that we want an 
-> error message whenever something bad or unexpected occurs.
-> 
-> Removal of a hot-unpluggable device isn't really bad or unexpected.  
-> Removal of a non-hot-unpluggable device might be bad, but on the other
-> hand the system isn't really "hot" while it is suspended.  Besides, the
-> appropriate subsystem can print an error message.  Furthermore the
-> kernel can't easily tell which devices are hot-unpluggable and which
-> aren't.
-> 
-> Anything else amounts to failure resuming a device that still exists.  
-> As such, it probably deserves an error message.
+> Signed-off-by: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+> Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+> Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Jeff Dike <jdike@addtoit.com>
+>
+> ...
+>
+> --- linux-2.6.30-rc7.orig/include/asm-generic/vmlinux.lds.h	2009-06-02 10:34:37.000000000 +0200
+> +++ linux-2.6.30-rc7/include/asm-generic/vmlinux.lds.h	2009-06-02 10:35:20.000000000 +0200
 
-Returning 0 from usb_external_resume_device() if the device is not present
-any more doesn't seem wrong.  It's not really an error condition, IMO, because
-it's rather normal that the devices may be removed while suspended.
+Sam's tree has mucked with this file in linux-next.
 
-OTOH, I don't think we can ignore -ENODEV universally in the core, because
-its meaning may depend on the bus type.  For example, for PCI it sometimes
-means a hardware problem has occured (other than the device being not present
-any more).
+> @@ -332,6 +332,14 @@
+>  /* Section used for early init (in .S files) */
+>  #define HEAD_TEXT  *(HEAD_TEXT_SECTION)
+>  
+> +#ifdef CONFIG_CONSTRUCTORS
+> +#define KERNEL_CTORS()	VMLINUX_SYMBOL(__ctors_start) = .; \
+> +			*(.ctors)			   \
+> +			VMLINUX_SYMBOL(__ctors_end) = .;
+> +#else
+> +#define KERNEL_CTORS()
+> +#endif
+> +
+>  /* init and exit section handling */
+>  #define INIT_DATA							\
+>  	*(.init.data)							\
+> @@ -340,7 +348,8 @@
+>  	CPU_DISCARD(init.data)						\
+>  	CPU_DISCARD(init.rodata)					\
+>  	MEM_DISCARD(init.data)						\
+> -	MEM_DISCARD(init.rodata)
+> +	MEM_DISCARD(init.rodata)					\
+> +	KERNEL_CTORS()
+>  
 
-> > if Rafael would be happy with a generic test for -ENODEV, it could be done.
-> > If not, maybe some other special error code would need to be used but then
-> > you'd still need to test in the subsystem to set that error.
-> > Disadvantage is also that it would make resume_device() and related PM
-> > driver core functions quite a bit less clean than they currently are.
-> > 
-> > Implementing the test in USB was quite a bit simpler (for me at least ;-)
-> 
-> We should get Rafael's opinion.
+What we now have here is
 
-I'd vote in favor of the Frans' patch, at least for now.
+#define INIT_DATA							\
+	*(.init.data)							\
+	DEV_DISCARD(init.data)						\
+	CPU_DISCARD(init.data)						\
+	MEM_DISCARD(init.data)						\
+	*(.init.rodata)							\
+	DEV_DISCARD(init.rodata)					\
+	CPU_DISCARD(init.rodata)					\
+	MEM_DISCARD(init.rodata)
 
-So, Frans, please resubmit with the changelog modified as requested by Alan.
+and I don't think that you wanted KERNEL_DTORS() inside the .rodata
+section, so I did this:
 
-Best,
-Rafael
+#define INIT_DATA							\
+	*(.init.data)							\
+	DEV_DISCARD(init.data)						\
+	CPU_DISCARD(init.data)						\
+	MEM_DISCARD(init.data)						\
+	KERNEL_CTORS()							\
+	*(.init.rodata)							\
+	DEV_DISCARD(init.rodata)					\
+	CPU_DISCARD(init.rodata)					\
+	MEM_DISCARD(init.rodata)
+
+Please check that?
