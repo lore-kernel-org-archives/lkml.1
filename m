@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbZFBEuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbZFBEu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757583AbZFBEuZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 00:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbZFBEuS
+	id S1759161AbZFBEu7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 00:50:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758647AbZFBEuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 00:50:18 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:34563 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751763AbZFBEuR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 00:50:17 -0400
-Date: Mon, 1 Jun 2009 21:48:32 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@openvz.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] ptrace: do_notify_parent_cldstop: fix the wrong
-	->nsproxy usage
-Message-ID: <20090602044832.GA8219@us.ibm.com>
-References: <20090525185502.GA20781@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090525185502.GA20781@redhat.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 2 Jun 2009 00:50:51 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33272 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753225AbZFBEuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 00:50:51 -0400
+Subject: Re: [regression, bisected] adb trackpad disappears after suspend
+ to ram
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jan Scholz <scholz@fias.uni-frankfurt.de>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <200906011836.15507.rjw@sisk.pl>
+References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de>
+	 <200905292010.10615.rjw@sisk.pl>
+	 <87fxekxe3w.fsf@scholz.fias.uni-frankfurt.de>
+	 <200906011836.15507.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Tue, 02 Jun 2009 14:49:24 +1000
+Message-Id: <1243918164.5308.23.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov [oleg@redhat.com] wrote:
-| If the non-traced sub-thread calls do_notify_parent_cldstop(), we send the
-| notification to group_leader->real_parent and we report group_leader's pid.
-| 
-| But, if group_leader is traced we use the wrong ->parent->nsproxy->pid_ns,
-| the tracer and parent can live in different namespaces. Change the code
-| to use "parent" instead of tsk->parent.
-| 
-| Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-Acked-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> So, it seems we lose and interrupt during resume and that confuses the
+> ADB controller driver or something like this.  Do you use the keyboard or
+> the trackpad as a wake-up device?
+> 
+> Please additionally try to go back to the original code, put
+> 'sleepy_trackpad = 1' at the beginning of do_adb_reset_bus() in
+> drivers/macintosh/adb.c and see if the problem is reproducible with that.
 
-| 
-| --- PTRACE/kernel/signal.c~CLDSTOP_NS	2009-05-25 20:24:50.000000000 +0200
-| +++ PTRACE/kernel/signal.c	2009-05-25 20:33:37.000000000 +0200
-| @@ -1496,7 +1496,7 @@ static void do_notify_parent_cldstop(str
-|  	 * see comment in do_notify_parent() abot the following 3 lines
-|  	 */
-|  	rcu_read_lock();
-| -	info.si_pid = task_pid_nr_ns(tsk, tsk->parent->nsproxy->pid_ns);
-| +	info.si_pid = task_pid_nr_ns(tsk, parent->nsproxy->pid_ns);
-|  	info.si_uid = __task_cred(tsk)->uid;
-|  	rcu_read_unlock();
-| 
+Well, the ADB controller is also the PMU (drivers/macintosh/via-pmu.c)
+which is also the system controller, handles the actual sleep state,
+etc... :-)
+
+That code is a bit itchy around the edges. I'm not sure it would have
+lost an interrupt, that sounds more like losing an IRQ would have broken
+it completely but it's not -impossible- (especially if it's the external
+GPIO or CB1 interrupt that notifies of an incoming ADB message).
+
+I haven't managed to reproduce the problem yet here though. I'll see if
+I can with a titanium powerbook I have somewhere in storage that might
+be a bit closer to your machine than the wallstreet powerbook I've been
+using to test at work :-) My other powerbook test machine uses a USB
+trackpad. 
+
+Cheers,
+Ben.
+
+
