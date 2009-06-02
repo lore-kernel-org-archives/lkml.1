@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbZFBOK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbZFBOMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755329AbZFBOK7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 10:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbZFBOKw
+	id S1756748AbZFBOMr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 10:12:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbZFBOMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 10:10:52 -0400
-Received: from mga14.intel.com ([143.182.124.37]:5233 "EHLO mga14.intel.com"
+	Tue, 2 Jun 2009 10:12:40 -0400
+Received: from mga14.intel.com ([143.182.124.37]:49403 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752333AbZFBOKw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 10:10:52 -0400
+	id S1753399AbZFBOMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 10:12:40 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,291,1241420400"; 
-   d="scan'208";a="149736056"
-Date: Tue, 2 Jun 2009 22:10:31 +0800
+   d="scan'208";a="149736550"
+Date: Tue, 2 Jun 2009 22:12:22 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andi Kleen <andi@firstfloor.org>
 Cc: Nick Piggin <npiggin@suse.de>, "hugh@veritas.com" <hugh@veritas.com>,
@@ -23,63 +23,38 @@ Cc: Nick Piggin <npiggin@suse.de>, "hugh@veritas.com" <hugh@veritas.com>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
 Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
 	in the VM v3
-Message-ID: <20090602141031.GC21338@localhost>
-References: <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org> <20090602125713.GG1392@wotan.suse.de> <20090602134659.GA21338@localhost> <20090602140830.GR1065@one.firstfloor.org>
+Message-ID: <20090602141222.GD21338@localhost>
+References: <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org> <20090602125713.GG1392@wotan.suse.de> <20090602132538.GK1065@one.firstfloor.org> <20090602132441.GC6262@wotan.suse.de> <20090602134126.GM1065@one.firstfloor.org> <20090602135324.GB21338@localhost> <20090602140639.GQ1065@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090602140830.GR1065@one.firstfloor.org>
+In-Reply-To: <20090602140639.GQ1065@one.firstfloor.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 10:08:30PM +0800, Andi Kleen wrote:
-> > > > We could probably call truncate_complete_page(), but then
-> > > > we would also need to duplicate most of the checking outside
-> > > > the function anyways and there wouldn't be any possibility
-> > > > to share the clean/dirty variants. If you insist I can
-> > > > do it, but I think it would be significantly worse code
-> > > > than before and I'm reluctant to do that.
-> > > 
-> > > I can write you the patch for that too if you like.
+On Tue, Jun 02, 2009 at 10:06:39PM +0800, Andi Kleen wrote:
+> > > Ok you're right. That one is not needed. I will remove it.
 > > 
-> > I have already posted one on truncate_complete_page(). Not the way you want it?
+> > No! Please read the comment. In fact __remove_from_page_cache() has a
+> > 
+> >                 BUG_ON(page_mapped(page));
+> > 
+> > Or, at least correct that BUG_ON() line together.
 > 
-> Sorry I must have missed it (too much mail I guess). Can you repost please?
+> Yes, but we already have them unmapped earlier and the poison check
 
-OK, here it is, a more simplified one.
+But you commented "try_to_unmap can fail temporarily due to races."
 
----
- mm/memory-failure.c |   13 +++----------
- 1 file changed, 3 insertions(+), 10 deletions(-)
+That's self-contradictory.
 
---- sound-2.6.orig/mm/memory-failure.c
-+++ sound-2.6/mm/memory-failure.c
-@@ -324,23 +324,16 @@ static int me_free(struct page *p)
-  */
- static int me_pagecache_clean(struct page *p)
- {
-+	if (page_mapping(p))
-+                truncate_complete_page(p->mapping, p);
-+
- 	if (!isolate_lru_page(p))
- 		page_cache_release(p);
- 
--	if (page_has_private(p))
--		do_invalidatepage(p, 0);
- 	if (page_has_private(p) && !try_to_release_page(p, GFP_NOIO))
- 		Dprintk(KERN_ERR "MCE %#lx: failed to release buffers\n",
- 			page_to_pfn(p));
- 
--	/*
--	 * remove_from_page_cache assumes (mapping && !mapped)
--	 */
--	if (page_mapping(p) && !page_mapped(p)) {
--		remove_from_page_cache(p);
--		page_cache_release(p);
--	}
--
- 	return RECOVERED;
- }
- 
+> in the page fault handler should prevent remapping.
+> 
+> So it really should not happen and if it happened we would deserve
+> the BUG.
+> 
+> -Andi
+> 
+> -- 
+> ak@linux.intel.com -- Speaking for myself only.
