@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbZFBUxC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbZFBUzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753576AbZFBUxC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 16:53:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZFBUwx
+	id S1753425AbZFBUzp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 16:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbZFBUzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 16:52:53 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:35452 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237AbZFBUwv (ORCPT
+	Tue, 2 Jun 2009 16:55:37 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:48893 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907AbZFBUzh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 16:52:51 -0400
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, Al Viro <viro@ZenIV.linux.org.uk>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>, Tejun Heo <tj@kernel.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 04/23] vfs: Introduce infrastructure for revoking a file
-References: <m1oct739xu.fsf@fess.ebiederm.org>
-	<1243893048-17031-4-git-send-email-ebiederm@xmission.com>
-	<20090602071411.GE31556@wotan.suse.de>
-	<alpine.LFD.2.01.0906021005190.3351@localhost.localdomain>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 02 Jun 2009 13:52:46 -0700
-In-Reply-To: <alpine.LFD.2.01.0906021005190.3351@localhost.localdomain> (Linus Torvalds's message of "Tue\, 2 Jun 2009 10\:06\:00 -0700 \(PDT\)")
-Message-ID: <m1y6sas6ht.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: torvalds@linux-foundation.org, ebiederm@aristanetworks.com, hch@infradead.org, akpm@linux-foundation.org, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, adobriyan@gmail.com, tj@kernel.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk, npiggin@suse.de
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+	Tue, 2 Jun 2009 16:55:37 -0400
+Subject: Re: [tip:timers/ntp] ntp: adjust SHIFT_PLL to improve NTP
+ convergence
+From: john stultz <johnstul@us.ibm.com>
+To: Miroslav Lichvar <mlichvar@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <20090602162208.GA15696@localhost>
+References: <200905051956.n45JuVo9025575@imap1.linux-foundation.org>
+	 <tip-22cfbbfd9f67b67fe073010f51cb71d3632387d5@git.kernel.org>
+	 <1243542817.29511.523.camel@jstultz-laptop> <20090601232223.GH749@elte.hu>
+	 <1243900716.11263.42.camel@jstultz-laptop> <4A246D0B.40204@redhat.com>
+	 <20090602002039.GA16410@elte.hu>  <20090602162208.GA15696@localhost>
+Content-Type: text/plain
+Date: Tue, 02 Jun 2009 13:55:35 -0700
+Message-Id: <1243976135.3501.10.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Tue, 2009-06-02 at 18:22 +0200, Miroslav Lichvar wrote:
+> On Tue, Jun 02, 2009 at 02:20:39AM +0200, Ingo Molnar wrote:
+> > 
+> > Not just that - but there's calibration noise during bootup that can 
+> > cause randomly distributed recalibrations as well. So other hosts in 
+> > a mixed environment will see inconsistencies anyway, after every 
+> > bootup.
+[snip]
+> As for the calibration issue, would it be possible to export the
+> information that an instable clocksource is used and when was the last
+> time it was calibrated? Then we'd know when the drift file should not
+> be trusted and let NTP calculate the frequency directly (it takes
+> about 15 minutes).
 
-> On Tue, 2 Jun 2009, Nick Piggin wrote:
->>
->> Why is it called hotplug? Does it have anything to do with hardware?
->> Because every concurrently changed software data structure in the
->> kernel can be "hot"-modified, right?
->> 
->> Wouldn't file_revoke_lock be more appropriate?
->
-> I agree, "hotplug" just sounds crazy. It's "open" and "revoke", not 
-> "plug" and "unplug".
+Just to de-thread the issues here, the calibration noise issue really is
+separate from the SHIFT_PLL convergence issue.
 
-I guess this shows my bias in triggering this code path from pci
-hotunplug.  Instead of with some system call.
+I'd really prefer the calibration noise issue to be resolved by the
+kernel, as its really only an issue on a subset of x86 machines. The
+tsc_khz= boot option I proposed earlier for folks who really care seems
+to me like a good route.
 
-I'm not married to the name.  I wanted file_lock but that is already
-used, and I did call the method revoke.
+The only NTPd side change to help the calibration issue that might be
+useful, would be a explicit ntp option to force NTP to always calculate
+the freq on startup if the drift file was present or not. Anything else
+would be way too much of a hack to get around bad kernel behavior.
 
-The only place where hotplug gives a useful hint is that it makes it
-clear we really are disconnecting the file descriptor from what lies
-below it.  We can't do some weird thing like keep the underlying object.
-Because the underlying object is gone.
+thanks
+-john
 
-Eric
+
