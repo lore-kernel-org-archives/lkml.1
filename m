@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785AbZFBPFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbZFBPKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755785AbZFBPFx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 11:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbZFBPFm
+	id S1756376AbZFBPKA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 11:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZFBPJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 11:05:42 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:40486 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755231AbZFBPFl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 11:05:41 -0400
-Date: Tue, 2 Jun 2009 11:05:09 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Larry H." <research@subreption.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH] Use kzfree in tty buffer management to enforce data 
- sanitization
-In-Reply-To: <alpine.LFD.2.01.0905311002010.3435@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0906021103490.23962@gentwo.org>
-References: <20090531015537.GA8941@oblivion.subreption.com> <alpine.LFD.2.01.0905301902530.3435@localhost.localdomain> <84144f020905302324r5e342f2dlfd711241ecfc8374@mail.gmail.com> <20090531112630.2c7f4f1d@lxorguk.ukuu.org.uk>
- <alpine.LFD.2.01.0905311002010.3435@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 2 Jun 2009 11:09:52 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52530 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752985AbZFBPJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 11:09:52 -0400
+Date: Tue, 2 Jun 2009 17:09:52 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
+Message-ID: <20090602150952.GB17448@wotan.suse.de>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090602124757.GG1065@one.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 31 May 2009, Linus Torvalds wrote:
+On Tue, Jun 02, 2009 at 02:47:57PM +0200, Andi Kleen wrote:
+> On Tue, Jun 02, 2009 at 02:00:42PM +0200, Nick Piggin wrote:
 
-> I suspect the "use page allocator" is historical - ie the tty layer
-> originally always did that, and then when people wanted to suppotr smaller
-> areas than one page, they added the special case. I have this dim memory
-> of the _original_ kmalloc not handling page-sized allocations well (due to
-> embedded size/pointer overheads), but I think all current allocators are
-> perfectly happy to allocate PAGE_SIZE buffers without slop.
->
-> If I'm right, then we could just use kmalloc/kfree unconditionally. Pekka?
+[snip: reusing truncate.c code]
 
-Yes. They do that in various ways. SLOB/SLUB will fall back to the
-page allocator for large allocation sizes.
+> > With all that writing you could have just done it. It's really
+> 
+> I would have done it if it made sense to me, but so far it hasn't.
+> 
+> The problem with your suggestion is that you do the big picture,
+> but seem to skip over a lot of details. But details matter.
+
+BTW. just to answer this point. The reason maybe for this
+is because the default response to my concerns seems to
+have been "you're wrong". Not "i don't understand, can you
+detail", and not "i don't agree because ...".
+
+I may well be wrong (in this case I'm quite sure I'm not),
+but if you say I'm wrong, then I assume that you understand
+what I'm talking about and have a fair idea of the details.
+
+Anyway don't worry. I get that a lot. I do really want to
+help get this merged.
 
