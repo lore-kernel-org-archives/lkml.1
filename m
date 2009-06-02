@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZFBQTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757492AbZFBQVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757065AbZFBQTu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 12:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZFBQTn
+	id S1757492AbZFBQVY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 12:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbZFBQVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 12:19:43 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:46358 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752975AbZFBQTn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 12:19:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=AxwrCNL1d5e7Vg0Rq7MPkS5HqNytA7Gh2fz5gMarRwzEM9QcQGGepEwrraTGdZgZ9c
-         KVfPEGf2ZtpxXfUr/Cr3+pXn0G3F+2bpyXCIdN1SWRnhWYxOdDurzdUsOo4E7TAh6IOK
-         MGAKydQ7hLPTPZIDg+fIWPvwMB9oK4HcFryY4=
+	Tue, 2 Jun 2009 12:21:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59468 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754457AbZFBQVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 12:21:15 -0400
+Date: Tue, 2 Jun 2009 19:20:21 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com
+Subject: Re: [KVM-RFC PATCH 0/2] irqfd: use POLLHUP notification for close()
+Message-ID: <20090602162021.GB6827@redhat.com>
+References: <20090602151135.29746.91320.stgit@dev.haskins.net> <20090602160434.GA6827@redhat.com> <4A254FD7.5090302@novell.com>
 MIME-Version: 1.0
-In-Reply-To: <20090602155833.GA23657@alberich.amd.com>
-References: <20090529184023.GD23770@alberich.amd.com>
-	 <20090529184225.GE23770@alberich.amd.com>
-	 <36ca99e90906020805r6a4e30br6bb53aeafe5f3cd7@mail.gmail.com>
-	 <20090602155833.GA23657@alberich.amd.com>
-Date: Tue, 2 Jun 2009 18:19:44 +0200
-Message-ID: <36ca99e90906020919r6f700b45p792c179658555cce@mail.gmail.com>
-Subject: Re: [PATCH 1/3] x86: provide CPU topology information for multi-node 
-	processors
-From: Bert Wesarg <bert.wesarg@googlemail.com>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A254FD7.5090302@novell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 2, 2009 at 17:58, Andreas Herrmann
-<andreas.herrmann3@amd.com> wrote:
-> On Tue, Jun 02, 2009 at 05:05:07PM +0200, Bert Wesarg wrote:
->> On Fri, May 29, 2009 at 20:42, Andreas Herrmann
->> <andreas.herrmann3@amd.com> wrote:
->> > This support can be switched off/on using a new config option
->> > MULTI_NODE_CPU. If the option is set the CPU topology information is
->> > extended with cpu_node information. This includes a cpu_node_id,
->> > cpu_node_siblings and cpu_node_siblings_list.
->
->> I think this would be a step back after commit
->> c50cbb05a05cf1f9ca3592272eff053c847727d8. Which exported default
->> topology information, in case the architecture does not provide these
->> information.
->
-> I am fine with exporting default topology information for all
-> architectures.
->
-> I just wanted to avoid pollution of sysfs with useless information
-> when this information is not provided on an architecture.
->
-> Further thoughts -- e.g. concerning the MULTI_NODE_CPU config option?
->
-> If I provide defaults for cpu_node_id, cpu_node_siblings etc. the
-> config option becomes rather useless and I'll remove it.
-Exactly ;-)
+On Tue, Jun 02, 2009 at 12:14:15PM -0400, Gregory Haskins wrote:
+> Michael S. Tsirkin wrote:
+> > On Tue, Jun 02, 2009 at 11:15:28AM -0400, Gregory Haskins wrote:
+> >   
+> >> (Applies to kvm.git/master:25deed73)
+> >>
+> >> Please see the header for 2/2 for a description.  This patch series has
+> >> been fully tested and appears to be working correctly.  I have it as an RFC
+> >> for now because it needs Davide's official submission/SOB for patch 1/2, and
+> >> it should get some eyeballs/acks on my SRCU usage before going in.
+> >>
+> >> I will submit the updated irqfd userspace which eschews the deassign() verb
+> >> since we can now just use the close(fd) method alone.  I will also address
+> >> the userspace review comments from Avi.
+> >>     
+> >
+> >
+> > We are not killing the deassign though, do we?
+> >   
+> 
+> Yes, it is not needed any more now that we have proper
+> release-notification from eventfd.
+> 
+> > It's good to have that option e.g. for when we pass
+> > the fd to another process.
+> >   
+> 
+> Passing the fd to another app should up the underlying file reference
+> count.  If the producer app wants to "deassign" it simply calls
+> close(fd) (as opposed to today where it calls DEASSIGN+close), but the
+> reference count will allow the consuming app to leave the eventfd's file
+> open.  Or am I misunderstanding you?
+> 
+> -Greg
+> 
+> 
 
-The interface to the exported API should not depend on config options.
-Only the kernel version number should indicate, whether the cpu_node
-information is available or not.
+I think we want to keep supporting the deassign ioctl. This, even though
+close overlaps with it functionally somewhat.
 
-Thanks,
-Bert
->
->
-> Regards,
-> Andreas
->
->
->
+This allows qemu to pass eventfd to another process/device, and then
+block/unblock interrupts as seen by that process by
+assigning/deassigning irq to it. This is much easier and lightweight
+than asking another process to close the fd and passing another fd
+later.
+
+-- 
+MST
