@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbZFBO5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbZFBO7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914AbZFBO5U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 10:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbZFBO5F
+	id S1754605AbZFBO7N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 10:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbZFBO7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 10:57:05 -0400
-Received: from mail-qy0-f104.google.com ([209.85.221.104]:61252 "EHLO
-	mail-qy0-f104.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751921AbZFBO5E convert rfc822-to-8bit (ORCPT
+	Tue, 2 Jun 2009 10:59:00 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:63617 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbZFBO67 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 10:57:04 -0400
-X-Greylist: delayed 453 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Jun 2009 10:57:04 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=EqnzxenEe1HG9giKi5TKDdxtXnIE05z+g2RjYYCIq1+8TyPznugEdRYQ9FByL7WLdP
-         TM0H/idyhw72W0L9kYJwivrwaYrFgm45r9RooeUJ9gQcMD2Pm+ZoxXr7+hCumkiBm5KB
-         CYA0iJLvP4+ys8VY/ylV8vTloKtqhVHGBZq6M=
+	Tue, 2 Jun 2009 10:58:59 -0400
+X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Jun 2009 10:58:59 EDT
+From: Karsten Keil <isdn@linux-pingi.de>
+Reply-To: isdn@linux-pingi.de
+To: Andreas Mohr <andi@lisas.de>
+Subject: Re: [PATCH] mISDN GIT: hfcpci cleanup failure on IRQ weirdness
+Date: Tue, 2 Jun 2009 16:53:35 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
+References: <20090602140250.GA3607@rhlx01.hs-esslingen.de>
+In-Reply-To: <20090602140250.GA3607@rhlx01.hs-esslingen.de>
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-In-Reply-To: <20090602141802.GC3914@think>
-References: <4A0B62F7.5030802@goop.org> <20090525091527.GA7535@elte.hu>
-	 <4A1C3805.7060404@goop.org> <20090528061702.GB6920@wotan.suse.de>
-	 <20090530102330.GC16913@elte.hu> <20090602141802.GC3914@think>
-Date: Tue, 2 Jun 2009 07:49:32 -0700
-Message-ID: <a36005b50906020749p22b89693k5c4ae171d18966a7@mail.gmail.com>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native 
-	kernels
-From: Ulrich Drepper <drepper@gmail.com>
-To: Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Nick Piggin <npiggin@suse.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906021653.36152.isdn@linux-pingi.de>
+X-Provags-ID: V01U2FsdGVkX186SNSrmww3ywZYmD8ByaQuR+e4IIf4SRtDVAE
+ UnsRbdxZpck/NSeCQNmXHA3hyNM/gYmeI5aBEx15fQzz8ybOrV
+ Qy+KlvK9+IDk7eQz4pbuPAPN76Mgcad
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 2, 2009 at 7:18 AM, Chris Mason <chris.mason@oracle.com> wrote:
-> I'm not suggesting we should take broken code, or that we should lower
-> standards just for xen.  But, expecting the xen developers to fix the 1%
-> hit on a very specific micro-benchmark is not a way to promote new
-> projects for the kernel, and it isn't a good way to convince people to
-> do continued development in mainline instead of in private trees.
+On Dienstag, 2. Juni 2009 16:02:50 you wrote:
+> Hi,
+>
+> > I have the suspicion that maybe I shouldn't be loading hisax upon boot
+> > (and then immediately removing it before launching mISDN stuff),
+> > since hfcpci acts very weird - perhaps it cannot recover card state fully
+> > after hisax fumbling.
+>
+> Indeed, manually killed all hisax modules on the system, rebooted, and -
+> it worked, immediately!
+> (test call SIP -> Asterisk -> LCR -> ISDN -> out -> ISDN)
+>
+> IOW, we've got an unfortunate driver init state handling issue which one
+> should perhaps investigate to make the driver more robust against
+> varying hardware state.
+> (my IRQ patch was a first step I guess ;)
+>
 
-It's not a new project which needs to be treated with kid's gloves.
-And one be sure that once the code is in the tree those interested
-parties will not be as strongly motivated to fix any problem like
-this.  Ingo pointed to a way which doesn't negatively impact the
-performance of the Xen kernel and reduces the overhead (dynamic
-patching).  Just get started on this (and general cleanup) and this
-whole argument will go away.
+Yes from mISDN side, but I do not see what inside hisax prevent mISDN from
+getting IRQs after hisax was unloaded. And it works here on my test setup, I 
+can load mISDN without an error, after unloading hisax.
+One other issue with the HiSax  HFC PCI code is the FIFO DMA memory
+allocation, this code is wrong  and broken (patch is under test).
 
-I find it ridiculous to use the "but it's used" argument to try to
-force the code into the kernel.  By this argument you can say the same
-about crap like ndiswrapper and similarly harmful code.
+> misdn_log still acts weird, though...
+>
+What does be weird here ?
+
+> Thanks for all your important ISDN work! (given the sizeable number of
+> commits mISDN will rather soon get there I think)
+>
+> BTW, could isdnlog be adapted to support mISDN relatively easily?
+> (since adding CAPI support would take longer I guess)
+
+isdnlog (beside that the isdnlog code is ugly enough) should be not a big 
+issue, mISDN supports logging in parallel to the normal work, look at the
+tools/loghex.c  code how to create a logging socket.
+It should make things easier as with HiSax, since it will get the data as 
+binary and not as hexdump.
+
+> My guys are going semi-ballistic with their isdnlog taken out and shot ;)
+>
+> Andreas Mohr
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
