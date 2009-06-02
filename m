@@ -1,70 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbZFBOHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756702AbZFBOIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755590AbZFBOHk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 10:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZFBOHc
+	id S1756702AbZFBOIP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 10:08:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbZFBOIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 10:07:32 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:56609 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752795AbZFBOHc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 10:07:32 -0400
-Date: Tue, 2 Jun 2009 10:05:52 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fix typo in asm-generic/gpio.h
-In-Reply-To: <20090602224936.8fb94b29.yoichi_yuasa@tripeaks.co.jp>
-Message-ID: <alpine.LFD.2.00.0906021005200.7519@localhost.localdomain>
-References: <20090602224936.8fb94b29.yoichi_yuasa@tripeaks.co.jp>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Tue, 2 Jun 2009 10:08:00 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49977 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755425AbZFBOH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 10:07:59 -0400
+Date: Tue, 2 Jun 2009 16:07:59 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
+Message-ID: <20090602140759.GB26982@wotan.suse.de>
+References: <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090601120537.GF5018@wotan.suse.de> <20090601185147.GT1065@one.firstfloor.org> <20090602121031.GC1392@wotan.suse.de> <20090602123450.GF1065@one.firstfloor.org> <20090602123720.GF1392@wotan.suse.de> <20090602133019.GC20462@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090602133019.GC20462@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Jun 2009, Yoichi Yuasa wrote:
+On Tue, Jun 02, 2009 at 09:30:19PM +0800, Wu Fengguang wrote:
+> > No I mean the difference between the case of dirty page unable to
+> > be written to backing sotre, and the case of dirty page becoming
+> > corrupted.
+> 
+> legacy EIO:   may success on (do something then) retry?
 
-> Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+Legacy EIO yes, I imagine most programs are assuming that the
+cache is still the most recent (and valid) copy of the data.
+
+
+> hwpoison EIO: a permanent unrecoverable error
 >
-> diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
-> index d6c379d..2a37611 100644
-> --- a/include/asm-generic/gpio.h
-> +++ b/include/asm-generic/gpio.h
-> @@ -53,7 +53,7 @@ struct module;
->   *	negative during registration, requests dynamic ID allocation.
->   * @ngpio: the number of GPIOs handled by this controller; the last GPIO
->   *	handled is (base + ngpio - 1).
-> - * @can_sleep: flag must be set iff get()/set() methods sleep, as they
-> + * @can_sleep: flag must be set if get()/set() methods sleep, as they
->   *	must while accessing GPIO expander chips over I2C or SPI
->   * @names: if set, must be an array of strings to use as alternative
->   *      names for the GPIOs in this chip. Any entry in the array
+> > They would presumably exit or do some default thing, which I
+> > think would be fine. Actually if your code catches them in the
+> > act of manipulating a corrupted page (ie. if it is mmapped),
+> > then it gets a SIGBUS.
+> 
+> That's OK.  filemap_fault() returns VM_FAULT_SIGBUS for legacy EIO,
+> while hwpoison pages will return VM_FAULT_HWPOISON. Both kills the
+> application I guess?
 
-  was that really a typo, or was it meant to represent "if and only
-if?
+Yes I was just using it to illustrate the difference. filemap_fault
+does SIGBUS for read failures, sure, but if you msync and get an
+EIO (legacy EIO), then it is not going to SIGBUS to all procs mapping
+the page.
 
-rday
---
+ 
+> read()/write() are the more interesting cases.
 
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
+Yes.
 
-        Linux Consulting, Training and Annoying Kernel Pedantry.
+ 
+> With read IO interception, the read() call will succeed.
+> 
+> The write() call have to be failed. But interestingly writes are
+> mostly delayed ones, and we have only one AS_EIO bit for the entire
+> file, which will be cleared after the EIO reporting. And the poisoned
+> page will be isolated (if succeed) and later read()/write() calls
+> won't even notice there was a poisoned page!
+> 
+> How are we going to fix this mess? EIO errors seem to be fuzzy and
+> temporary by nature at least in the current implementation, and hard
 
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+Well that is a problem too. It is questionable how long to keep
+legacy EIO reporting around (I'm of the opinion that we really
+need to keep them around forever and wait for either truncate or
+add a new syscall to discard them). But this is another discussion
+because we already have these existing semantics, so little point
+to quickly change them :) 
+
+
+> to be improved to be exact and/or permanent in both implementation and
+> interface:
+> - can/shall we remember the exact EIO page? maybe not.
+
+If you add a new bit in the mapping, you could then call to the
+error recovery code to do slowpath checking for overlapping page
+offsets. It gets tricky if you want to allow the inode to be
+reclaimed and still remember the errors ;)
+
+> - can EIO reporting be permanent? sounds like a horrible user interface..
+
+[Let's describe the ideal world:
+ We'd have EBADMEM that everyone knows about, and we have a syscall
+ that can clear these errors/bad pages. Maybe even another syscall
+ which can read back the contents of this memory without being SIGBUSed
+ or EBADMEMed.]
+
+Now I have been of the the opinion that our current (legacy) EIO should
+be permanent (unless the pages end up being able to be written back),
+and we should have another syscall to clear this condition.
+
+Unaware applications may have some difficulties, but a cmd line utility
+can clear these so it could easily be recovered...
+
+I think this might work for hwpoison as well (whether it ends up using
+EIO or something else).
+
