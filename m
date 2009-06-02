@@ -1,110 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760462AbZFBI4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760672AbZFBI6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760462AbZFBI4J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 04:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760121AbZFBIzk
+	id S1760672AbZFBI6H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 04:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbZFBI55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 04:55:40 -0400
-Received: from mga03.intel.com ([143.182.124.21]:37274 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759665AbZFBIzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 04:55:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,290,1241420400"; 
-   d="scan'208";a="149644688"
-Date: Tue, 2 Jun 2009 16:55:23 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Eric Sandeen <sandeen@sandeen.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>,
-       Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH] skip I_CLEAR state inodes
-Message-ID: <20090602085523.GC7161@localhost>
-References: <20090318170237.8F6C.61FB500B@jp.fujitsu.com> <20090323103846.GA16577@localhost> <20090324155655.2684.61FB500B@jp.fujitsu.com> <20090324074457.GA7745@localhost> <20090324120502.GC23439@duck.suse.cz> <20090324124001.GA25326@localhost> <4A244A5B.7070605@sandeen.net>
+	Tue, 2 Jun 2009 04:57:57 -0400
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:23530 "EHLO
+	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754732AbZFBI54 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 04:57:56 -0400
+X-SpamScore: -16
+X-BigFish: VPS-16(zz1432R98dR1805M873fnzz1202hzzz32i6bh17ch43j)
+X-FB-SS: 5,
+X-WSS-ID: 0KKLSWB-04-7EI-01
+Date: Tue, 2 Jun 2009 10:57:37 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] dma-debug: add dma_debug_driver kernel command line
+Message-ID: <20090602085736.GM4062@amd.com>
+References: <1243523971-12681-1-git-send-email-joerg.roedel@amd.com> <1243523971-12681-4-git-send-email-joerg.roedel@amd.com> <20090601150813.84c932f4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <4A244A5B.7070605@sandeen.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090601150813.84c932f4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 02 Jun 2009 08:57:37.0390 (UTC) FILETIME=[2D5858E0:01C9E360]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 05:38:35AM +0800, Eric Sandeen wrote:
-> Wu Fengguang wrote:
-> > Add I_CLEAR tests to drop_pagecache_sb(), generic_sync_sb_inodes() and
-> > add_dquot_ref().
-> > 
-> > clear_inode() will switch inode state from I_FREEING to I_CLEAR,
-> > and do so _outside_ of inode_lock. So any I_FREEING testing is
-> > incomplete without the testing of I_CLEAR.
-> > 
-> > Masayoshi MIZUMA first discovered the bug in drop_pagecache_sb() and
-> > Jan Kara reminds fixing the other two cases. Thanks!
+On Mon, Jun 01, 2009 at 03:08:13PM -0700, Andrew Morton wrote:
+> On Thu, 28 May 2009 17:19:30 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
 > 
-> Is there a reason it's not done for __sync_single_inode as well?
-
-It missed the glance because it don't have an obvious '|' in the line ;)
-
-> Jeff Layton asked the question and I'm following it up :)
+> > This patch add the dma_debug_driver= boot parameter to enable the driver
+> > filter for early boot.
+> > 
 > 
-> __sync_single_inode currently only tests I_FREEING, but I think we are
-> safe because __sync_single_inode sets I_SYNC, and clear_inode waits for
-> I_SYNC to be cleared before it changes I_STATE.
+> Please always update Documentation/kernel-parameters.txt when adding
+> new boot options.
+> 
+> > +static int __init parse_dma_debug_driver(char *str)
+> > +{
+> > +	int i;
+> > +
+> > +	for (i = 0; i < NAME_MAX_LEN - 1; ++i, ++str) {
+> > +		current_driver_name[i] = *str;
+> > +		if (*str == ' ' || *str == '\t' || isspace(*str) || *str == 0)
+> 
+> The comparisons with ' ' and '\t' are unneeded, surely?
+> 
+> > +			break;
+> > +	}
+> > +	current_driver_name[i] = 0;
+> > +
+> > +	if (current_driver_name[0])
+> > +		printk(KERN_INFO "DMA-API: enable driver filter for "
+> > +				 "driver [%s]\n", current_driver_name);
+> > +
+> > +
+> > +	return 1;
+> > +}
+> > +__setup("dma_debug_driver=", parse_dma_debug_driver);
+> 
+> The whole thing seems a bit overdone - take a look at some other __setup
+> functions, see what they're doing.  None of them bother looking for
+> spaces in the input - higher level code took care of that.
+> 
+> It's conventional for the name of a __setup function to end in "_setup".
 
-But I_SYNC is removed just before the I_FREEING test, so we still have
-a small race window?
+Ok, thanks. Will check again here.
 
-> On the other hand, testing I_CLEAR here probably would be safe anyway,
-> and it'd be bonus points for consistency?
+Joerg
 
-So let's add the I_CLEAR test?
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
-> Same basic question for generic_sync_sb_inodes, which has a
-> BUG_ON(inode->i_state & I_FREEING), seems like this could check I_CLWAR
-> as well?
-
-Yes, we can add I_CLEAR here to catch more error condition.
-
-Thanks,
-Fengguang
-
----
-skip I_CLEAR state inodes in writeback routines
-
-The I_FREEING test in __sync_single_inode() is racy because
-clear_inode() can set i_state to I_CLEAR between the clear of I_SYNC
-and the test of I_FREEING.
-
-Also extend the coverage of BUG_ON(I_FREEING) to I_CLEAR.
-
-Reported-by: Jeff Layton <jlayton@redhat.com>
-Reported-by: Eric Sandeen <sandeen@sandeen.net>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- fs/fs-writeback.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- linux.orig/fs/fs-writeback.c
-+++ linux/fs/fs-writeback.c
-@@ -316,7 +316,7 @@ __sync_single_inode(struct inode *inode,
- 	spin_lock(&inode_lock);
- 	WARN_ON(inode->i_state & I_NEW);
- 	inode->i_state &= ~I_SYNC;
--	if (!(inode->i_state & I_FREEING)) {
-+	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
- 		if (!(inode->i_state & I_DIRTY) &&
- 		    mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
- 			/*
-@@ -518,7 +518,7 @@ void generic_sync_sb_inodes(struct super
- 		if (current_is_pdflush() && !writeback_acquire(bdi))
- 			break;
- 
--		BUG_ON(inode->i_state & I_FREEING);
-+		BUG_ON(inode->i_state & (I_FREEING | I_CLEAR));
- 		__iget(inode);
- 		pages_skipped = wbc->pages_skipped;
- 		__writeback_single_inode(inode, wbc);
