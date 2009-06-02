@@ -1,40 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbZFBENi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753811AbZFBE1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754711AbZFBENi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 00:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbZFBENb
+	id S1753811AbZFBE1H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 00:27:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZFBE04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 00:13:31 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:59566 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750958AbZFBENb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 00:13:31 -0400
-Date: Tue, 2 Jun 2009 14:13:26 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Alex Riesen <raa.lkml@gmail.com>
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Use formatting of module name in crypto API
-Message-ID: <20090602041326.GE22831@gondor.apana.org.au>
-References: <20090527175139.GA8969@blimp.localdomain>
+	Tue, 2 Jun 2009 00:26:56 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:41890 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751225AbZFBE04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 00:26:56 -0400
+Date: Mon, 01 Jun 2009 23:26:53 -0500
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.30-rc8
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090527175139.GA8969@blimp.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090602042653.66DB5A1FAB93@attica.americas.sgi.com>
+From: felixb@sgi.com (Felix Blyakher)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 07:51:39PM +0200, Alex Riesen wrote:
-> Besdies, for the old code, gcc-4.3.3 produced this warning:
->   "format not a string literal and no format arguments"
-> 
-> Signed-off-by: Alex Riesen <raa.lkml@gmail.com>
+The following changes since commit d9244b5d2fbfe9fa540024b410047af13ceec90f:
+  Linus Torvalds (1):
+        Merge branch 'hwmon-for-linus' of git://git.kernel.org/.../jdelvare/staging
 
-Applied to cryptodev.  Thanks!
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+are available in the git repository at:
+
+  git://oss.sgi.com/xfs/xfs for-linus
+
+Eric Sandeen (1):
+      xfs: fix overflow in xfs_growfs_data_private
+
+Felix Blyakher (2):
+      xfs: fix double unlock in xfs_swap_extents()
+      xfs: prevent deadlock in xfs_qm_shake()
+
+ fs/xfs/linux-2.6/kmem.h |    2 +-
+ fs/xfs/xfs_dfrag.c      |    8 +++++---
+ fs/xfs/xfs_fsops.c      |    2 +-
+ 3 files changed, 7 insertions(+), 5 deletions(-)
