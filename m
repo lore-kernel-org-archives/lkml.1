@@ -1,51 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756380AbZFBOBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbZFBOBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756380AbZFBOBa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 10:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbZFBOBW
+	id S1756566AbZFBOBr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 10:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbZFBOBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 10:01:22 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34861 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753253AbZFBOBV (ORCPT
+	Tue, 2 Jun 2009 10:01:39 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:38001 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754828AbZFBOBi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 10:01:21 -0400
-Date: Tue, 2 Jun 2009 16:08:30 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602140830.GR1065@one.firstfloor.org>
-References: <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org> <20090602125713.GG1392@wotan.suse.de> <20090602134659.GA21338@localhost>
+	Tue, 2 Jun 2009 10:01:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :date:message-id:mime-version:x-mailer;
+        b=XkAzWprQ+W4TGiZcee9BnooeJ8lmNlUijoAQfBsg7PlM84ZrWpoOfkEp2A81REQ/fr
+         fo9rFV1xb2gG5+kxg4TZjUZD6Mmq/YFsNg0q2jRKseRD8AM2PPadSxncJaphZ1J/FTaL
+         zV32BR7MAYRf2AUV5OvbG9QGIHt+pGVySLz88=
+Subject: Re: [2.6.27-rc7 vs 2.6.29 Regresion] Wifi Network Slownes rt2500pci
+From: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
+	<alejandro.riveira@gmail.com>
+Reply-To: alejandro.riveira@gmail.com
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linville@tuxdriver.com,
+       Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <1243351397.4888.2.camel@varda>
+References: <1243247687.5322.8.camel@varda>
+	 <200905261235.36658.IvDoorn@gmail.com> <1243341791.7607.4.camel@varda>
+	 <200905261445.46990.IvDoorn@gmail.com>  <1243351397.4888.2.camel@varda>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-D9UvABn7j4IAR34Oo5dI"
+Date: Tue, 02 Jun 2009 16:01:32 +0200
+Message-Id: <1243951292.22942.1.camel@varda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090602134659.GA21338@localhost>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > We could probably call truncate_complete_page(), but then
-> > > we would also need to duplicate most of the checking outside
-> > > the function anyways and there wouldn't be any possibility
-> > > to share the clean/dirty variants. If you insist I can
-> > > do it, but I think it would be significantly worse code
-> > > than before and I'm reluctant to do that.
-> > 
-> > I can write you the patch for that too if you like.
-> 
-> I have already posted one on truncate_complete_page(). Not the way you want it?
 
-Sorry I must have missed it (too much mail I guess). Can you repost please?
+--=-D9UvABn7j4IAR34Oo5dI
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
--Andi
+El mar, 26-05-2009 a las 17:23 +0200, Alejandro Riveira Fern=C3=A1ndez
+escribi=C3=B3:
+> El mar, 26-05-2009 a las 14:45 +0200, Ivo van Doorn escribi=C3=B3:
+> > Hi,
+> >=20
+> [...]
+> >=20
+> > Ok, that means it is the wrong script, try the other one from the downl=
+oad
+> > location you previously refered to. I changed the API some time ago, an=
+d
+> > am not sure which stable release that change will be in.
+>=20
+> I inline the diff between the two dumps the dumps are attached to the
+> mail message
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+ICMP ECHO REQUEST
+
+Any advance?
+
+> =20
+>=20
+> --- reg_dump_bad.txt	2009-05-26 17:16:03.078863719 +0200
+> +++ reg_dump_good.txt	2009-05-26 16:48:07.654117749 +0200
+> @@ -1,4 +1,4 @@
+> -kernel: 2.6.29.4-00257-g186f9b1
+> +kernel: 2.6.29.4-00258-ga2c0a36
+>  driver: rt2500pci
+>  version: 2.2.3
+>  compiled: May 26 2009 13:05:03
+=20
+[...]
+
+> Alejandro
+--=20
+The idea that Bill Gates has appeared like a knight in shining armour to
+lead all customers out of a mire of technological chaos neatly ignores
+the fact that it was he who, by peddling second-rate technology, led
+them into it in the first place.=20
+                                     Douglas Adams
+
+--=-D9UvABn7j4IAR34Oo5dI
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Esto es una parte de mensaje firmado digitalmente
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iQIcBAABAgAGBQJKJTC2AAoJEDO4iEReSTB2OSMP/Rlu1gG/gsPSdcRTF8bJ5iSS
+djRtbJozFNl2Tx9OnqC1C42CBQk7rigkdnOYWpGSQ+1+LeuIPj5004MbSzePrezL
+us2puLJxQ+OsSUhnwXPi6OpuxmQNxkBQxQLCPge/WJ98ZxAKvpprtInUuaMx6dEa
+W8FDwgFUZob4VmHvZ6v2XmpF/HQuG+uFJLZf5CdY6xuUFAABBrmel73X1JZXrtVp
+nmaJXi4IjX862ahFsIhe7wDY4uimuH+65f0oWJ6Z2XTDsgo0/ujyQOAln0bhgtt6
+QIw2FsRxgBhzXNr+7xAzGOkYtUtwY9FxxnJL60UKFMoFAutepwwSViZAdewdVD/n
+5H7SMc7eRpGYip1r1fGu6fuZ1xaYv2cVx2SlKsiuRmHQggyT5qCJ5Z9SNxrTA5zw
+r06ROV1aZmhaISA5kzHwqUojd8EpbpM81S3DXul++PI/pcLThZ0YhCzHa+zYxbuS
+mmaAowKEQHycBeh+gWGppy9ovHiyH4RGsxCHQwNkzygXPcR4CCrJ35XHtIyI793v
+UIKW7knQEkcZVmvdVhV0I5i57Rc9pX/QTjpM+M9bHU2vzJKe4MFaWIUnxe4Y+P7g
+r32hSBjKQCcsAexX/ddi+DdTG+WrTGYqX5Nzt5254Lc4X5HT+SK/XPiuEMiedvY/
+F/q12n6S4t5cpoNTEq2V
+=IFrO
+-----END PGP SIGNATURE-----
+
+--=-D9UvABn7j4IAR34Oo5dI--
+
