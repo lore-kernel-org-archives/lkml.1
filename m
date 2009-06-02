@@ -1,139 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757885AbZFBJKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759749AbZFBJLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757885AbZFBJKO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 05:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbZFBJKE
+	id S1759749AbZFBJLV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 05:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbZFBJLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 05:10:04 -0400
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:51933 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752591AbZFBJKB (ORCPT
+	Tue, 2 Jun 2009 05:11:03 -0400
+Received: from build.ossfans.org ([67.223.233.67]:39589 "EHLO
+	build.ossfans.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752941AbZFBJLB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 05:10:01 -0400
-Date: Tue, 2 Jun 2009 14:39:44 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com, menage@google.com,
-       lkml <linux-kernel@vger.kernel.org>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       libcg-devel <libcg-devel@lists.sourceforge.net>
-Subject: Re: +
-	cgroups-forbid-noprefix-if-mounting-more-than-just-cpuset-subsystem.
-	patch added to -mm tree
-Message-ID: <20090602090944.GB16753@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <200906020602.n5262wcu008560@imap1.linux-foundation.org>
+	Tue, 2 Jun 2009 05:11:01 -0400
+X-Greylist: delayed 1096 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Jun 2009 05:11:01 EDT
+Date: Tue, 2 Jun 2009 12:52:36 +0400
+From: Sergey Lapin <slapin@ossfans.org>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       Holger Schurig <hs4233@mail.mn-solutions.de>,
+       linux-wireless@vger.kernel.org,
+       =?iso-8859-1?Q?G=E1bor?= Stefanik <netrolller.3d@gmail.com>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       maxim.osipov@siemens.com, dmitry.baryshkov@siemens.com,
+       oliver.fendt@siemens.com
+Subject: Re: =?utf-8?B?0J7RgtCy0LXRgg==?=
+	=?utf-8?Q?=3A?= [PATCH 10/10] ieee802154: add at86rf230/rf231 spi
+	driver
+Message-ID: <20090602085236.GA13088@build.ossfans.org>
+References: <1243868091-5315-3-git-send-email-dbaryshkov@gmail.com> <69e28c910906010921r56cf7017gc858cb7ba819c385@mail.gmail.com> <20090601203348.GC7143@doriath.ww600.siemens.net> <200906021010.49613.hs4233@mail.mn-solutions.de> <1243930893.3192.62.camel@localhost.localdomain> <bc64b4640906020129x4fe15e5en9d8e2cad1d86b236@mail.gmail.com> <1243931809.3192.68.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906020602.n5262wcu008560@imap1.linux-foundation.org>
+In-Reply-To: <1243931809.3192.68.camel@localhost.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 01, 2009 at 11:02:58PM -0700, akpm@linux-foundation.org wrote:
+On Tue, Jun 02, 2009 at 10:36:49AM +0200, Marcel Holtmann wrote:
+> > This gonna happen, as we are most probably going to implement 6lowpan
+> > on top of our stack. 6lowpan is a way to encapsulate IPv6 frames into
+> > IEEE 802.15.4 and has nothing in common with ZigBee. Moreover
+> > ZigBee is a trademark with strict rules upon it's usage. Our lawyers are
+> > currently investigating if it's possible to use this name in projects like
+> > Linux kernel which are open-source, non-related to any project but
+> > OTOH can be encapsulated in any commercial project.
+> > 
+> > IEEE 802.15.4 is a term like IEEE 802.11. We do have mac80211,
+> > we have had (until recently) ieee80211 dir, so why bother?
+> > 
+> > For Bluetooth naming directories 'bluetooth' is logical, as 802.15.1
+> > standard is a less known name, doesn't incorporate latest changes
+> > from Bluetooth, etc.
 > 
-> The patch titled
->      cgroups: forbid noprefix if mounting more than just cpuset subsystem
-> has been added to the -mm tree.  Its filename is
->      cgroups-forbid-noprefix-if-mounting-more-than-just-cpuset-subsystem.patch
-> 
-> Before you just go and hit "reply", please:
->    a) Consider who else should be cc'ed
->    b) Prefer to cc a suitable mailing list as well
->    c) Ideally: find the original patch on the mailing list and do a
->       reply-to-all to that, adding suitable additional cc's
-> 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> 
-> See http://userweb.kernel.org/~akpm/stuff/added-to-mm.txt to find
-> out what to do about this
-> 
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> 
-> ------------------------------------------------------
-> Subject: cgroups: forbid noprefix if mounting more than just cpuset subsystem
-> From: Li Zefan <lizf@cn.fujitsu.com>
-> 
-> The 'noprefix' option was introduced for backwards-compatibility of
-> cpuset, but actually it can be used when mounting other subsystems.
-> 
-> This results in possibility of name collision, and now the collision can
-> really happen, because we have 'stat' file in both memory and cpuacct
-> subsystem:
-> 
-> 	# mount -t cgroup -o noprefix,memory,cpuacct xxx /mnt
-> 
-> Cgroup will happily mount the 2 subsystems, but only 'stat' file of memory
-> subsys can be seen.
-> 
-> We don't want users to use nopreifx, and also want to avoid name
-> collision, so we change to allow noprefix only if mounting just the cpuset
-> subsystem.
-> 
+> and so is IEEE 802.15.4 hence we propose using "zigbee" here. Using the
+> mac80211 has historical reasons and 802.11 is a known name and even used
+> on product marketing material. IEEE 802.15.4 is not. We are also using
+> the term "wimax" and not its IEEE numbering.
 
-I am not sure if this is a good idea. For libcgroup, we would then be
-adding a special case for just cpuset. I would rather that we allow it
-either for all the subsystems or none of them.
+That WILL add confusion. Because of the following:
+1. IEEE 802.15.4 is layer under ZigBee. ZigBee is implemented on top of
+IEEE 802.15.4, like UDP is implemented on top of IP.
+2. There are hardware implementations of the following sorts:
+a) Simple radio (IEEE 802.15.4 PHY).
+b) IEEE 802.15.4 MAC
+c) ZigBee, or other high level protocols (well, actually I don't know of
+any others than ZigBee at this level, but that doesn't mean they don't
+exist).
 
-thanks,
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> Cc: Paul Menage <menage@google.com>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-> Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  kernel/cgroup.c |   10 ++++++++++
->  1 file changed, 10 insertions(+)
-> 
-> diff -puN kernel/cgroup.c~cgroups-forbid-noprefix-if-mounting-more-than-just-cpuset-subsystem kernel/cgroup.c
-> --- a/kernel/cgroup.c~cgroups-forbid-noprefix-if-mounting-more-than-just-cpuset-subsystem
-> +++ a/kernel/cgroup.c
-> @@ -842,6 +842,11 @@ static int parse_cgroupfs_options(char *
->  				     struct cgroup_sb_opts *opts)
->  {
->  	char *token, *o = data ?: "all";
-> +	unsigned long mask = (unsigned long)-1;
-> +
-> +#ifdef CONFIG_CPUSETS
-> +	mask = ~(1 << cpuset_subsys_id);
-> +#endif
-> 
->  	opts->subsys_bits = 0;
->  	opts->flags = 0;
-> @@ -886,6 +891,11 @@ static int parse_cgroupfs_options(char *
->  		}
->  	}
-> 
-> +	/* We allow noprefix only if mounting just the cpuset subsystem */
-> +	if (test_bit(ROOT_NOPREFIX, &opts->flags) &&
-> +	    (opts->subsys_bits & mask))
-> +		return -EINVAL;
-> +
->  	/* We can't have an empty hierarchy */
->  	if (!opts->subsys_bits)
->  		return -EINVAL;
-> _
-> 
-> Patches currently in -mm which might be from lizf@cn.fujitsu.com are
-> 
-> origin.patch
-> linux-next.patch
-> mm-add-swap-cache-interface-for-swap-reference.patch
-> mm-modify-swap_map-and-add-swap_has_cache-flag.patch
-> mm-reuse-unused-swap-entry-if-necessary.patch
-> hexdump-remove-the-trailing-space.patch
-> cgroups-make-messages-more-readable.patch
-> cgroups-forbid-noprefix-if-mounting-more-than-just-cpuset-subsystem.patch
-> devcgroup-skip-superfluous-checks-when-found-the-dev_all-elem.patch
-> memcg-remove-some-redundant-checks.patch
-> memcg-remove-unneeded-forward-declaration-from-schedh.patch
-> memcg-fix-swap-accounting.patch
+Using this stack we can implement both a) and b). With addition of
+ZigBee layers, it might be possible to implement c), too. For things
+like 6lowpan, only a) and b) are useful. If you call this all ZigBee,
+it will add confusion and artifical limitation. Not to mention, not
+true. And just for cosmetic measures. That will be a lot of trouble and
+no practical gain from that.
 
--- 
-regards,
-Dhaval
+References:
+RFC-4919
+RFC-4944
+
+All the best,
+S.
+
