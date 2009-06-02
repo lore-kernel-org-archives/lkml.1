@@ -1,116 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510AbZFBNDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601AbZFBNGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754510AbZFBNDS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 09:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZFBNDH
+	id S1753601AbZFBNGR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 09:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbZFBNGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 09:03:07 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34413 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751811AbZFBNDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 09:03:06 -0400
-Date: Tue, 2 Jun 2009 15:03:06 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: hugh@veritas.com, riel@redhat.com, akpm@linux-foundation.org,
-       chris.mason@oracle.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, fengguang.wu@intel.com
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602130306.GA6262@wotan.suse.de>
-References: <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090601120537.GF5018@wotan.suse.de> <20090601185147.GT1065@one.firstfloor.org> <20090602121031.GC1392@wotan.suse.de> <20090602123450.GF1065@one.firstfloor.org> <20090602123720.GF1392@wotan.suse.de> <20090602125538.GH1065@one.firstfloor.org>
-Mime-Version: 1.0
+	Tue, 2 Jun 2009 09:06:06 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:46768 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752813AbZFBNGF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 09:06:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=qfj+1UPqLhchnahFQa9Vn9BGncRe/EbFXKrhmNi2vHIEqDzZ92RfORep2WobL0JzOc
+         WIW/u+Wn5tW4AMBmskGgGxSqI57cP13Lvqf9nCMmQqq1y4IL3u7C6F9fR20yBAOW+DC7
+         vtsexjCbx1UBJoT2kbS4wbYgW7G7PZFVVQeZs=
+Date: Tue, 2 Jun 2009 15:07:20 +0200
+From: Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: Matt Mackall <mpm@selenic.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Denis Vlasenko <vda.linux@googlemail.com>,
+       Rob Landley <rob@landley.net>, linux-kernel@vger.kernel.org,
+       Mike Frysinger <vapier@gentoo.org>
+Subject: Re: [PATCH] update kernel's scripts/bloat-o-meter from busybox
+Message-ID: <20090602130720.GA6259@mx.loc>
+References: <200906011526.01108.rgetz@blackfin.uclinux.org> <1243885732.22069.112.camel@calx> <200906011657.20251.rgetz@blackfin.uclinux.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090602125538.GH1065@one.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <200906011657.20251.rgetz@blackfin.uclinux.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 02:55:38PM +0200, Andi Kleen wrote:
-> On Tue, Jun 02, 2009 at 02:37:20PM +0200, Nick Piggin wrote:
-> > Because I don't see any difference (see my previous patch). I
-> > still don't know what it is supposed to be doing differently.
-> > So if you reinvent your own that looks close enough to truncate
-> > to warrant a comment to say /* this is close to truncate but
-> > not quite */, then yes I insist that you say exactly why it is
-> > not quite like truncate ;)
-> 
-> I will just delete that comment because it apparently causes so 
-> much confusion.
+On Mon, Jun 01, 2009 at 04:57:20PM -0400, Robin Getz wrote:
+>On Mon 1 Jun 2009 15:48, Matt Mackall pondered:
+>> On Mon, 2009-06-01 at 15:26 -0400, Robin Getz wrote:
 
-And replace it with something that actually clears up the
-confusion.
+>> > +	# Skip archive members
+>> > +        if len(l.split()) == 1 and l.endswith(':'):
+>> 
+>> if ' ' not in l ...
+>
+>http://git.busybox.net/busybox/commit/?id=49bdf28c320bf4e02048eb0cbd115d84b8467cd9
+>
+>OK with me - if it is OK with Bernhard.
 
+Fine with me either way, sure. All parts i ever touched in bloat-o-meter
+(and kbuild, kconfig) are:
+Signed-off-by: Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>
 
-> > > > I'm suggesting that EIO is traditionally for when the data still
-> > > > dirty in pagecache and was not able to get back to backing
-> > > > store. Do you deny that?
-> > > 
-> > > Yes. That is exactly the case when memory-failure triggers EIO
-> > > 
-> > > Memory error on a dirty file mapped page.
-> > 
-> > But it is no longer dirty, and the problem was not that the data
-> > was unable to be written back.
-> 
-> Sorry I don't understand. What do you mean with "no longer dirty"
-> 
-> Of course it's still dirty, just has to be discarded because it's 
-> corrupted.
-
-The pagecache location is no longer dirty. Userspace only cares
-about pagecache locations and their contents, not the page that
-was once there and has now been taken out.
-
- 
-> > > > And I think the application might try to handle the case of a
-> > > > page becoming corrupted differently. Do you deny that?
-> > > 
-> > > You mean a clean file-mapped page? In this case there is no EIO,
-> > > memory-failure just drops the page and it is reloaded.
-> > > 
-> > > If the page is dirty we trigger EIO which as you said above is the 
-> > > right reaction.
-> > 
-> > No I mean the difference between the case of dirty page unable to
-> > be written to backing sotre, and the case of dirty page becoming
-> > corrupted.
-> 
-> Nick, I have really a hard time following you here.
-> 
-> What exactly do you want? 
-> 
-> A new errno? Or something else? If yes what precisely?
-
-Yeah a new errno would be nice. Precisely one to say that the
-memory was corrupted.
-
- 
-> I currently don't see any sane way to report this to the application
-> through write().  That is because adding a new errno for something
-> is incredibly hard and often impossible, and that's certainly
-> the case here.
-> 
-> The application can detect it if it maps the 
-> shared page and waits for a SIGBUS, but not through write().
-> 
-> But I doubt there will be really any apps that do anything differently
-> here anyways. A clever app could retry a few times if it still
-> has a copy of the data, but that might even make sense on normal
-> IO errors (e.g. on a SAN).
-
-I'm sure some of the ones that really care would.
-
-
-> > They would presumably exit or do some default thing, which I
-> > think would be fine.
-> 
-> No it's not fine if they would handle EIO. e.g. consider
-> a sophisticated database which likely has sophisticated
-> IO error mechanisms too (e.g. only abort the current commit)
-
-Umm, if it is a generic "this failed, we can abort" then why
-would not this be the default case. The issue is if it does
-something differnet specifically for EIO, and specifically
-assuming the pagecache is still valid and dirty.
+thanks,
