@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbZFBUzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZFBUz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425AbZFBUzp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 16:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbZFBUzh
+	id S1754495AbZFBUz4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 16:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZFBUzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 16:55:37 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:48893 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907AbZFBUzh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 16:55:37 -0400
-Subject: Re: [tip:timers/ntp] ntp: adjust SHIFT_PLL to improve NTP
- convergence
-From: john stultz <johnstul@us.ibm.com>
-To: Miroslav Lichvar <mlichvar@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Rik van Riel <riel@redhat.com>,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <20090602162208.GA15696@localhost>
-References: <200905051956.n45JuVo9025575@imap1.linux-foundation.org>
-	 <tip-22cfbbfd9f67b67fe073010f51cb71d3632387d5@git.kernel.org>
-	 <1243542817.29511.523.camel@jstultz-laptop> <20090601232223.GH749@elte.hu>
-	 <1243900716.11263.42.camel@jstultz-laptop> <4A246D0B.40204@redhat.com>
-	 <20090602002039.GA16410@elte.hu>  <20090602162208.GA15696@localhost>
-Content-Type: text/plain
-Date: Tue, 02 Jun 2009 13:55:35 -0700
-Message-Id: <1243976135.3501.10.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 2 Jun 2009 16:55:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41610 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754476AbZFBUzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 16:55:47 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jan Kratochvil <jan.kratochvil@redhat.com>,
+       Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH for 2.6.30] ptrace: revert "ptrace_detach: the wrong wakeup
+	breaks the ERESTARTxxx logic"
+In-Reply-To: Oleg Nesterov's message of  Tuesday, 2 June 2009 22:39:39 +0200 <20090602203939.GA13939@redhat.com>
+References: <20090529103017.D548FFC2BD@magilla.sf.frob.com>
+	<20090529125405.GD19812@redhat.com>
+	<20090529143049.GA27424@redhat.com>
+	<20090530202313.GA12066@host0.dyn.jankratochvil.net>
+	<20090530234449.GA31604@redhat.com>
+	<20090601014258.E3EA2FC3C7@magilla.sf.frob.com>
+	<20090602011318.GA2461@redhat.com>
+	<20090602203939.GA13939@redhat.com>
+Emacs: the prosecution rests its case.
+Message-Id: <20090602205537.E4143FC403@magilla.sf.frob.com>
+Date: Tue,  2 Jun 2009 13:55:37 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-02 at 18:22 +0200, Miroslav Lichvar wrote:
-> On Tue, Jun 02, 2009 at 02:20:39AM +0200, Ingo Molnar wrote:
-> > 
-> > Not just that - but there's calibration noise during bootup that can 
-> > cause randomly distributed recalibrations as well. So other hosts in 
-> > a mixed environment will see inconsistencies anyway, after every 
-> > bootup.
-[snip]
-> As for the calibration issue, would it be possible to export the
-> information that an instable clocksource is used and when was the last
-> time it was calibrated? Then we'd know when the drift file should not
-> be trusted and let NTP calculate the frequency directly (it takes
-> about 15 minutes).
+Acked-by: Roland McGrath <roland@redhat.com>
 
-Just to de-thread the issues here, the calibration noise issue really is
-separate from the SHIFT_PLL convergence issue.
-
-I'd really prefer the calibration noise issue to be resolved by the
-kernel, as its really only an issue on a subset of x86 machines. The
-tsc_khz= boot option I proposed earlier for folks who really care seems
-to me like a good route.
-
-The only NTPd side change to help the calibration issue that might be
-useful, would be a explicit ntp option to force NTP to always calculate
-the freq on startup if the drift file was present or not. Anything else
-would be way too much of a hack to get around bad kernel behavior.
-
-thanks
--john
+Indeed the old code was highly suspect and we need more work to fix it.
+But this was not a conservative change and it did produce regressions.
+It's better to leave old-and-wrong as it was until we have finished
+more thorough revamp work.
 
 
+Thanks,
+Roland
