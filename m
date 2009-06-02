@@ -1,81 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbZFBNIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbZFBNNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754364AbZFBNIf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 09:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZFBNI1
+	id S1753956AbZFBNNJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 09:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbZFBNM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 09:08:27 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:43724 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753145AbZFBNI0 convert rfc822-to-8bit (ORCPT
+	Tue, 2 Jun 2009 09:12:58 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58256 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751611AbZFBNM5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 09:08:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lbX67lQa2y9kwlhnIyIxreVQWZJ+tWjqgEM5pRI8Iidl1c3Y+RVEwoNpzk3zbK2+vP
-         eON/bdX1sRIMftop61iq4GwxftxjOEPE6NhUDFsWYROM1i2BMD7SFQdWg3ZRT+R18PSZ
-         honWLrBFEd4gSFzJkouHqd04lcL7XsFa8bwVA=
-MIME-Version: 1.0
-In-Reply-To: <200906021218.33787.bzolnier@gmail.com>
-References: <1243926308-32385-1-git-send-email-petkovbb@gmail.com>
-	 <1243926308-32385-2-git-send-email-petkovbb@gmail.com>
-	 <200906021218.33787.bzolnier@gmail.com>
-Date: Tue, 2 Jun 2009 15:08:27 +0200
-Message-ID: <9ea470500906020608o14f8bc8dwaedabff70c1cb707@mail.gmail.com>
-Subject: Re: [PATCH 1/2] ide-tape: change IDE_AFLAG_IGNORE_DSC non-atomically
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Jun 2009 09:12:57 -0400
+Date: Tue, 2 Jun 2009 15:20:02 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, hugh@veritas.com, riel@redhat.com,
+       akpm@linux-foundation.org, chris.mason@oracle.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
+Message-ID: <20090602132002.GJ1065@one.firstfloor.org>
+References: <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090601120537.GF5018@wotan.suse.de> <20090601185147.GT1065@one.firstfloor.org> <20090602121031.GC1392@wotan.suse.de> <20090602123450.GF1065@one.firstfloor.org> <20090602123720.GF1392@wotan.suse.de> <20090602125538.GH1065@one.firstfloor.org> <20090602130306.GA6262@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090602130306.GA6262@wotan.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Jun 02, 2009 at 03:03:06PM +0200, Nick Piggin wrote:
+> > > > > I'm suggesting that EIO is traditionally for when the data still
+> > > > > dirty in pagecache and was not able to get back to backing
+> > > > > store. Do you deny that?
+> > > > 
+> > > > Yes. That is exactly the case when memory-failure triggers EIO
+> > > > 
+> > > > Memory error on a dirty file mapped page.
+> > > 
+> > > But it is no longer dirty, and the problem was not that the data
+> > > was unable to be written back.
+> > 
+> > Sorry I don't understand. What do you mean with "no longer dirty"
+> > 
+> > Of course it's still dirty, just has to be discarded because it's 
+> > corrupted.
+> 
+> The pagecache location is no longer dirty. Userspace only cares
+> about pagecache locations and their contents, not the page that
+> was once there and has now been taken out.
 
-On Tue, Jun 2, 2009 at 12:18 PM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
+Sorry, but that just sounds wrong to me. User space has no clue
+about the page cache, it just wants to know that the write it just
+did didn't reach the disk. And that's what happened and
+what we report here.
 
-..
+Retries can make sense in some cases, but in these cases the
+user space should do it in other EIO cases too.
 
->> --- a/drivers/ide/ide-tape.c
->> +++ b/drivers/ide/ide-tape.c
->> @@ -656,15 +656,24 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
->>
->>       if ((drive->dev_flags & IDE_DFLAG_DSC_OVERLAP) == 0 &&
->>           (rq->cmd[13] & REQ_IDETAPE_PC2) == 0)
->> -             set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
->> +             drive->atapi_flags |= IDE_AFLAG_IGNORE_DSC;
->>
->>       if (drive->dev_flags & IDE_DFLAG_POST_RESET) {
->> -             set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
->> +             drive->atapi_flags |= IDE_AFLAG_IGNORE_DSC;
->>               drive->dev_flags &= ~IDE_DFLAG_POST_RESET;
->>       }
->>
->> -     if (!test_and_clear_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags) &&
->> -         (stat & ATA_DSC) == 0) {
->> +     /*
->> +      * This is a precaution for IDE_AFLAG_IGNORE_DSC being conditionally set
->> +      * above. We don't need a stronger enforcement of ordering because the
->> +      * read below cannot precede the earlier write out-of-order since it is
->> +      * to the same location. Also, since we have the ide port locked during
->> +      * the ->do_request(), we only have to be aware of gcc reordering stuff.
->> +      */
->> +     barrier();
->
-> Are you seeing a real problem with gcc here?  No sane compiler should need
-> a barrier() here (we would probably need zillions of them in kernel if it
-> really does).
+> > > > > And I think the application might try to handle the case of a
+> > > > > page becoming corrupted differently. Do you deny that?
+> > > > 
+> > > > You mean a clean file-mapped page? In this case there is no EIO,
+> > > > memory-failure just drops the page and it is reloaded.
+> > > > 
+> > > > If the page is dirty we trigger EIO which as you said above is the 
+> > > > right reaction.
+> > > 
+> > > No I mean the difference between the case of dirty page unable to
+> > > be written to backing sotre, and the case of dirty page becoming
+> > > corrupted.
+> > 
+> > Nick, I have really a hard time following you here.
+> > 
+> > What exactly do you want? 
+> > 
+> > A new errno? Or something else? If yes what precisely?
+> 
+> Yeah a new errno would be nice. Precisely one to say that the
+> memory was corrupted.
 
-No, this is just a precaution. The asm I checked looked fine but since
-the flag is set and right afterwards checked, it will be bad if this
-somehow got reordered. I actually haven't checked whether anything like
-that would be possible, at all.
+Ok.  I firmly think a new errno is a bad idea because I don't
+want to explain to a lot of people how to fix their applications.
+Compatibility is important.
+
+> > I currently don't see any sane way to report this to the application
+> > through write().  That is because adding a new errno for something
+> > is incredibly hard and often impossible, and that's certainly
+> > the case here.
+> > 
+> > The application can detect it if it maps the 
+> > shared page and waits for a SIGBUS, but not through write().
+> > 
+> > But I doubt there will be really any apps that do anything differently
+> > here anyways. A clever app could retry a few times if it still
+> > has a copy of the data, but that might even make sense on normal
+> > IO errors (e.g. on a SAN).
+> 
+> I'm sure some of the ones that really care would.
+
+Even if they would there would be still old binaries around.
+Compatibility is important.
+
+> 
+> 
+> > > They would presumably exit or do some default thing, which I
+> > > think would be fine.
+> > 
+> > No it's not fine if they would handle EIO. e.g. consider
+> > a sophisticated database which likely has sophisticated
+> > IO error mechanisms too (e.g. only abort the current commit)
+> 
+> Umm, if it is a generic "this failed, we can abort" then why
+> would not this be the default case. The issue is if it does
+> something differnet specifically for EIO, and specifically
+> assuming the pagecache is still valid and dirty.
+
+How would it make such an assumption?
+
+I assume that if an application does something with EIO it 
+can either retry a few times or give up. Both is ok here.
+
+-Andi
 
 -- 
-Regards/Gruss,
-Boris
+ak@linux.intel.com -- Speaking for myself only.
