@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbZFBNyC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbZFBNyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754030AbZFBNyC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 09:54:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbZFBNxw
+	id S1755773AbZFBNyV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 09:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbZFBNx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 09:53:52 -0400
-Received: from mga03.intel.com ([143.182.124.21]:36146 "EHLO mga03.intel.com"
+	Tue, 2 Jun 2009 09:53:57 -0400
+Received: from mga14.intel.com ([143.182.124.37]:30086 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754985AbZFBNxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 09:53:51 -0400
+	id S1755177AbZFBNx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 09:53:56 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,291,1241420400"; 
-   d="scan'208";a="149728698"
-Date: Tue, 2 Jun 2009 21:46:59 +0800
+   d="scan'208";a="149728746"
+Date: Tue, 2 Jun 2009 20:51:34 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Nick Piggin <npiggin@suse.de>
 Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
@@ -23,99 +23,111 @@ Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
 Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
 	in the VM v3
-Message-ID: <20090602134659.GA21338@localhost>
-References: <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org> <20090602125713.GG1392@wotan.suse.de>
+Message-ID: <20090602125134.GA20462@localhost>
+References: <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601140553.GA1979@localhost> <20090601144050.GA12099@wotan.suse.de> <20090602111407.GA17234@localhost> <20090602121940.GD1392@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090602125713.GG1392@wotan.suse.de>
+In-Reply-To: <20090602121940.GD1392@wotan.suse.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 08:57:13PM +0800, Nick Piggin wrote:
-> On Tue, Jun 02, 2009 at 02:47:57PM +0200, Andi Kleen wrote:
-> > On Tue, Jun 02, 2009 at 02:00:42PM +0200, Nick Piggin wrote:
-> > > not a big deal and just avoids duplicating code. I attached an
-> > > (untested) patch.
+On Tue, Jun 02, 2009 at 08:19:40PM +0800, Nick Piggin wrote:
+> On Tue, Jun 02, 2009 at 07:14:07PM +0800, Wu Fengguang wrote:
+> > On Mon, Jun 01, 2009 at 10:40:51PM +0800, Nick Piggin wrote:
+> > > But you just said that you try to intercept the IO. So the underlying
+> > > data is not necessarily corrupt. And even if it was then what if it
+> > > was reinitialized to something else in the meantime (such as filesystem
+> > > metadata blocks?) You'd just be introducing worse possibilities for
+> > > coruption.
 > > 
-> > Thanks. But the function in the patch is not doing the same what
-> > the me_pagecache_clean/dirty are doing. For once there is no error
-> > checking, as in the second try_to_release_page()
+> > The IO interception will be based on PFN instead of file offset, so it
+> > won't affect innocent pages such as your example of reinitialized data.
+> 
+> OK, if you could intercept the IO so it never happens at all, yes
+> of course that could work.
+> 
+> > poisoned dirty page == corrupt data      => process shall be killed
+> > poisoned clean page == recoverable data  => process shall survive
 > > 
-> > Then it doesn't do all the IO error and missing mapping handling.
+> > In the case of dirty hwpoison page, if we reload the on disk old data
+> > and let application proceed with it, it may lead to *silent* data
+> > corruption/inconsistency, because the application will first see v2
+> > then v1, which is illogical and hence may mess up its internal data
+> > structure.
 > 
-> Obviously I don't mean just use that single call for the entire
-> handler. You can set the EIO bit or whatever you like. The
-> "error handling" you have there also seems strange. You could
-> retain it, but the page is assured to be removed from pagecache.
+> Right, but how do you prevent that? There is no way to reconstruct the
+> most updtodate data because it was destroyed.
 
-You mean this?
+To kill the application ruthlessly, rather than allow it go rotten quietly.
 
-        if (page_has_private(p) && !try_to_release_page(p, GFP_NOIO))
-                return FAILED;
-
-If page->private cannot be removed, that means some fs may start IO on it, so
-we return FAILED.
-
-> > The page_mapped() check is useless because the pages are not 
-> > mapped here etc.
+> > > You will need to demonstrate a *big* advantage before doing crazy things
+> > > with writeback ;)
+> > 
+> > OK. We can do two things about poisoned writeback pages:
+> > 
+> > 1) to stop IO for them, thus avoid corrupted data to hit disk and/or
+> >    trigger further machine checks
 > 
-> That's OK, it is a core part of the protocol to prevent
-> truncated pages from being mapped, so I like it to be in
-> that function.
- 
-Right.
-
-> (you are also doing extraneous page_mapped tests in your handler,
-> so surely your concern isn't from the perspective of this
-> error handler code)
- 
-That's because the initial try_to_unmap() may fail and page still remain
-mapped, and remove_from_page_cache() assumes !page_mapped(). 
-
-> > We could probably call truncate_complete_page(), but then
-> > we would also need to duplicate most of the checking outside
-> > the function anyways and there wouldn't be any possibility
-> > to share the clean/dirty variants. If you insist I can
-> > do it, but I think it would be significantly worse code
-> > than before and I'm reluctant to do that.
+> 1b) At which point, you invoke the end-io handlers, and the page is
+> no longer writeback.
 > 
-> I can write you the patch for that too if you like.
+> > 2) to isolate them from page cache, thus preventing possible
+> >    references in the writeback time window
+> 
+> And then this is possible because you aren't violating mm
+> assumptions due to 1b. This proceeds just as the existing
+> pagecache mce error handler case which exists now.
 
-I have already posted one on truncate_complete_page(). Not the way you want it?
- 
-> > I don't also really see what the big deal is of just
-> > calling these few functions directly. After all we're not
-> > truncating here and they're all already called from other files.
-> >
-> > > > > No, it seems rather insane to do something like this here that no other
-> > > > > code in the mm ever does.
-> > > > 
-> > > > Just because the rest of the VM doesn't do it doesn't mean it might make sense.
+Yeah that's a good scheme - we are talking about two interception
+scheme. Mine is passive one and yours is active one.
+
+passive: check hwpoison pages at __generic_make_request()/elv_next_request() 
+         (the code will be enabled by an mce_bad_io_pages counter)
+
+active:  iterate all queued requests for hwpoison pages
+
+Each has its merits and complexities.
+
+I'll list the merits(+) and complexities(-) of the passive approach,
+with them you automatically get the merits of the active one:
+
++ works on generic code and don't have to touch all deadline/as/cfq elevators
+- the wait_on_page_writeback() puzzle because of the writeback time window
+
++ could also intercept the "cannot de-dirty for now" pages when they
+  eventually go to writeback IO
+- have to avoid filesystem references on PG_hwpoison pages, eg.
+  - zeroing partial EOF page when i_size is not page aligned
+  - calculating checksums
+
+
+> > > > Now it's obvious that reusing more code than truncate_complete_page()
+> > > > is not easy (or natural).
 > > > 
-> > > It is going to be possible to do it somehow surely, but it is insane
-> > > to try to add such constraints to the VM to close a few small windows
+> > > Just lock the page and wait for writeback, then do the truncate
+> > > work in another function. In your case if you've already unmapped
+> > > the page then it won't try to unmap again so no problem.
+> > > 
+> > > Truncating from pagecache does not change ->index so you can
+> > > move the loop logic out.
 > > 
-> > We don't know currently if they are small. If they are small I would
-> > agree with you, but that needs numbers. That said fancy writeback handling
-> > is currently not on my agenda.
+> > Right. So effectively the reusable function is exactly
+> > truncate_complete_page(). As I said this reuse is not a big gain.
 > 
-> Yes, writeback pages are very limited, a tiny number at any time and
-> the faction gets relatively smaller as total RAM size gets larger.
-
-Yes they are less interesting for now.
- 
-> > > if you already have other large ones.
-> > 
-> > That's unclear too.
+> Anyway, we don't have to argue about it. I already send a patch
+> because it was so hard to do, so let's move past this ;)
 > 
-> You can't do much about most kernel pages, and dirty metadata pages
-> are both going to cause big problems. User pagetable pages. Lots of
-> stuff.
+> 
+> > > > Yes it's kind of insane.  I'm interested in reasoning it out though.
+> 
+> Well with the IO interception (I missed this point), then it seems
+> maybe no longer so insane. We could see how it looks.
 
-Yes, that's a network of pointers that's hard to break away with.
+OK.
 
 Thanks,
 Fengguang
+
