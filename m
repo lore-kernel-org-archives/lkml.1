@@ -1,99 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbZFBWk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755324AbZFBWn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753823AbZFBWk6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 18:40:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZFBWkv
+	id S1755324AbZFBWn2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 18:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZFBWnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 18:40:51 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:56422 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753155AbZFBWku (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 18:40:50 -0400
-Date: Tue, 2 Jun 2009 18:40:51 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: George Dunlap <george.dunlap@eu.citrix.com>
-Cc: David Miller <davem@davemloft.net>, "jeremy@goop.org" <jeremy@goop.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       Dan Magenheimer <dan.magenheimer@oracle.com>,
-       "avi@redhat.com" <avi@redhat.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       "xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
-       ksrinivasan <ksrinivasan@novell.com>,
-       "EAnderson@novell.com" <EAnderson@novell.com>,
-       "wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
-       Stephen Spector <stephen.spector@citrix.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "npiggin@suse.de" <npiggin@suse.de>
-Subject: Re: Xen is a feature
-Message-ID: <20090602224051.GB32428@goodmis.org>
-References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org> <20090528.210559.137121893.davem@davemloft.net> <4A1FCE8E.2060604@eu.citrix.com>
+	Tue, 2 Jun 2009 18:43:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47595 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752581AbZFBWnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 18:43:18 -0400
+Date: Tue, 2 Jun 2009 22:42:47 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter tools: Make source code headers more coherent
+Message-ID: <tip-bf9e187637ca3d85cee7407e3af93995868cc87c@git.kernel.org>
+Git-Commit-ID: bf9e187637ca3d85cee7407e3af93995868cc87c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <4A1FCE8E.2060604@eu.citrix.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 02 Jun 2009 22:42:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29, 2009 at 01:01:18PM +0100, George Dunlap wrote:
->
-> If we take him at his word, that the root issue is that he fundamentally  
-> dislikes the design choice of running Linux-as-hypervisor-component,  
-> then we have a difference of opinion and we're just going to have to  
-> agree to disagree.  But there are reasons to include it anyway,  
-> including benefits to existing Xen users and potential Xen users (who  
-> have decided not to use KVM for whatever reason), and the idea of  
-> survival-of-the-fittest: Xen and KVM have made different design choices,  
-> let's let them both grow and see which one thrives.  If KVM's design is  
-> unilaterally superior, eventually Xen will die off.  But I suspect that  
-> there's significant demand in the OSS virtualization ecology for both  
-> approaches, and the world will be the worse for dom0 support being  
-> out-of-tree.
->
+Commit-ID:  bf9e187637ca3d85cee7407e3af93995868cc87c
+Gitweb:     http://git.kernel.org/tip/bf9e187637ca3d85cee7407e3af93995868cc87c
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 2 Jun 2009 23:37:05 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 2 Jun 2009 23:37:05 +0200
 
-Three years ago, when I was hired by Red Hat, I was put on the Virt team,
-and I had to work on Xen. I found it an awkward community to say the least.
-But I'll refrain from talking about that experience.
+perf_counter tools: Make source code headers more coherent
 
-Before I was hired, I was full time developing the -rt patch. I was accustom
-to the way the Linux development worked, and felt comfortable with it. I was
-very pleased when I left the virt team to go back to work on the -rt patch.
-Just before I left, KVM came out. I started playing with it and I once again
-felt comfortable in that development. I probably would not have mind working
-in the virt team if it was KVM that I was working on. I guess the point I'm
-trying to make here is that KVM is developed in a Linux community, Xen is not.
+The perf commands had different ways of describing themselves,
+introduce a coherent command-file-header format taken from the
+Git project.
 
-The major difference between KVM and Xen is that KVM _is_ part of Linux. Xen
-is not. The reason that this matters is that if we need to make a change to
-the way Linux works we can simply make KVM handle the change. That is, you
-could think of it as Dom0 and the hypervisor would always be in sync.
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Kacur <jkacur@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-If we were to break an interface with Dom0 for Xen then we would have a bunch
-of people crying foul about us breaking a defined API. One of Thomas's complaints
-(and a valid one) is that once Linux supports an external API it must always
-keep it compatible. This will hamper new development in Linux if the APIs are
-scattered throughout the kernel without much thought.
 
-Now here's a crazy solution. Merge the Xen hypervisor into Linux ;-)
+---
+ Documentation/perf_counter/builtin-record.c |   11 ++++-
+ Documentation/perf_counter/builtin-report.c |   10 ++++-
+ Documentation/perf_counter/builtin-stat.c   |   29 ++++++++-----
+ Documentation/perf_counter/builtin-top.c    |   60 ++++++++-------------------
+ Documentation/perf_counter/perf.c           |    9 ++++
+ 5 files changed, 62 insertions(+), 57 deletions(-)
 
-Give full ownership of Xen to the Linux community. One of your people could be
-a maintainer. This way the API between Dom0 and the hypervisor would be an internal
-one. If you needed to upgrade Dom0, you also must upgrade the hypervisor, but that
-would be fine since the hypervisor would also be in the Kernel proper.
-
-This may not solve all the issues that the x86 maintainers have with the Dom0
-patches, but it may help solve the API one.
-
-Yeah, I know, I'll be having snowball fights with Saddam before that happens.
-
--- Steve
-
+diff --git a/Documentation/perf_counter/builtin-record.c b/Documentation/perf_counter/builtin-record.c
+index 8feb119..2741b35 100644
+--- a/Documentation/perf_counter/builtin-record.c
++++ b/Documentation/perf_counter/builtin-record.c
+@@ -1,9 +1,14 @@
+ /*
+- * perf record: Record the profile of a workload (or a CPU, or a PID) into
+- * the perf.data output file - for later analysis via perf report.
++ * builtin-record.c
++ *
++ * Builtin record command: Record the profile of a workload
++ * (or a CPU, or a PID) into the perf.data output file - for
++ * later analysis via perf report.
+  */
+-#include "perf.h"
+ #include "builtin.h"
++
++#include "perf.h"
++
+ #include "util/util.h"
+ #include "util/parse-options.h"
+ #include "util/parse-events.h"
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index 270e986..9da990f 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -1,6 +1,14 @@
+-#include "util/util.h"
++/*
++ * builtin-report.c
++ *
++ * Builtin report command: Analyze the perf.data input file,
++ * look up and read DSOs and symbol information and display
++ * a histogram of results, along various sorting keys.
++ */
+ #include "builtin.h"
+ 
++#include "util/util.h"
++
+ #include "util/list.h"
+ #include "util/cache.h"
+ #include "util/rbtree.h"
+diff --git a/Documentation/perf_counter/builtin-stat.c b/Documentation/perf_counter/builtin-stat.c
+index 27abe6a..2357a66 100644
+--- a/Documentation/perf_counter/builtin-stat.c
++++ b/Documentation/perf_counter/builtin-stat.c
+@@ -1,20 +1,27 @@
+ /*
+- * perf stat:  /usr/bin/time -alike performance counter statistics utility
++ * builtin-stat.c
++ *
++ * Builtin stat command: Give a precise performance counters summary
++ * overview about any workload, CPU or specific PID.
++ *
++ * Sample output:
+ 
+-          It summarizes the counter events of all tasks (and child tasks),
+-          covering all CPUs that the command (or workload) executes on.
+-          It only counts the per-task events of the workload started,
+-          independent of how many other tasks run on those CPUs.
++   $ perf stat ~/hackbench 10
++   Time: 0.104
+ 
+-   Sample output:
++    Performance counter stats for '/home/mingo/hackbench':
+ 
+-   $ perf stat -e 1 -e 3 -e 5 ls -lR /usr/include/ >/dev/null
++       1255.538611  task clock ticks     #      10.143 CPU utilization factor
++             54011  context switches     #       0.043 M/sec
++               385  CPU migrations       #       0.000 M/sec
++             17755  pagefaults           #       0.014 M/sec
++        3808323185  CPU cycles           #    3033.219 M/sec
++        1575111190  instructions         #    1254.530 M/sec
++          17367895  cache references     #      13.833 M/sec
++           7674421  cache misses         #       6.112 M/sec
+ 
+-   Performance counter stats for 'ls':
++    Wall-clock time elapsed:   123.786620 msecs
+ 
+-           163516953 instructions
+-                2295 cache-misses
+-             2855182 branch-misses
+  *
+  * Copyright (C) 2008, Red Hat Inc, Ingo Molnar <mingo@redhat.com>
+  *
+diff --git a/Documentation/perf_counter/builtin-top.c b/Documentation/perf_counter/builtin-top.c
+index 5029d8e..a639352 100644
+--- a/Documentation/perf_counter/builtin-top.c
++++ b/Documentation/perf_counter/builtin-top.c
+@@ -1,49 +1,25 @@
+ /*
+- * kerneltop.c: show top kernel functions - performance counters showcase
+-
+-   Build with:
+-
+-     make -C Documentation/perf_counter/
+-
+-   Sample output:
+-
+-------------------------------------------------------------------------------
+- KernelTop:    2669 irqs/sec  [cache-misses/cache-refs],  (all, cpu: 2)
+-------------------------------------------------------------------------------
+-
+-             weight         RIP          kernel function
+-             ______   ________________   _______________
+-
+-              35.20 - ffffffff804ce74b : skb_copy_and_csum_dev
+-              33.00 - ffffffff804cb740 : sock_alloc_send_skb
+-              31.26 - ffffffff804ce808 : skb_push
+-              22.43 - ffffffff80510004 : tcp_established_options
+-              19.00 - ffffffff8027d250 : find_get_page
+-              15.76 - ffffffff804e4fc9 : eth_type_trans
+-              15.20 - ffffffff804d8baa : dst_release
+-              14.86 - ffffffff804cf5d8 : skb_release_head_state
+-              14.00 - ffffffff802217d5 : read_hpet
+-              12.00 - ffffffff804ffb7f : __ip_local_out
+-              11.97 - ffffffff804fc0c8 : ip_local_deliver_finish
+-               8.54 - ffffffff805001a3 : ip_queue_xmit
++ * builtin-top.c
++ *
++ * Builtin top command: Display a continuously updated profile of
++ * any workload, CPU or specific PID.
++ *
++ * Copyright (C) 2008, Red Hat Inc, Ingo Molnar <mingo@redhat.com>
++ *
++ * Improvements and fixes by:
++ *
++ *   Arjan van de Ven <arjan@linux.intel.com>
++ *   Yanmin Zhang <yanmin.zhang@intel.com>
++ *   Wu Fengguang <fengguang.wu@intel.com>
++ *   Mike Galbraith <efault@gmx.de>
++ *   Paul Mackerras <paulus@samba.org>
++ *
++ * Released under the GPL v2. (and only v2, not any later version)
+  */
+-
+- /*
+-  * Copyright (C) 2008, Red Hat Inc, Ingo Molnar <mingo@redhat.com>
+-  *
+-  * Improvements and fixes by:
+-  *
+-  *   Arjan van de Ven <arjan@linux.intel.com>
+-  *   Yanmin Zhang <yanmin.zhang@intel.com>
+-  *   Wu Fengguang <fengguang.wu@intel.com>
+-  *   Mike Galbraith <efault@gmx.de>
+-  *   Paul Mackerras <paulus@samba.org>
+-  *
+-  * Released under the GPL v2. (and only v2, not any later version)
+-  */
++#include "builtin.h"
+ 
+ #include "perf.h"
+-#include "builtin.h"
++
+ #include "util/symbol.h"
+ #include "util/util.h"
+ #include "util/rbtree.h"
+diff --git a/Documentation/perf_counter/perf.c b/Documentation/perf_counter/perf.c
+index e8a8584..ec7edb7 100644
+--- a/Documentation/perf_counter/perf.c
++++ b/Documentation/perf_counter/perf.c
+@@ -1,4 +1,13 @@
++/*
++ * perf.c
++ *
++ * Performance analysis utility.
++ *
++ * This is the main hub from which the sub-commands (perf stat,
++ * perf top, perf record, perf report, etc.) are started.
++ */
+ #include "builtin.h"
++
+ #include "util/exec_cmd.h"
+ #include "util/cache.h"
+ #include "util/quote.h"
