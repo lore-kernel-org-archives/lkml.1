@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759080AbZFBEob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759110AbZFBEom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759080AbZFBEob (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 00:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755720AbZFBEnl
+	id S1759110AbZFBEom (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 00:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757978AbZFBEnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 00:43:41 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:55385 "EHLO
+	Tue, 2 Jun 2009 00:43:42 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41669 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753123AbZFBEni (ORCPT
+	with ESMTP id S1753225AbZFBEni (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Jun 2009 00:43:38 -0400
-Message-Id: <20090602044339.761392749@goodmis.org>
+Message-Id: <20090602044339.977624129@goodmis.org>
 References: <20090602044315.439593107@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 02 Jun 2009 00:43:18 -0400
+Date: Tue, 02 Jun 2009 00:43:19 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 03/10] tracing: combine the default tracers into one config
-Content-Disposition: inline; filename=0003-tracing-combine-the-default-tracers-into-one-config.patch
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: [PATCH 04/10] tracing/events: fix a typo in __string() format output
+Content-Disposition: inline; filename=0004-tracing-events-fix-a-typo-in-__string-format-output.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-Both event tracer and sched switch plugin are selected by default
-by all generic tracers. But if no generic tracer is enabled, their options
-appear. But ether one of them will select the other, thus it only
-makes sense to have the default tracers be selected by one option.
+"tsize" should be "\tsize". Also remove the space before "__str_loc".
 
-[ Impact: clean up kconfig menu ]
+Before:
+ # cat tracing/events/irq/irq_handler_entry/format
+        ...
+        field:int irq;  offset:12;      size:4;
+        field: __str_loc name;  offset:16;tsize:2;
+        ...
 
+After:
+ # cat tracing/events/irq/irq_handler_entry/format
+	...
+        field:int irq;  offset:12;      size:4;
+        field:__str_loc name;   offset:16;      size:2;
+	...
+
+[ Impact: standardize __string field description in events format file ]
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/Kconfig |   19 +++----------------
- 1 files changed, 3 insertions(+), 16 deletions(-)
+ include/trace/ftrace.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 6e55cc3..4a13e5a 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -192,27 +192,14 @@ config SCHED_TRACER
- 	  This tracer tracks the latency of the highest priority task
- 	  to be scheduled in, starting from the point it has woken up.
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index b4ec83a..9276ec4 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -209,8 +209,8 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
  
--config ENABLE_CONTEXT_SWITCH_TRACER
--	bool "Trace process context switches"
--	depends on !GENERIC_TRACER
--	select TRACING
--	select CONTEXT_SWITCH_TRACER
--	help
--	  This tracer gets called from the context switch and records
--	  all switching of tasks.
--
--config ENABLE_EVENT_TRACING
--	bool "Trace various events in the kernel"
-+config ENABLE_DEFAULT_TRACERS
-+	bool "Trace process context switches and events"
- 	depends on !GENERIC_TRACER
- 	select TRACING
- 	help
- 	  This tracer hooks to various trace points in the kernel
- 	  allowing the user to pick and choose which trace point they
--	  want to trace.
--
--	  Note, all tracers enable event tracing. This option is
--	  only a convenience to enable event tracing when no other
--	  tracers are selected.
-+	  want to trace. It also includes the sched_switch tracer plugin.
- 
- config FTRACE_SYSCALLS
- 	bool "Trace syscalls"
+ #undef __string
+ #define __string(item, src)						       \
+-	ret = trace_seq_printf(s, "\tfield: __str_loc " #item ";\t"	       \
+-			       "offset:%u;tsize:%u;\n",			       \
++	ret = trace_seq_printf(s, "\tfield:__str_loc " #item ";\t"	       \
++			       "offset:%u;\tsize:%u;\n",		       \
+ 			       (unsigned int)offsetof(typeof(field),	       \
+ 					__str_loc_##item),		       \
+ 			       (unsigned int)sizeof(field.__str_loc_##item));  \
 -- 
 1.6.3.1
 
