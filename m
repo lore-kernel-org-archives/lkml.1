@@ -1,150 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752326AbZFBMAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbZFBMKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752326AbZFBMAt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 08:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZFBMAm
+	id S1752892AbZFBMKl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 08:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbZFBMKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 08:00:42 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46102 "EHLO mx1.suse.de"
+	Tue, 2 Jun 2009 08:10:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33010 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751345AbZFBMAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 08:00:42 -0400
-Date: Tue, 2 Jun 2009 14:00:42 +0200
+	id S1751601AbZFBMKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 08:10:33 -0400
+Date: Tue, 2 Jun 2009 14:10:31 +0200
 From: Nick Piggin <npiggin@suse.de>
 To: Andi Kleen <andi@firstfloor.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: hugh@veritas.com, riel@redhat.com, akpm@linux-foundation.org,
+       chris.mason@oracle.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com
 Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602120042.GB1392@wotan.suse.de>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org>
+Message-ID: <20090602121031.GC1392@wotan.suse.de>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090601120537.GF5018@wotan.suse.de> <20090601185147.GT1065@one.firstfloor.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090601183225.GS1065@one.firstfloor.org>
+In-Reply-To: <20090601185147.GT1065@one.firstfloor.org>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 01, 2009 at 08:32:25PM +0200, Andi Kleen wrote:
-> On Mon, Jun 01, 2009 at 01:50:46PM +0200, Nick Piggin wrote:
-> > > Another major complexity is on calling the isolation routines to
-> > > remove references from
-> > >         - PTE
-> > >         - page cache
-> > >         - swap cache
-> > >         - LRU list
-> > > They more or less made some assumptions on their operating environment
-> > > that we have to take care of.  Unfortunately these complexities are
-> > > also not easily resolvable.
+On Mon, Jun 01, 2009 at 08:51:47PM +0200, Andi Kleen wrote:
+> On Mon, Jun 01, 2009 at 02:05:38PM +0200, Nick Piggin wrote:
+> > On Thu, May 28, 2009 at 03:45:20PM +0200, Andi Kleen wrote:
+> > > On Thu, May 28, 2009 at 02:08:54PM +0200, Nick Piggin wrote:
+> > > > Then the data can not have been consumed, by DMA or otherwise? What
 > > > 
-> > > > (and few comments) of all the files in mm/. If you want to get rid
+> > > When the data was consumed we get a different machine check
+> > > (or a different error if it was consumed by a IO device)
 > > > 
-> > > I promise I'll add more comments :)
+> > > This code right now just handles the case of "CPU detected a page is broken
+> > > is wrong, but hasn't consumed it yet"
 > > 
-> > OK, but they should still go in their relevant files. Or as best as
-> > possible. Right now it's just silly to have all this here when much
-> > of it could be moved out to filemap.c, swap_state.c, page_alloc.c, etc.
+> > OK. Out of curiosity, how often do you expect to see uncorrectable ECC
+> > errors?
 > 
-> Can you be more specific what that "all this" is? 
+> That's a difficult question. It depends on a lot of factors, e.g. 
+> how much memory you have (but memory sizes are growing all the time), 
+> how many machines you have (large clusters tend to turn infrequent errors 
+> into frequent ones), how well your cooling and power supply works etc.
+> 
+> I can't give you a single number at this point, sorry.
 
-The functions which take action in response to a bad page being 
-detected. They belong with the subsystem that the page belongs
-to. I'm amazed this is causing so much argument or confusion
-because it is how the rest of mm/ code is arranged. OK, Hugh has
-a point about ifdefs, but OTOH we have lots of ifdefs like this.
+That's OK. I don't doubt they happen, I was just curious. Although
+for me with my pesant amounts of memory I never even see corrected
+transient ECC errors ;)
 
  
-> > > > of the page and don't care what it's count or dirtyness is, then
-> > > > truncate_inode_pages_range is the correct API to use.
-> > > >
-> > > > (or you could extract out some of it so you can call it directly on
-> > > > individual locked pages, if that helps).
-> > >  
-> > > The patch to move over to truncate_complete_page() would like this.
-> > > It's not a big win indeed.
+> > Just extract the part where it has the page locked into a common
+> > function.
+> 
+> That doesn't do some stuff we want to do, like try_to_release_buffers
+> And there's the page count problem with remove_mapping
+> 
+> That could be probably fixed, but to be honest I'm uncomfortable
+> fiddling with truncate internals.
+
+You're looking at invalidate, which is different. See my
+last patch.
+
+
+> > > Is there anything concretely wrong with the current code?
 > > 
-> > No I don't mean to do this, but to move the truncate_inode_pages
-> > code for truncating a single, locked, page into another function
-> > in mm/truncate.c and then call that from here.
+> > 
+> > /*
+> >  * Truncate does the same, but we're not quite the same
+> >  * as truncate. Needs more checking, but keep it for now.
+> >  */
+> > 
+> > I guess that it duplicates this tricky truncate code and also
+> > says it is different (but AFAIKS it is doing exactly the same
+> > thing).
 > 
-> I took a look at that.  First there's no direct equivalent of
-> me_pagecache_clean/dirty in truncate.c and to be honest I don't
-> see a clean way to refactor any of the existing functions to 
-> do the same.
+> It's not, there are various differences (like the reference count)
 
-With all that writing you could have just done it. It's really
-not a big deal and just avoids duplicating code. I attached an
-(untested) patch.
+No. If there are, then it *really* needs better documentation. I
+don't think there are, though.
 
-
-> > No, it seems rather insane to do something like this here that no other
-> > code in the mm ever does.
-> 
-> Just because the rest of the VM doesn't do it doesn't mean it might make sense.
-
-It is going to be possible to do it somehow surely, but it is insane
-to try to add such constraints to the VM to close a few small windows
-if you already have other large ones.
-
----
- mm/truncate.c |   24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
-
-Index: linux-2.6/mm/truncate.c
-===================================================================
---- linux-2.6.orig/mm/truncate.c
-+++ linux-2.6/mm/truncate.c
-@@ -135,6 +135,16 @@ invalidate_complete_page(struct address_
- 	return ret;
- }
  
-+void truncate_inode_page(struct address_space *mapping, struct page *page)
-+{
-+	if (page_mapped(page)) {
-+		unmap_mapping_range(mapping,
-+		  (loff_t)page->index<<PAGE_CACHE_SHIFT,
-+		  PAGE_CACHE_SIZE, 0);
-+	}
-+	truncate_complete_page(mapping, page);
-+}
-+
- /**
-  * truncate_inode_pages - truncate range of pages specified by start & end byte offsets
-  * @mapping: mapping to truncate
-@@ -196,12 +206,7 @@ void truncate_inode_pages_range(struct a
- 				unlock_page(page);
- 				continue;
- 			}
--			if (page_mapped(page)) {
--				unmap_mapping_range(mapping,
--				  (loff_t)page_index<<PAGE_CACHE_SHIFT,
--				  PAGE_CACHE_SIZE, 0);
--			}
--			truncate_complete_page(mapping, page);
-+			truncate_inode_page(mapping, page);
- 			unlock_page(page);
- 		}
- 		pagevec_release(&pvec);
-@@ -238,15 +243,10 @@ void truncate_inode_pages_range(struct a
- 				break;
- 			lock_page(page);
- 			wait_on_page_writeback(page);
--			if (page_mapped(page)) {
--				unmap_mapping_range(mapping,
--				  (loff_t)page->index<<PAGE_CACHE_SHIFT,
--				  PAGE_CACHE_SIZE, 0);
--			}
-+			truncate_inode_page(mappng, page);
- 			if (page->index > next)
- 				next = page->index;
- 			next++;
--			truncate_complete_page(mapping, page);
- 			unlock_page(page);
- 		}
- 		pagevec_release(&pvec);
+> > > > Well, the dirty data has never been corrupted before (ie. the data
+> > > > in pagecache has been OK). It was just unable to make it back to
+> > > > backing store. So a program could retry the write/fsync/etc or
+> > > > try to write the data somewhere else.
+> > > 
+> > > In theory it could, but in practice it is very unlikely it would.
+> > 
+> > very unlikely to try rewriting the page again or taking evasive
+> > action to save the data somewhere else? I think that's a bold
+> > assumption.
+> > 
+> > At the very least, having a prompt "IO error, check your hotplug
+> > device / network connection / etc and try again" I don't think
+> > sounds unreasonable at all.
+> 
+> I'm not sure what you're suggesting here. Are you suggesting
+> corrupted dirty page should return a different errno than a traditional 
+> IO error?
+> 
+> I don't think having a different errno for this would be a good
+> idea. Programs expect EIO on IO error and not something else.
+> And from the POV of the program it's an IO error.
+> 
+> Or are you suggesting there should be a mechanism where
+> an application could query about more details about a given
+> error it retrieved before? I think the later would be useful
+> in some cases, but probably hard to implement. Definitely
+> out of scope for this effort.
+
+I'm suggesting that EIO is traditionally for when the data still
+dirty in pagecache and was not able to get back to backing
+store. Do you deny that?
+
+And I think the application might try to handle the case of a
+page becoming corrupted differently. Do you deny that?
+
+OK, given the range of errors that APIs are defined to return,
+then maybe EIO is the best option. I don't suppose it is possible
+to expand them to return something else?
+
+
+> > > > Just seems overengineered. We could rewrite any if/switch statement like
+> > > > that (and actually the compiler probably will if it is beneficial).
+> > > 
+> > > The reason I like it is that it separates the functions cleanly,
+> > > without that there would be a dispatcher from hell. Yes it's a bit
+> > > ugly that there is a lot of manual bit checking around now too,
+> > > but as you go into all the corner cases originally clean code
+> > > always tends to get more ugly (and this is a really ugly problem)
+> > 
+> > Well... it is just writing another dispatcher from hell in a
+> > different way really, isn't it? How is it so much better than
+> > a simple switch or if/elseif/else statement?
+> 
+> switch () wouldn't work, it relies on the order.
+
+Order of what?
+
+
+> if () would work, but it would be larger and IMHO much harder
+> to read than the table. I prefer the table, which is a reasonably
+> clean mechanism to do that.
+
+OK. Maybe I'll try send a patch to remove it and see how it looks
+sometime. I think it's totally overengineered, but that's just me.
+
+
