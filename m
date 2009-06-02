@@ -1,88 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbZFBQ1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756481AbZFBQ2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755719AbZFBQ1S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 12:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbZFBQ1I
+	id S1756481AbZFBQ2S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 12:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbZFBQ2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 12:27:08 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:45713 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753037AbZFBQ1H (ORCPT
+	Tue, 2 Jun 2009 12:28:07 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:64177 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753117AbZFBQ2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 12:27:07 -0400
-Date: Tue, 2 Jun 2009 12:20:08 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
-	kernels
-Message-ID: <20090602162008.GH3914@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Ulrich Drepper <drepper@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-	Nick Piggin <npiggin@suse.de>,
-	Jeremy Fitzhardinge <jeremy@goop.org>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Avi Kivity <avi@redhat.com>, Arjan van de Ven <arjan@infradead.org>
-References: <4A0B62F7.5030802@goop.org> <20090525091527.GA7535@elte.hu> <4A1C3805.7060404@goop.org> <20090528061702.GB6920@wotan.suse.de> <20090530102330.GC16913@elte.hu> <20090602141802.GC3914@think> <a36005b50906020749p22b89693k5c4ae171d18966a7@mail.gmail.com> <20090602150339.GF3914@think> <a36005b50906020822m33917c6fn5061af562b54c6c2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a36005b50906020822m33917c6fn5061af562b54c6c2@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Source-IP: abhmt004.oracle.com [141.146.116.13]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4A25513E.023D:SCFSTAT5015188,ss=1,fgs=0
+	Tue, 2 Jun 2009 12:28:07 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [tip:perfcounters/core] perf_counter: Use PID namespaces
+ properly
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       acme@redhat.com, paulus@samba.org, hpa@zytor.com, mingo@redhat.com,
+       jkacur@redhat.com, efault@gmx.de, ebiederm@xmission.com,
+       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
+       mingo@elte.hu
+In-Reply-To: <20090602154816.GA15734@redhat.com>
+References: <tip-709e50cf870e61745b39552044aa6c7c38e4f9e0@git.kernel.org>
+	 <20090602154816.GA15734@redhat.com>
+Content-Type: text/plain
+Date: Tue, 02 Jun 2009 18:28:05 +0200
+Message-Id: <1243960085.13761.190.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 08:22:57AM -0700, Ulrich Drepper wrote:
-> On Tue, Jun 2, 2009 at 8:03 AM, Chris Mason <chris.mason@oracle.com> wrote:
-> > The idea that people shipping xen aren't interested in performance
-> > regressions is really strange to me.
+On Tue, 2009-06-02 at 17:55 +0200, Oleg Nesterov wrote:
+> On 06/02, tip-bot for Peter Zijlstra wrote:
+> >
+> > +static u32 perf_counter_pid(struct perf_counter *counter, struct task_struct *p)
+> > +{
+> > +	/*
+> > +	 * only top level counters have the pid namespace they were created in
+> > +	 */
+> > +	if (counter->parent)
+> > +		counter = counter->parent;
+> > +
+> > +	return task_tgid_nr_ns(p, counter->ns);
+> > +}
+> > +
+> > +static u32 perf_counter_tid(struct perf_counter *counter, struct task_struct *p)
+> > +{
+> > +	/*
+> > +	 * only top level counters have the pid namespace they were created in
+> > +	 */
+> > +	if (counter->parent)
+> > +		counter = counter->parent;
+> > +
+> > +	return task_pid_nr_ns(p, counter->ns);
 > 
-> Why?  They have a different base line.  For them any regression to
-> bare hardware performance is even a positive (since it means the gap
-> between hardware and virt shrinks).
+> Perhaps this should be
+> 
+> 	return task_pid_nr_ns(p->group_leader);
+> 
+> ?
 
-And we would have gotten away with it too if it weren't for you meddling
-kids!
+That seems to be exactly what task_tgid_nr_ns() does.
 
-> 
-> 
-> > Dynamic patching is a big wad of duct tape over the problem.
-> 
-> And what do you call the Xen model?  It's a perfect fit IMO.
-> 
-> > I'm not saying to take harmful code, I'm saying to take code with a
-> > small performance regression under a specific CONFIG_.  Slub regresses
-> > more than 1% on database loads, CONFIG_SCHED_GROUPS, the list goes on
-> > and on.
-> 
-> None of those have to be enabled in default kernels.
-> 
-> 
-> > The best place to fix xen is in the kernel.
-> 
-> No.  The best way to fix things is _on the way into the kernel_.
+so  pid = task->group_leader->pids[PIDTYPE_PID].pid
+and tid = task->pids[PIDTYPE_PID].pid
 
-It all depends on which parts are causing problems.  A 1% performance
-hit, under a CONFIG_ that can be disabled?  If maintainers are focusing
-on details like this for long term and active projects, we're doing
-something very wrong.
+> > +		tid_entry.pid = perf_counter_pid(counter, current);
+> > +		tid_entry.tid = perf_counter_tid(counter, current);
+> 
+> 
+> Otherwise we seem to always report .pid == .tid
 
--chris
+tgid vs pid, I don't think they end up being equal. Are they?
 
