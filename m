@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbZFBFhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbZFBFkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758984AbZFBFhs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 01:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757375AbZFBFhl
+	id S1759208AbZFBFkt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 01:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbZFBFkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 01:37:41 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:46828 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756691AbZFBFhl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 01:37:41 -0400
+	Tue, 2 Jun 2009 01:40:40 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:39613 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752184AbZFBFkj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 01:40:39 -0400
+Message-ID: <4A24BB21.3050402@nokia.com>
+Date: Tue, 02 Jun 2009 08:39:45 +0300
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18980.47776.940214.789245@drongo.ozlabs.ibm.com>
-Date: Tue, 2 Jun 2009 15:37:36 +1000
-From: Paul Mackerras <paulus@samba.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf_counter: Provide functions for locking and
-	pinning the context for a task
-In-Reply-To: <20090601231428.GF749@elte.hu>
-References: <18979.34748.755674.596386@cargo.ozlabs.ibm.com>
-	<18979.35192.995732.609215@cargo.ozlabs.ibm.com>
-	<20090601162109.GA8459@elte.hu>
-	<18980.19019.158462.125715@cargo.ozlabs.ibm.com>
-	<20090601231428.GF749@elte.hu>
-X-Mailer: VM 8.0.12 under 22.3.1 (powerpc-unknown-linux-gnu)
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/2] hrtimer: export ktime_add_safe
+References: <20090529150929.8912.33879.sendpatchset@localhost.localdomain> <20090529150938.8912.3443.sendpatchset@localhost.localdomain> <20090601195600.GF29610@elte.hu>
+In-Reply-To: <20090601195600.GF29610@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 02 Jun 2009 05:39:47.0659 (UTC) FILETIME=[8A6F21B0:01C9E344]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
-
-> Yeah, indeed that box has a CPU hotplug testcase - sets cpu1 to 
-> offline then online.
+ext Ingo Molnar wrote:
+> * Artem Bityutskiy <Artem.Bityutskiy@nokia.com> wrote:
 > 
-> There should be no counters active anywhere during that.
+>> From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+>> Subject: [PATCH 1/2] hrtimer: export ktime_add_safe
+>>
+>> We want to use hrtimers in UBIFS (for write-buffer write-back timer).
+>> We need the 'hrtimer_set_expires_range_ns()', which is an in-line
+>> function which uses 'ktime_add_safe()'.
+>>
+>> Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+>> ---
+>>  kernel/hrtimer.c |    2 ++
+>>  1 files changed, 2 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+>> index cb8a15c..18f6906 100644
+>> --- a/kernel/hrtimer.c
+>> +++ b/kernel/hrtimer.c
+>> @@ -332,6 +332,8 @@ ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs)
+>>  	return res;
+>>  }
+>>  
+>> +EXPORT_SYMBOL_GPL(ktime_add_safe);
+>> +
+> 
+> Feel free to queue this up in your tree - it's trivial enough.
+> 
+> Acked-by: Ingo Molnar <mingo@elte.hu>
 
-OK, I can't reproduce this on powerpc.  I guess you have dynamic
-per-cpu patches in there, and per-cpu areas are getting reinitialized
-when cpus come up.  That, combined with the fact that the
-migration_notifier in kernel/sched.c puts itself at priority 10, means
-that we're getting a call to perf_counter_task_migration() for a
-newly-added CPU before perf_cpu_notify() has been called for that CPU,
-and so we're trying to use an uninitialized perf_cpu_context and we go
-boom.
+OK, thanks.
 
-Could you try the same test with this patch?  If this fixes it, then
-that's what the problem is.  It's up to you whether increasing the
-priority on perf_cpu_nb is the right solution or whether we should
-solve the problem some other way.
-
-Paul.
-
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -3902,8 +3902,12 @@ perf_cpu_notify(struct notifier_block *self, unsigned long action, void *hcpu)
- 	return NOTIFY_OK;
- }
- 
-+/*
-+ * This has to have a higher priority than migration_notifier in sched.c.
-+ */
- static struct notifier_block __cpuinitdata perf_cpu_nb = {
- 	.notifier_call		= perf_cpu_notify,
-+	.priority		= 20,
- };
- 
- void __init perf_counter_init(void)
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
