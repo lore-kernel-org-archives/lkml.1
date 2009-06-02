@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758528AbZFBDNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757621AbZFBDQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758528AbZFBDNn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 23:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbZFBDNf
+	id S1757621AbZFBDQR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 23:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbZFBDQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 23:13:35 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33304 "EHLO
+	Mon, 1 Jun 2009 23:16:06 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33393 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754730AbZFBDNf (ORCPT
+	with ESMTP id S1755389AbZFBDQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 23:13:35 -0400
-Date: Tue, 2 Jun 2009 12:12:02 +0900
+	Mon, 1 Jun 2009 23:16:04 -0400
+Date: Tue, 2 Jun 2009 12:14:31 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
@@ -18,8 +18,8 @@ Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
        "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/4] reuse unused swap entry if necessary
-Message-Id: <20090602121202.6740a718.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH 4/4] memcg fix swap accounting
+Message-Id: <20090602121431.01c6f770.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20090602120425.0bcff554.kamezawa.hiroyu@jp.fujitsu.com>
 References: <20090602120425.0bcff554.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: FUJITSU Co. LTD.
@@ -31,109 +31,138 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-This is a replacement for
- mm-reuse-unused-swap-entry-if-necessary.patch in mmotm.
- function is renamed and comments are added.
+This is a replacement for 
+  memcg-fix-swap-accounting.patch in mmotm.
+Adjusted to style changes in 2/4 and 3/4.
 
 ==
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Now, we can know the swap is just used as SwapCache via swap_map,
-without looking up swap cache.
+This patch fixes mis-accounting of swap usage in memcg.
 
-Then, we have a chance to reuse swap-cache-only swap entries in
-get_swap_pages().
+In current implementation, memcg's swap account is uncharged only when
+swap is completely freed. But there are several cases where swap
+cannot be freed cleanly. For handling that, this patch changes that
+memcg uncharges swap account when swap has no references other than cache.
 
-This patch tries to free swap-cache-only swap entries if swap is
-not enough.
-Note: We hit following path when swap_cluster code cannot find
-a free cluster. Then, vm_swap_full() is not only condition to allow
-the kernel to reclaim unused swap.
+By this, memcg's swap entry accounting can be fully synchronous with
+the application's behavior.
+This patch also changes memcg's hooks for swap-out.
+(If delete_from_swap_cache() is called but there is no swap-reference,
+ charge to swaps doesn't occur.
+ (the charge for mem+swap is attached to the page itself if mapped)
 
 Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- mm/swapfile.c |   47 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
+ include/linux/swap.h |    5 +++--
+ mm/memcontrol.c      |   17 ++++++++++++-----
+ mm/swapfile.c        |   16 ++++++++++++----
+ 3 files changed, 27 insertions(+), 11 deletions(-)
 
+Index: mmotm-2.6.30-May28/include/linux/swap.h
+===================================================================
+--- mmotm-2.6.30-May28.orig/include/linux/swap.h
++++ mmotm-2.6.30-May28/include/linux/swap.h
+@@ -319,10 +319,11 @@ static inline void disable_swap_token(vo
+ }
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+-extern void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent);
++extern void
++mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent, bool swapout);
+ #else
+ static inline void
+-mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
++mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent, bool swapout)
+ {
+ }
+ #endif
+Index: mmotm-2.6.30-May28/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.30-May28.orig/mm/memcontrol.c
++++ mmotm-2.6.30-May28/mm/memcontrol.c
+@@ -189,6 +189,7 @@ enum charge_type {
+ 	MEM_CGROUP_CHARGE_TYPE_SHMEM,	/* used by page migration of shmem */
+ 	MEM_CGROUP_CHARGE_TYPE_FORCE,	/* used by force_empty */
+ 	MEM_CGROUP_CHARGE_TYPE_SWAPOUT,	/* for accounting swapcache */
++	MEM_CGROUP_CHARGE_TYPE_DROP,	/* a page was unused swap cache */
+ 	NR_CHARGE_TYPE,
+ };
+ 
+@@ -1493,6 +1494,7 @@ __mem_cgroup_uncharge_common(struct page
+ 
+ 	switch (ctype) {
+ 	case MEM_CGROUP_CHARGE_TYPE_MAPPED:
++	case MEM_CGROUP_CHARGE_TYPE_DROP:
+ 		if (page_mapped(page))
+ 			goto unlock_out;
+ 		break;
+@@ -1556,18 +1558,23 @@ void mem_cgroup_uncharge_cache_page(stru
+  * called after __delete_from_swap_cache() and drop "page" account.
+  * memcg information is recorded to swap_cgroup of "ent"
+  */
+-void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
++void
++mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent, bool swapout)
+ {
+ 	struct mem_cgroup *memcg;
++	int ctype = MEM_CGROUP_CHARGE_TYPE_SWAPOUT;
++
++	if (!swapout) /* this was a swap cache but the swap is unused ! */
++		ctype = MEM_CGROUP_CHARGE_TYPE_DROP;
++
++	memcg = __mem_cgroup_uncharge_common(page, ctype);
+ 
+-	memcg = __mem_cgroup_uncharge_common(page,
+-					MEM_CGROUP_CHARGE_TYPE_SWAPOUT);
+ 	/* record memcg information */
+-	if (do_swap_account && memcg) {
++	if (do_swap_account && swapout && memcg) {
+ 		swap_cgroup_record(ent, css_id(&memcg->css));
+ 		mem_cgroup_get(memcg);
+ 	}
+-	if (memcg)
++	if (swapout && memcg)
+ 		css_put(&memcg->css);
+ }
+ #endif
 Index: mmotm-2.6.30-May28/mm/swapfile.c
 ===================================================================
 --- mmotm-2.6.30-May28.orig/mm/swapfile.c
 +++ mmotm-2.6.30-May28/mm/swapfile.c
-@@ -79,6 +79,32 @@ static inline unsigned short encode_swap
- 	return ret;
+@@ -583,8 +583,9 @@ static int swap_entry_free(struct swap_i
+ 			swap_list.next = p - swap_info;
+ 		nr_swap_pages++;
+ 		p->inuse_pages--;
+-		mem_cgroup_uncharge_swap(ent);
+ 	}
++	if (!swap_count(count))
++		mem_cgroup_uncharge_swap(ent);
+ 	return count;
  }
  
-+/* returnes 1 if swap entry is freed */
-+static int
-+__try_to_reclaim_swap(struct swap_info_struct *si, unsigned long offset)
-+{
-+	int type = si - swap_info;
-+	swp_entry_t entry = swp_entry(type, offset);
-+	struct page *page;
-+	int ret = 0;
-+
-+	page = find_get_page(&swapper_space, entry.val);
-+	if (!page)
-+		return 0;
-+	/*
-+	 * This function is called from scan_swap_map() and it's called
-+	 * by vmscan.c at reclaiming pages. So, we hold a lock on a page, here.
-+	 * We have to use trylock for avoiding deadlock. This is a special
-+	 * case and you should use try_to_free_swap() with explicit lock_page()
-+	 * in usual operations.
-+	 */
-+	if (trylock_page(page)) {
-+		ret = try_to_free_swap(page);
-+		unlock_page(page);
-+	}
-+	page_cache_release(page);
-+	return ret;
-+}
+@@ -609,12 +610,19 @@ void swap_free(swp_entry_t entry)
+ void swapcache_free(swp_entry_t entry, struct page *page)
+ {
+ 	struct swap_info_struct *p;
++	int ret;
  
- /*
-  * We need this because the bdev->unplug_fn can sleep and we cannot
-@@ -301,6 +327,19 @@ checks:
- 		goto no_page;
- 	if (offset > si->highest_bit)
- 		scan_base = offset = si->lowest_bit;
-+
-+	/* reuse swap entry of cache-only swap if not busy. */
-+	if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
-+		int swap_was_freed;
-+		spin_unlock(&swap_lock);
-+		swap_was_freed = __try_to_reclaim_swap(si, offset);
-+		spin_lock(&swap_lock);
-+		/* entry was freed successfully, try to use this again */
-+		if (swap_was_freed)
-+			goto checks;
-+		goto scan; /* check next one */
-+	}
-+
- 	if (si->swap_map[offset])
- 		goto scan;
- 
-@@ -382,6 +421,10 @@ scan:
- 			spin_lock(&swap_lock);
- 			goto checks;
- 		}
-+		if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
-+			spin_lock(&swap_lock);
-+			goto checks;
+-	if (page)
+-		mem_cgroup_uncharge_swapcache(page, entry);
+ 	p = swap_info_get(entry);
+ 	if (p) {
+-		swap_entry_free(p, entry, SWAP_CACHE);
++		ret = swap_entry_free(p, entry, SWAP_CACHE);
++		if (page) {
++			bool swapout;
++			if (ret)
++				swapout = true; /* the end of swap out */
++			else
++				swapout = false; /* no more swap users! */
++			mem_cgroup_uncharge_swapcache(page, entry, swapout);
 +		}
- 		if (unlikely(--latency_ration < 0)) {
- 			cond_resched();
- 			latency_ration = LATENCY_LIMIT;
-@@ -393,6 +436,10 @@ scan:
- 			spin_lock(&swap_lock);
- 			goto checks;
- 		}
-+		if (vm_swap_full() && si->swap_map[offset] == SWAP_HAS_CACHE) {
-+			spin_lock(&swap_lock);
-+			goto checks;
-+		}
- 		if (unlikely(--latency_ration < 0)) {
- 			cond_resched();
- 			latency_ration = LATENCY_LIMIT;
+ 		spin_unlock(&swap_lock);
+ 	}
+ 	return;
 
