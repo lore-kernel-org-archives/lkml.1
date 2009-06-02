@@ -1,47 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759747AbZFBLhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760498AbZFBLhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759747AbZFBLhO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 07:37:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601AbZFBLhD
+	id S1760498AbZFBLhr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 07:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757990AbZFBLhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 07:37:03 -0400
-Received: from fmmailgate02.web.de ([217.72.192.227]:43589 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754552AbZFBLhB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 07:37:01 -0400
-From: Markus <M4rkusXXL@web.de>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Seagate Barracuda 7200.11 ST31500341AS fw SD17
-Date: Tue, 2 Jun 2009 13:37:02 +0200
-User-Agent: KMail/1.9.10
-References: <200906021258.20346.M4rkusXXL@web.de> <4A250B6A.6030904@grupopie.com>
-In-Reply-To: <4A250B6A.6030904@grupopie.com>
+	Tue, 2 Jun 2009 07:37:37 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:60454 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755965AbZFBLhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 07:37:36 -0400
+Date: Tue, 2 Jun 2009 13:37:36 +0200
+From: Jan Kara <jack@suse.cz>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Eric Sandeen <sandeen@sandeen.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>,
+       Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH] skip I_CLEAR state inodes
+Message-ID: <20090602113736.GB15010@duck.suse.cz>
+References: <20090318170237.8F6C.61FB500B@jp.fujitsu.com> <20090323103846.GA16577@localhost> <20090324155655.2684.61FB500B@jp.fujitsu.com> <20090324074457.GA7745@localhost> <20090324120502.GC23439@duck.suse.cz> <20090324124001.GA25326@localhost> <4A244A5B.7070605@sandeen.net> <20090602085523.GC7161@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906021337.03123.M4rkusXXL@web.de>
-X-Provags-ID: V01U2FsdGVkX1/fpsj0F1w0EFjhORCe3g+7tEqGZWXaLeXr9tXy
-	FPel2O9L4pfE7eDW2mRH6IsBIL9gCKWPSLUuvoHjqmoHi0Mg5X
-	V0KfjWitg=
+In-Reply-To: <20090602085523.GC7161@localhost>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rui Santos wrote:
->> I have some Seagate Barracuda 7200.11 ST31500341AS 1.5TB drives. They 
->> use the firmware SD17.
-> Seagate recommends firmware SD1A for that HD.
-> However, I do not know if it will solve your problem. Jut try it...
+On Tue 02-06-09 16:55:23, Wu Fengguang wrote:
+> On Tue, Jun 02, 2009 at 05:38:35AM +0800, Eric Sandeen wrote:
+> > Wu Fengguang wrote:
+> > > Add I_CLEAR tests to drop_pagecache_sb(), generic_sync_sb_inodes() and
+> > > add_dquot_ref().
+> > > 
+> > > clear_inode() will switch inode state from I_FREEING to I_CLEAR,
+> > > and do so _outside_ of inode_lock. So any I_FREEING testing is
+> > > incomplete without the testing of I_CLEAR.
+> > > 
+> > > Masayoshi MIZUMA first discovered the bug in drop_pagecache_sb() and
+> > > Jan Kara reminds fixing the other two cases. Thanks!
+> > 
+> > Is there a reason it's not done for __sync_single_inode as well?
+> 
+> It missed the glance because it don't have an obvious '|' in the line ;)
+> 
+> > Jeff Layton asked the question and I'm following it up :)
+> > 
+> > __sync_single_inode currently only tests I_FREEING, but I think we are
+> > safe because __sync_single_inode sets I_SYNC, and clear_inode waits for
+> > I_SYNC to be cleared before it changes I_STATE.
+> 
+> But I_SYNC is removed just before the I_FREEING test, so we still have
+> a small race window?
+> 
+> > On the other hand, testing I_CLEAR here probably would be safe anyway,
+> > and it'd be bonus points for consistency?
+> 
+> So let's add the I_CLEAR test?
+> 
+> > Same basic question for generic_sync_sb_inodes, which has a
+> > BUG_ON(inode->i_state & I_FREEING), seems like this could check I_CLWAR
+> > as well?
+> 
+> Yes, we can add I_CLEAR here to catch more error condition.
+> 
+> Thanks,
+> Fengguang
+> 
+> ---
+> skip I_CLEAR state inodes in writeback routines
+> 
+> The I_FREEING test in __sync_single_inode() is racy because
+> clear_inode() can set i_state to I_CLEAR between the clear of I_SYNC
+> and the test of I_FREEING.
+> 
+> Also extend the coverage of BUG_ON(I_FREEING) to I_CLEAR.
+> 
+> Reported-by: Jeff Layton <jlayton@redhat.com>
+> Reported-by: Eric Sandeen <sandeen@sandeen.net>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  fs/fs-writeback.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- linux.orig/fs/fs-writeback.c
+> +++ linux/fs/fs-writeback.c
+> @@ -316,7 +316,7 @@ __sync_single_inode(struct inode *inode,
+>  	spin_lock(&inode_lock);
+>  	WARN_ON(inode->i_state & I_NEW);
+>  	inode->i_state &= ~I_SYNC;
+> -	if (!(inode->i_state & I_FREEING)) {
+> +	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
+>  		if (!(inode->i_state & I_DIRTY) &&
+>  		    mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
+  Is the whole if needed? I had an impression that everyone calling
+__sync_single_inode() should better take care it does not race with inode
+freeing... So WARN_ON would be more appropriate IMHO.
 
->> This drive+fw is blacklisted in the kernel, but there is no firmware 
->> upgrade for these drives. (Only very few serial numbers are able to 
->> upgrade.)
+>  			/*
+> @@ -518,7 +518,7 @@ void generic_sync_sb_inodes(struct super
+>  		if (current_is_pdflush() && !writeback_acquire(bdi))
+>  			break;
+>  
+> -		BUG_ON(inode->i_state & I_FREEING);
+> +		BUG_ON(inode->i_state & (I_FREEING | I_CLEAR));
+>  		__iget(inode);
+>  		pages_skipped = wbc->pages_skipped;
+>  		__writeback_single_inode(inode, wbc);
+  Looking at this code, it looks a bit suspicious. What prevents this s_io
+list scan to race with inode freeing? In particular generic_forget_inode()
+can drop inode_lock to write the inode and in the mean time
+generic_sync_sb_inodes() can come, get a reference to the inode and start
+it's writeback... Subsequent iput() would then call generic_forget_inode()
+on the inode again. So shouldn't we skip I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW
+inodes in this scan like we do for later in the function for another scan?
 
-I cant upgrade the firmware because the flash-utility will abort due 
-to "not affected serial number". I tried SD1B, the very newest version.
-Cant find the SD1A for my drives.
-
-Markus
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
