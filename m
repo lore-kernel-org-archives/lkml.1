@@ -1,144 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZFBW7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZFBXJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbZFBW7B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 18:59:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZFBW6u
+	id S1755494AbZFBXJq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 19:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbZFBXJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 18:58:50 -0400
-Received: from mail-qy0-f104.google.com ([209.85.221.104]:57844 "EHLO
-	mail-qy0-f104.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751845AbZFBW6t convert rfc822-to-8bit (ORCPT
+	Tue, 2 Jun 2009 19:09:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52418 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752546AbZFBXJi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 18:58:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=fJrTgc2x4u+27rMlvcChCV8u897exkE5aWWvX+oX+F8OhXmAVOHTgUVH29lcOJ4A5o
-         9g/BmINcEY+RxQIyoa9AsC6BdjOXAwa8kwLKM8bi6rEaSkU4UW5JuHTxFLu0laSNfjAB
-         yWJWvpQHvhsGLG5lD6z1h5sXBYtTGmSE6cPbI=
-MIME-Version: 1.0
-In-Reply-To: <4A25876A.1010901@garzik.org>
-References: <18980.48553.328662.80987@notabene.brown>
-	 <4A25876A.1010901@garzik.org>
-Date: Tue, 2 Jun 2009 15:58:49 -0700
-X-Google-Sender-Auth: 0d7e29177dcd1d7a
-Message-ID: <e9c3a7c20906021558q28f049ccw8d1b80a5c0f43b72@mail.gmail.com>
-Subject: Re: ANNOUNCE: mdadm 3.0 - A tool for managing Soft RAID under Linux
-From: Dan Williams <dan.j.williams@intel.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Neil Brown <neilb@suse.de>, linux-raid@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Ed Ciechanowski <ed.ciechanowski@intel.com>,
-       Jacek Danecki <jacek.danecki@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Jun 2009 19:09:38 -0400
+Date: Tue, 2 Jun 2009 16:09:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Baruch Siach <baruch@tkos.co.il>
+Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux@arm.linux.org.uk,
+       baruch@tkos.co.il
+Subject: Re: [PATCH v3] gpio: driver for PrimeCell PL061 GPIO controller
+Message-Id: <20090602160902.046ccffa.akpm@linux-foundation.org>
+In-Reply-To: <1243975690-12073-1-git-send-email-baruch@tkos.co.il>
+References: <1243975690-12073-1-git-send-email-baruch@tkos.co.il>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 2, 2009 at 1:11 PM, Jeff Garzik <jeff@garzik.org> wrote:
-> Neil Brown wrote:
->>
->> I am pleased to (finally) announce the availability of
->>   mdadm version 3.0
->>
->> It is available at the usual places:
->>   countrycode=xx.
->>   http://www.${countrycode}kernel.org/pub/linux/utils/raid/mdadm/
->> and via git at
->>   git://neil.brown.name/mdadm
->>   http://neil.brown.name/git?p=mdadm
->>
->>
->> This is a major new version and as such should be treated with some
->> caution.  However it has seen substantial testing and is considerred
->> to be ready for wide use.
->>
->>
->> The significant change which justifies the new major version number is
->> that mdadm can now handle metadata updates entirely in userspace.
->> This allows mdadm to support metadata formats that the kernel knows
->> nothing about.
->>
->> Currently two such metadata formats are supported:
->>  - DDF  - The SNIA standard format
->>  - Intel Matrix - The metadata used by recent Intel ICH controlers.
->
-> This seems pretty awful from a support standpoint:  dmraid has been the sole
-> provider of support for vendor-proprietary up until this point.
+On Tue,  2 Jun 2009 23:48:10 +0300
+Baruch Siach <baruch@tkos.co.il> wrote:
 
-This bares similarities with the early difficulties of selecting
-between ide and libata.
+> This is a driver for the ARM PrimeCell PL061 GPIO AMBA peripheral. The driver
+> is implemented using the gpiolib framework.
 
-> Now Linux users -- and distro installers -- must choose between software
-> RAID stack "MD" and software RAID stack "DM".  That choice is made _not_
-> based on features, but on knowing the underlying RAID metadata format that
-> is required, and what features you need out of it.
->
-> dmraid already supports
->        - Intel RAID format, touched by Intel as recently as 2007
->        - DDF, the SNIA standard format
->
-> This obviously generates some relevant questions...
->
-> 1) Why?  This obviously duplicates existing effort and code.  The only
-> compelling reason I see is RAID5 support, which DM lacks IIRC -- but the
-> huge issue of user support and duplicated code remains.
+x86_64 allmodconfig:
 
-The MD raid5 code has been upstream since forever and already has
-features like online capacity expansion.  There is also
-infrastructure, upstream, for online raid level migration.
+drivers/gpio/pl061.c: In function 'pl061_probe':
+drivers/gpio/pl061.c:254: error: 'SZ_4K' undeclared (first use in this function)
+drivers/gpio/pl061.c:254: error: (Each undeclared identifier is reported only once
+drivers/gpio/pl061.c:254: error: for each function it appears in.)
+drivers/gpio/pl061.c:306: error: implicit declaration of function 'set_irq_flags'
+drivers/gpio/pl061.c:306: error: 'IRQF_VALID' undeclared (first use in this function)
 
-> 2) Adding container-like handling obviously moves MD in the direction of DM.
->  Does that imply someone will be looking at integrating the two codebases,
-> or will this begin to implement features also found in DM's codebase?
-
-I made a proof-of-concept investigation of what it would take to
-activate all dmraid arrays (any metadata format, any raid level) with
-MD.  The result, dm2md [1], did not stimulate much in the way of
-conversation.
-
-A pluggable architecture for a write-intent log seems to be the only
-piece that does not have a current equivalent in MD.  However, the
-'bitmap' infrastructure covers most needs.  I think unifying on a
-write-intent logging infrastructure is a good place to start working
-together.
-
-> 3) What is the status of distro integration efforts?  I wager the distro
-> installer guys will grumble at having to choose among duplicated RAID code
-> and formats.
-
-There has been some grumbling, but the benefits of using one
-linux-raid infrastructure for md-metadata and vendor metadata is
-appealing.  mdadm-3.0 also makes a serious effort to be more agreeable
-with udev and incremental discovery.  So hopefully this makes mdadm
-easier to handle in the installer.
-
-> 4) What is the plan for handling existing Intel RAID users (e.g. dmraid +
-> Intel RAID)?  Has Intel been contacted about dmraid issues?  What does Intel
-> think about this lovely user confusion shoved into their laps?
-
-The confusion was the other way round.  We were faced with how to
-achieve long term feature parity of our raid solution across OS's and
-the community presented us with two directions DM and MD.  The
-decision was made to support and maintain dmraid for existing
-deployments while basing future development on extending the MD stack,
-because it gave some feature advantages out of the gate.  So, there is
-support for both and new development will focus on MD.
-
-> 5) Have the dmraid maintainer and DM folks been queried, given that you are
-> duplicating their functionality via Intel and DDF RAID formats? What was
-> their response, what issues were raised and resolved?
-
-There have been interludes, but not much in the way of discussion.
-Hopefully, this will be a starting point.
-
-Thanks,
-Dan
-
-[1] http://marc.info/?l=linux-raid&m=123300614013042&w=2
+I'll put a depends-on-ARM in there...
