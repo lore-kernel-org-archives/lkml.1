@@ -1,156 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbZFBAgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756496AbZFBAwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758661AbZFBAgg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 20:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756996AbZFBAee
+	id S1756496AbZFBAwR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 20:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZFBAwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 20:34:34 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36885 "EHLO mx2.redhat.com"
+	Mon, 1 Jun 2009 20:52:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45632 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754271AbZFBAe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 20:34:29 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v9 3/7] kprobes: checks probe address is instruction
-	boudary on x86
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
-Date: Mon, 01 Jun 2009 20:37:31 -0400
-Message-ID: <20090602003731.29255.33432.stgit@localhost.localdomain>
-In-Reply-To: <20090602003709.29255.48248.stgit@localhost.localdomain>
-References: <20090602003709.29255.48248.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	id S1753403AbZFBAwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 20:52:09 -0400
+Date: Tue, 2 Jun 2009 00:51:30 GMT
+From: tip-bot for Jiri Slaby <jirislaby@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       gorcunov@openvz.org, jirislaby@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       gorcunov@openvz.org, jirislaby@gmail.com, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1243497289-18591-1-git-send-email-jirislaby@gmail.com>
+References: <1243497289-18591-1-git-send-email-jirislaby@gmail.com>
+Subject: [tip:irq/numa] x86, apic: Restore irqs on fail paths
+Message-ID: <tip-3d58829b0510244596079c1d2f1762c53aef2e97@git.kernel.org>
+Git-Commit-ID: 3d58829b0510244596079c1d2f1762c53aef2e97
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 02 Jun 2009 00:51:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ensure safeness of inserting kprobes by checking whether the specified
-address is at the first byte of a instruction on x86.
-This is done by decoding probed function from its head to the probe point.
+Commit-ID:  3d58829b0510244596079c1d2f1762c53aef2e97
+Gitweb:     http://git.kernel.org/tip/3d58829b0510244596079c1d2f1762c53aef2e97
+Author:     Jiri Slaby <jirislaby@gmail.com>
+AuthorDate: Thu, 28 May 2009 09:54:47 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 2 Jun 2009 02:48:59 +0200
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
+x86, apic: Restore irqs on fail paths
+
+lapic_resume forgets to restore interrupts on fail paths.
+Fix that.
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Acked-by: Cyrill Gorcunov <gorcunov@openvz.org>
+LKML-Reference: <1243497289-18591-1-git-send-email-jirislaby@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: H. Peter Anvin <hpa@zytor.com>
+
+
 ---
+ arch/x86/kernel/apic/apic.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
- arch/x86/kernel/kprobes.c |   69 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 69 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 7b5169d..41d524f 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -48,12 +48,14 @@
- #include <linux/preempt.h>
- #include <linux/module.h>
- #include <linux/kdebug.h>
-+#include <linux/kallsyms.h>
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index b0fd264..e82488d 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -2027,7 +2027,7 @@ static int lapic_resume(struct sys_device *dev)
+ 	unsigned int l, h;
+ 	unsigned long flags;
+ 	int maxlvt;
+-	int ret;
++	int ret = 0;
+ 	struct IO_APIC_route_entry **ioapic_entries = NULL;
  
- #include <asm/cacheflush.h>
- #include <asm/desc.h>
- #include <asm/pgtable.h>
- #include <asm/uaccess.h>
- #include <asm/alternative.h>
-+#include <asm/insn.h>
+ 	if (!apic_pm_state.active)
+@@ -2038,14 +2038,15 @@ static int lapic_resume(struct sys_device *dev)
+ 		ioapic_entries = alloc_ioapic_entries();
+ 		if (!ioapic_entries) {
+ 			WARN(1, "Alloc ioapic_entries in lapic resume failed.");
+-			return -ENOMEM;
++			ret = -ENOMEM;
++			goto restore;
+ 		}
  
- void jprobe_return_end(void);
+ 		ret = save_IO_APIC_setup(ioapic_entries);
+ 		if (ret) {
+ 			WARN(1, "Saving IO-APIC state failed: %d\n", ret);
+ 			free_ioapic_entries(ioapic_entries);
+-			return ret;
++			goto restore;
+ 		}
  
-@@ -244,6 +246,71 @@ retry:
+ 		mask_IO_APIC_setup(ioapic_entries);
+@@ -2097,10 +2098,10 @@ static int lapic_resume(struct sys_device *dev)
+ 		restore_IO_APIC_setup(ioapic_entries);
+ 		free_ioapic_entries(ioapic_entries);
  	}
+-
++restore:
+ 	local_irq_restore(flags);
+ 
+-	return 0;
++	return ret;
  }
  
-+/* Recover the probed instruction at addr for further analysis. */
-+static int recover_probed_instruction(kprobe_opcode_t *buf, unsigned long addr)
-+{
-+	struct kprobe *kp;
-+	kp = get_kprobe((void *)addr);
-+	if (!kp)
-+		return -EINVAL;
-+
-+	/*
-+	 *  Basically, kp->ainsn.insn has an original instruction.
-+	 *  However, RIP-relative instruction can not do single-stepping
-+	 *  at different place, fix_riprel() tweaks the displacement of
-+	 *  that instruction. In that case, we can't recover the instruction
-+	 *  from the kp->ainsn.insn.
-+	 *
-+	 *  On the other hand, kp->opcode has a copy of the first byte of
-+	 *  the probed instruction, which is overwritten by int3. And
-+	 *  the instruction at kp->addr is not modified by kprobes except
-+	 *  for the first byte, we can recover the original instruction
-+	 *  from it and kp->opcode.
-+	 */
-+	memcpy(buf, kp->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
-+	buf[0] = kp->opcode;
-+	return 0;
-+}
-+
-+/* Dummy buffers for kallsyms_lookup */
-+static char __dummy_buf[KSYM_NAME_LEN];
-+
-+/* Check if paddr is at an instruction boundary */
-+static int __kprobes can_probe(unsigned long paddr)
-+{
-+	int ret;
-+	unsigned long addr, offset = 0;
-+	struct insn insn;
-+	kprobe_opcode_t buf[MAX_INSN_SIZE];
-+
-+	if (!kallsyms_lookup(paddr, NULL, &offset, NULL, __dummy_buf))
-+		return 0;
-+
-+	/* Decode instructions */
-+	addr = paddr - offset;
-+	while (addr < paddr) {
-+		kernel_insn_init(&insn, (void *)addr);
-+		insn_get_opcode(&insn);
-+
-+		/* Check if the instruction has been modified. */
-+		if (OPCODE1(&insn) == BREAKPOINT_INSTRUCTION) {
-+			ret = recover_probed_instruction(buf, addr);
-+			if (ret)
-+				/*
-+				 * Another debugging subsystem might insert
-+				 * this breakpoint. In that case, we can't
-+				 * recover it.
-+				 */
-+				return 0;
-+			kernel_insn_init(&insn, buf);
-+		}
-+		insn_get_length(&insn);
-+		addr += insn.length;
-+	}
-+
-+	return (addr == paddr);
-+}
-+
  /*
-  * Returns non-zero if opcode modifies the interrupt flag.
-  */
-@@ -359,6 +426,8 @@ static void __kprobes arch_copy_kprobe(struct kprobe *p)
- 
- int __kprobes arch_prepare_kprobe(struct kprobe *p)
- {
-+	if (!can_probe((unsigned long)p->addr))
-+		return -EILSEQ;
- 	/* insn: must be on special executable page on x86. */
- 	p->ainsn.insn = get_insn_slot();
- 	if (!p->ainsn.insn)
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
