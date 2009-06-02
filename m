@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZFBUz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753399AbZFBU5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754495AbZFBUz4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 16:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZFBUzs
+	id S1753399AbZFBU5a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 16:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbZFBU5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 16:55:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41610 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754476AbZFBUzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 16:55:47 -0400
+	Tue, 2 Jun 2009 16:57:23 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:58762 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752639AbZFBU5X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 16:57:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=xDNPUETJxZOsPlHaEfYVfxS5x15AU/wvp94fMAzeGgnPgs5AZ59lm37aZppUTs6WY6
+         eX4JIiK7TSfc6KnQoXVGgVTRt1AcYXWL+TFEa6KzURDOtMqBLZ9jiQzsm5w2jFk0QC6l
+         uSGCPHtogYXtflMfCPCOvEh21Cmu9foAEDJqA=
+Message-ID: <4A25AE50.4090108@gmail.com>
+Date: Wed, 03 Jun 2009 00:57:20 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: rostedt@goodmis.org
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] tracing/mm: val should be signed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jan Kratochvil <jan.kratochvil@redhat.com>,
-       Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH for 2.6.30] ptrace: revert "ptrace_detach: the wrong wakeup
-	breaks the ERESTARTxxx logic"
-In-Reply-To: Oleg Nesterov's message of  Tuesday, 2 June 2009 22:39:39 +0200 <20090602203939.GA13939@redhat.com>
-References: <20090529103017.D548FFC2BD@magilla.sf.frob.com>
-	<20090529125405.GD19812@redhat.com>
-	<20090529143049.GA27424@redhat.com>
-	<20090530202313.GA12066@host0.dyn.jankratochvil.net>
-	<20090530234449.GA31604@redhat.com>
-	<20090601014258.E3EA2FC3C7@magilla.sf.frob.com>
-	<20090602011318.GA2461@redhat.com>
-	<20090602203939.GA13939@redhat.com>
-Emacs: the prosecution rests its case.
-Message-Id: <20090602205537.E4143FC403@magilla.sf.frob.com>
-Date: Tue,  2 Jun 2009 13:55:37 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Roland McGrath <roland@redhat.com>
+If not signed the `val < 0' test below doesn't make sense.
+Also strict_strtol requires a long pointer.
 
-Indeed the old code was highly suspect and we need more work to fix it.
-But this was not a conservative change and it did produce regressions.
-It's better to leave old-and-wrong as it was until we have finished
-more thorough revamp work.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+I think this is what was intended? please review.
 
-
-Thanks,
-Roland
+diff --git a/kernel/trace/trace_mm.c b/kernel/trace/trace_mm.c
+index 4bc7fc0..9af2351 100644
+--- a/kernel/trace/trace_mm.c
++++ b/kernel/trace/trace_mm.c
+@@ -54,7 +54,8 @@ static ssize_t
+ trace_mm_dump_range_write(struct file *filp, const char __user *ubuf, size_t cnt,
+ 		       loff_t *ppos)
+ {
+-	unsigned long val, start, end;
++	unsigned long start, end;
++	long val;
+ 	char buf[64];
+ 	int ret;
+ 
