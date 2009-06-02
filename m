@@ -1,50 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758822AbZFBD7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbZFBEIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758822AbZFBD7w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 23:59:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756798AbZFBD7l
+	id S1753669AbZFBEIi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 00:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZFBEI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 23:59:41 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59749 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752933AbZFBD7k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 23:59:40 -0400
-Date: Mon, 1 Jun 2009 23:05:38 -0500
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] Move sleeping operations to outside the semaphore.
-Message-ID: <20090602040538.GA21698@hallyn.com>
-References: <200906020141.n521faqb003256@www262.sakura.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906020141.n521faqb003256@www262.sakura.ne.jp>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 2 Jun 2009 00:08:29 -0400
+Received: from sh.osrg.net ([192.16.179.4]:41148 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751271AbZFBEI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 00:08:29 -0400
+Date: Tue, 2 Jun 2009 13:08:10 +0900
+To: ian.campbell@citrix.com
+Cc: linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu,
+       jeremy@goop.org, tony.luck@intel.com, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH 01/11] ia64: introduce arch-specific dma-mapping
+ interfaces
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1243870383-12954-2-git-send-email-ian.campbell@citrix.com>
+References: <1243870383-12954-1-git-send-email-ian.campbell@citrix.com>
+	<1243870383-12954-2-git-send-email-ian.campbell@citrix.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090602130830A.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 02 Jun 2009 13:08:10 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Tetsuo Handa (penguin-kernel@i-love.sakura.ne.jp):
-> TOMOYO is using rw_semaphore for protecting list elements.
-> But TOMOYO is doing operations which might sleep inside down_write().
-> This patch makes TOMOYO's sleeping operations go outside down_write().
+On Mon, 1 Jun 2009 16:32:53 +0100
+Ian Campbell <ian.campbell@citrix.com> wrote:
 
-Hi Tetsuo,
+> dma_map_range is intended to replace usage of both
+> swiotlb_arch_range_needs_mapping and
+> swiotlb_arch_address_needs_mapping as __weak functions as well as
+> replacing is_buffer_dma_capable.
+> 
+> phys_to_dma and dma_to_phys are intended to replace
+> swiotlb_phys_to_bus and swiotlb_bus_to_phys.  I choose to use dma
+> rather than bus since a) it matches the parameters and b) avoids
+> confusion on x86 with the existing (but deprecated) virt_to_bus
+> function which relates to ISA device DMA.
+> 
+> Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+> Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+> Cc: Tony Luck <tony.luck@intel.com>
+> Cc: linux-ia64@vger.kernel.org
+> ---
+>  arch/ia64/include/asm/dma-mapping.h |   23 +++++++++++++++++++++++
+>  1 files changed, 23 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/asm/dma-mapping.h
+> index 36c0009..47d4107 100644
+> --- a/arch/ia64/include/asm/dma-mapping.h
+> +++ b/arch/ia64/include/asm/dma-mapping.h
+> @@ -174,4 +174,27 @@ dma_cache_sync (struct device *dev, void *vaddr, size_t size,
+>  
+>  #define dma_is_consistent(d, h)	(1)	/* all we do is coherent memory... */
+>  
+> +static inline dma_addr_t phys_to_dma(struct device *hwdev, phys_addr_t paddr)
+> +{
+> +	return paddr;
+> +}
+> +
+> +static inline phys_addr_t dma_to_phys(struct device *hwdev, dma_addr_t daddr)
+> +{
+> +	return daddr;
+> +}
+> +
+> +static inline bool dma_map_range(struct device *dev, u64 mask,
+> +				       phys_addr_t addr, size_t size,
+> +				       dma_addr_t *dma_addr_p)
+> +{
+> +	dma_addr_t dma_addr = phys_to_dma(dev, addr);
+> +
+> +	if (dma_addr + size > mask)
+> +		return false;
+> +
+> +	*dma_addr_p = dma_addr;
+> +	return true;
+> +}
+> +
 
-another thing making these patches hard for me to review is the lack of
-documentation to start with.  There are lists of policy managers, domain
-initializers, etc, and I don't know what they are.
+dma_map_range is a really confusing name. We have dma_map_single and
+dma_map_sg, they are the DMA mapping API.
 
-Could you flesh out Documentation/tomoyo.txt and/or the variable, struct,
-and function definitions under security/tomoyo/ with some explanations?
+dma_map_range sounds like the DMA mapping API but it isn't. As I said,
+Xen dom0 needs to implement something like xen_map_sg, xen_map_single,
+etc, which uses some of swiotlb functions internally. Then we don't
+need functions like the above.
 
-(A fn comment like
-	* tomoyo_update_manager_entry - Add a manager entry.
-is not helpful)
-
-That should help me sound less ignorant in the future...
-
-thanks,
--serge
