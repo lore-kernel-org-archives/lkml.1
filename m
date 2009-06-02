@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbZFBPZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbZFBPZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758077AbZFBPZp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 11:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756333AbZFBPYu
+	id S1758198AbZFBPZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 11:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757838AbZFBPY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 11:24:50 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:42652 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757697AbZFBPYt (ORCPT
+	Tue, 2 Jun 2009 11:24:56 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:47268 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757803AbZFBPYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 11:24:49 -0400
-Subject: [PATCH 03/10] ACPI: export acpi_pci_find_root()
+	Tue, 2 Jun 2009 11:24:54 -0400
+Subject: [PATCH 04/10] ACPI: Introduce acpi_get_pci_dev()
 To: lenb@kernel.org
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-pci@vger.kernel.org
-Date: Tue, 02 Jun 2009 09:24:51 -0600
-Message-ID: <20090602152451.7346.99317.stgit@bob.kio>
+Date: Tue, 02 Jun 2009 09:24:56 -0600
+Message-ID: <20090602152456.7346.64853.stgit@bob.kio>
 In-Reply-To: <20090602152351.7346.48697.stgit@bob.kio>
 References: <20090602152351.7346.48697.stgit@bob.kio>
 User-Agent: StGit/0.14.3.347.g594a
@@ -27,98 +27,133 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This function is useful for pci_bind.c as well.
+Convert an ACPI CA handle to a struct pci_dev.
+
+Performing this lookup dynamically allows us to get rid of the
+ACPI-PCI binding code, which:
+
+	- eliminates struct acpi_device vs struct pci_dev lifetime issues
+	- lays more groundwork for eliminating .start from acpi_device_ops
+	  and thus simplifying ACPI drivers
+	- whacks out a lot of code
+
+This change also changes the time-space tradeoff ever so slightly.
+
+Looking up the ACPI-PCI binding is never in the performance path, and by
+eliminating this caching, we save 24 bytes for each _ADR device in the
+ACPI namespace.
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/acpi/pci_root.c |   33 ++++++++++-----------------------
- include/acpi/acpi_bus.h |   13 +++++++++++++
- 2 files changed, 23 insertions(+), 23 deletions(-)
+ drivers/acpi/pci_bind.c     |   83 +++++++++++++++++++++++++++++++++++++++++++
+ include/acpi/acpi_drivers.h |    1 +
+ 2 files changed, 84 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-index 853a6e4..bcab69a 100644
---- a/drivers/acpi/pci_root.c
-+++ b/drivers/acpi/pci_root.c
-@@ -61,19 +61,6 @@ static struct acpi_driver acpi_pci_root_driver = {
- 		},
- };
- 
--struct acpi_pci_root {
--	struct list_head node;
--	struct acpi_device * device;
--	struct acpi_pci_id id;
--	struct pci_bus *bus;
--
--	u32 osc_support_set;	/* _OSC state of support bits */
--	u32 osc_control_set;	/* _OSC state of control bits */
--	u32 osc_control_qry;	/* the latest _OSC query result */
--
--	u32 osc_queried:1;	/* has _OSC control been queried? */
--};
--
- static LIST_HEAD(acpi_pci_roots);
- 
- static struct acpi_pci_driver *sub_driver;
-@@ -183,6 +170,16 @@ out:
- }
- EXPORT_SYMBOL_GPL(acpi_is_root_bridge);
- 
-+struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle)
-+{
-+	struct acpi_pci_root *root;
-+	list_for_each_entry(root, &acpi_pci_roots, node) {
-+		if (root->device->handle == handle)
-+			return root;
-+	}
-+	return NULL;
-+}
-+
- static acpi_status
- get_root_bridge_busnr_callback(struct acpi_resource *resource, void *data)
- {
-@@ -336,16 +333,6 @@ static acpi_status acpi_pci_osc_support(struct acpi_pci_root *root, u32 flags)
- 	return status;
+diff --git a/drivers/acpi/pci_bind.c b/drivers/acpi/pci_bind.c
+index 236765c..584fa30 100644
+--- a/drivers/acpi/pci_bind.c
++++ b/drivers/acpi/pci_bind.c
+@@ -56,6 +56,89 @@ static void acpi_pci_data_handler(acpi_handle handle, u32 function,
+ 	return;
  }
  
--static struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle)
--{
--	struct acpi_pci_root *root;
--	list_for_each_entry(root, &acpi_pci_roots, node) {
--		if (root->device->handle == handle)
--			return root;
--	}
--	return NULL;
--}
--
- /**
-  * acpi_pci_osc_control_set - commit requested control to Firmware
-  * @handle: acpi_handle for the target ACPI object
-diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-index 494088b..38f2bff 100644
---- a/include/acpi/acpi_bus.h
-+++ b/include/acpi/acpi_bus.h
-@@ -371,9 +371,22 @@ struct device *acpi_get_physical_device(acpi_handle);
- struct device *acpi_get_physical_pci_device(acpi_handle);
- 
- /* helper */
-+struct acpi_pci_root {
++struct acpi_handle_node {
 +	struct list_head node;
-+	struct acpi_device *device;
-+	struct acpi_pci_id id;
-+	struct pci_bus *bus;
-+
-+	u32 osc_support_set;	/* _OSC state of support bits */
-+	u32 osc_control_set;	/* _OSC state of control bits */
-+	u32 osc_control_qry;	/* the latest _OSC query result */
-+
-+	u32 osc_queried:1;	/* has _OSC control been queried? */
++	acpi_handle handle;
 +};
- acpi_handle acpi_get_child(acpi_handle, acpi_integer);
- int acpi_is_root_bridge(acpi_handle);
- acpi_handle acpi_get_pci_rootbridge_handle(unsigned int, unsigned int);
-+struct acpi_pci_root *acpi_pci_find_root(acpi_handle);
- #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)((dev)->archdata.acpi_handle))
++
++/**
++ * acpi_get_pci_dev - convert ACPI CA handle to struct pci_dev
++ * @handle: the handle in question
++ *
++ * Given an ACPI CA handle, the desired PCI device is located in the
++ * list of PCI devices.
++ *
++ * If the device is found, its reference count is increased and this
++ * function returns a pointer to its data structure.  The caller must
++ * decrement the reference count by calling pci_dev_put().
++ * If no device is found, %NULL is returned.
++ */
++struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
++{
++	int dev, fn;
++	unsigned long long adr;
++	acpi_status status;
++	acpi_handle phandle;
++	struct pci_bus *pbus;
++	struct pci_dev *pdev = NULL;
++	struct acpi_handle_node *node, *tmp;
++	struct acpi_pci_root *root;
++	LIST_HEAD(device_list);
++
++	/*
++	 * Walk up the ACPI CA namespace until we reach a PCI root bridge.
++	 */
++	phandle = handle;
++	while (!acpi_is_root_bridge(phandle)) {
++		node = kzalloc(sizeof(struct acpi_handle_node), GFP_KERNEL);
++		if (!node)
++			goto out;
++
++		INIT_LIST_HEAD(&node->node);
++		node->handle = phandle;
++		list_add(&node->node, &device_list);
++
++		status = acpi_get_parent(phandle, &phandle);
++		if (ACPI_FAILURE(status))
++			goto out;
++	}
++
++	root = acpi_pci_find_root(phandle);
++	if (!root)
++		goto out;
++
++	pbus = pci_find_bus(root->id.segment, root->id.bus);
++	if (!pbus)
++		goto out;
++
++	/*
++	 * Now, walk back down the PCI device tree until we return to our
++	 * original handle. Assumes that everything between the PCI root
++	 * bridge and the device we're looking for must be a P2P bridge.
++	 */
++	list_for_each_entry_safe(node, tmp, &device_list, node) {
++		acpi_handle hnd = node->handle;
++		status = acpi_evaluate_integer(hnd, "_ADR", NULL, &adr);
++		if (ACPI_FAILURE(status))
++			goto out;
++		dev = (adr >> 16) & 0xffff;
++		fn  = adr & 0xffff;
++
++		list_del(&node->node);
++		kfree(node);
++
++		pdev = pci_get_slot(pbus, PCI_DEVFN(dev, fn));
++		if (hnd == handle)
++			break;
++
++		pbus = pdev->subordinate;
++		pci_dev_put(pdev);
++	}
++out:
++	return pdev;
++}
++EXPORT_SYMBOL_GPL(acpi_get_pci_dev);
++
+ /**
+  * acpi_get_pci_id
+  * ------------------
+diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
+index bbe9207..1ef529b 100644
+--- a/include/acpi/acpi_drivers.h
++++ b/include/acpi/acpi_drivers.h
+@@ -97,6 +97,7 @@ void acpi_pci_irq_del_prt(int segment, int bus);
  
- #ifdef CONFIG_PM_SLEEP
+ struct pci_bus;
+ 
++struct pci_dev *acpi_get_pci_dev(acpi_handle);
+ acpi_status acpi_get_pci_id(acpi_handle handle, struct acpi_pci_id *id);
+ int acpi_pci_bind_root(struct acpi_device *device, struct acpi_pci_id *id,
+ 		       struct pci_bus *bus);
 
