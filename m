@@ -1,61 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbZFBEns@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758616AbZFBEoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758669AbZFBEns (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 00:43:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbZFBEni
+	id S1758616AbZFBEoA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 00:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbZFBEnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 00:43:38 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41665 "EHLO
+	Tue, 2 Jun 2009 00:43:39 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35694 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752639AbZFBEni (ORCPT
+	with ESMTP id S1752736AbZFBEni (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Jun 2009 00:43:38 -0400
-Message-Id: <20090602044315.439593107@goodmis.org>
+Message-Id: <20090602044339.373006181@goodmis.org>
+References: <20090602044315.439593107@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 02 Jun 2009 00:43:15 -0400
+Date: Tue, 02 Jun 2009 00:43:16 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 00/10] [GIT PULL] tracing: various updates
+Subject: [PATCH 01/10] ftrace: add kernel command line function filtering
+Content-Disposition: inline; filename=0001-ftrace-add-kernel-command-line-function-filtering.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Steven Rostedt <srostedt@redhat.com>
 
-Ingo,
+When using ftrace=function on the command line to trace functions
+on boot up, one can not filter out functions that are commonly called.
 
-Please pull the latest tip/tracing/ftrace-2 tree, which can be found at:
+This patch adds two new ftrace command line commands.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/ftrace-2
+  ftrace_notrace=function-list
+  ftrace_filter=function-list
 
+Where function-list is a comma separated list of functions to filter.
+The ftrace_notrace will make the functions listed not be included
+in the function tracing, and ftrace_filter will only trace the functions
+listed.
 
-Li Zefan (3):
-      tracing/events: fix a typo in __string() format output
-      tracing/events: put TP_fast_assign into braces
-      tracing/events: introduce __dynamic_array()
+These two act the same as the debugfs/tracing/set_ftrace_notrace and
+debugfs/tracing/set_ftrace_filter respectively.
 
-Steven Rostedt (6):
-      ftrace: add kernel command line function filtering
-      tracing: fix config options to not show when automatically selected
-      tracing: combine the default tracers into one config
-      tracing: remove redundant SOFTIRQ from softirq event traces
-      tracing: make trace pipe recognize latency format flag
-      ftrace: do not profile functions when disabled
+The simple glob expressions that are allowed by the filter files can also
+be used by the command line interface.
 
-Steven Whitehouse (1):
-      tracing: add exports to use __print_symbolic and __print_flags from a module
+	ftrace_notrace=rcu*,*lock,*spin*
 
-----
- Documentation/kernel-parameters.txt |   17 ++++-
- include/linux/ftrace_event.h        |    2 +-
- include/trace/events/irq.h          |   24 +++---
- include/trace/ftrace.h              |  126 +++++++++++++++++++++++++----------
- kernel/trace/Kconfig                |   60 ++++++++--------
- kernel/trace/ftrace.c               |   50 +++++++++++++-
- kernel/trace/trace.c                |    3 +
- kernel/trace/trace_events_filter.c  |    6 +-
- kernel/trace/trace_output.c         |    3 +
- 9 files changed, 205 insertions(+), 86 deletions(-)
+Will not trace any function that starts with rcu, ends with lock, or has
+the word spin in it.
+
+Note, if the self tests are enabled, they may interfere with the filtering
+set by the command lines.
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ Documentation/kernel-parameters.txt |   17 ++++++++++++-
+ kernel/trace/ftrace.c               |   42 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 57 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 9243dd8..fcd3bfb 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -751,12 +751,25 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			ia64_pal_cache_flush instead of SAL_CACHE_FLUSH.
+ 
+ 	ftrace=[tracer]
+-			[ftrace] will set and start the specified tracer
++			[FTRACE] will set and start the specified tracer
+ 			as early as possible in order to facilitate early
+ 			boot debugging.
+ 
+ 	ftrace_dump_on_oops
+-			[ftrace] will dump the trace buffers on oops.
++			[FTRACE] will dump the trace buffers on oops.
++
++	ftrace_filter=[function-list]
++			[FTRACE] Limit the functions traced by the function
++			tracer at boot up. function-list is a comma separated
++			list of functions. This list can be changed at run
++			time by the set_ftrace_filter file in the debugfs
++			tracing directory. 
++
++	ftrace_notrace=[function-list]
++			[FTRACE] Do not trace the functions specified in
++			function-list. This list can be changed at run time
++			by the set_ftrace_notrace file in the debugfs
++			tracing directory.
+ 
+ 	gamecon.map[2|3]=
+ 			[HW,JOY] Multisystem joystick and NES/SNES/PSX pad
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 140699a..2074e5b 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -32,6 +32,7 @@
+ #include <trace/events/sched.h>
+ 
+ #include <asm/ftrace.h>
++#include <asm/setup.h>
+ 
+ #include "trace_output.h"
+ #include "trace_stat.h"
+@@ -2369,6 +2370,45 @@ void ftrace_set_notrace(unsigned char *buf, int len, int reset)
+ 	ftrace_set_regex(buf, len, reset, 0);
+ }
+ 
++/*
++ * command line interface to allow users to set filters on boot up.
++ */
++#define FTRACE_FILTER_SIZE		COMMAND_LINE_SIZE
++static char ftrace_notrace_buf[FTRACE_FILTER_SIZE] __initdata;
++static char ftrace_filter_buf[FTRACE_FILTER_SIZE] __initdata;
++
++static int __init set_ftrace_notrace(char *str)
++{
++	strncpy(ftrace_notrace_buf, str, FTRACE_FILTER_SIZE);
++	return 1;
++}
++__setup("ftrace_notrace=", set_ftrace_notrace);
++
++static int __init set_ftrace_filter(char *str)
++{
++	strncpy(ftrace_filter_buf, str, FTRACE_FILTER_SIZE);
++	return 1;
++}
++__setup("ftrace_filter=", set_ftrace_filter);
++
++static void __init set_ftrace_early_filter(char *buf, int enable)
++{
++	char *func;
++
++	while (buf) {
++		func = strsep(&buf, ",");
++		ftrace_set_regex(func, strlen(func), 0, enable);
++	}
++}
++
++static void __init set_ftrace_early_filters(void)
++{
++	if (ftrace_filter_buf[0])
++		set_ftrace_early_filter(ftrace_filter_buf, 1);
++	if (ftrace_notrace_buf[0])
++		set_ftrace_early_filter(ftrace_notrace_buf, 0);
++}
++
+ static int
+ ftrace_regex_release(struct inode *inode, struct file *file, int enable)
+ {
+@@ -2829,6 +2869,8 @@ void __init ftrace_init(void)
+ 	if (ret)
+ 		pr_warning("Failed to register trace ftrace module notifier\n");
+ 
++	set_ftrace_early_filters();
++
+ 	return;
+  failed:
+ 	ftrace_disabled = 1;
+-- 
+1.6.3.1
+
 -- 
