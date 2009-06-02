@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758311AbZFBQeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbZFBQfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758311AbZFBQeu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 12:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbZFBQen
+	id S1758602AbZFBQfi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 12:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755151AbZFBQfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 12:34:43 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:40146 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752296AbZFBQem convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 12:34:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=Nyhy59SGQFeHCAEYYbKI0pzTOXdOAiq0ywy71S4lvG5r/wnPdesUDRknfl/B71qjbL
-         gxkdCDnRnPQwgVj4qYxuocYfWCXhl10Ib1mXgk/SglQQbw8EB7y4nrApX152i3U/UQ4i
-         6kmkUdJwpOcy3i1LX8PzrgmFkdJeAD9vl4opE=
-From: Ivo van Doorn <ivdoorn@gmail.com>
-To: alejandro.riveira@gmail.com
-Subject: Re: [2.6.27-rc7 vs 2.6.29 Regresion] Wifi Network Slownes rt2500pci
-Date: Tue, 2 Jun 2009 18:34:39 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linville@tuxdriver.com,
-       Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <1243247687.5322.8.camel@varda> <1243351397.4888.2.camel@varda> <1243951292.22942.1.camel@varda>
-In-Reply-To: <1243951292.22942.1.camel@varda>
+	Tue, 2 Jun 2009 12:35:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60476 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755139AbZFBQfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 12:35:30 -0400
+Date: Tue, 2 Jun 2009 18:30:48 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       acme@redhat.com, paulus@samba.org, hpa@zytor.com, mingo@redhat.com,
+       jkacur@redhat.com, efault@gmx.de, ebiederm@xmission.com,
+       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
+       mingo@elte.hu
+Subject: Re: [tip:perfcounters/core] perf_counter: Use PID namespaces
+	properly
+Message-ID: <20090602163047.GA17784@redhat.com>
+References: <tip-709e50cf870e61745b39552044aa6c7c38e4f9e0@git.kernel.org> <20090602154816.GA15734@redhat.com> <1243960085.13761.190.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906021834.40009.IvDoorn@gmail.com>
+In-Reply-To: <1243960085.13761.190.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 June 2009, Alejandro Riveira Fernández wrote:
-> El mar, 26-05-2009 a las 17:23 +0200, Alejandro Riveira Fernández
-> escribió:
-> > El mar, 26-05-2009 a las 14:45 +0200, Ivo van Doorn escribió:
-> > > Hi,
-> > > 
-> > [...]
-> > > 
-> > > Ok, that means it is the wrong script, try the other one from the download
-> > > location you previously refered to. I changed the API some time ago, and
-> > > am not sure which stable release that change will be in.
+On 06/02, Peter Zijlstra wrote:
+>
+> On Tue, 2009-06-02 at 17:55 +0200, Oleg Nesterov wrote:
+> > On 06/02, tip-bot for Peter Zijlstra wrote:
+> > >
+> > > +static u32 perf_counter_pid(struct perf_counter *counter, struct task_struct *p)
+> > > +{
+> > > +	/*
+> > > +	 * only top level counters have the pid namespace they were created in
+> > > +	 */
+> > > +	if (counter->parent)
+> > > +		counter = counter->parent;
+> > > +
+> > > +	return task_tgid_nr_ns(p, counter->ns);
+> > > +}
+> > > +
+> > > +static u32 perf_counter_tid(struct perf_counter *counter, struct task_struct *p)
+> > > +{
+> > > +	/*
+> > > +	 * only top level counters have the pid namespace they were created in
+> > > +	 */
+> > > +	if (counter->parent)
+> > > +		counter = counter->parent;
+> > > +
+> > > +	return task_pid_nr_ns(p, counter->ns);
 > > 
-> > I inline the diff between the two dumps the dumps are attached to the
-> > mail message
+> > Perhaps this should be
+> > 
+> > 	return task_pid_nr_ns(p->group_leader);
+> > 
+> > ?
 > 
-> ICMP ECHO REQUEST
-> 
-> Any advance?
+> That seems to be exactly what task_tgid_nr_ns() does.
 
-Well I checked the dumps from the bugreport, but like I expected
-the only difference is that with the slow speed the correct value
-is written, and the fast speed the wrong value is written.
-I couldn't find anything else interesting in it... :(
+Ah, yes, I didn't notice _tgid_ above.
 
-Ivo
+Oleg.
+
