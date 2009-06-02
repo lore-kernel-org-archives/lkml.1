@@ -1,97 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757190AbZFBON5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbZFBOOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757190AbZFBON5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 10:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbZFBONu
+	id S1757327AbZFBOOY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 10:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbZFBOOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 10:13:50 -0400
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:55398 "EHLO
-	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753764AbZFBONt convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 10:13:49 -0400
-X-SpamScore: -26
-X-BigFish: VPS-26(zz1454M1432R98dR1805M2cdeizz1202hzz5a6ciz32i17ch6bh6di)
-X-FB-SS: 5,13,8,
-X-WSS-ID: 0KKM7IA-02-JON-01
-Date: Tue, 2 Jun 2009 16:13:25 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for May 29 (__rdmsr_on_cpu() OOPS)
-Message-ID: <20090602141325.GB13792@aftab>
-References: <20090529145018.ff547ea1.sfr@canb.auug.org.au> <200905302137.57644.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+	Tue, 2 Jun 2009 10:14:16 -0400
+Received: from cantor.suse.de ([195.135.220.2]:50287 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752163AbZFBOOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 10:14:16 -0400
+Date: Tue, 2 Jun 2009 16:14:16 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
+Message-ID: <20090602141416.GC26982@wotan.suse.de>
+References: <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org> <20090602125713.GG1392@wotan.suse.de> <20090602134659.GA21338@localhost> <20090602140830.GR1065@one.firstfloor.org> <20090602141031.GC21338@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200905302137.57644.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 02 Jun 2009 14:13:25.0816 (UTC) FILETIME=[4B7CB380:01C9E38C]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090602141031.GC21338@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Jun 02, 2009 at 10:10:31PM +0800, Wu Fengguang wrote:
+> On Tue, Jun 02, 2009 at 10:08:30PM +0800, Andi Kleen wrote:
+> > > > > We could probably call truncate_complete_page(), but then
+> > > > > we would also need to duplicate most of the checking outside
+> > > > > the function anyways and there wouldn't be any possibility
+> > > > > to share the clean/dirty variants. If you insist I can
+> > > > > do it, but I think it would be significantly worse code
+> > > > > than before and I'm reluctant to do that.
+> > > > 
+> > > > I can write you the patch for that too if you like.
+> > > 
+> > > I have already posted one on truncate_complete_page(). Not the way you want it?
+> > 
+> > Sorry I must have missed it (too much mail I guess). Can you repost please?
+> 
+> OK, here it is, a more simplified one.
 
-On Sat, May 30, 2009 at 09:37:57PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> 
-> next-20090529 oopses in __rdmsr_on_cpu() on my Pentium M laptop.
-> 
-> .jpg + .config:
-> http://www.kernel.org/pub/linux/kernel/people/bart/next-20090529-oops.*
-> 
-> (gdb) l *0xc023410f
-> 0xc023410f is in __rdmsr_on_cpu (arch/x86/lib/msr.c:25).
-> 20              if (rv->msrs)
-> 21                      reg = &rv->msrs[this_cpu - rv->off];
-> 22              else
-> 23                      reg = &rv->reg;
-> 24
-> 25              rdmsr(rv->msr_no, reg->l, reg->h);
-> 26      }
-> 27
-> 28      static void __wrmsr_on_cpu(void *info)
-> 29      {
-> 
-> Thus the problem seems to be introduced by:
-> 
-> commit 23d19840368b2787d2da97ad0f0f29248503648a
-> Author: Borislav Petkov <borislav.petkov@amd.com>
-> Date:   Fri May 22 13:52:19 2009 +0200
-> 
->     x86: MSR: add methods for writing of an MSR on several CPUs
-> ...
-> 
-> and indeed the following patch fixes it:
-> 
-> [ Borislav, feel free to fold it into the above change or replace by
->   a more complete one if needed (there may be more rv fields needing
->   initialization). ]
-> 
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] x86: MSR: fix __rdmsr_on_cpu() OOPS
-> 
-> {rd,wr}msr_on_cpu() need to explicitly initalize rv.msrs
-> (since rv is allocated on the stack).
-> 
-> Cc: Borislav Petkov <borislav.petkov@amd.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+I prefer mine because I don't want truncate_complete_page escaping
+mm/truncate.c because the caller has to deal with truncate races.
 
-Thanks.
 
-I went and zeroed out the whole struct so that no stale data sneaks
-in. I'm still adding your S-O-B to the patch, if you don't mind, that
-is.
-
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+> ---
+>  mm/memory-failure.c |   13 +++----------
+>  1 file changed, 3 insertions(+), 10 deletions(-)
+> 
+> --- sound-2.6.orig/mm/memory-failure.c
+> +++ sound-2.6/mm/memory-failure.c
+> @@ -324,23 +324,16 @@ static int me_free(struct page *p)
+>   */
+>  static int me_pagecache_clean(struct page *p)
+>  {
+> +	if (page_mapping(p))
+> +                truncate_complete_page(p->mapping, p);
+> +
+>  	if (!isolate_lru_page(p))
+>  		page_cache_release(p);
+>  
+> -	if (page_has_private(p))
+> -		do_invalidatepage(p, 0);
+>  	if (page_has_private(p) && !try_to_release_page(p, GFP_NOIO))
+>  		Dprintk(KERN_ERR "MCE %#lx: failed to release buffers\n",
+>  			page_to_pfn(p));
+>  
+> -	/*
+> -	 * remove_from_page_cache assumes (mapping && !mapped)
+> -	 */
+> -	if (page_mapping(p) && !page_mapped(p)) {
+> -		remove_from_page_cache(p);
+> -		page_cache_release(p);
+> -	}
+> -
+>  	return RECOVERED;
+>  }
 
