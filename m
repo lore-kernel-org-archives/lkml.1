@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbZFBWow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbZFBWpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbZFBWow (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 18:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbZFBWnr
+	id S1756110AbZFBWpH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 18:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbZFBWns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 18:43:47 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:21607 "EHLO
+	Tue, 2 Jun 2009 18:43:48 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:20851 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754328AbZFBWno (ORCPT
+	with ESMTP id S1754869AbZFBWnq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 18:43:44 -0400
+	Tue, 2 Jun 2009 18:43:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=po59l4nyHlvQ+6Ba6CmtdWSmqyIOjhWWCfISFLfcJWLEPW0Gs1iB1vidmdVewHqDOc
-         Z7aECFGIbMon9b7ymsfyjeqbeKIhNq0lnQY/lmkkYbJvfWdDizXKReCXxTztMH8ovGPs
-         ThDULsmZKhKwaDvm6bznp1Afl0A3Cg8e2m764=
+        b=aRCypLodWcJkSLKIZAvsMsucdHcRKeDovUrHnkXHE9wlDN2tRz2IexjDym3Mj/zrEN
+         nsKEln6ZXCGYP8K/zDFy0/9h5A73ZbkbT/hv6guGZxrFXV61wBue0+TvG0A0Ty/GP07U
+         ia12IhR3oBuOo8UayOESP9oXcfrAsIFaEr3IE=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -23,9 +23,9 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Steven Rostedt <rostedt@goodmis.org>,
        Alan Stern <stern@rowland.harvard.edu>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 04/12] hw-breakpoints: modifying generic debug exception to use thread-specific debug registers
-Date: Wed,  3 Jun 2009 00:43:28 +0200
-Message-Id: <1243982616-18212-5-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 06/12] hw-breakpoints: use the new wrapper routines to access debug registers in process/thread code
+Date: Wed,  3 Jun 2009 00:43:30 +0200
+Message-Id: <1243982616-18212-7-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1243982616-18212-1-git-send-email-fweisbec@gmail.com>
 References: <1243982616-18212-1-git-send-email-fweisbec@gmail.com>
@@ -35,121 +35,215 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: K.Prasad <prasad@linux.vnet.ibm.com>
 
-This patch modifies the breakpoint exception handler code to use the new
-abstract debug register names.
+This patch enables the use of abstract debug registers in
+process-handling routines, according to the new hardware breakpoint
+Api.
 
-[ fweisbec@gmail.com: fix conflict against kmemcheck ]
-
-[ Impact: refactor and cleanup x86 debug exception handler ]
+[ Impact: adapt thread breakpoints handling code to the new breakpoint Api ]
 
 Original-patch-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 Reviewed-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- arch/x86/kernel/traps.c |   69 ++++++++++++++++------------------------------
- 1 files changed, 24 insertions(+), 45 deletions(-)
+ arch/x86/kernel/process.c    |   22 ++++++----------------
+ arch/x86/kernel/process_32.c |   28 ++++++++++++++++++++++++++++
+ arch/x86/kernel/process_64.c |   31 +++++++++++++++++++++++++++++++
+ 3 files changed, 65 insertions(+), 16 deletions(-)
 
-diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
-index a1d2883..de99132 100644
---- a/arch/x86/kernel/traps.c
-+++ b/arch/x86/kernel/traps.c
-@@ -529,73 +529,52 @@ asmlinkage __kprobes struct pt_regs *sync_regs(struct pt_regs *eregs)
- dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
- {
- 	struct task_struct *tsk = current;
--	unsigned long condition;
-+	unsigned long dr6;
- 	int si_code;
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 291527c..19a686c 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -15,6 +15,8 @@
+ #include <asm/uaccess.h>
+ #include <asm/i387.h>
+ #include <asm/ds.h>
++#include <asm/debugreg.h>
++#include <asm/hw_breakpoint.h>
  
--	get_debugreg(condition, 6);
-+	get_debugreg(dr6, 6);
+ unsigned long idle_halt;
+ EXPORT_SYMBOL(idle_halt);
+@@ -46,6 +48,8 @@ void free_thread_xstate(struct task_struct *tsk)
+ 		kmem_cache_free(task_xstate_cachep, tsk->thread.xstate);
+ 		tsk->thread.xstate = NULL;
+ 	}
++	if (unlikely(test_tsk_thread_flag(tsk, TIF_DEBUG)))
++		flush_thread_hw_breakpoint(tsk);
  
-+	/* DR6 may or may not be cleared by the CPU */
-+	set_debugreg(0, 6);
+ 	WARN(tsk->thread.ds_ctx, "leaking DS context\n");
+ }
+@@ -106,12 +110,8 @@ void flush_thread(void)
+ 
+ 	clear_tsk_thread_flag(tsk, TIF_DEBUG);
+ 
+-	tsk->thread.debugreg[0] = 0;
+-	tsk->thread.debugreg[1] = 0;
+-	tsk->thread.debugreg[2] = 0;
+-	tsk->thread.debugreg[3] = 0;
+-	tsk->thread.debugreg6 = 0;
+-	tsk->thread.debugreg7 = 0;
++	if (unlikely(test_tsk_thread_flag(tsk, TIF_DEBUG)))
++		flush_thread_hw_breakpoint(tsk);
+ 	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
  	/*
- 	 * The processor cleared BTF, so don't mark that we need it set.
- 	 */
- 	clear_tsk_thread_flag(tsk, TIF_DEBUGCTLMSR);
- 	tsk->thread.debugctlmsr = 0;
+ 	 * Forget coprocessor state..
+@@ -193,16 +193,6 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
+ 	else if (next->debugctlmsr != prev->debugctlmsr)
+ 		update_debugctlmsr(next->debugctlmsr);
  
--	if (notify_die(DIE_DEBUG, "debug", regs, condition, error_code,
-+	/* Store the virtualized DR6 value */
-+	tsk->thread.debugreg6 = dr6;
+-	if (test_tsk_thread_flag(next_p, TIF_DEBUG)) {
+-		set_debugreg(next->debugreg[0], 0);
+-		set_debugreg(next->debugreg[1], 1);
+-		set_debugreg(next->debugreg[2], 2);
+-		set_debugreg(next->debugreg[3], 3);
+-		/* no 4 and 5 */
+-		set_debugreg(next->debugreg6, 6);
+-		set_debugreg(next->debugreg7, 7);
+-	}
+-
+ 	if (test_tsk_thread_flag(prev_p, TIF_NOTSC) ^
+ 	    test_tsk_thread_flag(next_p, TIF_NOTSC)) {
+ 		/* prev and next are different */
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index b5e4bfe..297ffff 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -61,6 +61,8 @@
+ #include <asm/idle.h>
+ #include <asm/syscalls.h>
+ #include <asm/ds.h>
++#include <asm/debugreg.h>
++#include <asm/hw_breakpoint.h>
+ 
+ asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
+ 
+@@ -265,7 +267,13 @@ int copy_thread(unsigned long clone_flags, unsigned long sp,
+ 
+ 	task_user_gs(p) = get_user_gs(regs);
+ 
++	p->thread.io_bitmap_ptr = NULL;
+ 	tsk = current;
++	err = -ENOMEM;
++	if (unlikely(test_tsk_thread_flag(tsk, TIF_DEBUG)))
++		if (copy_thread_hw_breakpoint(tsk, p, clone_flags))
++			goto out;
 +
-+	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
- 						SIGTRAP) == NOTIFY_STOP)
- 		return;
+ 	if (unlikely(test_tsk_thread_flag(tsk, TIF_IO_BITMAP))) {
+ 		p->thread.io_bitmap_ptr = kmemdup(tsk->thread.io_bitmap_ptr,
+ 						IO_BITMAP_BYTES, GFP_KERNEL);
+@@ -285,10 +293,13 @@ int copy_thread(unsigned long clone_flags, unsigned long sp,
+ 		err = do_set_thread_area(p, -1,
+ 			(struct user_desc __user *)childregs->si, 0);
  
- 	/* It's safe to allow irq's after DR6 has been saved */
- 	preempt_conditional_sti(regs);
- 
--	/* Mask out spurious debug traps due to lazy DR7 setting */
--	if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) {
--		if (!tsk->thread.debugreg7)
--			goto clear_dr7;
-+	if (regs->flags & X86_VM_MASK) {
-+		handle_vm86_trap((struct kernel_vm86_regs *) regs,
-+				error_code, 1);
-+		return;
++out:
+ 	if (err && p->thread.io_bitmap_ptr) {
+ 		kfree(p->thread.io_bitmap_ptr);
+ 		p->thread.io_bitmap_max = 0;
  	}
++	if (err)
++		flush_thread_hw_breakpoint(p);
  
--#ifdef CONFIG_X86_32
--	if (regs->flags & X86_VM_MASK)
--		goto debug_vm86;
--#endif
--
--	/* Save debug status register where ptrace can see it */
--	tsk->thread.debugreg6 = condition;
--
- 	/*
--	 * Single-stepping through TF: make sure we ignore any events in
--	 * kernel space (but re-enable TF when returning to user mode).
-+	 * Single-stepping through system calls: ignore any exceptions in
-+	 * kernel space, but re-enable TF when returning to user mode.
+ 	clear_tsk_thread_flag(p, TIF_DS_AREA_MSR);
+ 	p->thread.ds_ctx = NULL;
+@@ -427,6 +438,23 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ 		lazy_load_gs(next->gs);
+ 
+ 	percpu_write(current_task, next_p);
++	/*
++	 * There's a problem with moving the arch_install_thread_hw_breakpoint()
++	 * call before current is updated.  Suppose a kernel breakpoint is
++	 * triggered in between the two, the hw-breakpoint handler will see that
++	 * the 'current' task does not have TIF_DEBUG flag set and will think it
++	 * is leftover from an old task (lazy switching) and will erase it. Then
++	 * until the next context switch, no user-breakpoints will be installed.
 +	 *
-+	 * We already checked v86 mode above, so we can check for kernel mode
-+	 * by just checking the CPL of CS.
- 	 */
--	if (condition & DR_STEP) {
--		if (!user_mode(regs))
--			goto clear_TF_reenable;
-+	if ((dr6 & DR_STEP) && !user_mode(regs)) {
-+		tsk->thread.debugreg6 &= ~DR_STEP;
-+		set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
-+		regs->flags &= ~X86_EFLAGS_TF;
- 	}
--
--	si_code = get_si_code(condition);
--	/* Ok, finally something we can handle */
--	send_sigtrap(tsk, regs, error_code, si_code);
--
--	/*
--	 * Disable additional traps. They'll be re-enabled when
--	 * the signal is delivered.
--	 */
--clear_dr7:
--	set_debugreg(0, 7);
-+	si_code = get_si_code(tsk->thread.debugreg6);
-+	if (tsk->thread.debugreg6 & (DR_STEP | DR_TRAP_BITS))
-+		send_sigtrap(tsk, regs, error_code, si_code);
- 	preempt_conditional_cli(regs);
--	return;
++	 * The real problem is that it's impossible to update both current and
++	 * physical debug registers at the same instant, so there will always be
++	 * a window in which they disagree and a breakpoint might get triggered.
++	 * Since we use lazy switching, we are forced to assume that a
++	 * disagreement means that current is correct and the exception is due
++	 * to lazy debug register switching.
++	 */
++	if (unlikely(test_tsk_thread_flag(next_p, TIF_DEBUG)))
++		arch_install_thread_hw_breakpoint(next_p);
  
--#ifdef CONFIG_X86_32
--debug_vm86:
--	/* reenable preemption: handle_vm86_trap() might sleep */
--	dec_preempt_count();
--	handle_vm86_trap((struct kernel_vm86_regs *) regs, error_code, 1);
--	conditional_cli(regs);
--	return;
--#endif
--
--clear_TF_reenable:
--	set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
--	regs->flags &= ~X86_EFLAGS_TF;
--	preempt_conditional_cli(regs);
- 	return;
+ 	return prev_p;
+ }
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index 5a1a1de..f7b276d 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -55,6 +55,8 @@
+ #include <asm/idle.h>
+ #include <asm/syscalls.h>
+ #include <asm/ds.h>
++#include <asm/debugreg.h>
++#include <asm/hw_breakpoint.h>
+ 
+ asmlinkage extern void ret_from_fork(void);
+ 
+@@ -248,6 +250,8 @@ void release_thread(struct task_struct *dead_task)
+ 			BUG();
+ 		}
+ 	}
++	if (unlikely(dead_task->thread.debugreg7))
++		flush_thread_hw_breakpoint(dead_task);
+ }
+ 
+ static inline void set_32bit_tls(struct task_struct *t, int tls, u32 addr)
+@@ -303,12 +307,18 @@ int copy_thread(unsigned long clone_flags, unsigned long sp,
+ 
+ 	p->thread.fs = me->thread.fs;
+ 	p->thread.gs = me->thread.gs;
++	p->thread.io_bitmap_ptr = NULL;
+ 
+ 	savesegment(gs, p->thread.gsindex);
+ 	savesegment(fs, p->thread.fsindex);
+ 	savesegment(es, p->thread.es);
+ 	savesegment(ds, p->thread.ds);
+ 
++	err = -ENOMEM;
++	if (unlikely(test_tsk_thread_flag(me, TIF_DEBUG)))
++		if (copy_thread_hw_breakpoint(me, p, clone_flags))
++			goto out;
++
+ 	if (unlikely(test_tsk_thread_flag(me, TIF_IO_BITMAP))) {
+ 		p->thread.io_bitmap_ptr = kmalloc(IO_BITMAP_BYTES, GFP_KERNEL);
+ 		if (!p->thread.io_bitmap_ptr) {
+@@ -347,6 +357,9 @@ out:
+ 		kfree(p->thread.io_bitmap_ptr);
+ 		p->thread.io_bitmap_max = 0;
+ 	}
++	if (err)
++		flush_thread_hw_breakpoint(p);
++
+ 	return err;
+ }
+ 
+@@ -492,6 +505,24 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ 	 */
+ 	if (tsk_used_math(next_p) && next_p->fpu_counter > 5)
+ 		math_state_restore();
++	/*
++	 * There's a problem with moving the arch_install_thread_hw_breakpoint()
++	 * call before current is updated.  Suppose a kernel breakpoint is
++	 * triggered in between the two, the hw-breakpoint handler will see that
++	 * the 'current' task does not have TIF_DEBUG flag set and will think it
++	 * is leftover from an old task (lazy switching) and will erase it. Then
++	 * until the next context switch, no user-breakpoints will be installed.
++	 *
++	 * The real problem is that it's impossible to update both current and
++	 * physical debug registers at the same instant, so there will always be
++	 * a window in which they disagree and a breakpoint might get triggered.
++	 * Since we use lazy switching, we are forced to assume that a
++	 * disagreement means that current is correct and the exception is due
++	 * to lazy debug register switching.
++	 */
++	if (unlikely(test_tsk_thread_flag(next_p, TIF_DEBUG)))
++		arch_install_thread_hw_breakpoint(next_p);
++
+ 	return prev_p;
  }
  
 -- 
