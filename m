@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760711AbZFBHOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760682AbZFBHPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760711AbZFBHOh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 03:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760490AbZFBHON
+	id S1760682AbZFBHPh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 03:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757990AbZFBHP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 03:14:13 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53183 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760600AbZFBHOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 03:14:11 -0400
-Date: Tue, 2 Jun 2009 09:14:11 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 04/23] vfs: Introduce infrastructure for revoking a file
-Message-ID: <20090602071411.GE31556@wotan.suse.de>
-References: <m1oct739xu.fsf@fess.ebiederm.org> <1243893048-17031-4-git-send-email-ebiederm@xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1243893048-17031-4-git-send-email-ebiederm@xmission.com>
-User-Agent: Mutt/1.5.9i
+	Tue, 2 Jun 2009 03:15:29 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:61813 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757361AbZFBHP3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 03:15:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=sDCsbwn4Kph6h1apaJwAfXzH+zuAhvLhwFNxIcL6O6kPdBlX/pnWnVyV1PH2mHpvPT
+         NFRUC9U8Zp00qE2Qgw4Fa2tzoLsElLS4XHAcXIkkFmwlUeyuZpj57aOQleplnk9Y2i6Y
+         EPOC8GtOFq/CWr1cPdKe2YbXaNN7xtOZgEozM=
+MIME-Version: 1.0
+In-Reply-To: <20090601215034.7352ddca.akpm@linux-foundation.org>
+References: <200906011357.09966.florian@openwrt.org>
+	 <20090601215034.7352ddca.akpm@linux-foundation.org>
+Date: Tue, 2 Jun 2009 09:15:29 +0200
+X-Google-Sender-Auth: 26a2fe37e5854ca9
+Message-ID: <10f740e80906020015t2d63fdadmaa1fa6bc204ec33a@mail.gmail.com>
+Subject: Re: [PATCH 1/9] kernel: export sound/core/pcm_timer.c gcd 
+	implementation
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Florian Fainelli <florian@openwrt.org>, linux-kernel@vger.kernel.org,
+       Takashi Iwai <tiwai@suse.de>, linux-mips@linux-mips.org,
+       Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 01, 2009 at 02:50:29PM -0700, Eric W. Biederman wrote:
-> From: Eric W. Biederman <ebiederm@xmission.com>
-> 
-> Introduce the file_hotplug_lock to protect file->f_op, file->private,
-> file->f_path from revoke operations.
-> 
-> The file_hotplug_lock is used typically as:
-> error = -EIO;
-> if (!file_hotplug_read_trylock(file))
-> 	goto out;
-> ....
-> file_hotplug_read_unlock(file);
+On Tue, Jun 2, 2009 at 06:50, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Mon, 1 Jun 2009 13:57:09 +0200 Florian Fainelli <florian@openwrt.org> wrote:
+>
+>> This patch exports the gcd implementation from
+>> sound/core/pcm_timer.c into include/linux/kernel.h.
+>> AR7 uses it in its clock routines.
+>>
+>> ...
+>>
+>> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+>> index 883cd44..878a27a 100644
+>> --- a/include/linux/kernel.h
+>> +++ b/include/linux/kernel.h
+>> @@ -147,6 +147,22 @@ extern int _cond_resched(void);
+>>               (__x < 0) ? -__x : __x;         \
+>>       })
+>>
+>> +/* Greatest common divisor */
+>> +static inline unsigned long gcd(unsigned long a, unsigned long b)
+>> +{
+>> +        unsigned long r;
+>> +        if (a < b) {
+>> +                r = a;
+>> +                a = b;
+>> +                b = r;
+>> +        }
+>> +        while ((r = a % b) != 0) {
+>> +                a = b;
+>> +                b = r;
+>> +        }
+>> +        return b;
+>> +}
+>
+> a) the name's a bit sucky.   Is there some convention for this name?
 
-Why is it called hotplug? Does it have anything to do with hardware?
-Because every concurrently changed software data structure in the
-kernel can be "hot"-modified, right?
+Well, `gcd' is a quite common acronym, probably almost as well known as `min'
+and `max'...
 
-Wouldn't file_revoke_lock be more appropriate?
+Gr{oetje,eeting}s,
 
+						Geert
 
-> In addition for a complete solution we need:
-> - A reliable way the file structures that we need to revoke.
-> - To wait for but not tamper with ongoing file creation and cleanup.
-> - A guarantee that all with user space controlled duration are removed.
-> 
-> The file_hotplug_lock has a very unique implementation necessitated by
-> the need to have no performance impact on existing code.  Classic locking
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Well, it isn't no performance impact. Function calls, branches, icache
-and dcache...
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
