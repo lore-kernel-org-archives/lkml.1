@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757456AbZFBC2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbZFBCa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757456AbZFBC2v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 22:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbZFBC2n
+	id S1757777AbZFBCa4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 22:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755389AbZFBCat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 22:28:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35432 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754900AbZFBC2n (ORCPT
+	Mon, 1 Jun 2009 22:30:49 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:55144 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754369AbZFBCas (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 22:28:43 -0400
-Date: Mon, 1 Jun 2009 19:28:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Marc Zyngier <maz@wild-wind.fr.eu.org>, linux-kernel@vger.kernel.org,
-       Andries Brouwer <Andries.Brouwer@cwi.nl>
-Subject: Re: [PATCH] eisa.ids: Add Network Peripherals FDDI boards
-Message-Id: <20090601192823.68befe31.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0905310041200.15490@ftp.linux-mips.org>
-References: <alpine.LFD.1.10.0905310041200.15490@ftp.linux-mips.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 1 Jun 2009 22:30:48 -0400
+Message-Id: <200906020230.n522UjfJ013581@www262.sakura.ne.jp>
+Subject: Re: [PATCH 2/5] TOMOYO: Clarify lock protected section.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: lizf@cn.fujitsu.com
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Date: Tue, 02 Jun 2009 11:30:45 +0900
+References: <200906020143.n521hGGP003698@www262.sakura.ne.jp> <4A248C90.9010904@cn.fujitsu.com>
+In-Reply-To: <4A248C90.9010904@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 01062009 #2072025, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 31 May 2009 00:54:26 +0100 (BST) "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
+Li Zefan wrote:
+> Tetsuo Handa wrote:
+> > Enclose reader section in
+> > 	/***** READER SECTION START *****/
+> > and
+> > 	/***** READER SECTION END *****/
+> > and writer section in
+> > 	/***** WRITER SECTION START *****/
+> > and
+> > 	/***** WRITER SECTION END *****/
+> > in order to avoid oversighting lock protected section.
+> > 
+> 
+> This makes me a bit uncomfortable..
+> 
+> IMHO this seems ugly, useless, and even harmful. If it's helpful,
+> we'd be doing this for the whole kernel tree, which is crazy..
+> 
+> Or does tomoyo do this for it's special reason?
 
->  Add EISA IDs for Network Peripherals FDDI boards.  Descriptions taken 
-> from the respective EISA configuration files.
-> 
-> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-> ---
->  It's unlikely we'll ever support these cards, the problem being the lack 
-> of documentation.  Assuming the policy for the EISA ID database is the 
-> same as for PCI I'm sending these entries for the sake of completeness.
-> 
->  Please apply.
-> 
->   Maciej
-> 
-> patch-mips-2.6.27-rc8-20081004-npi-eisa-0
-> Index: linux-mips-2.6.27-rc8-20081004-dolch/drivers/eisa/eisa.ids
-> ===================================================================
-> --- linux-mips-2.6.27-rc8-20081004-dolch.orig/drivers/eisa/eisa.ids
-> +++ linux-mips-2.6.27-rc8-20081004-dolch/drivers/eisa/eisa.ids
+I intended to help reviewers to visualize the range of protected section
+at a glance. But if reviewers feel noisy, I can remove these markers.
 
-Gee.  Nobody has altered that file in six years.  Then again, few new
-EISA cards have been designed in that time...
+Thanks.
