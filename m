@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbZFBR6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757751AbZFBSCp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756604AbZFBR6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 13:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbZFBR6N
+	id S1757751AbZFBSCp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 14:02:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757508AbZFBSCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 13:58:13 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:40434 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753555AbZFBR6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 13:58:12 -0400
-Date: Tue, 2 Jun 2009 19:58:14 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: scameron@beardog.cca.cpqcorp.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, mikem@beardog.cca.cpqcorp.net
-Subject: Re: [PATCH 2/2] cciss: Fix SCSI device reset handler
-Message-ID: <20090602175814.GO11363@kernel.dk>
-References: <20090527203007.GA30160@beardog.cca.cpqcorp.net> <20090529124208.531839fe.akpm@linux-foundation.org> <20090602125011.GJ11363@kernel.dk> <20090602105114.fe754481.akpm@linux-foundation.org>
+	Tue, 2 Jun 2009 14:02:37 -0400
+Received: from mail-qy0-f104.google.com ([209.85.221.104]:52911 "EHLO
+	mail-qy0-f104.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756170AbZFBSCg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 14:02:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=tGHF/pJF2ZMKKVIILfSvlqUQRkZE/gKuv3+2f9owMToQ+TByFyHl4OB3atXDhXMzbl
+         0KWE3a3NHRvBskaPxUVKdKmRlTQG7+szmtpLbxNKs9Rqb+CcyL8+CpJ8n0Ax6RPH2kad
+         v4XQscOpxyC6EtpEQXjo9T43bGFh5/lQJaStY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090602105114.fe754481.akpm@linux-foundation.org>
+Date: Tue, 2 Jun 2009 11:02:37 -0700
+Message-ID: <dd18b0c30906021102h43b8ecc4u9e67687de129bca1@mail.gmail.com>
+Subject: ACPI Exception (evregion-0422): AE_ERROR, Returned by Handler for 
+	[PCI_Config] [20090320]
+From: Justin Mattock <justinmattock@gmail.com>
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02 2009, Andrew Morton wrote:
-> On Tue, 2 Jun 2009 14:50:11 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Fri, May 29 2009, Andrew Morton wrote:
-> > > On Wed, 27 May 2009 15:30:07 -0500
-> > > scameron@beardog.cca.cpqcorp.net wrote:
-> > > 
-> > > > +static int wait_for_device_to_become_ready(ctlr_info_t *h,
-> > > > +	unsigned char lunaddr[])
-> > > > +{
-> > > > +	int rc;
-> > > > +	int count = 0;
-> > > > +	int waittime = HZ;
-> > > > +	CommandList_struct *c;
-> > > > +
-> > > > +	c = cmd_alloc(h, 1);
-> > > > +	if (!c) {
-> > > > +		printk(KERN_WARNING "cciss%d: out of memory in "
-> > > > +			"wait_for_device_to_become_ready.\n", h->ctlr);
-> > > > +		return IO_ERROR;
-> > > > +	}
-> > > > +
-> > > > +	/* Send test unit ready until device ready, or give up. */
-> > > > +	while (count < 20) {
-> > > > +
-> > > > +		/* Wait for a bit.  do this first, because if we send
-> > > > +		 * the TUR right away, the reset will just abort it.
-> > > > +		 */
-> > > > +		set_current_state(TASK_INTERRUPTIBLE);
-> > > > +		schedule_timeout(waittime);
-> > > 
-> > > That's schedule_timeout_interruptible().
-> > > 
-> > > The problem with interruptible sleeps of this nature is that they are
-> > > no-ops if the calling process happens to have signal_pending().  I
-> > > suspect that this condition will break your driver.
-> > > 
-> > > If so, switching to schedule_timeout_uninterruptible() will unbreak it.
-> > 
-> > I added Stephens patch and your fixup.
-> 
-> My cciss-fix-scsi-device-reset-handler-fix.patch was a simple cleanup -
-> it uses schedule_timeout_interruptible().
-> 
-> I believe that this should be changed to
-> schedule_timeout_uninterruptible() for the above reasons, but the cciss
-> guys fell asleep on me.
+I posted this error a few weeks ago, but had no response.
+So after a few weeks of looking at this, I wanted to find out if
+this is safe to see this, or should I be concerned:
 
-It's an improvement, none the less. And I bet it should just be
-uninterruptible sleep, unless it has a good reason to accept signals.
-Mike? Stephen?
+[    5.868418] ACPI: Power Button [PWRB]
+[    5.868547] input: Sleep Button as
+/devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input4
+[    5.868621] ACPI: Sleep Button [SLPB]
+[    6.093547] ACPI Exception (evregion-0422): AE_ERROR, Returned by
+Handler for [PCI_Config] [20090320]
+[    6.093555] ACPI Error (psparse-0537): Method parse/execution
+failed [\_SB_.PCI0.RP01.GFX0._PS0] (Node f703dcc0), AE_ERROR
+[    6.093614] ACPI: Transitioning device [GFX0] to D0
+
+I did do a dsdt dump, and looked for any errors
+but none had shown up.
+kernels that I have seen this are 2.6.29 -
+2.6.30-rc5
 
 -- 
-Jens Axboe
-
+Justin P. Mattock
