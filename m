@@ -1,53 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbZFBAHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755680AbZFBAMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754900AbZFBAHJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 20:07:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbZFBAG7
+	id S1755680AbZFBAMg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 20:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbZFBAM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 20:06:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55641 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754207AbZFBAG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 20:06:58 -0400
-Message-ID: <4A246D0B.40204@redhat.com>
-Date: Mon, 01 Jun 2009 20:06:35 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Mon, 1 Jun 2009 20:12:26 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:38910 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752539AbZFBAMZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 20:12:25 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, tj@kernel.org,
+       hugh.dickins@tiscali.co.uk, adobriyan@gmail.com,
+       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk, gregkh@suse.de,
+       npiggin@suse.de, hch@infradead.org, ebiederm@aristanetworks.com
+Subject: Re: [PATCH 01/23] mm: Introduce revoke_file_mappings.
+References: <m1oct739xu.fsf@fess.ebiederm.org>
+	<1243893048-17031-1-git-send-email-ebiederm@xmission.com>
+	<20090601152553.b2de027a.akpm@linux-foundation.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 01 Jun 2009 17:12:19 -0700
+In-Reply-To: <20090601152553.b2de027a.akpm@linux-foundation.org> (Andrew Morton's message of "Mon\, 1 Jun 2009 15\:25\:53 -0700")
+Message-ID: <m1vdnfze70.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: John Stultz <johnstul@us.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org,
-       Miroslav Lichvar <mlichvar@redhat.com>
-Subject: Re: [tip:timers/ntp] ntp: adjust SHIFT_PLL to improve NTP convergence
-References: <200905051956.n45JuVo9025575@imap1.linux-foundation.org>	 <tip-22cfbbfd9f67b67fe073010f51cb71d3632387d5@git.kernel.org>	 <1243542817.29511.523.camel@jstultz-laptop>  <20090601232223.GH749@elte.hu> <1243900716.11263.42.camel@jstultz-laptop>
-In-Reply-To: <1243900716.11263.42.camel@jstultz-laptop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, ebiederm@aristanetworks.com, hch@infradead.org, npiggin@suse.de, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org, adobriyan@gmail.com, hugh.dickins@tiscali.co.uk, tj@kernel.org, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Stultz wrote:
-> On Tue, 2009-06-02 at 01:22 +0200, Ingo Molnar wrote:
+Andrew Morton <akpm@linux-foundation.org> writes:
 
->> I might be missing something here - but Linux converging faster 
->> seems like a genuinely good thing. What non-Linux problem could 
->> there be? Linux's convergence is really Linux's private issue. 
-> 
-> Yea. It does seem that way. Miroslav can likely expand on the issue to
-> help clarify, but as I understand it, the example is if you have a
-> number of systems that are peers in an NTP network. All of them are
-> using the same userland NTP daemon. However, if the rate of change that
-> corrections are applied is different in half of them, you will have
-> problems getting all the systems to converge together. 
+> On Mon,  1 Jun 2009 14:50:26 -0700
+> "Eric W. Biederman" <ebiederm@xmission.com> wrote:
+>
+>> +static void revoke_vma(struct vm_area_struct *vma)
+>
+> This looks odd.
+>
+>> +{
+>> +	struct file *file = vma->vm_file;
+>> +	struct address_space *mapping = file->f_mapping;
+>> +	unsigned long start_addr, end_addr, size;
+>> +	struct mm_struct *mm;
+>> +
+>> +	start_addr = vma->vm_start;
+>> +	end_addr = vma->vm_end;
+>
+> We take a copy of start_addr/end_addr (and this end_addr value is never used)
+A foolish consistency.
 
-Would this not be true already, because the convergence
-of Linux system suddenly became a lot slower in 2.6.19?
+>> +	/* Switch out the locks so I can maninuplate this under the mm sem.
+>> +	 * Needed so I can call vm_ops->close.
+>> +	 */
+>> +	mm = vma->vm_mm;
+>> +	atomic_inc(&mm->mm_users);
+>> +	spin_unlock(&mapping->i_mmap_lock);
+>> +
+>> +	/* Block page faults and other code modifying the mm. */
+>> +	down_write(&mm->mmap_sem);
+>> +
+>> +	/* Lookup a vma for my file address */
+>> +	vma = find_vma(mm, start_addr);
+>
+> Then we look up a vma.  Is there reason to believe that this will
+> differ from the incoming arg which we just overwrote?  Maybe the code
+> is attempting to handle racing concurrent mmap/munmap activity?  If so,
+> what are the implications of this?
 
-Damned if we do, damned if we don't - except the new
-behaviour introduced by your patches is nicer.
+Yes it is.  The file based index is only safe while we hold the i_mmap_lock.
+The manipulation that needs to happen under the mmap_sem.
 
--- 
-All rights reversed.
+So I drop all of the locks and restart.  And use the time honored
+kernel practice of relooking up the thing I am going to manipulate.
+As long as it is for the same file I don't care.
+
+> I _think_ that what the function is attempting to do is "unmap the vma
+> which covers the address at vma->start_addr".  If so, why not just pass
+> it that virtual address?
+
+Actually it is  unmapping a vma for the file I am revoking.  I hand it
+one and then it does an address space jig.
+
+> Anyway, it's all a bit obscure and I do think that the semantics and
+> behaviour should be carefully explained in a comment, no?
+>
+>> +	if (vma->vm_file != file)
+>> +		goto out;
+>
+> This strengthens the theory that some sort of race-management is
+> happening here.
+
+Totally.  I dropped all of my locks so I am having to restart in
+a different locking context.
+
+>> +	start_addr = vma->vm_start;
+>> +	end_addr   = vma->vm_end;
+>> +	size	   = end_addr - start_addr;
+>> +
+>> +	/* Unlock the pages */
+>> +	if (mm->locked_vm && (vma->vm_flags & VM_LOCKED)) {
+>> +		mm->locked_vm -= vma_pages(vma);
+>> +		vma->vm_flags &= ~VM_LOCKED;
+>> +	}
+>> +
+>> +	/* Unmap the vma */
+>> +	zap_page_range(vma, start_addr, size, NULL);
+>> +
+>> +	/* Unlink the vma from the file */
+>> +	unlink_file_vma(vma);
+>> +
+>> +	/* Close the vma */
+>> +	if (vma->vm_ops && vma->vm_ops->close)
+>> +		vma->vm_ops->close(vma);
+>> +	fput(vma->vm_file);
+>> +	vma->vm_file = NULL;
+>> +	if (vma->vm_flags & VM_EXECUTABLE)
+>> +		removed_exe_file_vma(vma->vm_mm);
+>> +
+>> +	/* Repurpose the vma  */
+>> +	vma->vm_private_data = NULL;
+>> +	vma->vm_ops = &revoked_vm_ops;
+>> +	vma->vm_flags &= ~(VM_NONLINEAR | VM_CAN_NONLINEAR);
+>> +out:
+>> +	up_write(&mm->mmap_sem);
+>> +	spin_lock(&mapping->i_mmap_lock);
+>> +}
+>
+> Also, I'm not a bit fan of the practice of overwriting the value of a
+> formal argument, especially in a function which is this large and
+> complex.  It makes the code harder to follow, because the one variable
+> holds two conceptually different things within the span of the same
+> function.  And it adds risk that someone will will later access a field
+> of *vma and it will be the wrong vma.  Worse, the bug is only exposed
+> under exeedingly rare conditions.
+>
+> So..  Use a new local, please.
+
+We can never legitimately have more than one vma manipulated in this function.
+As for the rest.  I guess I just assumed that the reader of the code would
+have a basic understanding of the locking rules for those data structures.
+
+Certainly the worst thing I suffer from is being close to the code,
+and not realizing which pieces are not obvious to a naive observer.
+
+Eric
