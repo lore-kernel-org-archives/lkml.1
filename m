@@ -1,89 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbZFBMLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbZFBMTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753308AbZFBMLu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 08:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbZFBMLj
+	id S1753096AbZFBMTs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 08:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbZFBMTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 08:11:39 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:48226 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753155AbZFBMLi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 08:11:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
-         :references;
-        b=Igg3e+zZYx48K/+Bpp3xsEZczp4ODeW/PH/MSimFT8uz2Wz1Enz2ALpK0EcYgsKjxB
-         xBed9REQ2+OQtQkdKpCwkt65Y7/aY9/qpRzBnp3l7OQzu+YRqwqXpTnXxHG6Vr6ELdiX
-         hm4pNy4dcBkMNwd/RJIVhpsp2hepSeRdbj6C0=
-From: Gerard Lledo <gerard.lledo@gmail.com>
-To: akpm@linux-foundation.org
-Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Gerard Lledo <gerard.lledo@gmail.com>
-Subject: [PATCH] [JFFS2] jffs2_start_garbage_collect_thread() return value cleanup
-Date: Tue,  2 Jun 2009 15:11:26 +0300
-Message-Id: <1243944686-7039-2-git-send-email-gerard.lledo@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1243944686-7039-1-git-send-email-gerard.lledo@gmail.com>
-References: <20090602113216.GA3513@tank>
- <1243944686-7039-1-git-send-email-gerard.lledo@gmail.com>
+	Tue, 2 Jun 2009 08:19:40 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46721 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751110AbZFBMTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 08:19:39 -0400
+Date: Tue, 2 Jun 2009 14:19:40 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
+Message-ID: <20090602121940.GD1392@wotan.suse.de>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601140553.GA1979@localhost> <20090601144050.GA12099@wotan.suse.de> <20090602111407.GA17234@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090602111407.GA17234@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no user of this return value in the kernel.  Change it to return void
-instead.
----
- fs/jffs2/background.c |    7 +------
- fs/jffs2/os-linux.h   |    2 +-
- 2 files changed, 2 insertions(+), 7 deletions(-)
+On Tue, Jun 02, 2009 at 07:14:07PM +0800, Wu Fengguang wrote:
+> On Mon, Jun 01, 2009 at 10:40:51PM +0800, Nick Piggin wrote:
+> > But you just said that you try to intercept the IO. So the underlying
+> > data is not necessarily corrupt. And even if it was then what if it
+> > was reinitialized to something else in the meantime (such as filesystem
+> > metadata blocks?) You'd just be introducing worse possibilities for
+> > coruption.
+> 
+> The IO interception will be based on PFN instead of file offset, so it
+> won't affect innocent pages such as your example of reinitialized data.
 
-diff --git a/fs/jffs2/background.c b/fs/jffs2/background.c
-index 3ff50da..3ae7e5c 100644
---- a/fs/jffs2/background.c
-+++ b/fs/jffs2/background.c
-@@ -30,10 +30,9 @@ void jffs2_garbage_collect_trigger(struct jffs2_sb_info *c)
- }
+OK, if you could intercept the IO so it never happens at all, yes
+of course that could work.
+
+
+> poisoned dirty page == corrupt data      => process shall be killed
+> poisoned clean page == recoverable data  => process shall survive
+> 
+> In the case of dirty hwpoison page, if we reload the on disk old data
+> and let application proceed with it, it may lead to *silent* data
+> corruption/inconsistency, because the application will first see v2
+> then v1, which is illogical and hence may mess up its internal data
+> structure.
+
+Right, but how do you prevent that? There is no way to reconstruct the
+most updtodate data because it was destroyed.
+
  
- /* This must only ever be called when no GC thread is currently running */
--int jffs2_start_garbage_collect_thread(struct jffs2_sb_info *c)
-+void jffs2_start_garbage_collect_thread(struct jffs2_sb_info *c)
- {
- 	struct task_struct *tsk;
--	int ret = 0;
+> > You will need to demonstrate a *big* advantage before doing crazy things
+> > with writeback ;)
+> 
+> OK. We can do two things about poisoned writeback pages:
+> 
+> 1) to stop IO for them, thus avoid corrupted data to hit disk and/or
+>    trigger further machine checks
+
+1b) At which point, you invoke the end-io handlers, and the page is
+no longer writeback.
+
+> 2) to isolate them from page cache, thus preventing possible
+>    references in the writeback time window
+
+And then this is possible because you aren't violating mm
+assumptions due to 1b. This proceeds just as the existing
+pagecache mce error handler case which exists now.
+
  
- 	BUG_ON(c->gc_task);
- 
-@@ -44,15 +43,11 @@ int jffs2_start_garbage_collect_thread(struct jffs2_sb_info *c)
- 	if (IS_ERR(tsk)) {
- 		printk(KERN_WARNING "fork failed for JFFS2 garbage collect thread: %ld\n", -PTR_ERR(tsk));
- 		complete(&c->gc_thread_exit);
--		ret = PTR_ERR(tsk);
- 	} else {
- 		/* Wait for it... */
- 		D1(printk(KERN_DEBUG "JFFS2: Garbage collect thread is pid %d\n", tsk->pid));
- 		wait_for_completion(&c->gc_thread_start);
--		ret = tsk->pid;
- 	}
--
--	return ret;
- }
- 
- void jffs2_stop_garbage_collect_thread(struct jffs2_sb_info *c)
-diff --git a/fs/jffs2/os-linux.h b/fs/jffs2/os-linux.h
-index 2228380..f3184ac 100644
---- a/fs/jffs2/os-linux.h
-+++ b/fs/jffs2/os-linux.h
-@@ -151,7 +151,7 @@ static inline void jffs2_erase_pending_trigger(struct jffs2_sb_info *c)
- }
- 
- /* background.c */
--int jffs2_start_garbage_collect_thread(struct jffs2_sb_info *c);
-+void jffs2_start_garbage_collect_thread(struct jffs2_sb_info *c);
- void jffs2_stop_garbage_collect_thread(struct jffs2_sb_info *c);
- void jffs2_garbage_collect_trigger(struct jffs2_sb_info *c);
- 
--- 
-1.5.6.5
+> > > Now it's obvious that reusing more code than truncate_complete_page()
+> > > is not easy (or natural).
+> > 
+> > Just lock the page and wait for writeback, then do the truncate
+> > work in another function. In your case if you've already unmapped
+> > the page then it won't try to unmap again so no problem.
+> > 
+> > Truncating from pagecache does not change ->index so you can
+> > move the loop logic out.
+> 
+> Right. So effectively the reusable function is exactly
+> truncate_complete_page(). As I said this reuse is not a big gain.
+
+Anyway, we don't have to argue about it. I already send a patch
+because it was so hard to do, so let's move past this ;)
+
+
+> > > Yes it's kind of insane.  I'm interested in reasoning it out though.
+
+Well with the IO interception (I missed this point), then it seems
+maybe no longer so insane. We could see how it looks.
+
+
+> > I guess it is a good idea to start simple.
+> 
+> Agreed.
+> 
+> > Considering that there are so many other types of pages that are
+> > impossible to deal with or have holes, then I very strongly doubt
+> > it will be worth so much complexity for closing the gap from 90%
+> > to 90.1%. But we'll see.
+> 
+> Yes, the plan is to first focus on the more important cases.
+
+Great.
+
+Thanks,
+Nick
 
