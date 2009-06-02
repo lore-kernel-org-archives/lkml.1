@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760712AbZFBLpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760716AbZFBLtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760712AbZFBLpa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 07:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760702AbZFBLoh
+	id S1760716AbZFBLtf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 07:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759784AbZFBLt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 07:44:37 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:51661 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759416AbZFBLob (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 07:44:31 -0400
-Message-Id: <20090602114359.129247921@linux.vnet.ibm.com>
-User-Agent: quilt/0.48-1
-Date: Tue, 02 Jun 2009 13:43:59 +0200
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       Huang Ying <ying.huang@intel.com>, Li Wei <W.Li@Sun.COM>,
-       Michael Ellerman <michaele@au1.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
-       Martin Schwidefsky <mschwid2@linux.vnet.ibm.com>
-Subject: [PATCH 0/4] gcov kernel support
+	Tue, 2 Jun 2009 07:49:28 -0400
+Received: from fifo99.com ([67.223.236.141]:60524 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759575AbZFBLt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 07:49:27 -0400
+Subject: Re: [PATCH] sched: sched_clock() clocksource handling.
+From: Daniel Walker <dwalker@fifo99.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Walleij <linus.ml.walleij@gmail.com>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       John Stultz <johnstul@linux.vnet.ibm.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-sh@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090602075409.GA19294@linux-sh.org>
+References: <20090602071718.GA17710@linux-sh.org>
+	 <1243927502.23657.5619.camel@twins> <20090602073515.GB17710@linux-sh.org>
+	 <1243928495.23657.5642.camel@twins>  <20090602075409.GA19294@linux-sh.org>
+Content-Type: text/plain
+Date: Tue, 02 Jun 2009 04:49:26 -0700
+Message-Id: <1243943366.6592.434.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset implements support for performing kernel code coverage
-measurements based on gcc's gcov mechanism. It can be used to improve
-kernel code quality by identifying code parts which are not exercised
-during test cases. Patch base is 2.6.30-rc7.
+On Tue, 2009-06-02 at 16:54 +0900, Paul Mundt wrote:
+>  unsigned long long __attribute__((weak)) sched_clock(void)
+>  {
+> -       return (unsigned long long)(jiffies - INITIAL_JIFFIES)
+> -                                       * (NSEC_PER_SEC / HZ);
+> +       unsigned long long time;
+> +       struct clocksource *clock;
+> +
+> +       rcu_read_lock();
+> +       clock = rcu_dereference(sched_clocksource);
+> +       time = cyc2ns(clock, clocksource_read(clock));
+> +       rcu_read_unlock();
+> +
+> +       return time;
+>  }
 
-Changes since last version:
-* removed __gcov_execve (assuming no kernel function will be called
-  execve)
+My concerns with the locking here still stand. Nothing you've said or
+done bolsters the clocksource in modules argument. I think what your
+planning for sh clocksources seems very inelegant. I would imagine a
+better solution is out there. I'd prefer if you just leave sched_clock
+alone.
 
-Patch overview:
-[PATCH 1/4] kernel: constructor support
-[PATCH 2/4] seq_file: add function to write binary data
-[PATCH 3/4] gcov: add gcov profiling infrastructure
-[PATCH 4/4] gcov: enable GCOV_PROFILE_ALL for x86_64
-
-For more information see Documentation/gcov.txt and the previous post:
-http://marc.info/?l=linux-kernel&m=123565658224661
+Daniel
 
