@@ -1,129 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbZFBNdG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbZFBNdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755601AbZFBNdG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 09:33:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbZFBNcs
+	id S1755714AbZFBNdj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 09:33:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbZFBNdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 09:32:48 -0400
-Received: from mga14.intel.com ([143.182.124.37]:18962 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754836AbZFBNcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 09:32:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,291,1241420400"; 
-   d="scan'208";a="149722163"
-Date: Tue, 2 Jun 2009 21:30:19 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
-	in the VM v3
-Message-ID: <20090602133019.GC20462@localhost>
-References: <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090601120537.GF5018@wotan.suse.de> <20090601185147.GT1065@one.firstfloor.org> <20090602121031.GC1392@wotan.suse.de> <20090602123450.GF1065@one.firstfloor.org> <20090602123720.GF1392@wotan.suse.de>
+	Tue, 2 Jun 2009 09:33:32 -0400
+Received: from wa4ehsobe004.messaging.microsoft.com ([216.32.181.14]:42121
+	"EHLO WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754372AbZFBNdc convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 09:33:32 -0400
+X-SpamScore: -26
+X-BigFish: VPS-26(zz1432R98dR1805M179dR873fnzz1202hzzz32i6bh17ch43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KKM5NL-02-FS5-01
+Date: Tue, 2 Jun 2009 15:33:21 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] dma-debug: add debugfs file for driver filter
+Message-ID: <20090602133321.GA2231@amd.com>
+References: <1243523971-12681-1-git-send-email-joerg.roedel@amd.com> <1243523971-12681-3-git-send-email-joerg.roedel@amd.com> <20090601150418.79dfd250.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20090602123720.GF1392@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090601150418.79dfd250.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 02 Jun 2009 13:33:22.0096 (UTC) FILETIME=[B2C22300:01C9E386]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 08:37:20PM +0800, Nick Piggin wrote:
-> On Tue, Jun 02, 2009 at 02:34:50PM +0200, Andi Kleen wrote:
-> > On Tue, Jun 02, 2009 at 02:10:31PM +0200, Nick Piggin wrote:
-> > > > It's not, there are various differences (like the reference count)
-> > > 
-> > > No. If there are, then it *really* needs better documentation. I
-> > > don't think there are, though.
-> > 
-> > Better documentation on what? You want a detailed listing in a comment
-> > how it is different from truncate?
-> > 
-> > To be honest I have some doubts of the usefulness of such a comment
-> > (why stop at truncate and not list the differences to every other
-> > page cache operation? @) but if you're insist (do you?) I can add one.
+On Mon, Jun 01, 2009 at 03:04:18PM -0700, Andrew Morton wrote:
+> On Thu, 28 May 2009 17:19:29 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
 > 
-> Because I don't see any difference (see my previous patch). I
-> still don't know what it is supposed to be doing differently.
-> So if you reinvent your own that looks close enough to truncate
-> to warrant a comment to say /* this is close to truncate but
-> not quite */, then yes I insist that you say exactly why it is
-> not quite like truncate ;)
-
-The truncate topic goes boring.  EIO is more interesting and imminent, hehe.
-
-> > > I'm suggesting that EIO is traditionally for when the data still
-> > > dirty in pagecache and was not able to get back to backing
-> > > store. Do you deny that?
-> > 
-> > Yes. That is exactly the case when memory-failure triggers EIO
-> > 
-> > Memory error on a dirty file mapped page.
+> > +	/*
+> > +	 * We can't copy from userspace directly. Access to
+> > +	 * current_driver_name is protected with a write_lock with irqs
+> > +	 * disabled. Since copy_from_user can fault and may sleep we
+> > +	 * need to copy to temporary buffer first
+> > +	 */
+> > +	len = min(count, len);
+> > +	if (copy_from_user(buf, userbuf, len))
+> > +		return -EFAULT;
+> > +
+> > +	buf[NAME_MAX_LEN - 1] = 0;
 > 
-> But it is no longer dirty, and the problem was not that the data
-> was unable to be written back.
+> Might be able to use strncpy_from_user() here.
+>
 
-Or rather, cannot be written back ;)
+Hmm, no, not in this place because I can't be sure that userspace passes
+a NULL-terminated string. So setting a character in the resulting string
+to \0 is always required. This eliminates the benefit of
+strncpy_from_user() here.
 
-> > > And I think the application might try to handle the case of a
-> > > page becoming corrupted differently. Do you deny that?
-> > 
-> > You mean a clean file-mapped page? In this case there is no EIO,
-> > memory-failure just drops the page and it is reloaded.
-> > 
-> > If the page is dirty we trigger EIO which as you said above is the 
-> > right reaction.
-> 
-> No I mean the difference between the case of dirty page unable to
-> be written to backing sotre, and the case of dirty page becoming
-> corrupted.
+Joerg
 
-legacy EIO:   may success on (do something then) retry?
-hwpoison EIO: a permanent unrecoverable error
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
-> > > OK, given the range of errors that APIs are defined to return,
-> > > then maybe EIO is the best option. I don't suppose it is possible
-> > > to expand them to return something else?
-> > 
-> > Expand the syscalls to return other errnos on specific
-> > kinds of IO error?
-> >  
-> > Of course that's possible, but it has the problem that you 
-> > would need to fix all the applications that expect EIO for
-> > IO error. The later I consider infeasible.
-> 
-> They would presumably exit or do some default thing, which I
-> think would be fine. Actually if your code catches them in the
-> act of manipulating a corrupted page (ie. if it is mmapped),
-> then it gets a SIGBUS.
-
-That's OK.  filemap_fault() returns VM_FAULT_SIGBUS for legacy EIO,
-while hwpoison pages will return VM_FAULT_HWPOISON. Both kills the
-application I guess?
-
-read()/write() are the more interesting cases.
-
-With read IO interception, the read() call will succeed.
-
-The write() call have to be failed. But interestingly writes are
-mostly delayed ones, and we have only one AS_EIO bit for the entire
-file, which will be cleared after the EIO reporting. And the poisoned
-page will be isolated (if succeed) and later read()/write() calls
-won't even notice there was a poisoned page!
-
-How are we going to fix this mess? EIO errors seem to be fuzzy and
-temporary by nature at least in the current implementation, and hard
-to be improved to be exact and/or permanent in both implementation and
-interface:
-- can/shall we remember the exact EIO page? maybe not.
-- can EIO reporting be permanent? sounds like a horrible user interface..
-
-
-Thanks,
-Fengguang
