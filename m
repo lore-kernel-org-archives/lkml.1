@@ -1,105 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbZFBNTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbZFBNTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754788AbZFBNTo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 09:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbZFBNTh
+	id S1755008AbZFBNTz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 09:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbZFBNTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 09:19:37 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34831 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752052AbZFBNTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 09:19:37 -0400
-Date: Tue, 2 Jun 2009 15:19:37 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: hugh@veritas.com, riel@redhat.com, akpm@linux-foundation.org,
-       chris.mason@oracle.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, fengguang.wu@intel.com
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602131937.GB6262@wotan.suse.de>
-References: <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090601120537.GF5018@wotan.suse.de> <20090601185147.GT1065@one.firstfloor.org> <20090602121031.GC1392@wotan.suse.de> <20090602123450.GF1065@one.firstfloor.org> <20090602123720.GF1392@wotan.suse.de> <20090602125538.GH1065@one.firstfloor.org> <20090602130306.GA6262@wotan.suse.de> <20090602132002.GJ1065@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 2 Jun 2009 09:19:40 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:47619 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754138AbZFBNTj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 09:19:39 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: ttyACM0: 2.6.30-rc7 dies on device disconnect, strange echo (regressions)
+Date: Tue, 2 Jun 2009 15:20:11 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.30-rc7-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+References: <20090601101421.GA1914@elf.ucw.cz> <200906011434.57083.oliver@neukum.org> <20090602091912.GD15756@elf.ucw.cz>
+In-Reply-To: <20090602091912.GD15756@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090602132002.GJ1065@one.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200906021520.12487.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 03:20:02PM +0200, Andi Kleen wrote:
-> On Tue, Jun 02, 2009 at 03:03:06PM +0200, Nick Piggin wrote:
-> > > > > > I'm suggesting that EIO is traditionally for when the data still
-> > > > > > dirty in pagecache and was not able to get back to backing
-> > > > > > store. Do you deny that?
-> > > > > 
-> > > > > Yes. That is exactly the case when memory-failure triggers EIO
-> > > > > 
-> > > > > Memory error on a dirty file mapped page.
-> > > > 
-> > > > But it is no longer dirty, and the problem was not that the data
-> > > > was unable to be written back.
-> > > 
-> > > Sorry I don't understand. What do you mean with "no longer dirty"
-> > > 
-> > > Of course it's still dirty, just has to be discarded because it's 
-> > > corrupted.
-> > 
-> > The pagecache location is no longer dirty. Userspace only cares
-> > about pagecache locations and their contents, not the page that
-> > was once there and has now been taken out.
-> 
-> Sorry, but that just sounds wrong to me. User space has no clue
-> about the page cache, it just wants to know that the write it just
+Am Dienstag, 2. Juni 2009 11:19:13 schrieb Pavel Machek:
+> On Mon 2009-06-01 14:34:56, Oliver Neukum wrote:
+> > Am Montag, 1. Juni 2009 13:31:51 schrieb Pavel Machek:
+> > > Steps to reproduce:
+> > >
+> > > minicom /dev/ttyACM0
+> > >
+> > > Bug #2: try to interactivelly communicate with the other
+> > > device. Notice that characters are echoed one character too late. You
+> > > type "hello", but only "hell" appears. You press "!", "o" appears.
+> > >
+> > > Bug #1: while minicom is still connected, pull the USB cable. Machine
+> > > locks hard.
+> >
+> > I can replicate neither bug with 2.6.30-rc7. Can you replicate it with
+> > anything but openMOKO?
+>
+> So AT commands echo properly on USB modem or something? Bad :-(.
 
-Umm, pagecache location is inode,offset, which is exactly what
-userspace cares about, and they obviously know there can be a
-writeback cache there because that's why fsync exists.
+My cell phone echoes back arbitrary strings.
 
+> I'm afraid I do not have another ACM device near me. I guess going
+> through cdc-acm.c 's history would be relevant?
 
-> did didn't reach the disk. And that's what happened and
-> what we report here.
+A bisection would indeed be very good.
 
-I didn't reach the disk and the dirty data was destroyed and
-will be recreated from some unknown (to userspace) state 
-from the filesystem. If you can't see how this is different
-to the rest of our EIO conditions, then I can't spell it out
-any simpler.
-
-
-> > > A new errno? Or something else? If yes what precisely?
-> > 
-> > Yeah a new errno would be nice. Precisely one to say that the
-> > memory was corrupted.
-> 
-> Ok.  I firmly think a new errno is a bad idea because I don't
-> want to explain to a lot of people how to fix their applications.
-> Compatibility is important.
-
-Fair enough, maybe EIO is the best option, but I just want
-people to think about it.
-
- 
-> > > No it's not fine if they would handle EIO. e.g. consider
-> > > a sophisticated database which likely has sophisticated
-> > > IO error mechanisms too (e.g. only abort the current commit)
-> > 
-> > Umm, if it is a generic "this failed, we can abort" then why
-> > would not this be the default case. The issue is if it does
-> > something differnet specifically for EIO, and specifically
-> > assuming the pagecache is still valid and dirty.
-> 
-> How would it make such an assumption?
-
-I guess either way you have to make assumptions that the
-app uses errno in a particular way.
-
- 
-> I assume that if an application does something with EIO it 
-> can either retry a few times or give up. Both is ok here.
-
-That's exactly the case where it is not OK, because the
-dirty page was now removed from pagecache, so the subsequent
-fsync is going to succeed and the app will think its dirty
-data has hit disk.
+	Regards
+		Oliver
 
