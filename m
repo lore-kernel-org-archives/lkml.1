@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759151AbZFBFVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbZFBFWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759151AbZFBFVR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 01:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZFBFVF
+	id S1759016AbZFBFWQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 01:22:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZFBFWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 01:21:05 -0400
-Received: from gate.crashing.org ([63.228.1.57]:48679 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751297AbZFBFVD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 01:21:03 -0400
-Subject: Re: [PATCH 3/7] percpu: clean up percpu variable definitions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: David Miller <davem@davemloft.net>, JBeulich@novell.com,
-       andi@firstfloor.org, mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, x86@kernel.org, ink@jurassic.park.msu.ru,
-       rth@twiddle.net, linux@arm.linux.org.uk, hskinnemoen@atmel.com,
-       cooloney@kernel.org, starvik@axis.com, jesper.nilsson@axis.com,
-       dhowells@redhat.com, ysato@users.sourceforge.jp, tony.luck@intel.com,
-       takata@linux-m32r.org, geert@linux-m68k.org, monstr@monstr.eu,
-       ralf@linux-mips.org, kyle@mcmartin.ca, paulus@samba.org,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, lethal@linux-sh.org,
-       jdike@addtoit.com, chris@zankel.net, rusty@rustcorp.com.au,
-       jens.axboe@oracle.com, davej@redhat.com, jeremy@xensource.com,
-       linux-mm@kvack.org
-In-Reply-To: <4A23BD20.5030500@kernel.org>
-References: <1243846708-805-1-git-send-email-tj@kernel.org>
-	 <1243846708-805-4-git-send-email-tj@kernel.org>
-	 <20090601.024006.98975069.davem@davemloft.net>
-	 <4A23BD20.5030500@kernel.org>
-Content-Type: text/plain
-Date: Tue, 02 Jun 2009 15:08:56 +1000
-Message-Id: <1243919336.5308.32.camel@pasglop>
+	Tue, 2 Jun 2009 01:22:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51790 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751159AbZFBFWA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 01:22:00 -0400
+Date: Mon, 1 Jun 2009 22:21:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: vibi_sreenivasan@cms.com, Mimi Zohar <zohar@us.ibm.com>,
+       Kylene Hall <kylene@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       Reiner Sailer <sailer@watson.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>
+Subject: Re: [PATCH]:RESEND : Return proper error value on failure of
+ dentry_open
+Message-Id: <20090601222105.16e20612.akpm@linux-foundation.org>
+In-Reply-To: <4A2393DE.10300@gmail.com>
+References: <1243836708.2163.3.camel@system>
+	<4A238625.8060002@gmail.com>
+	<1243844849.2327.27.camel@system>
+	<4A2393DE.10300@gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-01 at 20:36 +0900, Tejun Heo wrote:
-> > Whether the volatile is actually needed or not, it's bad to have this
-> > kind of potential behavior changing nugget hidden in this seemingly
-> > inocuous change.  Especially if you're the poor soul who ends up
-> > having to debug it :-/
+On Mon, 01 Jun 2009 10:39:58 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
+
+> On 06/01/2009 10:27 AM, vibi sreenivasan wrote:
+> > --- a/security/integrity/ima/ima_main.c
+> > +++ b/security/integrity/ima/ima_main.c
+> > @@ -201,10 +201,10 @@ int ima_path_check(struct path *path, int mask)
+> >  	}
+> >  out:
+> >  	mutex_unlock(&iint->mutex);
+> > -	if (file)
+> > +	if (!IS_ERR(file))
+> >  		fput(file);
 > 
-> You're right.  Aieee... how do I feed volatile to the DEFINE macro.
-> I'll think of something.
+> No, IS_ERR won't catch NULL and there is 'file = NULL' on the
+> dentry_open fail path. I still think 'if (file)' is proper condition.
+> 
+> What bug did you hit?
 
-Or better, work with the cris maintainer to figure out whether it's
-needed (it probably isn't) and have a pre-requisite patch that removes
-it before your series :-)
+	if (!(iint->flags & IMA_MEASURED)) {
+		struct dentry *dentry = dget(path->dentry);
+		struct vfsmount *mnt = mntget(path->mnt);
 
-Cheers,
-Ben.
+		file = dentry_open(dentry, mnt, O_RDONLY | O_LARGEFILE,
+				   current_cred());
+		if (IS_ERR(file)) {
+			pr_info("%s dentry_open failed\n", dentry->d_name.name);
+			rc = PTR_ERR(file);
+			file = NULL;
+			goto out;
+		}
+		rc = get_path_measurement(iint, file, dentry->d_name.name);
+	}
+out:
+	mutex_unlock(&iint->mutex);
+	if (file)
+		fput(file);
+	kref_put(&iint->refcount, iint_free);
+	return 0;
+}
 
+The handling of `file' looks OK to me.
+
+otoh the function just drops the error code on the floor.  Shouldn't it
+return `rc'?
 
