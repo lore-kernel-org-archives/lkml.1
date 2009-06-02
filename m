@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbZFBMug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753708AbZFBMv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754097AbZFBMug (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 08:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZFBMuL
+	id S1753708AbZFBMv6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 08:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbZFBMvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 08:50:11 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:55825 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752181AbZFBMuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 08:50:10 -0400
-Date: Tue, 2 Jun 2009 14:50:11 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: scameron@beardog.cca.cpqcorp.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, mikem@beardog.cca.cpqcorp.net
-Subject: Re: [PATCH 2/2] cciss: Fix SCSI device reset handler
-Message-ID: <20090602125011.GJ11363@kernel.dk>
-References: <20090527203007.GA30160@beardog.cca.cpqcorp.net> <20090529124208.531839fe.akpm@linux-foundation.org>
+	Tue, 2 Jun 2009 08:51:51 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:43202 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752611AbZFBMvv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 08:51:51 -0400
+Date: Tue, 2 Jun 2009 08:51:51 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 00/10] [GIT PULL] tracing: various updates
+In-Reply-To: <20090602092840.GA10421@elte.hu>
+Message-ID: <alpine.DEB.2.00.0906020842020.14994@gandalf.stny.rr.com>
+References: <20090602044315.439593107@goodmis.org> <20090602083043.GC12411@elte.hu> <20090602092840.GA10421@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090529124208.531839fe.akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 29 2009, Andrew Morton wrote:
-> On Wed, 27 May 2009 15:30:07 -0500
-> scameron@beardog.cca.cpqcorp.net wrote:
-> 
-> > +static int wait_for_device_to_become_ready(ctlr_info_t *h,
-> > +	unsigned char lunaddr[])
-> > +{
-> > +	int rc;
-> > +	int count = 0;
-> > +	int waittime = HZ;
-> > +	CommandList_struct *c;
-> > +
-> > +	c = cmd_alloc(h, 1);
-> > +	if (!c) {
-> > +		printk(KERN_WARNING "cciss%d: out of memory in "
-> > +			"wait_for_device_to_become_ready.\n", h->ctlr);
-> > +		return IO_ERROR;
-> > +	}
-> > +
-> > +	/* Send test unit ready until device ready, or give up. */
-> > +	while (count < 20) {
-> > +
-> > +		/* Wait for a bit.  do this first, because if we send
-> > +		 * the TUR right away, the reset will just abort it.
-> > +		 */
-> > +		set_current_state(TASK_INTERRUPTIBLE);
-> > +		schedule_timeout(waittime);
-> 
-> That's schedule_timeout_interruptible().
-> 
-> The problem with interruptible sleeps of this nature is that they are
-> no-ops if the calling process happens to have signal_pending().  I
-> suspect that this condition will break your driver.
-> 
-> If so, switching to schedule_timeout_uninterruptible() will unbreak it.
 
-I added Stephens patch and your fixup.
+On Tue, 2 Jun 2009, Ingo Molnar wrote:
 
--- 
-Jens Axboe
+> 
+> -tip testing found this build failure:
+> 
+> kernel/trace/trace.h: In function ?ftrace_trace_task?:
+> kernel/trace/trace.h:605: error: implicit declaration of function ?test_tsk_trace_trace?
+> 
+> I suspect one of the Kconfig changes/cleanups. Config attached.
 
+What branch? The config does not apply well to either master or 
+tracing/ftrace.
+
+I compiled it on both branches here and it worked fine. But I had to 
+disable the LZMA compression because I don't have that, and I had to 
+select the default choices, since the config does not match the options.
+
+-- Steve
