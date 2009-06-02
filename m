@@ -1,66 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754440AbZFBVxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753574AbZFBV64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754440AbZFBVxy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 17:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbZFBVxs
+	id S1753574AbZFBV64 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 17:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZFBV6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 17:53:48 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:13558 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750994AbZFBVxr convert rfc822-to-8bit (ORCPT
+	Tue, 2 Jun 2009 17:58:46 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:42841 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751053AbZFBV6p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 17:53:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=qQJrOW/H5AfN/JBUByOR95fch7GT7JCR+768qppaHFtMUyuzfg0DbbdfdYgD9Hx1vQ
-         1aDiLcDiLLLv26UFqVrn26g/cERCVSgJarpaOv+L0ajPCJyQI5HcHb3hHi2wUVCa1X3W
-         Gec5AU+lOzWKWAl+gRxjARPPbnYQx2mc/J38s=
-From: Ivo van Doorn <ivdoorn@gmail.com>
-To: alejandro.riveira@gmail.com
-Subject: Re: [2.6.27-rc7 vs 2.6.29 Regresion] Wifi Network Slownes rt2500pci
-Date: Tue, 2 Jun 2009 23:53:43 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linville@tuxdriver.com,
-       Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <1243247687.5322.8.camel@varda> <200906021834.40009.IvDoorn@gmail.com> <1243961465.9894.3.camel@varda>
-In-Reply-To: <1243961465.9894.3.camel@varda>
+	Tue, 2 Jun 2009 17:58:45 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 2 Jun 2009 14:52:41 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Al Viro <viro@ZenIV.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Eric W. Biederman" <ebiederm@maxwell.aristanetworks.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 18/23] vfs: Teach epoll to use file_hotplug_lock
+In-Reply-To: <m1eiu2qqho.fsf@fess.ebiederm.org>
+Message-ID: <alpine.DEB.1.10.0906021429570.12866@makko.or.mcafeemobile.com>
+References: <m1oct739xu.fsf@fess.ebiederm.org> <1243893048-17031-18-git-send-email-ebiederm@xmission.com> <alpine.DEB.1.10.0906020944540.12866@makko.or.mcafeemobile.com> <m1eiu2qqho.fsf@fess.ebiederm.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200906022353.44284.IvDoorn@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 June 2009, Alejandro Riveira Fernández wrote:
-> El mar, 02-06-2009 a las 18:34 +0200, Ivo van Doorn escribió:
-> > On Tuesday 02 June 2009, Alejandro Riveira Fernández wrote:
+On Tue, 2 Jun 2009, Eric W. Biederman wrote:
+
+> Davide Libenzi <davidel@xmailserver.org> writes:
 > 
-> [...]
+> > On Mon, 1 Jun 2009, Eric W. Biederman wrote:
+> >
+> >> From: Eric W. Biederman <ebiederm@maxwell.aristanetworks.com>
+> >> 
+> >> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+> >> ---
+> >>  fs/eventpoll.c |   39 ++++++++++++++++++++++++++++++++-------
+> >>  1 files changed, 32 insertions(+), 7 deletions(-)
+> >
+> > This patchset gives me the willies for the amount of changes and possible 
+> > impact on many subsystems.
 > 
-> > > ICMP ECHO REQUEST
-> > > 
-> > > Any advance?
-> > 
-> > Well I checked the dumps from the bugreport, but like I expected
-> > the only difference is that with the slow speed the correct value
-> > is written, and the fast speed the wrong value is written.
-> 
-> So my chip works better with incorrect values written in its registers?
+> It both is and is not that bad.  It is the cost of adding a lock.
 
-Apparently, probably because some other register is set to an incorrect value,
-but I have no idea which one that would be.
+We both know that it is not only the cost of a lock, but also the 
+sprinkling over a pretty vast amount of subsystems, of another layer of 
+code.
 
-> What about other chips out there do they prefer wrong values too ;)
-> Maybe what we thought wrong values are not that wrong ?
 
-They are wrong. That exact register initialization is pretty straightforward
-in the original Ralink driver on which rt2x00 is based.
 
-Ivo
+> I thought of doing something more uniform to user space.  But I observed
+> that the existing epoll punts on the case of a file descriptor being closed
+> and locking to go from a file to the other epoll datastructures is pretty
+> horrid I said forget it and used the existing close behaviour.
+
+Well, you cannot rely on the caller to tidy up the epoll fd by issuing an 
+epoll_ctl(DEL), so you do *need* to "punt" on close in order to not leave 
+lingering crap around. You cannot even hold a reference of the file, since 
+otherwise the epoll hooking will have to trigger not only at ->release() 
+time, but at every close, where you'll have to figure out if this is the 
+last real userspace reference or not. Plus all the issues related to 
+holding permanent extra references to userspace files.
+And since a file can be added in many epoll devices, you need to 
+unregister it from all of them (hence the other datastructures lookup). 
+Better this, on the slow path, with locks acquired only in the epoll usage 
+case, than some other thing and on the fast path, for every file.
+
+
+
+- Davide
+
+
