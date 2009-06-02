@@ -1,68 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758896AbZFBFIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbZFBFJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758896AbZFBFIA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 01:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZFBFHw
+	id S1758459AbZFBFJG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 01:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755076AbZFBFI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 01:07:52 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:56032 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754046AbZFBFHw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 01:07:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=ce+VjAGdfZJhnYa6+hPDecjN6ruIGTaDreiWSsSIqoUjscGdisLe+ti3vArmci+CVj
-         eeD0VPTCIk+GJDQ1+dQ7DuPazBOE4BN2pJ16qIvMUXha3EMJSXTz7CagpK2LwmPDaG0F
-         00D7TKlvad6Ir7sClqt5cap/7O+J82A+v1f3o=
+	Tue, 2 Jun 2009 01:08:57 -0400
+Received: from tundra.namei.org ([65.99.196.166]:58944 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753241AbZFBFI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 01:08:56 -0400
+Date: Tue, 2 Jun 2009 15:08:52 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+cc: lizf@cn.fujitsu.com, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] TOMOYO: Clarify lock protected section.
+In-Reply-To: <200906020230.n522UjfJ013581@www262.sakura.ne.jp>
+Message-ID: <alpine.LRH.2.00.0906021507360.10061@tundra.namei.org>
+References: <200906020143.n521hGGP003698@www262.sakura.ne.jp> <4A248C90.9010904@cn.fujitsu.com> <200906020230.n522UjfJ013581@www262.sakura.ne.jp>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <f5a7b3810905220417m5bbef733s54524e1180a9d4f7@mail.gmail.com>
-References: <f5a7b3810905220417m5bbef733s54524e1180a9d4f7@mail.gmail.com>
-Date: Tue, 2 Jun 2009 07:07:52 +0200
-Message-ID: <cfd18e0f0906012207i61621045je6d98db91d986c5f@mail.gmail.com>
-Subject: Re: adjtimex system man page EINVAL
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: naresh kamboju <naresh.kernel@gmail.com>
-Cc: ziegler@uni-freiburg.de, akpm@linux-foundation.org, johnstul@us.ibm.com,
-       zippel@linux-m68k.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Naresh,
+On Tue, 2 Jun 2009, Tetsuo Handa wrote:
 
-On Fri, May 22, 2009 at 1:17 PM, naresh kamboju <naresh.kernel@gmail.com> wrote:
-> Hi,
->
-> Regarding adjtimex system man page,
->
-> Since there are modifications noticed in
-> /kerel/time/ntp.c
-> /include/linux/timex.h
->
-> compared with /kerel/time/ntp.c 2.6.23 and 2.6.29 and above i have
-> attached adjtimex_2.6.23_vs_2.6.29.log : line number 330.
->
-> In adjtimex (2) man page under the EINVAL Error check section changes
-> are required w.r.t buf.offset.
-> Could you conform and update the man page.
+> I intended to help reviewers to visualize the range of protected section
+> at a glance. But if reviewers feel noisy, I can remove these markers.
 
-Could you please summarize in a couple of sentence what the actual
-changes are that you think are required.
+The lock functions act as annotations, you don't need to add any more.  
 
-Cheers,
-
-Michael
-
+Only add comments if the code is not obvious, but also first ask whether 
+this might mean that there's something wrong.
 
 -- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+James Morris
+<jmorris@namei.org>
