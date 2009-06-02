@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbZFBW4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbZFBW4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755645AbZFBW4T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 18:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbZFBW4F
+	id S1755942AbZFBW4b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 18:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753992AbZFBW4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 18:56:05 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:40464 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753420AbZFBW4D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 18:56:03 -0400
-To: Nick Piggin <npiggin@suse.de>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 04/23] vfs: Introduce infrastructure for revoking a file
-References: <m1oct739xu.fsf@fess.ebiederm.org>
-	<1243893048-17031-4-git-send-email-ebiederm@xmission.com>
-	<20090602071411.GE31556@wotan.suse.de>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 02 Jun 2009 15:56:02 -0700
-In-Reply-To: <20090602071411.GE31556@wotan.suse.de> (Nick Piggin's message of "Tue\, 2 Jun 2009 09\:14\:11 +0200")
-Message-ID: <m1tz2ykzy5.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 2 Jun 2009 18:56:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36887 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754717AbZFBW4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 18:56:08 -0400
+Message-ID: <4A25ADB6.2070503@kernel.org>
+Date: Tue, 02 Jun 2009 15:54:46 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: npiggin@suse.de, ebiederm@aristanetworks.com, hch@infradead.org, akpm@linux-foundation.org, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org, adobriyan@gmail.com, tj@kernel.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
+To: Pascal Terjan <pterjan@mandriva.com>
+CC: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       stable <stable@kernel.org>, linux-pci@vger.kernel.org
+Subject: Re: Stable regression 2.6.29.3 vs 2.6.29.2
+References: <1243625720.4426.0.camel@plop>  <4A203BFD.7040000@kernel.org>	 <1243949325.19053.100.camel@plop>  <4A256050.2020305@kernel.org>	 <1243969741.27062.11.camel@plop>  <4A258F1C.7030707@kernel.org> <1243983068.1629.0.camel@plop>
+In-Reply-To: <1243983068.1629.0.camel@plop>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <npiggin@suse.de> writes:
+Pascal Terjan wrote:
+> Le mardi 02 juin 2009 à 13:44 -0700, Yinghai Lu a écrit :
+>> Pascal Terjan wrote:
+>>> Le mardi 02 juin 2009 à 10:24 -0700, Yinghai Lu a écrit :
+>>> ACPI: Using IOAPIC for interrupt routing
+>>> PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 255
+>>> PCI: MCFG area at f0000000 reserved in ACPI motherboard resources
+>>> PCI: updated MCFG configuration 0: base f0000000 segment 0 buses 0 - 63
+>>> PCI: Using MMCONFIG for extended config space
+>> please check
+>>
+>> [PATCH] x86/pci: fix mmconfig detection with 32bit need 4g
+>>
+> 
+> I confirm that the machine boots fine with 2.6.29.4 + this patch
 
->> In addition for a complete solution we need:
->> - A reliable way the file structures that we need to revoke.
->> - To wait for but not tamper with ongoing file creation and cleanup.
->> - A guarantee that all with user space controlled duration are removed.
->> 
->> The file_hotplug_lock has a very unique implementation necessitated by
->> the need to have no performance impact on existing code.  Classic locking
->
-> Well, it isn't no performance impact. Function calls, branches, icache
-> and dcache...
+Thanks. Pascal
 
-Practically none.
+Can you try that on tip/master too?
 
-Everything I could measure was in the noise.  It is cheaper than any serializing
-locking primitive.  I ran both lmbench and did some microbenchmark testing.
-So I know on the fast path the overhead is minimal.  Certainly less than  what
-we are doing in sysfs and proc today.
+http://people.redhat.com/mingo/tip.git/readme.txt
 
-Eric
-
+YH
