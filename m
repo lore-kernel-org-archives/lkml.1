@@ -1,99 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760120AbZFBH12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbZFBHfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760120AbZFBH12 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 03:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759677AbZFBH1U
+	id S1759677AbZFBHfH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 03:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbZFBHe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 03:27:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57900 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756987AbZFBH1T (ORCPT
+	Tue, 2 Jun 2009 03:34:57 -0400
+Received: from viefep18-int.chello.at ([62.179.121.38]:20077 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951AbZFBHe4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 03:27:19 -0400
-Date: Tue, 2 Jun 2009 00:26:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Florian Fainelli <florian@openwrt.org>
-Cc: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
-       linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/9] kernel: export sound/core/pcm_timer.c gcd
- implementation
-Message-Id: <20090602002616.d5707d6b.akpm@linux-foundation.org>
-In-Reply-To: <200906020919.25162.florian@openwrt.org>
-References: <200906011357.09966.florian@openwrt.org>
-	<20090601215034.7352ddca.akpm@linux-foundation.org>
-	<200906020919.25162.florian@openwrt.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 2 Jun 2009 03:34:56 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [patch 3/3 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0906020016060.24915@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0906011828040.6936@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.0906011830490.6936@chino.kir.corp.google.com>
+	 <20090601225602.3482cd0d.akpm@linux-foundation.org>
+	 <alpine.DEB.2.00.0906020016060.24915@chino.kir.corp.google.com>
+Content-Type: text/plain
+Date: Tue, 02 Jun 2009 09:34:55 +0200
+Message-Id: <1243928095.23657.5633.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Jun 2009 09:19:22 +0200 Florian Fainelli <florian@openwrt.org> wrote:
-
-> Le Tuesday 02 June 2009 06:50:34 Andrew Morton, vous avez __crit__:
-> > On Mon, 1 Jun 2009 13:57:09 +0200 Florian Fainelli <florian@openwrt.org> 
-> wrote:
-> > > This patch exports the gcd implementation from
-> > > sound/core/pcm_timer.c into include/linux/kernel.h.
-> > > AR7 uses it in its clock routines.
-> > >
-> > > ...
-> > >
-> > > diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> > > index 883cd44..878a27a 100644
-> > > --- a/include/linux/kernel.h
-> > > +++ b/include/linux/kernel.h
-> > > @@ -147,6 +147,22 @@ extern int _cond_resched(void);
-> > >  		(__x < 0) ? -__x : __x;		\
-> > >  	})
-> > >
-> > > +/* Greatest common divisor */
-> > > +static inline unsigned long gcd(unsigned long a, unsigned long b)
-> > > +{
-> > > +        unsigned long r;
-> > > +        if (a < b) {
-> > > +                r = a;
-> > > +                a = b;
-> > > +                b = r;
-> > > +        }
-> > > +        while ((r = a % b) != 0) {
-> > > +                a = b;
-> > > +                b = r;
-> > > +        }
-> > > +        return b;
-> > > +}
-> >
-> > a) the name's a bit sucky.   Is there some convention for this name?
+On Tue, 2009-06-02 at 00:26 -0700, David Rientjes wrote:
+> > I really think/hope/expect that this is unneeded.
+> > 
+> > Do we know of any callsites which do greater-than-order-0 allocations
+> > with GFP_NOFAIL?  If so, we should fix them.
+> > 
+> > Then just ban order>0 && GFP_NOFAIL allocations.
+> > 
 > 
-> We might want something better like greatest_common_divisor which is a bit 
-> more self-explanatory ?
-
-Well, if gcd() is a commonly used name then let's use that.  I don't
-personally recall seeing it used but that doesn't mean much.
-
-> >
-> > b) It looks too large to be inlined.  lib/gdc.c?
+> That seems like a different topic: banning higher-order __GFP_NOFAIL 
+> allocations or just deprecating __GFP_NOFAIL altogether and slowly 
+> switching users over is a worthwhile effort, but is unrelated.
 > 
-> And its users select it in order not to increase the size of kernel.h, sounds 
-> good.
+> This patch is necessary because we explicitly deny the oom killer from 
+> being used when the order is greater than PAGE_ALLOC_COSTLY_ORDER because 
+> of an assumption that it won't help.  That assumption isn't always true, 
+> especially for large memory-hogging tasks that have mlocked large chunks 
+> of contiguous memory, for example.  The only thing we do know is that 
+> direct reclaim has not made any progress so we're unlikely to get a 
+> substantial amount of memory freeing in the immediate future.  Such an 
+> instance will simply loop forever without killing that rogue task for a 
+> __GFP_NOFAIL allocation.
 > 
-> >
-> > b) there's an implementation of gcd() in
-> >    net/netfilter/ipvs/ip_vs_wrr.c.  I expect that this patch broke the
-> >    build.
-> 
-> I did forget about this. That gcd implementation only treats the a > b case.
-> 
-> What do you prefer, each user keeps its gcd implementation locally or we make 
-> a lib/gcd.c for it ?
+> So while it's better in the long-term to deprecate the flag as much as 
+> possible and perhaps someday remove it from the page allocator entirely, 
+> we're faced with the current behavior of either looping endlessly or 
+> freeing memory so the kernel allocation may succeed when direct reclaim 
+> has failed, which also makes this a rare instance where the oom killer 
+> will never needlessly kill a task.
 
-I think lib/gcd.c would be better.  Then migrate current code over to
-use that.
+I would really prefer if we do as Andrew suggests. Both will fix this
+problem, so I don't see it as a different topic at all.
 
-The problem with offering a generic version is types: will it work
-correctly and sensibly for all combinations of signed/unsigned
-char/short/int/long/longlong?  All but the last, I expect.  In which
-case that'll be good enough for now.
+Eradicating __GFP_NOFAIL is a fine goal, but very hard work (people have
+been wanting to do that for many years). But simply limiting it to
+0-order allocation should be much(?) easier.
+
+
