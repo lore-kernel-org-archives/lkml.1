@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753749AbZFBTc0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbZFBTcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753749AbZFBTc0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 15:32:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbZFBTcP
+	id S1753918AbZFBTcj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 15:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZFBTca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 15:32:15 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:48810 "EHLO e3.ny.us.ibm.com"
+	Tue, 2 Jun 2009 15:32:30 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:55717 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750970AbZFBTcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 15:32:14 -0400
-Date: Tue, 2 Jun 2009 12:32:02 -0700
+	id S1752795AbZFBTcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 15:32:18 -0400
+Date: Tue, 2 Jun 2009 12:32:16 -0700
 From: Gary Hade <garyhade@us.ibm.com>
 To: mingo@elte.hu, mingo@redhat.com
 Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
        x86@kernel.org, ebiederm@xmission.com, yinghai@kernel.org,
        lcm@us.ibm.com
 Subject: [RESEND] [PATCH v2] [BUGFIX] x86/x86_64: fix CPU offlining
-	triggered "inactive" device IRQ interrruption
-Message-ID: <20090602193202.GB7282@us.ibm.com>
+	triggered "active" device IRQ interrruption
+Message-ID: <20090602193216.GC7282@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -27,25 +27,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: Eliminates a race that can leave the system in an
-        unusable state
+Impact: Eliminates an issue that can leave the system in an
+        unusable state.
 
-During rapid offlining of multiple CPUs there is a chance
-that an IRQ affinity move destination CPU will be offlined
-before the IRQ affinity move initiated during the offlining
-of a previous CPU completes.  This can happen when the device
-is not very active and thus fails to generate the IRQ that is
-needed to complete the IRQ affinity move before the move
-destination CPU is offlined.  When this happens there is an
--EBUSY return from __assign_irq_vector() during the offlining
-of the IRQ move destination CPU which prevents initiation of
-a new IRQ affinity move operation to an online CPU.  This
-leaves the IRQ affinity set to an offlined CPU.
+This patch addresses an issue where device generated IRQs
+are no longer seen by the kernel following IRQ affinity
+migration while the device is generating IRQs at a high rate.
 
-I have been able to reproduce the problem on some of our
-systems using the following script.  When the system is idle
-the problem often reproduces during the first CPU offlining
-sequence.
+I have been able to consistently reproduce the problem on
+some of our systems by running the following script (VICTIM_IRQ
+specifies the IRQ for the aic94xx device) while a single instance
+of the command
+  # while true; do find / -exec file {} \;; done
+is keeping the filesystem activity and IRQ rate reasonably high.
 
 #!/bin/sh
 
@@ -66,44 +60,113 @@ while true; do
   iteration=`expr $iteration + 1`
 done
 
-The proposed fix takes advantage of the fact that when all
-CPUs in the old domain are offline there is nothing to be done
-by send_cleanup_vector() during the affinity move completion.
-So, we simply avoid setting cfg->move_in_progress preventing
-the above mentioned -EBUSY return from __assign_irq_vector().
-This allows initiation of a new IRQ affinity move to a CPU
-that is not going offline.
+The root cause is a known issue already addressed for some
+code paths [e.g. ack_apic_level() and the now obsolete
+migrate_irq_remapped_level_desc()] where the ioapic can
+misbehave when the I/O redirection table register is written
+while the Remote IRR bit is set.
+
+The proposed fix uses the same avoidance method and much
+of same code that the Interrupt Remapping code previously
+used to avoid the same problem.
 
 Successfully tested with Ingo's linux-2.6-tip (32 and 64-bit
 builds) on the IBM x460, x3550 M2, x3850, and x3950 M2.
 
 v2: modified to integrate with Yinghai Lu's
-    "x86/irq: remove leftover code from NUMA_MIGRATE_IRQ_DESC"
-    patch which modified intersecting lines.  Only comment 
-    changes were affected.  The actual change to the code 
-    is the same.  
+    "irq: change ->set_affinity() to return status" changes
+    to intersecting/related code.
 
 Signed-off-by: Gary Hade <garyhade@us.ibm.com>
 
 ---
- arch/x86/kernel/apic/io_apic.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/x86/kernel/apic/io_apic.c |   68 ++++++++++++++++++++++++++++++-
+ 1 file changed, 67 insertions(+), 1 deletion(-)
 
 Index: linux-2.6-tip/arch/x86/kernel/apic/io_apic.c
 ===================================================================
---- linux-2.6-tip.orig/arch/x86/kernel/apic/io_apic.c	2009-05-14 14:06:30.000000000 -0700
-+++ linux-2.6-tip/arch/x86/kernel/apic/io_apic.c	2009-05-14 14:09:42.000000000 -0700
-@@ -1218,8 +1218,11 @@ next:
- 		current_vector = vector;
- 		current_offset = offset;
- 		if (old_vector) {
--			cfg->move_in_progress = 1;
- 			cpumask_copy(cfg->old_domain, cfg->domain);
-+			if (cpumask_intersects(cfg->old_domain,
-+					       cpu_online_mask)) {
-+				cfg->move_in_progress = 1;
+--- linux-2.6-tip.orig/arch/x86/kernel/apic/io_apic.c	2009-05-14 14:11:00.000000000 -0700
++++ linux-2.6-tip/arch/x86/kernel/apic/io_apic.c	2009-05-14 14:11:32.000000000 -0700
+@@ -2296,7 +2296,8 @@ set_desc_affinity(struct irq_desc *desc,
+ }
+
+ static int
+-set_ioapic_affinity_irq_desc(struct irq_desc *desc, const struct cpumask *mask)
++set_ioapic_irq_affinity_desc(struct irq_desc *desc,
++			     const struct cpumask *mask)
+ {
+ 	struct irq_cfg *cfg;
+ 	unsigned long flags;
+@@ -2320,6 +2321,71 @@ set_ioapic_affinity_irq_desc(struct irq_
+ 	return ret;
+ }
+
++static void
++delayed_irq_move(struct work_struct *work)
++{
++	unsigned int irq;
++	struct irq_desc *desc;
++
++	for_each_irq_desc(irq, desc) {
++		if (desc->status & IRQ_MOVE_PENDING) {
++			unsigned long flags;
++
++			spin_lock_irqsave(&desc->lock, flags);
++			if (!desc->chip->set_affinity ||
++			    !(desc->status & IRQ_MOVE_PENDING)) {
++				desc->status &= ~IRQ_MOVE_PENDING;
++				spin_unlock_irqrestore(&desc->lock, flags);
++				continue;
 +			}
- 		}
- 		for_each_cpu_and(new_cpu, tmp_mask, cpu_online_mask)
- 			per_cpu(vector_irq, new_cpu)[vector] = irq;
++			desc->chip->set_affinity(irq, desc->pending_mask);
++			spin_unlock_irqrestore(&desc->lock, flags);
++		}
++	}
++}
++
++static DECLARE_DELAYED_WORK(delayed_irq_move_work, delayed_irq_move);
++
++static int
++set_ioapic_irq_affinity_level_desc(struct irq_desc *desc)
++{
++	struct irq_cfg *cfg = desc->chip_data;
++	int ret = -1;
++
++	mask_IO_APIC_irq_desc(desc);
++	if (io_apic_level_ack_pending(cfg)) {
++		/*
++		 * Interrupt in progress. Migrating irq now will change
++		 * the vector information in the IO-APIC RTE which will
++		 * confuse the EOI broadcast performed by cpu.
++		 * So, we delay the IRQ migration.
++		 */
++		schedule_delayed_work(&delayed_irq_move_work, 1);
++		ret = 0;
++		goto unmask;
++	}
++
++	/* Interrupt not in progress.  We can change the vector
++	 * information in the IO-APIC RTE. */
++	ret = set_ioapic_irq_affinity_desc(desc, desc->pending_mask);
++	desc->status &= ~IRQ_MOVE_PENDING;
++unmask:
++	unmask_IO_APIC_irq_desc(desc);
++	return ret;
++}
++
++static int
++set_ioapic_affinity_irq_desc(struct irq_desc *desc,
++			     const struct cpumask *mask)
++{
++	if (desc->status & IRQ_LEVEL) {
++		desc->status |= IRQ_MOVE_PENDING;
++		cpumask_copy(desc->pending_mask, mask);
++		return set_ioapic_irq_affinity_level_desc(desc);
++	}
++	return set_ioapic_irq_affinity_desc(desc, mask);
++}
++
+ static int
+ set_ioapic_affinity_irq(unsigned int irq, const struct cpumask *mask)
+ {
 
