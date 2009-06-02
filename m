@@ -1,99 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759985AbZFBIyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760132AbZFBIzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759985AbZFBIyl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 04:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbZFBIya
+	id S1760132AbZFBIzn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 04:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbZFBIza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 04:54:30 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:45928 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754241AbZFBIy3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 04:54:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=IWGo4RqZmJx+E8ioNk3Wnbxpw9zpvnp2M7mdzMQsRjNDEiiZ0pVVaPkUIxlNWBLrmj
-         ASyrlwXP2NIlVY8hz/rk0ockt+1C3RHN34A6MESC+Sm/GGYFy4gPcUVPjhR6+T+Vo5ZH
-         //J/Yu9aThemy7uHjCh+tdQh0t7X+5cDPHj6A=
-From: Florian Fainelli <florian@openwrt.org>
-To: Marcel Holtmann <marcel@holtmann.org>
-Subject: Re: =?utf-8?q?=D0=9E=D1=82=D0=B2=D0=B5=D1=82=3A_=5BPATCH_10/10=5D_ieee802154=3A?=
- =?utf-8?q?_add_at86rf230/rf231_spi?= driver
-Date: Tue, 2 Jun 2009 10:46:51 +0200
-User-Agent: KMail/1.9.9
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       Holger Schurig <hs4233@mail.mn-solutions.de>,
-       linux-wireless@vger.kernel.org,
-       =?utf-8?q?G=C3=A1bor_Stefanik?= <netrolller.3d@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       slapin@ossfans.org, maxim.osipov@siemens.com,
-       dmitry.baryshkov@siemens.com, oliver.fendt@siemens.com
-References: <1243868091-5315-3-git-send-email-dbaryshkov@gmail.com> <bc64b4640906020129x4fe15e5en9d8e2cad1d86b236@mail.gmail.com> <1243931809.3192.68.camel@localhost.localdomain>
-In-Reply-To: <1243931809.3192.68.camel@localhost.localdomain>
+	Tue, 2 Jun 2009 04:55:30 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:57297
+	"EHLO VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753810AbZFBIz3 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 04:55:29 -0400
+X-SpamScore: -18
+X-BigFish: VPS-18(zz1432R98dR1805M873fnzz1202hzzz32i6bh17ch61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KKLSS7-02-48D-01
+Date: Tue, 2 Jun 2009 10:55:19 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] dma-debug: add debugfs file for driver filter
+Message-ID: <20090602085519.GL4062@amd.com>
+References: <1243523971-12681-1-git-send-email-joerg.roedel@amd.com> <1243523971-12681-3-git-send-email-joerg.roedel@amd.com> <20090601150418.79dfd250.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-Message-Id: <200906021046.52681.florian@openwrt.org>
+In-Reply-To: <20090601150418.79dfd250.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 02 Jun 2009 08:55:19.0487 (UTC) FILETIME=[DB2604F0:01C9E35F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Tuesday 02 June 2009 10:36:49 Marcel Holtmann, vous avez Ã©critÂ :
-> Hi Dmitry,
->
-> > >> > I thought about drivers/net as about ip (well, more or less)
-> > >> > network drivers. We have drivers/atm or drivers/bluetooth (and
-> > >> > bluetooth is 802.15.1...).
-> > >>
-> > >> I actually like that this is drivers/bluetooth and not
-> > >> drivers/ieee802151. Would you consider drivers/zigbee instead of
-> > >> drivers/ieee802154 ???
-> > >
-> > > I fully agree here.
-> > >
-> > > Please use "zigbee" instead of "ieee*" names since that can become
-> > > messy and confusing. I know that in theory the IEEE part of ZigBee is
-> > > more low-level radio and could be used by non-ZigBee devices, but that
-> > > is not gonna happen anyway. Especially with Bluetooth Low Energy
-> > > pushing into the turf of ZigBee. So please use proper names and not
-> > > confuse people with IEEE numbers ;)
+On Mon, Jun 01, 2009 at 03:04:18PM -0700, Andrew Morton wrote:
+> On Thu, 28 May 2009 17:19:29 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> > This patch adds the dma-api/driver_filter file to debugfs. The root user
+> > can write a driver name into this file to see only dma-api errors for
+> > that particular driver in the kernel log. Writing an empty string to
+> > that file disables the driver filter.
+> > 
 > >
-> > This gonna happen, as we are most probably going to implement 6lowpan
-> > on top of our stack. 6lowpan is a way to encapsulate IPv6 frames into
-> > IEEE 802.15.4 and has nothing in common with ZigBee. Moreover
-> > ZigBee is a trademark with strict rules upon it's usage. Our lawyers are
-> > currently investigating if it's possible to use this name in projects
-> > like Linux kernel which are open-source, non-related to any project but
-> > OTOH can be encapsulated in any commercial project.
+> > ...
 > >
-> > IEEE 802.15.4 is a term like IEEE 802.11. We do have mac80211,
-> > we have had (until recently) ieee80211 dir, so why bother?
-> >
-> > For Bluetooth naming directories 'bluetooth' is logical, as 802.15.1
-> > standard is a less known name, doesn't incorporate latest changes
-> > from Bluetooth, etc.
->
-> and so is IEEE 802.15.4 hence we propose using "zigbee" here. Using the
-> mac80211 has historical reasons and 802.11 is a known name and even used
-> on product marketing material. IEEE 802.15.4 is not. We are also using
-> the term "wimax" and not its IEEE numbering.
+> > +static ssize_t filter_read(struct file *file, char __user *user_buf,
+> > +			   size_t count, loff_t *ppos)
+> > +{
+> > +	unsigned long flags;
+> > +	char buf[NAME_MAX_LEN + 1];
+> > +	int len;
+> > +
+> > +	if (!current_driver_name[0])
+> > +		return 0;
+> > +
+> > +	/*
+> > +	 * We can't copy to userspace directly because current_driver_name can
+> > +	 * only be read under the driver_name_lock with irqs disabled. So
+> > +	 * create a temporary copy first.
+> > +	 */
+> > +	read_lock_irqsave(&driver_name_lock, flags);
+> > +	strncpy(buf, current_driver_name, NAME_MAX_LEN - 1);
+> 
+> If you use strlcpy() here,
+> 
+> > +	read_unlock_irqrestore(&driver_name_lock, flags);
+> > +
+> > +	/* make it look nice :-) */
+> > +	len = strnlen(buf, NAME_MAX_LEN - 1);
+> > +	buf[len]     = '\n';
+> > +	buf[len + 1] = 0;
+> 
+> the above can all be replaced with a simple strcat().  I think.
 
-Because you have an IEEE 802.15.4 PHY/MAC chip does not mean you want to do 
-ZigBee on top of it and Dmitry explained that well. I would stick with the 
-ieee802154 name here for that reason. If your drivers go in ZigBee, it means 
-that your hardware implements parts of the ZigBee profiles, and that is not 
-the case here.
+Right, thanks.
 
-The current Bluetooth implementation in the kernel deserves its name since 
-drivers are implementing the HCI Bluetooth profile (maybe others as well), 
-that is not plain IEEE 802.15.1.
+> Perhaps the whole lot can be replaced with a single scnprintf(), if
+> it's known that the input string has appropriate length.
+
+I will check that. Thanks.
+
+> > +	return simple_read_from_buffer(user_buf, count, ppos, buf, len + 1);
+> > +}
+> > +
+> > +static ssize_t filter_write(struct file *file, const char __user *userbuf,
+> > +			    size_t count, loff_t *ppos)
+> > +{
+> > +	unsigned long flags;
+> > +	char buf[NAME_MAX_LEN];
+> > +	size_t len = NAME_MAX_LEN - 1;
+> > +	int i;
+> > +
+> > +	/*
+> > +	 * We can't copy from userspace directly. Access to
+> > +	 * current_driver_name is protected with a write_lock with irqs
+> > +	 * disabled. Since copy_from_user can fault and may sleep we
+> > +	 * need to copy to temporary buffer first
+> > +	 */
+> > +	len = min(count, len);
+> > +	if (copy_from_user(buf, userbuf, len))
+> > +		return -EFAULT;
+> > +
+> > +	buf[NAME_MAX_LEN - 1] = 0;
+> 
+> Might be able to use strncpy_from_user() here.
+> 
+> > +	write_lock_irqsave(&driver_name_lock, flags);
+> > +	if (!isalnum(buf[0])) {
+> > +		if (current_driver_name[0])
+> > +			printk(KERN_INFO "DMA-API: switching off dma-debug "
+> > +					 "driver filter\n");
+> > +		current_driver_name[0] = 0;
+> > +		current_driver = NULL;
+> > +		goto out_unlock;
+> > +	}
+> > +
+> > +	for (i = 0; i < NAME_MAX_LEN; ++i) {
+> > +		current_driver_name[i] = buf[i];
+> > +		if (isspace(buf[i]) || buf[i] == ' ' ||
+> > +		    buf[i] == '\t' || buf[i] == 0)
+> > +			break;
+> > +	}
+> > +	current_driver_name[i] = 0;
+> > +	current_driver = NULL;
+> > +
+> > +	printk(KERN_INFO "DMA-API: enable driver filter for driver [%s]\n",
+> > +	       current_driver_name);
+> > +
+> > +out_unlock:
+> > +	write_unlock_irqrestore(&driver_name_lock, flags);
+> > +
+> > +	return count;
+> > +}
+> 
+> It's unobvious what user interface this code is attempting to implement.
+> The change to DMA-API.txt in the fourth patch doesn't illuminate the
+> issue either. Some code comments explaining wtf this is doing and why
+> would help, please.
+
+It implements a file to which the name of a driver can be written. If
+done, dma-debug will only print errors from that particular driver. I
+will state that also in a comment.
+
+> I'd have thought that the test for isspace() makes the tests for ' '
+> and '\t' redundant?
+
+Checking again, this is true for '\t' but not for ' '. The later one
+would be checked by isblank() which is not implemented in the kernel.
+
+
+Joerg
+
 -- 
-Best regards, Florian Fainelli
-Email : florian@openwrt.org
-http://openwrt.org
--------------------------------
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
+
