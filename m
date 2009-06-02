@@ -1,95 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbZFBWWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbZFBWY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754620AbZFBWWn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 18:22:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbZFBWWg
+	id S1754643AbZFBWY4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 18:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbZFBWYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 18:22:36 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:5208 "EHLO
+	Tue, 2 Jun 2009 18:24:49 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:36195 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751347AbZFBWWf (ORCPT
+	with ESMTP id S1750780AbZFBWYr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 18:22:35 -0400
+	Tue, 2 Jun 2009 18:24:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
-         :date:message-id:mime-version:x-mailer;
-        b=u91pwB92DFUQx/fMv1/WeAghqHe0nQTGk7BZoA0wL/4gzq+EdmDto8vbMXUIf37fXg
-         IZzfLjbCio2jkJ19NucCBZyfERpr4vAmoLcIeQOByLemq7g8y8SWylFWXy0jus4uNsN4
-         U0UqKmGWrBwJ0DDkpgA+l59Wx41BJaDc6W9pI=
-Subject: Re: [2.6.27-rc7 vs 2.6.29 Regresion] Wifi Network Slownes rt2500pci
-From: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
-	<alejandro.riveira@gmail.com>
-Reply-To: alejandro.riveira@gmail.com
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linville@tuxdriver.com,
-       Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <200906022353.44284.IvDoorn@gmail.com>
-References: <1243247687.5322.8.camel@varda>
-	 <200906021834.40009.IvDoorn@gmail.com> <1243961465.9894.3.camel@varda>
-	 <200906022353.44284.IvDoorn@gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-bCFE2XwOvKIZa9VjM5t1"
-Date: Wed, 03 Jun 2009 00:22:33 +0200
-Message-Id: <1243981353.7204.1.camel@varda>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=eT5v068he0mdtxM9fBHtaRs3lESeS78nIP74b9HGIKdACug4p92HLGFrFe24MoB8E+
+         g5hWdwmla5JZju37cn4ux+9DyzmGZR+2A1tYzAz1+i8oPEo5YqIcCRsLuF5OTST2dT7n
+         h7swWR9FH+fHui2njo8rgXK1aHhERCkUItdHo=
+Date: Wed, 3 Jun 2009 00:24:45 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH 1/2] function-graph: move initialization of new tasks
+	up in fork
+Message-ID: <20090602222443.GC6041@nowhere>
+References: <20090602220212.894951549@goodmis.org> <20090602220309.575197235@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090602220309.575197235@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 02, 2009 at 06:02:13PM -0400, Steven Rostedt wrote:
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> When the function graph tracer is enabled, all new tasks must allocate
+> a ret_stack to place the return address of functions. This is because
+> the function graph tracer will replace the real return address with a
+> call to the tracing of the exit function.
+> 
+> This initialization happens in fork, but it happens too late. If fork
+> fails, then it will call free_task and that calls the freeing of this
+> ret_stack. But before initialization happens, the new (failed) task
+> points to its parents ret_stack. If a fork failure happens during
+> the function trace, it would be catastrophic for the parent.
+> 
+> Also, there's no need to call ftrace_graph_exit_task from fork, since
+> it is called by free_task which fork calls on failure.
+> 
+> [ Impact: prevent crash during failed fork running function graph tracer ]
+> 
+> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
---=-bCFE2XwOvKIZa9VjM5t1
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-El mar, 02-06-2009 a las 23:53 +0200, Ivo van Doorn escribi=C3=B3:
+Ah, thanks a lot. It was on my TODO list.
+Oleg Nesterov reported me that problem...
 
-> > So my chip works better with incorrect values written in its registers?
->=20
-> Apparently, probably because some other register is set to an incorrect v=
-alue,
-> but I have no idea which one that would be.
+Frederic.
 
-Could the fact that i dual boot with windows (and use the windows
-driver) have someting to do with it ?
 
->=20
-> > What about other chips out there do they prefer wrong values too ;)
-> > Maybe what we thought wrong values are not that wrong ?
->=20
-> They are wrong. That exact register initialization is pretty straightforw=
-ard
-> in the original Ralink driver on which rt2x00 is based.
->=20
-> Ivo
---=20
-"I contend that we are both atheists. I just believe in one fewer god
-than you do. When you understand why you dismiss all the other possible
-gods, you will understand why I dismiss yours."
-                                                  Stephen Henry Roberts
-
---=-bCFE2XwOvKIZa9VjM5t1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Esto es una parte de mensaje firmado digitalmente
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iQIcBAABAgAGBQJKJaYjAAoJEDO4iEReSTB2gdQQAKFSQNzIQ65Aqa/h4alsEGab
-8w/QkS5arLgEmbcT4LqDrKuGk9aN1y3K+pAiZiiw+vqQWi5AXLC9+rKl1zFDTSZm
-BpgrxWxJ0iGt6STYNQwI6O2pex7KLOjfP9dgwK160zfIY7bEUCHLQXBabJNzpMMf
-aG65SAut/xfFgyzukyIl4KIdkiiQgEVavj2AHPVJ8vAKAZ4vkbJCTa3RUl+FtYN7
-GT1dRZoZZp2tsfcoKuUtqQqe3Ba91XrWAUV0RP70zGyxD1zQuBFU9EgWjavh8u/5
-AFhx0aBysmM7EoXuexXpq1YBkrt/uftgaLSse9cJZn7IZ9aX6IYKTh7Gz0Z+LLYU
-T/q78CecpcHAj6XX0T1AY6SNH1C6LcHci1RDIVGQx5uXfRLQgHUKLM2E69f2HnSA
-O0vyqzhvAaxkZM0+HGdEA+7s8t2Qh0ZmV9AczZTZ5zUc7UPib9qruWj3PEQRZ84e
-ydZfUm/0M2ykryTtyyhnbldYIeGj4/3bcGLjxqlpqH4EraIFzfxs9EDtuWFrTXho
-NxJoJWGOteuGMk9U9qE1Uyau5If1Vfd/+MGmxJ2ACDfjxaujDYzp3SCb3oxl1HMn
-3iBpd6FpdtG8tS3Soys/rEDEtVrxCY/2CN5d9BrGnHQabYovHaq6snvkmVS04tQ8
-Fw3DwrJPRqI+D5lRfhco
-=yUq9
------END PGP SIGNATURE-----
-
---=-bCFE2XwOvKIZa9VjM5t1--
+> ---
+>  kernel/fork.c |   10 ++++------
+>  1 files changed, 4 insertions(+), 6 deletions(-)
+> 
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index b9e2edd..c4b1e35 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -982,6 +982,8 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+>  	if (!p)
+>  		goto fork_out;
+>  
+> +	ftrace_graph_init_task(p);
+> +
+>  	rt_mutex_init_task(p);
+>  
+>  #ifdef CONFIG_PROVE_LOCKING
+> @@ -1131,8 +1133,6 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+>  		}
+>  	}
+>  
+> -	ftrace_graph_init_task(p);
+> -
+>  	p->pid = pid_nr(pid);
+>  	p->tgid = p->pid;
+>  	if (clone_flags & CLONE_THREAD)
+> @@ -1141,7 +1141,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+>  	if (current->nsproxy != p->nsproxy) {
+>  		retval = ns_cgroup_clone(p, pid);
+>  		if (retval)
+> -			goto bad_fork_free_graph;
+> +			goto bad_fork_free_pid;
+>  	}
+>  
+>  	p->set_child_tid = (clone_flags & CLONE_CHILD_SETTID) ? child_tidptr : NULL;
+> @@ -1233,7 +1233,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+>  		spin_unlock(&current->sighand->siglock);
+>  		write_unlock_irq(&tasklist_lock);
+>  		retval = -ERESTARTNOINTR;
+> -		goto bad_fork_free_graph;
+> +		goto bad_fork_free_pid;
+>  	}
+>  
+>  	if (clone_flags & CLONE_THREAD) {
+> @@ -1268,8 +1268,6 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+>  	cgroup_post_fork(p);
+>  	return p;
+>  
+> -bad_fork_free_graph:
+> -	ftrace_graph_exit_task(p);
+>  bad_fork_free_pid:
+>  	if (pid != &init_struct_pid)
+>  		free_pid(pid);
+> -- 
+> 1.6.3.1
+> 
+> -- 
 
