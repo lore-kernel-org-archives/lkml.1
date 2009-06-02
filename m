@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760605AbZFBIhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759147AbZFBItw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760605AbZFBIhV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 04:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758896AbZFBIhN
+	id S1759147AbZFBItw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 04:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756910AbZFBIto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 04:37:13 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:35607 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753000AbZFBIhL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 04:37:11 -0400
-Subject: Re: =?UTF-8?Q?=D0=9E=D1=82=D0=B2=D0=B5=D1=82=3A?= [PATCH 10/10]
- ieee802154: add at86rf230/rf231 spi driver
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Holger Schurig <hs4233@mail.mn-solutions.de>,
-       linux-wireless@vger.kernel.org,
-       =?ISO-8859-1?Q?G=E1bor?= Stefanik <netrolller.3d@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       slapin@ossfans.org, maxim.osipov@siemens.com,
-       dmitry.baryshkov@siemens.com, oliver.fendt@siemens.com
-In-Reply-To: <bc64b4640906020129x4fe15e5en9d8e2cad1d86b236@mail.gmail.com>
-References: <1243868091-5315-3-git-send-email-dbaryshkov@gmail.com>
-	 <69e28c910906010921r56cf7017gc858cb7ba819c385@mail.gmail.com>
-	 <20090601203348.GC7143@doriath.ww600.siemens.net>
-	 <200906021010.49613.hs4233@mail.mn-solutions.de>
-	 <1243930893.3192.62.camel@localhost.localdomain>
-	 <bc64b4640906020129x4fe15e5en9d8e2cad1d86b236@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 02 Jun 2009 10:36:49 +0200
-Message-Id: <1243931809.3192.68.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Tue, 2 Jun 2009 04:49:44 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:56438 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756776AbZFBIto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 04:49:44 -0400
+Message-ID: <4A24E788.2090305@atmel.com>
+Date: Tue, 02 Jun 2009 10:49:12 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Rob Emanuele <poorarm@shoreis.com>
+CC: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH] New AT91 MCI Driver that supports both MCI slots used
+ at the 	same time
+References: <c8284b5b0905281440hd2e4993re3d0d8c590713fa0@mail.gmail.com>
+In-Reply-To: <c8284b5b0905281440hd2e4993re3d0d8c590713fa0@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
-
-> >> > I thought about drivers/net as about ip (well, more or less)
-> >> > network drivers. We have drivers/atm or drivers/bluetooth (and
-> >> > bluetooth is 802.15.1...).
-> >>
-> >> I actually like that this is drivers/bluetooth and not
-> >> drivers/ieee802151. Would you consider drivers/zigbee instead of
-> >> drivers/ieee802154 ???
-> >
-> > I fully agree here.
-> >
-> > Please use "zigbee" instead of "ieee*" names since that can become messy
-> > and confusing. I know that in theory the IEEE part of ZigBee is more
-> > low-level radio and could be used by non-ZigBee devices, but that is not
-> > gonna happen anyway. Especially with Bluetooth Low Energy pushing into
-> > the turf of ZigBee. So please use proper names and not confuse people
-> > with IEEE numbers ;)
+Rob Emanuele :
+> Greetings,
 > 
-> This gonna happen, as we are most probably going to implement 6lowpan
-> on top of our stack. 6lowpan is a way to encapsulate IPv6 frames into
-> IEEE 802.15.4 and has nothing in common with ZigBee. Moreover
-> ZigBee is a trademark with strict rules upon it's usage. Our lawyers are
-> currently investigating if it's possible to use this name in projects like
-> Linux kernel which are open-source, non-related to any project but
-> OTOH can be encapsulated in any commercial project.
+> This patch creates a new AT91 Multimedia Card Interface (MCI) driver
+> that supports using both MCI slots at the same time.  I'm looking for
+> others to test this patch on other boards within the same family of
+> chips.
 > 
-> IEEE 802.15.4 is a term like IEEE 802.11. We do have mac80211,
-> we have had (until recently) ieee80211 dir, so why bother?
-> 
-> For Bluetooth naming directories 'bluetooth' is logical, as 802.15.1
-> standard is a less known name, doesn't incorporate latest changes
-> from Bluetooth, etc.
+> This driver is a port the Atmel AVR32 MCI driver which uses similar silicon.
 
-and so is IEEE 802.15.4 hence we propose using "zigbee" here. Using the
-mac80211 has historical reasons and 802.11 is a known name and even used
-on product marketing material. IEEE 802.15.4 is not. We are also using
-the term "wimax" and not its IEEE numbering.
+I am very interested with this work. But, you will have to tell us what
+is the precise relation between this code and the Atmel AVR32 MCI driver.
+Why did you rename all function and variables to at91... instead of
+trying to modify the atmel-mci driver ? Was the needed behavior so far
+from the original code that you decided to create another completely new
+one ? Please enlighten us.
 
-Regards
+Moreover, it seems that in your code, DMA is not supported so atmel-mci
+without the DMA option enabled should be working without modification at
+all (am I missing something ?).
 
-Marcel
+> In addition it modifies the AT91SAM9G20-EK's board platform config to
+> support having MCI Slot A hooked to an SD Slot.  This was the board
+> that this was developed on. To support MCI Slot A it was needed to not
+> enable the LEDs on the AT91SAM9G20-EK board if SD/MMC Slot A is
+> enabled.  The Slot A pins overlap the LEDs on Rev A and B boards.
 
+This is a different board, so you will have to create a different board
+source file (board-my9g20customboard.c) or find a clever way of sharing
+code (true, can be preferable as only a few lines are changing).
+
+Best regards,
+-- 
+Nicolas Ferre
 
