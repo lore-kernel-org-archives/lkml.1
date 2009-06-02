@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759174AbZFBGnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbZFBGsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759174AbZFBGnS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 02:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZFBGnH
+	id S1758817AbZFBGsk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 02:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZFBGsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 02:43:07 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:40802 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753126AbZFBGnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 02:43:05 -0400
-Date: Tue, 2 Jun 2009 08:43:07 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org, "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Subject: Re: [PATCH block#for-2.6.31] block: fix a possible oops on
-	elv_abort_queue()
-Message-ID: <20090602064307.GX11363@kernel.dk>
-References: <4A246772.1090304@ct.jp.nec.com>
+	Tue, 2 Jun 2009 02:48:32 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:54770 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753254AbZFBGsc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 02:48:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ZchEJ+fkDddWzY7Nb1cZnfrFsLNoMktDdlYoYmGjGEGSrnuVqGyKU2we8jBuXMib0o
+         HfGCV8HPshIBtkfGa/VoZXE/IxL+FjnjoO20pXjrYqfZwMWMjKHYNif2prIEjcQ8pm/+
+         5dLt+oPhV2AIOSe4aINfstoKfvE4ghNjA7wh8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A246772.1090304@ct.jp.nec.com>
+In-Reply-To: <20090601130825.GA1422@wotan.suse.de>
+References: <1243517365.11533.65.camel@penberg-laptop>
+	 <20090601130825.GA1422@wotan.suse.de>
+Date: Tue, 2 Jun 2009 09:48:32 +0300
+X-Google-Sender-Auth: 137b4daf79e8a87f
+Message-ID: <84144f020906012348r749f7cfbk3cf7112e6263299b@mail.gmail.com>
+Subject: Re: [PATCH] init: call vfs_caches_init_early() later in the boot 
+	sequence
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Nick Piggin <npiggin@suse.de>
+Cc: mingo@elte.hu, cl@linux-foundation.com, torvalds@linux-foundation.org,
+       mpm@selenic.com, yinghai@kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02 2009, Kiyoshi Ueda wrote:
-> Hi Jens,
-> 
-> I found one more mis-conversion to the 'request is always dequeued
-> when completing' model in elv_abort_queue() during code inspection.
-> Although I haven't hit any problem caused by this mis-conversion yet
-> and just done compile/boot test, please apply if you have no problem.
-> 
-> 
-> Request must be dequeued when it completes.
-> However, elv_abort_queue() completes requests without dequeueing.
-> This will cause oops in the __blk_end_request_all().
-> This patch fixes the oops.
+Hi Nick,
 
-Thanks, applied!
+[ I see I typo'd Linus' email address in the original patch submission... ]
 
-> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> ---
->  block/elevator.c |    5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> Index: linux-2.6-block/block/elevator.c
-> ===================================================================
-> --- linux-2.6-block.orig/block/elevator.c
-> +++ linux-2.6-block/block/elevator.c
-> @@ -813,6 +813,11 @@ void elv_abort_queue(struct request_queu
->  		rq = list_entry_rq(q->queue_head.next);
->  		rq->cmd_flags |= REQ_QUIET;
->  		trace_block_rq_abort(q, rq);
-> +		/*
-> +		 * Mark this request as started so we don't trigger
-> +		 * any debug logic in the end I/O path.
-> +		 */
-> +		blk_start_request(rq);
->  		__blk_end_request_all(rq, -EIO);
->  	}
->  }
+On Thu, May 28, 2009 at 04:29:25PM +0300, Pekka Enberg wrote:
+>> From: Pekka Enberg <penberg@cs.helsinki.fi>
+>>
+>> There's no need to call vfs_caches_init_early() before kmem_cache_init(). All
+>> we have to do is make sure we don't attempt to use the bootmem allocator after
+>> we've called mem_init().
 
--- 
-Jens Axboe
+On Mon, Jun 1, 2009 at 4:08 PM, Nick Piggin <npiggin@suse.de> wrote:
+> Hmm, but you'd want to be able to allocate > MAX_ORDER areas in the linear
+> KVA, which the page allocator cannot do. So this is just going to silently
+> truncate hash table size. Nack on this one.
 
+OK, makes sense. IIRC, Linus suggested doing this but I think I'll
+just revert the patch.
+
+                                             Pekka
