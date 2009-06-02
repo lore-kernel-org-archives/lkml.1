@@ -1,101 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753399AbZFBNSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbZFBNTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753399AbZFBNSh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 09:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbZFBNSa
+	id S1754788AbZFBNTo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 09:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbZFBNTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 09:18:30 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37673 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752754AbZFBNSa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 09:18:30 -0400
-Date: Tue, 2 Jun 2009 15:25:38 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
+	Tue, 2 Jun 2009 09:19:37 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34831 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752052AbZFBNTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 09:19:37 -0400
+Date: Tue, 2 Jun 2009 15:19:37 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: hugh@veritas.com, riel@redhat.com, akpm@linux-foundation.org,
+       chris.mason@oracle.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com
 Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602132538.GK1065@one.firstfloor.org>
-References: <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org> <20090602125713.GG1392@wotan.suse.de>
+Message-ID: <20090602131937.GB6262@wotan.suse.de>
+References: <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090601120537.GF5018@wotan.suse.de> <20090601185147.GT1065@one.firstfloor.org> <20090602121031.GC1392@wotan.suse.de> <20090602123450.GF1065@one.firstfloor.org> <20090602123720.GF1392@wotan.suse.de> <20090602125538.GH1065@one.firstfloor.org> <20090602130306.GA6262@wotan.suse.de> <20090602132002.GJ1065@one.firstfloor.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090602125713.GG1392@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090602132002.GJ1065@one.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 02:57:13PM +0200, Nick Piggin wrote:
-> > > not a big deal and just avoids duplicating code. I attached an
-> > > (untested) patch.
+On Tue, Jun 02, 2009 at 03:20:02PM +0200, Andi Kleen wrote:
+> On Tue, Jun 02, 2009 at 03:03:06PM +0200, Nick Piggin wrote:
+> > > > > > I'm suggesting that EIO is traditionally for when the data still
+> > > > > > dirty in pagecache and was not able to get back to backing
+> > > > > > store. Do you deny that?
+> > > > > 
+> > > > > Yes. That is exactly the case when memory-failure triggers EIO
+> > > > > 
+> > > > > Memory error on a dirty file mapped page.
+> > > > 
+> > > > But it is no longer dirty, and the problem was not that the data
+> > > > was unable to be written back.
+> > > 
+> > > Sorry I don't understand. What do you mean with "no longer dirty"
+> > > 
+> > > Of course it's still dirty, just has to be discarded because it's 
+> > > corrupted.
 > > 
-> > Thanks. But the function in the patch is not doing the same what
-> > the me_pagecache_clean/dirty are doing. For once there is no error
-> > checking, as in the second try_to_release_page()
+> > The pagecache location is no longer dirty. Userspace only cares
+> > about pagecache locations and their contents, not the page that
+> > was once there and has now been taken out.
+> 
+> Sorry, but that just sounds wrong to me. User space has no clue
+> about the page cache, it just wants to know that the write it just
+
+Umm, pagecache location is inode,offset, which is exactly what
+userspace cares about, and they obviously know there can be a
+writeback cache there because that's why fsync exists.
+
+
+> did didn't reach the disk. And that's what happened and
+> what we report here.
+
+I didn't reach the disk and the dirty data was destroyed and
+will be recreated from some unknown (to userspace) state 
+from the filesystem. If you can't see how this is different
+to the rest of our EIO conditions, then I can't spell it out
+any simpler.
+
+
+> > > A new errno? Or something else? If yes what precisely?
 > > 
-> > Then it doesn't do all the IO error and missing mapping handling.
+> > Yeah a new errno would be nice. Precisely one to say that the
+> > memory was corrupted.
 > 
-> Obviously I don't mean just use that single call for the entire
-> handler. You can set the EIO bit or whatever you like. The
-> "error handling" you have there also seems strange. You could
-> retain it, but the page is assured to be removed from pagecache.
+> Ok.  I firmly think a new errno is a bad idea because I don't
+> want to explain to a lot of people how to fix their applications.
+> Compatibility is important.
 
-The reason this code double checks is that someone could have 
-a reference (remember we can come in any time) we cannot kill immediately.
+Fair enough, maybe EIO is the best option, but I just want
+people to think about it.
 
-> > The page_mapped() check is useless because the pages are not 
-> > mapped here etc.
-> 
-> That's OK, it is a core part of the protocol to prevent
-> truncated pages from being mapped, so I like it to be in
-> that function.
-> 
-> (you are also doing extraneous page_mapped tests in your handler,
-> so surely your concern isn't from the perspective of this
-> error handler code)
-
-We do page_mapping() checks, not page_mapped checks.
-
-I know details, but ...
-
-> 
-> 
-> > We could probably call truncate_complete_page(), but then
-> > we would also need to duplicate most of the checking outside
-> > the function anyways and there wouldn't be any possibility
-> > to share the clean/dirty variants. If you insist I can
-> > do it, but I think it would be significantly worse code
-> > than before and I'm reluctant to do that.
-> 
-> I can write you the patch for that too if you like.
-
-Ok I will write it, but I will add a comment saying that Nick forced
-me to make the code worse @)
-
-It'll be fairly redundant at least.
-
-> > > if you already have other large ones.
+ 
+> > > No it's not fine if they would handle EIO. e.g. consider
+> > > a sophisticated database which likely has sophisticated
+> > > IO error mechanisms too (e.g. only abort the current commit)
 > > 
-> > That's unclear too.
+> > Umm, if it is a generic "this failed, we can abort" then why
+> > would not this be the default case. The issue is if it does
+> > something differnet specifically for EIO, and specifically
+> > assuming the pagecache is still valid and dirty.
 > 
-> You can't do much about most kernel pages, and dirty metadata pages
-> are both going to cause big problems. User pagetable pages. Lots of
-> stuff.
+> How would it make such an assumption?
 
-User page tables was on the todo list, these are actually relatively
-easy. The biggest issue is to detect them.
+I guess either way you have to make assumptions that the
+app uses errno in a particular way.
 
-Metadata would likely need file system callbacks, which I would like to 
-avoid at this point.
+ 
+> I assume that if an application does something with EIO it 
+> can either retry a few times or give up. Both is ok here.
 
--Andi
+That's exactly the case where it is not OK, because the
+dirty page was now removed from pagecache, so the subsequent
+fsync is going to succeed and the app will think its dirty
+data has hit disk.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
