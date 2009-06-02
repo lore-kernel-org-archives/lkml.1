@@ -1,118 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbZFBMTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752574AbZFBMYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753096AbZFBMTs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 08:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbZFBMTk
+	id S1752574AbZFBMYg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 08:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbZFBMY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 08:19:40 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46721 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751110AbZFBMTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 08:19:39 -0400
-Date: Tue, 2 Jun 2009 14:19:40 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602121940.GD1392@wotan.suse.de>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601140553.GA1979@localhost> <20090601144050.GA12099@wotan.suse.de> <20090602111407.GA17234@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090602111407.GA17234@localhost>
-User-Agent: Mutt/1.5.9i
+	Tue, 2 Jun 2009 08:24:29 -0400
+Received: from guanin.uni-konstanz.de ([134.34.240.60]:58175 "EHLO
+	guanin.uni-konstanz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751119AbZFBMY2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 08:24:28 -0400
+X-Greylist: delayed 592 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Jun 2009 08:24:28 EDT
+X-IronPort-AV: E=Sophos;i="4.41,291,1241395200"; 
+   d="scan'208";a="81034537"
+Message-ID: <4A2517AD.1080509@uni-konstanz.de>
+Date: Tue, 02 Jun 2009 14:14:37 +0200
+From: Kay Diederichs <kay.diederichs@uni-konstanz.de>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090327)
+MIME-Version: 1.0
+Newsgroups: gmane.linux.kernel
+To: Markus <M4rkusXXL@web.de>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Seagate Barracuda 7200.11 ST31500341AS fw SD17
+References: <200906021258.20346.M4rkusXXL@web.de> <4A250B6A.6030904@grupopie.com> <200906021337.03123.M4rkusXXL@web.de>
+In-Reply-To: <200906021337.03123.M4rkusXXL@web.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 07:14:07PM +0800, Wu Fengguang wrote:
-> On Mon, Jun 01, 2009 at 10:40:51PM +0800, Nick Piggin wrote:
-> > But you just said that you try to intercept the IO. So the underlying
-> > data is not necessarily corrupt. And even if it was then what if it
-> > was reinitialized to something else in the meantime (such as filesystem
-> > metadata blocks?) You'd just be introducing worse possibilities for
-> > coruption.
+Markus schrieb:
+> Rui Santos wrote:
+>>> I have some Seagate Barracuda 7200.11 ST31500341AS 1.5TB drives. They 
+>>> use the firmware SD17.
+>> Seagate recommends firmware SD1A for that HD.
+>> However, I do not know if it will solve your problem. Jut try it...
 > 
-> The IO interception will be based on PFN instead of file offset, so it
-> won't affect innocent pages such as your example of reinitialized data.
-
-OK, if you could intercept the IO so it never happens at all, yes
-of course that could work.
-
-
-> poisoned dirty page == corrupt data      => process shall be killed
-> poisoned clean page == recoverable data  => process shall survive
+>>> This drive+fw is blacklisted in the kernel, but there is no firmware 
+>>> upgrade for these drives. (Only very few serial numbers are able to 
+>>> upgrade.)
 > 
-> In the case of dirty hwpoison page, if we reload the on disk old data
-> and let application proceed with it, it may lead to *silent* data
-> corruption/inconsistency, because the application will first see v2
-> then v1, which is illogical and hence may mess up its internal data
-> structure.
-
-Right, but how do you prevent that? There is no way to reconstruct the
-most updtodate data because it was destroyed.
-
- 
-> > You will need to demonstrate a *big* advantage before doing crazy things
-> > with writeback ;)
+> I cant upgrade the firmware because the flash-utility will abort due 
+> to "not affected serial number". I tried SD1B, the very newest version.
+> Cant find the SD1A for my drives.
 > 
-> OK. We can do two things about poisoned writeback pages:
-> 
-> 1) to stop IO for them, thus avoid corrupted data to hit disk and/or
->    trigger further machine checks
+> Markus
 
-1b) At which point, you invoke the end-io handlers, and the page is
-no longer writeback.
+I think you might have tried the wrong firmware file.
+ST31500341AS needs 
+http://www.seagate.com/staticfiles/support/downloads/firmware/Brinks-4D8H-SD1B.ISO
 
-> 2) to isolate them from page cache, thus preventing possible
->    references in the writeback time window
+HTH,
 
-And then this is possible because you aren't violating mm
-assumptions due to 1b. This proceeds just as the existing
-pagecache mce error handler case which exists now.
-
- 
-> > > Now it's obvious that reusing more code than truncate_complete_page()
-> > > is not easy (or natural).
-> > 
-> > Just lock the page and wait for writeback, then do the truncate
-> > work in another function. In your case if you've already unmapped
-> > the page then it won't try to unmap again so no problem.
-> > 
-> > Truncating from pagecache does not change ->index so you can
-> > move the loop logic out.
-> 
-> Right. So effectively the reusable function is exactly
-> truncate_complete_page(). As I said this reuse is not a big gain.
-
-Anyway, we don't have to argue about it. I already send a patch
-because it was so hard to do, so let's move past this ;)
-
-
-> > > Yes it's kind of insane.  I'm interested in reasoning it out though.
-
-Well with the IO interception (I missed this point), then it seems
-maybe no longer so insane. We could see how it looks.
-
-
-> > I guess it is a good idea to start simple.
-> 
-> Agreed.
-> 
-> > Considering that there are so many other types of pages that are
-> > impossible to deal with or have holes, then I very strongly doubt
-> > it will be worth so much complexity for closing the gap from 90%
-> > to 90.1%. But we'll see.
-> 
-> Yes, the plan is to first focus on the more important cases.
-
-Great.
-
-Thanks,
-Nick
+Kay
 
