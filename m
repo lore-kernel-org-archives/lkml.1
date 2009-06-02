@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbZFBPWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbZFBPXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755405AbZFBPWx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 11:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbZFBPWq
+	id S1756245AbZFBPXM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 11:23:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbZFBPW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 11:22:46 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:49875 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753712AbZFBPWq (ORCPT
+	Tue, 2 Jun 2009 11:22:58 -0400
+Received: from mail-qy0-f104.google.com ([209.85.221.104]:39989 "EHLO
+	mail-qy0-f104.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753934AbZFBPW5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 11:22:46 -0400
+	Tue, 2 Jun 2009 11:22:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=v1fKsDnywO9gkMEybWaE11QZSy5R49ZwCfcs3QJJ9+TQvc6UMDH/hYY191hlmIJv5z
-         0D7mtM0KNxy392J9D0rAVR1KL8xSWwFOTfQbocMw5kJSPSUAnjCg1zfVAMWCA4LIdhFV
-         r18r319GvmXzvuT0MqxONRUCcW/u+vVWdnp6I=
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: alan@lxorguk.ukuu.org.uk, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: [PATCH] tty_io: add an API to get device corresponding to tty_struct
-Date: Tue,  2 Jun 2009 19:21:38 +0400
-Message-Id: <1243956098-20155-1-git-send-email-dbaryshkov@gmail.com>
-X-Mailer: git-send-email 1.6.3.1
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=Ax4ycTEgBnffQ/fucmZKCjqAENqB5UYDXxDVL0MLIlymFXDCs1wFqN5uAVQBEcQ0CB
+         miBRVITclautxmQ3Rl2F2lWXLXAIpQitbL6Tca8Uc6exLSq4W5qZBNDT2Dga+XndKznQ
+         unIxquQrqvqP8vyiT5+0hJjh8CgVESfBmcq6s=
+MIME-Version: 1.0
+In-Reply-To: <20090602150339.GF3914@think>
+References: <4A0B62F7.5030802@goop.org> <20090525091527.GA7535@elte.hu>
+	 <4A1C3805.7060404@goop.org> <20090528061702.GB6920@wotan.suse.de>
+	 <20090530102330.GC16913@elte.hu> <20090602141802.GC3914@think>
+	 <a36005b50906020749p22b89693k5c4ae171d18966a7@mail.gmail.com>
+	 <20090602150339.GF3914@think>
+Date: Tue, 2 Jun 2009 08:22:57 -0700
+Message-ID: <a36005b50906020822m33917c6fn5061af562b54c6c2@mail.gmail.com>
+Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native 
+	kernels
+From: Ulrich Drepper <drepper@gmail.com>
+To: Chris Mason <chris.mason@oracle.com>, Ulrich Drepper <drepper@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- drivers/char/tty_io.c |   20 ++++++++++++++++++++
- include/linux/tty.h   |    1 +
- 2 files changed, 21 insertions(+), 0 deletions(-)
+On Tue, Jun 2, 2009 at 8:03 AM, Chris Mason <chris.mason@oracle.com> wrote:
+> The idea that people shipping xen aren't interested in performance
+> regressions is really strange to me.
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 66b99a2..0160500 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -3026,6 +3026,26 @@ dev_t tty_devnum(struct tty_struct *tty)
- }
- EXPORT_SYMBOL(tty_devnum);
- 
-+static int dev_match_devt(struct device *dev, void *data)
-+{
-+	dev_t *devt = data;
-+	return dev->devt == *devt;
-+}
-+
-+/**
-+ * 	tty_get_device - get a device corresponding to tty
-+ * 	@tty: the struct that describes the tty device
-+ *
-+ * 	Returns a pointer to the struct device for this tty device
-+ * 	(or NULL in case of error).
-+ */
-+struct device *tty_get_device(struct tty_struct *tty)
-+{
-+	dev_t devt = tty_devnum(tty);
-+	return class_find_device(tty_class, NULL, &devt, dev_match_devt);
-+}
-+EXPORT_SYMBOL(tty_get_device);
-+
- void proc_clear_tty(struct task_struct *p)
- {
- 	unsigned long flags;
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index fc39db9..d17ba1e 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -413,6 +413,7 @@ extern int tty_mode_ioctl(struct tty_struct *tty, struct file *file,
- 			unsigned int cmd, unsigned long arg);
- extern int tty_perform_flush(struct tty_struct *tty, unsigned long arg);
- extern dev_t tty_devnum(struct tty_struct *tty);
-+struct device *tty_get_device(struct tty_struct *tty);
- extern void proc_clear_tty(struct task_struct *p);
- extern struct tty_struct *get_current_tty(void);
- extern void tty_default_fops(struct file_operations *fops);
--- 
-1.6.3.1
+Why?  They have a different base line.  For them any regression to
+bare hardware performance is even a positive (since it means the gap
+between hardware and virt shrinks).
 
+
+> Dynamic patching is a big wad of duct tape over the problem.
+
+And what do you call the Xen model?  It's a perfect fit IMO.
+
+
+> I'm not saying to take harmful code, I'm saying to take code with a
+> small performance regression under a specific CONFIG_.  Slub regresses
+> more than 1% on database loads, CONFIG_SCHED_GROUPS, the list goes on
+> and on.
+
+None of those have to be enabled in default kernels.
+
+
+> The best place to fix xen is in the kernel.
+
+No.  The best way to fix things is _on the way into the kernel_.
