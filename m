@@ -1,163 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758616AbZFBEoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758875AbZFBEoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758616AbZFBEoA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 00:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbZFBEnj
+	id S1758875AbZFBEoV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 00:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756520AbZFBEnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 00:43:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35694 "EHLO
+	Tue, 2 Jun 2009 00:43:40 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35698 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752736AbZFBEni (ORCPT
+	with ESMTP id S1753111AbZFBEni (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Jun 2009 00:43:38 -0400
-Message-Id: <20090602044339.373006181@goodmis.org>
+Message-Id: <20090602044339.565690900@goodmis.org>
 References: <20090602044315.439593107@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 02 Jun 2009 00:43:16 -0400
+Date: Tue, 02 Jun 2009 00:43:17 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 01/10] ftrace: add kernel command line function filtering
-Content-Disposition: inline; filename=0001-ftrace-add-kernel-command-line-function-filtering.patch
+Subject: [PATCH 02/10] tracing: fix config options to not show when automatically selected
+Content-Disposition: inline; filename=0002-tracing-fix-config-options-to-not-show-when-automati.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-When using ftrace=function on the command line to trace functions
-on boot up, one can not filter out functions that are commonly called.
+There are two options that are selected by all tracers, but we want
+to have those options available when no tracer is selected. These are
 
-This patch adds two new ftrace command line commands.
+ The event tracer and sched switch tracer.
 
-  ftrace_notrace=function-list
-  ftrace_filter=function-list
+The are enabled by all tracers, but if a tracer is not selected we want
+the options to appear. All tracers including them select TRACING.
+Thus what we would like to do is:
 
-Where function-list is a comma separated list of functions to filter.
-The ftrace_notrace will make the functions listed not be included
-in the function tracing, and ftrace_filter will only trace the functions
-listed.
+  config EVENT_TRACER
+	bool "prompt"
+	depends on TRACING
+	select TRACING
 
-These two act the same as the debugfs/tracing/set_ftrace_notrace and
-debugfs/tracing/set_ftrace_filter respectively.
+But that gives us a bug in the kbuild system since we just created a
+circular dependency. We only want the prompt to show when TRACING is off.
 
-The simple glob expressions that are allowed by the filter files can also
-be used by the command line interface.
+This patch adds GENERIC_TRACER that all tracers will select instead of
+TRACING. The two options (sched switch and event tracer) will select
+TRACING directly and depend on !GENERIC_TRACER. This solves the cicular
+dependency.
 
-	ftrace_notrace=rcu*,*lock,*spin*
-
-Will not trace any function that starts with rcu, ends with lock, or has
-the word spin in it.
-
-Note, if the self tests are enabled, they may interfere with the filtering
-set by the command lines.
+[ Impact: hide options that are selected by default ]
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- Documentation/kernel-parameters.txt |   17 ++++++++++++-
- kernel/trace/ftrace.c               |   42 +++++++++++++++++++++++++++++++++++
- 2 files changed, 57 insertions(+), 2 deletions(-)
+ kernel/trace/Kconfig |   43 ++++++++++++++++++++++++++++---------------
+ 1 files changed, 28 insertions(+), 15 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 9243dd8..fcd3bfb 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -751,12 +751,25 @@ and is between 256 and 4096 characters. It is defined in the file
- 			ia64_pal_cache_flush instead of SAL_CACHE_FLUSH.
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index a508b9d..6e55cc3 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -56,6 +56,13 @@ config CONTEXT_SWITCH_TRACER
+ 	select MARKERS
+ 	bool
  
- 	ftrace=[tracer]
--			[ftrace] will set and start the specified tracer
-+			[FTRACE] will set and start the specified tracer
- 			as early as possible in order to facilitate early
- 			boot debugging.
++# All tracer options should select GENERIC_TRACER. For those options that are
++# enabled by all tracers (context switch and event tracer) they select TRACING.
++# This allows those options to appear when no other tracer is selected. But the
++# options do not appear when something else selects it. We need the two options
++# GENERIC_TRACER and TRACING to avoid circular dependencies to accomplish the
++# hidding of the automatic options options.
++
+ config TRACING
+ 	bool
+ 	select DEBUG_FS
+@@ -66,6 +73,10 @@ config TRACING
+ 	select BINARY_PRINTF
+ 	select EVENT_TRACING
  
- 	ftrace_dump_on_oops
--			[ftrace] will dump the trace buffers on oops.
-+			[FTRACE] will dump the trace buffers on oops.
++config GENERIC_TRACER
++	bool
++	select TRACING
 +
-+	ftrace_filter=[function-list]
-+			[FTRACE] Limit the functions traced by the function
-+			tracer at boot up. function-list is a comma separated
-+			list of functions. This list can be changed at run
-+			time by the set_ftrace_filter file in the debugfs
-+			tracing directory. 
-+
-+	ftrace_notrace=[function-list]
-+			[FTRACE] Do not trace the functions specified in
-+			function-list. This list can be changed at run time
-+			by the set_ftrace_notrace file in the debugfs
-+			tracing directory.
+ #
+ # Minimum requirements an architecture has to meet for us to
+ # be able to offer generic tracing facilities:
+@@ -95,7 +106,7 @@ config FUNCTION_TRACER
+ 	depends on HAVE_FUNCTION_TRACER
+ 	select FRAME_POINTER
+ 	select KALLSYMS
+-	select TRACING
++	select GENERIC_TRACER
+ 	select CONTEXT_SWITCH_TRACER
+ 	help
+ 	  Enable the kernel to trace every kernel function. This is done
+@@ -126,7 +137,7 @@ config IRQSOFF_TRACER
+ 	depends on TRACE_IRQFLAGS_SUPPORT
+ 	depends on GENERIC_TIME
+ 	select TRACE_IRQFLAGS
+-	select TRACING
++	select GENERIC_TRACER
+ 	select TRACER_MAX_TRACE
+ 	help
+ 	  This option measures the time spent in irqs-off critical
+@@ -147,7 +158,7 @@ config PREEMPT_TRACER
+ 	default n
+ 	depends on GENERIC_TIME
+ 	depends on PREEMPT
+-	select TRACING
++	select GENERIC_TRACER
+ 	select TRACER_MAX_TRACE
+ 	help
+ 	  This option measures the time spent in preemption off critical
+@@ -166,7 +177,7 @@ config PREEMPT_TRACER
+ config SYSPROF_TRACER
+ 	bool "Sysprof Tracer"
+ 	depends on X86
+-	select TRACING
++	select GENERIC_TRACER
+ 	select CONTEXT_SWITCH_TRACER
+ 	help
+ 	  This tracer provides the trace needed by the 'Sysprof' userspace
+@@ -174,7 +185,7 @@ config SYSPROF_TRACER
  
- 	gamecon.map[2|3]=
- 			[HW,JOY] Multisystem joystick and NES/SNES/PSX pad
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 140699a..2074e5b 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -32,6 +32,7 @@
- #include <trace/events/sched.h>
+ config SCHED_TRACER
+ 	bool "Scheduling Latency Tracer"
+-	select TRACING
++	select GENERIC_TRACER
+ 	select CONTEXT_SWITCH_TRACER
+ 	select TRACER_MAX_TRACE
+ 	help
+@@ -183,6 +194,7 @@ config SCHED_TRACER
  
- #include <asm/ftrace.h>
-+#include <asm/setup.h>
+ config ENABLE_CONTEXT_SWITCH_TRACER
+ 	bool "Trace process context switches"
++	depends on !GENERIC_TRACER
+ 	select TRACING
+ 	select CONTEXT_SWITCH_TRACER
+ 	help
+@@ -191,6 +203,7 @@ config ENABLE_CONTEXT_SWITCH_TRACER
  
- #include "trace_output.h"
- #include "trace_stat.h"
-@@ -2369,6 +2370,45 @@ void ftrace_set_notrace(unsigned char *buf, int len, int reset)
- 	ftrace_set_regex(buf, len, reset, 0);
- }
+ config ENABLE_EVENT_TRACING
+ 	bool "Trace various events in the kernel"
++	depends on !GENERIC_TRACER
+ 	select TRACING
+ 	help
+ 	  This tracer hooks to various trace points in the kernel
+@@ -204,14 +217,14 @@ config ENABLE_EVENT_TRACING
+ config FTRACE_SYSCALLS
+ 	bool "Trace syscalls"
+ 	depends on HAVE_FTRACE_SYSCALLS
+-	select TRACING
++	select GENERIC_TRACER
+ 	select KALLSYMS
+ 	help
+ 	  Basic tracer to catch the syscall entry and exit events.
  
-+/*
-+ * command line interface to allow users to set filters on boot up.
-+ */
-+#define FTRACE_FILTER_SIZE		COMMAND_LINE_SIZE
-+static char ftrace_notrace_buf[FTRACE_FILTER_SIZE] __initdata;
-+static char ftrace_filter_buf[FTRACE_FILTER_SIZE] __initdata;
-+
-+static int __init set_ftrace_notrace(char *str)
-+{
-+	strncpy(ftrace_notrace_buf, str, FTRACE_FILTER_SIZE);
-+	return 1;
-+}
-+__setup("ftrace_notrace=", set_ftrace_notrace);
-+
-+static int __init set_ftrace_filter(char *str)
-+{
-+	strncpy(ftrace_filter_buf, str, FTRACE_FILTER_SIZE);
-+	return 1;
-+}
-+__setup("ftrace_filter=", set_ftrace_filter);
-+
-+static void __init set_ftrace_early_filter(char *buf, int enable)
-+{
-+	char *func;
-+
-+	while (buf) {
-+		func = strsep(&buf, ",");
-+		ftrace_set_regex(func, strlen(func), 0, enable);
-+	}
-+}
-+
-+static void __init set_ftrace_early_filters(void)
-+{
-+	if (ftrace_filter_buf[0])
-+		set_ftrace_early_filter(ftrace_filter_buf, 1);
-+	if (ftrace_notrace_buf[0])
-+		set_ftrace_early_filter(ftrace_notrace_buf, 0);
-+}
-+
- static int
- ftrace_regex_release(struct inode *inode, struct file *file, int enable)
- {
-@@ -2829,6 +2869,8 @@ void __init ftrace_init(void)
- 	if (ret)
- 		pr_warning("Failed to register trace ftrace module notifier\n");
+ config BOOT_TRACER
+ 	bool "Trace boot initcalls"
+-	select TRACING
++	select GENERIC_TRACER
+ 	select CONTEXT_SWITCH_TRACER
+ 	help
+ 	  This tracer helps developers to optimize boot times: it records
+@@ -228,7 +241,7 @@ config BOOT_TRACER
  
-+	set_ftrace_early_filters();
-+
- 	return;
-  failed:
- 	ftrace_disabled = 1;
+ config TRACE_BRANCH_PROFILING
+ 	bool
+-	select TRACING
++	select GENERIC_TRACER
+ 
+ choice
+ 	prompt "Branch Profiling"
+@@ -308,7 +321,7 @@ config BRANCH_TRACER
+ config POWER_TRACER
+ 	bool "Trace power consumption behavior"
+ 	depends on X86
+-	select TRACING
++	select GENERIC_TRACER
+ 	help
+ 	  This tracer helps developers to analyze and optimize the kernels
+ 	  power management decisions, specifically the C-state and P-state
+@@ -342,14 +355,14 @@ config STACK_TRACER
+ config HW_BRANCH_TRACER
+ 	depends on HAVE_HW_BRANCH_TRACER
+ 	bool "Trace hw branches"
+-	select TRACING
++	select GENERIC_TRACER
+ 	help
+ 	  This tracer records all branches on the system in a circular
+ 	  buffer giving access to the last N branches for each cpu.
+ 
+ config KMEMTRACE
+ 	bool "Trace SLAB allocations"
+-	select TRACING
++	select GENERIC_TRACER
+ 	help
+ 	  kmemtrace provides tracing for slab allocator functions, such as
+ 	  kmalloc, kfree, kmem_cache_alloc, kmem_cache_free etc.. Collected
+@@ -369,7 +382,7 @@ config KMEMTRACE
+ 
+ config WORKQUEUE_TRACER
+ 	bool "Trace workqueues"
+-	select TRACING
++	select GENERIC_TRACER
+ 	help
+ 	  The workqueue tracer provides some statistical informations
+           about each cpu workqueue thread such as the number of the
+@@ -385,7 +398,7 @@ config BLK_DEV_IO_TRACE
+ 	select RELAY
+ 	select DEBUG_FS
+ 	select TRACEPOINTS
+-	select TRACING
++	select GENERIC_TRACER
+ 	select STACKTRACE
+ 	help
+ 	  Say Y here if you want to be able to trace the block layer actions
+@@ -446,7 +459,7 @@ config FTRACE_SELFTEST
+ 
+ config FTRACE_STARTUP_TEST
+ 	bool "Perform a startup test on ftrace"
+-	depends on TRACING
++	depends on GENERIC_TRACER
+ 	select FTRACE_SELFTEST
+ 	help
+ 	  This option performs a series of startup tests on ftrace. On bootup
+@@ -457,7 +470,7 @@ config FTRACE_STARTUP_TEST
+ config MMIOTRACE
+ 	bool "Memory mapped IO tracing"
+ 	depends on HAVE_MMIOTRACE_SUPPORT && PCI
+-	select TRACING
++	select GENERIC_TRACER
+ 	help
+ 	  Mmiotrace traces Memory Mapped I/O access and is meant for
+ 	  debugging and reverse engineering. It is called from the ioremap
 -- 
 1.6.3.1
 
