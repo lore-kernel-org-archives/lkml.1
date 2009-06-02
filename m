@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbZFBJ3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759317AbZFBJkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759969AbZFBJ3s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 05:29:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756063AbZFBJ3h
+	id S1759317AbZFBJkz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 05:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755056AbZFBJkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 05:29:37 -0400
-Received: from ppsw-5.csi.cam.ac.uk ([131.111.8.135]:34536 "EHLO
-	ppsw-5.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753882AbZFBJ3g (ORCPT
+	Tue, 2 Jun 2009 05:40:47 -0400
+Received: from mail-ew0-f224.google.com ([209.85.219.224]:51926 "EHLO
+	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753183AbZFBJkr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 05:29:36 -0400
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4A24F106.5040704@cam.ac.uk>
-Date: Tue, 02 Jun 2009 09:29:42 +0000
-From: Jonathan Cameron <jic23@cam.ac.uk>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 2 Jun 2009 05:40:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:subject:message-id:user-agent:mime-version
+         :content-type;
+        b=nObxAd96/4Z4Dy4yyyFz6FNX0A80R0Vth6lzTbmHrDpXc64jp//CQ369kmBwpfiuTH
+         PRhNSLnqfu8bRYeD5pIl7NCbyFM4GoHggZl9U3QWSsfdxuR1akVNv/roYpxcRWThlqXO
+         Z6Qibq7XwBq+kZG1WGGGks7NphRdAXxJVnbYo=
+Date: Tue, 2 Jun 2009 11:41:06 +0300 (EAT)
+From: Dan Carpenter <error27@gmail.com>
+X-X-Sender: dcarpenter@bicker
+To: linux-kernel@vger.kernel.org
+Subject: smatch 1.53 released
+Message-ID: <alpine.DEB.2.00.0906021141010.19390@bicker>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: maxim@mox.ru
-CC: Marcel Holtmann <marcel@holtmann.org>,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       Holger Schurig <hs4233@mail.mn-solutions.de>,
-       linux-wireless@vger.kernel.org,
-       =?windows-1252?Q?G=E1bor_Stefanik?= <netrolller.3d@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       slapin@ossfans.org, maxim.osipov@siemens.com,
-       dmitry.baryshkov@siemens.com, oliver.fendt@siemens.com
-Subject: Re: =?windows-1252?Q?=3F=3F=3F=3F=3F=3A_=5BPATCH_10/10=5D_?=
- =?windows-1252?Q?ieee802154=3A_add_at86rf230/rf231_spi_driver?=
-References: <1243868091-5315-3-git-send-email-dbaryshkov@gmail.com>	 <69e28c910906010921r56cf7017gc858cb7ba819c385@mail.gmail.com>	 <20090601203348.GC7143@doriath.ww600.siemens.net>	 <200906021010.49613.hs4233@mail.mn-solutions.de>	 <1243930893.3192.62.camel@localhost.localdomain>	 <bc64b4640906020129x4fe15e5en9d8e2cad1d86b236@mail.gmail.com>	 <1243931809.3192.68.camel@localhost.localdomain> <6097c490906020149j5d614064ied2a4bfebd13ddb0@mail.gmail.com>
-In-Reply-To: <6097c490906020149j5d614064ied2a4bfebd13ddb0@mail.gmail.com>
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maxim Osipov wrote:
-> Hi Marcel,
-> 
-> On Tue, Jun 2, 2009 at 12:36 PM, Marcel Holtmann <marcel@holtmann.org> wrote:
->>> For Bluetooth naming directories 'bluetooth' is logical, as 802.15.1
->>> standard is a less known name, doesn't incorporate latest changes
->>> from Bluetooth, etc.
->> and so is IEEE 802.15.4 hence we propose using "zigbee" here. Using the
->> mac80211 has historical reasons and 802.11 is a known name and even used
->> on product marketing material. IEEE 802.15.4 is not. We are also using
->> the term "wimax" and not its IEEE numbering.
-> 
-> Actually, ieee802154 is better in this case, because as Dmitry
-> mentioned, an entire family of standards is implemented on the top of
-> it, including:
-> 
-> - ZigBee
-> - 6LoWPAN
-> - ISA100.11a
-> - WirelessHART
->  - and probably something I don't know about
-I'll tack on tosmac (the tinyos protocol).
-The platforms I support have out of kernel support for a cc2420 (802.15.4) radio
-using that protocol. In the embedded sensors field it seems to be
-pretty common to use linux nodes as gateways to systems running various realtime
-/ light weight OSes.
+Smatch is a source code checker for C.  Right now the focus is on checking 
+for kernel bugs.
 
-As Maxim stated there are a lot of protocols out there.
+Here is are the instructions for installing and using:
+    git clone git://repo.or.cz/smatch.git
+    cd smatch
+    make
+    cd /usr/src/linux
+    make C=1 CHECK=/path/to/smatch modules bzImage | tee warns.txt 
+    egrep '(warn|error):' warns.txt
 
-Thank you to Dmitry and co for your work on this project, I'll be following
-your progress with interest (and when I have a sec adding support for the cc2420
-if no one else does it first ;)
+Some weeks ago I pushed a bad commit.  I haven't had internet access to 
+fix it until now.  Sorry about that.  It's fixed now.
 
----
-Jonathan Cameron
+Smatch v1.53 improves handling of compound implications.  So if you have 
+code like this:
+        aaa = 0;
+        if (y)
+                aaa = 1;
+        if (x)
+                aaa = 2;
+        if (x && y)
+                __smatch_print_value("aaa");  // <-- prints aaa == 2
+        else
+                __smatch_print_value("aaa");  // <-- prints aaa == 0-2
 
- 
+This version also adds implications for switch statements.
+        if (!a && x != 42)
+                return;
+        switch(x) {
+        case 1:
+                a->member = 1;  // <--  It's ok to dereference 'a' here.
+        case 42:
+                a->member = 1;  // <-- smatch prints an error here.
+
+regards,
+dan carpenter
