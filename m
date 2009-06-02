@@ -1,42 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbZFBRUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757029AbZFBRWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbZFBRUS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 13:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbZFBRUH
+	id S1757029AbZFBRWU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 13:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZFBRWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 13:20:07 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49627 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753569AbZFBRUG (ORCPT
+	Tue, 2 Jun 2009 13:22:07 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:59571 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754632AbZFBRWG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 13:20:06 -0400
-Date: Tue, 2 Jun 2009 19:27:15 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, Andi Kleen <andi@firstfloor.org>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602172715.GT1065@one.firstfloor.org>
-References: <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org> <20090602125713.GG1392@wotan.suse.de> <20090602134659.GA21338@localhost> <20090602151729.GC17448@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090602151729.GC17448@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 2 Jun 2009 13:22:06 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 2 Jun 2009 10:16:01 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com, mst@redhat.com, paulmck@linux.vnet.ibm.com
+Subject: Re: [KVM-RFC PATCH 2/2] kvm: use POLLHUP to close an irqfd instead
+ of an explicit ioctl
+In-Reply-To: <20090602151538.29746.40356.stgit@dev.haskins.net>
+Message-ID: <alpine.DEB.1.10.0906021011390.12866@makko.or.mcafeemobile.com>
+References: <20090602151135.29746.91320.stgit@dev.haskins.net> <20090602151538.29746.40356.stgit@dev.haskins.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hmm, if you're handling buffercache here then possibly yes.
+On Tue, 2 Jun 2009, Gregory Haskins wrote:
 
-Good question, will check.
+> @@ -64,12 +101,28 @@ irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
+>  {
+>  	struct _irqfd *irqfd = container_of(wait, struct _irqfd, wait);
+>  
+> -	/*
+> -	 * The wake_up is called with interrupts disabled.  Therefore we need
+> -	 * to defer the IRQ injection until later since we need to acquire the
+> -	 * kvm->lock to do so.
+> -	 */
+> -	schedule_work(&irqfd->work);
+> +	switch ((unsigned long)key) {
+> +	case POLLIN:
+> +		/*
+> +		 * The POLLIN wake_up is called with interrupts disabled.
+> +		 * Therefore we need to defer the IRQ injection until later
+> +		 * since we need to acquire the kvm->lock to do so.
+> +		 */
+> +		schedule_work(&irqfd->inject);
+> +		break;
+> +	case POLLHUP:
+> +		/*
+> +		 * The POLLHUP is called unlocked, so it theoretically should
+> +		 * be safe to remove ourselves from the wqh
+> +		 */
+> +		remove_wait_queue(irqfd->wqh, &irqfd->wait);
+> +		flush_work(&irqfd->inject);
+> +		irqfd_disconnect(irqfd);
+> +
+> +		cleanup_srcu_struct(&irqfd->srcu);
+> +		kfree(irqfd);
+> +		break;
+> +	}
 
--Andi
+Since "key" is an event *bitmap*, you better be treating it as such. Do 
+not assume what eventfd delivers today (event bitmaps with only one bit 
+set). So this better be like:
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	if (key & POLLIN) {
+		...
+	}
+	if (key & POLLHUP) {
+		...
+	}
+
+
+- Davide
+
+
