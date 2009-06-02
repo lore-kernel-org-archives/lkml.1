@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760672AbZFBI6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759241AbZFBJAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760672AbZFBI6H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 04:58:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbZFBI55
+	id S1759241AbZFBJAY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 05:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbZFBJAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 04:57:57 -0400
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:23530 "EHLO
-	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754732AbZFBI54 convert rfc822-to-8bit (ORCPT
+	Tue, 2 Jun 2009 05:00:13 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33733 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754570AbZFBJAM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 04:57:56 -0400
-X-SpamScore: -16
-X-BigFish: VPS-16(zz1432R98dR1805M873fnzz1202hzzz32i6bh17ch43j)
-X-FB-SS: 5,
-X-WSS-ID: 0KKLSWB-04-7EI-01
-Date: Tue, 2 Jun 2009 10:57:37 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] dma-debug: add dma_debug_driver kernel command line
-Message-ID: <20090602085736.GM4062@amd.com>
-References: <1243523971-12681-1-git-send-email-joerg.roedel@amd.com> <1243523971-12681-4-git-send-email-joerg.roedel@amd.com> <20090601150813.84c932f4.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <20090601150813.84c932f4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 02 Jun 2009 08:57:37.0390 (UTC) FILETIME=[2D5858E0:01C9E360]
+	Tue, 2 Jun 2009 05:00:12 -0400
+Subject: Re: [PATCH] U300 sched_clock implementation
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Walleij <linus.ml.walleij@gmail.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <63386a3d0906010046k3b86d70av3e290fc26c2934f5@mail.gmail.com>
+References: <63386a3d0905112337p2d426481o5f9bf9b9489cc57e@mail.gmail.com>
+	 <63386a3d0905231446h245bb4a9gec111f68a74a44e4@mail.gmail.com>
+	 <1243151839.26820.642.camel@twins>
+	 <63386a3d0905250513q6ca56eeepcf7bebe46c447fb4@mail.gmail.com>
+	 <1243256510.26820.679.camel@twins>
+	 <63386a3d0906010046k3b86d70av3e290fc26c2934f5@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 02 Jun 2009 11:00:12 +0200
+Message-Id: <1243933212.23657.5726.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 01, 2009 at 03:08:13PM -0700, Andrew Morton wrote:
-> On Thu, 28 May 2009 17:19:30 +0200
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
+On Mon, 2009-06-01 at 09:46 +0200, Linus Walleij wrote:
+> 2009/5/25 Peter Zijlstra <peterz@infradead.org>:
+> > On Mon, 2009-05-25 at 14:13 +0200, Linus Walleij wrote:
+> >> 2009/5/24 Peter Zijlstra <peterz@infradead.org>:
+> >>
+> >> > On Sat, 2009-05-23 at 23:46 +0200, Linus Walleij wrote:
+> >> >
+> >> >> This overrides the global sched_clock() symbol in the Linux
+> >> >> scheduler with a local implementation which takes advantage of
+> >> >> the timesource in U300 giving a scheduling resolution of 1us. The
+> >> >> solution is the same as found in the OMAP2 core code.
+> >> >
+> >> > We assume sched_clock() to return time in ns (e-9) resolution.
+> >>
+> >> Yep okay and in this case:
+> >>
+> >> >> +       ret = (unsigned long long) u300_get_cycles();
+> >> >> +       ret = (ret * clocksource_u300_1mhz.mult_orig) >>
+> >> >> +               clocksource_u300_1mhz.shift;
+> >> >> +       return ret;
+> >>
+> >> (mult_orig >> shift) == 1000
+> >
+> > Ah, ok -- missed that little detail ;-)
+> >
+> >> So for each cycle in cyclecount register we return 1000 * cycles
+> >> i.e 1000ns.
+> >>
+> >> If it looks nicer we can of course simply:
+> >> return (unsigned long long) u300_get_cycles * 1000;
+> >>
+> >> But the question here is whether this resolution is enough for
+> >> sched_clock() or if it is irrelevant to override sched_clock()
+> >> if it cannot schedule with better precision than 1000 ns.
+> >
+> > No anything better than jiffies is good, 1us certainly is worth the
+> > trouble.
 > 
-> > This patch add the dma_debug_driver= boot parameter to enable the driver
-> > filter for early boot.
-> > 
-> 
-> Please always update Documentation/kernel-parameters.txt when adding
-> new boot options.
-> 
-> > +static int __init parse_dma_debug_driver(char *str)
-> > +{
-> > +	int i;
-> > +
-> > +	for (i = 0; i < NAME_MAX_LEN - 1; ++i, ++str) {
-> > +		current_driver_name[i] = *str;
-> > +		if (*str == ' ' || *str == '\t' || isspace(*str) || *str == 0)
-> 
-> The comparisons with ' ' and '\t' are unneeded, surely?
-> 
-> > +			break;
-> > +	}
-> > +	current_driver_name[i] = 0;
-> > +
-> > +	if (current_driver_name[0])
-> > +		printk(KERN_INFO "DMA-API: enable driver filter for "
-> > +				 "driver [%s]\n", current_driver_name);
-> > +
-> > +
-> > +	return 1;
-> > +}
-> > +__setup("dma_debug_driver=", parse_dma_debug_driver);
-> 
-> The whole thing seems a bit overdone - take a look at some other __setup
-> functions, see what they're doing.  None of them bother looking for
-> spaces in the input - higher level code took care of that.
-> 
-> It's conventional for the name of a __setup function to end in "_setup".
+> Can I interpret this as Acked-by: Peter Zijlstra <peterz@infradead.org> ?
 
-Ok, thanks. Will check again here.
-
-Joerg
-
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
-
+I think its best if we continue with the patch Paul Mundt has been
+proposing.
