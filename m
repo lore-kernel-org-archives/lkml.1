@@ -1,182 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbZFBSys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752975AbZFBS51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752127AbZFBSys (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 14:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbZFBSyk
+	id S1752975AbZFBS51 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 14:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbZFBS5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 14:54:40 -0400
-Received: from h155.mvista.com ([63.81.120.155]:27556 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750776AbZFBSyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 14:54:39 -0400
-Message-ID: <4A2575BC.9000805@ru.mvista.com>
-Date: Tue, 02 Jun 2009 22:55:56 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Tue, 2 Jun 2009 14:57:20 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:57514 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbZFBS5T convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 14:57:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ndzu59R+llzWl1hYWTqzKgsSzwHeYSoWjG8Wr1kP4CWeI3w29yQKm4s1ZL9S61KXJH
+         YVwXkgLwrU/GU4aFlsqaNNUAGT0+1U/BVXLTfVqZXmMZC24umr8v0iNPfRk4ZVnQRw8Y
+         knVRYNJs8j/ePTY1JL9p9g+fLR8UFf5VZLpUM=
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>,
-       linux-kernel@vger.kernel.org, Robert Hancock <hancockrwd@gmail.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Frans Pop <elendil@planet.nl>
-Subject: Re: [PATCH 3/4] ide-gd: implement block device ->set_capacity method
-References: <20090531143911.7164.26834.sendpatchset@localhost.localdomain> <20090531143931.7164.96956.sendpatchset@localhost.localdomain> <200906012332.31628.bzolnier@gmail.com>
-In-Reply-To: <200906012332.31628.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090602141529.GA8325@emlix.com>
+References: <E1LfGwO-0007Kq-6c@mailer.emlix.com>
+	 <20090310073350.GH10393@linux-sh.org>
+	 <20090402135343.d18d17a5.akpm@linux-foundation.org>
+	 <20090409142553.GA3330@emlix.com> <20090505140847.GB25409@emlix.com>
+	 <20090527114955.GA23343@emlix.com>
+	 <20090527134357.601c3c87.akpm@linux-foundation.org>
+	 <20090528000801.GA30594@linux-sh.org>
+	 <20090527171631.ed4de515.akpm@linux-foundation.org>
+	 <20090602141529.GA8325@emlix.com>
+Date: Tue, 2 Jun 2009 14:57:18 -0400
+Message-ID: <8bd0f97a0906021157pfad795dg9fc0ac0ed4f85d1c@mail.gmail.com>
+Subject: Re: [PATCH -v3] flat: fix data sections alignment
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Oskar Schirmer <os@emlix.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mundt <lethal@linux-sh.org>, jw@emlix.com, dhowells@redhat.com,
+       rmk@arm.linux.org.uk, cooloney@kernel.org, geert@linux-m68k.org,
+       gerg@uclinux.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Tue, Jun 2, 2009 at 10:15, Oskar Schirmer wrote:
+> On Wed, May 27, 2009 at 17:16:31 -0700, Andrew Morton wrote:
+>> On Thu, 28 May 2009 09:08:02 +0900
+>> Paul Mundt <lethal@linux-sh.org> wrote:
+>> > On Wed, May 27, 2009 at 01:43:57PM -0700, Andrew Morton wrote:
+>> > > The patch had a fairly shaky start and it's been unclear to me that
+>> > > everyone is happy with it and has tested it.
+>> > >
+>> > >  arch/arm/include/asm/flat.h      |    3 --
+>> > >  arch/blackfin/include/asm/flat.h |    1
+>> > >  arch/h8300/include/asm/flat.h    |    1
+>> > >  arch/m32r/include/asm/flat.h     |    1
+>> > >  arch/m68k/include/asm/flat.h     |    1
+>> > >  arch/sh/include/asm/flat.h       |    1
+>> > >  fs/binfmt_flat.c                 |   46 ++++++++++++++++++++++++++-------------
+>> > >
+>> > > I guess ARM is the major architecture amongst that lot.  Have Russell
+>> > > and co had a decent look through this?
+>> > >
+>> > The problem here is that the ARM nommu people seem to have disappeared
+>> > shortly after getting their changes merged. I see no activity within the
+>> > kernel for ARM nommu since 2006.
+>>
+>> heh, OK.  Oskar touched it last, so he's now ARM nommu maintainer.
+>
+> Well, I'ld need some test device for that purpose.
+> Someone around who can provide one?
 
-Bartlomiej Zolnierkiewicz wrote:
-
->>From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>Subject: [PATCH] ide-gd: implement block device ->set_capacity method
-
->>* Use ->probed_capacity to store native device capacity for ATA disks.
-
->>* Add ->set_capacity method to struct ide_disk_ops.
-
->>* Implement disk device ->set_capacity method for ATA disks.
-
->>* Implement block device ->set_capacity method.
-
->>Together with the previous patch adding ->set_capacity block device
->>method this allows automatic disabling of Host Protected Area (HPA)
->>if any partitions overlapping HPA are detected.
-
->>Cc: Robert Hancock <hancockrwd@gmail.com>
->>Cc: Frans Pop <elendil@planet.nl>
->>Cc: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
->>Cc: Al Viro <viro@zeniv.linux.org.uk>
->>Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-
-> v2 interdiff
-
-> v2:
-> * Check if LBA and HPA are supported in ide_disk_set_capacity().
-
-> * According to the spec the SET MAX ADDRESS command shall be
->   immediately preceded by a READ NATIVE MAX ADDRESS command.
-
-> * Add ide_disk_hpa_{get_native,set}_capacity() helpers.
-
-    One of them seem to me pretty useless...
-
-> diff -u b/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
-> --- b/drivers/ide/ide-disk.c
-> +++ b/drivers/ide/ide-disk.c
-> @@ -302,14 +302,12 @@
->  	{ NULL,		NULL }
->  };
->  
-> -static void idedisk_check_hpa(ide_drive_t *drive)
-> +static u64 ide_disk_hpa_get_native_capacity(ide_drive_t *drive, int lba48)
-
-    Frankly speaking, I don't see what you've bought with factoring out this 
-function...
-
->  {
-> -	unsigned long long capacity, set_max;
-> -	int lba48 = ata_id_lba48_enabled(drive->id);
-> +	u64 capacity, set_max;
->  
->  	capacity = drive->capacity64;
-> -
-> -	set_max = idedisk_read_native_max_address(drive, lba48);
-> +	set_max  = idedisk_read_native_max_address(drive, lba48);
->  
->  	if (ide_in_drive_list(drive->id, hpa_list)) {
->  		/*
-> @@ -320,6 +318,26 @@
->  			set_max--;
->  	}
->  
-> +	return set_max;
-> +}
-> +
-> +static u64 ide_disk_hpa_set_capacity(ide_drive_t *drive, u64 set_max, int lba48)
-> +{
-> +	set_max = idedisk_set_max_address(drive, set_max, lba48);
-> +	if (set_max)
-> +		drive->capacity64 = set_max;
-> +
-> +	return set_max;
-> +}
-> +
-> +static void idedisk_check_hpa(ide_drive_t *drive)
-> +{
-> +	u64 capacity, set_max;
-> +	int lba48 = ata_id_lba48_enabled(drive->id);
-> +
-> +	capacity = drive->capacity64;
-> +	set_max  = ide_disk_hpa_get_native_capacity(drive, lba48);
-> +
->  	if (set_max <= capacity)
->  		return;
->  
-> @@ -332,13 +350,10 @@
->  			 capacity, sectors_to_MB(capacity),
->  			 set_max, sectors_to_MB(set_max));
->  
-> -	set_max = idedisk_set_max_address(drive, set_max, lba48);
-> -
-> -	if (set_max) {
-> -		drive->capacity64 = set_max;
-> +	set_max = ide_disk_hpa_set_capacity(drive, set_max, lba48);
-> +	if (set_max)
->  		printk(KERN_INFO "%s: Host Protected Area disabled.\n",
->  				 drive->name);
-> -	}
->  }
->  
->  static int ide_disk_get_capacity(ide_drive_t *drive)
-> @@ -399,12 +414,25 @@
->  static u64 ide_disk_set_capacity(ide_drive_t *drive, u64 capacity)
->  {
->  	u64 set = min(capacity, drive->probed_capacity);
-> -	int lba48 = ata_id_lba48_enabled(drive->id);
-> -
-> -	capacity = idedisk_set_max_address(drive, set, lba48);
-> -	if (capacity)
-> -		drive->capacity64 = capacity;
-> +	u16 *id = drive->id;
-> +	int lba48 = ata_id_lba48_enabled(id);
->  
-> +	if ((drive->dev_flags & IDE_DFLAG_LBA) == 0 ||
-> +	    ata_id_hpa_enabled(id) == 0)
-> +		goto out;
-> +
-> +	/*
-> +	 * according to the spec the SET MAX ADDRESS command shall be
-> +	 * immediately preceded by a READ NATIVE MAX ADDRESS command
-> +	 */
-> +	capacity = ide_disk_hpa_get_native_capacity(drive, lba48);
-
-    Might as well just call idedisk_read_native_max_address() -- we don't 
-need to lookup hpa_list[] if we're only checking whether we can read native 
-max address or not afterwards:
-
-> +	if (capacity == 0)
-> +		goto out;
-> +
-> +	set = ide_disk_hpa_set_capacity(drive, set, lba48);
-> +	if (set)
-> +		return set;
-
-    Why bother doing that again if the function itself does such check and 
-sets drive->capacity64 to the returned value on success? It should be as 
-simple as:
-
-	ide_disk_hpa_set_capacity(drive, set, lba48);
-
-> +out:
->  	return drive->capacity64;
->  }
-
-    Label/gotos unnecessary in this case -- we have *return*...
-
-MBR, Sergei
+seems a bit odd for a maintainer to not have any hardware ... at any
+rate, dont you have an ARM system ?  cant you just disable support for
+the MMU ?
+-mike
