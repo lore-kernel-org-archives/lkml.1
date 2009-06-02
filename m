@@ -1,50 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbZFBNjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbZFBNkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755723AbZFBNjR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 09:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbZFBNjD
+	id S1755553AbZFBNkb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 09:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbZFBNkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 09:39:03 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:32864 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751799AbZFBNjC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 09:39:02 -0400
-Date: Tue, 2 Jun 2009 15:46:10 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, hugh@veritas.com, riel@redhat.com,
-       akpm@linux-foundation.org, chris.mason@oracle.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com
+	Tue, 2 Jun 2009 09:40:24 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49229 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752522AbZFBNkY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 09:40:24 -0400
+Date: Tue, 2 Jun 2009 15:40:24 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
 Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602134610.GO1065@one.firstfloor.org>
-References: <20090528134520.GH1065@one.firstfloor.org> <20090601120537.GF5018@wotan.suse.de> <20090601185147.GT1065@one.firstfloor.org> <20090602121031.GC1392@wotan.suse.de> <20090602123450.GF1065@one.firstfloor.org> <20090602123720.GF1392@wotan.suse.de> <20090602125538.GH1065@one.firstfloor.org> <20090602130306.GA6262@wotan.suse.de> <20090602132002.GJ1065@one.firstfloor.org> <20090602131937.GB6262@wotan.suse.de>
+Message-ID: <20090602134024.GA19390@wotan.suse.de>
+References: <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org> <20090602125713.GG1392@wotan.suse.de> <20090602132538.GK1065@one.firstfloor.org> <20090602132441.GC6262@wotan.suse.de> <20090602134126.GM1065@one.firstfloor.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090602131937.GB6262@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090602134126.GM1065@one.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 03:19:37PM +0200, Nick Piggin wrote:
-> > I assume that if an application does something with EIO it 
-> > can either retry a few times or give up. Both is ok here.
+On Tue, Jun 02, 2009 at 03:41:26PM +0200, Andi Kleen wrote:
+> On Tue, Jun 02, 2009 at 03:24:41PM +0200, Nick Piggin wrote:
+> > On Tue, Jun 02, 2009 at 03:25:38PM +0200, Andi Kleen wrote:
+> > > The reason this code double checks is that someone could have 
+> > > a reference (remember we can come in any time) we cannot kill immediately.
+> > 
+> > Can't kill what? The page is gone from pagecache. It may remain
+> > other kernel references, but I don't see why this code will
+> > consider this as a failure (and not, for example, a raised error
+> > count).
 > 
-> That's exactly the case where it is not OK, because the
-> dirty page was now removed from pagecache, so the subsequent
-> fsync is going to succeed and the app will think its dirty
-> data has hit disk.
+> It's a failure because the page was still used and not successfully
+> isolated.
 
-Ok that's a fair point -- that's a hole in my scheme. I don't
-know of a good way to fix it though. Do you?
+But you're predicating success on page_count, so there can be
+other users anyway. You do check page_count later and emit
+a different message in this case, but even that isn't enough
+to tell you if it has no more users.
 
-I suspect adding a new errno would break more cases than fixing
-them.
+I wouldn't have thought it's worth the complication, but
+there is nothing preventing you using my truncate function
+and also keeping this error check to test afterwards.
+ 
 
--Andi
+> > +        * remove_from_page_cache assumes (mapping && !mapped)
+> > +        */
+> > +       if (page_mapping(p) && !page_mapped(p)) {
+> 
+> Ok you're right. That one is not needed. I will remove it.
+> 
+> > > 
+> > > User page tables was on the todo list, these are actually relatively
+> > > easy. The biggest issue is to detect them.
+> > > 
+> > > Metadata would likely need file system callbacks, which I would like to 
+> > > avoid at this point.
+> > 
+> > So I just don't know why you argue the point that you have lots
+> > of large holes left.
+> 
+> I didn't argue that. My point was just that I currently don't have
+> data what holes are the worst on given workloads. If I figure out at
+> some point that writeback pages are a significant part of some important
+> workload I would be interested in tackling them.
+> That said I think that's unlikely, but I'm not ruling it out.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Well, it sounds like maybe there is a sane way to do them with your
+IO interception... but anyway let's not worry about this right
+now ;)
