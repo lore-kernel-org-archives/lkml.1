@@ -1,64 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbZFBX1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbZFBX15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754213AbZFBX1g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 19:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZFBX12
+	id S1753989AbZFBX15 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 19:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbZFBX1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 19:27:28 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:39099 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751742AbZFBX11 (ORCPT
+	Tue, 2 Jun 2009 19:27:50 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44599 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752544AbZFBX1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 19:27:27 -0400
-Date: Wed, 3 Jun 2009 07:27:24 +0800
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Paul Menage <menage@google.com>, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, lizf@cn.fujitsu.com,
-       kamezawa.hiroyu@jp.fujitsu.com, lkml <linux-kernel@vger.kernel.org>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       libcg-devel <libcg-devel@lists.sourceforge.net>
-Subject: Re: +
-	cgroups-forbid-noprefix-if-mounting-more-than-just-cpuset-subsystem.
-	patch added to -mm tree
-Message-ID: <20090602232724.GB29326@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <200906020602.n5262wcu008560@imap1.linux-foundation.org> <20090602090944.GB16753@linux.vnet.ibm.com> <6599ad830906020908s7cb6afe6pd83ca35b82d148a4@mail.gmail.com> <20090602174042.GD16753@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 2 Jun 2009 19:27:49 -0400
+Date: Wed, 3 Jun 2009 01:34:57 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch][v2] swap: virtual swap readahead
+Message-ID: <20090602233457.GY1065@one.firstfloor.org>
+References: <20090602223738.GA15475@cmpxchg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090602174042.GD16753@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090602223738.GA15475@cmpxchg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dhaval Giani <dhaval@linux.vnet.ibm.com> [2009-06-02 23:10:42]:
+On Wed, Jun 03, 2009 at 12:37:39AM +0200, Johannes Weiner wrote:
+> + *
+> + * Caller must hold down_read on the vma->vm_mm if vma is not NULL.
+> + */
+> +struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
+> +			struct vm_area_struct *vma, unsigned long addr)
+> +{
+> +	unsigned long start, pos, end;
+> +	unsigned long pmin, pmax;
+> +	int cluster, window;
+> +
+> +	if (!vma || !vma->vm_mm)	/* XXX: shmem case */
+> +		return swapin_readahead_phys(entry, gfp_mask, vma, addr);
+> +
+> +	cluster = 1 << page_cluster;
+> +	window = cluster << PAGE_SHIFT;
+> +
+> +	/* Physical range to read from */
+> +	pmin = swp_offset(entry) & ~(cluster - 1);
 
-> On Tue, Jun 02, 2009 at 09:08:04AM -0700, Paul Menage wrote:
-> > On Tue, Jun 2, 2009 at 2:09 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> > >
-> > > I am not sure if this is a good idea. For libcgroup, we would then be
-> > > adding a special case for just cpuset. I would rather that we allow it
-> > > either for all the subsystems or none of them.
-> > >
-> > 
-> > libcgroup shouldn't be using the noprefix option. Its only intentded
-> > use is to allow the legacy "cpuset" filesystem type to be mounted and
-> > to see the same fileset as it had before the cgroups transition.
-> > 
-> 
-> It does not. But if some user is using that option, we need to be in a
-> position to handle it.
-> 
-> I am quite happy not supporting the noprefix option in the library if it
-> is fine.
->
+Is cluster really properly sign extended on 64bit? Looks a little
+dubious. long from the start would be safer
 
-I am not for supporting noprefix in the library, like Paul said it is
-for legacy users who already have their applications working with
-libcpuset or an equivalent library. libcgroup should not bother about
-noprefix. 
+> +
+> +	/* Virtual range to read from */
+> +	start = addr & ~(window - 1);
 
+Same.
+
+> +		pgd = pgd_offset(vma->vm_mm, pos);
+> +		if (!pgd_present(*pgd))
+> +			continue;
+> +		pud = pud_offset(pgd, pos);
+> +		if (!pud_present(*pud))
+> +			continue;
+> +		pmd = pmd_offset(pud, pos);
+> +		if (!pmd_present(*pmd))
+> +			continue;
+> +		pte = pte_offset_map_lock(vma->vm_mm, pmd, pos, &ptl);
+
+You could be more efficient here by using the standard mm/* nested loop
+pattern that avoids relookup of everything in each iteration. I suppose
+it would mainly make a difference with 32bit highpte where mapping a pte
+can be somewhat costly. And you would take less locks this way.
+
+> +		page = read_swap_cache_async(swp, gfp_mask, vma, pos);
+> +		if (!page)
+> +			continue;
+
+That's out of memory, break would be better here because prefetch
+while oom is usually harmful.
+
+> +		page_cache_release(page);
+> +	}
+> +	lru_add_drain();	/* Push any new pages onto the LRU now */
+> +	return read_swap_cache_async(entry, gfp_mask, vma, addr);
+
+Shouldn't that page be already handled in the loop earlier? Why doing that
+again? It would be better to remember it from there.
+
+-Andi
 -- 
-	Balbir
+ak@linux.intel.com -- Speaking for myself only.
