@@ -1,190 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbZFBOhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755778AbZFBOhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755438AbZFBOhQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 10:37:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbZFBOhD
+	id S1755778AbZFBOhe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 10:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbZFBOhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 10:37:03 -0400
-Received: from wa4ehsobe002.messaging.microsoft.com ([216.32.181.12]:15832
-	"EHLO WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752333AbZFBOhC (ORCPT
+	Tue, 2 Jun 2009 10:37:05 -0400
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:32150
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752479AbZFBOhC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 2 Jun 2009 10:37:02 -0400
-X-SpamScore: 13
-X-BigFish: VPS13(zz9321rzz1202hzzz32i17ch43j64h)
-X-Spam-TCS-SCL: 3:0
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i17ch43j65h)
+X-Spam-TCS-SCL: 4:0
 X-FB-SS: 5,
-X-WSS-ID: 0KKM8LE-03-J7A-01
+X-WSS-ID: 0KKM8LF-03-J7B-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 CC: akpm@linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 2/4] dma-debug: add debugfs file for driver filter
-Date: Tue, 2 Jun 2009 16:36:42 +0200
-Message-ID: <1243953404-31799-3-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 1/4] dma-debug: add variables and checks for driver filter
+Date: Tue, 2 Jun 2009 16:36:41 +0200
+Message-ID: <1243953404-31799-2-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1243953404-31799-1-git-send-email-joerg.roedel@amd.com>
 References: <1243953404-31799-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 02 Jun 2009 14:36:48.0047 (UTC) FILETIME=[8F482BF0:01C9E38F]
+X-OriginalArrivalTime: 02 Jun 2009 14:36:48.0484 (UTC) FILETIME=[8F8ADA40:01C9E38F]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the dma-api/driver_filter file to debugfs. The root user
-can write a driver name into this file to see only dma-api errors for
-that particular driver in the kernel log. Writing an empty string to
-that file disables the driver filter.
+This patch adds the state variables for the driver filter and a function
+to check if the filter is enabled and matches to the current device. The
+check is built into the err_printk function.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- lib/dma-debug.c |  102 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 101 insertions(+), 1 deletions(-)
+ lib/dma-debug.c |   49 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 48 insertions(+), 1 deletions(-)
 
 diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index c01f647..c6330b1 100644
+index cdd205d..c01f647 100644
 --- a/lib/dma-debug.c
 +++ b/lib/dma-debug.c
-@@ -23,9 +23,11 @@
- #include <linux/dma-debug.h>
- #include <linux/spinlock.h>
- #include <linux/debugfs.h>
-+#include <linux/uaccess.h>
- #include <linux/device.h>
- #include <linux/types.h>
- #include <linux/sched.h>
-+#include <linux/ctype.h>
- #include <linux/list.h>
- #include <linux/slab.h>
- 
-@@ -98,6 +100,7 @@ static struct dentry *show_all_errors_dent  __read_mostly;
- static struct dentry *show_num_errors_dent  __read_mostly;
+@@ -99,6 +99,15 @@ static struct dentry *show_num_errors_dent  __read_mostly;
  static struct dentry *num_free_entries_dent __read_mostly;
  static struct dentry *min_free_entries_dent __read_mostly;
-+static struct dentry *filter_dent           __read_mostly;
  
- /* per-driver filter related state */
++/* per-driver filter related state */
++
++#define NAME_MAX_LEN	64
++
++static char                  current_driver_name[NAME_MAX_LEN] __read_mostly;
++static struct device_driver *current_driver                    __read_mostly;
++
++static DEFINE_RWLOCK(driver_name_lock);
++
+ static const char *type2name[4] = { "single", "page",
+ 				    "scather-gather", "coherent" };
  
-@@ -160,7 +163,8 @@ static bool driver_filter(struct device *dev)
- 		read_lock_irqsave(&driver_name_lock, flags);
- 
- 		if (drv->name &&
--		    strncmp(current_driver_name, drv->name, 63) == 0) {
-+		    strncmp(current_driver_name, drv->name,
-+			    NAME_MAX_LEN-1) == 0) {
- 			current_driver = drv;
- 			ret = true;
- 		}
-@@ -454,6 +458,97 @@ out_err:
- 	return -ENOMEM;
+@@ -128,9 +137,47 @@ static inline void dump_entry_trace(struct dma_debug_entry *entry)
+ #endif
  }
  
-+static ssize_t filter_read(struct file *file, char __user *user_buf,
-+			   size_t count, loff_t *ppos)
++static bool driver_filter(struct device *dev)
 +{
-+	unsigned long flags;
-+	char buf[NAME_MAX_LEN + 1];
-+	int len;
++	/* driver filter off */
++	if (likely(!current_driver_name[0]))
++		return true;
 +
-+	if (!current_driver_name[0])
-+		return 0;
++	/* driver filter on and initialized */
++	if (current_driver && dev->driver == current_driver)
++		return true;
 +
-+	/*
-+	 * We can't copy to userspace directly because current_driver_name can
-+	 * only be read under the driver_name_lock with irqs disabled. So
-+	 * create a temporary copy first.
-+	 */
-+	read_lock_irqsave(&driver_name_lock, flags);
-+	len = scnprintf(buf, NAME_MAX_LEN + 1, "%s\n", current_driver_name);
-+	read_unlock_irqrestore(&driver_name_lock, flags);
++	/* driver filter on but not yet initialized */
++	if (!current_driver && current_driver_name[0]) {
++		struct device_driver *drv = get_driver(dev->driver);
++		unsigned long flags;
++		bool ret = false;
 +
-+	return simple_read_from_buffer(user_buf, count, ppos, buf, len);
-+}
++		if (!drv)
++			return false;
 +
-+static ssize_t filter_write(struct file *file, const char __user *userbuf,
-+			    size_t count, loff_t *ppos)
-+{
-+	unsigned long flags;
-+	char buf[NAME_MAX_LEN];
-+	size_t len = NAME_MAX_LEN - 1;
-+	int i;
++		/* lock to protect against change of current_driver_name */
++		read_lock_irqsave(&driver_name_lock, flags);
 +
-+	/*
-+	 * We can't copy from userspace directly. Access to
-+	 * current_driver_name is protected with a write_lock with irqs
-+	 * disabled. Since copy_from_user can fault and may sleep we
-+	 * need to copy to temporary buffer first
-+	 */
-+	len = min(count, len);
-+	if (copy_from_user(buf, userbuf, len))
-+		return -EFAULT;
++		if (drv->name &&
++		    strncmp(current_driver_name, drv->name, 63) == 0) {
++			current_driver = drv;
++			ret = true;
++		}
 +
-+	buf[len] = 0;
++		read_unlock_irqrestore(&driver_name_lock, flags);
++		put_driver(drv);
 +
-+	write_lock_irqsave(&driver_name_lock, flags);
-+
-+	/* Now handle the string we got from userspace very carefully.
-+	 * The rules are:
-+	 *         - only use the first token we got
-+	 *         - token delimiter is everything looking like a space
-+	 *           character (' ', '\n', '\t' ...)
-+	 *
-+	 */
-+	if (!isalnum(buf[0])) {
-+		/*
-+		   If the first character userspace gave us is not
-+		 * alphanumerical then assume the filter should be
-+		 * switched off.
-+		 */
-+		if (current_driver_name[0])
-+			printk(KERN_INFO "DMA-API: switching off dma-debug "
-+					 "driver filter\n");
-+		current_driver_name[0] = 0;
-+		current_driver = NULL;
-+		goto out_unlock;
++		return ret;
 +	}
 +
-+	/*
-+	 * Now parse out the first token and use it as the name for the
-+	 * driver to filter for.
-+	 */
-+	for (i = 0; i < NAME_MAX_LEN; ++i) {
-+		current_driver_name[i] = buf[i];
-+		if (isspace(buf[i]) || buf[i] == ' ' || buf[i] == 0)
-+			break;
-+	}
-+	current_driver_name[i] = 0;
-+	current_driver = NULL;
-+
-+	printk(KERN_INFO "DMA-API: enable driver filter for driver [%s]\n",
-+	       current_driver_name);
-+
-+out_unlock:
-+	write_unlock_irqrestore(&driver_name_lock, flags);
-+
-+	return count;
++	return false;
 +}
 +
-+const struct file_operations filter_fops = {
-+	.read  = filter_read,
-+	.write = filter_write,
-+};
-+
- static int dma_debug_fs_init(void)
- {
- 	dma_debug_dent = debugfs_create_dir("dma-api", NULL);
-@@ -497,6 +592,11 @@ static int dma_debug_fs_init(void)
- 	if (!min_free_entries_dent)
- 		goto out_err;
- 
-+	filter_dent = debugfs_create_file("driver_filter", 0644,
-+					  dma_debug_dent, NULL, &filter_fops);
-+	if (!filter_dent)
-+		goto out_err;
-+
- 	return 0;
- 
- out_err:
+ #define err_printk(dev, entry, format, arg...) do {		\
+ 		error_count += 1;				\
+-		if (show_all_errors || show_num_errors > 0) {	\
++		if (driver_filter(dev) &&			\
++		    (show_all_errors || show_num_errors > 0)) {	\
+ 			WARN(1, "%s %s: " format,		\
+ 			     dev_driver_string(dev),		\
+ 			     dev_name(dev) , ## arg);		\
 -- 
 1.6.3.1
 
