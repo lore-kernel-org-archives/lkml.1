@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbZFBPqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbZFBPvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757900AbZFBPqX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 11:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZFBPqP
+	id S1756603AbZFBPvj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 11:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbZFBPva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 11:46:15 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:42820 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754529AbZFBPqP (ORCPT
+	Tue, 2 Jun 2009 11:51:30 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:45940 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752296AbZFBPva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 11:46:15 -0400
-Date: Tue, 2 Jun 2009 17:46:16 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: Karsten Keil <isdn@linux-pingi.de>
-Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mISDN GIT: hfcpci cleanup failure on IRQ weirdness
-Message-ID: <20090602154616.GB10941@rhlx01.hs-esslingen.de>
-References: <20090602130649.GA14794@rhlx01.hs-esslingen.de> <200906021729.58677.isdn@linux-pingi.de>
-MIME-Version: 1.0
+	Tue, 2 Jun 2009 11:51:30 -0400
+Date: Tue, 2 Jun 2009 10:51:53 -0500
+From: "Mike Miller (OS Dev)" <mikem@beardog.cca.cpqcorp.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       scameron@beardog.cca.cpqcorp.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 2/2] cciss: Fix SCSI device reset handler
+Message-ID: <20090602155153.GA14121@beardog.cca.cpqcorp.net>
+References: <20090527203007.GA30160@beardog.cca.cpqcorp.net> <20090529124208.531839fe.akpm@linux-foundation.org> <20090602125011.GJ11363@kernel.dk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906021729.58677.isdn@linux-pingi.de>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090602125011.GJ11363@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tue, Jun 02, 2009 at 05:29:58PM +0200, Karsten Keil wrote:
-> Hmm, I think shared as comment in the IRQ function should be
-> enough -  but  I do not complain to a longer comment.
-
-OK, whatever. It has better verbosity, but maybe too much.
-
-> easier:
-> 			if (cnt == 1)
-> 				break;
-> 			else {
+On Tue, Jun 02, 2009 at 02:50:11PM +0200, Jens Axboe wrote:
+> On Fri, May 29 2009, Andrew Morton wrote:
+> > On Wed, 27 May 2009 15:30:07 -0500
+> > scameron@beardog.cca.cpqcorp.net wrote:
+> > 
+> > > +static int wait_for_device_to_become_ready(ctlr_info_t *h,
+> > > +	unsigned char lunaddr[])
+> > > +{
+> > > +	int rc;
+> > > +	int count = 0;
+> > > +	int waittime = HZ;
+> > > +	CommandList_struct *c;
+> > > +
+> > > +	c = cmd_alloc(h, 1);
+> > > +	if (!c) {
+> > > +		printk(KERN_WARNING "cciss%d: out of memory in "
+> > > +			"wait_for_device_to_become_ready.\n", h->ctlr);
+> > > +		return IO_ERROR;
+> > > +	}
+> > > +
+> > > +	/* Send test unit ready until device ready, or give up. */
+> > > +	while (count < 20) {
+> > > +
+> > > +		/* Wait for a bit.  do this first, because if we send
+> > > +		 * the TUR right away, the reset will just abort it.
+> > > +		 */
+> > > +		set_current_state(TASK_INTERRUPTIBLE);
+> > > +		schedule_timeout(waittime);
+> > 
+> > That's schedule_timeout_interruptible().
+> > 
+> > The problem with interruptible sleeps of this nature is that they are
+> > no-ops if the calling process happens to have signal_pending().  I
+> > suspect that this condition will break your driver.
+> > 
+> > If so, switching to schedule_timeout_uninterruptible() will unbreak it.
 > 
+> I added Stephens patch and your fixup.
 > 
-> I will send this patch together with some other ISDN fixes again soon.
-
-Thanks!
-
-Andreas Mohr
+> -- 
+> Jens Axboe
+> 
+Thanks, Jens.
