@@ -1,75 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbZFBNbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbZFBNcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753997AbZFBNbR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 09:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZFBNbH
+	id S1755566AbZFBNcw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 09:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZFBNcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 09:31:07 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:64362 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752836AbZFBNbH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 09:31:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=Ud4B07OSoRa3l3aFAbB5dF4NUCvpk51UjnMZM9CyIFL3m2ynIYD0rhlVJDlvno5TxT
-         cIyZ0B3yitcd4BjV54NezVX+AfxfvHyIG3Zhufcip/4KMa/PF0y8+tS3ZQrCrzQtCV5j
-         EHMYoZedpJKVPCj9cGopvM/vX41sLE69ON5IA=
+	Tue, 2 Jun 2009 09:32:45 -0400
+Received: from mga14.intel.com ([143.182.124.37]:18962 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752189AbZFBNcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 09:32:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,291,1241420400"; 
+   d="scan'208";a="149722148"
+Date: Tue, 2 Jun 2009 21:02:16 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Nick Piggin <npiggin@suse.de>, "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
+	in the VM v3
+Message-ID: <20090602130216.GB20462@localhost>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org>
 MIME-Version: 1.0
-In-Reply-To: <1243817268.4375.28.camel@concordia>
-References: <d970ff420905291307p62e9c6eck772e7ee3757ee44a@mail.gmail.com>
-	 <1243817268.4375.28.camel@concordia>
-Date: Tue, 2 Jun 2009 10:24:15 -0300
-Message-ID: <d970ff420906020624r6988e99aq2d3ddae26e0d6585@mail.gmail.com>
-Subject: Re: MPC8343 - serial8250: too much work
-From: Alemao <xcarandiru@gmail.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090602124757.GG1065@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Tue, Jun 02, 2009 at 08:47:57PM +0800, Andi Kleen wrote:
+> On Tue, Jun 02, 2009 at 02:00:42PM +0200, Nick Piggin wrote:
+> > > On Mon, Jun 01, 2009 at 01:50:46PM +0200, Nick Piggin wrote:
+> > > > > Another major complexity is on calling the isolation routines to
+> > > > > remove references from
+> > > > >         - PTE
+> > > > >         - page cache
+> > > > >         - swap cache
+> > > > >         - LRU list
+> > > > > They more or less made some assumptions on their operating environment
+> > > > > that we have to take care of.  Unfortunately these complexities are
+> > > > > also not easily resolvable.
+> > > > > 
+> > > > > > (and few comments) of all the files in mm/. If you want to get rid
+> > > > > 
+> > > > > I promise I'll add more comments :)
+> > > > 
+> > > > OK, but they should still go in their relevant files. Or as best as
+> > > > possible. Right now it's just silly to have all this here when much
+> > > > of it could be moved out to filemap.c, swap_state.c, page_alloc.c, etc.
+> > > 
+> > > Can you be more specific what that "all this" is? 
+> > 
+> > The functions which take action in response to a bad page being 
+> > detected. They belong with the subsystem that the page belongs
+> > to. I'm amazed this is causing so much argument or confusion
+> > because it is how the rest of mm/ code is arranged. OK, Hugh has
+> > a point about ifdefs, but OTOH we have lots of ifdefs like this.
+> 
+> Well we're already calling into that subsystem, just not with
+> a single function call.
+> 
+> > > > > > of the page and don't care what it's count or dirtyness is, then
+> > > > > > truncate_inode_pages_range is the correct API to use.
+> > > > > >
+> > > > > > (or you could extract out some of it so you can call it directly on
+> > > > > > individual locked pages, if that helps).
+> > > > >  
+> > > > > The patch to move over to truncate_complete_page() would like this.
+> > > > > It's not a big win indeed.
+> > > > 
+> > > > No I don't mean to do this, but to move the truncate_inode_pages
+> > > > code for truncating a single, locked, page into another function
+> > > > in mm/truncate.c and then call that from here.
+> > > 
+> > > I took a look at that.  First there's no direct equivalent of
+> > > me_pagecache_clean/dirty in truncate.c and to be honest I don't
+> > > see a clean way to refactor any of the existing functions to 
+> > > do the same.
+> > 
+> > With all that writing you could have just done it. It's really
+> 
+> I would have done it if it made sense to me, but so far it hasn't.
+> 
+> The problem with your suggestion is that you do the big picture,
+> but seem to skip over a lot of details. But details matter.
+> 
+> > not a big deal and just avoids duplicating code. I attached an
+> > (untested) patch.
+> 
+> Thanks. But the function in the patch is not doing the same what
+> the me_pagecache_clean/dirty are doing. For once there is no error
+> checking, as in the second try_to_release_page()
+> 
+> Then it doesn't do all the IO error and missing mapping handling.
+> 
+> The page_mapped() check is useless because the pages are not 
+> mapped here etc.
+> 
+> We could probably call truncate_complete_page(), but then
+> we would also need to duplicate most of the checking outside
+> the function anyways and there wouldn't be any possibility
+> to share the clean/dirty variants. If you insist I can
+> do it, but I think it would be significantly worse code
+> than before and I'm reluctant to do that.
+> 
+> I don't also really see what the big deal is of just
+> calling these few functions directly. After all we're not
+> truncating here and they're all already called from other files.
 
-In a normal situation, I have something like this:
+Yes I like the current "one code block calling one elemental function
+to isolate from one reference source" scenario:
+         - PTE
+         - page cache
+         - swap cache
+         - LRU list
 
-serial8250_interrupt()
-serial8250_handle_port()
-transmit_chars()
-pass_counter: 0
-serial8250_handle_port()
-pass_counter: 1
-serial8250_handle_port()
-pass_counter: 2
-pass_counter: 3
+Calling into the generic truncate code only messes up the concepts.
 
-
-But when the problem happends:
-
-serial8250_interrupt(16)
-serial8250_handle_port()
-transmit_chars()
-uart_circ_empty()
-pass_counter: 0
-.
-.
-.
-serial8250_handle_port()
-transmit_chars()
-uart_circ_empty()
-pass_counter: 257
-serial8250: too much work for irq16
-
-If the circ buffer is empty, why iterate 256 times?
-
-How can I trace the application that is calling serial routines?
-
-Its difficult to debug cause I use serial console to communicate with the board.
-
-Thanks in advance,
-
---
-Alemao
+Thanks,
+Fengguang
