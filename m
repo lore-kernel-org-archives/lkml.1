@@ -1,92 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760219AbZFBLFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760709AbZFBLGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760219AbZFBLFi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 07:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757695AbZFBLFP
+	id S1760709AbZFBLGV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 07:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759613AbZFBLFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 07:05:15 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:45112 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752639AbZFBLFN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 07:05:13 -0400
-Message-Id: <20090602110512.327768024@de.ibm.com>
-References: <20090602105311.591592481@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 02 Jun 2009 12:53:14 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [PATCH/RFC 3/4] kprobes: use probe_kernel_write
-Content-Disposition: inline; filename=202-kprobes-probe_kernel_write.diff
+	Tue, 2 Jun 2009 07:05:23 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:35331 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759445AbZFBLFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 07:05:21 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18981.1900.792795.836858@cargo.ozlabs.ibm.com>
+Date: Tue, 2 Jun 2009 21:05:16 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: [PATCH] perf_counter: Initialize per-cpu context earlier on
+   cpu up
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+This arranges for perf_counter's notifier for cpu hotplug operations
+to be called earlier than the migration notifier in sched.c by
+increasing its priority to 20, compared to the 10 for the migration
+notifier.  The reason for doing this is that a subsequent commit to
+convert the cpu migration counter to use the generic swcounter
+infrastructure will add a call into the perf_counter subsystem when
+tasks get migrated.  Therefore the perf_counter subsystem needs a
+chance to initialize its per-cpu data for the new cpu before it can
+get called from the migration code.
 
-Use proble_kernel_write() to patch the kernel.
+This also adds a comment to the migration notifier noting that its
+priority needs to be lower than that of the perf_counter notifier.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
+ kernel/perf_counter.c |    4 ++++
+ kernel/sched.c        |    6 ++++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
- arch/s390/kernel/kprobes.c |   31 ++-----------------------------
- 1 file changed, 2 insertions(+), 29 deletions(-)
-
-diff -urpN linux-2.6/arch/s390/kernel/kprobes.c linux-2.6-patched/arch/s390/kernel/kprobes.c
---- linux-2.6/arch/s390/kernel/kprobes.c	2009-03-24 00:12:14.000000000 +0100
-+++ linux-2.6-patched/arch/s390/kernel/kprobes.c	2009-06-02 10:40:05.000000000 +0200
-@@ -25,9 +25,9 @@
- #include <linux/preempt.h>
- #include <linux/stop_machine.h>
- #include <linux/kdebug.h>
-+#include <linux/uaccess.h>
- #include <asm/cacheflush.h>
- #include <asm/sections.h>
--#include <asm/uaccess.h>
- #include <linux/module.h>
- 
- DEFINE_PER_CPU(struct kprobe *, current_kprobe) = NULL;
-@@ -155,35 +155,8 @@ void __kprobes get_instruction_type(stru
- static int __kprobes swap_instruction(void *aref)
- {
- 	struct ins_replace_args *args = aref;
--	u32 *addr;
--	u32 instr;
--	int err = -EFAULT;
- 
--	/*
--	 * Text segment is read-only, hence we use stura to bypass dynamic
--	 * address translation to exchange the instruction. Since stura
--	 * always operates on four bytes, but we only want to exchange two
--	 * bytes do some calculations to get things right. In addition we
--	 * shall not cross any page boundaries (vmalloc area!) when writing
--	 * the new instruction.
--	 */
--	addr = (u32 *)((unsigned long)args->ptr & -4UL);
--	if ((unsigned long)args->ptr & 2)
--		instr = ((*addr) & 0xffff0000) | args->new;
--	else
--		instr = ((*addr) & 0x0000ffff) | args->new << 16;
--
--	asm volatile(
--		"	lra	%1,0(%1)\n"
--		"0:	stura	%2,%1\n"
--		"1:	la	%0,0\n"
--		"2:\n"
--		EX_TABLE(0b,2b)
--		: "+d" (err)
--		: "a" (addr), "d" (instr)
--		: "memory", "cc");
--
--	return err;
-+	return probe_kernel_write(args->ptr, &args->new, sizeof(args->new));
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index df319c4..8d2653f 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -3902,8 +3902,12 @@ perf_cpu_notify(struct notifier_block *self, unsigned long action, void *hcpu)
+ 	return NOTIFY_OK;
  }
  
- void __kprobes arch_arm_kprobe(struct kprobe *p)
-
++/*
++ * This has to have a higher priority than migration_notifier in sched.c.
++ */
+ static struct notifier_block __cpuinitdata perf_cpu_nb = {
+ 	.notifier_call		= perf_cpu_notify,
++	.priority		= 20,
+ };
+ 
+ void __init perf_counter_init(void)
+diff --git a/kernel/sched.c b/kernel/sched.c
+index ad079f0..3226cc1 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7319,8 +7319,10 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 	return NOTIFY_OK;
+ }
+ 
+-/* Register at highest priority so that task migration (migrate_all_tasks)
+- * happens before everything else.
++/*
++ * Register at high priority so that task migration (migrate_all_tasks)
++ * happens before everything else.  This has to be lower priority than
++ * the notifier in the perf_counter subsystem, though.
+  */
+ static struct notifier_block __cpuinitdata migration_notifier = {
+ 	.notifier_call = migration_call,
 -- 
+1.6.0.4
+
