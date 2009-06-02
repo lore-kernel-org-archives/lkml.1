@@ -1,134 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbZFBM1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbZFBMh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753531AbZFBM1w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 08:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZFBM1p
+	id S1753237AbZFBMh1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 08:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbZFBMhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 08:27:45 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50713 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbZFBM1p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 08:27:45 -0400
-Date: Tue, 2 Jun 2009 14:34:50 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, hugh@veritas.com, riel@redhat.com,
-       akpm@linux-foundation.org, chris.mason@oracle.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com
+	Tue, 2 Jun 2009 08:37:20 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33769 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751919AbZFBMhT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 08:37:19 -0400
+Date: Tue, 2 Jun 2009 14:37:20 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: hugh@veritas.com, riel@redhat.com, akpm@linux-foundation.org,
+       chris.mason@oracle.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com
 Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602123450.GF1065@one.firstfloor.org>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090601120537.GF5018@wotan.suse.de> <20090601185147.GT1065@one.firstfloor.org> <20090602121031.GC1392@wotan.suse.de>
+Message-ID: <20090602123720.GF1392@wotan.suse.de>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090601120537.GF5018@wotan.suse.de> <20090601185147.GT1065@one.firstfloor.org> <20090602121031.GC1392@wotan.suse.de> <20090602123450.GF1065@one.firstfloor.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090602121031.GC1392@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090602123450.GF1065@one.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 02:10:31PM +0200, Nick Piggin wrote:
-> > > Just extract the part where it has the page locked into a common
-> > > function.
+On Tue, Jun 02, 2009 at 02:34:50PM +0200, Andi Kleen wrote:
+> On Tue, Jun 02, 2009 at 02:10:31PM +0200, Nick Piggin wrote:
+> > > It's not, there are various differences (like the reference count)
 > > 
-> > That doesn't do some stuff we want to do, like try_to_release_buffers
-> > And there's the page count problem with remove_mapping
-> > 
-> > That could be probably fixed, but to be honest I'm uncomfortable
-> > fiddling with truncate internals.
+> > No. If there are, then it *really* needs better documentation. I
+> > don't think there are, though.
 > 
-> You're looking at invalidate, which is different. See my
-> last patch.
-
-Hmm. 
-
+> Better documentation on what? You want a detailed listing in a comment
+> how it is different from truncate?
 > 
-> > > > Is there anything concretely wrong with the current code?
-> > > 
-> > > 
-> > > /*
-> > >  * Truncate does the same, but we're not quite the same
-> > >  * as truncate. Needs more checking, but keep it for now.
-> > >  */
-> > > 
-> > > I guess that it duplicates this tricky truncate code and also
-> > > says it is different (but AFAIKS it is doing exactly the same
-> > > thing).
-> > 
-> > It's not, there are various differences (like the reference count)
-> 
-> No. If there are, then it *really* needs better documentation. I
-> don't think there are, though.
+> To be honest I have some doubts of the usefulness of such a comment
+> (why stop at truncate and not list the differences to every other
+> page cache operation? @) but if you're insist (do you?) I can add one.
 
-Better documentation on what? You want a detailed listing in a comment
-how it is different from truncate?
+Because I don't see any difference (see my previous patch). I
+still don't know what it is supposed to be doing differently.
+So if you reinvent your own that looks close enough to truncate
+to warrant a comment to say /* this is close to truncate but
+not quite */, then yes I insist that you say exactly why it is
+not quite like truncate ;)
 
-To be honest I have some doubts of the usefulness of such a comment
-(why stop at truncate and not list the differences to every other
-page cache operation? @) but if you're insist (do you?) I can add one.
-
-> I'm suggesting that EIO is traditionally for when the data still
-> dirty in pagecache and was not able to get back to backing
-> store. Do you deny that?
-
-Yes. That is exactly the case when memory-failure triggers EIO
-
-Memory error on a dirty file mapped page.
-
-> And I think the application might try to handle the case of a
-> page becoming corrupted differently. Do you deny that?
-
-You mean a clean file-mapped page? In this case there is no EIO,
-memory-failure just drops the page and it is reloaded.
-
-If the page is dirty we trigger EIO which as you said above is the 
-right reaction.
-
-> 
-> OK, given the range of errors that APIs are defined to return,
-> then maybe EIO is the best option. I don't suppose it is possible
-> to expand them to return something else?
-
-Expand the syscalls to return other errnos on specific
-kinds of IO error?
  
-Of course that's possible, but it has the problem that you 
-would need to fix all the applications that expect EIO for
-IO error. The later I consider infeasible.
-
-> > > > > Just seems overengineered. We could rewrite any if/switch statement like
-> > > > > that (and actually the compiler probably will if it is beneficial).
-> > > > 
-> > > > The reason I like it is that it separates the functions cleanly,
-> > > > without that there would be a dispatcher from hell. Yes it's a bit
-> > > > ugly that there is a lot of manual bit checking around now too,
-> > > > but as you go into all the corner cases originally clean code
-> > > > always tends to get more ugly (and this is a really ugly problem)
-> > > 
-> > > Well... it is just writing another dispatcher from hell in a
-> > > different way really, isn't it? How is it so much better than
-> > > a simple switch or if/elseif/else statement?
-> > 
-> > switch () wouldn't work, it relies on the order.
+> > I'm suggesting that EIO is traditionally for when the data still
+> > dirty in pagecache and was not able to get back to backing
+> > store. Do you deny that?
 > 
-> Order of what?
-
-Order of the bit tests. 
-
+> Yes. That is exactly the case when memory-failure triggers EIO
 > 
+> Memory error on a dirty file mapped page.
+
+But it is no longer dirty, and the problem was not that the data
+was unable to be written back.
+
+
+> > And I think the application might try to handle the case of a
+> > page becoming corrupted differently. Do you deny that?
 > 
-> > if () would work, but it would be larger and IMHO much harder
-> > to read than the table. I prefer the table, which is a reasonably
-> > clean mechanism to do that.
+> You mean a clean file-mapped page? In this case there is no EIO,
+> memory-failure just drops the page and it is reloaded.
 > 
-> OK. Maybe I'll try send a patch to remove it and see how it looks
-> sometime. I think it's totally overengineered, but that's just me.
+> If the page is dirty we trigger EIO which as you said above is the 
+> right reaction.
 
-I disagree on that.
+No I mean the difference between the case of dirty page unable to
+be written to backing sotre, and the case of dirty page becoming
+corrupted.
 
--Andi
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+> > OK, given the range of errors that APIs are defined to return,
+> > then maybe EIO is the best option. I don't suppose it is possible
+> > to expand them to return something else?
+> 
+> Expand the syscalls to return other errnos on specific
+> kinds of IO error?
+>  
+> Of course that's possible, but it has the problem that you 
+> would need to fix all the applications that expect EIO for
+> IO error. The later I consider infeasible.
+
+They would presumably exit or do some default thing, which I
+think would be fine. Actually if your code catches them in the
+act of manipulating a corrupted page (ie. if it is mmapped),
+then it gets a SIGBUS.
