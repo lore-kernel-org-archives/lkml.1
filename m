@@ -1,95 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbZFBW0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288AbZFBWc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755009AbZFBW0U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 18:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbZFBW0K
+	id S1753288AbZFBWc7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 18:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZFBWcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 18:26:10 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:56052 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751894AbZFBW0I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 18:26:08 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH v2] usb: avoid PM error messages during resume if a device was disconnected
-Date: Wed, 3 Jun 2009 00:26:07 +0200
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-usb@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0906021745380.3960-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906021745380.3960-100000@iolanthe.rowland.org>
+	Tue, 2 Jun 2009 18:32:51 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57032 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752074AbZFBWcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 18:32:50 -0400
+Date: Tue, 2 Jun 2009 22:32:15 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf record: Increase mmap buffering default
+Message-ID: <tip-3cf165fc2e7f221a7a95098b47eb990779e29f5f@git.kernel.org>
+Git-Commit-ID: 3cf165fc2e7f221a7a95098b47eb990779e29f5f
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906030026.08399.elendil@planet.nl>
-X-OriginalArrivalTime: 02 Jun 2009 22:26:08.0825 (UTC) FILETIME=[2069E290:01C9E3D1]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 02 Jun 2009 22:32:17 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently if a laptop is suspended e.g. while docked and then resumed after
-undocking it, the following errors get generated because the USB hub in the
-docking station and the devices connected to it are no longer available:
-pm_op(): usb_dev_resume+0x0/0x10 returns -19
-PM: Device 1-2 failed to resume: error -19
-pm_op(): usb_dev_resume+0x0/0x10 returns -19
-PM: Device 1-2.2 failed to resume: error -19
-pm_op(): usb_dev_resume+0x0/0x10 returns -19
-PM: Device 1-2.3 failed to resume: error -19
+Commit-ID:  3cf165fc2e7f221a7a95098b47eb990779e29f5f
+Gitweb:     http://git.kernel.org/tip/3cf165fc2e7f221a7a95098b47eb990779e29f5f
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 2 Jun 2009 23:02:59 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 2 Jun 2009 23:04:24 +0200
 
-As the removal of USB devices while a system is suspended is a relatively
-common use case and in most cases not an error, just return success on
--ENODEV. The user gets informed anyway as the USB subsystem generates
-regular disconnect messages for the devices shortly afterwards:
-usb 1-2: USB disconnect, address 3
-usb 1-2.2: USB disconnect, address 4
-usblp0: removed
-usb 1-2.3: USB disconnect, address 5
+perf record: Increase mmap buffering default
 
-Signed-off-by: Frans Pop <elendil@planet.nl>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
+I've run into mmap overruns with the current 16 pages default,
+increase it to 128 pages.
+
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: John Kacur <jkacur@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
+ Documentation/perf_counter/builtin-record.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-On Tuesday 02 June 2009, Alan Stern wrote:
-> If we change -ENODEV to 0, the change should be made in usb_resume()
-> rather than usb_external_resume_device().
-
-Like so?
-Agreed that it's cleaner and tested that it works just as well :-)
-
-Cheers,
-FJP
-
-diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
-index d0a21a5..0aaf26e 100644
---- a/drivers/usb/core/driver.c
-+++ b/drivers/usb/core/driver.c
-@@ -1762,6 +1762,7 @@ int usb_suspend(struct device *dev, pm_message_t msg)
- int usb_resume(struct device *dev, pm_message_t msg)
- {
- 	struct usb_device	*udev;
-+	int			status;
+diff --git a/Documentation/perf_counter/builtin-record.c b/Documentation/perf_counter/builtin-record.c
+index 19cba6b..8feb119 100644
+--- a/Documentation/perf_counter/builtin-record.c
++++ b/Documentation/perf_counter/builtin-record.c
+@@ -19,9 +19,9 @@ static int			default_interval = 100000;
+ static int			event_count[MAX_COUNTERS];
  
- 	udev = to_usb_device(dev);
- 
-@@ -1771,7 +1772,14 @@ int usb_resume(struct device *dev, pm_message_t msg)
- 	 */
- 	if (udev->skip_sys_resume)
- 		return 0;
--	return usb_external_resume_device(udev, msg);
-+	status = usb_external_resume_device(udev, msg);
-+
-+	/* Avoid PM error messages for devices disconnected while suspended
-+	 * as we'll display regular disconnect messages just a bit later.
-+	 */
-+	if (status == -ENODEV)
-+		return 0;
-+	return status;
- }
- 
- #endif /* CONFIG_PM */
+ static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
+-static int			nr_cpus				=  0;
++static int			nr_cpus				= 0;
+ static unsigned int		page_size;
+-static unsigned int		mmap_pages			= 16;
++static unsigned int		mmap_pages			= 128;
+ static int			output;
+ static const char		*output_name			= "perf.data";
+ static int			group				= 0;
