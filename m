@@ -1,117 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbZFBRmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbZFBRmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755844AbZFBRmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 13:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756604AbZFBRmE
+	id S1758590AbZFBRmr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 13:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbZFBRmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 13:42:04 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:55127 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756477AbZFBRmD (ORCPT
+	Tue, 2 Jun 2009 13:42:39 -0400
+Received: from qmta08.emeryville.ca.mail.comcast.net ([76.96.30.80]:42431 "EHLO
+	QMTA08.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755441AbZFBRmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 13:42:03 -0400
-Message-ID: <4A25646A.8030306@novell.com>
-Date: Tue, 02 Jun 2009 13:42:02 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Tue, 2 Jun 2009 13:42:38 -0400
+Message-ID: <4A256462.10600@gmail.com>
+Date: Tue, 02 Jun 2009 13:41:54 -0400
+From: Tom Talpey <tmtalpey@gmail.com>
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, mst@redhat.com, paulmck@linux.vnet.ibm.com
-Subject: Re: [KVM-RFC PATCH 2/2] kvm: use POLLHUP to close an irqfd instead
- of an explicit ioctl
-References: <20090602151135.29746.91320.stgit@dev.haskins.net> <20090602151538.29746.40356.stgit@dev.haskins.net> <alpine.DEB.1.10.0906021011390.12866@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0906021011390.12866@makko.or.mcafeemobile.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig9D1DE861ACDE5FDDBCD17FCF"
+To: Alex Riesen <raa.lkml@gmail.com>
+CC: trivial@kernel.org, linux-kernel@vger.kernel.org,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: Re: [PATCH] Use formatting of module name in SUNRPC
+References: <20090527175955.GB8969@blimp.localdomain>
+In-Reply-To: <20090527175955.GB8969@blimp.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig9D1DE861ACDE5FDDBCD17FCF
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Davide Libenzi wrote:
-> On Tue, 2 Jun 2009, Gregory Haskins wrote:
+On 5/27/2009 1:59 PM, Alex Riesen wrote:
+> Besides, the old code caused gcc-4.3.3 to produce the warning:
+>    "format not a string literal and no format arguments"
 >
->  =20
->> @@ -64,12 +101,28 @@ irqfd_wakeup(wait_queue_t *wait, unsigned mode, i=
-nt sync, void *key)
->>  {
->>  	struct _irqfd *irqfd =3D container_of(wait, struct _irqfd, wait);
->> =20
->> -	/*
->> -	 * The wake_up is called with interrupts disabled.  Therefore we nee=
-d
->> -	 * to defer the IRQ injection until later since we need to acquire t=
-he
->> -	 * kvm->lock to do so.
->> -	 */
->> -	schedule_work(&irqfd->work);
->> +	switch ((unsigned long)key) {
->> +	case POLLIN:
->> +		/*
->> +		 * The POLLIN wake_up is called with interrupts disabled.
->> +		 * Therefore we need to defer the IRQ injection until later
->> +		 * since we need to acquire the kvm->lock to do so.
->> +		 */
->> +		schedule_work(&irqfd->inject);
->> +		break;
->> +	case POLLHUP:
->> +		/*
->> +		 * The POLLHUP is called unlocked, so it theoretically should
->> +		 * be safe to remove ourselves from the wqh
->> +		 */
->> +		remove_wait_queue(irqfd->wqh, &irqfd->wait);
->> +		flush_work(&irqfd->inject);
->> +		irqfd_disconnect(irqfd);
->> +
->> +		cleanup_srcu_struct(&irqfd->srcu);
->> +		kfree(irqfd);
->> +		break;
->> +	}
->>    =20
+> Signed-off-by: Alex Riesen<raa.lkml@gmail.com>
+> ---
+>   net/sunrpc/xprt.c |    5 +----
+>   1 files changed, 1 insertions(+), 4 deletions(-)
 >
-> Since "key" is an event *bitmap*, you better be treating it as such. Do=
-=20
-> not assume what eventfd delivers today (event bitmaps with only one bit=
-=20
-> set). So this better be like:
+> diff --git a/net/sunrpc/xprt.c b/net/sunrpc/xprt.c
+> index 06ca058..82f62fd 100644
+> --- a/net/sunrpc/xprt.c
+> +++ b/net/sunrpc/xprt.c
+> @@ -162,7 +162,6 @@ EXPORT_SYMBOL_GPL(xprt_unregister_transport);
+>   int xprt_load_transport(const char *transport_name)
+>   {
+>   	struct xprt_class *t;
+> -	char module_name[sizeof t->name + 5];
+>   	int result;
 >
-> 	if (key & POLLIN) {
-> 		...
-> 	}
-> 	if (key & POLLHUP) {
-> 		...
-> 	}
->
->
-> - Davide
->
->
->  =20
-Indeed.  Thanks for catching that!
+>   	result = 0;
+> @@ -174,9 +173,7 @@ int xprt_load_transport(const char *transport_name)
+>   		}
+>   	}
+>   	spin_unlock(&xprt_list_lock);
+> -	strcpy(module_name, "xprt");
+> -	strncat(module_name, transport_name, sizeof t->name);
+> -	result = request_module(module_name);
+> +	result = request_module("xprt%s", transport_name);
+>   out:
+>   	return result;
+>   }
 
--Greg
+Never saw the warning while compiling, but I'm fine with the
+proposed change, besides, it's cleaner. Ack.
 
+Tom.
 
---------------enig9D1DE861ACDE5FDDBCD17FCF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkolZGoACgkQlOSOBdgZUxm40wCcCC4XfV8fNcFhPeuRsMj3KyEm
-sKwAmgJ97SAp4krbB4aKRgQdvpZtsT7K
-=mSmg
------END PGP SIGNATURE-----
-
---------------enig9D1DE861ACDE5FDDBCD17FCF--
