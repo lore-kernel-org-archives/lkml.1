@@ -1,132 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751503AbZFBSkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752166AbZFBSqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751503AbZFBSkP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 14:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbZFBSkD
+	id S1752166AbZFBSqP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 14:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbZFBSqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 14:40:03 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:13321 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750800AbZFBSkB (ORCPT
+	Tue, 2 Jun 2009 14:46:01 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:34875 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751225AbZFBSqA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 14:40:01 -0400
-Date: Tue, 2 Jun 2009 13:40:25 -0500
-From: scameron@beardog.cca.cpqcorp.net
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, mikem@beardog.cca.cpqcorp.net
-Subject: Re: [PATCH 2/2] cciss: Fix SCSI device reset handler
-Message-ID: <20090602184025.GT30160@beardog.cca.cpqcorp.net>
-References: <20090527203007.GA30160@beardog.cca.cpqcorp.net> <20090529124208.531839fe.akpm@linux-foundation.org> <20090602125011.GJ11363@kernel.dk> <20090602105114.fe754481.akpm@linux-foundation.org> <20090602175814.GO11363@kernel.dk> <20090602182051.GR30160@beardog.cca.cpqcorp.net> <20090602182830.GP11363@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090602182830.GP11363@kernel.dk>
-User-Agent: Mutt/1.5.9i
+	Tue, 2 Jun 2009 14:46:00 -0400
+Message-Id: <20090602184601.361575345@goodmis.org>
+References: <20090602183036.621443366@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Tue, 02 Jun 2009 14:30:39 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, stable@kernel.org,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: [PATCH 3/3] function-graph: add memory barriers for accessing tasks ret_stack
+Content-Disposition: inline; filename=0003-function-graph-add-memory-barriers-for-accessing-tas.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 08:28:31PM +0200, Jens Axboe wrote:
-> On Tue, Jun 02 2009, scameron@beardog.cca.cpqcorp.net wrote:
-> > 
-> > On Tue, Jun 02, 2009 at 07:58:14PM +0200, Jens Axboe wrote:
-> > > On Tue, Jun 02 2009, Andrew Morton wrote:
-> > > > On Tue, 2 Jun 2009 14:50:11 +0200
-> > > > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > > 
-> > > > > On Fri, May 29 2009, Andrew Morton wrote:
-> > > > > > On Wed, 27 May 2009 15:30:07 -0500
-> > > > > > scameron@beardog.cca.cpqcorp.net wrote:
-> > > > > > 
-> > > > > > > +static int wait_for_device_to_become_ready(ctlr_info_t *h,
-> > > > > > > +	unsigned char lunaddr[])
-> > > > > > > +{
-> > > > > > > +	int rc;
-> > > > > > > +	int count = 0;
-> > > > > > > +	int waittime = HZ;
-> > > > > > > +	CommandList_struct *c;
-> > > > > > > +
-> > > > > > > +	c = cmd_alloc(h, 1);
-> > > > > > > +	if (!c) {
-> > > > > > > +		printk(KERN_WARNING "cciss%d: out of memory in "
-> > > > > > > +			"wait_for_device_to_become_ready.\n", h->ctlr);
-> > > > > > > +		return IO_ERROR;
-> > > > > > > +	}
-> > > > > > > +
-> > > > > > > +	/* Send test unit ready until device ready, or give up. */
-> > > > > > > +	while (count < 20) {
-> > > > > > > +
-> > > > > > > +		/* Wait for a bit.  do this first, because if we send
-> > > > > > > +		 * the TUR right away, the reset will just abort it.
-> > > > > > > +		 */
-> > > > > > > +		set_current_state(TASK_INTERRUPTIBLE);
-> > > > > > > +		schedule_timeout(waittime);
-> > > > > > 
-> > > > > > That's schedule_timeout_interruptible().
-> > > > > > 
-> > > > > > The problem with interruptible sleeps of this nature is that they are
-> > > > > > no-ops if the calling process happens to have signal_pending().  I
-> > > > > > suspect that this condition will break your driver.
-> > > > > > 
-> > > > > > If so, switching to schedule_timeout_uninterruptible() will unbreak it.
-> > > > > 
-> > > > > I added Stephens patch and your fixup.
-> > > > 
-> > > > My cciss-fix-scsi-device-reset-handler-fix.patch was a simple cleanup -
-> > > > it uses schedule_timeout_interruptible().
-> > > > 
-> > > > I believe that this should be changed to
-> > > > schedule_timeout_uninterruptible() for the above reasons, but the cciss
-> > > > guys fell asleep on me.
-> > > 
-> > > It's an improvement, none the less. And I bet it should just be
-> > > uninterruptible sleep, unless it has a good reason to accept signals.
-> > > Mike? Stephen?
-> > > 
-> > > -- 
-> > > Jens Axboe
-> > > 
-> > 
-> > Sorry for the slow reply.
-> > 
-> > No good reason that I know to accept signals, I'll defer to your
-> > judgement on that.  When I wrote that schedule_timeout_... line,
-> > I was vaguely wondering if it was quite right.
-> > 
-> > That being said, I'm working on a set of patches to make the cciss
-> > SCSI error handling stuff work with interrupts enabled, which
-> > means making similar changes to sendcmd_withirq() as I already
-> > did to sendcmd() among some other stuff.   I didn't notice until
-> > just a few days ago that since sometime in 2.4 kernels you no longer 
-> > need to do the SCSI error handling with interrupts disabled as
-> > in 2.2 kernels.  Mike asked me why we did it with interrupts
-> > disabled, and I went looking in the docs to try to find where
-> > it said we needed to do that, and... oh, that requirement is
-> > gone.
-> > 
-> > So, if I rewrite the stuff to work with interrupts enabled, 
-> > would that change which kind of schedule_timeout() should be used?
-> > Or is that unrelated, and it depends whether you plan to do
-> > something with signals?  I'm not all that clear when to use
-> > one vs. tha other.
-> 
-> For short sleeps and sleeps that are outside of direct process context,
-> an uninterruptible sleep is typically the right thing to do. Since this
-> function is invoked from the scsi eh, doing signal enabled sleeps are
-> pointless.
+From: Steven Rostedt <srostedt@redhat.com>
 
-Ok, thanks.
+The code that handles the tasks ret_stack allocation for every task
+assumes that only an interrupt can cause issues (even though interrupts
+are disabled).
 
-I think in a few days I should have five or six more patches to clean up
-some of the sendcmd_() junk a little bit, and get the SCSI error handling
-stuff working with interrupts enabled, and I think that may allow the weird thing
-where we stow away completed commands that sendcmd() scoops up inadvertently
-for later processing to be removed, which would be nice.
+In reality, the code is allocating the ret_stack for tasks that may be
+running on other CPUs and there are not efficient memory barriers to
+handle this case.
 
--- steve
+[ Impact: prevent crash due to using of uninitialized ret_stack variables ]
 
-> 
-> -- 
-> Jens Axboe
-> 
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/ftrace.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 20e0660..1664d3f 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -2580,12 +2580,12 @@ static int alloc_retstack_tasklist(struct ftrace_ret_stack **ret_stack_list)
+ 		}
+ 
+ 		if (t->ret_stack == NULL) {
+-			t->curr_ret_stack = -1;
+-			/* Make sure IRQs see the -1 first: */
+-			barrier();
+-			t->ret_stack = ret_stack_list[start++];
+ 			atomic_set(&t->tracing_graph_pause, 0);
+ 			atomic_set(&t->trace_overrun, 0);
++			t->curr_ret_stack = -1;
++			/* Make sure the tasks see the -1 first: */
++			smp_wmb();
++			t->ret_stack = ret_stack_list[start++];
+ 		}
+ 	} while_each_thread(g, t);
+ 
+-- 
+1.6.3.1
+
+-- 
