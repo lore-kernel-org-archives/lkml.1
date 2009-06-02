@@ -1,81 +1,339 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbZFBFWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbZFBFYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759016AbZFBFWQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 01:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZFBFWB
+	id S1759472AbZFBFYY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 01:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757375AbZFBFYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 01:22:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51790 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751159AbZFBFWA (ORCPT
+	Tue, 2 Jun 2009 01:24:16 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:53005 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756756AbZFBFYP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 01:22:00 -0400
-Date: Mon, 1 Jun 2009 22:21:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: vibi_sreenivasan@cms.com, Mimi Zohar <zohar@us.ibm.com>,
-       Kylene Hall <kylene@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-       Reiner Sailer <sailer@watson.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>
-Subject: Re: [PATCH]:RESEND : Return proper error value on failure of
- dentry_open
-Message-Id: <20090601222105.16e20612.akpm@linux-foundation.org>
-In-Reply-To: <4A2393DE.10300@gmail.com>
-References: <1243836708.2163.3.camel@system>
-	<4A238625.8060002@gmail.com>
-	<1243844849.2327.27.camel@system>
-	<4A2393DE.10300@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 2 Jun 2009 01:24:15 -0400
+Message-Id: <200906020523.n525NdJe050896@www262.sakura.ne.jp>
+Subject: Re: [PATCH 2/5] TOMOYO: Clarify lock protected section.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: jmorris@namei.org
+Cc: lizf@cn.fujitsu.com, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Date: Tue, 02 Jun 2009 14:23:39 +0900
+References: <200906020143.n521hGGP003698@www262.sakura.ne.jp> <4A248C90.9010904@cn.fujitsu.com> <200906020230.n522UjfJ013581@www262.sakura.ne.jp> <alpine.LRH.2.00.0906021507360.10061@tundra.namei.org>
+In-Reply-To: <alpine.LRH.2.00.0906021507360.10061@tundra.namei.org>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 02062009 #2073455, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 01 Jun 2009 10:39:58 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
+James Morris wrote:
+> The lock functions act as annotations, you don't need to add any more.  
 
-> On 06/01/2009 10:27 AM, vibi sreenivasan wrote:
-> > --- a/security/integrity/ima/ima_main.c
-> > +++ b/security/integrity/ima/ima_main.c
-> > @@ -201,10 +201,10 @@ int ima_path_check(struct path *path, int mask)
-> >  	}
-> >  out:
-> >  	mutex_unlock(&iint->mutex);
-> > -	if (file)
-> > +	if (!IS_ERR(file))
-> >  		fput(file);
-> 
-> No, IS_ERR won't catch NULL and there is 'file = NULL' on the
-> dentry_open fail path. I still think 'if (file)' is proper condition.
-> 
-> What bug did you hit?
+I see. I'll remake patchset.
 
-	if (!(iint->flags & IMA_MEASURED)) {
-		struct dentry *dentry = dget(path->dentry);
-		struct vfsmount *mnt = mntget(path->mnt);
+Thanks.
+--------------------
+Subject: TOMOYO: Remove redundant markers.
 
-		file = dentry_open(dentry, mnt, O_RDONLY | O_LARGEFILE,
-				   current_cred());
-		if (IS_ERR(file)) {
-			pr_info("%s dentry_open failed\n", dentry->d_name.name);
-			rc = PTR_ERR(file);
-			file = NULL;
-			goto out;
-		}
-		rc = get_path_measurement(iint, file, dentry->d_name.name);
-	}
-out:
-	mutex_unlock(&iint->mutex);
-	if (file)
-		fput(file);
-	kref_put(&iint->refcount, iint_free);
-	return 0;
-}
+Remove '/***** START/STOP *****/' markers.
 
-The handling of `file' looks OK to me.
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ security/tomoyo/common.c   |    8 --------
+ security/tomoyo/domain.c   |   14 --------------
+ security/tomoyo/file.c     |   10 ----------
+ security/tomoyo/realpath.c |    4 ----
+ 4 files changed, 36 deletions(-)
 
-otoh the function just drops the error code on the floor.  Shouldn't it
-return `rc'?
-
+--- security-testing-2.6.git.orig/security/tomoyo/common.c
++++ security-testing-2.6.git/security/tomoyo/common.c
+@@ -866,7 +866,6 @@ static struct tomoyo_profile *tomoyo_fin
+ 
+ 	if (profile >= TOMOYO_MAX_PROFILES)
+ 		return NULL;
+-	/***** EXCLUSIVE SECTION START *****/
+ 	mutex_lock(&lock);
+ 	ptr = tomoyo_profile_ptr[profile];
+ 	if (ptr)
+@@ -880,7 +879,6 @@ static struct tomoyo_profile *tomoyo_fin
+ 	tomoyo_profile_ptr[profile] = ptr;
+  ok:
+ 	mutex_unlock(&lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return ptr;
+ }
+ 
+@@ -1050,7 +1048,6 @@ static int tomoyo_update_manager_entry(c
+ 	saved_manager = tomoyo_save_name(manager);
+ 	if (!saved_manager)
+ 		return -ENOMEM;
+-	/***** EXCLUSIVE SECTION START *****/
+ 	down_write(&tomoyo_policy_manager_list_lock);
+ 	list_for_each_entry(ptr, &tomoyo_policy_manager_list, list) {
+ 		if (ptr->manager != saved_manager)
+@@ -1072,7 +1069,6 @@ static int tomoyo_update_manager_entry(c
+ 	error = 0;
+  out:
+ 	up_write(&tomoyo_policy_manager_list_lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return error;
+ }
+ 
+@@ -1197,13 +1193,11 @@ static bool tomoyo_is_select_one(struct 
+ 
+ 	if (sscanf(data, "pid=%u", &pid) == 1) {
+ 		struct task_struct *p;
+-		/***** CRITICAL SECTION START *****/
+ 		read_lock(&tasklist_lock);
+ 		p = find_task_by_vpid(pid);
+ 		if (p)
+ 			domain = tomoyo_real_domain(p);
+ 		read_unlock(&tasklist_lock);
+-		/***** CRITICAL SECTION END *****/
+ 	} else if (!strncmp(data, "domain=", 7)) {
+ 		if (tomoyo_is_domain_def(data + 7)) {
+ 			down_read(&tomoyo_domain_list_lock);
+@@ -1594,13 +1588,11 @@ static int tomoyo_read_pid(struct tomoyo
+ 		const int pid = head->read_step;
+ 		struct task_struct *p;
+ 		struct tomoyo_domain_info *domain = NULL;
+-		/***** CRITICAL SECTION START *****/
+ 		read_lock(&tasklist_lock);
+ 		p = find_task_by_vpid(pid);
+ 		if (p)
+ 			domain = tomoyo_real_domain(p);
+ 		read_unlock(&tasklist_lock);
+-		/***** CRITICAL SECTION END *****/
+ 		if (domain)
+ 			tomoyo_io_printf(head, "%d %u %s", pid, domain->profile,
+ 					 domain->domainname->name);
+--- security-testing-2.6.git.orig/security/tomoyo/domain.c
++++ security-testing-2.6.git/security/tomoyo/domain.c
+@@ -67,14 +67,12 @@ void tomoyo_set_domain_flag(struct tomoy
+ {
+ 	/* We need to serialize because this is bitfield operation. */
+ 	static DEFINE_SPINLOCK(lock);
+-	/***** CRITICAL SECTION START *****/
+ 	spin_lock(&lock);
+ 	if (!is_delete)
+ 		domain->flags |= flags;
+ 	else
+ 		domain->flags &= ~flags;
+ 	spin_unlock(&lock);
+-	/***** CRITICAL SECTION END *****/
+ }
+ 
+ /**
+@@ -135,7 +133,6 @@ static int tomoyo_update_domain_initiali
+ 	saved_program = tomoyo_save_name(program);
+ 	if (!saved_program)
+ 		return -ENOMEM;
+-	/***** EXCLUSIVE SECTION START *****/
+ 	down_write(&tomoyo_domain_initializer_list_lock);
+ 	list_for_each_entry(ptr, &tomoyo_domain_initializer_list, list) {
+ 		if (ptr->is_not != is_not ||
+@@ -161,7 +158,6 @@ static int tomoyo_update_domain_initiali
+ 	error = 0;
+  out:
+ 	up_write(&tomoyo_domain_initializer_list_lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return error;
+ }
+ 
+@@ -315,7 +311,6 @@ static int tomoyo_update_domain_keeper_e
+ 	saved_domainname = tomoyo_save_name(domainname);
+ 	if (!saved_domainname)
+ 		return -ENOMEM;
+-	/***** EXCLUSIVE SECTION START *****/
+ 	down_write(&tomoyo_domain_keeper_list_lock);
+ 	list_for_each_entry(ptr, &tomoyo_domain_keeper_list, list) {
+ 		if (ptr->is_not != is_not ||
+@@ -341,7 +336,6 @@ static int tomoyo_update_domain_keeper_e
+ 	error = 0;
+  out:
+ 	up_write(&tomoyo_domain_keeper_list_lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return error;
+ }
+ 
+@@ -476,7 +470,6 @@ static int tomoyo_update_alias_entry(con
+ 	saved_aliased_name = tomoyo_save_name(aliased_name);
+ 	if (!saved_original_name || !saved_aliased_name)
+ 		return -ENOMEM;
+-	/***** EXCLUSIVE SECTION START *****/
+ 	down_write(&tomoyo_alias_list_lock);
+ 	list_for_each_entry(ptr, &tomoyo_alias_list, list) {
+ 		if (ptr->original_name != saved_original_name ||
+@@ -499,7 +492,6 @@ static int tomoyo_update_alias_entry(con
+ 	error = 0;
+  out:
+ 	up_write(&tomoyo_alias_list_lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return error;
+ }
+ 
+@@ -567,7 +559,6 @@ int tomoyo_delete_domain(char *domainnam
+ 
+ 	name.name = domainname;
+ 	tomoyo_fill_path_info(&name);
+-	/***** EXCLUSIVE SECTION START *****/
+ 	down_write(&tomoyo_domain_list_lock);
+ 	/* Is there an active domain? */
+ 	list_for_each_entry(domain, &tomoyo_domain_list, list) {
+@@ -581,7 +572,6 @@ int tomoyo_delete_domain(char *domainnam
+ 		break;
+ 	}
+ 	up_write(&tomoyo_domain_list_lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return 0;
+ }
+ 
+@@ -600,7 +590,6 @@ struct tomoyo_domain_info *tomoyo_find_o
+ 	struct tomoyo_domain_info *domain = NULL;
+ 	const struct tomoyo_path_info *saved_domainname;
+ 
+-	/***** EXCLUSIVE SECTION START *****/
+ 	down_write(&tomoyo_domain_list_lock);
+ 	domain = tomoyo_find_domain(domainname);
+ 	if (domain)
+@@ -619,7 +608,6 @@ struct tomoyo_domain_info *tomoyo_find_o
+ 		    domain->domainname != saved_domainname)
+ 			continue;
+ 		flag = false;
+-		/***** CRITICAL SECTION START *****/
+ 		read_lock(&tasklist_lock);
+ 		for_each_process(p) {
+ 			if (tomoyo_real_domain(p) != domain)
+@@ -628,7 +616,6 @@ struct tomoyo_domain_info *tomoyo_find_o
+ 			break;
+ 		}
+ 		read_unlock(&tasklist_lock);
+-		/***** CRITICAL SECTION END *****/
+ 		if (flag)
+ 			continue;
+ 		list_for_each_entry(ptr, &domain->acl_info_list, list) {
+@@ -651,7 +638,6 @@ struct tomoyo_domain_info *tomoyo_find_o
+ 	}
+  out:
+ 	up_write(&tomoyo_domain_list_lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return domain;
+ }
+ 
+--- security-testing-2.6.git.orig/security/tomoyo/file.c
++++ security-testing-2.6.git/security/tomoyo/file.c
+@@ -166,7 +166,6 @@ static int tomoyo_update_globally_readab
+ 	saved_filename = tomoyo_save_name(filename);
+ 	if (!saved_filename)
+ 		return -ENOMEM;
+-	/***** EXCLUSIVE SECTION START *****/
+ 	down_write(&tomoyo_globally_readable_list_lock);
+ 	list_for_each_entry(ptr, &tomoyo_globally_readable_list, list) {
+ 		if (ptr->filename != saved_filename)
+@@ -187,7 +186,6 @@ static int tomoyo_update_globally_readab
+ 	error = 0;
+  out:
+ 	up_write(&tomoyo_globally_readable_list_lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return error;
+ }
+ 
+@@ -284,7 +282,6 @@ static int tomoyo_update_file_pattern_en
+ 	saved_pattern = tomoyo_save_name(pattern);
+ 	if (!saved_pattern)
+ 		return -ENOMEM;
+-	/***** EXCLUSIVE SECTION START *****/
+ 	down_write(&tomoyo_pattern_list_lock);
+ 	list_for_each_entry(ptr, &tomoyo_pattern_list, list) {
+ 		if (saved_pattern != ptr->pattern)
+@@ -305,7 +302,6 @@ static int tomoyo_update_file_pattern_en
+ 	error = 0;
+  out:
+ 	up_write(&tomoyo_pattern_list_lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return error;
+ }
+ 
+@@ -407,7 +403,6 @@ static int tomoyo_update_no_rewrite_entr
+ 	saved_pattern = tomoyo_save_name(pattern);
+ 	if (!saved_pattern)
+ 		return -ENOMEM;
+-	/***** EXCLUSIVE SECTION START *****/
+ 	down_write(&tomoyo_no_rewrite_list_lock);
+ 	list_for_each_entry(ptr, &tomoyo_no_rewrite_list, list) {
+ 		if (ptr->pattern != saved_pattern)
+@@ -428,7 +423,6 @@ static int tomoyo_update_no_rewrite_entr
+ 	error = 0;
+  out:
+ 	up_write(&tomoyo_no_rewrite_list_lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return error;
+ }
+ 
+@@ -745,7 +739,6 @@ static int tomoyo_update_single_path_acl
+ 	saved_filename = tomoyo_save_name(filename);
+ 	if (!saved_filename)
+ 		return -ENOMEM;
+-	/***** EXCLUSIVE SECTION START *****/
+ 	down_write(&tomoyo_domain_acl_info_list_lock);
+ 	if (is_delete)
+ 		goto delete;
+@@ -800,7 +793,6 @@ static int tomoyo_update_single_path_acl
+ 	}
+  out:
+ 	up_write(&tomoyo_domain_acl_info_list_lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return error;
+ }
+ 
+@@ -836,7 +828,6 @@ static int tomoyo_update_double_path_acl
+ 	saved_filename2 = tomoyo_save_name(filename2);
+ 	if (!saved_filename1 || !saved_filename2)
+ 		return -ENOMEM;
+-	/***** EXCLUSIVE SECTION START *****/
+ 	down_write(&tomoyo_domain_acl_info_list_lock);
+ 	if (is_delete)
+ 		goto delete;
+@@ -884,7 +875,6 @@ static int tomoyo_update_double_path_acl
+ 	}
+  out:
+ 	up_write(&tomoyo_domain_acl_info_list_lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return error;
+ }
+ 
+--- security-testing-2.6.git.orig/security/tomoyo/realpath.c
++++ security-testing-2.6.git/security/tomoyo/realpath.c
+@@ -220,7 +220,6 @@ void *tomoyo_alloc_element(const unsigne
+ 		= roundup(size, max(sizeof(void *), sizeof(long)));
+ 	if (word_aligned_size > PATH_MAX)
+ 		return NULL;
+-	/***** EXCLUSIVE SECTION START *****/
+ 	mutex_lock(&lock);
+ 	if (buf_used_len + word_aligned_size > PATH_MAX) {
+ 		if (!tomoyo_quota_for_elements ||
+@@ -251,7 +250,6 @@ void *tomoyo_alloc_element(const unsigne
+ 		}
+ 	}
+ 	mutex_unlock(&lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return ptr;
+ }
+ 
+@@ -318,7 +316,6 @@ const struct tomoyo_path_info *tomoyo_sa
+ 		return NULL;
+ 	}
+ 	hash = full_name_hash((const unsigned char *) name, len - 1);
+-	/***** EXCLUSIVE SECTION START *****/
+ 	mutex_lock(&lock);
+ 	list_for_each_entry(ptr, &tomoyo_name_list[hash % TOMOYO_MAX_HASH],
+ 			     list) {
+@@ -366,7 +363,6 @@ const struct tomoyo_path_info *tomoyo_sa
+ 	}
+  out:
+ 	mutex_unlock(&lock);
+-	/***** EXCLUSIVE SECTION END *****/
+ 	return ptr ? &ptr->entry : NULL;
+ }
+ 
