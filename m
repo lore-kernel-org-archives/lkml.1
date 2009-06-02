@@ -1,57 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbZFBPRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbZFBPWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757653AbZFBPRg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 11:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbZFBPR3
+	id S1755405AbZFBPWx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 11:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbZFBPWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 11:17:29 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52937 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754329AbZFBPR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 11:17:28 -0400
-Date: Tue, 2 Jun 2009 17:17:29 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602151729.GC17448@wotan.suse.de>
-References: <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org> <20090602125713.GG1392@wotan.suse.de> <20090602134659.GA21338@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090602134659.GA21338@localhost>
-User-Agent: Mutt/1.5.9i
+	Tue, 2 Jun 2009 11:22:46 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:49875 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753712AbZFBPWq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 11:22:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=v1fKsDnywO9gkMEybWaE11QZSy5R49ZwCfcs3QJJ9+TQvc6UMDH/hYY191hlmIJv5z
+         0D7mtM0KNxy392J9D0rAVR1KL8xSWwFOTfQbocMw5kJSPSUAnjCg1zfVAMWCA4LIdhFV
+         r18r319GvmXzvuT0MqxONRUCcW/u+vVWdnp6I=
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: alan@lxorguk.ukuu.org.uk, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: [PATCH] tty_io: add an API to get device corresponding to tty_struct
+Date: Tue,  2 Jun 2009 19:21:38 +0400
+Message-Id: <1243956098-20155-1-git-send-email-dbaryshkov@gmail.com>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 09:46:59PM +0800, Wu Fengguang wrote:
-> On Tue, Jun 02, 2009 at 08:57:13PM +0800, Nick Piggin wrote:
-> > Obviously I don't mean just use that single call for the entire
-> > handler. You can set the EIO bit or whatever you like. The
-> > "error handling" you have there also seems strange. You could
-> > retain it, but the page is assured to be removed from pagecache.
-> 
-> You mean this?
-> 
->         if (page_has_private(p) && !try_to_release_page(p, GFP_NOIO))
->                 return FAILED;
-> 
-> If page->private cannot be removed, that means some fs may start IO on it, so
-> we return FAILED.
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+---
+ drivers/char/tty_io.c |   20 ++++++++++++++++++++
+ include/linux/tty.h   |    1 +
+ 2 files changed, 21 insertions(+), 0 deletions(-)
 
-Hmm, if you're handling buffercache here then possibly yes.
-But if you throw out dirty buffer cache then you're probably
-corrupting your filesystem just as bad (or even worse than
-a couple of bits flipped). Just seems ad-hoc.
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 66b99a2..0160500 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -3026,6 +3026,26 @@ dev_t tty_devnum(struct tty_struct *tty)
+ }
+ EXPORT_SYMBOL(tty_devnum);
+ 
++static int dev_match_devt(struct device *dev, void *data)
++{
++	dev_t *devt = data;
++	return dev->devt == *devt;
++}
++
++/**
++ * 	tty_get_device - get a device corresponding to tty
++ * 	@tty: the struct that describes the tty device
++ *
++ * 	Returns a pointer to the struct device for this tty device
++ * 	(or NULL in case of error).
++ */
++struct device *tty_get_device(struct tty_struct *tty)
++{
++	dev_t devt = tty_devnum(tty);
++	return class_find_device(tty_class, NULL, &devt, dev_match_devt);
++}
++EXPORT_SYMBOL(tty_get_device);
++
+ void proc_clear_tty(struct task_struct *p)
+ {
+ 	unsigned long flags;
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index fc39db9..d17ba1e 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -413,6 +413,7 @@ extern int tty_mode_ioctl(struct tty_struct *tty, struct file *file,
+ 			unsigned int cmd, unsigned long arg);
+ extern int tty_perform_flush(struct tty_struct *tty, unsigned long arg);
+ extern dev_t tty_devnum(struct tty_struct *tty);
++struct device *tty_get_device(struct tty_struct *tty);
+ extern void proc_clear_tty(struct task_struct *p);
+ extern struct tty_struct *get_current_tty(void);
+ extern void tty_default_fops(struct file_operations *fops);
+-- 
+1.6.3.1
 
-I guess it is best-effort in most places though, and this
-doesn't take much effort. But due to being best effort
-means that it is hard for someone who knows exactly what all
-the code does, to know what your intentions or intended
-semantics are in places like this. So short comments would help,
