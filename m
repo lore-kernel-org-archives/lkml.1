@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbZFBQRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZFBQTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757218AbZFBQRa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 12:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbZFBQRX
+	id S1757065AbZFBQTu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 12:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZFBQTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 12:17:23 -0400
-Received: from www.tglx.de ([62.245.132.106]:35688 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751981AbZFBQRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 12:17:23 -0400
-Date: Tue, 2 Jun 2009 18:11:04 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Christophe Saout <chtephan@leto.intern.saout.de>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 14/16] paravirtualize IO permission bitmap
-In-Reply-To: <1242163718-2934-15-git-send-email-jeremy@goop.org>
-Message-ID: <alpine.LFD.2.00.0906021751510.3419@localhost.localdomain>
-References: <1242163718-2934-1-git-send-email-jeremy@goop.org> <1242163718-2934-15-git-send-email-jeremy@goop.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 2 Jun 2009 12:19:43 -0400
+Received: from mail-fx0-f216.google.com ([209.85.220.216]:46358 "EHLO
+	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752975AbZFBQTn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 12:19:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=AxwrCNL1d5e7Vg0Rq7MPkS5HqNytA7Gh2fz5gMarRwzEM9QcQGGepEwrraTGdZgZ9c
+         KVfPEGf2ZtpxXfUr/Cr3+pXn0G3F+2bpyXCIdN1SWRnhWYxOdDurzdUsOo4E7TAh6IOK
+         MGAKydQ7hLPTPZIDg+fIWPvwMB9oK4HcFryY4=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090602155833.GA23657@alberich.amd.com>
+References: <20090529184023.GD23770@alberich.amd.com>
+	 <20090529184225.GE23770@alberich.amd.com>
+	 <36ca99e90906020805r6a4e30br6bb53aeafe5f3cd7@mail.gmail.com>
+	 <20090602155833.GA23657@alberich.amd.com>
+Date: Tue, 2 Jun 2009 18:19:44 +0200
+Message-ID: <36ca99e90906020919r6f700b45p792c179658555cce@mail.gmail.com>
+Subject: Re: [PATCH 1/3] x86: provide CPU topology information for multi-node 
+	processors
+From: Bert Wesarg <bert.wesarg@googlemail.com>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009, Jeremy Fitzhardinge wrote:
+On Tue, Jun 2, 2009 at 17:58, Andreas Herrmann
+<andreas.herrmann3@amd.com> wrote:
+> On Tue, Jun 02, 2009 at 05:05:07PM +0200, Bert Wesarg wrote:
+>> On Fri, May 29, 2009 at 20:42, Andreas Herrmann
+>> <andreas.herrmann3@amd.com> wrote:
+>> > This support can be switched off/on using a new config option
+>> > MULTI_NODE_CPU. If the option is set the CPU topology information is
+>> > extended with cpu_node information. This includes a cpu_node_id,
+>> > cpu_node_siblings and cpu_node_siblings_list.
+>
+>> I think this would be a step back after commit
+>> c50cbb05a05cf1f9ca3592272eff053c847727d8. Which exported default
+>> topology information, in case the architecture does not provide these
+>> information.
+>
+> I am fine with exporting default topology information for all
+> architectures.
+>
+> I just wanted to avoid pollution of sysfs with useless information
+> when this information is not provided on an architecture.
+>
+> Further thoughts -- e.g. concerning the MULTI_NODE_CPU config option?
+>
+> If I provide defaults for cpu_node_id, cpu_node_siblings etc. the
+> config option becomes rather useless and I'll remove it.
+Exactly ;-)
 
-> From: Christophe Saout <chtephan@leto.intern.saout.de>
-> 
-> A PV Xen guest kernel has no TSS of its own, so the IO permission
-> bitmap must be paravirtualized.  This patch adds set_io_bitmap
-> as a paravirt op, and defines a native version which updates the tss,
-> and a Xen version which uses a hypercall.
-> 
-> This is much easier now that 32 and 64-bit use the same code to
-> manage the IO bitmap.
-
-  Sigh, is there a plan to limit the paravirt horror at some point or
-  are we keeping on adding to it forever ?
-
-> --- a/arch/x86/kernel/ioport.c
-> +++ b/arch/x86/kernel/ioport.c
-> @@ -30,14 +30,31 @@ static void set_bitmap(unsigned long *bitmap, unsigned int base,
->  	}
->  }
-
-This needs kernel doc annotation and a comment about the calling
-conventions i.e. preemption disabled.
-  
-> +void native_set_io_bitmap(struct thread_struct *t,
-> +			  int changed, unsigned long bytes_updated)
-> +{
-> +	struct tss_struct *tss;
-> +
-> +	if (!bytes_updated)
-> +		return;
-> +
-> +	tss = &__get_cpu_var(init_tss);
-> +
-> +	/* Update the TSS: */
-> +	if (t->io_bitmap_ptr)
-> +		memcpy(tss->io_bitmap, t->io_bitmap_ptr, bytes_updated);
-> +	else
-> +		memset(tss->io_bitmap, 0xff, bytes_updated);
-> +}
-> +
+The interface to the exported API should not depend on config options.
+Only the kernel version number should indicate, whether the cpu_node
+information is available or not.
 
 Thanks,
-
-	tglx
+Bert
+>
+>
+> Regards,
+> Andreas
+>
+>
+>
