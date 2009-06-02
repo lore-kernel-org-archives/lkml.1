@@ -1,199 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759885AbZFBHBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759634AbZFBHFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759885AbZFBHBB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 03:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbZFBHAx
+	id S1759634AbZFBHFZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 03:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758706AbZFBHFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 03:00:53 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:40167 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753780AbZFBHAx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 03:00:53 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: Greg KH <gregkh@suse.de>, Robin Getz <rgetz@blackfin.uclinux.org>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH] debugfs: use specified mode to possibly mark files read/write only
-Date: Tue,  2 Jun 2009 03:00:47 -0400
-Message-Id: <1243926047-29704-1-git-send-email-vapier@gentoo.org>
+	Tue, 2 Jun 2009 03:05:13 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:47592 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758011AbZFBHFL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 03:05:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=cwSYBT0i/SgxDKbulsoQh+JgdxEL77lFgtgmoj1j0B+tzts0yj2gAO8HU++iGBip1V
+         LoIMrLujhAlr/DANzzGTjTKWbp+FcfB9+j4KPYm2iZB3ntKxwHjbUsvyy18lvv/UKomE
+         bPRjhqDT57pl546E3x2pR2zqrAjWPAwFTbWZM=
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/2] ide-tape: fix flags
+Date: Tue,  2 Jun 2009 09:05:06 +0200
+Message-Id: <1243926308-32385-1-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <20090125213403.GB3600@kroah.com>
-References: <20090125213403.GB3600@kroah.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robin Getz <rgetz@blackfin.uclinux.org>
+Hi Bart,
 
-In many SoC implementations there are hardware registers can be read or
-write only.  This extends the debugfs to enforce the file permissions for
-these types of registers by providing a set of fops which are read or
-write only.  This assumes that the kernel developer knows more about the
-hardware than the user (even root users) -- which is normally true.
+those fix a stupid flags misuse that got spotted by Jiri Slaby. Please
+pay special attention to the first patch. FWIW, those can go as hot
+fixes right away and we might catch 30-rc8 since it's not out yet.
 
-Signed-off-by: Robin Getz <rgetz@blackfin.uclinux.org>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
-you mention debugfs header file changes, but i don't see what would need
-changing ?  the mode checking is all done internally ...
+Thanks,
+Boris.
 
- fs/debugfs/file.c |   63 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 63 insertions(+), 0 deletions(-)
-
-diff --git a/fs/debugfs/file.c b/fs/debugfs/file.c
-index 33a9012..f10091f 100644
---- a/fs/debugfs/file.c
-+++ b/fs/debugfs/file.c
-@@ -67,6 +67,8 @@ static int debugfs_u8_get(void *data, u64 *val)
- 	return 0;
- }
- DEFINE_SIMPLE_ATTRIBUTE(fops_u8, debugfs_u8_get, debugfs_u8_set, "%llu\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_u8_ro, debugfs_u8_get, NULL, "%llu\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_u8_wo, NULL, debugfs_u8_set, "%llu\n");
- 
- /**
-  * debugfs_create_u8 - create a debugfs file that is used to read and write an unsigned 8-bit value
-@@ -95,6 +97,13 @@ DEFINE_SIMPLE_ATTRIBUTE(fops_u8, debugfs_u8_get, debugfs_u8_set, "%llu\n");
- struct dentry *debugfs_create_u8(const char *name, mode_t mode,
- 				 struct dentry *parent, u8 *value)
- {
-+	/* if there are no write bits set, make read only */
-+	if (!(mode & S_IWUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_u8_ro);
-+	/* if there are no read bits set, make write only */
-+	if (!(mode & S_IRUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_u8_wo);
-+
- 	return debugfs_create_file(name, mode, parent, value, &fops_u8);
- }
- EXPORT_SYMBOL_GPL(debugfs_create_u8);
-@@ -110,6 +119,8 @@ static int debugfs_u16_get(void *data, u64 *val)
- 	return 0;
- }
- DEFINE_SIMPLE_ATTRIBUTE(fops_u16, debugfs_u16_get, debugfs_u16_set, "%llu\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_u16_ro, debugfs_u16_get, NULL, "%llu\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_u16_wo, NULL, debugfs_u16_set, "%llu\n");
- 
- /**
-  * debugfs_create_u16 - create a debugfs file that is used to read and write an unsigned 16-bit value
-@@ -138,6 +149,13 @@ DEFINE_SIMPLE_ATTRIBUTE(fops_u16, debugfs_u16_get, debugfs_u16_set, "%llu\n");
- struct dentry *debugfs_create_u16(const char *name, mode_t mode,
- 				  struct dentry *parent, u16 *value)
- {
-+	/* if there are no write bits set, make read only */
-+	if (!(mode & S_IWUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_u16_ro);
-+	/* if there are no read bits set, make write only */
-+	if (!(mode & S_IRUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_u16_wo);
-+
- 	return debugfs_create_file(name, mode, parent, value, &fops_u16);
- }
- EXPORT_SYMBOL_GPL(debugfs_create_u16);
-@@ -153,6 +171,8 @@ static int debugfs_u32_get(void *data, u64 *val)
- 	return 0;
- }
- DEFINE_SIMPLE_ATTRIBUTE(fops_u32, debugfs_u32_get, debugfs_u32_set, "%llu\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_u32_ro, debugfs_u32_get, NULL, "%llu\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_u32_wo, NULL, debugfs_u32_set, "%llu\n");
- 
- /**
-  * debugfs_create_u32 - create a debugfs file that is used to read and write an unsigned 32-bit value
-@@ -181,6 +201,13 @@ DEFINE_SIMPLE_ATTRIBUTE(fops_u32, debugfs_u32_get, debugfs_u32_set, "%llu\n");
- struct dentry *debugfs_create_u32(const char *name, mode_t mode,
- 				 struct dentry *parent, u32 *value)
- {
-+	/* if there are no write bits set, make read only */
-+	if (!(mode & S_IWUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_u32_ro);
-+	/* if there are no read bits set, make write only */
-+	if (!(mode & S_IRUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_u32_wo);
-+
- 	return debugfs_create_file(name, mode, parent, value, &fops_u32);
- }
- EXPORT_SYMBOL_GPL(debugfs_create_u32);
-@@ -197,6 +224,8 @@ static int debugfs_u64_get(void *data, u64 *val)
- 	return 0;
- }
- DEFINE_SIMPLE_ATTRIBUTE(fops_u64, debugfs_u64_get, debugfs_u64_set, "%llu\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_u64_ro, debugfs_u64_get, NULL, "%llu\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_u64_wo, NULL, debugfs_u64_set, "%llu\n");
- 
- /**
-  * debugfs_create_u64 - create a debugfs file that is used to read and write an unsigned 64-bit value
-@@ -225,15 +254,28 @@ DEFINE_SIMPLE_ATTRIBUTE(fops_u64, debugfs_u64_get, debugfs_u64_set, "%llu\n");
- struct dentry *debugfs_create_u64(const char *name, mode_t mode,
- 				 struct dentry *parent, u64 *value)
- {
-+	/* if there are no write bits set, make read only */
-+	if (!(mode & S_IWUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_u64_ro);
-+	/* if there are no read bits set, make write only */
-+	if (!(mode & S_IRUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_u64_wo);
-+
- 	return debugfs_create_file(name, mode, parent, value, &fops_u64);
- }
- EXPORT_SYMBOL_GPL(debugfs_create_u64);
- 
- DEFINE_SIMPLE_ATTRIBUTE(fops_x8, debugfs_u8_get, debugfs_u8_set, "0x%02llx\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_x8_ro, debugfs_u8_get, NULL, "0x%02llx\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_x8_wo, NULL, debugfs_u8_set, "0x%02llx\n");
- 
- DEFINE_SIMPLE_ATTRIBUTE(fops_x16, debugfs_u16_get, debugfs_u16_set, "0x%04llx\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_x16_ro, debugfs_u16_get, NULL, "0x%04llx\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_x16_wo, NULL, debugfs_u16_set, "0x%04llx\n");
- 
- DEFINE_SIMPLE_ATTRIBUTE(fops_x32, debugfs_u32_get, debugfs_u32_set, "0x%08llx\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_x32_ro, debugfs_u32_get, NULL, "0x%08llx\n");
-+DEFINE_SIMPLE_ATTRIBUTE(fops_x32_wo, NULL, debugfs_u32_set, "0x%08llx\n");
- 
- /*
-  * debugfs_create_x{8,16,32} - create a debugfs file that is used to read and write an unsigned {8,16,32}-bit value
-@@ -256,6 +298,13 @@ DEFINE_SIMPLE_ATTRIBUTE(fops_x32, debugfs_u32_get, debugfs_u32_set, "0x%08llx\n"
- struct dentry *debugfs_create_x8(const char *name, mode_t mode,
- 				 struct dentry *parent, u8 *value)
- {
-+	/* if there are no write bits set, make read only */
-+	if (!(mode & S_IWUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_x8_ro);
-+	/* if there are no read bits set, make write only */
-+	if (!(mode & S_IRUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_x8_wo);
-+
- 	return debugfs_create_file(name, mode, parent, value, &fops_x8);
- }
- EXPORT_SYMBOL_GPL(debugfs_create_x8);
-@@ -273,6 +322,13 @@ EXPORT_SYMBOL_GPL(debugfs_create_x8);
- struct dentry *debugfs_create_x16(const char *name, mode_t mode,
- 				 struct dentry *parent, u16 *value)
- {
-+	/* if there are no write bits set, make read only */
-+	if (!(mode & S_IWUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_x16_ro);
-+	/* if there are no read bits set, make write only */
-+	if (!(mode & S_IRUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_x16_wo);
-+
- 	return debugfs_create_file(name, mode, parent, value, &fops_x16);
- }
- EXPORT_SYMBOL_GPL(debugfs_create_x16);
-@@ -290,6 +346,13 @@ EXPORT_SYMBOL_GPL(debugfs_create_x16);
- struct dentry *debugfs_create_x32(const char *name, mode_t mode,
- 				 struct dentry *parent, u32 *value)
- {
-+	/* if there are no write bits set, make read only */
-+	if (!(mode & S_IWUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_x32_ro);
-+	/* if there are no read bits set, make write only */
-+	if (!(mode & S_IRUGO))
-+		return debugfs_create_file(name, mode, parent, value, &fops_x32_wo);
-+
- 	return debugfs_create_file(name, mode, parent, value, &fops_x32);
- }
- EXPORT_SYMBOL_GPL(debugfs_create_x32);
--- 
-1.6.3.1
-
+drivers/ide/ide-atapi.c |    2 +-
+ drivers/ide/ide-tape.c  |   64 ++++++++++++++++++++++++++++++----------------
+ 2 files changed, 43 insertions(+), 23 deletions(-)
