@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758616AbZFBEzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbZFBE4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758616AbZFBEzV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 00:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbZFBEzL
+	id S1758825AbZFBE4R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 00:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753818AbZFBE4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 00:55:11 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:44197 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752144AbZFBEzK (ORCPT
+	Tue, 2 Jun 2009 00:56:05 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:37134 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752144AbZFBE4D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 00:55:10 -0400
-X-Greylist: delayed 588 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Jun 2009 00:55:09 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=X+egG+Opcmg6usN+ywV4jdZDU4YBBuJBeaT3NG1C1b8EwXU7mA9HfaDT+ByVD0p04P
-         3Knw18rW2Wg3AWhOBkhDl9rCRpOPI0U/qwB48RyQVKBaD8nv46fN8vxwt0qrbzezRtro
-         nOFt3djMIiOd3NhdgJtAg3S0Nwf37JB/KbOOo=
+	Tue, 2 Jun 2009 00:56:03 -0400
+Date: Mon, 1 Jun 2009 21:54:18 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] ptrace: do_notify_parent_cldstop: fix the wrong
+	->nsproxy usage
+Message-ID: <20090602045418.GB8219@us.ibm.com>
+References: <20090525185502.GA20781@redhat.com> <20090526210514.C1C91FC2BD@magilla.sf.frob.com> <20090526213346.GA7073@redhat.com> <20090527005527.B50B7FC36B@magilla.sf.frob.com>
 MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <cfd18e0f0906012145h28827eccu1d9fa2aed2e7355@mail.gmail.com>
-References: <20090526175622.687B.A69D9226@jp.fujitsu.com>
-	 <cfd18e0f0906012145h28827eccu1d9fa2aed2e7355@mail.gmail.com>
-Date: Tue, 2 Jun 2009 06:49:55 +0200
-Message-ID: <cfd18e0f0906012149l1f567acdxdde9c65f9408b368@mail.gmail.com>
-Subject: Re: poll never return EBADF?
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-man@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090527005527.B50B7FC36B@magilla.sf.frob.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Why don't we remove EBADF description?
->
-> Yes, that seems corrrrect for me. I've removed it for the next release (3.22).
+Roland McGrath [roland@redhat.com] wrote:
+| > Yes. Perhaps it would be nice to add a helper,
+| 
+| I agree.
+| 
+| > > sys_kill, do_tkill all look wrong to me.
+| > 
+| > They should be fine, note the
+| > 
+| > 	if (from_ancestor_ns)
+| > 		q->info.si_pid = 0;
+| > 
+| > in __send_signal(). If we send the signal "down" to the sub-namespace,
+| > si_pid == 0 is correct. And, unlike do_notify_parent/ptrace_notify/etc
+| > kill/tkill can't send the signal "up".
+| 
+| Ah, right.  I knew there was something around this I was forgetting.
 
-And I forgot to say: thanks for the very detailed bug report!
+Setting si_pid to task_tgid_vnr(current); in places like do_tkill() is
+slightly misleading bc, it can get modified later in send_signal().  We
+can't set si_pid correctly in do_tkill() since we must first establish
+pid-namespace relationship and that can mess up control flow.
 
-Cheers,
-
-Michael
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Maybe a comment will help.
