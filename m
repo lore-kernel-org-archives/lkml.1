@@ -1,80 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbZFBWvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756520AbZFBWvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbZFBWvA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 18:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbZFBWuw
+	id S1756520AbZFBWvW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 18:51:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbZFBWvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 18:50:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60406 "EHLO hera.kernel.org"
+	Tue, 2 Jun 2009 18:51:12 -0400
+Received: from ryu.zarb.org ([212.85.158.22]:52757 "EHLO ryu.zarb.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751237AbZFBWuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 18:50:51 -0400
-Date: Tue, 2 Jun 2009 22:49:27 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf record: Print out the number of events captured
-Message-ID: <tip-addc2785ce92ff05da8edf18317b6b4719e10d9f@git.kernel.org>
-Git-Commit-ID: addc2785ce92ff05da8edf18317b6b4719e10d9f
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 02 Jun 2009 22:49:28 +0000 (UTC)
+	id S1752052AbZFBWvL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 18:51:11 -0400
+Subject: Re: Stable regression 2.6.29.3 vs 2.6.29.2
+From: Pascal Terjan <pterjan@mandriva.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       stable <stable@kernel.org>, linux-pci@vger.kernel.org
+In-Reply-To: <4A258F1C.7030707@kernel.org>
+References: <1243625720.4426.0.camel@plop>  <4A203BFD.7040000@kernel.org>
+	 <1243949325.19053.100.camel@plop>  <4A256050.2020305@kernel.org>
+	 <1243969741.27062.11.camel@plop>  <4A258F1C.7030707@kernel.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Mandriva
+Date: Wed, 03 Jun 2009 00:51:08 +0200
+Message-Id: <1243983068.1629.0.camel@plop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1-1mdv2009.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  addc2785ce92ff05da8edf18317b6b4719e10d9f
-Gitweb:     http://git.kernel.org/tip/addc2785ce92ff05da8edf18317b6b4719e10d9f
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 2 Jun 2009 23:43:11 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 2 Jun 2009 23:43:11 +0200
+Le mardi 02 juin 2009 à 13:44 -0700, Yinghai Lu a écrit :
+> Pascal Terjan wrote:
+> > Le mardi 02 juin 2009 à 10:24 -0700, Yinghai Lu a écrit :
+> > ACPI: Using IOAPIC for interrupt routing
+> > PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 255
+> > PCI: MCFG area at f0000000 reserved in ACPI motherboard resources
+> > PCI: updated MCFG configuration 0: base f0000000 segment 0 buses 0 - 63
+> > PCI: Using MMCONFIG for extended config space
+> 
+> please check
+> 
+> [PATCH] x86/pci: fix mmconfig detection with 32bit need 4g
+> 
 
-perf record: Print out the number of events captured
+I confirm that the machine boots fine with 2.6.29.4 + this patch
 
-It makes sense to inform the user about how many events
-perf record has written - so that the sufficiency of
-profiling coverage and intensity can be determined at
-a glance.
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- Documentation/perf_counter/builtin-record.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-record.c b/Documentation/perf_counter/builtin-record.c
-index 2741b35..ec3b73a 100644
---- a/Documentation/perf_counter/builtin-record.c
-+++ b/Documentation/perf_counter/builtin-record.c
-@@ -467,6 +467,9 @@ static int __cmd_record(int argc, const char **argv)
- 			ret = poll(event_array, nr_poll, 100);
- 	}
- 
-+
-+	fprintf(stderr, "[ perf record: Captured and wrote %ld events. ]\n", events);
-+
- 	return 0;
- }
- 
