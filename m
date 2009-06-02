@@ -1,59 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758817AbZFBGsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759799AbZFBGwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758817AbZFBGsk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 02:48:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZFBGsc
+	id S1759799AbZFBGwU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 02:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbZFBGwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 02:48:32 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:54770 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753254AbZFBGsc (ORCPT
+	Tue, 2 Jun 2009 02:52:06 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:33070 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754674AbZFBGwE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 02:48:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=ZchEJ+fkDddWzY7Nb1cZnfrFsLNoMktDdlYoYmGjGEGSrnuVqGyKU2we8jBuXMib0o
-         HfGCV8HPshIBtkfGa/VoZXE/IxL+FjnjoO20pXjrYqfZwMWMjKHYNif2prIEjcQ8pm/+
-         5dLt+oPhV2AIOSe4aINfstoKfvE4ghNjA7wh8=
+	Tue, 2 Jun 2009 02:52:04 -0400
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 04/23] vfs: Introduce infrastructure for revoking a file
+References: <m1oct739xu.fsf@fess.ebiederm.org>
+	<1243893048-17031-4-git-send-email-ebiederm@xmission.com>
+	<84144f020906012216n715a04d0ha492abc12175816@mail.gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 01 Jun 2009 23:51:56 -0700
+In-Reply-To: <84144f020906012216n715a04d0ha492abc12175816@mail.gmail.com> (Pekka Enberg's message of "Tue\, 2 Jun 2009 08\:16\:44 +0300")
+Message-ID: <m1ws7vyvoz.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20090601130825.GA1422@wotan.suse.de>
-References: <1243517365.11533.65.camel@penberg-laptop>
-	 <20090601130825.GA1422@wotan.suse.de>
-Date: Tue, 2 Jun 2009 09:48:32 +0300
-X-Google-Sender-Auth: 137b4daf79e8a87f
-Message-ID: <84144f020906012348r749f7cfbk3cf7112e6263299b@mail.gmail.com>
-Subject: Re: [PATCH] init: call vfs_caches_init_early() later in the boot 
-	sequence
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Nick Piggin <npiggin@suse.de>
-Cc: mingo@elte.hu, cl@linux-foundation.com, torvalds@linux-foundation.org,
-       mpm@selenic.com, yinghai@kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: penberg@cs.helsinki.fi, ebiederm@aristanetworks.com, hch@infradead.org, akpm@linux-foundation.org, npiggin@suse.de, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org, adobriyan@gmail.com, tj@kernel.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick,
+Pekka Enberg <penberg@cs.helsinki.fi> writes:
 
-[ I see I typo'd Linus' email address in the original patch submission... ]
+> Hi Eric,
+>
+> On Tue, Jun 2, 2009 at 12:50 AM, Eric W. Biederman
+> <ebiederm@xmission.com> wrote:
+>> +#ifdef CONFIG_FILE_HOTPLUG
+>> +
+>> +static bool file_in_use(struct file *file)
+>> +{
+>> +       struct task_struct *leader, *task;
+>> +       bool in_use = false;
+>> +       int i;
+>> +
+>> +       rcu_read_lock();
+>> +       do_each_thread(leader, task) {
+>> +               for (i = 0; i < MAX_FILE_HOTPLUG_LOCK_DEPTH; i++) {
+>> +                       if (task->file_hotplug_lock[i] == file) {
+>> +                               in_use = true;
+>> +                               goto found;
+>> +                       }
+>> +               }
+>> +       } while_each_thread(leader, task);
+>> +found:
+>> +       rcu_read_unlock();
+>> +       return in_use;
+>> +}
+>
+> This seems rather heavy-weight. If we're going to use this
+> infrastructure for forced unmount, I think this will be a problem.
 
-On Thu, May 28, 2009 at 04:29:25PM +0300, Pekka Enberg wrote:
->> From: Pekka Enberg <penberg@cs.helsinki.fi>
->>
->> There's no need to call vfs_caches_init_early() before kmem_cache_init(). All
->> we have to do is make sure we don't attempt to use the bootmem allocator after
->> we've called mem_init().
+> Can't we two this in two stages: (1) mark a bit that forces
+> file_hotplug_read_trylock to always fail and (2) block until the last
+> remaining in-kernel file_hotplug_read_unlock() has executed?
 
-On Mon, Jun 1, 2009 at 4:08 PM, Nick Piggin <npiggin@suse.de> wrote:
-> Hmm, but you'd want to be able to allocate > MAX_ORDER areas in the linear
-> KVA, which the page allocator cannot do. So this is just going to silently
-> truncate hash table size. Nack on this one.
+Yes there is room for more optimization in the slow path.
+I haven't noticed being a problem yet so I figured I would start
+with stupid and simple.
 
-OK, makes sense. IIRC, Linus suggested doing this but I think I'll
-just revert the patch.
+I can easily see two passes.  The first setting the flag an calling
+f_op->dead.  The second some kind of consolidate walk through the task
+list, allowing checking on multiple files at once.
 
-                                             Pekka
+I'm not ready to consider anything that will add cost to the fast
+path in the file descriptors though.
+
+Eric
