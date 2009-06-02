@@ -1,156 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbZFBQbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbZFBQcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbZFBQbX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 12:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757744AbZFBQbE
+	id S1758076AbZFBQcE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 12:32:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756467AbZFBQbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 12:31:04 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:33861 "EHLO mail.atlantis.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757992AbZFBQbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 12:31:03 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix floppy hibernation
-Date: Tue, 2 Jun 2009 18:30:50 +0200
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <200905301804.26762.linux@rainbow-software.org> <20090601164520.281cc4c8.akpm@linux-foundation.org>
-In-Reply-To: <20090601164520.281cc4c8.akpm@linux-foundation.org>
+	Tue, 2 Jun 2009 12:31:55 -0400
+Received: from mail-ew0-f224.google.com ([209.85.219.224]:33209 "EHLO
+	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756255AbZFBQby convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 12:31:54 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906021830.53531.linux@rainbow-software.org>
+In-Reply-To: <4A24E788.2090305@atmel.com>
+References: <c8284b5b0905281440hd2e4993re3d0d8c590713fa0@mail.gmail.com>
+	 <4A24E788.2090305@atmel.com>
+Date: Tue, 2 Jun 2009 09:31:55 -0700
+X-Google-Sender-Auth: 933fe6c2254721ac
+Message-ID: <c8284b5b0906020931v1d30bb7co40db73239d44c629@mail.gmail.com>
+Subject: Re: [PATCH] New AT91 MCI Driver that supports both MCI slots used at 
+	the same time
+From: Rob Emanuele <poorarm@shoreis.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 June 2009 01:45:20 Andrew Morton wrote:
-> On Sat, 30 May 2009 18:04:25 +0200
->
-> Ondrej Zary <linux@rainbow-software.org> wrote:
-> > Hello,
-> > floppy driver was always missing hibernation support. After resume,
-> > floppy did not work (until a couple of disk reinserts and retries),
-> > producing errors like this:
-> > end_request: I/O error, dev fd0, sector 0
-> >
-> > Ingo Molnar tried to fix it in 2006: http://lkml.org/lkml/2006/11/12/92
-> >
-> >
-> >
-> >
-> > Based on Ingo Molnar's patch from 2006, this makes the floppy work after
-> > resume from hibernation, at least on my machine.
-> >
-> >
-> > Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-> >
-> > --- linux-2.6.29.4-orig/drivers/block/floppy.c	2009-05-30
-> > 14:38:29.000000000 +0200 +++ linux/drivers/block/floppy.c	2009-05-30
-> > 17:50:32.000000000 +0200 @@ -4148,6 +4148,24 @@
-> >  {
-> >  }
-> >
-> > +static int floppy_resume(struct platform_device *dev)
-> > +{
-> > +	int i;
-> > +
-> > +	for (i = 0; i < N_FDC; i++)
-> > +		if (FDCS->address != -1)
-> > +			user_reset_fdc(-1, FD_RESET_ALWAYS, 0);
-> > +
-> > +	return 0;
-> > +}
->
-> hm, how does this work?
->
-> FDCS is a revolting should-not-exist macro which assumes the presence
-> of a local variable called `fdc'.
+Greetings Nicolas,
 
-The driver is complete mess - there is also a global static fdc variable.
-So it worked because I have only one floppy controller.
+Thank you for your interest in this.
 
-> So I think the loop control variable here should be called `fdc', not `i'.
+On Tue, Jun 2, 2009 at 1:49 AM, Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+> Rob Emanuele :
+>> Greetings,
+>>
+>> This patch creates a new AT91 Multimedia Card Interface (MCI) driver
+>> that supports using both MCI slots at the same time.  I'm looking for
+>> others to test this patch on other boards within the same family of
+>> chips.
+>>
+>> This driver is a port the Atmel AVR32 MCI driver which uses similar silicon.
+>
+> I am very interested with this work. But, you will have to tell us what
+> is the precise relation between this code and the Atmel AVR32 MCI driver.
+> Why did you rename all function and variables to at91... instead of
+> trying to modify the atmel-mci driver ? Was the needed behavior so far
+> from the original code that you decided to create another completely new
+> one ? Please enlighten us.
+>
+> Moreover, it seems that in your code, DMA is not supported so atmel-mci
+> without the DMA option enabled should be working without modification at
+> all (am I missing something ?).
 
-See the v2 patch below. Tested and works too.
+Currently the behavior is similar to that of the AVR32.  The DMA
+support will be vastly different and the registers are not a perfect
+match.  Those were the main reasons for diverging the driver from the
+AVR32.  I need to be sure this code can work as well as possible
+without regard for the AVR32 (as I do not have the ability to test
+against it for regressions).  As the driver improves in performance
+and gets to a very stable point I would be happy to look at
+re-integrating them.
 
 >
-> It's pretty amazing that something like this still exists in a core
-> driver.  Someone please save us!
+>> In addition it modifies the AT91SAM9G20-EK's board platform config to
+>> support having MCI Slot A hooked to an SD Slot.  This was the board
+>> that this was developed on. To support MCI Slot A it was needed to not
+>> enable the LEDs on the AT91SAM9G20-EK board if SD/MMC Slot A is
+>> enabled.  The Slot A pins overlap the LEDs on Rev A and B boards.
+>
+> This is a different board, so you will have to create a different board
+> source file (board-my9g20customboard.c) or find a clever way of sharing
+> code (true, can be preferable as only a few lines are changing).
 
+I have one that I can include in the next version of the patch.
 
+As it stands now, I am having trouble writing more than a small file
+to both cards simultaneously (from the user's point of view).  I can
+write to one card and then the other.  I start to get errors when, for
+example, I write continuously to slot B and then try to write anything
+more than 16k to slot A.  I'm exploring the causes of this.  I'm
+thinking it is either the controller needs to be fully reconfigured
+when switching between slots or that the locks in the driver aren't
+protecting everything they need to be.
 
+Again thank you for your interest,
 
-Based on Ingo Molnar's patch from 2006, this makes the floppy work after
-resume from hibernation, at least on my machine.
-
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-
---- linux-2.6.29.4-orig/drivers/block/floppy.c	2009-05-30 14:38:29.000000000 +0200
-+++ linux/drivers/block/floppy.c	2009-06-02 17:32:56.000000000 +0200
-@@ -4148,6 +4148,24 @@
- {
- }
- 
-+static int floppy_resume(struct platform_device *dev)
-+{
-+	int fdc;
-+
-+	for (fdc = 0; fdc < N_FDC; fdc++)
-+		if (FDCS->address != -1)
-+			user_reset_fdc(-1, FD_RESET_ALWAYS, 0);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver floppy_driver = {
-+	.resume = floppy_resume,
-+	.driver = {
-+		.name = "floppy",
-+	},
-+};
-+
- static struct platform_device floppy_device[N_DRIVE];
- 
- static struct kobject *floppy_find(dev_t dev, int *part, void *data)
-@@ -4196,10 +4214,14 @@
- 	if (err)
- 		goto out_put_disk;
- 
-+	err = platform_driver_register(&floppy_driver);
-+	if (err)
-+		goto out_unreg_blkdev;
-+
- 	floppy_queue = blk_init_queue(do_fd_request, &floppy_lock);
- 	if (!floppy_queue) {
- 		err = -ENOMEM;
--		goto out_unreg_blkdev;
-+		goto out_unreg_driver;
- 	}
- 	blk_queue_max_sectors(floppy_queue, 64);
- 
-@@ -4346,6 +4368,8 @@
- out_unreg_region:
- 	blk_unregister_region(MKDEV(FLOPPY_MAJOR, 0), 256);
- 	blk_cleanup_queue(floppy_queue);
-+out_unreg_driver:
-+	platform_driver_unregister(&floppy_driver);
- out_unreg_blkdev:
- 	unregister_blkdev(FLOPPY_MAJOR, "fd");
- out_put_disk:
-@@ -4566,6 +4590,7 @@
- 
- 	blk_unregister_region(MKDEV(FLOPPY_MAJOR, 0), 256);
- 	unregister_blkdev(FLOPPY_MAJOR, "fd");
-+	platform_driver_unregister(&floppy_driver);
- 
- 	for (drive = 0; drive < N_DRIVE; drive++) {
- 		del_timer_sync(&motor_off_timer[drive]);
-
--- 
-Ondrej Zary
+Rob Emanuele
