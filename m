@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759184AbZFBGmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759623AbZFBGmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759184AbZFBGmF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 02:42:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbZFBGl4
+	id S1759623AbZFBGmY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 02:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZFBGmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 02:41:56 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:64050 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751276AbZFBGlz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 02:41:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=ZdbTRfiKnw37JMxg0v34b05JYgWKHiafZ3u1fILbUsNRok7pXMrwPRDM+d/6wWaKxP
-         X7Vs9IqkZ0OiF6cvRCvn//kO3Sk7A/wkboAq5ozu47KbBdEqUmgUSpYoPIwVnqcLF5im
-         i27n2mMXQ7ebZO+Oa9KcUhZOAdGddqHWiNxr0=
+	Tue, 2 Jun 2009 02:42:15 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60032 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754149AbZFBGmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 02:42:14 -0400
+Message-ID: <4A24CA1B.5020604@cn.fujitsu.com>
+Date: Tue, 02 Jun 2009 14:43:39 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-In-Reply-To: <20090602062738.GA31556@wotan.suse.de>
-References: <alpine.DEB.2.00.0906011828040.6936@chino.kir.corp.google.com>
-	 <alpine.DEB.2.00.0906011830490.6936@chino.kir.corp.google.com>
-	 <20090601225602.3482cd0d.akpm@linux-foundation.org>
-	 <20090602062738.GA31556@wotan.suse.de>
-Date: Tue, 2 Jun 2009 09:41:56 +0300
-X-Google-Sender-Auth: 28e1b619eb7df395
-Message-ID: <84144f020906012341k42530236x823c8393b5e65502@mail.gmail.com>
-Subject: Re: [patch 3/3 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
-       Mel Gorman <mel@csn.ul.ie>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Paul Menage <menage@google.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.linux-foundation.org>
+Subject: Re: [PATCH] cgroups: forbid noprefix if mounting more than just cpuset
+ subsystem
+References: <4A24911F.4070601@cn.fujitsu.com> <20090601230251.57411c83.akpm@linux-foundation.org>
+In-Reply-To: <20090601230251.57411c83.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick,
+>> +	/* We allow noprefix only if mounting just the cpuset subsystem */
+>> +	if (test_bit(ROOT_NOPREFIX, &opts->flags) &&
+>> +	    (opts->subsys_bits & mask))
+>> +		return -EINVAL;
+>> +
+> 
+> uh, OK.  I hope that comment is clear enough for anyone who wants to
+> understand it.   It doesn't explain _why_ this is done..
+> 
 
-On Mon, Jun 01, 2009 at 10:56:02PM -0700, Andrew Morton wrote:
->> Do we know of any callsites which do greater-than-order-0 allocations
->> with GFP_NOFAIL?  If so, we should fix them.
+I agree more explanation is better..
 
-On Tue, Jun 2, 2009 at 9:27 AM, Nick Piggin <npiggin@suse.de> wrote:
-> Yeah, we have GFP_NOFAIL going to the slab allocator, so all bets are
-> off in regard to the order.
+====
 
-SLUB is supports variable order allocations so we can certainly do
-GFP_NOFAIL special casing there for < PAGE_SIZE allocations to enforce
-zero order allocation for those. I suspect we could do something
-similar in SLQB too?
+From: Li Zefan <lizf@cn.fujitsu.com>
+Subject: [PATCH] cgroups: forbid noprefix if mounting more than just cpuset subsystem, fix2
 
-                        Pekka
+Explain more on the noprefix option.
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/cgroup.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index ad17f9d..d15432c 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -891,7 +891,11 @@ static int parse_cgroupfs_options(char *data,
+ 		}
+ 	}
+ 
+-	/* We allow noprefix only if mounting just the cpuset subsystem */
++	/*
++	 * Option noprefix was introduced just for backward compatibility
++	 * with the old cpuset, so we allow noprefix only if mounting just
++	 * the cpuset subsystem.
++	 */
+ 	if (test_bit(ROOT_NOPREFIX, &opts->flags) &&
+ 	    (opts->subsys_bits & mask))
+ 		return -EINVAL;
+-- 
+1.5.4.rc3
+
+
