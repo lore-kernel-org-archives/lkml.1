@@ -1,125 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757979AbZFBK2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757023AbZFBK4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757979AbZFBK2I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 06:28:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbZFBK1z
+	id S1757023AbZFBK4Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 06:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601AbZFBK4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 06:27:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55636 "EHLO mx2.redhat.com"
+	Tue, 2 Jun 2009 06:56:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48820 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752941AbZFBK1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 06:27:54 -0400
-Date: Tue, 2 Jun 2009 06:27:29 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Eric Sandeen <sandeen@sandeen.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jan Kara <jack@suse.cz>,
-       Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH] skip I_CLEAR state inodes
-Message-ID: <20090602062729.03bdbe99@tupile.poochiereds.net>
-In-Reply-To: <20090602085523.GC7161@localhost>
-References: <20090318170237.8F6C.61FB500B@jp.fujitsu.com>
-	<20090323103846.GA16577@localhost>
-	<20090324155655.2684.61FB500B@jp.fujitsu.com>
-	<20090324074457.GA7745@localhost>
-	<20090324120502.GC23439@duck.suse.cz>
-	<20090324124001.GA25326@localhost>
-	<4A244A5B.7070605@sandeen.net>
-	<20090602085523.GC7161@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1755301AbZFBK4L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 06:56:11 -0400
+Date: Tue, 2 Jun 2009 12:56:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] printk: add halt_delay parameter for printk delay in
+	halt phase
+Message-ID: <20090602105609.GA9182@elte.hu>
+References: <a8e1da0906020254s34dd0cd9id1b88655cab6d72d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8e1da0906020254s34dd0cd9id1b88655cab6d72d@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Jun 2009 16:55:23 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-> On Tue, Jun 02, 2009 at 05:38:35AM +0800, Eric Sandeen wrote:
-> > Wu Fengguang wrote:
-> > > Add I_CLEAR tests to drop_pagecache_sb(), generic_sync_sb_inodes() and
-> > > add_dquot_ref().
-> > > 
-> > > clear_inode() will switch inode state from I_FREEING to I_CLEAR,
-> > > and do so _outside_ of inode_lock. So any I_FREEING testing is
-> > > incomplete without the testing of I_CLEAR.
-> > > 
-> > > Masayoshi MIZUMA first discovered the bug in drop_pagecache_sb() and
-> > > Jan Kara reminds fixing the other two cases. Thanks!
-> > 
-> > Is there a reason it's not done for __sync_single_inode as well?
-> 
-> It missed the glance because it don't have an obvious '|' in the line ;)
-> 
-> > Jeff Layton asked the question and I'm following it up :)
-> > 
-> > __sync_single_inode currently only tests I_FREEING, but I think we are
-> > safe because __sync_single_inode sets I_SYNC, and clear_inode waits for
-> > I_SYNC to be cleared before it changes I_STATE.
-> 
-> But I_SYNC is removed just before the I_FREEING test, so we still have
-> a small race window?
-> 
+* Dave Young <hidave.darkstar@gmail.com> wrote:
 
-Yes, I think so. __sync_single_inode clears I_SYNC but doesn't wake up
-the wait queue until the end of the function. So I think it's possible
-(though unlikely) that another thread can race in and change the state
-to I_CLEAR before the I_FREEING check.
+> Add a halt_delay module parameter in printk.c used to read the printk
+> messages in halt/poweroff/restart phase, delay each printk messages
+> by halt_delay milliseconds. It is useful for debugging if there's no
+> other way to dump kernel messages that time.
 
-> > On the other hand, testing I_CLEAR here probably would be safe anyway,
-> > and it'd be bonus points for consistency?
+nice idea! We frequently have kernel-death warnings/messages that 
+scroll off too fast and which cannot be captured.
+
+> halt_delay default value is 0, change it by:
 > 
-> So let's add the I_CLEAR test?
-> 
-> > Same basic question for generic_sync_sb_inodes, which has a
-> > BUG_ON(inode->i_state & I_FREEING), seems like this could check I_CLWAR
-> > as well?
-> 
-> Yes, we can add I_CLEAR here to catch more error condition.
-> 
-> Thanks,
-> Fengguang
-> 
+> echo xxx > /sys/module/printk/parameters/halt_delay
+>
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 > ---
-> skip I_CLEAR state inodes in writeback routines
+> kernel/printk.c   |   21 +++++++++++++++++++++
+> lib/Kconfig.debug |   10 ++++++++++
+> 2 files changed, 31 insertions(+)
 > 
-> The I_FREEING test in __sync_single_inode() is racy because
-> clear_inode() can set i_state to I_CLEAR between the clear of I_SYNC
-> and the test of I_FREEING.
+> --- linux-2.6.orig/kernel/printk.c	2009-04-09 16:23:03.000000000 +0800
+> +++ linux-2.6/kernel/printk.c	2009-06-02 17:45:54.000000000 +0800
+> @@ -250,6 +250,26 @@ static inline void boot_delay_msec(void)
+>  }
+>  #endif
 > 
-> Also extend the coverage of BUG_ON(I_FREEING) to I_CLEAR.
-> 
-> Reported-by: Jeff Layton <jlayton@redhat.com>
-> Reported-by: Eric Sandeen <sandeen@sandeen.net>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  fs/fs-writeback.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> --- linux.orig/fs/fs-writeback.c
-> +++ linux/fs/fs-writeback.c
-> @@ -316,7 +316,7 @@ __sync_single_inode(struct inode *inode,
->  	spin_lock(&inode_lock);
->  	WARN_ON(inode->i_state & I_NEW);
->  	inode->i_state &= ~I_SYNC;
-> -	if (!(inode->i_state & I_FREEING)) {
-> +	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
->  		if (!(inode->i_state & I_DIRTY) &&
->  		    mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
->  			/*
-> @@ -518,7 +518,7 @@ void generic_sync_sb_inodes(struct super
->  		if (current_is_pdflush() && !writeback_acquire(bdi))
->  			break;
->  
-> -		BUG_ON(inode->i_state & I_FREEING);
-> +		BUG_ON(inode->i_state & (I_FREEING | I_CLEAR));
->  		__iget(inode);
->  		pages_skipped = wbc->pages_skipped;
->  		__writeback_single_inode(inode, wbc);
+> +#ifdef CONFIG_HALT_PRINTK_DELAY
 
-Acked-by: Jeff Layton <jlayton@redhat.com>
+(this #ifdef is ugly - see below.)
+
+> +/* msecs delay after each halt/poweroff/restart phase printk */
+> +static unsigned int halt_delay;
+> +
+> +static inline void halt_delay_msec(void)
+> +{
+> +	if (halt_delay == 0 || !(system_state == SYSTEM_HALT
+> +				|| system_state == SYSTEM_POWER_OFF
+> +				|| system_state == SYSTEM_RESTART))
+> +		return;
+> +
+> +	mdelay(halt_delay);
+
+>
+>  	boot_delay_msec();
+> +	halt_delay_msec();
+
+
+i think it should be done in boot_delay_msec() and the function 
+should be renamed to print_delay_msec() or so.
+
+>  	preempt_disable();
+>  	/* This stops the holder of console_sem just where we want him */
+> --- linux-2.6.orig/lib/Kconfig.debug	2009-05-12 11:27:22.000000000 +0800
+> +++ linux-2.6/lib/Kconfig.debug	2009-06-02 17:50:15.000000000 +0800
+> @@ -647,6 +647,16 @@ config BOOT_PRINTK_DELAY
+>  	  BOOT_PRINTK_DELAY also may cause DETECT_SOFTLOCKUP to detect
+>  	  what it believes to be lockup conditions.
+> 
+> +config HALT_PRINTK_DELAY
+> +	bool "Delay halt/poweroff/restart printk message by N milliseconds"
+> +	depends on DEBUG_KERNEL && PRINTK && SYSFS
+> +	default n
+> +	help
+> +	  This build option allows you to read kernel messages in
+> +	  halt/poweroff/restart phase by inserting a short delay after
+> +	  each one.  The delay is specified in milliseconds on the
+> +	  module parameter: /sys/module/printk/halt_delay.
+
+No need for a Kconfig option - this should be an unconditional 
+feature like boot-delay.
+
+This will further simplify the patch and will get rid of that ugly 
+#ifdef.
+
+	Ingo
