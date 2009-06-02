@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbZFBTVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZFBTVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751894AbZFBTVi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 15:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbZFBTVb
+	id S1753906AbZFBTVt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 15:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbZFBTVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 15:21:31 -0400
-Received: from www.tglx.de ([62.245.132.106]:47140 "EHLO www.tglx.de"
+	Tue, 2 Jun 2009 15:21:41 -0400
+Received: from pearlgates.net ([83.163.47.93]:47765 "EHLO mail.pearlgates.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750871AbZFBTVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 15:21:30 -0400
-Date: Tue, 2 Jun 2009 21:14:23 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Chris Mason <chris.mason@oracle.com>
-cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+	id S1752488AbZFBTVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 15:21:39 -0400
+X-Greylist: delayed 631 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Jun 2009 15:21:39 EDT
+Date: Tue, 2 Jun 2009 21:11:07 +0200
+From: Jos van der Ende <seraph@xs4all.nl>
+To: "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
- kernels
-In-Reply-To: <20090602141802.GC3914@think>
-Message-ID: <alpine.LFD.2.00.0906022100130.3419@localhost.localdomain>
-References: <4A0B62F7.5030802@goop.org> <20090525091527.GA7535@elte.hu> <4A1C3805.7060404@goop.org> <20090528061702.GB6920@wotan.suse.de> <20090530102330.GC16913@elte.hu> <20090602141802.GC3914@think>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "DRI" <dri-devel@lists.sourceforge.net>
+Subject: Re: [Bug #12947] r128: system hangs when X is started with DRI
+ enabled
+Message-Id: <20090602211107.388693ef.seraph@xs4all.nl>
+In-Reply-To: <20090531105227.178e5397.angel@pearlgates.net>
+References: <THxQaUP0K2D.A.QkF.UVbIKB@chimera>
+	<PkPeJtNB3KO.A.CSH.sWbIKB@chimera>
+	<20090531105227.178e5397.angel@pearlgates.net>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Jun 2009, Chris Mason wrote:
-> I'm not suggesting we should take broken code, or that we should lower
-> standards just for xen.  But, expecting the xen developers to fix the 1%
-> hit on a very specific micro-benchmark is not a way to promote new
-> projects for the kernel, and it isn't a good way to convince people to
-> do continued development in mainline instead of in private trees.
-> 
-> Please reconsider.  Keeping these patches out is only making it harder
-> on the people that want to make them better.
+> The bug fix in question is this one:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=42beefc00
 
-You are missing one subtle point. 
+I did some final testing today.
 
-I read several times, that A, B and C can not be changed design wise
-to allow newer kernels to run on older hypervisors. That's what
-frightens me:
+The problem with the black screen I was having with 2.6.30 seems to have been solved in rc7, X works flawlessly there.
 
-   dom0 imposes a kind of ABI which we can not change anymore. 
+2.6.29.4 and 2.6.29-gentoo-r5 also work just fine with Dave's bug fix in place.
 
-So where is the room for the improvements which you expect when dom0
-is merged ? It's not about micro benchmark results, it's about the
-inability to fix the existing design decisions in the near future.
 
-You can change the internals of btrfs as often as you want, but you
-can not change the on disk layout at will. And while you can invent
-btrfs2 w/o any impact aside of grumpy users and a couple of thousand
-lines self contained code, dom0v2 would just add a different layer of
-intrusiveness into the x86 code base w/o removing the existing one.
+Thanks to everyone who helped! :-)
 
-Thanks,
 
-	tglx
+-- 
+Jos van der Ende <seraph@xs4all.nl>
