@@ -1,93 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZFBUTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbZFBUWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756192AbZFBUTb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 16:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbZFBUSV
+	id S1754694AbZFBUWU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 16:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbZFBUWM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 16:18:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39551 "EHLO hera.kernel.org"
+	Tue, 2 Jun 2009 16:22:12 -0400
+Received: from www.tglx.de ([62.245.132.106]:38017 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755502AbZFBUST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 16:18:19 -0400
-Date: Tue, 2 Jun 2009 20:17:49 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, jkacur@redhat.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, jkacur@redhat.com, a.p.zijlstra@chello.nl,
-       efault@gmx.de, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf report: Fix column width/alignment of dsos
-Message-ID: <tip-cf25c63c609e99bfb9303b68a7a90a56a3a32cea@git.kernel.org>
-Git-Commit-ID: cf25c63c609e99bfb9303b68a7a90a56a3a32cea
-X-Mailer: tip-git-log-daemon
+	id S1750907AbZFBUWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 16:22:11 -0400
+Date: Tue, 2 Jun 2009 22:21:23 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Daniel Walker <dwalker@fifo99.com>
+cc: Paul Mundt <lethal@linux-sh.org>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Linus Walleij <linus.ml.walleij@gmail.com>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       John Stultz <johnstul@linux.vnet.ibm.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-sh@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sched: sched_clock() clocksource handling.
+In-Reply-To: <1243943366.6592.434.camel@desktop>
+Message-ID: <alpine.LFD.2.00.0906022218070.3419@localhost.localdomain>
+References: <20090602071718.GA17710@linux-sh.org>  <1243927502.23657.5619.camel@twins> <20090602073515.GB17710@linux-sh.org>  <1243928495.23657.5642.camel@twins>  <20090602075409.GA19294@linux-sh.org> <1243943366.6592.434.camel@desktop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 02 Jun 2009 20:17:50 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  cf25c63c609e99bfb9303b68a7a90a56a3a32cea
-Gitweb:     http://git.kernel.org/tip/cf25c63c609e99bfb9303b68a7a90a56a3a32cea
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 2 Jun 2009 22:12:14 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 2 Jun 2009 22:12:14 +0200
+On Tue, 2 Jun 2009, Daniel Walker wrote:
+> On Tue, 2009-06-02 at 16:54 +0900, Paul Mundt wrote:
+> >  unsigned long long __attribute__((weak)) sched_clock(void)
+> >  {
+> > -       return (unsigned long long)(jiffies - INITIAL_JIFFIES)
+> > -                                       * (NSEC_PER_SEC / HZ);
+> > +       unsigned long long time;
+> > +       struct clocksource *clock;
+> > +
+> > +       rcu_read_lock();
+> > +       clock = rcu_dereference(sched_clocksource);
+> > +       time = cyc2ns(clock, clocksource_read(clock));
+> > +       rcu_read_unlock();
+> > +
+> > +       return time;
+> >  }
+> 
+> My concerns with the locking here still stand. Nothing you've said or
+> done bolsters the clocksource in modules argument. I think what your
 
-perf report: Fix column width/alignment of dsos
+Can you please stop to belabor modules? Again, it is totally
+_irrelevant_ whether the clocksource is in a module or not.
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: John Kacur <jkacur@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+unregister_clocksource() can be called from compiled in code as well
+to replace a clocksource which is physically shut down. We have to
+deal with that modules or not.
 
+Thanks,
 
----
- Documentation/perf_counter/builtin-report.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index 6d68f3a..b84aaf1 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -303,11 +303,11 @@ sort__thread_cmp(struct hist_entry *left, struct hist_entry *right)
- static size_t
- sort__thread_print(FILE *fp, struct hist_entry *self)
- {
--	return fprintf(fp, "  %16s:%5d", self->thread->comm ?: "", self->thread->pid);
-+	return fprintf(fp, " %16s:%5d", self->thread->comm ?: "", self->thread->pid);
- }
- 
- static struct sort_entry sort_thread = {
--	.header = "          Command: Pid ",
-+	.header = "         Command: Pid ",
- 	.cmp	= sort__thread_cmp,
- 	.print	= sort__thread_print,
- };
-@@ -363,11 +363,11 @@ sort__dso_cmp(struct hist_entry *left, struct hist_entry *right)
- static size_t
- sort__dso_print(FILE *fp, struct hist_entry *self)
- {
--	return fprintf(fp, "  %s", self->dso ? self->dso->name : "<unknown>");
-+	return fprintf(fp, "  %-25s", self->dso ? self->dso->name : "<unknown>");
- }
- 
- static struct sort_entry sort_dso = {
--	.header = " Shared Object",
-+	.header = " Shared Object          ",
- 	.cmp	= sort__dso_cmp,
- 	.print	= sort__dso_print,
- };
+	tglx
