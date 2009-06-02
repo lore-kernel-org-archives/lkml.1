@@ -1,115 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755121AbZFBOrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbZFBOya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755121AbZFBOrj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 10:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZFBOrc
+	id S1755336AbZFBOya (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 10:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbZFBOyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 10:47:32 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:41132 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752479AbZFBOrc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 10:47:32 -0400
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-kernel@vger.kernel.org
-Cc: Daniel Mack <daniel@caiaq.de>
-Subject: [PATCH] console: make blank timeout value a boot option
-Date: Tue,  2 Jun 2009 16:46:33 +0200
-Message-Id: <1243953993-18608-1-git-send-email-daniel@caiaq.de>
-X-Mailer: git-send-email 1.6.3.1
+	Tue, 2 Jun 2009 10:54:23 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:65531 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751300AbZFBOyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 10:54:22 -0400
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+To: linux-mips@linux-mips.org
+Cc: ralf@linux-mips.org, herbert@gondor.apana.org.au, mpm@selenic.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] TXx9: Add TX4939 RNG support (v2)
+Date: Tue,  2 Jun 2009 23:54:22 +0900
+Message-Id: <1243954462-18149-2-git-send-email-anemo@mba.ocn.ne.jp>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The console blank timer is currently hardcoded to 10*60 seconds which is
-ok for most applications but might be annoying when using the console
-for debugging and no userspace application was started to manually
-change this default behaviour.
+Add platform support for RNG of TX4939 SoC.
 
-This patch defines a core_param for the variable in charge which allows
-users to entirely disable the blank feature by setting it 0.
-
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 ---
- Documentation/kernel-parameters.txt |    4 ++++
- drivers/char/vt.c                   |   13 +++++++------
- 2 files changed, 11 insertions(+), 6 deletions(-)
+Changes since v1:
+* Move TX4939_RNG_REG definition to tx4939.h
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index e87bdbf..67331e8 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -545,6 +545,10 @@ and is between 256 and 4096 characters. It is defined in the file
- 			console=brl,ttyS0
- 		For now, only VisioBraille is supported.
+ arch/mips/include/asm/txx9/tx4939.h   |    3 +++
+ arch/mips/txx9/generic/setup_tx4939.c |   17 +++++++++++++++++
+ arch/mips/txx9/rbtx4939/setup.c       |    1 +
+ 3 files changed, 21 insertions(+), 0 deletions(-)
+
+diff --git a/arch/mips/include/asm/txx9/tx4939.h b/arch/mips/include/asm/txx9/tx4939.h
+index 050364d..d4f342c 100644
+--- a/arch/mips/include/asm/txx9/tx4939.h
++++ b/arch/mips/include/asm/txx9/tx4939.h
+@@ -45,6 +45,8 @@
+ #define TX4939_RTC_REG		(TX4939_REG_BASE + 0xfb00)
+ #define TX4939_CIR_REG		(TX4939_REG_BASE + 0xfc00)
  
-+	consoleblank=	[KNL] The console blank (screen saver) timeout in
-+			seconds. Defaults to 10*60 = 10mins. A value of 0
-+			disables the blank timer.
++#define TX4939_RNG_REG		(TX4939_CRYPTO_REG + 0xb0)
 +
- 	coredump_filter=
- 			[KNL] Change the default value for
- 			/proc/<pid>/coredump_filter.
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index 08151d4..85efe81 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -172,8 +172,9 @@ int do_poke_blanked_console;
- int console_blanked;
+ struct tx4939_le_reg {
+ 	__u32 r;
+ 	__u32 unused;
+@@ -547,5 +549,6 @@ void tx4939_ndfmc_init(unsigned int hold, unsigned int spw,
+ void tx4939_dmac_init(int memcpy_chan0, int memcpy_chan1);
+ void tx4939_aclc_init(void);
+ void tx4939_sramc_init(void);
++void tx4939_rng_init(void);
  
- static int vesa_blank_mode; /* 0:none 1:suspendV 2:suspendH 3:powerdown */
--static int blankinterval = 10*60*HZ;
- static int vesa_off_interval;
-+static int blankinterval = 10*60;
-+core_param(consoleblank, blankinterval, int, 0444);
- 
- static DECLARE_WORK(console_work, console_callback);
- 
-@@ -1486,7 +1487,7 @@ static void setterm_command(struct vc_data *vc)
- 			update_attr(vc);
- 			break;
- 		case 9:	/* set blanking interval */
--			blankinterval = ((vc->vc_par[1] < 60) ? vc->vc_par[1] : 60) * 60 * HZ;
-+			blankinterval = ((vc->vc_par[1] < 60) ? vc->vc_par[1] : 60) * 60;
- 			poke_blanked_console();
- 			break;
- 		case 10: /* set bell frequency in Hz */
-@@ -2872,7 +2873,7 @@ static int __init con_init(void)
- 
- 	if (blankinterval) {
- 		blank_state = blank_normal_wait;
--		mod_timer(&console_timer, jiffies + blankinterval);
-+		mod_timer(&console_timer, jiffies + (blankinterval * HZ));
- 	}
- 
- 	/*
-@@ -3681,7 +3682,7 @@ void do_unblank_screen(int leaving_gfx)
- 		return; /* but leave console_blanked != 0 */
- 
- 	if (blankinterval) {
--		mod_timer(&console_timer, jiffies + blankinterval);
-+		mod_timer(&console_timer, jiffies + (blankinterval * HZ));
- 		blank_state = blank_normal_wait;
- 	}
- 
-@@ -3715,7 +3716,7 @@ void unblank_screen(void)
- static void blank_screen_t(unsigned long dummy)
- {
- 	if (unlikely(!keventd_up())) {
--		mod_timer(&console_timer, jiffies + blankinterval);
-+		mod_timer(&console_timer, jiffies + (blankinterval * HZ));
- 		return;
- 	}
- 	blank_timer_expired = 1;
-@@ -3745,7 +3746,7 @@ void poke_blanked_console(void)
- 	if (console_blanked)
- 		unblank_screen();
- 	else if (blankinterval) {
--		mod_timer(&console_timer, jiffies + blankinterval);
-+		mod_timer(&console_timer, jiffies + (blankinterval * HZ));
- 		blank_state = blank_normal_wait;
- 	}
+ #endif /* __ASM_TXX9_TX4939_H */
+diff --git a/arch/mips/txx9/generic/setup_tx4939.c b/arch/mips/txx9/generic/setup_tx4939.c
+index df13a89..3dc19f4 100644
+--- a/arch/mips/txx9/generic/setup_tx4939.c
++++ b/arch/mips/txx9/generic/setup_tx4939.c
+@@ -500,6 +500,23 @@ void __init tx4939_sramc_init(void)
+ 		txx9_sramc_init(&tx4939_sram_resource);
  }
+ 
++void __init tx4939_rng_init(void)
++{
++	static struct resource res = {
++		.start = TX4939_RNG_REG & 0xfffffffffULL,
++		.end = (TX4939_RNG_REG & 0xfffffffffULL) + 0x30 - 1,
++		.flags = IORESOURCE_MEM,
++	};
++	static struct platform_device pdev = {
++		.name = "tx4939-rng",
++		.id = -1,
++		.num_resources = 1,
++		.resource = &res,
++	};
++
++	platform_device_register(&pdev);
++}
++
+ static void __init tx4939_stop_unused_modules(void)
+ {
+ 	__u64 pcfg, rst = 0, ckd = 0;
+diff --git a/arch/mips/txx9/rbtx4939/setup.c b/arch/mips/txx9/rbtx4939/setup.c
+index b919696..c033ffe 100644
+--- a/arch/mips/txx9/rbtx4939/setup.c
++++ b/arch/mips/txx9/rbtx4939/setup.c
+@@ -502,6 +502,7 @@ static void __init rbtx4939_device_init(void)
+ 	tx4939_aclc_init();
+ 	platform_device_register_simple("txx9aclc-generic", -1, NULL, 0);
+ 	tx4939_sramc_init();
++	tx4939_rng_init();
+ }
+ 
+ static void __init rbtx4939_setup(void)
 -- 
-1.6.3.1
+1.5.6.5
 
