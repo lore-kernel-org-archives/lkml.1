@@ -1,84 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbZFBO7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbZFBO7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754605AbZFBO7N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 10:59:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbZFBO7A
+	id S1756772AbZFBO7c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 10:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136AbZFBO7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 10:59:00 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:63617 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbZFBO67 (ORCPT
+	Tue, 2 Jun 2009 10:59:23 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57001 "EHLO
+	t61.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754668AbZFBO7X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 10:58:59 -0400
-X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Jun 2009 10:58:59 EDT
-From: Karsten Keil <isdn@linux-pingi.de>
-Reply-To: isdn@linux-pingi.de
-To: Andreas Mohr <andi@lisas.de>
-Subject: Re: [PATCH] mISDN GIT: hfcpci cleanup failure on IRQ weirdness
-Date: Tue, 2 Jun 2009 16:53:35 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
-References: <20090602140250.GA3607@rhlx01.hs-esslingen.de>
-In-Reply-To: <20090602140250.GA3607@rhlx01.hs-esslingen.de>
-Cc: linux-kernel@vger.kernel.org
+	Tue, 2 Jun 2009 10:59:23 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] parport: quickfix the proc registration bug
+To: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Date: Tue, 02 Jun 2009 16:58:10 +0100
+Message-ID: <20090602155718.12461.87554.stgit@t61.ukuu.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906021653.36152.isdn@linux-pingi.de>
-X-Provags-ID: V01U2FsdGVkX186SNSrmww3ywZYmD8ByaQuR+e4IIf4SRtDVAE
- UnsRbdxZpck/NSeCQNmXHA3hyNM/gYmeI5aBEx15fQzz8ybOrV
- Qy+KlvK9+IDk7eQz4pbuPAPN76Mgcad
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dienstag, 2. Juni 2009 16:02:50 you wrote:
-> Hi,
->
-> > I have the suspicion that maybe I shouldn't be loading hisax upon boot
-> > (and then immediately removing it before launching mISDN stuff),
-> > since hfcpci acts very weird - perhaps it cannot recover card state fully
-> > after hisax fumbling.
->
-> Indeed, manually killed all hisax modules on the system, rebooted, and -
-> it worked, immediately!
-> (test call SIP -> Asterisk -> LCR -> ISDN -> out -> ISDN)
->
-> IOW, we've got an unfortunate driver init state handling issue which one
-> should perhaps investigate to make the driver more robust against
-> varying hardware state.
-> (my IRQ patch was a first step I guess ;)
->
+From: Alan Cox <alan@etchedpixels.co.uk>
 
-Yes from mISDN side, but I do not see what inside hisax prevent mISDN from
-getting IRQs after hisax was unloaded. And it works here on my test setup, I 
-can load mISDN without an error, after unloading hisax.
-One other issue with the HiSax  HFC PCI code is the FIFO DMA memory
-allocation, this code is wrong  and broken (patch is under test).
+Ideally we should have a directory of drivers and a link to the 'active'
+driver. For now just show the first device which is effectively the existing
+semantics without a warning.
 
-> misdn_log still acts weird, though...
->
-What does be weird here ?
+This is an update on the original buggy patch that I then forgot to
+resubmit. Confusingly it was proposed by Red Hat, written by Etched Pixels
+fixed and submitted by Intel ...
 
-> Thanks for all your important ISDN work! (given the sizeable number of
-> commits mISDN will rather soon get there I think)
->
-> BTW, could isdnlog be adapted to support mISDN relatively easily?
-> (since adding CAPI support would take longer I guess)
+Resolves-Bug: http://bugzilla.kernel.org/show_bug.cgi?id=9749
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+---
 
-isdnlog (beside that the isdnlog code is ugly enough) should be not a big 
-issue, mISDN supports logging in parallel to the normal work, look at the
-tools/loghex.c  code how to create a logging socket.
-It should make things easier as with HiSax, since it will get the data as 
-binary and not as hexdump.
+ drivers/parport/share.c |   13 ++++++++++---
+ include/linux/parport.h |    4 ++++
+ 2 files changed, 14 insertions(+), 3 deletions(-)
 
-> My guys are going semi-ballistic with their isdnlog taken out and shot ;)
->
-> Andreas Mohr
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+diff --git a/drivers/parport/share.c b/drivers/parport/share.c
+index 0ebca45..dffa5d4 100644
+--- a/drivers/parport/share.c
++++ b/drivers/parport/share.c
+@@ -614,7 +614,10 @@ parport_register_device(struct parport *port, const char *name,
+ 	 * pardevice fields. -arca
+ 	 */
+ 	port->ops->init_state(tmp, tmp->state);
+-	parport_device_proc_register(tmp);
++	if (!test_and_set_bit(PARPORT_DEVPROC_REGISTERED, &port->devflags)) {
++		port->proc_device = tmp;
++		parport_device_proc_register(tmp);
++	}
+ 	return tmp;
+ 
+  out_free_all:
+@@ -646,10 +649,14 @@ void parport_unregister_device(struct pardevice *dev)
+ 	}
+ #endif
+ 
+-	parport_device_proc_unregister(dev);
+-
+ 	port = dev->port->physport;
+ 
++	if (port->proc_device == dev) {
++		port->proc_device = NULL;
++		clear_bit(PARPORT_DEVPROC_REGISTERED, &port->devflags);
++		parport_device_proc_unregister(dev);
++	}
++
+ 	if (port->cad == dev) {
+ 		printk(KERN_DEBUG "%s: %s forgot to release port\n",
+ 		       port->name, dev->name);
+diff --git a/include/linux/parport.h b/include/linux/parport.h
+index e1f83c5..38a423e 100644
+--- a/include/linux/parport.h
++++ b/include/linux/parport.h
+@@ -324,6 +324,10 @@ struct parport {
+ 	int spintime;
+ 	atomic_t ref_count;
+ 
++	unsigned long devflags;
++#define PARPORT_DEVPROC_REGISTERED	0
++	struct pardevice *proc_device;	/* Currently register proc device */
++
+ 	struct list_head full_list;
+ 	struct parport *slaves[3];
+ };
 
