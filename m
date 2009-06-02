@@ -1,139 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbZFBWeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbZFBWju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753737AbZFBWeA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 18:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbZFBWdw
+	id S1754955AbZFBWju (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 18:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbZFBWjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 18:33:52 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:49483 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751894AbZFBWdw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 18:33:52 -0400
-X-IronPort-AV: E=Sophos;i="4.41,294,1241395200"; 
-   d="scan'208";a="166660518"
-From: Roland Dreier <rdreier@cisco.com>
-To: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: InfiniBand/RDMA merge plans for 2.6.31
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 02 Jun 2009 15:33:53 -0700
-Message-ID: <adafxeib6zy.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
+	Tue, 2 Jun 2009 18:39:42 -0400
+Received: from cmpxchg.org ([85.214.51.133]:58859 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752216AbZFBWjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 18:39:42 -0400
+Date: Wed, 3 Jun 2009 00:37:39 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: [patch][v2] swap: virtual swap readahead
+Message-ID: <20090602223738.GA15475@cmpxchg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 Jun 2009 22:33:53.0884 (UTC) FILETIME=[359C41C0:01C9E3D2]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since 2.6.30-rc7 has been out more than a week already, it's probably
-a good time to talk about 2.6.31 merge plans.  All the pending things
-that I'm aware of are listed below.  (For some reason this cycle seems
-to have not produced many patches -- we'll probably be very busy
-reviewing things for 2.6.32)
+Hi Andrew,
 
-Boilerplate:
+I redid the qsbench runs with a bigger page cluster (2^4).  It shows
+improvement on both versions, the patched one still performing better.
+Rik hinted me that we can make the default even bigger when we are
+better at avoiding reading unrelated pages.  I am currently testing
+this.  Here are the timings for 2^4 (i.e. twice the) ra pages:
 
-If something isn't already in my tree and it isn't listed below, I
-probably missed it or dropped it unintentionally.  Please remind me.
+vanilla:
+1 x 2048M [20 runs]  user 101.41/101.06 [1.42] system 11.02/10.83 [0.92] real 368.44/361.31 [48.47]
+2 x 1024M [20 runs]  user 101.42/101.23 [0.66] system 12.98/13.01 [0.56] real 338.45/338.56 [2.94]
+4 x 540M [20 runs]  user 101.75/101.62 [1.03] system 10.05/9.52 [1.53] real 371.97/351.88 [77.69]
+8 x 280M [20 runs]  user 103.35/103.33 [0.63] system 9.80/9.59 [1.72] real 453.48/473.21 [115.61]
+16 x 128M [20 runs]  user 91.04/91.00 [0.86] system 8.95/9.41 [2.06] real 312.16/342.29 [100.53]
 
-As usual, when submitting a patch:
+vswapra:
+1 x 2048M [20 runs]  user 98.47/98.32 [1.33] system 9.85/9.90 [0.92] real 373.95/382.64 [26.77]
+2 x 1024M [20 runs]  user 96.89/97.00 [0.44] system 9.52/9.48 [1.49] real 288.43/281.55 [53.12]
+4 x 540M [20 runs]  user 98.74/98.70 [0.92] system 7.62/7.83 [1.25] real 291.15/296.94 [54.85]
+8 x 280M [20 runs]  user 100.68/100.59 [0.53] system 7.59/7.62 [0.41] real 305.12/311.29 [26.09]
+16 x 128M [20 runs]  user 88.67/88.50 [1.02] system 6.06/6.22 [0.72] real 205.29/221.65 [42.06]
 
- - Give a good changelog that explains what issue your patch
-   addresses, how you address the issue, how serious the issue is, and
-   any other information that would be useful to someone evaluating
-   your patch or reading it years from now.
+Furthermore I changed the patch to leave shmem alone for now and added
+documentation for the new approach.  And I adjusted the changelog a
+bit.
 
- - Please make sure that you include a "Signed-off-by:" line, and put
-   any extra junk that should not go into the final kernel log *after*
-   the "---" line so that git tools strip it off automatically.  Make
-   the subject line be appropriate for inclusion in the kernel log as
-   well once the leading "[PATCH ...]" stuff is stripped off.  I waste a
-   lot of time fixing patches by hand that could otherwise be spent
-   doing something productive like watching youtube.
+Andi, I think the NUMA policy is already taken care of.  Can you have
+another look at it?  Other than that you gave positive feedback - can
+I add your acked-by?
 
- - Run your patch through checkpatch.pl so I don't have to nag you to
-   fix trivial issues (or spend time fixing them myself).
+	Hannes
 
- - Read your patch over so I don't see a memory leak or deadlock as
-   soon as I look at it.
+---
+The current swap readahead implementation reads a physically
+contiguous group of swap slots around the faulting page to take
+advantage of the disk head's position and in the hope that the
+surrounding pages will be needed soon as well.
 
- - Build your patch with sparse checking ("C=2 CF=-D__CHECK_ENDIAN__")
-   and make sure it doesn't introduce new warnings.  (A big bonus in
-   goodwill for sending patches that fix old warnings)
+This works as long as the physical swap slot order approximates the
+LRU order decently, otherwise it wastes memory and IO bandwidth to
+read in pages that are unlikely to be needed soon.
 
- - Test your patch on a kernel with things like slab debugging and
-   lockdep turned on.
+However, the physical swap slot layout diverges from the LRU order
+with increasing swap activity, i.e. high memory pressure situations,
+and this is exactly the situation where swapin should not waste any
+memory or IO bandwidth as both are the most contended resources at
+this point.
 
-And while you're waiting for me to get to your patch, I sure wouldn't
-mind if you read and commented on someone else's patch.  None of this
-means you shouldn't remind me about pending patches, since I often
-lose track of things and drop them accidentally.
+Another approximation for LRU-relation is the VMA order as groups of
+VMA-related pages are usually used together.
 
-Core:
+This patch combines both the physical and the virtual hint to get a
+good approximation of pages that are sensible to read ahead.
 
- - Removal of unnecessary casts of void * to other pointer types.
+When both diverge, we either read unrelated data, seek heavily for
+related data, or, what this patch does, just decrease the readahead
+efforts.
 
- - Userspace MMU notifiers ("ummunot") -- the code looks great to me
-   (since I wrote it), but I don't think this is suitable to merge
-   through the InfiniBand/RDMA tree, and I think a prerequisite to even
-   asking for broader review by the core kernel and VM community is to
-   prove that this approach works by actually prototyping support for
-   this in an MPI implementation.  I'm working with Jeff Squyres on Open
-   MPI support but I suspect we're already too close to the 2.6.31
-   window for this to be appropriate.  However 2.6.32 should be easily
-   doable, assuming the approach I took actually works and is palatable
-   to the kernel community.
+To achieve this, we have essentially two readahead windows of the same
+size: one spans the virtual, the other one the physical neighborhood
+of the faulting page.  We only read where both areas overlap.
 
-ULPs:
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+Reviewed-by: Rik van Riel <riel@redhat.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andi Kleen <andi@firstfloor.org>
+---
+ mm/swap_state.c |  115 ++++++++++++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 99 insertions(+), 16 deletions(-)
 
- - One fix for IPoIB multicast packet drops.
+version 2:
+  o fall back to physical ra window for shmem
+  o add documentation to the new ra algorithm
 
-HW specific:
+qsbench, 20 runs, 1.7GB RAM, 2GB swap, "mean (standard deviation) median":
 
- - A few cxgb3 fixes.
+		vanilla				vswapra
 
- - A few optimizations to ehca QP creation.
+1  x 2048M	391.25 ( 71.76) 384.56		445.55 (83.19) 415.41
+2  x 1024M	384.25 ( 75.00) 423.08		290.26 (31.38) 299.51
+4  x  540M	553.91 (100.02) 554.57		336.58 (52.49) 331.52
+8  x  280M	561.08 ( 82.36) 583.12		319.13 (43.17) 307.69
+16 x  128M	285.51 (113.20) 236.62		214.24 (62.37) 214.15
 
- - Add a module parameter to mthca and mlx4 to be able to register
-   more memory by increasing MTT segment size.
-
- - A fix to an almost-impossible-to-hit off-by-one in nes.
-
-Here are a few topics that I believe will not be ready in time for the
-2.6.31 window and will need to wait for 2.6.32 at least:
-
- - Jack's XRC patch set.  I still need time to work through and clean
-   up the code.  (I actually did make some progress on this during
-   this cycle -- if you look closely you can see my xrc branch has
-   changed -- but not enough to actually finish unfortunately)
-
-Here all the patches I already have in my for-next branch:
-
-Anton Blanchard (1):
-      IB/ehca: Replace vmalloc() with kmalloc() for queue allocation
-
-Christoph Lameter (1):
-      IPoIB: Don't drop multicast packets sent before group is joined
-
-Eli Cohen (2):
-      IB/mthca: Add module parameter for number of MTTs per segment
-      mlx4_core: Add module parameter for number of MTTs per segment
-
-Jack Stone (1):
-      infiniband: Remove void casts
-
-Roel Kluin (1):
-      RDMA/nes: Fix off-by-one bugs in reset_adapter_ne020() and init_serdes()
-
-Stefan Roscher (3):
-      IB/ehca: Fall back to vmalloc() for big allocations
-      IB/ehca: Remove unnecessary memory operations for userspace queue pairs
-      IB/ehca: Increment version number
-
-Steve Wise (2):
-      RDMA/cxgb3: Report correct port state and MTU
-      RDMA/cxgb3: Limit fast register size based on T3 limitations
-
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -325,27 +325,14 @@ struct page *read_swap_cache_async(swp_e
+ 	return found_page;
+ }
+ 
+-/**
+- * swapin_readahead - swap in pages in hope we need them soon
+- * @entry: swap entry of this memory
+- * @gfp_mask: memory allocation flags
+- * @vma: user vma this address belongs to
+- * @addr: target address for mempolicy
+- *
+- * Returns the struct page for entry and addr, after queueing swapin.
+- *
++/*
+  * Primitive swap readahead code. We simply read an aligned block of
+  * (1 << page_cluster) entries in the swap area. This method is chosen
+  * because it doesn't cost us any seek time.  We also make sure to queue
+  * the 'original' request together with the readahead ones...
+- *
+- * This has been extended to use the NUMA policies from the mm triggering
+- * the readahead.
+- *
+- * Caller must hold down_read on the vma->vm_mm if vma is not NULL.
+  */
+-struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
+-			struct vm_area_struct *vma, unsigned long addr)
++static struct page *swapin_readahead_phys(swp_entry_t entry, gfp_t gfp_mask,
++				struct vm_area_struct *vma, unsigned long addr)
+ {
+ 	int nr_pages;
+ 	struct page *page;
+@@ -371,3 +358,99 @@ struct page *swapin_readahead(swp_entry_
+ 	lru_add_drain();	/* Push any new pages onto the LRU now */
+ 	return read_swap_cache_async(entry, gfp_mask, vma, addr);
+ }
++
++/**
++ * swapin_readahead - swap in pages in hope we need them soon
++ * @entry: swap entry of this memory
++ * @gfp_mask: memory allocation flags
++ * @vma: user vma this address belongs to
++ * @addr: target address for mempolicy
++ *
++ * Returns the struct page for entry and addr, after queueing swapin.
++ *
++ * The readahead window is the virtual area around the faulting page,
++ * where the physical proximity of the swap slots is taken into
++ * account as well.
++ *
++ * While the swap allocation algorithm tries to keep LRU-related pages
++ * together on the swap backing, it is not reliable on heavy thrashing
++ * systems where concurrent reclaimers allocate swap slots and/or most
++ * anonymous memory pages are already in swap cache.
++ *
++ * On the virtual side, subgroups of VMA-related pages are usually
++ * used together, which gives another hint to LRU relationship.
++ *
++ * By taking both aspects into account, we get a good approximation of
++ * which pages are sensible to read together with the faulting one.
++ *
++ * This has been extended to use the NUMA policies from the mm
++ * triggering the readahead.
++ *
++ * Caller must hold down_read on the vma->vm_mm if vma is not NULL.
++ */
++struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
++			struct vm_area_struct *vma, unsigned long addr)
++{
++	unsigned long start, pos, end;
++	unsigned long pmin, pmax;
++	int cluster, window;
++
++	if (!vma || !vma->vm_mm)	/* XXX: shmem case */
++		return swapin_readahead_phys(entry, gfp_mask, vma, addr);
++
++	cluster = 1 << page_cluster;
++	window = cluster << PAGE_SHIFT;
++
++	/* Physical range to read from */
++	pmin = swp_offset(entry) & ~(cluster - 1);
++	pmax = pmin + cluster;
++
++	/* Virtual range to read from */
++	start = addr & ~(window - 1);
++	end = start + window;
++
++	for (pos = start; pos < end; pos += PAGE_SIZE) {
++		struct page *page;
++		swp_entry_t swp;
++		spinlock_t *ptl;
++		pgd_t *pgd;
++		pud_t *pud;
++		pmd_t *pmd;
++		pte_t *pte;
++
++		pgd = pgd_offset(vma->vm_mm, pos);
++		if (!pgd_present(*pgd))
++			continue;
++		pud = pud_offset(pgd, pos);
++		if (!pud_present(*pud))
++			continue;
++		pmd = pmd_offset(pud, pos);
++		if (!pmd_present(*pmd))
++			continue;
++		pte = pte_offset_map_lock(vma->vm_mm, pmd, pos, &ptl);
++		if (!is_swap_pte(*pte)) {
++			pte_unmap_unlock(pte, ptl);
++			continue;
++		}
++		swp = pte_to_swp_entry(*pte);
++		pte_unmap_unlock(pte, ptl);
++
++		if (swp_type(swp) != swp_type(entry))
++			continue;
++		/*
++		 * Dont move the disk head too far away.  This also
++		 * throttles readahead while thrashing, where virtual
++		 * order diverges more and more from physical order.
++		 */
++		if (swp_offset(swp) > pmax)
++			continue;
++		if (swp_offset(swp) < pmin)
++			continue;
++		page = read_swap_cache_async(swp, gfp_mask, vma, pos);
++		if (!page)
++			continue;
++		page_cache_release(page);
++	}
++	lru_add_drain();	/* Push any new pages onto the LRU now */
++	return read_swap_cache_async(entry, gfp_mask, vma, addr);
++}
