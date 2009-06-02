@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbZFBAOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbZFBAS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865AbZFBAOT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 20:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753637AbZFBAON
+	id S1754971AbZFBAS7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 20:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbZFBASv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 20:14:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41685 "EHLO mx2.redhat.com"
+	Mon, 1 Jun 2009 20:18:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47318 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752831AbZFBAOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 20:14:12 -0400
-Date: Tue, 2 Jun 2009 02:08:50 +0200
+	id S1752594AbZFBASv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 20:18:51 -0400
+Date: Tue, 2 Jun 2009 02:14:24 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: Roland McGrath <roland@redhat.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, paul@mad-scientist.net,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] coredump: Retry writes where appropriate
-Message-ID: <20090602000850.GA31064@redhat.com>
-References: <1243748019.7369.319.camel@homebase.localnet> <20090531111851.07eb1df3@lxorguk.ukuu.org.uk> <20090601161234.GA10486@redhat.com> <20090601174159.48acf3f5@lxorguk.ukuu.org.uk> <20090601171119.GA13970@redhat.com> <20090601184608.6379440c@lxorguk.ukuu.org.uk> <20090601182305.GA16372@redhat.com> <20090601203845.B010DFC3C7@magilla.sf.frob.com> <20090601223241.GA26788@redhat.com> <20090601230210.C0B15FC3C7@magilla.sf.frob.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: PATCH? tracehook_report_clone: fix false positives
+Message-ID: <20090602001424.GA986@redhat.com>
+References: <20090528113601.GA18725@redhat.com> <20090528114100.GA18744@redhat.com> <20090528212418.2F605FC2BD@magilla.sf.frob.com> <20090529122411.GC19812@redhat.com> <20090530185212.GA10677@redhat.com> <20090601002226.480CEFC3C7@magilla.sf.frob.com> <20090601200723.GA22204@redhat.com> <20090601205056.16307FC3C7@magilla.sf.frob.com> <20090601213443.GA26291@redhat.com> <20090601231939.223CEFC3C7@magilla.sf.frob.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090601230210.C0B15FC3C7@magilla.sf.frob.com>
+In-Reply-To: <20090601231939.223CEFC3C7@magilla.sf.frob.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,35 +28,20 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On 06/01, Roland McGrath wrote:
 >
-> That is almost a separate subject, really.  Having i/o calls' waits wrongly
-> interrupted and then clearing TIF_SIGPENDING just seems goofy to me.
+> This is where the utrace attachment point has to be (i.e. outside all the
+> locking).
 
-Yes, agreed. The patch I sent make the coredumping task invisible to all
-signals except SIGKILL.
+Yes I see. Quoting myself:
 
-> But there is the possibility of recalc_sigpending_and_wake
-> via cancel_freezing, at least.  Seems safer to make recalc_sigpending_tsk
-> robust in this case.
+	Yes, utrace-ptrace will likely change this code further anyway
+	and move the code from _init() to _report_clone() back, but in this case
+	I guess the whole tracehook_finish_clone() will go away, so this change
+	looks right anyway to me.
 
-Oh, I forgot about freezer...
+> So I don't see any benefit to changing the ptrace status quo now
+> for its own sake.
 
-Well, not good to complicate recalc_sigpending_tsk() for this unlikely case.
-And this can't help, freezer does signal_wake_up() unconditionally.
-
-So in fact this is another argument to check signal_pending() and clear it
-in dump_write/seek.
-
-But since the coredumping task is not freezable anyway, perhaps we should
-change fake_signal_wake_up() to ignore SIGNAL_GROUP_DUMPING task.
-
-Or we should make the coredumping freezable. This means dump_write/seek
-and exit_mm() should do try_to_freeze().
-
-
-In any case, the coredumping is special. If ->write() returns -ERESTART/EINTR
-it assumes the return to ths user-space, this is not true for the coredump.
-This means that handling the spurious signals in coredump_file_write() is
-not so bad if we can't avoid this.
+OK, agreed.
 
 Oleg.
 
