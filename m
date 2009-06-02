@@ -1,103 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbZFBOXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756674AbZFBOX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756337AbZFBOXK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 10:23:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbZFBOWz
+	id S1756674AbZFBOX1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 10:23:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756721AbZFBOXD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 10:22:55 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:44952 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752435AbZFBOWy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 10:22:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=FU1LiEVOwqkQG+nqTdYta8WAGkrAIFg0Wd1x2XjGxXY9MFoUemMIeW02lRybBAdBgI
-         9QYmp7a+uTzth16abfpyRhL4o8Aa/BBun/HXXr6klX/tbl7wQ477qkjhSoN7vdybG7y0
-         0OLsB24AyOUDtkeMIk8gDlwVk3bjQLFFvtRS8=
-Date: Tue, 2 Jun 2009 18:22:41 +0400
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, slapin@ossfans.org,
-       maxim.osipov@siemens.com, dmitry.baryshkov@siemens.com,
-       oliver.fendt@siemens.com
-Subject: Re: [PATCH 08/10] tty_io: export tty_class
-Message-ID: <20090602142241.GA18656@doriath.ww600.siemens.net>
-References: <1243868091-5315-3-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-4-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-5-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-6-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-7-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-8-git-send-email-dbaryshkov@gmail.com> <1243868091-5315-9-git-send-email-dbaryshkov@gmail.com> <20090601160721.7b262469@lxorguk.ukuu.org.uk> <bc64b4640906010810l8ace77byfbd650b549f9b5c3@mail.gmail.com> <20090601163418.465be751@lxorguk.ukuu.org.uk>
+	Tue, 2 Jun 2009 10:23:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58077 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751921AbZFBOXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 10:23:01 -0400
+Date: Tue, 2 Jun 2009 16:22:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] printk: add halt_delay parameter for printk delay in
+	halt phase
+Message-ID: <20090602142259.GA4580@elte.hu>
+References: <a8e1da0906020254s34dd0cd9id1b88655cab6d72d@mail.gmail.com> <20090602105609.GA9182@elte.hu> <a8e1da0906020627u148c3904qb5b792260a0169cf@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090601163418.465be751@lxorguk.ukuu.org.uk>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a8e1da0906020627u148c3904qb5b792260a0169cf@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 01, 2009 at 04:34:18PM +0100, Alan Cox wrote:
-> > I used class_find_device finding the device with matching minor. Will it be
-> > acceptable, if I just move this code into tty_* file and export it as
-> > to modules?
+
+* Dave Young <hidave.darkstar@gmail.com> wrote:
+
+> On Tue, Jun 2, 2009 at 6:56 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * Dave Young <hidave.darkstar@gmail.com> wrote:
+> >
+> >> Add a halt_delay module parameter in printk.c used to read the printk
+> >> messages in halt/poweroff/restart phase, delay each printk messages
+> >> by halt_delay milliseconds. It is useful for debugging if there's no
+> >> other way to dump kernel messages that time.
+> >
+> > nice idea! We frequently have kernel-death warnings/messages that
+> > scroll off too fast and which cannot be captured.
 > 
-> Yes - create a proper tty helper function for doing the job and document
-> what it does. That way if the tty layer is changed it is obvious that
-> this code also needs considering.
+> Thanks! It is for this case indeed.
+> 
+> >
+> >> halt_delay default value is 0, change it by:
+> >>
+> >> echo xxx > /sys/module/printk/parameters/halt_delay
+> >>
+> >> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> >> ---
+> >> kernel/printk.c   |   21 +++++++++++++++++++++
+> >> lib/Kconfig.debug |   10 ++++++++++
+> >> 2 files changed, 31 insertions(+)
+> >>
+> >> --- linux-2.6.orig/kernel/printk.c    2009-04-09 16:23:03.000000000 +0800
+> >> +++ linux-2.6/kernel/printk.c 2009-06-02 17:45:54.000000000 +0800
+> >> @@ -250,6 +250,26 @@ static inline void boot_delay_msec(void)
+> >>  }
+> >>  #endif
+> >>
+> >> +#ifdef CONFIG_HALT_PRINTK_DELAY
+> >
+> > (this #ifdef is ugly - see below.)
+> >
+> >> +/* msecs delay after each halt/poweroff/restart phase printk */
+> >> +static unsigned int halt_delay;
+> >> +
+> >> +static inline void halt_delay_msec(void)
+> >> +{
+> >> +     if (halt_delay == 0 || !(system_state == SYSTEM_HALT
+> >> +                             || system_state == SYSTEM_POWER_OFF
+> >> +                             || system_state == SYSTEM_RESTART))
+> >> +             return;
+> >> +
+> >> +     mdelay(halt_delay);
+> >
+> >>
+> >>       boot_delay_msec();
+> >> +     halt_delay_msec();
+> >
+> >
+> > i think it should be done in boot_delay_msec() and the function
+> > should be renamed to print_delay_msec() or so.
+> 
+> I have two concerns:
+> 
+> 1. boot_delay use a busy looping with lpj preset because it's too
+> early that mdelay is probably not ready yet. Furthermore the delay is
+> not accurate. For halt issue we can just use mdelay()
+> 
+> 2. boot_delay is set by kernel boot paramenter, but IMHO, for halt
+> delay use sysfs file is more convenient.
+> 
+> >
+> >>       preempt_disable();
+> >>       /* This stops the holder of console_sem just where we want him */
+> >> --- linux-2.6.orig/lib/Kconfig.debug  2009-05-12 11:27:22.000000000 +0800
+> >> +++ linux-2.6/lib/Kconfig.debug       2009-06-02 17:50:15.000000000 +0800
+> >> @@ -647,6 +647,16 @@ config BOOT_PRINTK_DELAY
+> >>         BOOT_PRINTK_DELAY also may cause DETECT_SOFTLOCKUP to detect
+> >>         what it believes to be lockup conditions.
+> >>
+> >> +config HALT_PRINTK_DELAY
+> >> +     bool "Delay halt/poweroff/restart printk message by N milliseconds"
+> >> +     depends on DEBUG_KERNEL && PRINTK && SYSFS
+> >> +     default n
+> >> +     help
+> >> +       This build option allows you to read kernel messages in
+> >> +       halt/poweroff/restart phase by inserting a short delay after
+> >> +       each one.  The delay is specified in milliseconds on the
+> >> +       module parameter: /sys/module/printk/halt_delay.
+> >
+> > No need for a Kconfig option - this should be an unconditional
+> > feature like boot-delay.
+> >
+> > This will further simplify the patch and will get rid of that ugly
+> > #ifdef.
+> 
+> What do you think removing the Kconfig option, then unconditionally
+>  use halt_delay functions?
 
-Is this suitable:
+that's fine too i think. The delay method assymetry between the two 
+functions indeed calls for them to be separate.
 
->From bea1f7dd279119a1aa60556ff0441e31c92876aa Mon Sep 17 00:00:00 2001
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Tue, 2 Jun 2009 06:31:35 +0400
-Subject: [PATCH] tty_io: add an API to get device corresponding to tty_struct
-
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- drivers/char/tty_io.c |   13 +++++++++++++
- include/linux/tty.h   |    1 +
- 2 files changed, 14 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 66b99a2..04d6c9a 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -3026,6 +3026,19 @@ dev_t tty_devnum(struct tty_struct *tty)
- }
- EXPORT_SYMBOL(tty_devnum);
- 
-+static int dev_match_devt(struct device *dev, void *data)
-+{
-+	dev_t *devt = data;
-+	return dev->devt == *devt;
-+}
-+
-+struct device *tty_get_device(struct tty_struct *tty)
-+{
-+	dev_t devt = tty_devnum(tty);
-+	return class_find_device(tty_class, NULL, &devt, dev_match_devt);
-+}
-+EXPORT_SYMBOL(tty_get_device);
-+
- void proc_clear_tty(struct task_struct *p)
- {
- 	unsigned long flags;
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index fc39db9..d17ba1e 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -413,6 +413,7 @@ extern int tty_mode_ioctl(struct tty_struct *tty, struct file *file,
- 			unsigned int cmd, unsigned long arg);
- extern int tty_perform_flush(struct tty_struct *tty, unsigned long arg);
- extern dev_t tty_devnum(struct tty_struct *tty);
-+struct device *tty_get_device(struct tty_struct *tty);
- extern void proc_clear_tty(struct task_struct *p);
- extern struct tty_struct *get_current_tty(void);
- extern void tty_default_fops(struct file_operations *fops);
--- 
-1.6.3.1
-
--- 
-With best wishes
-Dmitry
-
+	Ingo
