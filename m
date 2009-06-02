@@ -1,124 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759601AbZFBHTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758587AbZFBHZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759601AbZFBHTe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 03:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbZFBHT1
+	id S1758587AbZFBHZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 03:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbZFBHZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 03:19:27 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:38819 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757199AbZFBHT0 (ORCPT
+	Tue, 2 Jun 2009 03:25:20 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45230 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754706AbZFBHZT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 03:19:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=eebZ8A/S+6Y00ce10Bf+LlJ4ALwLU/lBKCRLsMngpjgcfU69xy9qGEs3GUOzoT4F1V
-         ryhTlnAMFNCbGyP2gVHf3ykTUCwBtH07NVqggelK6AkT+m0a7aLSdVPYiOjYJoL103BC
-         tZ6tDKYTO9CTgMFcPOBOOeoGVMFMMDcyZoO+w=
-From: Florian Fainelli <florian@openwrt.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/9] kernel: export sound/core/pcm_timer.c gcd implementation
-Date: Tue, 2 Jun 2009 09:19:22 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
-       linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <200906011357.09966.florian@openwrt.org> <20090601215034.7352ddca.akpm@linux-foundation.org>
-In-Reply-To: <20090601215034.7352ddca.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1733965.8q685CKkAD";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Tue, 2 Jun 2009 03:25:19 -0400
+Subject: Re: [PATCH] sched: sched_clock() clocksource handling.
+From: Peter Zijlstra <peterz@infradead.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Daniel Walker <dwalker@fifo99.com>,
+       Linus Walleij <linus.ml.walleij@gmail.com>,
+       Andrew Victor <linux@maxim.org.za>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       John Stultz <johnstul@linux.vnet.ibm.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-sh@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090602071718.GA17710@linux-sh.org>
+References: <20090602071718.GA17710@linux-sh.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906020919.25162.florian@openwrt.org>
+Date: Tue, 02 Jun 2009 09:25:02 +0200
+Message-Id: <1243927502.23657.5619.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1733965.8q685CKkAD
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tue, 2009-06-02 at 16:17 +0900, Paul Mundt wrote:
 
-Le Tuesday 02 June 2009 06:50:34 Andrew Morton, vous avez =E9crit=A0:
-> On Mon, 1 Jun 2009 13:57:09 +0200 Florian Fainelli <florian@openwrt.org>=
-=20
-wrote:
-> > This patch exports the gcd implementation from
-> > sound/core/pcm_timer.c into include/linux/kernel.h.
-> > AR7 uses it in its clock routines.
-> >
-> > ...
-> >
-> > diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-> > index 883cd44..878a27a 100644
-> > --- a/include/linux/kernel.h
-> > +++ b/include/linux/kernel.h
-> > @@ -147,6 +147,22 @@ extern int _cond_resched(void);
-> >  		(__x < 0) ? -__x : __x;		\
-> >  	})
-> >
-> > +/* Greatest common divisor */
-> > +static inline unsigned long gcd(unsigned long a, unsigned long b)
-> > +{
-> > +        unsigned long r;
-> > +        if (a < b) {
-> > +                r =3D a;
-> > +                a =3D b;
-> > +                b =3D r;
-> > +        }
-> > +        while ((r =3D a % b) !=3D 0) {
-> > +                a =3D b;
-> > +                b =3D r;
-> > +        }
-> > +        return b;
-> > +}
->
-> a) the name's a bit sucky.   Is there some convention for this name?
+> @@ -362,6 +364,9 @@ static struct clocksource *select_clocksource(void)
+>  	if (next == curr_clocksource)
+>  		return NULL;
+>  
+> +	if (next->flags & CLOCK_SOURCE_USE_FOR_SCHED_CLOCK)
+> +		sched_clocksource = next;
+> +
+>  	return next;
+>  }
+>  
+> @@ -440,7 +445,21 @@ void clocksource_unregister(struct clocksource *cs)
+>  	list_del(&cs->list);
+>  	if (clocksource_override == cs)
+>  		clocksource_override = NULL;
+> +
+>  	next_clocksource = select_clocksource();
+> +
+> +	/*
+> +	 * If select_clocksource() fails to find another suitable
+> +	 * clocksource for sched_clocksource and we are unregistering
+> +	 * it, switch back to jiffies.
+> +	 */
+> +	if (sched_clocksource == cs) {
+> +		rcu_assign_pointer(sched_clocksource, &clocksource_jiffies);
+> +		spin_unlock_irqrestore(&clocksource_lock, flags);
+> +		synchronize_rcu();
+> +		return;
+> +	}
+> +
+>  	spin_unlock_irqrestore(&clocksource_lock, flags);
+>  }
 
-We might want something better like greatest_common_divisor which is a bit=
-=20
-more self-explanatory ?
 
->
-> b) It looks too large to be inlined.  lib/gdc.c?
+What if there's multiple CLOCK_SOURCE_USER_FOR_SCHED_CLOCK [ damn, thats
+a long name to type :-) ] ?
 
-And its users select it in order not to increase the size of kernel.h, soun=
-ds=20
-good.
+That is, should we have logic in select_clocksource that does:
 
->
-> b) there's an implementation of gcd() in
->    net/netfilter/ipvs/ip_vs_wrr.c.  I expect that this patch broke the
->    build.
+  if ((next->flags & ..) && next->prio > sched_clocksource->prio)
 
-I did forget about this. That gcd implementation only treats the a > b case.
+or whatever, so that it picks the best one?
 
-What do you prefer, each user keeps its gcd implementation locally or we ma=
-ke=20
-a lib/gcd.c for it ?
-
-Thanks
-=2D-=20
-Best regards, Florian Fainelli
-Email : florian@openwrt.org
-http://openwrt.org
-=2D------------------------------
-
---nextPart1733965.8q685CKkAD
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkok0nsACgkQlyvkmBGtjyYOSQCgl2miLsK5IoByk8+x64m8/F9s
-vNwAoKHAoFAWk6L5hN3P8c8uAdtmp3Gn
-=gSD5
------END PGP SIGNATURE-----
-
---nextPart1733965.8q685CKkAD--
+Same for unregister, should we re-evaluate all clocksources before
+falling back to basic?
