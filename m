@@ -1,133 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbZFBWSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbZFBWWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755343AbZFBWSW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 18:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbZFBWSP
+	id S1754620AbZFBWWn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 18:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbZFBWWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 18:18:15 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:55131 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753149AbZFBWSO (ORCPT
+	Tue, 2 Jun 2009 18:22:36 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:5208 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751347AbZFBWWf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 18:18:14 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=from:subject:to:cc:date:message-id:user-agent:
-	mime-version:content-type:content-transfer-encoding:x-system-of-record;
-	b=gl+vfwtS04x/hUz4AOVu92dsM9muqzg6FOl7im+tSxC0niLYdTe0wQ1Wu1gJMBZDl
-	8PM2NWM3wRA8HLls6EywA==
-From: Mike Waychison <mikew@google.com>
-Subject: [PATCH] Remove __invalidate_mapping_pages variant
-To: akpm@linux-foundation.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Date: Tue, 02 Jun 2009 15:18:05 -0700
-Message-ID: <20090602221804.16461.15918.stgit@crlf.mtv.corp.google.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+	Tue, 2 Jun 2009 18:22:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :date:message-id:mime-version:x-mailer;
+        b=u91pwB92DFUQx/fMv1/WeAghqHe0nQTGk7BZoA0wL/4gzq+EdmDto8vbMXUIf37fXg
+         IZzfLjbCio2jkJ19NucCBZyfERpr4vAmoLcIeQOByLemq7g8y8SWylFWXy0jus4uNsN4
+         U0UqKmGWrBwJ0DDkpgA+l59Wx41BJaDc6W9pI=
+Subject: Re: [2.6.27-rc7 vs 2.6.29 Regresion] Wifi Network Slownes rt2500pci
+From: Alejandro Riveira =?ISO-8859-1?Q?Fern=E1ndez?= 
+	<alejandro.riveira@gmail.com>
+Reply-To: alejandro.riveira@gmail.com
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linville@tuxdriver.com,
+       Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <200906022353.44284.IvDoorn@gmail.com>
+References: <1243247687.5322.8.camel@varda>
+	 <200906021834.40009.IvDoorn@gmail.com> <1243961465.9894.3.camel@varda>
+	 <200906022353.44284.IvDoorn@gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-bCFE2XwOvKIZa9VjM5t1"
+Date: Wed, 03 Jun 2009 00:22:33 +0200
+Message-Id: <1243981353.7204.1.camel@varda>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove __invalidate_mapping_pages atomic variant now that its sole caller can
-sleep (fixed in eccb95cee4f0d56faa46ef22fb94dd4a3578d3eb).
 
-This fixes softlockups that can occur while in the drop_caches path.
+--=-bCFE2XwOvKIZa9VjM5t1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Mike Waychison <mikew@google.com>
----
+El mar, 02-06-2009 a las 23:53 +0200, Ivo van Doorn escribi=C3=B3:
 
- fs/drop_caches.c   |    2 +-
- include/linux/fs.h |    3 ---
- mm/truncate.c      |   39 ++++++++++++++++-----------------------
- 3 files changed, 17 insertions(+), 27 deletions(-)
+> > So my chip works better with incorrect values written in its registers?
+>=20
+> Apparently, probably because some other register is set to an incorrect v=
+alue,
+> but I have no idea which one that would be.
 
-diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-index b6a719a..a2edb79 100644
---- a/fs/drop_caches.c
-+++ b/fs/drop_caches.c
-@@ -24,7 +24,7 @@ static void drop_pagecache_sb(struct super_block *sb)
- 			continue;
- 		__iget(inode);
- 		spin_unlock(&inode_lock);
--		__invalidate_mapping_pages(inode->i_mapping, 0, -1, true);
-+		invalidate_mapping_pages(inode->i_mapping, 0, -1);
- 		iput(toput_inode);
- 		toput_inode = inode;
- 		spin_lock(&inode_lock);
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 3b534e5..131dc03 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -2043,9 +2043,6 @@ extern int __invalidate_device(struct block_device *);
- extern int invalidate_partition(struct gendisk *, int);
- #endif
- extern int invalidate_inodes(struct super_block *);
--unsigned long __invalidate_mapping_pages(struct address_space *mapping,
--					pgoff_t start, pgoff_t end,
--					bool be_atomic);
- unsigned long invalidate_mapping_pages(struct address_space *mapping,
- 					pgoff_t start, pgoff_t end);
- 
-diff --git a/mm/truncate.c b/mm/truncate.c
-index 12e1579..ccc3ecf 100644
---- a/mm/truncate.c
-+++ b/mm/truncate.c
-@@ -267,8 +267,21 @@ void truncate_inode_pages(struct address_space *mapping, loff_t lstart)
- }
- EXPORT_SYMBOL(truncate_inode_pages);
- 
--unsigned long __invalidate_mapping_pages(struct address_space *mapping,
--				pgoff_t start, pgoff_t end, bool be_atomic)
-+/**
-+ * invalidate_mapping_pages - Invalidate all the unlocked pages of one inode
-+ * @mapping: the address_space which holds the pages to invalidate
-+ * @start: the offset 'from' which to invalidate
-+ * @end: the offset 'to' which to invalidate (inclusive)
-+ *
-+ * This function only removes the unlocked pages, if you want to
-+ * remove all the pages of one inode, you must call truncate_inode_pages.
-+ *
-+ * invalidate_mapping_pages() will not block on IO activity. It will not
-+ * invalidate pages which are dirty, locked, under writeback or mapped into
-+ * pagetables.
-+ */
-+unsigned long invalidate_mapping_pages(struct address_space *mapping,
-+				       pgoff_t start, pgoff_t end)
- {
- 	struct pagevec pvec;
- 	pgoff_t next = start;
-@@ -309,30 +322,10 @@ unlock:
- 				break;
- 		}
- 		pagevec_release(&pvec);
--		if (likely(!be_atomic))
--			cond_resched();
-+		cond_resched();
- 	}
- 	return ret;
- }
--
--/**
-- * invalidate_mapping_pages - Invalidate all the unlocked pages of one inode
-- * @mapping: the address_space which holds the pages to invalidate
-- * @start: the offset 'from' which to invalidate
-- * @end: the offset 'to' which to invalidate (inclusive)
-- *
-- * This function only removes the unlocked pages, if you want to
-- * remove all the pages of one inode, you must call truncate_inode_pages.
-- *
-- * invalidate_mapping_pages() will not block on IO activity. It will not
-- * invalidate pages which are dirty, locked, under writeback or mapped into
-- * pagetables.
-- */
--unsigned long invalidate_mapping_pages(struct address_space *mapping,
--				pgoff_t start, pgoff_t end)
--{
--	return __invalidate_mapping_pages(mapping, start, end, false);
--}
- EXPORT_SYMBOL(invalidate_mapping_pages);
- 
- /*
+Could the fact that i dual boot with windows (and use the windows
+driver) have someting to do with it ?
+
+>=20
+> > What about other chips out there do they prefer wrong values too ;)
+> > Maybe what we thought wrong values are not that wrong ?
+>=20
+> They are wrong. That exact register initialization is pretty straightforw=
+ard
+> in the original Ralink driver on which rt2x00 is based.
+>=20
+> Ivo
+--=20
+"I contend that we are both atheists. I just believe in one fewer god
+than you do. When you understand why you dismiss all the other possible
+gods, you will understand why I dismiss yours."
+                                                  Stephen Henry Roberts
+
+--=-bCFE2XwOvKIZa9VjM5t1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Esto es una parte de mensaje firmado digitalmente
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iQIcBAABAgAGBQJKJaYjAAoJEDO4iEReSTB2gdQQAKFSQNzIQ65Aqa/h4alsEGab
+8w/QkS5arLgEmbcT4LqDrKuGk9aN1y3K+pAiZiiw+vqQWi5AXLC9+rKl1zFDTSZm
+BpgrxWxJ0iGt6STYNQwI6O2pex7KLOjfP9dgwK160zfIY7bEUCHLQXBabJNzpMMf
+aG65SAut/xfFgyzukyIl4KIdkiiQgEVavj2AHPVJ8vAKAZ4vkbJCTa3RUl+FtYN7
+GT1dRZoZZp2tsfcoKuUtqQqe3Ba91XrWAUV0RP70zGyxD1zQuBFU9EgWjavh8u/5
+AFhx0aBysmM7EoXuexXpq1YBkrt/uftgaLSse9cJZn7IZ9aX6IYKTh7Gz0Z+LLYU
+T/q78CecpcHAj6XX0T1AY6SNH1C6LcHci1RDIVGQx5uXfRLQgHUKLM2E69f2HnSA
+O0vyqzhvAaxkZM0+HGdEA+7s8t2Qh0ZmV9AczZTZ5zUc7UPib9qruWj3PEQRZ84e
+ydZfUm/0M2ykryTtyyhnbldYIeGj4/3bcGLjxqlpqH4EraIFzfxs9EDtuWFrTXho
+NxJoJWGOteuGMk9U9qE1Uyau5If1Vfd/+MGmxJ2ACDfjxaujDYzp3SCb3oxl1HMn
+3iBpd6FpdtG8tS3Soys/rEDEtVrxCY/2CN5d9BrGnHQabYovHaq6snvkmVS04tQ8
+Fw3DwrJPRqI+D5lRfhco
+=yUq9
+-----END PGP SIGNATURE-----
+
+--=-bCFE2XwOvKIZa9VjM5t1--
 
