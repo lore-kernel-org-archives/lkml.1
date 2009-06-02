@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbZFBN7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756162AbZFBOAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755163AbZFBN7i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 09:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbZFBN7b
+	id S1756162AbZFBOAl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 10:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbZFBOAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 09:59:31 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34847 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752689AbZFBN7a (ORCPT
+	Tue, 2 Jun 2009 10:00:32 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:47923 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754881AbZFBOAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 09:59:30 -0400
-Date: Tue, 2 Jun 2009 16:06:39 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602140639.GQ1065@one.firstfloor.org>
-References: <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org> <20090602125713.GG1392@wotan.suse.de> <20090602132538.GK1065@one.firstfloor.org> <20090602132441.GC6262@wotan.suse.de> <20090602134126.GM1065@one.firstfloor.org> <20090602135324.GB21338@localhost>
-Mime-Version: 1.0
+	Tue, 2 Jun 2009 10:00:31 -0400
+Date: Tue, 2 Jun 2009 09:51:59 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+Message-ID: <20090602135159.GB30509@tuxdriver.com>
+References: <20090601.032500.54712490.davem@davemloft.net> <1243867942.3015.18.camel@localhost.localdomain> <20090601.143248.258478440.davem@davemloft.net> <1243929229.3192.40.camel@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090602135324.GB21338@localhost>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1243929229.3192.40.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Ok you're right. That one is not needed. I will remove it.
+On Tue, Jun 02, 2009 at 09:53:48AM +0200, Marcel Holtmann wrote:
+> Hi Dave,
 > 
-> No! Please read the comment. In fact __remove_from_page_cache() has a
+> > >> Things are really winding down, and the bug fix rate is down
+> > >> to at best a trickle.  It might be time to do that final
+> > >> release soon :-)
+> > > 
+> > > can you give me quick update on this pull request:
+> > > 
+> > > 	http://marc.info/?l=linux-netdev&m=124341070008320&w=2
+> > 
+> > Sorry that I overlooked this.
 > 
->                 BUG_ON(page_mapped(page));
-> 
-> Or, at least correct that BUG_ON() line together.
+> no problem, but I was just wondering since you normally never miss
+> anything on netdev ;)
 
-Yes, but we already have them unmapped earlier and the poison check
-in the page fault handler should prevent remapping.
-
-So it really should not happen and if it happened we would deserve
-the BUG.
-
--Andi
+Maybe Dave had to return some of his gnomes to Alan Cox? :-)
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
