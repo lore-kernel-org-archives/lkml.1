@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759749AbZFBJLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbZFBJNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759749AbZFBJLV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 05:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbZFBJLD
+	id S1756186AbZFBJNL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 05:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbZFBJM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 05:11:03 -0400
-Received: from build.ossfans.org ([67.223.233.67]:39589 "EHLO
-	build.ossfans.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752941AbZFBJLB (ORCPT
+	Tue, 2 Jun 2009 05:12:58 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47107 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752803AbZFBJM6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 05:11:01 -0400
-X-Greylist: delayed 1096 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Jun 2009 05:11:01 EDT
-Date: Tue, 2 Jun 2009 12:52:36 +0400
-From: Sergey Lapin <slapin@ossfans.org>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       Holger Schurig <hs4233@mail.mn-solutions.de>,
-       linux-wireless@vger.kernel.org,
-       =?iso-8859-1?Q?G=E1bor?= Stefanik <netrolller.3d@gmail.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       maxim.osipov@siemens.com, dmitry.baryshkov@siemens.com,
-       oliver.fendt@siemens.com
-Subject: Re: =?utf-8?B?0J7RgtCy0LXRgg==?=
-	=?utf-8?Q?=3A?= [PATCH 10/10] ieee802154: add at86rf230/rf231 spi
-	driver
-Message-ID: <20090602085236.GA13088@build.ossfans.org>
-References: <1243868091-5315-3-git-send-email-dbaryshkov@gmail.com> <69e28c910906010921r56cf7017gc858cb7ba819c385@mail.gmail.com> <20090601203348.GC7143@doriath.ww600.siemens.net> <200906021010.49613.hs4233@mail.mn-solutions.de> <1243930893.3192.62.camel@localhost.localdomain> <bc64b4640906020129x4fe15e5en9d8e2cad1d86b236@mail.gmail.com> <1243931809.3192.68.camel@localhost.localdomain>
+	Tue, 2 Jun 2009 05:12:58 -0400
+Date: Tue, 2 Jun 2009 11:12:52 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Joe Perches <joe@perches.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Script to integrate MAINTAINERS P: and M: lines
+Message-ID: <20090602091252.GA15756@elf.ucw.cz>
+References: <cover.1243131992.git.joe@perches.com> <136e58c251157179f19a7eecedd1e6fe71a3e6d9.1243131992.git.joe@perches.com> <20090526144141.570594cf.akpm@linux-foundation.org> <1243455722.27337.65.camel@Joe-Laptop.home> <20090527151510.fb773db6.akpm@linux-foundation.org> <1243878331.3402.52.camel@Joe-Laptop.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1243931809.3192.68.camel@localhost.localdomain>
+In-Reply-To: <1243878331.3402.52.camel@Joe-Laptop.home>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 10:36:49AM +0200, Marcel Holtmann wrote:
-> > This gonna happen, as we are most probably going to implement 6lowpan
-> > on top of our stack. 6lowpan is a way to encapsulate IPv6 frames into
-> > IEEE 802.15.4 and has nothing in common with ZigBee. Moreover
-> > ZigBee is a trademark with strict rules upon it's usage. Our lawyers are
-> > currently investigating if it's possible to use this name in projects like
-> > Linux kernel which are open-source, non-related to any project but
-> > OTOH can be encapsulated in any commercial project.
-> > 
-> > IEEE 802.15.4 is a term like IEEE 802.11. We do have mac80211,
-> > we have had (until recently) ieee80211 dir, so why bother?
-> > 
-> > For Bluetooth naming directories 'bluetooth' is logical, as 802.15.1
-> > standard is a less known name, doesn't incorporate latest changes
-> > from Bluetooth, etc.
+On Mon 2009-06-01 10:45:31, Joe Perches wrote:
+> Here's a script to convert the MAINTAINERS file
+> to a single-line format.
 > 
-> and so is IEEE 802.15.4 hence we propose using "zigbee" here. Using the
-> mac80211 has historical reasons and 802.11 is a known name and even used
-> on product marketing material. IEEE 802.15.4 is not. We are also using
-> the term "wimax" and not its IEEE numbering.
+> from:
+> 	P:	name
+> 	M:	address
+> to
+> 	M:	name <address>
+> 
+> Please run the script and apply the result when convenient.
 
-That WILL add confusion. Because of the following:
-1. IEEE 802.15.4 is layer under ZigBee. ZigBee is implemented on top of
-IEEE 802.15.4, like UDP is implemented on top of IP.
-2. There are hardware implementations of the following sorts:
-a) Simple radio (IEEE 802.15.4 PHY).
-b) IEEE 802.15.4 MAC
-c) ZigBee, or other high level protocols (well, actually I don't know of
-any others than ZigBee at this level, but that doesn't mean they don't
-exist).
+I don't know if it is appropriate for meta-patch, but:
 
-Using this stack we can implement both a) and b). With addition of
-ZigBee layers, it might be possible to implement c), too. For things
-like 6lowpan, only a) and b) are useful. If you call this all ZigBee,
-it will add confusion and artifical limitation. Not to mention, not
-true. And just for cosmetic measures. That will be a lot of trouble and
-no practical gain from that.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-References:
-RFC-4919
-RFC-4944
-
-All the best,
-S.
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
