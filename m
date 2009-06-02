@@ -1,177 +1,705 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757502AbZFBCHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756965AbZFBCTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757502AbZFBCHd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 1 Jun 2009 22:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbZFBCHX
+	id S1756965AbZFBCTx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 1 Jun 2009 22:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbZFBCTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 1 Jun 2009 22:07:23 -0400
-Received: from mga09.intel.com ([134.134.136.24]:44153 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755124AbZFBCHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 1 Jun 2009 22:07:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,287,1241420400"; 
-   d="scan'208";a="520835376"
-Subject: Re: [PATCH 0/12] Per-bdi writeback flusher threads v7
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, richard@rsk.demon.co.uk
-In-Reply-To: <20090527061705.GQ11363@kernel.dk>
-References: <1243330430-9964-1-git-send-email-jens.axboe@oracle.com>
-	 <1243402035.2560.127.camel@ymzhang>  <20090527061705.GQ11363@kernel.dk>
-Content-Type: text/plain
-Date: Tue, 02 Jun 2009 10:07:33 +0800
-Message-Id: <1243908453.2560.139.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Mon, 1 Jun 2009 22:19:43 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60429 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754708AbZFBCTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 1 Jun 2009 22:19:42 -0400
+Message-ID: <4A248C90.9010904@cn.fujitsu.com>
+Date: Tue, 02 Jun 2009 10:21:04 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+CC: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] TOMOYO: Clarify lock protected section.
+References: <200906020143.n521hGGP003698@www262.sakura.ne.jp>
+In-Reply-To: <200906020143.n521hGGP003698@www262.sakura.ne.jp>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-27 at 08:17 +0200, Jens Axboe wrote:
-> On Wed, May 27 2009, Zhang, Yanmin wrote:
-> > On Tue, 2009-05-26 at 11:33 +0200, Jens Axboe wrote:
-> > > Hi,
-> > > 
-> > > Here's the 7th version of the writeback patches. Changes since
-> > > v5/v6:
-> > > 
-> > > - Move the sync_supers() to the global bdi_forker_task() thread, so we
-> > >   don't writeback the supers from all the bdi kupdated() tasks.
-> > > - Make bdi_start_writeback() and bdi_writeback_all() be sync when called
-> > >   with WB_SYNC_ALL only.
-> > > - Shuffle some more things around to make a cleaner series. The sync vs
-> > >   async nature of bdi_writeback_all() and bdi_start_writeback() isn't
-> > >   consistent through the series, but otherwise things should be sane.
-> > > 
-> > > I'd appreciate if Richard and Yanmin could re-run testing with this,
-> > > just to make sure that things are sane. For ease of patching, I've
-> > > put the full diff here:
-> > > 
-> > >   http://kernel.dk/writeback-v7.patch
-> > I ported it to 2.6.30-rc6 with some change in file mm/page-write.c, so I 
-> > could compare with old data.
-> > 
-> > See the attachment.
-> > 
-> > The new testing hits the hang issue again. It seems there is still a race.
-> 
-> It's actually not a race, it's a deadlock on the bdi_lock. If you find
-> the bdi-default task, it should be stuck in the mutex slow path. I
-> posted this quickie [1] yesterday but didn't test it, I'll test it today and
-> post a v8.
+Tetsuo Handa wrote:
+> Enclose reader section in
+> 	/***** READER SECTION START *****/
+> and
+> 	/***** READER SECTION END *****/
+> and writer section in
+> 	/***** WRITER SECTION START *****/
+> and
+> 	/***** WRITER SECTION END *****/
+> in order to avoid oversighting lock protected section.
 > 
 
+This makes me a bit uncomfortable..
 
-> [1] http://lkml.org/lkml/2009/5/26/401
-Jens,
+IMHO this seems ugly, useless, and even harmful. If it's helpful,
+we'd be doing this for the whole kernel tree, which is crazy..
 
-I checked V9 and found it includes the fix. However, the issue appears again on another
-machine when doing 'umount -f /dev/sda3'.
+Or does tomoyo do this for it's special reason?
 
-INFO: task umount:17110 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-umount        D ffffc20000011300  6128 17110  16225
- ffffffff8093e350 0000000000000086 0000000000000000 0000000000000000
- ffffe200006482e8 0000000000004000 0000000000011300 000000000000c868
- ffff8801be07dd48 0000000000000000 ffff8801be5f8000 ffff8801be5f8388
-Call Trace:
- [<ffffffff802c316c>] ? bdi_sched_wait+0x0/0xd
- [<ffffffff8071e53f>] ? schedule+0x9/0x1e
- [<ffffffff802c3175>] ? bdi_sched_wait+0x9/0xd
- [<ffffffff8071eb06>] ? __wait_on_bit+0x41/0x71
- [<ffffffff802c316c>] ? bdi_sched_wait+0x0/0xd
- [<ffffffff8071eba1>] ? out_of_line_wait_on_bit+0x6b/0x77
- [<ffffffff8024cbf0>] ? wake_bit_function+0x0/0x23
- [<ffffffff802c2e1f>] ? bdi_writeback_all+0x117/0x14e
- [<ffffffff802c2f8f>] ? generic_sync_sb_inodes+0x31/0xdc
- [<ffffffff802c30bd>] ? sync_inodes_sb+0x83/0x88
- [<ffffffff802ab4f3>] ? fsync_super+0x9/0x16
- [<ffffffff802ab7a8>] ? generic_shutdown_super+0x25/0xde
- [<ffffffff802ab883>] ? kill_block_super+0x22/0x3a
- [<ffffffff802abec9>] ? deactivate_super+0x5f/0x76
- [<ffffffff802bdf5f>] ? sys_umount+0x2cd/0x2fc
- [<ffffffff8020ba2b>] ? system_call_fastpath+0x16/0x1b
-
-
-
-Then, I run command sync and hit a panic:
-
-[root@lkp-ne02 ~]# BUG: unable to handle kernel paging request at 0000000561887e50
-IP: [<ffffffff8022d121>] task_rq_lock+0x28/0x6b
-PGD bc551067 PUD 0
-Oops: 0000 [#1] SMP
-last sysfs file: /sys/class/net/eth1/ifindex
-CPU 9
-Modules linked in:
-Pid: 27470, comm: sync Not tainted 2.6.30-rc7-bdiflusherv9 #1 X8DTN
-RIP: 0010:[<ffffffff8022d121>]  [<ffffffff8022d121>] task_rq_lock+0x28/0x6b
-RSP: 0018:ffff8800bccd9e48  EFLAGS: 00010096
-RAX: 00000000bc1d0420 RBX: 0000000000011300 RCX: 0000000000000000
-RDX: 00000000000110fd RSI: ffff8800bccd9e88 RDI: ffff8800bd703090
-RBP: 0000000000011300 R08: fefefefefefefeff R09: 0000000000000000
-R10: 00000034cbd6da70 R11: 00000034cbacab70 R12: ffff8800bccd9e88
-R13: ffff8800bd703090 R14: 000000000000000f R15: 0000000000000000
-FS:  00007f04696dd6f0(0000) GS:ffffc20001200000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000561887e50 CR3: 00000000bc0d6000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process sync (pid: 27470, threadinfo ffff8800bccd8000, task ffff8800bc4ee810)
-Stack:
- 00000034cbaca000 000000000000000f ffff8800bd703090 ffff8800bccd9f18
- ffff8800bd780138 ffffffff80233889 0000000000000000 ffffffff802c2be6
- 0000000000000296 ffff8800bcd6f900 ffff8800bd5a9d10 ffff8800bccd9f18
-Call Trace:
- [<ffffffff80233889>] ? try_to_wake_up+0x8f/0x2d0
- [<ffffffff802c2be6>] ? bdi_alloc_work+0x28/0xa6
- [<ffffffff802c2e45>] ? bdi_writeback_all+0x13d/0x14e
- [<ffffffff8027f151>] ? wakeup_flusher_threads+0x4c/0x51
- [<ffffffff802c5c39>] ? do_sync+0xb/0x5a
- [<ffffffff802c5caa>] ? sys_sync+0xe/0x14
- [<ffffffff8020ba2b>] ? system_call_fastpath+0x16/0x1b
-Code: 41 59 c3 41 55 49 89 fd 41 54 49 89 f4 55 48 c7 c5 00 13 01 00 53 48 83 ec 08 9c 58 fa 49 89 04 24 49 8b 45 08 48 89 e
-RIP  [<ffffffff8022d121>] task_rq_lock+0x28/0x6b
- RSP <ffff8800bccd9e48>
-CR2: 0000000561887e50
-
-
-
-Another machine hangs twice with 2.6.30-rc7+bdiflusherV9
-after it's idle for hours without testing. Serial console
-didn't capture any useful info.
-
-
-As for perforamnce testing result, there is no big variation from previous vesions.
-
+> Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+> Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
+> ---
+>  security/tomoyo/common.c   |   30 ++++++++++++++++++++++++++++--
+>  security/tomoyo/domain.c   |   34 ++++++++++++++++++++++++----------
+>  security/tomoyo/file.c     |   36 ++++++++++++++++++++++++++----------
+>  security/tomoyo/realpath.c |    2 ++
+>  4 files changed, 80 insertions(+), 22 deletions(-)
 > 
-> > INFO: task sync:30013 blocked for more than 120 seconds.
-> > "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> > sync          D ffffc20000011300  4736 30013  28019
-> >  ffffffff8093e350 0000000000000086 0000000000000000 0000000000000000
-> >  0000000000021220 0000000000004000 0000000000011300 000000000000c868
-> >  ffff880000016c48 ffffe20002934b30 ffff8800720b3780 ffff8800720b3b08
-> > Call Trace:
-> >  [<ffffffff802c31d0>] ? bdi_sched_wait+0x0/0xd
-> >  [<ffffffff8071e56f>] ? schedule+0x9/0x1e
-> >  [<ffffffff802c31d9>] ? bdi_sched_wait+0x9/0xd
-> >  [<ffffffff8071eb36>] ? __wait_on_bit+0x41/0x71
-> >  [<ffffffff802c31d0>] ? bdi_sched_wait+0x0/0xd
-> >  [<ffffffff8071ebd1>] ? out_of_line_wait_on_bit+0x6b/0x77
-> >  [<ffffffff8024cc0c>] ? wake_bit_function+0x0/0x23
-> >  [<ffffffff8022cfa1>] ? __wake_up+0x30/0x44
-> >  [<ffffffff802c2e22>] ? bdi_writeback_all+0x20b/0x24c
-> >  [<ffffffff802800ce>] ? pagevec_lookup_tag+0x1a/0x21
-> >  [<ffffffff80279248>] ? wait_on_page_writeback_range+0xce/0x11b
-> >  [<ffffffff802c2ff3>] ? generic_sync_sb_inodes+0x36/0xe1
-> >  [<ffffffff802c3121>] ? sync_inodes_sb+0x83/0x88
-> >  [<ffffffff802c316c>] ? __sync_inodes+0x46/0x8f
-> >  [<ffffffff802c5d10>] ? do_sync+0x36/0x5a
-> >  [<ffffffff802c5d56>] ? sys_sync+0xe/0x14
-> >  [<ffffffff8020ba2b>] ? system_call_fastpath+0x16/0x1b
-> > 
-> > 
-
+> --- security-testing-2.6.git.orig/security/tomoyo/common.c
+> +++ security-testing-2.6.git/security/tomoyo/common.c
+> @@ -706,6 +706,7 @@ static const char *tomoyo_get_exe(void)
+>  
+>  	if (!mm)
+>  		return NULL;
+> +	/***** READER SECTION START *****/
+>  	down_read(&mm->mmap_sem);
+>  	for (vma = mm->mmap; vma; vma = vma->vm_next) {
+>  		if ((vma->vm_flags & VM_EXECUTABLE) && vma->vm_file) {
+> @@ -714,6 +715,7 @@ static const char *tomoyo_get_exe(void)
+>  		}
+>  	}
+>  	up_read(&mm->mmap_sem);
+> +	/***** READER SECTION END *****/
+>  	return cp;
+>  }
+>  
+> @@ -784,6 +786,7 @@ bool tomoyo_domain_quota_is_ok(struct to
+>  
+>  	if (!domain)
+>  		return true;
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_domain_acl_info_list_lock);
+>  	list_for_each_entry(ptr, &domain->acl_info_list, list) {
+>  		if (ptr->type & TOMOYO_ACL_DELETED)
+> @@ -839,6 +842,7 @@ bool tomoyo_domain_quota_is_ok(struct to
+>  		}
+>  	}
+>  	up_read(&tomoyo_domain_acl_info_list_lock);
+> +	/***** READER SECTION END *****/
+>  	if (count < tomoyo_check_flags(domain, TOMOYO_MAX_ACCEPT_ENTRY))
+>  		return true;
+>  	if (!domain->quota_warned) {
+> @@ -1053,7 +1057,7 @@ static int tomoyo_update_manager_entry(c
+>  		return -ENOMEM;
+>  	if (!is_delete)
+>  		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+> -	/***** EXCLUSIVE SECTION START *****/
+> +	/***** WRITER SECTION START *****/
+>  	down_write(&tomoyo_policy_manager_list_lock);
+>  	list_for_each_entry(ptr, &tomoyo_policy_manager_list, list) {
+>  		if (ptr->manager != saved_manager)
+> @@ -1070,7 +1074,7 @@ static int tomoyo_update_manager_entry(c
+>  		error = 0;
+>  	}
+>  	up_write(&tomoyo_policy_manager_list_lock);
+> -	/***** EXCLUSIVE SECTION END *****/
+> +	/***** WRITER SECTION END *****/
+>  	kfree(new_entry);
+>  	return error;
+>  }
+> @@ -1108,6 +1112,7 @@ static int tomoyo_read_manager_policy(st
+>  
+>  	if (head->read_eof)
+>  		return 0;
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_policy_manager_list_lock);
+>  	list_for_each_cookie(pos, head->read_var2,
+>  			     &tomoyo_policy_manager_list) {
+> @@ -1122,6 +1127,7 @@ static int tomoyo_read_manager_policy(st
+>  		}
+>  	}
+>  	up_read(&tomoyo_policy_manager_list_lock);
+> +	/***** READER SECTION END *****/
+>  	head->read_eof = done;
+>  	return 0;
+>  }
+> @@ -1144,6 +1150,7 @@ static bool tomoyo_is_policy_manager(voi
+>  		return true;
+>  	if (!tomoyo_manage_by_non_root && (task->cred->uid || task->cred->euid))
+>  		return false;
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_policy_manager_list_lock);
+>  	list_for_each_entry(ptr, &tomoyo_policy_manager_list, list) {
+>  		if (!ptr->is_deleted && ptr->is_domain
+> @@ -1153,11 +1160,13 @@ static bool tomoyo_is_policy_manager(voi
+>  		}
+>  	}
+>  	up_read(&tomoyo_policy_manager_list_lock);
+> +	/***** READER SECTION END *****/
+>  	if (found)
+>  		return true;
+>  	exe = tomoyo_get_exe();
+>  	if (!exe)
+>  		return false;
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_policy_manager_list_lock);
+>  	list_for_each_entry(ptr, &tomoyo_policy_manager_list, list) {
+>  		if (!ptr->is_deleted && !ptr->is_domain
+> @@ -1167,6 +1176,7 @@ static bool tomoyo_is_policy_manager(voi
+>  		}
+>  	}
+>  	up_read(&tomoyo_policy_manager_list_lock);
+> +	/***** READER SECTION END *****/
+>  	if (!found) { /* Reduce error messages. */
+>  		static pid_t last_pid;
+>  		const pid_t pid = current->pid;
+> @@ -1205,9 +1215,11 @@ static bool tomoyo_is_select_one(struct 
+>  		/***** CRITICAL SECTION END *****/
+>  	} else if (!strncmp(data, "domain=", 7)) {
+>  		if (tomoyo_is_domain_def(data + 7)) {
+> +			/***** READER SECTION START *****/
+>  			down_read(&tomoyo_domain_list_lock);
+>  			domain = tomoyo_find_domain(data + 7);
+>  			up_read(&tomoyo_domain_list_lock);
+> +			/***** READER SECTION END *****/
+>  		}
+>  	} else
+>  		return false;
+> @@ -1222,6 +1234,7 @@ static bool tomoyo_is_select_one(struct 
+>  	if (domain) {
+>  		struct tomoyo_domain_info *d;
+>  		head->read_var1 = NULL;
+> +		/***** READER SECTION START *****/
+>  		down_read(&tomoyo_domain_list_lock);
+>  		list_for_each_entry(d, &tomoyo_domain_list, list) {
+>  			if (d == domain)
+> @@ -1229,6 +1242,7 @@ static bool tomoyo_is_select_one(struct 
+>  			head->read_var1 = &d->list;
+>  		}
+>  		up_read(&tomoyo_domain_list_lock);
+> +		/***** READER SECTION END *****/
+>  		head->read_var2 = NULL;
+>  		head->read_bit = 0;
+>  		head->read_step = 0;
+> @@ -1267,9 +1281,11 @@ static int tomoyo_write_domain_policy(st
+>  		if (is_delete)
+>  			tomoyo_delete_domain(data);
+>  		else if (is_select) {
+> +			/***** READER SECTION START *****/
+>  			down_read(&tomoyo_domain_list_lock);
+>  			domain = tomoyo_find_domain(data);
+>  			up_read(&tomoyo_domain_list_lock);
+> +			/***** READER SECTION END *****/
+>  		} else
+>  			domain = tomoyo_find_or_assign_new_domain(data, 0);
+>  		head->write_var1 = domain;
+> @@ -1426,6 +1442,7 @@ static int tomoyo_read_domain_policy(str
+>  		return 0;
+>  	if (head->read_step == 0)
+>  		head->read_step = 1;
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_domain_list_lock);
+>  	list_for_each_cookie(dpos, head->read_var1, &tomoyo_domain_list) {
+>  		struct tomoyo_domain_info *domain;
+> @@ -1460,6 +1477,7 @@ acl_loop:
+>  		if (head->read_step == 3)
+>  			goto tail_mark;
+>  		/* Print ACL entries in the domain. */
+> +		/***** READER SECTION START *****/
+>  		down_read(&tomoyo_domain_acl_info_list_lock);
+>  		list_for_each_cookie(apos, head->read_var2,
+>  				      &domain->acl_info_list) {
+> @@ -1472,6 +1490,7 @@ acl_loop:
+>  			}
+>  		}
+>  		up_read(&tomoyo_domain_acl_info_list_lock);
+> +		/***** READER SECTION END *****/
+>  		if (!done)
+>  			break;
+>  		head->read_step = 3;
+> @@ -1485,6 +1504,7 @@ tail_mark:
+>  			break;
+>  	}
+>  	up_read(&tomoyo_domain_list_lock);
+> +	/***** READER SECTION END *****/
+>  	head->read_eof = done;
+>  	return 0;
+>  }
+> @@ -1511,9 +1531,11 @@ static int tomoyo_write_domain_profile(s
+>  	if (!cp)
+>  		return -EINVAL;
+>  	*cp = '\0';
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_domain_list_lock);
+>  	domain = tomoyo_find_domain(cp + 1);
+>  	up_read(&tomoyo_domain_list_lock);
+> +	/***** READER SECTION END *****/
+>  	if (strict_strtoul(data, 10, &profile))
+>  		return -EINVAL;
+>  	if (domain && profile < TOMOYO_MAX_PROFILES
+> @@ -1543,6 +1565,7 @@ static int tomoyo_read_domain_profile(st
+>  
+>  	if (head->read_eof)
+>  		return 0;
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_domain_list_lock);
+>  	list_for_each_cookie(pos, head->read_var1, &tomoyo_domain_list) {
+>  		struct tomoyo_domain_info *domain;
+> @@ -1556,6 +1579,7 @@ static int tomoyo_read_domain_profile(st
+>  		}
+>  	}
+>  	up_read(&tomoyo_domain_list_lock);
+> +	/***** READER SECTION END *****/
+>  	head->read_eof = done;
+>  	return 0;
+>  }
+> @@ -1777,6 +1801,7 @@ void tomoyo_load_policy(const char *file
+>  	tomoyo_policy_loaded = true;
+>  	{ /* Check all profiles currently assigned to domains are defined. */
+>  		struct tomoyo_domain_info *domain;
+> +		/***** READER SECTION START *****/
+>  		down_read(&tomoyo_domain_list_lock);
+>  		list_for_each_entry(domain, &tomoyo_domain_list, list) {
+>  			const u8 profile = domain->profile;
+> @@ -1786,6 +1811,7 @@ void tomoyo_load_policy(const char *file
+>  			      profile, domain->domainname->name);
+>  		}
+>  		up_read(&tomoyo_domain_list_lock);
+> +		/***** READER SECTION END *****/
+>  	}
+>  }
+>  
+> --- security-testing-2.6.git.orig/security/tomoyo/domain.c
+> +++ security-testing-2.6.git/security/tomoyo/domain.c
+> @@ -137,7 +137,7 @@ static int tomoyo_update_domain_initiali
+>  		return -ENOMEM;
+>  	if (!is_delete)
+>  		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+> -	/***** EXCLUSIVE SECTION START *****/
+> +	/***** WRITER SECTION START *****/
+>  	down_write(&tomoyo_domain_initializer_list_lock);
+>  	list_for_each_entry(ptr, &tomoyo_domain_initializer_list, list) {
+>  		if (ptr->is_not != is_not ||
+> @@ -159,7 +159,7 @@ static int tomoyo_update_domain_initiali
+>  		error = 0;
+>  	}
+>  	up_write(&tomoyo_domain_initializer_list_lock);
+> -	/***** EXCLUSIVE SECTION END *****/
+> +	/***** WRITER SECTION END *****/
+>  	kfree(new_entry);
+>  	return error;
+>  }
+> @@ -176,6 +176,7 @@ bool tomoyo_read_domain_initializer_poli
+>  	struct list_head *pos;
+>  	bool done = true;
+>  
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_domain_initializer_list_lock);
+>  	list_for_each_cookie(pos, head->read_var2,
+>  			     &tomoyo_domain_initializer_list) {
+> @@ -201,6 +202,7 @@ bool tomoyo_read_domain_initializer_poli
+>  		}
+>  	}
+>  	up_read(&tomoyo_domain_initializer_list_lock);
+> +	/***** READER SECTION END *****/
+>  	return done;
+>  }
+>  
+> @@ -247,6 +249,7 @@ static bool tomoyo_is_domain_initializer
+>  	struct tomoyo_domain_initializer_entry *ptr;
+>  	bool flag = false;
+>  
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_domain_initializer_list_lock);
+>  	list_for_each_entry(ptr,  &tomoyo_domain_initializer_list, list) {
+>  		if (ptr->is_deleted)
+> @@ -269,6 +272,7 @@ static bool tomoyo_is_domain_initializer
+>  		flag = true;
+>  	}
+>  	up_read(&tomoyo_domain_initializer_list_lock);
+> +	/***** READER SECTION END *****/
+>  	return flag;
+>  }
+>  
+> @@ -316,7 +320,7 @@ static int tomoyo_update_domain_keeper_e
+>  		return -ENOMEM;
+>  	if (!is_delete)
+>  		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+> -	/***** EXCLUSIVE SECTION START *****/
+> +	/***** WRITER SECTION START *****/
+>  	down_write(&tomoyo_domain_keeper_list_lock);
+>  	list_for_each_entry(ptr, &tomoyo_domain_keeper_list, list) {
+>  		if (ptr->is_not != is_not ||
+> @@ -337,7 +341,7 @@ static int tomoyo_update_domain_keeper_e
+>  		error = 0;
+>  	}
+>  	up_write(&tomoyo_domain_keeper_list_lock);
+> -	/***** EXCLUSIVE SECTION END *****/
+> +	/***** WRITER SECTION END *****/
+>  	kfree(new_entry);
+>  	return error;
+>  }
+> @@ -375,6 +379,7 @@ bool tomoyo_read_domain_keeper_policy(st
+>  	struct list_head *pos;
+>  	bool done = true;
+>  
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_domain_keeper_list_lock);
+>  	list_for_each_cookie(pos, head->read_var2,
+>  			     &tomoyo_domain_keeper_list) {
+> @@ -400,6 +405,7 @@ bool tomoyo_read_domain_keeper_policy(st
+>  		}
+>  	}
+>  	up_read(&tomoyo_domain_keeper_list_lock);
+> +	/***** READER SECTION END *****/
+>  	return done;
+>  }
+>  
+> @@ -420,6 +426,7 @@ static bool tomoyo_is_domain_keeper(cons
+>  	struct tomoyo_domain_keeper_entry *ptr;
+>  	bool flag = false;
+>  
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_domain_keeper_list_lock);
+>  	list_for_each_entry(ptr, &tomoyo_domain_keeper_list, list) {
+>  		if (ptr->is_deleted)
+> @@ -440,6 +447,7 @@ static bool tomoyo_is_domain_keeper(cons
+>  		flag = true;
+>  	}
+>  	up_read(&tomoyo_domain_keeper_list_lock);
+> +	/***** READER SECTION END *****/
+>  	return flag;
+>  }
+>  
+> @@ -475,7 +483,7 @@ static int tomoyo_update_alias_entry(con
+>  		return -ENOMEM;
+>  	if (!is_delete)
+>  		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+> -	/***** EXCLUSIVE SECTION START *****/
+> +	/***** WRITER SECTION START *****/
+>  	down_write(&tomoyo_alias_list_lock);
+>  	list_for_each_entry(ptr, &tomoyo_alias_list, list) {
+>  		if (ptr->original_name != saved_original_name ||
+> @@ -493,7 +501,7 @@ static int tomoyo_update_alias_entry(con
+>  		error = 0;
+>  	}
+>  	up_write(&tomoyo_alias_list_lock);
+> -	/***** EXCLUSIVE SECTION END *****/
+> +	/***** WRITER SECTION END *****/
+>  	kfree(new_entry);
+>  	return error;
+>  }
+> @@ -510,6 +518,7 @@ bool tomoyo_read_alias_policy(struct tom
+>  	struct list_head *pos;
+>  	bool done = true;
+>  
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_alias_list_lock);
+>  	list_for_each_cookie(pos, head->read_var2, &tomoyo_alias_list) {
+>  		struct tomoyo_alias_entry *ptr;
+> @@ -525,6 +534,7 @@ bool tomoyo_read_alias_policy(struct tom
+>  		}
+>  	}
+>  	up_read(&tomoyo_alias_list_lock);
+> +	/***** READER SECTION END *****/
+>  	return done;
+>  }
+>  
+> @@ -562,7 +572,7 @@ int tomoyo_delete_domain(char *domainnam
+>  
+>  	name.name = domainname;
+>  	tomoyo_fill_path_info(&name);
+> -	/***** EXCLUSIVE SECTION START *****/
+> +	/***** WRITER SECTION START *****/
+>  	down_write(&tomoyo_domain_list_lock);
+>  	/* Is there an active domain? */
+>  	list_for_each_entry(domain, &tomoyo_domain_list, list) {
+> @@ -576,7 +586,7 @@ int tomoyo_delete_domain(char *domainnam
+>  		break;
+>  	}
+>  	up_write(&tomoyo_domain_list_lock);
+> -	/***** EXCLUSIVE SECTION END *****/
+> +	/***** WRITER SECTION END *****/
+>  	return 0;
+>  }
+>  
+> @@ -602,7 +612,7 @@ struct tomoyo_domain_info *tomoyo_find_o
+>  	if (!saved_domainname)
+>  		return NULL;
+>  	new_domain = kmalloc(sizeof(*new_domain), GFP_KERNEL);
+> -	/***** EXCLUSIVE SECTION START *****/
+> +	/***** WRITER SECTION START *****/
+>  	down_write(&tomoyo_domain_list_lock);
+>  	domain = tomoyo_find_domain(domainname);
+>  	if (domain)
+> @@ -649,7 +659,7 @@ struct tomoyo_domain_info *tomoyo_find_o
+>  	}
+>   out:
+>  	up_write(&tomoyo_domain_list_lock);
+> -	/***** EXCLUSIVE SECTION END *****/
+> +	/***** WRITER SECTION END *****/
+>  	kfree(new_domain);
+>  	return domain;
+>  }
+> @@ -722,6 +732,7 @@ int tomoyo_find_next_domain(struct linux
+>  	if (tomoyo_pathcmp(&r, &s)) {
+>  		struct tomoyo_alias_entry *ptr;
+>  		/* Is this program allowed to be called via symbolic links? */
+> +		/***** READER SECTION START *****/
+>  		down_read(&tomoyo_alias_list_lock);
+>  		list_for_each_entry(ptr, &tomoyo_alias_list, list) {
+>  			if (ptr->is_deleted ||
+> @@ -735,6 +746,7 @@ int tomoyo_find_next_domain(struct linux
+>  			break;
+>  		}
+>  		up_read(&tomoyo_alias_list_lock);
+> +		/***** READER SECTION END *****/
+>  	}
+>  
+>  	/* Check execute permission. */
+> @@ -765,9 +777,11 @@ int tomoyo_find_next_domain(struct linux
+>  	}
+>  	if (domain || strlen(new_domain_name) >= TOMOYO_MAX_PATHNAME_LEN)
+>  		goto done;
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_domain_list_lock);
+>  	domain = tomoyo_find_domain(new_domain_name);
+>  	up_read(&tomoyo_domain_list_lock);
+> +	/***** READER SECTION END *****/
+>  	if (domain)
+>  		goto done;
+>  	if (is_enforce)
+> --- security-testing-2.6.git.orig/security/tomoyo/file.c
+> +++ security-testing-2.6.git/security/tomoyo/file.c
+> @@ -168,7 +168,7 @@ static int tomoyo_update_globally_readab
+>  		return -ENOMEM;
+>  	if (!is_delete)
+>  		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+> -	/***** EXCLUSIVE SECTION START *****/
+> +	/***** WRITER SECTION START *****/
+>  	down_write(&tomoyo_globally_readable_list_lock);
+>  	list_for_each_entry(ptr, &tomoyo_globally_readable_list, list) {
+>  		if (ptr->filename != saved_filename)
+> @@ -184,7 +184,7 @@ static int tomoyo_update_globally_readab
+>  		error = 0;
+>  	}
+>  	up_write(&tomoyo_globally_readable_list_lock);
+> -	/***** EXCLUSIVE SECTION END *****/
+> +	/***** WRITER SECTION END *****/
+>  	kfree(new_entry);
+>  	return error;
+>  }
+> @@ -201,6 +201,7 @@ static bool tomoyo_is_globally_readable_
+>  {
+>  	struct tomoyo_globally_readable_file_entry *ptr;
+>  	bool found = false;
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_globally_readable_list_lock);
+>  	list_for_each_entry(ptr, &tomoyo_globally_readable_list, list) {
+>  		if (!ptr->is_deleted &&
+> @@ -210,6 +211,7 @@ static bool tomoyo_is_globally_readable_
+>  		}
+>  	}
+>  	up_read(&tomoyo_globally_readable_list_lock);
+> +	/***** READER SECTION END *****/
+>  	return found;
+>  }
+>  
+> @@ -238,6 +240,7 @@ bool tomoyo_read_globally_readable_polic
+>  	struct list_head *pos;
+>  	bool done = true;
+>  
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_globally_readable_list_lock);
+>  	list_for_each_cookie(pos, head->read_var2,
+>  			     &tomoyo_globally_readable_list) {
+> @@ -254,6 +257,7 @@ bool tomoyo_read_globally_readable_polic
+>  		}
+>  	}
+>  	up_read(&tomoyo_globally_readable_list_lock);
+> +	/***** READER SECTION END *****/
+>  	return done;
+>  }
+>  
+> @@ -284,7 +288,7 @@ static int tomoyo_update_file_pattern_en
+>  		return -ENOMEM;
+>  	if (!is_delete)
+>  		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+> -	/***** EXCLUSIVE SECTION START *****/
+> +	/***** WRITER SECTION START *****/
+>  	down_write(&tomoyo_pattern_list_lock);
+>  	list_for_each_entry(ptr, &tomoyo_pattern_list, list) {
+>  		if (saved_pattern != ptr->pattern)
+> @@ -300,7 +304,7 @@ static int tomoyo_update_file_pattern_en
+>  		error = 0;
+>  	}
+>  	up_write(&tomoyo_pattern_list_lock);
+> -	/***** EXCLUSIVE SECTION END *****/
+> +	/***** WRITER SECTION END *****/
+>  	kfree(new_entry);
+>  	return error;
+>  }
+> @@ -318,6 +322,7 @@ tomoyo_get_file_pattern(const struct tom
+>  	struct tomoyo_pattern_entry *ptr;
+>  	const struct tomoyo_path_info *pattern = NULL;
+>  
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_pattern_list_lock);
+>  	list_for_each_entry(ptr, &tomoyo_pattern_list, list) {
+>  		if (ptr->is_deleted)
+> @@ -333,6 +338,7 @@ tomoyo_get_file_pattern(const struct tom
+>  		}
+>  	}
+>  	up_read(&tomoyo_pattern_list_lock);
+> +	/***** READER SECTION END *****/
+>  	if (pattern)
+>  		filename = pattern;
+>  	return filename;
+> @@ -363,6 +369,7 @@ bool tomoyo_read_file_pattern(struct tom
+>  	struct list_head *pos;
+>  	bool done = true;
+>  
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_pattern_list_lock);
+>  	list_for_each_cookie(pos, head->read_var2, &tomoyo_pattern_list) {
+>  		struct tomoyo_pattern_entry *ptr;
+> @@ -376,6 +383,7 @@ bool tomoyo_read_file_pattern(struct tom
+>  		}
+>  	}
+>  	up_read(&tomoyo_pattern_list_lock);
+> +	/***** READER SECTION END *****/
+>  	return done;
+>  }
+>  
+> @@ -406,7 +414,7 @@ static int tomoyo_update_no_rewrite_entr
+>  		return -ENOMEM;
+>  	if (!is_delete)
+>  		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+> -	/***** EXCLUSIVE SECTION START *****/
+> +	/***** WRITER SECTION START *****/
+>  	down_write(&tomoyo_no_rewrite_list_lock);
+>  	list_for_each_entry(ptr, &tomoyo_no_rewrite_list, list) {
+>  		if (ptr->pattern != saved_pattern)
+> @@ -422,7 +430,7 @@ static int tomoyo_update_no_rewrite_entr
+>  		error = 0;
+>  	}
+>  	up_write(&tomoyo_no_rewrite_list_lock);
+> -	/***** EXCLUSIVE SECTION END *****/
+> +	/***** WRITER SECTION END *****/
+>  	kfree(new_entry);
+>  	return error;
+>  }
+> @@ -440,6 +448,7 @@ static bool tomoyo_is_no_rewrite_file(co
+>  	struct tomoyo_no_rewrite_entry *ptr;
+>  	bool found = false;
+>  
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_no_rewrite_list_lock);
+>  	list_for_each_entry(ptr, &tomoyo_no_rewrite_list, list) {
+>  		if (ptr->is_deleted)
+> @@ -450,6 +459,7 @@ static bool tomoyo_is_no_rewrite_file(co
+>  		break;
+>  	}
+>  	up_read(&tomoyo_no_rewrite_list_lock);
+> +	/***** READER SECTION END *****/
+>  	return found;
+>  }
+>  
+> @@ -478,6 +488,7 @@ bool tomoyo_read_no_rewrite_policy(struc
+>  	struct list_head *pos;
+>  	bool done = true;
+>  
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_no_rewrite_list_lock);
+>  	list_for_each_cookie(pos, head->read_var2, &tomoyo_no_rewrite_list) {
+>  		struct tomoyo_no_rewrite_entry *ptr;
+> @@ -491,6 +502,7 @@ bool tomoyo_read_no_rewrite_policy(struc
+>  		}
+>  	}
+>  	up_read(&tomoyo_no_rewrite_list_lock);
+> +	/***** READER SECTION END *****/
+>  	return done;
+>  }
+>  
+> @@ -556,6 +568,7 @@ static int tomoyo_check_single_path_acl2
+>  	struct tomoyo_acl_info *ptr;
+>  	int error = -EPERM;
+>  
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_domain_acl_info_list_lock);
+>  	list_for_each_entry(ptr, &domain->acl_info_list, list) {
+>  		struct tomoyo_single_path_acl_record *acl;
+> @@ -576,6 +589,7 @@ static int tomoyo_check_single_path_acl2
+>  		break;
+>  	}
+>  	up_read(&tomoyo_domain_acl_info_list_lock);
+> +	/***** READER SECTION END *****/
+>  	return error;
+>  }
+>  
+> @@ -742,7 +756,7 @@ static int tomoyo_update_single_path_acl
+>  		return -ENOMEM;
+>  	if (!is_delete)
+>  		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+> -	/***** EXCLUSIVE SECTION START *****/
+> +	/***** WRITER SECTION START *****/
+>  	down_write(&tomoyo_domain_acl_info_list_lock);
+>  	if (is_delete)
+>  		goto delete;
+> @@ -799,7 +813,7 @@ static int tomoyo_update_single_path_acl
+>  	}
+>   out:
+>  	up_write(&tomoyo_domain_acl_info_list_lock);
+> -	/***** EXCLUSIVE SECTION END *****/
+> +	/***** WRITER SECTION END *****/
+>  	kfree(new_entry);
+>  	return error;
+>  }
+> @@ -838,7 +852,7 @@ static int tomoyo_update_double_path_acl
+>  		return -ENOMEM;
+>  	if (!is_delete)
+>  		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+> -	/***** EXCLUSIVE SECTION START *****/
+> +	/***** WRITER SECTION START *****/
+>  	down_write(&tomoyo_domain_acl_info_list_lock);
+>  	if (is_delete)
+>  		goto delete;
+> @@ -888,7 +902,7 @@ static int tomoyo_update_double_path_acl
+>  	}
+>   out:
+>  	up_write(&tomoyo_domain_acl_info_list_lock);
+> -	/***** EXCLUSIVE SECTION END *****/
+> +	/***** WRITER SECTION END *****/
+>  	kfree(new_entry);
+>  	return error;
+>  }
+> @@ -934,6 +948,7 @@ static int tomoyo_check_double_path_acl(
+>  
+>  	if (!tomoyo_check_flags(domain, TOMOYO_MAC_FOR_FILE))
+>  		return 0;
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_domain_acl_info_list_lock);
+>  	list_for_each_entry(ptr, &domain->acl_info_list, list) {
+>  		struct tomoyo_double_path_acl_record *acl;
+> @@ -951,6 +966,7 @@ static int tomoyo_check_double_path_acl(
+>  		break;
+>  	}
+>  	up_read(&tomoyo_domain_acl_info_list_lock);
+> +	/***** READER SECTION END *****/
+>  	return error;
+>  }
+>  
+> --- security-testing-2.6.git.orig/security/tomoyo/realpath.c
+> +++ security-testing-2.6.git/security/tomoyo/realpath.c
+> @@ -326,10 +326,12 @@ void __init tomoyo_realpath_init(void)
+>  	INIT_LIST_HEAD(&tomoyo_kernel_domain.acl_info_list);
+>  	tomoyo_kernel_domain.domainname = tomoyo_save_name(TOMOYO_ROOT_NAME);
+>  	list_add_tail(&tomoyo_kernel_domain.list, &tomoyo_domain_list);
+> +	/***** READER SECTION START *****/
+>  	down_read(&tomoyo_domain_list_lock);
+>  	if (tomoyo_find_domain(TOMOYO_ROOT_NAME) != &tomoyo_kernel_domain)
+>  		panic("Can't register tomoyo_kernel_domain");
+>  	up_read(&tomoyo_domain_list_lock);
+> +	/***** READER SECTION END *****/
+>  }
+>  
+>  /* Memory allocated for temporary purpose. */
