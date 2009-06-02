@@ -1,46 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZFBXJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZFBXNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbZFBXJq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 19:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbZFBXJj
+	id S1754059AbZFBXNZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 19:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZFBXNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 19:09:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52418 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752546AbZFBXJi (ORCPT
+	Tue, 2 Jun 2009 19:13:18 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:23674 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752274AbZFBXNS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 19:09:38 -0400
-Date: Tue, 2 Jun 2009 16:09:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Baruch Siach <baruch@tkos.co.il>
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux@arm.linux.org.uk,
-       baruch@tkos.co.il
-Subject: Re: [PATCH v3] gpio: driver for PrimeCell PL061 GPIO controller
-Message-Id: <20090602160902.046ccffa.akpm@linux-foundation.org>
-In-Reply-To: <1243975690-12073-1-git-send-email-baruch@tkos.co.il>
-References: <1243975690-12073-1-git-send-email-baruch@tkos.co.il>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 2 Jun 2009 19:13:18 -0400
+Message-ID: <4A25B1C8.7030708@caviumnetworks.com>
+Date: Tue, 02 Jun 2009 16:12:08 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 11/12] hw-breakpoints: ftrace plugin for kernel symbol
+ tracing using HW Breakpoint interfaces
+References: <1243982616-18212-1-git-send-email-fweisbec@gmail.com> <1243982616-18212-12-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1243982616-18212-12-git-send-email-fweisbec@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Jun 2009 23:12:08.0766 (UTC) FILETIME=[8D7775E0:01C9E3D7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue,  2 Jun 2009 23:48:10 +0300
-Baruch Siach <baruch@tkos.co.il> wrote:
+Frederic Weisbecker wrote:
+> From: K.Prasad <prasad@linux.vnet.ibm.com>
+> 
+> This patch adds an ftrace plugin to detect and profile memory access over kernel
+> variables. It uses HW Breakpoint interfaces to 'watch memory addresses.
+> 
+> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+>  kernel/trace/Kconfig          |   21 ++
+>  kernel/trace/Makefile         |    1 +
+>  kernel/trace/trace.h          |   23 ++
+>  kernel/trace/trace_ksym.c     |  525 +++++++++++++++++++++++++++++++++++++++++
+>  kernel/trace/trace_selftest.c |   53 ++++
+>  5 files changed, 623 insertions(+), 0 deletions(-)
+>  create mode 100644 kernel/trace/trace_ksym.c
+[...]
+> +	entry->ksym_hbp->info.name = ksymname;
+> +	entry->ksym_hbp->info.type = op;
+> +	entry->ksym_addr = entry->ksym_hbp->info.address = addr;
+> +#ifdef CONFIG_X86
+> +	entry->ksym_hbp->info.len = HW_BREAKPOINT_LEN_4;
+> +#endif
 
-> This is a driver for the ARM PrimeCell PL061 GPIO AMBA peripheral. The driver
-> is implemented using the gpiolib framework.
+What if the symbol referred to an object of size other than 4?  This 
+would clearly be incorrect in that case.
 
-x86_64 allmodconfig:
 
-drivers/gpio/pl061.c: In function 'pl061_probe':
-drivers/gpio/pl061.c:254: error: 'SZ_4K' undeclared (first use in this function)
-drivers/gpio/pl061.c:254: error: (Each undeclared identifier is reported only once
-drivers/gpio/pl061.c:254: error: for each function it appears in.)
-drivers/gpio/pl061.c:306: error: implicit declaration of function 'set_irq_flags'
-drivers/gpio/pl061.c:306: error: 'IRQF_VALID' undeclared (first use in this function)
+> +	entry->ksym_hbp->triggered = (void *)ksym_hbp_handler;
+> +
+> +	ret = register_kernel_hw_breakpoint(entry->ksym_hbp);
 
-I'll put a depends-on-ARM in there...
+I hate to sound like a broken record, but could some one explain to me 
+again why it is a good idea to design a new API that requires processor 
+specific #ifdefs to be sprinkled all around generic kernel code?
+
+Back in:
+http://lkml.org/lkml/2008/12/4/329
+and
+http://lkml.org/lkml/2009/5/21/189
+
+I raised doubts about this hw-breakpoint thing being generic and the 
+responses made think that the processor specific portions would be 
+isolated in the processor specific parts of the kernel.  I now see that 
+I was wrong.
+
+When we add sparc, MIPS, ppc...  Support it would be nice to not have to 
+add all our own #ifdefs to this, but instead have a generic interface 
+that will not need changes.
+
+David Daney
