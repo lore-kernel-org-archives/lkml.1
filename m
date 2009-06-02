@@ -1,99 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbZFBM5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510AbZFBNDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754564AbZFBM5U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 08:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZFBM5N
+	id S1754510AbZFBNDS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 09:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZFBNDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 08:57:13 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47928 "EHLO mx1.suse.de"
+	Tue, 2 Jun 2009 09:03:07 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34413 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752764AbZFBM5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 08:57:13 -0400
-Date: Tue, 2 Jun 2009 14:57:13 +0200
+	id S1751811AbZFBNDG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 09:03:06 -0400
+Date: Tue, 2 Jun 2009 15:03:06 +0200
 From: Nick Piggin <npiggin@suse.de>
 To: Andi Kleen <andi@firstfloor.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: hugh@veritas.com, riel@redhat.com, akpm@linux-foundation.org,
+       chris.mason@oracle.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com
 Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090602125713.GG1392@wotan.suse.de>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org>
+Message-ID: <20090602130306.GA6262@wotan.suse.de>
+References: <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090601120537.GF5018@wotan.suse.de> <20090601185147.GT1065@one.firstfloor.org> <20090602121031.GC1392@wotan.suse.de> <20090602123450.GF1065@one.firstfloor.org> <20090602123720.GF1392@wotan.suse.de> <20090602125538.GH1065@one.firstfloor.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090602124757.GG1065@one.firstfloor.org>
+In-Reply-To: <20090602125538.GH1065@one.firstfloor.org>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 02:47:57PM +0200, Andi Kleen wrote:
-> On Tue, Jun 02, 2009 at 02:00:42PM +0200, Nick Piggin wrote:
-> > not a big deal and just avoids duplicating code. I attached an
-> > (untested) patch.
+On Tue, Jun 02, 2009 at 02:55:38PM +0200, Andi Kleen wrote:
+> On Tue, Jun 02, 2009 at 02:37:20PM +0200, Nick Piggin wrote:
+> > Because I don't see any difference (see my previous patch). I
+> > still don't know what it is supposed to be doing differently.
+> > So if you reinvent your own that looks close enough to truncate
+> > to warrant a comment to say /* this is close to truncate but
+> > not quite */, then yes I insist that you say exactly why it is
+> > not quite like truncate ;)
 > 
-> Thanks. But the function in the patch is not doing the same what
-> the me_pagecache_clean/dirty are doing. For once there is no error
-> checking, as in the second try_to_release_page()
-> 
-> Then it doesn't do all the IO error and missing mapping handling.
+> I will just delete that comment because it apparently causes so 
+> much confusion.
 
-Obviously I don't mean just use that single call for the entire
-handler. You can set the EIO bit or whatever you like. The
-"error handling" you have there also seems strange. You could
-retain it, but the page is assured to be removed from pagecache.
-
- 
-> The page_mapped() check is useless because the pages are not 
-> mapped here etc.
-
-That's OK, it is a core part of the protocol to prevent
-truncated pages from being mapped, so I like it to be in
-that function.
-
-(you are also doing extraneous page_mapped tests in your handler,
-so surely your concern isn't from the perspective of this
-error handler code)
+And replace it with something that actually clears up the
+confusion.
 
 
-> We could probably call truncate_complete_page(), but then
-> we would also need to duplicate most of the checking outside
-> the function anyways and there wouldn't be any possibility
-> to share the clean/dirty variants. If you insist I can
-> do it, but I think it would be significantly worse code
-> than before and I'm reluctant to do that.
-
-I can write you the patch for that too if you like.
-
- 
-> I don't also really see what the big deal is of just
-> calling these few functions directly. After all we're not
-> truncating here and they're all already called from other files.
->
-> > > > No, it seems rather insane to do something like this here that no other
-> > > > code in the mm ever does.
+> > > > I'm suggesting that EIO is traditionally for when the data still
+> > > > dirty in pagecache and was not able to get back to backing
+> > > > store. Do you deny that?
 > > > 
-> > > Just because the rest of the VM doesn't do it doesn't mean it might make sense.
+> > > Yes. That is exactly the case when memory-failure triggers EIO
+> > > 
+> > > Memory error on a dirty file mapped page.
 > > 
-> > It is going to be possible to do it somehow surely, but it is insane
-> > to try to add such constraints to the VM to close a few small windows
+> > But it is no longer dirty, and the problem was not that the data
+> > was unable to be written back.
 > 
-> We don't know currently if they are small. If they are small I would
-> agree with you, but that needs numbers. That said fancy writeback handling
-> is currently not on my agenda.
-
-Yes, writeback pages are very limited, a tiny number at any time and
-the faction gets relatively smaller as total RAM size gets larger.
-
-
-> > if you already have other large ones.
+> Sorry I don't understand. What do you mean with "no longer dirty"
 > 
-> That's unclear too.
+> Of course it's still dirty, just has to be discarded because it's 
+> corrupted.
 
-You can't do much about most kernel pages, and dirty metadata pages
-are both going to cause big problems. User pagetable pages. Lots of
-stuff.
+The pagecache location is no longer dirty. Userspace only cares
+about pagecache locations and their contents, not the page that
+was once there and has now been taken out.
+
+ 
+> > > > And I think the application might try to handle the case of a
+> > > > page becoming corrupted differently. Do you deny that?
+> > > 
+> > > You mean a clean file-mapped page? In this case there is no EIO,
+> > > memory-failure just drops the page and it is reloaded.
+> > > 
+> > > If the page is dirty we trigger EIO which as you said above is the 
+> > > right reaction.
+> > 
+> > No I mean the difference between the case of dirty page unable to
+> > be written to backing sotre, and the case of dirty page becoming
+> > corrupted.
+> 
+> Nick, I have really a hard time following you here.
+> 
+> What exactly do you want? 
+> 
+> A new errno? Or something else? If yes what precisely?
+
+Yeah a new errno would be nice. Precisely one to say that the
+memory was corrupted.
+
+ 
+> I currently don't see any sane way to report this to the application
+> through write().  That is because adding a new errno for something
+> is incredibly hard and often impossible, and that's certainly
+> the case here.
+> 
+> The application can detect it if it maps the 
+> shared page and waits for a SIGBUS, but not through write().
+> 
+> But I doubt there will be really any apps that do anything differently
+> here anyways. A clever app could retry a few times if it still
+> has a copy of the data, but that might even make sense on normal
+> IO errors (e.g. on a SAN).
+
+I'm sure some of the ones that really care would.
+
+
+> > They would presumably exit or do some default thing, which I
+> > think would be fine.
+> 
+> No it's not fine if they would handle EIO. e.g. consider
+> a sophisticated database which likely has sophisticated
+> IO error mechanisms too (e.g. only abort the current commit)
+
+Umm, if it is a generic "this failed, we can abort" then why
+would not this be the default case. The issue is if it does
+something differnet specifically for EIO, and specifically
+assuming the pagecache is still valid and dirty.
