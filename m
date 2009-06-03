@@ -1,101 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbZFCLbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZFCLeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754329AbZFCLbY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 07:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbZFCLbR
+	id S1755881AbZFCLeh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 07:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753540AbZFCLe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 07:31:17 -0400
-Received: from smtprelay06.ispgateway.de ([80.67.31.40]:34365 "EHLO
-	smtprelay06.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753166AbZFCLbR (ORCPT
+	Wed, 3 Jun 2009 07:34:28 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:37117 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752464AbZFCLe2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 07:31:17 -0400
-References: <1240950704.3781.12.camel@maxim-laptop> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic> <cone.1242065107.695268.13534.1000@onepiie> <20090512060231.GB26286@liondog.tnic> <cone.1242669880.118150.4276.1000@deskpiie> <20090524192219.GA30285@liondog.tnic> <cone.1243865541.882421.4368.1000@deskpiie> <20090603073552.GA2671@liondog.tnic> <cone.1244016635.374757.16292.1000@arca> <9ea470500906030352x7d72f3c7s94b12701142a7f7a@mail.gmail.com>
-Message-ID: <cone.1244028557.77039.16292.1000@arca>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH] Acer Aspire One Fan Control
-Date: Wed, 03 Jun 2009 13:29:17 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="UTF-8"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-Df-Sender: 404094
+	Wed, 3 Jun 2009 07:34:28 -0400
+Message-ID: <4A265FBD.3080108@novell.com>
+Date: Wed, 03 Jun 2009 07:34:21 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+MIME-Version: 1.0
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com
+Subject: Re: [KVM-RFC PATCH 0/2] irqfd: use POLLHUP notification for close()
+References: <20090602151135.29746.91320.stgit@dev.haskins.net> <20090602160434.GA6827@redhat.com> <4A254FD7.5090302@novell.com> <20090602162021.GB6827@redhat.com> <4A255484.6060401@novell.com> <20090602165949.GD6827@redhat.com> <4A256431.2080101@novell.com> <20090603063956.GA8134@redhat.com>
+In-Reply-To: <20090603063956.GA8134@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig49573CFFCEED5084AB43BF0A"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig49573CFFCEED5084AB43BF0A
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Borislav Petkov writes:
-
-> Hi,
-> 
-> On Wed, Jun 3, 2009 at 10:10 AM, Peter Feuerer <peter@piie.net> wrote:
->>>> Hm.. I think it should be clear that the fan is turned off, as soon as
->>>> the temperature is below the fanoff temperature. In my opinion printing this
->>>> message would be a case for a "verbose==2" verbose mode :)
+Michael S. Tsirkin wrote:
+> On Tue, Jun 02, 2009 at 01:41:05PM -0400, Gregory Haskins wrote:
+>  =20
+>>> And having close not clean up the state unless you do an ioctl first =
+is
+>>> very messy IMO - I don't think you'll find any such examples in kerne=
+l.
 >>>
->>> My reasoning was that because this is called from sysfs and the user
->>> sees nothing happening even if he'd turned off the fan by calling
->>> .set_cur_state that it might be useful to tell him why.
+>>>  =20
+>>>      =20
+>> I agree, and that is why I am advocating this POLLHUP solution.  It wa=
+s
+>> only this other way to begin with because the technology didn't exist
+>> until Davide showed me the light.
 >>
->> But the user isn't allowed to change the fan state from userspace anymore.
-> 
-> Actually, Pavel wanted to have that functionality...
+>> Problem with your request is that I already looked into what is
+>> essentially a bi-directional reference problem (for a different reason=
+)
+>> when I started the POLLHUP series.  Its messy to do this in a way that=
 
-So you think it makes sense to allow it, too? For me it doesn't really 
-matter whether user is allowed to change the fan or not. I think controlling 
-the fan belongs into kernel, but if the user wants to have his own userspace 
-tool I'm fine with this too. So I'll enable userspace control of the fan 
-again, ok?
+>> doesn't negatively impact the fast path (introducing locking, etc) or
+>> make my head explode making sure it doesn't race.  Afaict, we would ne=
+ed
+>> to solve this problem to do what you are proposing (patches welcome).
+>>
+>> If this hybrid decoupled-deassign + unified-close is indeed an importa=
+nt
+>> feature set, I suggest that we still consider this POLLHUP series for
+>> inclusion, and then someone can re-introduce DEASSIGN support in the
+>> future as a CAP bit extension.  That way we at least get the desirable=
 
->> If you try to change the fan state from userspace you'll get the "changing
->> fan state is not allowed" message.
-> 
-> By the way, the system log is being polluted with that message after a
-> suspend/resume cycle:
-> 
-> [99027.020952] acerhdf: failed reading fan state, disabling kernelmode.
-> [99027.520172] ACPI: EC: missing confirmations, switch off interrupt mode.
-> [99047.672142] acerhdf: changing fan state is not allowed
-> [99057.696151] acerhdf: changing fan state is not allowed
-> [99067.720125] acerhdf: changing fan state is not allowed
-> [99077.744164] acerhdf: changing fan state is not allowed
-> [99087.796127] acerhdf: changing fan state is not allowed
-> [99097.820147] acerhdf: changing fan state is not allowed
-> [99107.844136] acerhdf: changing fan state is not allowed
-> [99117.908153] acerhdf: changing fan state is not allowed
-> [99127.932155] acerhdf: changing fan state is not allowed
-> [99137.123893] [drm:i915_get_vblank_counter] *ERROR* trying to get
-> vblank count for disabled pipe 0
-> [99137.956075] acerhdf: changing fan state is not allowed
-> [99147.980158] acerhdf: changing fan state is not allowed
-> [99158.004180] acerhdf: changing fan state is not allowed
-> [99168.028148] acerhdf: changing fan state is not allowed
-> [99170.207885] [drm:i915_get_vblank_counter] *ERROR* trying to get
-> vblank count for disabled pipe 0
-> [99178.052149] acerhdf: changing fan state is not allowed
-> [99188.076149] acerhdf: changing fan state is not allowed
-> [99198.100148] acerhdf: changing fan state is not allowed
-> [99208.124150] acerhdf: changing fan state is not allowed
-> [99210.558715] acerhdf: kernelmode ON
-> [99210.581161] acerhdf: changing fan state is not allowed
-> 
-> because the suspend/resume cycle is causing the EC error message
-> above. In that case, you shouldn't probably switch off kernel mode but
-> unregister the driver completely until the EC error is fixed (if ever)... Hmm...
+>> close() properties that we both seem in favor of, and get this advance=
+d
+>> use case when we need it (and can figure out the locking design).
+>>
+>>    =20
+>
+> FWIW, I took a look and yes, it is non-trivial.
+> I concur, we can always add the deassign ioctl later.
+>
+>
+>
+>  =20
 
-There's a bug in the algorithm which disables the kernelmode in case of 
-unexpected register value. → It doesn't stop polling.
+Sounds good, Michael.  Thanks!
 
-And I will re-add suspend / resume code to get rid of the resume problem.
+-Greg
 
-Thanks!
 
-best regards,
---peter
+--------------enig49573CFFCEED5084AB43BF0A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkomX8IACgkQlOSOBdgZUxnXKQCffOAJZLTSB6k8VMoOJnLWmw8s
+UHsAn3/AXzrHbW80oI/ha43+/GsJZpT2
+=IQIs
+-----END PGP SIGNATURE-----
+
+--------------enig49573CFFCEED5084AB43BF0A--
