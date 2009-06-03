@@ -1,181 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbZFCF3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730AbZFCFj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755548AbZFCF3o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 01:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbZFCF3f
+	id S1755730AbZFCFj3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 01:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbZFCFjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 01:29:35 -0400
-Received: from mga05.intel.com ([192.55.52.89]:10648 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751805AbZFCF3f (ORCPT
+	Wed, 3 Jun 2009 01:39:20 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:61379 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751693AbZFCFjT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 01:29:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,296,1241420400"; 
-   d="scan'208";a="695982475"
-Date: Wed, 3 Jun 2009 13:12:55 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH -tip] perf_counter/x86: Remove the IRQ (non-NMI) handling
-	bits
-Message-ID: <20090603051255.GA2791@ywang-moblin2.bj.intel.com>
+	Wed, 3 Jun 2009 01:39:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=QCrssEt3E1OttBgzlDHjUGaXOZ2eWrpLQTH6v8RObNm2YCFxjVvMZydr6wBNZoVl8L
+         QS8yvlj0ExuqGvgPaw5pUy4zAJwF8uKlQilNYl+ShHb0tEmbk9hUwaGo0rzRFCuNY/aK
+         wDt6qvcbWuoo0gvPq7+0R0ijwGFLGnbfBF6og=
+Date: Wed, 3 Jun 2009 07:39:16 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] ide-tape: change IDE_AFLAG_IGNORE_DSC
+	non-atomically
+Message-ID: <20090603053916.GA3577@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1243926308-32385-1-git-send-email-petkovbb@gmail.com> <200906021218.33787.bzolnier@gmail.com> <9ea470500906020608o14f8bc8dwaedabff70c1cb707@mail.gmail.com> <200906021517.53027.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <200906021517.53027.bzolnier@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the IRQ (non-NMI) handling bits as NMI will be used always.
+Hi,
 
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+> > > Are you seeing a real problem with gcc here?  No sane compiler should need
+> > > a barrier() here (we would probably need zillions of them in kernel if it
+> > > really does).
+> > 
+> > No, this is just a precaution. The asm I checked looked fine but since
+> > the flag is set and right afterwards checked, it will be bad if this
+> > somehow got reordered. I actually haven't checked whether anything like
+> > that would be possible, at all.
+> 
+> Please remove it then.
 
 ---
- include/asm/entry_arch.h  |    1 -
- include/asm/hw_irq.h      |    1 -
- include/asm/irq_vectors.h |    5 -----
- kernel/cpu/perf_counter.c |   21 ++++++---------------
- kernel/entry_64.S         |    2 --
- kernel/irqinit.c          |    1 -
- 6 files changed, 6 insertions(+), 25 deletions(-)
 
-diff --git a/arch/x86/include/asm/entry_arch.h b/arch/x86/include/asm/entry_arch.h
-index 794bb12..89c59b2 100644
---- a/arch/x86/include/asm/entry_arch.h
-+++ b/arch/x86/include/asm/entry_arch.h
-@@ -49,7 +49,6 @@ BUILD_INTERRUPT(error_interrupt,ERROR_APIC_VECTOR)
- BUILD_INTERRUPT(spurious_interrupt,SPURIOUS_APIC_VECTOR)
+From: Borislav Petkov <petkovbb@gmail.com>
+Date: Mon, 1 Jun 2009 13:43:49 +0200
+Subject: [PATCH 1/2] ide-tape: change IDE_AFLAG_IGNORE_DSC non-atomically
+
+There are two sites where the flag is being changed: ide_retry_pc
+and idetape_do_request. Both codepaths are protected by hwif->busy
+(ide_lock_port) and therefore we shouldn't need the atomic accesses.
+
+Spotted-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+---
+ drivers/ide/ide-atapi.c |    2 +-
+ drivers/ide/ide-tape.c  |   12 +++++++-----
+ 2 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
+index afe5a43..fbcb851 100644
+--- a/drivers/ide/ide-atapi.c
++++ b/drivers/ide/ide-atapi.c
+@@ -258,7 +258,7 @@ void ide_retry_pc(ide_drive_t *drive)
+ 	pc->req_xfer = sense_rq->data_len;
  
- #ifdef CONFIG_PERF_COUNTERS
--BUILD_INTERRUPT(perf_counter_interrupt, LOCAL_PERF_VECTOR)
- BUILD_INTERRUPT(perf_pending_interrupt, LOCAL_PENDING_VECTOR)
- #endif
+ 	if (drive->media == ide_tape)
+-		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
++		drive->atapi_flags |= IDE_AFLAG_IGNORE_DSC;
  
-diff --git a/arch/x86/include/asm/hw_irq.h b/arch/x86/include/asm/hw_irq.h
-index d2b24a3..6df45f6 100644
---- a/arch/x86/include/asm/hw_irq.h
-+++ b/arch/x86/include/asm/hw_irq.h
-@@ -29,7 +29,6 @@
- extern void apic_timer_interrupt(void);
- extern void generic_interrupt(void);
- extern void error_interrupt(void);
--extern void perf_counter_interrupt(void);
- extern void perf_pending_interrupt(void);
+ 	if (ide_queue_sense_rq(drive, pc))
+ 		ide_complete_rq(drive, -EIO, blk_rq_bytes(drive->hwif->rq));
+diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+index 203bbea..f1d3c7b 100644
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -656,15 +656,15 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
  
- extern void spurious_interrupt(void);
-diff --git a/arch/x86/include/asm/irq_vectors.h b/arch/x86/include/asm/irq_vectors.h
-index e006719..3c2de12 100644
---- a/arch/x86/include/asm/irq_vectors.h
-+++ b/arch/x86/include/asm/irq_vectors.h
-@@ -108,11 +108,6 @@
- #define LOCAL_TIMER_VECTOR		0xef
+ 	if ((drive->dev_flags & IDE_DFLAG_DSC_OVERLAP) == 0 &&
+ 	    (rq->cmd[13] & REQ_IDETAPE_PC2) == 0)
+-		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
++		drive->atapi_flags |= IDE_AFLAG_IGNORE_DSC;
  
- /*
-- * Performance monitoring interrupt vector:
-- */
--#define LOCAL_PERF_VECTOR		0xee
--
--/*
-  * Generic system vector for platform specific use
-  */
- #define GENERIC_INTERRUPT_VECTOR	0xed
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index e16e8c1..12cc05e 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -40,7 +40,7 @@ struct cpu_hw_counters {
- struct x86_pmu {
- 	const char	*name;
- 	int		version;
--	int		(*handle_irq)(struct pt_regs *, int);
-+	int		(*handle_irq)(struct pt_regs *);
- 	void		(*disable_all)(void);
- 	void		(*enable_all)(void);
- 	void		(*enable)(struct hw_perf_counter *, int);
-@@ -755,7 +755,7 @@ static void intel_pmu_reset(void)
-  * This handler is triggered by the local APIC, so the APIC IRQ handling
-  * rules apply:
-  */
--static int intel_pmu_handle_irq(struct pt_regs *regs, int nmi)
-+static int intel_pmu_handle_irq(struct pt_regs *regs)
- {
- 	struct cpu_hw_counters *cpuc;
- 	struct cpu_hw_counters;
-@@ -794,7 +794,7 @@ again:
- 		if (!intel_pmu_save_and_restart(counter))
- 			continue;
- 
--		if (perf_counter_overflow(counter, nmi, regs, 0))
-+		if (perf_counter_overflow(counter, 1, regs, 0))
- 			intel_pmu_disable_counter(&counter->hw, bit);
+ 	if (drive->dev_flags & IDE_DFLAG_POST_RESET) {
+-		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
++		drive->atapi_flags |= IDE_AFLAG_IGNORE_DSC;
+ 		drive->dev_flags &= ~IDE_DFLAG_POST_RESET;
  	}
  
-@@ -812,7 +812,7 @@ again:
- 	return 1;
- }
- 
--static int amd_pmu_handle_irq(struct pt_regs *regs, int nmi)
-+static int amd_pmu_handle_irq(struct pt_regs *regs)
- {
- 	int cpu, idx, handled = 0;
- 	struct cpu_hw_counters *cpuc;
-@@ -840,22 +840,13 @@ static int amd_pmu_handle_irq(struct pt_regs *regs, int nmi)
- 		if (!x86_perf_counter_set_period(counter, hwc, idx))
- 			continue;
- 
--		if (perf_counter_overflow(counter, nmi, regs, 0))
-+		if (perf_counter_overflow(counter, 1, regs, 0))
- 			amd_pmu_disable_counter(hwc, idx);
- 	}
- 
- 	return handled;
- }
- 
--void smp_perf_counter_interrupt(struct pt_regs *regs)
--{
--	irq_enter();
--	apic_write(APIC_LVTPC, LOCAL_PERF_VECTOR);
--	ack_APIC_irq();
--	x86_pmu.handle_irq(regs, 0);
--	irq_exit();
--}
--
- void smp_perf_pending_interrupt(struct pt_regs *regs)
- {
- 	irq_enter();
-@@ -910,7 +901,7 @@ perf_counter_nmi_handler(struct notifier_block *self,
- 	 * If the first NMI handles both, the latter will be empty and daze
- 	 * the CPU.
- 	 */
--	x86_pmu.handle_irq(regs, 1);
-+	x86_pmu.handle_irq(regs);
- 
- 	return NOTIFY_STOP;
- }
-diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
-index 1008511..fbe821d 100644
---- a/arch/x86/kernel/entry_64.S
-+++ b/arch/x86/kernel/entry_64.S
-@@ -1013,8 +1013,6 @@ apicinterrupt SPURIOUS_APIC_VECTOR \
- 	spurious_interrupt smp_spurious_interrupt
- 
- #ifdef CONFIG_PERF_COUNTERS
--apicinterrupt LOCAL_PERF_VECTOR \
--	perf_counter_interrupt smp_perf_counter_interrupt
- apicinterrupt LOCAL_PENDING_VECTOR \
- 	perf_pending_interrupt smp_perf_pending_interrupt
- #endif
-diff --git a/arch/x86/kernel/irqinit.c b/arch/x86/kernel/irqinit.c
-index aab3d27..343ec2e 100644
---- a/arch/x86/kernel/irqinit.c
-+++ b/arch/x86/kernel/irqinit.c
-@@ -201,7 +201,6 @@ static void __init apic_intr_init(void)
- 
- 	/* Performance monitoring interrupts: */
- # ifdef CONFIG_PERF_COUNTERS
--	alloc_intr_gate(LOCAL_PERF_VECTOR, perf_counter_interrupt);
- 	alloc_intr_gate(LOCAL_PENDING_VECTOR, perf_pending_interrupt);
- # endif
- 
+-	if (!test_and_clear_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags) &&
+-	    (stat & ATA_DSC) == 0) {
++	if (!(drive->atapi_flags & IDE_AFLAG_IGNORE_DSC) &&
++	    !(stat & ATA_DSC)) {
+ 		if (postponed_rq == NULL) {
+ 			tape->dsc_polling_start = jiffies;
+ 			tape->dsc_poll_freq = tape->best_dsc_rw_freq;
+@@ -684,7 +684,9 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
+ 			tape->dsc_poll_freq = IDETAPE_DSC_MA_SLOW;
+ 		idetape_postpone_request(drive);
+ 		return ide_stopped;
+-	}
++	} else
++		drive->atapi_flags &= ~IDE_AFLAG_IGNORE_DSC;
++
+ 	if (rq->cmd[13] & REQ_IDETAPE_READ) {
+ 		pc = &tape->queued_pc;
+ 		ide_tape_create_rw_cmd(tape, pc, rq, READ_6);
+-- 
+1.6.3.1
+
+
+-- 
+Regards/Gruss,
+    Boris.
