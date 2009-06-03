@@ -1,59 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZFCO2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757812AbZFCO3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757065AbZFCO2a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 10:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbZFCO2X
+	id S1757812AbZFCO3a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 10:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbZFCO3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 10:28:23 -0400
-Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:45412 "EHLO
-	TX2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753054AbZFCO2W (ORCPT
+	Wed, 3 Jun 2009 10:29:23 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:46993 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751826AbZFCO3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 10:28:22 -0400
-X-SpamScore: -3
-X-BigFish: VPS-3(zz4015Lzz1202hzzz32i1a3h6bh17ch)
-X-FB-SS: 13,
-X-WSS-ID: 0KKO2UY-01-PX8-01
-Date: Wed, 3 Jun 2009 16:27:27 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org, Bert Wesarg <bert.wesarg@googlemail.com>
-Subject: [PATCH 0/5 v3] x86: adapt CPU topology detection for AMD
-	Magny-Cours
-Message-ID: <20090603142727.GI5736@alberich.amd.com>
+	Wed, 3 Jun 2009 10:29:22 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       OF-General <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, OF-EWG <ewg@lists.openfabrics.org>
+Subject: [PATCH] IB/ehca: Remove superfluous bitmasks from QP control block
+User-Agent: KMail/1.9.1
+Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Alexander Schmidt <alexschm@de.ibm.com>
+References: <200806061835.43802.fenkes@de.ibm.com> <48499C11.7030504@gmail.com>
+In-Reply-To: <48499C11.7030504@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 03 Jun 2009 14:28:13.0478 (UTC) FILETIME=[86FCEC60:01C9E457]
+X-Length: 2361
+Date: Wed, 3 Jun 2009 16:28:17 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906031628.19556.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changes to previous patch set:
-- remove MULTI_NODE_CPU config option
-- provide defaults for cpu_node topology information
-- add patch to fix AMD mcheck code
+All the fields in the control block are nicely right-aligned, so no masking
+is necessary.
 
-Current patch set contains 5 patches:
-- patch 1 adapts common code to show cpu_node_id,
-  cpu_node_siblings and cpu_node_siblings_list in
-  /sys/devices/system/cpu/cpu*/topology
-- patch 2 prepares arch/x86 to provide cpu_node information
-- patch 3 sets up cpu_node information for AMD Magny-Cours CPU
-- patch 4 fixes L3 cache information for Magny-Cours
-- patch 5 fixes mcheck code for Magny-Cours
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
+ drivers/infiniband/hw/ehca/ehca_classes_pSeries.h |   28 ---------------------
+ drivers/infiniband/hw/ehca/ehca_qp.c              |   18 +++---------
+ 2 files changed, 5 insertions(+), 41 deletions(-)
 
-Patches are against tip/master.
-Please apply.
-
-
-Thanks,
-
-Andreas
-
-PS: See http://lkml.org/lkml/2009/5/29/263 for previous patch
-    submission.
+diff --git a/drivers/infiniband/hw/ehca/ehca_classes_pSeries.h b/drivers/infiniband/hw/ehca/ehca_classes_pSeries.h
+index 1798e64..689c357 100644
+--- a/drivers/infiniband/hw/ehca/ehca_classes_pSeries.h
++++ b/drivers/infiniband/hw/ehca/ehca_classes_pSeries.h
+@@ -165,7 +165,6 @@ struct hcp_modify_qp_control_block {
+ #define MQPCB_MASK_ALT_P_KEY_IDX                EHCA_BMASK_IBM( 7,  7)
+ #define MQPCB_MASK_RDMA_ATOMIC_CTRL             EHCA_BMASK_IBM( 8,  8)
+ #define MQPCB_MASK_QP_STATE                     EHCA_BMASK_IBM( 9,  9)
+-#define MQPCB_QP_STATE                          EHCA_BMASK_IBM(24, 31)
+ #define MQPCB_MASK_RDMA_NR_ATOMIC_RESP_RES      EHCA_BMASK_IBM(11, 11)
+ #define MQPCB_MASK_PATH_MIGRATION_STATE         EHCA_BMASK_IBM(12, 12)
+ #define MQPCB_MASK_RDMA_ATOMIC_OUTST_DEST_QP    EHCA_BMASK_IBM(13, 13)
+@@ -176,60 +175,33 @@ struct hcp_modify_qp_control_block {
+ #define MQPCB_MASK_RETRY_COUNT                  EHCA_BMASK_IBM(18, 18)
+ #define MQPCB_MASK_TIMEOUT                      EHCA_BMASK_IBM(19, 19)
+ #define MQPCB_MASK_PATH_MTU                     EHCA_BMASK_IBM(20, 20)
+-#define MQPCB_PATH_MTU                          EHCA_BMASK_IBM(24, 31)
+ #define MQPCB_MASK_MAX_STATIC_RATE              EHCA_BMASK_IBM(21, 21)
+-#define MQPCB_MAX_STATIC_RATE                   EHCA_BMASK_IBM(24, 31)
+ #define MQPCB_MASK_DLID                         EHCA_BMASK_IBM(22, 22)
+-#define MQPCB_DLID                              EHCA_BMASK_IBM(16, 31)
+ #define MQPCB_MASK_RNR_RETRY_COUNT              EHCA_BMASK_IBM(23, 23)
+-#define MQPCB_RNR_RETRY_COUNT                   EHCA_BMASK_IBM(29, 31)
+ #define MQPCB_MASK_SOURCE_PATH_BITS             EHCA_BMASK_IBM(24, 24)
+-#define MQPCB_SOURCE_PATH_BITS                  EHCA_BMASK_IBM(25, 31)
+ #define MQPCB_MASK_TRAFFIC_CLASS                EHCA_BMASK_IBM(25, 25)
+-#define MQPCB_TRAFFIC_CLASS                     EHCA_BMASK_IBM(24, 31)
+ #define MQPCB_MASK_HOP_LIMIT                    EHCA_BMASK_IBM(26, 26)
+-#define MQPCB_HOP_LIMIT                         EHCA_BMASK_IBM(24, 31)
+ #define MQPCB_MASK_SOURCE_GID_IDX               EHCA_BMASK_IBM(27, 27)
+-#define MQPCB_SOURCE_GID_IDX                    EHCA_BMASK_IBM(24, 31)
+ #define MQPCB_MASK_FLOW_LABEL                   EHCA_BMASK_IBM(28, 28)
+-#define MQPCB_FLOW_LABEL                        EHCA_BMASK_IBM(12, 31)
+ #define MQPCB_MASK_DEST_GID                     EHCA_BMASK_IBM(30, 30)
+ #define MQPCB_MASK_SERVICE_LEVEL_AL             EHCA_BMASK_IBM(31, 31)
+-#define MQPCB_SERVICE_LEVEL_AL                  EHCA_BMASK_IBM(28, 31)
+ #define MQPCB_MASK_SEND_GRH_FLAG_AL             EHCA_BMASK_IBM(32, 32)
+-#define MQPCB_SEND_GRH_FLAG_AL                  EHCA_BMASK_IBM(31, 31)
+ #define MQPCB_MASK_RETRY_COUNT_AL               EHCA_BMASK_IBM(33, 33)
+-#define MQPCB_RETRY_COUNT_AL                    EHCA_BMASK_IBM(29, 31)
+ #define MQPCB_MASK_TIMEOUT_AL                   EHCA_BMASK_IBM(34, 34)
+-#define MQPCB_TIMEOUT_AL                        EHCA_BMASK_IBM(27, 31)
+ #define MQPCB_MASK_MAX_STATIC_RATE_AL           EHCA_BMASK_IBM(35, 35)
+-#define MQPCB_MAX_STATIC_RATE_AL                EHCA_BMASK_IBM(24, 31)
+ #define MQPCB_MASK_DLID_AL                      EHCA_BMASK_IBM(36, 36)
+-#define MQPCB_DLID_AL                           EHCA_BMASK_IBM(16, 31)
+ #define MQPCB_MASK_RNR_RETRY_COUNT_AL           EHCA_BMASK_IBM(37, 37)
+-#define MQPCB_RNR_RETRY_COUNT_AL                EHCA_BMASK_IBM(29, 31)
+ #define MQPCB_MASK_SOURCE_PATH_BITS_AL          EHCA_BMASK_IBM(38, 38)
+-#define MQPCB_SOURCE_PATH_BITS_AL               EHCA_BMASK_IBM(25, 31)
+ #define MQPCB_MASK_TRAFFIC_CLASS_AL             EHCA_BMASK_IBM(39, 39)
+-#define MQPCB_TRAFFIC_CLASS_AL                  EHCA_BMASK_IBM(24, 31)
+ #define MQPCB_MASK_HOP_LIMIT_AL                 EHCA_BMASK_IBM(40, 40)
+-#define MQPCB_HOP_LIMIT_AL                      EHCA_BMASK_IBM(24, 31)
+ #define MQPCB_MASK_SOURCE_GID_IDX_AL            EHCA_BMASK_IBM(41, 41)
+-#define MQPCB_SOURCE_GID_IDX_AL                 EHCA_BMASK_IBM(24, 31)
+ #define MQPCB_MASK_FLOW_LABEL_AL                EHCA_BMASK_IBM(42, 42)
+-#define MQPCB_FLOW_LABEL_AL                     EHCA_BMASK_IBM(12, 31)
+ #define MQPCB_MASK_DEST_GID_AL                  EHCA_BMASK_IBM(44, 44)
+ #define MQPCB_MASK_MAX_NR_OUTST_SEND_WR         EHCA_BMASK_IBM(45, 45)
+-#define MQPCB_MAX_NR_OUTST_SEND_WR              EHCA_BMASK_IBM(16, 31)
+ #define MQPCB_MASK_MAX_NR_OUTST_RECV_WR         EHCA_BMASK_IBM(46, 46)
+-#define MQPCB_MAX_NR_OUTST_RECV_WR              EHCA_BMASK_IBM(16, 31)
+ #define MQPCB_MASK_DISABLE_ETE_CREDIT_CHECK     EHCA_BMASK_IBM(47, 47)
+-#define MQPCB_DISABLE_ETE_CREDIT_CHECK          EHCA_BMASK_IBM(31, 31)
+-#define MQPCB_QP_NUMBER                         EHCA_BMASK_IBM( 8, 31)
+ #define MQPCB_MASK_QP_ENABLE                    EHCA_BMASK_IBM(48, 48)
+-#define MQPCB_QP_ENABLE                         EHCA_BMASK_IBM(31, 31)
+ #define MQPCB_MASK_CURR_SRQ_LIMIT               EHCA_BMASK_IBM(49, 49)
+-#define MQPCB_CURR_SRQ_LIMIT                    EHCA_BMASK_IBM(16, 31)
+ #define MQPCB_MASK_QP_AFF_ASYN_EV_LOG_REG       EHCA_BMASK_IBM(50, 50)
+ #define MQPCB_MASK_SHARED_RQ_HNDL               EHCA_BMASK_IBM(51, 51)
+ 
+diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
+index ead4e71..0338f1f 100644
+--- a/drivers/infiniband/hw/ehca/ehca_qp.c
++++ b/drivers/infiniband/hw/ehca/ehca_qp.c
+@@ -1962,19 +1962,13 @@ int ehca_query_qp(struct ib_qp *qp,
+ 	qp_attr->cap.max_inline_data = my_qp->sq_max_inline_data_size;
+ 	qp_attr->dest_qp_num = qpcb->dest_qp_nr;
+ 
+-	qp_attr->pkey_index =
+-		EHCA_BMASK_GET(MQPCB_PRIM_P_KEY_IDX, qpcb->prim_p_key_idx);
+-
+-	qp_attr->port_num =
+-		EHCA_BMASK_GET(MQPCB_PRIM_PHYS_PORT, qpcb->prim_phys_port);
+-
++	qp_attr->pkey_index = qpcb->prim_p_key_idx;
++	qp_attr->port_num = qpcb->prim_phys_port;
+ 	qp_attr->timeout = qpcb->timeout;
+ 	qp_attr->retry_cnt = qpcb->retry_count;
+ 	qp_attr->rnr_retry = qpcb->rnr_retry_count;
+ 
+-	qp_attr->alt_pkey_index =
+-		EHCA_BMASK_GET(MQPCB_PRIM_P_KEY_IDX, qpcb->alt_p_key_idx);
+-
++	qp_attr->alt_pkey_index = qpcb->alt_p_key_idx;
+ 	qp_attr->alt_port_num = qpcb->alt_phys_port;
+ 	qp_attr->alt_timeout = qpcb->timeout_al;
+ 
+@@ -2061,8 +2055,7 @@ int ehca_modify_srq(struct ib_srq *ibsrq, struct ib_srq_attr *attr,
+ 		update_mask |=
+ 			EHCA_BMASK_SET(MQPCB_MASK_CURR_SRQ_LIMIT, 1)
+ 			| EHCA_BMASK_SET(MQPCB_MASK_QP_AFF_ASYN_EV_LOG_REG, 1);
+-		mqpcb->curr_srq_limit =
+-			EHCA_BMASK_SET(MQPCB_CURR_SRQ_LIMIT, attr->srq_limit);
++		mqpcb->curr_srq_limit = attr->srq_limit;
+ 		mqpcb->qp_aff_asyn_ev_log_reg =
+ 			EHCA_BMASK_SET(QPX_AAELOG_RESET_SRQ_LIMIT, 1);
+ 	}
+@@ -2125,8 +2118,7 @@ int ehca_query_srq(struct ib_srq *srq, struct ib_srq_attr *srq_attr)
+ 
+ 	srq_attr->max_wr = qpcb->max_nr_outst_recv_wr - 1;
+ 	srq_attr->max_sge = 3;
+-	srq_attr->srq_limit = EHCA_BMASK_GET(
+-		MQPCB_CURR_SRQ_LIMIT, qpcb->curr_srq_limit);
++	srq_attr->srq_limit = qpcb->curr_srq_limit;
+ 
+ 	if (ehca_debug_level >= 2)
+ 		ehca_dmp(qpcb, 4*70, "qp_num=%x", my_qp->real_qp_num);
+-- 
+1.5.5
 
 
