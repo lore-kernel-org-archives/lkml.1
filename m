@@ -1,96 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbZFCPKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759152AbZFCPKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757244AbZFCPKO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 11:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbZFCPKD
+	id S1759152AbZFCPKs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 11:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbZFCPKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 11:10:03 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:64692 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753587AbZFCPKB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 11:10:01 -0400
-X-Greylist: delayed 1902 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Jun 2009 11:10:00 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=S1KItvE/rU8u0/Xb054zofyCaQqKNfpaKk9CYdTQ2U1yubz14SgQZ5uwEl4clIT30N
-         ibj5XEF4mF8CwRFsfVx2pfiLk63Z8gurxPnXuwjpXePgUmDQfoCtSdAdlA0Jvy51+iwL
-         dsDDIZ4je6ZRHmM1ok4nHiaXYLJwmDz6BEJlE=
+	Wed, 3 Jun 2009 11:10:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56933 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755185AbZFCPKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 11:10:40 -0400
+Date: Wed, 3 Jun 2009 16:45:52 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: akpm@linux-foundation.org
+Cc: hugh@veritas.com, linux-kernel@vger.kernel.org,
+       Izik Eidus <ieidus@redhat.com>, nickpiggin@yahoo.com.au,
+       chrisw@redhat.com, linux-mm@kvack.org, riel@redhat.com
+Subject: [PATCH] ksm: fix rmap_item use after free
+Message-ID: <20090603144552.GB30426@random.random>
 MIME-Version: 1.0
-In-Reply-To: <1243399356.2263.46.camel@brutus>
-References: <1243399356.2263.46.camel@brutus>
-Date: Wed, 3 Jun 2009 16:38:19 +0200
-X-Google-Sender-Auth: 68dd681b863d2a61
-Message-ID: <10f740e80906030738x3b42de18n189367b28a730c56@mail.gmail.com>
-Subject: Re: [PATCH v3] MFD: PCAP driver
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Daniel Ribeiro <drwyrm@gmail.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Harald Welte <laforge@gnumonks.org>,
-       Philipp Zabel <philipp.zabel@gmail.com>,
-       openezx-devel <openezx-devel@lists.openezx.org>,
-       linux-next@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 06:42, Daniel Ribeiro <drwyrm@gmail.com> wrote:
-> --- a/drivers/mfd/Kconfig
-> +++ b/drivers/mfd/Kconfig
-> @@ -241,6 +241,13 @@ config PCF50633_GPIO
->         Say yes here if you want to include support GPIO for pins on
->         the PCF50633 chip.
->
-> +config EZX_PCAP
-> +       bool "PCAP Support"
-> +       depends on SPI_MASTER
+From: Andrea Arcangeli <aarcange@redhat.com>
 
-It also has to depend on GENERIC_HARDIRQS, as it needs set_irq_type():
+This avoid crashing with slab debugging enabled by removing a window
+for memory corruption if freed slab entries are reused before we read
+the next pointer. Against mmotm.
 
-> +       set_irq_type(spi->irq, IRQ_TYPE_EDGE_RISING);
+Signed-off-by: Andrea Arcangeli <aarcange@redhat.com>
+---
 
-Cfr. the m68k allmodconfig build failure on linux-next
-http://kisskb.ellerman.id.au/kisskb/buildresult/595604/:
+diff --git a/mm/ksm.c b/mm/ksm.c
+index 74d921b..f060e87 100644
+--- a/mm/ksm.c
++++ b/mm/ksm.c
+@@ -892,7 +892,7 @@ static struct rmap_item *stable_tree_search(struct page *page,
+ {
+ 	struct rb_node *node = root_stable_tree.rb_node;
+ 	struct tree_item *tree_item;
+-	struct rmap_item *found_rmap_item;
++	struct rmap_item *found_rmap_item, *next_rmap_item;
+ 
+ 	while (node) {
+ 		int ret;
+@@ -907,9 +907,11 @@ static struct rmap_item *stable_tree_search(struct page *page,
+ 			      found_rmap_item->address == rmap_item->address)) {
+ 				if (!is_zapped_item(found_rmap_item, page2))
+ 					break;
++				next_rmap_item = found_rmap_item->next;
+ 				remove_rmap_item_from_tree(found_rmap_item);
+-			}
+-			found_rmap_item = found_rmap_item->next;
++				found_rmap_item = next_rmap_item;
++			} else
++				found_rmap_item = found_rmap_item->next;
+ 		}
+ 		if (!found_rmap_item)
+ 			goto out_didnt_find;
+@@ -959,7 +961,7 @@ static int stable_tree_insert(struct page *page,
+ 
+ 	while (*new) {
+ 		int ret;
+-		struct rmap_item *insert_rmap_item;
++		struct rmap_item *insert_rmap_item, *next_rmap_item;
+ 
+ 		tree_item = rb_entry(*new, struct tree_item, node);
+ 		BUG_ON(!tree_item);
+@@ -973,9 +975,11 @@ static int stable_tree_insert(struct page *page,
+ 			     insert_rmap_item->address == rmap_item->address)) {
+ 				if (!is_zapped_item(insert_rmap_item, page2))
+ 					break;
++				next_rmap_item = insert_rmap_item->next;
+ 				remove_rmap_item_from_tree(insert_rmap_item);
+-			}
+-			insert_rmap_item = insert_rmap_item->next;
++				insert_rmap_item = next_rmap_item;
++			} else
++				insert_rmap_item = insert_rmap_item->next;
+ 		}
+ 		if (!insert_rmap_item)
+ 			return 1;
 
-drivers/mfd/ezx-pcap.c:123: error: implicit declaration of function
-'get_irq_chip_data'
-drivers/mfd/ezx-pcap.c:179: error: implicit declaration of function
-'note_interrupt'
-drivers/mfd/ezx-pcap.c:189: error: implicit declaration of function
-'get_irq_data'
-drivers/mfd/ezx-pcap.c:370: error: implicit declaration of function
-'set_irq_chip_and_handler'
-drivers/mfd/ezx-pcap.c:426: error: 'handle_simple_irq' undeclared
-(first use in this function)
-drivers/mfd/ezx-pcap.c:426: error: (Each undeclared identifier is
-reported only once
-drivers/mfd/ezx-pcap.c:426: error: for each function it appears in.)
-drivers/mfd/ezx-pcap.c:427: error: implicit declaration of function
-'set_irq_chip_data'
-drivers/mfd/ezx-pcap.c:431: error: implicit declaration of function
-'set_irq_noprobe'
-drivers/mfd/ezx-pcap.c:440: error: implicit declaration of function
-'set_irq_type'
-drivers/mfd/ezx-pcap.c:441: error: implicit declaration of function
-'set_irq_data'
-drivers/mfd/ezx-pcap.c:442: error: implicit declaration of function
-'set_irq_chained_handler'
-drivers/mfd/ezx-pcap.c:443: error: implicit declaration of function
-'set_irq_wake'
 
-Gr{oetje,eeting}s,
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
