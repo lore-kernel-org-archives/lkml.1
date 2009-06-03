@@ -1,613 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756364AbZFCUS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755625AbZFCUVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756364AbZFCUS2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 16:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbZFCUSA
+	id S1755625AbZFCUVZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 16:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753294AbZFCUVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 16:18:00 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:34540 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753621AbZFCUR4 (ORCPT
+	Wed, 3 Jun 2009 16:21:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:63822 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753053AbZFCUVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 16:17:56 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [KVM PATCH v5 2/2] kvm: add iosignalfd support
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com, davidel@xmailserver.org,
-       mtosatti@redhat.com, paulmck@linux.vnet.ibm.com, markmc@redhat.com
-Date: Wed, 03 Jun 2009 16:17:49 -0400
-Message-ID: <20090603201748.8206.96424.stgit@dev.haskins.net>
-In-Reply-To: <20090603200835.8206.8039.stgit@dev.haskins.net>
-References: <20090603200835.8206.8039.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
+	Wed, 3 Jun 2009 16:21:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=g+psZ4ie7phjvJqc4ivckSa5zi/pn3NGL32MQC6Psokmfz99HU3I4ZgSWf2plpnfu8
+         nDOWC+TUyh15a8s41OjzD4Raa1wF0f7qIpQ1/qn/ADA9o5Kjtq0OXl9+IGk4DS9oloB2
+         jFkkC2iOEDmeLOTXExisk6HvNvlkKGwu2klwM=
+Message-ID: <4A26DB2F.4080801@gmail.com>
+Date: Wed, 03 Jun 2009 22:21:03 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Fwd: swapper: page allocation failure. order:0, was: Weird (after
+ try of use arping2)
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-iosignalfd is a mechanism to register PIO/MMIO regions to trigger an eventfd
-signal when written to by a guest.  Host userspace can register any arbitrary
-IO address with a corresponding eventfd and then pass the eventfd to a
-specific end-point of interest for handling.
+Looks like -mm puzzle.
+Jarek P.
 
-Normal IO requires a blocking round-trip since the operation may cause
-side-effects in the emulated model or may return data to the caller.
-Therefore, an IO in KVM traps from the guest to the host, causes a VMX/SVM
-"heavy-weight" exit back to userspace, and is ultimately serviced by qemu's
-device model synchronously before returning control back to the vcpu.
+-------- Original Message --------
+Subject: Weird (after try of use arping2)
+Date: Mon, 01 Jun 2009 15:20:55 +0200
+From: Pawe³ Staszewski <pstaszewski@itcare.pl>
+To: Linux Network Development list <netdev@vger.kernel.org>
 
-However, there is a subclass of IO which acts purely as a trigger for
-other IO (such as to kick off an out-of-band DMA request, etc).  For these
-patterns, the synchronous call is particularly expensive since we really
-only want to simply get our notification transmitted asychronously and
-return as quickly as possible.  All the sychronous infrastructure to ensure
-proper data-dependencies are met in the normal IO case are just unecessary
-overhead for signalling.  This adds additional computational load on the
-system, as well as latency to the signalling path.
 
-Therefore, we provide a mechanism for registration of an in-kernel trigger
-point that allows the VCPU to only require a very brief, lightweight
-exit just long enough to signal an eventfd.  This also means that any
-clients compatible with the eventfd interface (which includes userspace
-and kernelspace equally well) can now register to be notified. The end
-result should be a more flexible and higher performance notification API
-for the backend KVM hypervisor and perhipheral components.
+Hello all.
+I dont know is this a bug but when i try to use arping:
 
-To test this theory, we built a test-harness called "doorbell".  This
-module has a function called "doorbell_ring()" which simply increments a
-counter for each time the doorbell is signaled.  It supports signalling
-from either an eventfd, or an ioctl().
+arping -s <mac-address>
+arping2 -v
+ARPing 2.06
 
-We then wired up two paths to the doorbell: One via QEMU via a registered
-io region and through the doorbell ioctl().  The other is direct via
-iosignalfd.
+dmesg shows:
 
-You can download this test harness here:
+swapper: page allocation failure. order:0, mode:0x20
+Pid: 0, comm: swapper Not tainted 2.6.29.1 #3
+Call Trace:
+ [<c024f6d4>] __alloc_pages_internal+0x342/0x356
+swapper: page allocation failure. order:0, mode:0x20
+Pid: 0, comm: swapper Not tainted 2.6.29.1 #3
+ [<c026a053>] cache_alloc_refill+0x260/0x442
+kswapd0: page allocation failure. order:0, mode:0x20
+ [<c026a2ae>] __kmalloc+0x79/0xb3
+ [<c040925f>] pskb_expand_head+0x55/0x153
+swapper: page allocation failure. order:0, mode:0x20
+Call Trace:
+ [<c04093cd>] __pskb_pull_tail+0x3f/0x211
+Pid: 0, comm: swapper Not tainted 2.6.29.1 #3
+ [<c042d066>] nf_conntrack_in+0x3b8/0x41e
+ [<c042b2d4>] skb_make_writable+0x5a/0x7a
+ [<c04641a0>] manip_pkt+0x1c/0xe2
+Call Trace:
+ [<c024f6d4>] __alloc_pages_internal+0x342/0x356
+Pid: 321, comm: kswapd0 Not tainted 2.6.29.1 #3
+ [<c04642cc>] nf_nat_packet+0x66/0x78
+ [<c024f6d4>] __alloc_pages_internal+0x342/0x356
+ [<c04682e2>] nf_nat_in+0x1d/0x4a
+ [<c043a6d8>] ip_rcv_finish+0x0/0x231
+ [<c042b04c>] nf_iterate+0x30/0x61
+ [<c043b870>] ip_forward_finish+0x2c/0x2e
+ [<c043a8f5>] ip_rcv_finish+0x21d/0x231
+ [<c026a053>] cache_alloc_refill+0x260/0x442
+ [<c043a6d8>] ip_rcv_finish+0x0/0x231
+ [<c0269db9>] kmem_cache_alloc+0x49/0x83
+ [<c043a6d8>] ip_rcv_finish+0x0/0x231
+ [<c042b0e2>] nf_hook_slow+0x41/0x99
+ [<c043a6d8>] ip_rcv_finish+0x0/0x231
+ [<c0371a28>] ixgbe_alloc_rx_buffers+0x68/0x200
+ [<c043acae>] ip_rcv+0x1d9/0x211
+ [<c043a6d8>] ip_rcv_finish+0x0/0x231
+ [<c040e663>] netif_receive_skb+0x2d7/0x307
+ [<c0372e79>] ixgbe_clean_rx_irq+0x497/0x4c0
+ [<c036fb34>] e1000_clean_rx_irq+0x246/0x2e7
+ [<c0375a11>] ixgbe_clean_rxonly+0x44/0x88
+ [<c036f203>] e1000_clean+0x7d/0x20e
+ [<c041081d>] net_rx_action+0x66/0x104
+ [<c041081d>] net_rx_action+0x66/0x104
+ [<c0225571>] __do_softirq+0x76/0x113
+ [<c0225640>] do_softirq+0x32/0x36
+ [<c02257ef>] irq_exit+0x35/0x62
+ [<c02046e2>] do_IRQ+0x8a/0xa0
+ [<c0225571>] __do_softirq+0x76/0x113
+ [<c0225640>] do_softirq+0x32/0x36
+ [<c02031a7>] common_interrupt+0x27/0x2c
+ [<c02257ef>] irq_exit+0x35/0x62
+ [<c02046e2>] do_IRQ+0x8a/0xa0
+ [<c0409044>] skb_clone+0x36/0x4a
+ [<c0207c7a>] mwait_idle+0x49/0x4e
+ [<c02018c8>] cpu_idle+0x57/0x70
+ [<c02031a7>] common_interrupt+0x27/0x2c
+Mem-Info:
+ [<c0207c7a>] mwait_idle+0x49/0x4e
+ [<c02018c8>] cpu_idle+0x57/0x70
+DMA per-cpu:
+Mem-Info:
+DMA per-cpu:
+CPU    0: hi:    0, btch:   1 usd:   0
+CPU    1: hi:    0, btch:   1 usd:   0
+CPU    0: hi:    0, btch:   1 usd:   0
+CPU    1: hi:    0, btch:   1 usd:   0
+CPU    2: hi:    0, btch:   1 usd:   0
+CPU    3: hi:    0, btch:   1 usd:   0
+CPU    2: hi:    0, btch:   1 usd:   0
+CPU    3: hi:    0, btch:   1 usd:   0
+CPU    4: hi:    0, btch:   1 usd:   0
+CPU    5: hi:    0, btch:   1 usd:   0
+CPU    6: hi:    0, btch:   1 usd:   0
+CPU    4: hi:    0, btch:   1 usd:   0
+CPU    5: hi:    0, btch:   1 usd:   0
+CPU    6: hi:    0, btch:   1 usd:   0
+CPU    7: hi:    0, btch:   1 usd:   0
+CPU    7: hi:    0, btch:   1 usd:   0
+Normal per-cpu:
+CPU    0: hi:  186, btch:  31 usd: 178
+CPU    1: hi:  186, btch:  31 usd:  84
+CPU    2: hi:  186, btch:  31 usd: 178
+CPU    3: hi:  186, btch:  31 usd:  67
+CPU    4: hi:  186, btch:  31 usd:  66
+CPU    5: hi:  186, btch:  31 usd:  88
+Normal per-cpu:
+CPU    6: hi:  186, btch:  31 usd:  42
+CPU    0: hi:  186, btch:  31 usd: 178
+CPU    1: hi:  186, btch:  31 usd:  84
+CPU    2: hi:  186, btch:  31 usd: 178
+CPU    3: hi:  186, btch:  31 usd:  67
+CPU    4: hi:  186, btch:  31 usd:  66
+CPU    5: hi:  186, btch:  31 usd:  88
+CPU    6: hi:  186, btch:  31 usd:  42
+CPU    7: hi:  186, btch:  31 usd: 169
+HighMem per-cpu:
+CPU    0: hi:  186, btch:  31 usd: 161
+CPU    7: hi:  186, btch:  31 usd: 169
+HighMem per-cpu:
+CPU    0: hi:  186, btch:  31 usd: 161
+CPU    1: hi:  186, btch:  31 usd: 142
+CPU    1: hi:  186, btch:  31 usd: 142
+CPU    2: hi:  186, btch:  31 usd: 127
+CPU    3: hi:  186, btch:  31 usd: 150
+CPU    4: hi:  186, btch:  31 usd: 143
+CPU    5: hi:  186, btch:  31 usd: 151
+CPU    6: hi:  186, btch:  31 usd: 158
+CPU    7: hi:  186, btch:  31 usd: 172
+ [<c040ec0a>] dev_hard_start_xmit+0x8d/0x268
+ [<c041a33b>] __qdisc_run+0xb7/0x18e
+ [<c0410bc8>] net_tx_action+0x8d/0xd1
+Active_anon:4472 active_file:48192 inactive_anon:0
+ inactive_file:15922 unevictable:0 dirty:44 writeback:0 unstable:0
+ free:2890227 slab:124368 mapped:941 pagetables:87 bounce:0
+DMA free:3664kB min:572kB low:712kB high:856kB active_anon:0kB 
+inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB 
+present:15764kB pages_scann
+ed:0 all_unreclaimable? no
+lowmem_reserve[]: 0 865 12146 12146
+Normal free:11976kB min:32192kB low:40240kB high:48288kB active_anon:0kB 
+inactive_anon:0kB active_file:147924kB inactive_file:29784kB 
+unevictable:0kB present:
+886228kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 90248 90248
+HighMem free:11545268kB min:512kB low:105424kB high:210340kB 
+active_anon:17888kB inactive_anon:0kB active_file:44844kB 
+inactive_file:33904kB unevictable:0kB p
+resent:11551812kB pages_scanned:32 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0 0
+DMA: CPU    2: hi:  186, btch:  31 usd: 127
+CPU    3: hi:  186, btch:  31 usd: 150
+CPU    4: hi:  186, btch:  31 usd: 143
+CPU    5: hi:  186, btch:  31 usd: 151
+CPU    6: hi:  186, btch:  31 usd: 158
+CPU    7: hi:  186, btch:  31 usd: 172
+Active_anon:4472 active_file:48192 inactive_anon:0
+ inactive_file:15922 unevictable:0 dirty:44 writeback:0 unstable:0
+ free:2890227 slab:124368 mapped:941 pagetables:87 bounce:0
+DMA free:3664kB min:572kB low:712kB high:856kB active_anon:0kB 
+inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB 
+present:15764kB pages_scann
+ed:0 all_unreclaimable? no
+lowmem_reserve[]: 0 865 12146 12146
+Normal free:11976kB min:32192kB low:40240kB high:48288kB active_anon:0kB 
+inactive_anon:0kB active_file:147924kB inactive_file:29784kB 
+unevictable:0kB present:
+886228kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 90248 90248
+HighMem free:11545268kB min:512kB low:105424kB high:210340kB 
+active_anon:17888kB inactive_anon:0kB active_file:44844kB 
+inactive_file:33904kB unevictable:0kB p
+resent:11551812kB pages_scanned:32 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0 0
+DMA: 3*4kB 3*8kB 6*16kB 5*32kB 4*64kB 2*128kB 1*256kB 1*512kB 2*1024kB 
+0*2048kB 0*4096kB = 3620kB
+Normal: 0*4kB 1*8kB 0*16kB 0*32kB 0*64kB 1*128kB 1*256kB 0*512kB 
+1*1024kB 1*2048kB 2*4096kB = 11656kB
+HighMem: 3*4kB 3*8kB 6*16kB 5*32kB 4*64kB 2*128kB 1*256kB 1*512kB 
+2*1024kB 0*2048kB 0*4096kB = 3620kB
+Normal:  [<c0225571>] __do_softirq+0x76/0x113
+0*4kB 1*8kB 0*16kB 0*32kB 0*64kB 1*128kB 1*256kB 0*512kB 1*1024kB 
+1*2048kB 2*4096kB = 11656kB
+HighMem: 1118*4kB 1118*4kB 3728*8kB 736*16kB 372*32kB 235*64kB 90*128kB 
+70*256kB 17*512kB 18*1024kB 2*2048kB 2786*4096kB = 11545144kB
+64154 total pagecache pages
+0 pages in swap cache
+Swap cache stats: add 0, delete 0, find 0/0
+Free swap  = 2040232kB
+Total swap = 2040232kB
+3728*8kB 736*16kB 372*32kB 235*64kB 90*128kB 70*256kB 17*512kB 18*1024kB 
+2*2048kB 2786*4096kB = 11545144kB
+64154 total pagecache pages
+0 pages in swap cache
+Swap cache stats: add 0, delete 0, find 0/0
+Free swap  = 2040232kB
+Total swap = 2040232kB
+ [<c0225640>] do_softirq+0x32/0x36
+ [<c02257ef>] irq_exit+0x35/0x62
+ [<c020f8f5>] smp_apic_timer_interrupt+0x71/0x7b
+ [<c02032c0>] apic_timer_interrupt+0x28/0x30
+ [<c0207c7a>] mwait_idle+0x49/0x4e
+Call Trace:
+ [<c02018c8>] cpu_idle+0x57/0x70
+ [<c024f6d4>] __alloc_pages_internal+0x342/0x356
+ [<c026a053>] cache_alloc_refill+0x260/0x442
+Mem-Info:
 
-ftp://ftp.novell.com/dev/ghaskins/doorbell.tar.bz2
 
-The measured results are as follows:
-
-qemu-mmio:       110000 iops, 9.09us rtt
-iosignalfd-mmio: 200100 iops, 5.00us rtt
-iosignalfd-pio:  367300 iops, 2.72us rtt
-
-I didn't measure qemu-pio, because I have to figure out how to register a
-PIO region with qemu's device model, and I got lazy.  However, for now we
-can extrapolate based on the data from the NULLIO runs of +2.56us for MMIO,
-and -350ns for HC, we get:
-
-qemu-pio:      153139 iops, 6.53us rtt
-iosignalfd-hc: 412585 iops, 2.37us rtt
-
-these are just for fun, for now, until I can gather more data.
-
-Here is a graph for your convenience:
-
-http://developer.novell.com/wiki/images/7/76/Iofd-chart.png
-
-The conclusion to draw is that we save about 4us by skipping the userspace
-hop.
-
---------------------
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
-
- arch/x86/kvm/x86.c       |    1 
- include/linux/kvm.h      |   15 ++
- include/linux/kvm_host.h |   10 +
- virt/kvm/eventfd.c       |  356 ++++++++++++++++++++++++++++++++++++++++++++++
- virt/kvm/kvm_main.c      |   11 +
- 5 files changed, 389 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index c1ed485..c96c0e3 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -1097,6 +1097,7 @@ int kvm_dev_ioctl_check_extension(long ext)
- 	case KVM_CAP_IRQ_INJECT_STATUS:
- 	case KVM_CAP_ASSIGN_DEV_IRQ:
- 	case KVM_CAP_IRQFD:
-+	case KVM_CAP_IOSIGNALFD:
- 	case KVM_CAP_PIT2:
- 		r = 1;
- 		break;
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 632a856..53b720d 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -300,6 +300,19 @@ struct kvm_guest_debug {
- 	struct kvm_guest_debug_arch arch;
- };
- 
-+#define KVM_IOSIGNALFD_FLAG_TRIGGER   (1 << 0)
-+#define KVM_IOSIGNALFD_FLAG_PIO       (1 << 1)
-+#define KVM_IOSIGNALFD_FLAG_DEASSIGN  (1 << 2)
-+
-+struct kvm_iosignalfd {
-+	__u64 trigger;
-+	__u64 addr;
-+	__u32 len;
-+	__u32 fd;
-+	__u32 flags;
-+	__u8  pad[36];
-+};
-+
- #define KVM_TRC_SHIFT           16
- /*
-  * kvm trace categories
-@@ -430,6 +443,7 @@ struct kvm_trace_rec {
- #ifdef __KVM_HAVE_PIT
- #define KVM_CAP_PIT2 33
- #endif
-+#define KVM_CAP_IOSIGNALFD 34
- 
- #ifdef KVM_CAP_IRQ_ROUTING
- 
-@@ -537,6 +551,7 @@ struct kvm_irqfd {
- #define KVM_DEASSIGN_DEV_IRQ       _IOW(KVMIO, 0x75, struct kvm_assigned_irq)
- #define KVM_IRQFD                  _IOW(KVMIO, 0x76, struct kvm_irqfd)
- #define KVM_CREATE_PIT2		   _IOW(KVMIO, 0x77, struct kvm_pit_config)
-+#define KVM_IOSIGNALFD             _IOW(KVMIO, 0x78, struct kvm_iosignalfd)
- 
- /*
-  * ioctls for vcpu fds
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index 216fe07..b705960 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -138,6 +138,7 @@ struct kvm {
- 	struct kvm_io_bus pio_bus;
- #ifdef CONFIG_HAVE_KVM_EVENTFD
- 	struct list_head irqfds;
-+	struct list_head iosignalfds;
- #endif
- 	struct kvm_vm_stat stat;
- 	struct kvm_arch arch;
-@@ -533,19 +534,24 @@ static inline void kvm_free_irq_routing(struct kvm *kvm) {}
- 
- #ifdef CONFIG_HAVE_KVM_EVENTFD
- 
--void kvm_irqfd_init(struct kvm *kvm);
-+void kvm_eventfd_init(struct kvm *kvm);
- int kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags);
- void kvm_irqfd_release(struct kvm *kvm);
-+int kvm_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args);
- 
- #else
- 
--static inline void kvm_irqfd_init(struct kvm *kvm) {}
-+static inline void kvm_eventfd_init(struct kvm *kvm) {}
- static inline int kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
- {
- 	return -EINVAL;
- }
- 
- static inline void kvm_irqfd_release(struct kvm *kvm) {}
-+static inline int kvm_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args)
-+{
-+	return -EINVAL;
-+}
- 
- #endif /* CONFIG_HAVE_KVM_EVENTFD */
- 
-diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
-index f3f2ea1..77befb3 100644
---- a/virt/kvm/eventfd.c
-+++ b/virt/kvm/eventfd.c
-@@ -21,6 +21,7 @@
-  */
- 
- #include <linux/kvm_host.h>
-+#include <linux/kvm.h>
- #include <linux/workqueue.h>
- #include <linux/syscalls.h>
- #include <linux/wait.h>
-@@ -29,6 +30,8 @@
- #include <linux/list.h>
- #include <linux/eventfd.h>
- 
-+#include "iodev.h"
-+
- /*
-  * --------------------------------------------------------------------
-  * irqfd: Allows an fd to be used to inject an interrupt to the guest
-@@ -208,9 +211,10 @@ kvm_deassign_irqfd(struct kvm *kvm, int fd, int gsi)
- }
- 
- void
--kvm_irqfd_init(struct kvm *kvm)
-+kvm_eventfd_init(struct kvm *kvm)
- {
- 	INIT_LIST_HEAD(&kvm->irqfds);
-+	INIT_LIST_HEAD(&kvm->iosignalfds);
- }
- 
- int
-@@ -233,3 +237,353 @@ kvm_irqfd_release(struct kvm *kvm)
- 		irqfd_release(irqfd);
- 	}
- }
-+
-+/*
-+ * --------------------------------------------------------------------
-+ * iosignalfd: translate a PIO/MMIO memory write to an eventfd signal.
-+ *
-+ * userspace can register a PIO/MMIO address with an eventfd for recieving
-+ * notification when the memory has been touched.
-+ * --------------------------------------------------------------------
-+ */
-+
-+/*
-+ * Design note: We create one PIO/MMIO device (iosignalfd_group) which
-+ * aggregates  one or more iosignalfd_items.  Each item points to exactly one
-+ * eventfd, and can be registered to trigger on any write to the group
-+ * (wildcard), or to a write of a specific value.  If more than one item is to
-+ * be supported, the addr/len ranges must all be identical in the group.  If a
-+ * trigger value is to be supported on a particular item, the group range must
-+ * be exactly the width of the trigger.
-+ */
-+
-+struct _iosignalfd_item {
-+	struct list_head     list;
-+	struct file         *file;
-+	unsigned char       *match;
-+	struct rcu_head      rcu;
-+};
-+
-+struct _iosignalfd_group {
-+	struct list_head     list;
-+	u64                  addr;
-+	size_t               length;
-+	struct list_head     items;
-+	struct kvm_io_device dev;
-+};
-+
-+static inline struct _iosignalfd_group *to_group(struct kvm_io_device *dev)
-+{
-+	return container_of(dev, struct _iosignalfd_group, dev);
-+}
-+
-+static inline struct _iosignalfd_item *to_item(struct rcu_head *rhp)
-+{
-+	return container_of(rhp, struct _iosignalfd_item, rcu);
-+}
-+
-+static int
-+iosignalfd_group_in_range(struct kvm_io_device *this, gpa_t addr, int len,
-+			  int is_write)
-+{
-+	struct _iosignalfd_group *p = to_group(this);
-+
-+	return ((addr >= p->addr && (addr < p->addr + p->length)));
-+}
-+
-+static int
-+iosignalfd_is_match(struct _iosignalfd_group *group,
-+		    struct _iosignalfd_item *item,
-+		    const void *val,
-+		    int len)
-+{
-+	if (!item->match)
-+		/* wildcard is a hit */
-+		return true;
-+
-+	if (len != group->length)
-+		/* mis-matched length is a miss */
-+		return false;
-+
-+	/* otherwise, we have to actually compare the data */
-+	return !memcmp(item->match, val, len) ? true : false;
-+}
-+
-+/*
-+ * MMIO/PIO writes trigger an event (if the data matches).
-+ *
-+ * This is invoked by the io_bus subsystem in response to an address match
-+ * against the group.  We must then walk the list of individual items to check
-+ * for a match and, if applicable, to send the appropriate signal. If the item
-+ * in question does not have a "match" pointer, it is considered a wildcard
-+ * and will always generate a signal.  There can be an arbitrary number
-+ * of distinct matches or wildcards per group.
-+ */
-+static void
-+iosignalfd_group_write(struct kvm_io_device *this, gpa_t addr, int len,
-+		       const void *val)
-+{
-+	struct _iosignalfd_group *group = to_group(this);
-+	struct _iosignalfd_item *item;
-+
-+	/* FIXME: We should probably use SRCU */
-+	rcu_read_lock();
-+
-+	list_for_each_entry_rcu(item, &group->items, list) {
-+		if (iosignalfd_is_match(group, item, val, len))
-+			eventfd_signal(item->file, 1);
-+	}
-+
-+	rcu_read_unlock();
-+}
-+
-+/*
-+ * MMIO/PIO reads against the group indiscriminately return all zeros
-+ */
-+static void
-+iosignalfd_group_read(struct kvm_io_device *this, gpa_t addr, int len,
-+		      void *val)
-+{
-+	memset(val, 0, len);
-+}
-+
-+static void
-+_iosignalfd_group_destructor(struct _iosignalfd_group *group)
-+{
-+	list_del(&group->list);
-+	kfree(group);
-+}
-+
-+static void
-+iosignalfd_group_destructor(struct kvm_io_device *this)
-+{
-+	struct _iosignalfd_group *group = to_group(this);
-+
-+	_iosignalfd_group_destructor(group);
-+}
-+
-+/* assumes kvm->lock held */
-+static struct _iosignalfd_group *
-+iosignalfd_group_find(struct kvm *kvm, u64 addr)
-+{
-+	struct _iosignalfd_group *group;
-+
-+	list_for_each_entry(group, &kvm->iosignalfds, list) {
-+		if (group->addr == addr)
-+			return group;
-+	}
-+
-+	return NULL;
-+}
-+
-+static const struct kvm_io_device_ops iosignalfd_ops = {
-+	.read       = iosignalfd_group_read,
-+	.write      = iosignalfd_group_write,
-+	.in_range   = iosignalfd_group_in_range,
-+	.destructor = iosignalfd_group_destructor,
-+};
-+
-+/*
-+ * Atomically find an existing group, or create a new one if it doesn't already
-+ * exist.
-+ *
-+ * assumes kvm->lock is held
-+ */
-+static struct _iosignalfd_group *
-+iosignalfd_group_get(struct kvm *kvm, struct kvm_io_bus *bus,
-+		      u64 addr, size_t len)
-+{
-+	struct _iosignalfd_group *group;
-+
-+	group = iosignalfd_group_find(kvm, addr);
-+	if (!group) {
-+		int ret;
-+
-+		group = kzalloc(sizeof(*group), GFP_KERNEL);
-+		if (!group)
-+			return ERR_PTR(-ENOMEM);
-+
-+		INIT_LIST_HEAD(&group->list);
-+		INIT_LIST_HEAD(&group->items);
-+		group->addr   = addr;
-+		group->length = len;
-+		kvm_iodevice_init(&group->dev, &iosignalfd_ops);
-+
-+		ret = kvm_io_bus_register_dev(bus, &group->dev);
-+		if (ret < 0) {
-+			kfree(group);
-+			return ERR_PTR(ret);
-+		}
-+
-+		list_add_tail(&group->list, &kvm->iosignalfds);
-+
-+	} else if (group->length != len)
-+		/*
-+		 * Existing groups must have the same addr/len tuple or we
-+		 * reject the request
-+		 */
-+		return ERR_PTR(-EINVAL);
-+
-+	return group;
-+}
-+
-+static int
-+kvm_assign_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args)
-+{
-+	int                       pio = args->flags & KVM_IOSIGNALFD_FLAG_PIO;
-+	struct kvm_io_bus        *bus = pio ? &kvm->pio_bus : &kvm->mmio_bus;
-+	struct _iosignalfd_group *group = NULL;
-+	struct _iosignalfd_item  *item = NULL;
-+	struct file              *file;
-+	int                       ret;
-+
-+	file = eventfd_fget(args->fd);
-+	if (IS_ERR(file)) {
-+		ret = PTR_ERR(file);
-+		return ret;
-+	}
-+
-+	item = kzalloc(sizeof(*item), GFP_KERNEL);
-+	if (!item) {
-+		ret = -ENOMEM;
-+		goto fail;
-+	}
-+
-+	INIT_LIST_HEAD(&item->list);
-+	item->file = file;
-+
-+	/*
-+	 * Registering a "trigger" address is optional.  If this flag
-+	 * is not specified, we leave the item->match pointer NULL, which
-+	 * indicates a wildcard
-+	 */
-+	if (args->flags & KVM_IOSIGNALFD_FLAG_TRIGGER) {
-+		if (args->len > sizeof(u64)) {
-+			ret = -EINVAL;
-+			goto fail;
-+		}
-+
-+		item->match = kzalloc(args->len, GFP_KERNEL);
-+		if (!item->match) {
-+			ret = -ENOMEM;
-+			goto fail;
-+		}
-+
-+		if (copy_from_user(item->match,
-+				   (void *)args->trigger,
-+				   args->len)) {
-+			ret = -EFAULT;
-+			goto fail;
-+		}
-+	}
-+
-+	mutex_lock(&kvm->lock);
-+
-+	group = iosignalfd_group_get(kvm, bus, args->addr, args->len);
-+	if (IS_ERR(group)) {
-+		ret = PTR_ERR(group);
-+		mutex_unlock(&kvm->lock);
-+		goto fail;
-+	}
-+
-+	/*
-+	 * Note: We are committed to succeed at this point since we have
-+	 * (potentially) published a new group-device.  Any failure handling
-+	 * added in the future after this point will need to be handled
-+	 * carefully.
-+	 */
-+
-+	list_add_tail_rcu(&item->list, &group->items);
-+
-+	mutex_unlock(&kvm->lock);
-+
-+	return 0;
-+
-+fail:
-+	if (item) {
-+		/*
-+		 * it would have never made it to the group->items list
-+		 * in the failure path, so we dont need to worry about removing
-+		 * it
-+		 */
-+		kfree(item->match);
-+		kfree(item);
-+	}
-+
-+	if (file)
-+		fput(file);
-+
-+	return ret;
-+}
-+
-+static void
-+iosignalfd_item_free(struct rcu_head *rhp)
-+{
-+	struct _iosignalfd_item *item = to_item(rhp);
-+
-+	fput(item->file);
-+	kfree(item->match);
-+	kfree(item);
-+}
-+
-+static int
-+kvm_deassign_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args)
-+{
-+	int                       pio = args->flags & KVM_IOSIGNALFD_FLAG_PIO;
-+	struct kvm_io_bus        *bus = pio ? &kvm->pio_bus : &kvm->mmio_bus;
-+	struct _iosignalfd_group *group;
-+	struct _iosignalfd_item  *item, *tmp;
-+	struct file              *file;
-+	int                       ret = 0;
-+
-+	mutex_lock(&kvm->lock);
-+
-+	group = iosignalfd_group_find(kvm, args->addr);
-+	if (!group) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	file = eventfd_fget(args->fd);
-+	if (IS_ERR(file)) {
-+		ret = PTR_ERR(file);
-+		goto out;
-+	}
-+
-+	list_for_each_entry_safe(item, tmp, &group->items, list) {
-+		/*
-+		 * any items registered at this group-address with the matching
-+		 * eventfd will be removed
-+		 */
-+		if (item->file != file)
-+			continue;
-+
-+		list_del_rcu(&item->list);
-+		call_rcu(&item->rcu, iosignalfd_item_free);
-+	}
-+
-+	if (list_empty(&group->items)) {
-+		/*
-+		 * We should unpublish our group device if we just removed
-+		 * the last of its contained items
-+		 */
-+		kvm_io_bus_unregister_dev(bus, &group->dev);
-+		_iosignalfd_group_destructor(group);
-+	}
-+
-+	fput(file);
-+
-+out:
-+	mutex_unlock(&kvm->lock);
-+
-+	return ret;
-+}
-+
-+int
-+kvm_iosignalfd(struct kvm *kvm, struct kvm_iosignalfd *args)
-+{
-+	if (args->flags & KVM_IOSIGNALFD_FLAG_DEASSIGN)
-+		return kvm_deassign_iosignalfd(kvm, args);
-+
-+	return kvm_assign_iosignalfd(kvm, args);
-+}
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 179c650..91d0fe2 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -977,7 +977,7 @@ static struct kvm *kvm_create_vm(void)
- 	atomic_inc(&kvm->mm->mm_count);
- 	spin_lock_init(&kvm->mmu_lock);
- 	kvm_io_bus_init(&kvm->pio_bus);
--	kvm_irqfd_init(kvm);
-+	kvm_eventfd_init(kvm);
- 	mutex_init(&kvm->lock);
- 	kvm_io_bus_init(&kvm->mmio_bus);
- 	init_rwsem(&kvm->slots_lock);
-@@ -2215,6 +2215,15 @@ static long kvm_vm_ioctl(struct file *filp,
- 		r = kvm_irqfd(kvm, data.fd, data.gsi, data.flags);
- 		break;
- 	}
-+	case KVM_IOSIGNALFD: {
-+		struct kvm_iosignalfd entry;
-+
-+		r = -EFAULT;
-+		if (copy_from_user(&entry, argp, sizeof entry))
-+			goto out;
-+		r = kvm_iosignalfd(kvm, &entry);
-+		break;
-+	}
- 	default:
- 		r = kvm_arch_vm_ioctl(filp, ioctl, arg);
- 	}
+--
+To unsubscribe from this list: send the line "unsubscribe netdev" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
