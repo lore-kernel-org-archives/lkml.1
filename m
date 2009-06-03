@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400AbZFCJBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbZFCJDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756400AbZFCJBe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 05:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbZFCJB1
+	id S1754412AbZFCJDt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 05:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752411AbZFCJDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 05:01:27 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36840 "EHLO ogre.sisk.pl"
+	Wed, 3 Jun 2009 05:03:41 -0400
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:39342 "EHLO h5.dl5rb.org.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751388AbZFCJB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 05:01:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH] Driver Core: Add platform device arch data V2
-Date: Wed, 3 Jun 2009 11:01:55 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, paul@pwsan.com, khilman@deeprootsystems.com,
-       gregkh@suse.de, stern@rowland.harvard.edu,
-       linux-pm@lists.linux-foundation.org
-References: <20090601101614.10720.93804.sendpatchset@rx1.opensource.se> <200906012133.32074.rjw@sisk.pl> <aec7e5c30906012133w74d7d843jccad99c564a308ec@mail.gmail.com>
-In-Reply-To: <aec7e5c30906012133w74d7d843jccad99c564a308ec@mail.gmail.com>
+	id S1752256AbZFCJDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 05:03:40 -0400
+Date: Wed, 3 Jun 2009 10:02:38 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-mips@linux-mips.org,
+       herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] hwrng: Add TX4939 RNG driver (v2)
+Message-ID: <20090603090238.GH23561@linux-mips.org>
+References: <1243954462-18149-1-git-send-email-anemo@mba.ocn.ne.jp> <1243973584.22069.182.camel@calx>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906031101.56577.rjw@sisk.pl>
+In-Reply-To: <1243973584.22069.182.camel@calx>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 June 2009, Magnus Damm wrote:
-> 2009/6/2 Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Monday 01 June 2009, Rafael J. Wysocki wrote:
-> >> On Monday 01 June 2009, Magnus Damm wrote:
-> >> > From: Magnus Damm <damm@igel.co.jp>
-[--snip--]
+On Tue, Jun 02, 2009 at 03:13:04PM -0500, Matt Mackall wrote:
+
+> On Tue, 2009-06-02 at 23:54 +0900, Atsushi Nemoto wrote:
+> > This patch adds support for the integrated RNG of the TX4939 SoC.
+> > 
+> > Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 > 
-> If you guys dislike adding arch specific data to struct platform
-> device then for SuperH we can just (mis)use the arch specific data in
-> struct device instead. I'm afraid that solution wastes memory since
-> the data will only be used for platform devices anyway. So I prefer
-> adding arch specific data to struct platform_device instead of struct
-> device if possible.
+> Acked-by: Matt Mackall <mpm@selenic.com>
 
-BTW, what is the difference really?  You can always put
-dev.platform_data = NULL for devices that don't have any platform data,
-can't you?
+Ok, I'll send this to Linus for 2.6.31 then.
 
-Rafael
+Thanks,
+
+   Ralf
