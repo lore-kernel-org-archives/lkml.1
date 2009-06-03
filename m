@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbZFCIqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbZFCIqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755813AbZFCIqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 04:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbZFCIqH
+	id S1755472AbZFCIqk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 04:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbZFCIqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 04:46:07 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:40767 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751985AbZFCIqF convert rfc822-to-8bit (ORCPT
+	Wed, 3 Jun 2009 04:46:31 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:63995 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751586AbZFCIqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 04:46:05 -0400
-From: "Cai, Cliff" <Cliff.Cai@analog.com>
-X-IronPort-AV: E=Sophos;i="4.41,297,1241409600"; 
-   d="scan'208";a="88331224"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Wed, 3 Jun 2009 04:46:30 -0400
+Message-ID: <4A26384A.6000906@nokia.com>
+Date: Wed, 03 Jun 2009 11:46:02 +0300
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 04/11] Blackfin SPORT UART: fix overrun errors
-Date: Wed, 3 Jun 2009 16:49:41 +0800
-Message-ID: <0F1B54C89D5F954D8535DB252AF412FA0422906C@chinexm1.ad.analog.com>
-In-Reply-To: <8bd0f97a0906030103i64bc1a9duc5aeaea7bd3f8365@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 04/11] Blackfin SPORT UART: fix overrun errors
-Thread-Index: AcnkIdTq/2eZfm3ZRFGtgpDbJsXiKAABi8Yw
-References: <1243926700-30485-1-git-send-email-vapier@gentoo.org> <1243926700-30485-4-git-send-email-vapier@gentoo.org> <20090602100018.415b1dfc@lxorguk.ukuu.org.uk> <8bd0f97a0906030103i64bc1a9duc5aeaea7bd3f8365@mail.gmail.com>
-To: "Mike Frysinger" <vapier.adi@gmail.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-CC: "Mike Frysinger" <vapier@gentoo.org>, <linux-serial@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>,
-       <uclinux-dist-devel@blackfin.uclinux.org>,
-       "Bryan Wu" <cooloney@kernel.org>
-X-OriginalArrivalTime: 03 Jun 2009 08:46:06.0699 (UTC) FILETIME=[BC1303B0:01C9E427]
+To: ext Stephen Rothwell <sfr@canb.auug.org.au>
+CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Dmitry Pervushin <dpervushin@embeddedalley.com>
+Subject: Re: linux-next: ubi tree build failure
+References: <20090603184408.49c7fb1f.sfr@canb.auug.org.au>
+In-Reply-To: <20090603184408.49c7fb1f.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 03 Jun 2009 08:46:07.0384 (UTC) FILETIME=[BC7B8980:01C9E427]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+Hi,
 
->-----Original Message-----
->From: Mike Frysinger [mailto:vapier.adi@gmail.com] 
->Sent: Wednesday, June 03, 2009 4:04 PM
->To: Alan Cox
->Cc: Mike Frysinger; linux-serial@vger.kernel.org; 
->linux-kernel@vger.kernel.org; 
->uclinux-dist-devel@blackfin.uclinux.org; Cai, Cliff; Bryan Wu
->Subject: Re: [PATCH 04/11] Blackfin SPORT UART: fix overrun errors
->
->On Tue, Jun 2, 2009 at 05:00, Alan Cox wrote:
->> On Tue, �2 Jun 2009 03:11:33 -0400 Mike Frysinger wrote:
->>> From: Cliff Cai <cliff.cai@analog.com>
->>>
->>> Push the ty_flip_buffer_push() call from the IRQ handler to a timer 
->>> so as to improve performance and decrease likelihood of overruns.
->>
->> This should have no effect on a modern kernel.
->
->well, we wouldnt be making changes if we werent seeing data 
->overruns today
->
->> There is 64K of queueing between you and the ldisc nowdays.
->
->i dont think that really matters ... we do too much work in 
->the interrupt and so we miss new data
->
->> Furthermore unless you set tty->low_latency the kernel already 
->> basically does this aggregation for you as the buffer push queues 
->> stuff for the ldisc to wake up and process.
->
->i guess we could try setting the low_latency bool instead and 
->see if that fixes things -mike
->
+Stephen Rothwell wrote:
+> Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
+> 
+> drivers/mtd/ubi/gluebi.c: In function 'gluebi_get_device':
+> drivers/mtd/ubi/gluebi.c:126: error: implicit declaration of function 'IS_ERR'
+> drivers/mtd/ubi/gluebi.c:129: error: implicit declaration of function 'PTR_ERR'
+> 
+> Introduced by commit ec5c514efde253de7f28668c88bbae26d2a293de ("UBI: make
+> gluebi a separate module") from the ubi tree.  I guess the conversion
+> managed to remove an implicit include of linux/err.h.
+> 
+> I have reverted that commit for today.  I then needed to also revert
+> commit 518ceef0c9ca97023e45ae46aedaefa240c690a6 ("UBI: remove built-in
+> gluebi") to make it build again.
 
-The overrrun problem doesn't exist even without my patch now,so I will drop it.
+My fault. Will be fixed shortly, thank you!
 
-Thanks
-
-Cliff
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
