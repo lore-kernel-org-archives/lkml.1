@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbZFCKV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbZFCKY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756276AbZFCKV5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 06:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbZFCKVu
+	id S1756064AbZFCKY0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 06:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbZFCKYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 06:21:50 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:50646 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753378AbZFCKVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 06:21:49 -0400
-Date: Wed, 3 Jun 2009 12:21:51 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
-	in the VM v3
-Message-ID: <20090603102151.GM11363@kernel.dk>
-References: <20090528082616.GG6920@wotan.suse.de> <20090528095934.GA10678@localhost> <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601140553.GA1979@localhost> <20090601144050.GA12099@wotan.suse.de> <20090602111407.GA17234@localhost> <20090602121940.GD1392@wotan.suse.de> <20090602125134.GA20462@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090602125134.GA20462@localhost>
+	Wed, 3 Jun 2009 06:24:19 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:48184 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752458AbZFCKYS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 06:24:18 -0400
+Date: Wed, 3 Jun 2009 12:24:16 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: =?UTF-8?B?SsO2cmc=?= Schummer <ext-jorg.2.schummer@nokia.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] MMC: core/core.c: mmc_rescan detects card change in
+ one run
+Message-ID: <20090603122416.4f32b6aa@mjolnir.ossman.eu>
+In-Reply-To: <1244022468.20907.5.camel@jorg-desktop>
+References: <20090303095530.65923117@mjolnir.ossman.eu>
+	<1238511081-24570-1-git-send-email-ext-jorg.2.schummer@nokia.com>
+	<20090410183955.011c4d65@mjolnir.ossman.eu>
+	<1244022468.20907.5.camel@jorg-desktop>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02 2009, Wu Fengguang wrote:
-> > And then this is possible because you aren't violating mm
-> > assumptions due to 1b. This proceeds just as the existing
-> > pagecache mce error handler case which exists now.
+On Wed, 03 Jun 2009 12:47:48 +0300
+Jörg Schummer <ext-jorg.2.schummer@nokia.com> wrote:
+
 > 
-> Yeah that's a good scheme - we are talking about two interception
-> scheme. Mine is passive one and yours is active one.
+> Hi Pierre,
 > 
-> passive: check hwpoison pages at __generic_make_request()/elv_next_request() 
->          (the code will be enabled by an mce_bad_io_pages counter)
+> is there any news about this patch?
+> 
 
-That's not a feasible approach at all, it'll add O(N) scan of a bio at
-queue time. Ditto for the elv_next_request() approach.
+It's in my -next branch and will be submitted upstream in the next
+merge window.
 
-What would be cheaper is to check the pages at dma map time, since you
-have to scan the request anyway. That means putting it in
-blk_rq_map_sg() or similar.
-
+Rgds
 -- 
-Jens Axboe
+     -- Pierre Ossman
 
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+  TigerVNC, core developer          http://www.tigervnc.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
