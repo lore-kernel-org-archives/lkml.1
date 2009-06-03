@@ -1,64 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbZFCQcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbZFCQeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756695AbZFCQcS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 12:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbZFCQcH
+	id S1757568AbZFCQeO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 12:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756297AbZFCQd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 12:32:07 -0400
-Received: from mail-px0-f182.google.com ([209.85.216.182]:36565 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753242AbZFCQcG (ORCPT
+	Wed, 3 Jun 2009 12:33:59 -0400
+Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:62966 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756204AbZFCQd6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 12:32:06 -0400
+	Wed, 3 Jun 2009 12:33:58 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 67.160.239.110
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX19goHOL9xlloXmxA3uUvl+N
+Date: Wed, 3 Jun 2009 09:33:45 -0700
+From: Tony Lindgren <tony@atomide.com>
+To: "Singh, Vimal" 
+	<IMCEAEX-_O=TI_OU=BD_CN=RECIPIENTS_CN=X0094262@dlee86.itg.ti.com>
+Cc: "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>,
+       "dedekind@infradead.org" <dedekind@infradead.org>,
+       "david-b@pacbell.net" <david-b@pacbell.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH] [MTD] [NAND] Add prefetch and dma support for omap2/3
+	NAND driver
+Message-ID: <20090603163344.GC5026@atomide.com>
+References: <20090602203629.GM27332@atomide.com> <19F8576C6E063C45BE387C64729E739404321C6096@dbde02.ent.ti.com>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.01.0906030925480.4880@localhost.localdomain>
-References: <20090530192829.GK6535@oblivion.subreption.com>
-	 <20090531022158.GA9033@oblivion.subreption.com>
-	 <alpine.DEB.1.10.0906021130410.23962@gentwo.org>
-	 <20090602203405.GC6701@oblivion.subreption.com>
-	 <alpine.DEB.1.10.0906031047390.15621@gentwo.org>
-	 <alpine.LFD.2.01.0906030800490.4880@localhost.localdomain>
-	 <alpine.DEB.1.10.0906031121030.15621@gentwo.org>
-	 <alpine.LFD.2.01.0906030827580.4880@localhost.localdomain>
-	 <7e0fb38c0906030922u3af8c2abi8a2cfdcd66151a5a@mail.gmail.com>
-	 <alpine.LFD.2.01.0906030925480.4880@localhost.localdomain>
-Date: Wed, 3 Jun 2009 12:32:07 -0400
-Message-ID: <7e0fb38c0906030932o28d5c963y8059672e5c2c7ecf@mail.gmail.com>
-Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change 
-	ZERO_SIZE_PTR to point at unmapped space)
-From: Eric Paris <eparis@parisplace.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       "Larry H." <research@subreption.com>, linux-mm@kvack.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, pageexec@freemail.hu
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19F8576C6E063C45BE387C64729E739404321C6096@dbde02.ent.ti.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 3, 2009 at 12:28 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
->
-> On Wed, 3 Jun 2009, Eric Paris wrote:
->>
->> As I recall the only need for CONFIG_SECURITY is for the ability to
->> override the check.
->
-> No, if you have SECURITY disabled entirely, the check goes away.
+* Singh, Vimal <IMCEAEX-_O=TI_OU=BD_CN=RECIPIENTS_CN=X0094262@dlee86.itg.ti.com> [090602 23:46]:
+> 
+> On Wed, Jun 3, 2009 at 2:06 AM, Tony Lindgren <tony@atomide.com> wrote:
+> > * vimal singh <vimalsingh@ti.com> [090602 05:40]:
+> >> This patch adds prefetch support to access nand flash in both mpu and dma mode.
+> >> This patch also adds 8-bit nand support (omap_read/write_buf8).
+> >> Prefetch can be used for both 8- and 16-bit devices.
+> >
+> > This should be reviewed on the linux-omap@vger.kernel.org list for sure.
+> > One other comment below.
+> >
+> >> Signed-off-by: Vimal Singh <vimalsingh@ti.com>
+> >> ---
+> >> I prepared this patch on top of "OMAP2 / OMAP3 NAND driver" patch:
+> >> http://lists.infradead.org/pipermail/linux-mtd/2009-May/025562.html
+> >>
+> >> ---
+> >>  arch/arm/mach-omap2/gpmc.c             |  102 ++++++++++
+> >>  arch/arm/plat-omap/include/mach/gpmc.h |    4
+> >>  drivers/mtd/nand/Kconfig               |   17 +
+> >>  drivers/mtd/nand/omap2.c               |  308 ++++++++++++++++++++++++++++++++-
+> >>  4 files changed, 422 insertions(+), 9 deletions(-)
+> >>
+> >> Index: mtd-2.6/arch/arm/mach-omap2/gpmc.c
+> >> ===================================================================
+> >> --- mtd-2.6.orig/arch/arm/mach-omap2/gpmc.c
+> >> +++ mtd-2.6/arch/arm/mach-omap2/gpmc.c
+> >> @@ -54,6 +54,12 @@
+> >>  #define GPMC_CHUNK_SHIFT     24              /* 16 MB */
+> >>  #define GPMC_SECTION_SHIFT   28              /* 128 MB */
+> >>
+> >> +#ifdef CONFIG_MTD_NAND_OMAP_PREFETCH
+> >> +#define CS_NUM_SHIFT         24
+> >> +#define ENABLE_PREFETCH              7
+> >> +#define DMA_MPU_MODE         2
+> >> +#endif
+> >> +
+> >>  static struct resource       gpmc_mem_root;
+> >>  static struct resource       gpmc_cs_mem[GPMC_CS_NUM];
+> >>  static DEFINE_SPINLOCK(gpmc_mem_lock);
+> >> @@ -383,6 +389,99 @@ void gpmc_cs_free(int cs)
+> >>  }
+> >>  EXPORT_SYMBOL(gpmc_cs_free);
+> >>
+> >> +#ifdef CONFIG_MTD_NAND_OMAP_PREFETCH
+> >> +/**
+> >> + * gpmc_prefetch_init - configures default configuration for prefetch engine
+> >> + */
+> >> +static void gpmc_prefetch_init(void)
+> >> +{
+> >> +     /* Setting the default threshold to 64 */
+> >> +     gpmc_write_reg(GPMC_PREFETCH_CONTROL, 0x0);
+> >> +     gpmc_write_reg(GPMC_PREFETCH_CONFIG1, 0x40  << 8);
+> >> +     gpmc_write_reg(GPMC_PREFETCH_CONFIG2, 0x0);
+> >> +}
+> >
+> > Why would you want to have NAND specific init code int gpmc.c?
+> >
+> > The purpose if gpmc.c is to provide access to configuring the
+> > General Purpose Memory Controller (GPMC). You should just provide
+> > functions in gpmc.c for the platform init code to use, and then
+> > the drivers can stay platform independent.
+> 
+> In my understanding, this 'prefetch' engine is part of GPMC itself, it is a
+> kind of feature provided by GPMC which can be utilized by NAND driver.
+> So, to me, it makes sens to get initialized prefetch by GPMC itself so that 
+> NAND driver can use it.
 
-I meant 'need' as in the reason I wrapped it in CONFIG_SECURITY, not
-that you were wrong when you said it disapeared.
+But it should not have a dependency to NAND. 
+ 
+> Another reason was that all read / write to GPMC register are done by 
+> functions 'gpmc_read_reg' / 'gpmc_write_reg', which have been made
+> 'static' in nature.
 
->> I think I could probably pretty cleanly change it to use
->> CAP_SYS_RAWIO/SELinux permissions if CONFIG_SECURITY and just allow it
->> for uid=0 in the non-security case?
->
-> We probably should, since the "capability" security version should
-> generally essentially emulate the regular non-SECURITY case for root.
+That's why you need to provide a generic function in gpmc.c to enable
+prefetch that the platform code for any driver can use.
 
-Will poke/patch this afternoon.
-
--Eric
+Tony
