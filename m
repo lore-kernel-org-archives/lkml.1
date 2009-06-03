@@ -1,98 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbZFCQTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbZFCQUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758598AbZFCQTr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 12:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757030AbZFCQT0
+	id S1758547AbZFCQUU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 12:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757195AbZFCQUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 12:19:26 -0400
-Received: from stargate.chelsio.com ([67.207.112.58]:27924 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755456AbZFCQTP (ORCPT
+	Wed, 3 Jun 2009 12:20:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41423 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757158AbZFCQUG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 12:19:15 -0400
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH net-next 2/2] cxgb3: minor aq100x phy fixes
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com
-Date: Wed, 03 Jun 2009 09:19:15 -0700
-Message-ID: <20090603161915.17960.58081.stgit@speedy5>
-In-Reply-To: <20090603161910.17960.28171.stgit@speedy5>
-References: <20090603161910.17960.28171.stgit@speedy5>
-User-Agent: StGIT/0.14.2
+	Wed, 3 Jun 2009 12:20:06 -0400
+Date: Wed, 3 Jun 2009 09:18:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Stephen Smalley <sds@tycho.nsa.gov>, "Larry H." <research@subreption.com>,
+       linux-mm@kvack.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu
+Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change
+ ZERO_SIZE_PTR to point at unmapped space)
+In-Reply-To: <alpine.DEB.1.10.0906031134410.13551@gentwo.org>
+Message-ID: <alpine.LFD.2.01.0906030912340.4880@localhost.localdomain>
+References: <20090530192829.GK6535@oblivion.subreption.com>  <alpine.LFD.2.01.0905301528540.3435@localhost.localdomain>  <20090530230022.GO6535@oblivion.subreption.com>  <alpine.LFD.2.01.0905301902010.3435@localhost.localdomain>  <20090531022158.GA9033@oblivion.subreption.com>
+  <alpine.DEB.1.10.0906021130410.23962@gentwo.org>  <20090602203405.GC6701@oblivion.subreption.com>  <alpine.DEB.1.10.0906031047390.15621@gentwo.org> <1244041914.12272.64.camel@localhost.localdomain> <alpine.DEB.1.10.0906031134410.13551@gentwo.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
-
-Use generic MDIO generic values.
-Based on Ben Hutchings'review comments.
-
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
-
- drivers/net/cxgb3/aq100x.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
 
 
-diff --git a/drivers/net/cxgb3/aq100x.c b/drivers/net/cxgb3/aq100x.c
-index c51e50d..b1fd5bf 100644
---- a/drivers/net/cxgb3/aq100x.c
-+++ b/drivers/net/cxgb3/aq100x.c
-@@ -43,8 +43,6 @@ enum {
- 	AQ_XAUI_TX_CFG	= 0xe400,
- 
- 	/* MDIO_DEV_ANEG registers */
--	AQ_100M_CTRL	= 0x0010,
--	AQ_10G_CTRL	= 0x0020,
- 	AQ_1G_CTRL	= 0xc400,
- 	AQ_ANEG_STAT	= 0xc800,
- 
-@@ -54,14 +52,15 @@ enum {
- 	AQ_IMASK_GLOBAL	= 0xff00,
- };
- 
--#define AQBIT(x)	(1 << (x))
--#define IMASK_PMA	AQBIT(0x2)
--#define IMASK_GLOBAL	AQBIT(0xf)
--#define ADV_1G_FULL	AQBIT(0xf)
--#define ADV_1G_HALF	AQBIT(0xe)
--#define ADV_10G_FULL	AQBIT(0xc)
--#define AQ_RESET	(AQBIT(0xe) | AQBIT(0xf))
--#define AQ_LOWPOWER	AQBIT(0xb)
-+enum {
-+	IMASK_PMA	= 1 << 2,
-+	IMASK_GLOBAL	= 1 << 15,
-+	ADV_1G_FULL	= 1 << 15,
-+	ADV_1G_HALF	= 1 << 14,
-+	ADV_10G_FULL	= 1 << 12,
-+	AQ_RESET	= (1 << 14) | (1 << 15),
-+	AQ_LOWPOWER	= 1 << 12,
-+};
- 
- static int aq100x_reset(struct cphy *phy, int wait)
- {
-@@ -160,7 +159,7 @@ static int aq100x_advertise(struct cphy *phy, unsigned int advertise_map)
- 	adv = 0;
- 	if (advertise_map & ADVERTISED_10000baseT_Full)
- 		adv |= ADV_10G_FULL;
--	err = t3_mdio_change_bits(phy, MDIO_MMD_AN, AQ_10G_CTRL,
-+	err = t3_mdio_change_bits(phy, MDIO_MMD_AN, MDIO_AN_10GBT_CTRL,
- 				  ADV_10G_FULL, adv);
- 	if (err)
- 		return err;
-@@ -186,7 +185,8 @@ static int aq100x_advertise(struct cphy *phy, unsigned int advertise_map)
- 		adv |= ADVERTISE_PAUSE_CAP;
- 	if (advertise_map & ADVERTISED_Asym_Pause)
- 		adv |= ADVERTISE_PAUSE_ASYM;
--	err = t3_mdio_change_bits(phy, MDIO_MMD_AN, AQ_100M_CTRL, 0xfe0, adv);
-+	err = t3_mdio_change_bits(phy, MDIO_MMD_AN, MDIO_AN_ADVERTISE,
-+				  0xfe0, adv);
- 
- 	return err;
- }
+On Wed, 3 Jun 2009, Christoph Lameter wrote:
+> 
+> mmap_min_addr depends on CONFIG_SECURITY which establishes various
+> strangely complex "security models".
+> 
+> The system needs to be secure by default.
 
+It _is_ secure by default. You have to do some pretty non-default things 
+to get away from it.
+
+But I do agree that it might be good to move the thing into the generic 
+path. I just don't think your arguments are very good. It's not about 
+defaults, it's about the fact that this isn't worth being hidden by that 
+security layer.
+
+			Linus
