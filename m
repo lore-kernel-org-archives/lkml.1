@@ -1,40 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759332AbZFCPYD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbZFCPYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759332AbZFCPYD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 11:24:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757309AbZFCPXx
+	id S1759444AbZFCPYX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 11:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757919AbZFCPXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 11:23:53 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:36845 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755266AbZFCPXx (ORCPT
+	Wed, 3 Jun 2009 11:23:54 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:35067 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757184AbZFCPXx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 3 Jun 2009 11:23:53 -0400
-Date: Wed, 3 Jun 2009 11:23:47 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: "Larry H." <research@subreption.com>, linux-mm@kvack.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, pageexec@freemail.hu
-Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change
- ZERO_SIZE_PTR to point at unmapped space)
-In-Reply-To: <alpine.LFD.2.01.0906030800490.4880@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0906031121030.15621@gentwo.org>
-References: <20090530192829.GK6535@oblivion.subreption.com> <alpine.LFD.2.01.0905301528540.3435@localhost.localdomain> <20090530230022.GO6535@oblivion.subreption.com> <alpine.LFD.2.01.0905301902010.3435@localhost.localdomain> <20090531022158.GA9033@oblivion.subreption.com>
- <alpine.DEB.1.10.0906021130410.23962@gentwo.org> <20090602203405.GC6701@oblivion.subreption.com> <alpine.DEB.1.10.0906031047390.15621@gentwo.org> <alpine.LFD.2.01.0906030800490.4880@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-Id: <20090603152313.281689482@de.ibm.com>
+References: <20090603152223.083010123@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 03 Jun 2009 17:22:24 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Rob van der Heij <rvdheij@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 1/2] idle profile hits with NOHZ
+Content-Disposition: inline; filename=profile-idle-tick.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Jun 2009, Linus Torvalds wrote:
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-> The point being that we do need to support mmap at zero. Not necessarily
-> universally, but it can't be some fixed "we don't allow that".
+On a NOHZ system the generic clock events code reports a maximum
+of 1 tick to the kernel profiler. If the system slept for more than
+a single tick or has not been woken by a timer interrupt the number
+of ticks reported will be incorrect. This skewes the percentages in
+the profile. A good place to report the profile ticks is in
+tick_nohz_restart_sched_tick. We calculate the number of ticks for
+the cpu accounting anyway. The only obstacle is that we need an
+instruction address for the profile ticks. In order to get one
+extend the tick_sched structure by an idle_pc field and set it in
+tick_nohz_stop_idle which is called from tick_check_idle.
+Note: this does not solve the same problem in oprofile.
 
-Hmmm... Depend on some capability? CAP_SYS_PTRACE may be something
-remotely related?
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ include/linux/tick.h     |    1 +
+ kernel/time/tick-sched.c |   14 +++++++++-----
+ 2 files changed, 10 insertions(+), 5 deletions(-)
+
+Index: quilt-2.6/include/linux/tick.h
+===================================================================
+--- quilt-2.6.orig/include/linux/tick.h
++++ quilt-2.6/include/linux/tick.h
+@@ -64,6 +64,7 @@ struct tick_sched {
+ 	unsigned long			last_jiffies;
+ 	unsigned long			next_jiffies;
+ 	ktime_t				idle_expires;
++	unsigned long			idle_pc;
+ };
+ 
+ extern void __init tick_init(void);
+Index: quilt-2.6/kernel/time/tick-sched.c
+===================================================================
+--- quilt-2.6.orig/kernel/time/tick-sched.c
++++ quilt-2.6/kernel/time/tick-sched.c
+@@ -166,6 +166,8 @@ static void tick_nohz_stop_idle(int cpu)
+ 		ts->idle_lastupdate = now;
+ 		ts->idle_sleeptime = ktime_add(ts->idle_sleeptime, delta);
+ 		ts->idle_active = 0;
++		if (in_interrupt())
++			ts->idle_pc = profile_pc(get_irq_regs());
+ 
+ 		sched_clock_idle_wakeup_event(0);
+ 	}
+@@ -419,9 +421,7 @@ void tick_nohz_restart_sched_tick(void)
+ {
+ 	int cpu = smp_processor_id();
+ 	struct tick_sched *ts = &per_cpu(tick_cpu_sched, cpu);
+-#ifndef CONFIG_VIRT_CPU_ACCOUNTING
+ 	unsigned long ticks;
+-#endif
+ 	ktime_t now;
+ 
+ 	local_irq_disable();
+@@ -443,19 +443,23 @@ void tick_nohz_restart_sched_tick(void)
+ 	tick_do_update_jiffies64(now);
+ 	cpumask_clear_cpu(cpu, nohz_cpu_mask);
+ 
++	ticks = jiffies - ts->idle_jiffies;
+ #ifndef CONFIG_VIRT_CPU_ACCOUNTING
+ 	/*
+ 	 * We stopped the tick in idle. Update process times would miss the
+ 	 * time we slept as update_process_times does only a 1 tick
+ 	 * accounting. Enforce that this is accounted to idle !
+-	 */
+-	ticks = jiffies - ts->idle_jiffies;
+-	/*
++	 *
+ 	 * We might be one off. Do not randomly account a huge number of ticks!
+ 	 */
+ 	if (ticks && ticks < LONG_MAX)
+ 		account_idle_ticks(ticks);
+ #endif
++#ifdef CONFIG_PROFILING
++	/* Create profile hits for all ticks we slept in idle. */
++	if (ticks && ticks < LONG_MAX)
++		profile_hits(CPU_PROFILING, (void *) ts->idle_pc, ticks);
++#endif
+ 
+ 	touch_softlockup_watchdog();
+ 	/*
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
