@@ -1,88 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbZFCGix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbZFCGlD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbZFCGix (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 02:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbZFCGiq
+	id S1754270AbZFCGlD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 02:41:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbZFCGkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 02:38:46 -0400
-Received: from claw.goop.org ([74.207.240.146]:45293 "EHLO claw.goop.org"
+	Wed, 3 Jun 2009 02:40:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58511 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750857AbZFCGiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 02:38:46 -0400
-Message-ID: <4A261A72.5040700@goop.org>
-Date: Wed, 03 Jun 2009 16:38:42 +1000
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1750857AbZFCGkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 02:40:52 -0400
+Date: Wed, 3 Jun 2009 09:39:56 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, paulmck@linux.vnet.ibm.com
+Subject: Re: [KVM-RFC PATCH 0/2] irqfd: use POLLHUP notification for close()
+Message-ID: <20090603063956.GA8134@redhat.com>
+References: <20090602151135.29746.91320.stgit@dev.haskins.net> <20090602160434.GA6827@redhat.com> <4A254FD7.5090302@novell.com> <20090602162021.GB6827@redhat.com> <4A255484.6060401@novell.com> <20090602165949.GD6827@redhat.com> <4A256431.2080101@novell.com>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>, Greg KH <gregkh@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, Chris Wright <chrisw@redhat.com>,
-       kurt.hackel@oracle.com, Andrew Morton <akpm@linux-foundation.org>,
-       Ky Srinivasan <ksrinivasan@novell.com>, Beulich <jbeulich@novell.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Avi Kivity <avi@redhat.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 01/17] xen/dom0: handle acpi lapic parsing in Xen dom0
-References: <1243409850-21577-1-git-send-email-jeremy@goop.org> <1243409850-21577-2-git-send-email-jeremy@goop.org> <alpine.LFD.2.00.0906021826430.3419@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0906021826430.3419@localhost.localdomain>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A256431.2080101@novell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Wed, 27 May 2009, Jeremy Fitzhardinge wrote:
->
->   
->> When running in Xen dom0, we still want to parse the ACPI tables to
->> find out about local and IO apics, but we don't want to actually use
->> the lapics.
->>     
->
-> Hmm, we parse the tables and discard the information. What's the point
-> of this exercise ? Some nice dmesg lines ?
->   
+On Tue, Jun 02, 2009 at 01:41:05PM -0400, Gregory Haskins wrote:
+> > And having close not clean up the state unless you do an ioctl first is
+> > very messy IMO - I don't think you'll find any such examples in kernel.
+> >
+> >   
+> 
+> I agree, and that is why I am advocating this POLLHUP solution.  It was
+> only this other way to begin with because the technology didn't exist
+> until Davide showed me the light.
+> 
+> Problem with your request is that I already looked into what is
+> essentially a bi-directional reference problem (for a different reason)
+> when I started the POLLHUP series.  Its messy to do this in a way that
+> doesn't negatively impact the fast path (introducing locking, etc) or
+> make my head explode making sure it doesn't race.  Afaict, we would need
+> to solve this problem to do what you are proposing (patches welcome).
+> 
+> If this hybrid decoupled-deassign + unified-close is indeed an important
+> feature set, I suggest that we still consider this POLLHUP series for
+> inclusion, and then someone can re-introduce DEASSIGN support in the
+> future as a CAP bit extension.  That way we at least get the desirable
+> close() properties that we both seem in favor of, and get this advanced
+> use case when we need it (and can figure out the locking design).
+> 
 
-No, it was to make some highly convoluted logic work.  I'm planning on 
-revisting all this to make it so that clearing the APIC cpuid feature 
-flag works (ie, the local apics are skipped, but IO-APIC discovery still 
-works).
+FWIW, I took a look and yes, it is non-trivial.
+I concur, we can always add the deassign ioctl later.
 
-I don't remember the specific problems I encountered, but it was 
-something to do with the fact that CPU discovery is tied up with local 
-APIC discovery and some entanglement with how ACPI table parsing works, 
-all coupled through some global variables with unclear semantics.
 
-> I hate these "if (xen_...)" extra cases even more than the paravirt
-> misery. They stick Xen dependencies into random places and enforce the
-> people who want to modify that code to find out why the heck this
-> needs to be there.
->   
 
-I agree.  The if (xen) stuff was there to avoid sugar-coating the 
-situation.  I could have prettily hidden things in abstraction layers, 
-but if there were no current or even likely non-Xen users, I thought it 
-was more honest and direct to just make the situation obvious to the reader.
-
-> That's the fundamental design problem with the Dom0 model that you
-> want just certain parts of Linux and those parts which are in your way
-> are just hacked out. But this is designed to be a nightmare for
-> maintainence and development. Are you going to stick more and more of
-> those "if (xen..)" constructs into places which provide functionality
-> which is only partially useful to Xen ?
->   
-
-No.
-
-My current plan for this apic stuff is to 1) clean up the local apic 
-discovery so we can just clear the APIC cpuid flag and have the right 
-thing happen (since that's the truth of the situation: there are no 
-local apics available to the kernel), and 2) implement the ioapic driver 
-layer so that we can just plug our Xen stuff into that.  That should 
-avoid all the explicit if (xen) bits in this part of the code.
-
-    J
+-- 
+MST
