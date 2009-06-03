@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbZFCVUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZFCVVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756096AbZFCVUX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 17:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbZFCVUN
+	id S1756112AbZFCVVy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 17:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755275AbZFCVVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 17:20:13 -0400
-Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:59342 "EHLO
-	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754064AbZFCVUM (ORCPT
+	Wed, 3 Jun 2009 17:21:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36235 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754064AbZFCVVr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 17:20:12 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] parport: quickfix the proc registration bug
-Date: Wed, 3 Jun 2009 23:20:11 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <20090602155718.12461.87554.stgit@t61.ukuu.org.uk>
-In-reply-To: <20090602155718.12461.87554.stgit@t61.ukuu.org.uk>
+	Wed, 3 Jun 2009 17:21:47 -0400
+Date: Wed, 3 Jun 2009 14:20:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: Eric Paris <eparis@parisplace.org>, "Larry H." <research@subreption.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-mm@kvack.org,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu
+Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change 
+ ZERO_SIZE_PTR to point at unmapped space)
+In-Reply-To: <alpine.DEB.1.10.0906031602250.20254@gentwo.org>
+Message-ID: <alpine.LFD.2.01.0906031414570.4880@localhost.localdomain>
+References: <20090530230022.GO6535@oblivion.subreption.com>  <alpine.LFD.2.01.0906031032390.4880@localhost.localdomain>  <20090603180037.GB18561@oblivion.subreption.com>  <alpine.LFD.2.01.0906031109150.4880@localhost.localdomain>  <20090603183939.GC18561@oblivion.subreption.com>
+  <alpine.LFD.2.01.0906031142390.4880@localhost.localdomain>  <alpine.LFD.2.01.0906031145460.4880@localhost.localdomain>  <alpine.DEB.1.10.0906031458250.9269@gentwo.org>  <7e0fb38c0906031214lf4a2ed2x688da299e8cb1034@mail.gmail.com> 
+ <alpine.DEB.1.10.0906031537110.20254@gentwo.org> <7e0fb38c0906031251h6844ea08y2dbfa09a7f46eb5f@mail.gmail.com> <alpine.DEB.1.10.0906031602250.20254@gentwo.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906032320.11870.elendil@planet.nl>
-X-OriginalArrivalTime: 03 Jun 2009 21:20:12.0218 (UTC) FILETIME=[148151A0:01C9E491]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> Ideally we should have a directory of drivers and a link to the 'active'
-> driver. For now just show the first device which is effectively the
-> existing semantics without a warning.
-> 
-> This is an update on the original buggy patch that I then forgot to
-> resubmit. Confusingly it was proposed by Red Hat, written by Etched
-> Pixels fixed and submitted by Intel ...
-> 
-> Resolves-Bug: http://bugzilla.kernel.org/show_bug.cgi?id=9749
-> Signed-off-by: Alan Cox <alan@linux.intel.com>
 
-Thanks Alan. Unfortunately I'm no longer able to test this as my printer 
-is now connected via USB to my notebook's docking station instead of via 
-a parport to my desktop (which was prompted to home server and moved to a 
-different room).
+
+On Wed, 3 Jun 2009, Christoph Lameter wrote:
+> 
+> Use mmap_min_addr indepedently of security models
+
+Looks ok by me. As mentioned, it would be nice if the coherency with the 
+'capabilities' security module was something inherent to the code, but 
+this looks like a sane minimal patch.
+
+			Linus
