@@ -1,43 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756948AbZFCMzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756950AbZFCM4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756948AbZFCMzv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 08:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbZFCMzl
+	id S1756950AbZFCM4E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 08:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbZFCMzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 08:55:41 -0400
-Received: from build.ossfans.org ([67.223.233.67]:34120 "EHLO
-	build.ossfans.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752836AbZFCMzk (ORCPT
+	Wed, 3 Jun 2009 08:55:50 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:47392 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756883AbZFCMzt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 08:55:40 -0400
-Date: Wed, 3 Jun 2009 16:55:07 +0400
-From: Sergey Lapin <slapin@ossfans.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       sfr@canb.auug.org.au
-Subject: Re: [PATCH 4/6] net: add NL802154 interface for configuration of
-	802.15.4 devices
-Message-ID: <20090603125507.GA22673@build.ossfans.org>
-References: <1244021629-18409-4-git-send-email-dbaryshkov@gmail.com> <1244021629-18409-5-git-send-email-dbaryshkov@gmail.com> <1244021964.10665.5.camel@johannes.local> <20090603.030911.162861804.davem@davemloft.net> <20090603105256.GB20508@doriath.ww600.siemens.net> <1244027110.1693.9.camel@johannes.local>
+	Wed, 3 Jun 2009 08:55:49 -0400
+Message-ID: <4A2672A8.8020809@nokia.com>
+Date: Wed, 03 Jun 2009 15:55:04 +0300
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244027110.1693.9.camel@johannes.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Dmitry Pervushin <dpervushin@embeddedalley.com>
+Subject: Re: linux-next: ubi tree build failure
+References: <20090603184408.49c7fb1f.sfr@canb.auug.org.au> <4A265DF6.3070602@nokia.com>
+In-Reply-To: <4A265DF6.3070602@nokia.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 03 Jun 2009 12:55:06.0066 (UTC) FILETIME=[84A18320:01C9E44A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +#define IEEE802154_ATTR_MAX (__IEEE802154_ATTR_MAX - 1)
-> > +#define NLA_HW_ADDR	NLA_U64
-> > +#define NLA_GET_HW_ADDR(attr, addr) do { u64 _temp = nla_get_u64(attr); memcpy(addr, &_temp, 8); } while (0)
-> > +#define NLA_PUT_HW_ADDR(msg, attr, addr) do { u64 _temp; memcpy(&_temp, addr, 8); NLA_PUT_U64(msg, attr, _temp); } while (0)
+Artem Bityutskiy wrote:
+> Stephen Rothwell wrote:
+>> Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
+>>
+>> drivers/mtd/ubi/gluebi.c: In function 'gluebi_get_device':
+>> drivers/mtd/ubi/gluebi.c:126: error: implicit declaration of function 'IS_ERR'
+>> drivers/mtd/ubi/gluebi.c:129: error: implicit declaration of function 'PTR_ERR'
+> 
+> It is strange that I do not see these errors on my x86_86
+> 
+>> Introduced by commit ec5c514efde253de7f28668c88bbae26d2a293de ("UBI: make
+>> gluebi a separate module") from the ubi tree.  I guess the conversion
+>> managed to remove an implicit include of linux/err.h.
+>>
+>> I have reverted that commit for today.  I then needed to also revert
+>> commit 518ceef0c9ca97023e45ae46aedaefa240c690a6 ("UBI: remove built-in
+>> gluebi") to make it build again.
+> 
+> Hmm, this means bisection problems, which I'd also like to fix.
+> But this commit builds just fine for me as well. Would be nice
+> to see what are the errors.
+> 
+> Any suggestions what I could do to reproduce the build issues?
+> I'll try at least now to build this on x86 (32-bit). 
 
-What would you propose here? adding prefix will add length to macro,
-IEEE802154_NL_PUT_HW_ADDR is damn long name. Using repeated code
-sequence is not better (it is error-prone and unreadable).
+Did not see compile error on x86 as well. Anyway, I have added more
+includes which seem to be missed. Hopefully this problem is fixed
+now. Thanks!
 
-Any ideas?
-
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
