@@ -1,105 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbZFCSt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbZFCStk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757288AbZFCSt3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 14:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbZFCSrF
+	id S1757603AbZFCStk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 14:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbZFCSrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 14:47:05 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37849 "EHLO
+	Wed, 3 Jun 2009 14:47:15 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:37873 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755275AbZFCSrE (ORCPT
+	with ESMTP id S1755389AbZFCSrN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 14:47:04 -0400
+	Wed, 3 Jun 2009 14:47:13 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20090603846.816684333@firstfloor.org>
 In-Reply-To: <20090603846.816684333@firstfloor.org>
-To: npiggin@suse.de, akpm@linux-foundation.org, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com
-Subject: [PATCH] [12/16] Refactor truncate to allow direct truncating of page
-Message-Id: <20090603184646.B915B1D0292@basil.firstfloor.org>
-Date: Wed,  3 Jun 2009 20:46:46 +0200 (CEST)
+To: akpm@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com
+Subject: [PATCH] [15/16] HWPOISON: Add madvise() based injector for hardware poisoned pages v3
+Message-Id: <20090603184650.CE7521D0290@basil.firstfloor.org>
+Date: Wed,  3 Jun 2009 20:46:50 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Nick Piggin <npiggin@suse.de>
+Impact: optional, useful for debugging
 
-Extract out truncate_inode_page() out of the truncate path so that
-it can be used by memory-failure.c
+Add a new madvice sub command to inject poison for some
+pages in a process' address space.  This is useful for
+testing the poison page handling.
 
-[AK: description, headers, fix typos]
+Open issues:
+
+- This patch allows root to tie up arbitary amounts of memory.
+Should this be disabled inside containers?
+- There's a small race window between getting the page and injecting.
+The patch drops the ref count because otherwise memory_failure
+complains about dangling references. In theory with a multi threaded
+injector one could inject poison for a process foreign page this way.
+Not a serious issue right now.
+
+v2: Use write flag for get_user_pages to make sure to always get
+a fresh page
+v3: Don't request write mapping (Fengguang Wu)
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/linux/mm.h |    2 ++
- mm/truncate.c      |   24 ++++++++++++------------
- 2 files changed, 14 insertions(+), 12 deletions(-)
+ include/asm-generic/mman-common.h |    1 +
+ mm/madvise.c                      |   36 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+)
 
-Index: linux/mm/truncate.c
+Index: linux/mm/madvise.c
 ===================================================================
---- linux.orig/mm/truncate.c	2009-06-03 19:37:38.000000000 +0200
-+++ linux/mm/truncate.c	2009-06-03 20:13:43.000000000 +0200
-@@ -135,6 +135,16 @@
- 	return ret;
+--- linux.orig/mm/madvise.c	2009-06-03 20:30:31.000000000 +0200
++++ linux/mm/madvise.c	2009-06-03 20:30:47.000000000 +0200
+@@ -207,6 +207,38 @@
+ 	return error;
  }
  
-+void truncate_inode_page(struct address_space *mapping, struct page *page)
++#ifdef CONFIG_MEMORY_FAILURE
++/*
++ * Error injection support for memory error handling.
++ */
++static int madvise_hwpoison(unsigned long start, unsigned long end)
 +{
-+	if (page_mapped(page)) {
-+		unmap_mapping_range(mapping,
-+		  (loff_t)page->index<<PAGE_CACHE_SHIFT,
-+		  PAGE_CACHE_SIZE, 0);
++	/*
++	 * RED-PEN
++	 * This allows to tie up arbitary amounts of memory.
++	 * Might be a good idea to disable it inside containers even for root.
++	 */
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++	for (; start < end; start += PAGE_SIZE) {
++		struct page *p;
++		int ret = get_user_pages(current, current->mm, start, 1,
++						0, 0, &p, NULL);
++		if (ret != 1)
++			return ret;
++		put_page(p);
++		/*
++		 * RED-PEN page can be reused in a short window, but otherwise
++		 * we'll have to fight with the reference count.
++		 */
++		printk(KERN_INFO "Injecting memory failure for page %lx at %lx\n",
++		       page_to_pfn(p), start);
++		memory_failure(page_to_pfn(p), 0);
 +	}
-+	truncate_complete_page(mapping, page);
++	return 0;
 +}
++#endif
 +
- /**
-  * truncate_inode_pages - truncate range of pages specified by start & end byte offsets
-  * @mapping: mapping to truncate
-@@ -196,12 +206,7 @@
- 				unlock_page(page);
- 				continue;
- 			}
--			if (page_mapped(page)) {
--				unmap_mapping_range(mapping,
--				  (loff_t)page_index<<PAGE_CACHE_SHIFT,
--				  PAGE_CACHE_SIZE, 0);
--			}
--			truncate_complete_page(mapping, page);
-+			truncate_inode_page(mapping, page);
- 			unlock_page(page);
- 		}
- 		pagevec_release(&pvec);
-@@ -238,15 +243,10 @@
- 				break;
- 			lock_page(page);
- 			wait_on_page_writeback(page);
--			if (page_mapped(page)) {
--				unmap_mapping_range(mapping,
--				  (loff_t)page->index<<PAGE_CACHE_SHIFT,
--				  PAGE_CACHE_SIZE, 0);
--			}
-+			truncate_inode_page(mapping, page);
- 			if (page->index > next)
- 				next = page->index;
- 			next++;
--			truncate_complete_page(mapping, page);
- 			unlock_page(page);
- 		}
- 		pagevec_release(&pvec);
-Index: linux/include/linux/mm.h
-===================================================================
---- linux.orig/include/linux/mm.h	2009-06-03 19:37:38.000000000 +0200
-+++ linux/include/linux/mm.h	2009-06-03 20:39:49.000000000 +0200
-@@ -811,6 +811,8 @@
- extern int vmtruncate(struct inode * inode, loff_t offset);
- extern int vmtruncate_range(struct inode * inode, loff_t offset, loff_t end);
+ static long
+ madvise_vma(struct vm_area_struct *vma, struct vm_area_struct **prev,
+ 		unsigned long start, unsigned long end, int behavior)
+@@ -307,6 +339,10 @@
+ 	int write;
+ 	size_t len;
  
-+void truncate_inode_page(struct address_space *mapping, struct page *page);
-+
- #ifdef CONFIG_MMU
- extern int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 			unsigned long address, int write_access);
++#ifdef CONFIG_MEMORY_FAILURE
++	if (behavior == MADV_HWPOISON)
++		return madvise_hwpoison(start, start+len_in);
++#endif
+ 	if (!madvise_behavior_valid(behavior))
+ 		return error;
+ 
+Index: linux/include/asm-generic/mman-common.h
+===================================================================
+--- linux.orig/include/asm-generic/mman-common.h	2009-06-03 20:30:31.000000000 +0200
++++ linux/include/asm-generic/mman-common.h	2009-06-03 20:30:47.000000000 +0200
+@@ -34,6 +34,7 @@
+ #define MADV_REMOVE	9		/* remove these pages & resources */
+ #define MADV_DONTFORK	10		/* don't inherit across fork */
+ #define MADV_DOFORK	11		/* do inherit across fork */
++#define MADV_HWPOISON	12		/* poison a page for testing */
+ 
+ /* compatibility flags */
+ #define MAP_FILE	0
