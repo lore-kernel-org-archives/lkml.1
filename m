@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756536AbZFCH6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbZFCIAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756536AbZFCH6F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 03:58:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbZFCH54
+	id S1756642AbZFCIAt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 04:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZFCIAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 03:57:56 -0400
-Received: from smtprelay01.ispgateway.de ([80.67.31.35]:54939 "EHLO
-	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754917AbZFCH54 (ORCPT
+	Wed, 3 Jun 2009 04:00:39 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:41041 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753631AbZFCIAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 03:57:56 -0400
-References: <1240950704.3781.12.camel@maxim-laptop> <cone.1241299309.265715.3948.1000@mentalhome> <20090503184617.GA3555@liondog.tnic> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic> <cone.1242065107.695268.13534.1000@onepiie> <20090512060231.GB26286@liondog.tnic> <cone.1242669880.118150.4276.1000@deskpiie> <20090524192219.GA30285@liondog.tnic> <cone.1243865900.580144.4368.1000@deskpiie> <20090603073939.GB2671@liondog.tnic>
-Message-ID: <cone.1244015521.698111.16292.1000@arca>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH] Acer Aspire One Fan Control
-Date: Wed, 03 Jun 2009 09:52:01 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
+	Wed, 3 Jun 2009 04:00:38 -0400
+Message-ID: <4A262D6E.9070908@nokia.com>
+Date: Wed, 03 Jun 2009 10:59:42 +0300
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "david@fromorbit.com" <david@fromorbit.com>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "jack@suse.cz" <jack@suse.cz>,
+       "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "damien.wyart@free.fr" <damien.wyart@free.fr>
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
+References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com> <4A1E9D0B.4090402@gmail.com> <4A1E9D8B.8020908@gmail.com> <1243542908.6645.104.camel@laptop> <4A20011E.7020900@nokia.com> <20090529155046.GH11363@kernel.dk> <4A20072B.7050807@nokia.com> <20090529170742.GI11363@kernel.dk> <4A2628A7.9080407@nokia.com> <20090603074417.GC11363@kernel.dk>
+In-Reply-To: <20090603074417.GC11363@kernel.dk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 03 Jun 2009 07:59:51.0619 (UTC) FILETIME=[45FF6930:01C9E421]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Boris,
-
-Borislav Petkov writes:
-
->> +
->> +#define pr_fmt(fmt) "acerhdf: " fmt
+Jens Axboe wrote:
+>> Just to make sure I understood you correctly. I assume my original
+>> patch is fine (because there is bdi_destroy()) and merge it to
+>> ubifs tree.
 > 
-> This is new but it's not used anywhere. Maybe some debug leftovers?
+> It needs to be:
+> 
+>         err = bdi_register(&c->bdi, NULL, "ubifs");
+>         if (err)
+>                 goto out_bdi;
+> 
+> so you hit the bdi_destroy() for that failure, not goto out_close;
+> Otherwise it was fine.
 
-This is the way Joe suggested, how to use printk's:
-You define the pr_fmt(fmt) before any includes and you can just do 
-'pr_notice("Fan control off, to enable:\n");' to printk a notice which looks 
-like this: "acerhdf: Fan control off...". Same with pr_err(...) which prints 
-an error.
+Did this, also added a
+Reviewed-by: Jens Axboe <jens.axboe@oracle.com>
 
-kind regards,
---peter
+http://git.infradead.org/ubifs-2.6.git?a=commit;h=813fdc16ad591e79d0c1b88d31970dcd1c2aa3f1
+
+Thanks.
+
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
