@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756642AbZFCIAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756746AbZFCIBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756642AbZFCIAt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 04:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZFCIAj
+	id S1756746AbZFCIBA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 04:01:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755793AbZFCIAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 04:00:39 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:41041 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753631AbZFCIAi (ORCPT
+	Wed, 3 Jun 2009 04:00:43 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:41000 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756073AbZFCIAl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 04:00:38 -0400
-Message-ID: <4A262D6E.9070908@nokia.com>
-Date: Wed, 03 Jun 2009 10:59:42 +0300
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 3 Jun 2009 04:00:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=hTLpvpkidwTtDFkh3j8asAAw61gKDFr5ZXNJuxIwlr710gJqPIQnmg5qIiV1wdjo/O
+         adKJam3Lkjtf0J3RqKiwe0+T5mGHf2S9ogQB21QyoX0sAoyg3OkwgcIqSxt111H3U5s7
+         Ms2D/yQ/Exn54kQCONaH0SVGL/v8a8nZSU4Bw=
+Date: Wed, 3 Jun 2009 10:00:40 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Peter Feuerer <peter@piie.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH] Acer Aspire One Fan Control
+Message-ID: <20090603080040.GA2716@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
+	Peter Feuerer <peter@piie.net>, LKML <linux-kernel@vger.kernel.org>,
+	lenb@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
+	Maxim Levitsky <maximlevitsky@gmail.com>
+References: <20090503184617.GA3555@liondog.tnic> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic> <cone.1242065107.695268.13534.1000@onepiie> <20090512060231.GB26286@liondog.tnic> <cone.1242669880.118150.4276.1000@deskpiie> <20090524192219.GA30285@liondog.tnic> <cone.1243865900.580144.4368.1000@deskpiie> <20090603073939.GB2671@liondog.tnic> <cone.1244015521.698111.16292.1000@arca>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "david@fromorbit.com" <david@fromorbit.com>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "jack@suse.cz" <jack@suse.cz>,
-       "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "damien.wyart@free.fr" <damien.wyart@free.fr>
-Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
-References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com> <4A1E9D0B.4090402@gmail.com> <4A1E9D8B.8020908@gmail.com> <1243542908.6645.104.camel@laptop> <4A20011E.7020900@nokia.com> <20090529155046.GH11363@kernel.dk> <4A20072B.7050807@nokia.com> <20090529170742.GI11363@kernel.dk> <4A2628A7.9080407@nokia.com> <20090603074417.GC11363@kernel.dk>
-In-Reply-To: <20090603074417.GC11363@kernel.dk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 03 Jun 2009 07:59:51.0619 (UTC) FILETIME=[45FF6930:01C9E421]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <cone.1244015521.698111.16292.1000@arca>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
->> Just to make sure I understood you correctly. I assume my original
->> patch is fine (because there is bdi_destroy()) and merge it to
->> ubifs tree.
-> 
-> It needs to be:
-> 
->         err = bdi_register(&c->bdi, NULL, "ubifs");
->         if (err)
->                 goto out_bdi;
-> 
-> so you hit the bdi_destroy() for that failure, not goto out_close;
-> Otherwise it was fine.
+Hi,
 
-Did this, also added a
-Reviewed-by: Jens Axboe <jens.axboe@oracle.com>
+On Wed, Jun 03, 2009 at 09:52:01AM +0200, Peter Feuerer wrote:
+>>> +#define pr_fmt(fmt) "acerhdf: " fmt
+>>
+>> This is new but it's not used anywhere. Maybe some debug leftovers?
+>
+> This is the way Joe suggested, how to use printk's:
+> You define the pr_fmt(fmt) before any includes and you can just do  
+> 'pr_notice("Fan control off, to enable:\n");' to printk a notice which 
+> looks like this: "acerhdf: Fan control off...". Same with pr_err(...) 
+> which prints an error.
 
-http://git.infradead.org/ubifs-2.6.git?a=commit;h=813fdc16ad591e79d0c1b88d31970dcd1c2aa3f1
+Ah, this thing. Ok.
 
-Thanks.
+...
+
++static int acerhdf_unbind(struct thermal_zone_device *thermal,
++               struct thermal_cooling_device *cdev)
++{
++       if (cdev != acerhdf_cool_dev)
++               return 0;
++
++       if (thermal_zone_unbind_cooling_device(thermal, 0, cdev)) {
++               pr_err("acerhdf: error unbinding cooling dev\n");
+
+you've missed one here.
+
++               return -EINVAL;
++       }
++       return 0;
++}
+
+...
+
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Regards/Gruss,
+    Boris.
