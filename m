@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758604AbZFCRa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbZFCRbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758604AbZFCRa2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 13:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbZFCRaT
+	id S1758945AbZFCRbh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 13:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbZFCRba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 13:30:19 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:46194 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755336AbZFCRaR (ORCPT
+	Wed, 3 Jun 2009 13:31:30 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:62725 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755261AbZFCRba (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 13:30:17 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 3 Jun 2009 10:24:07 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: paulmck@linux.vnet.ibm.com, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com, mst@redhat.com
-Subject: Re: [KVM-RFC PATCH 2/2] kvm: use POLLHUP to close an irqfd instead
- of an explicit ioctl
-In-Reply-To: <4A26B284.3060809@novell.com>
-Message-ID: <alpine.DEB.1.10.0906031023470.18001@makko.or.mcafeemobile.com>
-References: <20090602151135.29746.91320.stgit@dev.haskins.net> <20090602151538.29746.40356.stgit@dev.haskins.net> <20090602180256.GD6743@linux.vnet.ibm.com> <4A256E12.9060301@novell.com> <20090602220157.GF6743@linux.vnet.ibm.com> <4A25D799.10604@novell.com>
- <20090603150439.GB6640@linux.vnet.ibm.com> <4A26B284.3060809@novell.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 3 Jun 2009 13:31:30 -0400
+Message-ID: <4A26B361.5000600@nortel.com>
+Date: Wed, 03 Jun 2009 11:31:13 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       George Dunlap <george.dunlap@eu.citrix.com>,
+       David Miller <davem@davemloft.net>, "jeremy@goop.org" <jeremy@goop.org>,
+       Dan Magenheimer <dan.magenheimer@oracle.com>,
+       "avi@redhat.com" <avi@redhat.com>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       "xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
+       ksrinivasan <ksrinivasan@novell.com>,
+       "EAnderson@novell.com" <EAnderson@novell.com>,
+       "wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
+       Stephen Spector <stephen.spector@citrix.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "npiggin@suse.de" <npiggin@suse.de>
+Subject: Re: Merge Xen (the hypervisor) into Linux
+References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org> <20090528.210559.137121893.davem@davemloft.net> <4A1FCE8E.2060604@eu.citrix.com> <20090602224051.GB32428@goodmis.org> <20090602232843.GA6577@elte.hu>
+In-Reply-To: <20090602232843.GA6577@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Jun 2009 17:31:19.0845 (UTC) FILETIME=[1B5F7D50:01C9E471]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Jun 2009, Gregory Haskins wrote:
+Ingo Molnar wrote:
 
-> 
-> Thanks again for the review, Paul.  IIUC, you think the design is ok as
-> it is.
-> 
-> Davide,
->    In light of this, would you like to submit patch 1/2 formally with
-> your SOB at your earliest convenience?  Or would you prefer that I
-> submit it and you can simply ack it?  Either is fine with me.
+> A lot of Xen legacies could be dropped: the crazy ring1 hack on 
+> 32-bit, the various wide interfaces to make pure-software 
+> virtualization limp along. All major CPUs shipped with hardware 
+> virtualization support in the past 2-3 years, so the availability of 
+> VMX and SVM can be taken for granted for such a project.
 
-Will do later today...
+That's a pretty bold statement.  I have five x86 machines in my house
+currently being used, and none of them support VMX/SVM.
 
+At least some Lenovo laptops disable VMX in the BIOS with no way to
+enable it.  Some of the Core2Duo chips don't support VMX at all.
 
+I think Xen without paravirtualization would be a serious degradation of
+usefulness.
 
-- Davide
-
-
+Chris
