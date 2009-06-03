@@ -1,95 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbZFCM11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbZFCM2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756412AbZFCM11 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 08:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbZFCM1R
+	id S1755892AbZFCM2V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 08:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbZFCM2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 08:27:17 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:36353 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754484AbZFCM1R (ORCPT
+	Wed, 3 Jun 2009 08:28:04 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:36838 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754529AbZFCM2B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 08:27:17 -0400
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: mingo@elte.hu, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, yinghai@kernel.org,
-       lcm@us.ibm.com
-Subject: Re: [RESEND] [PATCH v2] [BUGFIX] x86/x86_64: fix CPU offlining triggered "active" device IRQ interrruption
-References: <20090602193216.GC7282@us.ibm.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 03 Jun 2009 05:27:13 -0700
-In-Reply-To: <20090602193216.GC7282@us.ibm.com> (Gary Hade's message of "Tue\, 2 Jun 2009 12\:32\:16 -0700")
-Message-ID: <m1y6s9qz8e.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 3 Jun 2009 08:28:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=s1s777BggC/3pAMlbbhXWKeg5JsZshRj5zgehsSqJMh+Kkl8ow6WlN65GOtONUyPxc
+         w+BrJjQzKEL+S/23za/f/EywcofcX8bQ0o8W/Cs8EovJSsVZAO6MwvRqcFqWtdDHsXzO
+         5RTVv+0AWaEGdgHQr+MtANyoKRLWLwgWZuu2A=
+Date: Wed, 3 Jun 2009 16:27:44 +0400
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+       sfr@canb.auug.org.au, slapin@ossfans.org
+Subject: Re: [PATCH 4/6] net: add NL802154 interface for configuration of
+	802.15.4 devices
+Message-ID: <20090603122744.GC20508@doriath.ww600.siemens.net>
+References: <1244021629-18409-4-git-send-email-dbaryshkov@gmail.com> <1244021629-18409-5-git-send-email-dbaryshkov@gmail.com> <1244021964.10665.5.camel@johannes.local> <20090603.030911.162861804.davem@davemloft.net> <20090603105256.GB20508@doriath.ww600.siemens.net> <1244027110.1693.9.camel@johannes.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: garyhade@us.ibm.com, lcm@us.ibm.com, yinghai@kernel.org, x86@kernel.org, hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org, mingo@redhat.com, mingo@elte.hu
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <1244027110.1693.9.camel@johannes.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gary Hade <garyhade@us.ibm.com> writes:
+On Wed, Jun 03, 2009 at 01:05:10PM +0200, Johannes Berg wrote:
+> On Wed, 2009-06-03 at 14:52 +0400, Dmitry Eremin-Solenikov wrote:
+> > +#define IEEE802154_ATTR_MAX (__IEEE802154_ATTR_MAX - 1)
+> > +#define NLA_HW_ADDR	NLA_U64
+> > +#define NLA_GET_HW_ADDR(attr, addr) do { u64 _temp = nla_get_u64(attr); memcpy(addr, &_temp, 8); } while (0)
+> > +#define NLA_PUT_HW_ADDR(msg, attr, addr) do { u64 _temp; memcpy(&_temp, addr, 8); NLA_PUT_U64(msg, attr, _temp); } while (0)
+> 
+> I really don't like this namespace pollution.
+> 
+> > +#ifdef IEEE802154_NL_WANT_POLICY
+> > +static struct nla_policy ieee802154_policy[IEEE802154_ATTR_MAX + 1] = {
+> 
+> Ho humm. This shouldn't be in a header file. Not even with an #ifdef
+> that exactly one C file then sets.
+> 
+> > +	[IEEE802154_ATTR_DURATION] = { .type = NLA_U8, },
+> > +#ifdef __KERNEL__
+> > +	[IEEE802154_ATTR_ED_LIST] = { .len = 27 },
+> > +#else
+> 
+> Ick.
 
-> Impact: Eliminates an issue that can leave the system in an
->         unusable state.
->
-> This patch addresses an issue where device generated IRQs
-> are no longer seen by the kernel following IRQ affinity
-> migration while the device is generating IRQs at a high rate.
->
-> I have been able to consistently reproduce the problem on
-> some of our systems by running the following script (VICTIM_IRQ
-> specifies the IRQ for the aic94xx device) while a single instance
-> of the command
->   # while true; do find / -exec file {} \;; done
-> is keeping the filesystem activity and IRQ rate reasonably high.
+We'd like to share the policy declaration between kernel and user space
+as a single file. I'll move this from header to the source file though.
 
-To be 100% clear.
+> 
+> > +/* commands */
+> > +/* REQ should be responded with CONF
+> > + * and INDIC with RESP
+> > + */
+> > +enum {
+> 
+> kernel-doc explaining the commands would be immensely helpful.
 
-If masking and checking to see if the irq was already pending was
-sufficient to migrate irqs in process context was enough to
-safely migrate irqs in process context then that is how we would
-always do it.  I have been down that road and down some extensive
-testing in the past.
+What explanations whould you like to see? These commands are described
+in the IEEE 802.15.4 standard.
 
-I found hardware bugs in both AMD and Intel IOAPIC that make your
-code demonstrably unsafe.
+> 
+> 
+> > +	IEEE802154_GTS_REQ, /* Not supported yet */
+> > +	IEEE802154_GTS_INDIC, /* Not supported yet */
+> > +	IEEE802154_GTS_CONF, /* Not supported yet */
+> > +	IEEE802154_RX_ENABLE_REQ, /* Not supported yet */
+> > +	IEEE802154_RX_ENABLE_CONF, /* Not supported yet */
+> 
+> Just leave it out then. You're fixing ABI here.
 
-I was challenged by some of the software guys from Intel and eventually
-the came back and told me they had talked with their hardware engineers
-and I was correct.
+Thas is the desired thing: the ABI is modelled after the subroutines in
+IEEE 802.15.4 standard. So we'd like to fix the numbers for the commands
+from the start.
 
-So no.  This code is totally and severely broken and we should not do
-it.
+> > +#ifdef __KERNEL__
+> > +struct net_device;
+> > +
+> > +int ieee802154_nl_assoc_indic(struct net_device *dev, struct ieee802154_addr *addr, u8 cap);
+> > +int ieee802154_nl_assoc_confirm(struct net_device *dev, u16 short_addr, u8 status);
+> > +int ieee802154_nl_disassoc_indic(struct net_device *dev, struct ieee802154_addr *addr, u8 reason);
+> > +int ieee802154_nl_disassoc_confirm(struct net_device *dev, u8 status);
+> > +int ieee802154_nl_scan_confirm(struct net_device *dev, u8 status, u8 scan_type, u32 unscanned,
+> > +		u8 *edl/*, struct list_head *pan_desc_list */);
+> > +int ieee802154_nl_beacon_indic(struct net_device *dev, u16 panid, u16 coord_addr); /* TODO */
+> > +#endif
+> 
+> Why not just use two header files, one in net/ and one in linux/?
 
-You are introducing complexity and heuristics to avoid the fact that
-fixup_irqs is fundamentally broken.  Sure you might tweak things
-so they work a little more often.
+What would you suggest to put into the linux/ header and what in the
+net/ one?
 
-> The root cause is a known issue already addressed for some
-> code paths [e.g. ack_apic_level() and the now obsolete
-> migrate_irq_remapped_level_desc()] where the ioapic can
-> misbehave when the I/O redirection table register is written
-> while the Remote IRR bit is set.
+> > +static int ieee802154_nl_put_failure(struct sk_buff *msg)
+> > +{
+> > +	void *hdr = genlmsg_data(NLMSG_DATA(msg->data)); /* XXX: nlh is right at the start of msg */
+> > +	genlmsg_cancel(msg, hdr);
+> > +	nlmsg_free(msg);
+> > +	return -ENOBUFS;
+> > +}
+> 
+> This seems weird.
 
-No the reason we do this is not because of the IRR.  Although
-that certainly does not help.
+Why?
 
-We do this because it is not in general safe to do complicated
-reprogramming to the ioapic while the hardware may send an
-irq.  You can lock up the hardware state machine etc.
+> > +static int ieee802154_associate_req(struct sk_buff *skb, struct genl_info *info)
+> > +{
+> > +	struct net_device *dev;
+> > +	struct ieee802154_addr addr;
+> > +	int ret = -EINVAL;
+> > +
+> > +	if (!info->attrs[IEEE802154_ATTR_CHANNEL]
+> > +	 || !info->attrs[IEEE802154_ATTR_COORD_PAN_ID]
+> > +	 || (!info->attrs[IEEE802154_ATTR_COORD_HW_ADDR] && !info->attrs[IEEE802154_ATTR_COORD_SHORT_ADDR])
+> > +	 || !info->attrs[IEEE802154_ATTR_CAPABILITY])
+> > +		return -EINVAL;
+> 
+> That's some odd coding style.
 
-If the work around was as simple as you propose a delayed work or busy
-waiting until the irq handler was complete variant would have been
-written and used long ago.
+Could you please elaborate this? What seems odd to you?
 
-So my reaction to this horrible afterthought is 
-NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO
-PLEASE NO.
+-- 
+With best wishes
+Dmitry
 
-Eric
