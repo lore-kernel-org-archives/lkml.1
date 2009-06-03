@@ -1,91 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbZFCTh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbZFCTmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755145AbZFCTh5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 15:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbZFCThu
+	id S1754784AbZFCTmd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 15:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbZFCTm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 15:37:50 -0400
-Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:12441
-	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753053AbZFCThu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 15:37:50 -0400
-X-SpamScore: -35
-X-BigFish: VPS-35(zz1803O1432R98dR1805M1804Kzz1202hzzz2fh17ch6bh62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-Message-ID: <4A26D0D9.9020609@am.sony.com>
-Date: Wed, 3 Jun 2009 12:36:57 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 3 Jun 2009 15:42:26 -0400
+Received: from r00tworld.com ([212.85.137.21]:33327 "EHLO r00tworld.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750954AbZFCTmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 15:42:25 -0400
+From: pageexec@freemail.hu
+To: "Larry H." <research@subreption.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 03 Jun 2009 21:41:35 +0200
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 2/3] ring-buffer: try to discard unneeded timestamps
-References: <20090603141605.001049251@goodmis.org> <20090603141651.231310727@goodmis.org> <4A26C6EC.30609@am.sony.com> <alpine.DEB.2.00.0906031510470.14994@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0906031510470.14994@gandalf.stny.rr.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Jun 2009 19:36:58.0572 (UTC) FILETIME=[A8CDF0C0:01C9E482]
-X-SEL-encryption-scan: scanned
+Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change ZERO_SIZE_PTR to point at unmapped space)
+Reply-to: pageexec@freemail.hu
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
+Message-ID: <4A26D1EF.21895.2E070251@pageexec.freemail.hu>
+In-reply-to: <alpine.LFD.2.01.0906031142390.4880@localhost.localdomain>
+References: <20090530230022.GO6535@oblivion.subreption.com>, <20090603183939.GC18561@oblivion.subreption.com>, <alpine.LFD.2.01.0906031142390.4880@localhost.localdomain>
+X-mailer: Pegasus Mail for Windows (4.50 PB1)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 03 Jun 2009 21:41:39 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Wed, 3 Jun 2009, Tim Bird wrote:
->> Is this new routine only for discarding uncommitted events,
->> or can it be used on committed events?
->>
->> I assume the former, since I see nothing about adjusting the
->> commit position.
+On 3 Jun 2009 at 11:45, Linus Torvalds wrote:
+
 > 
-> Only uncommitted events.
-OK.
-
->> In the ring_buffer API I see that there's a function for
->> discarding events (committed ones), but not for free-ing them.
->> In function duration filtering, it is desirable to free the
->> last committed event, which for a function exit of short
->> duration will be it's entry event 99% of the time.
 > 
-> In filtering we deside before commiting if we want to discard or not. 
-> (Note, this is only in tip right now.)  Once we commit it, there is no way 
-> to safely remove it from the ring buffer. Additions of items are not under 
-> a lock (only the moving from page to page is).
+> On Wed, 3 Jun 2009, Larry H. wrote:
+> > > 
+> > > The fact, the NULL pointer attack is neither easy nor common. It's 
+> > > perfectly reasonable to say "we'll allow mmap at virtual address zero".
+> > 
+> > And how could you calibrate if this attack venue isn't easy to take
+> > advantage of? Or not commonly abused? What empirical results led you to this
+> > conclusion?
 > 
-> For the event tracer we check if we want to disard it or not before we 
-> commit.
+> It's not a primary attack vector. You need to have already broken local 
+> security to get there - you need to be able to execute code.
 
-Yeah - that's what I thought.  I have duration filtering working
-(well, the user interface is not done yet), but with the above
-limitations, I can only free the exit from the trace, and mark
-the entry event as discarded.  It would save a whole lot more
-space to free the entry event as well.
+during last summer's flame war^W^Wdiscussion about how you guys were covering
+up security fixes you brought an example of smart university students breaking
+communal boxes left and right. are you now saying that it was actually a strawman
+argument as you consider that situation already broken? you can't have it both
+ways ;).
 
-I'm experimenting with free-ing only the last committed event,
-when no other write has occurred in the buffer.  But I'm still
-not sure I can make it safe.  Under normal conditions this
-would be sufficient to catch 99% of the cases.  I did this
-in KFT, but under locks, and I know you want to be lockless with
-ftrace.
+> That means that you've already by-passed all the main security. It's thus 
+> by definition less common than attack vectors like buffer overflows that 
+> give you that capability in the first place.
 
-Are writes the only issue, or is it a problem with readers?
-I was thinking of experimenting with allowing it when no readers
-were active (or were on a different page).
-
->> P.S. I'm very sorry about the missing '>' on the Signed-off-by line.
->> I ran checkpatch and got a passing score, but missed this.
-> 
-> No prob, you only made me spam LKML (and others) with about 10 garbage 
-> emails ;-)
-LOL.  Sorry again. ;-)
-
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+that only means that you've ignored multi-user boxes.
 
