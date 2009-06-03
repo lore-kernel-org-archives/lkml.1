@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbZFCJQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbZFCJUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbZFCJQM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 05:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbZFCJP7
+	id S1752841AbZFCJUm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 05:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbZFCJUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 05:15:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36922 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751902AbZFCJP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 05:15:58 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [Bug #13306] hibernate slow on _second_ run
-Date: Wed, 3 Jun 2009 11:16:04 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <4to6E2myxvG.A.muC.aIbIKB@chimera> <200906012248.49304.rjw@sisk.pl> <1244018021.10665.4.camel@johannes.local>
-In-Reply-To: <1244018021.10665.4.camel@johannes.local>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906031116.05114.rjw@sisk.pl>
+	Wed, 3 Jun 2009 05:20:34 -0400
+Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:52114 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751354AbZFCJUd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 05:20:33 -0400
+X-IronPort-AV: E=Sophos;i="4.41,297,1241395200"; 
+   d="scan'208";a="5556274"
+User-Agent: Microsoft-Entourage/12.17.0.090302
+Date: Wed, 03 Jun 2009 10:20:27 +0100
+Subject: Re: Merge Xen (the hypervisor) into Linux
+From: Keir Fraser <keir.fraser@eu.citrix.com>
+To: Gerd Hoffmann <kraxel@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Theodore Tso <tytso@mit.edu>, Dan Magenheimer <dan.magenheimer@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       George Dunlap <George.Dunlap@eu.citrix.com>,
+       David Miller <davem@davemloft.net>, "jeremy@goop.org" <jeremy@goop.org>,
+       "avi@redhat.com" <avi@redhat.com>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       "xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
+       ksrinivasan <ksrinivasan@novell.com>,
+       "EAnderson@novell.com" <EAnderson@novell.com>,
+       "wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
+       Stephen Spector <stephen.spector@citrix.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "npiggin@suse.de" <npiggin@suse.de>
+Message-ID: <C64BFEEB.C9EC%keir.fraser@eu.citrix.com>
+Thread-Topic: Merge Xen (the hypervisor) into Linux
+Thread-Index: AcnkKxRRfVbDhPQNRtmhpjgz9aaw4gAAXPIl
+In-Reply-To: <4A263DD3.3090901@redhat.com>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
+X-OriginalArrivalTime: 03 Jun 2009 09:20:34.0850 (UTC) FILETIME=[8CC9D020:01C9E42C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 June 2009, Johannes Berg wrote:
-> On Mon, 2009-06-01 at 22:48 +0200, Rafael J. Wysocki wrote:
-> > > No, it's now hanging 20 seconds much later, after returning to
-> > > userspace :( But the dmesg log still has a hang of ~20.5 seconds just
-> > > like before, between two kernel messages...
-> > 
-> > Hmm.  Can you try to comment out suspend_device_irqs() and resume_device_irqs()
-> > in drivers/base/power/main.c and see what happens?
+On 03/06/2009 10:09, "Gerd Hoffmann" <kraxel@redhat.com> wrote:
+
+> On 06/03/09 10:47, Alan Cox wrote:
+>>> Linux is not the only player here.  NetBSD can run as dom0 guest.
+>>> Solaris can run as dom0 guest too.  Thus making the dom0/xen interface
+>>> private to linux and xen isn't going to fly.
+>> 
+>> It does not however preclude fixing the dom0 interface.
 > 
-> Oddly, that does seem to help. I'm sure it can't be a solution though :)
+> It wasn't my intention to imply that.  The interface can be extended
+> when needed.  PAT support will probably be such a case.  Changing it in
+> incompatible ways isn't going to work though.
 
-Not really. ;-)
+We're happy to change interfaces where we agree that makes sense.
+Compatibility is our own (Xen's) problem of course, and it's generally not
+an insurmountable problem -- worst case we can launch dom0 in a varying
+environment dependent on a Xen-specific elf note, for example.
 
-Still, something like the (untested) patch below can be.  Can you please give
-it a try?
+ -- Keir
 
-Rafael
 
----
- kernel/irq/manage.c |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/kernel/irq/manage.c
-===================================================================
---- linux-2.6.orig/kernel/irq/manage.c
-+++ linux-2.6/kernel/irq/manage.c
-@@ -187,9 +187,9 @@ static inline int setup_affinity(unsigne
- void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
- {
- 	if (suspend) {
--		if (!desc->action || (desc->action->flags & IRQF_TIMER))
--			return;
--		desc->status |= IRQ_SUSPENDED;
-+		if (desc->action && !(desc->action->flags & IRQF_TIMER))
-+			desc->status |= IRQ_SUSPENDED | IRQ_DISABLED;
-+		return;
- 	}
- 
- 	if (!desc->depth++) {
-@@ -250,8 +250,12 @@ EXPORT_SYMBOL(disable_irq);
- 
- void __enable_irq(struct irq_desc *desc, unsigned int irq, bool resume)
- {
--	if (resume)
-+	if (resume) {
- 		desc->status &= ~IRQ_SUSPENDED;
-+		if (!desc->depth)
-+			desc->status &= ~IRQ_DISABLED;
-+		return;
-+	}
- 
- 	switch (desc->depth) {
- 	case 0:
