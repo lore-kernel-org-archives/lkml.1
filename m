@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbZFCOvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758357AbZFCOxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758406AbZFCOvm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 10:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbZFCOvf
+	id S1758357AbZFCOxt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 10:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754097AbZFCOxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 10:51:35 -0400
-Received: from web50104.mail.re2.yahoo.com ([206.190.38.32]:46634 "HELO
-	web50104.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754097AbZFCOve convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 10:51:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=VRaNp9lE8dfdpWezb1bLZOqb22Bl1COWj1SBbxvbTziY2xGcEevU4aQtycJLg+9OI22cIGfXpWGz/WXFreuATlM47AUXLavWlzBzupmboVRRP7Tg+TdKsJAXDu/WBH8LbgdX/PtPY9pKcr8+b+XDePtKd1Zwf4E2YZ27Vh+x/EY=;
-Message-ID: <862246.51153.qm@web50104.mail.re2.yahoo.com>
-X-YMail-OSG: J2OEO5sVM1kfg99dNOhLb1.6j3I3VX7hq8W2iJbdKVdUiJJYc0If4qcnMXksg8FeU4_8UrihOqZ0DG3tV0pegfVQTaSCgbPFV2xLFKXX2xid_96CfaI9FSeCB40CB2lu3wUbax0I_7iXECXCm9rfMFX_kqxQqqIKpfA64qacHmRF3R58.JKb3X11Zzj0Zo5gnOhzf.NHsXz39UTOPZf9Qu_o3uVYLZ_B6C8xk5oxrO8oVa79e3xItibnlEAy9HrqNM.kClgQjBbaFbvtj32kRbb7gzPR1ojdA5RagOZL0AW5GHuNv8ZfZLjV_Ar.PPdF3hLk6Hv38QR98U__FSCtkIgGolBWiQ--
-X-Mailer: YahooMailClassic/5.4.12 YahooMailWebService/0.7.289.10
-Date: Wed, 3 Jun 2009 07:51:35 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [PATCH] Fix the meaning of EDAC abbreviation
-To: leemgs1@gmail.com, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jiri Kosina <trivial@kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, dougthompson@xmission.com,
-       Andrew Morton <akpm@osdl.org>
+	Wed, 3 Jun 2009 10:53:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51197 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754059AbZFCOxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 10:53:42 -0400
+Message-ID: <4A268DF8.6000701@redhat.com>
+Date: Wed, 03 Jun 2009 10:51:36 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Johannes Weiner <hannes@cmpxchg.org>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch][v2] swap: virtual swap readahead
+References: <20090602223738.GA15475@cmpxchg.org> <20090602233457.GY1065@one.firstfloor.org> <20090603132751.GA1813@cmpxchg.org>
+In-Reply-To: <20090603132751.GA1813@cmpxchg.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Johannes Weiner wrote:
+> On Wed, Jun 03, 2009 at 01:34:57AM +0200, Andi Kleen wrote:
+>> On Wed, Jun 03, 2009 at 12:37:39AM +0200, Johannes Weiner wrote:
 
---- On Wed, 6/3/09, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Subject: Re: [PATCH] Fix the meaning of EDAC abbreviation
-> To: leemgs1@gmail.com
-> Cc: "Jiri Kosina" <trivial@kernel.org>, "linux-kernel" <linux-kernel@vger.kernel.org>, dougthompson@xmission.com
-> Date: Wednesday, June 3, 2009, 1:42 AM
-> > Fix the meaning of EDAC(Error
-> Detection And Correction) correctly.
-> >  - http://bluesmoke.sourceforge.net
-> > 
-> >         Signed-off-by:
-> GeunSik Lim <geunsik.lim@samsung.com>
-> > ---
-> >  drivers/edac/Kconfig |    2 +-
-> >  1 files changed, 1 insertions(+), 1
-> deletions(-)
-> > 
-> > diff --git a/drivers/edac/Kconfig
-> b/drivers/edac/Kconfig
-> > index 956982f..2a81915 100644
-> > --- a/drivers/edac/Kconfig
-> > +++ b/drivers/edac/Kconfig
-> > @@ -5,7 +5,7 @@
-> >  #
-> >  
-> >  menuconfig EDAC
-> > -    bool "EDAC - error detection and
-> reporting"
-> > +    bool "EDAC - Error Detection And
-> Correction"
+>>> +		pgd = pgd_offset(vma->vm_mm, pos);
+>>> +		if (!pgd_present(*pgd))
+>>> +			continue;
+>>> +		pud = pud_offset(pgd, pos);
+>>> +		if (!pud_present(*pud))
+>>> +			continue;
+>>> +		pmd = pmd_offset(pud, pos);
+>>> +		if (!pmd_present(*pmd))
+>>> +			continue;
+>>> +		pte = pte_offset_map_lock(vma->vm_mm, pmd, pos, &ptl);
+>> You could be more efficient here by using the standard mm/* nested loop
+>> pattern that avoids relookup of everything in each iteration. I suppose
+>> it would mainly make a difference with 32bit highpte where mapping a pte
+>> can be somewhat costly. And you would take less locks this way.
 > 
-> The code started off as one thing and acquired its name but
-> a primary
-> function of it now is indeed reporting rather than just
-> correction. The
-> name has stuck but the functionality doesn't quite match -
-> so the
-> existing menuconfig entry is actually more helpful.
-> 
+> I ran into weird problems here.  The above version is actually faster
+> in the benchmarks than writing a nested level walker or using
+> walk_page_range().  Still digging but it can take some time.  Busy
+> week :(
 
-Alan has been "connected" with "bluesmoke"/EDAC far longer than I have and probably a better overall history of it.
+I'm not too worried about not walking the page tables,
+because swap is an extreme slow path anyway.
 
-Yet the EDAC modules harvest the events generated by the Error Detection and Correction hardware and present it, via reporting and he points out. But in spite of just being the "reporters", the modules manage the "detectors" in a way and deal with most of the "EDAC" system
-
-I like the new patch mod
-
-doug t
-
+-- 
+All rights reversed.
