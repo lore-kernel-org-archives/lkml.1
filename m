@@ -1,125 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730AbZFCFj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZFCFkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755730AbZFCFj3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 01:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751861AbZFCFjU
+	id S1755524AbZFCFkn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 01:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbZFCFkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 01:39:20 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:61379 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751693AbZFCFjT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 01:39:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=QCrssEt3E1OttBgzlDHjUGaXOZ2eWrpLQTH6v8RObNm2YCFxjVvMZydr6wBNZoVl8L
-         QS8yvlj0ExuqGvgPaw5pUy4zAJwF8uKlQilNYl+ShHb0tEmbk9hUwaGo0rzRFCuNY/aK
-         wDt6qvcbWuoo0gvPq7+0R0ijwGFLGnbfBF6og=
-Date: Wed, 3 Jun 2009 07:39:16 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] ide-tape: change IDE_AFLAG_IGNORE_DSC
-	non-atomically
-Message-ID: <20090603053916.GA3577@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1243926308-32385-1-git-send-email-petkovbb@gmail.com> <200906021218.33787.bzolnier@gmail.com> <9ea470500906020608o14f8bc8dwaedabff70c1cb707@mail.gmail.com> <200906021517.53027.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200906021517.53027.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 3 Jun 2009 01:40:36 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60008 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751784AbZFCFkf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 01:40:35 -0400
+Date: Wed, 3 Jun 2009 15:40:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Abhijith Das <adas@redhat.com>
+Subject: linux-next: gfs2 tree build warning
+Message-Id: <20090603154031.3652281b.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__3_Jun_2009_15_40_31_+1000_mU+DuB=o09+oZmEU"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Signature=_Wed__3_Jun_2009_15_40_31_+1000_mU+DuB=o09+oZmEU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > > Are you seeing a real problem with gcc here?  No sane compiler should need
-> > > a barrier() here (we would probably need zillions of them in kernel if it
-> > > really does).
-> > 
-> > No, this is just a precaution. The asm I checked looked fine but since
-> > the flag is set and right afterwards checked, it will be bad if this
-> > somehow got reordered. I actually haven't checked whether anything like
-> > that would be possible, at all.
-> 
-> Please remove it then.
+Hi Steven,
 
----
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
-From: Borislav Petkov <petkovbb@gmail.com>
-Date: Mon, 1 Jun 2009 13:43:49 +0200
-Subject: [PATCH 1/2] ide-tape: change IDE_AFLAG_IGNORE_DSC non-atomically
+fs/gfs2/file.c: In function 'gfs2_flock':
+fs/gfs2/file.c:697: warning: unused variable 'ip'
 
-There are two sites where the flag is being changed: ide_retry_pc
-and idetape_do_request. Both codepaths are protected by hwif->busy
-(ide_lock_port) and therefore we shouldn't need the atomic accesses.
+Introduced by commit a12af1ebe675e85831fde3c4d0908fc3b0908b7a ("GFS2:
+smbd proccess hangs with flock() call") which removed the last usage of
+'ip'.
 
-Spotted-by: Jiri Slaby <jirislaby@gmail.com>
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
----
- drivers/ide/ide-atapi.c |    2 +-
- drivers/ide/ide-tape.c  |   12 +++++++-----
- 2 files changed, 8 insertions(+), 6 deletions(-)
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index afe5a43..fbcb851 100644
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -258,7 +258,7 @@ void ide_retry_pc(ide_drive_t *drive)
- 	pc->req_xfer = sense_rq->data_len;
- 
- 	if (drive->media == ide_tape)
--		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
-+		drive->atapi_flags |= IDE_AFLAG_IGNORE_DSC;
- 
- 	if (ide_queue_sense_rq(drive, pc))
- 		ide_complete_rq(drive, -EIO, blk_rq_bytes(drive->hwif->rq));
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index 203bbea..f1d3c7b 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -656,15 +656,15 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
- 
- 	if ((drive->dev_flags & IDE_DFLAG_DSC_OVERLAP) == 0 &&
- 	    (rq->cmd[13] & REQ_IDETAPE_PC2) == 0)
--		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
-+		drive->atapi_flags |= IDE_AFLAG_IGNORE_DSC;
- 
- 	if (drive->dev_flags & IDE_DFLAG_POST_RESET) {
--		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
-+		drive->atapi_flags |= IDE_AFLAG_IGNORE_DSC;
- 		drive->dev_flags &= ~IDE_DFLAG_POST_RESET;
- 	}
- 
--	if (!test_and_clear_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags) &&
--	    (stat & ATA_DSC) == 0) {
-+	if (!(drive->atapi_flags & IDE_AFLAG_IGNORE_DSC) &&
-+	    !(stat & ATA_DSC)) {
- 		if (postponed_rq == NULL) {
- 			tape->dsc_polling_start = jiffies;
- 			tape->dsc_poll_freq = tape->best_dsc_rw_freq;
-@@ -684,7 +684,9 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
- 			tape->dsc_poll_freq = IDETAPE_DSC_MA_SLOW;
- 		idetape_postpone_request(drive);
- 		return ide_stopped;
--	}
-+	} else
-+		drive->atapi_flags &= ~IDE_AFLAG_IGNORE_DSC;
-+
- 	if (rq->cmd[13] & REQ_IDETAPE_READ) {
- 		pc = &tape->queued_pc;
- 		ide_tape_create_rw_cmd(tape, pc, rq, READ_6);
--- 
-1.6.3.1
+--Signature=_Wed__3_Jun_2009_15_40_31_+1000_mU+DuB=o09+oZmEU
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
--- 
-Regards/Gruss,
-    Boris.
+iEYEARECAAYFAkomDM8ACgkQjjKRsyhoI8wOSACgtrMdUcBm6juQB/YGvc4ZnfvK
+9R4AoLoXeKvcovLB8DTV4D+gDtyRJ1rn
+=iu+9
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Jun_2009_15_40_31_+1000_mU+DuB=o09+oZmEU--
