@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbZFCHd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbZFCHeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755773AbZFCHd7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 03:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbZFCHdw
+	id S1754638AbZFCHeS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 03:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbZFCHdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 03:33:52 -0400
-Received: from mga09.intel.com ([134.134.136.24]:45222 "EHLO mga09.intel.com"
+	Wed, 3 Jun 2009 03:33:55 -0400
+Received: from mga02.intel.com ([134.134.136.20]:46471 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752581AbZFCHdv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 03:33:51 -0400
+	id S1754100AbZFCHdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 03:33:54 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,297,1241420400"; 
-   d="scan'208";a="418425546"
-Subject: [PATCH 1/2] MCE: inject: Support specifying context for software
- mce injection
+   d="scan'208";a="521316725"
+Subject: [PATCH 2/2] MCE: inject: Support specifying raise mode for
+ software MCE injection
 From: Huang Ying <ying.huang@intel.com>
 To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 03 Jun 2009 15:33:51 +0800
-Message-Id: <1244014431.8361.301.camel@yhuang-dev.sh.intel.com>
+Date: Wed, 03 Jun 2009 15:33:53 +0800
+Message-Id: <1244014433.8361.302.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
@@ -28,264 +28,93 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, All,
+Support specifying raise mode for software MCE injection
 
-This patchset is based on git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-branch x86/mce3.
+Raise mode include raising as exception or raising as poll, it is
+specified via the mce.inject_flags field.
 
-Best Regards,
-Huang Ying
------------------------------------------------------------->
-Support specifying context for software mce injection
-
-The cpu context is specified via the new mce.inject_flags fields.
-This allows more realistic machine check testing in different
-situations. "RANDOM" context is implemented via NMI broadcasting to
-add randomization to testing.
-
-AK: Fix NMI broadcasting check. Some race fixes. Move to
-module. Various changes
+This can be used to specify raise mode of UCNA, which is UC error but
+raised not as exception. And this can be used to test the filter code
+of poll handler or exception handler too. For example, enforce a poll
+raise mode for a fatal MCE.
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- arch/x86/include/asm/mce.h              |   12 ++
- arch/x86/kernel/cpu/mcheck/mce-inject.c |  155 +++++++++++++++++++++++++-------
- 2 files changed, 135 insertions(+), 32 deletions(-)
+ arch/x86/include/asm/mce.h              |    1 +
+ arch/x86/kernel/cpu/mcheck/mce-inject.c |   16 ++++++++--------
+ 2 files changed, 9 insertions(+), 8 deletions(-)
 
 --- a/arch/x86/kernel/cpu/mcheck/mce-inject.c
 +++ b/arch/x86/kernel/cpu/mcheck/mce-inject.c
-@@ -18,6 +18,10 @@
- #include <linux/string.h>
- #include <linux/fs.h>
- #include <linux/smp.h>
-+#include <linux/notifier.h>
-+#include <linux/kdebug.h>
-+#include <linux/cpu.h>
-+#include <linux/sched.h>
- #include <asm/mce.h>
- 
- /* Update fake mce registers on current CPU. */
-@@ -39,44 +43,139 @@ static void inject_mce(struct mce *m)
+@@ -43,7 +43,7 @@ static void inject_mce(struct mce *m)
  	i->finished = 1;
  }
  
--struct delayed_mce {
--	struct timer_list timer;
--	struct mce m;
-+static void raise_corrected(struct mce *m)
-+{
-+	unsigned long flags;
-+	mce_banks_t b;
-+
-+	memset(&b, 0xff, sizeof(mce_banks_t));
-+	local_irq_save(flags);
-+	machine_check_poll(0, &b);
-+	local_irq_restore(flags);
-+	m->finished = 0;
-+}
-+
-+static void raise_uncorrected(struct mce *m, struct pt_regs *pregs)
-+{
-+	struct pt_regs regs;
-+	unsigned long flags;
-+
-+	if (!pregs) {
-+		memset(&regs, 0, sizeof(struct pt_regs));
-+		regs.ip = m->ip;
-+		regs.cs = m->cs;
-+		pregs = &regs;
-+	}
-+	/* in mcheck exeception handler, irq will be disabled */
-+	local_irq_save(flags);
-+	do_machine_check(pregs, 0);
-+	local_irq_restore(flags);
-+	m->finished = 0;
-+}
-+
-+static cpumask_t mce_inject_cpumask;
-+
-+static int mce_raise_notify(struct notifier_block *self,
-+			    unsigned long val, void *data)
-+{
-+	struct die_args *args = (struct die_args *)data;
-+	int cpu = smp_processor_id();
-+	struct mce *m = &__get_cpu_var(injectm);
-+	if (val != DIE_NMI_IPI || !cpu_isset(cpu, mce_inject_cpumask))
-+		return NOTIFY_DONE;
-+	cpu_clear(cpu, mce_inject_cpumask);
-+	if (m->status & MCI_STATUS_UC)
-+		raise_uncorrected(m, args->regs);
-+	else if (m->status)
-+		raise_corrected(m);
-+	return NOTIFY_STOP;
-+}
-+
-+static struct notifier_block mce_raise_nb = {
-+	.notifier_call = mce_raise_notify,
-+	.priority = 1000,
- };
- 
- /* Inject mce on current CPU */
--static void raise_mce(unsigned long data)
-+static int raise_local(struct mce *m)
+-static void raise_corrected(struct mce *m)
++static void raise_poll(struct mce *m)
  {
--	struct delayed_mce *dm = (struct delayed_mce *)data;
--	struct mce *m = &dm->m;
-+	int context = MCJ_CTX(m->inject_flags);
-+	int ret = 0;
+ 	unsigned long flags;
+ 	mce_banks_t b;
+@@ -55,7 +55,7 @@ static void raise_corrected(struct mce *
+ 	m->finished = 0;
+ }
+ 
+-static void raise_uncorrected(struct mce *m, struct pt_regs *pregs)
++static void raise_exception(struct mce *m, struct pt_regs *pregs)
+ {
+ 	struct pt_regs regs;
+ 	unsigned long flags;
+@@ -84,10 +84,10 @@ static int mce_raise_notify(struct notif
+ 	if (val != DIE_NMI_IPI || !cpu_isset(cpu, mce_inject_cpumask))
+ 		return NOTIFY_DONE;
+ 	cpu_clear(cpu, mce_inject_cpumask);
+-	if (m->status & MCI_STATUS_UC)
+-		raise_uncorrected(m, args->regs);
++	if (m->inject_flags & MCJ_EXCEPTION)
++		raise_exception(m, args->regs);
+ 	else if (m->status)
+-		raise_corrected(m);
++		raise_poll(m);
+ 	return NOTIFY_STOP;
+ }
+ 
+@@ -103,7 +103,7 @@ static int raise_local(struct mce *m)
+ 	int ret = 0;
  	int cpu = m->cpu;
  
--	inject_mce(m);
- 	if (m->status & MCI_STATUS_UC) {
--		struct pt_regs regs;
--		memset(&regs, 0, sizeof(struct pt_regs));
--		regs.ip = m->ip;
--		regs.cs = m->cs;
+-	if (m->status & MCI_STATUS_UC) {
++	if (m->inject_flags & MCJ_EXCEPTION) {
  		printk(KERN_INFO "Triggering MCE exception on CPU %d\n", cpu);
--		do_machine_check(&regs, 0);
-+		switch (context) {
-+		case MCJ_CTX_IRQ:
-+			/* Could do more to fake interrupts like
-+			 * calling irq_enter, but the necessary
-+			 * machinery isn't exported currently.
-+			 */
-+			/*FALL THROUGH*/
-+		case MCJ_CTX_PROCESS:
-+			raise_uncorrected(m, NULL);
-+			break;
-+		default:
-+			printk(KERN_INFO "Invalid MCE context\n");
-+			ret = -EINVAL;
-+		}
- 		printk(KERN_INFO "MCE exception done on CPU %d\n", cpu);
--	} else {
--		mce_banks_t b;
--		memset(&b, 0xff, sizeof(mce_banks_t));
--		printk(KERN_INFO "Starting machine check poll CPU %d\n", cpu);
--		machine_check_poll(0, &b);
--		mce_notify_user();
--		printk(KERN_INFO "Finished machine check poll on CPU %d\n",
-+	} else if (m->status) {
-+		printk(KERN_INFO "Starting machine check poll on CPU %d\n",
+ 		switch (context) {
+ 		case MCJ_CTX_IRQ:
+@@ -113,7 +113,7 @@ static int raise_local(struct mce *m)
+ 			 */
+ 			/*FALL THROUGH*/
+ 		case MCJ_CTX_PROCESS:
+-			raise_uncorrected(m, NULL);
++			raise_exception(m, NULL);
+ 			break;
+ 		default:
+ 			printk(KERN_INFO "Invalid MCE context\n");
+@@ -123,7 +123,7 @@ static int raise_local(struct mce *m)
+ 	} else if (m->status) {
+ 		printk(KERN_INFO "Starting machine check poll on CPU %d\n",
  		       cpu);
--	}
--	kfree(dm);
-+		raise_corrected(m);
-+		mce_notify_user();
-+		printk(KERN_INFO "Machine check poll done on CPU %d\n", cpu);
-+	} else
-+		m->finished = 0;
-+
-+	return ret;
-+}
-+
-+static void raise_mce(struct mce *m)
-+{
-+	int context = MCJ_CTX(m->inject_flags);
-+
-+	inject_mce(m);
-+
-+	if (context == MCJ_CTX_RANDOM)
-+		return;
-+
-+	if (m->inject_flags & MCJ_NMI_BROADCAST) {
-+		unsigned long start;
-+		int cpu;
-+		get_online_cpus();
-+		mce_inject_cpumask = cpu_online_map;
-+		cpu_clear(get_cpu(), mce_inject_cpumask);
-+		for_each_online_cpu(cpu) {
-+			struct mce *mcpu = &per_cpu(injectm, cpu);
-+			if (!mcpu->finished ||
-+			    MCJ_CTX(mcpu->inject_flags) != MCJ_CTX_RANDOM)
-+				cpu_clear(cpu, mce_inject_cpumask);
-+		}
-+		if (!cpus_empty(mce_inject_cpumask))
-+			apic->send_IPI_mask(&mce_inject_cpumask, NMI_VECTOR);
-+		start = jiffies;
-+		while (!cpus_empty(mce_inject_cpumask)) {
-+			if (!time_before(jiffies, start + 2*HZ)) {
-+				printk(KERN_ERR
-+				"Timeout waiting for mce inject NMI %lx\n",
-+					*cpus_addr(mce_inject_cpumask));
-+				break;
-+			}
-+			cpu_relax();
-+		}
-+		raise_local(m);
-+		put_cpu();
-+		put_online_cpus();
-+	} else
-+		raise_local(m);
- }
- 
- /* Error injection interface */
- static ssize_t mce_write(struct file *filp, const char __user *ubuf,
- 			 size_t usize, loff_t *off)
- {
--	struct delayed_mce *dm;
- 	struct mce m;
- 
- 	if (!capable(CAP_SYS_ADMIN))
-@@ -96,19 +195,12 @@ static ssize_t mce_write(struct file *fi
- 	if (m.cpu >= num_possible_cpus() || !cpu_online(m.cpu))
- 		return -EINVAL;
- 
--	dm = kmalloc(sizeof(struct delayed_mce), GFP_KERNEL);
--	if (!dm)
--		return -ENOMEM;
--
- 	/*
- 	 * Need to give user space some time to set everything up,
- 	 * so do it a jiffie or two later everywhere.
--	 * Should we use a hrtimer here for better synchronization?
- 	 */
--	memcpy(&dm->m, &m, sizeof(struct mce));
--	setup_timer(&dm->timer, raise_mce, (unsigned long)dm);
--	dm->timer.expires = jiffies + 2;
--	add_timer_on(&dm->timer, m.cpu);
-+	schedule_timeout(2);
-+	raise_mce(&m);
- 	return usize;
- }
- 
-@@ -116,6 +208,7 @@ static int inject_init(void)
- {
- 	printk(KERN_INFO "Machine check injector initialized\n");
- 	mce_chrdev_ops.write = mce_write;
-+	register_die_notifier(&mce_raise_nb);
- 	return 0;
- }
- 
+-		raise_corrected(m);
++		raise_poll(m);
+ 		mce_notify_user();
+ 		printk(KERN_INFO "Machine check poll done on CPU %d\n", cpu);
+ 	} else
 --- a/arch/x86/include/asm/mce.h
 +++ b/arch/x86/include/asm/mce.h
-@@ -28,6 +28,13 @@
- #define MCI_STATUS_ADDRV (1ULL<<58)  /* addr reg. valid */
- #define MCI_STATUS_PCC   (1ULL<<57)  /* processor context corrupt */
+@@ -34,6 +34,7 @@
+ #define MCJ_CTX_PROCESS		1    /* inject context: process */
+ #define MCJ_CTX_IRQ		2    /* inject context: IRQ */
+ #define MCJ_NMI_BROADCAST	4    /* do NMI broadcasting */
++#define MCJ_EXCEPTION		8    /* raise as exception */
  
-+#define MCJ_CTX_MASK		3
-+#define MCJ_CTX(flags)		((flags) & MCJ_CTX_MASK)
-+#define MCJ_CTX_RANDOM		0    /* inject context: random */
-+#define MCJ_CTX_PROCESS		1    /* inject context: process */
-+#define MCJ_CTX_IRQ		2    /* inject context: IRQ */
-+#define MCJ_NMI_BROADCAST	4    /* do NMI broadcasting */
-+
  /* Fields are zero when not available */
  struct mce {
- 	__u64 status;
-@@ -37,7 +44,10 @@ struct mce {
- 	__u64 ip;
- 	__u64 tsc;	/* cpu time stamp counter */
- 	__u64 res1;	/* for future extension */
--	__u64 res2;	/* dito. */
-+	__u8  pad1;
-+	__u8  inject_flags;	/* software inject flags */
-+	__u16 pad2;
-+	__u32 pad3;
- 	__u8  cs;		/* code segment */
- 	__u8  bank;	/* machine check bank */
- 	__u8  cpu;	/* cpu that raised the error */
 
 
