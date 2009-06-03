@@ -1,166 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbZFCJfO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbZFCJft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756317AbZFCJfO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 05:35:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbZFCJeY
+	id S1756689AbZFCJft (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 05:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756150AbZFCJeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 05:34:24 -0400
-Received: from mail-fx0-f168.google.com ([209.85.220.168]:45724 "EHLO
-	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753668AbZFCJeS (ORCPT
+	Wed, 3 Jun 2009 05:34:37 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:21206 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755399AbZFCJe0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 05:34:18 -0400
+	Wed, 3 Jun 2009 05:34:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=leQuoJSPC0LTGy/ifUXnHFjks0tlhwnfr1j4QcHxZreMRi08bIfOfPsE3CopkW8GWa
-         68B7AQlGlyvGXCcHZzfV6bAO28adCgxsMSjVgmerovOilT+PVs0OSERngN+ogUj/3CJL
-         8O3v+ZcUGLEhILtglpOCO/LZPnYfpgrsFenxw=
+        b=ihWGFAEZShf0mCofx3zgQo/0FVYK6Z1UCZhk1XEdCELntjZJlyu02HB4Yr/6QdBHm+
+         +CYZZlpzPtW89KZ5EMrh+4cEh/1a6JAB4Dx323F2ykbxpS5+pa5JjJoitZvzkgS8lPRQ
+         FY6y0DTraTuZMJzFkyzR+R+huyq301smIvxvQ=
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
        davem@davemloft.net, Stephen Rothwell <sfr@canb.auug.org.au>,
        Sergey Lapin <slapin@ossfans.org>,
        Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: [PATCH 2/6] Add constants for the ieee 802.15.4/ZigBee stack
-Date: Wed,  3 Jun 2009 13:33:45 +0400
-Message-Id: <1244021629-18409-3-git-send-email-dbaryshkov@gmail.com>
+Subject: [PATCH 5/6] ieee802154: add documentation about our stack
+Date: Wed,  3 Jun 2009 13:33:48 +0400
+Message-Id: <1244021629-18409-6-git-send-email-dbaryshkov@gmail.com>
 X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1244021629-18409-2-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1244021629-18409-5-git-send-email-dbaryshkov@gmail.com>
 References: <1244021629-18409-1-git-send-email-dbaryshkov@gmail.com>
  <1244021629-18409-2-git-send-email-dbaryshkov@gmail.com>
+ <1244021629-18409-3-git-send-email-dbaryshkov@gmail.com>
+ <1244021629-18409-4-git-send-email-dbaryshkov@gmail.com>
+ <1244021629-18409-5-git-send-email-dbaryshkov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IEEE 802.15.4/ZigBee stack requires several constants to be defined/adjusted.
+Add MAINTAINERS entry and a small text describing our stack interfaces,
+how to hook the drivers, etc.
 
 Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 Signed-off-by: Sergey Lapin <slapin@ossfans.org>
 ---
- include/linux/if.h       |    2 ++
- include/linux/if_arp.h   |    2 ++
- include/linux/if_ether.h |    2 ++
- include/linux/socket.h   |    6 +++++-
- net/core/dev.c           |    6 ++++--
- net/core/sock.c          |    3 +++
- 6 files changed, 18 insertions(+), 3 deletions(-)
+ Documentation/networking/ieee802154.txt |   76 +++++++++++++++++++++++++++++++
+ MAINTAINERS                             |   12 +++++
+ 2 files changed, 88 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/networking/ieee802154.txt
 
-diff --git a/include/linux/if.h b/include/linux/if.h
-index 1108f3e..3f574b8 100644
---- a/include/linux/if.h
-+++ b/include/linux/if.h
-@@ -68,6 +68,8 @@
- #define IFF_MASTER_ARPMON 0x100		/* bonding master, ARP mon in use */
- #define IFF_WAN_HDLC	0x200		/* WAN HDLC device		*/
- 
-+#define IFF_IEEE802154_COORD 0x100	/* IEEE802.15.4 PAN coordinator */
+diff --git a/Documentation/networking/ieee802154.txt b/Documentation/networking/ieee802154.txt
+new file mode 100644
+index 0000000..a0280ad
+--- /dev/null
++++ b/Documentation/networking/ieee802154.txt
+@@ -0,0 +1,76 @@
 +
- #define IF_GET_IFACE	0x0001		/* for querying only */
- #define IF_GET_PROTO	0x0002
++		Linux IEEE 802.15.4 implementation
++
++
++Introduction
++============
++
++The Linux-ZigBee project goal is to provide complete implementation
++of IEEE 802.15.4 / ZigBee / 6LoWPAN protocols. IEEE 802.15.4 is a stack
++of protocols for organizing Low-Rate Wireless Personal Area Networks.
++
++Currently only IEEE 802.15.4 layer is implemented. We have choosen
++to use plain Berkeley socket API, the generic Linux networking stack
++to transfer IEEE 802.15.4 messages and a special protocol over genetlink
++for configuration/management
++
++
++Socket API
++==========
++
++int sd = socket(PF_IEEE802154, SOCK_DGRAM, 0);
++.....
++
++The address family, socket addresses etc. are defined in the
++include/net/ieee802154/af_ieee802154.h header or in the special header
++in our userspace package (see either linux-zigbee sourceforge download page
++or git tree at git://linux-zigbee.git.sourceforge.net/gitroot/linux-zigbee).
++
++One can use SOCK_RAW for passing raw data towards device xmit function. YMMV.
++
++
++MLME - MAC Level Management
++============================
++
++Most of IEEE 802.15.4 MLME interfaces are directly mapped on netlink commands.
++See the include/net/ieee802154/nl802154.h header. Our userspace tools package
++(see above) provides CLI configuration utility for radio interfaces and simple
++coordinator for IEEE 802.15.4 networks as an example users of MLME protocol.
++
++
++Kernel side
++=============
++
++Like with WiFi, there are several types of devices implementing IEEE 802.15.4.
++1) 'HardMAC'. The MAC layer is implemented in the device itself, the device
++   exports MLME and data API.
++2) 'SoftMAC' or just radio. These types of devices are just radio transceivers
++   possibly with some kinds of acceleration like automatic CRC computation and
++   comparation, automagic ACK handling, address matching, etc.
++
++Those types of devices require different approach to be hooked into Linux kernel.
++
++
++HardMAC
++=======
++
++See the header include/net/ieee802154/netdevice.h. You have to implement Linux
++net_device, with .type = ARPHRD_IEEE802154. Data is exchanged with socket family
++code via plain sk_buffs. The control block of sk_buffs will contain additional
++info as described in the struct ieee802154_mac_cb.
++
++To hook the MLME interface you have to populate the ml_priv field of your
++net_device with a pointer to struct ieee802154_mlme_ops instance. All fields are
++required.
++
++We provide an example of simple HardMAC driver at drivers/ieee802154/fakehard.c
++
++
++SoftMAC
++=======
++
++We are going to provide intermediate layer impelementing IEEE 802.15.4 MAC
++in software. This is currently WIP.
++
++See header include/net/ieee802154/mac802154.h and several drivers in
++drivers/ieee802154/
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 77cbfb1..d7214c7 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2807,6 +2807,18 @@ L:	linux1394-devel@lists.sourceforge.net
+ S:	Maintained
+ F:	drivers/ieee1394/raw1394*
  
-diff --git a/include/linux/if_arp.h b/include/linux/if_arp.h
-index 5ff8980..b554300 100644
---- a/include/linux/if_arp.h
-+++ b/include/linux/if_arp.h
-@@ -86,6 +86,8 @@
- #define ARPHRD_IEEE80211 801		/* IEEE 802.11			*/
- #define ARPHRD_IEEE80211_PRISM 802	/* IEEE 802.11 + Prism2 header  */
- #define ARPHRD_IEEE80211_RADIOTAP 803	/* IEEE 802.11 + radiotap header */
-+#define ARPHRD_IEEE802154	  804
-+#define ARPHRD_IEEE802154_PHY	  805
- 
- #define ARPHRD_PHONET	820		/* PhoNet media type		*/
- #define ARPHRD_PHONET_PIPE 821		/* PhoNet pipe header		*/
-diff --git a/include/linux/if_ether.h b/include/linux/if_ether.h
-index cfe4fe1..0a08e92 100644
---- a/include/linux/if_ether.h
-+++ b/include/linux/if_ether.h
-@@ -106,6 +106,8 @@
- #define ETH_P_DSA	0x001B		/* Distributed Switch Arch.	*/
- #define ETH_P_TRAILER	0x001C		/* Trailer switch tagging	*/
- #define ETH_P_PHONET	0x00F5		/* Nokia Phonet frames          */
-+#define ETH_P_IEEE802154 0x00F6		/* IEEE802.15.4 frame		*/
-+#define ETH_P_IEEE802154_MAC 0x00F7	/* IEEE802.15.4 MAC frame	*/
- 
- /*
-  *	This is an Ethernet frame header.
-diff --git a/include/linux/socket.h b/include/linux/socket.h
-index 421afb4..09d792e 100644
---- a/include/linux/socket.h
-+++ b/include/linux/socket.h
-@@ -194,7 +194,9 @@ struct ucred {
- #define AF_RXRPC	33	/* RxRPC sockets 		*/
- #define AF_ISDN		34	/* mISDN sockets 		*/
- #define AF_PHONET	35	/* Phonet sockets		*/
--#define AF_MAX		36	/* For now.. */
-+#define AF_IEEE802154	36	/* IEEE802154 sockets		*/
-+#define AF_ZIGBEE	37	/* ZIGBEE sockets		*/
-+#define AF_MAX		38	/* For now.. */
- 
- /* Protocol families, same as address families. */
- #define PF_UNSPEC	AF_UNSPEC
-@@ -233,6 +235,8 @@ struct ucred {
- #define PF_RXRPC	AF_RXRPC
- #define PF_ISDN		AF_ISDN
- #define PF_PHONET	AF_PHONET
-+#define PF_IEEE802154	AF_IEEE802154
-+#define PF_ZIGBEE	AF_ZIGBEE
- #define PF_MAX		AF_MAX
- 
- /* Maximum queue length specifiable by listen.  */
-diff --git a/net/core/dev.c b/net/core/dev.c
-index e2e9e4a..4119dfc 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -268,7 +268,8 @@ static const unsigned short netdev_lock_type[] =
- 	 ARPHRD_IRDA, ARPHRD_FCPP, ARPHRD_FCAL, ARPHRD_FCPL,
- 	 ARPHRD_FCFABRIC, ARPHRD_IEEE802_TR, ARPHRD_IEEE80211,
- 	 ARPHRD_IEEE80211_PRISM, ARPHRD_IEEE80211_RADIOTAP, ARPHRD_PHONET,
--	 ARPHRD_PHONET_PIPE, ARPHRD_VOID, ARPHRD_NONE};
-+	 ARPHRD_PHONET_PIPE, ARPHRD_IEEE802154, ARPHRD_IEEE802154_PHY,
-+	 ARPHRD_VOID, ARPHRD_NONE};
- 
- static const char *netdev_lock_name[] =
- 	{"_xmit_NETROM", "_xmit_ETHER", "_xmit_EETHER", "_xmit_AX25",
-@@ -285,7 +286,8 @@ static const char *netdev_lock_name[] =
- 	 "_xmit_IRDA", "_xmit_FCPP", "_xmit_FCAL", "_xmit_FCPL",
- 	 "_xmit_FCFABRIC", "_xmit_IEEE802_TR", "_xmit_IEEE80211",
- 	 "_xmit_IEEE80211_PRISM", "_xmit_IEEE80211_RADIOTAP", "_xmit_PHONET",
--	 "_xmit_PHONET_PIPE", "_xmit_VOID", "_xmit_NONE"};
-+	 "_xmit_PHONET_PIPE", "_xmit_IEEE802154", "_xmit_IEEE802154_PHY",
-+	 "_xmit_VOID", "_xmit_NONE"};
- 
- static struct lock_class_key netdev_xmit_lock_key[ARRAY_SIZE(netdev_lock_type)];
- static struct lock_class_key netdev_addr_lock_key[ARRAY_SIZE(netdev_lock_type)];
-diff --git a/net/core/sock.c b/net/core/sock.c
-index 7dbf3ff..72d593b 100644
---- a/net/core/sock.c
-+++ b/net/core/sock.c
-@@ -155,6 +155,7 @@ static const char *af_family_key_strings[AF_MAX+1] = {
-   "sk_lock-27"       , "sk_lock-28"          , "sk_lock-AF_CAN"      ,
-   "sk_lock-AF_TIPC"  , "sk_lock-AF_BLUETOOTH", "sk_lock-IUCV"        ,
-   "sk_lock-AF_RXRPC" , "sk_lock-AF_ISDN"     , "sk_lock-AF_PHONET"   ,
-+  "sk_lock-AF_IEEE802154", "sk_lock-AF_ZIGBEE",
-   "sk_lock-AF_MAX"
- };
- static const char *af_family_slock_key_strings[AF_MAX+1] = {
-@@ -170,6 +171,7 @@ static const char *af_family_slock_key_strings[AF_MAX+1] = {
-   "slock-27"       , "slock-28"          , "slock-AF_CAN"      ,
-   "slock-AF_TIPC"  , "slock-AF_BLUETOOTH", "slock-AF_IUCV"     ,
-   "slock-AF_RXRPC" , "slock-AF_ISDN"     , "slock-AF_PHONET"   ,
-+  "slock-AF_IEEE802154", "slock-AF_ZIGBEE",
-   "slock-AF_MAX"
- };
- static const char *af_family_clock_key_strings[AF_MAX+1] = {
-@@ -185,6 +187,7 @@ static const char *af_family_clock_key_strings[AF_MAX+1] = {
-   "clock-27"       , "clock-28"          , "clock-AF_CAN"      ,
-   "clock-AF_TIPC"  , "clock-AF_BLUETOOTH", "clock-AF_IUCV"     ,
-   "clock-AF_RXRPC" , "clock-AF_ISDN"     , "clock-AF_PHONET"   ,
-+  "clock-AF_IEEE802154", "clock-AF_ZIGBEE",
-   "clock-AF_MAX"
- };
- 
++IEEE 802.15.4 SUBSYSTEM
++P:	Dmitry Eremin-Solenikov
++M:	dbaryshkov@gmail.com
++P:	Sergey Lapin
++M:	slapin@ossfans.org
++L:	linux-zigbee-devel@lists.sourceforge.net
++W:	http://apps.sourceforge.net/trac/linux-zigbee
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/lumag/lowpan.git
++S:	Maintained
++F:	net/ieee802154/
++F:	drivers/ieee801254/
++
+ INTEGRITY MEASUREMENT ARCHITECTURE (IMA)
+ P:	Mimi Zohar
+ M:	zohar@us.ibm.com
 -- 
 1.6.3.1
 
