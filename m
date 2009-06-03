@@ -1,65 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZFCTOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZFCTO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755997AbZFCTOS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 15:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbZFCTOL
+	id S1755077AbZFCTO6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 15:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753810AbZFCTOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 15:14:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42296 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753450AbZFCTOK (ORCPT
+	Wed, 3 Jun 2009 15:14:51 -0400
+Received: from mail-px0-f182.google.com ([209.85.216.182]:36365 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753592AbZFCTOv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 15:14:10 -0400
-Date: Wed, 3 Jun 2009 15:14:10 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Tim Bird <tim.bird@am.sony.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 2/3] ring-buffer: try to discard unneeded timestamps
-In-Reply-To: <4A26C6EC.30609@am.sony.com>
-Message-ID: <alpine.DEB.2.00.0906031510470.14994@gandalf.stny.rr.com>
-References: <20090603141605.001049251@goodmis.org> <20090603141651.231310727@goodmis.org> <4A26C6EC.30609@am.sony.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 3 Jun 2009 15:14:51 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <alpine.DEB.1.10.0906031458250.9269@gentwo.org>
+References: <20090530230022.GO6535@oblivion.subreption.com>
+	 <alpine.DEB.1.10.0906031047390.15621@gentwo.org>
+	 <20090603182949.5328d411@lxorguk.ukuu.org.uk>
+	 <alpine.LFD.2.01.0906031032390.4880@localhost.localdomain>
+	 <20090603180037.GB18561@oblivion.subreption.com>
+	 <alpine.LFD.2.01.0906031109150.4880@localhost.localdomain>
+	 <20090603183939.GC18561@oblivion.subreption.com>
+	 <alpine.LFD.2.01.0906031142390.4880@localhost.localdomain>
+	 <alpine.LFD.2.01.0906031145460.4880@localhost.localdomain>
+	 <alpine.DEB.1.10.0906031458250.9269@gentwo.org>
+Date: Wed, 3 Jun 2009 15:14:52 -0400
+Message-ID: <7e0fb38c0906031214lf4a2ed2x688da299e8cb1034@mail.gmail.com>
+Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change 
+	ZERO_SIZE_PTR to point at unmapped space)
+From: Eric Paris <eparis@parisplace.org>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Larry H." <research@subreption.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-mm@kvack.org,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jun 3, 2009 at 2:59 PM, Christoph Lameter
+<cl@linux-foundation.org> wrote:
+> We could just move the check for mmap_min_addr out from
+> CONFIG_SECURITY?
+>
+>
+> Use mmap_min_addr indepedently of security models
+>
+> This patch removes the dependency of mmap_min_addr on CONFIG_SECURITY.
+> It also sets a default mmap_min_addr of 4096.
+>
+> mmapping of addresses below 4096 will only be possible for processes
+> with CAP_SYS_RAWIO.
+>
+>
+> Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-On Wed, 3 Jun 2009, Tim Bird wrote:
-> 
-> Is this new routine only for discarding uncommitted events,
-> or can it be used on committed events?
-> 
-> I assume the former, since I see nothing about adjusting the
-> commit position.
+NAK  with SELinux on you now need both the SELinux mmap_zero
+permission and the CAP_SYS_RAWIO permission.  Previously you only
+needed one or the other, depending on which was the predominant
+LSM.....
 
-Only uncommitted events.
+Even if you want to argue that I have to take CAP_SYS_RAWIO in the
+SELinux case what about all the other places?  do_mremap?  do_brk?
+expand_downwards?
 
-> 
-> In the ring_buffer API I see that there's a function for
-> discarding events (committed ones), but not for free-ing them.
-> In function duration filtering, it is desirable to free the
-> last committed event, which for a function exit of short
-> duration will be it's entry event 99% of the time.
+-Eric
 
-In filtering we deside before commiting if we want to discard or not. 
-(Note, this is only in tip right now.)  Once we commit it, there is no way 
-to safely remove it from the ring buffer. Additions of items are not under 
-a lock (only the moving from page to page is).
 
-For the event tracer we check if we want to disard it or not before we 
-commit.
-
-> 
-> P.S. I'm very sorry about the missing '>' on the Signed-off-by line.
-> I ran checkpatch and got a passing score, but missed this.
-
-No prob, you only made me spam LKML (and others) with about 10 gargage 
-emails ;-)
-
--- Steve
-
+> ===================================================================
+> --- linux-2.6.orig/mm/mmap.c    2009-06-03 13:48:01.000000000 -0500
+> +++ linux-2.6/mm/mmap.c 2009-06-03 13:48:10.000000000 -0500
+> @@ -87,6 +87,9 @@ int sysctl_overcommit_ratio = 50;     /* def
+>  int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
+>  struct percpu_counter vm_committed_as;
+>
+> +/* amount of vm to protect from userspace access */
+> +unsigned long mmap_min_addr = CONFIG_DEFAULT_MMAP_MIN_ADDR;
+> +
+>  /*
+>  * Check that a process has enough memory to allocate a new virtual
+>  * mapping. 0 means there is enough memory for the allocation to
+> @@ -1043,6 +1046,9 @@ unsigned long do_mmap_pgoff(struct file
+>                }
+>        }
+>
+> +       if ((addr < mmap_min_addr) && !capable(CAP_SYS_RAWIO))
+> +               return -EACCES;
+> +
+>        error = security_file_mmap(file, reqprot, prot, flags, addr, 0);
+>        if (error)
+>                return error;
