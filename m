@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbZFCT1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbZFCT2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148AbZFCT1r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 15:27:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbZFCT1k
+	id S1755135AbZFCT2U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 15:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbZFCT2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 15:27:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55647 "EHLO
+	Wed, 3 Jun 2009 15:28:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56469 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750968AbZFCT1j (ORCPT
+	by vger.kernel.org with ESMTP id S1752527AbZFCT2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 15:27:39 -0400
-Date: Wed, 3 Jun 2009 12:27:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: davidel@xmailserver.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] epoll - send POLLHUP on ->release
-Message-Id: <20090603122739.c53b1d1f.akpm@linux-foundation.org>
-In-Reply-To: <4A26CCFA.7050105@novell.com>
-References: <alpine.DEB.1.10.0906031153471.18001@makko.or.mcafeemobile.com>
-	<4A26CCFA.7050105@novell.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Jun 2009 15:28:12 -0400
+Date: Wed, 3 Jun 2009 12:27:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: "Larry H." <research@subreption.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, pageexec@freemail.hu
+Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change
+ ZERO_SIZE_PTR to point at unmapped space)
+In-Reply-To: <alpine.DEB.1.10.0906031458250.9269@gentwo.org>
+Message-ID: <alpine.LFD.2.01.0906031222550.4880@localhost.localdomain>
+References: <20090530230022.GO6535@oblivion.subreption.com> <alpine.LFD.2.01.0905301902010.3435@localhost.localdomain> <20090531022158.GA9033@oblivion.subreption.com> <alpine.DEB.1.10.0906021130410.23962@gentwo.org> <20090602203405.GC6701@oblivion.subreption.com>
+ <alpine.DEB.1.10.0906031047390.15621@gentwo.org> <20090603182949.5328d411@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0906031032390.4880@localhost.localdomain> <20090603180037.GB18561@oblivion.subreption.com> <alpine.LFD.2.01.0906031109150.4880@localhost.localdomain>
+ <20090603183939.GC18561@oblivion.subreption.com> <alpine.LFD.2.01.0906031142390.4880@localhost.localdomain> <alpine.LFD.2.01.0906031145460.4880@localhost.localdomain> <alpine.DEB.1.10.0906031458250.9269@gentwo.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 03 Jun 2009 15:20:26 -0400
-Gregory Haskins <ghaskins@novell.com> wrote:
 
-> Davide Libenzi wrote:
-> > The following patch allows waiters to be notified about the eventfd file* 
-> > going away, and give them a change to unregister from the wait queue.
-> > This is turn allows eventfd users to use the eventfd file* w/out 
-> > holding a live reference to it.
-> > After the eventfd user callbacks returns, any usage of the eventfd file* 
-> > should be dropped. The eventfd user callback can acquire sleepy locks 
-> > since it is invoked lockless.
-> >
-> >
-> >
-> > Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-> >   
-> 
-> Tested-by: Gregory Haskins <ghaskins@novell.com>
 
-Confused.  Did you test this with some new kernel patch, or with some
-existing kernel code?
+On Wed, 3 Jun 2009, Christoph Lameter wrote:
+>
+> We could just move the check for mmap_min_addr out from
+> CONFIG_SECURITY?
 
-If the latter, what code are we talking about here and what was the test
-case and what went wrong when using the current mainline
-implementation?
+No.
 
+The thing is, the security model wants to modify the rules on what's 
+"secure" and what isn't. And your patch just hard-coded that 
+capable(CAP_SYS_RAWIO) decision - but that's not what something like 
+SElinux actually uses to decide whether it's ok or not.
+
+So if you do it in generic code, you'd have to make it much more complex. 
+One option would be to change the rule for what "security_file_mmap()" 
+means, and make the return value says "yes, no, override". Where 
+"override" would be "allow it for this process even if it's below the 
+minimum mmap limit.
+
+But the better option really is to just copy the cap_file_mmap() rule to 
+the !SECURITY rule, and make !SECURITY really mean the same as "always do 
+default security", the way it's documented.
+
+			Linus
