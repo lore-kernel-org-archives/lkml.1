@@ -1,73 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbZFCPN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbZFCPS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757841AbZFCPN4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 11:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbZFCPNs
+	id S1757919AbZFCPS3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 11:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbZFCPSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 11:13:48 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:48699 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751826AbZFCPNr (ORCPT
+	Wed, 3 Jun 2009 11:18:21 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:37103 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753885AbZFCPSU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 11:13:47 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+	Wed, 3 Jun 2009 11:18:20 -0400
+Message-Id: <20090603151820.843681458@goodmis.org>
+References: <20090603151724.144915858@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 03 Jun 2009 11:17:26 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
-Cc: "linux-fsdevel\@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "Hunter Adrian \(Nokia-D\/Helsinki\)" <adrian.hunter@nokia.com>,
-       "Bityutskiy Artem \(Nokia-D\/Helsinki\)" <Artem.Bityutskiy@nokia.com>
-Subject: Re: [PATCH 0/5] FAT errors, user space notifications
-References: <1243866494-31011-1-git-send-email-ext-denis.2.karpov@nokia.com>
-	<87bpp6nhet.fsf@devron.myhome.or.jp>
-	<20090603113617.GA9917@smart.research.nokia.com>
-Date: Thu, 04 Jun 2009 00:13:45 +0900
-In-Reply-To: <20090603113617.GA9917@smart.research.nokia.com> (Denis Karpov's
-	message of "Wed, 3 Jun 2009 14:36:17 +0300")
-Message-ID: <87oct5l592.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.93 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       walimis <walimisdev@gmail.com>
+Subject: [PATCH 2/5] tracing/events: fix output format of kernel stack
+Content-Disposition: inline; filename=0002-tracing-events-fix-output-format-of-kernel-stack.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denis Karpov <ext-denis.2.karpov@nokia.com> writes:
+From: walimis <walimisdev@gmail.com>
 
-> I realise that, but in this particular case I deal with non-critical data 
-> on a large FAT partition and can probably afford certain risk of damaging
-> the data. What I can't afford is to spend several minutes fsck'ing huge FAT
-> partition on slow SD/MMC media during bootup.
->
-> So I choose to optionally receive notification of errors encountered 
-> during 'run time' and act upon them.
->
-> Otherwise, nothing stops you from doing proper fsck before mounting.
+According to "events/ftrace/kernel_stack/format", output format of
+kernel stack should use "=>" instead of "<=".
 
-I think fsckless is to add the reliability to fs driver (logging,
-softupdate, etc.). Yes, it's not easy, and it needs time. Anyway, I
-actually thought about softupdate (and some others) before, I think it's
-_not_ nothing.
+The second problem is that we shouldn't skip the first entry in the stack,
+although it seems to be duplicated when used in the "function" tracer,
+but events also use it. If we skip the first one, we will drop the topmost
+entry of the stack.
 
-> IMO, receivng notification of errors is benefitial in any case:
-> together with the 1st patch above it gives full flexibility to user space
-> to implement fs 'run-time' errors handling policy (at least for FAT,EXT2),
-> e.g.:
->
-> - do nothing: remount r/o on errors, don't monitor kernel notifications (old/default
->  behavior)
-> - remount-ro on errors, get notified; unmount partition, fsck, mount
->   partition back r/w;
-> - ignore errors (continue), get notified: unmount the partition later at
-> suitable time, fsck, mount back r/w
+The last problem is that if the last entry is ULONG_MAX(0xffffffff), we should
+drop it, otherwise it will print a NULL name line.
 
-If this is monitoring interface, I guess it should be more generic. And
-I guess it will tell what happened in kernel, not fs_clean. (There is no
-guarantee about fs state)
+before fix:
 
-If not, some errors can not be detected by fs driver. User may know some
-run-time errors by fs_clean, but some run-time errors is not. So, user
-can not trust fs_clean.
+      sh-1072  [000]   26.957239: sched_process_fork: parent sh:1072 child sh:1073
+      sh-1072  [000]   26.957262:
+ <= syscall_call
+ <=
+      sh-1072  [000]   26.957744: sched_switch: task sh:1072 [120] (R) ==> sh:1073 [120]
+      sh-1072  [000]   26.957752:
+ <= preempt_schedule
+ <= wake_up_new_task
+ <= do_fork
+ <= sys_clone
+ <= syscall_call
+ <=
 
-Thanks.
+After fix:
+
+      sh-1075  [000]    39.791848: sched_process_fork: parent sh:1075  child sh:1076
+      sh-1075  [000]    39.791871:
+ => sys_clone
+ => syscall_call
+      sh-1075  [000]    39.792713: sched_switch: task sh:1075 [120] (R) ==> sh:1076 [120]
+      sh-1075  [000]    39.792722:
+ => schedule
+ => preempt_schedule
+ => wake_up_new_task
+ => do_fork
+ => sys_clone
+ => syscall_call
+
+Signed-off-by: walimis <walimisdev@gmail.com>
+LKML-Reference: <1244016090-7814-2-git-send-email-walimisdev@gmail.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/trace_output.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index 0fe3b22..64596a5 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -975,16 +975,16 @@ static enum print_line_t trace_stack_print(struct trace_iterator *iter,
+ 
+ 	trace_assign_type(field, iter->ent);
+ 
++	if (!trace_seq_puts(s, "\n"))
++		goto partial;
+ 	for (i = 0; i < FTRACE_STACK_ENTRIES; i++) {
+-		if (!field->caller[i])
++		if (!field->caller[i] || (field->caller[i] == ULONG_MAX))
+ 			break;
+-		if (i) {
+-			if (!trace_seq_puts(s, " <= "))
+-				goto partial;
++		if (!trace_seq_puts(s, " => "))
++			goto partial;
+ 
+-			if (!seq_print_ip_sym(s, field->caller[i], flags))
+-				goto partial;
+-		}
++		if (!seq_print_ip_sym(s, field->caller[i], flags))
++			goto partial;
+ 		if (!trace_seq_puts(s, "\n"))
+ 			goto partial;
+ 	}
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+1.6.3.1
+
+-- 
