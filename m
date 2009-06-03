@@ -1,85 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754295AbZFCTWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756057AbZFCTW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754295AbZFCTWS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 15:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZFCTWF
+	id S1756057AbZFCTW2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 15:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbZFCTWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 15:22:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44415 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752458AbZFCTWD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 15:22:03 -0400
-Date: Wed, 3 Jun 2009 19:21:31 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter tools: Optimize harder
-Message-ID: <tip-095b3a6a030f7d4f24825ae93fc384b3d4b4fafa@git.kernel.org>
-Git-Commit-ID: 095b3a6a030f7d4f24825ae93fc384b3d4b4fafa
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 03 Jun 2009 19:21:32 +0000 (UTC)
+	Wed, 3 Jun 2009 15:22:15 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45454 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754283AbZFCTWO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 15:22:14 -0400
+Date: Wed, 3 Jun 2009 20:21:17 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Larry H." <research@subreption.com>, linux-mm@kvack.org,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu
+Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change
+ ZERO_SIZE_PTR to point at unmapped space)
+Message-ID: <20090603202117.39b070d5@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.DEB.1.10.0906031458250.9269@gentwo.org>
+References: <20090530230022.GO6535@oblivion.subreption.com>
+	<alpine.LFD.2.01.0905301902010.3435@localhost.localdomain>
+	<20090531022158.GA9033@oblivion.subreption.com>
+	<alpine.DEB.1.10.0906021130410.23962@gentwo.org>
+	<20090602203405.GC6701@oblivion.subreption.com>
+	<alpine.DEB.1.10.0906031047390.15621@gentwo.org>
+	<20090603182949.5328d411@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0906031032390.4880@localhost.localdomain>
+	<20090603180037.GB18561@oblivion.subreption.com>
+	<alpine.LFD.2.01.0906031109150.4880@localhost.localdomain>
+	<20090603183939.GC18561@oblivion.subreption.com>
+	<alpine.LFD.2.01.0906031142390.4880@localhost.localdomain>
+	<alpine.LFD.2.01.0906031145460.4880@localhost.localdomain>
+	<alpine.DEB.1.10.0906031458250.9269@gentwo.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  095b3a6a030f7d4f24825ae93fc384b3d4b4fafa
-Gitweb:     http://git.kernel.org/tip/095b3a6a030f7d4f24825ae93fc384b3d4b4fafa
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Wed, 3 Jun 2009 20:13:51 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 3 Jun 2009 20:15:15 +0200
+On Wed, 3 Jun 2009 14:59:51 -0400 (EDT)
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-perf_counter tools: Optimize harder
+> We could just move the check for mmap_min_addr out from
+> CONFIG_SECURITY?
+> 
+> 
+> Use mmap_min_addr indepedently of security models
+> 
+> This patch removes the dependency of mmap_min_addr on CONFIG_SECURITY.
+> It also sets a default mmap_min_addr of 4096.
+> 
+> mmapping of addresses below 4096 will only be possible for processes
+> with CAP_SYS_RAWIO.
 
-Use -O6 to build the tools.
+This appears to break the security models as they can no longer replace
+the CAP_SYS_RAWIO check with something based on the security model.
 
-Before:
+> @@ -1043,6 +1046,9 @@ unsigned long do_mmap_pgoff(struct file
+>  		}
+>  	}
+> 
+> +	if ((addr < mmap_min_addr) && !capable(CAP_SYS_RAWIO))
+> +		return -EACCES;
+> +
 
-    12387507370  instructions         #    3121.653 M/sec
+You can't move this bit here
 
-After:
+>  	error = security_file_mmap(file, reqprot, prot, flags, addr, 0);
 
-     6244894971  instructions         #    3458.437 M/sec
+You need it in the default (no security) version of security_file_mmap()
+in security.h not hard coded into do_mmap_pgoff, and leave the one in
+cap_* alone.
 
-Almost twice as fast!
+So NAK - not to the idea but to the fact the patch is buggy.
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- Documentation/perf_counter/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/perf_counter/Makefile b/Documentation/perf_counter/Makefile
-index eae8856..005709b 100644
---- a/Documentation/perf_counter/Makefile
-+++ b/Documentation/perf_counter/Makefile
-@@ -159,7 +159,7 @@ uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
- 
- # CFLAGS and LDFLAGS are for the users to override from the command line.
- 
--CFLAGS = -ggdb3 -Wall -Werror -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement
-+CFLAGS = -ggdb3 -Wall -Werror -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement -O6
- LDFLAGS = -lpthread -lrt -lelf
- ALL_CFLAGS = $(CFLAGS)
- ALL_LDFLAGS = $(LDFLAGS)
+Alan
