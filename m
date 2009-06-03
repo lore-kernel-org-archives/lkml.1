@@ -1,112 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754392AbZFCDzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbZFCD42@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754392AbZFCDzq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 23:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZFCDzj
+	id S1755667AbZFCD42 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 23:56:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbZFCD4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 23:55:39 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58264 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753229AbZFCDzi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 23:55:38 -0400
-Date: Wed, 3 Jun 2009 12:54:06 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>
-Subject: Re: [PATCH mmotm 1/2] memcg: add interface to reset limits
-Message-Id: <20090603125406.fd5a2ef2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090603114908.52c3aed5.nishimura@mxp.nes.nec.co.jp>
-References: <20090603114518.301cef4d.nishimura@mxp.nes.nec.co.jp>
-	<20090603114908.52c3aed5.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 2 Jun 2009 23:56:17 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53420 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752583AbZFCD4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 23:56:15 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jeff Garzik <jeff@garzik.org>
+Date: Wed, 3 Jun 2009 13:56:35 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18981.62579.171350.910761@notabene.brown>
+Cc: linux-raid@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>, dm-devel@redhat.com,
+       Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: ANNOUNCE: mdadm 3.0 - A tool for managing Soft RAID under Linux
+In-Reply-To: message from Jeff Garzik on Tuesday June 2
+References: <18980.48553.328662.80987@notabene.brown>
+	<4A25876A.1010901@garzik.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Jun 2009 11:49:08 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-> Setting mem.limit or memsw.limit to 0 has no meaning
-> in actual use(no process can run in such condition).
+[dm-devel added for completeness]
+
+Hi Jeff,
+ thanks for your thoughts.
+ I agree this is a conversation worth having.
+
+On Tuesday June 2, jeff@garzik.org wrote:
+> Neil Brown wrote:
+
+> > The significant change which justifies the new major version number is
+> > that mdadm can now handle metadata updates entirely in userspace.
+> > This allows mdadm to support metadata formats that the kernel knows
+> > nothing about.
+> > 
+> > Currently two such metadata formats are supported:
+> >   - DDF  - The SNIA standard format
+> >   - Intel Matrix - The metadata used by recent Intel ICH controlers.
 > 
-> We don't have interface to reset mem.limit or memsw.limit now,
-> so let's reset the mem.limit or memsw.limit to default(unlimited)
-> when they are being set to 0.
+> This seems pretty awful from a support standpoint:  dmraid has been the 
+> sole provider of support for vendor-proprietary up until this point.
+
+And mdadm has been the sole provider of raid5 and raid6 (and,
+arguably, reliable raid1 - there was a thread recently about
+architectural issues in dm/raid1 that allowed data corruption).
+So either dmraid would have to support raid5, or mdadm would have to
+support IMSM.  or both?
+
 > 
-Maybe good. But when I proposed this kind of patch, it was rejected.
-(try to add RES_ININITY)
+> Now Linux users -- and distro installers -- must choose between software 
+> RAID stack "MD" and software RAID stack "DM".  That choice is made _not_ 
+> based on features, but on knowing the underlying RAID metadata format 
+> that is required, and what features you need out of it.
 
-please wait acks from others.
-But from me,
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujits.ucom>
+If you replace the word "required" by "supported", then the metadata
+format becomes a feature.  And only md provides raid5/raid6.  And only
+dm provides LVM.  So I think there are plenty of "feature" issues
+between them.
+Maybe there are now more use-cases where the choice cannot be made
+based on features.  I guess things like familiarity and track-record
+come in to play there.  But choice is a crucial element of freedom.
 
 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> ---
->  Documentation/cgroups/memory.txt |    1 +
->  include/linux/res_counter.h      |    2 ++
->  kernel/res_counter.c             |    2 +-
->  mm/memcontrol.c                  |    2 ++
->  4 files changed, 6 insertions(+), 1 deletions(-)
 > 
-> diff --git a/Documentation/cgroups/memory.txt b/Documentation/cgroups/memory.txt
-> index 1a60887..e1c69f3 100644
-> --- a/Documentation/cgroups/memory.txt
-> +++ b/Documentation/cgroups/memory.txt
-> @@ -204,6 +204,7 @@ We can alter the memory limit:
->  
->  NOTE: We can use a suffix (k, K, m, M, g or G) to indicate values in kilo,
->  mega or gigabytes.
-> +NOTE: We can write "0" to reset the *.limit_in_bytes(unlimited).
->  
->  # cat /cgroups/0/memory.limit_in_bytes
->  4194304
-> diff --git a/include/linux/res_counter.h b/include/linux/res_counter.h
-> index 4c5bcf6..511f42f 100644
-> --- a/include/linux/res_counter.h
-> +++ b/include/linux/res_counter.h
-> @@ -49,6 +49,8 @@ struct res_counter {
->  	struct res_counter *parent;
->  };
->  
-> +#define RESOURCE_MAX (unsigned long long)LLONG_MAX
-> +
->  /**
->   * Helpers to interact with userspace
->   * res_counter_read_u64() - returns the value of the specified member.
-> diff --git a/kernel/res_counter.c b/kernel/res_counter.c
-> index bf8e753..0a45778 100644
-> --- a/kernel/res_counter.c
-> +++ b/kernel/res_counter.c
-> @@ -18,7 +18,7 @@
->  void res_counter_init(struct res_counter *counter, struct res_counter *parent)
->  {
->  	spin_lock_init(&counter->lock);
-> -	counter->limit = (unsigned long long)LLONG_MAX;
-> +	counter->limit = RESOURCE_MAX;
->  	counter->parent = parent;
->  }
->  
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index a83e039..6629ed2 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -2040,6 +2040,8 @@ static int mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
->  		ret = res_counter_memparse_write_strategy(buffer, &val);
->  		if (ret)
->  			break;
-> +		if (!val)
-> +			val = RESOURCE_MAX;
->  		if (type == _MEM)
->  			ret = mem_cgroup_resize_limit(memcg, val);
->  		else
+> dmraid already supports
+> 	- Intel RAID format, touched by Intel as recently as 2007
+> 	- DDF, the SNIA standard format
 > 
+> This obviously generates some relevant questions...
+> 
+> 1) Why?  This obviously duplicates existing effort and code.  The only 
+> compelling reason I see is RAID5 support, which DM lacks IIRC -- but the 
+> huge issue of user support and duplicated code remains.
 
+Yes, RAID5 (and RAID6) are big parts of the reason.  RAID1 is not an
+immaterial part.
+But my initial motivation was that this was the direction I wanted the
+md code base to move in.  It was previously locked to two internal
+metadata formats.  I wanted to move the metadata support into
+userspace where I felt it belonged, and DDF was a good vehicle to
+drive that.
+Intel then approached me about adding IMSM support and I was happy to
+co-operate.
+
+> 
+> 2) Adding container-like handling obviously moves MD in the direction of 
+> DM.  Does that imply someone will be looking at integrating the two 
+> codebases, or will this begin to implement features also found in DM's 
+> codebase?
+
+I wonder why you think "container-like" handling moves in the
+direction of DM.  I see nothing in the DM that explicitly relates to
+this.  There was something in MD (internal metadata support) which
+explicitly worked against it.  I have since made that less of an issue.
+All the knowledge of containers  is really in lvm2/dmraid and mdadm - the
+user-space tools (and I do think it is important to be aware of the
+distinction between the kernel side and the user side of each
+system). 
+
+So this is really a case of md "seeing" the wisdom in that aspect of
+the design of "dm" and taking a similar approach - though with
+significantly different details.
+
+As for integrating the two code bases.... people have been suggesting
+that for years, but I suspect few of them have looked deeply at the
+practicalities.  Apparently it was suggested at the recent "storage
+summit".  However as the primary md and dm developers were absent, I
+have doubts about how truly well-informed that conversation could have
+been.
+
+I do have my own sketchy ideas about how unification could be
+achieved.  It would involve creating a third "thing" and then
+migrating md and dm (and loop and nbd and drbd and ...) to mesh with
+that new model.
+But it is hard to make this a priority where there are more
+practically useful things to be done.
+
+It is worth reflecting again on the distinction between lvm2 or dmraid
+and dm, and between mdadm and md.
+lvm2 could conceivably use md.  mdadm could conceivably use dm.
+I have certainly considered teaching mdadm to work with dm-multipath
+so that I could justifiably remove md/multipath without the risk of
+breaking someone's installation.  But it isn't much of a priority.
+The dmraid developers might think that utilising md to provide some
+raid levels might be a good thing (now that I have shown it to be
+possible).  I would be happy to support that to the extent of
+explaining how it can work and even refining interfaces if that proved
+to be necessary.  Who knows - that could eventually lead to me being
+able to end-of-life mdadm and leave everyone using dmraid :-)
+
+Will md implement features found in dm's code base?
+For things like LVM, Multipath, crypt and snapshot : no, definitely not.
+For things like suspend/resume of incoming IO (so a device can be
+reconfigured), maybe.  I recently added that so that I could effect 
+raid5->raid6 conversions.  I would much rather this was implemented in
+the block layer than in md or dm.  I added it to md because that was
+the fastest path, and it allowed me to explore and come to understand
+the issues.  I tried to arrange the implementation so that it could be
+moved up to the block layer without user-space noticing.  Hopefully I
+will get around to attempting that before I forget all that I learnt.
+
+
+> 
+> 3) What is the status of distro integration efforts?  I wager the distro 
+> installer guys will grumble at having to choose among duplicated RAID 
+> code and formats.
+
+Some distros are shipping mdadm-3.0-pre releases, but I don't think
+any have seriously tried to integrate the DDF or IMSM support with
+installers or the boot process yet.
+Intel have engineers working to make sure such integration is
+possible, reliable, and relatively simple.
+
+Installers already understand lvm and mdadm for different use cases.
+Adding some new use cases that overlap should not be a big headache.
+They also already support ext3-vs-xfs, gnome-vs-kde etc.
+
+There is an issue of "if the drives appear to have DDF metadata, which
+tool shall I use".  I am not well placed to give an objective answer
+to that.
+mdadm can easily be told to ignore such arrays unless explicitly
+requested to deal with them.  A line like
+   AUTO -ddf -imsm
+in mdadm.conf would ensure that auto-assembly and incremental assembly
+will ignore both DDF and IMSM.
+
+> 
+> 4) What is the plan for handling existing Intel RAID users (e.g. dmraid 
+> + Intel RAID)?  Has Intel been contacted about dmraid issues?  What does 
+> Intel think about this lovely user confusion shoved into their laps?
+
+The above mentioned AUTO line can disable mdadm auto-management of
+such arrays.  Maybe dmraid auto-management can be equally disabled.
+Distros might be well-advise to make the choice a configurable
+option.
+
+I cannot speak for Intel, except to acknowledge that their engineers
+have done most of the work to support IMSM is mdadm.  I just provided
+the infrastructure and general consulting.
+
+> 
+> 5) Have the dmraid maintainer and DM folks been queried, given that you 
+> are duplicating their functionality via Intel and DDF RAID formats? 
+> What was their response, what issues were raised and resolved?
+
+I haven't spoken to them, no (except for a couple of barely-related
+chats with Alasdair).
+By and large, they live in their little walled garden, and I/we live
+in ours.
+
+NeilBrown
