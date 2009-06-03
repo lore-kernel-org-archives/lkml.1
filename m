@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbZFCS5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756422AbZFCS6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbZFCS5T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 14:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZFCS5H
+	id S1756422AbZFCS6y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 14:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbZFCS6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 14:57:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39737 "EHLO
+	Wed, 3 Jun 2009 14:58:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58887 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752841AbZFCS5F (ORCPT
+	by vger.kernel.org with ESMTP id S1752564AbZFCS6p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 14:57:05 -0400
-Date: Wed, 3 Jun 2009 11:56:11 -0700
+	Wed, 3 Jun 2009 14:58:45 -0400
+Date: Wed, 3 Jun 2009 11:58:10 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Denis Karpov <ext-denis.2.karpov@nokia.com>
 Cc: axboe@kernel.dk, hirofumi@mail.parknet.co.jp, linux-ext4@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        adrian.hunter@nokia.com, artem.bityutskiy@nokia.com
-Subject: Re: [PATCH 0/4] FS: userspace notification of errors
-Message-Id: <20090603115611.6bbbaf55.akpm@linux-foundation.org>
-In-Reply-To: <1244041518-32229-1-git-send-email-ext-denis.2.karpov@nokia.com>
+Subject: Re: [PATCH 1/4] FS: filesystem corruption notification
+Message-Id: <20090603115810.10641330.akpm@linux-foundation.org>
+In-Reply-To: <e7005f79dd6b8f25fef78ddbfedcef54f6b40bd5.1244049680.git.ext-denis.2.karpov@nokia.com>
 References: <1244041518-32229-1-git-send-email-ext-denis.2.karpov@nokia.com>
+	<e7005f79dd6b8f25fef78ddbfedcef54f6b40bd5.1244049680.git.ext-denis.2.karpov@nokia.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,69 +29,84 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  3 Jun 2009 18:05:14 +0300
+On Wed,  3 Jun 2009 18:05:15 +0300
 Denis Karpov <ext-denis.2.karpov@nokia.com> wrote:
 
+> Add a generic mechnism to notify the userspace about possible filesystem
+> corruption through sysfs entry (/sys/block/<bdev>/<part>/fs_unclean)
+> and uevent (KOBJ_CHANGE, uevent's environment variable FS_UNCLEAN=[0:1]).
 > 
-> Hello, 
+> To mark fs clean (e.g. after fs was fixed by userspace):
 > 
-> these patches are resent (a bit re-worked and separated from other stuff).
-> The issue was discussed here:
-> http://marc.info/?l=linux-fsdevel&m=124402900920380&w=2
+> echo 0 > /sys/block/<bdev>/<part>/fs_unclean
+> (you will still receive uevent KOBJ_CHANGE with env var FS_UNCLEAN=0)
 > 
-> Summary:
+> Signed-off-by: Denis Karpov <ext-denis.2.karpov@nokia.com>
+> ---
+>  fs/partitions/check.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/genhd.h |    2 ++
+>  2 files changed, 44 insertions(+), 0 deletions(-)
 > 
-> 1. Generic mechanism for notifications of user space about file system's
->    errors/inconsistency on a particular partition using:
-> 
->      - sysfs entry /sys/block/<bdev>/<part>/fs_unclean
->      - uevent KOBJ_CHANGE, uevent's environment variable FS_UNCLEAN=[0:1]
-> 
->    Userspace might want to monitor these notifications (poll2() on sysfs 
->    file or udevd's rule for uevent) and fix the fs damage.
->    Filesystem can be marked clean again by writing '0' to the 
->    corresponding 'fs_unclean' sysfs file.
-> 
->    Currently some file systems remount themselves r/o on critical errors
->    (*FAT; EXT2 depending on 'errors' mount option), userspace is generally
->    unaware of such events. This feature will allow user space to become 
->    aware of possible file system problems and do something about them 
->    (e.g. run fsck automatically or with user's consent).
->    [PATCH 1]
-> 
-> 2. Make FAT and EXT2 file systems use the above mechanism to optionally
->    notify user space about errors. Implemented as 'notify' mount option
->    (PATCH 3,4).
->    FAT error reporting facilities had to be re-factored (PATCH 2) in 
->    order to simplify sending error notifications.
-> 
-> Adrian Hunter and Artem Bityutskiy provided input and ideas on implementing
-> these features.
-> 
+> diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+> index 99e33ef..191d89e 100644
+> --- a/fs/partitions/check.c
+> +++ b/fs/partitions/check.c
+> @@ -196,6 +196,24 @@ check_partition(struct gendisk *hd, struct block_device *bdev)
+>  	return ERR_PTR(res);
+>  }
+>  
+> +void notify_part_fs_unclean(struct device *dev, uint8_t unclean)
+> +{
+> +	char event_string[13];
+> +	char *envp[] = { event_string, NULL };
+> +
+> +	if ((unclean != 0 && unclean != 1) ||
+> +		unclean == dev_to_part(dev)->fs_unclean)
+> +		return;
+> +
+> +	dev_to_part(dev)->fs_unclean = unclean;
+> +
+> +	sysfs_notify(&dev->kobj, NULL, "fs_unclean");
+> +
+> +	sprintf(event_string, "FS_UNCLEAN=%u", unclean);
+> +	kobject_uevent_env(&dev->kobj, KOBJ_CHANGE, envp);
+> +}
+> +EXPORT_SYMBOL(notify_part_fs_unclean);
 
-hm, I'm uncertain on the desirability or otherwise of the overall feature.
+Please document this function.
 
-Are there users or distros or device manufacturers asking for this? 
-Where did the requirement come from?
+That documentation should, amongst other things, explain the semantics
+of the `unclean' argument.  It can be 0, 1 or "something else".  Why?
 
-What downstream application will handle the uevent messages?  Do you
-have some userspace design/plan in mind?
+Also, why is `unclean' a u8 rather than a boring old `int'?
 
-IOW, it would be useful if we were told more about all of this, rather
-than just staring at a kernel patch!
+>  static ssize_t part_partition_show(struct device *dev,
+>  				   struct device_attribute *attr, char *buf)
+>  {
+> @@ -246,6 +264,26 @@ ssize_t part_stat_show(struct device *dev,
+>  		jiffies_to_msecs(part_stat_read(p, time_in_queue)));
+>  }
+>  
+> +ssize_t part_fs_unclean_show(struct device *dev,
+> +		       struct device_attribute *attr, char *buf)
+> +{
+> +	struct hd_struct *p = dev_to_part(dev);
+> +
+> +	return sprintf(buf, "%d\n", p->fs_unclean);
+> +}
+> +
+> +ssize_t part_fs_unclean_store(struct device *dev,
+> +			struct device_attribute *attr,
+> +			const char *buf, size_t count)
+> +{
+> +	int i;
+> +
+> +	if (count > 0 && sscanf(buf, "%d", &i) > 0)
 
-One part of the design which you didn't describe, but which I inferred
-is that you intend that userspace will see the FS_UNCLEAN=1 messages
-and will then poll all the /sys/block/<bdev>/<part>/fs_unclean files to
-work out which partition(s) got the error, correct?  Please spell all
-that out in the changelog.
+strict_strtoul(), please.
 
-What use is the FS_UNCLEAN=0 message?  I don't get that.  Again, please
-cover this in the description.
-
-The "unclean" term doesn't seem a good fit.  It usually means "has
-in-memory data which needs writing back".  But here you've redefined
-"unclean" to mean "got an IO error" or "detected metadata
-inconsistency", or perhaps "dunno, please run fsck to find out".  This
-all should be spelled out in exacting detail and thought about, please.
+> +		notify_part_fs_unclean(dev, (i == 0) ? 0 : 1);
+> +
+> +	return count;
+> +}
 
