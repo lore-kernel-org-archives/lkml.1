@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbZFCXZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbZFCX3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755890AbZFCXZn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 19:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbZFCXZd
+	id S1756509AbZFCX3R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 19:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754452AbZFCX3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 19:25:33 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:37042 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752949AbZFCXZc (ORCPT
+	Wed, 3 Jun 2009 19:29:08 -0400
+Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:50357 "EHLO
+	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754287AbZFCX3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 19:25:32 -0400
-Subject: Re: [PATCH 23/23] vfs: Teach readahead to use the file_hotplug_lock
-From: Badari Pulavarty <pbadari@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Eric W. Biederman" <ebiederm@maxwell.aristanetworks.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-In-Reply-To: <1243893048-17031-23-git-send-email-ebiederm@xmission.com>
-References: <m1oct739xu.fsf@fess.ebiederm.org>
-	 <1243893048-17031-23-git-send-email-ebiederm@xmission.com>
-Content-Type: text/plain
-Date: Wed, 03 Jun 2009 16:25:29 -0700
-Message-Id: <1244071529.6383.11.camel@badari-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 3 Jun 2009 19:29:07 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: Xen is a feature
+Date: Thu, 4 Jun 2009 01:29:01 +0200
+User-Agent: KMail/1.9.9
+Cc: tglx@linutronix.de, george.dunlap@eu.citrix.com, davem@davemloft.net,
+       jeremy@goop.org, mingo@elte.hu, dan.magenheimer@oracle.com,
+       avi@redhat.com, xen-devel@lists.xensource.com, x86@kernel.org,
+       linux-kernel@vger.kernel.org, Keir.Fraser@eu.citrix.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, kurt.hackel@oracle.com,
+       Ian.Pratt@eu.citrix.com, xen-users@lists.xensource.com,
+       ksrinivasan@novell.com, EAnderson@novell.com, wimcoekaerts@wimmekes.net,
+       stephen.spector@citrix.com, jens.axboe@oracle.com
+References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org> <20090528.210559.137121893.davem@davemloft.net> <4A1FCE8E.2060604@eu.citrix.com> <alpine.LFD.2.00.0905311607560.3379@localhost.localdomain> <4A26D3D8.6080002@tmr.com> <alpine.LFD.2.00.0906032204220.3419@localhost.localdomain> <alpine.LFD.2.00.0906032204220.3419@localhost.localdomain> <4A26FB3B.6010205@tmr.com>
+In-reply-To: <4A26FB3B.6010205@tmr.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906040129.07852.elendil@planet.nl>
+X-OriginalArrivalTime: 03 Jun 2009 23:29:08.0344 (UTC) FILETIME=[17987780:01C9E4A3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-01 at 14:50 -0700, Eric W. Biederman wrote:
-> From: Eric W. Biederman <ebiederm@maxwell.aristanetworks.com>
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
-> ---
->  mm/filemap.c |   25 ++++++++++++++++---------
->  1 files changed, 16 insertions(+), 9 deletions(-)
-> 
-> diff --git a/mm/filemap.c b/mm/filemap.c
-> index 379ff0b..5016aa5 100644
-> --- a/mm/filemap.c
-> +++ b/mm/filemap.c
-> @@ -1402,16 +1402,23 @@ SYSCALL_DEFINE(readahead)(int fd, loff_t offset, size_t count)
->  
->  	ret = -EBADF;
->  	file = fget(fd);
-> -	if (file) {
-> -		if (file->f_mode & FMODE_READ) {
-> -			struct address_space *mapping = file->f_mapping;
-> -			pgoff_t start = offset >> PAGE_CACHE_SHIFT;
-> -			pgoff_t end = (offset + count - 1) >> PAGE_CACHE_SHIFT;
-> -			unsigned long len = end - start + 1;
-> -			ret = do_readahead(mapping, file, start, len);
-> -		}
-> -		fput(file);
-> +	if (!file)
-> +		goto out;
-> +
-> +	if (!(file->f_mode & FMODE_READ))
-> +		goto out_fput;
-> +
+Bill Davidsen wrote:
+> I was referring to your "no benefit" comment, I don't dispute the
+> technical issues. I think the idea of moving the hypervisor into the
+> kernel and letting xen folks do the external parts as they please.
 
-To be consistent with others, don't you want to do
-	  ret = -EIO;
-here ?
-> +	if (file_hotplug_read_trylock(file)) {
-> +		struct address_space *mapping = file->f_mapping;
-> +		pgoff_t start = offset >> PAGE_CACHE_SHIFT;
-> +		pgoff_t end = (offset + count - 1) >> PAGE_CACHE_SHIFT;
-> +		unsigned long len = end - start + 1;
-> +		ret = do_readahead(mapping, file, start, len);
-> +		file_hotplug_read_unlock(file);
->  	}
-> +out_fput:
-> +	fput(file);
-> +out:
->  	return ret;
->  }
->  #ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
+Where does that come from? AFAICT Thomas never made a "no benefit" comment 
+other than limited to the context of the technical implementation.
+I've always understood his meaning in this thread to be: "the proposed 
+patch set does not improve the technical standard of the linux kernel, 
+but would instead lower it considerably".
+Thomas has been extremely correct in this thread and IMO does not deserve 
+this attack.
 
-Thanks,
-Badari
+Let's look at his exact comments (emphasis mine).
 
+! The kernel policy always was and still is to accept only those
+! features which have a technical benefit **to the code base**.
+
+and
+
+! Aside of the paravirt, which seems to expand through arch/x86 like a
+! hydra, the new patches sprinkle "if (xen_...)" all over the
+! place. These extra xen dependencies are no improvement, they are a
+! royal pain in the ...
+
+Also clearly limited to technical implementation.
+
+! I really have a hard time to see why dom0 support makes Linux more
+! useful **to people who do not use it**. It does not improve the Linux
+! experience **of Joe User** at all.
+
+Or has Thomas made some "no benefit" comment I've missed?
+
+Cheers,
+FJP
