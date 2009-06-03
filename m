@@ -1,88 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZFCMrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZFCMwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbZFCMrR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 08:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbZFCMrJ
+	id S1756112AbZFCMwz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 08:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbZFCMwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 08:47:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:44953 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752836AbZFCMrI (ORCPT
+	Wed, 3 Jun 2009 08:52:47 -0400
+Received: from mail-ew0-f162.google.com ([209.85.219.162]:42171 "EHLO
+	mail-ew0-f162.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751902AbZFCMwq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 08:47:08 -0400
-Date: Wed, 3 Jun 2009 08:47:07 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Wang Liming <liming.wang@windriver.com>
-cc: wu zhangjin <wuzhangjin@gmail.com>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, Wu Zhangjin <wuzj@lemote.com>,
-       Ralf Baechle <ralf@linux-mips.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Nicholas Mc Guire <der.herr@hofr.at>
-Subject: Re: [PATCH v2 2/6] mips dynamic function tracer support
-In-Reply-To: <4A26129E.1080008@windriver.com>
-Message-ID: <alpine.DEB.2.00.0906030841040.14994@gandalf.stny.rr.com>
-References: <cover.1243604390.git.wuzj@lemote.com>  <a00a91f6fc79b7d20b5b2193086e879dcafded46.1243604390.git.wuzj@lemote.com>  <4A22281B.7020908@windriver.com> <b00321320906020915n7ba241eqb3cb0de877af514d@mail.gmail.com> <4A26129E.1080008@windriver.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 3 Jun 2009 08:52:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Y8UXymwdG86kO53T3vSDK+sEvZW/m/wGOyu7aFZjD/KRxfXF4kNedyoH8teNRHZGJf
+         pPf0wj1FEIgaXsC+PGg/kU8wOWfx7kpAQO3ZpKfuzZzzpzWEaWvqIPnPgpeuBwLBT4oI
+         s83O6rqbipCUN+LxhEWeuvrJ7Wm6Jb3WXp6LM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090603131407.57c490ed@lxorguk.ukuu.org.uk>
+References: <c5bd819b0906021525l13ee9282j1fb270e141985f66@mail.gmail.com>
+	 <4A25F688.9000407@gmail.com>
+	 <c5bd819b0906030435w466368cbsd48be91a97597437@mail.gmail.com>
+	 <20090603131407.57c490ed@lxorguk.ukuu.org.uk>
+Date: Wed, 3 Jun 2009 14:52:46 +0200
+Message-ID: <c5bd819b0906030552w6f23185etb394f83c8b630e6@mail.gmail.com>
+Subject: Re: Kernel 2.6.30rc7 limits IDE to UDMA33
+From: Grozdan <neutrino8@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: hancockrwd@gmail.com, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/6/3 Alan Cox <alan@lxorguk.ukuu.org.uk>:
+>> ACPI: PCI Interrupt Link [ALKA] disabled and referenced, BIOS bug
+>> ACPI: PCI Interrupt Link [ALKA] enabled at IRQ 20
+>> pata_via 0000:00:0f.0: PCI INT A -> Link[ALKA] -> GSI 20 (level, low) -> IRQ 20
+>> scsi0 : pata_via
+>> scsi1 : pata_via
+>> ata1: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0xdc00 irq 14
+>> ata2: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xdc08 irq 15
+>> ata1.00: ATA-7: Maxtor 6Y080L0, YAR41BW0, max UDMA/133
+>> ata1.00: 160086528 sectors, multi 16: LBA
+>> ata1.01: ATA-5: ST340016A, 3.10, max UDMA/100
+>> ata1.01: 78165360 sectors, multi 16: LBA
+>> ata1.00: limited to UDMA/33 due to 40-wire cable
+>> ata1.01: limited to UDMA/33 due to 40-wire cable
+>
+> The via driver hasn't changed its cable detect handling between 2.6.27
+> and now. The actual detection is done by the BIOS either by setting flags
+> or via ACPI.
+>
+> To trace it down I'd need to at minimum to know exactly which kernel the
+> behaviour you see changed.
+>
 
-On Wed, 3 Jun 2009, Wang Liming wrote:
+Hi Alan,
 
-> wu zhangjin wrote:
-> > hi,
-> > 
-> > sorry, I'm so late to reply your E-mail, a little busy these days.
-> > > 
-> > > }
-> > > 
-> > > ----------arch/mips/kernel/module.c:apply_r_mips_26_rel()-------------------
-> > > 
-> > > v is kernel _mcount's address, location is the address of the instrution
-> > > that should be relocated;
-> > > 
-> > > To resolve this problem, we may need to do more work, either on gcc or on
-> > > the kernel. So I want to hear your test result and if you have solution,
-> > > please let me know.
-> > > 
-> > 
-> > yes, current version of mips-specific dynamic ftrace not support modules
-> > yet.
-> > 
-> > there is similar solution implemented in PowerPC(something named
-> > trampoline),
-> > although I did not look into it, but I'm sure we can implement the
-> > mips-specific one
-> > via imitating it.
-> Good hit. I may have a look on Powerpc implementation.
-
-Note, PowerPC uses a trampoline from modules to kernel core. I think MIPS 
-just calls mcount differently. That is, it does a full 32bit address call
-(64 bit for 64 bit archs?). Something like:
-
-	lui	v1, _mcount
-	addiu	v1, v1, _mcount
-	jalr	v1
-	addiu	sp, sp, -8
-
-Then a nop would not do. Due to preemption, we can not modify more than 
-one line. But you could modify it to:
-
-	b	1f
-	addiu	v1, v1, _mcount
-	jalr	v1
-	addiu	sp, sp, -8
-1:
-
-Clobbering v1 should not be an issue since it is already used to store 
-_mcount. That is, we still do the addiu v1,v1,_mcount with that branch. 
-But v1 should be ignored.
-
--- Steve
-
+The limiting only appears on kernel 2.6.30-rc7-git4. I downloaded the
+source RPM package from the SUSE build service and compiled it myself,
+enabling/tweaking a few things (higher Hz, full preempt, stack
+protector enabled, CPU set to Opteron/Athlon64). During configuration,
+I did not change any block device or IDE options (except for selecting
+anticipatory disk scheduler to be the default), nor any ACPI related
+ones. My distro default kernel, which is 2.6.27.21, correctly sets the
+UDMA for my disks on this machine. Only kernel 2.6.30-rc7-git4 (which
+is the only 2.6.30 kernel I tried so far) limits them to UDMA33. My
+IDE cables are alright (I use high-quality black AOpen 80-wires
+cables)
