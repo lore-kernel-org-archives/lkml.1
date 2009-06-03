@@ -1,115 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755914AbZFCNwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755719AbZFCOAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755914AbZFCNwk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 09:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbZFCNwc
+	id S1755719AbZFCOAJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 10:00:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbZFCN76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 09:52:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33665 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753406AbZFCNwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 09:52:32 -0400
-Subject: trace: fix multiple use of __print_flags and __print_symbolic
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       cluster-devel@redhat.com, Christoph Hellwig <hch@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.DEB.2.00.0906030917010.14994@gandalf.stny.rr.com>
-References: <1244019900.29604.588.camel@localhost.localdomain>
-	 <4A26474C.1000900@cn.fujitsu.com>
-	 <1244033875.29604.599.camel@localhost.localdomain>
-	 <alpine.DEB.2.00.0906030917010.14994@gandalf.stny.rr.com>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
- 3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
- Street, Windsor, Berkshire, SL4 ITE
-Date: Wed, 03 Jun 2009 14:52:03 +0100
-Message-Id: <1244037123.29604.603.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Jun 2009 09:59:58 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:34118 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751826AbZFCN75 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 09:59:57 -0400
+Date: Wed, 3 Jun 2009 09:59:58 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: walimis <walimisdev@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] tracing/trace_stack: fix the number of entries in
+ the header
+In-Reply-To: <1244016090-7814-1-git-send-email-walimisdev@gmail.com>
+Message-ID: <alpine.DEB.2.00.0906030959310.14994@gandalf.stny.rr.com>
+References: <1244016090-7814-1-git-send-email-walimisdev@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Here is an updated patch to include the extra call to
-trace_seq_init() as requested. This is vs. the latest
--tip tree and fixes the use of multiple __print_flags
-and __print_symbolic in a single tracer. Also tested
-to ensure its working now:
+On Wed, 3 Jun 2009, walimis wrote:
 
-mount.gfs2-2534  [000]   235.850587: gfs2_glock_queue: 8.7 glock 1:2 dequeue PR
-mount.gfs2-2534  [000]   235.850591: gfs2_demote_rq: 8.7 glock 1:0 demote EX to NL flags:DI
-mount.gfs2-2534  [000]   235.850591: gfs2_glock_queue: 8.7 glock 1:0 dequeue EX
-glock_workqueue-2529  [000]   235.850666: gfs2_glock_state_change: 8.7 glock 1:0 state EX => NL tgt:NL dmt:NL flags:lDpI
-glock_workqueue-2529  [000]   235.850672: gfs2_glock_put: 8.7 glock 1:0 state NL => IV flags:I
+> The last entry in the stack_dump_trace is ULONG_MAX, which is not
+> a valid entry, but max_stack_trace.nr_entries has accounted for it.
+> So when printing the header, we should decrease it by one.
+> Before fix, print as following, for example:
+> 
+> 	Depth    Size   Location    (53 entries)	<--- should be 52
+> 	-----    ----   --------
+>   0)     3264     108   update_wall_time+0x4d5/0x9a0
+>   ...
+>  51)       80      80   syscall_call+0x7/0xb
+>  ^^^
+>    it's correct.
+> 
+> Signed-off-by: walimis <walimisdev@gmail.com>
 
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+This is one of those bugs I've been meaning to fix for a long time, but 
+never got around to actually doing it. Thanks!
 
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index b4ec83a..1c58f05 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -100,6 +100,7 @@
-  *	field = (typeof(field))entry;
-  *
-  *	p = get_cpu_var(ftrace_event_seq);
-+ *	trace_seq_init(p);
-  *	ret = trace_seq_printf(s, <TP_printk> "\n");
-  *	put_cpu();
-  *	if (!ret)
-@@ -159,6 +160,7 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
- 	field = (typeof(field))entry;					\
- 									\
- 	p = &get_cpu_var(ftrace_event_seq);				\
-+	trace_seq_init(p);						\
- 	ret = trace_seq_printf(s, #call ": " print);			\
- 	put_cpu();							\
- 	if (!ret)							\
-diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index c12d95d..ac6ced1 100644
---- a/kernel/trace/trace_output.c
-+++ b/kernel/trace/trace_output.c
-@@ -222,10 +222,9 @@ ftrace_print_flags_seq(struct trace_seq *p, const char *delim,
- {
- 	unsigned long mask;
- 	const char *str;
-+	const char *ret = p->buffer + p->len;
- 	int i;
- 
--	trace_seq_init(p);
--
- 	for (i = 0;  flag_array[i].name && flags; i++) {
- 
- 		mask = flag_array[i].mask;
-@@ -248,7 +247,7 @@ ftrace_print_flags_seq(struct trace_seq *p, const char *delim,
- 
- 	trace_seq_putc(p, 0);
- 
--	return p->buffer;
-+	return ret;
- }
- 
- const char *
-@@ -256,8 +255,7 @@ ftrace_print_symbols_seq(struct trace_seq *p, unsigned long val,
- 			 const struct trace_print_flags *symbol_array)
- {
- 	int i;
--
--	trace_seq_init(p);
-+	const char *ret = p->buffer + p->len;
- 
- 	for (i = 0;  symbol_array[i].name; i++) {
- 
-@@ -273,7 +271,7 @@ ftrace_print_symbols_seq(struct trace_seq *p, unsigned long val,
- 		
- 	trace_seq_putc(p, 0);
- 
--	return p->buffer;
-+	return ret;
- }
- 
- #ifdef CONFIG_KRETPROBES
+I'll queue this up.
 
+-- Steve
 
+> ---
+>  kernel/trace/trace_stack.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
+> index 1796f00..2d7aebd 100644
+> --- a/kernel/trace/trace_stack.c
+> +++ b/kernel/trace/trace_stack.c
+> @@ -265,7 +265,7 @@ static int t_show(struct seq_file *m, void *v)
+>  		seq_printf(m, "        Depth    Size   Location"
+>  			   "    (%d entries)\n"
+>  			   "        -----    ----   --------\n",
+> -			   max_stack_trace.nr_entries);
+> +			   max_stack_trace.nr_entries - 1);
+>  
+>  		if (!stack_tracer_enabled && !max_stack_size)
+>  			print_disabled(m);
+> -- 
+> 1.6.0.3
+> 
+> 
