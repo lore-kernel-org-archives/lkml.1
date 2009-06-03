@@ -1,93 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758971AbZFCPTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758869AbZFCPTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758971AbZFCPTW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 11:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756586AbZFCPSX
+	id S1758869AbZFCPTd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 11:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756748AbZFCPSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 11:18:23 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:59102 "EHLO
+	Wed, 3 Jun 2009 11:18:24 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:59129 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754521AbZFCPSV (ORCPT
+	with ESMTP id S1756367AbZFCPSX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 11:18:21 -0400
-Message-Id: <20090603151821.119336461@goodmis.org>
+	Wed, 3 Jun 2009 11:18:23 -0400
+Message-Id: <20090603151821.266956360@goodmis.org>
 References: <20090603151724.144915858@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 03 Jun 2009 11:17:27 -0400
+Date: Wed, 03 Jun 2009 11:17:28 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       walimis <walimisdev@gmail.com>
-Subject: [PATCH 3/5] tracing/events: fix output format of user stack
-Content-Disposition: inline; filename=0003-tracing-events-fix-output-format-of-user-stack.patch
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 4/5] tracing: fix multiple use of __print_flags and __print_symbolic
+Content-Disposition: inline; filename=0004-tracing-fix-multiple-use-of-__print_flags-and-__prin.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: walimis <walimisdev@gmail.com>
+From: Steven Whitehouse <swhiteho@redhat.com>
 
-According to "events/ftrace/user_stack/format", fix the output of
-user stack.
+Here is an updated patch to include the extra call to
+trace_seq_init() as requested. This is vs. the latest
+-tip tree and fixes the use of multiple __print_flags
+and __print_symbolic in a single tracer. Also tested
+to ensure its working now:
 
-before fix:
+mount.gfs2-2534  [000]   235.850587: gfs2_glock_queue: 8.7 glock 1:2 dequeue PR
+mount.gfs2-2534  [000]   235.850591: gfs2_demote_rq: 8.7 glock 1:0 demote EX to NL flags:DI
+mount.gfs2-2534  [000]   235.850591: gfs2_glock_queue: 8.7 glock 1:0 dequeue EX
+glock_workqueue-2529  [000]   235.850666: gfs2_glock_state_change: 8.7 glock 1:0 state EX => NL tgt:NL dmt:NL flags:lDpI
+glock_workqueue-2529  [000]   235.850672: gfs2_glock_put: 8.7 glock 1:0 state NL => IV flags:I
 
-  sh-1073  [000]    31.137561:  <b7f274fe> <-  <0804e33c> <-  <080835c1>
-
-after fix:
-
-  sh-1072  [000]    37.039329:
- =>  <b7f8a4fe>
- =>  <0804e33c>
- =>  <080835c1>
-
-Signed-off-by: walimis <walimisdev@gmail.com>
-LKML-Reference: <1244016090-7814-3-git-send-email-walimisdev@gmail.com>
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+LKML-Reference: <1244037123.29604.603.camel@localhost.localdomain>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/trace_output.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+ include/trace/ftrace.h      |    2 ++
+ kernel/trace/trace_output.c |   10 ++++------
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index b5478da..40ede4d 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -104,6 +104,7 @@
+  *	field = (typeof(field))entry;
+  *
+  *	p = get_cpu_var(ftrace_event_seq);
++ *	trace_seq_init(p);
+  *	ret = trace_seq_printf(s, <TP_printk> "\n");
+  *	put_cpu();
+  *	if (!ret)
+@@ -167,6 +168,7 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+ 	field = (typeof(field))entry;					\
+ 									\
+ 	p = &get_cpu_var(ftrace_event_seq);				\
++	trace_seq_init(p);						\
+ 	ret = trace_seq_printf(s, #call ": " print);			\
+ 	put_cpu();							\
+ 	if (!ret)							\
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 64596a5..8dadbbb 100644
+index 8dadbbb..8afeea4 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
-@@ -389,17 +389,20 @@ seq_print_userip_objs(const struct userstack_entry *entry, struct trace_seq *s,
+@@ -223,10 +223,9 @@ ftrace_print_flags_seq(struct trace_seq *p, const char *delim,
+ {
+ 	unsigned long mask;
+ 	const char *str;
++	const char *ret = p->buffer + p->len;
+ 	int i;
  
- 		if (ip == ULONG_MAX || !ret)
- 			break;
--		if (i && ret)
--			ret = trace_seq_puts(s, " <- ");
-+		if (ret)
-+			ret = trace_seq_puts(s, " => ");
- 		if (!ip) {
- 			if (ret)
- 				ret = trace_seq_puts(s, "??");
-+			if (ret)
-+				ret = trace_seq_puts(s, "\n");
- 			continue;
- 		}
- 		if (!ret)
- 			break;
- 		if (ret)
- 			ret = seq_print_user_ip(s, mm, ip, sym_flags);
-+		ret = trace_seq_puts(s, "\n");
- 	}
+-	trace_seq_init(p);
+-
+ 	for (i = 0;  flag_array[i].name && flags; i++) {
  
- 	if (mm)
-@@ -1012,10 +1015,10 @@ static enum print_line_t trace_user_stack_print(struct trace_iterator *iter,
+ 		mask = flag_array[i].mask;
+@@ -249,7 +248,7 @@ ftrace_print_flags_seq(struct trace_seq *p, const char *delim,
  
- 	trace_assign_type(field, iter->ent);
+ 	trace_seq_putc(p, 0);
  
--	if (!seq_print_userip_objs(field, s, flags))
-+	if (!trace_seq_putc(s, '\n'))
- 		goto partial;
+-	return p->buffer;
++	return ret;
+ }
+ EXPORT_SYMBOL(ftrace_print_flags_seq);
  
--	if (!trace_seq_putc(s, '\n'))
-+	if (!seq_print_userip_objs(field, s, flags))
- 		goto partial;
+@@ -258,8 +257,7 @@ ftrace_print_symbols_seq(struct trace_seq *p, unsigned long val,
+ 			 const struct trace_print_flags *symbol_array)
+ {
+ 	int i;
+-
+-	trace_seq_init(p);
++	const char *ret = p->buffer + p->len;
  
- 	return TRACE_TYPE_HANDLED;
+ 	for (i = 0;  symbol_array[i].name; i++) {
+ 
+@@ -275,7 +273,7 @@ ftrace_print_symbols_seq(struct trace_seq *p, unsigned long val,
+ 		
+ 	trace_seq_putc(p, 0);
+ 
+-	return p->buffer;
++	return ret;
+ }
+ EXPORT_SYMBOL(ftrace_print_symbols_seq);
+ 
 -- 
 1.6.3.1
 
