@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbZFCUVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZFCUWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755241AbZFCUVu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 16:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbZFCUVn
+	id S1756177AbZFCUWp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 16:22:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZFCUWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 16:21:43 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:35907 "EHLO pasmtpB.tele.dk"
+	Wed, 3 Jun 2009 16:22:38 -0400
+Received: from www.tglx.de ([62.245.132.106]:45438 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751329AbZFCUVm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 16:21:42 -0400
-Subject: Re: sata_sil24 0000:04:00.0: DMA-API: device driver frees DMA sg
-	list  with different entry count [map count=13] [unmap count=10]
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-In-Reply-To: <64bb37e0906031230m22234268k9fdcd43dc1d35f18@mail.gmail.com>
-References: <64bb37e0905261214g2957924ar837339367f320d4c@mail.gmail.com>
-	 <4A1C7DDB.9010605@gmail.com>
-	 <64bb37e0906031230m22234268k9fdcd43dc1d35f18@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 03 Jun 2009 22:21:43 +0200
-Message-Id: <1244060503.11698.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+	id S1751409AbZFCUWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 16:22:37 -0400
+Date: Wed, 3 Jun 2009 22:20:02 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Bill Davidsen <davidsen@tmr.com>
+cc: George Dunlap <george.dunlap@eu.citrix.com>,
+       David Miller <davem@davemloft.net>, "jeremy@goop.org" <jeremy@goop.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       Dan Magenheimer <dan.magenheimer@oracle.com>,
+       "avi@redhat.com" <avi@redhat.com>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       "xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
+       ksrinivasan <ksrinivasan@novell.com>,
+       "EAnderson@novell.com" <EAnderson@novell.com>,
+       "wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
+       Stephen Spector <stephen.spector@citrix.com>, jens.axboe@oracle.com
+Subject: Re: Xen is a feature
+In-Reply-To: <4A26D3D8.6080002@tmr.com>
+Message-ID: <alpine.LFD.2.00.0906032204220.3419@localhost.localdomain>
+References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org> <20090528.210559.137121893.davem@davemloft.net> <4A1FCE8E.2060604@eu.citrix.com> <alpine.LFD.2.00.0905311607560.3379@localhost.localdomain>
+ <4A26D3D8.6080002@tmr.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-03 at 21:30 +0200, Torsten Kaiser wrote:
-> On Wed, May 27, 2009 at 1:40 AM, Robert Hancock <hancockrwd@gmail.com> wrote:
-> > Torsten Kaiser wrote:
-> >>
-> >> On upgrading to 2.6.30-rc1 I enable the DMA-Debugging option
-> >> CONFIG_DMA_API_DEBUG=y
-> >> Since then I get the following or similar errors on each boot:
-> >
-> > Please retest with a newer -rc, this patch likely fixes it:
-> >
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5825627c9463581fd9e70f8285685889ae5bb9bb
-> >
-> 
-> Still happens with 2.6.30-rc8 (see trace at the end of the email)
-> 
-<snip>
+On Wed, 3 Jun 2009, Bill Davidsen wrote:
+> Thomas Gleixner wrote:
+> > Aside of the paravirt, which seems to expand through arch/x86 like a
+> > hydra, the new patches sprinkle "if (xen_...)" all over the
+> > place. These extra xen dependencies are no improvement, they are a
+> > royal pain in the ... They are sticky once they got merged simply
+> > because the hypervisor relies on them and we need to provide
+> > compatibility for a long time.
+> > 
+> Wait, let's not classify something as "no improvement" when you mean "I don't
+> need it."
 
-Does this actually give you any problems? should I be scared to give .30
-a test?
+It's not about "I don't need it.". It's about having Xen dependencies
+in the code all over the place which make mainatainence harder. I have
+to balance the users benefit (xen dom0 support) vs. the impact on
+maintainability and the restrictions which are going to be set almost
+in stone by merging it.
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Let's stick to technical issues, and not deny that there are a number of users
+> who really will have expanded capability. The technical points are valid, but
+> as a former and probable future xen (CentOS) user, so are the benefits.
 
+Refusing random "if (xen...)" dependencies is a purely technical
+decision. I have said more than once that I'm not against merging dom0
+in general, I'm just frightened by the technical impact of a defacto
+ABI which we swallow with it.
+
+We have enough problems with real silicon and BIOS/ACPI already, why
+should we add artifical and _avoidable_ virtual silicon horror ?
+
+Thanks,
+
+	tglx
