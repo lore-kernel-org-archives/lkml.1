@@ -1,162 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbZFCOr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbZFCOsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757954AbZFCOr4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 10:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754395AbZFCOrs
+	id S1758118AbZFCOsT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 10:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbZFCOsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 10:47:48 -0400
-Received: from mga14.intel.com ([143.182.124.37]:30741 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753234AbZFCOrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 10:47:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,298,1241420400"; 
-   d="scan'208";a="150207797"
-Date: Wed, 3 Jun 2009 22:47:11 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Eric Sandeen <sandeen@sandeen.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       Nick Piggin <npiggin@suse.de>, Jeff Layton <jlayton@redhat.com>
-Subject: Re: [PATCH] skip I_CLEAR state inodes
-Message-ID: <20090603144711.GC5738@localhost>
-References: <20090323103846.GA16577@localhost> <20090324155655.2684.61FB500B@jp.fujitsu.com> <20090324074457.GA7745@localhost> <20090324120502.GC23439@duck.suse.cz> <20090324124001.GA25326@localhost> <4A244A5B.7070605@sandeen.net> <20090602085523.GC7161@localhost> <20090602113736.GB15010@duck.suse.cz> <20090603141021.GB5738@localhost> <20090603141636.GC5650@duck.suse.cz>
+	Wed, 3 Jun 2009 10:48:08 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:62747 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754395AbZFCOsH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 10:48:07 -0400
+X-Greylist: delayed 404 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Jun 2009 10:48:06 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vEYYIUIi57V/6ZIfakw6u2zCM/eqgBg5P2aPmU7Svvol9mp1yecVHUwD+WsUHxLhBs
+         1PJKYluMKeheq6nFYuXkKG9jR3BQ8DFI9OLUvs9KXgAVdg6+LfeTz4zseqLTebL+BK3r
+         M2XxtpVH1XZ0u7XvWklIDA78nH920FD7+G+RI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090603141636.GC5650@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090603143559.GL5736@alberich.amd.com>
+References: <20090603142727.GI5736@alberich.amd.com>
+	 <20090603143559.GL5736@alberich.amd.com>
+Date: Wed, 3 Jun 2009 16:48:07 +0200
+Message-ID: <36ca99e90906030748l6e6cc2caqb575c924836dc0e@mail.gmail.com>
+Subject: Re: [PATCH 3/5] x86: add cpu_node topology detection for AMD 
+	Magny-Cours
+From: Bert Wesarg <bert.wesarg@googlemail.com>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 10:16:36PM +0800, Jan Kara wrote:
-> On Wed 03-06-09 22:10:21, Wu Fengguang wrote:
-> > On Tue, Jun 02, 2009 at 07:37:36PM +0800, Jan Kara wrote:
-> > > On Tue 02-06-09 16:55:23, Wu Fengguang wrote:
-> > > > On Tue, Jun 02, 2009 at 05:38:35AM +0800, Eric Sandeen wrote:
-> > > > > Wu Fengguang wrote:
-> > > > > > Add I_CLEAR tests to drop_pagecache_sb(), generic_sync_sb_inodes() and
-> > > > > > add_dquot_ref().
-> > > > > > 
-> > > > > > clear_inode() will switch inode state from I_FREEING to I_CLEAR,
-> > > > > > and do so _outside_ of inode_lock. So any I_FREEING testing is
-> > > > > > incomplete without the testing of I_CLEAR.
-> > > > > > 
-> > > > > > Masayoshi MIZUMA first discovered the bug in drop_pagecache_sb() and
-> > > > > > Jan Kara reminds fixing the other two cases. Thanks!
-> > > > > 
-> > > > > Is there a reason it's not done for __sync_single_inode as well?
-> > > > 
-> > > > It missed the glance because it don't have an obvious '|' in the line ;)
-> > > > 
-> > > > > Jeff Layton asked the question and I'm following it up :)
-> > > > > 
-> > > > > __sync_single_inode currently only tests I_FREEING, but I think we are
-> > > > > safe because __sync_single_inode sets I_SYNC, and clear_inode waits for
-> > > > > I_SYNC to be cleared before it changes I_STATE.
-> > > > 
-> > > > But I_SYNC is removed just before the I_FREEING test, so we still have
-> > > > a small race window?
-> > > > 
-> > > > > On the other hand, testing I_CLEAR here probably would be safe anyway,
-> > > > > and it'd be bonus points for consistency?
-> > > > 
-> > > > So let's add the I_CLEAR test?
-> > > > 
-> > > > > Same basic question for generic_sync_sb_inodes, which has a
-> > > > > BUG_ON(inode->i_state & I_FREEING), seems like this could check I_CLWAR
-> > > > > as well?
-> > > > 
-> > > > Yes, we can add I_CLEAR here to catch more error condition.
-> > > > 
-> > > > Thanks,
-> > > > Fengguang
-> > > > 
-> > > > ---
-> > > > skip I_CLEAR state inodes in writeback routines
-> > > > 
-> > > > The I_FREEING test in __sync_single_inode() is racy because
-> > > > clear_inode() can set i_state to I_CLEAR between the clear of I_SYNC
-> > > > and the test of I_FREEING.
-> > > > 
-> > > > Also extend the coverage of BUG_ON(I_FREEING) to I_CLEAR.
-> > > > 
-> > > > Reported-by: Jeff Layton <jlayton@redhat.com>
-> > > > Reported-by: Eric Sandeen <sandeen@sandeen.net>
-> > > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > > ---
-> > > >  fs/fs-writeback.c |    4 ++--
-> > > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > > > 
-> > > > --- linux.orig/fs/fs-writeback.c
-> > > > +++ linux/fs/fs-writeback.c
-> > > > @@ -316,7 +316,7 @@ __sync_single_inode(struct inode *inode,
-> > > >  	spin_lock(&inode_lock);
-> > > >  	WARN_ON(inode->i_state & I_NEW);
-> > > >  	inode->i_state &= ~I_SYNC;
-> > > > -	if (!(inode->i_state & I_FREEING)) {
-> > > > +	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
-> > > >  		if (!(inode->i_state & I_DIRTY) &&
-> > > >  		    mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
-> > >   Is the whole if needed? I had an impression that everyone calling
-> > > __sync_single_inode() should better take care it does not race with inode
-> > > freeing... So WARN_ON would be more appropriate IMHO.
-> > > 
-> > > >  			/*
-> > > > @@ -518,7 +518,7 @@ void generic_sync_sb_inodes(struct super
-> > > >  		if (current_is_pdflush() && !writeback_acquire(bdi))
-> > > >  			break;
-> > > >  
-> > > > -		BUG_ON(inode->i_state & I_FREEING);
-> > > > +		BUG_ON(inode->i_state & (I_FREEING | I_CLEAR));
-> > > >  		__iget(inode);
-> > > >  		pages_skipped = wbc->pages_skipped;
-> > > >  		__writeback_single_inode(inode, wbc);
-> > >   Looking at this code, it looks a bit suspicious. What prevents this s_io
-> > > list scan to race with inode freeing? In particular generic_forget_inode()
-> > 
-> > Good catch.
-> > 
-> > > can drop inode_lock to write the inode and in the mean time
-> > > generic_sync_sb_inodes() can come, get a reference to the inode and start
-> > > it's writeback... Subsequent iput() would then call generic_forget_inode()
-> > 
-> > Another possibility:
-> > 
-> > generic_forget_inode
-> >   inode->i_state |= I_WILL_FREE;
-> >   spin_unlock(&inode_lock);
-> >                                                 generic_sync_sb_inodes()
-> >                                                   spin_lock(&inode_lock);
-> >                                                   __iget(inode);
-> >                                                   __writeback_single_inode
-> >                                                     // see non zero i_count
-> >                                                     WARN_ON(inode->i_state & I_WILL_FREE);
-> > 
-> > I'm wondering why didn't we saw reports on the last WARN_ON()?
-> > Did we missed something?
->   I meant the above race in my description ;-). Anyway, the race can happen
-> only if we are unmounting the filesystem (normally, we bail out on
-> sb->s_flags & MS_ACTIVE check - yes, it's a bit hidden and it also took me
-> a while to understand why we weren't seeing tons of warnings...).
+On Wed, Jun 3, 2009 at 16:35, Andreas Herrmann
+<andreas.herrmann3@amd.com> wrote:
+> This adapts CPU topology detection for AMD Magny-Cours.
+>
+> Here is example output from two cores on same package but different
+> internal cpu_nodes:
+>
+> /sys/devices/system/cpu/cpu5:
+>  physical_package_id        : 0
+>  core_id                    : 5
+>  thread_siblings            : 00000020
+>  thread_siblings_list       : 5
+>  cpu_node_id                : 0
+>  cpu_node_siblings          : 0000003f
+>  cpu_node_siblings_list     : 0-5
+>  core_siblings              : 00000fff
+>  core_siblings_list         : 0-11
+> /sys/devices/system/cpu/cpu6:
+>  physical_package_id        : 0
+>  core_id                    : 0
+>  thread_siblings            : 00000040
+>  thread_siblings_list       : 6
+>  cpu_node_id                : 1
+>  cpu_node_siblings          : 00000fc0
+>  cpu_node_siblings_list     : 6-11
+>  core_siblings              : 00000fff
+>  core_siblings_list         : 0-11
+>
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> ---
+>  arch/x86/include/asm/cpufeature.h |    1 +
+>  arch/x86/kernel/cpu/amd.c         |   61 +++++++++++++++++++++++++++++++++++++
+>  2 files changed, 62 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+> index 728b375..feed057 100644
+> --- a/arch/x86/kernel/cpu/amd.c
+> +++ b/arch/x86/kernel/cpu/amd.c
+> @@ -274,7 +328,14 @@ static void __cpuinit srat_detect_node(struct cpuinfo_x86 *c)
+>        int node;
+>        unsigned apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
+>
+> +#ifdef CONFIG_MULTI_NODE_CPU
+> +       if (cpu_has(c, X86_FEATURE_AMD_DCM))
+> +               node = (c->phys_proc_id << 1) + c->cpu_node_id;
+> +       else
+> +               node = c->phys_proc_id;
+> +#else
+>        node = c->phys_proc_id;
+> +#endif
+Stale CONFIG_MULTI_NODE_CPU?
 
-Ah OK. Just checked that all three callers of generic_sync_sb_inodes():
-- writeback_inodes(): umount prevented
-- pohmelfs_kill_super(): just before umount
-- ubifs calls: too complex to be obvious..
-At least the first two cases are safe, so we didn't see the error report ;)
+Regards,
+Bert
 
-> > > on the inode again. So shouldn't we skip I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW
-> > > inodes in this scan like we do for later in the function for another scan?
-
-Yes we should do this at least for safety.  I_WILL_FREE means
-generic_forget_inode() is going to writeback the inode on its own, so
-generic_sync_sb_inodes() would better not to wade in.
-
-Thanks,
-Fengguang
+>        if (apicid_to_node[apicid] != NUMA_NO_NODE)
+>                node = apicid_to_node[apicid];
+>        if (!node_online(node)) {
+> --
+> 1.6.3.1
+>
+>
+>
+>
