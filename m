@@ -1,108 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbZFCNaD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZFCNcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756885AbZFCNaD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 09:30:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZFCN3y
+	id S1757254AbZFCNcj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 09:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbZFCNca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 09:29:54 -0400
-Received: from cmpxchg.org ([85.214.51.133]:50318 "EHLO cmpxchg.org"
+	Wed, 3 Jun 2009 09:32:30 -0400
+Received: from mga03.intel.com ([143.182.124.21]:20449 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752836AbZFCN3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 09:29:53 -0400
-Date: Wed, 3 Jun 2009 15:27:52 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch][v2] swap: virtual swap readahead
-Message-ID: <20090603132751.GA1813@cmpxchg.org>
-References: <20090602223738.GA15475@cmpxchg.org> <20090602233457.GY1065@one.firstfloor.org>
-Mime-Version: 1.0
+	id S1751351AbZFCNca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 09:32:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,298,1241420400"; 
+   d="scan'208";a="150183319"
+Date: Wed, 3 Jun 2009 21:32:02 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Eric Sandeen <sandeen@sandeen.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH] skip I_CLEAR state inodes
+Message-ID: <20090603133202.GA5738@localhost>
+References: <20090318170237.8F6C.61FB500B@jp.fujitsu.com> <20090323103846.GA16577@localhost> <20090324155655.2684.61FB500B@jp.fujitsu.com> <20090324074457.GA7745@localhost> <20090324120502.GC23439@duck.suse.cz> <20090324124001.GA25326@localhost> <4A244A5B.7070605@sandeen.net> <20090602085523.GC7161@localhost> <20090602113736.GB15010@duck.suse.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090602233457.GY1065@one.firstfloor.org>
+In-Reply-To: <20090602113736.GB15010@duck.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 01:34:57AM +0200, Andi Kleen wrote:
-> On Wed, Jun 03, 2009 at 12:37:39AM +0200, Johannes Weiner wrote:
-> > + *
-> > + * Caller must hold down_read on the vma->vm_mm if vma is not NULL.
-> > + */
-> > +struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
-> > +			struct vm_area_struct *vma, unsigned long addr)
-> > +{
-> > +	unsigned long start, pos, end;
-> > +	unsigned long pmin, pmax;
-> > +	int cluster, window;
-> > +
-> > +	if (!vma || !vma->vm_mm)	/* XXX: shmem case */
-> > +		return swapin_readahead_phys(entry, gfp_mask, vma, addr);
-> > +
-> > +	cluster = 1 << page_cluster;
-> > +	window = cluster << PAGE_SHIFT;
-> > +
-> > +	/* Physical range to read from */
-> > +	pmin = swp_offset(entry) & ~(cluster - 1);
-> 
-> Is cluster really properly sign extended on 64bit? Looks a little
-> dubious. long from the start would be safer
+[reply the easy part first]
+On Tue, Jun 02, 2009 at 07:37:36PM +0800, Jan Kara wrote:
+> On Tue 02-06-09 16:55:23, Wu Fengguang wrote:
+> > On Tue, Jun 02, 2009 at 05:38:35AM +0800, Eric Sandeen wrote:
+> > > Wu Fengguang wrote:
+> > > > Add I_CLEAR tests to drop_pagecache_sb(), generic_sync_sb_inodes() and
+> > > > add_dquot_ref().
+> > > > 
+> > > > clear_inode() will switch inode state from I_FREEING to I_CLEAR,
+> > > > and do so _outside_ of inode_lock. So any I_FREEING testing is
+> > > > incomplete without the testing of I_CLEAR.
+> > > > 
+> > > > Masayoshi MIZUMA first discovered the bug in drop_pagecache_sb() and
+> > > > Jan Kara reminds fixing the other two cases. Thanks!
+> > > 
+> > > Is there a reason it's not done for __sync_single_inode as well?
+> > 
+> > It missed the glance because it don't have an obvious '|' in the line ;)
+> > 
+> > > Jeff Layton asked the question and I'm following it up :)
+> > > 
+> > > __sync_single_inode currently only tests I_FREEING, but I think we are
+> > > safe because __sync_single_inode sets I_SYNC, and clear_inode waits for
+> > > I_SYNC to be cleared before it changes I_STATE.
+> > 
+> > But I_SYNC is removed just before the I_FREEING test, so we still have
+> > a small race window?
+> > 
+> > > On the other hand, testing I_CLEAR here probably would be safe anyway,
+> > > and it'd be bonus points for consistency?
+> > 
+> > So let's add the I_CLEAR test?
+> > 
+> > > Same basic question for generic_sync_sb_inodes, which has a
+> > > BUG_ON(inode->i_state & I_FREEING), seems like this could check I_CLWAR
+> > > as well?
+> > 
+> > Yes, we can add I_CLEAR here to catch more error condition.
+> > 
+> > Thanks,
+> > Fengguang
+> > 
+> > ---
+> > skip I_CLEAR state inodes in writeback routines
+> > 
+> > The I_FREEING test in __sync_single_inode() is racy because
+> > clear_inode() can set i_state to I_CLEAR between the clear of I_SYNC
+> > and the test of I_FREEING.
+> > 
+> > Also extend the coverage of BUG_ON(I_FREEING) to I_CLEAR.
+> > 
+> > Reported-by: Jeff Layton <jlayton@redhat.com>
+> > Reported-by: Eric Sandeen <sandeen@sandeen.net>
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > ---
+> >  fs/fs-writeback.c |    4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > --- linux.orig/fs/fs-writeback.c
+> > +++ linux/fs/fs-writeback.c
+> > @@ -316,7 +316,7 @@ __sync_single_inode(struct inode *inode,
+> >  	spin_lock(&inode_lock);
+> >  	WARN_ON(inode->i_state & I_NEW);
+> >  	inode->i_state &= ~I_SYNC;
+> > -	if (!(inode->i_state & I_FREEING)) {
+> > +	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
+> >  		if (!(inode->i_state & I_DIRTY) &&
+> >  		    mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
+>   Is the whole if needed? I had an impression that everyone calling
+> __sync_single_inode() should better take care it does not race with inode
+> freeing... So WARN_ON would be more appropriate IMHO.
 
-Fixed.
-
-> > +	/* Virtual range to read from */
-> > +	start = addr & ~(window - 1);
-> 
-> Same.
-
-Fixed.
-
-> > +		pgd = pgd_offset(vma->vm_mm, pos);
-> > +		if (!pgd_present(*pgd))
-> > +			continue;
-> > +		pud = pud_offset(pgd, pos);
-> > +		if (!pud_present(*pud))
-> > +			continue;
-> > +		pmd = pmd_offset(pud, pos);
-> > +		if (!pmd_present(*pmd))
-> > +			continue;
-> > +		pte = pte_offset_map_lock(vma->vm_mm, pmd, pos, &ptl);
-> 
-> You could be more efficient here by using the standard mm/* nested loop
-> pattern that avoids relookup of everything in each iteration. I suppose
-> it would mainly make a difference with 32bit highpte where mapping a pte
-> can be somewhat costly. And you would take less locks this way.
-
-I ran into weird problems here.  The above version is actually faster
-in the benchmarks than writing a nested level walker or using
-walk_page_range().  Still digging but it can take some time.  Busy
-week :(
-
-> > +		page = read_swap_cache_async(swp, gfp_mask, vma, pos);
-> > +		if (!page)
-> > +			continue;
-> 
-> That's out of memory, break would be better here because prefetch
-> while oom is usually harmful.
-
-It can also happen due to a race with something releasing the swap
-slot (i.e. swap_duplicate() fails).  But the old version did a break
-too and this patch shouldn't do it differently.  Fixed.
-
-> > +		page_cache_release(page);
-> > +	}
-> > +	lru_add_drain();	/* Push any new pages onto the LRU now */
-> > +	return read_swap_cache_async(entry, gfp_mask, vma, addr);
-> 
-> Shouldn't that page be already handled in the loop earlier? Why doing that
-> again? It would be better to remember it from there.
-
-When doing the nested page table level walker, communicating even more
-state back and forth gets pretty ugly.  I see what I can do.
-
-Thanks for your input Andi,
-
-	Hannes
+The caller doesn't matter here, because we temporarily dropped inode_lock
+in __sync_single_inode() ?
