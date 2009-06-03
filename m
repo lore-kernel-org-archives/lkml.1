@@ -1,81 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbZFCDgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754995AbZFCDi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754996AbZFCDgi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 23:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbZFCDga
+	id S1754995AbZFCDi6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 23:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbZFCDiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 23:36:30 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:56587 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752985AbZFCDg3 (ORCPT
+	Tue, 2 Jun 2009 23:38:51 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:51959 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbZFCDiu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 23:36:29 -0400
-Date: Wed, 3 Jun 2009 12:36:03 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Walleij <linus.ml.walleij@gmail.com>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       John Stultz <johnstul@linux.vnet.ibm.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sched: sched_clock() clocksource handling.
-Message-ID: <20090603033603.GA31488@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Daniel Walker <dwalker@fifo99.com>,
-	Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Linus Walleij <linus.ml.walleij@gmail.com>,
-	Andrew Victor <linux@maxim.org.za>,
-	Haavard Skinnemoen <hskinnemoen@atmel.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	John Stultz <johnstul@linux.vnet.ibm.com>,
-	linux-arm-kernel@lists.arm.linux.org.uk, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20090602071718.GA17710@linux-sh.org> <1243927502.23657.5619.camel@twins> <20090602073515.GB17710@linux-sh.org> <1243928495.23657.5642.camel@twins> <20090602075409.GA19294@linux-sh.org> <1243943366.6592.434.camel@desktop>
+	Tue, 2 Jun 2009 23:38:50 -0400
+Message-ID: <4A25F0C4.4070604@oracle.com>
+Date: Tue, 02 Jun 2009 20:40:52 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1243943366.6592.434.camel@desktop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Reza Mostafid <m.r.mostafid@gmail.com>, linux-kernel@vger.kernel.org,
+       x86 maintainers <x86@kernel.org>
+Subject: Re: kernel panic despite enabling math-emulation
+References: <47a46110905302240w36d78bcbne506210dd7e9c1d2@mail.gmail.com> <4A259155.3000909@oracle.com>
+In-Reply-To: <4A259155.3000909@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt010.oracle.com [141.146.116.19]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010204.4A25F008.0097:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 04:49:26AM -0700, Daniel Walker wrote:
-> On Tue, 2009-06-02 at 16:54 +0900, Paul Mundt wrote:
-> >  unsigned long long __attribute__((weak)) sched_clock(void)
-> >  {
-> > -       return (unsigned long long)(jiffies - INITIAL_JIFFIES)
-> > -                                       * (NSEC_PER_SEC / HZ);
-> > +       unsigned long long time;
-> > +       struct clocksource *clock;
-> > +
-> > +       rcu_read_lock();
-> > +       clock = rcu_dereference(sched_clocksource);
-> > +       time = cyc2ns(clock, clocksource_read(clock));
-> > +       rcu_read_unlock();
-> > +
-> > +       return time;
-> >  }
+Randy Dunlap wrote:
+> Reza Mostafid wrote:
+>> I am trying to build a stripped down v2.6.* kernel to run on a single
+>> chip 386 processor.
+>> As I understand it, the math emulation library must be enabled (
+>> compiled into the kernel )
+>> to cater for the absence of a proper HW FPU.
+>>
+>> I am doing the builds on a more modern x86 desktop machine running Fedora 8
+>> ( based on 2.6.23.1 kernel ) using the source from Fedora 8 ( i.e.
+>> with the F8 patches
+>>   applied against a 2.6.23.1 kernel )
+>>
+>> As a first step, after building the kernel with
+>> 'CONFIG_MATH_EMULATION=y' I tried to test
+>> this feature on my build machine ( which does have an FPU ), by
+>> supplying the 'no387'
+>> boot parameter in order to simulate a non-existing FPU.
+>>
+>> Running the math-emu enabled kernel in this way causes a kernel panic
+>> which happens before
+>> spawning 'init' and early-user space initialization.
+>>
+>> I have observed this condition with several 2.6.* kernel versions and
+>> several Intel/AMD boxes.
+>>
+>> Using the 'earlyprintk=vga' bootparameter and some printk statements
+>> sprinkled in the
+>> appropriate corners of the code ( i.e. '__init' function 'no387()' in
+>> bug.c ) I was able to
+>> observe that in all three cases the 'no387()' code snippet executes
+>> its stuff without hick ups
+>> when the 'no388' boot parameter is processed
+>>
+>>  37 static int __init no_387(char *s)
+>>  38 {
+>>  39         boot_cpu_data.hard_math = 0;
+>>  40         write_cr0(0xE | read_cr0());
+>>  41         return 1;
+>>  42 }
+>>  43
+>>  44 __setup("no387", no_387);
+>>
+>> The kernel freeze happens as a result of a panic in 'fpu_entry.c' (
+>> here I have reproduced code
+>> and line no.s from the file as it exists in v2.6.23.1 under
+>> 'arch/i386/math-emu' )
+>>
+>> 179   else if ( FPU_CS == __KERNEL_CS )
+>> 180     {
+>> 181       printk("math_emulate: %04x:%08lx\n",FPU_CS,FPU_EIP);
+>> 182       panic("Math emulation needed in kernel");
+>> 183     }
+>> 184   else
+>>
+>> In all cases the following lines are the last outputs to the console:
+>>
+>>   math_emulate: <some FPU_CS value>:<some FPU_EIP value>
+>>   Kernel panic-not syncing: Math emulation needed in kernel
+>>
+>> So it appears that even with math emulation enabled the logic of the
+>> code in 'fpu_entry.c' takes
+>> the kernel into the above 'else', i.e. the kernel thinks that there is
+>> no 'math emulation'.
+>>
+>> Searching the web I was able to find references to this problem in
+>> several threads but no apparent
+>> solution to it.
+>>
+>> Math-emulation albeit not a widely used feature, should have been
+>> around long enough for someone to
+>> have stumbled upon such an obvious problem.
+>>
+>> Q1) Am I overlooking anything?
+>>
+>>  or
+>>
+>> Q2) Is this a problem in the code?
+>>
+>>  and finally
+>>
+>> Q3) Any suggestions for how I could get a 2.6 kernel to actually run
+>> with the math-emu?
+>>
+>>
+>>
+>> Regards
+>>
+>>
+>> Reza Mostafid
+>>
+>>
+>>
+>> ==========================================================================================================
+>>
+>> Here is a reproduction of the steps I took:
+>>
+>>
+>> i)   I downloaded the source rpms for the Fedora distro I am running (
+>> Fedora Core 8 which runs
+>>      a modified version of the 2.6.23.1 kernel ).
+>>
+>> ii)  I compiled the Fedora kernel version thus obtained ( using the
+>> supplied distro .config ) and
+>>      it boots fine
+>>
+>> iii) I then change a single parameter of the original configuration,
+>> i.e. enable math-emulation and
+>>      I observed the problem ( kernel panics with the 'no387' param
+>> supplied )
+>>
+>> iv)  I then reproduced the same problem booting a 'kernel.org' vanilla
+>> 2.6.23.1 kernel with the same
+>>      configuration and observed the same problem.
+>>
+>> v)   Finally several different versions of the 'kernel.org' vanilla
+>> source were compiled with the same
+>>      configuration ( the FC8 distro '.config' with just the 'math-emu'
+>> enabled ) on three different PCs.
+>>      Each time the same problem: Each math-emu enabled kernel boots
+>> fine, until you supply the 'no387'
+>>      option, in which case all of them hang at the same place.
+>>
+>>
+>> Configuration used as base:    That of the Fedora 8 distro
+>>
+>> Parameter changed:             CONFIG_MATH_EMULATION=y
+>>
+>> Kernels tested:
+>>
+>> 2.6.23.1 source rpm for Fedora 8
+>> 2.6.23.1 'vanilla' from 'kernel.org'
+>> 2.6.11.12 'vanilla' from 'kernel.org'
+>> 2.6.12.6  'vanilla' from 'kernel.org'
+>> 2.6.28.8  'vanilla' from 'kernel.org'
+>>
+>> CPUs/machines problem was observed on:
+>>
+>> Intel Celeron 331 ( Netburst type P4 )
+>> AMD Semperon
+>> AMD Athlon
 > 
-> My concerns with the locking here still stand. Nothing you've said or
-> done bolsters the clocksource in modules argument. I think what your
-> planning for sh clocksources seems very inelegant. I would imagine a
-> better solution is out there. I'd prefer if you just leave sched_clock
-> alone.
 > 
-This is the first I've heard you mention locking concerns, and as usual
-there is not enough technical content (or any, really) to go on to even
-reply to this. Whether you consider my solution for sh clocksources
-elegant or not is irrelevant, as I wasn't soliciting feedback, and it's a
-problem that has to be dealt with regardless of whether it's a pretty one
-or not.
+> I can easily reproduce this on a Pentium M running 2.6.30-rc7,
+> although it's a bit difficult to get a backtrace of it.
 
-If at such a time you wish to post something bordering on a real
-technical concern, we can continue this thread of conversation, until
-then I'll be sure to drop you from future versions of the patch. If you
-want to hand-wave, do it somewhere else, thanks.
+Booting with "no387 nofxsr noxsave" allows me to boot successfully.
+
+(noxsave is a very recent addition, after 2.6.30-rc7.  I don't know
+if it's really required, but it makes sense to me to use it along
+with the other 2.)
+
+
+
+-- 
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
