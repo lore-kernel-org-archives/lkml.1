@@ -1,93 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZFCPiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759090AbZFCPiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757065AbZFCPiK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 11:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbZFCPho
+	id S1759090AbZFCPiv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 11:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758237AbZFCPif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 11:37:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58119 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755262AbZFCPhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 11:37:42 -0400
-Message-ID: <4A26989A.3030300@redhat.com>
-Date: Wed, 03 Jun 2009 10:36:58 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 3 Jun 2009 11:38:35 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:44623 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758589AbZFCPie convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 11:38:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vcLO8A8YnGK6UlAlBcF0WiUMsQo6SERiJ4vWX8fAekROZFiLuTqeEd0QYTbE3fTJC2
+         Ad8G9ah9R9AeuJGj0wFCKlsNpGenAuk+4B1kvxUtCPyoBPkuB+dW0EgQgRMcw9XfcZL2
+         I8wRfFS/0doRBuz3aDZZJB6IZyUbJ3zlGNNXc=
 MIME-Version: 1.0
-To: Denis Karpov <ext-denis.2.karpov@nokia.com>
-CC: axboe@kernel.dk, akpm@linux-foundation.org, hirofumi@mail.parknet.co.jp,
-       linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, adrian.hunter@nokia.com,
-       artem.bityutskiy@nokia.com
-Subject: Re: [PATCH 0/4] FS: userspace notification of errors
-References: <1244041518-32229-1-git-send-email-ext-denis.2.karpov@nokia.com>
-In-Reply-To: <1244041518-32229-1-git-send-email-ext-denis.2.karpov@nokia.com>
+In-Reply-To: <20090603132217.GA18353@oksana.dev.rtsoft.ru>
+References: <4A255B21.8040002@gersys.de>
+	 <20090602171527.GA8745@oksana.dev.rtsoft.ru>
+	 <4A266FB2.2040902@gersys.de>
+	 <20090603132217.GA18353@oksana.dev.rtsoft.ru>
+Date: Wed, 3 Jun 2009 11:38:35 -0400
+Message-ID: <9e4733910906030838o7313c311je3545cd974d3edd5@mail.gmail.com>
+Subject: Re: PWM class? (was: Re: MPC52xx simple GPIO support)
+From: Jon Smirl <jonsmirl@gmail.com>
+To: avorontsov@ru.mvista.com
+Cc: Stefan Strobl <nst@gersys.de>, ppc-dev <linuxppc-dev@ozlabs.org>,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Denis Karpov wrote:
-> Hello, 
-> 
-> these patches are resent (a bit re-worked and separated from other stuff).
-> The issue was discussed here:
-> http://marc.info/?l=linux-fsdevel&m=124402900920380&w=2
-> 
-> Summary:
-> 
-> 1. Generic mechanism for notifications of user space about file system's
->    errors/inconsistency on a particular partition using:
-> 
->      - sysfs entry /sys/block/<bdev>/<part>/fs_unclean
->      - uevent KOBJ_CHANGE, uevent's environment variable FS_UNCLEAN=[0:1]
+On Wed, Jun 3, 2009 at 9:22 AM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Wed, Jun 03, 2009 at 02:42:26PM +0200, Stefan Strobl wrote:
+> [...]
+>> The led class provides support for setting the brightness, which
+>> obviously the gpio driver doesn't support. The hardware (mpc52xx_gpt)
+>> would support it in PWM mode though. I'm now wandering how this could be
+>> best implemented.
+>>
+>> 1) - Create some PWM class similar to the GPIO class
+>>    - Add support for PWM mode in mpc52xx_gpt.c that uses that PWM class
+>>    - And add an interface for the LED to use the PWM class
+>>
+>> 2) - Create an LED driver that accesses the mpc52xx_gpt directly.
+>>
+>> I think I would be overwhelmed trying to implement (1) but am confident
+>> to do (2). What do you think is the right approach?
+>
+> I'd suggest creating a generic PWM class, i.e. PWMLIB, alike to
+> GPIOLIB. (2) can be an acceptable approach for now, but for the
+> long-term solution (1) is the way to go.
 
-My first thought here, just at a very high level, is that fs_errors
-rather than fs_unclean may be more accurate; at least in my filesystem
-developer world, an "unclean" filesystem is one that was not unmounted
-cleanly, not one with ... errors.  "fs_errors"  (or fs_has_errors?)
-would also be more in sync with ext3's "errors=" mount options...
+What happened to this one?
 
->    Userspace might want to monitor these notifications (poll2() on sysfs 
->    file or udevd's rule for uevent) and fix the fs damage.
->    Filesystem can be marked clean again by writing '0' to the 
->    corresponding 'fs_unclean' sysfs file.
+http://ozlabs.org/pipermail/linuxppc-dev/2008-October/063562.html
 
-It seems a little odd to me that you can just clear this error condition
-without necessarily fixing the actual error, but I don't know how else
-it should be done....
 
-For ext2/3/4, the fs is -marked- with errors in the superblock, so when
-it mounts with that error flag cleared (by fsck), the mount itself could
-clear this error condition perhaps?  Maybe it could be the filesystem's
-choice whether the error condition is clearable from userspace?
+>
+> The non-lib PWM API is already there, see include/linux/pwm.h,
+> and arch/arm/mach-pxa/pwm.c as an implementation example.
+>
+> Note that PXA implementation is SOC-specific, which is not very
+> good.
+>
+> So I'd suggest creating drivers/pwm/pwmlib.c, borrowing
+> ideas from gpiolib. And then we can reuse drivers/leds/leds-pwm.c
+> driver (of course, after adding appropriate OF code into it).
+>
+> Sure, as you've said, it could be quite boringly to implement,
+> could take quite some time to pass all review cycles etc.
+> But someday someone will have to do this. :-)
+>
+> --
+> Anton Vorontsov
+> email: cbouatmailru@gmail.com
+> irc://irc.freenode.net/bd2
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-It's also possible that the error was encountered in memory rather than
-from on-disk, so it might be nice to differentiate somehow, at least for
-filesystems which can do this.  I'm thinking here of "I read something
-from disk that was supposed to be an inode but it had the wrong magic
-number" vs. "I hit a programming error that caused the transaction
-subsystem to get into a state where the filesystem had to shut down" -
-in the latter case, fsck is not going to resolve it...
 
-Thanks,
--Eric
 
->    Currently some file systems remount themselves r/o on critical errors
->    (*FAT; EXT2 depending on 'errors' mount option), userspace is generally
->    unaware of such events. This feature will allow user space to become 
->    aware of possible file system problems and do something about them 
->    (e.g. run fsck automatically or with user's consent).
->    [PATCH 1]
-> 
-> 2. Make FAT and EXT2 file systems use the above mechanism to optionally
->    notify user space about errors. Implemented as 'notify' mount option
->    (PATCH 3,4).
->    FAT error reporting facilities had to be re-factored (PATCH 2) in 
->    order to simplify sending error notifications.
-> 
-> Adrian Hunter and Artem Bityutskiy provided input and ideas on implementing
-> these features.
-> 
-> Denis Karpov.
+-- 
+Jon Smirl
+jonsmirl@gmail.com
