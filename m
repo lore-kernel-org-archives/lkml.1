@@ -1,69 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756359AbZFCMDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbZFCMD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756359AbZFCMDd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 08:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbZFCMD0
+	id S1756694AbZFCMD7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 08:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbZFCMDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 08:03:26 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:48751 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753603AbZFCMD0 (ORCPT
+	Wed, 3 Jun 2009 08:03:51 -0400
+Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:47765 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754064AbZFCMDv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 08:03:26 -0400
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: mingo@elte.hu, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, yinghai@kernel.org,
-       lcm@us.ibm.com
-Subject: Re: [RESEND] [PATCH v2] [BUGFIX] x86/x86_64: fix CPU offlining triggered "active" device IRQ interrruption
-References: <20090602193216.GC7282@us.ibm.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 03 Jun 2009 05:03:24 -0700
-In-Reply-To: <20090602193216.GC7282@us.ibm.com> (Gary Hade's message of "Tue\, 2 Jun 2009 12\:32\:16 -0700")
-Message-ID: <m1prdlttgz.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 3 Jun 2009 08:03:51 -0400
+X-IronPort-AV: E=Sophos;i="4.41,298,1241395200"; 
+   d="scan'208";a="5560757"
+Message-ID: <4A2666A7.4060603@eu.citrix.com>
+Date: Wed, 03 Jun 2009 13:03:51 +0100
+From: George Dunlap <george.dunlap@eu.citrix.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: garyhade@us.ibm.com, lcm@us.ibm.com, yinghai@kernel.org, x86@kernel.org, hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org, mingo@redhat.com, mingo@elte.hu
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Dan Magenheimer <dan.magenheimer@oracle.com>, Theodore Tso <tytso@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       "jeremy@goop.org" <jeremy@goop.org>, "avi@redhat.com" <avi@redhat.com>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       "xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
+       ksrinivasan <ksrinivasan@novell.com>,
+       "EAnderson@novell.com" <EAnderson@novell.com>,
+       "wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
+       Stephen Spector <stephen.spector@citrix.com>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "npiggin@suse.de" <npiggin@suse.de>
+Subject: Re: Merge Xen (the hypervisor) into Linux
+References: <3ab07e3b-a601-48d5-b350-29cbaf111892@default> <alpine.DEB.2.00.0906030108500.14994@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0906030108500.14994@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Jun 2009 12:03:51.0959 (UTC) FILETIME=[5C520270:01C9E443]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gary Hade <garyhade@us.ibm.com> writes:
+Steven Rostedt wrote:
+> What's the issue with this? You get to keep your "micro hypervisor" design 
+> that has been stated to be the superior method.
+>   
+It is a very interesting idea, but it would still be basically a 
+completely new project.  If someone started such a project, they could 
+probably cannibalize a lot of Xen's existing code (a funny boomerang, 
+since Xen cannibalized Linux's code when it started), but it would still 
+require a lot of work and re-writing, and the result would be a lot 
+different than Xen is now.  It would be years before it was ready to be 
+used in a production system.  It's not really realistic to expect all 
+the Xen developers and users to drop Xen development, shift gears into 
+this new project, and wait until it's ready to be used.  (That's not to 
+say that the idea has no merit, just that Xen as it is wouldn't go away 
+until it this hypothetical linux hypervisor component was mature enough 
+for users and developers to jump onto.)
 
-> Impact: Eliminates an issue that can leave the system in an
->         unusable state.
->
-> This patch addresses an issue where device generated IRQs
-> are no longer seen by the kernel following IRQ affinity
-> migration while the device is generating IRQs at a high rate.
->
-> I have been able to consistently reproduce the problem on
-> some of our systems by running the following script (VICTIM_IRQ
-> specifies the IRQ for the aic94xx device) while a single instance
-> of the command
->   # while true; do find / -exec file {} \;; done
-> is keeping the filesystem activity and IRQ rate reasonably high.
+Yeah, lots of interesting implications for such a project.
 
-Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+Having a separate component to be a hypervisor, even if in the same 
+tree, would mean we could have dedicated hypervisor schedulers, &c.  
+They could (conceivably) work more closely with the dom0 scheduler to 
+make things more efficient.
 
-Again you are attempt to work around the fact that fixup_irqs
-is broken.
+As others have said, it would limit the ability of such a hypervisor to 
+be used with other dom0 operatings systems.  Fixing the ABI sufficiently 
+so that others can use it might be possible, but it seems to me unlikely 
+to meet with much success without a lot of committment on both sides 
+(i.e., w/in Linux and within other OS communities).
 
-fixup_irqs is what needs to be fixed to call these functions properly.
+I'm not sure that it would turn out quite the way some people expect, 
+though.  From a technical perspective, I'm not sure getting rid of the 
+"ring 1 hack" or requiring HVM support would be the best design choice 
+for such a project.  And it's hard to predict what kinds of technical, 
+political, or cultural issues, directions, or potential dead-ends a 
+project might take. 
 
-We have several intense debug sessions by various people including
-myself that show that your delayed_irq_move function will simply not
-work reliably.
+ From all angles, it's too risky to just abandon the current Xen 
+codebase until this hypothetical linux hypervisor component has shown 
+itself to be viable.
 
-Frankly simply looking at it gives me the screaming heebie jeebies.
-
-The fact you can't reproduce the old failure cases which demonstrated
-themselves as lockups in the ioapic state machines gives me no
-confidence in your testing of this code.
-
-Eric
+-George
