@@ -1,53 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756537AbZFCXuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZFCXvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756537AbZFCXuW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 19:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbZFCXuL
+	id S1755666AbZFCXvJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 19:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZFCXu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 19:50:11 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:43096 "EHLO bilbo.ozlabs.org"
+	Wed, 3 Jun 2009 19:50:57 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55933 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751783AbZFCXuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 19:50:11 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751783AbZFCXu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 19:50:57 -0400
+Date: Thu, 4 Jun 2009 09:50:55 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Alan Carvalho de Assis <acassis@gmail.com>,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: linux-next: manual merge of the mips tree with the arm tree
+Message-Id: <20090604095055.1d1dfb5e.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18983.3111.770392.800486@cargo.ozlabs.ibm.com>
-Date: Thu, 4 Jun 2009 09:49:59 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: perf_counter: powerpc: Use new identifier names in powerpc-specific code
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit b23f3325 ("perf_counter: Rename various fields") fixed up
-most of the uses of the renamed fields, but missed one instance
-of "record_type" in powerpc-specific code which needs to be changed
-to "sample_type", and a "PERF_RECORD_ADDR" in the same statement that
-needs to be changed to "PERF_SAMPLE_ADDR", causing compilation
-errors on powerpc.  This fixes it.
+Hi Ralf,
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/kernel/perf_counter.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Today's linux-next merge of the mips tree got conflicts in
+drivers/char/hw_random/Kconfig and drivers/char/hw_random/Makefile
+between commit 45001e92d0249a8c4b9f6c3695215652e8e8493d ("i.MX31: Add
+hw-random for RNGA") from the arm tree and commit
+5f2b54f3ee4417d943b98440063a5534503f6d6d ("MIPS: hwrng: Add TX4939 RNG
+driver") from the mips tree.
 
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 4cc4ac5..232b00a 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -1002,7 +1002,7 @@ static void record_and_restart(struct perf_counter *counter, long val,
- 	 */
- 	if (record) {
- 		addr = 0;
--		if (counter->attr.record_type & PERF_RECORD_ADDR) {
-+		if (counter->attr.sample_type & PERF_SAMPLE_ADDR) {
- 			/*
- 			 * The user wants a data address recorded.
- 			 * If we're not doing instruction sampling,
+Just overlapping additions.  I fixed it up (see below) and can carry the
+fix as necessary.
 -- 
-1.6.0.4
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
+diff --cc drivers/char/hw_random/Kconfig
+index 26c93c7,9d321cc..0000000
+--- a/drivers/char/hw_random/Kconfig
++++ b/drivers/char/hw_random/Kconfig
+@@@ -149,14 -149,15 +149,27 @@@ config HW_RANDOM_VIRTI
+  	  To compile this driver as a module, choose M here: the
+  	  module will be called virtio-rng.  If unsure, say N.
+  
+ +config HW_RANDOM_MXC_RNGA
+ +	tristate "Freescale i.MX RNGA Random Number Generator"
+ +	depends on HW_RANDOM && ARCH_HAS_RNGA
+ +	---help---
+ +	  This driver provides kernel-side support for the Random Number
+ +	  Generator hardware found on Freescale i.MX processors.
+ +
+ +	  To compile this driver as a module, choose M here: the
+ +	  module will be called mxc-rnga.
+ +
+ +	  If unsure, say Y.
+++
++ config HW_RANDOM_TX4939
++ 	tristate "TX4939 Random Number Generator support"
++ 	depends on HW_RANDOM && SOC_TX4939
++ 	default HW_RANDOM
++ 	---help---
++ 	  This driver provides kernel-side support for the Random Number
++ 	  Generator hardware found on TX4939 SoC.
++ 
++ 	  To compile this driver as a module, choose M here: the
++ 	  module will be called tx4939-rng.
++ 
++ 	  If unsure, say Y.
+diff --cc drivers/char/hw_random/Makefile
+index fd1ecd2,936d388..0000000
+--- a/drivers/char/hw_random/Makefile
++++ b/drivers/char/hw_random/Makefile
+@@@ -15,4 -15,4 +15,5 @@@ obj-$(CONFIG_HW_RANDOM_IXP4XX) += ixp4x
+  obj-$(CONFIG_HW_RANDOM_OMAP) += omap-rng.o
+  obj-$(CONFIG_HW_RANDOM_PASEMI) += pasemi-rng.o
+  obj-$(CONFIG_HW_RANDOM_VIRTIO) += virtio-rng.o
+ +obj-$(CONFIG_HW_RANDOM_MXC_RNGA) += mxc-rnga.o
++ obj-$(CONFIG_HW_RANDOM_TX4939) += tx4939-rng.o
