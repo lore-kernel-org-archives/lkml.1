@@ -1,87 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbZFCISW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754356AbZFCIWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbZFCISW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 04:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbZFCISL
+	id S1754356AbZFCIWZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 04:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZFCIWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 04:18:11 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:52943 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755690AbZFCISJ (ORCPT
+	Wed, 3 Jun 2009 04:22:15 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37381 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752211AbZFCIWN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 04:18:09 -0400
-Subject: Re: linux-next: manual merge of the trivial tree with the wireless
- tree
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Matt LaPlante <kernel1@cyberdogtech.com>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <alpine.LNX.2.00.0906031006270.7457@wotan.suse.de>
-References: <20090603152247.b52f552e.sfr@canb.auug.org.au>
-	 <alpine.LNX.2.00.0906031006270.7457@wotan.suse.de>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-/1pc8Y4Y2br3JrY68qCn"
-Date: Wed, 03 Jun 2009 10:14:11 +0200
-Message-Id: <1244016851.7176.32.camel@johannes.local>
+	Wed, 3 Jun 2009 04:22:13 -0400
+Date: Wed, 3 Jun 2009 17:20:39 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>
+Subject: Re: [PATCH mmotm 2/2] memcg: allow mem.limit bigger than
+ memsw.limit iff unlimited
+Message-Id: <20090603172039.71e6df7c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090603140102.72b04b6f.nishimura@mxp.nes.nec.co.jp>
+References: <20090603114518.301cef4d.nishimura@mxp.nes.nec.co.jp>
+	<20090603115027.80f9169b.nishimura@mxp.nes.nec.co.jp>
+	<20090603125228.368ecaf7.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090603140102.72b04b6f.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 3 Jun 2009 14:01:02 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
---=-/1pc8Y4Y2br3JrY68qCn
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> On Wed, 3 Jun 2009 12:52:28 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > On Wed, 3 Jun 2009 11:50:27 +0900
+> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > 
+> > > Now users cannot set mem.limit bigger than memsw.limit.
+> > > This patch allows mem.limit bigger than memsw.limit iff mem.limit==unlimited.
+> > > 
+> > > By this, users can set memsw.limit without setting mem.limit.
+> > > I think it's usefull if users want to limit memsw only.
+> > > They must set mem.limit first and memsw.limit to the same value now for this purpose.
+> > > They can save the first step by this patch.
+> > > 
+> > 
+> > I don't like this. No benefits to users.
+> > The user should know when they set memsw.limit they have to set memory.limit.
+> > This just complicates things.
+> > 
+> Hmm, I think there is a user who cares only limitting logical memory(mem+swap),
+> not physical memory, and wants kswapd to reclaim physical memory when congested. 
+> At least, I'm a such user.
+> 
+> Do you disagree even if I add a file like "memory.allow_limit_memsw_only" ?
+> 
+We can it _now_.
 
-On Wed, 2009-06-03 at 10:07 +0200, Jiri Kosina wrote:
-> On Wed, 3 Jun 2009, Stephen Rothwell wrote:
->=20
-> > Today's linux-next merge of the trivial tree got a conflict in=20
-> > Documentation/rfkill.txt between commit=20
-> > c6d660ce29295d344fcdc3654274b4a0aad1a9c8 ("rfkill: rewrite") from the=20
-> > wireless tree and commit 9976d9daf91d146724ad9c336f74c60d2195c386=20
-> > ("trivial: Miscellaneous documentation typo fixes") from the trivial=20
-> > tree.
-> > I just used the version from the wireless tree since it has been
-> > basically rewritten there (except I applied the "transmiter" to
-> > "transmitter" fix - see below).  Maybe the part of the trivial tree pat=
-ch
-> > that affects this file should be dropped.
->=20
-> Hi,
->=20
-> thanks for letting me know. I have dropped the Documentation/rfkill.txt=20
-> hunk completely.=20
->=20
-> Wireless guys, will you please apply the transmiter -> transmitter fix to=
-=20
-> your tree?
-
-Will do.
-
-johannes
-
---=-/1pc8Y4Y2br3JrY68qCn
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKJjDQAAoJEODzc/N7+QmaGpsP/iLhPdelHXIVEdmSff/I89nu
-aCAhEalv5SYGAqxz7U3CIKE2OCQf5UdBBopFolPCTKBr7lXfBSPX59Lwui3pm2Px
-LaPx4dQT5AeqmdDOu9Z2F4sz9GLubgsHqL9KE2rgm5tnn0yuR5WDxJh0PQ0misAI
-iCpI8ltkVDYVsOvqY6Z6KPHyTYo/YBRZUpS3fpbgPZB+wWmcQ6yGgJPUXfaZNrOE
-lmO5n7k0Az1uYAhLUGnpZHhDBYwDJF+uVDLvInBKm4ShKebVwYMFqMTlZY9+e/rl
-AsKrgXn+LtCkr7MRrtYycm+govwEuJQVqQ81hYeL/WfPkgVWewDBY/N4fXMkp80X
-Z6rctUvQK1nVJu/WsKpoHIosnMizeEhmlh7zzHIu50Vf5ZpqTgc+NbwWrYkBdXjC
-i92Y+1UcWbgo75DIsUmUh7SUKUFJFYEblOLnFzojnSC1eaTzuaat/k7UYsynhjaN
-yvGLPhnoWRpVt5TV7aNdE4AHN84hvKmYjz/+nZHZrrVEQFKkVexDDJtCRX0WoThl
-5VeKtgDnIiT3sFB/heyifc3+Znn2vO1uNZmeJFuXnH3qNfPyhYRPxVj4bo5Z9+yR
-8aKjA9gCLL/Yt/yWRhKaWtBVBA9B2RI8gVFZnRVKVuRh3JJCptMnBkHuDT74mAXS
-42qYcUrwkXsYn8KDW5hW
-=TWWK
------END PGP SIGNATURE-----
-
---=-/1pc8Y4Y2br3JrY68qCn--
+Thanks,
+-Kame
 
