@@ -1,60 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbZFCMW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbZFCM11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991AbZFCMW2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 08:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329AbZFCMWV
+	id S1756412AbZFCM11 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 08:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbZFCM1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 08:22:21 -0400
-Received: from mail-bw0-f165.google.com ([209.85.218.165]:59857 "EHLO
-	mail-bw0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753332AbZFCMWU (ORCPT
+	Wed, 3 Jun 2009 08:27:17 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:36353 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754484AbZFCM1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 08:22:20 -0400
-X-Greylist: delayed 449 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Jun 2009 08:22:20 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=k4sstAJtLbYRd6rIkoMv7NqYXwHrApBbF42eeoIpkPRyxtlMoySvkecA+5UkPxvVw8
-         VUca7aRrFLrQGE9hiIeR8wcxNcE1VIz2rks+s/eNkaTyt4DPon+aBZFJbvDph14XxtcC
-         kdqx1PCe98bpckNFVeM+BthHf3e3At713vEcg=
+	Wed, 3 Jun 2009 08:27:17 -0400
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: mingo@elte.hu, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, yinghai@kernel.org,
+       lcm@us.ibm.com
+Subject: Re: [RESEND] [PATCH v2] [BUGFIX] x86/x86_64: fix CPU offlining triggered "active" device IRQ interrruption
+References: <20090602193216.GC7282@us.ibm.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 03 Jun 2009 05:27:13 -0700
+In-Reply-To: <20090602193216.GC7282@us.ibm.com> (Gary Hade's message of "Tue\, 2 Jun 2009 12\:32\:16 -0700")
+Message-ID: <m1y6s9qz8e.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <cone.1244020249.943312.16292.1000@arca>
-References: <cone.1244020249.943312.16292.1000@arca>
-Date: Wed, 3 Jun 2009 14:14:52 +0200
-Message-ID: <9ea470500906030514q1f52be64x2ff73a3d27ac62fa@mail.gmail.com>
-Subject: Re: [PATCH] Request driver inclusion - acer aspire one fan control
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Peter Feuerer <peter@piie.net>
-Cc: Len Brown <len.brown@intel.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: garyhade@us.ibm.com, lcm@us.ibm.com, yinghai@kernel.org, x86@kernel.org, hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org, mingo@redhat.com, mingo@elte.hu
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Gary Hade <garyhade@us.ibm.com> writes:
 
-On Wed, Jun 3, 2009 at 11:10 AM, Peter Feuerer <peter@piie.net> wrote:
-> Hi Len,
+> Impact: Eliminates an issue that can leave the system in an
+>         unusable state.
 >
-> please include following driver.
+> This patch addresses an issue where device generated IRQs
+> are no longer seen by the kernel following IRQ affinity
+> migration while the device is generating IRQs at a high rate.
 >
-> thanks and best regards,
-> --peter
->
->
-> Acerhdf is a driver for Acer Aspire One netbooks. It allows to access
-> the temperature sensor and to control the fan.
->
-> Signed-off-by: Peter Feuerer <peter@piie.net>
-> Reviewed-by: Borislav Petkov <petkovbb@gmail.com>
-> Tested-by: Borislav Petkov <petkovbb@gmail.com>
+> I have been able to consistently reproduce the problem on
+> some of our systems by running the following script (VICTIM_IRQ
+> specifies the IRQ for the aic94xx device) while a single instance
+> of the command
+>   # while true; do find / -exec file {} \;; done
+> is keeping the filesystem activity and IRQ rate reasonably high.
 
-By the way, your patch is line-wrapped and it won't apply here. See
-<Documentation/email-clients.txt> for more info.
+To be 100% clear.
 
--- 
-Regards/Gruss,
-Boris
+If masking and checking to see if the irq was already pending was
+sufficient to migrate irqs in process context was enough to
+safely migrate irqs in process context then that is how we would
+always do it.  I have been down that road and down some extensive
+testing in the past.
+
+I found hardware bugs in both AMD and Intel IOAPIC that make your
+code demonstrably unsafe.
+
+I was challenged by some of the software guys from Intel and eventually
+the came back and told me they had talked with their hardware engineers
+and I was correct.
+
+So no.  This code is totally and severely broken and we should not do
+it.
+
+You are introducing complexity and heuristics to avoid the fact that
+fixup_irqs is fundamentally broken.  Sure you might tweak things
+so they work a little more often.
+
+> The root cause is a known issue already addressed for some
+> code paths [e.g. ack_apic_level() and the now obsolete
+> migrate_irq_remapped_level_desc()] where the ioapic can
+> misbehave when the I/O redirection table register is written
+> while the Remote IRR bit is set.
+
+No the reason we do this is not because of the IRR.  Although
+that certainly does not help.
+
+We do this because it is not in general safe to do complicated
+reprogramming to the ioapic while the hardware may send an
+irq.  You can lock up the hardware state machine etc.
+
+If the work around was as simple as you propose a delayed work or busy
+waiting until the irq handler was complete variant would have been
+written and used long ago.
+
+So my reaction to this horrible afterthought is 
+NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO NO
+PLEASE NO.
+
+Eric
