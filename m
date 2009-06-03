@@ -1,87 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbZFCAEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbZFCAWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753604AbZFCAEn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 20:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbZFCAEg
+	id S1754184AbZFCAWu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 20:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZFCAWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 20:04:36 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:63182 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751713AbZFCAEf (ORCPT
+	Tue, 2 Jun 2009 20:22:42 -0400
+Received: from sg2ehsobe003.messaging.microsoft.com ([207.46.51.77]:34605 "EHLO
+	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751742AbZFCAWl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 20:04:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:content-type:organization:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ZhX8KAidbuT+YCoeTCmJY+HrxSdQNmRYc13FTxPE0FZwefCN3IrK/q9PXS48gGtm82
-         HwQC7vVpx+Rk9OXq80WHzdpSdVI0o+wUqSxGnlVWnIRK07r6TtYr1+GLiEQ4jYWePSNL
-         Brm1VVWGh8c/Af0Yh6P4COO+l8WBUhNKSp1l4=
-Subject: [PATCH] Fix the meaning of EDAC abbreviation
-From: GeunSik Lim <leemgs1@gmail.com>
-Reply-To: leemgs1@gmail.com
-To: Jiri Kosina <trivial@kernel.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, dougthompson@xmission.com
-Content-Type: text/plain
-Organization: Private
-Date: Wed, 03 Jun 2009 09:04:29 +0900
-Message-Id: <1243987469.20635.69.camel@centos51>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+	Tue, 2 Jun 2009 20:22:41 -0400
+X-Greylist: delayed 905 seconds by postgrey-1.27 at vger.kernel.org; Tue, 02 Jun 2009 20:22:41 EDT
+X-SpamScore: 0
+X-BigFish: VPS0(zzzz1202hzzz2fh17ch6bh66h)
+X-Spam-TCS-SCL: 5:0
+Message-ID: <4A25BE9E.5090909@am.sony.com>
+Date: Tue, 2 Jun 2009 17:06:54 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fix bug in ring_buffer_discard_commit
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Jun 2009 00:06:55.0691 (UTC) FILETIME=[34A069B0:01C9E3DF]
+X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+There's a bug in ring_buffer_discard_commit.  The wrong
+pointer is being compared in order to check if the event
+can be freed from the buffer rather than discarded
+(i.e. marked as PAD).
 
+I noticed this when I was working on duration filtering.
+The bug is not deadly - it just results in lots of wasted
+space in the buffer.  All filtered events are left in
+the buffer and marked as discarded, rather than being
+removed from the buffer to make space for other events.
 
-Dear Jiri Kosina,
+Unfortunately, when I fixed this bug, I got errors doing a
+filtered function trace.  Multiple TIME_EXTEND
+events pile up in the buffer, and trigger the
+following loop overage warning in rb_iter_peek():
 
-This is trivial patch about meaning of EDAC in the driver/edac/Kconfig file.
- * Screenshot after patch :
-   http://blogfiles16.naver.net/data42/2009/6/3/31/edac-before-after-invain.png
+again:
+	...
+	if (RB_WARN_ON(cpu_buffer, ++nr_loops > 10))
+		return NULL;
 
+I'm not sure what the best way is to fix this. I don't
+know if I should extend the loop threshhold, or if I should
+make the test more complex (ignore TIME_EXTEND
+events), or just get rid of this loop check completely.
 
-Thanks, 
+Note that if I implement a workaround for this, then I
+see another problem from rb_advance_iter().  I haven't
+tracked that one down yet.
 
+In general, it seems like the case of removing filtered
+events has not been working properly, and so some assumptions
+about buffer invariant conditions need to be revisited.
 
-Subject: [PATCH] Fix the meaning of EDAC abbreviation
+Here's the patch for the simple fix:
 
-Fix the meaning of EDAC(Error Detection And Correction) correctly.
- - http://bluesmoke.sourceforge.net
+Compare correct pointer for checking if an event can be
+freed rather than left as discarded in the buffer.
 
-        Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+Signed-off-by: Tim Bird <tim.bird@am.sony.com
 ---
- drivers/edac/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/trace/ring_buffer.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
-index 956982f..2a81915 100644
---- a/drivers/edac/Kconfig
-+++ b/drivers/edac/Kconfig
-@@ -5,7 +5,7 @@
- #
- 
- menuconfig EDAC
--	bool "EDAC - error detection and reporting"
-+	bool "EDAC - Error Detection And Correction"
- 	depends on HAS_IOMEM
- 	depends on X86 || PPC
- 	help
--- 
-1.6.3.1
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1711,7 +1711,7 @@ void ring_buffer_discard_commit(struct r
 
+ 	bpage = cpu_buffer->tail_page;
 
-
------------------------------------------------
-To unsubscribe from this list: send the line "unsubscribe linux-***" 
-in the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
-GeunSik Lim ( Samsung Electronics )
-e-Mail  :1) geunsik.lim@samsung.com
-         2) leemgs@gmail.com , leemgs1@gmail.com
-HomePage: http://blog.naver.com/invain/
------------------------------------------------
+-	if (bpage == (void *)addr && rb_page_write(bpage) == old_index) {
++	if (bpage->page == (void *)addr && rb_page_write(bpage) == old_index) {
+ 		/*
+ 		 * This is on the tail page. It is possible that
+ 		 * a write could come in and move the tail page
 
