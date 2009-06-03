@@ -1,57 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753113AbZFCA5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753341AbZFCBBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753113AbZFCA5y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 20:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbZFCA5p
+	id S1753341AbZFCBBj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 21:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZFCBBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 20:57:45 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:54257 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751024AbZFCA5p (ORCPT
+	Tue, 2 Jun 2009 21:01:32 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58532 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751024AbZFCBBb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 20:57:45 -0400
-Date: Tue, 2 Jun 2009 20:57:46 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Frans Pop <elendil@planet.nl>, <linux-usb@vger.kernel.org>,
-       <linux-pm@lists.linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] usb: avoid PM error messages during resume if a device
- was disconnected
-In-Reply-To: <200906030053.41385.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906022056070.8257-100000@netrider.rowland.org>
+	Tue, 2 Jun 2009 21:01:31 -0400
+Date: Tue, 2 Jun 2009 21:01:31 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Tim Bird <tim.bird@am.sony.com>
+cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix bug in ring_buffer_discard_commit
+In-Reply-To: <4A25BE9E.5090909@am.sony.com>
+Message-ID: <alpine.DEB.2.00.0906022100560.14994@gandalf.stny.rr.com>
+References: <4A25BE9E.5090909@am.sony.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Jun 2009, Rafael J. Wysocki wrote:
 
-> > +	/* Avoid PM error messages for devices disconnected while suspended
-> > +	 * as we'll display regular disconnect messages just a bit later.
-> > +	 */
-> > +	if (status == -ENODEV)
-> > +		return 0;
-> > +	return status;
+On Tue, 2 Jun 2009, Tim Bird wrote:
+
+> There's a bug in ring_buffer_discard_commit.  The wrong
+> pointer is being compared in order to check if the event
+> can be freed from the buffer rather than discarded
+> (i.e. marked as PAD).
 > 
-> + return status == -ENODEV ? 0 : status;
+> I noticed this when I was working on duration filtering.
+> The bug is not deadly - it just results in lots of wasted
+> space in the buffer.  All filtered events are left in
+> the buffer and marked as discarded, rather than being
+> removed from the buffer to make space for other events.
 > 
-> maybe?
+> Unfortunately, when I fixed this bug, I got errors doing a
+> filtered function trace.  Multiple TIME_EXTEND
+> events pile up in the buffer, and trigger the
+> following loop overage warning in rb_iter_peek():
 > 
-> >  }
-> >  
-> >  #endif /* CONFIG_PM */
+> again:
+> 	...
+> 	if (RB_WARN_ON(cpu_buffer, ++nr_loops > 10))
+> 		return NULL;
+> 
+> I'm not sure what the best way is to fix this. I don't
+> know if I should extend the loop threshhold, or if I should
+> make the test more complex (ignore TIME_EXTEND
+> events), or just get rid of this loop check completely.
+> 
+> Note that if I implement a workaround for this, then I
+> see another problem from rb_advance_iter().  I haven't
+> tracked that one down yet.
+> 
+> In general, it seems like the case of removing filtered
+> events has not been working properly, and so some assumptions
+> about buffer invariant conditions need to be revisited.
+> 
+> Here's the patch for the simple fix:
+> 
+> Compare correct pointer for checking if an event can be
+> freed rather than left as discarded in the buffer.
+> 
+> Signed-off-by: Tim Bird <tim.bird@am.sony.com
 
-Personally, I would do:
+Thanks Tim! I'll queue it up.
 
-	if (status == -ENODEV)
-		status = 0;
-	return status;
+I'll take a look at the code to see what other issues might be happening.
 
-It doesn't make any difference; they are all equally good.
+-- Steve
 
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
-
-
+> ---
+>  kernel/trace/ring_buffer.c |    2 +-
+>  1 files changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- a/kernel/trace/ring_buffer.c
+> +++ b/kernel/trace/ring_buffer.c
+> @@ -1711,7 +1711,7 @@ void ring_buffer_discard_commit(struct r
+> 
+>  	bpage = cpu_buffer->tail_page;
+> 
+> -	if (bpage == (void *)addr && rb_page_write(bpage) == old_index) {
+> +	if (bpage->page == (void *)addr && rb_page_write(bpage) == old_index) {
+>  		/*
+>  		 * This is on the tail page. It is possible that
+>  		 * a write could come in and move the tail page
+> 
+> 
