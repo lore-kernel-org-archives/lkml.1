@@ -1,114 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbZFCLKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbZFCLNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755536AbZFCLKW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 07:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbZFCLKL
+	id S1755104AbZFCLNM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 07:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbZFCLM5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 07:10:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55642 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753812AbZFCLKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 07:10:10 -0400
-Date: Wed, 3 Jun 2009 11:09:37 GMT
-From: tip-bot for Cliff Wickman <cpw@sgi.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       stable@kernel.org, cpw@sgi.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       stable@kernel.org, cpw@sgi.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <E1M6lZR-0007kV-Aq@eag09.americas.sgi.com>
-References: <E1M6lZR-0007kV-Aq@eag09.americas.sgi.com>
-Subject: [tip:x86/urgent] x86: Fix UV BAU activation descriptor init
-Message-ID: <tip-0e2595cdfd7df9f1128f7185152601ae5417483b@git.kernel.org>
-Git-Commit-ID: 0e2595cdfd7df9f1128f7185152601ae5417483b
-X-Mailer: tip-git-log-daemon
+	Wed, 3 Jun 2009 07:12:57 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:24336 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752458AbZFCLM4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 07:12:56 -0400
+Message-ID: <4A265A82.8060909@nokia.com>
+Date: Wed, 03 Jun 2009 14:12:02 +0300
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 03 Jun 2009 11:09:39 +0000 (UTC)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, tytso@mit.edu,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, damien.wyart@free.fr
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
+References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 03 Jun 2009 11:12:10.0169 (UTC) FILETIME=[23826A90:01C9E43C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0e2595cdfd7df9f1128f7185152601ae5417483b
-Gitweb:     http://git.kernel.org/tip/0e2595cdfd7df9f1128f7185152601ae5417483b
-Author:     Cliff Wickman <cpw@sgi.com>
-AuthorDate: Wed, 20 May 2009 08:10:57 -0500
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 3 Jun 2009 13:07:31 +0200
+Jens Axboe wrote:
+> Here's the 9th version of the writeback patches. Changes since v8:
+> 
+> - Fix a bdi_work on-stack allocation hang. I hope this fixes Ted's
+>   issue.
+> - Get rid of the explicit wait queues, we can just use wake_up_process()
+>   since it's just for that one task.
+> - Add separate "sync_supers" thread that makes sure that the dirty
+>   super blocks get written. We cannot safely do this from bdi_forker_task(),
+>   as that risks deadlocking on ->s_umount. Artem, I implemented this
+>   by doing the wake ups from a timer so that it would be easier for you
+>   to just deactivate the timer when there are no super blocks.
 
-x86: Fix UV BAU activation descriptor init
+I wonder if you would consider to work on top of the latest VFS changes:
 
-The UV tlb shootdown code has a serious initialization error.
+git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git for-next
 
-An array of structures [32*8] is initialized as if it were [32].
-The array is indexed by (cpu number on the blade)*8, so the short
-initialization works for up to 4 cpus on a blade.
-But above that, we provide an invalid opcode to the hub's
-broadcast assist unit.
-
-This patch changes the allocation of the array to use its symbolic
-dimensions for better clarity. And initializes all 32*8 entries.
-
-Shortened 'UV_ACTIVATION_DESCRIPTOR_SIZE' to 'UV_ADP_SIZE' per Ingo's
-recommendation.
-
-Tested on the UV simulator.
-
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
-Cc: <stable@kernel.org>
-LKML-Reference: <E1M6lZR-0007kV-Aq@eag09.americas.sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/include/asm/uv/uv_bau.h |    2 +-
- arch/x86/kernel/tlb_uv.c         |   15 +++++++++++++--
- 2 files changed, 14 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/include/asm/uv/uv_bau.h b/arch/x86/include/asm/uv/uv_bau.h
-index 9b0e61b..bddd44f 100644
---- a/arch/x86/include/asm/uv/uv_bau.h
-+++ b/arch/x86/include/asm/uv/uv_bau.h
-@@ -37,7 +37,7 @@
- #define UV_CPUS_PER_ACT_STATUS		32
- #define UV_ACT_STATUS_MASK		0x3
- #define UV_ACT_STATUS_SIZE		2
--#define UV_ACTIVATION_DESCRIPTOR_SIZE	32
-+#define UV_ADP_SIZE			32
- #define UV_DISTRIBUTION_SIZE		256
- #define UV_SW_ACK_NPENDING		8
- #define UV_NET_ENDPOINT_INTD		0x38
-diff --git a/arch/x86/kernel/tlb_uv.c b/arch/x86/kernel/tlb_uv.c
-index ed0c337..16f0fd4 100644
---- a/arch/x86/kernel/tlb_uv.c
-+++ b/arch/x86/kernel/tlb_uv.c
-@@ -715,7 +715,12 @@ uv_activation_descriptor_init(int node, int pnode)
- 	struct bau_desc *adp;
- 	struct bau_desc *ad2;
- 
--	adp = (struct bau_desc *)kmalloc_node(16384, GFP_KERNEL, node);
-+	/*
-+	 * each bau_desc is 64 bytes; there are 8 (UV_ITEMS_PER_DESCRIPTOR)
-+	 * per cpu; and up to 32 (UV_ADP_SIZE) cpu's per blade
-+	 */
-+	adp = (struct bau_desc *)kmalloc_node(sizeof(struct bau_desc)*
-+		UV_ADP_SIZE*UV_ITEMS_PER_DESCRIPTOR, GFP_KERNEL, node);
- 	BUG_ON(!adp);
- 
- 	pa = uv_gpa(adp); /* need the real nasid*/
-@@ -729,7 +734,13 @@ uv_activation_descriptor_init(int node, int pnode)
- 				      (n << UV_DESC_BASE_PNODE_SHIFT | m));
- 	}
- 
--	for (i = 0, ad2 = adp; i < UV_ACTIVATION_DESCRIPTOR_SIZE; i++, ad2++) {
-+	/*
-+	 * initializing all 8 (UV_ITEMS_PER_DESCRIPTOR) descriptors for each
-+	 * cpu even though we only use the first one; one descriptor can
-+	 * describe a broadcast to 256 nodes.
-+	 */
-+	for (i = 0, ad2 = adp; i < (UV_ADP_SIZE*UV_ITEMS_PER_DESCRIPTOR);
-+		i++, ad2++) {
- 		memset(ad2, 0, sizeof(struct bau_desc));
- 		ad2->header.sw_ack_flag = 1;
- 		/*
+For me the problem is that my original patches were created against
+the VFS tree, and they do not apply nicely to your tree. So what I've
+tried to do - I applied your patches on top of the VFS tree. But they
+did not apply cleanly either. I'm currently working on merging them,
+but I thought it is better to ask if you already did this.
+                                                                                              
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
