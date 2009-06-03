@@ -1,100 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757264AbZFCQBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbZFCQEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757264AbZFCQBQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 12:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbZFCQBE
+	id S1756517AbZFCQEa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 12:04:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbZFCQEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 12:01:04 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:42047 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752488AbZFCQBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 12:01:04 -0400
-Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, ying.huang@intel.com, W.Li@Sun.COM, mingo@elte.hu,
-       heicars2@linux.vnet.ibm.com, mschwid2@linux.vnet.ibm.com
-In-Reply-To: <4A26961E.7040207@linux.vnet.ibm.com>
-References: <20090602114359.129247921@linux.vnet.ibm.com>
-	 <20090602114402.951631599@linux.vnet.ibm.com>
-	 <20090602150324.c706b1d2.akpm@linux-foundation.org>
-	 <4A266546.5080601@linux.vnet.ibm.com> <4A26961E.7040207@linux.vnet.ibm.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-3ZbG0NcC6nRL2Hh65ofy"
-Date: Thu, 04 Jun 2009 02:01:03 +1000
-Message-Id: <1244044863.2998.10.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 3 Jun 2009 12:04:22 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:61681 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752488AbZFCQEW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 12:04:22 -0400
+Message-ID: <4A269ED2.7020204@caviumnetworks.com>
+Date: Wed, 03 Jun 2009 09:03:30 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 11/12] hw-breakpoints: ftrace plugin for kernel symbol
+ tracing using HW Breakpoint interfaces
+References: <1243982616-18212-1-git-send-email-fweisbec@gmail.com> <1243982616-18212-12-git-send-email-fweisbec@gmail.com> <4A25B1C8.7030708@caviumnetworks.com> <20090603003811.GF6041@nowhere>
+In-Reply-To: <20090603003811.GF6041@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Jun 2009 16:03:30.0450 (UTC) FILETIME=[D6919F20:01C9E464]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Frederic Weisbecker wrote:
+> On Tue, Jun 02, 2009 at 04:12:08PM -0700, David Daney wrote:
+>> Frederic Weisbecker wrote:
+>>> From: K.Prasad <prasad@linux.vnet.ibm.com>
+>>>
+>>> This patch adds an ftrace plugin to detect and profile memory access over kernel
+>>> variables. It uses HW Breakpoint interfaces to 'watch memory addresses.
+>>>
+>>> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+>>> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+>>> ---
+>>>  kernel/trace/Kconfig          |   21 ++
+>>>  kernel/trace/Makefile         |    1 +
+>>>  kernel/trace/trace.h          |   23 ++
+>>>  kernel/trace/trace_ksym.c     |  525 +++++++++++++++++++++++++++++++++++++++++
+>>>  kernel/trace/trace_selftest.c |   53 ++++
+>>>  5 files changed, 623 insertions(+), 0 deletions(-)
+>>>  create mode 100644 kernel/trace/trace_ksym.c
+>> [...]
+>>> +	entry->ksym_hbp->info.name = ksymname;
+>>> +	entry->ksym_hbp->info.type = op;
+>>> +	entry->ksym_addr = entry->ksym_hbp->info.address = addr;
+>>> +#ifdef CONFIG_X86
+>>> +	entry->ksym_hbp->info.len = HW_BREAKPOINT_LEN_4;
+>>> +#endif
+>> What if the symbol referred to an object of size other than 4?  This  
+>> would clearly be incorrect in that case.
+>>
+>>
+>>> +	entry->ksym_hbp->triggered = (void *)ksym_hbp_handler;
+>>> +
+>>> +	ret = register_kernel_hw_breakpoint(entry->ksym_hbp);
+>> I hate to sound like a broken record, but could some one explain to me  
+>> again why it is a good idea to design a new API that requires processor  
+>> specific #ifdefs to be sprinkled all around generic kernel code?
+>>
+>> Back in:
+>> http://lkml.org/lkml/2008/12/4/329
+>> and
+>> http://lkml.org/lkml/2009/5/21/189
+>>
+>> I raised doubts about this hw-breakpoint thing being generic and the  
+>> responses made think that the processor specific portions would be  
+>> isolated in the processor specific parts of the kernel.  I now see that  
+>> I was wrong.
+>>
+>> When we add sparc, MIPS, ppc...  Support it would be nice to not have to  
+>> add all our own #ifdefs to this, but instead have a generic interface  
+>> that will not need changes.
+>>
+>> David Daney
+> 
+> I was discussing about it with Prasad few hours ago :)
+> 
+> The fact is that archs support the hardware breakpoints in
+> very different ways each.
+> Some of them support read breakpoint, others not (x86).
+> Some support addresses range, others (x86).
+> 
+> But still it would be nice to gather the most common
+> breakpoints operations through a real generic wrapper
+> that relies on arch specific implmentation in
+> background.
+> 
 
---=-3ZbG0NcC6nRL2Hh65ofy
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Thanks for taking the time to think about it.  I do think this patch set 
+will be useful.
 
-On Wed, 2009-06-03 at 17:26 +0200, Peter Oberparleiter wrote:
-> Peter Oberparleiter wrote:
-> > Andrew Morton wrote:
-> >> On Tue, 02 Jun 2009 13:44:02 +0200
-> >> Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
-> >>> +	/* Duplicate gcov_info. */
-> >>> +	active =3D num_counter_active(info);
-> >>> +	dup =3D kzalloc(sizeof(struct gcov_info) +
-> >>> +		      sizeof(struct gcov_ctr_info) * active, GFP_KERNEL);
-> >>=20
-> >> How large can this allocation be?
-> >=20
-> > Hm, good question. Having a look at my test system, I see coverage data=
-=20
-> > files of up to 60kb size. With counters making up the largest part of=20
-> > those, I'd guess the allocation size can be around ~55kb. I assume that=
-=20
-> > makes it a candidate for vmalloc?
->=20
-> A further run with debug output showed that the maximum size is
-> actually around 4k, so in my opinion, there is no need to switch
-> to vmalloc.
+One thing I was thinking was that when I am using gdb, all I have to do 
+is say 'watch symbol' and the differences in hardware breakpoint 
+facilities are abstracted away.  Having similar abstraction in this 
+kernel API should be possible as well.
 
-The real question is how big can active be, and it looks like <=3D 5 is
-the answer:
-
-+/* Determine number of active counters. Based on gcc magic. */
-+static unsigned int num_counter_active(struct gcov_info *info)
-+{
-+	unsigned int i;
-+	unsigned int result =3D 0;
-+
-+	for (i =3D 0; i < GCOV_COUNTERS; i++) {
-+		if (counter_active(info, i))
-+			result++;
-+	}
-+	return result;
-+}
-
-+#define GCOV_COUNTERS		5
-
-So that seems reasonable.
-
-I assumed these were the per BB counters, but it seems they're counter
-_types_. Where are the BB counters, in the values array? If so perhaps
-that is the candidate for vmalloc.
-
-cheers
-
---=-3ZbG0NcC6nRL2Hh65ofy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkomnjoACgkQdSjSd0sB4dLdCACgx14+TZy9AJU97y2NgJ97FRrR
-vB8An37mRHYIC02aM7mu/juuyd2tyORa
-=DqVP
------END PGP SIGNATURE-----
-
---=-3ZbG0NcC6nRL2Hh65ofy--
+David Daney
 
