@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbZFCIev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbZFCIhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbZFCIev (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 04:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbZFCIeo
+	id S1755212AbZFCIhN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 04:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753166AbZFCIhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 04:34:44 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:37524 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753091AbZFCIen convert rfc822-to-8bit (ORCPT
+	Wed, 3 Jun 2009 04:37:03 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:50911 "EHLO
+	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752881AbZFCIhB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 04:34:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ibYxffmNfv9DvQhNEwpmPdrLwWY1pm6cyh+1H5xZQJgMsQ3CWOVWtUgLZOHnCScmxh
-         oWJy1NzklcIsGcF37AuPPxepKIpmAXMqqS2TMN1Gs3pn/xcNlVzlhZxUpl4gUbudAoyz
-         gffFqKvUhMS0l5T0dHQmUYYzrVaGYx+mO5pRo=
+	Wed, 3 Jun 2009 04:37:01 -0400
+X-SpamScore: -21
+X-BigFish: VPS-21(zz1432R98dR1805Mzz1202hzz5a6ciz32i6bh1a3h17ch43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KKNML8-03-6L0-01
+Date: Wed, 3 Jun 2009 10:36:42 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: mingo@elte.hu, x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] x86: amd_iommu, fix lock imbalance
+Message-ID: <20090603083642.GB22359@amd.com>
+References: <1243497289-18591-1-git-send-email-jirislaby@gmail.com> <1243497289-18591-2-git-send-email-jirislaby@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090603084253.1a0aa5b0@lxorguk.ukuu.org.uk>
-References: <1243987469.20635.69.camel@centos51>
-	 <20090603084253.1a0aa5b0@lxorguk.ukuu.org.uk>
-Date: Wed, 3 Jun 2009 17:34:44 +0900
-Message-ID: <49b7c2350906030134x4a911313x138b9775322d13cf@mail.gmail.com>
-Subject: Re: [PATCH] Fix the meaning of EDAC abbreviation
-From: GeunSik Lim <leemgs1@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jiri Kosina <trivial@kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, dougthompson@xmission.com
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <1243497289-18591-2-git-send-email-jirislaby@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 03 Jun 2009 08:36:42.0888 (UTC) FILETIME=[6C044880:01C9E426]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 3, 2009 at 4:42 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> Fix the meaning of EDAC(Error Detection And Correction) correctly.
->>  - http://bluesmoke.sourceforge.net
->>
->>         Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
->> ---
->>  drivers/edac/Kconfig |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
->> index 956982f..2a81915 100644
->> --- a/drivers/edac/Kconfig
->> +++ b/drivers/edac/Kconfig
->> @@ -5,7 +5,7 @@
->>  #
->>
->>  menuconfig EDAC
->> -     bool "EDAC - error detection and reporting"
->> +     bool "EDAC - Error Detection And Correction"
->
-> The code started off as one thing and acquired its name but a primary
-> function of it now is indeed reporting rather than just correction. The
-Thank you for explanation and advice about EDAC meaning.
+On Thu, May 28, 2009 at 09:54:48AM +0200, Jiri Slaby wrote:
+> In alloc_coherent there is an omitted unlock on the path where mapping
+> fails. Add the unlock.
+> 
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Cc: Joerg Roedel <joerg.roedel@amd.com>
+> ---
+>  arch/x86/kernel/amd_iommu.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+> index a97db99..b123e20 100644
+> --- a/arch/x86/kernel/amd_iommu.c
+> +++ b/arch/x86/kernel/amd_iommu.c
+> @@ -1537,8 +1537,10 @@ static void *alloc_coherent(struct device *dev, size_t size,
+>  	*dma_addr = __map_single(dev, iommu, domain->priv, paddr,
+>  				 size, DMA_BIDIRECTIONAL, true, dma_mask);
+>  
+> -	if (*dma_addr == bad_dma_address)
+> +	if (*dma_addr == bad_dma_address) {
+> +		spin_unlock_irqrestore(&domain->lock, flags);
+>  		goto out_free;
+> +	}
+>  
+>  	iommu_completion_wait(iommu);
 
-> name has stuck but the functionality doesn't quite match - so the
-> existing menuconfig entry is actually more helpful.
-Um.
-How about  we change contents with "EDAC (Error Detection And
-Correction) reporting"  to understand EDAC abbreviation normally?
-This is Just my thinking.
-
-Thks,
-
+Applied to amd-iommu/fixes. Thanks Jiri.
 
 -- 
-Regards,
-GeunSik Lim ( Samsung Electronics )
-Blog : http://blog.naver.com/invain/
-e-Mail: geunsik.lim@samsung.com
-           leemgs@gmail.com , leemgs1@gmail.com
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei M�nchen
+ System    | 
+ Research  | Gesch�ftsf�hrer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis M�nchen
+           | Registergericht M�nchen, HRB Nr. 43632
+
