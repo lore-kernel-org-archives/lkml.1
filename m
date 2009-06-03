@@ -1,84 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZFCIsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbZFCIsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757065AbZFCIsV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 04:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbZFCIsN
+	id S1757186AbZFCIsg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 04:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756816AbZFCIsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 04:48:13 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38714 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbZFCIsN (ORCPT
+	Wed, 3 Jun 2009 04:48:25 -0400
+Received: from mail-px0-f134.google.com ([209.85.216.134]:56538 "EHLO
+	mail-px0-f134.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751515AbZFCIsY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 04:48:13 -0400
-Date: Wed, 3 Jun 2009 17:46:41 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>
-Subject: Re: [PATCH mmotm 2/2] memcg: allow mem.limit bigger than
- memsw.limit iff unlimited
-Message-Id: <20090603174641.445e3012.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090603140102.72b04b6f.nishimura@mxp.nes.nec.co.jp>
-References: <20090603114518.301cef4d.nishimura@mxp.nes.nec.co.jp>
-	<20090603115027.80f9169b.nishimura@mxp.nes.nec.co.jp>
-	<20090603125228.368ecaf7.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090603140102.72b04b6f.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Jun 2009 04:48:24 -0400
+X-Greylist: delayed 694 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Jun 2009 04:48:23 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=x/C5cDs2RaujOXJeOe4bpShmWdVxqSsgQaGxBv2D7/Gm4R/SaHScKRDVoeKX8/SFMb
+         2xvLw6hhmLRCfO4NSsYMu5Nen+n4/7rGm9I2MvtbhKu6mVEbtPcN+gciWZIQl7zXPcai
+         grqVf01+wQ0bvnZeUUWfDHGhI5fi8bcDQAEvU=
+MIME-Version: 1.0
+Date: Wed, 3 Jun 2009 16:36:51 +0800
+Message-ID: <955abea80906030136s19bc740fv9a0665ec260a5f94@mail.gmail.com>
+Subject: =?Big5?B?o+EyMDA5LzYvMyCkc+C+rOyn3rr0rbazXa1w?=
+From: =?Big5?B?w7m2rray?= <t1cp2v4c642@gmail.com>
+To: lindsay@videogum.com
+Content-Type: text/plain; charset=Big5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n538mL54007317
 
-On Wed, 3 Jun 2009 14:01:02 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-
-> On Wed, 3 Jun 2009 12:52:28 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > On Wed, 3 Jun 2009 11:50:27 +0900
-> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > 
-> > > Now users cannot set mem.limit bigger than memsw.limit.
-> > > This patch allows mem.limit bigger than memsw.limit iff mem.limit==unlimited.
-> > > 
-> > > By this, users can set memsw.limit without setting mem.limit.
-> > > I think it's usefull if users want to limit memsw only.
-> > > They must set mem.limit first and memsw.limit to the same value now for this purpose.
-> > > They can save the first step by this patch.
-> > > 
-> > 
-> > I don't like this. No benefits to users.
-> > The user should know when they set memsw.limit they have to set memory.limit.
-> > This just complicates things.
-> > 
-> Hmm, I think there is a user who cares only limitting logical memory(mem+swap),
-> not physical memory, and wants kswapd to reclaim physical memory when congested. 
-> At least, I'm a such user.
-> 
-> Do you disagree even if I add a file like "memory.allow_limit_memsw_only" ?
-> 
-
-How about removing memory.limit < memsw.limit condition completely ?
-
-Thanks,
--Kame
-
-> 
-> Thanks,
-> Daisuke Nishimura.
-> 
-> > If you want to do this, add an interface as
-> >   memory.all.limit_in_bytes (or some better name)
-> > and allow to set memory.limit and memory.memsw.limit _at once_.
-> > 
-> > But I'm not sure it's worth to try. Saving user's few steps by the kenerl patch ?
-> > 
-> > Thanks,
-> > -Kame
-> > 
-> > 
-> 
-
+2009-6-3  -  16:36
+¤sIà¾I¬ìq§Ş0ºôM­¶X³]g­p
+§ÚY­Ìzªºo©vS¦®E¡G«È¤áqªº¨C£¸¥ó6¤p¨Æ±¡¡A³£¬O¤shà¾ªºH¤j¨Æ±¡
+§ÚR­Ìd7¦bR±À¥XB¥ø·~§Î¶Hºô6¯¸¥]§t«e¥xºô­¶¬ü¤u+«á¥xºŞ²zµ{¦¡
+­­H®ÉA­­q¶q9±M®×»ù ¥u­n$29,900  (¦b°e£¸¦~100MB ¤£­­¬y¶qºô¯¸ªÅ¶¡)
+§Út­Ìk°µTªºd¤£E¥us¬OrºôLg¯¸¡A¦ÓY¬Ow±z1¥øC·~Gªºz¤JS¤f
+£¸2­Óh¦ndªºh¥øh·~EºôU¯¸gd¸êg®ÆM§YY®Ér§óD·sIªºo³tXU«×v¬Om«Üh­«m­n0ªº
+¥øl·~¢í¤Æk°ªe«~p½è4¹Î4¶¤¡A¥´5³yYG±zTªºSºôe¸ômªù0­±
+¿ïc¾Ü4¤sqà¾u¦¨l´Nm±ziªºxr¹Ú37·Q
+9Åwªï¨Ó¹q1¬¢¸ß¶À±M­û¡G0_9_8_0_1_1_9_8_1_2q¡ºA¢Jr?3¡¼R¡ñÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
