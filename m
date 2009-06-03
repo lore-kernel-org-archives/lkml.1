@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbZFCKP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756871AbZFCKPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756276AbZFCKP0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 06:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZFCKPP
+	id S1756871AbZFCKPz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 06:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbZFCKPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 06:15:15 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:45672 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752635AbZFCKPN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 06:15:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Cc1y1Xa4MDgnmJfJQlI/YbW89OT5k7iDGwECklucGU+R76/9s7M+Mc0MbBssuXZoeT
-         CqsNyI2ILqIJy/gDXFu04YIO6d3SymItQ/Y07+FBCJ0nADW55VLQ8gXEihOyL4o1c8/y
-         j6S0o6rtWweFLUlEOGEeyxHjZCkwIT8KkGg1c=
-MIME-Version: 1.0
-In-Reply-To: <20090603105716.341244fc@lxorguk.ukuu.org.uk>
-References: <1243926700-30485-1-git-send-email-vapier@gentoo.org>
-	 <1243926700-30485-4-git-send-email-vapier@gentoo.org>
-	 <20090602100018.415b1dfc@lxorguk.ukuu.org.uk>
-	 <8bd0f97a0906030103i64bc1a9duc5aeaea7bd3f8365@mail.gmail.com>
-	 <20090603095346.64c874b1@lxorguk.ukuu.org.uk>
-	 <8bd0f97a0906030247ueeb9320k30e794109ca51758@mail.gmail.com>
-	 <20090603105716.341244fc@lxorguk.ukuu.org.uk>
-Date: Wed, 3 Jun 2009 06:15:14 -0400
-Message-ID: <8bd0f97a0906030315l60214ff1n7f5d7a7203dd4547@mail.gmail.com>
-Subject: Re: [PATCH 04/11] Blackfin SPORT UART: fix overrun errors
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Cliff Cai <cliff.cai@analog.com>, Bryan Wu <cooloney@kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 3 Jun 2009 06:15:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37807 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752717AbZFCKPq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 06:15:46 -0400
+Subject: Re: linux-next: gfs2 tree build warning
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Abhijith Das <adas@redhat.com>
+In-Reply-To: <20090603154031.3652281b.sfr@canb.auug.org.au>
+References: <20090603154031.3652281b.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+ 3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+ Street, Windsor, Berkshire, SL4 ITE
+Date: Wed, 03 Jun 2009 11:15:36 +0100
+Message-Id: <1244024136.29604.596.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 3, 2009 at 05:57, Alan Cox wrote:
->> since the serial stuff is in a bit of orphaned state (going by
->> MAINTAINERS), should i merge the other changes through the Blackfin
->> tree ?
->
-> The other bits are all merged into the ttydev tree
+Hi,
 
-ah, ok.  i'm guessing that is this:
-http://www.linux.org.uk/~alan/ttydev/
+On Wed, 2009-06-03 at 15:40 +1000, Stephen Rothwell wrote:
+> Hi Steven,
+> 
+> Today's linux-next build (x86_64 allmodconfig) produced this warning:
+> 
+> fs/gfs2/file.c: In function 'gfs2_flock':
+> fs/gfs2/file.c:697: warning: unused variable 'ip'
+> 
+> Introduced by commit a12af1ebe675e85831fde3c4d0908fc3b0908b7a ("GFS2:
+> smbd proccess hangs with flock() call") which removed the last usage of
+> 'ip'.
+> 
 
-useful to add to MAINTAINERS ?
--mike
+Thanks for letting me know. There is a fix in the -nmw tree now,
+
+Steve.
+
+
