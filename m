@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbZFCEJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbZFCEKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636AbZFCEJn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 00:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750857AbZFCEJg
+	id S1754312AbZFCEKj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 00:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZFCEKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 00:09:36 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:60896 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbZFCEJg (ORCPT
+	Wed, 3 Jun 2009 00:10:31 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:36135 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750735AbZFCEKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 00:09:36 -0400
-Message-ID: <4A25F814.7030101@oracle.com>
-Date: Tue, 02 Jun 2009 21:12:04 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 3 Jun 2009 00:10:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=LPQfL5hXemBzhjoTmk+J32dNMm4OBNTz6zu9aEkfkAqaMqbpB2/wXngGWXu3hFlvfJ
+         6b5P754yOWYRHQVgQerwSqWIFdZcz3p5mHZzrkWOrucQYd73MOmV7X+KIzQGQqDZOzvY
+         09pzlLZiswiKckxldA9gesbGB9CDsm+fm0E+8=
+Message-ID: <4A25F7B6.4080904@gmail.com>
+Date: Tue, 02 Jun 2009 22:10:30 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>
-Subject: Re: mmotm 2009-06-02-16-11 uploaded (staging)
-References: <200906022331.n52NVJhG015117@imap1.linux-foundation.org>
-In-Reply-To: <200906022331.n52NVJhG015117@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Markus <M4rkusXXL@web.de>
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Seagate Barracuda 7200.11 ST31500341AS fw SD17
+References: <200906021258.20346.M4rkusXXL@web.de>
+In-Reply-To: <200906021258.20346.M4rkusXXL@web.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt002.oracle.com [141.146.116.11]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4A25F758.0144:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2009-06-02-16-11 has been uploaded to
+Markus wrote:
+> Hello!
 > 
->    http://userweb.kernel.org/~akpm/mmotm/
+> I have some Seagate Barracuda 7200.11 ST31500341AS 1.5TB drives. They 
+> use the firmware SD17.
+> They time out at the flush write cache and sometimes on the identify 
+> command.
+> I know that sounds suspicious so I wrote to seagate but they told me my 
+> drives are ok. (Although I dont think so.)
 > 
-> and will soon be available at
+> This drive+fw is blacklisted in the kernel, but there is no firmware 
+> upgrade for these drives. (Only very few serial numbers are able to 
+> upgrade.)
 > 
->    git://git.zen-sources.org/zen/mmotm.git
+> Now I want to know after what period of the time the kernel timeouts at 
+> these commands!? And if this timeout can be increased (manually, small 
+> patch for the kernel) and the min/max/avg time could somehow be 
+> messured. Every timeout kicks the drives off the raid, so I disabled 
+> the write cache (hdparm -W0 /dev/sdx) but thats no solution, just a bad 
+> workaround.
 
+I believe the timeout for commands like these is usually 30 seconds. 
+Normally if it doesn't respond after that length of time, it never will. 
+Even if it eventually did, I don't think you'd be happy with disk access 
+delays of over 30 seconds..
 
-drivers/staging/agnx/pci.c:64:3: warning: "/*" within comment
-drivers/staging/agnx/pci.c:223:2: warning: "/*" within comment
+> 
+> Its a amd64 system with the 2.6.29.4 on an AM3 board with AMDs 790GX + 
+> SB750 Chipsets running in ahci mode.
+> 
+> Thanks for your time and support!
+> 
+> Markus
+> 
+> PS: Please CC me!
 
-drivers/staging/android/lowmemorykiller.c:106: error: 'struct task_struct' has no member named 'oomkilladj'
-
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
