@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZFCKOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbZFCKP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754449AbZFCKOq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 06:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZFCKOj
+	id S1756276AbZFCKP0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 06:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZFCKPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 06:14:39 -0400
-Received: from fmmailgate02.web.de ([217.72.192.227]:55796 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753241AbZFCKOj (ORCPT
+	Wed, 3 Jun 2009 06:15:15 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:45672 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbZFCKPN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 06:14:39 -0400
-From: Markus <M4rkusXXL@web.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Seagate Barracuda 7200.11 ST31500341AS fw SD17
-Date: Wed, 3 Jun 2009 12:14:39 +0200
-User-Agent: KMail/1.9.10
-References: <200906021258.20346.M4rkusXXL@web.de> <200906021438.50228.M4rkusXXL@web.de> <m3r5y2ivh6.fsf@intrepid.localdomain>
-In-Reply-To: <m3r5y2ivh6.fsf@intrepid.localdomain>
+	Wed, 3 Jun 2009 06:15:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Cc1y1Xa4MDgnmJfJQlI/YbW89OT5k7iDGwECklucGU+R76/9s7M+Mc0MbBssuXZoeT
+         CqsNyI2ILqIJy/gDXFu04YIO6d3SymItQ/Y07+FBCJ0nADW55VLQ8gXEihOyL4o1c8/y
+         j6S0o6rtWweFLUlEOGEeyxHjZCkwIT8KkGg1c=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <20090603105716.341244fc@lxorguk.ukuu.org.uk>
+References: <1243926700-30485-1-git-send-email-vapier@gentoo.org>
+	 <1243926700-30485-4-git-send-email-vapier@gentoo.org>
+	 <20090602100018.415b1dfc@lxorguk.ukuu.org.uk>
+	 <8bd0f97a0906030103i64bc1a9duc5aeaea7bd3f8365@mail.gmail.com>
+	 <20090603095346.64c874b1@lxorguk.ukuu.org.uk>
+	 <8bd0f97a0906030247ueeb9320k30e794109ca51758@mail.gmail.com>
+	 <20090603105716.341244fc@lxorguk.ukuu.org.uk>
+Date: Wed, 3 Jun 2009 06:15:14 -0400
+Message-ID: <8bd0f97a0906030315l60214ff1n7f5d7a7203dd4547@mail.gmail.com>
+Subject: Re: [PATCH 04/11] Blackfin SPORT UART: fix overrun errors
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Cliff Cai <cliff.cai@analog.com>, Bryan Wu <cooloney@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906031214.39610.M4rkusXXL@web.de>
-X-Provags-ID: V01U2FsdGVkX19U60kJIujYsF5rs5L0DG/4aCKRzc15uJOyYFRW
-	CFJ2PMUHlQca40YLx1HkX+oJ/hYljWdpSjXh5ujVCvn4tAgp6H
-	K28x2OBT0=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Markus <M4rkusXXL@web.de> writes:
-> 
-> > 
-http://www.seagate.com/staticfiles/support/downloads/firmware/Brinks-4D8H-SD1B.ISO
-> >
-> > I tried that one (compared md5sum). It does not work. It only works 
-> > for "ST31500341AS,  9JU138-300 or -336, SD15 through SD1A ONLY!"
-> 
-> Did you try to contact them?
+On Wed, Jun 3, 2009 at 05:57, Alan Cox wrote:
+>> since the serial stuff is in a bit of orphaned state (going by
+>> MAINTAINERS), should i merge the other changes through the Blackfin
+>> tree ?
+>
+> The other bits are all merged into the ttydev tree
 
-Of course I did. They told me, my drives are not affected and drives 
-with "good" serial numbers will not be upgraded.
-And they now told me I have OEM drives (???) which they do not provide 
-firmware upgrades for, although my drives are ok. I dont understand 
-those support-people.
+ah, ok.  i'm guessing that is this:
+http://www.linux.org.uk/~alan/ttydev/
 
-Markus
+useful to add to MAINTAINERS ?
+-mike
