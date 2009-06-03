@@ -1,100 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757746AbZFCPxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758308AbZFCPy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757746AbZFCPxy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 11:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbZFCPxq
+	id S1758308AbZFCPy6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 11:54:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbZFCPyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 11:53:46 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:45726 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbZFCPxp (ORCPT
+	Wed, 3 Jun 2009 11:54:51 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:16242 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751515AbZFCPyv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 11:53:45 -0400
-Subject: Re: linux-next: Tree for June 3 (rfkill)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: =?ISO-8859-1?Q?G=E1bor?= Stefanik <netrolller.3d@gmail.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-In-Reply-To: <69e28c910906030847k7e6f97bbo16497d872b93151b@mail.gmail.com>
-References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au>
-	 <4A269539.8020607@oracle.com> <1244042950.4862.10.camel@johannes.local>
-	 <69e28c910906030847k7e6f97bbo16497d872b93151b@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-8AHxGSoibjcmzL9mpW7O"
-Date: Wed, 03 Jun 2009 17:53:37 +0200
-Message-Id: <1244044417.4862.23.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+	Wed, 3 Jun 2009 11:54:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=VuURNw/zSyT+cbw4rR4bXQIsIuoPVcu10cMUyzFHoj+5YuA2f4n/cUi4t26Sw9ACTF
+         xKjjIcB8y94jIm0PCvc7SDBq1cyix6OdTu3t5+NShQOxuUhQrpCBfBpspGGWwURKaH7Z
+         iYHifAL1SuwphKZGMCKmLRwU7WTDDZ32exxOI=
+MIME-Version: 1.0
+In-Reply-To: <9e4733910906030838o7313c311je3545cd974d3edd5@mail.gmail.com>
+References: <4A255B21.8040002@gersys.de>
+	 <20090602171527.GA8745@oksana.dev.rtsoft.ru>
+	 <4A266FB2.2040902@gersys.de>
+	 <20090603132217.GA18353@oksana.dev.rtsoft.ru>
+	 <9e4733910906030838o7313c311je3545cd974d3edd5@mail.gmail.com>
+Date: Wed, 3 Jun 2009 21:24:52 +0530
+Message-ID: <5d5443650906030854h40e98ff9tb2bd23a0f5e8dec6@mail.gmail.com>
+Subject: Re: PWM class? (was: Re: MPC52xx simple GPIO support)
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: avorontsov@ru.mvista.com, Stefan Strobl <nst@gersys.de>,
+       ppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org,
+       Bill Gatliff <bgat@billgatliff.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jon,
 
---=-8AHxGSoibjcmzL9mpW7O
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On Wed, Jun 3, 2009 at 9:08 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On Wed, Jun 3, 2009 at 9:22 AM, Anton Vorontsov
+> <avorontsov@ru.mvista.com> wrote:
+>> On Wed, Jun 03, 2009 at 02:42:26PM +0200, Stefan Strobl wrote:
+>> [...]
+>>> The led class provides support for setting the brightness, which
+>>> obviously the gpio driver doesn't support. The hardware (mpc52xx_gpt)
+>>> would support it in PWM mode though. I'm now wandering how this could be
+>>> best implemented.
+>>>
+>>> 1) - Create some PWM class similar to the GPIO class
+>>>    - Add support for PWM mode in mpc52xx_gpt.c that uses that PWM class
+>>>    - And add an interface for the LED to use the PWM class
+>>>
+>>> 2) - Create an LED driver that accesses the mpc52xx_gpt directly.
+>>>
+>>> I think I would be overwhelmed trying to implement (1) but am confident
+>>> to do (2). What do you think is the right approach?
+>>
+>> I'd suggest creating a generic PWM class, i.e. PWMLIB, alike to
+>> GPIOLIB. (2) can be an acceptable approach for now, but for the
+>> long-term solution (1) is the way to go.
+>
+> What happened to this one?
+>
+> http://ozlabs.org/pipermail/linuxppc-dev/2008-October/063562.html
+>
 
-On Wed, 2009-06-03 at 17:47 +0200, G=C3=A1bor Stefanik wrote:
+Adding Bill to see if he has any updates.
 
-> >> CFG80211=3Dy
-> >> MAC80211=3Dy
-> >> RFKILL=3Dm
-> >>
-> >> net/built-in.o: In function `cfg80211_netdev_notifier_call':
-> >> core.c:(.text+0xa678b): undefined reference to `rfkill_blocked'
-> >> net/built-in.o: In function `cfg80211_dev_free':
-> >
-> > Hrm. I thought
-> >
-> > config CFG80211
-> >        tristate "Improved wireless configuration API"
-> >        depends on RFKILL || !RFKILL
-> >
-> > would avoid that. Why doesn't it?
-> >
-> > johannes
-> >
->=20
-> Maybe the "y" state of CFG80211 specifically needs to depend on
-> RFKILL=3Dy || !RFKILL.
-
-Maybe doesn't help me at all.
-
-> BTW should CFG80211=3Dy really be blocked when RFKILL=3Dm?=20
-
-Yes.
-
-> Shouldn't we
-> just disable CFG80211 RFKILL support in this case (perhaps via a
-> separate CONFIG_CFG80211_RFKILL automatically configured depending on
-> CONFIG_RFKILL)?
-
-That would be immensely stupid. You might as well just make cfg80211 a
-module then.
-
-johannes
-
---=-8AHxGSoibjcmzL9mpW7O
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKJpx+AAoJEODzc/N7+QmaEicP/3JwoPj8xjfkugDReCjXIHQJ
-OKSqNE1gscuq0XinPhx1qp1WFBrCRzvhuYehX51nRAcgajdu9/PG7CJ+0+KbsTBr
-xY0nxfMrqoJBElwfKbe2HCl0WP4dRdais4SlnlW6YVcbdcvtw2KeYtQBFgEFTeyg
-RvJqxzTqhOn9a8e0QzwHgOGuiwn+tczYj23XdSMB8HzGWJTwKaWmUttkYVM4Q8Mt
-sD9syg75E0mJiOSJ5ss17c2XUZQk+HR16SBQvpwsjRiC2h4Fin9Kk77tBXVnnxXu
-HfZY8OHqDjJSSdzdRnXFO3gWyALfKo0vOmx/qJdUW2T+MjY7rvZAq4wo6bgaVZbh
-UjobFIhsAo5x1BravQmodJfVZ1oKZCQK0IVnD1x3LlXm/WClBsH0qkEP3Q+roKHY
-VQsMik227irP+Snwcrh2jpCQQj6ob0/haejWZsnFQ39KDECEiBn4NgmHVGqfeHVb
-2H8RE0ftNEl2J62znjvihPCjyzfeCNSQ1AyudcD70KtSTmQ4tVhRPWIAXzO1Pa63
-rB/Hw0DFJgKuBY0EDrEFfaRJUXMOlnsZwf3nOAx5kEKba+JJx8s47F0KhSxAg+jE
-FjwuJmw1QxDV5kHZS2KQW+FBCQpQVyqdSWxduZ9RrCUK31d3CgYds4mms+2XqHE9
-VDnn2WUWR92mhqYgrOOI
-=jn+N
------END PGP SIGNATURE-----
-
---=-8AHxGSoibjcmzL9mpW7O--
-
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
