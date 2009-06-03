@@ -1,232 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbZFCL7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756359AbZFCMDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754869AbZFCL7R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 07:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZFCL7E
+	id S1756359AbZFCMDd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 08:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754064AbZFCMD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 07:59:04 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:61010 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753261AbZFCL7D (ORCPT
+	Wed, 3 Jun 2009 08:03:26 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:48751 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753603AbZFCMD0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 07:59:03 -0400
-Message-ID: <4A266546.5080601@linux.vnet.ibm.com>
-Date: Wed, 03 Jun 2009 13:57:58 +0200
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 3 Jun 2009 08:03:26 -0400
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: mingo@elte.hu, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, yinghai@kernel.org,
+       lcm@us.ibm.com
+Subject: Re: [RESEND] [PATCH v2] [BUGFIX] x86/x86_64: fix CPU offlining triggered "active" device IRQ interrruption
+References: <20090602193216.GC7282@us.ibm.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 03 Jun 2009 05:03:24 -0700
+In-Reply-To: <20090602193216.GC7282@us.ibm.com> (Gary Hade's message of "Tue\, 2 Jun 2009 12\:32\:16 -0700")
+Message-ID: <m1prdlttgz.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, andi@firstfloor.org, ying.huang@intel.com,
-       W.Li@Sun.COM, michaele@au1.ibm.com, mingo@elte.hu,
-       heicars2@linux.vnet.ibm.com, mschwid2@linux.vnet.ibm.com
-Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
-References: <20090602114359.129247921@linux.vnet.ibm.com> <20090602114402.951631599@linux.vnet.ibm.com> <20090602150324.c706b1d2.akpm@linux-foundation.org>
-In-Reply-To: <20090602150324.c706b1d2.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: garyhade@us.ibm.com, lcm@us.ibm.com, yinghai@kernel.org, x86@kernel.org, hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org, mingo@redhat.com, mingo@elte.hu
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 02 Jun 2009 13:44:02 +0200
-> Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
->> +/*
->> + * __gcov_init is called by gcc-generated constructor code for each object
->> + * file compiled with -fprofile-arcs.
->> + */
-> 
-> How does this work?  At what time does gcc call the constructors, and
-> in what context are they called, etc?
-> 
-> IOW, please teach me about -fprofile-arcs :)
+Gary Hade <garyhade@us.ibm.com> writes:
 
-No problem :) -fprofile-arcs cause gcc to insert profiling code which 
-relies on gcc's constructor mechanism for initialization purposes (so 
-the two are separate things while the former makes use of the latter). 
-gcc's constructor mechanism also has uses besides -fprofile-arcs, such 
-as calling C++ object constructors and the like.
+> Impact: Eliminates an issue that can leave the system in an
+>         unusable state.
+>
+> This patch addresses an issue where device generated IRQs
+> are no longer seen by the kernel following IRQ affinity
+> migration while the device is generating IRQs at a high rate.
+>
+> I have been able to consistently reproduce the problem on
+> some of our systems by running the following script (VICTIM_IRQ
+> specifies the IRQ for the aic94xx device) while a single instance
+> of the command
+>   # while true; do find / -exec file {} \;; done
+> is keeping the filesystem activity and IRQ rate reasonably high.
 
-In userland, constructor functions are called by one of the gcc 
-libraries just before the main() function. For the kernel, the kernel 
-constructor patch mimics a similar behavior:
-* for code which was compiled in, constructor functions are called
-   in do_basic_setup(), just before processing initcalls
-* for modules, init_module() calls them before mod->init().
-The context is in both cases that of the calling functions.
+Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-Note that any function can be made a constructor function by tagging it 
-with __attribute__((constructor)), though I'm not sure if that has any 
-feasible use.
+Again you are attempt to work around the fact that fixup_irqs
+is broken.
 
->> +void __gcov_init(struct gcov_info *info)
->> +{
->> +	static unsigned int gcov_version;
->> +
->> +	mutex_lock(&gcov_lock);
->> +	if (gcov_version == 0) {
->> +		gcov_version = info->version;
->> +		/*
->> +		 * Printing gcc's version magic may prove useful for debugging
->> +		 * incompatibility reports.
->> +		 */
->> +		pr_info("version magic: 0x%x\n", gcov_version);
-> 
-> Will this be spat out as simply
-> 
-> version magic: 0x1234
-> 
-> ?  If so, that'll be rather obscure because people won't know what
-> subsystem printed it.  Prefixing this (and all other printks) with
-> "gcov: " would fix that.
+fixup_irqs is what needs to be fixed to call these functions properly.
 
-As Michael already pointed out that's already being taken care of by the 
-  #define pr_fmt.
+We have several intense debug sessions by various people including
+myself that show that your delayed_irq_move function will simply not
+work reliably.
 
-> 
->> +	}
->> +	/*
->> +	 * Add new profiling data structure to list and inform event
->> +	 * listener.
->> +	 */
->> +	info->next = gcov_info_head;
->> +	gcov_info_head = info;
->> +	if (gcov_events_enabled)
->> +		gcov_event(GCOV_ADD, info);
->> +	mutex_unlock(&gcov_lock);
->> +}
->> +EXPORT_SYMBOL(__gcov_init);
->> +
->>
->> ...
->>
->> +#ifdef CONFIG_MODULES
->> +static inline int within(void *addr, void *start, unsigned long size)
->> +{
->> +	return ((addr >= start) && (addr < start + size));
->> +}
-> 
-> That's our fourth implementation of within() (at least).  All basically
-> identical.  Whine.
+Frankly simply looking at it gives me the screaming heebie jeebies.
 
-I know, I know.. and I will try to come up with another patch that 
-consolidates all those within() implementations - but seeing that this 
-might take more discussions to get right, I'd rather only start with 
-that after making sure that the gcov code is finalized.
+The fact you can't reproduce the old failure cases which demonstrated
+themselves as lockups in the ioapic state machines gives me no
+confidence in your testing of this code.
 
-> 
->> ...
->>
->> +static int __init gcov_persist_setup(char *str)
->> +{
->> +	int val;
->> +	char delim;
->> +
->> +	if (sscanf(str, "%d %c", &val, &delim) != 1) {
->> +		pr_warning("invalid gcov_persist parameter '%s'\n", str);
->> +		return 0;
->> +	}
->> +	pr_info("setting gcov_persist to %d\n", val);
->> +	gcov_persist = val;
->> +
->> +	return 1;
->> +}
->> +__setup("gcov_persist=", gcov_persist_setup);
-> 
-> hm, what's the input format here?  It looks like
-> 
-> 	gcov_persist=1 x
-> 
-> and " x" is checked for, but ignored.
-> 
-> Confused.  What's this all for?  Can't we just us plain old strtoul(), etc?
-
-Right - the sscanf would make sense if kernel parameters could contain 
-spaces (in that case it catches <number><blanks><garbage> input) which 
-it can't so strtoul() would indeed make more sense. I'll prepare an 
-updated patch and send it out later today.
-
->> +/*
->> + * seq_file.start() implementation for gcov data files. Note that the
->> + * gcov_iterator interface is designed to be more restrictive than seq_file
->> + * (no start from arbitrary position, etc.), to simplify the iterator
->> + * implementation.
->> + */
->> +static void *gcov_seq_start(struct seq_file *seq, loff_t *pos)
->> +{
->> +	loff_t i;
->> +
->> +	gcov_iter_start(seq->private);
->> +	for (i = 0; i < *pos; i++) {
->> +		if (gcov_iter_next(seq->private))
->> +			return NULL;
->> +	}
->> +	return seq->private;
->> +}
-> 
-> This looks like it could be very expensive if used inappropriately.  I
-> guess the answer to that is "don't use it inapprpriately", yes?
-
-Yes :) The expensiveness is more than made up for by the reduced code 
-complexity of the iterator interface. Also the extra effort is only 
-spent when actually reading coverage files, i.e. not while performing a 
-test.
-
->> ...
->>
->> +struct gcov_info *gcov_info_dup(struct gcov_info *info)
->> +{
->> +	struct gcov_info *dup;
->> +	unsigned int i;
->> +	unsigned int active;
->> +
->> +	/* Duplicate gcov_info. */
->> +	active = num_counter_active(info);
->> +	dup = kzalloc(sizeof(struct gcov_info) +
->> +		      sizeof(struct gcov_ctr_info) * active, GFP_KERNEL);
-> 
-> How large can this allocation be?
-
-Hm, good question. Having a look at my test system, I see coverage data 
-files of up to 60kb size. With counters making up the largest part of 
-those, I'd guess the allocation size can be around ~55kb. I assume that 
-makes it a candidate for vmalloc?
-
->> +	if (!dup)
->> +		return NULL;
->> +	dup->version		= info->version;
->> +	dup->stamp		= info->stamp;
->> +	dup->n_functions	= info->n_functions;
->> +	dup->ctr_mask		= info->ctr_mask;
->> +	/* Duplicate filename. */
->> +	dup->filename		= kstrdup(info->filename, GFP_KERNEL);
->> +	if (!dup->filename)
->> +		goto err_free;
->> +	/* Duplicate table of functions. */
->> +	dup->functions = kmemdup(info->functions, info->n_functions *
->> +				 get_fn_size(info), GFP_KERNEL);
->> +	if (!dup->functions)
->> +		goto err_free;
->> +	/* Duplicate counter arrays. */
->> +	for (i = 0; i < active ; i++) {
->> +		struct gcov_ctr_info *ctr = &info->counts[i];
->> +		size_t size = ctr->num * sizeof(gcov_type);
->> +
->> +		dup->counts[i].num = ctr->num;
->> +		dup->counts[i].merge = ctr->merge;
->> +		dup->counts[i].values = kmemdup(ctr->values, size, GFP_KERNEL);
->> +		if (!dup->counts[i].values)
->> +			goto err_free;
->> +	}
->> +	return dup;
->> +
->> +err_free:
->> +	gcov_info_free(dup);
->> +	return NULL;
->> +}
->> +
-> 
-> It all looks very nice to me.
-
-Thanks :)
-
+Eric
