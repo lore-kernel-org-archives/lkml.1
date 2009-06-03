@@ -1,96 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbZFCQ04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbZFCQ1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbZFCQ04 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 12:26:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZFCQ0t
+	id S1758641AbZFCQ1k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 12:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbZFCQ1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 12:26:49 -0400
-Received: from oblivion.subreption.com ([66.240.236.22]:37779 "EHLO
-	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752088AbZFCQ0t (ORCPT
+	Wed, 3 Jun 2009 12:27:31 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:48190 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754412AbZFCQ1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 12:26:49 -0400
-Date: Wed, 3 Jun 2009 09:28:31 -0700
-From: "Larry H." <research@subreption.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>,
-       Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, pageexec@freemail.hu
-Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change
-	ZERO_SIZE_PTR to point at unmapped space)
-Message-ID: <20090603162831.GF6701@oblivion.subreption.com>
-References: <20090530192829.GK6535@oblivion.subreption.com> <alpine.LFD.2.01.0905301528540.3435@localhost.localdomain> <20090530230022.GO6535@oblivion.subreption.com> <alpine.LFD.2.01.0905301902010.3435@localhost.localdomain> <20090531022158.GA9033@oblivion.subreption.com> <alpine.DEB.1.10.0906021130410.23962@gentwo.org> <20090602203405.GC6701@oblivion.subreption.com> <alpine.DEB.1.10.0906031047390.15621@gentwo.org> <1244041914.12272.64.camel@localhost.localdomain> <alpine.DEB.1.10.0906031134410.13551@gentwo.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0906031134410.13551@gentwo.org>
-Organization: Subreption LLC
+	Wed, 3 Jun 2009 12:27:30 -0400
+Subject: Re: linux-next: Tree for June 3 (rfkill)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+In-Reply-To: <4A269539.8020607@oracle.com>
+References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au>
+	 <4A269539.8020607@oracle.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-N6EotFSpetdxPWbtZMMX"
+Date: Wed, 03 Jun 2009 18:27:21 +0200
+Message-Id: <1244046441.4862.32.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11:41 Wed 03 Jun     , Christoph Lameter wrote:
-> On Wed, 3 Jun 2009, Stephen Smalley wrote:
-> 
-> > > If one remaps page 0 then the kernel checks for NULL pointers of various
-> > > flavors are bypassed and this may be exploited in various creative ways
-> > > to transfer data from kernel space to user space.
-> > >
-> > > Fix this by not allowing the remapping of page 0. Return -EINVAL if
-> > > such a mapping is attempted.
 
-Christopher, crippling the system is truly not the way to fix this.
-There are many legitimate users of private|fixed mappings at 0. In
-addition, if you want to go ahead and break POSIX, at least make sure
-your patch closes the loophole.
+--=-N6EotFSpetdxPWbtZMMX
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Given these circumstances, are you proposing this over my patch?
+On Wed, 2009-06-03 at 08:22 -0700, Randy Dunlap wrote:
+> Stephen Rothwell wrote:
+> > Hi all,
+> >=20
+> > Looks like a real rush since -rc7 ...
+>=20
+>=20
+> CFG80211=3Dy
+> MAC80211=3Dy
+> RFKILL=3Dm
 
-Linus already pointed out the main (functional) problem about it. It
-seems you are also confusing the issue, albeit already realized it can
-be a venue of attack, which is good.
+Hmm. I see, it's mac80211's broken select CFG80211. I'll fix it.
 
-For instance, there are many scenarios in which a fixed mapping can be
-used in a non-zero address to abuse kernel flaws... your patch is
-useless against those.
+johannes
 
-Please let me remind you that my original intent was to prevent
-kmalloc(0) from leading to potential NULL or offset-from-NULL access
-issues, and not deterring NULL pointer deferences in kernel-land which
-is a whole different thing (see PaX UDEREF for clues on this).
+--=-N6EotFSpetdxPWbtZMMX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-> >
-> > You can already prevent unauthorized processes from mapping low memory
-> > via the existing mmap_min_addr setting, configurable via
-> > SECURITY_DEFAULT_MMAP_MIN_ADDR or /proc/sys/vm/mmap_min_addr.  Then
-> > cap_file_mmap() or selinux_file_mmap() will apply a check when a process
-> > attempts to map memory below that address.
+-----BEGIN PGP SIGNATURE-----
 
-If SELinux isn't present, that's not useful. If mmap_min_addr is
-enabled, that still won't solve what my original, utterly simple patch
-fixes.
+iQIcBAABAgAGBQJKJqRmAAoJEODzc/N7+Qma2CAP/0tJxOkS04n6m1xJ2UWE53ax
+Yjz5MwWOq4LJzHQlLbo86vlkBCOyznqxdWVtWrDNazKxnsFkUi5IWvE7j57unw7b
+EovR8neplGtFTvPeDIEh7U3BTgFGdO7YhUOwJxpLr/5qSllvtKHZDRKE5SW38WGM
+fi2CBRNM1yKO6HLbONRs9U2wToOw+4zzVMElSZc/5XeiO26Uy2Vcw8pAKje6xYjy
+wlPu3N+x+AhOTVj9/RkQkJx3BSzMJz3aFiP1mbFQ5AZ8LEWQO6vitRb5iE9xwasY
+7jGBG9GOdFtVJTWctKjc41tvI+ihUM/D//oLO8TB3Wd0x6EsNCpJniu9cmuBIqOd
+5LJDAvd/MRqDTERpl9QeZdEPpR0p2TRo7x2yT6HagpNo5/zj9e2OvnfOCLyzE1+J
+DDOjNKjX6FiSDESvlahut+aZjOZnk6gnzFVyu72RlUN76yuQARMAD4Drn6Bwipyg
+ufTbsueVdTK7KDMrJX0nZtYJbZN2RSO6U3fAs9/y3vdTvYZFPZ6wdWdbtZz0m0SB
+Z3/kTW+AkRsDuIaj/IloFqDzA7ktn9e5cPxPh3TNQeV9lKNBgxtJ7UQ+4bmduOjT
+sapeo52Lw7dIWT4tATlDANycIKVnmb6fXmwvOB3F06ifO2GrYroD6Hw9INzhRRIU
+aVCF+qMF2lHHuAgusJuh
+=x0d9
+-----END PGP SIGNATURE-----
 
-The patch provides a no-impact, clean solution to prevent kmalloc(0)
-situations from becoming a security hazard. Nothing else.
-
-If you want to solve NULL/ptr deference abuse from userland, you better
-start thinking about separating kernel virtual address space from
-userland's, with the performance impact that implies. Few architectures
-provide this capability without performance hit, and x86 ain't one of
-them.
-
-> mmap_min_addr depends on CONFIG_SECURITY which establishes various
-> strangely complex "security models".
-> 
-> The system needs to be secure by default.
-
-Correct, so what was wrong with my patch again? That the original two
-line change was written by the PaX team?
-
-Come on chap, It's not like you will lose your bragging rights among
-your peers for admitting that I was right. Just this one time. I won't
-tell anybody. Promise.
-
-	Larry
+--=-N6EotFSpetdxPWbtZMMX--
 
