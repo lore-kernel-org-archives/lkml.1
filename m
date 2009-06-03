@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757687AbZFCR1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757983AbZFCR1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757687AbZFCR1G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 13:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbZFCR0w
+	id S1757983AbZFCR1s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 13:27:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbZFCR1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 13:26:52 -0400
-Received: from mail-px0-f182.google.com ([209.85.216.182]:40836 "EHLO
-	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753082AbZFCR0v convert rfc822-to-8bit (ORCPT
+	Wed, 3 Jun 2009 13:27:40 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:44453 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753082AbZFCR1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 13:26:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=utiiFtPqEMIaJoyo1vxRvkJz8Fsw4HSIORnkbsXzR7v6gWwNDDyRpifaFrjiMLrX2c
-         rwkslYh2f+grymZmaS1mij82gYvSbB/aYYPFbUq9GgM4beSfoFErZYdimvW2iIshGv4N
-         wfAXux3QgTIpGxOgTtO6JV9HmSTsidTPdOdmk=
+	Wed, 3 Jun 2009 13:27:39 -0400
+Message-ID: <4A26B284.3060809@novell.com>
+Date: Wed, 03 Jun 2009 13:27:32 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-In-Reply-To: <1244040123.6938.19.camel@o>
-References: <18980.48553.328662.80987@notabene.brown>
-	 <4A25876A.1010901@garzik.org>
-	 <18981.62579.171350.910761@notabene.brown>
-	 <1244040123.6938.19.camel@o>
-Date: Wed, 3 Jun 2009 10:26:51 -0700
-X-Google-Sender-Auth: 2234eb17fce5349d
-Message-ID: <e9c3a7c20906031026s49a5a694hb91db40dc05a2580@mail.gmail.com>
-Subject: Re: [dm-devel] Re: ANNOUNCE: mdadm 3.0 - A tool for managing Soft 
-	RAID under Linux
-From: Dan Williams <dan.j.williams@intel.com>
-To: heinzm@redhat.com, device-mapper development <dm-devel@redhat.com>
-Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-raid@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Ed Ciechanowski <ed.ciechanowski@intel.com>,
-       Jacek Danecki <jacek.danecki@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: paulmck@linux.vnet.ibm.com
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org, mst@redhat.com
+Subject: Re: [KVM-RFC PATCH 2/2] kvm: use POLLHUP to close an irqfd instead
+ of an explicit ioctl
+References: <20090602151135.29746.91320.stgit@dev.haskins.net> <20090602151538.29746.40356.stgit@dev.haskins.net> <20090602180256.GD6743@linux.vnet.ibm.com> <4A256E12.9060301@novell.com> <20090602220157.GF6743@linux.vnet.ibm.com> <4A25D799.10604@novell.com> <20090603150439.GB6640@linux.vnet.ibm.com>
+In-Reply-To: <20090603150439.GB6640@linux.vnet.ibm.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig25CB41F09E6F3EA94C350FDF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 3, 2009 at 7:42 AM, Heinz Mauelshagen <heinzm@redhat.com> wrote:
-> On Wed, 2009-06-03 at 13:56 +1000, Neil Brown wrote:
->> As for integrating the two code bases.... people have been suggesting
->> that for years, but I suspect few of them have looked deeply at the
->> practicalities.  Apparently it was suggested at the recent "storage
->> summit".  However as the primary md and dm developers were absent, I
->> have doubts about how truly well-informed that conversation could have
->> been.
->
-> Agreed, we'd need face-time and talk issues through in order to come up
-> with any such plan for md+dm integration.
->
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig25CB41F09E6F3EA94C350FDF
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-What are your general impressions of dmraid using md kernel
-infrastructure for raid level support?
 
-Thanks,
-Dan
+Thanks again for the review, Paul.  IIUC, you think the design is ok as
+it is.
+
+Davide,
+   In light of this, would you like to submit patch 1/2 formally with
+your SOB at your earliest convenience?  Or would you prefer that I
+submit it and you can simply ack it?  Either is fine with me.
+
+-Greg
+
+
+--------------enig25CB41F09E6F3EA94C350FDF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkomsokACgkQlOSOBdgZUxlbYQCeKTTQYgdOxIStBPhF54zmgcTK
+kzEAmgOB5Fu09ghDYLgbVuZtuWMSy7bh
+=532n
+-----END PGP SIGNATURE-----
+
+--------------enig25CB41F09E6F3EA94C350FDF--
