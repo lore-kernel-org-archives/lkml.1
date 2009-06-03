@@ -1,118 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbZFCXOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbZFCXQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755831AbZFCXOD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 19:14:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbZFCXNw
+	id S1756028AbZFCXQH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 19:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZFCXPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 19:13:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:20331 "EHLO
+	Wed, 3 Jun 2009 19:15:52 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:25727 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753869AbZFCXNv (ORCPT
+	with ESMTP id S1752239AbZFCXPv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 19:13:51 -0400
+	Wed, 3 Jun 2009 19:15:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=JFo79f74WP14H2BK2MZXmihSUwFFi/JVP5fDSEgfPxXs2wQn/H6etc/yBIqYgn33Hw
-         G3MlHOWdV7fIVQIPGAPNpcLR2cQSpBLpEGw8sZ2VjMktLj53AYskEdWg6TBU4bCaTek3
-         Uoo6VOSuarOb2Mkx6TFNy5OjQM2Ny0roSsDac=
-Date: Thu, 4 Jun 2009 03:06:56 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matt Helsley <matthltc@us.ibm.com>, xemul@parallels.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       dave@linux.vnet.ibm.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org
-Subject: [PATCH 6/9] exec_path 6/9: add struct spu::tsk
-Message-ID: <20090603230656.GG853@x200.localdomain>
-References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org> <20090531215427.GA29534@x200.localdomain> <20090531151953.8f8b14b5.akpm@linux-foundation.org> <20090603230422.GB853@x200.localdomain>
+        b=t+SQ1tOo/hCipfsABg/8pjmUKHxQpaBGCi4hnzECcD2wJIVwf0GjHoz8FZLs/ogEX3
+         884Rzbl+T/XcOdE2ujILCUCszDyS2WqGCC3WgtnVL73etKp63/fO2pNHjeLdODAf7KnH
+         nOJzUuX3lwlni22aPOYGDYu0S8I1d6atOaQAk=
+Date: Thu, 4 Jun 2009 03:15:37 +0400
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, sfr@canb.auug.org.au,
+       slapin@ossfans.org
+Subject: Re: [PATCH 2/6] Add constants for the ieee 802.15.4/ZigBee stack
+Message-ID: <20090603231537.GB32561@doriath.ww600.siemens.net>
+References: <1244021629-18409-3-git-send-email-dbaryshkov@gmail.com> <20090603.030826.03512651.davem@davemloft.net> <20090603105151.GA20508@doriath.ww600.siemens.net> <20090603.141919.261921857.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090603230422.GB853@x200.localdomain>
+In-Reply-To: <20090603.141919.261921857.davem@davemloft.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pass down task_struct too.
+On Wed, Jun 03, 2009 at 02:19:19PM -0700, David Miller wrote:
+> From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+> Date: Wed, 3 Jun 2009 14:51:51 +0400
+> 
+> > Please check the updated patch. We do request several unused in this
+> > serie value (like AF_ZIGBEE), but we'd like for them to be merged ASAP
+> > as their are a part of ABI.
+> 
+> I don't allow anyone else to do this, and neither will I
+> allow it for you either.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Sorry, we didn't know about this policy. No need to be that harsh!
+Here is the cleaned up version.
+
+>From d1e359b7f66a4acc8b41bbeaeeeee4c81501e4bc Mon Sep 17 00:00:00 2001
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Thu, 4 Jun 2009 03:09:40 +0400
+Subject: [PATCH 2/6] Add constants for the ieee 802.15.4/ZigBee stack
+
+IEEE 802.15.4/ZigBee stack requires several constants to be defined/adjusted.
+
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Signed-off-by: Sergey Lapin <slapin@ossfans.org>
 ---
- arch/powerpc/include/asm/spu.h            |    3 ++-
- arch/powerpc/platforms/cell/spu_base.c    |   11 ++++++-----
- arch/powerpc/platforms/cell/spufs/sched.c |    4 ++--
- 3 files changed, 10 insertions(+), 8 deletions(-)
+ include/linux/if_arp.h   |    2 ++
+ include/linux/if_ether.h |    1 +
+ include/linux/socket.h   |    4 +++-
+ net/core/dev.c           |    6 ++++--
+ net/core/sock.c          |    3 +++
+ 5 files changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/spu.h b/arch/powerpc/include/asm/spu.h
-index 0ab8d86..f9b1bcf 100644
---- a/arch/powerpc/include/asm/spu.h
-+++ b/arch/powerpc/include/asm/spu.h
-@@ -135,6 +135,7 @@ struct spu {
- 	u64 class_1_dsisr;
- 	size_t ls_size;
- 	unsigned int slb_replace;
-+	struct task_struct *tsk;
- 	struct mm_struct *mm;
- 	struct spu_context *ctx;
- 	struct spu_runqueue *rq;
-@@ -212,7 +213,7 @@ static inline void crash_register_spus(struct list_head *list)
- #endif
+diff --git a/include/linux/if_arp.h b/include/linux/if_arp.h
+index 5ff8980..b554300 100644
+--- a/include/linux/if_arp.h
++++ b/include/linux/if_arp.h
+@@ -86,6 +86,8 @@
+ #define ARPHRD_IEEE80211 801		/* IEEE 802.11			*/
+ #define ARPHRD_IEEE80211_PRISM 802	/* IEEE 802.11 + Prism2 header  */
+ #define ARPHRD_IEEE80211_RADIOTAP 803	/* IEEE 802.11 + radiotap header */
++#define ARPHRD_IEEE802154	  804
++#define ARPHRD_IEEE802154_PHY	  805
  
- extern void spu_invalidate_slbs(struct spu *spu);
--extern void spu_associate_mm(struct spu *spu, struct mm_struct *mm);
-+extern void spu_associate_task(struct spu *spu, struct task_struct *tsk);
- int spu_64k_pages_available(void);
+ #define ARPHRD_PHONET	820		/* PhoNet media type		*/
+ #define ARPHRD_PHONET_PIPE 821		/* PhoNet pipe header		*/
+diff --git a/include/linux/if_ether.h b/include/linux/if_ether.h
+index cfe4fe1..11a60e4 100644
+--- a/include/linux/if_ether.h
++++ b/include/linux/if_ether.h
+@@ -106,6 +106,7 @@
+ #define ETH_P_DSA	0x001B		/* Distributed Switch Arch.	*/
+ #define ETH_P_TRAILER	0x001C		/* Trailer switch tagging	*/
+ #define ETH_P_PHONET	0x00F5		/* Nokia Phonet frames          */
++#define ETH_P_IEEE802154 0x00F6		/* IEEE802.15.4 frame		*/
  
- /* Calls from the memory management to the SPU */
-diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
-index 9abd210..46f4a63 100644
---- a/arch/powerpc/platforms/cell/spu_base.c
-+++ b/arch/powerpc/platforms/cell/spu_base.c
-@@ -117,17 +117,18 @@ static inline void mm_needs_global_tlbie(struct mm_struct *mm)
- 	bitmap_fill(cpumask_bits(mm_cpumask(mm)), nr);
- }
+ /*
+  *	This is an Ethernet frame header.
+diff --git a/include/linux/socket.h b/include/linux/socket.h
+index 421afb4..642d1f1 100644
+--- a/include/linux/socket.h
++++ b/include/linux/socket.h
+@@ -194,7 +194,8 @@ struct ucred {
+ #define AF_RXRPC	33	/* RxRPC sockets 		*/
+ #define AF_ISDN		34	/* mISDN sockets 		*/
+ #define AF_PHONET	35	/* Phonet sockets		*/
+-#define AF_MAX		36	/* For now.. */
++#define AF_IEEE802154	36	/* IEEE802154 sockets		*/
++#define AF_MAX		37	/* For now.. */
  
--void spu_associate_mm(struct spu *spu, struct mm_struct *mm)
-+void spu_associate_task(struct spu *spu, struct task_struct *tsk)
- {
- 	unsigned long flags;
+ /* Protocol families, same as address families. */
+ #define PF_UNSPEC	AF_UNSPEC
+@@ -233,6 +234,7 @@ struct ucred {
+ #define PF_RXRPC	AF_RXRPC
+ #define PF_ISDN		AF_ISDN
+ #define PF_PHONET	AF_PHONET
++#define PF_IEEE802154	AF_IEEE802154
+ #define PF_MAX		AF_MAX
  
- 	spin_lock_irqsave(&spu_full_list_lock, flags);
--	spu->mm = mm;
-+	spu->tsk = tsk;
-+	spu->mm = tsk ? tsk->mm : NULL;
- 	spin_unlock_irqrestore(&spu_full_list_lock, flags);
--	if (mm)
--		mm_needs_global_tlbie(mm);
-+	if (tsk && tsk->mm)
-+		mm_needs_global_tlbie(tsk->mm);
- }
--EXPORT_SYMBOL_GPL(spu_associate_mm);
-+EXPORT_SYMBOL_GPL(spu_associate_task);
+ /* Maximum queue length specifiable by listen.  */
+diff --git a/net/core/dev.c b/net/core/dev.c
+index e2e9e4a..4119dfc 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -268,7 +268,8 @@ static const unsigned short netdev_lock_type[] =
+ 	 ARPHRD_IRDA, ARPHRD_FCPP, ARPHRD_FCAL, ARPHRD_FCPL,
+ 	 ARPHRD_FCFABRIC, ARPHRD_IEEE802_TR, ARPHRD_IEEE80211,
+ 	 ARPHRD_IEEE80211_PRISM, ARPHRD_IEEE80211_RADIOTAP, ARPHRD_PHONET,
+-	 ARPHRD_PHONET_PIPE, ARPHRD_VOID, ARPHRD_NONE};
++	 ARPHRD_PHONET_PIPE, ARPHRD_IEEE802154, ARPHRD_IEEE802154_PHY,
++	 ARPHRD_VOID, ARPHRD_NONE};
  
- int spu_64k_pages_available(void)
- {
-diff --git a/arch/powerpc/platforms/cell/spufs/sched.c b/arch/powerpc/platforms/cell/spufs/sched.c
-index 9fbd87a..2f7e497 100644
---- a/arch/powerpc/platforms/cell/spufs/sched.c
-+++ b/arch/powerpc/platforms/cell/spufs/sched.c
-@@ -230,7 +230,7 @@ static void spu_bind_context(struct spu *spu, struct spu_context *ctx)
- 	ctx->stats.slb_flt_base = spu->stats.slb_flt;
- 	ctx->stats.class2_intr_base = spu->stats.class2_intr;
+ static const char *netdev_lock_name[] =
+ 	{"_xmit_NETROM", "_xmit_ETHER", "_xmit_EETHER", "_xmit_AX25",
+@@ -285,7 +286,8 @@ static const char *netdev_lock_name[] =
+ 	 "_xmit_IRDA", "_xmit_FCPP", "_xmit_FCAL", "_xmit_FCPL",
+ 	 "_xmit_FCFABRIC", "_xmit_IEEE802_TR", "_xmit_IEEE80211",
+ 	 "_xmit_IEEE80211_PRISM", "_xmit_IEEE80211_RADIOTAP", "_xmit_PHONET",
+-	 "_xmit_PHONET_PIPE", "_xmit_VOID", "_xmit_NONE"};
++	 "_xmit_PHONET_PIPE", "_xmit_IEEE802154", "_xmit_IEEE802154_PHY",
++	 "_xmit_VOID", "_xmit_NONE"};
  
--	spu_associate_mm(spu, ctx->owner->mm);
-+	spu_associate_task(spu, ctx->owner);
+ static struct lock_class_key netdev_xmit_lock_key[ARRAY_SIZE(netdev_lock_type)];
+ static struct lock_class_key netdev_addr_lock_key[ARRAY_SIZE(netdev_lock_type)];
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 7dbf3ff..8a1644c 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -155,6 +155,7 @@ static const char *af_family_key_strings[AF_MAX+1] = {
+   "sk_lock-27"       , "sk_lock-28"          , "sk_lock-AF_CAN"      ,
+   "sk_lock-AF_TIPC"  , "sk_lock-AF_BLUETOOTH", "sk_lock-IUCV"        ,
+   "sk_lock-AF_RXRPC" , "sk_lock-AF_ISDN"     , "sk_lock-AF_PHONET"   ,
++  "sk_lock-AF_IEEE802154",
+   "sk_lock-AF_MAX"
+ };
+ static const char *af_family_slock_key_strings[AF_MAX+1] = {
+@@ -170,6 +171,7 @@ static const char *af_family_slock_key_strings[AF_MAX+1] = {
+   "slock-27"       , "slock-28"          , "slock-AF_CAN"      ,
+   "slock-AF_TIPC"  , "slock-AF_BLUETOOTH", "slock-AF_IUCV"     ,
+   "slock-AF_RXRPC" , "slock-AF_ISDN"     , "slock-AF_PHONET"   ,
++  "slock-AF_IEEE802154",
+   "slock-AF_MAX"
+ };
+ static const char *af_family_clock_key_strings[AF_MAX+1] = {
+@@ -185,6 +187,7 @@ static const char *af_family_clock_key_strings[AF_MAX+1] = {
+   "clock-27"       , "clock-28"          , "clock-AF_CAN"      ,
+   "clock-AF_TIPC"  , "clock-AF_BLUETOOTH", "clock-AF_IUCV"     ,
+   "clock-AF_RXRPC" , "clock-AF_ISDN"     , "clock-AF_PHONET"   ,
++  "clock-AF_IEEE802154",
+   "clock-AF_MAX"
+ };
  
- 	spin_lock_irq(&spu->register_lock);
- 	spu->ctx = ctx;
-@@ -470,7 +470,7 @@ static void spu_unbind_context(struct spu *spu, struct spu_context *ctx)
- 	spu->ctx = NULL;
- 	spin_unlock_irq(&spu->register_lock);
- 
--	spu_associate_mm(spu, NULL);
-+	spu_associate_task(spu, NULL);
- 
- 	ctx->stats.slb_flt +=
- 		(spu->stats.slb_flt - ctx->stats.slb_flt_base);
+-- 
+1.6.3.1
+
+-- 
+With best wishes
+Dmitry
+
