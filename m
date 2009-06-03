@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbZFCFS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbZFCFVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755476AbZFCFS5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 01:18:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbZFCFSu
+	id S1755867AbZFCFVS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 01:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbZFCFVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 01:18:50 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36563 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbZFCFSt (ORCPT
+	Wed, 3 Jun 2009 01:21:10 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:51847 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751354AbZFCFVJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 01:18:49 -0400
-Date: Wed, 3 Jun 2009 14:01:02 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH mmotm 2/2] memcg: allow mem.limit bigger than
- memsw.limit iff unlimited
-Message-Id: <20090603140102.72b04b6f.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090603125228.368ecaf7.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090603114518.301cef4d.nishimura@mxp.nes.nec.co.jp>
-	<20090603115027.80f9169b.nishimura@mxp.nes.nec.co.jp>
-	<20090603125228.368ecaf7.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Jun 2009 01:21:09 -0400
+Date: Wed, 3 Jun 2009 10:50:53 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: menage@google.com, lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
+       kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       bharata@linux.vnet.ibm.com, libcg-devel@lists.sourceforge.net
+Subject: Re: +
+	cgroups-forbid-noprefix-if-mounting-more-than-just-cpuset-subsystem.
+	patch added to -mm tree
+Message-ID: <20090603052053.GA3910@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <200906020602.n5262wcu008560@imap1.linux-foundation.org> <20090602090944.GB16753@linux.vnet.ibm.com> <6599ad830906020908s7cb6afe6pd83ca35b82d148a4@mail.gmail.com> <20090602174042.GD16753@linux.vnet.ibm.com> <20090602133534.d2e453f6.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090602133534.d2e453f6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Jun 2009 12:52:28 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Wed, 3 Jun 2009 11:50:27 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On Tue, Jun 02, 2009 at 01:35:34PM -0700, Andrew Morton wrote:
+> On Tue, 2 Jun 2009 23:10:42 +0530
+> Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 > 
-> > Now users cannot set mem.limit bigger than memsw.limit.
-> > This patch allows mem.limit bigger than memsw.limit iff mem.limit==unlimited.
+> > On Tue, Jun 02, 2009 at 09:08:04AM -0700, Paul Menage wrote:
+> > > On Tue, Jun 2, 2009 at 2:09 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> > > >
+> > > > I am not sure if this is a good idea. For libcgroup, we would then be
+> > > > adding a special case for just cpuset. I would rather that we allow it
+> > > > either for all the subsystems or none of them.
+> > > >
+> > > 
+> > > libcgroup shouldn't be using the noprefix option. Its only intentded
+> > > use is to allow the legacy "cpuset" filesystem type to be mounted and
+> > > to see the same fileset as it had before the cgroups transition.
+> > > 
 > > 
-> > By this, users can set memsw.limit without setting mem.limit.
-> > I think it's usefull if users want to limit memsw only.
-> > They must set mem.limit first and memsw.limit to the same value now for this purpose.
-> > They can save the first step by this patch.
+> > It does not. But if some user is using that option, we need to be in a
+> > position to handle it.
+> > 
+> > I am quite happy not supporting the noprefix option in the library if it
+> > is fine.
 > > 
 > 
-> I don't like this. No benefits to users.
-> The user should know when they set memsw.limit they have to set memory.limit.
-> This just complicates things.
-> 
-Hmm, I think there is a user who cares only limitting logical memory(mem+swap),
-not physical memory, and wants kswapd to reclaim physical memory when congested. 
-At least, I'm a such user.
+> fyi, the above discussion transitions akpm into the "confused" state. 
+> I'll keep the patch on hold until akpm transitions back out of that
+> state.
 
-Do you disagree even if I add a file like "memory.allow_limit_memsw_only" ?
+I can help with that :).
 
+We will not support noprefix in libcgroup and this patch should go in
+because it fixes an obvious bug.
 
 Thanks,
-Daisuke Nishimura.
-
-> If you want to do this, add an interface as
->   memory.all.limit_in_bytes (or some better name)
-> and allow to set memory.limit and memory.memsw.limit _at once_.
-> 
-> But I'm not sure it's worth to try. Saving user's few steps by the kenerl patch ?
-> 
-> Thanks,
-> -Kame
-> 
-> 
+-- 
+regards,
+Dhaval
