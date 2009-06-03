@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754230AbZFCJpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753646AbZFCJrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754230AbZFCJpI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 05:45:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbZFCJo7
+	id S1753646AbZFCJrn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 05:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZFCJrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 05:44:59 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:50949 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751553AbZFCJo6 (ORCPT
+	Wed, 3 Jun 2009 05:47:36 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:26840 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751553AbZFCJrf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 05:44:58 -0400
-Date: Wed, 3 Jun 2009 19:44:54 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: linux-mips@linux-mips.org, ralf@linux-mips.org, mpm@selenic.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] TXx9: Add TX4939 RNG support (v2)
-Message-ID: <20090603094454.GB11356@gondor.apana.org.au>
-References: <1243954462-18149-2-git-send-email-anemo@mba.ocn.ne.jp>
+	Wed, 3 Jun 2009 05:47:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Vf9IWyCSnTTWHFRO+PqNDhIFz+hOsNzJXR4b3WUs8Dtd3YdneHoVaQoP0YHH3fyey5
+         92Ja051yHtWUuFQJUg3YfCvo5TWOtAE3a0lHrsx4/x+a9vjGM9GGUCS8ktqEEPFfqlbX
+         wGpFJHgSHbwI3OhKAAYE9BzGmUtbAtuM32RWc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1243954462-18149-2-git-send-email-anemo@mba.ocn.ne.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090603095346.64c874b1@lxorguk.ukuu.org.uk>
+References: <1243926700-30485-1-git-send-email-vapier@gentoo.org>
+	 <1243926700-30485-4-git-send-email-vapier@gentoo.org>
+	 <20090602100018.415b1dfc@lxorguk.ukuu.org.uk>
+	 <8bd0f97a0906030103i64bc1a9duc5aeaea7bd3f8365@mail.gmail.com>
+	 <20090603095346.64c874b1@lxorguk.ukuu.org.uk>
+Date: Wed, 3 Jun 2009 05:47:36 -0400
+Message-ID: <8bd0f97a0906030247ueeb9320k30e794109ca51758@mail.gmail.com>
+Subject: Re: [PATCH 04/11] Blackfin SPORT UART: fix overrun errors
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Cliff Cai <cliff.cai@analog.com>, Bryan Wu <cooloney@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 11:54:22PM +0900, Atsushi Nemoto wrote:
-> Add platform support for RNG of TX4939 SoC.
-> 
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+On Wed, Jun 3, 2009 at 04:53, Alan Cox wrote:
+>> > This should have no effect on a modern kernel.
+>>
+>> well, we wouldnt be making changes if we werent seeing data overruns today
+>
+> If it has an effect then something else is going on.
+>>
+>> > There is 64K of queueing between you and the ldisc nowdays.
+>>
+>> i dont think that really matters ... we do too much work in the
+>> interrupt and so we miss new data
+>
+> Which the other patches addressed so my guess is the real fixes were the
+> other changes.
 
-Aha, I knew I should have left Ralf take the patch, and this is
-the reason :)
+pfft, always got to make us do real work :)
 
-Rather than having the patches split between the two of us, I'll
-back out the RNG patch from my tree so both of them can go through
-Ralf's MIPS tree.
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+since the serial stuff is in a bit of orphaned state (going by
+MAINTAINERS), should i merge the other changes through the Blackfin
+tree ?
+-mike
