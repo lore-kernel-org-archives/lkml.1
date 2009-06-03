@@ -1,111 +1,381 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbZFCJeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbZFCJgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753355AbZFCJeu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 05:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZFCJeV
+	id S1756832AbZFCJgB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 05:36:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbZFCJel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 05:34:21 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:21206 "EHLO
+	Wed, 3 Jun 2009 05:34:41 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:65469 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753458AbZFCJeP (ORCPT
+	with ESMTP id S1755850AbZFCJea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 05:34:15 -0400
+	Wed, 3 Jun 2009 05:34:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=oRCc7duXZLDxOrEAc5j48RN5SY5ptp96Yd2NcjbCsc5hpBJ1N7VekpGo5rotj2WU1+
-         wjETv3lQm/xNttz344br523gElsqy/uUypT+Q0z27DPPf2A6Z+wJBcsm3q2oCwUDD3nJ
-         tfBXqs54WYbJ6XnKKL6BjkQ1j7AVgvvwG6oVY=
+        b=qiSxn5wkxl9YCbnK7Bwm48nhzX0nX78jwQkLiQxMYz8Bab0DCsIWmxxg6A4S6BYUgT
+         YK1FBMaYR0QuPL8+T0fGtld+J4ZJvs+AWAYXk19e3ni4HgzPEN9OUKGjU3CujCHd8PPi
+         YVeAZC4Frc3wd23/iRuki3jEl1gC3Auh+yyls=
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
        davem@davemloft.net, Stephen Rothwell <sfr@canb.auug.org.au>,
        Sergey Lapin <slapin@ossfans.org>,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-Subject: [PATCH 1/6] crc-itu-t: add bit-reversed calculation
-Date: Wed,  3 Jun 2009 13:33:44 +0400
-Message-Id: <1244021629-18409-2-git-send-email-dbaryshkov@gmail.com>
+       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: [PATCH 6/6] ieee802154: add simple HardMAC driver sample
+Date: Wed,  3 Jun 2009 13:33:49 +0400
+Message-Id: <1244021629-18409-7-git-send-email-dbaryshkov@gmail.com>
 X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1244021629-18409-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <1244021629-18409-6-git-send-email-dbaryshkov@gmail.com>
 References: <1244021629-18409-1-git-send-email-dbaryshkov@gmail.com>
+ <1244021629-18409-2-git-send-email-dbaryshkov@gmail.com>
+ <1244021629-18409-3-git-send-email-dbaryshkov@gmail.com>
+ <1244021629-18409-4-git-send-email-dbaryshkov@gmail.com>
+ <1244021629-18409-5-git-send-email-dbaryshkov@gmail.com>
+ <1244021629-18409-6-git-send-email-dbaryshkov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
+fakehard is a really simple driver implementing only necessary
+callbacks and serves the role of an example of driver for HardMAC
+IEEE 802.15.4 device.
 
-Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Signed-off-by: Sergey Lapin <slapin@ossfans.org>
 ---
- include/linux/crc-itu-t.h |   10 ++++++++++
- lib/crc-itu-t.c           |   18 ++++++++++++++++++
- 2 files changed, 28 insertions(+), 0 deletions(-)
+ drivers/Makefile              |    1 +
+ drivers/ieee802154/Kconfig    |   21 ++++
+ drivers/ieee802154/Makefile   |    3 +
+ drivers/ieee802154/fakehard.c |  258 +++++++++++++++++++++++++++++++++++++++++
+ drivers/net/Kconfig           |    2 +
+ 5 files changed, 285 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/ieee802154/Kconfig
+ create mode 100644 drivers/ieee802154/Makefile
+ create mode 100644 drivers/ieee802154/fakehard.c
 
-diff --git a/include/linux/crc-itu-t.h b/include/linux/crc-itu-t.h
-index 84920f3..7b2b7ba 100644
---- a/include/linux/crc-itu-t.h
-+++ b/include/linux/crc-itu-t.h
-@@ -6,6 +6,9 @@
-  *   Poly  0x0x1021 (x^16 + x^12 + x^15 + 1)
-  *   Init  0
-  *
-+ * The bit-reversed buffer variants may be non-standard, but some firmware
-+ * loaders require them.
-+ *
-  * This source code is licensed under the GNU General Public License,
-  * Version 2. See the file COPYING for more details.
-  */
-@@ -14,15 +17,22 @@
- #define CRC_ITU_T_H
- 
- #include <linux/types.h>
-+#include <linux/bitrev.h>
- 
- extern u16 const crc_itu_t_table[256];
- 
- extern u16 crc_itu_t(u16 crc, const u8 *buffer, size_t len);
-+extern u16 crc_itu_t_bitreversed(u16 crc, const u8 *buffer, size_t len);
- 
- static inline u16 crc_itu_t_byte(u16 crc, const u8 data)
- {
- 	return (crc << 8) ^ crc_itu_t_table[((crc >> 8) ^ data) & 0xff];
- }
- 
-+static inline u16 crc_itu_t_bitreversed_byte(u16 crc, const u8 data)
-+{
-+	return (crc << 8) ^ crc_itu_t_table[((crc >> 8) ^ bitrev8(data)) & 0xff];
-+}
+diff --git a/drivers/Makefile b/drivers/Makefile
+index 1266ead..9e7d4e5 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -107,3 +107,4 @@ obj-$(CONFIG_SSB)		+= ssb/
+ obj-$(CONFIG_VIRTIO)		+= virtio/
+ obj-$(CONFIG_STAGING)		+= staging/
+ obj-y				+= platform/
++obj-y				+= ieee802154/
+diff --git a/drivers/ieee802154/Kconfig b/drivers/ieee802154/Kconfig
+new file mode 100644
+index 0000000..2aaa5b6
+--- /dev/null
++++ b/drivers/ieee802154/Kconfig
+@@ -0,0 +1,21 @@
++menuconfig IEEE802154_DRIVERS
++	bool "IEEE 802.15.4 drivers"
++	depends on NETDEVICES && IEEE802154
++	default y
++	---help---
++	  Say Y here to get to see options for IEEE 802.15.4 Low-Rate
++	  Wireless Personal Area Network device drivers. This option alone
++	  does not add any kernel code.
 +
- #endif /* CRC_ITU_T_H */
- 
-diff --git a/lib/crc-itu-t.c b/lib/crc-itu-t.c
-index a63472b..5562fdd 100644
---- a/lib/crc-itu-t.c
-+++ b/lib/crc-itu-t.c
-@@ -64,6 +64,24 @@ u16 crc_itu_t(u16 crc, const u8 *buffer, size_t len)
- }
- EXPORT_SYMBOL(crc_itu_t);
- 
-+/**
-+ * crc_itu_t_bitreversed - Compute the CRC-ITU-T for the data buffer;
-+ * the buffer content is assumed to be bit-reversed
++	  If you say N, all options in this submenu will be skipped and disabled.
++
++config IEEE802154_FAKEHARD
++	tristate "Fake LR-WPAN driver with several interconnected devices"
++	depends on  IEEE802154_DRIVERS
++	---help---
++	  Say Y here to enable the fake driver that serves as an example
++          of HardMAC device driver.
++
++          This driver can also be built as a module. To do so say M here.
++	  The module will be called 'fakehard'.
++
+diff --git a/drivers/ieee802154/Makefile b/drivers/ieee802154/Makefile
+new file mode 100644
+index 0000000..e0e8e1a
+--- /dev/null
++++ b/drivers/ieee802154/Makefile
+@@ -0,0 +1,3 @@
++obj-$(CONFIG_IEEE802154_FAKEHARD) += fakehard.o
++
++EXTRA_CFLAGS += -DDEBUG -DCONFIG_FFD
+diff --git a/drivers/ieee802154/fakehard.c b/drivers/ieee802154/fakehard.c
+new file mode 100644
+index 0000000..82664a5
+--- /dev/null
++++ b/drivers/ieee802154/fakehard.c
+@@ -0,0 +1,258 @@
++/*
++ * Sample driver for HardMAC IEEE 802.15.4 devices
 + *
-+ * @crc:     previous CRC value
-+ * @buffer:  data pointer
-+ * @len:     number of bytes in the buffer
++ * Copyright (C) 2009 Siemens AG
 + *
-+ * Returns the updated CRC value
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Written by:
++ * Dmitry Eremin-Solenikov <dmitry.baryshkov@siemens.com>
 + */
-+u16 crc_itu_t_bitreversed(u16 crc, const u8 *buffer, size_t len)
-+{
-+	while (len--)
-+		crc = crc_itu_t_bitreversed_byte(crc, *buffer++);
-+	return crc;
-+}
-+EXPORT_SYMBOL(crc_itu_t_bitreversed);
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/netdevice.h>
++#include <linux/skbuff.h>
++#include <linux/if_arp.h>
 +
- MODULE_DESCRIPTION("CRC ITU-T V.41 calculations");
- MODULE_LICENSE("GPL");
++#include <net/ieee802154/af_ieee802154.h>
++#include <net/ieee802154/netdevice.h>
++#include <net/ieee802154/mac_def.h>
++#include <net/ieee802154/nl802154.h>
++
++static u16 fake_get_pan_id(struct net_device *dev)
++{
++	BUG_ON(dev->type != ARPHRD_IEEE802154);
++
++	return 0xeba1;
++}
++
++static u16 fake_get_short_addr(struct net_device *dev)
++{
++	BUG_ON(dev->type != ARPHRD_IEEE802154);
++
++	return 0x1;
++}
++
++static u8 fake_get_dsn(struct net_device *dev)
++{
++	BUG_ON(dev->type != ARPHRD_IEEE802154);
++
++	return 0x00; /* DSN are implemented in HW, so return just 0 */
++}
++
++static u8 fake_get_bsn(struct net_device *dev)
++{
++	BUG_ON(dev->type != ARPHRD_IEEE802154);
++
++	return 0x00; /* BSN are implemented in HW, so return just 0 */
++}
++
++static int fake_assoc_req(struct net_device *dev, struct ieee802154_addr *addr, u8 channel, u8 cap)
++{
++	/* We simply emulate it here */
++	return ieee802154_nl_assoc_confirm(dev, fake_get_short_addr(dev), IEEE802154_SUCCESS);
++}
++
++static int fake_assoc_resp(struct net_device *dev, struct ieee802154_addr *addr, u16 short_addr, u8 status)
++{
++	return 0;
++}
++
++static int fake_disassoc_req(struct net_device *dev, struct ieee802154_addr *addr, u8 reason)
++{
++	return ieee802154_nl_disassoc_confirm(dev, IEEE802154_SUCCESS);
++}
++
++static int fake_start_req(struct net_device *dev, struct ieee802154_addr *addr,
++				u8 channel,
++				u8 bcn_ord, u8 sf_ord, u8 pan_coord, u8 blx,
++				u8 coord_realign)
++{
++	return 0;
++}
++
++static int fake_scan_req(struct net_device *dev, u8 type, u32 channels, u8 duration)
++{
++	u8 edl[27] = {};
++	return ieee802154_nl_scan_confirm(dev, IEEE802154_SUCCESS, type, channels,
++			type == IEEE802154_MAC_SCAN_ED ? edl : NULL);
++}
++
++static struct ieee802154_mlme_ops fake_mlme = {
++	.assoc_req = fake_assoc_req,
++	.assoc_resp = fake_assoc_resp,
++	.disassoc_req = fake_disassoc_req,
++	.start_req = fake_start_req,
++	.scan_req = fake_scan_req,
++
++	.get_pan_id = fake_get_pan_id,
++	.get_short_addr = fake_get_short_addr,
++	.get_dsn = fake_get_dsn,
++	.get_bsn = fake_get_bsn,
++};
++
++static int ieee802154_fake_open(struct net_device *dev)
++{
++	netif_start_queue(dev);
++	return 0;
++}
++
++static int ieee802154_fake_close(struct net_device *dev)
++{
++	netif_stop_queue(dev);
++	return 0;
++}
++
++static int ieee802154_fake_xmit(struct sk_buff *skb, struct net_device *dev)
++{
++	skb->iif = dev->ifindex;
++	skb->dev = dev;
++	dev->stats.tx_packets++;
++	dev->stats.tx_bytes += skb->len;
++
++	dev->trans_start = jiffies;
++
++	/* FIXME: do hardware work here ... */
++
++	return 0;
++}
++
++
++static int ieee802154_fake_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
++{
++	struct sockaddr_ieee802154 *sa = (struct sockaddr_ieee802154 *)&ifr->ifr_addr;
++	u16 pan_id, short_addr;
++
++	switch (cmd) {
++	case SIOCGIFADDR:
++		/* FIXME: fixed here, get from device IRL */
++		pan_id = fake_get_pan_id(dev);
++		short_addr = fake_get_short_addr(dev);
++		if (pan_id == IEEE802154_PANID_BROADCAST || short_addr == IEEE802154_ADDR_BROADCAST)
++			return -EADDRNOTAVAIL;
++
++		sa->family = AF_IEEE802154;
++		sa->addr.addr_type = IEEE802154_ADDR_SHORT;
++		sa->addr.pan_id = pan_id;
++		sa->addr.short_addr = short_addr;
++		return 0;
++	}
++	return -ENOIOCTLCMD;
++}
++
++static int ieee802154_fake_mac_addr(struct net_device *dev, void *p)
++{
++	return -EBUSY; /* HW address is built into the device */
++}
++
++static const struct net_device_ops fake_ops = {
++	.ndo_open		= ieee802154_fake_open,
++	.ndo_stop		= ieee802154_fake_close,
++	.ndo_start_xmit		= ieee802154_fake_xmit,
++	.ndo_do_ioctl		= ieee802154_fake_ioctl,
++	.ndo_set_mac_address	= ieee802154_fake_mac_addr,
++};
++
++
++static void ieee802154_fake_setup(struct net_device *dev)
++{
++	dev->addr_len		= IEEE802154_ADDR_LEN;
++	memset(dev->broadcast, 0xff, IEEE802154_ADDR_LEN);
++	dev->features		= NETIF_F_NO_CSUM;
++	dev->needed_tailroom	= 2; /* FCS */
++	dev->mtu		= 127;
++	dev->tx_queue_len	= 10;
++	dev->type		= ARPHRD_IEEE802154;
++	dev->flags		= IFF_NOARP | IFF_BROADCAST;
++	dev->watchdog_timeo	= 0;
++}
++
++
++static int __devinit ieee802154fake_probe(struct platform_device *pdev)
++{
++	struct net_device *dev = alloc_netdev(0, "hardwpan%d", ieee802154_fake_setup);
++	int err;
++
++	if (!dev)
++		return -ENOMEM;
++
++	memcpy(dev->dev_addr, "\xba\xbe\xca\xfe\xde\xad\xbe\xef", dev->addr_len);
++	memcpy(dev->perm_addr, dev->dev_addr, dev->addr_len);
++
++	dev->netdev_ops = &fake_ops;
++	dev->ml_priv = &fake_mlme;
++
++	/*
++	 * If the name is a format string the caller wants us to do a
++	 * name allocation.
++	 */
++	if (strchr(dev->name, '%')) {
++		err = dev_alloc_name(dev, dev->name);
++		if (err < 0)
++			goto out;
++	}
++
++	SET_NETDEV_DEV(dev, &pdev->dev);
++
++	platform_set_drvdata(pdev, dev);
++
++	err = register_netdev(dev);
++	if (err < 0)
++		goto out;
++
++
++	dev_info(&pdev->dev, "Added ieee802154 HardMAC hardware\n");
++	return 0;
++
++out:
++	unregister_netdev(dev);
++	return err;
++}
++
++static int __devexit ieee802154fake_remove(struct platform_device *pdev)
++{
++	struct net_device *dev = platform_get_drvdata(pdev);
++	unregister_netdev(dev);
++	free_netdev(dev);
++	return 0;
++}
++
++static struct platform_device *ieee802154fake_dev;
++
++static struct platform_driver ieee802154fake_driver = {
++	.probe = ieee802154fake_probe,
++	.remove = __devexit_p(ieee802154fake_remove),
++	.driver = {
++			.name = "ieee802154hardmac",
++			.owner = THIS_MODULE,
++	},
++};
++
++static __init int fake_init(void)
++{
++	ieee802154fake_dev = platform_device_register_simple("ieee802154hardmac", -1, NULL, 0);
++	return platform_driver_register(&ieee802154fake_driver);
++}
++
++static __exit void fake_exit(void)
++{
++	platform_driver_unregister(&ieee802154fake_driver);
++	platform_device_unregister(ieee802154fake_dev);
++}
++
++module_init(fake_init);
++module_exit(fake_exit);
++MODULE_LICENSE("GPL");
++
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index 214a92d..ec8cf21 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2704,6 +2704,8 @@ source "drivers/net/wan/Kconfig"
  
+ source "drivers/atm/Kconfig"
+ 
++source "drivers/ieee802154/Kconfig"
++
+ source "drivers/s390/net/Kconfig"
+ 
+ config XEN_NETDEV_FRONTEND
 -- 
 1.6.3.1
 
