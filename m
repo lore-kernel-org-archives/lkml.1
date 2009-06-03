@@ -1,113 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753137AbZFCAEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753604AbZFCAEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753137AbZFCAEX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 20:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZFCAEQ
+	id S1753604AbZFCAEn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 20:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbZFCAEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 20:04:16 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34508 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343AbZFCAEP (ORCPT
+	Tue, 2 Jun 2009 20:04:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:63182 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751713AbZFCAEf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 20:04:15 -0400
-Date: Wed, 3 Jun 2009 09:02:43 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, menage@google.com,
-       lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, bharata@linux.vnet.ibm.com,
-       libcg-devel@lists.sourceforge.net
-Subject: Re: +
- cgroups-forbid-noprefix-if-mounting-more-than-just-cpuset-subsystem. patch
- added to -mm tree
-Message-Id: <20090603090243.5a2f566c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090602133534.d2e453f6.akpm@linux-foundation.org>
-References: <200906020602.n5262wcu008560@imap1.linux-foundation.org>
-	<20090602090944.GB16753@linux.vnet.ibm.com>
-	<6599ad830906020908s7cb6afe6pd83ca35b82d148a4@mail.gmail.com>
-	<20090602174042.GD16753@linux.vnet.ibm.com>
-	<20090602133534.d2e453f6.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 2 Jun 2009 20:04:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:content-type:organization:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ZhX8KAidbuT+YCoeTCmJY+HrxSdQNmRYc13FTxPE0FZwefCN3IrK/q9PXS48gGtm82
+         HwQC7vVpx+Rk9OXq80WHzdpSdVI0o+wUqSxGnlVWnIRK07r6TtYr1+GLiEQ4jYWePSNL
+         Brm1VVWGh8c/Af0Yh6P4COO+l8WBUhNKSp1l4=
+Subject: [PATCH] Fix the meaning of EDAC abbreviation
+From: GeunSik Lim <leemgs1@gmail.com>
+Reply-To: leemgs1@gmail.com
+To: Jiri Kosina <trivial@kernel.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, dougthompson@xmission.com
+Content-Type: text/plain
+Organization: Private
+Date: Wed, 03 Jun 2009 09:04:29 +0900
+Message-Id: <1243987469.20635.69.camel@centos51>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Jun 2009 13:35:34 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Tue, 2 Jun 2009 23:10:42 +0530
-> Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> 
-> > On Tue, Jun 02, 2009 at 09:08:04AM -0700, Paul Menage wrote:
-> > > On Tue, Jun 2, 2009 at 2:09 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> > > >
-> > > > I am not sure if this is a good idea. For libcgroup, we would then be
-> > > > adding a special case for just cpuset. I would rather that we allow it
-> > > > either for all the subsystems or none of them.
-> > > >
-> > > 
-> > > libcgroup shouldn't be using the noprefix option. Its only intentded
-> > > use is to allow the legacy "cpuset" filesystem type to be mounted and
-> > > to see the same fileset as it had before the cgroups transition.
-> > > 
-> > 
-> > It does not. But if some user is using that option, we need to be in a
-> > position to handle it.
-> > 
-> > I am quite happy not supporting the noprefix option in the library if it
-> > is fine.
-> > 
-> 
-> fyi, the above discussion transitions akpm into the "confused" state. 
-> I'll keep the patch on hold until akpm transitions back out of that
-> state.
-> 
-Traffic control...
-
-[What "noprefix" is]
- - When "noprefix" is used, the name of file under cgroup is..
-  [Without noprefix]  ... (dir)/subsysname.filename
-  [With noprefix]     ... (dir)/filename
-
-Then, cpuset's files will be
-  [Without noprefix]  ... (dir)/cpuset.xxx
-  [With noprefix]     ... (dir)/xxx
-
-This is for _backward compatibility_.
-
-[Problem]
- cpustat subsys has "stat" file.
- memory  subsys has "stat" file.
-
- So, these cannot be mounted at the same mount point with "noprefix".
-
-Considering arbitrary subsys can be mounted at the same point, allowing "noprefix"
-other than cpuset just makes user-land complex, and "noprefix" itself is
-troublesome, it breaks naming rule for cgroup files.
-
-Then, I vote for that this patch should go.
-
-Thanks,
--Kame
 
 
+Dear Jiri Kosina,
+
+This is trivial patch about meaning of EDAC in the driver/edac/Kconfig file.
+ * Screenshot after patch :
+   http://blogfiles16.naver.net/data42/2009/6/3/31/edac-before-after-invain.png
+
+
+Thanks, 
+
+
+Subject: [PATCH] Fix the meaning of EDAC abbreviation
+
+Fix the meaning of EDAC(Error Detection And Correction) correctly.
+ - http://bluesmoke.sourceforge.net
+
+        Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+---
+ drivers/edac/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
+index 956982f..2a81915 100644
+--- a/drivers/edac/Kconfig
++++ b/drivers/edac/Kconfig
+@@ -5,7 +5,7 @@
+ #
  
+ menuconfig EDAC
+-	bool "EDAC - error detection and reporting"
++	bool "EDAC - Error Detection And Correction"
+ 	depends on HAS_IOMEM
+ 	depends on X86 || PPC
+ 	help
+-- 
+1.6.3.1
 
 
 
+-----------------------------------------------
+To unsubscribe from this list: send the line "unsubscribe linux-***" 
+in the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
 
-
-
-
-
-
-
-
-
-
-> 
+GeunSik Lim ( Samsung Electronics )
+e-Mail  :1) geunsik.lim@samsung.com
+         2) leemgs@gmail.com , leemgs1@gmail.com
+HomePage: http://blog.naver.com/invain/
+-----------------------------------------------
 
