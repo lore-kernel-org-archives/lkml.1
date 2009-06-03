@@ -1,75 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZFCCLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZFCCPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755342AbZFCCLs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 22:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbZFCCLl
+	id S1755342AbZFCCPb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 22:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbZFCCPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 22:11:41 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:55957 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752228AbZFCCLk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 22:11:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=WL34l1k41sa/nG3XHZdBENR9/bYPrk401256/YM+RT7Nqf7lTdfLS04mACkc/BDNi0
-         ltgqQRveYE4GX18Zj8gKC7t42gG1BlWA/Wuka50a9vrXgPxvePg2uL0E88GiD+QRVBkU
-         RpWOh9ka0SSu4rGF2v1G9rbXtN8Zja7de82TA=
-MIME-Version: 1.0
-In-Reply-To: <1243992286.9076.5.camel@rzhang-dt>
-References: <dd18b0c30906021102h43b8ecc4u9e67687de129bca1@mail.gmail.com>
-	 <1243992286.9076.5.camel@rzhang-dt>
-Date: Tue, 2 Jun 2009 19:11:41 -0700
-Message-ID: <dd18b0c30906021911u4c2359daje01b0477a6bd23ff@mail.gmail.com>
-Subject: Re: ACPI Exception (evregion-0422): AE_ERROR, Returned by Handler for 
-	[PCI_Config] [20090320]
-From: Justin Mattock <justinmattock@gmail.com>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 2 Jun 2009 22:15:23 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:41921 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752831AbZFCCPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 22:15:22 -0400
+Date: Wed, 3 Jun 2009 12:15:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@linux.intel.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: linux-next: manual merge of the wireless tree with the x86 tree
+Message-Id: <20090603121515.4bd45eec.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__3_Jun_2009_12_15_15_+1000_p1uBGdfDLF48tsnB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 2, 2009 at 6:24 PM, Zhang Rui <rui.zhang@intel.com> wrote:
-> On Wed, 2009-06-03 at 02:02 +0800, Justin Mattock wrote:
->> I posted this error a few weeks ago, but had no response.
->> So after a few weeks of looking at this, I wanted to find out if
->> this is safe to see this, or should I be concerned:
->>
->> [    5.868418] ACPI: Power Button [PWRB]
->> [    5.868547] input: Sleep Button as
->> /devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input4
->> [    5.868621] ACPI: Sleep Button [SLPB]
->> [    6.093547] ACPI Exception (evregion-0422): AE_ERROR, Returned by
->> Handler for [PCI_Config] [20090320]
->> [    6.093555] ACPI Error (psparse-0537): Method parse/execution
->> failed [\_SB_.PCI0.RP01.GFX0._PS0] (Node f703dcc0), AE_ERROR
->> [    6.093614] ACPI: Transitioning device [GFX0] to D0
->>
->> I did do a dsdt dump, and looked for any errors
->> but none had shown up.
->> kernels that I have seen this are 2.6.29 -
->> 2.6.30-rc5
->>
-> please file a new bug report at
-> http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
-> and attach the full dmesg output and acpidump there.
->
-> thanks,
-> rui
->
->
+--Signature=_Wed__3_Jun_2009_12_15_15_+1000_p1uBGdfDLF48tsnB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-alright(Ill have to do that when I get a chance)
-As for the error message after looking into it more today
-I notice this message fired off as soon as I compiled
-and loaded the nvidia module.
+Hi John,
 
+Today's linux-next merge of the wireless tree got a conflict in
+Documentation/feature-removal-schedule.txt between commit
+45f458e9a8a216b02b76fe61d9e8bc40d659fbe8 ("x86, mce: deprecate old 32bit
+machine check code") from the x86 tree and commit
+0122405503e36bd15077acb571821d459bbd3e85 ("rfkill: create useful
+userspace interface") from the wireless tree.
 
--- 
-Justin P. Mattock
+Juts overlapping additions.  I fixed it up (see below) and can carry the
+fix as necessary.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc Documentation/feature-removal-schedule.txt
+index ec9ef5d,edb2f0b..0000000
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@@ -438,12 -438,9 +438,19 @@@ Why:	Superseded by tdfxfb. I2C/DDC supp
+  Who:	Jean Delvare <khali@linux-fr.org>
+  	Krzysztof Helt <krzysztof.h1@wp.pl>
+ =20
+ +----------------------------
+ +
+ +What:	CONFIG_X86_OLD_MCE
+ +When:	2.6.32
+ +Why:	Remove the old legacy 32bit machine check code. This has been
+ +	superseded by the newer machine check code from the 64bit port,
+ +	but the old version has been kept around for easier testing. Note this
+ +	doesn't impact the old P5 and WinChip machine check handlers.
+ +Who:	Andi Kleen <andi@firstfloor.org>
+++
++ ---------------------------
++=20
++ What:	CONFIG_RFKILL_INPUT
++ When:	2.6.33
++ Why:	Should be implemented in userspace, policy daemon.
++ Who:	Johannes Berg <johannes@sipsolutions.net>
+
+--Signature=_Wed__3_Jun_2009_12_15_15_+1000_p1uBGdfDLF48tsnB
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkol3LMACgkQjjKRsyhoI8w6uACeNacK08u+c9i4p5iFr2knq82Z
+BS0AoKr4XTVkNeG8sQn0JIWuQTfHpe1c
+=53I5
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__3_Jun_2009_12_15_15_+1000_p1uBGdfDLF48tsnB--
