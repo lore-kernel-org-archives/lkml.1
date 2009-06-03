@@ -1,91 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbZFCIL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757633AbZFCIMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756847AbZFCIL6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 04:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbZFCILm
+	id S1757633AbZFCIMu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 04:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbZFCIMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 04:11:42 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:16761 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752581AbZFCILk (ORCPT
+	Wed, 3 Jun 2009 04:12:36 -0400
+Received: from smtprelay10.ispgateway.de ([80.67.29.24]:53527 "EHLO
+	smtprelay10.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753458AbZFCIMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 04:11:40 -0400
-Message-ID: <4A263019.3090807@nokia.com>
-Date: Wed, 03 Jun 2009 11:11:05 +0300
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "david@fromorbit.com" <david@fromorbit.com>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "jack@suse.cz" <jack@suse.cz>,
-       "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "damien.wyart@free.fr" <damien.wyart@free.fr>
-Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
-References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com> <4A200846.5050109@gmail.com> <4A200B43.40708@nokia.com> <20090529170911.GK11363@kernel.dk>
-In-Reply-To: <20090529170911.GK11363@kernel.dk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 03 Jun 2009 08:11:06.0846 (UTC) FILETIME=[D876DFE0:01C9E422]
-X-Nokia-AV: Clean
+	Wed, 3 Jun 2009 04:12:34 -0400
+References: <1240950704.3781.12.camel@maxim-laptop> <cone.1241299309.265715.3948.1000@mentalhome> <20090503184617.GA3555@liondog.tnic> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic> <cone.1242065107.695268.13534.1000@onepiie> <20090512060231.GB26286@liondog.tnic> <cone.1242669880.118150.4276.1000@deskpiie> <20090524192219.GA30285@liondog.tnic> <cone.1243865541.882421.4368.1000@deskpiie> <20090603073552.GA2671@liondog.tnic>
+Message-ID: <cone.1244016635.374757.16292.1000@arca>
+X-Mailer: http://www.courier-mta.org/cone/
+From: Peter Feuerer <peter@piie.net>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH] Acer Aspire One Fan Control
+Date: Wed, 03 Jun 2009 10:10:35 +0200
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed; charset="US-ASCII"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+X-Df-Sender: 404094
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ext Jens Axboe wrote:
-> On Fri, May 29 2009, Artem Bityutskiy wrote:
->> Artem Bityutskiy wrote:
->>> Jens Axboe wrote:
->>>> Hi,
->>>>
->>>> Here's the 9th version of the writeback patches. Changes since v8:
->>>>
->>>> - Fix a bdi_work on-stack allocation hang. I hope this fixes Ted's
->>>>   issue.
->>>> - Get rid of the explicit wait queues, we can just use wake_up_process()
->>>>   since it's just for that one task.
->>>> - Add separate "sync_supers" thread that makes sure that the dirty
->>>>   super blocks get written. We cannot safely do this from
->>>> bdi_forker_task(),
->>>>   as that risks deadlocking on ->s_umount. Artem, I implemented this
->>>>   by doing the wake ups from a timer so that it would be easier for you
->>>>   to just deactivate the timer when there are no super blocks.
->>>>
->>>> For ease of patching, I've put the full diff here:
->>>>
->>>>   http://kernel.dk/writeback-v9.patch
->>>>
->>>> and also stored this in a writeback-v9 branch that will not change,
->>>> you can pull that into Linus tree from here:
->>>>
->>>>   git://git.kernel.dk/linux-2.6-block.git writeback-v9
->>> I'm working with the above branch. Got the following twice.
->>> Not sure what triggers this, probably if I do nothing and
->>> cpufreq starts doing its magic, this is triggered.
->>>
->>> And I'm not sure it has something to do with your changes,
->>> it is just that I saw this only with your tree. Please,
->>> ignore if this is not relevant.
->> Sorry, probably I shouldn't have reported this before looking
->> closer. I'll investigate this later and fine out whether it
->> is related to your work or not. Sorry for too early and probably
->> false alarm.
+Hi,
+
+Borislav Petkov writes:
+
+> Hi,
 > 
-> No problem. If it does turn out to have some relation to the writeback
-> stuff, let me know.
+> On Mon, Jun 01, 2009 at 04:12:21PM +0200, Peter Feuerer wrote:
+>>> Ok, minor nitpicks below but it starting to shape up quite ok. You could
+>>> send it for inclusion upstream.
+>>
+>> How exactly do I send the patch for inclusion?
+> 
+> just rediff it against latest git and send an email to Len Brown (i
+> assume, from looking at git log drivers/thermal/ output) requesting for
+> driver inclusion.
+> 
+> Len?
+> 
+> If you hurry and do it this week it might be possible to get it in .31
+> because the merge window opens around the coming weekend.
 
-OK, I'm confirming that I observe this also with pure 2.6.30-rc7
-as well.
+Ok, I'll try to directly address len with subject "Request driver inclusion 
+acer aspire one fan control" and send a diff against latest git, right? 
+(CC'ing lkml of course). Just wondering if it'll work, as Len has always 
+been included via CC into our discussions and has never said anything :-(
 
+>>>> +			acerhdf_notice("temp %d\n", temp);
+>>>> +		return temp;
+>>>> +	}
+>>>> +	return ACERHDF_ERROR;
+>>>> +}
+>>>> +
+>>>> +
+>>>> +		if (verbose)
+>>>> +			acerhdf_error("read state: %d expected state: %d\n",
+>>>> +					old_state, fanstate);
+>>>> +
+>>>> +		acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+>>>> +		disable_kernelmode = 1;
+>>>> +	}
+>>>> +
+>>>> +	if (state == 0) {
+>>>> +		/* turn fan off only if below fanoff temperature */
+>>>> +		if ((old_state == ACERHDF_FAN_AUTO) &&
+>>>> +				(acerhdf_get_temp() < fanoff))
+>>>
+>>> it might be cool to tell the user why you're not turning off the fan.
+>>>
+>>> 		if (verbose)
+>>> 			acerhdf_notice("Not turning off fan due to current temp "
+>>> 				       "exceeding fanoff value\n");
+>>>
+>>
+>> Hm.. I think it should be clear that the fan is turned off, as soon as 
+>> the temperature is below the fanoff temperature. In my opinion printing 
+>> this message would be a case for a "verbose==2" verbose mode :)
+> 
+> My reasoning was that because this is called from sysfs and the user
+> sees nothing happening even if he'd turned off the fan by calling
+> .set_cur_state that it might be useful to tell him why.
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+But the user isn't allowed to change the fan state from userspace anymore. 
+If you try to change the fan state from userspace you'll get the "changing 
+fan state is not allowed" message.
+
+best regards,
+--peter
