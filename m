@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZFCVTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbZFCVUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754623AbZFCVTb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 17:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbZFCVTU
+	id S1756096AbZFCVUX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 17:20:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbZFCVUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 17:19:20 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54080
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752614AbZFCVTT (ORCPT
+	Wed, 3 Jun 2009 17:20:13 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:59342 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754064AbZFCVUM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 17:19:19 -0400
-Date: Wed, 03 Jun 2009 14:19:19 -0700 (PDT)
-Message-Id: <20090603.141919.261921857.davem@davemloft.net>
-To: dbaryshkov@gmail.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, sfr@canb.auug.org.au,
-       slapin@ossfans.org
-Subject: Re: [PATCH 2/6] Add constants for the ieee 802.15.4/ZigBee stack
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090603105151.GA20508@doriath.ww600.siemens.net>
-References: <1244021629-18409-3-git-send-email-dbaryshkov@gmail.com>
-	<20090603.030826.03512651.davem@davemloft.net>
-	<20090603105151.GA20508@doriath.ww600.siemens.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 3 Jun 2009 17:20:12 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] parport: quickfix the proc registration bug
+Date: Wed, 3 Jun 2009 23:20:11 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <20090602155718.12461.87554.stgit@t61.ukuu.org.uk>
+In-reply-To: <20090602155718.12461.87554.stgit@t61.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906032320.11870.elendil@planet.nl>
+X-OriginalArrivalTime: 03 Jun 2009 21:20:12.0218 (UTC) FILETIME=[148151A0:01C9E491]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Date: Wed, 3 Jun 2009 14:51:51 +0400
+Alan Cox wrote:
+> Ideally we should have a directory of drivers and a link to the 'active'
+> driver. For now just show the first device which is effectively the
+> existing semantics without a warning.
+> 
+> This is an update on the original buggy patch that I then forgot to
+> resubmit. Confusingly it was proposed by Red Hat, written by Etched
+> Pixels fixed and submitted by Intel ...
+> 
+> Resolves-Bug: http://bugzilla.kernel.org/show_bug.cgi?id=9749
+> Signed-off-by: Alan Cox <alan@linux.intel.com>
 
-> Please check the updated patch. We do request several unused in this
-> serie value (like AF_ZIGBEE), but we'd like for them to be merged ASAP
-> as their are a part of ABI.
-
-I don't allow anyone else to do this, and neither will I
-allow it for you either.
-
-Merge it when the patches that use them are submitted.
-
-And if it happens, you just might to change AF_ZIGBEE if
-that number is taken by another series of patches, that's
-just how it is.  We don't reserve AF_* for people while
-they're getting their stuff ready.
-
-This decision is final.
+Thanks Alan. Unfortunately I'm no longer able to test this as my printer 
+is now connected via USB to my notebook's docking station instead of via 
+a parport to my desktop (which was prompted to home server and moved to a 
+different room).
