@@ -1,108 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754355AbZFCHEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbZFCHMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754355AbZFCHEU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 03:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZFCHEG
+	id S1754788AbZFCHMR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 03:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbZFCHMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 03:04:06 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54288 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751713AbZFCHEF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 03:04:05 -0400
-Subject: Re: [PATCH] sched: sched_clock() clocksource handling.
-From: Peter Zijlstra <peterz@infradead.org>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Daniel Walker <dwalker@fifo99.com>,
-       Linus Walleij <linus.ml.walleij@gmail.com>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       John Stultz <johnstul@linux.vnet.ibm.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1243981485.3501.92.camel@localhost>
-References: <20090602071718.GA17710@linux-sh.org>
-	 <1243981485.3501.92.camel@localhost>
-Content-Type: text/plain
+	Wed, 3 Jun 2009 03:12:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33996 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753238AbZFCHMC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 03:12:02 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Wed, 03 Jun 2009 09:03:49 +0200
-Message-Id: <1244012629.13761.1074.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, paul@mad-scientist.net,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] coredump: Retry writes where appropriate
+In-Reply-To: Oleg Nesterov's message of  Tuesday, 2 June 2009 02:08:50 +0200 <20090602000850.GA31064@redhat.com>
+References: <1243748019.7369.319.camel@homebase.localnet>
+	<20090531111851.07eb1df3@lxorguk.ukuu.org.uk>
+	<20090601161234.GA10486@redhat.com>
+	<20090601174159.48acf3f5@lxorguk.ukuu.org.uk>
+	<20090601171119.GA13970@redhat.com>
+	<20090601184608.6379440c@lxorguk.ukuu.org.uk>
+	<20090601182305.GA16372@redhat.com>
+	<20090601203845.B010DFC3C7@magilla.sf.frob.com>
+	<20090601223241.GA26788@redhat.com>
+	<20090601230210.C0B15FC3C7@magilla.sf.frob.com>
+	<20090602000850.GA31064@redhat.com>
+Emacs: Lovecraft was an optimist.
+Message-Id: <20090603070939.4E31CFC333@magilla.sf.frob.com>
+Date: Wed,  3 Jun 2009 00:09:39 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-02 at 15:24 -0700, john stultz wrote:
+> Oh, I forgot about freezer...
 
-> >  /*
-> >   * Scheduler clock - returns current time in nanosec units.
-> > @@ -38,8 +40,15 @@
-> >   */
-> >  unsigned long long __attribute__((weak)) sched_clock(void)
-> >  {
-> > -	return (unsigned long long)(jiffies - INITIAL_JIFFIES)
-> > -					* (NSEC_PER_SEC / HZ);
-> > +	unsigned long long time;
-> > +	struct clocksource *clock;
-> > +
-> > +	rcu_read_lock();
-> > +	clock = rcu_dereference(sched_clocksource);
-> > +	time = cyc2ns(clock, clocksource_read(clock));
-> > +	rcu_read_unlock();
-> > +
-> > +	return time;
-> >  }
-> 
-> So in the above, cyc2ns could overflow prior to a u64 wrap. 
-> 
-> 
-> cyc2ns does the following:
-> 	(cycles * cs->mult) >> cs->shift;
-> 
-> The (cycles*cs->mult) bit may overflow for large cycle values, and its
-> likely that could be fairly quickly, as ideally we have a large shift
-> value to keep the precision high so mult will also be large.
-> 
-> I just went through some of the math here with Jon Hunter in this
-> thread: http://lkml.org/lkml/2009/5/15/466
-> 
-> None the less, either sched_clock will have to handle overflows or we'll
-> need to do something like the timekeeping code where there's an periodic
-> accumulation step that keeps the unaccumulated cycles small.
-> 
-> That said, the x86 sched_clock() uses cycles_2_ns() which is similar
-> (but with a smaller scale value). So its likely it would also overflow
-> prior to the u64 boundary as well.
-> 
-> 
-> > diff --git a/kernel/time/jiffies.c b/kernel/time/jiffies.c
-> > index c3f6c30..727d881 100644
-> > --- a/kernel/time/jiffies.c
-> > +++ b/kernel/time/jiffies.c
-> > @@ -52,7 +52,7 @@
-> > 
-> >  static cycle_t jiffies_read(struct clocksource *cs)
-> >  {
-> > -	return (cycle_t) jiffies;
-> > +	return (cycle_t) (jiffies - INITIAL_JIFFIES);
-> >  }
-> 
-> Also, on 32bit systems this will may overflow ~monthly. However, this
-> isn't different then the existing sched_clock() implementation, so
-> either its been already handled and sched_clock is more robust then I
-> thought or there's a bug there.
+We all would like to.
 
-I suspect you just found two bugs.. I thought to remember the jiffies
-based sched clock used to use jiffies_64, but I might be mistaken.
+> Well, not good to complicate recalc_sigpending_tsk() for this unlikely case.
+> And this can't help, freezer does signal_wake_up() unconditionally.
+> 
+> So in fact this is another argument to check signal_pending() and clear it
+> in dump_write/seek.
 
-As to the x86 sched_clock wrapping before 64bits, how soon would that
-be? The scheduler code really assumes it wraps on 64bit and I expect it
-to do something mighty odd when it wraps sooner (although I'd have to
-audit the code to see exactly what).
+I can't agree with this at all.  IMHO it's far better to have a consistent
+definition of when TIF_SIGPENDING ought to be triggered, and have
+recalc_sigpending_tsk() use logic that matches the logic controlling when
+to set TIF_SIGPENDING asynchronously (i.e. signal_wake_up calls).
 
-Aah, I think the filtering in kernel/sched_clock.c fixes it up. The wrap
-will be visible as a large backward motion which will be discarded.
+> But since the coredumping task is not freezable anyway, perhaps we should
+> change fake_signal_wake_up() to ignore SIGNAL_GROUP_DUMPING task.
+
+That could be a long delay and a lot of i/o before suspending.
+
+> Or we should make the coredumping freezable. This means dump_write/seek
+> and exit_mm() should do try_to_freeze().
+
+Yes, I think this is the thing to do for that issue.
+(It's kind of a separate problem.)
+
+> In any case, the coredumping is special. If ->write() returns -ERESTART/EINTR
+> it assumes the return to ths user-space, this is not true for the coredump.
+> This means that handling the spurious signals in coredump_file_write() is
+> not so bad if we can't avoid this.
+
+I am not so confident.  It seems far too easy to wind up with some other
+way that TIF_SIGPENDING gets continually set and this loops, for example.
+(This could be some day in the future when fs, driver or pipe-io code
+changes somehow completely obscure.)  It's far better to have confidence
+just in the signals code itself: the only things that set TIF_SIGPENDING
+interlock with the logic of the only things that are expected to clear it.
+
+
+Thanks,
+Roland
