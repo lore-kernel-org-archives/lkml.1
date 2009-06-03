@@ -1,120 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbZFCHeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbZFCHgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754638AbZFCHeS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 03:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbZFCHdz
+	id S1755916AbZFCHgM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 03:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbZFCHf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 03:33:55 -0400
-Received: from mga02.intel.com ([134.134.136.20]:46471 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754100AbZFCHdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 03:33:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,297,1241420400"; 
-   d="scan'208";a="521316725"
-Subject: [PATCH 2/2] MCE: inject: Support specifying raise mode for
- software MCE injection
-From: Huang Ying <ying.huang@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 03 Jun 2009 15:33:53 +0800
-Message-Id: <1244014433.8361.302.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Jun 2009 03:35:59 -0400
+Received: from mail-fx0-f168.google.com ([209.85.220.168]:63334 "EHLO
+	mail-fx0-f168.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752981AbZFCHf6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 03:35:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=TQEhBpJZ/JEl55LYfceNO5T7+RSzU7w57iaAJldIq6V08oU8moDHz2hXpRnPaQ2Jzz
+         ApjGjs1lfgo/n4qktEtPbAkC9TYhn64KMIpNIxugyKVTX6eWDc6j6DiXpmI9dNNWVtEg
+         SUc+Yno4s/4Qkg18RKz2vSFa5pDuibVT2wfNg=
+Date: Wed, 3 Jun 2009 09:35:52 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Peter Feuerer <peter@piie.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [PATCH] Acer Aspire One Fan Control
+Message-ID: <20090603073552.GA2671@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
+	Peter Feuerer <peter@piie.net>, LKML <linux-kernel@vger.kernel.org>,
+	lenb@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
+	Maxim Levitsky <maximlevitsky@gmail.com>
+References: <1240950704.3781.12.camel@maxim-laptop> <cone.1241299309.265715.3948.1000@mentalhome> <20090503184617.GA3555@liondog.tnic> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic> <cone.1242065107.695268.13534.1000@onepiie> <20090512060231.GB26286@liondog.tnic> <cone.1242669880.118150.4276.1000@deskpiie> <20090524192219.GA30285@liondog.tnic> <cone.1243865541.882421.4368.1000@deskpiie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <cone.1243865541.882421.4368.1000@deskpiie>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support specifying raise mode for software MCE injection
+Hi,
 
-Raise mode include raising as exception or raising as poll, it is
-specified via the mce.inject_flags field.
+On Mon, Jun 01, 2009 at 04:12:21PM +0200, Peter Feuerer wrote:
+>> Ok, minor nitpicks below but it starting to shape up quite ok. You could
+>> send it for inclusion upstream.
+>
+> How exactly do I send the patch for inclusion?
 
-This can be used to specify raise mode of UCNA, which is UC error but
-raised not as exception. And this can be used to test the filter code
-of poll handler or exception handler too. For example, enforce a poll
-raise mode for a fatal MCE.
+just rediff it against latest git and send an email to Len Brown (i
+assume, from looking at git log drivers/thermal/ output) requesting for
+driver inclusion.
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+Len?
 
----
- arch/x86/include/asm/mce.h              |    1 +
- arch/x86/kernel/cpu/mcheck/mce-inject.c |   16 ++++++++--------
- 2 files changed, 9 insertions(+), 8 deletions(-)
+If you hurry and do it this week it might be possible to get it in .31
+because the merge window opens around the coming weekend.
 
---- a/arch/x86/kernel/cpu/mcheck/mce-inject.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce-inject.c
-@@ -43,7 +43,7 @@ static void inject_mce(struct mce *m)
- 	i->finished = 1;
- }
- 
--static void raise_corrected(struct mce *m)
-+static void raise_poll(struct mce *m)
- {
- 	unsigned long flags;
- 	mce_banks_t b;
-@@ -55,7 +55,7 @@ static void raise_corrected(struct mce *
- 	m->finished = 0;
- }
- 
--static void raise_uncorrected(struct mce *m, struct pt_regs *pregs)
-+static void raise_exception(struct mce *m, struct pt_regs *pregs)
- {
- 	struct pt_regs regs;
- 	unsigned long flags;
-@@ -84,10 +84,10 @@ static int mce_raise_notify(struct notif
- 	if (val != DIE_NMI_IPI || !cpu_isset(cpu, mce_inject_cpumask))
- 		return NOTIFY_DONE;
- 	cpu_clear(cpu, mce_inject_cpumask);
--	if (m->status & MCI_STATUS_UC)
--		raise_uncorrected(m, args->regs);
-+	if (m->inject_flags & MCJ_EXCEPTION)
-+		raise_exception(m, args->regs);
- 	else if (m->status)
--		raise_corrected(m);
-+		raise_poll(m);
- 	return NOTIFY_STOP;
- }
- 
-@@ -103,7 +103,7 @@ static int raise_local(struct mce *m)
- 	int ret = 0;
- 	int cpu = m->cpu;
- 
--	if (m->status & MCI_STATUS_UC) {
-+	if (m->inject_flags & MCJ_EXCEPTION) {
- 		printk(KERN_INFO "Triggering MCE exception on CPU %d\n", cpu);
- 		switch (context) {
- 		case MCJ_CTX_IRQ:
-@@ -113,7 +113,7 @@ static int raise_local(struct mce *m)
- 			 */
- 			/*FALL THROUGH*/
- 		case MCJ_CTX_PROCESS:
--			raise_uncorrected(m, NULL);
-+			raise_exception(m, NULL);
- 			break;
- 		default:
- 			printk(KERN_INFO "Invalid MCE context\n");
-@@ -123,7 +123,7 @@ static int raise_local(struct mce *m)
- 	} else if (m->status) {
- 		printk(KERN_INFO "Starting machine check poll on CPU %d\n",
- 		       cpu);
--		raise_corrected(m);
-+		raise_poll(m);
- 		mce_notify_user();
- 		printk(KERN_INFO "Machine check poll done on CPU %d\n", cpu);
- 	} else
---- a/arch/x86/include/asm/mce.h
-+++ b/arch/x86/include/asm/mce.h
-@@ -34,6 +34,7 @@
- #define MCJ_CTX_PROCESS		1    /* inject context: process */
- #define MCJ_CTX_IRQ		2    /* inject context: IRQ */
- #define MCJ_NMI_BROADCAST	4    /* do NMI broadcasting */
-+#define MCJ_EXCEPTION		8    /* raise as exception */
- 
- /* Fields are zero when not available */
- struct mce {
+>>> +/* acer ec functions */
+>>> +static int acerhdf_get_temp(void)
+>>> +{
+>>> +	u8 temp;
+>>> +	/* read temperature */
+>>> +	if (!ec_read(bios_settings[bios_version].tempreg, &temp)) {
+>>> +		if (verbose)
+>>
+>> you need to check the error status here before printing the temperature
+>> since it might be invalid if the ec_read has failed:
+>>
+>> 	u8 temp;
+>> 	int err;
+>>
+>> 	err = ec_read(bios_settings[bios_version].tempreg, &temp);
+>>
+>> 	if (err)
+>> 		return ACERHDF_ERROR;
+>>
+>> 	if (verbose)
+>> 		acerhdf_notice("temp %d\n", temp);
+>>
+>> 	return temp;
+>> }
+>>
+>
+> The printf was already omitted when ec_read fails the way I wrote it, 
+> wasn't it? - Only if ec_read returns 0, the printf is launched and the 
+> temperature is returned.
 
+Ah, nevermind. I got mixed up here, sorry.
 
+>>> +			acerhdf_notice("temp %d\n", temp);
+>>> +		return temp;
+>>> +	}
+>>> +	return ACERHDF_ERROR;
+>>> +}
+>>> +
+>>> +
+>>> +		if (verbose)
+>>> +			acerhdf_error("read state: %d expected state: %d\n",
+>>> +					old_state, fanstate);
+>>> +
+>>> +		acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+>>> +		disable_kernelmode = 1;
+>>> +	}
+>>> +
+>>> +	if (state == 0) {
+>>> +		/* turn fan off only if below fanoff temperature */
+>>> +		if ((old_state == ACERHDF_FAN_AUTO) &&
+>>> +				(acerhdf_get_temp() < fanoff))
+>>
+>> it might be cool to tell the user why you're not turning off the fan.
+>>
+>> 		if (verbose)
+>> 			acerhdf_notice("Not turning off fan due to current temp "
+>> 				       "exceeding fanoff value\n");
+>>
+>
+> Hm.. I think it should be clear that the fan is turned off, as soon as 
+> the temperature is below the fanoff temperature. In my opinion printing 
+> this message would be a case for a "verbose==2" verbose mode :)
+
+My reasoning was that because this is called from sysfs and the user
+sees nothing happening even if he'd turned off the fan by calling
+.set_cur_state that it might be useful to tell him why.
+
+-- 
+Regards/Gruss,
+    Boris.
