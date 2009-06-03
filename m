@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbZFCFB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbZFCFH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754151AbZFCFB0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 01:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755111AbZFCFBF
+	id S1755795AbZFCFH7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 01:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZFCFHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 01:01:05 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54285 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754007AbZFCFBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 01:01:04 -0400
-Date: Tue, 2 Jun 2009 21:55:51 -0700
-From: Greg KH <gregkh@suse.de>
-To: David Rientjes <rientjes@google.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2009-06-02-16-11 uploaded (staging)
-Message-ID: <20090603045551.GA3869@suse.de>
-References: <200906022331.n52NVJhG015117@imap1.linux-foundation.org> <4A25F814.7030101@oracle.com> <alpine.DEB.2.00.0906022132490.26434@chino.kir.corp.google.com>
+	Wed, 3 Jun 2009 01:07:51 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:59228 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751354AbZFCFHu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 01:07:50 -0400
+Date: Wed, 3 Jun 2009 01:07:49 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: David Miller <davem@davemloft.net>
+cc: dan.magenheimer@oracle.com, tytso@mit.edu, mingo@elte.hu,
+       george.dunlap@eu.citrix.com, jeremy@goop.org, avi@redhat.com,
+       xen-devel@lists.xensource.com, x86@kernel.org,
+       linux-kernel@vger.kernel.org, Keir.Fraser@eu.citrix.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, kurt.hackel@oracle.com,
+       Ian.Pratt@eu.citrix.com, xen-users@lists.xensource.com,
+       ksrinivasan@novell.com, EAnderson@novell.com, wimcoekaerts@wimmekes.net,
+       stephen.spector@citrix.com, jens.axboe@oracle.com, npiggin@suse.de
+Subject: Re: Merge Xen (the hypervisor) into Linux
+In-Reply-To: <20090602.215802.149628704.davem@davemloft.net>
+Message-ID: <alpine.DEB.2.00.0906030103480.14994@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0906022332230.14994@gandalf.stny.rr.com> <3ab07e3b-a601-48d5-b350-29cbaf111892@default> <20090602.215802.149628704.davem@davemloft.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0906022132490.26434@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 09:45:15PM -0700, David Rientjes wrote:
-> On Tue, 2 Jun 2009, Randy Dunlap wrote:
-> 
-> > drivers/staging/android/lowmemorykiller.c:106: error: 'struct task_struct' has no member named 'oomkilladj'
-> > 
-> 
-> Thanks Randy.
-> 
-> This is due to oom-move-oom_adj-value-from-task_struct-to-mm_struct.patch 
-> which was merged in mmotm early this morning.
-> 
-> I had previously fixed this in an earlier version of the patch series, but 
-> people didn't agree that an oom killer change should touch staging files 
-> even though the Android lowmemorykiller is in both mmotm and git HEAD.  
-> See http://marc.info/?l=linux-kernel&m=124200164711314.
-> 
-> I'm still a little curious about why it was decided like that since it 
-> seems to be the simplest way to avoid these failures, which leave you with 
-> a broken build, and an unnecessary burden on maintainers to magically fix 
-> them up later (which I guess is now?).
-> 
-> So when I moved oomkilladj from struct task_struct to struct mm_struct and 
-> renamed it to something more appropriate, I still think I should have been 
-> able to change drivers/staging/android/lowmemorykiller.c for those 
-> reasons and avoid all of this hassle.
-> 
-> Anyway, here's a patch that should work and will hopefully now be 
-> accepted.  I know Greg is the maintainer for the staging tree and we're 
-> talking about mmotm, but I don't know how else to do it anymore.
 
-If Andrew took the change that caused this, then he can take the fixup
-for the android code as well, no problem with me.
+On Tue, 2 Jun 2009, David Miller wrote:
 
-thanks,
+> From: Dan Magenheimer <dan.magenheimer@oracle.com>
+> Date: Tue, 2 Jun 2009 21:49:58 -0700 (PDT)
+> 
+> > A hypervisor is not an operating system.
+> 
+> This is a pretty bogus statement if you ask me.
+> 
+> A hypervisor a software system that provides seperation between
+> protection realms.
+> 
+> It also handles exceptions and "system calls" on behalf of the other
+> protection realms.
+> 
+> I personally don't see the difference at all.  And since many
+> hypervisors even do cpu scheduling, the fundamental differences
+> converge to almost nothing.
 
-greg k-h
+I recently sat in an Operating Systems class where the Professor was an 
+old IBM retiree, that worked on the 390 system way back when. He would 
+argue the point that an Operating System must do at least two things, 
+schedule tasks and manage paging. The Xen hypervisor does both, thus in 
+his eyes, it is indeed an Operating System.
+
+-- Steve
+
+P.S. he also thought that filesystem management does not have to be a 
+duty of the OS and he hated the fact he had to teach it ;-)
+
