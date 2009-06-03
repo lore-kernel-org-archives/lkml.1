@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753783AbZFCJ0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbZFCJ2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753783AbZFCJ0d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 05:26:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbZFCJ00
+	id S1753371AbZFCJ2R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 05:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZFCJ2B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 05:26:26 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:32934 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752527AbZFCJ00 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 05:26:26 -0400
-Date: Wed, 3 Jun 2009 19:26:10 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Matt Mackall <mpm@selenic.com>, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hwrng: Add TX4939 RNG driver (v2)
-Message-ID: <20090603092610.GA11258@gondor.apana.org.au>
-References: <1243954462-18149-1-git-send-email-anemo@mba.ocn.ne.jp> <1243973584.22069.182.camel@calx> <20090603090238.GH23561@linux-mips.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090603090238.GH23561@linux-mips.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 3 Jun 2009 05:28:01 -0400
+Received: from ryu.zarb.org ([212.85.158.22]:39982 "EHLO ryu.zarb.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752597AbZFCJ2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 05:28:00 -0400
+Subject: Re: Stable regression 2.6.29.3 vs 2.6.29.2
+From: Pascal Terjan <pterjan@mandriva.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       stable <stable@kernel.org>, linux-pci@vger.kernel.org
+In-Reply-To: <4A25ADB6.2070503@kernel.org>
+References: <1243625720.4426.0.camel@plop>  <4A203BFD.7040000@kernel.org>
+	 <1243949325.19053.100.camel@plop>  <4A256050.2020305@kernel.org>
+	 <1243969741.27062.11.camel@plop>  <4A258F1C.7030707@kernel.org>
+	 <1243983068.1629.0.camel@plop>  <4A25ADB6.2070503@kernel.org>
+Content-Type: text/plain; charset="ISO-8859-15"
+Organization: Mandriva
+Date: Wed, 03 Jun 2009 11:27:59 +0200
+Message-Id: <1244021279.2481.32.camel@plop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1-1mdv2009.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 10:02:38AM +0100, Ralf Baechle wrote:
-> On Tue, Jun 02, 2009 at 03:13:04PM -0500, Matt Mackall wrote:
-> 
-> > On Tue, 2009-06-02 at 23:54 +0900, Atsushi Nemoto wrote:
-> > > This patch adds support for the integrated RNG of the TX4939 SoC.
-> > > 
-> > > Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Le mardi 02 juin 2009 à 15:54 -0700, Yinghai Lu a écrit :
+> Pascal Terjan wrote:
+> > Le mardi 02 juin 2009 à 13:44 -0700, Yinghai Lu a écrit :
+> >> Pascal Terjan wrote:
+> >>> Le mardi 02 juin 2009 à 10:24 -0700, Yinghai Lu a écrit :
+> >>> ACPI: Using IOAPIC for interrupt routing
+> >>> PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 255
+> >>> PCI: MCFG area at f0000000 reserved in ACPI motherboard resources
+> >>> PCI: updated MCFG configuration 0: base f0000000 segment 0 buses 0 - 63
+> >>> PCI: Using MMCONFIG for extended config space
+> >> please check
+> >>
+> >> [PATCH] x86/pci: fix mmconfig detection with 32bit need 4g
+> >>
 > > 
-> > Acked-by: Matt Mackall <mpm@selenic.com>
+> > I confirm that the machine boots fine with 2.6.29.4 + this patch
 > 
-> Ok, I'll send this to Linus for 2.6.31 then.
+> Thanks. Pascal
+> 
+> Can you try that on tip/master too?
+> 
 
-Actually I've already added it to my tree since I'm looking after
-the hwrng drivers.
+It had the bug and the patch fixes it there too
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Thanks
+
