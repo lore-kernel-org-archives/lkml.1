@@ -1,112 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753728AbZFCSzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbZFCS5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753728AbZFCSzs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 14:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbZFCSzl
+	id S1754869AbZFCS5T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 14:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZFCS5H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 14:55:41 -0400
-Received: from wa4ehsobe002.messaging.microsoft.com ([216.32.181.12]:3652 "EHLO
-	WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752088AbZFCSzk (ORCPT
+	Wed, 3 Jun 2009 14:57:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39737 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752841AbZFCS5F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 14:55:40 -0400
-X-SpamScore: -32
-X-BigFish: VPS-32(zz1803O1432R98dR1805Mzz1202hzzz2fh6bh17ch62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-Message-ID: <4A26C6EC.30609@am.sony.com>
-Date: Wed, 3 Jun 2009 11:54:36 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 2/3] ring-buffer: try to discard unneeded timestamps
-References: <20090603141605.001049251@goodmis.org> <20090603141651.231310727@goodmis.org>
-In-Reply-To: <20090603141651.231310727@goodmis.org>
-Content-Type: text/plain; charset="UTF-8"
+	Wed, 3 Jun 2009 14:57:05 -0400
+Date: Wed, 3 Jun 2009 11:56:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Denis Karpov <ext-denis.2.karpov@nokia.com>
+Cc: axboe@kernel.dk, hirofumi@mail.parknet.co.jp, linux-ext4@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       adrian.hunter@nokia.com, artem.bityutskiy@nokia.com
+Subject: Re: [PATCH 0/4] FS: userspace notification of errors
+Message-Id: <20090603115611.6bbbaf55.akpm@linux-foundation.org>
+In-Reply-To: <1244041518-32229-1-git-send-email-ext-denis.2.karpov@nokia.com>
+References: <1244041518-32229-1-git-send-email-ext-denis.2.karpov@nokia.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Jun 2009 18:54:37.0633 (UTC) FILETIME=[BE496B10:01C9E47C]
-X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> There are times that a race may happen that we add a timestamp in a
-> nested write. This timestamp would just contain a zero delta and serves
-> no purpose.
+On Wed,  3 Jun 2009 18:05:14 +0300
+Denis Karpov <ext-denis.2.karpov@nokia.com> wrote:
+
 > 
-> Now that we have a way to discard events, this patch will try to discard
-> the timestamp instead of just wasting the space in the ring buffer.
+> Hello, 
 > 
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> ---
->  kernel/trace/ring_buffer.c |   67 +++++++++++++++++++++++++++-----------------
->  1 files changed, 41 insertions(+), 26 deletions(-)
+> these patches are resent (a bit re-worked and separated from other stuff).
+> The issue was discussed here:
+> http://marc.info/?l=linux-fsdevel&m=124402900920380&w=2
 > 
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index 9453023..5092660 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -1335,6 +1335,38 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
->  	return event;
->  }
->  
-> +static inline int
-> +rb_try_to_discard(struct ring_buffer_per_cpu *cpu_buffer,
-> +		  struct ring_buffer_event *event)
-> +{
-> +	unsigned long new_index, old_index;
-> +	struct buffer_page *bpage;
-> +	unsigned long index;
-> +	unsigned long addr;
-> +
-> +	new_index = rb_event_index(event);
-> +	old_index = new_index + rb_event_length(event);
-> +	addr = (unsigned long)event;
-> +	addr &= PAGE_MASK;
-> +
-> +	bpage = cpu_buffer->tail_page;
-> +
-> +	if (bpage->page == (void *)addr && rb_page_write(bpage) == old_index) {
-> +		/*
-> +		 * This is on the tail page. It is possible that
-> +		 * a write could come in and move the tail page
-> +		 * and write to the next page. That is fine
-> +		 * because we just shorten what is on this page.
-> +		 */
-> +		index = local_cmpxchg(&bpage->write, old_index, new_index);
-> +		if (index == old_index)
-> +			return 1;
-> +	}
-> +
-> +	/* could not discard */
-> +	return 0;
-> +}
-> +
+> Summary:
+> 
+> 1. Generic mechanism for notifications of user space about file system's
+>    errors/inconsistency on a particular partition using:
+> 
+>      - sysfs entry /sys/block/<bdev>/<part>/fs_unclean
+>      - uevent KOBJ_CHANGE, uevent's environment variable FS_UNCLEAN=[0:1]
+> 
+>    Userspace might want to monitor these notifications (poll2() on sysfs 
+>    file or udevd's rule for uevent) and fix the fs damage.
+>    Filesystem can be marked clean again by writing '0' to the 
+>    corresponding 'fs_unclean' sysfs file.
+> 
+>    Currently some file systems remount themselves r/o on critical errors
+>    (*FAT; EXT2 depending on 'errors' mount option), userspace is generally
+>    unaware of such events. This feature will allow user space to become 
+>    aware of possible file system problems and do something about them 
+>    (e.g. run fsck automatically or with user's consent).
+>    [PATCH 1]
+> 
+> 2. Make FAT and EXT2 file systems use the above mechanism to optionally
+>    notify user space about errors. Implemented as 'notify' mount option
+>    (PATCH 3,4).
+>    FAT error reporting facilities had to be re-factored (PATCH 2) in 
+>    order to simplify sending error notifications.
+> 
+> Adrian Hunter and Artem Bityutskiy provided input and ideas on implementing
+> these features.
+> 
 
-Is this new routine only for discarding uncommitted events,
-or can it be used on committed events?
+hm, I'm uncertain on the desirability or otherwise of the overall feature.
 
-I assume the former, since I see nothing about adjusting the
-commit position.
+Are there users or distros or device manufacturers asking for this? 
+Where did the requirement come from?
 
-In the ring_buffer API I see that there's a function for
-discarding events (committed ones), but not for free-ing them.
-In function duration filtering, it is desirable to free the
-last committed event, which for a function exit of short
-duration will be it's entry event 99% of the time.
- -- Tim
+What downstream application will handle the uevent messages?  Do you
+have some userspace design/plan in mind?
 
-P.S. I'm very sorry about the missing '>' on the Signed-off-by line.
-I ran checkpatch and got a passing score, but missed this.
+IOW, it would be useful if we were told more about all of this, rather
+than just staring at a kernel patch!
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+One part of the design which you didn't describe, but which I inferred
+is that you intend that userspace will see the FS_UNCLEAN=1 messages
+and will then poll all the /sys/block/<bdev>/<part>/fs_unclean files to
+work out which partition(s) got the error, correct?  Please spell all
+that out in the changelog.
+
+What use is the FS_UNCLEAN=0 message?  I don't get that.  Again, please
+cover this in the description.
+
+The "unclean" term doesn't seem a good fit.  It usually means "has
+in-memory data which needs writing back".  But here you've redefined
+"unclean" to mean "got an IO error" or "detected metadata
+inconsistency", or perhaps "dunno, please run fsck to find out".  This
+all should be spelled out in exacting detail and thought about, please.
 
