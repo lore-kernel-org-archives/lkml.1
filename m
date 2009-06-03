@@ -1,78 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbZFCTtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbZFCTug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755331AbZFCTtW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 15:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZFCTtO
+	id S1755405AbZFCTug (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 15:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbZFCTu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 15:49:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56944 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751977AbZFCTtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 15:49:13 -0400
-Date: Wed, 3 Jun 2009 19:48:33 GMT
-From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, efault@gmx.de, peterz@infradead.org,
-       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, peterz@infradead.org, efault@gmx.de,
-       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
-In-Reply-To: <20090603174921.GG7805@ghostprotocols.net>
-References: <20090603174921.GG7805@ghostprotocols.net>
-Subject: [tip:perfcounters/core] perf_counter tools: Fix off-by-one bug in symbol__new
-Message-ID: <tip-18374ab76e3ec1cf1b0ca5a8d08e35cfc5d01669@git.kernel.org>
-Git-Commit-ID: 18374ab76e3ec1cf1b0ca5a8d08e35cfc5d01669
-X-Mailer: tip-git-log-daemon
+	Wed, 3 Jun 2009 15:50:29 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:49563 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751329AbZFCTu3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 15:50:29 -0400
+Date: Wed, 3 Jun 2009 15:50:17 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: "Larry H." <research@subreption.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, pageexec@freemail.hu
+Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change
+ ZERO_SIZE_PTR to point at unmapped space)
+In-Reply-To: <alpine.LFD.2.01.0906031222550.4880@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0906031547090.20254@gentwo.org>
+References: <20090530230022.GO6535@oblivion.subreption.com> <alpine.LFD.2.01.0905301902010.3435@localhost.localdomain> <20090531022158.GA9033@oblivion.subreption.com> <alpine.DEB.1.10.0906021130410.23962@gentwo.org> <20090602203405.GC6701@oblivion.subreption.com>
+ <alpine.DEB.1.10.0906031047390.15621@gentwo.org> <20090603182949.5328d411@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0906031032390.4880@localhost.localdomain> <20090603180037.GB18561@oblivion.subreption.com> <alpine.LFD.2.01.0906031109150.4880@localhost.localdomain>
+ <20090603183939.GC18561@oblivion.subreption.com> <alpine.LFD.2.01.0906031142390.4880@localhost.localdomain> <alpine.LFD.2.01.0906031145460.4880@localhost.localdomain> <alpine.DEB.1.10.0906031458250.9269@gentwo.org>
+ <alpine.LFD.2.01.0906031222550.4880@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 03 Jun 2009 19:48:33 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  18374ab76e3ec1cf1b0ca5a8d08e35cfc5d01669
-Gitweb:     http://git.kernel.org/tip/18374ab76e3ec1cf1b0ca5a8d08e35cfc5d01669
-Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Wed, 3 Jun 2009 14:49:21 -0300
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 3 Jun 2009 21:46:59 +0200
+On Wed, 3 Jun 2009, Linus Torvalds wrote:
 
-perf_counter tools: Fix off-by-one bug in symbol__new
+> But the better option really is to just copy the cap_file_mmap() rule to
+> the !SECURITY rule, and make !SECURITY really mean the same as "always do
+> default security", the way it's documented.
 
-The end is really (start + len - 1). Noticed when synthesizing
-the PLT symbols, that are small (16 bytes), and hot on the
-start RIP.
-
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <20090603174921.GG7805@ghostprotocols.net>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Na, I really like the ability to just avoid having to deal with this
+"security" stuff (CONFIG_SECURITY). And core security checks sidelined in
+some security model config thingy? I'd prefer to see these checks right
+there in core code while working on them.
 
 
----
- Documentation/perf_counter/util/symbol.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/perf_counter/util/symbol.c b/Documentation/perf_counter/util/symbol.c
-index d52a1ae..35ee6de 100644
---- a/Documentation/perf_counter/util/symbol.c
-+++ b/Documentation/perf_counter/util/symbol.c
-@@ -19,7 +19,7 @@ static struct symbol *symbol__new(uint64_t start, uint64_t len,
- 			self = ((void *)self) + priv_size;
- 		}
- 		self->start = start;
--		self->end   = start + len;
-+		self->end   = start + len - 1;
- 		memcpy(self->name, name, namelen);
- 	}
- 
