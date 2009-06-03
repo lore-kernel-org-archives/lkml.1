@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759291AbZFCP32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759396AbZFCP3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759291AbZFCP32 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 11:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756468AbZFCP3T
+	id S1759396AbZFCP3w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 11:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757405AbZFCP3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 11:29:19 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:39794 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755202AbZFCP3R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 11:29:17 -0400
-Subject: Re: linux-next: Tree for June 3 (rfkill)
-From: Johannes Berg <johannes@sipsolutions.net>
+	Wed, 3 Jun 2009 11:29:44 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57401 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757761AbZFCP3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 11:29:43 -0400
+Date: Wed, 3 Jun 2009 08:25:58 -0700
+From: Greg KH <gregkh@suse.de>
 To: Randy Dunlap <randy.dunlap@oracle.com>
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-In-Reply-To: <4A269539.8020607@oracle.com>
-References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au>
-	 <4A269539.8020607@oracle.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-QkqTClLmTdUR2xiL+kR+"
-Date: Wed, 03 Jun 2009 17:29:10 +0200
-Message-Id: <1244042950.4862.10.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 3 (staging)
+Message-ID: <20090603152558.GA25725@suse.de>
+References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au> <4A2695C1.2060104@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A2695C1.2060104@oracle.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-QkqTClLmTdUR2xiL+kR+
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2009-06-03 at 08:22 -0700, Randy Dunlap wrote:
+On Wed, Jun 03, 2009 at 08:24:49AM -0700, Randy Dunlap wrote:
 > Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Looks like a real rush since -rc7 ...
+> 
+> 
+> drivers/staging/comedi/drivers/adq12b.c:328: error: implicit declaration of function 'udelay'
+> 
+> 
+> drivers/staging/mrst_nand/ffsport.c:360:error: 'struct request' has no member named 'sector'
+> drivers/staging/mrst_nand/ffsport.c:376:error: 'struct request' has no member named 'sector'
+> drivers/staging/mrst_nand/ffsport.c:376:error: 'struct request' has no member named 'current_nr_sectors'
+> drivers/staging/mrst_nand/ffsport.c:380:error: 'struct request' has no member named 'sector'
+> drivers/staging/mrst_nand/ffsport.c:381:error: 'struct request' has no member named 'current_nr_sectors'
+> drivers/staging/mrst_nand/ffsport.c:392:error: 'struct request' has no member named 'current_nr_sectors'
+> drivers/staging/mrst_nand/ffsport.c:499:error: implicit declaration of function 'elv_next_request'
+> drivers/staging/mrst_nand/ffsport.c:517:error: implicit declaration of function 'end_request'
+> drivers/staging/mrst_nand/ffsport.c:738:error: implicit declaration of function 'blk_queue_hardsect_size'
 
-> CFG80211=3Dy
-> MAC80211=3Dy
-> RFKILL=3Dm
->=20
-> net/built-in.o: In function `cfg80211_netdev_notifier_call':
-> core.c:(.text+0xa678b): undefined reference to `rfkill_blocked'
-> net/built-in.o: In function `cfg80211_dev_free':
+Can I get your .config for this?  It works here with a "default" one.
 
-Hrm. I thought
+thanks,
 
-config CFG80211
-	tristate "Improved wireless configuration API"
-	depends on RFKILL || !RFKILL
-
-would avoid that. Why doesn't it?
-
-johannes
-
---=-QkqTClLmTdUR2xiL+kR+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKJpbCAAoJEODzc/N7+Qma29UP/31xLzunD84G90EkhPiI2twv
-+fhSiLtA/o30bghV3NRKAuq5f+SmoCJzrPvl6uUzZ8RTLrHxKp2Ur5MC2bOqgWm+
-7v7j6uBv/LuHMuNdcXmGQWvzQQbSIckWzeuo2oizaMjxnxB7+FCX4titM34ileFD
-S5HYEEyP9/Y6Tfdmj6Nkvt+9JhXx2U3C5P4jkfzXs7nVZnODoEjkgQxavWQy341V
-bVQdfnCPf8RgbYpopUkb1ovZc8DkUBbkLku8w+eRtSmm0D/pMO9xSla4/lqCMhqU
-f5cc7wL5MnZPvx13hjuP13P+vxC5aKXs+XdH0c1bpasxQ5wWtwmsoF56NJ7Y/mbX
-G19KxOMfANWe/Xer7Hk+tkxQx3Q7BrRPUENFgjSbaBhQoaCuLfET+3CCRx7JS823
-3OplGgu6YLuzvPE/OjFI8yL9pe77251U8y76QP5cmso/IWqaihA/vdELfO69x8S9
-1wr/Me0jTn2zF+/q6Lhs4VE+fB3MRZ+xHt+ue61c9zqKPQmZk6SGENpf4IIxtbA2
-RSJoEhbdMTCRbLcSI9WjZWamCJIuTvwNcGBGcj7BvulTlc4W5NcoXLHpamvlFk3n
-cEFLnwGCv6jgDerv2+2Bv6mxyuch94xZWuGYoZ6mv5QCGjo9PZFOjvSNHn+gaxc3
-j0/RtkqHYxVrxGPTqf8v
-=yF4V
------END PGP SIGNATURE-----
-
---=-QkqTClLmTdUR2xiL+kR+--
-
+greg k-h
