@@ -1,81 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZFCNXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbZFCNaD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbZFCNXS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 09:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbZFCNXL
+	id S1756885AbZFCNaD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 09:30:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZFCN3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 09:23:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47379 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751351AbZFCNXK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 09:23:10 -0400
-Date: Wed, 3 Jun 2009 09:23:11 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Steven Whitehouse <swhiteho@redhat.com>
-cc: Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       cluster-devel@redhat.com, Christoph Hellwig <hch@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: trace: fix multiple use of __print_flags and __print_symbolic
-In-Reply-To: <1244033875.29604.599.camel@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.0906030917010.14994@gandalf.stny.rr.com>
-References: <1244019900.29604.588.camel@localhost.localdomain>  <4A26474C.1000900@cn.fujitsu.com> <1244033875.29604.599.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 3 Jun 2009 09:29:54 -0400
+Received: from cmpxchg.org ([85.214.51.133]:50318 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752836AbZFCN3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 09:29:53 -0400
+Date: Wed, 3 Jun 2009 15:27:52 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch][v2] swap: virtual swap readahead
+Message-ID: <20090603132751.GA1813@cmpxchg.org>
+References: <20090602223738.GA15475@cmpxchg.org> <20090602233457.GY1065@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090602233457.GY1065@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 3 Jun 2009, Steven Whitehouse wrote:
-
-> Hi
+On Wed, Jun 03, 2009 at 01:34:57AM +0200, Andi Kleen wrote:
+> On Wed, Jun 03, 2009 at 12:37:39AM +0200, Johannes Weiner wrote:
+> > + *
+> > + * Caller must hold down_read on the vma->vm_mm if vma is not NULL.
+> > + */
+> > +struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
+> > +			struct vm_area_struct *vma, unsigned long addr)
+> > +{
+> > +	unsigned long start, pos, end;
+> > +	unsigned long pmin, pmax;
+> > +	int cluster, window;
+> > +
+> > +	if (!vma || !vma->vm_mm)	/* XXX: shmem case */
+> > +		return swapin_readahead_phys(entry, gfp_mask, vma, addr);
+> > +
+> > +	cluster = 1 << page_cluster;
+> > +	window = cluster << PAGE_SHIFT;
+> > +
+> > +	/* Physical range to read from */
+> > +	pmin = swp_offset(entry) & ~(cluster - 1);
 > 
-> On Wed, 2009-06-03 at 17:50 +0800, Li Zefan wrote:
-> > Steven Whitehouse wrote:
-> > > When using multiple calls to __print_symbolic and __print_flags in
-> > > the same tracer, I noticed that the output was incorrect. I think
-> > > the following patch is the correct fix (it works for me) but please
-> > > check it carefully since I'm not that familiar with this code,
-> > > and I may well have made a mistake somewhere.
-> > > 
-> > 
-> > I don't see there's bug in __print_symbolic() or __print_flags():
-> > 
-> > enum print_line_t
-> > ftrace_raw_output_##call(struct trace_iterator *iter, int flags)
-> > {
-> > 	...
-> > 	p = &get_cpu_var(ftrace_event_seq);
-> > 	/* here we call ftrace_print_flags_seq(p, ...) */
-> > 	ret = trace_seq_printf(s, #call ": " print);
-> > 	put_cpu();
-> > 	...
-> > }
-> > 
-> > ftrace_event_seq is percpu data, and here is used with preempt-disabled,
-> > so there shouldn't be problem of concurrent accessing.
-> > 
-> I've double checked this now, and I'm seeing results like:
+> Is cluster really properly sign extended on 64bit? Looks a little
+> dubious. long from the start would be safer
+
+Fixed.
+
+> > +	/* Virtual range to read from */
+> > +	start = addr & ~(window - 1);
 > 
+> Same.
+
+Fixed.
+
+> > +		pgd = pgd_offset(vma->vm_mm, pos);
+> > +		if (!pgd_present(*pgd))
+> > +			continue;
+> > +		pud = pud_offset(pgd, pos);
+> > +		if (!pud_present(*pud))
+> > +			continue;
+> > +		pmd = pmd_offset(pud, pos);
+> > +		if (!pmd_present(*pmd))
+> > +			continue;
+> > +		pte = pte_offset_map_lock(vma->vm_mm, pmd, pos, &ptl);
 > 
-> glock_workqueue-2482  [001]   809.956985: gfs2_glock_state_change: 8.7 glock 2:33119 state EX => EX tgt:EX dmt:EX flags:EX
-> glock_workqueue-2482  [001]   809.957155: gfs2_glock_state_change: 8.7 glock 2:33119 state NL => NL tgt:NL dmt:NL flags:NL
-> glock_workqueue-2482  [001]   809.959473: gfs2_glock_state_change: 8.7 glock 1:2 state NL => NL tgt:NL dmt:NL flags:NL
-> glock_workqueue-2482  [001]   809.959556: gfs2_glock_state_change: 8.7 glock 2:33119 state EX => EX tgt:EX dmt:EX flags:EX
-> glock_workqueue-2482  [001]   810.008773: gfs2_glock_state_change: 8.7 glock 1:0 state EX => EX tgt:EX dmt:EX flags:EX
+> You could be more efficient here by using the standard mm/* nested loop
+> pattern that avoids relookup of everything in each iteration. I suppose
+> it would mainly make a difference with 32bit highpte where mapping a pte
+> can be somewhat costly. And you would take less locks this way.
+
+I ran into weird problems here.  The above version is actually faster
+in the benchmarks than writing a nested level walker or using
+walk_page_range().  Still digging but it can take some time.  Busy
+week :(
+
+> > +		page = read_swap_cache_async(swp, gfp_mask, vma, pos);
+> > +		if (!page)
+> > +			continue;
 > 
+> That's out of memory, break would be better here because prefetch
+> while oom is usually harmful.
+
+It can also happen due to a race with something releasing the swap
+slot (i.e. swap_duplicate() fails).  But the old version did a break
+too and this patch shouldn't do it differently.  Fixed.
+
+> > +		page_cache_release(page);
+> > +	}
+> > +	lru_add_drain();	/* Push any new pages onto the LRU now */
+> > +	return read_swap_cache_async(entry, gfp_mask, vma, addr);
 > 
-> without the patch, which is clearly wrong,
+> Shouldn't that page be already handled in the loop earlier? Why doing that
+> again? It would be better to remember it from there.
 
-Ah, I did not account for having multiple instances of print_symbol of 
-print_flags in a single print. Your patch is partialy correct. Add a:
+When doing the nested page table level walker, communicating even more
+state back and forth gets pretty ugly.  I see what I can do.
 
-	trace_seq_init(p);
+Thanks for your input Andi,
 
-after the "p = &get_cpu_var(ftrace_event_seq);".
-
--- Steve
-
+	Hannes
