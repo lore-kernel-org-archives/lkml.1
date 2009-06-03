@@ -1,91 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbZFCSrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbZFCSsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbZFCSrg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 14:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbZFCSqr
+	id S1755389AbZFCSsz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 14:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755403AbZFCSrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 14:46:47 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37810 "EHLO
+	Wed, 3 Jun 2009 14:47:04 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:37849 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754732AbZFCSqq (ORCPT
+	with ESMTP id S1755275AbZFCSrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 14:46:46 -0400
+	Wed, 3 Jun 2009 14:47:03 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20090603846.816684333@firstfloor.org>
 In-Reply-To: <20090603846.816684333@firstfloor.org>
-To: akpm@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, fengguang.wu@intel.com
-Subject: [PATCH] [4/16] HWPOISON: Add new SIGBUS error codes for hardware poison signals
-Message-Id: <20090603184636.9F9DE1D0286@basil.firstfloor.org>
-Date: Wed,  3 Jun 2009 20:46:36 +0200 (CEST)
+To: fengguang.wu@intel.com, akpm@linux-foundation.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com
+Subject: [PATCH] [11/16] HWPOISON: check and isolate corrupted free pages v2
+Message-Id: <20090603184645.68FA21D0286@basil.firstfloor.org>
+Date: Wed,  3 Jun 2009 20:46:45 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add new SIGBUS codes for reporting machine checks as signals. When 
-the hardware detects an uncorrected ECC error it can trigger these
-signals.
+From: Wu Fengguang <fengguang.wu@intel.com>
 
-This is needed for telling KVM's qemu about machine checks that happen to
-guests, so that it can inject them, but might be also useful for other programs.
-I find it useful in my test programs.
+If memory corruption hits the free buddy pages, we can safely ignore them.
+No one will access them until page allocation time, then prep_new_page()
+will automatically check and isolate PG_hwpoison page for us (for 0-order
+allocation).
 
-This patch merely defines the new types.
+This patch expands prep_new_page() to check every component page in a high
+order page allocation, in order to completely stop PG_hwpoison pages from
+being recirculated.
 
-- Define two new si_codes for SIGBUS.  BUS_MCEERR_AO and BUS_MCEERR_AR
-* BUS_MCEERR_AO is for "Action Optional" machine checks, which means that some
-corruption has been detected in the background, but nothing has been consumed
-so far. The program can ignore those if it wants (but most programs would
-already get killed)
-* BUS_MCEERR_AR is for "Action Required" machine checks. This happens
-when corrupted data is consumed or the application ran into an area
-which has been known to be corrupted earlier. These require immediate
-action and cannot just returned to. Most programs would kill themselves.
-- They report the address of the corruption in the user address space
-in si_addr.
-- Define a new si_addr_lsb field that reports the extent of the corruption
-to user space. That's currently always a (small) page. The user application
-cannot tell where in this page the corruption happened.
+Note that the common case -- only allocating a single page, doesn't
+do any more work than before. Allocating > order 0 does a bit more work,
+but that's relatively uncommon.
 
-AK: I plan to write a man page update before anyone asks.
+This simple implementation may drop some innocent neighbor pages, hopefully
+it is not a big problem because the event should be rare enough.
 
+This patch adds some runtime costs to high order page users.
+
+[AK: Improved description]
+
+v2: Andi Kleen:
+Port to -mm code
+Move check into separate function.
+Don't dump stack in bad_pages for hwpoisoned pages.
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/asm-generic/siginfo.h |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ mm/page_alloc.c |   20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
-Index: linux/include/asm-generic/siginfo.h
+Index: linux/mm/page_alloc.c
 ===================================================================
---- linux.orig/include/asm-generic/siginfo.h	2009-06-03 19:36:22.000000000 +0200
-+++ linux/include/asm-generic/siginfo.h	2009-06-03 19:36:23.000000000 +0200
-@@ -82,6 +82,7 @@
- #ifdef __ARCH_SI_TRAPNO
- 			int _trapno;	/* TRAP # which caused the signal */
- #endif
-+			short _addr_lsb; /* LSB of the reported address */
- 		} _sigfault;
+--- linux.orig/mm/page_alloc.c	2009-06-03 19:37:39.000000000 +0200
++++ linux/mm/page_alloc.c	2009-06-03 20:13:43.000000000 +0200
+@@ -237,6 +237,12 @@
+ 	static unsigned long nr_shown;
+ 	static unsigned long nr_unshown;
  
- 		/* SIGPOLL */
-@@ -112,6 +113,7 @@
- #ifdef __ARCH_SI_TRAPNO
- #define si_trapno	_sifields._sigfault._trapno
- #endif
-+#define si_addr_lsb	_sifields._sigfault._addr_lsb
- #define si_band		_sifields._sigpoll._band
- #define si_fd		_sifields._sigpoll._fd
- 
-@@ -192,7 +194,11 @@
- #define BUS_ADRALN	(__SI_FAULT|1)	/* invalid address alignment */
- #define BUS_ADRERR	(__SI_FAULT|2)	/* non-existant physical address */
- #define BUS_OBJERR	(__SI_FAULT|3)	/* object specific hardware error */
--#define NSIGBUS		3
-+/* hardware memory error consumed on a machine check: action required */
-+#define BUS_MCEERR_AR	(__SI_FAULT|4)
-+/* hardware memory error detected in process but not consumed: action optional*/
-+#define BUS_MCEERR_AO	(__SI_FAULT|5)
-+#define NSIGBUS		5
- 
++	/* Don't complain about poisoned pages */
++	if (PageHWPoison(page)) {
++		__ClearPageBuddy(page);
++		return;
++	}
++
+ 	/*
+ 	 * Allow a burst of 60 reports, then keep quiet for that minute;
+ 	 * or allow a steady drip of one report per second.
+@@ -650,7 +656,7 @@
  /*
-  * SIGTRAP si_codes
+  * This page is about to be returned from the page allocator
+  */
+-static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
++static inline int check_new_page(struct page *page)
+ {
+ 	if (unlikely(page_mapcount(page) |
+ 		(page->mapping != NULL)  |
+@@ -659,6 +665,18 @@
+ 		bad_page(page);
+ 		return 1;
+ 	}
++	return 0;
++}
++
++static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
++{
++	int i;
++
++	for (i = 0; i < (1 << order); i++) {
++		struct page *p = page + i;
++		if (unlikely(check_new_page(p)))
++			return 1;
++	}
+ 
+ 	set_page_private(page, 0);
+ 	set_page_refcounted(page);
