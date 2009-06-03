@@ -1,86 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZFCJjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbZFCJkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756730AbZFCJjo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 05:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZFCJja
+	id S1756098AbZFCJkt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 05:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbZFCJkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 05:39:30 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:49576 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751841AbZFCJj3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 05:39:29 -0400
-Subject: Re: [PATCH 4/6] net: add NL802154 interface for configuration of
- 802.15.4 devices
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, davem@davemloft.net,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Sergey Lapin <slapin@ossfans.org>
-In-Reply-To: <1244021629-18409-5-git-send-email-dbaryshkov@gmail.com>
-References: <1244021629-18409-1-git-send-email-dbaryshkov@gmail.com>
-	 <1244021629-18409-2-git-send-email-dbaryshkov@gmail.com>
-	 <1244021629-18409-3-git-send-email-dbaryshkov@gmail.com>
-	 <1244021629-18409-4-git-send-email-dbaryshkov@gmail.com>
-	 <1244021629-18409-5-git-send-email-dbaryshkov@gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-f1uVj3P7zhwS81FSTB85"
-Date: Wed, 03 Jun 2009 11:39:24 +0200
-Message-Id: <1244021964.10665.5.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+	Wed, 3 Jun 2009 05:40:41 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:40308 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751553AbZFCJkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 05:40:41 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18982.17684.138182.954599@cargo.ozlabs.ibm.com>
+Date: Wed, 3 Jun 2009 19:40:36 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] perf_counter: powerpc: Fix race causing "oops trying to read PMC0" errors
+In-Reply-To: <18982.17586.666132.90983@cargo.ozlabs.ibm.com>
+References: <18982.17586.666132.90983@cargo.ozlabs.ibm.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When using interrupting counters and limited (non-interrupting) counters
+at the same time, it's possible that we get an interrupt in write_mmcr0()
+after writing MMCR0 but before we have set up the counters using limited
+PMCs.  What happens then is that we get into perf_counter_interrupt()
+with counter->hw.idx = 0 for the limited counters, leading to the "oops
+trying to read PMC0" error message being printed.
 
---=-f1uVj3P7zhwS81FSTB85
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This fixes the problem by making perf_counter_interrupt() robust against
+counter->hw.idx being zero (the counter is just ignored in that case)
+and also by changing write_mmcr0() to write MMCR0 initially with the
+counter overflow interrupt enable bits masked (set to 0).  If the MMCR0
+value requested by the caller has either of those bits set, we write
+MMCR0 again with the requested value of those bits after setting up the
+limited counters properly.
 
-On Wed, 2009-06-03 at 13:33 +0400, Dmitry Eremin-Solenikov wrote:
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/kernel/perf_counter.c |   16 ++++++++++++++--
+ 1 files changed, 14 insertions(+), 2 deletions(-)
 
-> +enum {
-> +	__IEEE802154_COMMAND_INVALID,
-> +
-> +	IEEE802154_ASSOCIATE_REQ,
-> +	IEEE802154_ASSOCIATE_CONF,
-> +	IEEE802154_DISASSOCIATE_REQ,
-> +	IEEE802154_DISASSOCIATE_CONF,
-> +	IEEE802154_GET_REQ,
-> +	IEEE802154_GET_CONF,
-> +/* 	IEEE802154_GTS_REQ, */
-> +/* 	IEEE802154_GTS_CONF, */
-> +	IEEE802154_RESET_REQ,
-> +	IEEE802154_RESET_CONF,
-> +/* 	IEEE802154_RX_ENABLE_REQ, */
-> +/* 	IEEE802154_RX_ENABLE_CONF, */
-
-This is a recipe for disaster. Somebody will come along and uncomment
-things. Why this is bad, I leave as an exercise for the reader.
-
-johannes
-
---=-f1uVj3P7zhwS81FSTB85
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKJkTJAAoJEODzc/N7+QmacIAP/j4pABnzbTeH28988f091okj
-X/woSZkYWYMpopmE/TAHXuQrsPDgt3MGzutTnXb2ctVZzLQb+iN5JpRtT2VE45ba
-Bz7sHuWLPw1GJZsS5bbETgGoho7NCZj/3fWHrdppgKoOI8qbIdIH3iEnjeiPTR8S
-/OIoDzASLfJ/5JunYZCpbfFrBn9lc0tKaus/LISO8r+rPUoL9dBuTzjqGCOuwMek
-T3yTEs5eTyIxyUMmDLkYV6BfrGjubGiEPLM/6CAh99PkC/MNLo9WQANi8Kl4mmlo
-dXb1Cq/mydhhSGHTdzIZ2UWTCY/BQCCh0lFBrTqvEfYb4NdkhHhTAEW91g0VeY8X
-+579VKNr+kCGpej0mSGKsJ127YJIM5ueSixAWLUiuinIcX+QrIFKi2nqdv7eYI2K
-7Fmi4/y3jzZiPe2cDGvCzBdwZZ98G1CzzrCQUgOqQ8HZHNQHYrWtL1eY2E9639aG
-H/cBAED9qTGyKew+aUbXFcT1+zVd0sGZmTbZoQMz0MiaGa0E4NHHz+ofvDfXJoY+
-broEJ3LH/3OcF4Z2WTx+YuNXMJKDZyrpadnrHh/7se8th/8DaHZWb8Y7EyujYI2i
-dHTX/DphX201FijyiNFXqfWxVqMAaSFovmpJ3rrE4NlihAGsSmE8GrqVMl3nDMvm
-pwdl74AZxvhugdrhM3Nh
-=uRcT
------END PGP SIGNATURE-----
-
---=-f1uVj3P7zhwS81FSTB85--
+diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
+index ea54686..4cc4ac5 100644
+--- a/arch/powerpc/kernel/perf_counter.c
++++ b/arch/powerpc/kernel/perf_counter.c
+@@ -372,16 +372,28 @@ static void write_mmcr0(struct cpu_hw_counters *cpuhw, unsigned long mmcr0)
+ 
+ 	/*
+ 	 * Write MMCR0, then read PMC5 and PMC6 immediately.
++	 * To ensure we don't get a performance monitor interrupt
++	 * between writing MMCR0 and freezing/thawing the limited
++	 * counters, we first write MMCR0 with the counter overflow
++	 * interrupt enable bits turned off.
+ 	 */
+ 	asm volatile("mtspr %3,%2; mfspr %0,%4; mfspr %1,%5"
+ 		     : "=&r" (pmc5), "=&r" (pmc6)
+-		     : "r" (mmcr0), "i" (SPRN_MMCR0),
++		     : "r" (mmcr0 & ~(MMCR0_PMC1CE | MMCR0_PMCjCE)),
++		       "i" (SPRN_MMCR0),
+ 		       "i" (SPRN_PMC5), "i" (SPRN_PMC6));
+ 
+ 	if (mmcr0 & MMCR0_FC)
+ 		freeze_limited_counters(cpuhw, pmc5, pmc6);
+ 	else
+ 		thaw_limited_counters(cpuhw, pmc5, pmc6);
++
++	/*
++	 * Write the full MMCR0 including the counter overflow interrupt
++	 * enable bits, if necessary.
++	 */
++	if (mmcr0 & (MMCR0_PMC1CE | MMCR0_PMCjCE))
++		mtspr(SPRN_MMCR0, mmcr0);
+ }
+ 
+ /*
+@@ -1108,7 +1120,7 @@ static void perf_counter_interrupt(struct pt_regs *regs)
+ 
+ 	for (i = 0; i < cpuhw->n_counters; ++i) {
+ 		counter = cpuhw->counter[i];
+-		if (is_limited_pmc(counter->hw.idx))
++		if (!counter->hw.idx || is_limited_pmc(counter->hw.idx))
+ 			continue;
+ 		val = read_pmc(counter->hw.idx);
+ 		if ((int)val < 0) {
+-- 
+1.6.0.4
 
