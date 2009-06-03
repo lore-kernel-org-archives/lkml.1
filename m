@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757838AbZFCPLC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbZFCPN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757838AbZFCPLC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 11:11:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757964AbZFCPKw
+	id S1757841AbZFCPN4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 11:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbZFCPNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 11:10:52 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:54692 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759091AbZFCPKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 11:10:51 -0400
-Message-ID: <4A269251.8090706@atmel.com>
-Date: Wed, 03 Jun 2009 17:10:09 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 3 Jun 2009 11:13:48 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:48699 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751826AbZFCPNr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 11:13:47 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: "linux-fsdevel\@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "Hunter Adrian \(Nokia-D\/Helsinki\)" <adrian.hunter@nokia.com>,
+       "Bityutskiy Artem \(Nokia-D\/Helsinki\)" <Artem.Bityutskiy@nokia.com>
+Subject: Re: [PATCH 0/5] FAT errors, user space notifications
+References: <1243866494-31011-1-git-send-email-ext-denis.2.karpov@nokia.com>
+	<87bpp6nhet.fsf@devron.myhome.or.jp>
+	<20090603113617.GA9917@smart.research.nokia.com>
+Date: Thu, 04 Jun 2009 00:13:45 +0900
+In-Reply-To: <20090603113617.GA9917@smart.research.nokia.com> (Denis Karpov's
+	message of "Wed, 3 Jun 2009 14:36:17 +0300")
+Message-ID: <87oct5l592.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.93 (gnu/linux)
 MIME-Version: 1.0
-To: Rob Emanuele <poorarm@shoreis.com>
-CC: Joey Oravec <joravec@drewtech.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [PATCH] New AT91 MCI Driver that supports both MCI slots used
- at 	the same time
-References: <c8284b5b0905281440hd2e4993re3d0d8c590713fa0@mail.gmail.com>	 <4A1FFEFB.6050104@drewtech.com> <c8284b5b0906020953o7c112b4hc264b5520cc3aed1@mail.gmail.com>
-In-Reply-To: <c8284b5b0906020953o7c112b4hc264b5520cc3aed1@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Emanuele :
-> Greetings Joey,
+Denis Karpov <ext-denis.2.karpov@nokia.com> writes:
 
->>> +       if (host->need_reset) {
->>> +               at91_mci_write(host, AT91_MCI_CR, AT91_MCI_SWRST);
->>> +               at91_mci_write(host, AT91_MCI_CR, AT91_MCI_MCIEN);
->>> +               at91_mci_write(host, AT91_MCI_MR, host->mode_reg);
->>> +               host->need_reset = false;
->>> +       }
->>>
->> In my experience some at91s need a reset after every single command,
->> otherwise bad things happen. I think the need_reset logic is too
->> conservative in this driver.
-> 
-> I'll try this and probably make it an option to always reset before
-> each command.
+> I realise that, but in this particular case I deal with non-critical data 
+> on a large FAT partition and can probably afford certain risk of damaging
+> the data. What I can't afford is to spend several minutes fsck'ing huge FAT
+> partition on slow SD/MMC media during bootup.
+>
+> So I choose to optionally receive notification of errors encountered 
+> during 'run time' and act upon them.
+>
+> Otherwise, nothing stops you from doing proper fsck before mounting.
 
-This systematic reset was remove by Haavard with this comment:
-"Also, don't reset the controller between each transfer. That was an
-attempt to work around earlier bugs, and it never really worked very
-well."
+I think fsckless is to add the reliability to fs driver (logging,
+softupdate, etc.). Yes, it's not easy, and it needs time. Anyway, I
+actually thought about softupdate (and some others) before, I think it's
+_not_ nothing.
 
-http://lkml.org/lkml/2008/10/5/152
+> IMO, receivng notification of errors is benefitial in any case:
+> together with the 1st patch above it gives full flexibility to user space
+> to implement fs 'run-time' errors handling policy (at least for FAT,EXT2),
+> e.g.:
+>
+> - do nothing: remount r/o on errors, don't monitor kernel notifications (old/default
+>  behavior)
+> - remount-ro on errors, get notified; unmount partition, fsck, mount
+>   partition back r/w;
+> - ignore errors (continue), get notified: unmount the partition later at
+> suitable time, fsck, mount back r/w
 
-This reset remains in at91_mci and it does improve things on this driver
-but I do not know it a better written driver can prevent from doing this...
+If this is monitoring interface, I guess it should be more generic. And
+I guess it will tell what happened in kernel, not fs_clean. (There is no
+guarantee about fs state)
 
->>> +               /*
->>> +                * WRPROOF and RDPROOF prevent overruns/underruns by
->>> +                * stopping the clock when the FIFO is full/empty.
->>> +                * This state is not expected to last for long.
->>> +                */
->>> +               host->mode_reg = (AT91_MCI_CLKDIV & clkdiv) |
->>> AT91_MCI_WRPROOF
->>> +                                       | AT91_MCI_RDPROOF;
->>>
->> These registers are not in all at91 chips especially the at91sam9261.
-> 
-> I'll look into this but will not be able to test every case.
+If not, some errors can not be detected by fs driver. User may know some
+run-time errors by fs_clean, but some run-time errors is not. So, user
+can not trust fs_clean.
 
-Only at91rm9200 & at91sam9261/9261s are unable to setup these
-functionalities.
-
-Best regards,
+Thanks.
 -- 
-Nicolas Ferre
-
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
