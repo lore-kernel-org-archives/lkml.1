@@ -1,95 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbZFCT6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbZFCT61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755470AbZFCT6P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 15:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbZFCT6A
+	id S1755844AbZFCT61 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 15:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755163AbZFCT6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 15:58:00 -0400
-Received: from mail.tmr.com ([64.65.253.246]:52614 "EHLO partygirl.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753450AbZFCT6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 15:58:00 -0400
-Message-ID: <4A26D3D8.6080002@tmr.com>
-Date: Wed, 03 Jun 2009 15:49:44 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 pango-text SeaMonkey/1.1.16
+	Wed, 3 Jun 2009 15:58:06 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44772 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754566AbZFCT6F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 15:58:05 -0400
+Date: Wed, 3 Jun 2009 21:58:06 +0200
+From: Jan Kara <jack@suse.cz>
+To: Diego Calleja <diegocg@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Performance regressions in 2.6.30-rc7?
+Message-ID: <20090603195806.GA9571@atrey.karlin.mff.cuni.cz>
+References: <200905282249.28592.diegocg@gmail.com> <20090529210718.bef7a9c1.akpm@linux-foundation.org> <200905301851.47708.diegocg@gmail.com>
 MIME-Version: 1.0
-Newsgroups: gmane.comp.emulators.xen.devel,gmane.comp.emulators.xen.user
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: George Dunlap <george.dunlap@eu.citrix.com>,
-       David Miller <davem@davemloft.net>, "jeremy@goop.org" <jeremy@goop.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       Dan Magenheimer <dan.magenheimer@oracle.com>,
-       "avi@redhat.com" <avi@redhat.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       "xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
-       ksrinivasan <ksrinivasan@novell.com>,
-       "EAnderson@novell.com" <EAnderson@novell.com>,
-       "wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
-       Stephen Spector <stephen.spector@citrix.com>, jens.axboe@oracle.com
-Subject: Re: Xen is a feature
-References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org> <20090528.210559.137121893.davem@davemloft.net> <4A1FCE8E.2060604@eu.citrix.com> <alpine.LFD.2.00.0905311607560.3379@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0905311607560.3379@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200905301851.47708.diegocg@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Fri, 29 May 2009, George Dunlap wrote:
->> David Miller wrote:
->>> I don't see Ingo's comments, whether I agree with them or not, as
->>> an implication of Xen being niche.  Rather I see his comments as
->>> an opposition to how Xen is implemented.
->>>   
->> It's in his definition of "improving Linux".  Jeremy is saying that allowing
->> Linux to run as dom0 *is* improving Linux.  The lack of dom0 support is at
->> this moment making life more difficult for a huge number of Linux users who
+> On Sábado 30 Mayo 2009 06:07:18 Andrew Morton escribió:
+> > Those regressions are huge.  They appear to be on compute-intensive
+> > workloads too.
+> > 
+> > I wonder if some expensive debugging option turned itself on or
+> > something silly like that.
 > 
-> Exactly that's the point. Adding dom0 makes life easier for a group of
-> users who decided to use Xen some time ago, but what Ingo wants is
-> technical improvement of the kernel.
+> They use the vanilla kernels that ubuntu ship with their own configs,
+> so they shouldn't be using any expensive debugging option.
 > 
-> There are many features which have been wildly used in the distro
-> world where developers tried to push support into the kernel with the
-> same line of arguments.
+> I've run myself two of those tests (I've not tested gnupg as I'm
+> allergic to it). I can't reproduce any regression with 7zip, I'm however
+> able to reproduce the regression in tiobench write latency, using 32
+> threads and 64 MB block size (--threads 32 --block 65536). I used ext4
+> (phoronix uses ext3).
 > 
-> The kernel policy always was and still is to accept only those
-> features which have a technical benefit to the code base.
 > 
-> I'm just picking a few examples:
+> Random Writes
+>                               File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
+> Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
+> ---------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
+> 2.6.29                        2000  65536  32   24.16 107.2%     0.051        0.21   0.00000  0.00000    23
 > 
-> Aside of the paravirt, which seems to expand through arch/x86 like a
-> hydra, the new patches sprinkle "if (xen_...)" all over the
-> place. These extra xen dependencies are no improvement, they are a
-> royal pain in the ... They are sticky once they got merged simply
-> because the hypervisor relies on them and we need to provide
-> compatibility for a long time.
-> 
-Wait, let's not classify something as "no improvement" when you mean "I don't 
-need it." The fact that processors without hardware VM can run virtual machines 
-is a non-trivial benefit for many users, and in future embedded applications, 
-where both hvm and 64 bit capability may not justify their power requirements. 
-And the improved PV performance over full virtualization is an improvement, even 
-though it certainly isn't night and day.
+> Random Writes
+>                               File  Blk   Num                   Avg      Maximum      Lat%     Lat%    CPU
+> Identifier                    Size  Size  Thr   Rate  (CPU%)  Latency    Latency      >2s      >10s    Eff
+> ---------------------------- ------ ----- ---  ------ ------ --------- -----------  -------- -------- -----
+> 2.6.30-rc7-00149-g3218911     2000  65536  32   23.06 178.4%     0.711      164.72   0.00000  0.00000    13
+  Hmm, also the CPU utilization seems to be much higher with comparable
+(in fact slightly lower) throughput. Would it be possible to get
+oprofile from the run on 2.6.30 and 2.6.29?
 
-Having replace some systems with new hardware just so I could use KVM does not 
-make me forget that I used xen for some time, and that PV is still a savings, 
-even with the latest hardware.
-
-Let's stick to technical issues, and not deny that there are a number of users 
-who really will have expanded capability. The technical points are valid, but as 
-a former and probable future xen (CentOS) user, so are the benefits.
-
+								Honza
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
