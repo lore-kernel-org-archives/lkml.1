@@ -1,98 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZFCGeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbZFCGfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbZFCGeh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 02:34:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756499AbZFCGeW
+	id S1756662AbZFCGfh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 02:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbZFCGfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 02:34:22 -0400
-Received: from claw.goop.org ([74.207.240.146]:50680 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756455AbZFCGeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 02:34:21 -0400
-Message-ID: <4A26196B.10402@goop.org>
-Date: Wed, 03 Jun 2009 16:34:19 +1000
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Stephen Tweedie <sct@redhat.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 05/16] xen mtrr: Add mtrr_ops support for Xen mtrr
-References: <1242163718-2934-1-git-send-email-jeremy@goop.org> <1242163718-2934-6-git-send-email-jeremy@goop.org> <alpine.LFD.2.00.0906021729260.3419@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0906021729260.3419@localhost.localdomain>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Jun 2009 02:35:30 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:36875 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752268AbZFCGf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 02:35:29 -0400
+Date: Wed, 3 Jun 2009 08:35:26 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Kalpesh Rathod <kalpeshrathod@gmail.com>
+Cc: Kalpesh Rathod <kalpeshrathod@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: SDIO irq handler context
+Message-ID: <20090603083526.34efe753@mjolnir.ossman.eu>
+In-Reply-To: <cee4bbc90905132155q1215bbbdqb246f194fd9ef352@mail.gmail.com>
+References: <cee4bbc90905132155q1215bbbdqb246f194fd9ef352@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-25015-1244010929-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Tue, 12 May 2009, Jeremy Fitzhardinge wrote:
->   
->>  	if (cpu_has_mtrr) {
->>  		mtrr_if = &generic_mtrr_ops;
->> +#ifdef CONFIG_XEN_DOM0
->> +		xen_init_mtrr();
->> +#endif
->> +
->>     
->
->   No #ifdefs please. Also isn't there some common place where Xen can
->   do all of it's magic extra init ?
->   
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-This init function overrides mtrr_if if its running under Xen, so it 
-needs to happen here.  But we can certainly lose the #ifdef.
+--=_freyr.ossman.eu-25015-1244010929-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
->   Aside of that this patch needs to be split into two. One adding the
->   num_var_ranges op and one adding the Xen bits.
->   
+On Thu, 14 May 2009 10:25:37 +0530
+Kalpesh Rathod <kalpeshrathod@gmail.com> wrote:
 
-OK.
+> Hi,
+>=20
+> SDIO driver irq handler runs in which context?
+> It always runs in process context ?
+> or
+> It runs in either interrupt context or process context? If this is the ca=
+se,
+> in_interrupt can be used to distinguish?
+>=20
 
->> +#include <xen/interface/platform.h>
->> +#include <asm/xen/hypervisor.h>
->> +#include <asm/xen/hypercall.h>
->> +
->> +static int __init xen_num_var_ranges(void);
->>     
->
->   Can we move the function here please ?
->   
-OK.
+It's run in process context as the sdio accessors sleep.
 
->> +/* DOM0 TODO: Need to fill in the remaining mtrr methods to have full
->> + * working userland mtrr support. */
->> +static struct mtrr_ops xen_mtrr_ops = {
->> +	.vendor            = X86_VENDOR_UNKNOWN,
->> +	.get_free_region   = generic_get_free_region,
->> +	.have_wrcomb       = positive_have_wrcomb,
->> +	.use_intel_if	   = 0,
->> +	.num_var_ranges	   = xen_num_var_ranges,
->> +};
->> +
->> +static int __init xen_num_var_ranges(void)
->> +{
->> +	int ranges;
->> +	struct xen_platform_op op;
->> +
->> +	for (ranges = 0; ; ranges++) {
->> +		op.cmd = XENPF_read_memtype;
->>     
->
->   Is op.cmd changed in the hypervisor call ?
->   
+Rgds
+--=20
+     -- Pierre Ossman
 
-No, it can be hoisted.
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+  TigerVNC, core developer          http://www.tigervnc.org
 
->   cpu_has_mtrr ..... please 
->   
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-OK.
+--=_freyr.ossman.eu-25015-1244010929-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
-Thanks,
-    J
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkomGbEACgkQ7b8eESbyJLiBhwCgjT3EzIbWX7kLstJHUggxnQ30
+I3kAoKlVh8+NJ3NN86FKvV1QcgF/1P0o
+=OTBw
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-25015-1244010929-0001-2--
