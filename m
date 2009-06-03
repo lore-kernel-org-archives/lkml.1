@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbZFCFpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZFCFrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755266AbZFCFpx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 01:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZFCFpo
+	id S1753864AbZFCFrW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 01:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZFCFrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 01:45:44 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:64990 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750806AbZFCFpn convert rfc822-to-8bit (ORCPT
+	Wed, 3 Jun 2009 01:47:16 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:43219 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbZFCFrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 01:45:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=btdv/OsXRoeLKbIAGDbhPJteJ2aOpF83r4W7Y5QMDswjF8T68C78bTIU3tMo9XA6Ow
-         8wP+Nr2lcFsMUPLx94hWwhJyT805p7TbxUuAQioAR5NuUzwRNMAvfREQZ5/C/CTg5g/E
-         6ZPxoEI25W1p1SnOBnhHYFnsJr7dQ8eRpuL4g=
-From: Ivo van Doorn <ivdoorn@gmail.com>
-To: alejandro.riveira@gmail.com
-Subject: Re: [2.6.27-rc7 vs 2.6.29 Regresion] Wifi Network Slownes rt2500pci
-Date: Wed, 3 Jun 2009 07:45:41 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linville@tuxdriver.com,
-       Greg KH <greg@kroah.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
-References: <1243247687.5322.8.camel@varda> <200906022353.44284.IvDoorn@gmail.com> <1243981353.7204.1.camel@varda>
-In-Reply-To: <1243981353.7204.1.camel@varda>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200906030745.41827.IvDoorn@gmail.com>
+	Wed, 3 Jun 2009 01:47:15 -0400
+Date: Wed, 3 Jun 2009 14:43:47 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Paul Menage <menage@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH mmotm 1/2] memcg: add interface to reset limits
+Message-Id: <20090603144347.81ec2ce1.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <4A26072B.8040207@cn.fujitsu.com>
+References: <20090603114518.301cef4d.nishimura@mxp.nes.nec.co.jp>
+	<20090603114908.52c3aed5.nishimura@mxp.nes.nec.co.jp>
+	<4A26072B.8040207@cn.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 03 June 2009, Alejandro Riveira Fernández wrote:
-> El mar, 02-06-2009 a las 23:53 +0200, Ivo van Doorn escribió:
-> 
-> > > So my chip works better with incorrect values written in its registers?
+On Wed, 03 Jun 2009 13:16:27 +0800, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> Daisuke Nishimura wrote:
+> > Setting mem.limit or memsw.limit to 0 has no meaning
+> > in actual use(no process can run in such condition).
 > > 
-> > Apparently, probably because some other register is set to an incorrect value,
-> > but I have no idea which one that would be.
 > 
-> Could the fact that i dual boot with windows (and use the windows
-> driver) have someting to do with it ?
+> I wrote a test program that set mem.limit to 0 to test
+> oom in memcg, and now it is in LTP, though I can modify
+> it accordingly.
+> 
+Thank you for your information, there is an acutual user then.
 
-Don't think so, unless you notice a difference in behavior when you reboot
-from Windows to Linux compared to making a cold-boot or reboot from Linux
-to Linux.
+> > We don't have interface to reset mem.limit or memsw.limit now,
+> > so let's reset the mem.limit or memsw.limit to default(unlimited)
+> > when they are being set to 0.
+> > 
+> 
+> The idea of having a way to set the limit to unlimited is good,
+> but how about allow this by writing -1 to mem.limit?
+> 
+O.K.
+I'll try it.
 
-Ivo
+
+Thanks,
+Daisuke Nishimura.
