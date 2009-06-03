@@ -1,183 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbZFCQsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbZFCRGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbZFCQsa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 12:48:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756417AbZFCQsP
+	id S1757551AbZFCRGd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 13:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbZFCRGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 12:48:15 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:10469 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756364AbZFCQsM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 12:48:12 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Alex Chiang <achiang@hp.com>
-Subject: Re: [PATCH 04/10] ACPI: Introduce acpi_get_pci_dev()
-Date: Wed, 3 Jun 2009 10:46:35 -0600
-User-Agent: KMail/1.9.10
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-References: <20090602152351.7346.48697.stgit@bob.kio> <20090602152456.7346.64853.stgit@bob.kio>
-In-Reply-To: <20090602152456.7346.64853.stgit@bob.kio>
+	Wed, 3 Jun 2009 13:06:24 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:56204 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752058AbZFCRGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 13:06:24 -0400
+Date: Wed, 3 Jun 2009 10:06:17 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Gary Hade <garyhade@us.ibm.com>, mingo@elte.hu, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
+       x86@kernel.org, yinghai@kernel.org, lcm@us.ibm.com
+Subject: Re: [RESEND] [PATCH v2] [BUGFIX] x86/x86_64: fix CPU offlining
+	triggered "active" device IRQ interrruption
+Message-ID: <20090603170617.GB7566@us.ibm.com>
+References: <20090602193216.GC7282@us.ibm.com> <m1prdlttgz.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906031046.36158.bjorn.helgaas@hp.com>
+In-Reply-To: <m1prdlttgz.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 02 June 2009 09:24:56 am Alex Chiang wrote:
-> Convert an ACPI CA handle to a struct pci_dev.
+On Wed, Jun 03, 2009 at 05:03:24AM -0700, Eric W. Biederman wrote:
+> Gary Hade <garyhade@us.ibm.com> writes:
 > 
-> Performing this lookup dynamically allows us to get rid of the
-> ACPI-PCI binding code, which:
+> > Impact: Eliminates an issue that can leave the system in an
+> >         unusable state.
+> >
+> > This patch addresses an issue where device generated IRQs
+> > are no longer seen by the kernel following IRQ affinity
+> > migration while the device is generating IRQs at a high rate.
+> >
+> > I have been able to consistently reproduce the problem on
+> > some of our systems by running the following script (VICTIM_IRQ
+> > specifies the IRQ for the aic94xx device) while a single instance
+> > of the command
+> >   # while true; do find / -exec file {} \;; done
+> > is keeping the filesystem activity and IRQ rate reasonably high.
 > 
-> 	- eliminates struct acpi_device vs struct pci_dev lifetime issues
-> 	- lays more groundwork for eliminating .start from acpi_device_ops
-> 	  and thus simplifying ACPI drivers
-> 	- whacks out a lot of code
+> Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 > 
-> This change also changes the time-space tradeoff ever so slightly.
+> Again you are attempt to work around the fact that fixup_irqs
+> is broken.
 > 
-> Looking up the ACPI-PCI binding is never in the performance path, and by
-> eliminating this caching, we save 24 bytes for each _ADR device in the
-> ACPI namespace.
-
-Just for future changelog readers, I think this space savings actually
-occurs in the "eviscerate pci_bind.c" patch where you remove the struct
-acpi_pci_data.
-
-I definitely agree that you're making the right time/space tradeoff.
-
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
+> fixup_irqs is what needs to be fixed to call these functions properly.
 > 
->  drivers/acpi/pci_bind.c     |   83 +++++++++++++++++++++++++++++++++++++++++++
->  include/acpi/acpi_drivers.h |    1 +
->  2 files changed, 84 insertions(+), 0 deletions(-)
+> We have several intense debug sessions by various people including
+> myself that show that your delayed_irq_move function will simply not
+> work reliably.
 > 
-> diff --git a/drivers/acpi/pci_bind.c b/drivers/acpi/pci_bind.c
-> index 236765c..584fa30 100644
-> --- a/drivers/acpi/pci_bind.c
-> +++ b/drivers/acpi/pci_bind.c
-> @@ -56,6 +56,89 @@ static void acpi_pci_data_handler(acpi_handle handle, u32 function,
->  	return;
->  }
->  
-> +struct acpi_handle_node {
-> +	struct list_head node;
-> +	acpi_handle handle;
-> +};
-> +
-> +/**
-> + * acpi_get_pci_dev - convert ACPI CA handle to struct pci_dev
-> + * @handle: the handle in question
-> + *
-> + * Given an ACPI CA handle, the desired PCI device is located in the
-> + * list of PCI devices.
-> + *
-> + * If the device is found, its reference count is increased and this
-> + * function returns a pointer to its data structure.  The caller must
-> + * decrement the reference count by calling pci_dev_put().
-> + * If no device is found, %NULL is returned.
-> + */
-> +struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
-> +{
-> +	int dev, fn;
-> +	unsigned long long adr;
-> +	acpi_status status;
-> +	acpi_handle phandle;
-> +	struct pci_bus *pbus;
-> +	struct pci_dev *pdev = NULL;
-> +	struct acpi_handle_node *node, *tmp;
-> +	struct acpi_pci_root *root;
-> +	LIST_HEAD(device_list);
-> +
-> +	/*
-> +	 * Walk up the ACPI CA namespace until we reach a PCI root bridge.
-> +	 */
-> +	phandle = handle;
-> +	while (!acpi_is_root_bridge(phandle)) {
-> +		node = kzalloc(sizeof(struct acpi_handle_node), GFP_KERNEL);
-> +		if (!node)
-> +			goto out;
-
-Since there's no cleanup to do at "out", a simple "return NULL"
-here is a bit more obvious.  Whoops, I think there actually *is*
-a little cleanup to do -- I think we leak the list if we take
-these early error exits.
-
-> +
-> +		INIT_LIST_HEAD(&node->node);
-> +		node->handle = phandle;
-> +		list_add(&node->node, &device_list);
-> +
-> +		status = acpi_get_parent(phandle, &phandle);
-> +		if (ACPI_FAILURE(status))
-> +			goto out;
-> +	}
-> +
-> +	root = acpi_pci_find_root(phandle);
-> +	if (!root)
-> +		goto out;
-> +
-> +	pbus = pci_find_bus(root->id.segment, root->id.bus);
-> +	if (!pbus)
-> +		goto out;
-
-Isn't this simply "root->bus"?
-
-> +	/*
-> +	 * Now, walk back down the PCI device tree until we return to our
-> +	 * original handle. Assumes that everything between the PCI root
-> +	 * bridge and the device we're looking for must be a P2P bridge.
-> +	 */
-> +	list_for_each_entry_safe(node, tmp, &device_list, node) {
-> +		acpi_handle hnd = node->handle;
-> +		status = acpi_evaluate_integer(hnd, "_ADR", NULL, &adr);
-> +		if (ACPI_FAILURE(status))
-> +			goto out;
-> +		dev = (adr >> 16) & 0xffff;
-> +		fn  = adr & 0xffff;
-> +
-> +		list_del(&node->node);
-> +		kfree(node);
-> +
-> +		pdev = pci_get_slot(pbus, PCI_DEVFN(dev, fn));
-> +		if (hnd == handle)
-> +			break;
-> +
-> +		pbus = pdev->subordinate;
-> +		pci_dev_put(pdev);
-> +	}
-> +out:
-> +	return pdev;
-> +}
-> +EXPORT_SYMBOL_GPL(acpi_get_pci_dev);
-> +
->  /**
->   * acpi_get_pci_id
->   * ------------------
-> diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
-> index bbe9207..1ef529b 100644
-> --- a/include/acpi/acpi_drivers.h
-> +++ b/include/acpi/acpi_drivers.h
-> @@ -97,6 +97,7 @@ void acpi_pci_irq_del_prt(int segment, int bus);
->  
->  struct pci_bus;
->  
-> +struct pci_dev *acpi_get_pci_dev(acpi_handle);
->  acpi_status acpi_get_pci_id(acpi_handle handle, struct acpi_pci_id *id);
->  int acpi_pci_bind_root(struct acpi_device *device, struct acpi_pci_id *id,
->  		       struct pci_bus *bus);
+> Frankly simply looking at it gives me the screaming heebie jeebies.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+> The fact you can't reproduce the old failure cases which demonstrated
+> themselves as lockups in the ioapic state machines gives me no
+> confidence in your testing of this code.
 
+Correct, after the fix was applied my testing did _not_ show
+the lockups that you are referring to.  I wonder if there is a
+chance that the root cause of those old failures and the root
+cause of issue that my fix addresses are the same?
 
+Can you provide the test case that demonstrated the old failure
+cases so I can try it on our systems?  Also, do you recall what
+mainline version demonstrated the old failure cases?
+
+Thanks,
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
