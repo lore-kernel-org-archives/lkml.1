@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbZFCV3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbZFCV3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755504AbZFCV3K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 17:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZFCV3F
+	id S1754145AbZFCV3X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 17:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756344AbZFCV3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 17:29:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:47614 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751950AbZFCV3E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 17:29:04 -0400
-Message-ID: <4A26EB18.6060907@zytor.com>
-Date: Wed, 03 Jun 2009 14:28:56 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 3 Jun 2009 17:29:14 -0400
+Received: from cantor.suse.de ([195.135.220.2]:39217 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756632AbZFCV3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 17:29:11 -0400
+Date: Wed, 3 Jun 2009 14:22:06 -0700
+From: Greg KH <gregkh@suse.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 3 (driver core)
+Message-ID: <20090603212206.GA20804@suse.de>
+References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au> <4A269BB2.4050508@oracle.com>
 MIME-Version: 1.0
-To: Alexey Vlasov <renton@renton.name>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: devpts mounts too slowly
-References: <20090603142801.GC21646@beaver.vrungel.ru>
-In-Reply-To: <20090603142801.GC21646@beaver.vrungel.ru>
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A269BB2.4050508@oracle.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Vlasov wrote:
-> Hi.
+On Wed, Jun 03, 2009 at 08:50:10AM -0700, Randy Dunlap wrote:
+> Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Looks like a real rush since -rc7 ...
 > 
-> In comparison with bind/proc mounting it takes a lot more time mounting
-> devpts. Is it possible to somehow accelerate the process? Now there are
-> about 5k devpts mounting, it already took 20 minutes, further will take
-> even more time.
 > 
-> # time mount -n -i -t devpts none /home/staff/.server-1/dev/pts
-> real    0m0.295s
-> user    0m0.000s
-> sys     0m0.288s
+> drivers/built-in.o: In function `register_mem_sect_under_node':
+> (.text+0x1d305b): undefined reference to `sysfs_create_link_nowarn'
 > 
+> 
+> I can't find this function's implementation when CONFIG_SYSFS=y.
 
-A profile would be handy here.  There is no sensible reason for this to
-that 0.3 seconds.  This might be RCU-epoch related?
+Ah, it looks like this shows up when CONFIG_MEMORY_HOTPLUG_SPARSE is
+set.
 
-	-hpa
+Eric, your patch, "sysfs: Remove now unnecessary error reporting
+suppression." caused this.  Turns out it is still used in the tree, and
+you forgot to remove the function from sysfs.h at the same time.
 
+I'm going to drop it, and the other two patches I took from you for
+sysfs, as it doesn't make sense to have them in the tree yet.
+
+Care to rework your series with this fixed?
+
+thanks,
+
+greg k-h
