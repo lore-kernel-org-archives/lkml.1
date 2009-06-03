@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757094AbZFCNWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZFCNXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757094AbZFCNWY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 09:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbZFCNWQ
+	id S1757207AbZFCNXS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 09:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbZFCNXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 09:22:16 -0400
-Received: from ru.mvista.com ([213.79.90.228]:6443 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751351AbZFCNWQ (ORCPT
+	Wed, 3 Jun 2009 09:23:11 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47379 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751351AbZFCNXK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 09:22:16 -0400
-Date: Wed, 3 Jun 2009 17:22:17 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Stefan Strobl <nst@gersys.de>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org
-Subject: PWM class? (was: Re: MPC52xx simple GPIO support)
-Message-ID: <20090603132217.GA18353@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <4A255B21.8040002@gersys.de> <20090602171527.GA8745@oksana.dev.rtsoft.ru> <4A266FB2.2040902@gersys.de>
+	Wed, 3 Jun 2009 09:23:10 -0400
+Date: Wed, 3 Jun 2009 09:23:11 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Steven Whitehouse <swhiteho@redhat.com>
+cc: Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       cluster-devel@redhat.com, Christoph Hellwig <hch@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: trace: fix multiple use of __print_flags and __print_symbolic
+In-Reply-To: <1244033875.29604.599.camel@localhost.localdomain>
+Message-ID: <alpine.DEB.2.00.0906030917010.14994@gandalf.stny.rr.com>
+References: <1244019900.29604.588.camel@localhost.localdomain>  <4A26474C.1000900@cn.fujitsu.com> <1244033875.29604.599.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <4A266FB2.2040902@gersys.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 02:42:26PM +0200, Stefan Strobl wrote:
-[...]
-> The led class provides support for setting the brightness, which
-> obviously the gpio driver doesn't support. The hardware (mpc52xx_gpt)
-> would support it in PWM mode though. I'm now wandering how this could be
-> best implemented.
+
+On Wed, 3 Jun 2009, Steven Whitehouse wrote:
+
+> Hi
 > 
-> 1) - Create some PWM class similar to the GPIO class
->    - Add support for PWM mode in mpc52xx_gpt.c that uses that PWM class
->    - And add an interface for the LED to use the PWM class
+> On Wed, 2009-06-03 at 17:50 +0800, Li Zefan wrote:
+> > Steven Whitehouse wrote:
+> > > When using multiple calls to __print_symbolic and __print_flags in
+> > > the same tracer, I noticed that the output was incorrect. I think
+> > > the following patch is the correct fix (it works for me) but please
+> > > check it carefully since I'm not that familiar with this code,
+> > > and I may well have made a mistake somewhere.
+> > > 
+> > 
+> > I don't see there's bug in __print_symbolic() or __print_flags():
+> > 
+> > enum print_line_t
+> > ftrace_raw_output_##call(struct trace_iterator *iter, int flags)
+> > {
+> > 	...
+> > 	p = &get_cpu_var(ftrace_event_seq);
+> > 	/* here we call ftrace_print_flags_seq(p, ...) */
+> > 	ret = trace_seq_printf(s, #call ": " print);
+> > 	put_cpu();
+> > 	...
+> > }
+> > 
+> > ftrace_event_seq is percpu data, and here is used with preempt-disabled,
+> > so there shouldn't be problem of concurrent accessing.
+> > 
+> I've double checked this now, and I'm seeing results like:
 > 
-> 2) - Create an LED driver that accesses the mpc52xx_gpt directly.
 > 
-> I think I would be overwhelmed trying to implement (1) but am confident
-> to do (2). What do you think is the right approach?
+> glock_workqueue-2482  [001]   809.956985: gfs2_glock_state_change: 8.7 glock 2:33119 state EX => EX tgt:EX dmt:EX flags:EX
+> glock_workqueue-2482  [001]   809.957155: gfs2_glock_state_change: 8.7 glock 2:33119 state NL => NL tgt:NL dmt:NL flags:NL
+> glock_workqueue-2482  [001]   809.959473: gfs2_glock_state_change: 8.7 glock 1:2 state NL => NL tgt:NL dmt:NL flags:NL
+> glock_workqueue-2482  [001]   809.959556: gfs2_glock_state_change: 8.7 glock 2:33119 state EX => EX tgt:EX dmt:EX flags:EX
+> glock_workqueue-2482  [001]   810.008773: gfs2_glock_state_change: 8.7 glock 1:0 state EX => EX tgt:EX dmt:EX flags:EX
+> 
+> 
+> without the patch, which is clearly wrong,
 
-I'd suggest creating a generic PWM class, i.e. PWMLIB, alike to
-GPIOLIB. (2) can be an acceptable approach for now, but for the
-long-term solution (1) is the way to go.
+Ah, I did not account for having multiple instances of print_symbol of 
+print_flags in a single print. Your patch is partialy correct. Add a:
 
-The non-lib PWM API is already there, see include/linux/pwm.h,
-and arch/arm/mach-pxa/pwm.c as an implementation example.
+	trace_seq_init(p);
 
-Note that PXA implementation is SOC-specific, which is not very
-good.
+after the "p = &get_cpu_var(ftrace_event_seq);".
 
-So I'd suggest creating drivers/pwm/pwmlib.c, borrowing
-ideas from gpiolib. And then we can reuse drivers/leds/leds-pwm.c
-driver (of course, after adding appropriate OF code into it).
+-- Steve
 
-Sure, as you've said, it could be quite boringly to implement,
-could take quite some time to pass all review cycles etc.
-But someday someone will have to do this. :-)
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
