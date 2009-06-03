@@ -1,118 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbZFCTyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755470AbZFCT6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755704AbZFCTyD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 15:54:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZFCTxy
+	id S1755470AbZFCT6P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 15:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbZFCT6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 15:53:54 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:35744 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753669AbZFCTxx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 15:53:53 -0400
-Message-ID: <4A26D4CC.4040504@novell.com>
-Date: Wed, 03 Jun 2009 15:53:48 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Wed, 3 Jun 2009 15:58:00 -0400
+Received: from mail.tmr.com ([64.65.253.246]:52614 "EHLO partygirl.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753450AbZFCT6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 15:58:00 -0400
+Message-ID: <4A26D3D8.6080002@tmr.com>
+Date: Wed, 03 Jun 2009 15:49:44 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 pango-text SeaMonkey/1.1.16
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: davidel@xmailserver.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch] epoll - send POLLHUP on ->release
-References: <alpine.DEB.1.10.0906031153471.18001@makko.or.mcafeemobile.com>	<4A26CCFA.7050105@novell.com> <20090603122739.c53b1d1f.akpm@linux-foundation.org>
-In-Reply-To: <20090603122739.c53b1d1f.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigD7724F9E5E1D0D8A7A9F9DA3"
+Newsgroups: gmane.comp.emulators.xen.devel,gmane.comp.emulators.xen.user
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: George Dunlap <george.dunlap@eu.citrix.com>,
+       David Miller <davem@davemloft.net>, "jeremy@goop.org" <jeremy@goop.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       Dan Magenheimer <dan.magenheimer@oracle.com>,
+       "avi@redhat.com" <avi@redhat.com>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "x86@kernel.org" <x86@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>,
+       "xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
+       ksrinivasan <ksrinivasan@novell.com>,
+       "EAnderson@novell.com" <EAnderson@novell.com>,
+       "wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
+       Stephen Spector <stephen.spector@citrix.com>, jens.axboe@oracle.com
+Subject: Re: Xen is a feature
+References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org> <20090528.210559.137121893.davem@davemloft.net> <4A1FCE8E.2060604@eu.citrix.com> <alpine.LFD.2.00.0905311607560.3379@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0905311607560.3379@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigD7724F9E5E1D0D8A7A9F9DA3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Thomas Gleixner wrote:
+> On Fri, 29 May 2009, George Dunlap wrote:
+>> David Miller wrote:
+>>> I don't see Ingo's comments, whether I agree with them or not, as
+>>> an implication of Xen being niche.  Rather I see his comments as
+>>> an opposition to how Xen is implemented.
+>>>   
+>> It's in his definition of "improving Linux".  Jeremy is saying that allowing
+>> Linux to run as dom0 *is* improving Linux.  The lack of dom0 support is at
+>> this moment making life more difficult for a huge number of Linux users who
+> 
+> Exactly that's the point. Adding dom0 makes life easier for a group of
+> users who decided to use Xen some time ago, but what Ingo wants is
+> technical improvement of the kernel.
+> 
+> There are many features which have been wildly used in the distro
+> world where developers tried to push support into the kernel with the
+> same line of arguments.
+> 
+> The kernel policy always was and still is to accept only those
+> features which have a technical benefit to the code base.
+> 
+> I'm just picking a few examples:
+> 
+> Aside of the paravirt, which seems to expand through arch/x86 like a
+> hydra, the new patches sprinkle "if (xen_...)" all over the
+> place. These extra xen dependencies are no improvement, they are a
+> royal pain in the ... They are sticky once they got merged simply
+> because the hypervisor relies on them and we need to provide
+> compatibility for a long time.
+> 
+Wait, let's not classify something as "no improvement" when you mean "I don't 
+need it." The fact that processors without hardware VM can run virtual machines 
+is a non-trivial benefit for many users, and in future embedded applications, 
+where both hvm and 64 bit capability may not justify their power requirements. 
+And the improved PV performance over full virtualization is an improvement, even 
+though it certainly isn't night and day.
 
-Andrew Morton wrote:
-> On Wed, 03 Jun 2009 15:20:26 -0400
-> Gregory Haskins <ghaskins@novell.com> wrote:
->
->  =20
->> Davide Libenzi wrote:
->>    =20
->>> The following patch allows waiters to be notified about the eventfd f=
-ile*=20
->>> going away, and give them a change to unregister from the wait queue.=
+Having replace some systems with new hardware just so I could use KVM does not 
+make me forget that I used xen for some time, and that PV is still a savings, 
+even with the latest hardware.
 
->>> This is turn allows eventfd users to use the eventfd file* w/out=20
->>> holding a live reference to it.
->>> After the eventfd user callbacks returns, any usage of the eventfd fi=
-le*=20
->>> should be dropped. The eventfd user callback can acquire sleepy locks=
-=20
->>> since it is invoked lockless.
->>>
->>>
->>>
->>> Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
->>>  =20
->>>      =20
->> Tested-by: Gregory Haskins <ghaskins@novell.com>
->>    =20
->
-> Confused.  Did you test this with some new kernel patch, or with some
-> existing kernel code?
->
->  =20
-Hi Andrew,
+Let's stick to technical issues, and not deny that there are a number of users 
+who really will have expanded capability. The technical points are valid, but as 
+a former and probable future xen (CentOS) user, so are the benefits.
 
-Davide created this patch in response to a problem we were trying to
-solve in kvm.git.  I took this patch in question, and combined it with a
-proposed patch for KVM and tested it out.  You can find the thread here:
-
-http://lkml.org/lkml/2009/6/2/276
-
-I built a test harness and verified that calling close() on an eventfd
-does indeed generate a POLLHUP wakeup, and that my code properly cleans
-up when it gets the POLLHUP
-
-Acceptance of my kvm optimization is predicated on Davide's patch going
-in first, so I asked him to submit it formally.  I figured I should
-chime in my findings in case it matters for upstream acceptance.=20
-(Apologies if this is not the normal/acceptable "tested-by"
-protocol...tested-by tag noob here ;)
-
-
-> If the latter, what code are we talking about here and what was the tes=
-t
-> case and what went wrong when using the current mainline
-> implementation?
->
->  =20
-
-Its not what went wrong per se.  Its more of a case of eliminating the
-need for an awkward work-around I had to do when eventfd didn't provide
-a release notification.  You can find the details in my patch 2/2
-header, available here for your convenience:
-
-http://lkml.org/lkml/2009/6/2/278
-
-Regards,
--Greg
-
-
---------------enigD7724F9E5E1D0D8A7A9F9DA3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkom1NAACgkQlOSOBdgZUxn+zACggy8ndf7njKPYDqPi820GPmpq
-jd8AnRYF13UKj/wXC6a/Yn6CE3GJ5Xp2
-=kRSA
------END PGP SIGNATURE-----
-
---------------enigD7724F9E5E1D0D8A7A9F9DA3--
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
