@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbZFCLO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbZFCLRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756504AbZFCLO2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 07:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbZFCLOU
+	id S1756566AbZFCLRB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 07:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbZFCLQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 07:14:20 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:24607 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752176AbZFCLOT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 07:14:19 -0400
-Message-ID: <4A265AF7.5000101@nokia.com>
-Date: Wed, 03 Jun 2009 14:13:59 +0300
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 3 Jun 2009 07:16:54 -0400
+Received: from thunk.org ([69.25.196.29]:57580 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754329AbZFCLQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 07:16:53 -0400
+Date: Wed, 3 Jun 2009 07:15:41 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Dan Magenheimer <dan.magenheimer@oracle.com>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       George Dunlap <george.dunlap@eu.citrix.com>,
+       David Miller <davem@davemloft.net>, jeremy@goop.org, avi@redhat.com,
+       xen-devel@lists.xensource.com, x86@kernel.org,
+       linux-kernel@vger.kernel.org, Keir Fraser <Keir.Fraser@eu.citrix.com>,
+       torvalds@linux-foundation.org, gregkh@suse.de, kurt.hackel@oracle.com,
+       Ian Pratt <Ian.Pratt@eu.citrix.com>, xen-users@lists.xensource.com,
+       ksrinivasan <ksrinivasan@novell.com>, EAnderson@novell.com,
+       wimcoekaerts@wimmekes.net, Stephen Spector <stephen.spector@citrix.com>,
+       jens.axboe@oracle.com, npiggin@suse.de
+Subject: Re: Merge Xen (the hypervisor) into Linux
+Message-ID: <20090603111541.GC31943@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Gerd Hoffmann <kraxel@redhat.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Dan Magenheimer <dan.magenheimer@oracle.com>,
+	Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+	George Dunlap <george.dunlap@eu.citrix.com>,
+	David Miller <davem@davemloft.net>, jeremy@goop.org, avi@redhat.com,
+	xen-devel@lists.xensource.com, x86@kernel.org,
+	linux-kernel@vger.kernel.org,
+	Keir Fraser <Keir.Fraser@eu.citrix.com>,
+	torvalds@linux-foundation.org, gregkh@suse.de,
+	kurt.hackel@oracle.com, Ian Pratt <Ian.Pratt@eu.citrix.com>,
+	xen-users@lists.xensource.com, ksrinivasan <ksrinivasan@novell.com>,
+	EAnderson@novell.com, wimcoekaerts@wimmekes.net,
+	Stephen Spector <stephen.spector@citrix.com>, jens.axboe@oracle.com,
+	npiggin@suse.de
+References: <20090602232843.GA6577@elte.hu> <793c2ffe-16d3-4e6c-9cd2-32fa089e46a3@default> <20090603024311.GZ31943@mit.edu> <4A26263A.7010809@redhat.com> <20090603094753.6eb32099@lxorguk.ukuu.org.uk> <4A263DD3.3090901@redhat.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>, Christoph Hellwig <hch@infradead.org>,
-       "viro@ZenIV.linux.org.uk" <viro@ZenIV.linux.org.uk>
-CC: Arnd Bergmann <arnd@arndb.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH 00/19] periodic write-back timer optimization
-References: <20090527130503.4913.62042.sendpatchset@localhost.localdomain> <200905271323.29818.arnd@arndb.de> <4A1D31BA.6060903@nokia.com> <20090527123320.GF11363@kernel.dk> <4A1D3418.8060909@nokia.com> <20090527124719.GH11363@kernel.dk> <4A1E307B.1060807@nokia.com> <20090528081845.GU11363@kernel.dk>
-In-Reply-To: <20090528081845.GU11363@kernel.dk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 03 Jun 2009 11:14:05.0010 (UTC) FILETIME=[67F5C320:01C9E43C]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A263DD3.3090901@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Thu, May 28 2009, Artem Bityutskiy wrote:
->> Jens Axboe wrote:
->>> That would be great, I would have no problem integrating such a feature.
->>> It definitely makes sense.
->> Hi Al, Christoph,
+On Wed, Jun 03, 2009 at 11:09:39AM +0200, Gerd Hoffmann wrote:
+> On 06/03/09 10:47, Alan Cox wrote:
+>>> Linux is not the only player here.  NetBSD can run as dom0 guest.
+>>> Solaris can run as dom0 guest too.  Thus making the dom0/xen interface
+>>> private to linux and xen isn't going to fly.
 >>
->> unless you have objections against the whole idea, I wonder if
->> it would be possible to make the patches which wrap sb->s_dirt
->> usage go via VFS tree first, and then I'd continue the timer
->> optimization work separately. IMO, wrapping s_dirt makes sense
->> in general. I mean, patches 01-17 from this series.
-> 
-> That makese sense, those are totally separate from the actual
-> functionality.
+>> It does not however preclude fixing the dom0 interface.
+>
+> It wasn't my intention to imply that.  The interface can be extended  
+> when needed.  PAT support will probably be such a case.  Changing it in  
+> incompatible ways isn't going to work though.
 
-Reminding ping.
+But that means that if there is some fundamentally broken piece of
+dom0 design, that the Linux kernel will be stuck with it ***forever***
+and it will contaminate code paths and make the code harder to
+maintain ***forever*** if we consent to the Xen merge?  Is that really
+what you are saying?   Be careful how you answer that....
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+     	     	       	  	      	  - Ted
