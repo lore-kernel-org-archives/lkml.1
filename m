@@ -1,88 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZFCCPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbZFCCSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755342AbZFCCPb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 22:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbZFCCPX
+	id S1755398AbZFCCSR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 22:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbZFCCSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 22:15:23 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41921 "EHLO smtps.tip.net.au"
+	Tue, 2 Jun 2009 22:18:08 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46669 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752831AbZFCCPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 22:15:22 -0400
-Date: Wed, 3 Jun 2009 12:15:15 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@linux.intel.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: linux-next: manual merge of the wireless tree with the x86 tree
-Message-Id: <20090603121515.4bd45eec.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__3_Jun_2009_12_15_15_+1000_p1uBGdfDLF48tsnB"
+	id S1752932AbZFCCSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 2 Jun 2009 22:18:08 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Jiri Slaby <jirislaby@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
+       linux-kernel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH 1/1] signal: make group kill signal fatal
+In-Reply-To: Oleg Nesterov's message of  Tuesday, 2 June 2009 16:50:35 +0200 <20090602144951.GA12123@redhat.com>
+References: <1243198054-13816-1-git-send-email-jirislaby@gmail.com>
+	<20090525000750.GA2301@redhat.com>
+	<4A1AC5A3.9000600@gmail.com>
+	<20090525172033.GA12586@redhat.com>
+	<4A1AE02D.5080701@gmail.com>
+	<20090525225150.GA12362@redhat.com>
+	<4A25211C.8050504@gmail.com>
+	<20090602144951.GA12123@redhat.com>
+X-Shopping-List: (1) Insolent inquisition mice
+   (2) Impervious burrowing redeemers
+   (3) Extemporaneous complicators
+Message-Id: <20090603015215.85A78FC333@magilla.sf.frob.com>
+Date: Tue,  2 Jun 2009 18:52:15 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__3_Jun_2009_12_15_15_+1000_p1uBGdfDLF48tsnB
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> > > Heh. In this case you have another (long-standing) issue, please note
+> > > the "if (p->flags & PF_EXITING)" check in wants_signal().
 
-Hi John,
+Hmm.  wants_signal():
 
-Today's linux-next merge of the wireless tree got a conflict in
-Documentation/feature-removal-schedule.txt between commit
-45f458e9a8a216b02b76fe61d9e8bc40d659fbe8 ("x86, mce: deprecate old 32bit
-machine check code") from the x86 tree and commit
-0122405503e36bd15077acb571821d459bbd3e85 ("rfkill: create useful
-userspace interface") from the wireless tree.
+	if (p->flags & PF_EXITING)
+		return 0;
+	if (sig == SIGKILL)
+		return 1;
 
-Juts overlapping additions.  I fixed it up (see below) and can carry the
-fix as necessary.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Perhaps we should reverse the order of those two?
 
-diff --cc Documentation/feature-removal-schedule.txt
-index ec9ef5d,edb2f0b..0000000
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@@ -438,12 -438,9 +438,19 @@@ Why:	Superseded by tdfxfb. I2C/DDC supp
-  Who:	Jean Delvare <khali@linux-fr.org>
-  	Krzysztof Helt <krzysztof.h1@wp.pl>
- =20
- +----------------------------
- +
- +What:	CONFIG_X86_OLD_MCE
- +When:	2.6.32
- +Why:	Remove the old legacy 32bit machine check code. This has been
- +	superseded by the newer machine check code from the 64bit port,
- +	but the old version has been kept around for easier testing. Note this
- +	doesn't impact the old P5 and WinChip machine check handlers.
- +Who:	Andi Kleen <andi@firstfloor.org>
-++
-+ ---------------------------
-+=20
-+ What:	CONFIG_RFKILL_INPUT
-+ When:	2.6.33
-+ Why:	Should be implemented in userspace, policy daemon.
-+ Who:	Johannes Berg <johannes@sipsolutions.net>
+But also I'm now reminded that complete_signal() short-circuits for the
+single-threaded case and never does the sig_fatal() case.
 
---Signature=_Wed__3_Jun_2009_12_15_15_+1000_p1uBGdfDLF48tsnB
-Content-Type: application/pgp-signature
+This means a single-threaded process will have SIGKILL in shared_pending
+but not in its own pending so __fatal_signal_pending() will be false, no?  
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+I'm also now wondering if in some of our recent signals discussions we have
+been assuming that SIGNAL_GROUP_EXIT is set when a fatal signal is pending.
+We might be leaving some other unintended hole since that's not really true.
 
-iEYEARECAAYFAkol3LMACgkQjjKRsyhoI8w6uACeNacK08u+c9i4p5iFr2knq82Z
-BS0AoKr4XTVkNeG8sQn0JIWuQTfHpe1c
-=53I5
------END PGP SIGNATURE-----
+Probably we should just fiddle complete_signal() to do that stuff for the
+single-threaded case too.  (That obviates the wants_signal change above.)
 
---Signature=_Wed__3_Jun_2009_12_15_15_+1000_p1uBGdfDLF48tsnB--
+> Yes, if a thread exits with the pending signal, then of course interruptible
+> wait doesn work.
+
+Along the same lines of the recent core dump discussion, I think it would
+be proper to fix this so TIF_SIGPENDING isn't left set (nor is newly set)
+by a signal that won't affect it later.
+
+> We can clear TIF_SIGPENDING, and we can change recalc_sigpending_xxx()
+> to take PF_EXITING into account (or change their callers), but this
+> needs changes. And I am not sure this will right.
+
+I think we want recalc_sigpending_tsk to be consistent with wants_signal
+and the other conditions controlling signal_wake_up calls.  But indeed we
+need to think through any ramifications carefully.
+
+
+Thanks,
+Roland
