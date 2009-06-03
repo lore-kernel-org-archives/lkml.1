@@ -1,162 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbZFCOfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbZFCOhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756454AbZFCOfV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 10:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbZFCOfJ
+	id S1757569AbZFCOhJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 10:37:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbZFCOg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 10:35:09 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:40768 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753753AbZFCOfH (ORCPT
+	Wed, 3 Jun 2009 10:36:59 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:47499 "EHLO
+	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754412AbZFCOg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 10:35:07 -0400
-X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i1a3h6bh17ch43j64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0KKO362-01-069-01
-Date: Wed, 3 Jun 2009 16:34:07 +0200
+	Wed, 3 Jun 2009 10:36:58 -0400
+X-SpamScore: -3
+X-BigFish: VPS-3(zz655Nzz1202hzzz32i17ch1a3h6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KKO395-01-09L-01
+Date: Wed, 3 Jun 2009 16:35:59 +0200
 From: Andreas Herrmann <andreas.herrmann3@amd.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>
 CC: linux-kernel@vger.kernel.org, Bert Wesarg <bert.wesarg@googlemail.com>
-Subject: [PATCH 2/5] x86: provide CPU topology information for multi-node
-	processors
-Message-ID: <20090603143407.GK5736@alberich.amd.com>
+Subject: [PATCH 3/5] x86: add cpu_node topology detection for AMD
+	Magny-Cours
+Message-ID: <20090603143559.GL5736@alberich.amd.com>
 References: <20090603142727.GI5736@alberich.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
 In-Reply-To: <20090603142727.GI5736@alberich.amd.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 03 Jun 2009 14:34:53.0790 (UTC) FILETIME=[7597AFE0:01C9E458]
+X-OriginalArrivalTime: 03 Jun 2009 14:36:45.0153 (UTC) FILETIME=[B7F85510:01C9E458]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide topology_cpu_node_id, topology_cpu_node_mask and cpu_node_map.
-CPUs with matching phys_proc_id and cpu_node_id belong to the same
-cpu_node.
+This adapts CPU topology detection for AMD Magny-Cours.
+
+Here is example output from two cores on same package but different
+internal cpu_nodes:
+
+/sys/devices/system/cpu/cpu5:
+  physical_package_id        : 0
+  core_id                    : 5
+  thread_siblings            : 00000020
+  thread_siblings_list       : 5
+  cpu_node_id                : 0
+  cpu_node_siblings          : 0000003f
+  cpu_node_siblings_list     : 0-5
+  core_siblings              : 00000fff
+  core_siblings_list         : 0-11
+/sys/devices/system/cpu/cpu6:
+  physical_package_id        : 0
+  core_id                    : 0
+  thread_siblings            : 00000040
+  thread_siblings_list       : 6
+  cpu_node_id                : 1
+  cpu_node_siblings          : 00000fc0
+  cpu_node_siblings_list     : 6-11
+  core_siblings              : 00000fff
+  core_siblings_list         : 0-11
 
 Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
 ---
- arch/x86/include/asm/processor.h |    2 ++
- arch/x86/include/asm/smp.h       |    6 ++++++
- arch/x86/include/asm/topology.h  |    2 ++
- arch/x86/kernel/cpu/common.c     |    2 ++
- arch/x86/kernel/cpu/proc.c       |    1 +
- arch/x86/kernel/smpboot.c        |   10 ++++++++++
- 6 files changed, 23 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/cpufeature.h |    1 +
+ arch/x86/kernel/cpu/amd.c         |   61 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 62 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index c776826..74d9258 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -106,6 +106,8 @@ struct cpuinfo_x86 {
- 	u16			booted_cores;
- 	/* Physical processor id: */
- 	u16			phys_proc_id;
-+	/* Node id in case of multi-node processor: */
-+	u16			cpu_node_id;
- 	/* Core id: */
- 	u16			cpu_core_id;
- 	/* Index into per_cpu list: */
-diff --git a/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
-index 6a84ed1..aad37c6 100644
---- a/arch/x86/include/asm/smp.h
-+++ b/arch/x86/include/asm/smp.h
-@@ -22,6 +22,7 @@ extern int smp_num_siblings;
- extern unsigned int num_processors;
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index 13cc6a5..7abe596 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -94,6 +94,7 @@
+ #define X86_FEATURE_TSC_RELIABLE (3*32+23) /* TSC is known to be reliable */
+ #define X86_FEATURE_NONSTOP_TSC	(3*32+24) /* TSC does not stop in C states */
+ #define X86_FEATURE_CLFLUSH_MONITOR (3*32+25) /* "" clflush reqd with monitor */
++#define X86_FEATURE_AMD_DCM     (3*32+26) /* multi-node processor */
  
- DECLARE_PER_CPU(cpumask_var_t, cpu_sibling_map);
-+DECLARE_PER_CPU(cpumask_var_t, cpu_node_map);
- DECLARE_PER_CPU(cpumask_var_t, cpu_core_map);
- DECLARE_PER_CPU(u16, cpu_llc_id);
- DECLARE_PER_CPU(int, cpu_number);
-@@ -31,6 +32,11 @@ static inline struct cpumask *cpu_sibling_mask(int cpu)
- 	return per_cpu(cpu_sibling_map, cpu);
- }
+ /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
+ #define X86_FEATURE_XMM3	(4*32+ 0) /* "pni" SSE-3 */
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index 728b375..feed057 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -6,6 +6,7 @@
+ #include <asm/processor.h>
+ #include <asm/apic.h>
+ #include <asm/cpu.h>
++#include <asm/pci-direct.h>
  
-+static inline struct cpumask *cpu_node_mask(int cpu)
+ #ifdef CONFIG_X86_64
+ # include <asm/numa_64.h>
+@@ -250,6 +251,56 @@ static int __cpuinit nearby_node(int apicid)
+ #endif
+ 
+ /*
++ * Fixup core topology information for AMD multi-node processors.
++ * Assumption 1: Number of cores in each internal node is the same.
++ * Assumption 2: Mixed systems with both single-node and dual-node
++ *               processors are not supported.
++ */
++static void __cpuinit amd_fixup_dcm(struct cpuinfo_x86 *c)
 +{
-+	return per_cpu(cpu_node_map, cpu);
++	u32 t, cpn;
++	u8 n;
++
++	/* fixup topology information only once for a core */
++	if (cpu_has(c, X86_FEATURE_AMD_DCM))
++		return;
++
++	/* check for multi-node processor on boot cpu */
++	t = read_pci_config(0, 24, 3, 0xe8);
++	if (!(t & (1 << 29)))
++		return;
++
++	set_cpu_cap(c, X86_FEATURE_AMD_DCM);
++
++	/* cores per node: each internal node has half the number of cores */
++	cpn = c->x86_max_cores >> 1;
++
++	/* even-numbered NB_id of this dual-node processor */
++	n = c->phys_proc_id << 1;
++
++	/*
++	 * determine internal node id and assign cores fifty-fifty to
++	 * each node of the dual-node processor
++	 */
++	t = read_pci_config(0, 24 + n, 3, 0xe8);
++	n = (t>>30) & 0x3;
++	if (n == 0) {
++		if (c->cpu_core_id < cpn)
++			c->cpu_node_id = 0;
++		else
++			c->cpu_node_id = 1;
++	} else {
++		if (c->cpu_core_id < cpn)
++			c->cpu_node_id = 1;
++		else
++			c->cpu_node_id = 0;
++	}
++
++	 /* fixup core id to be in range from 0 to cpn */
++	c->cpu_core_id = c->cpu_core_id % cpn;
 +}
 +
- static inline struct cpumask *cpu_core_mask(int cpu)
- {
- 	return per_cpu(cpu_core_map, cpu);
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index 066ef59..9eddb69 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -190,6 +190,8 @@ extern const struct cpumask *cpu_coregroup_mask(int cpu);
- #define topology_core_id(cpu)			(cpu_data(cpu).cpu_core_id)
- #define topology_core_cpumask(cpu)		(per_cpu(cpu_core_map, cpu))
- #define topology_thread_cpumask(cpu)		(per_cpu(cpu_sibling_map, cpu))
-+#define topology_cpu_node_id(cpu)		(cpu_data(cpu).cpu_node_id)
-+#define topology_cpu_node_cpumask(cpu)		(per_cpu(cpu_node_map, cpu))
- 
- /* indicates that pointers to the topology cpumask_t maps are valid */
- #define arch_provides_topology_pointers		yes
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 3ffdcfa..d14d074 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -478,6 +478,8 @@ out:
- 	if ((c->x86_max_cores * smp_num_siblings) > 1) {
- 		printk(KERN_INFO  "CPU: Physical Processor ID: %d\n",
- 		       c->phys_proc_id);
-+		printk(KERN_INFO  "CPU: Processor Node ID: %d\n",
-+		       c->cpu_node_id);
- 		printk(KERN_INFO  "CPU: Processor Core ID: %d\n",
- 		       c->cpu_core_id);
- 	}
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index d5e3039..ff539c1 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -15,6 +15,7 @@ static void show_cpuinfo_core(struct seq_file *m, struct cpuinfo_x86 *c,
- 		seq_printf(m, "physical id\t: %d\n", c->phys_proc_id);
- 		seq_printf(m, "siblings\t: %d\n",
- 			   cpumask_weight(cpu_core_mask(cpu)));
-+		seq_printf(m, "node id\t\t: %d\n", c->cpu_node_id);
- 		seq_printf(m, "core id\t\t: %d\n", c->cpu_core_id);
- 		seq_printf(m, "cpu cores\t: %d\n", c->booted_cores);
- 		seq_printf(m, "apicid\t\t: %d\n", c->apicid);
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index d2e8de9..d9750ad 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -108,6 +108,10 @@ EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
- DEFINE_PER_CPU(cpumask_var_t, cpu_core_map);
- EXPORT_PER_CPU_SYMBOL(cpu_core_map);
- 
-+/* representing node silbings on multi-node CPU */
-+DEFINE_PER_CPU(cpumask_var_t, cpu_node_map);
-+EXPORT_PER_CPU_SYMBOL(cpu_node_map);
-+
- /* Per CPU bogomips and other parameters */
- DEFINE_PER_CPU_SHARED_ALIGNED(struct cpuinfo_x86, cpu_info);
- EXPORT_PER_CPU_SYMBOL(cpu_info);
-@@ -401,6 +405,11 @@ void __cpuinit set_cpu_sibling_map(int cpu)
- 			cpumask_set_cpu(i, c->llc_shared_map);
- 			cpumask_set_cpu(cpu, cpu_data(i).llc_shared_map);
- 		}
-+		if ((c->phys_proc_id == cpu_data(i).phys_proc_id) &&
-+		    (c->cpu_node_id == cpu_data(i).cpu_node_id)) {
-+			cpumask_set_cpu(i, cpu_node_mask(cpu));
-+			cpumask_set_cpu(cpu, cpu_node_mask(i));
-+		}
- 		if (c->phys_proc_id == cpu_data(i).phys_proc_id) {
- 			cpumask_set_cpu(i, cpu_core_mask(cpu));
- 			cpumask_set_cpu(cpu, cpu_core_mask(i));
-@@ -1218,6 +1227,7 @@ static void remove_siblinginfo(int cpu)
- 	cpumask_clear(cpu_sibling_mask(cpu));
- 	cpumask_clear(cpu_core_mask(cpu));
- 	c->phys_proc_id = 0;
-+	c->cpu_node_id = 0;
- 	c->cpu_core_id = 0;
- 	cpumask_clear_cpu(cpu, cpu_sibling_setup_mask);
++/*
+  * On a AMD dual core setup the lower bits of the APIC id distingush the cores.
+  * Assumes number of cores is a power of two.
+  */
+@@ -264,6 +315,9 @@ static void __cpuinit amd_detect_cmp(struct cpuinfo_x86 *c)
+ 	c->cpu_core_id = c->initial_apicid & ((1 << bits)-1);
+ 	/* Convert the initial APIC ID into the socket ID */
+ 	c->phys_proc_id = c->initial_apicid >> bits;
++	/* fixup topology information on multi-node processors */
++	if ((c->x86 == 0x10) && (c->x86_model == 9))
++		amd_fixup_dcm(c);
+ #endif
  }
+ 
+@@ -274,7 +328,14 @@ static void __cpuinit srat_detect_node(struct cpuinfo_x86 *c)
+ 	int node;
+ 	unsigned apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
+ 
++#ifdef CONFIG_MULTI_NODE_CPU
++	if (cpu_has(c, X86_FEATURE_AMD_DCM))
++		node = (c->phys_proc_id << 1) + c->cpu_node_id;
++	else
++		node = c->phys_proc_id;
++#else
+ 	node = c->phys_proc_id;
++#endif
+ 	if (apicid_to_node[apicid] != NUMA_NO_NODE)
+ 		node = apicid_to_node[apicid];
+ 	if (!node_online(node)) {
 -- 
 1.6.3.1
 
