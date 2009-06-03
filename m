@@ -1,51 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbZFCMNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756468AbZFCMSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbZFCMNS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 08:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbZFCMNF
+	id S1756468AbZFCMSh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 08:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754121AbZFCMSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 08:13:05 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51682 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752385AbZFCMNE (ORCPT
+	Wed, 3 Jun 2009 08:18:30 -0400
+Received: from fias.uni-frankfurt.de ([141.2.248.1]:60476 "EHLO
+	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754067AbZFCMS3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 08:13:04 -0400
-Date: Wed, 3 Jun 2009 13:14:07 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Grozdan <neutrino8@gmail.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: Kernel 2.6.30rc7 limits IDE to UDMA33
-Message-ID: <20090603131407.57c490ed@lxorguk.ukuu.org.uk>
-In-Reply-To: <c5bd819b0906030435w466368cbsd48be91a97597437@mail.gmail.com>
-References: <c5bd819b0906021525l13ee9282j1fb270e141985f66@mail.gmail.com>
-	<4A25F688.9000407@gmail.com>
-	<c5bd819b0906030435w466368cbsd48be91a97597437@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Jun 2009 08:18:29 -0400
+From: Jan Scholz <scholz@fias.uni-frankfurt.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jan Scholz <scholz@fias.uni-frankfurt.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [regression, bisected] adb trackpad disappears after suspend to ram
+References: <878wkl6vce.fsf@scholz.fias.uni-frankfurt.de>
+	<200906011836.15507.rjw@sisk.pl>
+	<877hzv8txp.fsf@scholz.fias.uni-frankfurt.de>
+	<200906031202.28916.rjw@sisk.pl>
+Date: Wed, 03 Jun 2009 14:18:13 +0200
+In-Reply-To: <200906031202.28916.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Wed, 3 Jun 2009 12:02:27 +0200")
+Message-ID: <877hzty0hm.fsf@scholz.fias.uni-frankfurt.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.94 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ACPI: PCI Interrupt Link [ALKA] disabled and referenced, BIOS bug
-> ACPI: PCI Interrupt Link [ALKA] enabled at IRQ 20
-> pata_via 0000:00:0f.0: PCI INT A -> Link[ALKA] -> GSI 20 (level, low) -> IRQ 20
-> scsi0 : pata_via
-> scsi1 : pata_via
-> ata1: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0xdc00 irq 14
-> ata2: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xdc08 irq 15
-> ata1.00: ATA-7: Maxtor 6Y080L0, YAR41BW0, max UDMA/133
-> ata1.00: 160086528 sectors, multi 16: LBA
-> ata1.01: ATA-5: ST340016A, 3.10, max UDMA/100
-> ata1.01: 78165360 sectors, multi 16: LBA
-> ata1.00: limited to UDMA/33 due to 40-wire cable
-> ata1.01: limited to UDMA/33 due to 40-wire cable
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-The via driver hasn't changed its cable detect handling between 2.6.27
-and now. The actual detection is done by the BIOS either by setting flags
-or via ACPI.
+> On Tuesday 02 June 2009, Jan Scholz wrote:                                 
+>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:                                
+>>                                                                          
+>> > On Monday 01 June 2009, Jan Scholz wrote:                              
+>> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:                             
+>> >>                                                                       
+>> >> > On Friday 29 May 2009, Jan Scholz wrote:                            
+>> >> >> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:          
+>> >> >>                                                                    
+>> >> >> >> We are too late in the cycle to revert this commit and it       
+> really is needed to                                                        
+>> >> >> >> fix a more serious issue. Nevertheless knowing that it caused   
+> the problem to                                                             
+>> >> >> >> appear on your system is also important.                        
+>> >> >> >>                                                                 
+>> >> >> >> Ben, do you have an idea what may be going on here? Does        
+> __disable_irq() mask                                                       
+>> >> >> >> the interrupt on this platform?                                 
+>> >> >> >                                                                  
+>> >> >> > I suppose so :-) I'll have to check what's going on, it's not    
+>> >> >> > immediately clear to me.                                         
+>> >> >> >                                                                  
+>> >> >> > Cheers,                                                          
+>> >> >> > Ben.                                                             
+>> >> >> >                                                                  
+>> >> >> >>                                                                 
+>> >> >> >> I'd like to see a boot log, preferably containing a             
+> suspend-resume in which                                                    
+>> >> >> >> the problem was reproduced.                                     
+>> >> >>                                                                    
+>> >> >> Here is a log from booting, through several suspend cycles, until  
+> the                                                                        
+>> >> >> trackpad disappeared. The first few suspends were done while X was 
+>> >> >> running but from the console. As you can tell from lines like      
+>> >> >> May 28 23:51:26 [kernel] adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f 
+>> >> >> the trackpad was still present. The last suspend was done from     
+> within X,                                                                  
+>> >> >> here the trackpad did not make it.                                 
+>> >> >> May 28 23:58:09 [kernel] adb devices: [2]: 2 c4 [7]: 7 1f          
+>> >> >> However, there have been cases, although not in this log, were the 
+>> >> >> trackpad has been alive even when suspending from within X.        
+>> >> >                                                                     
+>> >> > This means the problem is probably timing-related.                  
+>> >> >                                                                     
+>> >> > Can you please try to comment out suspend_device_irqs() and         
+>> >> > resume_device_irqs() in drivers/base/power/main.c and see if that   
+> changes                                                                    
+>> >> > anything? It's not entirely safe (well, that's why the calls are    
+> there after                                                                
+>> >> > all), but hopefully the box won't hang during this test.            
+>> >> >                                                                     
+>> >>                                                                       
+>> >> Tried that against v2.6.30-rc7 and it seems to fix the issue. I did   
+> ~10                                                                        
+>> >> suspend-resume cycles from the console (which worked just like        
+> before)                                                                    
+>> >> and ~20 cycles from within X and the trackpad is still alive.         
+>> >                                                                        
+>> > So, it seems we lose and interrupt during resume and that confuses the 
+>> > ADB controller driver or something like this. Do you use the keyboard  
+> or                                                                         
+>> > the trackpad as a wake-up device?                                      
+>>                                                                          
+>> I do the wakeup by pressing keys on the keyboard. I'd try wakeup via the 
+>> trackpad's button, but I have no idea how to activate that.              
+>>                                                                          
+>> > Please additionally try to go back to the original code, put           
+>> > 'sleepy_trackpad = 1' at the beginning of do_adb_reset_bus() in        
+>> > drivers/macintosh/adb.c and see if the problem is reproducible with    
+> that.                                                                      
+>>                                                                          
+>> Tried this, but it does not help.                                        
+>>                                                                          
+>> What I haven't noticed before is, that even if the trackpad already      
+>> disappeared, an additional suspend-resume cycle from the console brought 
+>> it back to life every time. Sometimes this worked from within X as well, 
+>> just not with such a high probability as from the console.               
+>> However, this is independent from 'sleepy_trackpad = 1'.                 
+>
+> OK, the patch is below, but I haven't had the opportunity to test it yet.  
+>
+> Can you please check if it helps, on top of 2.6.30-rc8?                    
+>
+> Best,                                                                      
+> Rafael                                                                     
+>
+> ---                                                                        
+> kernel/irq/manage.c | 12 ++++++++----                                      
+> 1 file changed, 8 insertions(+), 4 deletions(-)                            
+>
+> Index: linux-2.6/kernel/irq/manage.c                                       
+> ===================================================================        
+> --- linux-2.6.orig/kernel/irq/manage.c                                     
+> +++ linux-2.6/kernel/irq/manage.c                                          
+> @@ -187,9 +187,9 @@ static inline int setup_affinity(unsigne               
+> void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)  
+> {                                                                          
+> if (suspend) {                                                             
+> - if (!desc->action || (desc->action->flags & IRQF_TIMER))                 
+> - return;                                                                  
+> - desc->status |= IRQ_SUSPENDED;                                           
+> + if (desc->action && !(desc->action->flags & IRQF_TIMER))                 
+> + desc->status |= IRQ_SUSPENDED | IRQ_DISABLED;                            
+> + return;                                                                  
+> }                                                                          
+>
+> if (!desc->depth++) {                                                      
+> @@ -250,8 +250,12 @@ EXPORT_SYMBOL(disable_irq);                           
+>
+> void __enable_irq(struct irq_desc *desc, unsigned int irq, bool resume)    
+> {                                                                          
+> - if (resume)                                                              
+> + if (resume) {                                                            
+> desc->status &= ~IRQ_SUSPENDED;                                            
+> + if (!desc->depth)                                                        
+> + desc->status &= ~IRQ_DISABLED;                                           
+> + return;                                                                  
+> + }                                                                        
+>
+> switch (desc->depth) {                                                     
+> case 0:                                                                    
 
-To trace it down I'd need to at minimum to know exactly which kernel the
-behaviour you see changed.
+Hi Rafael,
+
+I tried your patch, but it makes my box crash on wakeup. It even reset
+the hwclock which normally only happens with completely empty battery
+and without AC.
+
+Here are the last few lines of the syslog, and the first after booting
+again:
+
+Jun  3 13:53:12 [kernel] [drm] writeback test succeeded in 1 usecs
+Jun  3 13:53:40 [kernel] radeonfb 0000:00:10.0: Invalid ROM contents
+                - Last output repeated twice -
+Jun  3 13:53:41 [kernel] agpgart-uninorth 0000:00:0b.0: putting AGP V2 device into 4x mode
+Jun  3 13:53:41 [kernel] radeonfb 0000:00:10.0: putting AGP V2 device into 4x mode
+Jun  3 13:53:41 [kernel] [drm] Setting GART location based on new memory map
+Jun  3 13:53:41 [kernel] [drm] Loading R200 Microcode
+Jun  3 13:53:41 [kernel] [drm] writeback test succeeded in 1 usecs
+Jun  3 13:53:47 [pbbuttonsd] INFO: Script '/etc/power/pmcs-pbbuttonsd suspend ac ram' launched and exited normally_
+Jan  1 01:01:52 [kernel] via-pmu: Server Mode is disabled
+
+
+Cheers,
+   Jan
