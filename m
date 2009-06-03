@@ -1,62 +1,397 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbZFCII2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbZFCIIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757225AbZFCII2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 04:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756545AbZFCIHo
+	id S1757313AbZFCIIp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 04:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbZFCIHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 04:07:44 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:57567 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756317AbZFCIHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 04:07:40 -0400
-Date: Wed, 3 Jun 2009 10:07:41 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "david@fromorbit.com" <david@fromorbit.com>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "jack@suse.cz" <jack@suse.cz>,
-       "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>,
-       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
-       "damien.wyart@free.fr" <damien.wyart@free.fr>
-Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
-Message-ID: <20090603080741.GE11363@kernel.dk>
-References: <4A1E9D0B.4090402@gmail.com> <4A1E9D8B.8020908@gmail.com> <1243542908.6645.104.camel@laptop> <4A20011E.7020900@nokia.com> <20090529155046.GH11363@kernel.dk> <4A20072B.7050807@nokia.com> <20090529170742.GI11363@kernel.dk> <4A2628A7.9080407@nokia.com> <20090603074417.GC11363@kernel.dk> <4A262D6E.9070908@nokia.com>
+	Wed, 3 Jun 2009 04:07:52 -0400
+Received: from proxy1.bredband.net ([195.54.101.71]:34722 "EHLO
+	proxy1.bredband.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756269AbZFCIHs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 04:07:48 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgEFAAPMJUpV5HbzPGdsb2JhbACBT5Y7AQEBAbdfhAsF
+X-IronPort-AV: E=Sophos;i="4.41,297,1241388000"; 
+   d="scan'208";a="533092620"
+Message-ID: <4A262F54.3090106@mocean-labs.com>
+Date: Wed, 03 Jun 2009 10:07:48 +0200
+From: =?UTF-8?B?UmljaGFyZCBSwprDtmpmb3Jz?= 
+	<richard.rojfors.ext@mocean-labs.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A262D6E.9070908@nokia.com>
+To: linux-kernel@vger.kernel.org
+CC: =?UTF-8?B?J1JpY2hhcmQgUsKaw7ZqZm9ycyc=?= 
+	<richard.rojfors.ext@mocean-labs.com>
+Subject: [PATCH] gpio: Added timbgpio
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03 2009, Artem Bityutskiy wrote:
-> Jens Axboe wrote:
->>> Just to make sure I understood you correctly. I assume my original
->>> patch is fine (because there is bdi_destroy()) and merge it to
->>> ubifs tree.
->>
->> It needs to be:
->>
->>         err = bdi_register(&c->bdi, NULL, "ubifs");
->>         if (err)
->>                 goto out_bdi;
->>
->> so you hit the bdi_destroy() for that failure, not goto out_close;
->> Otherwise it was fine.
->
-> Did this, also added a
-> Reviewed-by: Jens Axboe <jens.axboe@oracle.com>
->
-> http://git.infradead.org/ubifs-2.6.git?a=commit;h=813fdc16ad591e79d0c1b88d31970dcd1c2aa3f1
+Supplied is a GPIO driver for the Timberdale FPGA found on the
+Intel Atom board Russellville.
 
-Looks good!
+Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
+---
+Index: linux-2.6.30-rc7/drivers/gpio/timbgpio.h
+===================================================================
+--- linux-2.6.30-rc7/drivers/gpio/timbgpio.h	(revision 0)
++++ linux-2.6.30-rc7/drivers/gpio/timbgpio.h	(revision 864)
+@@ -0,0 +1,48 @@
++/*
++ * timbgpio.h timberdale FPGA GPIO driver defines
++ * Copyright (c) 2009 Intel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++/* Supports:
++ * Timberdale FPGA GPIO
++ */
++
++#ifndef _TIMBGPIO_H_
++#define _TIMBGPIO_H_
++
++#include <linux/mutex.h>
++#include <linux/gpio.h>
++
++#define TIMB_NR_GPIOS 16
++
++#define TGPIOVAL 	0
++#define TGPIODIR 	0x04
++#define TGPIOINT 	0x08
++#define TGPIOINT_STATUS	0x0c
++#define TGPIOINT_PENDING 0x10
++#define TGPIOINT_CLR	0x14
++#define TGPIOFLK 	0x18
++#define TGPIOLVL 	0x1c
++
++struct timbgpio {
++	void __iomem		*membase;
++	struct resource		rscr;
++	struct mutex		lock; /* mutual exclusion */
++	struct pci_dev		*pdev;
++	struct gpio_chip	gpio;
++};
++
++#endif
+Index: linux-2.6.30-rc7/drivers/gpio/timbgpio.c
+===================================================================
+--- linux-2.6.30-rc7/drivers/gpio/timbgpio.c	(revision 0)
++++ linux-2.6.30-rc7/drivers/gpio/timbgpio.c	(revision 864)
+@@ -0,0 +1,275 @@
++/*
++ * timbgpio.c timberdale FPGA GPIO driver
++ * Copyright (c) 2009 Intel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++/* Supports:
++ * Timberdale FPGA GPIO
++ */
++
++#include <linux/module.h>
++#include <linux/gpio.h>
++#include <linux/pci.h>
++#include <linux/platform_device.h>
++#include <linux/interrupt.h>
++
++#include "timbgpio.h"
++
++static u32 timbgpio_configure(struct gpio_chip *gpio, unsigned nr,
++						unsigned off, unsigned val)
++{
++	struct timbgpio *tgpio = container_of(gpio, struct timbgpio, gpio);
++
++	u32 config, oldconfig, wconfig;
++
++	mutex_lock(&tgpio->lock);
++	config = ioread32(tgpio->membase + off);
++	oldconfig = config;
++
++	if (val)
++		config |= (1 << nr);
++	else
++		config &= ~(1 << nr);
++
++	iowrite32(config, tgpio->membase + off);
++	wconfig = ioread32(tgpio->membase + off);
++	mutex_unlock(&tgpio->lock);
++
++	return oldconfig;
++}
++
++static int timbgpio_gpio_direction_input(struct gpio_chip *gpio, unsigned nr)
++{
++	timbgpio_configure(gpio, nr, TGPIODIR, 1);
++	return 0;
++}
++
++static int timbgpio_gpio_get(struct gpio_chip *gpio, unsigned nr)
++{
++	struct timbgpio *tgpio = container_of(gpio, struct timbgpio, gpio);
++	u32 value;
++
++	value = ioread32(tgpio->membase + TGPIOVAL);
++	return (value & (1 << nr)) ? 1 : 0;
++}
++
++static int timbgpio_gpio_direction_output(struct gpio_chip *gpio,
++						unsigned nr, int val)
++{
++	timbgpio_configure(gpio, nr, TGPIODIR, 0);
++	return 0;
++}
++
++
++
++static void timbgpio_gpio_set(struct gpio_chip *gpio,
++				unsigned nr, int val)
++{
++	timbgpio_configure(gpio, nr, TGPIOVAL, val);
++}
++
++/*
++ * Function to control flank or level triggered GPIO pin
++ * @nr - pin
++ * @ val - 1: flank, 0: level
++ *
++ */
++static void timbgpio_gpio_flnk_lvl_ctrl(struct gpio_chip *gpio,
++						unsigned nr, int val)
++{
++	timbgpio_configure(gpio, nr, TGPIOFLK, val);
++}
++EXPORT_SYMBOL(timbgpio_gpio_flnk_lvl_ctrl);
++
++/*
++ * Enable or disable interrupt
++ *
++ */
++static void timbgpio_gpio_int_ctrl(struct gpio_chip *gpio,
++					unsigned nr, int val)
++{
++	timbgpio_configure(gpio, nr, TGPIOINT, val);
++}
++EXPORT_SYMBOL(timbgpio_gpio_int_ctrl);
++
++/*
++ * @val - 1: Asserted high or on positive flank, 0: Asserted low or on negative flank
++ *
++ */
++static void timbgpio_gpio_lvl_ctrl(struct gpio_chip *gpio,
++					unsigned nr, int val)
++{
++	timbgpio_configure(gpio, nr, TGPIOLVL, val);
++}
++EXPORT_SYMBOL(timbgpio_gpio_lvl_ctrl);
++
++static void timbgpio_gpio_int_clr(struct gpio_chip *gpio,
++					unsigned nr, int val)
++{
++	timbgpio_configure(gpio, nr, TGPIOINT_CLR, val);
++}
++EXPORT_SYMBOL(timbgpio_gpio_int_clr);
++
++
++static irqreturn_t timbgpio_handleinterrupt(int irq, void *devid)
++{
++	struct timbgpio *tgpio = (struct timbgpio *)devid;
++
++	iowrite32(0xffffffff, tgpio->membase + TGPIOINT_CLR);
++
++	return IRQ_HANDLED;
++}
++
++static int timbgpio_probe(struct platform_device *dev)
++{
++	int err, irq;
++	struct gpio_chip *gc;
++	struct timbgpio *tgpio;
++	struct resource *iomem, *rscr;
++
++	iomem = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (!iomem) {
++		err = -EINVAL;
++		goto err_mem;
++	}
++
++	tgpio = kzalloc(sizeof(*tgpio), GFP_KERNEL);
++	if (!tgpio) {
++		err = -EINVAL;
++		goto err_mem;
++	}
++
++	mutex_init(&tgpio->lock);
++
++	rscr = &tgpio->rscr;
++	rscr->name = "timb-gpio";
++	rscr->start = iomem->start;
++	rscr->end = iomem->end;
++	rscr->flags = IORESOURCE_MEM;
++
++	err = request_resource(iomem, rscr);
++	if (err)
++		goto err_request;
++
++	tgpio->membase = ioremap(rscr->start, resource_size(rscr));
++	if (!tgpio->membase) {
++		err = -ENOMEM;
++		goto err_ioremap;
++	}
++
++	gc = &tgpio->gpio;
++
++	gc->label = "timbgpio";
++	gc->owner = THIS_MODULE;
++	gc->direction_input = timbgpio_gpio_direction_input;
++	gc->get = timbgpio_gpio_get;
++	gc->direction_output = timbgpio_gpio_direction_output;
++	gc->set = timbgpio_gpio_set;
++	gc->dbg_show = NULL;
++	gc->base = 0;
++	gc->ngpio = TIMB_NR_GPIOS;
++	gc->can_sleep = 0;
++
++	err = gpiochip_add(gc);
++	if (err)
++		goto err_chipadd;
++
++	platform_set_drvdata(dev, tgpio);
++
++	/* register interrupt */
++	irq = platform_get_irq(dev, 0);
++	if (irq < 0)
++		goto err_get_irq;
++
++	/* clear pending interrupts */
++	iowrite32(0xffffffff, tgpio->membase + TGPIOINT_CLR);
++	iowrite32(0x0, tgpio->membase + TGPIOINT);
++
++	/* request IRQ */
++	err = request_irq(irq, timbgpio_handleinterrupt, IRQF_SHARED,
++			  "timb-gpio", tgpio);
++	if (err) {
++		printk(KERN_ERR "timbgpio: Failed to request IRQ\n");
++		goto err_get_irq;
++	}
++
++	return err;
++
++err_get_irq:
++	err = gpiochip_remove(&tgpio->gpio);
++	if (err)
++		printk(KERN_ERR "timbgpio: failed to remove gpio_chip\n");
++err_chipadd:
++	iounmap(tgpio->membase);
++err_ioremap:
++	release_resource(&tgpio->rscr);
++err_request:
++	kfree(tgpio);
++err_mem:
++	printk(KERN_ERR "timberdale: Failed to register GPIOs: %d\n", err);
++
++	return err;
++}
++
++static int timbgpio_remove(struct platform_device *dev)
++{
++	int err;
++	struct timbgpio *tgpio = platform_get_drvdata(dev);
++
++	/* disable interrupts */
++	iowrite32(0x0, tgpio->membase + TGPIOINT);
++
++	free_irq(platform_get_irq(dev, 0), tgpio);
++	err = gpiochip_remove(&tgpio->gpio);
++	if (err)
++		printk(KERN_ERR "timbgpio: failed to remove gpio_chip\n");
++
++	iounmap(tgpio->membase);
++	release_resource(&tgpio->rscr);
++	kfree(tgpio);
++
++	return 0;
++}
++
++static struct platform_driver timbgpio_platform_driver = {
++	.driver = {
++		.name	= "timb-gpio",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= timbgpio_probe,
++	.remove		= timbgpio_remove,
++};
++
++/*--------------------------------------------------------------------------*/
++
++static int __init timbgpio_init(void)
++{
++	return platform_driver_register(&timbgpio_platform_driver);
++}
++
++static void __exit timbgpio_exit(void)
++{
++	platform_driver_unregister(&timbgpio_platform_driver);
++}
++
++module_init(timbgpio_init);
++module_exit(timbgpio_exit);
++
++MODULE_DESCRIPTION("Timberdale GPIO driver");
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("Mocean Laboratories");
++MODULE_ALIAS("platform:timb-gpio");
++
+Index: linux-2.6.30-rc7/drivers/gpio/Kconfig
+===================================================================
+--- linux-2.6.30-rc7/drivers/gpio/Kconfig	(revision 861)
++++ linux-2.6.30-rc7/drivers/gpio/Kconfig	(working copy)
+@@ -161,6 +161,12 @@
 
--- 
-Jens Axboe
+ 	  If unsure, say N.
 
++config GPIO_TIMBERDALE
++	tristate "Support for timberdale GPIO"
++	depends on MFD_TIMBERDALE && GPIOLIB
++	---help---
++	Add support for GPIO usage of some pins of the timberdale FPGA.
++
+ comment "SPI GPIO expanders:"
+
+ config GPIO_MAX7301
+Index: linux-2.6.30-rc7/drivers/gpio/Makefile
+===================================================================
+--- linux-2.6.30-rc7/drivers/gpio/Makefile	(revision 861)
++++ linux-2.6.30-rc7/drivers/gpio/Makefile	(working copy)
+@@ -12,3 +12,5 @@
+ obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
+ obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
+ obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
++obj-$(CONFIG_GPIO_TIMBERDALE)	+= timbgpio.o
++
