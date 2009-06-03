@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756607AbZFCXND@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbZFCXOD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756607AbZFCXND (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 19:13:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbZFCXMx
+	id S1755831AbZFCXOD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 19:14:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbZFCXNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 19:12:53 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:44862 "EHLO
+	Wed, 3 Jun 2009 19:13:52 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:20331 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753781AbZFCXMw (ORCPT
+	with ESMTP id S1753869AbZFCXNv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 19:12:52 -0400
+	Wed, 3 Jun 2009 19:13:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=LfxRl+gHHIsFJ4J+ZuY5sWu2FkExuFUwZ0R1o877UtxntO7AFp6pPfJM46W12RFBsu
-         Rd+JAJFdkm1QTI0kKSa5GvVbNJqOqOAUEWe61o7om+BBIWCs2tldhlQrTqoHvK5xZurz
-         io7YDSnAuDOM4Cmn9e57u3JhgR1ckVN27HXtU=
-Date: Thu, 4 Jun 2009 03:06:13 +0400
+        b=JFo79f74WP14H2BK2MZXmihSUwFFi/JVP5fDSEgfPxXs2wQn/H6etc/yBIqYgn33Hw
+         G3MlHOWdV7fIVQIPGAPNpcLR2cQSpBLpEGw8sZ2VjMktLj53AYskEdWg6TBU4bCaTek3
+         Uoo6VOSuarOb2Mkx6TFNy5OjQM2Ny0roSsDac=
+Date: Thu, 4 Jun 2009 03:06:56 +0400
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Matt Helsley <matthltc@us.ibm.com>, xemul@parallels.com,
        containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        dave@linux.vnet.ibm.com, mingo@elte.hu, torvalds@linux-foundation.org,
        linux-fsdevel@vger.kernel.org
-Subject: [PATCH 4/9] exec_path 4/9: switch oprofile to ->exec_path
-Message-ID: <20090603230613.GE853@x200.localdomain>
+Subject: [PATCH 6/9] exec_path 6/9: add struct spu::tsk
+Message-ID: <20090603230656.GG853@x200.localdomain>
 References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org> <20090531215427.GA29534@x200.localdomain> <20090531151953.8f8b14b5.akpm@linux-foundation.org> <20090603230422.GB853@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -36,66 +36,83 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Pass down task_struct too.
+
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- drivers/oprofile/buffer_sync.c |   30 ++++++++----------------------
- 1 files changed, 8 insertions(+), 22 deletions(-)
+ arch/powerpc/include/asm/spu.h            |    3 ++-
+ arch/powerpc/platforms/cell/spu_base.c    |   11 ++++++-----
+ arch/powerpc/platforms/cell/spufs/sched.c |    4 ++--
+ 3 files changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/oprofile/buffer_sync.c b/drivers/oprofile/buffer_sync.c
-index 8574622..64c6d7d 100644
---- a/drivers/oprofile/buffer_sync.c
-+++ b/drivers/oprofile/buffer_sync.c
-@@ -25,6 +25,7 @@
- #include <linux/workqueue.h>
- #include <linux/notifier.h>
- #include <linux/dcookies.h>
-+#include <linux/path.h>
- #include <linux/profile.h>
- #include <linux/module.h>
- #include <linux/fs.h>
-@@ -213,30 +214,15 @@ static inline unsigned long fast_get_dcookie(struct path *path)
- 	return cookie;
+diff --git a/arch/powerpc/include/asm/spu.h b/arch/powerpc/include/asm/spu.h
+index 0ab8d86..f9b1bcf 100644
+--- a/arch/powerpc/include/asm/spu.h
++++ b/arch/powerpc/include/asm/spu.h
+@@ -135,6 +135,7 @@ struct spu {
+ 	u64 class_1_dsisr;
+ 	size_t ls_size;
+ 	unsigned int slb_replace;
++	struct task_struct *tsk;
+ 	struct mm_struct *mm;
+ 	struct spu_context *ctx;
+ 	struct spu_runqueue *rq;
+@@ -212,7 +213,7 @@ static inline void crash_register_spus(struct list_head *list)
+ #endif
+ 
+ extern void spu_invalidate_slbs(struct spu *spu);
+-extern void spu_associate_mm(struct spu *spu, struct mm_struct *mm);
++extern void spu_associate_task(struct spu *spu, struct task_struct *tsk);
+ int spu_64k_pages_available(void);
+ 
+ /* Calls from the memory management to the SPU */
+diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
+index 9abd210..46f4a63 100644
+--- a/arch/powerpc/platforms/cell/spu_base.c
++++ b/arch/powerpc/platforms/cell/spu_base.c
+@@ -117,17 +117,18 @@ static inline void mm_needs_global_tlbie(struct mm_struct *mm)
+ 	bitmap_fill(cpumask_bits(mm_cpumask(mm)), nr);
  }
  
--
--/* Look up the dcookie for the task's first VM_EXECUTABLE mapping,
-- * which corresponds loosely to "application name". This is
-- * not strictly necessary but allows oprofile to associate
-- * shared-library samples with particular applications
-- */
--static unsigned long get_exec_dcookie(struct mm_struct *mm)
-+static unsigned long get_exec_dcookie(struct task_struct *tsk)
+-void spu_associate_mm(struct spu *spu, struct mm_struct *mm)
++void spu_associate_task(struct spu *spu, struct task_struct *tsk)
  {
- 	unsigned long cookie = NO_COOKIE;
--	struct vm_area_struct *vma;
-+	struct path exec_path;
+ 	unsigned long flags;
  
--	if (!mm)
--		goto out;
--
--	for (vma = mm->mmap; vma; vma = vma->vm_next) {
--		if (!vma->vm_file)
--			continue;
--		if (!(vma->vm_flags & VM_EXECUTABLE))
--			continue;
--		cookie = fast_get_dcookie(&vma->vm_file->f_path);
--		break;
--	}
--
--out:
-+	get_task_exec_path(tsk, &exec_path);
-+	if (exec_path.mnt && exec_path.dentry)
-+		cookie = fast_get_dcookie(&exec_path);
-+	path_put(&exec_path);
- 	return cookie;
+ 	spin_lock_irqsave(&spu_full_list_lock, flags);
+-	spu->mm = mm;
++	spu->tsk = tsk;
++	spu->mm = tsk ? tsk->mm : NULL;
+ 	spin_unlock_irqrestore(&spu_full_list_lock, flags);
+-	if (mm)
+-		mm_needs_global_tlbie(mm);
++	if (tsk && tsk->mm)
++		mm_needs_global_tlbie(tsk->mm);
  }
+-EXPORT_SYMBOL_GPL(spu_associate_mm);
++EXPORT_SYMBOL_GPL(spu_associate_task);
  
-@@ -543,7 +529,7 @@ void sync_buffer(int cpu)
- 				release_mm(oldmm);
- 				mm = take_tasks_mm(new);
- 				if (mm != oldmm)
--					cookie = get_exec_dcookie(mm);
-+					cookie = get_exec_dcookie(new);
- 				add_user_ctx_switch(new, cookie);
- 			}
- 			if (op_cpu_buffer_get_size(&entry))
+ int spu_64k_pages_available(void)
+ {
+diff --git a/arch/powerpc/platforms/cell/spufs/sched.c b/arch/powerpc/platforms/cell/spufs/sched.c
+index 9fbd87a..2f7e497 100644
+--- a/arch/powerpc/platforms/cell/spufs/sched.c
++++ b/arch/powerpc/platforms/cell/spufs/sched.c
+@@ -230,7 +230,7 @@ static void spu_bind_context(struct spu *spu, struct spu_context *ctx)
+ 	ctx->stats.slb_flt_base = spu->stats.slb_flt;
+ 	ctx->stats.class2_intr_base = spu->stats.class2_intr;
+ 
+-	spu_associate_mm(spu, ctx->owner->mm);
++	spu_associate_task(spu, ctx->owner);
+ 
+ 	spin_lock_irq(&spu->register_lock);
+ 	spu->ctx = ctx;
+@@ -470,7 +470,7 @@ static void spu_unbind_context(struct spu *spu, struct spu_context *ctx)
+ 	spu->ctx = NULL;
+ 	spin_unlock_irq(&spu->register_lock);
+ 
+-	spu_associate_mm(spu, NULL);
++	spu_associate_task(spu, NULL);
+ 
+ 	ctx->stats.slb_flt +=
+ 		(spu->stats.slb_flt - ctx->stats.slb_flt_base);
