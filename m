@@ -1,97 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbZFCRSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbZFCRTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757887AbZFCRSS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 13:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbZFCRSF
+	id S1758116AbZFCRTn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 13:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754734AbZFCRTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 13:18:05 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:46936 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754295AbZFCRSE (ORCPT
+	Wed, 3 Jun 2009 13:19:36 -0400
+Received: from oblivion.subreption.com ([66.240.236.22]:34207 "EHLO
+	mail.subreption.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754638AbZFCRTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 13:18:04 -0400
-Message-ID: <4A26B0D2.3090207@oracle.com>
-Date: Wed, 03 Jun 2009 10:20:18 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 3 Jun 2009 13:19:35 -0400
+Date: Wed, 3 Jun 2009 10:21:23 -0700
+From: "Larry H." <research@subreption.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu
+Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change
+	ZERO_SIZE_PTR to point at unmapped space)
+Message-ID: <20090603172123.GG6701@oblivion.subreption.com>
+References: <20090530230022.GO6535@oblivion.subreption.com> <alpine.LFD.2.01.0905301902010.3435@localhost.localdomain> <20090531022158.GA9033@oblivion.subreption.com> <alpine.DEB.1.10.0906021130410.23962@gentwo.org> <20090602203405.GC6701@oblivion.subreption.com> <alpine.DEB.1.10.0906031047390.15621@gentwo.org> <1244041914.12272.64.camel@localhost.localdomain> <alpine.DEB.1.10.0906031134410.13551@gentwo.org> <20090603162831.GF6701@oblivion.subreption.com> <4A26A689.1090300@redhat.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       johannes@sipsolutions.net,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       linux-wimax@intel.com, wimax@linuxwimax.org
-Subject: Re: linux-next: Tree for June 3 (rfkill)
-References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au> <4A269539.8020607@oracle.com>
-In-Reply-To: <4A269539.8020607@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt005.oracle.com [141.146.116.14]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4A26B015.025C:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A26A689.1090300@redhat.com>
+Organization: Subreption LLC
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> Stephen Rothwell wrote:
->> Hi all,
->>
->> Looks like a real rush since -rc7 ...
-> 
-> 
-> CFG80211=y
-> MAC80211=y
-> RFKILL=m
-> 
-> net/built-in.o: In function `cfg80211_netdev_notifier_call':
-> core.c:(.text+0xa678b): undefined reference to `rfkill_blocked'
-> net/built-in.o: In function `cfg80211_dev_free':
-> (.text+0xa67e2): undefined reference to `rfkill_destroy'
-> net/built-in.o: In function `cfg80211_rfkill_sync_work':
-> core.c:(.text+0xa686e): undefined reference to `rfkill_blocked'
-> net/built-in.o: In function `wiphy_new':
-> (.text+0xa69f2): undefined reference to `rfkill_alloc'
-> net/built-in.o: In function `wiphy_rfkill_start_polling':
-> (.text+0xa6bd2): undefined reference to `rfkill_resume_polling'
-> net/built-in.o: In function `wiphy_rfkill_stop_polling':
-> (.text+0xa6bdf): undefined reference to `rfkill_pause_polling'
-> net/built-in.o: In function `wiphy_unregister':
-> (.text+0xa6bf4): undefined reference to `rfkill_unregister'
-> net/built-in.o: In function `wiphy_rfkill_set_hw_state':
-> (.text+0xa6c64): undefined reference to `rfkill_set_hw_state'
-> net/built-in.o: In function `wiphy_register':
-> (.text+0xa6db4): undefined reference to `rfkill_register'
-> net/built-in.o: In function `cfg80211_wext_giwtxpower':
-> (.text+0xb01e9): undefined reference to `rfkill_blocked'
-> net/built-in.o: In function `cfg80211_wext_siwtxpower':
-> (.text+0xb0cf3): undefined reference to `rfkill_set_sw_state'
-> net/built-in.o: In function `cfg80211_wext_siwtxpower':
-> (.text+0xb0d1f): undefined reference to `rfkill_set_sw_state'
+On 12:36 Wed 03 Jun     , Rik van Riel wrote:
+> Larry H. wrote:
+>
+>> Christopher, crippling the system is truly not the way to fix this.
+>> There are many legitimate users of private|fixed mappings at 0. In
+>> addition, if you want to go ahead and break POSIX, at least make sure
+>> your patch closes the loophole.
+>
+> I suspect there aren't many at all, and restricting them through
+> SELinux may be enough to mitigate the risk.
 
+It's still perfectly valid POSIX, but I'm definitely keen on using this
+patch together with a convenient mmap_min_addr value. I'm just trying to
+show how both things are orthogonal to each other, without additional
+cost for us (as in people doing kernel/drivers development) and users.
 
-Ugh, there are similar errors in the wimax area, which doesn't
-seem to mention RFKILL in its Kconfig file at all.  :(
+>> If SELinux isn't present, that's not useful. If mmap_min_addr is
+>> enabled, that still won't solve what my original, utterly simple patch
+>> fixes.
+>
+> Would anybody paranoid run their system without SELinux?
 
-net/built-in.o: In function `wimax_rfkill':
-(.text+0x81996): undefined reference to `rfkill_set_sw_state'
-net/built-in.o: In function `wimax_report_rfkill_sw':
-(.text+0x81ac0): undefined reference to `rfkill_set_sw_state'
-net/built-in.o: In function `wimax_report_rfkill_hw':
-(.text+0x81bd3): undefined reference to `rfkill_set_hw_state'
-net/built-in.o: In function `wimax_rfkill_rm':
-(.text+0x81c8f): undefined reference to `rfkill_unregister'
-net/built-in.o: In function `wimax_rfkill_rm':
-(.text+0x81c9a): undefined reference to `rfkill_destroy'
-net/built-in.o: In function `wimax_rfkill_add':
-(.text+0x81d52): undefined reference to `rfkill_alloc'
-net/built-in.o: In function `wimax_rfkill_add':
-(.text+0x81db3): undefined reference to `rfkill_register'
-net/built-in.o: In function `wimax_rfkill_add':
-(.text+0x81e2d): undefined reference to `rfkill_destroy'
+Does everyone who is conscious about security must use SELinux? Is
+SELinux the only acceptable solution? What about people who decide to
+use AppArmor, or LIDS, or grsecurity?
 
+That's not a valid point. People should stay safe without SELinux
+whenever it is feasible, IMHO. I think everyone here will agree that
+SELinux has a track of being disabled by users after installation
+because they don't want to invest the necessary time on understanding
+and learning the policy language or management tools.
 
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+>> The patch provides a no-impact, clean solution to prevent kmalloc(0)
+>> situations from becoming a security hazard. Nothing else.
+>
+> True, the changes in your patch only affect a few code paths.
+
+Only SLAB code itself is affected, users of kmalloc won't see a
+functional difference. They just won't be as easily abused if a zero
+length ends up passed to kmalloc and the pointer is used for something
+later. There's an issue here that I must note: a wraparound can happen
+and make the pointer land back somewhere near NULL.
+
+It could be changed to point at the start of the fixmap.
+
+It might be wise to see if expanding the fixmap on runtime can deter
+this, although I had trouble using it within vm guests. This can be done
+using reservetop boot option.
+
+	Larry
