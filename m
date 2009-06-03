@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbZFCLRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbZFCL1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756860AbZFCLRz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 07:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbZFCLRr
+	id S1754895AbZFCL1k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 07:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbZFCL1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 07:17:47 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34076 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754628AbZFCLRr (ORCPT
+	Wed, 3 Jun 2009 07:27:32 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:46031 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752189AbZFCL1b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 07:17:47 -0400
-Date: Wed, 3 Jun 2009 13:24:56 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+	Wed, 3 Jun 2009 07:27:31 -0400
+Message-ID: <4A265DF6.3070602@nokia.com>
+Date: Wed, 03 Jun 2009 14:26:46 +0300
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090603112456.GA1065@one.firstfloor.org>
-References: <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org> <20090602125713.GG1392@wotan.suse.de> <20090602134659.GA21338@localhost> <20090602151729.GC17448@wotan.suse.de> <20090602172715.GT1065@one.firstfloor.org> <20090603093546.GA16275@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090603093546.GA16275@wotan.suse.de>
-User-Agent: Mutt/1.4.2.1i
+       Dmitry Pervushin <dpervushin@embeddedalley.com>
+Subject: Re: linux-next: ubi tree build failure
+References: <20090603184408.49c7fb1f.sfr@canb.auug.org.au>
+In-Reply-To: <20090603184408.49c7fb1f.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 03 Jun 2009 11:26:47.0352 (UTC) FILETIME=[2E59EB80:01C9E43E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 11:35:46AM +0200, Nick Piggin wrote:
-> On Tue, Jun 02, 2009 at 07:27:15PM +0200, Andi Kleen wrote:
-> > > Hmm, if you're handling buffercache here then possibly yes.
-> > 
-> > Good question, will check.
+Stephen Rothwell wrote:
+> Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
 > 
-> BTW. now that I think about it, buffercache is probably not a good
-> idea to truncate (truncate, as-in: remove from pagecache). Because
-> filesystems can assume that with just a reference on the page, then
-> it will not be truncated.
+> drivers/mtd/ubi/gluebi.c: In function 'gluebi_get_device':
+> drivers/mtd/ubi/gluebi.c:126: error: implicit declaration of function 'IS_ERR'
+> drivers/mtd/ubi/gluebi.c:129: error: implicit declaration of function 'PTR_ERR'
 
-Yes I understand. Need to check for this, but I'm not sure
-how we can reliably detect it based on the struct page alone. I guess we have 
-to look at the mapping.
+It is strange that I do not see these errors on my x86_86
 
-> So I think it would be a good idea to exclude buffercache from
-> here completely until it can be shown to be safe. Actually you
+> Introduced by commit ec5c514efde253de7f28668c88bbae26d2a293de ("UBI: make
+> gluebi a separate module") from the ubi tree.  I guess the conversion
+> managed to remove an implicit include of linux/err.h.
+> 
+> I have reverted that commit for today.  I then needed to also revert
+> commit 518ceef0c9ca97023e45ae46aedaefa240c690a6 ("UBI: remove built-in
+> gluebi") to make it build again.
 
-Agreed. Just need to figure out how.
+Hmm, this means bisection problems, which I'd also like to fix.
+But this commit builds just fine for me as well. Would be nice
+to see what are the errors.
 
--Andi
+Any suggestions what I could do to reproduce the build issues?
+I'll try at least now to build this on x86 (32-bit). 
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
