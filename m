@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756950AbZFCM4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZFCM6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756950AbZFCM4E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 08:56:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbZFCMzu
+	id S1757065AbZFCM6V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 08:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbZFCM6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 08:55:50 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:47392 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756883AbZFCMzt (ORCPT
+	Wed, 3 Jun 2009 08:58:13 -0400
+Received: from mb1.zcs.datasyncintra.net ([208.88.241.39]:53562 "EHLO
+	mb1.zcs.datasyncintra.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753332AbZFCM6M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 08:55:49 -0400
-Message-ID: <4A2672A8.8020809@nokia.com>
-Date: Wed, 03 Jun 2009 15:55:04 +0300
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 3 Jun 2009 08:58:12 -0400
+X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Jun 2009 08:58:12 EDT
+Date: Wed, 3 Jun 2009 07:51:44 -0500 (CDT)
+From: Anand Avati <avati@gluster.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: muirj@nortel.com, csaba@gluster.com, fuse-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       dl-hacking@gluster.com
+Message-ID: <1119562997.1044731244033504415.JavaMail.root@mb1>
+In-Reply-To: <683929306.1044151244033426071.JavaMail.root@mb1>
+Subject: Re: [PATCH] fuse: cache invalidation calls
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Dmitry Pervushin <dpervushin@embeddedalley.com>
-Subject: Re: linux-next: ubi tree build failure
-References: <20090603184408.49c7fb1f.sfr@canb.auug.org.au> <4A265DF6.3070602@nokia.com>
-In-Reply-To: <4A265DF6.3070602@nokia.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 03 Jun 2009 12:55:06.0066 (UTC) FILETIME=[84A18320:01C9E44A]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [172.16.0.65]
+X-Mailer: Zimbra 5.0.16_GA_2921.UBUNTU8_64 (ZimbraWebClient - FF3.0 (Linux)/5.0.16_GA_2921.UBUNTU8_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Artem Bityutskiy wrote:
-> Stephen Rothwell wrote:
->> Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
->>
->> drivers/mtd/ubi/gluebi.c: In function 'gluebi_get_device':
->> drivers/mtd/ubi/gluebi.c:126: error: implicit declaration of function 'IS_ERR'
->> drivers/mtd/ubi/gluebi.c:129: error: implicit declaration of function 'PTR_ERR'
-> 
-> It is strange that I do not see these errors on my x86_86
-> 
->> Introduced by commit ec5c514efde253de7f28668c88bbae26d2a293de ("UBI: make
->> gluebi a separate module") from the ubi tree.  I guess the conversion
->> managed to remove an implicit include of linux/err.h.
->>
->> I have reverted that commit for today.  I then needed to also revert
->> commit 518ceef0c9ca97023e45ae46aedaefa240c690a6 ("UBI: remove built-in
->> gluebi") to make it build again.
-> 
-> Hmm, this means bisection problems, which I'd also like to fix.
-> But this commit builds just fine for me as well. Would be nice
-> to see what are the errors.
-> 
-> Any suggestions what I could do to reproduce the build issues?
-> I'll try at least now to build this on x86 (32-bit). 
 
-Did not see compile error on x86 as well. Anyway, I have added more
-includes which seem to be missed. Hopefully this problem is fixed
-now. Thanks!
+----- "Miklos Szeredi" <miklos@szeredi.hu> wrote:
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+> John, thanks for the patch.  If no problems are found I'd like to add
+> it to the 2.6.31 queue.
+> 
+> Csaba, Anand, does this meet your requirements?
+> 
+> Other comments?
+
+I was wondering how the userland libfuse would be made aware of the presence of these two notification features?
+
+Avati
