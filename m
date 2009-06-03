@@ -1,86 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbZFCUBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbZFCUDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755933AbZFCUBp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 16:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbZFCUBi
+	id S1756053AbZFCUDf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 16:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbZFCUD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 16:01:38 -0400
-Received: from r00tworld.com ([212.85.137.21]:41513 "EHLO r00tworld.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750954AbZFCUBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 16:01:37 -0400
-From: pageexec@freemail.hu
-To: "Larry H." <research@subreption.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 03 Jun 2009 22:00:52 +0200
-MIME-Version: 1.0
-Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change ZERO_SIZE_PTR to point at unmapped space)
-Reply-to: pageexec@freemail.hu
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
-Message-ID: <4A26D674.10117.2E18A862@pageexec.freemail.hu>
-In-reply-to: <alpine.LFD.2.01.0906031145460.4880@localhost.localdomain>
-References: <20090530230022.GO6535@oblivion.subreption.com>, <alpine.LFD.2.01.0906031142390.4880@localhost.localdomain>, <alpine.LFD.2.01.0906031145460.4880@localhost.localdomain>
-X-mailer: Pegasus Mail for Windows (4.50 PB1)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 03 Jun 2009 22:00:56 +0200 (CEST)
+	Wed, 3 Jun 2009 16:03:28 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:47749 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755404AbZFCUD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 16:03:27 -0400
+Date: Wed, 3 Jun 2009 22:03:21 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] Late MMC fixes
+Message-ID: <20090603220321.03917c47@mjolnir.ossman.eu>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-31175-1244059407-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3 Jun 2009 at 11:50, Linus Torvalds wrote:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> 
-> 
-> On Wed, 3 Jun 2009, Linus Torvalds wrote:
-> > 
-> > That means that you've already by-passed all the main security. It's thus 
-> > by definition less common than attack vectors like buffer overflows that 
-> > give you that capability in the first place.
-> 
-> Btw, you obviously need to then _also_ pair it with some as-yet-unknown 
-> case of kernel bug to get to that NULL pointer (or zero-sized-alloc 
-> pointer) problem. 
+--=_freyr.ossman.eu-31175-1244059407-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-are you saying it's hard to find 'as-yet-unknown' null-deref bugs? what about
-'already-known-but-not-yet-fixed-in-distro-kernel' ones? especially when the
-disclosure process was, let's say, less than 'full'.
+Linus, please pull from
 
-> You _also_ seem to be totally ignoring the fact that we already _do_ 
-> protect against NULL pointers by default.
+        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-li=
+nus
 
-this whole discussion about NULL derefs is quite missing the point by the way.
-the proper bug class is about unintended userland ptr derefs by the kernel,
-of which NULL derefs are a small subset only. and you can't protect against
-it by default or otherwise by banning userland from using its address space ;).
+to receive some important fixes, primarily for the new host drivers.
 
-fixing ZERO_SIZE_PTR is about not making the mess of mixing userland/kernel
-addresses worse, that's all. small piece of the parcel but then it's obviously
-correct too.
+I'm sorry this comes so late in the development cycle. I haven't had time
+to put a tree together until now. :/
 
-> So I really don't see why you're making a big deal of this. It's as if you 
-> were talking about us not randomizing the address space - sure, you can 
-> turn it off, but so what? We do it by default.
+ drivers/mmc/host/mvsdio.c     |   35 ++++++++++++++++++++++++++++++
+ drivers/mmc/host/mxcmmc.c     |   47 ++++++++++++++++++++++++++++++-------=
+---
+ drivers/mmc/host/omap.c       |    2 +-
+ drivers/mmc/host/omap_hsmmc.c |    2 +-
+ drivers/mmc/host/sdhci-of.c   |    9 +++++++-
+ 5 files changed, 80 insertions(+), 15 deletions(-)
 
-and the amount of it is easily bruteforceable not to mention lack of
-protection against said bruteforce. don't rest on your laurels yet ;).
+Anand Gadiyar (1):
+      omap_hsmmc: Trivial fix for a typo in comment
 
-> So it boils down to:
-> 
->  - NULL pointers already cannot be in mmap memory
+Ben Nizette (1):
+      mmc/omap: Use disable_irq_nosync() from within irq handlers.
 
-not all NULL deref bugs are literally around address 0, there's often an
-offset involved, sometimes even under the attacker's control (a famous
-userland example is discussed in 
-   http://documents.iss.net/whitepapers/IBM_X-Force_WP_final.pdf
-).
+Dave Liu (1):
+      sdhci-of: Fix the wrong accessor to HOSTVER register
 
-> (unless a distro has 
->    done something wrong - outside of the kernel)
+Kumar Gala (1):
+      sdhci-of: Add fsl,esdhc as a valid compatible to bind against
 
-do you have data about which distros and kernels enable this? and how
-they handle v86 and stuff? suid root equivalent or something better?
+Martin Fuzzey (2):
+      mxcmmc : Reset the SDHC hardware if software timeout occurs.
+      mxcmmc: Fix missing return value checking in DMA setup code.
 
+Nicolas Pitre (3):
+      mvsdio: allow automatic loading when modular
+      mvsdio: ignore high speed timing requests from the core
+      mvsdio: fix config failure with some high speed SDHC cards
+
+Sascha Hauer (1):
+      mxcmmc: decrease minimum frequency to make MMC cards work
+
+--=20
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+  TigerVNC, core developer          http://www.tigervnc.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-31175-1244059407-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkom1w8ACgkQ7b8eESbyJLhM/QCdExr/YVdC9nnDgWWsFQtM6F6+
+lOcAmgP4PkSKaIzBrcZpJ6RO7EaP9bCm
+=Arpj
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-31175-1244059407-0001-2--
