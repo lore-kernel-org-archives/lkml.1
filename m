@@ -1,88 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756333AbZFCVku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbZFCVnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756333AbZFCVku (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 17:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbZFCVko
+	id S1755926AbZFCVnk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 17:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbZFCVnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 17:40:44 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:33603 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754328AbZFCVkn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 17:40:43 -0400
-Subject: Re: [Bug #13306] hibernate slow on _second_ run
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <200906032305.07551.rjw@sisk.pl>
-References: <4to6E2myxvG.A.muC.aIbIKB@chimera>
-	 <200906031116.05114.rjw@sisk.pl> <1244062874.22576.4.camel@johannes.local>
-	 <200906032305.07551.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-lpuU9u7L+CoCht5DDRWe"
-Date: Wed, 03 Jun 2009 23:25:15 +0200
-Message-Id: <1244064315.22576.5.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+	Wed, 3 Jun 2009 17:43:33 -0400
+Received: from mga01.intel.com ([192.55.52.88]:11776 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754007AbZFCVnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 17:43:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,300,1241420400"; 
+   d="scan'208";a="463191108"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Jeff Moyer <jmoyer@redhat.com>
+Subject: Re: linux-next end of partition problems?
+In-Reply-To: <4A25F5F7.9020506@gmail.com>
+References: <4a25b8e987329b28c@agluck-desktop.sc.intel.com> <4A25F5F7.9020506@gmail.com>
+Date: Wed, 03 Jun 2009 14:43:34 -0700
+Message-Id: <4a26ee864930956be@agluck-desktop.sc.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> What kind of controller/drive is this?
 
---=-lpuU9u7L+CoCht5DDRWe
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+lspci says the controller is:
+06:02.0 SCSI storage controller: LSI Logic / Symbios Logic 53c1030 PCI-X Fusion-MPT Dual Ultra320 SCSI (rev 07)
 
-[can you please turn off html email?]
+console log says drive is:
+scsi 0:0:1:0: Direct-Access     SEAGATE  ST318406LC       010A PQ: 0 ANSI: 3
+ target0:0:1: Beginning Domain Validation
+ target0:0:1: Ending Domain Validation
+ target0:0:1: FAST-80 WIDE SCSI 160.0 MB/s DT (12.5 ns, offset 63)
+sd 0:0:1:0: [sdb] 35843670 512-byte hardware sectors: (18.3 GB/17.0 GiB)
+sd 0:0:1:0: [sdb] Write Protect is off
+sd 0:0:1:0: [sdb] Mode Sense: 9f 00 10 08
+scsi 0:0:6:0: Processor         ESG-SHV  SCA HSBP M17     1.0D PQ: 0 ANSI: 2
+ target0:0:6: Beginning Domain Validation
+sd 0:0:1:0: [sdb] Write cache: enabled, read cache: enabled, supports DPO and FUA
+ target0:0:6: Ending Domain Validation
+ target0:0:6: asynchronous
+ sdb: sdb1 sdb2 sdb3
+sd 0:0:1:0: [sdb] Attached SCSI disk
+
+A git bisect between v2.6.30-rc7(good) and next-20090602(bad) points
+the finger at this commit (and reverting this change from next-20090602
+confirms it introduces this problem):
 
 
-> Can you please send me /proc/interrupts from the affected box?
+commit db2dbb12dc47a50c7a4c5678f526014063e486f6
+Author: Jeff Moyer <jmoyer@redhat.com>
+Date:   Wed Apr 22 14:08:13 2009 +0200
 
-$ cat /proc/interrupts=20
-            CPU0       CPU1      =20
-   0:    1820687          0   IO-APIC-edge      timer
-   7:          1          0   IO-APIC-edge   =20
-   9:      38721          0   IO-APIC-fasteoi   acpi
-  16:        940          0   IO-APIC-fasteoi   HDA Intel
-  17:        517          0   IO-APIC-fasteoi   ohci_hcd:usb4
-  18:     289829          0   IO-APIC-fasteoi   ohci_hcd:usb3
-  19:    2035671          0   IO-APIC-fasteoi   ehci_hcd:usb2
-  20:         32          0   IO-APIC-fasteoi   ehci_hcd:usb1
-  25:     515569          0   PCI-MSI-edge      ahci
-  26:          0          0   PCI-MSI-edge      eth0
- NMI:          0          0   Non-maskable interrupts
- LOC:     152936     638337   Local timer interrupts
- SPU:          0          0   Spurious interrupts
- RES:     317238     581858   Rescheduling interrupts
- CAL:         43        128   Function call interrupts
- TLB:      60645      53553   TLB shootdowns
- TRM:          0          0   Thermal event interrupts
- THR:          0          0   Threshold APIC interrupts
- ERR:          1
- MIS:          0
+    block: implement blkdev_readpages
+    
+    Doing a proper block dev ->readpages() speeds up the crazy dump(8)
+    approach of using interleaved process IO.
+    
+    Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
+    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 
-johannes
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index f45dbc1..a85fe31 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -331,6 +331,12 @@ static int blkdev_readpage(struct file * file, struct page * page)
+ 	return block_read_full_page(page, blkdev_get_block);
+ }
+ 
++static int blkdev_readpages(struct file *file, struct address_space *mapping,
++			struct list_head *pages, unsigned nr_pages)
++{
++	return mpage_readpages(mapping, pages, nr_pages, blkdev_get_block);
++}
++
+ static int blkdev_write_begin(struct file *file, struct address_space *mapping,
+ 			loff_t pos, unsigned len, unsigned flags,
+ 			struct page **pagep, void **fsdata)
+@@ -1399,6 +1405,7 @@ static int blkdev_releasepage(struct page *page, gfp_t wait)
+ 
+ static const struct address_space_operations def_blk_aops = {
+ 	.readpage	= blkdev_readpage,
++	.readpages	= blkdev_readpages,
+ 	.writepage	= blkdev_writepage,
+ 	.sync_page	= block_sync_page,
+ 	.write_begin	= blkdev_write_begin,
 
---=-lpuU9u7L+CoCht5DDRWe
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
+On a random hunch, I wondered whether this error message was connected to
+the fact that ia64 kernel has a 64K page size.  I re-built using a 4k
+pagesize ... and this also make the partition overrun message go away.
 
-iQIcBAABAgAGBQJKJuo4AAoJEODzc/N7+Qmatq0QAM8Cu2HS8Xg+YJdspCcejiVC
-4xzY6zH+upZZr4eg9I03nhrbHODt0o5rAmKsBv3M4Iy1NlM9KoTQIdTia77a2t6S
-r7/gtnPZ3e4SiTTiTfDou4WDjwXaMLM80MYAhGs5EFtQDjpiGicpWOn21eyIcmun
-f8bypCpCix8FyhZ9yXMrvwse4dLSWig2kxyE8WgsDoNy5/MiMNdyk/oP6MEFJeTE
-osCN0H89IHwTHmWCkTWMyICxBzA5zaU7QpKBabWCmAlpbo0d9FPiRyBfjXCthur+
-m3EoRVyVlrb5xEhtj1k/4O+3oT2sOcXVV9TTry1NsmMcCxaLcMG/99VaDP7gLKoW
-Bi52tgxYVyL0CPFB4lwdhLiyHDk6TKr2soUPBfBgaw5KzcTyK9T5pjFkkUls4007
-vYU8J7H2PMZa6Vfyq6N0gfCO+JWJkKP7TEcscUoFvlf0hZsinZeC+OvxckcGXzfv
-uuQDVQjEX+6qXbI1PmdaZsCp/b+Hw2lmWh4H4o82c+gZaXP+PfF0bDi4a0hSoGsw
-qRcfMquOYD3ht4TQnlkLddBbwZwJ1BnJpBXAmrQhG0P7T7KVSx3I+TjSLe05+G5q
-xwzEj+PJEpyXDokA+2buHlp4YZ7s2/OtWSBfb7rr0rl0w7NTpFPdogbcaKjMjn1+
-ZdkTbecWEUuJ+MSbCa2p
-=lINr
------END PGP SIGNATURE-----
+So is it plausible that the blkdev_readpages() code is resulting in some
+readahead of a page that overlaps the partition end?  The partition size
+(15832057 * 1K block according to /proc/partitions) is not a multiple of
+the 64K page size ... but then it isn't a multiple of 4K either :-(
 
---=-lpuU9u7L+CoCht5DDRWe--
-
+-Tony
