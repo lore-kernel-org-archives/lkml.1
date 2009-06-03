@@ -1,65 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755852AbZFCGZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbZFCGah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755852AbZFCGZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 02:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbZFCGZS
+	id S1755227AbZFCGah (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 02:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZFCGaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 02:25:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38234 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752523AbZFCGZR (ORCPT
+	Wed, 3 Jun 2009 02:30:25 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:36043 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752238AbZFCGaY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 02:25:17 -0400
-Date: Tue, 2 Jun 2009 23:25:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rjw@sisk.pl
-Subject: Re: [PATCH] Fix floppy hibernation
-Message-Id: <20090602232502.b05302d3.akpm@linux-foundation.org>
-In-Reply-To: <200906030813.27625.linux@rainbow-software.org>
-References: <200905301804.26762.linux@rainbow-software.org>
-	<200906021830.53531.linux@rainbow-software.org>
-	<20090602151556.5df9167c.akpm@linux-foundation.org>
-	<200906030813.27625.linux@rainbow-software.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Jun 2009 02:30:24 -0400
+Date: Wed, 3 Jun 2009 08:30:25 +0200
+From: Andreas Mohr <andim2@users.sourceforge.net>
+To: andi@lisas.de
+Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>, rjw@sisk.pl,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: e100 kills S2R on my box, plus network drops dead
+Message-ID: <20090603063025.GA32600@rhlx01.hs-esslingen.de>
+Reply-To: andi@lisas.de
+References: <20081228.000118.121541932.davem@davemloft.net> <20081229102515.GA17171@rhlx01.hs-esslingen.de> <20081229091728.d869f1c1.akpm@linux-foundation.org> <9929d2390812291515y623d6a51yed1bef021ab6847e@mail.gmail.com> <20081230120756.GA5393@rhlx01.hs-esslingen.de> <20090228203757.GA18850@rhlx01.hs-esslingen.de> <9929d2390903010257p7c6fb367ga974767605033bc9@mail.gmail.com> <20090301212412.GA13210@rhlx01.hs-esslingen.de> <20090602214852.GA3095@rhlx01.hs-esslingen.de> <20090603060123.GA17558@rhlx01.hs-esslingen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090603060123.GA17558@rhlx01.hs-esslingen.de>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Jun 2009 08:13:26 +0200 Ondrej Zary <linux@rainbow-software.org> wrote:
+Hi,
 
-> > > +static int floppy_resume(struct platform_device *dev)
-> > > +{
-> > > +	int fdc;
-> > > +
-> > > +	for (fdc = 0; fdc < N_FDC; fdc++)
-> > > +		if (FDCS->address != -1)
-> > > +			user_reset_fdc(-1, FD_RESET_ALWAYS, 0);
-> > > +
-> > > +	return 0;
-> > > +}
-> >
-> > The patch changes the driver so that it calls user_reset_fdc() for each
-> > device at resume-time.
-> >
-> > Why?  What effect does this have on the hardware and why does it fix
-> > things?
+On Wed, Jun 03, 2009 at 08:01:23AM +0200, Andreas Mohr wrote:
+> IOW, we have _two_ issues:
 > 
-> I don't know at all, it's complete guesswork. The first thing I tested was 
-> rmmod floppy && modprobe floppy after resume - it worked. Narrowing the 
-> initialization code down resulted in this patch.
+> - that PM suspend part here doesn't support non-PM PCI cards
+> - PM suspend breaks networking stuff (or is that caused by incomplete reinitialization of my card,
+>   thus it's not network-suitable after resume and hangs on some network APIs?)
+> 
+> What to do?
+> 
+> (I should have provided some SysRq-T(?) lock traces I guess, will record that now)
 
-lol, OK.  I added this to the changelog:
+Those were not too useful methinks, but I can provide them if need be.
 
-  This fix resets the floppy controller on resume.  It was
-  experimentally determined to bring the controller back to life - we
-  don't really know why it works.
+> Oh, and I will test whether eepro100 S2R works on that machine, and if
+> so what that driver does to avoid trouble.
 
-  floppy_init() does the same thing at boot/modprobe time.
+Well, yes, eepro100 (2.6.28.10) does achieve successful S2R,
+and I _do_ have working network even after resume (which is not too astonishing
+since it almost takes active measures to NOT make this card work,
+given that it's fully auto-configuring on the transceiver side)
 
-Let's see how it goes...  If someone reports breakage then we can
-always change the driver so that activation of your new code requires a
-module parameter.
+
+
+static int eepro100_suspend(struct pci_dev *pdev, pm_message_t state)
+{
+        struct net_device *dev = pci_get_drvdata (pdev);
+        struct speedo_private *sp = netdev_priv(dev);
+        void __iomem *ioaddr = sp->regs;
+
+        pci_save_state(pdev);
+
+        if (!netif_running(dev))
+                return 0;
+
+        del_timer_sync(&sp->timer);
+
+        netif_device_detach(dev);
+        iowrite32(PortPartialReset, ioaddr + SCBPort);
+
+        /* XXX call pci_set_power_state ()? */
+        pci_disable_device(pdev);
+        pci_set_power_state (pdev, PCI_D3hot);
+        return 0;
+}
+
+
+That's pretty boring code, linearily executing stuff without checking
+results, thus it's unsurprising that it does not prevent suspend
+on a non-PM PCI card.
+
+
+So, what to do to fix those suspend issues on the e100 side of things?
+And do we perhaps have similar non-PM PCI card support issues
+with other drivers?
+
+
+Thanks,
+
+Andreas Mohr
