@@ -1,242 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755311AbZFCVMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbZFCVNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755311AbZFCVMY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 17:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZFCVMP
+	id S1754202AbZFCVNi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 17:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZFCVNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 17:12:15 -0400
-Received: from www84.your-server.de ([213.133.104.84]:41446 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753566AbZFCVMO (ORCPT
+	Wed, 3 Jun 2009 17:13:31 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:49627 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751950AbZFCVNa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 17:12:14 -0400
-X-Greylist: delayed 2247 seconds by postgrey-1.27 at vger.kernel.org; Wed, 03 Jun 2009 17:12:13 EDT
-Subject: Detailed Stack Information Patch Next Generation
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Joerg Engel <joern@logfs.org>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20090401193135.GA12316@elte.hu>
-References: <1238511505.364.61.camel@matrix>
-	 <20090401193135.GA12316@elte.hu>
-Content-Type: text/plain
-Date: Wed, 03 Jun 2009 22:34:09 +0200
-Message-Id: <1244061249.5624.62.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Wed, 3 Jun 2009 17:13:30 -0400
+To: Gary Hade <garyhade@us.ibm.com>
+Cc: mingo@elte.hu, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, yinghai@kernel.org,
+       lcm@us.ibm.com
+Subject: Re: [RESEND] [PATCH v2] [BUGFIX] x86/x86_64: fix CPU offlining triggered "active" device IRQ interrruption
+References: <20090602193216.GC7282@us.ibm.com>
+	<m1prdlttgz.fsf@fess.ebiederm.org> <20090603170617.GB7566@us.ibm.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 03 Jun 2009 14:13:23 -0700
+In-Reply-To: <20090603170617.GB7566@us.ibm.com> (Gary Hade's message of "Wed\, 3 Jun 2009 10\:06\:17 -0700")
+Message-ID: <m1oct5nhqk.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: garyhade@us.ibm.com, lcm@us.ibm.com, yinghai@kernel.org, x86@kernel.org, hpa@zytor.com, tglx@linutronix.de, linux-kernel@vger.kernel.org, mingo@redhat.com, mingo@elte.hu
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everybody,
+Gary Hade <garyhade@us.ibm.com> writes:
 
-kernel 2.6.30 is near so i think it is time for the next try.
+> Correct, after the fix was applied my testing did _not_ show
+> the lockups that you are referring to.  I wonder if there is a
+> chance that the root cause of those old failures and the root
+> cause of issue that my fix addresses are the same?
+>
+> Can you provide the test case that demonstrated the old failure
+> cases so I can try it on our systems?  Also, do you recall what
+> mainline version demonstrated the old failure 
 
-This is the new version of the "detailed stack info" patch which give
-you a better overview of the userland application stack usage,
-especially for embedded linux.
+The irq migration has already been moved to interrupt context by the
+time I started working on it.  And I managed to verify that there were
+indeed problems with moving it out of interrupt context before my code
+merged.
 
-Currently you are only able to dump the main process/thread stack usage
-which is showed in /proc/pid/status by the "VmStk" Value. But you get no
-information about the consumed stack memory of the the threads.
+So if you want to reproduce it reduce your irq migration to the essentials.
+Set IRQ_MOVE_PCNTXT, and always migrate the irqs from process context
+immediately.
 
-There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which
-marks the vm mapping where the thread stack pointer reside with "[thread
-stack xxxxxxxx]". xxxxxxxx is the start address of the stack.
+Then migrate an irq that fires at a high rate rapidly from one cpu to
+another.
 
-Also there is a new entry "stack usage" in /proc/<pid>/{task/*,}/status
-which will you give the current stack usage in kb.
+Right now you are insulated from most of the failures because you still
+don't have IRQ_MOVE_PCNTXT.  So you are only really testing your new code
+in the cpu hotunplug path.
 
-I also fixed stack base address in /proc/<pid>/task/*/stat to the base
-address of the associated thread stack and not the one of the main
-process. This makes more sense.
+Now that I look at it in more detail you are doing a double
+mask_IO_APIC_irq and unmask_IO_APIC_irq on the fast path and
+duplicating the pending irq check.  All of which are pretty atrocious
+in and of themselves.
 
-Changes since last posting:
+Eric
 
- - Redesigned everything what was suggested by Ingo
- - the thread watch monitor is gone
- - the /proc/stackmon entry is also gone
- - slime done
-
-The patch is against 2.6.30-rc7 and tested with on intel and ppc
-architectures.
-
-I think it is now ready for inclusion in the main kernel. Ingo what do
-you think?
-
-Greetings,
-Stefani
-
- fs/exec.c             |    2 +
- fs/proc/array.c       |   69 +++++++++++++++++++++++++++++++++++++++++++++++++-
- fs/proc/task_mmu.c    |   14 ++++++++++
- include/linux/sched.h |    1 
- kernel/fork.c         |    3 ++
- 5 files changed, 88 insertions(+), 1 deletion(-)
-
--patch begins here--------------------------------------------------------------
-
-diff -u -N -r linux-2.6.30.orig/fs/exec.c linux-2.6.30/fs/exec.c
---- linux-2.6.30.orig/fs/exec.c	2009-06-03 17:36:41.000000000 +0200
-+++ linux-2.6.30/fs/exec.c	2009-06-03 17:30:47.000000000 +0200
-@@ -1328,6 +1328,8 @@
- 	if (retval < 0)
- 		goto out;
- 
-+	current->stack_start = current->mm->start_stack;
-+
- 	/* execve succeeded */
- 	current->fs->in_exec = 0;
- 	current->in_execve = 0;
-diff -u -N -r linux-2.6.30.orig/fs/proc/array.c linux-2.6.30/fs/proc/array.c
---- linux-2.6.30.orig/fs/proc/array.c	2009-06-03 17:36:41.000000000 +0200
-+++ linux-2.6.30/fs/proc/array.c	2009-06-03 17:32:53.000000000 +0200
-@@ -82,6 +82,7 @@
- #include <linux/pid_namespace.h>
- #include <linux/ptrace.h>
- #include <linux/tracehook.h>
-+#include <linux/pfn.h>
- 
- #include <asm/pgtable.h>
- #include <asm/processor.h>
-@@ -321,6 +322,71 @@
- 			p->nivcsw);
- }
- 
-+#ifdef CONFIG_STACK_GROWSUP
-+static inline unsigned long get_stack_pages(struct vm_area_struct *vma,
-+					struct task_struct *p)
-+{
-+	unsigned long	i;
-+	struct page	*page;
-+	unsigned long	stack_usage;
-+	unsigned long	esp;
-+
-+	esp = KSTK_ESP(p);
-+
-+	stack_usage = (PFN_ALIGN(esp)-PFN_ALIGN(p->stack_start));
-+
-+	for (i = vma->vm_end; i-PAGE_SIZE > esp; i -= PAGE_SIZE) {
-+
-+		page = follow_page(vma, i-PAGE_SIZE, 0);
-+
-+		if ((!IS_ERR(page) == 0) || (page))
-+			break;
-+	}
-+	return ((i - esp + stack_usage) >> (PAGE_SHIFT)) + 1;
-+}
-+#else
-+static inline unsigned long get_stack_pages(struct vm_area_struct *vma,
-+					struct task_struct *p)
-+{
-+	unsigned long	i;
-+	struct page	*page;
-+	unsigned long	stack_usage;
-+	unsigned long	esp;
-+
-+	esp = KSTK_ESP(p);
-+
-+	stack_usage = (PFN_ALIGN(p->stack_start) - PFN_ALIGN(esp));
-+
-+	for (i = vma->vm_start; i+PAGE_SIZE <= esp; i += PAGE_SIZE) {
-+
-+		page = follow_page(vma, i, 0);
-+
-+		if ((!IS_ERR(page) == 0) || (page))
-+			break;
-+	}
-+	return ((esp - i + stack_usage) >> (PAGE_SHIFT)) + 1;
-+}
-+#endif
-+
-+static inline void task_show_stack_usage(struct seq_file *m,
-+						struct task_struct *p)
-+{
-+	struct vm_area_struct	*vma;
-+	struct mm_struct	*mm;
-+
-+	mm = get_task_mm(p);
-+
-+	if (mm) {
-+		vma = find_vma(mm, p->stack_start);
-+
-+		if (vma)
-+			seq_printf(m, "Stack usage:\t%lu kB\n",
-+				get_stack_pages(vma, p) << (PAGE_SHIFT - 10));
-+
-+		mmput(mm);
-+	}
-+}
-+
- int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
- 			struct pid *pid, struct task_struct *task)
- {
-@@ -340,6 +406,7 @@
- 	task_show_regs(m, task);
- #endif
- 	task_context_switch_counts(m, task);
-+	task_show_stack_usage(m, task);
- 	return 0;
- }
- 
-@@ -481,7 +548,7 @@
- 		rsslim,
- 		mm ? mm->start_code : 0,
- 		mm ? mm->end_code : 0,
--		(permitted && mm) ? mm->start_stack : 0,
-+		(permitted) ? task->stack_start : 0,
- 		esp,
- 		eip,
- 		/* The signal information here is obsolete.
-diff -u -N -r linux-2.6.30.orig/fs/proc/task_mmu.c linux-2.6.30/fs/proc/task_mmu.c
---- linux-2.6.30.orig/fs/proc/task_mmu.c	2009-06-03 17:36:41.000000000 +0200
-+++ linux-2.6.30/fs/proc/task_mmu.c	2009-06-03 17:30:47.000000000 +0200
-@@ -242,6 +242,20 @@
- 				} else if (vma->vm_start <= mm->start_stack &&
- 					   vma->vm_end >= mm->start_stack) {
- 					name = "[stack]";
-+				} else {
-+					unsigned long stack_start;
-+
-+					stack_start =
-+						((struct proc_maps_private *)
-+						m->private)->task->stack_start;
-+
-+					if (vma->vm_start <= stack_start &&
-+					    vma->vm_end >= stack_start) {
-+						pad_len_spaces(m, len);
-+						seq_printf(m,
-+						 "[thread stack: %08lx]",
-+						 stack_start);
-+					}
- 				}
- 			} else {
- 				name = "[vdso]";
-diff -u -N -r linux-2.6.30.orig/include/linux/sched.h linux-2.6.30/include/linux/sched.h
---- linux-2.6.30.orig/include/linux/sched.h	2009-06-03 17:36:41.000000000 +0200
-+++ linux-2.6.30/include/linux/sched.h	2009-06-03 17:30:47.000000000 +0200
-@@ -1429,6 +1429,7 @@
- 	/* state flags for use by tracers */
- 	unsigned long trace;
- #endif
-+	unsigned long stack_start;
- };
- 
- /* Future-safe accessor for struct task_struct's cpus_allowed. */
-diff -u -N -r linux-2.6.30.orig/kernel/fork.c linux-2.6.30/kernel/fork.c
---- linux-2.6.30.orig/kernel/fork.c	2009-06-03 17:36:42.000000000 +0200
-+++ linux-2.6.30/kernel/fork.c	2009-06-03 17:30:47.000000000 +0200
-@@ -1092,6 +1092,9 @@
- 	if (unlikely(current->ptrace))
- 		ptrace_fork(p, clone_flags);
- 
-+	p->stack_start = (stack_start == KSTK_ESP(current)) ?
-+		current->stack_start : stack_start;
-+
- 	/* Perform scheduler related setup. Assign this task to a CPU. */
- 	sched_fork(p, clone_flags);
- 
 
 
