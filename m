@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758378AbZFCO6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZFCPD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758378AbZFCO6W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 10:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbZFCO6O
+	id S1757446AbZFCPD4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 11:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbZFCPDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 10:58:14 -0400
-Received: from fifo99.com ([67.223.236.141]:56958 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753587AbZFCO6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 10:58:13 -0400
-Subject: Re: [PATCH] sched: sched_clock() clocksource handling.
-From: Daniel Walker <dwalker@fifo99.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Walleij <linus.ml.walleij@gmail.com>,
-       Andrew Victor <linux@maxim.org.za>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+	Wed, 3 Jun 2009 11:03:46 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:51583 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753054AbZFCPDp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 11:03:45 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 3 Jun 2009 07:57:40 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Al Viro <viro@ZenIV.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       John Stultz <johnstul@linux.vnet.ibm.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090603033603.GA31488@linux-sh.org>
-References: <20090602071718.GA17710@linux-sh.org>
-	 <1243927502.23657.5619.camel@twins> <20090602073515.GB17710@linux-sh.org>
-	 <1243928495.23657.5642.camel@twins> <20090602075409.GA19294@linux-sh.org>
-	 <1243943366.6592.434.camel@desktop>  <20090603033603.GA31488@linux-sh.org>
-Content-Type: text/plain
-Date: Wed, 03 Jun 2009 07:58:08 -0700
-Message-Id: <1244041088.18985.9.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+       Christoph Hellwig <hch@infradead.org>,
+       "Eric W. Biederman" <ebiederm@maxwell.aristanetworks.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 18/23] vfs: Teach epoll to use file_hotplug_lock
+In-Reply-To: <m13aaintb1.fsf@fess.ebiederm.org>
+Message-ID: <alpine.DEB.1.10.0906030754550.17143@makko.or.mcafeemobile.com>
+References: <m1oct739xu.fsf@fess.ebiederm.org> <1243893048-17031-18-git-send-email-ebiederm@xmission.com> <alpine.DEB.1.10.0906020944540.12866@makko.or.mcafeemobile.com> <m1eiu2qqho.fsf@fess.ebiederm.org> <alpine.DEB.1.10.0906021429570.12866@makko.or.mcafeemobile.com>
+ <m13aaintb1.fsf@fess.ebiederm.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-03 at 12:36 +0900, Paul Mundt wrote:
-> On Tue, Jun 02, 2009 at 04:49:26AM -0700, Daniel Walker wrote:
-> > On Tue, 2009-06-02 at 16:54 +0900, Paul Mundt wrote:
-> > >  unsigned long long __attribute__((weak)) sched_clock(void)
-> > >  {
-> > > -       return (unsigned long long)(jiffies - INITIAL_JIFFIES)
-> > > -                                       * (NSEC_PER_SEC / HZ);
-> > > +       unsigned long long time;
-> > > +       struct clocksource *clock;
-> > > +
-> > > +       rcu_read_lock();
-> > > +       clock = rcu_dereference(sched_clocksource);
-> > > +       time = cyc2ns(clock, clocksource_read(clock));
-> > > +       rcu_read_unlock();
-> > > +
-> > > +       return time;
-> > >  }
-> > 
-> > My concerns with the locking here still stand. Nothing you've said or
-> > done bolsters the clocksource in modules argument. I think what your
-> > planning for sh clocksources seems very inelegant. I would imagine a
-> > better solution is out there. I'd prefer if you just leave sched_clock
-> > alone.
-> > 
-> This is the first I've heard you mention locking concerns, and as usual
-> there is not enough technical content (or any, really) to go on to even
-> reply to this. Whether you consider my solution for sh clocksources
-> elegant or not is irrelevant, as I wasn't soliciting feedback, and it's a
-> problem that has to be dealt with regardless of whether it's a pretty one
-> or not.
+On Tue, 2 Jun 2009, Eric W. Biederman wrote:
 
-I think maybe your not reading my emails .. I said there is unnessesary
-locking in sched_clock, and that it's fixing a problem that doesn't
-exist (i.e. clocksources in modules) .. You claim you want clocksources
-in modules because you have a useful case in sh, which I consider not
-very useful .. And your refusing to remove the locking, or that's how it
-seems. So I'd prefer you don't submit this code any longer. I don't
-think you know what your doing in this case.
+> I am not clear what problem you have.
+> 
+> Is it the sprinkling the code that takes and removes the lock?  Just
+> the VFS needs to be involved with that.  It is a slightly larger
+> surface area than doing the work inside the file operations as we
+> sometimes call the same method from 3-4 different places but it is
+> definitely a bounded problem.
+> 
+> Is it putting in the handful lines per subsystem to actually use this
+> functionality?  At that level something generic that is maintained
+> outside of the subsystem is better than the mess we have with 4-5
+> different implementations in the subsystems that need it, each having
+> a different assortment of bugs.
 
-This is not hand waving, and it is technical.
+Come on, only in the open fast path, there are at least two spin 
+lock/unlock and two atomic ops. Without even starting to count all the 
+extra branches and software added.
+Is this stuff *really* needed, or we can faitly happily live w/out?
 
-Daniel
+
+- Davide
+
 
