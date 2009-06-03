@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbZFCVOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZFCVTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755301AbZFCVOZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 17:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbZFCVOS
+	id S1754623AbZFCVTb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 17:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbZFCVTU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 17:14:18 -0400
-Received: from mail.tmr.com ([64.65.253.246]:60955 "EHLO partygirl.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753057AbZFCVOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 17:14:18 -0400
-Message-ID: <4A26E79B.2040306@tmr.com>
-Date: Wed, 03 Jun 2009 17:14:03 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 pango-text SeaMonkey/1.1.16
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: J Louis <handstogether8@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Linux scheduler capabilities for batch jobs.
-References: <6f41bd4b0906010641n1b360dffs6eaed72eb24f60f5@mail.gmail.com> <4A240479.9040907@redhat.com>
-In-Reply-To: <4A240479.9040907@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 3 Jun 2009 17:19:20 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54080
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752614AbZFCVTT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 17:19:19 -0400
+Date: Wed, 03 Jun 2009 14:19:19 -0700 (PDT)
+Message-Id: <20090603.141919.261921857.davem@davemloft.net>
+To: dbaryshkov@gmail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, sfr@canb.auug.org.au,
+       slapin@ossfans.org
+Subject: Re: [PATCH 2/6] Add constants for the ieee 802.15.4/ZigBee stack
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090603105151.GA20508@doriath.ww600.siemens.net>
+References: <1244021629-18409-3-git-send-email-dbaryshkov@gmail.com>
+	<20090603.030826.03512651.davem@davemloft.net>
+	<20090603105151.GA20508@doriath.ww600.siemens.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> J Louis wrote:
-> 
->> If it was possible to tell
->> the scheduler that it was OK not to be fair when scheduling these
->> processes, I think the total runtime could be reduced if it put some
->> of the processes to sleep while others completed.  Is there a way to
->> tell the scheduler it is allowed to do this?  Should there be?
-> 
-> There is no way to do this currently, but I suspect that it
-> would not be too difficult to add.
-> 
-> Of course, if you have two tasks that are each a little larger
-> than memory, your idea could lead to one of the processes being
-> starved forever.  This is probably not acceptable :)
-> 
-> In fact, one single batch process that is swapping could trigger
-> the algorithm you described, halting itself.  Your idea would
-> need very carefuly implementation to avoid these kinds of issues,
-> but I believe it could definately be done.
-> 
-I think it gets doubly hard because the processes may have parts swapped even if 
-there isn't memory pressure, so you can't just use percentage in memory. If you 
-were going to do this in an effective way you would really need to monitor swap 
-rate per process, and factor in total size, so it's not trivial. Of course in 
-the extreme cases it would be hard to avoid improvement, so it need not be 
-perfect to be helpful.
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Wed, 3 Jun 2009 14:51:51 +0400
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   Even purely technical things can appear to be magic, if the documentation is
-obscure enough. For example, PulseAudio is configured by dancing naked around a
-fire at midnight, shaking a rattle with one hand and a LISP manual with the
-other, while reciting the GNU manifesto in hexadecimal. The documentation fails
-to note that you must circle the fire counter-clockwise in the southern
-hemisphere.
+> Please check the updated patch. We do request several unused in this
+> serie value (like AF_ZIGBEE), but we'd like for them to be merged ASAP
+> as their are a part of ABI.
 
+I don't allow anyone else to do this, and neither will I
+allow it for you either.
+
+Merge it when the patches that use them are submitted.
+
+And if it happens, you just might to change AF_ZIGBEE if
+that number is taken by another series of patches, that's
+just how it is.  We don't reserve AF_* for people while
+they're getting their stuff ready.
+
+This decision is final.
