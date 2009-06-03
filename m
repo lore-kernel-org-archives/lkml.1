@@ -1,75 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbZFCI1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbZFCIdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385AbZFCI1T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 04:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbZFCI1J
+	id S1755442AbZFCIdx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 04:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbZFCIdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 04:27:09 -0400
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:18176 "EHLO
-	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbZFCI1H convert rfc822-to-8bit (ORCPT
+	Wed, 3 Jun 2009 04:33:45 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:59784 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753668AbZFCIdo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 04:27:07 -0400
-X-SpamScore: -12
-X-BigFish: VPS-12(z21eWzzz1202hzzz32i6bh17ch1a3h43j)
-X-WSS-ID: 0KKNM4X-03-6C6-01
-Date: Wed, 3 Jun 2009 10:26:54 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: mingo@elte.hu
-CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [git pull] dma-debug updates for 2.6.31
-Message-ID: <20090603082654.GA22359@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 03 Jun 2009 08:26:54.0960 (UTC) FILETIME=[0D959700:01C9E425]
+	Wed, 3 Jun 2009 04:33:44 -0400
+Subject: Re: [Bug #13306] hibernate slow on _second_ run
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <200906012248.49304.rjw@sisk.pl>
+References: <4to6E2myxvG.A.muC.aIbIKB@chimera>
+	 <200906012226.46086.rjw@sisk.pl> <1243888860.5299.32.camel@johannes.local>
+	 <200906012248.49304.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-9pnyQgOL/svDVHzKWrXJ"
+Date: Wed, 03 Jun 2009 10:33:41 +0200
+Message-Id: <1244018021.10665.4.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
 
-The following changes since commit 83cce2b69eaa4bc7535f98f75b79397baf277470:
-  Joerg Roedel (1):
-        Merge branches 'amd-iommu/fixes', 'amd-iommu/debug', 'amd-iommu/suspend-resume' and 'amd-iommu/extended-allocator' into amd-iommu/2.6.31
+--=-9pnyQgOL/svDVHzKWrXJ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-are available in the git repository at:
+On Mon, 2009-06-01 at 22:48 +0200, Rafael J. Wysocki wrote:
+> > No, it's now hanging 20 seconds much later, after returning to
+> > userspace :( But the dmesg log still has a hang of ~20.5 seconds just
+> > like before, between two kernel messages...
+>=20
+> Hmm.  Can you try to comment out suspend_device_irqs() and resume_device_=
+irqs()
+> in drivers/base/power/main.c and see what happens?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git dma-debug/2.6.31
+Oddly, that does seem to help. I'm sure it can't be a solution though :)
 
-FUJITA Tomonori (3):
-      dma-debug: use sg_dma_address accessor instead of using dma_address directly
-      dma-debug: use sg_dma_len accessor
-      dma-debug: fix debug_dma_sync_sg_for_cpu and debug_dma_sync_sg_for_device
+johannes
 
-Joerg Roedel (6):
-      dma-debug: re-add dma memory leak detection
-      dma-debug: add variables and checks for driver filter
-      dma-debug: add debugfs file for driver filter
-      dma-debug: add dma_debug_driver kernel command line
-      dma-debug: add documentation for the driver filter
-      Merge branches 'dma-debug/fixes' and 'dma-debug/driver-filter' into dma-debug/2.6.31
+--=-9pnyQgOL/svDVHzKWrXJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
- Documentation/DMA-API.txt           |   12 ++
- Documentation/kernel-parameters.txt |    7 +
- lib/dma-debug.c                     |  291 ++++++++++++++++++++++++++++++++---
- 3 files changed, 288 insertions(+), 22 deletions(-)
+-----BEGIN PGP SIGNATURE-----
 
-The changes include some fixes and a new feature, the driver filter.
-With this filter the dma-debug code can be instrumented to only print
-error messages originating by a selected driver. The driver to filter
-for can be set by a kernel command line or by a new file in debugfs.
-Please pull.
+iQIcBAABAgAGBQJKJjViAAoJEODzc/N7+QmaGj8P/A+UCCu+EE0wS+CQOBMPyoeM
+JS5ljkIdyqHIEdVdRhD0ThA2frkStR/AqehkS90T+n1WtKE4q+kqTur+8RgoHntY
+xm3TfgaPJEiuOpEvhncHXL7UdJgrHrNOfMUXtBK4JXqGTpcjnTRz5PRUAwE3Z2wL
+NgSVJl4wRSbtTzbcj3m56mSBbwZKv8HMKb2bW2h00HFCFNptFILZoTzi20KKrizJ
+5b26uwyUi00SAR+PoZqTC9tDKzWmn0YreI7hGXUVroj6ds11Pi0DJNz+wygBwxlH
+VdC4IhknaF9wGDpSOoi39n9ZE4r85OMCPsDJQQhvAu4a1OK2eZUnIXp+/UkMPuo9
+dbOzdJlP/BuQGl6HCIwU7cKh7dkRxav9rCvM1ovp7fEKkEyU0AnGFkTM0i9JQ8mk
+9J57Iatfj9T3+2koPUL78d5LTqBeZmdYNCXpvFdQscJa9iJCgGhVYuAV9E8i66G9
+MsHyNM9DaHCEKCrsYv1gJBeDEJO7FL5Aq0X+rNSYtOnsp0TfwA4EVUcYZsFnGsKs
+09ddoMa8s4oykSBUPNZZDeUEKcCO1AdOmNtQmL0ZcyptHQFdzffk9h2yBoChtg4N
+ftgGwRLkBDFZjTuov8dv4zbdxX4+0leJYHAVDo6wZLZd1XaaniSjKn8gVOOmDCe4
+8+8k23ye3cZvIfe9aSpU
+=uUtz
+-----END PGP SIGNATURE-----
 
-Joerg
-
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+--=-9pnyQgOL/svDVHzKWrXJ--
 
