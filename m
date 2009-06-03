@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbZFCNN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbZFCNPQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757444AbZFCNN5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 09:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbZFCNNu
+	id S1755586AbZFCNPQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 09:15:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbZFCNPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 09:13:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55873 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753054AbZFCNNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 09:13:49 -0400
-Date: Wed, 3 Jun 2009 15:06:57 +0200
-From: Stanislaw Gruszka <sgruszka@redhat.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH resend5 4/4] cputime: optimize jiffies_to_cputime(1)
-Message-ID: <20090603150657.0a60a474@dhcp-lab-109.englab.brq.redhat.com>
-In-Reply-To: <alpine.LFD.2.00.0905291406370.3397@localhost.localdomain>
-References: <20090529131948.36174118@dhcp-lab-109.englab.brq.redhat.com>
-	<alpine.LFD.2.00.0905291406370.3397@localhost.localdomain>
-Organization: RedHat
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 3 Jun 2009 09:15:05 -0400
+Received: from mail-ew0-f162.google.com ([209.85.219.162]:63708 "EHLO
+	mail-ew0-f162.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbZFCNPE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 09:15:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XtUBg1SR8aQXB8jQfMgCAMhGlDTp8/FrWOtfDdUFF/Mq40BBCqVoFIUqHmtiV/BP13
+         Yrx/MdUhegMOBgjM1vq3Enqs+VsMrk3wZV48a/vDUb/ME94/Fulp+FjM4qCTOL3GSj3E
+         MniNJg2jX7eRT1D5Ka/f89mPhQ3AXMi+g88Rg=
+MIME-Version: 1.0
+In-Reply-To: <20090603140140.491a8ea8@lxorguk.ukuu.org.uk>
+References: <c5bd819b0906021525l13ee9282j1fb270e141985f66@mail.gmail.com>
+	 <4A25F688.9000407@gmail.com>
+	 <c5bd819b0906030435w466368cbsd48be91a97597437@mail.gmail.com>
+	 <20090603131407.57c490ed@lxorguk.ukuu.org.uk>
+	 <c5bd819b0906030552w6f23185etb394f83c8b630e6@mail.gmail.com>
+	 <20090603140140.491a8ea8@lxorguk.ukuu.org.uk>
+Date: Wed, 3 Jun 2009 15:15:04 +0200
+Message-ID: <c5bd819b0906030615t67e20299q38e81992419637fa@mail.gmail.com>
+Subject: Re: Kernel 2.6.30rc7 limits IDE to UDMA33
+From: Grozdan <neutrino8@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: hancockrwd@gmail.com, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+2009/6/3 Alan Cox <alan@lxorguk.ukuu.org.uk>:
+> What about 2.6.28 or 2.6.29 ?
+>
 
-> > This patch (with 3 previous) was compiled on x86, x86_64, ppc with
-> > CONFIG_VIRT_CPU_ACCOUNTNG=n, ppc64 with CONFIG_VIRT_CPU_ACCOUNTING=y.
-> > Run time testing was done only on x86.
+Hi,
 
-I tested patches on ppc64 with CONFIG_VIRT_CPU_ACCOUNTING=y . Additionally I
-measure impact of iffies_to_cputime(1) to cputime_one_jiffiy conversion on
-check_cpu_itimer() calls with below code:
-
-+       xstart = get_cycles();
-+       barrier();
-        check_cpu_itimer(tsk, &sig->it[CPUCLOCK_PROF], &prof_expires, ptime,
-                         SIGPROF);
-        check_cpu_itimer(tsk, &sig->it[CPUCLOCK_VIRT], &virt_expires, utime,
-                         SIGVTALRM);
-+       barrier();
-+       xend = get_cycles();
-+       check_cpu_itimer_cycles += xend - xstart;
-+       check_cpu_itimer_n++;
-
-Using cputime_one_jiffy was about 4% faster.
-
-Cheers
-Stanislaw
+I did not try those and I don't think I can find them anymore in the
+build service. There's only a 2.6.29 realtime one. I will try it out
+and report back in a few...
