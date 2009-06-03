@@ -1,407 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbZFCCKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZFCCLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754226AbZFCCKU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 2 Jun 2009 22:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbZFCCKJ
+	id S1755342AbZFCCLs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 2 Jun 2009 22:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbZFCCLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 2 Jun 2009 22:10:09 -0400
-Received: from mailout3.samsung.com ([203.254.224.33]:58333 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751619AbZFCCKI (ORCPT
+	Tue, 2 Jun 2009 22:11:41 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:55957 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752228AbZFCCLk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 2 Jun 2009 22:10:08 -0400
-Date: Wed, 03 Jun 2009 11:09:04 +0900
-From: Minkyu Kang <mk7.kang@samsung.com>
-Subject: [PATCH] add MAX17040 Fuel Gauge driver
-To: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       kyungmin.park@samsung.com
-Message-id: <4A25DB40.6010904@samsung.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Content-transfer-encoding: 7BIT
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
-X-OriginalArrivalTime: 03 Jun 2009 02:09:04.0758 (UTC)
- FILETIME=[45174960:01C9E3F0]
+	Tue, 2 Jun 2009 22:11:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=WL34l1k41sa/nG3XHZdBENR9/bYPrk401256/YM+RT7Nqf7lTdfLS04mACkc/BDNi0
+         ltgqQRveYE4GX18Zj8gKC7t42gG1BlWA/Wuka50a9vrXgPxvePg2uL0E88GiD+QRVBkU
+         RpWOh9ka0SSu4rGF2v1G9rbXtN8Zja7de82TA=
+MIME-Version: 1.0
+In-Reply-To: <1243992286.9076.5.camel@rzhang-dt>
+References: <dd18b0c30906021102h43b8ecc4u9e67687de129bca1@mail.gmail.com>
+	 <1243992286.9076.5.camel@rzhang-dt>
+Date: Tue, 2 Jun 2009 19:11:41 -0700
+Message-ID: <dd18b0c30906021911u4c2359daje01b0477a6bd23ff@mail.gmail.com>
+Subject: Re: ACPI Exception (evregion-0422): AE_ERROR, Returned by Handler for 
+	[PCI_Config] [20090320]
+From: Justin Mattock <justinmattock@gmail.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The MAX17040 is a I2C interfaced Fuel Gauge systems for lithium-ion batteries
-This patch adds support the MAX17040 Fuel Gauge
+On Tue, Jun 2, 2009 at 6:24 PM, Zhang Rui <rui.zhang@intel.com> wrote:
+> On Wed, 2009-06-03 at 02:02 +0800, Justin Mattock wrote:
+>> I posted this error a few weeks ago, but had no response.
+>> So after a few weeks of looking at this, I wanted to find out if
+>> this is safe to see this, or should I be concerned:
+>>
+>> [    5.868418] ACPI: Power Button [PWRB]
+>> [    5.868547] input: Sleep Button as
+>> /devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input4
+>> [    5.868621] ACPI: Sleep Button [SLPB]
+>> [    6.093547] ACPI Exception (evregion-0422): AE_ERROR, Returned by
+>> Handler for [PCI_Config] [20090320]
+>> [    6.093555] ACPI Error (psparse-0537): Method parse/execution
+>> failed [\_SB_.PCI0.RP01.GFX0._PS0] (Node f703dcc0), AE_ERROR
+>> [    6.093614] ACPI: Transitioning device [GFX0] to D0
+>>
+>> I did do a dsdt dump, and looked for any errors
+>> but none had shown up.
+>> kernels that I have seen this are 2.6.29 -
+>> 2.6.30-rc5
+>>
+> please file a new bug report at
+> http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
+> and attach the full dmesg output and acpidump there.
+>
+> thanks,
+> rui
+>
+>
 
-Signed-off-by: Minkyu Kang <mk7.kang@samsung.com>
----
- drivers/power/Kconfig            |    8 +
- drivers/power/Makefile           |    3 +-
- drivers/power/max17040_battery.c |  304 ++++++++++++++++++++++++++++++++++++++
- include/linux/max17040_battery.h |   19 +++
- 4 files changed, 333 insertions(+), 1 deletions(-)
- create mode 100644 drivers/power/max17040_battery.c
- create mode 100644 include/linux/max17040_battery.h
+alright(Ill have to do that when I get a chance)
+As for the error message after looking into it more today
+I notice this message fired off as soon as I compiled
+and loaded the nvidia module.
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 33da112..6af5798 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -88,4 +88,12 @@ config CHARGER_PCF50633
- 	help
- 	 Say Y to include support for NXP PCF50633 Main Battery Charger.
- 
-+config BATTERY_MAX17040
-+	tristate "Maxim MAX17040 Fuel Gauge"
-+	depends on I2C
-+	help
-+	  MAX17040 is fuel-gauge systems for lithium-ion (Li+) batteries
-+	  in handheld and portable equipment. The MAX17040 is configured
-+	  to operate with a single lithium cell
-+
- endif # POWER_SUPPLY
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index 2fcf41d..9c48995 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -25,4 +25,5 @@ obj-$(CONFIG_BATTERY_TOSA)	+= tosa_battery.o
- obj-$(CONFIG_BATTERY_WM97XX)	+= wm97xx_battery.o
- obj-$(CONFIG_BATTERY_BQ27x00)	+= bq27x00_battery.o
- obj-$(CONFIG_BATTERY_DA9030)	+= da9030_battery.o
--obj-$(CONFIG_CHARGER_PCF50633)	+= pcf50633-charger.o
-\ No newline at end of file
-+obj-$(CONFIG_BATTERY_MAX17040))	+= max17040_battery.o
-+obj-$(CONFIG_CHARGER_PCF50633)	+= pcf50633-charger.o
-diff --git a/drivers/power/max17040_battery.c b/drivers/power/max17040_battery.c
-new file mode 100644
-index 0000000..9bee171
---- /dev/null
-+++ b/drivers/power/max17040_battery.c
-@@ -0,0 +1,304 @@
-+/*
-+ *  max17040_battery.c
-+ *  fuel-gauge systems for lithium-ion (Li+) batteries
-+ *
-+ *  Copyright (C) 2009 Samsung Electronics
-+ *  Minkyu Kang <mk7.kang@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/mutex.h>
-+#include <linux/err.h>
-+#include <linux/i2c.h>
-+#include <linux/delay.h>
-+#include <linux/power_supply.h>
-+#include <linux/max17040_battery.h>
-+
-+#define MAX17040_VCELL_MSB	0x02
-+#define MAX17040_VCELL_LSB	0x03
-+#define MAX17040_SOC_MSB	0x04
-+#define MAX17040_SOC_LSB	0x05
-+#define MAX17040_MODE_MSB	0x06
-+#define MAX17040_MODE_LSB	0x07
-+#define MAX17040_VER_MSB	0x08
-+#define MAX17040_VER_LSB	0x09
-+#define MAX17040_RCOMP_MSB	0x0C
-+#define MAX17040_RCOMP_LSB	0x0D
-+#define MAX17040_CMD_MSB	0xFE
-+#define MAX17040_CMD_LSB	0xFF
-+
-+#define MAX17040_DELAY		1000
-+#define MAX17040_BATTERY_FULL	95
-+
-+struct max17040_chip {
-+	struct i2c_client	*client;
-+	struct delayed_work	work;
-+
-+	/* State Of Connect */
-+	int online;
-+	/* battery voltage */
-+	int vcell;
-+	/* battery capacity */
-+	int soc;
-+	/* State Of Charge */
-+	int status;
-+};
-+
-+static struct max17040_chip *max17040;
-+static struct max17040_platform_data *pdata;
-+
-+static int max17040_get_property(struct power_supply *bat_ps,
-+			    enum power_supply_property psp,
-+			    union power_supply_propval *val)
-+{
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		val->intval = max17040->status;
-+		break;
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		val->intval = max17040->online;
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		val->intval = max17040->vcell;
-+		break;
-+	case POWER_SUPPLY_PROP_CAPACITY:
-+		val->intval = max17040->soc;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static struct power_supply bat_ps = {
-+	.name		= "battery",
-+	.type		= POWER_SUPPLY_TYPE_BATTERY,
-+	.get_property	= max17040_get_property,
-+};
-+
-+static int max17040_write_reg(int reg, u8 value)
-+{
-+	int ret;
-+
-+	ret = i2c_smbus_write_byte_data(max17040->client, reg, value);
-+
-+	if (ret < 0) {
-+		dev_err(&max17040->client->dev,
-+				"%s: reg 0x%x, val 0x%x, err %d\n",
-+				__func__, reg, value, ret);
-+	}
-+
-+	return ret;
-+}
-+
-+static u8 max17040_read_reg(int reg)
-+{
-+	int ret;
-+
-+	ret = i2c_smbus_read_byte_data(max17040->client, reg);
-+
-+	if (ret < 0) {
-+		dev_err(&max17040->client->dev,
-+				"%s: reg 0x%x, err %d\n",
-+				__func__, reg, ret);
-+	}
-+
-+	return ret;
-+}
-+
-+static void max17040_reset(void)
-+{
-+	max17040_write_reg(MAX17040_CMD_MSB, 0x54);
-+	max17040_write_reg(MAX17040_CMD_LSB, 0x00);
-+}
-+
-+static void max17040_set_rcomp(u16 val)
-+{
-+	max17040_write_reg(MAX17040_RCOMP_MSB, val >> 8);
-+	max17040_write_reg(MAX17040_RCOMP_LSB, (val << 8) >> 8);
-+}
-+
-+static void max17040_get_vcell(void)
-+{
-+	u8 msb;
-+	u8 lsb;
-+
-+	msb = max17040_read_reg(MAX17040_VCELL_MSB);
-+	lsb = max17040_read_reg(MAX17040_VCELL_LSB);
-+
-+	max17040->vcell = (msb << 4) + (lsb >> 4);
-+}
-+
-+static void max17040_get_soc(void)
-+{
-+	u8 msb;
-+	u8 lsb;
-+
-+	msb = max17040_read_reg(MAX17040_SOC_MSB);
-+	lsb = max17040_read_reg(MAX17040_SOC_LSB);
-+
-+	max17040->soc = msb;
-+}
-+
-+static void max17040_get_version(void)
-+{
-+	u8 msb;
-+	u8 lsb;
-+
-+	msb = max17040_read_reg(MAX17040_VER_MSB);
-+	lsb = max17040_read_reg(MAX17040_VER_LSB);
-+
-+	dev_info(&max17040->client->dev,
-+			"MAX17040 Fuel-Gauge Ver %d%d\n", msb, lsb);
-+}
-+
-+static void max17040_get_online(void)
-+{
-+	if (pdata->battery_online)
-+		max17040->online = pdata->battery_online();
-+	else
-+		max17040->online = 1;
-+}
-+
-+static void max17040_get_status(void)
-+{
-+	if (!pdata->charger_online || !pdata->charger_enable) {
-+		max17040->status = POWER_SUPPLY_STATUS_UNKNOWN;
-+		return;
-+	}
-+
-+	if (pdata->charger_online()) {
-+		if (pdata->charger_enable())
-+			max17040->status = POWER_SUPPLY_STATUS_CHARGING;
-+		else
-+			max17040->status = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+	} else {
-+		max17040->status = POWER_SUPPLY_STATUS_DISCHARGING;
-+	}
-+
-+	if (max17040->soc > MAX17040_BATTERY_FULL)
-+		max17040->status = POWER_SUPPLY_STATUS_FULL;
-+}
-+
-+static void max17040_work(struct work_struct *work)
-+{
-+	max17040_get_vcell();
-+	max17040_get_soc();
-+	max17040_get_online();
-+	max17040_get_status();
-+
-+	schedule_delayed_work(&max17040->work, MAX17040_DELAY);
-+}
-+
-+static enum power_supply_property max17040_battery_props[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CAPACITY,
-+};
-+
-+static int __devinit max17040_probe(struct i2c_client *client,
-+			const struct i2c_device_id *id)
-+{
-+	struct max17040_chip *chip;
-+	int ret;
-+
-+	chip = kzalloc(sizeof(struct max17040_chip), GFP_KERNEL);
-+	if (!chip)
-+		return -ENOMEM;
-+
-+	chip->client = client;
-+	pdata = client->dev.platform_data;
-+
-+	i2c_set_clientdata(client, chip);
-+	max17040 = chip;
-+
-+	max17040_reset();
-+
-+	max17040_get_version();
-+
-+	INIT_DELAYED_WORK_DEFERRABLE(&chip->work, max17040_work);
-+	schedule_delayed_work(&chip->work, MAX17040_DELAY);
-+
-+	bat_ps.properties = max17040_battery_props;
-+	bat_ps.num_properties = ARRAY_SIZE(max17040_battery_props);
-+
-+	ret = power_supply_register(&client->dev, &bat_ps);
-+	if (ret) {
-+		dev_err(&max17040->client->dev,
-+				"failed: power supply register\n");
-+		kfree(chip);
-+		max17040 = NULL;
-+		i2c_set_clientdata(client, NULL);
-+		return -1;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __devexit max17040_remove(struct i2c_client *client)
-+{
-+	struct max17040_chip *chip = i2c_get_clientdata(client);
-+
-+	kfree(chip);
-+	max17040 = NULL;
-+	i2c_set_clientdata(client, NULL);
-+	power_supply_unregister(&bat_ps);
-+	return 0;
-+}
-+
-+static int max17040_suspend(struct i2c_client *client,
-+		pm_message_t state)
-+{
-+	struct max17040_chip *chip = i2c_get_clientdata(client);
-+
-+	cancel_delayed_work(&chip->work);
-+	return 0;
-+}
-+
-+static int max17040_resume(struct i2c_client *client)
-+{
-+	struct max17040_chip *chip = i2c_get_clientdata(client);
-+
-+	schedule_delayed_work(&chip->work, MAX17040_DELAY);
-+	return 0;
-+}
-+
-+static const struct i2c_device_id max17040_id[] = {
-+	{ "max17040", 0 },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(i2c, max17040_id);
-+
-+static struct i2c_driver max17040_i2c_driver = {
-+	.driver	= {
-+		.name	= "max17040",
-+	},
-+	.probe		= max17040_probe,
-+	.remove		= __devexit_p(max17040_remove),
-+	.suspend	= max17040_suspend,
-+	.resume		= max17040_resume,
-+	.id_table	= max17040_id,
-+};
-+
-+static int __init max17040_init(void)
-+{
-+	return i2c_add_driver(&max17040_i2c_driver);
-+}
-+module_init(max17040_init);
-+
-+static void __exit max17040_exit(void)
-+{
-+	i2c_del_driver(&max17040_i2c_driver);
-+}
-+module_exit(max17040_exit);
-+
-+MODULE_AUTHOR("Minkyu Kang <mk7.kang@samsung.com>");
-+MODULE_DESCRIPTION("MAX17040 Fuel Gauge");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/max17040_battery.h b/include/linux/max17040_battery.h
-new file mode 100644
-index 0000000..ad97b06
---- /dev/null
-+++ b/include/linux/max17040_battery.h
-@@ -0,0 +1,19 @@
-+/*
-+ *  Copyright (C) 2009 Samsung Electronics
-+ *  Minkyu Kang <mk7.kang@samsung.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef __MAX17040_BATTERY_H_
-+#define __MAX17040_BATTERY_H_
-+
-+struct max17040_platform_data {
-+	int (*battery_online)(void);
-+	int (*charger_online)(void);
-+	int (*charger_enable)(void);
-+};
-+
-+#endif
+
 -- 
-1.5.4.3
+Justin P. Mattock
