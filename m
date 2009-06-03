@@ -1,156 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZFCHjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbZFCHk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbZFCHjv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 03:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZFCHjn
+	id S1756158AbZFCHk2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 03:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbZFCHkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 03:39:43 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:35816 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753326AbZFCHjm (ORCPT
+	Wed, 3 Jun 2009 03:40:16 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:50416 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753403AbZFCHkP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 03:39:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=mSqlgW5PXQBVBfiFWhQB5aEiPanKh0xwrelzLEupxUFzIEueZzG2ljudeK3Ukdi6TW
-         P8zk31OwBsKHNX9Qemv/VaFFr2W7n1UP9v9NCtv98K9VEsqW+Nu1onWAlksWgRgT+2gj
-         Z49/MQ398u7Mf/h1k3N1egn8GrahP1eFkXIRE=
-Date: Wed, 3 Jun 2009 09:39:39 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Peter Feuerer <peter@piie.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH] Acer Aspire One Fan Control
-Message-ID: <20090603073939.GB2671@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
-	Peter Feuerer <peter@piie.net>, LKML <linux-kernel@vger.kernel.org>,
-	lenb@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
-	Maxim Levitsky <maximlevitsky@gmail.com>
-References: <1240950704.3781.12.camel@maxim-laptop> <cone.1241299309.265715.3948.1000@mentalhome> <20090503184617.GA3555@liondog.tnic> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic> <cone.1242065107.695268.13534.1000@onepiie> <20090512060231.GB26286@liondog.tnic> <cone.1242669880.118150.4276.1000@deskpiie> <20090524192219.GA30285@liondog.tnic> <cone.1243865900.580144.4368.1000@deskpiie>
+	Wed, 3 Jun 2009 03:40:15 -0400
+Message-ID: <4A2628A7.9080407@nokia.com>
+Date: Wed, 03 Jun 2009 10:39:19 +0300
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <cone.1243865900.580144.4368.1000@deskpiie>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "david@fromorbit.com" <david@fromorbit.com>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "jack@suse.cz" <jack@suse.cz>,
+       "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "damien.wyart@free.fr" <damien.wyart@free.fr>
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
+References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com> <4A1E9D0B.4090402@gmail.com> <4A1E9D8B.8020908@gmail.com> <1243542908.6645.104.camel@laptop> <4A20011E.7020900@nokia.com> <20090529155046.GH11363@kernel.dk> <4A20072B.7050807@nokia.com> <20090529170742.GI11363@kernel.dk>
+In-Reply-To: <20090529170742.GI11363@kernel.dk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 03 Jun 2009 07:39:27.0142 (UTC) FILETIME=[6C270C60:01C9E41E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Jens Axboe wrote:
+> On Fri, May 29 2009, Artem Bityutskiy wrote:
+>> Jens Axboe wrote:
+>>>> diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
+>>>> index 2349e2c..d1ac967 100644
+>>>> --- a/fs/ubifs/super.c
+>>>> +++ b/fs/ubifs/super.c
+>>>> @@ -1929,6 +1929,9 @@ static int ubifs_fill_super(struct super_block *sb, void *data, int silent)
+>>>> 	err  = bdi_init(&c->bdi);
+>>>> 	if (err)
+>>>> 		goto out_close;
+>>>> +	err = bdi_register(&c->bdi, NULL, "ubifs");
+>>>> +	if (err)
+>>>> +		goto out_close;
+>>> Not quite right, you need to call bdi_destroy() if you have done the
+>>> init.
+>> Right, bdi_destroy() is already there for long time.
+>> I'm confused.
+>>
+>>> I committed this one this morning:
+>>>
+>>> http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=570a2fe1df85741988ad0ca22aa406744436e281
+>> Hmm, it is the same as my patch, but you do
+>> +       err = bdi_register(&c->bdi);
+>> while I do
+>> +	err = bdi_register(&c->bdi, NULL, "ubifs");
+> 
+> Oops, that's my bad. If you combine the two, we should have a working
+> patch :-)
+> 
+>>> But feel free to commit/submit to the ubifs tree directly, then it'll
+>>> disappear from my tree once it is merged.
+>> Yeah, I think it can go via my tree. I'd merge it at
+>> 2.6.31 window. This change does not depend on your
+>> work anyway.
+> 
+> Right, I'll just carry the fixup patches meanwhile as well, but wont
+> upstream them.
 
-On Mon, Jun 01, 2009 at 04:18:20PM +0200, Peter Feuerer wrote:
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 41c6605..bd7617e 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -222,6 +222,13 @@ L:	linux-acenic@sunsite.dk
-> S:	Maintained
-> F:	drivers/net/acenic*
->
-> +ACER ASPIRE ONE TEMPERATURE AND FAN DRIVER
-> +P: Peter Feuerer
-> +M: peter@piie.net
-> +W: http://piie.net/?section=acerhdf
-> +S: Maintained
-> +F: drivers/platform/x86/acerhdf.c
-> +
-> ACER WMI LAPTOP EXTRAS
-> P:	Carlos Corbacho
-> M:	carlos@strangeworlds.co.uk
-> diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-> index 284ebac..fe14dfd 100644
-> --- a/drivers/platform/x86/Kconfig
-> +++ b/drivers/platform/x86/Kconfig
-> @@ -34,6 +34,23 @@ config ACER_WMI
-> 	  If you have an ACPI-WMI compatible Acer/ Wistron laptop, say Y or M
-> 	  here.
->
-> +config ACERHDF
-> +	tristate "Acer Aspire One temperature and fan driver"
-> +	depends on THERMAL && THERMAL_HWMON
-> +	---help---
-> +	  This is a driver for Acer Aspire One netbooks. It allows to access
-> +	  the temperature sensor and to control the fan.
-> +
-> +	  After loading this driver the BIOS is still in control of the fan.
-> +	  To let the kernel handle the fan, do:
-> +	  echo -n enabled > /sys/class/thermal/thermal_zone0/mode
-> +
-> +	  For more information about this driver see
-> +	  <http://piie.net/files/acerhdf_README.txt>
-> +
-> +	  If you have an Acer Aspire One netbook, say Y or M
-> +	  here.
-> +
-> config ASUS_LAPTOP
-> 	tristate "Asus Laptop Extras (EXPERIMENTAL)"
-> 	depends on ACPI
-> diff --git a/drivers/platform/x86/Makefile b/drivers/platform/x86/Makefile
-> index e40c7bd..641b8bf 100644
-> --- a/drivers/platform/x86/Makefile
-> +++ b/drivers/platform/x86/Makefile
-> @@ -9,6 +9,7 @@ obj-$(CONFIG_COMPAL_LAPTOP)	+= compal-laptop.o
-> obj-$(CONFIG_DELL_LAPTOP)	+= dell-laptop.o
-> obj-$(CONFIG_DELL_WMI)		+= dell-wmi.o
-> obj-$(CONFIG_ACER_WMI)		+= acer-wmi.o
-> +obj-$(CONFIG_ACERHDF)		+= acerhdf.o
-> obj-$(CONFIG_HP_WMI)		+= hp-wmi.o
-> obj-$(CONFIG_TC1100_WMI)	+= tc1100-wmi.o
-> obj-$(CONFIG_SONY_LAPTOP)	+= sony-laptop.o
-> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-> new file mode 100644
-> index 0000000..dcfb8b2
-> --- /dev/null
-> +++ b/drivers/platform/x86/acerhdf.c
-> @@ -0,0 +1,533 @@
-> +/*
-> + * acerhdf - A driver which monitors the temperature
-> + *           of the aspire one netbook, turns on/off the fan
-> + *           as soon as the upper/lower threshold is reached.
-> + *
-> + * (C) 2009 - Peter Feuerer     peter (a) piie.net
-> + *                              http://piie.net
-> + *
-> + * Inspired by and many thanks to:
-> + *  o acerfand   - Rachel Greenham
-> + *  o acer_ec.pl - Michael Kurz     michi.kurz (at) googlemail.com
-> + *               - Petr Tomasek     tomasek (#) etf,cuni,cz
-> + *               - Carlos Corbacho  cathectic (at) gmail.com
-> + *               - Matthew Garrett
-> + *               - Borislav Petkov
-> + *
-> + *  This program is free software; you can redistribute it and/or modify
-> + *  it under the terms of the GNU General Public License as published by
-> + *  the Free Software Foundation; either version 2 of the License, or
-> + *  (at your option) any later version.
-> + *
-> + *  This program is distributed in the hope that it will be useful,
-> + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + *  GNU General Public License for more details.
-> + *
-> + *  You should have received a copy of the GNU General Public License
-> + *  along with this program; if not, write to the Free Software
-> + *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-> + */
-> +
-> +#define pr_fmt(fmt) "acerhdf: " fmt
+Just to make sure I understood you correctly. I assume my original
+patch is fine (because there is bdi_destroy()) and merge it to
+ubifs tree.
 
-This is new but it's not used anywhere. Maybe some debug leftovers?
-
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/fs.h>
-> +#include <linux/dmi.h>
-> +#include <acpi/acpi_drivers.h>
-> +#include <linux/sched.h>
-
-...
 
 -- 
-Regards/Gruss,
-    Boris.
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
