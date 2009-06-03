@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbZFCJgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZFCJjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756228AbZFCJgd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 05:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756644AbZFCJfr
+	id S1756730AbZFCJjo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 05:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZFCJja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 05:35:47 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46784 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756689AbZFCJfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 05:35:46 -0400
-Date: Wed, 3 Jun 2009 11:35:46 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v3
-Message-ID: <20090603093546.GA16275@wotan.suse.de>
-References: <20090528122357.GM6920@wotan.suse.de> <20090528135428.GB16528@localhost> <20090601115046.GE5018@wotan.suse.de> <20090601183225.GS1065@one.firstfloor.org> <20090602120042.GB1392@wotan.suse.de> <20090602124757.GG1065@one.firstfloor.org> <20090602125713.GG1392@wotan.suse.de> <20090602134659.GA21338@localhost> <20090602151729.GC17448@wotan.suse.de> <20090602172715.GT1065@one.firstfloor.org>
+	Wed, 3 Jun 2009 05:39:30 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:49576 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751841AbZFCJj3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 05:39:29 -0400
+Subject: Re: [PATCH 4/6] net: add NL802154 interface for configuration of
+ 802.15.4 devices
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, davem@davemloft.net,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Sergey Lapin <slapin@ossfans.org>
+In-Reply-To: <1244021629-18409-5-git-send-email-dbaryshkov@gmail.com>
+References: <1244021629-18409-1-git-send-email-dbaryshkov@gmail.com>
+	 <1244021629-18409-2-git-send-email-dbaryshkov@gmail.com>
+	 <1244021629-18409-3-git-send-email-dbaryshkov@gmail.com>
+	 <1244021629-18409-4-git-send-email-dbaryshkov@gmail.com>
+	 <1244021629-18409-5-git-send-email-dbaryshkov@gmail.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-f1uVj3P7zhwS81FSTB85"
+Date: Wed, 03 Jun 2009 11:39:24 +0200
+Message-Id: <1244021964.10665.5.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090602172715.GT1065@one.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.26.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 07:27:15PM +0200, Andi Kleen wrote:
-> > Hmm, if you're handling buffercache here then possibly yes.
-> 
-> Good question, will check.
 
-BTW. now that I think about it, buffercache is probably not a good
-idea to truncate (truncate, as-in: remove from pagecache). Because
-filesystems can assume that with just a reference on the page, then
-it will not be truncated.
+--=-f1uVj3P7zhwS81FSTB85
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This code will cause ext2 (as the first one I looked at), to go
-oops.
+On Wed, 2009-06-03 at 13:33 +0400, Dmitry Eremin-Solenikov wrote:
 
-And this is not predicated on PagePrivate or page_has_buffers,
-because filesystems are free to directly operate on their own
-metadata buffercache pages.
+> +enum {
+> +	__IEEE802154_COMMAND_INVALID,
+> +
+> +	IEEE802154_ASSOCIATE_REQ,
+> +	IEEE802154_ASSOCIATE_CONF,
+> +	IEEE802154_DISASSOCIATE_REQ,
+> +	IEEE802154_DISASSOCIATE_CONF,
+> +	IEEE802154_GET_REQ,
+> +	IEEE802154_GET_CONF,
+> +/* 	IEEE802154_GTS_REQ, */
+> +/* 	IEEE802154_GTS_CONF, */
+> +	IEEE802154_RESET_REQ,
+> +	IEEE802154_RESET_CONF,
+> +/* 	IEEE802154_RX_ENABLE_REQ, */
+> +/* 	IEEE802154_RX_ENABLE_CONF, */
 
-So I think it would be a good idea to exclude buffercache from
-here completely until it can be shown to be safe. Actually you
-*can* use the invalidate_mapping_pages path, which will check
-refcounts etc (or a derivative thereof, similarly to my truncate
-patch).
+This is a recipe for disaster. Somebody will come along and uncomment
+things. Why this is bad, I leave as an exercise for the reader.
 
+johannes
+
+--=-f1uVj3P7zhwS81FSTB85
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKJkTJAAoJEODzc/N7+QmacIAP/j4pABnzbTeH28988f091okj
+X/woSZkYWYMpopmE/TAHXuQrsPDgt3MGzutTnXb2ctVZzLQb+iN5JpRtT2VE45ba
+Bz7sHuWLPw1GJZsS5bbETgGoho7NCZj/3fWHrdppgKoOI8qbIdIH3iEnjeiPTR8S
+/OIoDzASLfJ/5JunYZCpbfFrBn9lc0tKaus/LISO8r+rPUoL9dBuTzjqGCOuwMek
+T3yTEs5eTyIxyUMmDLkYV6BfrGjubGiEPLM/6CAh99PkC/MNLo9WQANi8Kl4mmlo
+dXb1Cq/mydhhSGHTdzIZ2UWTCY/BQCCh0lFBrTqvEfYb4NdkhHhTAEW91g0VeY8X
++579VKNr+kCGpej0mSGKsJ127YJIM5ueSixAWLUiuinIcX+QrIFKi2nqdv7eYI2K
+7Fmi4/y3jzZiPe2cDGvCzBdwZZ98G1CzzrCQUgOqQ8HZHNQHYrWtL1eY2E9639aG
+H/cBAED9qTGyKew+aUbXFcT1+zVd0sGZmTbZoQMz0MiaGa0E4NHHz+ofvDfXJoY+
+broEJ3LH/3OcF4Z2WTx+YuNXMJKDZyrpadnrHh/7se8th/8DaHZWb8Y7EyujYI2i
+dHTX/DphX201FijyiNFXqfWxVqMAaSFovmpJ3rrE4NlihAGsSmE8GrqVMl3nDMvm
+pwdl74AZxvhugdrhM3Nh
+=uRcT
+-----END PGP SIGNATURE-----
+
+--=-f1uVj3P7zhwS81FSTB85--
 
