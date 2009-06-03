@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbZFCIIM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbZFCII2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889AbZFCIIM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 04:08:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756369AbZFCIHn
+	id S1757225AbZFCII2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 04:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756545AbZFCIHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 04:07:43 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34506 "EHLO smtps.tip.net.au"
+	Wed, 3 Jun 2009 04:07:44 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:57567 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756264AbZFCIHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756317AbZFCIHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 3 Jun 2009 04:07:40 -0400
-Date: Wed, 3 Jun 2009 18:07:34 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Craig Shelley <craig@microtron.org.uk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: linux-next: manual merge of the usb tree with the ttydev tree
-Message-Id: <20090603180734.f175e04f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__3_Jun_2009_18_07_34_+1000_XaoKCrXWgL3zv0Aw"
+Date: Wed, 3 Jun 2009 10:07:41 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "david@fromorbit.com" <david@fromorbit.com>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "jack@suse.cz" <jack@suse.cz>,
+       "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>,
+       "richard@rsk.demon.co.uk" <richard@rsk.demon.co.uk>,
+       "damien.wyart@free.fr" <damien.wyart@free.fr>
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
+Message-ID: <20090603080741.GE11363@kernel.dk>
+References: <4A1E9D0B.4090402@gmail.com> <4A1E9D8B.8020908@gmail.com> <1243542908.6645.104.camel@laptop> <4A20011E.7020900@nokia.com> <20090529155046.GH11363@kernel.dk> <4A20072B.7050807@nokia.com> <20090529170742.GI11363@kernel.dk> <4A2628A7.9080407@nokia.com> <20090603074417.GC11363@kernel.dk> <4A262D6E.9070908@nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A262D6E.9070908@nokia.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__3_Jun_2009_18_07_34_+1000_XaoKCrXWgL3zv0Aw
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Jun 03 2009, Artem Bityutskiy wrote:
+> Jens Axboe wrote:
+>>> Just to make sure I understood you correctly. I assume my original
+>>> patch is fine (because there is bdi_destroy()) and merge it to
+>>> ubifs tree.
+>>
+>> It needs to be:
+>>
+>>         err = bdi_register(&c->bdi, NULL, "ubifs");
+>>         if (err)
+>>                 goto out_bdi;
+>>
+>> so you hit the bdi_destroy() for that failure, not goto out_close;
+>> Otherwise it was fine.
+>
+> Did this, also added a
+> Reviewed-by: Jens Axboe <jens.axboe@oracle.com>
+>
+> http://git.infradead.org/ubifs-2.6.git?a=commit;h=813fdc16ad591e79d0c1b88d31970dcd1c2aa3f1
 
-Hi Greg,
+Looks good!
 
-Today's linux-next merge of the usb tree got a conflict in
-drivers/usb/serial/cp210x.c between commit
-d6ba273795c1260745197dc93f64c321c80a5ecc ("tty-usb-use-port") from the
-ttydev tree and commit fa9eb42aff8444a67db3136bc405a53882efb14f ("USB:
-CP210X Replace CP2101 with CP210x") from the usb tree.
+-- 
+Jens Axboe
 
-This is really just the same three commits being applied to both trees,
-but the ttydev tree has the above commit preceding them.  Maybe Greg you
-should rdop these patches ("USB: CP210X Add device IDs", "USB: CP210X Use
-official request code definitions", and "USB: CP210X Replace CP2101 with
-CP210x") is Craig can verify that they are indeed identical in both trees
-(I know the first two are, but the last is different due to the other
-changes in the ttydev tree).
-
-As a side issue, the last patch has no SOB from Craig in the ttydev tree.
-
-So, I just used the ttydev tree version on the assumption that my
-reasoning above is correct.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__3_Jun_2009_18_07_34_+1000_XaoKCrXWgL3zv0Aw
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkomL0YACgkQjjKRsyhoI8x/wACfayx/70VqxfJT1CQ1iB57DQh/
-C4UAnAzCiGlDW7yzXRkzdadY3bxe+oIl
-=rQL2
------END PGP SIGNATURE-----
-
---Signature=_Wed__3_Jun_2009_18_07_34_+1000_XaoKCrXWgL3zv0Aw--
