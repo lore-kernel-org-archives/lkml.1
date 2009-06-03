@@ -1,50 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbZFCGJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbZFCGNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755592AbZFCGJt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 02:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZFCGJl
+	id S1754986AbZFCGNi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 02:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbZFCGNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 02:09:41 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:46404 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751784AbZFCGJl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 02:09:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:date:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ealwP097FceMobxHsfOSdWtEU5AO6OZr2Jpfx30PRNZ8LXEoTDW8VQzHQoBUEEvhI+
-         CLFLCeSp9k3+2pJEtsuZj54SHy5qiv2f7Zwu6zu++PctEnW+U+5eXK77ydtUv/iv4kDM
-         8kgK885JntMvtNpo2I8VNZQ/0NAScD4//+q4I=
-From: Gerard Lledo <gerard.lledo@gmail.com>
-Date: Wed, 3 Jun 2009 09:09:37 +0300
+	Wed, 3 Jun 2009 02:13:31 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:33418 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752031AbZFCGNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 02:13:31 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [JFFS2] jffs2_start_garbage_collect_thread() return
-	value cleanup
-Message-ID: <20090603060937.GA2554@tank>
-References: <20090602113216.GA3513@tank> <1243944686-7039-1-git-send-email-gerard.lledo@gmail.com> <1243944686-7039-2-git-send-email-gerard.lledo@gmail.com> <20090602151112.376ca436.akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fix floppy hibernation
+Date: Wed, 3 Jun 2009 08:13:26 +0200
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, rjw@sisk.pl
+References: <200905301804.26762.linux@rainbow-software.org> <200906021830.53531.linux@rainbow-software.org> <20090602151556.5df9167c.akpm@linux-foundation.org>
+In-Reply-To: <20090602151556.5df9167c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090602151112.376ca436.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906030813.27625.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 02, 2009 at 03:11:12PM -0700, Andrew Morton wrote:
-> On Tue,  2 Jun 2009 15:11:26 +0300
-> Gerard Lledo <gerard.lledo@gmail.com> wrote:
-> 
-> > There is no user of this return value in the kernel.  Change it to return void
-> > instead.
-> 
-> Both these patches were missing your signed-off-by:.  As your first
-> version of the first patch wasn't missing it, I added it to both these
-> patches, OK?
+On Wednesday 03 June 2009, Andrew Morton wrote:
+> On Tue, 2 Jun 2009 18:30:50 +0200
 >
+> Ondrej Zary <linux@rainbow-software.org> wrote:
+> > > > +static int floppy_resume(struct platform_device *dev)
+> > > > +{
+> > > > +	int i;
+> > > > +
+> > > > +	for (i = 0; i < N_FDC; i++)
+> > > > +		if (FDCS->address != -1)
+> > > > +			user_reset_fdc(-1, FD_RESET_ALWAYS, 0);
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > >
+> > > hm, how does this work?
+> > >
+> > > FDCS is a revolting should-not-exist macro which assumes the presence
+> > > of a local variable called `fdc'.
+> >
+> > The driver is complete mess - there is also a global static fdc variable.
+> > So it worked because I have only one floppy controller.
+> >
+> > > So I think the loop control variable here should be called `fdc', not
+> > > `i'.
+> >
+> > See the v2 patch below. Tested and works too.
+>
+> OK.
+>
+> > > It's pretty amazing that something like this still exists in a core
+> > > driver.  Someone please save us!
+> >
+> > Based on Ingo Molnar's patch from 2006, this makes the floppy work after
+> > resume from hibernation, at least on my machine.
+>
+> That's a very skimpy changelog.  The lack of any useful reference to
+> the referred-to Ingopatch doesn't aid things..
+>
+> > --- linux-2.6.29.4-orig/drivers/block/floppy.c	2009-05-30
+> > 14:38:29.000000000 +0200 +++ linux/drivers/block/floppy.c	2009-06-02
+> > 17:32:56.000000000 +0200 @@ -4148,6 +4148,24 @@
+> >  {
+> >  }
+> >
+> > +static int floppy_resume(struct platform_device *dev)
+> > +{
+> > +	int fdc;
+> > +
+> > +	for (fdc = 0; fdc < N_FDC; fdc++)
+> > +		if (FDCS->address != -1)
+> > +			user_reset_fdc(-1, FD_RESET_ALWAYS, 0);
+> > +
+> > +	return 0;
+> > +}
+>
+> The patch changes the driver so that it calls user_reset_fdc() for each
+> device at resume-time.
+>
+> Why?  What effect does this have on the hardware and why does it fix
+> things?
 
-Thats fine.  I just forgot to add it.  Thanks, and sorry for the trouble/noise.
+I don't know at all, it's complete guesswork. The first thing I tested was 
+rmmod floppy && modprobe floppy after resume - it worked. Narrowing the 
+initialization code down resulted in this patch.
+
+-- 
+Ondrej Zary
