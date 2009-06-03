@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbZFCJth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757175AbZFCJts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756897AbZFCJth (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 05:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752333AbZFCJt2
+	id S1757175AbZFCJts (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 05:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756205AbZFCJta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 05:49:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60124 "EHLO hera.kernel.org"
+	Wed, 3 Jun 2009 05:49:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60127 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752851AbZFCJt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 05:49:27 -0400
-Date: Wed, 3 Jun 2009 09:48:36 GMT
+	id S1755361AbZFCJt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 05:49:28 -0400
+Date: Wed, 3 Jun 2009 09:48:48 GMT
 From: tip-bot for Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
@@ -22,31 +22,30 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
        cjashfor@linux.vnet.ibm.com, mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
-Subject: [tip:perfcounters/core] perf report: Print -D to stdout
-Message-ID: <tip-3502973d005ed89cc2b3f39780813a341ddba97f@git.kernel.org>
-Git-Commit-ID: 3502973d005ed89cc2b3f39780813a341ddba97f
+Subject: [tip:perfcounters/core] perf report: Improve sort key recognition
+Message-ID: <tip-5352f35d6ae7b8b981d77137fb268bc54d10624f@git.kernel.org>
+Git-Commit-ID: 5352f35d6ae7b8b981d77137fb268bc54d10624f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 03 Jun 2009 09:48:37 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 03 Jun 2009 09:48:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3502973d005ed89cc2b3f39780813a341ddba97f
-Gitweb:     http://git.kernel.org/tip/3502973d005ed89cc2b3f39780813a341ddba97f
+Commit-ID:  5352f35d6ae7b8b981d77137fb268bc54d10624f
+Gitweb:     http://git.kernel.org/tip/5352f35d6ae7b8b981d77137fb268bc54d10624f
 Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Wed, 3 Jun 2009 09:38:58 +0200
+AuthorDate: Wed, 3 Jun 2009 10:07:39 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 3 Jun 2009 10:01:57 +0200
+CommitDate: Wed, 3 Jun 2009 10:07:39 +0200
 
-perf report: Print -D to stdout
+perf report: Improve sort key recognition
 
--D prints to stderr - which is a bit confusing - print to stdout
-instead.
-
-Also clean up the if (dump_trace) patterns via a dprintf helper.
+ - allow case-insensitive tokens - such as --sort Comm,Symbol
+ - allow substring shortcuts: --sort sym
+ - detect invalid tokens and bail out
 
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
@@ -61,118 +60,63 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- Documentation/perf_counter/builtin-report.c |   64 ++++++++++++--------------
- 1 files changed, 30 insertions(+), 34 deletions(-)
+ Documentation/perf_counter/builtin-report.c |   29 +++++++++++++++-----------
+ 1 files changed, 17 insertions(+), 12 deletions(-)
 
 diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index 9da990f..6207a31 100644
+index 6207a31..a8d3905 100644
 --- a/Documentation/perf_counter/builtin-report.c
 +++ b/Documentation/perf_counter/builtin-report.c
-@@ -31,6 +31,8 @@ static int		input;
- static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
+@@ -453,28 +453,18 @@ static int sort_dimension__add(char *tok)
+ 		if (sd->taken)
+ 			continue;
  
- static int		dump_trace = 0;
-+#define dprintf(x...)	do { if (dump_trace) printf(x); } while (0)
+-		if (strcmp(tok, sd->name))
++		if (strncasecmp(tok, sd->name, strlen(tok)))
+ 			continue;
+ 
+ 		list_add_tail(&sd->entry->list, &hist_entry__sort_list);
+ 		sd->taken = 1;
 +
- static int		verbose;
- static int		full_paths;
- 
-@@ -729,14 +731,12 @@ more:
- 		uint64_t ip = event->ip.ip;
- 		struct map *map = NULL;
- 
--		if (dump_trace) {
--			fprintf(stderr, "%p [%p]: PERF_EVENT (IP, %d): %d: %p\n",
--				(void *)(offset + head),
--				(void *)(long)(event->header.size),
--				event->header.misc,
--				event->ip.pid,
--				(void *)(long)ip);
--		}
-+		dprintf("%p [%p]: PERF_EVENT (IP, %d): %d: %p\n",
-+			(void *)(offset + head),
-+			(void *)(long)(event->header.size),
-+			event->header.misc,
-+			event->ip.pid,
-+			(void *)(long)ip);
- 
- 		if (thread == NULL) {
- 			fprintf(stderr, "problem processing %d event, skipping it.\n",
-@@ -781,15 +781,14 @@ more:
- 		struct thread *thread = threads__findnew(event->mmap.pid);
- 		struct map *map = map__new(&event->mmap, cwdp, cwdlen);
- 
--		if (dump_trace) {
--			fprintf(stderr, "%p [%p]: PERF_EVENT_MMAP: [%p(%p) @ %p]: %s\n",
--				(void *)(offset + head),
--				(void *)(long)(event->header.size),
--				(void *)(long)event->mmap.start,
--				(void *)(long)event->mmap.len,
--				(void *)(long)event->mmap.pgoff,
--				event->mmap.filename);
--		}
-+		dprintf("%p [%p]: PERF_EVENT_MMAP: [%p(%p) @ %p]: %s\n",
-+			(void *)(offset + head),
-+			(void *)(long)(event->header.size),
-+			(void *)(long)event->mmap.start,
-+			(void *)(long)event->mmap.len,
-+			(void *)(long)event->mmap.pgoff,
-+			event->mmap.filename);
-+
- 		if (thread == NULL || map == NULL) {
- 			if (verbose)
- 				fprintf(stderr, "problem processing PERF_EVENT_MMAP, skipping event.\n");
-@@ -802,12 +801,11 @@ more:
- 	case PERF_EVENT_COMM: {
- 		struct thread *thread = threads__findnew(event->comm.pid);
- 
--		if (dump_trace) {
--			fprintf(stderr, "%p [%p]: PERF_EVENT_COMM: %s:%d\n",
--				(void *)(offset + head),
--				(void *)(long)(event->header.size),
--				event->comm.comm, event->comm.pid);
--		}
-+		dprintf("%p [%p]: PERF_EVENT_COMM: %s:%d\n",
-+			(void *)(offset + head),
-+			(void *)(long)(event->header.size),
-+			event->comm.comm, event->comm.pid);
-+
- 		if (thread == NULL ||
- 		    thread__set_comm(thread, event->comm.comm)) {
- 			fprintf(stderr, "problem processing PERF_EVENT_COMM, skipping event.\n");
-@@ -818,11 +816,10 @@ more:
- 	}
- 	default: {
- broken_event:
--		if (dump_trace)
--			fprintf(stderr, "%p [%p]: skipping unknown header type: %d\n",
--					(void *)(offset + head),
--					(void *)(long)(event->header.size),
--					event->header.type);
-+		dprintf("%p [%p]: skipping unknown header type: %d\n",
-+			(void *)(offset + head),
-+			(void *)(long)(event->header.size),
-+			event->header.type);
- 
- 		total_unknown++;
- 
-@@ -846,14 +843,13 @@ broken_event:
- 	rc = EXIT_SUCCESS;
- 	close(input);
- 
--	if (dump_trace) {
--		fprintf(stderr, "      IP events: %10ld\n", total);
--		fprintf(stderr, "    mmap events: %10ld\n", total_mmap);
--		fprintf(stderr, "    comm events: %10ld\n", total_comm);
--		fprintf(stderr, " unknown events: %10ld\n", total_unknown);
-+	dprintf("      IP events: %10ld\n", total);
-+	dprintf("    mmap events: %10ld\n", total_mmap);
-+	dprintf("    comm events: %10ld\n", total_comm);
-+	dprintf(" unknown events: %10ld\n", total_unknown);
- 
-+	if (dump_trace)
  		return 0;
--	}
+ 	}
  
- 	if (verbose >= 2)
- 		dsos__fprintf(stdout);
+ 	return -ESRCH;
+ }
+ 
+-static void setup_sorting(void)
+-{
+-	char *tmp, *tok, *str = strdup(sort_order);
+-
+-	for (tok = strtok_r(str, ", ", &tmp);
+-			tok; tok = strtok_r(NULL, ", ", &tmp))
+-		sort_dimension__add(tok);
+-
+-	free(str);
+-}
+-
+ static int64_t
+ hist_entry__cmp(struct hist_entry *left, struct hist_entry *right)
+ {
+@@ -880,6 +870,21 @@ static const struct option options[] = {
+ 	OPT_END()
+ };
+ 
++static void setup_sorting(void)
++{
++	char *tmp, *tok, *str = strdup(sort_order);
++
++	for (tok = strtok_r(str, ", ", &tmp);
++			tok; tok = strtok_r(NULL, ", ", &tmp)) {
++		if (sort_dimension__add(tok) < 0) {
++			error("Unknown --sort key: `%s'", tok);
++			usage_with_options(report_usage, options);
++		}
++	}
++
++	free(str);
++}
++
+ int cmd_report(int argc, const char **argv, const char *prefix)
+ {
+ 	symbol__init();
