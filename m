@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbZFCNPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757094AbZFCNWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755586AbZFCNPQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 09:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbZFCNPF
+	id S1757094AbZFCNWY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 09:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbZFCNWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 09:15:05 -0400
-Received: from mail-ew0-f162.google.com ([209.85.219.162]:63708 "EHLO
-	mail-ew0-f162.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237AbZFCNPE (ORCPT
+	Wed, 3 Jun 2009 09:22:16 -0400
+Received: from ru.mvista.com ([213.79.90.228]:6443 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751351AbZFCNWQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 09:15:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XtUBg1SR8aQXB8jQfMgCAMhGlDTp8/FrWOtfDdUFF/Mq40BBCqVoFIUqHmtiV/BP13
-         Yrx/MdUhegMOBgjM1vq3Enqs+VsMrk3wZV48a/vDUb/ME94/Fulp+FjM4qCTOL3GSj3E
-         MniNJg2jX7eRT1D5Ka/f89mPhQ3AXMi+g88Rg=
+	Wed, 3 Jun 2009 09:22:16 -0400
+Date: Wed, 3 Jun 2009 17:22:17 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Stefan Strobl <nst@gersys.de>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org
+Subject: PWM class? (was: Re: MPC52xx simple GPIO support)
+Message-ID: <20090603132217.GA18353@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <4A255B21.8040002@gersys.de> <20090602171527.GA8745@oksana.dev.rtsoft.ru> <4A266FB2.2040902@gersys.de>
 MIME-Version: 1.0
-In-Reply-To: <20090603140140.491a8ea8@lxorguk.ukuu.org.uk>
-References: <c5bd819b0906021525l13ee9282j1fb270e141985f66@mail.gmail.com>
-	 <4A25F688.9000407@gmail.com>
-	 <c5bd819b0906030435w466368cbsd48be91a97597437@mail.gmail.com>
-	 <20090603131407.57c490ed@lxorguk.ukuu.org.uk>
-	 <c5bd819b0906030552w6f23185etb394f83c8b630e6@mail.gmail.com>
-	 <20090603140140.491a8ea8@lxorguk.ukuu.org.uk>
-Date: Wed, 3 Jun 2009 15:15:04 +0200
-Message-ID: <c5bd819b0906030615t67e20299q38e81992419637fa@mail.gmail.com>
-Subject: Re: Kernel 2.6.30rc7 limits IDE to UDMA33
-From: Grozdan <neutrino8@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: hancockrwd@gmail.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <4A266FB2.2040902@gersys.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/3 Alan Cox <alan@lxorguk.ukuu.org.uk>:
-> What about 2.6.28 or 2.6.29 ?
->
+On Wed, Jun 03, 2009 at 02:42:26PM +0200, Stefan Strobl wrote:
+[...]
+> The led class provides support for setting the brightness, which
+> obviously the gpio driver doesn't support. The hardware (mpc52xx_gpt)
+> would support it in PWM mode though. I'm now wandering how this could be
+> best implemented.
+> 
+> 1) - Create some PWM class similar to the GPIO class
+>    - Add support for PWM mode in mpc52xx_gpt.c that uses that PWM class
+>    - And add an interface for the LED to use the PWM class
+> 
+> 2) - Create an LED driver that accesses the mpc52xx_gpt directly.
+> 
+> I think I would be overwhelmed trying to implement (1) but am confident
+> to do (2). What do you think is the right approach?
 
-Hi,
+I'd suggest creating a generic PWM class, i.e. PWMLIB, alike to
+GPIOLIB. (2) can be an acceptable approach for now, but for the
+long-term solution (1) is the way to go.
 
-I did not try those and I don't think I can find them anymore in the
-build service. There's only a 2.6.29 realtime one. I will try it out
-and report back in a few...
+The non-lib PWM API is already there, see include/linux/pwm.h,
+and arch/arm/mach-pxa/pwm.c as an implementation example.
+
+Note that PXA implementation is SOC-specific, which is not very
+good.
+
+So I'd suggest creating drivers/pwm/pwmlib.c, borrowing
+ideas from gpiolib. And then we can reuse drivers/leds/leds-pwm.c
+driver (of course, after adding appropriate OF code into it).
+
+Sure, as you've said, it could be quite boringly to implement,
+could take quite some time to pass all review cycles etc.
+But someday someone will have to do this. :-)
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
