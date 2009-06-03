@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757971AbZFCRL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbZFCRQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757971AbZFCRL5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 13:11:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756110AbZFCRLu
+	id S1755342AbZFCRQW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 13:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbZFCRQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 13:11:50 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:38106 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756017AbZFCRLt (ORCPT
+	Wed, 3 Jun 2009 13:16:15 -0400
+Received: from mail-pz0-f177.google.com ([209.85.222.177]:58336 "EHLO
+	mail-pz0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753885AbZFCRQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 13:11:49 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC: Style] Kernel coding style for Extended Attributes.
-Date: Wed, 3 Jun 2009 12:11:47 -0500
-User-Agent: KMail/1.9.9
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200906031037.50803.lkml@morethan.org> <alpine.LFD.2.01.0906030843340.4880@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0906030843340.4880@localhost.localdomain>
+	Wed, 3 Jun 2009 13:16:14 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+In-Reply-To: <alpine.LFD.2.01.0906030944440.4880@localhost.localdomain>
+References: <20090530192829.GK6535@oblivion.subreption.com>
+	 <20090531022158.GA9033@oblivion.subreption.com>
+	 <alpine.DEB.1.10.0906021130410.23962@gentwo.org>
+	 <20090602203405.GC6701@oblivion.subreption.com>
+	 <alpine.DEB.1.10.0906031047390.15621@gentwo.org>
+	 <1244041914.12272.64.camel@localhost.localdomain>
+	 <alpine.DEB.1.10.0906031134410.13551@gentwo.org>
+	 <20090603162831.GF6701@oblivion.subreption.com>
+	 <4A26A689.1090300@redhat.com>
+	 <alpine.LFD.2.01.0906030944440.4880@localhost.localdomain>
+Date: Wed, 3 Jun 2009 13:16:14 -0400
+Message-ID: <7e0fb38c0906031016m77416390v37fb0673e6e50501@mail.gmail.com>
+Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change 
+	ZERO_SIZE_PTR to point at unmapped space)
+From: Eric Paris <eparis@parisplace.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>, "Larry H." <research@subreption.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Stephen Smalley <sds@tycho.nsa.gov>, linux-mm@kvack.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       pageexec@freemail.hu
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906031211.49890.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed June 3 2009, Linus Torvalds wrote:
-> 
-> On Wed, 3 Jun 2009, Michael S. Zick wrote:
-> > 
-> > Is there a recommended style for the kernel source?
-> 
-> I think the recommended style is:
-> 
->   "Hide them behind a macro so that they never show up in the source".
->
+On Wed, Jun 3, 2009 at 12:47 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
 
-That seems to be the general consensus in (/by) practice.
+> The other mistake is to think that SELinux is sane, or should be the
+> default. It's a f*cking complex disaster, and makes performance plummet on
+> some things.
 
-Thanks,
-Mike  
+While I think you couldn't be more wrong I'm not going to argue that topic....
 
-> and then basically nobody will care about whether there is a space between 
-> the __attribute__ and '(('.
-> 
-> 		Linus
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+I am at least interested in hearing about the 'performance plummet.'
+I don't see any performance reports on my todo list but I am
+interested in banging on any that people report.  Last performance
+thing I heard anything about was Ingo doing some profiling of of a
+network stack benchmark in which SELinux was eating a percent or two
+his time.  I cut the SELinux performance penalty by about 50% on my
+systems in that benchmark.  If others have complaints let me or the
+selinux list know....
 
-
+-Eric
