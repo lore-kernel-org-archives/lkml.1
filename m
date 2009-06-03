@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbZFCQ1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbZFCQ37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758641AbZFCQ1k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 12:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbZFCQ1b
+	id S1756705AbZFCQ37 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 12:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754465AbZFCQ3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 12:27:31 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:48190 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754412AbZFCQ1a (ORCPT
+	Wed, 3 Jun 2009 12:29:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43267 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751237AbZFCQ3w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 12:27:30 -0400
-Subject: Re: linux-next: Tree for June 3 (rfkill)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-In-Reply-To: <4A269539.8020607@oracle.com>
-References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au>
-	 <4A269539.8020607@oracle.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-N6EotFSpetdxPWbtZMMX"
-Date: Wed, 03 Jun 2009 18:27:21 +0200
-Message-Id: <1244046441.4862.32.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+	Wed, 3 Jun 2009 12:29:52 -0400
+Date: Wed, 3 Jun 2009 09:28:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Eric Paris <eparis@parisplace.org>
+cc: Christoph Lameter <cl@linux-foundation.org>,
+       "Larry H." <research@subreption.com>, linux-mm@kvack.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, pageexec@freemail.hu
+Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change 
+ ZERO_SIZE_PTR to point at unmapped space)
+In-Reply-To: <7e0fb38c0906030922u3af8c2abi8a2cfdcd66151a5a@mail.gmail.com>
+Message-ID: <alpine.LFD.2.01.0906030925480.4880@localhost.localdomain>
+References: <20090530192829.GK6535@oblivion.subreption.com>  <20090530230022.GO6535@oblivion.subreption.com>  <alpine.LFD.2.01.0905301902010.3435@localhost.localdomain>  <20090531022158.GA9033@oblivion.subreption.com>  <alpine.DEB.1.10.0906021130410.23962@gentwo.org>
+  <20090602203405.GC6701@oblivion.subreption.com>  <alpine.DEB.1.10.0906031047390.15621@gentwo.org>  <alpine.LFD.2.01.0906030800490.4880@localhost.localdomain>  <alpine.DEB.1.10.0906031121030.15621@gentwo.org>  <alpine.LFD.2.01.0906030827580.4880@localhost.localdomain>
+ <7e0fb38c0906030922u3af8c2abi8a2cfdcd66151a5a@mail.gmail.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-N6EotFSpetdxPWbtZMMX
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2009-06-03 at 08:22 -0700, Randy Dunlap wrote:
-> Stephen Rothwell wrote:
-> > Hi all,
-> >=20
-> > Looks like a real rush since -rc7 ...
->=20
->=20
-> CFG80211=3Dy
-> MAC80211=3Dy
-> RFKILL=3Dm
+On Wed, 3 Jun 2009, Eric Paris wrote:
+> 
+> As I recall the only need for CONFIG_SECURITY is for the ability to
+> override the check.
 
-Hmm. I see, it's mac80211's broken select CFG80211. I'll fix it.
+No, if you have SECURITY disabled entirely, the check goes away.
 
-johannes
+If you have SECURITY on, but then use the simple capability model, the 
+check is there.
 
---=-N6EotFSpetdxPWbtZMMX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+If you have SECURITY on, and then use SElinux, you can make it be dynamic.
 
------BEGIN PGP SIGNATURE-----
+> I think I could probably pretty cleanly change it to use
+> CAP_SYS_RAWIO/SELinux permissions if CONFIG_SECURITY and just allow it
+> for uid=0 in the non-security case?
 
-iQIcBAABAgAGBQJKJqRmAAoJEODzc/N7+Qma2CAP/0tJxOkS04n6m1xJ2UWE53ax
-Yjz5MwWOq4LJzHQlLbo86vlkBCOyznqxdWVtWrDNazKxnsFkUi5IWvE7j57unw7b
-EovR8neplGtFTvPeDIEh7U3BTgFGdO7YhUOwJxpLr/5qSllvtKHZDRKE5SW38WGM
-fi2CBRNM1yKO6HLbONRs9U2wToOw+4zzVMElSZc/5XeiO26Uy2Vcw8pAKje6xYjy
-wlPu3N+x+AhOTVj9/RkQkJx3BSzMJz3aFiP1mbFQ5AZ8LEWQO6vitRb5iE9xwasY
-7jGBG9GOdFtVJTWctKjc41tvI+ihUM/D//oLO8TB3Wd0x6EsNCpJniu9cmuBIqOd
-5LJDAvd/MRqDTERpl9QeZdEPpR0p2TRo7x2yT6HagpNo5/zj9e2OvnfOCLyzE1+J
-DDOjNKjX6FiSDESvlahut+aZjOZnk6gnzFVyu72RlUN76yuQARMAD4Drn6Bwipyg
-ufTbsueVdTK7KDMrJX0nZtYJbZN2RSO6U3fAs9/y3vdTvYZFPZ6wdWdbtZz0m0SB
-Z3/kTW+AkRsDuIaj/IloFqDzA7ktn9e5cPxPh3TNQeV9lKNBgxtJ7UQ+4bmduOjT
-sapeo52Lw7dIWT4tATlDANycIKVnmb6fXmwvOB3F06ifO2GrYroD6Hw9INzhRRIU
-aVCF+qMF2lHHuAgusJuh
-=x0d9
------END PGP SIGNATURE-----
+We probably should, since the "capability" security version should 
+generally essentially emulate the regular non-SECURITY case for root. 
 
---=-N6EotFSpetdxPWbtZMMX--
-
+			Linus
