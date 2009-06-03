@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbZFCHSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZFCHSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755301AbZFCHSW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 03:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbZFCHSP
+	id S1753864AbZFCHSk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 03:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbZFCHSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 03:18:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36327 "EHLO mx1.redhat.com"
+	Wed, 3 Jun 2009 03:18:32 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:42104 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751713AbZFCHSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 03:18:14 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753263AbZFCHSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 03:18:31 -0400
+Date: Wed, 3 Jun 2009 17:18:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: linux-next: manual merge of the driver-core tree with the x86 tree
+Message-Id: <20090603171830.b2f80b02.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, paul@mad-scientist.net,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] coredump: Retry writes where appropriate
-In-Reply-To: Oleg Nesterov's message of  Tuesday, 2 June 2009 17:29:44 +0200 <20090602152927.GA13515@redhat.com>
-References: <1243748019.7369.319.camel@homebase.localnet>
-	<20090531111851.07eb1df3@lxorguk.ukuu.org.uk>
-	<20090601161234.GA10486@redhat.com>
-	<20090601174159.48acf3f5@lxorguk.ukuu.org.uk>
-	<20090601171119.GA13970@redhat.com>
-	<20090601184608.6379440c@lxorguk.ukuu.org.uk>
-	<20090601182305.GA16372@redhat.com>
-	<20090601203845.B010DFC3C7@magilla.sf.frob.com>
-	<20090601223241.GA26788@redhat.com>
-	<20090602092119.1a12a356@lxorguk.ukuu.org.uk>
-	<20090602152927.GA13515@redhat.com>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20090603071545.DFDA0FC333@magilla.sf.frob.com>
-Date: Wed,  3 Jun 2009 00:15:45 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hmm. Does ->core_dump() report the state of ->sighand->action? I can't
-> find any usage. Perhaps we can just ignore all signals except SIGKILL ?
+Hi Greg,
 
-I don't think anything uses that information.  But it might one day,
-or it might matter in some other arcane way (/proc/pid/status during
-the dump is the only way I can think of to notice, but who knows).
+Today's linux-next merge of the driver-core tree got a conflict in
+arch/x86/kernel/microcode_core.c between commit
+871b72dd1e12afc3f024479531d25a9339d2e3f9 ("x86: microcode: use
+smp_call_function_single instead of set_cpus_allowed, cleanup of
+synchronization logic") from the x86 tree and commit
+3b5f472624ad5b54753388bb3c563a8f308eed88 ("Driver Core: misc: add
+nodename support for misc devices") from the driver-core tree.
 
-I think it's better just not to get into any kludges that clobber
-anything that records actual user-visible state that we normally
-read out to userland in any fashion (even if none is known to do so
-at dumping time or later).  It's much more natural just to use pure
-internal kernel state such as signal->flags for anything like this.
+Just white space changes overlapping an addition.  I fixed it up (see
+below) and can carry the fix as necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-
-Thanks,
-Roland
+diff --cc arch/x86/kernel/microcode_core.c
+index 9c44615,75bb914..0000000
+--- a/arch/x86/kernel/microcode_core.c
++++ b/arch/x86/kernel/microcode_core.c
+@@@ -234,9 -171,10 +234,10 @@@ static const struct file_operations mic
+  };
+  
+  static struct miscdevice microcode_dev = {
+ -	.minor		= MICROCODE_MINOR,
+ -	.name		= "microcode",
+ -	.devnode	= "cpu/microcode",
+ -	.fops		= &microcode_fops,
+ +	.minor			= MICROCODE_MINOR,
+ +	.name			= "microcode",
+++	.devnode		= "cpu/microcode",
+ +	.fops			= &microcode_fops,
+  };
+  
+  static int __init microcode_dev_init(void)
