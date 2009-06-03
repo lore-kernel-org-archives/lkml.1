@@ -1,43 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZFCU0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbZFCU2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180AbZFCU0O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 16:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbZFCU0A
+	id S1755455AbZFCU2f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 16:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752791AbZFCU22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 16:26:00 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:11069 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753779AbZFCU0A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 16:26:00 -0400
-X-IronPort-AV: E=Sophos;i="4.41,299,1241395200"; 
-   d="scan'208";a="194498183"
-From: Roland Dreier <rdreier@cisco.com>
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       OF-General <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>, OF-EWG <ewg@lists.openfabrics.org>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Alexander Schmidt <alexschm@de.ibm.com>
-Subject: Re: [PATCH] IB/ehca: Remove superfluous bitmasks from QP control block
-References: <200806061835.43802.fenkes@de.ibm.com>
-	<48499C11.7030504@gmail.com> <200906031628.19556.fenkes@de.ibm.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 03 Jun 2009 13:26:01 -0700
-In-Reply-To: <200906031628.19556.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Wed, 3 Jun 2009 16:28:17 +0200")
-Message-ID: <adaoct59i92.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 03 Jun 2009 20:26:01.0487 (UTC) FILETIME=[82EB21F0:01C9E489]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Wed, 3 Jun 2009 16:28:28 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:51651 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751826AbZFCU21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 16:28:27 -0400
+Date: Wed, 3 Jun 2009 22:28:24 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: pHilipp Zabel <philipp.zabel@gmail.com>
+Cc: ian@mnementh.co.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] mmc: tmio_mmc: add bus_shift support
+Message-ID: <20090603222824.2be98423@mjolnir.ossman.eu>
+In-Reply-To: <74d0deb30905300446k606289cctc56efe68fdc7193d@mail.gmail.com>
+References: <1243279681-4233-1-git-send-email-philipp.zabel@gmail.com>
+	<1243279681-4233-3-git-send-email-philipp.zabel@gmail.com>
+	<4A2109C7.5080009@f2s.com>
+	<74d0deb30905300446k606289cctc56efe68fdc7193d@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-31326-1244060907-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-looks fine, applied for 2.6.31
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
+
+--=_freyr.ossman.eu-31326-1244060907-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+
+On Sat, 30 May 2009 13:46:06 +0200
+pHilipp Zabel <philipp.zabel@gmail.com> wrote:
+
+> On Sat, May 30, 2009 at 12:26 PM, Ian molton <spyro@f2s.com> wrote:
+> > Acked-by: Ian Molton <ian@mnementh.co.uk>
+> >
+> > Works fine on the e-series machines, however checkpatch has a few warni=
+ngs
+> > about overlength lines. I dont think they are a problem, but its not my=
+ call
+> > - Pierre?
+>=20
+> Yes, if you prefer I'll resend with those lines broken up.
+>=20
+
+Please do. And included that amended diff at the same time. :)
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-31326-1244060907-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkom3OsACgkQ7b8eESbyJLjKNQCfYpkdnGekQkKyjrGTJMORF4Wb
+wOwAn0Hg3gUBtTo+PLTMhl8ETWY77KXc
+=FEaX
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-31326-1244060907-0001-2--
