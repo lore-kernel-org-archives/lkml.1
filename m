@@ -1,102 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755677AbZFCJeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753355AbZFCJeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755677AbZFCJeZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 05:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752836AbZFCJeM
+	id S1753355AbZFCJeu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 05:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZFCJeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 05:34:12 -0400
+	Wed, 3 Jun 2009 05:34:21 -0400
 Received: from fg-out-1718.google.com ([72.14.220.157]:21206 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752411AbZFCJeK (ORCPT
+	with ESMTP id S1753458AbZFCJeP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 05:34:10 -0400
+	Wed, 3 Jun 2009 05:34:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=x4Gk64sPuiqURMNhHIQGa2JTiOLs/PPgGS992p0c/H9+n/jbcai1RVnGPMwAM0Xt8G
-         R2R8fpkqt3o35X9E2otFYaPeTw5dBMBC0nwNtYJh8xfBuWU5TBNRSIJzM1OooaEmtG6p
-         NMQ/1j8Qe6DaSkApMYMfV8Uh6gAvKVBMYctnc=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=oRCc7duXZLDxOrEAc5j48RN5SY5ptp96Yd2NcjbCsc5hpBJ1N7VekpGo5rotj2WU1+
+         wjETv3lQm/xNttz344br523gElsqy/uUypT+Q0z27DPPf2A6Z+wJBcsm3q2oCwUDD3nJ
+         tfBXqs54WYbJ6XnKKL6BjkQ1j7AVgvvwG6oVY=
 From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 To: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
        davem@davemloft.net, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Sergey Lapin <slapin@ossfans.org>
-Subject: [MERGE REQUEST] IEEE 802.15.4 stack: generic parts
-Date: Wed,  3 Jun 2009 13:33:43 +0400
-Message-Id: <1244021629-18409-1-git-send-email-dbaryshkov@gmail.com>
+       Sergey Lapin <slapin@ossfans.org>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+Subject: [PATCH 1/6] crc-itu-t: add bit-reversed calculation
+Date: Wed,  3 Jun 2009 13:33:44 +0400
+Message-Id: <1244021629-18409-2-git-send-email-dbaryshkov@gmail.com>
 X-Mailer: git-send-email 1.6.3.1
+In-Reply-To: <1244021629-18409-1-git-send-email-dbaryshkov@gmail.com>
+References: <1244021629-18409-1-git-send-email-dbaryshkov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: Darren Salt <linux@youmustbejoking.demon.co.uk>
 
-As generic parts of our IEEE 802.15.4 stack are now more or less stable,
-we'd like to merge them into mainline Linux kernel. I've prepared a branch
-on the git.kernel.org that contains changes we'd like to get in at first
-step. What should we do? Should this be included into linux-next? Should
-this be submitted directly to Dave Miller?
+Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
+---
+ include/linux/crc-itu-t.h |   10 ++++++++++
+ lib/crc-itu-t.c           |   18 ++++++++++++++++++
+ 2 files changed, 28 insertions(+), 0 deletions(-)
 
-The following changes since commit 59a3759d0fe8d969888c741bb33f4946e4d3750d:
-  Linus Torvalds (1):
-        Linux 2.6.30-rc7
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/lumag/lowpan.git for-next
-
-Darren Salt (1):
-      crc-itu-t: add bit-reversed calculation
-
-Dmitry Eremin-Solenikov (5):
-      Add constants for the ieee 802.15.4/ZigBee stack
-      net: add IEEE 802.15.4 socket family implementation
-      net: add NL802154 interface for configuration of 802.15.4 devices
-      ieee802154: add documentation about our stack
-      ieee802154: add simple HardMAC driver sample
-
- Documentation/networking/ieee802154.txt |   76 +++++
- MAINTAINERS                             |   12 +
- drivers/Makefile                        |    1 +
- drivers/ieee802154/Kconfig              |   21 ++
- drivers/ieee802154/Makefile             |    3 +
- drivers/ieee802154/fakehard.c           |  258 ++++++++++++++++
- drivers/net/Kconfig                     |    2 +
- include/linux/crc-itu-t.h               |   10 +
- include/linux/if.h                      |    2 +
- include/linux/if_arp.h                  |    2 +
- include/linux/if_ether.h                |    2 +
- include/linux/socket.h                  |    6 +-
- include/net/ieee802154/af_ieee802154.h  |   60 ++++
- include/net/ieee802154/mac_def.h        |  158 ++++++++++
- include/net/ieee802154/netdevice.h      |   84 ++++++
- include/net/ieee802154/nl802154.h       |  165 +++++++++++
- lib/crc-itu-t.c                         |   18 ++
- net/Kconfig                             |    1 +
- net/Makefile                            |    1 +
- net/core/dev.c                          |    6 +-
- net/core/sock.c                         |    3 +
- net/ieee802154/Kconfig                  |   12 +
- net/ieee802154/Makefile                 |    5 +
- net/ieee802154/af802154.h               |   35 +++
- net/ieee802154/af_ieee802154.c          |  356 +++++++++++++++++++++++
- net/ieee802154/dgram.c                  |  373 ++++++++++++++++++++++++
- net/ieee802154/netlink.c                |  485 +++++++++++++++++++++++++++++++
- net/ieee802154/raw.c                    |  250 ++++++++++++++++
- 28 files changed, 2404 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/networking/ieee802154.txt
- create mode 100644 drivers/ieee802154/Kconfig
- create mode 100644 drivers/ieee802154/Makefile
- create mode 100644 drivers/ieee802154/fakehard.c
- create mode 100644 include/net/ieee802154/af_ieee802154.h
- create mode 100644 include/net/ieee802154/mac_def.h
- create mode 100644 include/net/ieee802154/netdevice.h
- create mode 100644 include/net/ieee802154/nl802154.h
- create mode 100644 net/ieee802154/Kconfig
- create mode 100644 net/ieee802154/Makefile
- create mode 100644 net/ieee802154/af802154.h
- create mode 100644 net/ieee802154/af_ieee802154.c
- create mode 100644 net/ieee802154/dgram.c
- create mode 100644 net/ieee802154/netlink.c
- create mode 100644 net/ieee802154/raw.c
+diff --git a/include/linux/crc-itu-t.h b/include/linux/crc-itu-t.h
+index 84920f3..7b2b7ba 100644
+--- a/include/linux/crc-itu-t.h
++++ b/include/linux/crc-itu-t.h
+@@ -6,6 +6,9 @@
+  *   Poly  0x0x1021 (x^16 + x^12 + x^15 + 1)
+  *   Init  0
+  *
++ * The bit-reversed buffer variants may be non-standard, but some firmware
++ * loaders require them.
++ *
+  * This source code is licensed under the GNU General Public License,
+  * Version 2. See the file COPYING for more details.
+  */
+@@ -14,15 +17,22 @@
+ #define CRC_ITU_T_H
+ 
+ #include <linux/types.h>
++#include <linux/bitrev.h>
+ 
+ extern u16 const crc_itu_t_table[256];
+ 
+ extern u16 crc_itu_t(u16 crc, const u8 *buffer, size_t len);
++extern u16 crc_itu_t_bitreversed(u16 crc, const u8 *buffer, size_t len);
+ 
+ static inline u16 crc_itu_t_byte(u16 crc, const u8 data)
+ {
+ 	return (crc << 8) ^ crc_itu_t_table[((crc >> 8) ^ data) & 0xff];
+ }
+ 
++static inline u16 crc_itu_t_bitreversed_byte(u16 crc, const u8 data)
++{
++	return (crc << 8) ^ crc_itu_t_table[((crc >> 8) ^ bitrev8(data)) & 0xff];
++}
++
+ #endif /* CRC_ITU_T_H */
+ 
+diff --git a/lib/crc-itu-t.c b/lib/crc-itu-t.c
+index a63472b..5562fdd 100644
+--- a/lib/crc-itu-t.c
++++ b/lib/crc-itu-t.c
+@@ -64,6 +64,24 @@ u16 crc_itu_t(u16 crc, const u8 *buffer, size_t len)
+ }
+ EXPORT_SYMBOL(crc_itu_t);
+ 
++/**
++ * crc_itu_t_bitreversed - Compute the CRC-ITU-T for the data buffer;
++ * the buffer content is assumed to be bit-reversed
++ *
++ * @crc:     previous CRC value
++ * @buffer:  data pointer
++ * @len:     number of bytes in the buffer
++ *
++ * Returns the updated CRC value
++ */
++u16 crc_itu_t_bitreversed(u16 crc, const u8 *buffer, size_t len)
++{
++	while (len--)
++		crc = crc_itu_t_bitreversed_byte(crc, *buffer++);
++	return crc;
++}
++EXPORT_SYMBOL(crc_itu_t_bitreversed);
++
+ MODULE_DESCRIPTION("CRC ITU-T V.41 calculations");
+ MODULE_LICENSE("GPL");
+ 
+-- 
+1.6.3.1
 
