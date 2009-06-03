@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758589AbZFCPik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbZFCPkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758589AbZFCPik (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 11:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756417AbZFCPib
+	id S1758530AbZFCPkP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 11:40:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756270AbZFCPkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 11:38:31 -0400
-Received: from khc.piap.pl ([195.187.100.11]:37980 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756752AbZFCPia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 11:38:30 -0400
-To: Markus <M4rkusXXL@web.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Seagate Barracuda 7200.11 ST31500341AS fw SD17
-References: <200906021258.20346.M4rkusXXL@web.de>
-	<200906021438.50228.M4rkusXXL@web.de>
-	<m3r5y2ivh6.fsf@intrepid.localdomain>
-	<200906031214.39610.M4rkusXXL@web.de>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 03 Jun 2009 17:38:30 +0200
-In-Reply-To: <200906031214.39610.M4rkusXXL@web.de> (Markus's message of "Wed\, 3 Jun 2009 12\:14\:39 +0200")
-Message-ID: <m3ab4pba4p.fsf@intrepid.localdomain>
+	Wed, 3 Jun 2009 11:40:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57539 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754734AbZFCPkB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 11:40:01 -0400
+Date: Wed, 3 Jun 2009 08:38:47 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Christoph Lameter <cl@linux-foundation.org>
+cc: "Larry H." <research@subreption.com>, linux-mm@kvack.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, pageexec@freemail.hu
+Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change
+ ZERO_SIZE_PTR to point at unmapped space)
+In-Reply-To: <alpine.DEB.1.10.0906031121030.15621@gentwo.org>
+Message-ID: <alpine.LFD.2.01.0906030827580.4880@localhost.localdomain>
+References: <20090530192829.GK6535@oblivion.subreption.com> <alpine.LFD.2.01.0905301528540.3435@localhost.localdomain> <20090530230022.GO6535@oblivion.subreption.com> <alpine.LFD.2.01.0905301902010.3435@localhost.localdomain> <20090531022158.GA9033@oblivion.subreption.com>
+ <alpine.DEB.1.10.0906021130410.23962@gentwo.org> <20090602203405.GC6701@oblivion.subreption.com> <alpine.DEB.1.10.0906031047390.15621@gentwo.org> <alpine.LFD.2.01.0906030800490.4880@localhost.localdomain> <alpine.DEB.1.10.0906031121030.15621@gentwo.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Markus <M4rkusXXL@web.de> writes:
 
->> > I tried that one (compared md5sum). It does not work. It only works 
->> > for "ST31500341AS,  9JU138-300 or -336, SD15 through SD1A ONLY!"
->
-> Of course I did. They told me, my drives are not affected and drives 
-> with "good" serial numbers will not be upgraded.
-> And they now told me I have OEM drives (???) which they do not provide 
-> firmware upgrades for, although my drives are ok. I dont understand 
-> those support-people.
 
-Well, they might be right. Or the drives may be affected but they don't
-support OEM versions anyway and may not know.
+On Wed, 3 Jun 2009, Christoph Lameter wrote:
 
-Obviously one could try updating anyway (I'm sure a simple hack in
-version/SN checking routine would do). It may be risky.
-You should, in theory, contact the OEM partner, not the manufacturer.
-Could be hard.
+> On Wed, 3 Jun 2009, Linus Torvalds wrote:
+> 
+> > The point being that we do need to support mmap at zero. Not necessarily
+> > universally, but it can't be some fixed "we don't allow that".
+> 
+> Hmmm... Depend on some capability? CAP_SYS_PTRACE may be something
+> remotely related?
 
-OTOH I think the update fixes unrelated problem (a drives failing to
-start), that would need checking.
--- 
-Krzysztof Halasa
+But as mentioned several times, we do have the system-wide setting in
+'mmap_min_addr' (that then can be overridden by CAP_SYS_RAWIO, so in that 
+sense a capability already exists).
+
+It defaults to 64kB in at least the x86 defconfig files, but to 0 in the 
+Kconfig defaults. Also, for some reason it has a "depends on SECURITY", 
+which means that if you just default to the old-style unix security you'll 
+lose it.
+
+So there are several ways to disable it by mistake. I don't know what 
+distros do.
+
+		Linus
