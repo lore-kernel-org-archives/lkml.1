@@ -1,77 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZFCUWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZFCU0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756177AbZFCUWp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 16:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZFCUWi
+	id S1754180AbZFCU0O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 16:26:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbZFCU0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 16:22:38 -0400
-Received: from www.tglx.de ([62.245.132.106]:45438 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751409AbZFCUWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 16:22:37 -0400
-Date: Wed, 3 Jun 2009 22:20:02 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Bill Davidsen <davidsen@tmr.com>
-cc: George Dunlap <george.dunlap@eu.citrix.com>,
-       David Miller <davem@davemloft.net>, "jeremy@goop.org" <jeremy@goop.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       Dan Magenheimer <dan.magenheimer@oracle.com>,
-       "avi@redhat.com" <avi@redhat.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       "xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
-       ksrinivasan <ksrinivasan@novell.com>,
-       "EAnderson@novell.com" <EAnderson@novell.com>,
-       "wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
-       Stephen Spector <stephen.spector@citrix.com>, jens.axboe@oracle.com
-Subject: Re: Xen is a feature
-In-Reply-To: <4A26D3D8.6080002@tmr.com>
-Message-ID: <alpine.LFD.2.00.0906032204220.3419@localhost.localdomain>
-References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org> <20090528.210559.137121893.davem@davemloft.net> <4A1FCE8E.2060604@eu.citrix.com> <alpine.LFD.2.00.0905311607560.3379@localhost.localdomain>
- <4A26D3D8.6080002@tmr.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 3 Jun 2009 16:26:00 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:11069 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753779AbZFCU0A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 16:26:00 -0400
+X-IronPort-AV: E=Sophos;i="4.41,299,1241395200"; 
+   d="scan'208";a="194498183"
+From: Roland Dreier <rdreier@cisco.com>
+To: Joachim Fenkes <fenkes@de.ibm.com>
+Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       OF-General <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, OF-EWG <ewg@lists.openfabrics.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Alexander Schmidt <alexschm@de.ibm.com>
+Subject: Re: [PATCH] IB/ehca: Remove superfluous bitmasks from QP control block
+References: <200806061835.43802.fenkes@de.ibm.com>
+	<48499C11.7030504@gmail.com> <200906031628.19556.fenkes@de.ibm.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 03 Jun 2009 13:26:01 -0700
+In-Reply-To: <200906031628.19556.fenkes@de.ibm.com> (Joachim Fenkes's message
+	of "Wed, 3 Jun 2009 16:28:17 +0200")
+Message-ID: <adaoct59i92.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 03 Jun 2009 20:26:01.0487 (UTC) FILETIME=[82EB21F0:01C9E489]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Jun 2009, Bill Davidsen wrote:
-> Thomas Gleixner wrote:
-> > Aside of the paravirt, which seems to expand through arch/x86 like a
-> > hydra, the new patches sprinkle "if (xen_...)" all over the
-> > place. These extra xen dependencies are no improvement, they are a
-> > royal pain in the ... They are sticky once they got merged simply
-> > because the hypervisor relies on them and we need to provide
-> > compatibility for a long time.
-> > 
-> Wait, let's not classify something as "no improvement" when you mean "I don't
-> need it."
-
-It's not about "I don't need it.". It's about having Xen dependencies
-in the code all over the place which make mainatainence harder. I have
-to balance the users benefit (xen dom0 support) vs. the impact on
-maintainability and the restrictions which are going to be set almost
-in stone by merging it.
-
-> Let's stick to technical issues, and not deny that there are a number of users
-> who really will have expanded capability. The technical points are valid, but
-> as a former and probable future xen (CentOS) user, so are the benefits.
-
-Refusing random "if (xen...)" dependencies is a purely technical
-decision. I have said more than once that I'm not against merging dom0
-in general, I'm just frightened by the technical impact of a defacto
-ABI which we swallow with it.
-
-We have enough problems with real silicon and BIOS/ACPI already, why
-should we add artifical and _avoidable_ virtual silicon horror ?
-
-Thanks,
-
-	tglx
+looks fine, applied for 2.6.31
