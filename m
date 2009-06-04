@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbZFDImI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbZFDIoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbZFDImI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 04:42:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752177AbZFDIl5
+	id S1755916AbZFDIoT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 04:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbZFDIoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 04:41:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47710 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751650AbZFDIl4 (ORCPT
+	Thu, 4 Jun 2009 04:44:05 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56620 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbZFDIoD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 04:41:56 -0400
-Date: Thu, 4 Jun 2009 01:40:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, andi@firstfloor.org, ying.huang@intel.com,
-       W.Li@Sun.COM, michaele@au1.ibm.com, mingo@elte.hu,
-       heicars2@linux.vnet.ibm.com, mschwid2@linux.vnet.ibm.com
-Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
-Message-Id: <20090604014031.01968da3.akpm@linux-foundation.org>
-In-Reply-To: <4A27853F.8060109@linux.vnet.ibm.com>
-References: <20090602114359.129247921@linux.vnet.ibm.com>
-	<20090602114402.951631599@linux.vnet.ibm.com>
-	<20090602150324.c706b1d2.akpm@linux-foundation.org>
-	<4A266546.5080601@linux.vnet.ibm.com>
-	<4A26961E.7040207@linux.vnet.ibm.com>
-	<20090603143923.a5387555.akpm@linux-foundation.org>
-	<4A27853F.8060109@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 4 Jun 2009 04:44:03 -0400
+Message-ID: <4A2788FA.2050606@jp.fujitsu.com>
+Date: Thu, 04 Jun 2009 17:42:34 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Alex Chiang <achiang@hp.com>
+CC: lenb@kernel.org, linux-acpi@vger.kernel.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH v2 07/11] ACPI: acpi_pci_unbind should clean up properly
+ after	acpi_pci_bind
+References: <20090604054504.18802.21690.stgit@bob.kio> <20090604055852.18802.22743.stgit@bob.kio>
+In-Reply-To: <20090604055852.18802.22743.stgit@bob.kio>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Jun 2009 10:26:39 +0200 Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
+Alex Chiang wrote:
+> In acpi_pci_bind, we add _PRT information for non-bridge devices, but
+> we never delete that information in acpi_pci_unbind.
+> 
+> We also set device->ops.bind and device->ops.unbind, but never clear
+> them out.
+> 
+> Let's make acpi_pci_unbind clean up what we did in acpi_pci_bind.
+> 
+> Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> 
+>  drivers/acpi/pci_bind.c |   11 +++++++++--
+>  1 files changed, 9 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/acpi/pci_bind.c b/drivers/acpi/pci_bind.c
+> index 62cb383..5fa1c5e 100644
+> --- a/drivers/acpi/pci_bind.c
+> +++ b/drivers/acpi/pci_bind.c
+> @@ -106,14 +106,21 @@ EXPORT_SYMBOL(acpi_get_pci_id);
+>  
+>  static int acpi_pci_unbind(struct acpi_device *device)
+>  {
+> +	struct pci_bus *bus;
+>  	struct pci_dev *dev;
+>  
+>  	dev = acpi_get_pci_dev(device->handle);
+>  	if (!dev)
+>  		return 0;
+>  
+> -	if (dev->subordinate)
+> -		acpi_pci_irq_del_prt(dev->subordinate);
+> +	if (dev->subordinate) {
+> +		bus = dev->subordinate;
+> +		device->ops.bind = NULL;
+> +		device->ops.unbind = NULL;
+> +	 } else
+> +		bus = dev->bus;
+> +
+> +	acpi_pci_irq_del_prt(bus);
+>  
 
-> Ah, right. That answers my question whether further changes should be 
-> posted as complete or incremental patches.
+I have a concern about this change.
 
-yup.  Incrementals are a bit more hassle, but they're hugely more
-friendly to people who have already reviewed the code.
+The acpi_pci_irq_del_prt() against dev->bus removes not only
+the _PRT entries for PCI function corresponding to specified
+acpi_device, but also other _PRT entries for working PCI
+devices/functions on the same bus. As a result, interrupt
+initialization for those PCI functions would no longer work
+properly after that.
 
-And occasionally when I turn a replacement patch into an incremental,
-it shows up things which the submitter hadn't intended be included.
+So I think we should not call acpi_pci_irq_del_prt() against
+dev->bus.
 
-> is it ok to post many small 
-> patches for -mm for minor changes like this one (simple_ -> strict_) or 
-> do you rather prefer these to be collected into somewhat larger patches 
-> that fix multiple minor issues?
+Thanks,
+Kenji Kaneshige
 
-I think one patch per "issue" would be best.  Although combo patches at
-this stage would not be a huge problem.
+
