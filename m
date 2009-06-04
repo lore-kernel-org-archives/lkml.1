@@ -1,158 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbZFDOwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbZFDOwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206AbZFDOwU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 10:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZFDOwA
+	id S1756996AbZFDOwb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 10:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbZFDOwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 10:52:00 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:40312 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751899AbZFDOv7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 10:51:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Kdu1gVI8lmTFfZ1WtYxg8ltjp+IvV46J3PrAXba1VJTa5Q/HAShbfHKK+a46mte7hc
-         8W8Xe5OJIfoDMgTw2BqD8IUu3bK/axvMR4M4XynWpHznkzlY1yDzPDzQhnl5VhWSkATy
-         oFnHCsMB+G0Yasp825GBM9p7wW6zcNKIsxW8k=
+	Thu, 4 Jun 2009 10:52:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60515 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756583AbZFDOwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 10:52:20 -0400
+Date: Thu, 4 Jun 2009 14:51:31 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter tools: Dont output in color on !tty
+Message-ID: <tip-13d0ab5ec29852a6925f612830fa9e822669ece6@git.kernel.org>
+Git-Commit-ID: 13d0ab5ec29852a6925f612830fa9e822669ece6
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <1244124749.22576.71.camel@johannes.local>
-References: <1244021629-18409-4-git-send-email-dbaryshkov@gmail.com>
-	 <1244021629-18409-5-git-send-email-dbaryshkov@gmail.com>
-	 <1244021964.10665.5.camel@johannes.local>
-	 <20090603.030911.162861804.davem@davemloft.net>
-	 <20090603105256.GB20508@doriath.ww600.siemens.net>
-	 <1244027110.1693.9.camel@johannes.local>
-	 <20090603122744.GC20508@doriath.ww600.siemens.net>
-	 <1244124749.22576.71.camel@johannes.local>
-Date: Thu, 4 Jun 2009 18:51:58 +0400
-Message-ID: <bc64b4640906040751i3c64c317i4eedb7d53307092a@mail.gmail.com>
-Subject: Re: [PATCH 4/6] net: add NL802154 interface for configuration of 
-	802.15.4 devices
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       sfr@canb.auug.org.au, slapin@ossfans.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 04 Jun 2009 14:51:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/4 Johannes Berg <johannes@sipsolutions.net>:
-> On Wed, 2009-06-03 at 16:27 +0400, Dmitry Eremin-Solenikov wrote:
->
->> > > +static int ieee802154_nl_put_failure(struct sk_buff *msg)
->> > > +{
->> > > + void *hdr = genlmsg_data(NLMSG_DATA(msg->data)); /* XXX: nlh is right at the start of msg */
->> > > + genlmsg_cancel(msg, hdr);
->> > > + nlmsg_free(msg);
->> > > + return -ENOBUFS;
->> > > +}
->> >
->> > This seems weird.
->>
->> Why?
->
-> Because it's strange to cancel then free?
+Commit-ID:  13d0ab5ec29852a6925f612830fa9e822669ece6
+Gitweb:     http://git.kernel.org/tip/13d0ab5ec29852a6925f612830fa9e822669ece6
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Thu, 4 Jun 2009 15:40:25 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 4 Jun 2009 15:40:25 +0200
 
->From looking at the other code, the usual pattern for netlink is
-(please, correct me if I'm wrong):
+perf_counter tools: Dont output in color on !tty
 
-int fill (....)
-{
-   genlmsg_put();
-   NLA_PUT(...)
-   NLA_PUT(...)
-   return genlmsg_end();
+Dont emit ASCII color characters if the terminal is not a tty,
+such as when perf report gets redirected into a file.
 
-nla_put_failure:
-   genlmsg_cancel();
-   return -EMSGSIZE;
-}
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-int cmd(...)
-{
-    int rc;
-    nlmsg_new();
 
-    rc = fill();
-    if (rc < 0)
-        goto out;
+---
+ Documentation/perf_counter/util/color.c |   17 ++++++++++++++---
+ 1 files changed, 14 insertions(+), 3 deletions(-)
 
-    genlmsg_unicast();
-
-out:
-    nlmsg_free();
-    return -ENOBUFS;
-}
-
-This is equivalent to our code:
-
-sk_buff *new()
-{
-   msg = nlmsg_new();
-   genlmsg_put();
-   return msg;
-}
-
-int finish()
-{
-    genlmsg_end();
-    return genlmsg_unicast(); /*multicast in our case, but doesn't matter */
-}
-
-int cancel()
-{
-   genlmsg_cancel();
-   nlmsg_free();
-   return -ENOBUFS;
-}
-
-int cmd()
-{
-  msg = new();
-  NLA_PUT()
-  NLA_PUT();
-  return finish();
-nla_put_failure:
-  return cancel();
-}
-
->> > > +static int ieee802154_associate_req(struct sk_buff *skb, struct genl_info *info)
->> > > +{
->> > > + struct net_device *dev;
->> > > + struct ieee802154_addr addr;
->> > > + int ret = -EINVAL;
->> > > +
->> > > + if (!info->attrs[IEEE802154_ATTR_CHANNEL]
->> > > +  || !info->attrs[IEEE802154_ATTR_COORD_PAN_ID]
->> > > +  || (!info->attrs[IEEE802154_ATTR_COORD_HW_ADDR] && !info->attrs[IEEE802154_ATTR_COORD_SHORT_ADDR])
->> > > +  || !info->attrs[IEEE802154_ATTR_CAPABILITY])
->> > > +         return -EINVAL;
->> >
->> > That's some odd coding style.
->>
->> Could you please elaborate this? What seems odd to you?
->
-> if (X
->    && Y)
->
-> vs
->
-> if (X &&
->    Y)
->
-> where the latter is used for all other sources files in the kernel. Try
-> applying that to _all_ your patches while you rework the sources to fit
-> into 80 columns.
-
-Fine, I'll apply the latter pattern and try to reformat code to fit to
-80 columns.
-
--- 
-With best wishes
-Dmitry
+diff --git a/Documentation/perf_counter/util/color.c b/Documentation/perf_counter/util/color.c
+index a77975d..9a8c20c 100644
+--- a/Documentation/perf_counter/util/color.c
++++ b/Documentation/perf_counter/util/color.c
+@@ -1,7 +1,7 @@
+ #include "cache.h"
+ #include "color.h"
+ 
+-int perf_use_color_default = 0;
++int perf_use_color_default = -1;
+ 
+ static int parse_color(const char *name, int len)
+ {
+@@ -169,10 +169,20 @@ static int color_vfprintf(FILE *fp, const char *color, const char *fmt,
+ {
+ 	int r = 0;
+ 
+-	if (*color)
++	/*
++	 * Auto-detect:
++	 */
++	if (perf_use_color_default < 0) {
++		if (isatty(1) || pager_in_use())
++			perf_use_color_default = 1;
++		else
++			perf_use_color_default = 0;
++	}
++
++	if (perf_use_color_default && *color)
+ 		r += fprintf(fp, "%s", color);
+ 	r += vfprintf(fp, fmt, args);
+-	if (*color)
++	if (perf_use_color_default && *color)
+ 		r += fprintf(fp, "%s", PERF_COLOR_RESET);
+ 	if (trail)
+ 		r += fprintf(fp, "%s", trail);
+@@ -185,6 +195,7 @@ int color_fprintf(FILE *fp, const char *color, const char *fmt, ...)
+ {
+ 	va_list args;
+ 	int r;
++
+ 	va_start(args, fmt);
+ 	r = color_vfprintf(fp, color, fmt, args, NULL);
+ 	va_end(args);
