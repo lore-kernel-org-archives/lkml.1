@@ -1,128 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757257AbZFDJf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757737AbZFDJfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757257AbZFDJf1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 05:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbZFDJfR
+	id S1757737AbZFDJfr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 05:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZFDJfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 05:35:17 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:12837 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753608AbZFDJfQ convert rfc822-to-8bit (ORCPT
+	Thu, 4 Jun 2009 05:35:39 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:35320 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753580AbZFDJfi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 05:35:16 -0400
-Date: Thu, 4 Jun 2009 11:35:04 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Minkyu Kang <mk7.kang@samsung.com>
-Cc: Trilok Soni <soni.trilok@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, kyungmin.park@samsung.com,
-       Anton Vorontsov <cbou@mail.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-i2c@vger.kernel.org
-Subject: Re: [PATCH v2] add MAX17040 Fuel Gauge driver
-Message-ID: <20090604113504.5370775b@hyperion.delvare>
-In-Reply-To: <5d5443650906040216h2314b7bbt1ae2e89c709b566e@mail.gmail.com>
-References: <4A278C08.5000206@samsung.com>
-	<5d5443650906040216h2314b7bbt1ae2e89c709b566e@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Thu, 4 Jun 2009 05:35:38 -0400
+To: csaba@gluster.com
+CC: miklos@szeredi.hu, avati@gluster.com, muirj@nortel.com,
+       fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, dl-hacking@gluster.com
+In-reply-to: <100d90a90906040232ofd2b5ebw8c8d5f677b13e840@mail.gmail.com>
+	(message from Csaba Henk on Thu, 4 Jun 2009 11:32:32 +0200)
+Subject: Re: [PATCH] fuse: cache invalidation calls
+References: <1119562997.1044731244033504415.JavaMail.root@mb1>
+	 <E1MC99F-0004l5-JF@pomaz-ex.szeredi.hu> <100d90a90906040232ofd2b5ebw8c8d5f677b13e840@mail.gmail.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Message-Id: <E1MC9MC-0004nV-Ri@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 04 Jun 2009 11:35:32 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Jun 2009 14:46:45 +0530, Trilok Soni wrote:
-> Hi Minkyu Kang,
-> 
-> Adding linux-i2c mailing list, so not deleting any code.
-> 
-> On Thu, Jun 4, 2009 at 2:25 PM, Minkyu Kang <mk7.kang@samsung.com> wrote:
-> > The MAX17040 is a I2C interfaced Fuel Gauge systems for lithium-ion batteries
-> > This patch adds support the MAX17040 Fuel Gauge
+On Thu, 4 Jun 2009, Csaba Henk wrote:
+> On Thu, Jun 4, 2009 at 11:22 AM, Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > On Wed, 3 Jun 2009, Anand Avati wrote:
+> >> I was wondering how the userland libfuse would be made aware of the
+> >> presence of these two notification features?
 > >
-> > Cc: Anton Vorontsov <cbou@mail.ru>
-> > Signed-off-by: Minkyu Kang <mk7.kang@samsung.com>
-> > ---
-> >  drivers/power/Kconfig            |    8 +
-> >  drivers/power/Makefile           |    3 +-
-> >  drivers/power/max17040_battery.c |  306 ++++++++++++++++++++++++++++++++++++++
-> >  include/linux/max17040_battery.h |   19 +++
-> >  4 files changed, 335 insertions(+), 1 deletions(-)
-> >  create mode 100644 drivers/power/max17040_battery.c
-> >  create mode 100644 include/linux/max17040_battery.h
-> > (...)
-> > +static u8 max17040_read_reg(int reg)
-> > +{
-> > +       int ret;
-> > +
-> > +       ret = i2c_smbus_read_byte_data(max17040->client, reg);
-> > +
-> > +       if (ret < 0) {
-> > +               dev_err(&max17040->client->dev,
-> > +                               "%s: reg 0x%x, err %d\n",
-> > +                               __func__, reg, ret);
-> > +       }
-> > +
-> > +       return ret;
-> > +}
-
-In case of error, this will wrap the error code into a u8 and the
-caller won't notice. So you'll return a random value, depending on the
-actual error which happened. No good.
-
-You should either return an int there, and have the caller check for
-errors, or if you don't want to care about errors, return an arbitrary
-value on error (e.g. 0.)
-
-> > (...)
-> > +static int __devinit max17040_probe(struct i2c_client *client,
-> > +                       const struct i2c_device_id *id)
-> > +{
-> > +       struct max17040_chip *chip;
-> > +       int ret;
-> > +
-> > +       chip = kzalloc(sizeof(struct max17040_chip), GFP_KERNEL);
-> > +       if (!chip)
-> > +               return -ENOMEM;
-> > +
-> > +       chip->client = client;
-> > +       pdata = client->dev.platform_data;
-> > +
-> > +       i2c_set_clientdata(client, chip);
+> > Here's a patch against fuse CVS. Â It's also from John Muir.
 > 
-> Please add i2c_check_functionality check before doing any smbus
-> read/write operations.
-> 
-> > +       max17040 = chip;
-> 
-> This means that we support only one instance of this chip, right?
-> 
-> > +
-> > +       max17040_reset();
-> > +
-> > +       max17040_get_version();
-> > +
-> > +       INIT_DELAYED_WORK_DEFERRABLE(&chip->work, max17040_work);
-> > +       schedule_delayed_work(&chip->work, MAX17040_DELAY);
-> > +
-> > +       bat_ps.properties = max17040_battery_props;
-> > +       bat_ps.num_properties = ARRAY_SIZE(max17040_battery_props);
-> > +
-> > +       ret = power_supply_register(&client->dev, &bat_ps);
-> > +       if (ret) {
-> > +               dev_err(&max17040->client->dev,
-> > +                               "failed: power supply register\n");
-> > +               cancel_delayed_work(&chip->work);
-> > +               i2c_set_clientdata(client, NULL);
-> > +               kfree(chip);
-> > +               max17040 = NULL;
-> > +               return -1;
+> In fact, what we were meditating about is the lack of the
+> FUSE_KERNEL_MINOR_VERSION bump. Without that, how do the two parties
+> negotiate if the rev inval messages are understood? One of John's
+> patches in his patchset had it bumped though...
 
-Please come up with a better error code.
+Yes, I removed that intentionally as hopefully this will go in 2.6.31
+with the other 10 -> 11 API changes.
 
-> > +       }
-> > +
-> > +       return 0;
-> > +}
-
--- 
-Jean Delvare
+Thanks,
+Miklos
