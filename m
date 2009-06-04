@@ -1,98 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbZFDXrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZFDXxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752933AbZFDXrR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 19:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbZFDXrD
+	id S1752638AbZFDXxS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 19:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZFDXxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 19:47:03 -0400
-Received: from mga07.intel.com ([143.182.124.22]:64974 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752350AbZFDXrD (ORCPT
+	Thu, 4 Jun 2009 19:53:10 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:43020 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658AbZFDXxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 19:47:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,307,1241420400"; 
-   d="scan'208";a="150873169"
-Date: Fri, 5 Jun 2009 01:49:12 +0200
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/7] MFD: ASIC3: add clock handling for MFD cells
-Message-ID: <20090604234911.GC5460@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <1244140576-18006-1-git-send-email-philipp.zabel@gmail.com> <1244140576-18006-3-git-send-email-philipp.zabel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244140576-18006-3-git-send-email-philipp.zabel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 4 Jun 2009 19:53:09 -0400
+Subject: Re: [GIT PULL] drm-intel fixes for 2.6.30-rc8
+From: Eric Anholt <eric@anholt.net>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1244139713.23850.3.camel@localhost.localdomain>
+References: <1244133916.11142.14.camel@gaiman.anholt.net>
+	 <1244139713.23850.3.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-EA6ct/cH80NmNEVTJSly"
+Date: Thu, 04 Jun 2009 23:52:31 +0000
+Message-Id: <1244159551.11142.16.camel@gaiman.anholt.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Philipp,
 
-On Thu, Jun 04, 2009 at 08:36:11PM +0200, Philipp Zabel wrote:
-> +
-> +struct asic3_clk {
-> +	int enabled;
-You probably want to use a kref here.
+--=-EA6ct/cH80NmNEVTJSly
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> +static int asic3_clk_enable(struct asic3 *asic, struct asic3_clk *clk)
-> +{
-> +	unsigned long flags;
-> +	u32 cdex;
-> +
-> +	spin_lock_irqsave(&asic->lock, flags);
-> +	if (clk->enabled++ == 0) {
-using the kref API here would definitely be nicer.
+On Thu, 2009-06-04 at 20:21 +0200, Marcel Holtmann wrote:
+> Hi Eric,
+>=20
+> > The following changes since commit 9fa7eb283c5cdc2b0f4a8cfe6387ed82e5e9=
+a3d3:
+> >   Linus Torvalds (1):
+> >         Linux 2.6.30-rc8
+> >=20
+> > are available in the git repository at:
+> >=20
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel for-li=
+nus
+> >=20
+> > This fixes a bogus BUG_ON that I saw get triggered with the new texture
+> > tiling code on gen4.  There are a couple of lovely further bugfixes in
+> > drm-intel-next, but it's rc8 and I'd rather help quiet things down
+> > so .30 gets out the door :)
+>=20
+> no idea if this has any relation to it. I am running wireless-testing
+> which is based on 2.6.30-rc8 and I got this (for the the first time):
+>=20
+> [   46.185008] [drm:gm45_get_vblank_counter] *ERROR* trying to get vblank=
+ count for disabled pipe 0
 
-Cheers,
-Samuel.
+This has been around for ages, is unrelated, and harmless.
 
-> +		cdex = asic3_read_register(asic, ASIC3_OFFSET(CLOCK, CDEX));
-> +		cdex |= clk->cdex;
-> +		asic3_write_register(asic, ASIC3_OFFSET(CLOCK, CDEX), cdex);
-> +	}
-> +	spin_unlock_irqrestore(&asic->lock, flags);
-> +
-> +	return 0;
-> +}
-> +
-> +static void asic3_clk_disable(struct asic3 *asic, struct asic3_clk *clk)
-> +{
-> +	unsigned long flags;
-> +	u32 cdex;
-> +
-> +	WARN_ON(clk->enabled == 0);
-> +
-> +	spin_lock_irqsave(&asic->lock, flags);
-> +	if (--clk->enabled == 0) {
-> +		cdex = asic3_read_register(asic, ASIC3_OFFSET(CLOCK, CDEX));
-> +		cdex &= ~clk->cdex;
-> +		asic3_write_register(asic, ASIC3_OFFSET(CLOCK, CDEX), cdex);
-> +	}
-> +	spin_unlock_irqrestore(&asic->lock, flags);
-> +}
->  
->  /* Core */
->  static int __init asic3_probe(struct platform_device *pdev)
-> @@ -638,6 +713,11 @@ static int __init asic3_probe(struct platform_device *pdev)
->  		goto out_irq;
->  	}
->  
-> +	/* Making a per-device copy is only needed for the
-> +	 * theoretical case of multiple ASIC3s on one board:
-> +	 */
-> +	memcpy(asic->clocks, asic3_clk_init, sizeof(asic3_clk_init));
-> +
->  	dev_info(asic->dev, "ASIC3 Core driver\n");
->  
->  	return 0;
-> -- 
-> 1.6.3.1
-> 
+> [   54.606049] metacity[2319]: segfault at 0 ip 0000000000462a4e sp 00007=
+fff412e4f60 error 4 in metacity[400000+86000]
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Sounds like you need some gdb.
+
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
+
+
+
+--=-EA6ct/cH80NmNEVTJSly
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkooXj8ACgkQHUdvYGzw6vfetACgh1sndY/nFNUoFjuMHpy8q6Fo
+wqAAnRPwIWXgJL/FNGm29W3WDD/G0HId
+=nNFB
+-----END PGP SIGNATURE-----
+
+--=-EA6ct/cH80NmNEVTJSly--
