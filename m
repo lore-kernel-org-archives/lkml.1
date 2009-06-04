@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757513AbZFDGAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757367AbZFDF7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757513AbZFDGAZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 02:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757004AbZFDF6v
+	id S1757367AbZFDF7v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 01:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756834AbZFDF6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 01:58:51 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:28930 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756948AbZFDF6u (ORCPT
+	Thu, 4 Jun 2009 01:58:42 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:8182 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756309AbZFDF6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 01:58:50 -0400
-Subject: [PATCH v2 07/11] ACPI: acpi_pci_unbind should clean up properly after
-	acpi_pci_bind
+	Thu, 4 Jun 2009 01:58:40 -0400
+Subject: [PATCH v2 05/11] ACPI: simplify acpi_pci_irq_add_prt() API
 To: lenb@kernel.org
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-acpi@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>,
        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Date: Wed, 03 Jun 2009 23:58:52 -0600
-Message-ID: <20090604055852.18802.22743.stgit@bob.kio>
+Date: Wed, 03 Jun 2009 23:58:42 -0600
+Message-ID: <20090604055842.18802.26237.stgit@bob.kio>
 In-Reply-To: <20090604054504.18802.21690.stgit@bob.kio>
 References: <20090604054504.18802.21690.stgit@bob.kio>
 User-Agent: StGit/0.14.3.347.g594a
@@ -28,47 +27,118 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In acpi_pci_bind, we add _PRT information for non-bridge devices, but
-we never delete that information in acpi_pci_unbind.
+A PCI domain cannot change as you descend down subordinate buses, which
+makes the 'segment' argument to acpi_pci_irq_add_prt() useless.
 
-We also set device->ops.bind and device->ops.unbind, but never clear
-them out.
-
-Let's make acpi_pci_unbind clean up what we did in acpi_pci_bind.
+Change the interface to take a struct pci_bus *, from whence we can derive
+the bus number and segment. Reducing the number of arguments makes life
+simpler for callers.
 
 Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/acpi/pci_bind.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
+ drivers/acpi/pci_bind.c     |    8 ++++----
+ drivers/acpi/pci_irq.c      |   10 +++++-----
+ drivers/acpi/pci_root.c     |    3 +--
+ include/acpi/acpi_drivers.h |    2 +-
+ 4 files changed, 11 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/acpi/pci_bind.c b/drivers/acpi/pci_bind.c
-index 62cb383..5fa1c5e 100644
+index 703d2a3..6eb58ef 100644
 --- a/drivers/acpi/pci_bind.c
 +++ b/drivers/acpi/pci_bind.c
-@@ -106,14 +106,21 @@ EXPORT_SYMBOL(acpi_get_pci_id);
- 
- static int acpi_pci_unbind(struct acpi_device *device)
+@@ -124,7 +124,7 @@ static int acpi_pci_bind(struct acpi_device *device)
  {
+ 	acpi_status status;
+ 	acpi_handle handle;
+-	unsigned char bus;
 +	struct pci_bus *bus;
  	struct pci_dev *dev;
  
  	dev = acpi_get_pci_dev(device->handle);
- 	if (!dev)
- 		return 0;
+@@ -157,11 +157,11 @@ static int acpi_pci_bind(struct acpi_device *device)
+ 		goto out;
  
--	if (dev->subordinate)
--		acpi_pci_irq_del_prt(dev->subordinate);
-+	if (dev->subordinate) {
+ 	if (dev->subordinate)
+-		bus = dev->subordinate->number;
 +		bus = dev->subordinate;
-+		device->ops.bind = NULL;
-+		device->ops.unbind = NULL;
-+	 } else
+ 	else
+-		bus = dev->bus->number;
 +		bus = dev->bus;
-+
-+	acpi_pci_irq_del_prt(bus);
  
+-	acpi_pci_irq_add_prt(device->handle, pci_domain_nr(dev->bus), bus);
++	acpi_pci_irq_add_prt(device->handle, bus);
+ 
+ out:
  	pci_dev_put(dev);
+diff --git a/drivers/acpi/pci_irq.c b/drivers/acpi/pci_irq.c
+index 51b9f82..3ed944c 100644
+--- a/drivers/acpi/pci_irq.c
++++ b/drivers/acpi/pci_irq.c
+@@ -182,7 +182,7 @@ static void do_prt_fixups(struct acpi_prt_entry *entry,
+ 	}
+ }
+ 
+-static int acpi_pci_irq_add_entry(acpi_handle handle, int segment, int bus,
++static int acpi_pci_irq_add_entry(acpi_handle handle, struct pci_bus *bus,
+ 				  struct acpi_pci_routing_table *prt)
+ {
+ 	struct acpi_prt_entry *entry;
+@@ -196,8 +196,8 @@ static int acpi_pci_irq_add_entry(acpi_handle handle, int segment, int bus,
+ 	 * 1=INTA, 2=INTB.  We use the PCI encoding throughout, so convert
+ 	 * it here.
+ 	 */
+-	entry->id.segment = segment;
+-	entry->id.bus = bus;
++	entry->id.segment = pci_domain_nr(bus);
++	entry->id.bus = bus->number;
+ 	entry->id.device = (prt->address >> 16) & 0xFFFF;
+ 	entry->pin = prt->pin + 1;
+ 
+@@ -242,7 +242,7 @@ static int acpi_pci_irq_add_entry(acpi_handle handle, int segment, int bus,
  	return 0;
+ }
+ 
+-int acpi_pci_irq_add_prt(acpi_handle handle, int segment, int bus)
++int acpi_pci_irq_add_prt(acpi_handle handle, struct pci_bus *bus)
+ {
+ 	acpi_status status;
+ 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+@@ -271,7 +271,7 @@ int acpi_pci_irq_add_prt(acpi_handle handle, int segment, int bus)
+ 
+ 	entry = buffer.pointer;
+ 	while (entry && (entry->length > 0)) {
+-		acpi_pci_irq_add_entry(handle, segment, bus, entry);
++		acpi_pci_irq_add_entry(handle, bus, entry);
+ 		entry = (struct acpi_pci_routing_table *)
+ 		    ((unsigned long)entry + entry->length);
+ 	}
+diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+index f23fcc5..f341b07 100644
+--- a/drivers/acpi/pci_root.c
++++ b/drivers/acpi/pci_root.c
+@@ -614,8 +614,7 @@ static int __devinit acpi_pci_root_add(struct acpi_device *device)
+ 	 */
+ 	status = acpi_get_handle(device->handle, METHOD_NAME__PRT, &handle);
+ 	if (ACPI_SUCCESS(status))
+-		result = acpi_pci_irq_add_prt(device->handle, root->id.segment,
+-					      root->id.bus);
++		result = acpi_pci_irq_add_prt(device->handle, root->bus);
+ 
+ 	/*
+ 	 * Scan and bind all _ADR-Based Devices
+diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
+index 01d9ce4..702b12e 100644
+--- a/include/acpi/acpi_drivers.h
++++ b/include/acpi/acpi_drivers.h
+@@ -90,7 +90,7 @@ int acpi_pci_link_free_irq(acpi_handle handle);
+ 
+ /* ACPI PCI Interrupt Routing (pci_irq.c) */
+ 
+-int acpi_pci_irq_add_prt(acpi_handle handle, int segment, int bus);
++int acpi_pci_irq_add_prt(acpi_handle handle, struct pci_bus *bus);
+ void acpi_pci_irq_del_prt(int segment, int bus);
+ 
+ /* ACPI PCI Device Binding (pci_bind.c) */
 
