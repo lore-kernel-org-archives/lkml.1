@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbZFDF6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757044AbZFDF7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbZFDF6o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 01:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756314AbZFDF6V
+	id S1757044AbZFDF7B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 01:59:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756390AbZFDF61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 01:58:21 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:31284 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754790AbZFDF6T (ORCPT
+	Thu, 4 Jun 2009 01:58:27 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:28803 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756680AbZFDF6Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 01:58:19 -0400
-Subject: [PATCH v2 01/11] ACPI: make acpi_pci_bind() static
+	Thu, 4 Jun 2009 01:58:25 -0400
+Subject: [PATCH v2 02/11] ACPI: Introduce acpi_is_root_bridge()
 To: lenb@kernel.org
 From: Alex Chiang <achiang@hp.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Date: Wed, 03 Jun 2009 23:58:21 -0600
-Message-ID: <20090604055821.18802.88142.stgit@bob.kio>
+Cc: linux-acpi@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Date: Wed, 03 Jun 2009 23:58:26 -0600
+Message-ID: <20090604055826.18802.67488.stgit@bob.kio>
 In-Reply-To: <20090604054504.18802.21690.stgit@bob.kio>
 References: <20090604054504.18802.21690.stgit@bob.kio>
 User-Agent: StGit/0.14.3.347.g594a
@@ -27,64 +27,158 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-acpi_pci_root_add() explicitly assigns device->ops.bind, and later
-calls acpi_pci_bind_root(), which also does the same thing.
+Returns whether an ACPI CA node is a PCI root bridge or not.
 
-We don't need to repeat ourselves; removing the explicit assignment
-allows us to make acpi_pci_bind() static.
+This API is generically useful, and shouldn't just be a hotplug function.
 
+The implementation becomes much simpler as well.
+
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/acpi/pci_bind.c     |    3 ++-
- drivers/acpi/pci_root.c     |    2 --
- include/acpi/acpi_drivers.h |    1 -
- 3 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/acpi/pci_root.c            |   24 ++++++++++++++++++++++
+ drivers/pci/hotplug/acpi_pcihp.c   |   40 ++----------------------------------
+ drivers/pci/hotplug/acpiphp_glue.c |    2 +-
+ include/acpi/acpi_bus.h            |    1 +
+ include/linux/pci_hotplug.h        |    1 -
+ 5 files changed, 28 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/acpi/pci_bind.c b/drivers/acpi/pci_bind.c
-index bc46de3..236765c 100644
---- a/drivers/acpi/pci_bind.c
-+++ b/drivers/acpi/pci_bind.c
-@@ -44,6 +44,7 @@ struct acpi_pci_data {
- 	struct pci_dev *dev;
- };
- 
-+static int acpi_pci_bind(struct acpi_device *device);
- static int acpi_pci_unbind(struct acpi_device *device);
- 
- static void acpi_pci_data_handler(acpi_handle handle, u32 function,
-@@ -108,7 +109,7 @@ acpi_status acpi_get_pci_id(acpi_handle handle, struct acpi_pci_id *id)
- 
- EXPORT_SYMBOL(acpi_get_pci_id);
- 
--int acpi_pci_bind(struct acpi_device *device)
-+static int acpi_pci_bind(struct acpi_device *device)
- {
- 	int result = 0;
- 	acpi_status status;
 diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-index 196f97d..ca8dba3 100644
+index ca8dba3..888cb9f 100644
 --- a/drivers/acpi/pci_root.c
 +++ b/drivers/acpi/pci_root.c
-@@ -386,8 +386,6 @@ static int __devinit acpi_pci_root_add(struct acpi_device *device)
- 	strcpy(acpi_device_class(device), ACPI_PCI_ROOT_CLASS);
- 	device->driver_data = root;
+@@ -142,6 +142,30 @@ acpi_handle acpi_get_pci_rootbridge_handle(unsigned int seg, unsigned int bus)
  
--	device->ops.bind = acpi_pci_bind;
+ EXPORT_SYMBOL_GPL(acpi_get_pci_rootbridge_handle);
+ 
++/**
++ * acpi_is_root_bridge - determine whether an ACPI CA node is a PCI root bridge
++ * @handle - the ACPI CA node in question.
++ *
++ * Note: we could make this API take a struct acpi_device * instead, but
++ * for now, it's more convenient to operate on an acpi_handle.
++ */
++int acpi_is_root_bridge(acpi_handle handle)
++{
++	int ret;
++	struct acpi_device *device;
++
++	ret = acpi_bus_get_device(handle, &device);
++	if (ret)
++		return 0;
++
++	ret = acpi_match_device_ids(device, root_device_ids);
++	if (ret)
++		return 0;
++	else
++		return 1;
++}
++EXPORT_SYMBOL_GPL(acpi_is_root_bridge);
++
+ static acpi_status
+ get_root_bridge_busnr_callback(struct acpi_resource *resource, void *data)
+ {
+diff --git a/drivers/pci/hotplug/acpi_pcihp.c b/drivers/pci/hotplug/acpi_pcihp.c
+index fbc63d5..eb15958 100644
+--- a/drivers/pci/hotplug/acpi_pcihp.c
++++ b/drivers/pci/hotplug/acpi_pcihp.c
+@@ -354,7 +354,7 @@ acpi_status acpi_get_hp_params_from_firmware(struct pci_bus *bus,
+ 		status = acpi_run_hpp(handle, hpp);
+ 		if (ACPI_SUCCESS(status))
+ 			break;
+-		if (acpi_root_bridge(handle))
++		if (acpi_is_root_bridge(handle))
+ 			break;
+ 		status = acpi_get_parent(handle, &phandle);
+ 		if (ACPI_FAILURE(status))
+@@ -428,7 +428,7 @@ int acpi_get_hp_hw_control_from_firmware(struct pci_dev *pdev, u32 flags)
+ 		status = acpi_run_oshp(handle);
+ 		if (ACPI_SUCCESS(status))
+ 			goto got_one;
+-		if (acpi_root_bridge(handle))
++		if (acpi_is_root_bridge(handle))
+ 			break;
+ 		chandle = handle;
+ 		status = acpi_get_parent(chandle, &handle);
+@@ -449,42 +449,6 @@ got_one:
+ }
+ EXPORT_SYMBOL(acpi_get_hp_hw_control_from_firmware);
+ 
+-/* acpi_root_bridge - check to see if this acpi object is a root bridge
+- *
+- * @handle - the acpi object in question.
+- */
+-int acpi_root_bridge(acpi_handle handle)
+-{
+-	acpi_status status;
+-	struct acpi_device_info *info;
+-	struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER, NULL};
+-	int i;
 -
- 	/*
- 	 * All supported architectures that use ACPI have support for
- 	 * PCI domains, so we indicate this in _OSC support capabilities.
-diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
-index 5e8ed3a..bbe9207 100644
---- a/include/acpi/acpi_drivers.h
-+++ b/include/acpi/acpi_drivers.h
-@@ -98,7 +98,6 @@ void acpi_pci_irq_del_prt(int segment, int bus);
- struct pci_bus;
+-	status = acpi_get_object_info(handle, &buffer);
+-	if (ACPI_SUCCESS(status)) {
+-		info = buffer.pointer;
+-		if ((info->valid & ACPI_VALID_HID) &&
+-			!strcmp(PCI_ROOT_HID_STRING,
+-					info->hardware_id.value)) {
+-			kfree(buffer.pointer);
+-			return 1;
+-		}
+-		if (info->valid & ACPI_VALID_CID) {
+-			for (i=0; i < info->compatibility_id.count; i++) {
+-				if (!strcmp(PCI_ROOT_HID_STRING,
+-					info->compatibility_id.id[i].value)) {
+-					kfree(buffer.pointer);
+-					return 1;
+-				}
+-			}
+-		}
+-		kfree(buffer.pointer);
+-	}
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(acpi_root_bridge);
+-
+-
+ static int is_ejectable(acpi_handle handle)
+ {
+ 	acpi_status status;
+diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+index 3a6064b..fc6636e 100644
+--- a/drivers/pci/hotplug/acpiphp_glue.c
++++ b/drivers/pci/hotplug/acpiphp_glue.c
+@@ -1631,7 +1631,7 @@ find_root_bridges(acpi_handle handle, u32 lvl, void *context, void **rv)
+ {
+ 	int *count = (int *)context;
  
- acpi_status acpi_get_pci_id(acpi_handle handle, struct acpi_pci_id *id);
--int acpi_pci_bind(struct acpi_device *device);
- int acpi_pci_bind_root(struct acpi_device *device, struct acpi_pci_id *id,
- 		       struct pci_bus *bus);
+-	if (acpi_root_bridge(handle)) {
++	if (acpi_is_root_bridge(handle)) {
+ 		acpi_install_notify_handler(handle, ACPI_SYSTEM_NOTIFY,
+ 				handle_hotplug_event_bridge, NULL);
+ 			(*count)++;
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+index 0f50167..494088b 100644
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -372,6 +372,7 @@ struct device *acpi_get_physical_pci_device(acpi_handle);
  
+ /* helper */
+ acpi_handle acpi_get_child(acpi_handle, acpi_integer);
++int acpi_is_root_bridge(acpi_handle);
+ acpi_handle acpi_get_pci_rootbridge_handle(unsigned int, unsigned int);
+ #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)((dev)->archdata.acpi_handle))
+ 
+diff --git a/include/linux/pci_hotplug.h b/include/linux/pci_hotplug.h
+index 2099874..a3576ef 100644
+--- a/include/linux/pci_hotplug.h
++++ b/include/linux/pci_hotplug.h
+@@ -226,7 +226,6 @@ struct hotplug_params {
+ extern acpi_status acpi_get_hp_params_from_firmware(struct pci_bus *bus,
+ 				struct hotplug_params *hpp);
+ int acpi_get_hp_hw_control_from_firmware(struct pci_dev *dev, u32 flags);
+-int acpi_root_bridge(acpi_handle handle);
+ int acpi_pci_check_ejectable(struct pci_bus *pbus, acpi_handle handle);
+ int acpi_pci_detect_ejectable(struct pci_bus *pbus);
+ #endif
 
