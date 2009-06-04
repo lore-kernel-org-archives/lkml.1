@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754392AbZFDJy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbZFDKBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754392AbZFDJy0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 05:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZFDJyS
+	id S1755352AbZFDKBs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 06:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZFDKBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 05:54:18 -0400
-Received: from n22a.bullet.mail.mud.yahoo.com ([68.142.207.188]:39064 "HELO
-	n22a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751107AbZFDJyR (ORCPT
+	Thu, 4 Jun 2009 06:01:39 -0400
+Received: from mail-px0-f182.google.com ([209.85.216.182]:43089 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbZFDKBj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 05:54:17 -0400
-X-Greylist: delayed 370 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Jun 2009 05:54:17 EDT
-X-Yahoo-Newman-Id: 836652.3816.bm@omp402.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=I7lFrrwAFpMeo3rLFCQgI6uw7gIdFi8a7hjCbDeli9ASWr+gvYmSPv8an52EouEUwzRGgGquiu2Vexbvbdz6YHH5wUyZpNo7o0mgSmsLJf09TlHyrTeDgUugzMY3zFtG/vZWluJDMLP+mV9PMh2TEAFFEvCyvmUVmxRZtoAw4fY=  ;
-X-YMail-OSG: B.HtUv4VM1lVZNH_qq4j0GQtC_7NN.ZrHjFhh.f6_Ncoe_JkmjstChtzfc4vm4rN9kp.b.rXW0igN1A8G5MM.d9iXGBiPC1Pam0zW4S5X55O69jxFuHh28zxptYv6BKeFLZBVRQwfakzMXNIXLpvaLBTOSgUI.QoryQ7iGB4Hl0FKeliQlUZtz0at4KcE95IKlEEkElRzEwGIfaDHwlamtIPX4AIC0BanJPCW6fkDel.OLrGrZQ0PJ7_2pLDx4XnpJ9HDJ3VlFVu8_g-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH] gpio sysfs: add a "toggle" value
-Date: Thu, 4 Jun 2009 02:48:07 -0700
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <1244017019-28163-1-git-send-email-vapier@gentoo.org> <200906040215.48264.david-b@pacbell.net> <8bd0f97a0906040220k6f56b944n733a2b3469faaccb@mail.gmail.com>
-In-Reply-To: <8bd0f97a0906040220k6f56b944n733a2b3469faaccb@mail.gmail.com>
+	Thu, 4 Jun 2009 06:01:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=H15ZHuVL/NT4+NQ+8sYtNQIh1aEqEwBjx6gq8DW27pkLmvu6KgbEL/V6hjptCzr+G2
+         ezY1pchtKVfZwwFoNSrUDZRy9W3RUYMVQU2EvB68XybZ4h+eTLqiibNd6QUwdjl8zB4i
+         MixT4zd758DCl1LcmIQfsa9yFnf7CsiMV0KX4=
+Date: Thu, 4 Jun 2009 17:56:23 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kbuild@vger.kernel.org
+Subject: Re: [Patch 1/2] kbuild: two trivial fixes for check headers
+Message-ID: <20090604095623.GC7030@cr0.nay.redhat.com>
+References: <20090604080406.7005.27662.sendpatchset@localhost.localdomain> <20090604091519.GA9571@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906040248.07922.david-b@pacbell.net>
+In-Reply-To: <20090604091519.GA9571@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 June 2009, Mike Frysinger wrote:
-> > I don't like the idea of embedding any kind of interpreter
-> > in the sysfs interface, but that's the direction you seem
-> > to be heading ...
-> 
-> i dont view the userspace GPIO interface as a simple "i want to wiggle
-> pins for fun and testing".  i see it as a dynamic method for building
-> userspace drivers for simple devices.
+On Thu, Jun 04, 2009 at 11:15:19AM +0200, Sam Ravnborg wrote:
+>On Thu, Jun 04, 2009 at 04:01:52AM -0400, Amerigo Wang wrote:
+>> 
+>> Remove a useless 'extern' in an exported header.
+>> Fix a comment headers_check.pl.
+>
+>These two patches has nothing in commom.
+>
+>> 
+>> Signed-off-by: WANG Cong <amwang@redhat.com>
+>> Cc: Sam Ravnborg <sam@ravnborg.org>
+>> 
+>> ------
+>> diff --git a/include/mtd/jffs2-user.h b/include/mtd/jffs2-user.h
+>> index fa94b0e..10dc7ef 100644
+>> --- a/include/mtd/jffs2-user.h
+>> +++ b/include/mtd/jffs2-user.h
+>> @@ -18,7 +18,7 @@
+>>  #undef je32_to_cpu
+>>  #undef jemode_to_cpu
+>>  
+>> -extern int target_endian;
+>> +int target_endian;
+>
+>You now declare a global variable named target_endian each time you include this file - which is wrong.
 
-I don't.  I see it as an adjunct to real drivers.  Or maybe
-we just differ on what "simple" means here.
+Hmmm, the script seems wrong, not the C code. :)
+And the word 'prototype' is only for functions.
 
+How about patch below?
 
-> as such, having a very simple 
-> "command language" for optimizing the interaction provides a pretty
-> good trade off between kernel complexity and lowering overhead imo.
+Signed-off-by: WANG Cong <amwang@redhat.com>
 
-If that's what you want, why don't you write a custom driver
-that provides the kind of command interpreter you want?
-
+---
+diff --git a/scripts/headers_check.pl b/scripts/headers_check.pl
+index 56f90a4..11dc869 100644
+--- a/scripts/headers_check.pl
++++ b/scripts/headers_check.pl
+@@ -2,7 +2,7 @@
+ #
+ # headers_check.pl execute a number of trivial consistency checks
+ #
+-# Usage: headers_check.pl dir [files...]
++# Usage: headers_check.pl dir arch [files...]
+ # dir:   dir to look for included files
+ # arch:  architecture
+ # files: list of files to check
+@@ -63,7 +63,7 @@ sub check_include
+ 
+ sub check_prototypes
+ {
+-	if ($line =~ m/^\s*extern\b/) {
++	if ($line =~ m/^\s*extern\b.*\(.*\)/) {
+ 		printf STDERR "$filename:$lineno: extern's make no sense in userspace\n";
+ 	}
+ }
