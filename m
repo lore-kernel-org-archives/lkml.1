@@ -1,58 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbZFDOKD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbZFDOKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754783AbZFDOKD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 10:10:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbZFDOJx
+	id S1756139AbZFDOKX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 10:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZFDOKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 10:09:53 -0400
-Received: from thunk.org ([69.25.196.29]:57702 "EHLO thunker.thunk.org"
+	Thu, 4 Jun 2009 10:10:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59416 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751977AbZFDOJx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 10:09:53 -0400
-Date: Thu, 4 Jun 2009 10:09:49 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
-       linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 05/11] ext4: Make sure blocks are properly allocated
-	under mmaped page even when blocksize < pagesize
-Message-ID: <20090604140949.GA2542@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
-	LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
-	linux-ext4@vger.kernel.org
-References: <1243429268-3028-1-git-send-email-jack@suse.cz> <1243429268-3028-6-git-send-email-jack@suse.cz>
+	id S1753053AbZFDOKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 10:10:10 -0400
+Date: Thu, 4 Jun 2009 14:09:33 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf report: Add consistent spacing rules
+Message-ID: <tip-71dd8945d8d827ab101cd287f9480ef22fc7c1b6@git.kernel.org>
+Git-Commit-ID: 71dd8945d8d827ab101cd287f9480ef22fc7c1b6
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1243429268-3028-6-git-send-email-jack@suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 04 Jun 2009 14:09:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 03:01:02PM +0200, Jan Kara wrote:
-> In a situation like:
->   truncate(f, 1024);
->   a = mmap(f, 0, 4096);
->   a[0] = 'a';
->   truncate(f, 4096);
-> 
-> we end up with a dirty page which does not have all blocks allocated /
-> reserved.  Fix the problem by using new VFS infrastructure.
-> 
-> Signed-off-by: Jan Kara <jack@suse.cz>
+Commit-ID:  71dd8945d8d827ab101cd287f9480ef22fc7c1b6
+Gitweb:     http://git.kernel.org/tip/71dd8945d8d827ab101cd287f9480ef22fc7c1b6
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Thu, 4 Jun 2009 15:16:56 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 4 Jun 2009 15:04:41 +0200
 
-One warning --- this patch will have a slight patch conflict with the
-patch ext4-convert-markers-to-tracepoints in the ext4 patch queue.
+perf report: Add consistent spacing rules
 
-The ext4-convert-markers-to-tracepoints patch is also in the unstable
-part of the patch queue, since it is waiting for patches allowing
-tracepoints to be used in modules to be merged into mainline at the
-next merge window.  It's a very minor, easy fix-up, but depending who
-which patch series gets merged first, there might be a minor fixup
-required.
+Make the sort header and the print function have the same column width.
 
-						- Ted
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ Documentation/perf_counter/builtin-report.c |   34 +++++++++++++++------------
+ 1 files changed, 19 insertions(+), 15 deletions(-)
+
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index be392e0..e930b4e 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -344,11 +344,11 @@ sort__thread_cmp(struct hist_entry *left, struct hist_entry *right)
+ static size_t
+ sort__thread_print(FILE *fp, struct hist_entry *self)
+ {
+-	return fprintf(fp, " %16s:%5d", self->thread->comm ?: "", self->thread->pid);
++	return fprintf(fp, "%16s:%5d", self->thread->comm ?: "", self->thread->pid);
+ }
+ 
+ static struct sort_entry sort_thread = {
+-	.header = "         Command: Pid ",
++	.header = "         Command:  Pid",
+ 	.cmp	= sort__thread_cmp,
+ 	.print	= sort__thread_print,
+ };
+@@ -382,11 +382,11 @@ sort__comm_collapse(struct hist_entry *left, struct hist_entry *right)
+ static size_t
+ sort__comm_print(FILE *fp, struct hist_entry *self)
+ {
+-	return fprintf(fp, "  %16s", self->thread->comm);
++	return fprintf(fp, "%16s", self->thread->comm);
+ }
+ 
+ static struct sort_entry sort_comm = {
+-	.header		= "          Command",
++	.header 	= "         Command",
+ 	.cmp		= sort__comm_cmp,
+ 	.collapse	= sort__comm_collapse,
+ 	.print		= sort__comm_print,
+@@ -416,13 +416,13 @@ static size_t
+ sort__dso_print(FILE *fp, struct hist_entry *self)
+ {
+ 	if (self->dso)
+-		return fprintf(fp, "  %-25s", self->dso->name);
++		return fprintf(fp, "%-25s", self->dso->name);
+ 
+-	return fprintf(fp, "  %016llx         ", (__u64)self->ip);
++	return fprintf(fp, "%016llx         ", (__u64)self->ip);
+ }
+ 
+ static struct sort_entry sort_dso = {
+-	.header = " Shared Object            ",
++	.header = "Shared Object            ",
+ 	.cmp	= sort__dso_cmp,
+ 	.print	= sort__dso_print,
+ };
+@@ -449,18 +449,18 @@ sort__sym_print(FILE *fp, struct hist_entry *self)
+ 	size_t ret = 0;
+ 
+ 	if (verbose)
+-		ret += fprintf(fp, "  %#018llx", (__u64)self->ip);
++		ret += fprintf(fp, "%#018llx  ", (__u64)self->ip);
+ 
+ 	if (self->sym)
+-		ret += fprintf(fp, "  %s", self->sym->name);
++		ret += fprintf(fp, "%s", self->sym->name);
+ 	else
+-		ret += fprintf(fp, "  %#016llx", (__u64)self->ip);
++		ret += fprintf(fp, "%#016llx", (__u64)self->ip);
+ 
+ 	return ret;
+ }
+ 
+ static struct sort_entry sort_sym = {
+-	.header = " Symbol",
++	.header = "Symbol",
+ 	.cmp	= sort__sym_cmp,
+ 	.print	= sort__sym_print,
+ };
+@@ -553,8 +553,10 @@ hist_entry__fprintf(FILE *fp, struct hist_entry *self, uint64_t total_samples)
+ 	} else
+ 		ret = fprintf(fp, "%12d ", self->count);
+ 
+-	list_for_each_entry(se, &hist_entry__sort_list, list)
++	list_for_each_entry(se, &hist_entry__sort_list, list) {
++		fprintf(fp, "  ");
+ 		ret += se->print(fp, self);
++	}
+ 
+ 	ret += fprintf(fp, "\n");
+ 
+@@ -721,13 +723,14 @@ static size_t output__fprintf(FILE *fp, uint64_t total_samples)
+ 	struct rb_node *nd;
+ 	size_t ret = 0;
+ 
++	fprintf(fp, "\n");
+ 	fprintf(fp, "#\n");
+ 	fprintf(fp, "# (%Ld profiler events)\n", (__u64)total_samples);
+ 	fprintf(fp, "#\n");
+ 
+ 	fprintf(fp, "# Overhead");
+ 	list_for_each_entry(se, &hist_entry__sort_list, list)
+-		fprintf(fp, " %s", se->header);
++		fprintf(fp, "  %s", se->header);
+ 	fprintf(fp, "\n");
+ 
+ 	fprintf(fp, "# ........");
+@@ -735,7 +738,7 @@ static size_t output__fprintf(FILE *fp, uint64_t total_samples)
+ 		int i;
+ 
+ 		fprintf(fp, "  ");
+-		for (i = 0; i < strlen(se->header)-1; i++)
++		for (i = 0; i < strlen(se->header); i++)
+ 			fprintf(fp, ".");
+ 	}
+ 	fprintf(fp, "\n");
+@@ -749,9 +752,10 @@ static size_t output__fprintf(FILE *fp, uint64_t total_samples)
+ 
+ 	if (!strcmp(sort_order, default_sort_order)) {
+ 		fprintf(fp, "#\n");
+-		fprintf(fp, "# ( For more details, try: perf report --sort comm,dso,symbol )\n");
++		fprintf(fp, "# (For more details, try: perf report --sort comm,dso,symbol)\n");
+ 		fprintf(fp, "#\n");
+ 	}
++	fprintf(fp, "\n");
+ 
+ 	return ret;
+ }
