@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753793AbZFDRT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbZFDRVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753793AbZFDRT0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 13:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbZFDRTS
+	id S1752587AbZFDRVo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 13:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZFDRVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 13:19:18 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:35264 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751608AbZFDRTR (ORCPT
+	Thu, 4 Jun 2009 13:21:37 -0400
+Received: from electron.quantumfyre.co.uk ([87.106.55.16]:45734 "EHLO
+	electron.quantumfyre.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750975AbZFDRVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 13:19:17 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
-Date: Thu, 4 Jun 2009 12:13:57 -0500
-User-Agent: KMail/1.9.9
-Cc: Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Harald Welte <HaraldWelte@viatech.com>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906041121.30845.lkml@morethan.org> <alpine.LFD.2.01.0906040948480.4880@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0906040948480.4880@localhost.localdomain>
+	Thu, 4 Jun 2009 13:21:37 -0400
+X-Greylist: delayed 1840 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Jun 2009 13:21:36 EDT
+Date: Thu, 4 Jun 2009 17:48:29 +0100 (BST)
+From: Julian Phillips <julian@quantumfyre.co.uk>
+X-X-Sender: jp3@reaper.quantumfyre.co.uk
+To: linux-kernel@vger.kernel.org
+Subject: A question about using a private anonymous mmap
+Message-ID: <alpine.LNX.2.00.0906041740110.21303@reaper.quantumfyre.co.uk>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906041214.00643.lkml@morethan.org>
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu June 4 2009, Linus Torvalds wrote:
-> 
-> That said, how all the internal CPU registers are set is all black magic. 
-> 
+I have a program which creates a reasonably large private anonymous map. 
+The program then writes into a few places in the map, but ends up reading 
+from all of them.
 
-That is the situation as I find it -
+When I run this program on a system running 2.6.20.7 the process only ever 
+seems to use enough memory to hold the data that has actually been written 
+(well - in units of PAGE_SIZE).  When I run the program on a system 
+running 2.6.24.5 then as it reads the map the amount of memory used 
+continues to increase until the complete map has actually been allocated 
+(and since the total size is greater than the physically available RAM 
+causes swapping).  Basically I seem to be seeing copy-on-read instead of 
+copy-on-write type behaviour.
 
-I have been practicing Computer Black Magic (CBM) not Computer Science (CS)
-these past few months.  <<deleted>> comment on un-documented processors.
+Is this an expected change, and is there any option I can tweak to get the 
+old behaviour back?
 
-Mike
-> 			Linus
-> 
-> 
+TIA,
 
+-- 
+Julian
 
+  ---
+I can't die until the government finds a safe place to bury my liver.
+ 		-- Phil Harris
