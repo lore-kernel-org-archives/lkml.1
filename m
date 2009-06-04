@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757920AbZFDJPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbZFDJP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757920AbZFDJPr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 05:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757656AbZFDJP3
+	id S1757928AbZFDJP6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 05:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758011AbZFDJPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 05:15:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57817 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757769AbZFDJP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 05:15:27 -0400
-Message-ID: <4A278C62.8000801@redhat.com>
-Date: Thu, 04 Jun 2009 16:57:06 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	Thu, 4 Jun 2009 05:15:48 -0400
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:37221 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757923AbZFDJPr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 05:15:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=hxBBYLC4C3KnBstaFhIArMwk9jGXgptECplrrV9arbH7behpvZjbRuvH4OxdNgDY3mILGzHPuggrkFozy9JqDDAOGmietrK++YPE7J3qmQTegDsaPyECuoJgCWxDqZAsTqJD3C1lBuVpzyIAcHdsqky4xZ9ZE2bIjNYPfySflzw=  ;
+X-YMail-OSG: w..LJBcVM1kDaIa4knFmP.CT3FysWZVUxYIP.PdWLeyxb9txIDh4BldhC4_JrwiEvD21H0NuDwMdPH6Gf3woQBVS1WMhSlUbpwr4mpkLDNJF3SDjoUcy7Jse.a3vOl.8inFW9K8mghmc_cVWPrsFHXdIyq9crr8x3OCEQWbLH3CjZBntgsCKa1eoFklucHBCA2Oo14Sm7YvbnT0X0AdR8hYvBOMYS9FDwa5mBMayF7R3Di.XZ.2tnaxgHPP6YY4tTdymva1204lqp3SSQlM7nKthZwE0TlOhdkC5xZdmKjJ2EHgVTkk-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Subject: Re: [PATCH] gpio sysfs: add a "toggle" value
+Date: Thu, 4 Jun 2009 02:15:48 -0700
+User-Agent: KMail/1.9.10
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <1244017019-28163-1-git-send-email-vapier@gentoo.org> <200906040206.44144.david-b@pacbell.net> <8bd0f97a0906040209r269fe700hffd0cdcba264ca0b@mail.gmail.com>
+In-Reply-To: <8bd0f97a0906040209r269fe700hffd0cdcba264ca0b@mail.gmail.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: linux-kernel@vger.kernel.org, jdike@addtoit.com, hch@infradead.org,
-       mingo@elte.hu, akpm@linux-foundation.org
-Subject: Re: [Patch 4/5] module: trim exception table in module_free()
-References: <20090604014813.6332.18486.sendpatchset@localhost.localdomain> <20090604014849.6332.35945.sendpatchset@localhost.localdomain> <200906041800.54696.rusty@rustcorp.com.au>
-In-Reply-To: <200906041800.54696.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200906040215.48264.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Thu, 4 Jun 2009 11:16:37 am Amerigo Wang wrote:
->   
->> Just as the comment said, trim the exception table entries when
->> module_free() mod->module_init.
->>
->> Currently, this is only done for x86. Other platforms should
->> also fix it like this (except sparc32).
->>     
->
-> I've taken this one to make it more generic.  I'll leave the x86 maintainers 
-> to apply the rest.
->   
+On Thursday 04 June 2009, Mike Frysinger wrote:
+> the point was to lower the number of user<->kernel transitions.  yes,
+> all of this stuff can of course be done in the shell, but it's hard to
+> push limits when the interface is tying your hands and sitting on your
+> back.
 
-Thank you. But this one depends on the previous, I don't think you can 
-apply this without
-the previous ones.
+So what's the application that needs to do all this in
+userspace yet which can't hook up a quick kernel driver?
 
-It's better to let Ingo take all of these, of coures, if he thinks they 
-are fine. :)
+I don't like the idea of embedding any kind of interpreter
+in the sysfs interface, but that's the direction you seem
+to be heading ...
+
+
 
 
