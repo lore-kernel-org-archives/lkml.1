@@ -1,76 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbZFDWA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbZFDWAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754285AbZFDWA2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 18:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbZFDWAT
+	id S1754442AbZFDWAq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 18:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752824AbZFDWAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 18:00:19 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:60814 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751447AbZFDWAS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 18:00:18 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Dave Jones <davej@redhat.com>
-Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
-Date: Thu, 4 Jun 2009 17:00:15 -0500
-User-Agent: KMail/1.9.9
-Cc: Harald Welte <HaraldWelte@viatech.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906041638.15480.lkml@morethan.org> <20090604214301.GB20822@redhat.com>
-In-Reply-To: <20090604214301.GB20822@redhat.com>
+	Thu, 4 Jun 2009 18:00:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50745 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751630AbZFDWAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 18:00:36 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [RFC PATCH] crypto: add buffer overflow checks to testmgr
+Date: Thu, 4 Jun 2009 17:59:36 -0400
+User-Agent: KMail/1.11.3 (Linux/2.6.29.3-140.fc11.x86_64; KDE/4.2.3; x86_64; ; )
+Cc: linux-crypto@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Neil Horman <nhorman@tuxdriver.com>
+References: <200905291132.55848.jarod@redhat.com> <20090529221055.GA17957@gondor.apana.org.au>
+In-Reply-To: <20090529221055.GA17957@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200906041700.17852.lkml@morethan.org>
+Message-Id: <200906041759.37762.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu June 4 2009, Dave Jones wrote:
-> On Thu, Jun 04, 2009 at 04:38:13PM -0500, Michael S. Zick wrote:
->  > I have already preceded that chunk of code with a printk and confirmed
->  > that x86_clflush_size is properly set to 64 bytes (somewhere else).
->  > 
->  > So your suggestion is the obvious one for the C7-M,
->  > I don't know about any other makes/models. 
->  > 
->  > This machine's C7-M is being reported as a "stepping 0" ??
->  > What is earlier than a stepping 0 ??
+On Friday 29 May 2009 18:10:55 Herbert Xu wrote:
+> On Fri, May 29, 2009 at 11:32:54AM -0400, Jarod Wilson wrote:
+> > At present, its entirely possible to add a test vector to testmgr with
+> > an input longer than a page in length w/o specifying a .np option, and
+> > overflow the page of memory allocated to {a,}xbuf[0], silently
+> > corrupting memory. I know, because I've accidentally done it. :)
+> > 
+> > While this doesn't currently happen in practice w/the existing code,
+> > due to all !np vectors being less than a 4k page in length (and the
+> > page allocation loop often returns contiguous pages anyway), explicit
+> > checks or a way to remove the 4k limit would be a good idea.
+> > 
+> > A few ways to fix and/or work around this:
+> > 
+> > 1) allocate some larger guaranteed contiguous buffers using
+> > __get_free_pages() or kmalloc and use them in the !np case
+> > 
+> > 2) catch the > PAGE_SIZE && !np case and then do things similar to how
+> > they are done in the np case
+> > 
+> > 3) catch the > PAGE_SIZE && !np case and simply exit with an error
+> > 
+> > Since there currently aren't any test vectors that are actually larger
+> > than a page and not tagged np, option 1 seems like a waste of memory
+> > and option 2 sounds like unnecessary complexity, so I'd offer up
+> > option 3 as the most viable alternative right now.
+> > 
+> > Signed-off-by: Jarod Wilson <jarod@redhat.com>
 > 
-> Earlier model numbers.
-> (Stepping gets reset to 0 every time they bump the model)
-> 
+> I just posted exactly the same thing yesterday :)
 
-So 6.model=13.stepping=0 should do it for the (or this) C7-M, correct?
-Your mention of "earlier models" will not apply until there is a
-stepping >0 for a model=13, correct?
+One note... This is actually causing some new compile warnings to be
+spit out, varies from arch to arch, dependent on page size... ppc64
+with 64k pages is the worst offender:
 
-Would a good practice be to put a "WARN_ON" in there in case a stepping
-greater than =0 happens to execute the code?
-In addition to checking specificly for 6.13.0 (rather than just 6.13).
-
-Hmmm...
-But that is making a big mess of a small mess -
-Why not just do the assignment you suggest for 6.model>=13?
-
-Models earlier than 13 are evidently working (due to lack of
-bug reports or other noise on this list).
-
-Mike
-> 	Dave
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+crypto/testmgr.c: In function 'test_nhash':
+crypto/testmgr.c:194: warning: comparison is always false due to limited range of data type
+crypto/testmgr.c: In function 'test_aead':
+crypto/testmgr.c:374: warning: comparison is always false due to limited range of data type
+crypto/testmgr.c:375: warning: comparison is always false due to limited range of data type
+crypto/testmgr.c: In function 'test_cipher':
+crypto/testmgr.c:676: warning: comparison is always false due to limited range of data type
+crypto/testmgr.c: In function 'test_skcipher':
+crypto/testmgr.c:771: warning: comparison is always false due to limited range of data type
 
 
+
+-- 
+Jarod Wilson
+jarod@redhat.com
