@@ -1,95 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbZFDKZD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbZFDKZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbZFDKZD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 06:25:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZFDKYz
+	id S1756048AbZFDKZb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 06:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbZFDKZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 06:24:55 -0400
-Received: from rere.qmqm.pl ([89.167.52.164]:48842 "EHLO rere.qmqm.pl"
+	Thu, 4 Jun 2009 06:25:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39205 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752081AbZFDKYy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 06:24:54 -0400
-Date: Thu, 4 Jun 2009 12:24:55 +0200
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: Pierre Ossman <pierre@ossman.eu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.29.4] Driver for CB710/720 memory card reader (MMC
-	part) - v5 fixed
-Message-ID: <20090604102455.GA32296@rere.qmqm.pl>
-References: <20081004215122.0626cd7b@mjolnir.drzeus.cx> <20081029141146.GA17741@rere.qmqm.pl> <20081114220658.38f0645c@mjolnir.drzeus.cx> <20090201185435.GA9165@rere.qmqm.pl> <20090221134603.6bc3c385@mjolnir.ossman.eu> <20090508151622.GA23006@rere.qmqm.pl> <20090522132755.144efcca@mjolnir.ossman.eu> <20090522175501.GA673@rere.qmqm.pl> <20090522183359.GA3567@rere.qmqm.pl> <20090527221342.3a1ba44d@mjolnir.ossman.eu>
+	id S1752346AbZFDKZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 06:25:18 -0400
+Message-ID: <4A27A10C.2050405@redhat.com>
+Date: Thu, 04 Jun 2009 13:25:16 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090527221342.3a1ba44d@mjolnir.ossman.eu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, davidel@xmailserver.org,
+       paulmck@linux.vnet.ibm.com
+Subject: Re: [KVM-RFC PATCH 0/2] irqfd: use POLLHUP notification for close()
+References: <20090602151135.29746.91320.stgit@dev.haskins.net> <20090602160434.GA6827@redhat.com> <4A254FD7.5090302@novell.com> <20090602162021.GB6827@redhat.com> <4A255484.6060401@novell.com> <20090602165949.GD6827@redhat.com> <4A256431.2080101@novell.com> <20090603063956.GA8134@redhat.com>
+In-Reply-To: <20090603063956.GA8134@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 27, 2009 at 10:13:42PM +0200, Pierre Ossman wrote:
-> On Fri, 22 May 2009 20:33:59 +0200
-> Micha³ Miros³aw <mirq-linux@rere.qmqm.pl> wrote:
-[cut: CB710 driver patch description]
-> Queued.
+Michael S. Tsirkin wrote:
+> On Tue, Jun 02, 2009 at 01:41:05PM -0400, Gregory Haskins wrote:
+>   
+>>> And having close not clean up the state unless you do an ioctl first is
+>>> very messy IMO - I don't think you'll find any such examples in kernel.
+>>>
+>>>   
+>>>       
+>> I agree, and that is why I am advocating this POLLHUP solution.  It was
+>> only this other way to begin with because the technology didn't exist
+>> until Davide showed me the light.
+>>
+>> Problem with your request is that I already looked into what is
+>> essentially a bi-directional reference problem (for a different reason)
+>> when I started the POLLHUP series.  Its messy to do this in a way that
+>> doesn't negatively impact the fast path (introducing locking, etc) or
+>> make my head explode making sure it doesn't race.  Afaict, we would need
+>> to solve this problem to do what you are proposing (patches welcome).
+>>
+>> If this hybrid decoupled-deassign + unified-close is indeed an important
+>> feature set, I suggest that we still consider this POLLHUP series for
+>> inclusion, and then someone can re-introduce DEASSIGN support in the
+>> future as a CAP bit extension.  That way we at least get the desirable
+>> close() properties that we both seem in favor of, and get this advanced
+>> use case when we need it (and can figure out the locking design).
+>>
+>>     
+>
+> FWIW, I took a look and yes, it is non-trivial.
+> I concur, we can always add the deassign ioctl later.
+>   
 
-One more fixup for the driver following.
+I agree that deassign is needed for reasons of symmetry, and that it can 
+be added later.
 
-Best Regards,
-Micha³ Miros³aw
+-- 
+error compiling committee.c: too many arguments to function
 
----here---
-
-cb710: Fix compilation warning in DEBUG case.
-
-Signed-off-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
-
-diff -urpN test1/drivers/misc/cb710/Kconfig test2/drivers/misc/cb710/Kconfig
---- test1/drivers/misc/cb710/Kconfig	2009-06-04 12:20:29.000000000 +0200
-+++ test2/drivers/misc/cb710/Kconfig	2009-06-04 10:53:34.000000000 +0200
-@@ -19,3 +19,8 @@ config CB710_DEBUG
- 	  This is an option for use by developers; most people should
- 	  say N here.  This adds a lot of debugging output to dmesg.
- 
-+config CB710_DEBUG_ASSUMPTIONS
-+	bool
-+	depends on CB710_CORE != n
-+	default y
-+
-diff -urpN test1/drivers/misc/cb710/Makefile test2/drivers/misc/cb710/Makefile
---- test1/drivers/misc/cb710/Makefile	2009-06-04 12:20:29.000000000 +0200
-+++ test2/drivers/misc/cb710/Makefile	2009-06-04 10:53:34.000000000 +0200
-@@ -2,3 +2,5 @@ obj-$(CONFIG_CB710_CORE)	+= cb710.o
- 
- cb710-y				:= core.o sgbuf2.o
- cb710-$(CONFIG_CB710_DEBUG)	+= debug.o
-+
-+ccflags-$(CONFIG_CB710_DEBUG)	+= -DDEBUG
-diff -urpN test1/drivers/mmc/host/Makefile test2/drivers/mmc/host/Makefile
---- test1/drivers/mmc/host/Makefile	2009-06-04 12:20:29.000000000 +0200
-+++ test2/drivers/mmc/host/Makefile	2009-06-04 10:53:34.000000000 +0200
-@@ -29,3 +29,7 @@ obj-$(CONFIG_MMC_SDRICOH_CS)	+= sdricoh_
- obj-$(CONFIG_MMC_TMIO)		+= tmio_mmc.o
- obj-$(CONFIG_MMC_CB710)	+= cb710-mmc.o
- 
-+ifeq ($(CONFIG_CB710_DEBUG),y)
-+CFLAGS-cb710-mmc		+= -DDEBUG
-+endif
-+
-diff -urpN test1/include/linux/cb710.h test2/include/linux/cb710.h
---- test1/include/linux/cb710.h	2009-06-04 12:20:29.000000000 +0200
-+++ test2/include/linux/cb710.h	2009-06-04 10:53:34.000000000 +0200
-@@ -10,13 +10,6 @@
- #ifndef LINUX_CB710_DRIVER_H
- #define LINUX_CB710_DRIVER_H
- 
--#ifdef CONFIG_CB710_DEBUG
--#define DEBUG
--#endif
--
--/* verify assumptions on platform_device framework */
--#define CONFIG_CB710_DEBUG_ASSUMPTIONS
--
- #include <linux/io.h>
- #include <linux/interrupt.h>
- #include <linux/spinlock.h>
