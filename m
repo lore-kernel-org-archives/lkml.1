@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbZFDHok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbZFDHow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757189AbZFDHok (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 03:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZFDHob
+	id S1755915AbZFDHow (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 03:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756501AbZFDHof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 03:44:31 -0400
-Received: from sh.osrg.net ([192.16.179.4]:33325 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751153AbZFDHoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 03:44:30 -0400
-Date: Thu, 4 Jun 2009 16:44:24 +0900
-To: bharrosh@panasas.com
-Cc: fujita.tomonori@lab.ntt.co.jp, just.for.lkml@googlemail.com,
-       hancockrwd@gmail.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: sata_sil24 0000:04:00.0: DMA-API: device driver frees DMA sg
- list 	with different entry count [map count=13] [unmap count=10]
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4A277482.5070909@panasas.com>
-References: <64bb37e0906032312i5f6906dehc0f8dd4e748254a2@mail.gmail.com>
-	<20090604153253B.fujita.tomonori@lab.ntt.co.jp>
-	<4A277482.5070909@panasas.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090604164418F.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 04 Jun 2009 16:44:25 +0900 (JST)
+	Thu, 4 Jun 2009 03:44:35 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:45301 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754620AbZFDHod (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 03:44:33 -0400
+Date: Thu, 4 Jun 2009 09:44:09 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] console: make blank timeout value a boot option
+Message-ID: <20090604074407.GX26148@buzzloop.caiaq.de>
+References: <1243953993-18608-1-git-send-email-daniel@caiaq.de> <20090604002325.5b1284de.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090604002325.5b1284de.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Jun 2009 10:15:14 +0300
-Boaz Harrosh <bharrosh@panasas.com> wrote:
-
-> On 06/04/2009 09:33 AM, FUJITA Tomonori wrote:
-> > On Thu, 4 Jun 2009 08:12:34 +0200
-> > Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
-> > 
-> >> On Thu, Jun 4, 2009 at 2:02 AM, FUJITA Tomonori
-> >> <fujita.tomonori@lab.ntt.co.jp> wrote:
-> >>> On Wed, 3 Jun 2009 21:30:32 +0200
-> >>> Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
-> >>>> Still happens with 2.6.30-rc8 (see trace at the end of the email)
-> >>>>
-> >>>> As orig_n_elem is only used two times in libata-core.c I suspected a
-> >>>> corruption of the qc->sg, but adding checks for this did not trigger.
-> >>>> So I looked into lib/dma-debug.c.
-> >>>> It seems add_dma_entry() does not protect against adding the same
-> >>>> entry twice.
-> >>> Do you mean that add_dma_entry() doesn't protect against adding a new
-> >>> entry identical to the existing entry, right?
-> >> Yes, as I read the hash bucket code in lib/dma-debug.c a second entry
-> >> from the same device and the same address will just be added to the
-> >> list and on unmap it will always return the first entry.
-> > 
-> > It means that two different DMA operations will be performed against
-> > the same dma addresss on the same device at the same time. It doesn't
-> > happen unless there is a bug in a driver, an IOMMU or somewhere, as I
-> > wrote in the previous mail.
-> > 
+On Thu, Jun 04, 2009 at 12:23:25AM -0700, Andrew Morton wrote:
+> > --- a/Documentation/kernel-parameters.txt
+> > +++ b/Documentation/kernel-parameters.txt
+> > @@ -545,6 +545,10 @@ and is between 256 and 4096 characters. It is defined in the file
+> >  			console=brl,ttyS0
+> >  		For now, only VisioBraille is supported.
+> >  
+> > +	consoleblank=	[KNL] The console blank (screen saver) timeout in
+> > +			seconds. Defaults to 10*60 = 10mins. A value of 0
+> > +			disables the blank timer.
+> > +
 > 
-> What about the draining buffers used by libata. Are they not the same buffer
-> for all devices for all requests?
+> It would be better to make this alterable at runtime, rather than at
+> boot time.  Perhaps another VT ioctl.
 
-I'm not sure if the drain buffer is used like that. But is there
-easier ways to see the same buffer; e.g. sending the same buffer twice
-with DIO?
+That's already possible - there is an ioctl for that. It's just not
+configurable at boot time, and that occured to be very annoying when
+developing systems that won't fully boot up for >10mins. You have no way
+to wake up the console then.
 
-As I wrote, I assume that he uses GART IOMMU; it allocates an unique
-dma address per dma mapping operation.
+Is there any concern why that shouldn't be a kernel option?
 
-However, dma-debug is broken wrt this, I guess.
+Daniel
+
