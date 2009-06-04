@@ -1,89 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756485AbZFDPph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbZFDPps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756485AbZFDPph (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 11:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbZFDPpO
+	id S1757233AbZFDPps (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 11:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbZFDPpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 11:45:14 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:44632 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755916AbZFDPpM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 11:45:12 -0400
-Date: Thu, 4 Jun 2009 21:15:00 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: David Daney <ddaney@caviumnetworks.com>, Ingo Molnar <mingo@elte.hu>,
+	Thu, 4 Jun 2009 11:45:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57960 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756123AbZFDPpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 11:45:13 -0400
+Subject: Re: [PATCH 1/6] headers_check fix: arm, hwcap.h
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 11/12] hw-breakpoints: ftrace plugin for kernel symbol
-	tracing using HW Breakpoint interfaces
-Message-ID: <20090604154500.GB5336@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <1243982616-18212-1-git-send-email-fweisbec@gmail.com> <1243982616-18212-12-git-send-email-fweisbec@gmail.com> <4A25B1C8.7030708@caviumnetworks.com> <20090603003811.GF6041@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090603003811.GF6041@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <20090604125306.GC24491@flint.arm.linux.org.uk>
+References: <1244118232.5172.26.camel@ht.satnam>
+	 <1244118476.5172.29.camel@ht.satnam>
+	 <20090604125306.GC24491@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Thu, 04 Jun 2009 21:15:43 +0530
+Message-Id: <1244130343.2470.6.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 02:38:12AM +0200, Frederic Weisbecker wrote:
-> On Tue, Jun 02, 2009 at 04:12:08PM -0700, David Daney wrote:
-> > Frederic Weisbecker wrote:
-> >> From: K.Prasad <prasad@linux.vnet.ibm.com>
+Hello Russell,
 
-> > I hate to sound like a broken record, but could some one explain to me  
-> > again why it is a good idea to design a new API that requires processor  
-> > specific #ifdefs to be sprinkled all around generic kernel code?
-> >
-> > Back in:
-> > http://lkml.org/lkml/2008/12/4/329
-> > and
-> > http://lkml.org/lkml/2009/5/21/189
-> >
-> > I raised doubts about this hw-breakpoint thing being generic and the  
-> > responses made think that the processor specific portions would be  
-> > isolated in the processor specific parts of the kernel.  I now see that  
-> > I was wrong.
-> >
-> > When we add sparc, MIPS, ppc...  Support it would be nice to not have to  
-> > add all our own #ifdefs to this, but instead have a generic interface  
-> > that will not need changes.
-> >
-> > David Daney
+On Thu, 2009-06-04 at 13:53 +0100, Russell King wrote:
+> On Thu, Jun 04, 2009 at 05:57:56PM +0530, Jaswinder Singh Rajput wrote:
+> > fix the following 'make headers_check' warning:
 > 
-> I was discussing about it with Prasad few hours ago :)
-> 
-> The fact is that archs support the hardware breakpoints in
-> very different ways each.
-> Some of them support read breakpoint, others not (x86).
-> Some support addresses range, others (x86).
-> 
-> But still it would be nice to gather the most common
-> breakpoints operations through a real generic wrapper
-> that relies on arch specific implmentation in
-> background.
-> 
-> Such as setting very simple x/w/r breakpoints...
-> 
-> Well Prasad and Alan Stern could tell more about it,
-> I wait for their answer.
-> 
-> Anyway it's a fairly new Api that can still evolve.
-> The basis are set but can still be improved and more high level
-> and generic things can still be implemented.
+> I think headers_check needs fixing - there's nothing wrong with the
+> code as it presently stands except the tools obviously can't properly
+> parse C preprocessor statements.
 > 
 
-I think this concern can be partially addressed, atleast as far as the
-breakpoint length is concerned. I've added my comments in the response
-to David Daney here: http://lkml.org/lkml/2009/6/4/303.
+You are right.
 
-Hope that the changes proposed there is acceptable to the community.
+But if we can keep things simpler why we make it complex ?
 
-Thanks,
-K.Prasad
+This is almost used in all header files :
+#ifdef __KERNEL__
+#ifndef __ASSEMBLY__
+
+Earlier it was also used like this :
+
+commit f884b1cf578e079f01682514ae1ae64c74586602
+Author: Catalin Marinas <catalin.marinas@arm.com>
+Date:   Thu Jul 12 16:10:22 2007 +0100
+
+    [ARM] 4473/2:  Take the HWCAP definitions out of the elf.h file
+    
+    The patch moves the HWCAP definitions and the extern elf_hwcap
+    declaration to the hwcap.h header file.
+    
+    Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+    Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+
+diff --git a/include/asm-arm/Kbuild b/include/asm-arm/Kbuild
+index c68e168..73237bd 100644
+--- a/include/asm-arm/Kbuild
++++ b/include/asm-arm/Kbuild
+@@ -1 +1,3 @@
+ include include/asm-generic/Kbuild.asm
++
++unifdef-y += hwcap.h
+diff --git a/include/asm-arm/elf.h b/include/asm-arm/elf.h
+index 3679a8a..d7a777f 100644
+--- a/include/asm-arm/elf.h
++++ b/include/asm-arm/elf.h
+@@ -7,6 +7,7 @@
+  */
+ #include <asm/ptrace.h>
+ #include <asm/user.h>
++#include <asm/hwcap.h>
+ 
+ typedef unsigned long elf_greg_t;
+ typedef unsigned long elf_freg_t[3];
+@@ -39,31 +40,9 @@ typedef struct user_fp elf_fpregset_t;
+ #endif
+ #define ELF_ARCH       EM_ARM
+ 
+-/*
+- * HWCAP flags - for elf_hwcap (in kernel) and AT_HWCAP
+- */
+-#define HWCAP_SWP      1
+-#define HWCAP_HALF     2
+-#define HWCAP_THUMB    4
+-#define HWCAP_26BIT    8       /* Play it safe */
+-#define HWCAP_FAST_MULT        16
+-#define HWCAP_FPA      32
+-#define HWCAP_VFP      64
+-#define HWCAP_EDSP     128
+-#define HWCAP_JAVA     256
+-#define HWCAP_IWMMXT   512
+-#define HWCAP_CRUNCH   1024
+-
+ #ifdef __KERNEL__
+ #ifndef __ASSEMBLY__
+ /*
+- * This yields a mask that user programs can use to figure out what
+- * instruction set this cpu supports.
+- */
+-#define ELF_HWCAP      (elf_hwcap)
+-extern unsigned int elf_hwcap;
+-
+-/*
+  * This yields a string that ld.so will use to load implementation
+  * specific libraries for optimization.  This is more specific in
+  * intent than poking at uname or /proc/cpuinfo.
+diff --git a/include/asm-arm/hwcap.h b/include/asm-arm/hwcap.h
+new file mode 100644
+index 0000000..01a1391
+--- /dev/null
++++ b/include/asm-arm/hwcap.h
+@@ -0,0 +1,28 @@
++#ifndef __ASMARM_HWCAP_H
++#define __ASMARM_HWCAP_H
++
++/*
++ * HWCAP flags - for elf_hwcap (in kernel) and AT_HWCAP
++ */
++#define HWCAP_SWP      1
++#define HWCAP_HALF     2
++#define HWCAP_THUMB    4
++#define HWCAP_26BIT    8       /* Play it safe */
++#define HWCAP_FAST_MULT        16
++#define HWCAP_FPA      32
++#define HWCAP_VFP      64
++#define HWCAP_EDSP     128
++#define HWCAP_JAVA     256
++#define HWCAP_IWMMXT   512
++#define HWCAP_CRUNCH   1024
++
++#if defined(__KERNEL__) && !defined(__ASSEMBLY__)
++/*
++ * This yields a mask that user programs can use to figure out what
++ * instruction set this cpu supports.
++ */
++#define ELF_HWCAP      (elf_hwcap)
++extern unsigned int elf_hwcap;
++#endif
++
++#endif
+
 
