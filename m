@@ -1,183 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZFDH5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbZFDH64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757472AbZFDH5a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 03:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbZFDH5V
+	id S1756946AbZFDH64 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 03:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbZFDH6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 03:57:21 -0400
-Received: from sh.osrg.net ([192.16.179.4]:41490 "EHLO sh.osrg.net"
+	Thu, 4 Jun 2009 03:58:46 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:63251 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754186AbZFDH5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 03:57:20 -0400
-Date: Thu, 4 Jun 2009 16:57:12 +0900
-To: arnd@arndb.de
-Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, lethal@linux-sh.org, chris@zankel.net
-Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <200906011111.28521.arnd@arndb.de>
-References: <200905282104.55818.arnd@arndb.de>
-	<20090601130319A.fujita.tomonori@lab.ntt.co.jp>
-	<200906011111.28521.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090604165703N.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 04 Jun 2009 16:57:14 +0900 (JST)
+	id S1754420AbZFDH6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 03:58:45 -0400
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+To: avictor.za@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk
+Cc: patrice.vilchez@atmel.com, linux-kernel@vger.kernel.org,
+       Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: [PATCH 2/3] at91: Support for at91sam9g45: clocks management
+Date: Thu,  4 Jun 2009 10:48:01 +0200
+Message-Id: <1244105282-31456-2-git-send-email-nicolas.ferre@atmel.com>
+X-Mailer: git-send-email 1.5.3.7
+In-Reply-To: <1244105282-31456-1-git-send-email-nicolas.ferre@atmel.com>
+References: <1244105282-31456-1-git-send-email-nicolas.ferre@atmel.com>
+Message-Id: <4a78a0b84331f1fb5ea111657992b3557f70a1b3.1244104625.git.nicolas.ferre@atmel.com>
+In-Reply-To: <0c80319114935c723d3bac8992e6b4d8fc464b0b.1244104624.git.nicolas.ferre@atmel.com>
+References: <0c80319114935c723d3bac8992e6b4d8fc464b0b.1244104624.git.nicolas.ferre@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 1 Jun 2009 11:11:27 +0100
-Arnd Bergmann <arnd@arndb.de> wrote:
+Add the at91sam9g45 series support to the AT91 generic clock file.
+This takes care of the particularities of the PMC for this series.
+It also takes advantage of the management by functionalities of
+those PLLs and clocks.
 
-> On Monday 01 June 2009, FUJITA Tomonori wrote:
-> > On Thu, 28 May 2009 21:04:55 +0100
-> > > I've added this version to
-> > > git://git.kernel.org/pub/scm/linux/kernel/git/arnd/asm-generic#next
-> > > 
-> > > I also have patches to convert the existing architectures to use
-> > > it, but I plan to submit those to the arch maintainers once asm-generic
-> > > series has been merged.
-> > 
-> > IMO, this need to be merged with some users. We don't want to merge
-> > something that nobody wants to use.
-> 
-> I've deliberately kept my asm-generic tree free from architecture specific
-> code for now, in order to make the merging process much easier.
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+ arch/arm/mach-at91/clock.c |   62 ++++++++++++++++++++++++++++++++++++-------
+ 1 files changed, 52 insertions(+), 10 deletions(-)
 
-I understand what you mean however we need to merge something
-useful. I don't say that you need to merge everything together however
-we can't know if this is useful or not unless you show how some
-architectures use it.
-
-
-> I do have branches in there that convert x86 and microblaze to use
-
-x86? How can it use asm-generic-linear.h?
-
-
-> all the files that they can share with the generic implementation
-> and the plan is to do more of those over time, but to avoid dealing
-> with all arch maintainers at the same time.
-> 
-> Would it be ok for you if I only do this on microblaze for now (which
-> does not have a dma-mapping.h yet) and leave the conversion of
-> more architectures for later?
-> Otherwise, I'd probably just skip dma-mapping.h in its entirety
-> because there is a different is a simpler alternative for new architectures
-> (setting CONFIG_NO_DMA).
-
-At least one architecture sounds fine to me.
-
-
-> > > +static inline dma_addr_t
-> > > +dma_map_single(struct device *dev, void *ptr, size_t size,
-> > > +	       enum dma_data_direction direction)
-> > > +{
-> > > +	dma_addr_t dma_addr = virt_to_bus(ptr);
-> > > +	BUG_ON(!valid_dma_direction(direction));
-> > > +
-> > > +	if (!dma_coherent_dev(dev))
-> > > +		dma_cache_sync(dev, ptr, size, direction);
-> > 
-> > Where can I find dma_coherent_dev?
-> > 
-> > I don't fancy this since this is architecture-specific stuff (not
-> > generic things).
-> 
-> I made this up in order to deal with the different requirements of
-> the architectures I converted. In SH, it's truly device specific
-> (pci may be coherent, others are never), on cris it returns false
-> and on most others always true.
-
-I know what you are trying here.
-
-However, dma_cache_sync() is an exported function to drivers; which
-should be used only with a buffer returned by dma_alloc_noncoherent()
-(see DMA-API.txt). So using dma_cache_sync() in this way is confusing
-to me.
-
-I might misunderstand dma_cache_sync (recently I learned what it
-should do).
-
-
-> Architectures like x86 and frv could use this hook to do th
-> global flush_write_buffers() but still return zero so that
-> dma_sync_sg_for_device does not have to iterate all SG
-> elements doing nothing for them.
-> 
-> Maybe it should be named __dma_coherent_dev() to make clear
-> that it is a helper internal to dma_mapping.h and not supposed to
-> be used by device drivers.
-
-Might be. However, we have dma_is_consistent() for a different purpose
-so it might be confusing anyway.
-
-
-> > > +static inline void
-> > > +dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, size_t size,
-> > > +			enum dma_data_direction direction)
-> > > +{
-> > > +	debug_dma_sync_single_for_cpu(dev, dma_handle, size, direction);
-> > > +}
-> > > +
-> > > +static inline void
-> > > +dma_sync_single_range_for_cpu(struct device *dev, dma_addr_t dma_handle,
-> > > +			      unsigned long offset, size_t size,
-> > > +			      enum dma_data_direction direction)
-> > > +{
-> > > +	debug_dma_sync_single_range_for_cpu(dev, dma_handle,
-> > > +					    offset, size, direction);
-> > > +}
-> > 
-> > This looks wrong. You put dma_coherent_dev hook in sync_*_for_device
-> > but why you don't need it sync_*_for_cpu. It's architecture
-> > specific. Some need both, some need either, and some need nothing.
-> 
-> It took me a while to find out what the architectures do in case of
-> dma_sync_single_for_*. The noncoherent implementations all flush
-> and invalidate the dcache in _for_device, which seems reasonable.
-> 
-> In arch/sh and arch/xtensa, we also flush and invalidate the
-> dcache in *_for_cpu.
-> This does not seem to make sense to me, because there should
-> not be any valid cache lines for that region at that time. My plan 
-> was to submit patches to sh and xtensa to no longer flush the
-> dcache in _for_cpu with that argument before submitting the patch
-> to use the common code. Maybe Paul or Chris can comment on
-> whether there is any reason for the dma flush here, if there is
-> one, we probably should also flush in dma_unmap_*.
-> 
-> AFAICT, the _for_cpu hooks are only required for swiotlb
-> or for an obscure HW implementation of an IOMMU.
-
-? Why we don't need to remove stale cache after DMA_FROM_DEVICE
-transfer?
-
-
-> > > +static inline int
-> > > +dma_supported(struct device *dev, u64 mask)
-> > > +{
-> > > +	/*
-> > > +	 * we fall back to GFP_DMA when the mask isn't all 1s,
-> > > +	 * so we can't guarantee allocations that must be
-> > > +	 * within a tighter range than GFP_DMA.
-> > > +	 */
-> > > +	if (mask < 0x00ffffff)
-> > > +		return 0;
-> > 
-> > I think that this is pretty architecture specific.
-> 
-> Yes, I wondered about this one. I suspect that the same code got
-> copied blindly from x86 into all the other architectures. The
-> same code exists in arm, cris, frv and mn10300, while avr32, sh
-> and xtensa seem to assume that nobody passes a smaller than
-> 24-bit mask in there and always return 1. They clearly could not
-> handle that situation either, so the version I chose is the
-> conservative approach.
-
-I think that it's better not have this in
-dma-mapping-linear.h. Everyone blindly copies it from x86 but they are
-not correct.
+diff --git a/arch/arm/mach-at91/clock.c b/arch/arm/mach-at91/clock.c
+index bac578f..6396680 100644
+--- a/arch/arm/mach-at91/clock.c
++++ b/arch/arm/mach-at91/clock.c
+@@ -47,20 +47,25 @@
+  * Chips have some kind of clocks : group them by functionality
+  */
+ #define cpu_has_utmi()		(  cpu_is_at91cap9() \
+-				|| cpu_is_at91sam9rl())
++				|| cpu_is_at91sam9rl() \
++				|| cpu_is_at91sam9g45())
+ 
+-#define cpu_has_800M_plla()	(cpu_is_at91sam9g20())
++#define cpu_has_800M_plla()	(  cpu_is_at91sam9g20() \
++				|| cpu_is_at91sam9g45())
+ 
+-#define cpu_has_pllb()		(!cpu_is_at91sam9rl())
++#define cpu_has_300M_plla()	(0)
+ 
+-#define cpu_has_upll()		(0)
++#define cpu_has_pllb()		(!(cpu_is_at91sam9rl() \
++				|| cpu_is_at91sam9g45()))
++
++#define cpu_has_upll()		(cpu_is_at91sam9g45())
+ 
+ /* USB host HS & FS */
+ #define cpu_has_uhp()		(!cpu_is_at91sam9rl())
+ 
+ /* USB device FS only */
+-#define cpu_has_udpfs()		(!cpu_is_at91sam9rl())
+-
++#define cpu_has_udpfs()		(!(cpu_is_at91sam9rl() \
++				|| cpu_is_at91sam9g45()))
+ 
+ static LIST_HEAD(clocks);
+ static DEFINE_SPINLOCK(clk_lock);
+@@ -133,6 +138,13 @@ static void pmc_uckr_mode(struct clk *clk, int is_on)
+ {
+ 	unsigned int uckr = at91_sys_read(AT91_CKGR_UCKR);
+ 
++	if (cpu_is_at91sam9g45()) {
++		if (is_on)
++			uckr |= AT91_PMC_BIASEN;
++		else
++			uckr &= ~AT91_PMC_BIASEN;
++	}
++
+ 	if (is_on) {
+ 		is_on = AT91_PMC_LOCKU;
+ 		at91_sys_write(AT91_CKGR_UCKR, uckr | clk->pmc_mask);
+@@ -310,6 +322,7 @@ long clk_round_rate(struct clk *clk, unsigned long rate)
+ 	unsigned long	flags;
+ 	unsigned	prescale;
+ 	unsigned long	actual;
++	unsigned long	prev = ULONG_MAX;
+ 
+ 	if (!clk_is_programmable(clk))
+ 		return -EINVAL;
+@@ -317,8 +330,16 @@ long clk_round_rate(struct clk *clk, unsigned long rate)
+ 
+ 	actual = clk->parent->rate_hz;
+ 	for (prescale = 0; prescale < 7; prescale++) {
+-		if (actual && actual <= rate)
++		if (actual > rate)
++			prev = actual;
++
++		if (actual && actual <= rate) {
++			if ((prev - rate) < (rate - actual)) {
++				actual = prev;
++				prescale--;
++			}
+ 			break;
++		}
+ 		actual >>= 1;
+ 	}
+ 
+@@ -373,6 +394,10 @@ int clk_set_parent(struct clk *clk, struct clk *parent)
+ 		return -EBUSY;
+ 	if (!clk_is_primary(parent) || !clk_is_programmable(clk))
+ 		return -EINVAL;
++
++	if (cpu_is_at91sam9rl() && parent->id == AT91_PMC_CSS_PLLB)
++		return -EINVAL;
++
+ 	spin_lock_irqsave(&clk_lock, flags);
+ 
+ 	clk->rate_hz = parent->rate_hz;
+@@ -637,6 +662,7 @@ int __init at91_clock_init(unsigned long main_clock)
+ {
+ 	unsigned tmp, freq, mckr;
+ 	int i;
++	int pll_overclock = false;
+ 
+ 	/*
+ 	 * When the bootloader initialized the main oscillator correctly,
+@@ -654,12 +680,25 @@ int __init at91_clock_init(unsigned long main_clock)
+ 
+ 	/* report if PLLA is more than mildly overclocked */
+ 	plla.rate_hz = at91_pll_rate(&plla, main_clock, at91_sys_read(AT91_CKGR_PLLAR));
+-	if ((!cpu_has_800M_plla() && plla.rate_hz > 209000000)
+-	   || (cpu_has_800M_plla() && plla.rate_hz > 800000000))
++	if (cpu_has_300M_plla()) {
++		if (plla.rate_hz > 300000000)
++			pll_overclock = true;
++	} else if (cpu_has_800M_plla()) {
++		if (plla.rate_hz > 800000000)
++			pll_overclock = true;
++	} else {
++		if (plla.rate_hz > 209000000)
++			pll_overclock = true;
++	}
++	if (pll_overclock)
+ 		pr_info("Clocks: PLLA overclocked, %ld MHz\n", plla.rate_hz / 1000000);
+ 
++	if (cpu_is_at91sam9g45()) {
++		mckr = at91_sys_read(AT91_PMC_MCKR);
++		plla.rate_hz /= (1 << ((mckr & AT91_PMC_PLLADIV2) >> 12));	/* plla divisor by 2 */
++	}
+ 
+-	if (cpu_has_upll() && !cpu_has_pllb()) {
++	if (!cpu_has_pllb() && cpu_has_upll()) {
+ 		/* setup UTMI clock as the fourth primary clock
+ 		 * (instead of pllb) */
+ 		utmi_clk.type |= CLK_TYPE_PRIMARY;
+@@ -701,6 +740,9 @@ int __init at91_clock_init(unsigned long main_clock)
+ 			freq / ((mckr & AT91_PMC_MDIV) >> 7) : freq;	/* mdiv ; (x >> 7) = ((x >> 8) * 2) */
+ 		if (mckr & AT91_PMC_PDIV)
+ 			freq /= 2;		/* processor clock division */
++	} else if (cpu_is_at91sam9g45()) {
++		mck.rate_hz = (mckr & AT91_PMC_MDIV) == AT91SAM9_PMC_MDIV_3 ?
++			freq / 3 : freq / (1 << ((mckr & AT91_PMC_MDIV) >> 8));	/* mdiv */
+ 	} else {
+ 		mck.rate_hz = freq / (1 << ((mckr & AT91_PMC_MDIV) >> 8));      /* mdiv */
+ 	}
+-- 
+1.5.3.7
 
