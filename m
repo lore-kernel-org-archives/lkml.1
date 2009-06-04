@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759940AbZFDQ2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760179AbZFDQ3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759940AbZFDQ2k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 12:28:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757644AbZFDQUP
+	id S1760179AbZFDQ3k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 12:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758975AbZFDQXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 12:20:15 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:40348 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757648AbZFDQUO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 12:20:14 -0400
-Message-Id: <20090604161902.814661884@de.ibm.com>
-References: <20090604161847.513682672@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 04 Jun 2009 18:19:01 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 14/38] cio: force console function
-Content-Disposition: inline; filename=pm_force_console.patch
+	Thu, 4 Jun 2009 12:23:46 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48425 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758850AbZFDQXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 12:23:45 -0400
+Date: Thu, 4 Jun 2009 09:00:23 -0700
+From: Greg KH <gregkh@suse.de>
+To: Yunpeng Gao <yunpeng.gao@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: linux-next: Tree for June 3 (staging)
+Message-ID: <20090604160023.GA20118@suse.de>
+References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au> <4A2695C1.2060104@oracle.com> <20090603152558.GA25725@suse.de> <4A269971.1050004@oracle.com> <20090603231152.GA18701@suse.de> <20090604232610.GA16053@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090604232610.GA16053@intel.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+On Fri, Jun 05, 2009 at 07:26:10AM +0800, Yunpeng Gao wrote:
+> Hi Greg,
+>    I have fixed these compiling bugs in file ffsport.c.
 
-If something goes wrong in a suspend / resume cycle a ccw based console
-if very likely in the suspended state and cannot print anything.
-Introduce ccw_device_force_console to force the wake up of the console
-device to be able to print the oops message. The console device drivers
-should use this function only if the system paniced.
+Great.
 
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
- arch/s390/include/asm/ccwdev.h |    1 +
- drivers/s390/cio/device.c      |    8 ++++++++
- 2 files changed, 9 insertions(+)
+>    But just found that my email client (Outlook) will replace
+>    TAB with blanks automatically. So, unfortunately, all the
+>    TABs in my first submission patch have been changed to
+>    blanks by the Outlook.
 
-Index: linux-2.5/drivers/s390/cio/device.c
-===================================================================
---- linux-2.5.orig/drivers/s390/cio/device.c
-+++ linux-2.5/drivers/s390/cio/device.c
-@@ -1785,6 +1785,15 @@ ccw_device_probe_console(void)
- 	return &console_cdev;
- }
- 
-+static int ccw_device_pm_restore(struct device *dev);
-+
-+int ccw_device_force_console(void)
-+{
-+	if (!console_cdev_in_use)
-+		return -ENODEV;
-+	return ccw_device_pm_restore(&console_cdev.dev);
-+}
-+EXPORT_SYMBOL_GPL(ccw_device_force_console);
- 
- const char *cio_get_console_cdev_name(struct subchannel *sch)
- {
-Index: linux-2.5/arch/s390/include/asm/ccwdev.h
-===================================================================
---- linux-2.5.orig/arch/s390/include/asm/ccwdev.h
-+++ linux-2.5/arch/s390/include/asm/ccwdev.h
-@@ -192,6 +192,7 @@ extern void ccw_device_get_id(struct ccw
- #define to_ccwdrv(n) container_of(n, struct ccw_driver, driver)
- 
- extern struct ccw_device *ccw_device_probe_console(void);
-+extern int ccw_device_force_console(void);
- 
- // FIXME: these have to go
- extern int _ccw_device_get_subchannel_number(struct ccw_device *);
+Heh.
 
--- 
-blue skies,
-   Martin.
+>    So I'd like to use the Mutt email client and re-submit
+>    the patch as below (the bug-fix of ffsport.c has been included).
+>    Does it make sense?
 
-"Reality continues to ruin my life." - Calvin.
+Sure, I can replace the existing patch with this one if you want me to.
+I'll go queue it up.
 
+thanks,
+
+greg k-h
