@@ -1,88 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755050AbZFDEcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbZFDEfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755050AbZFDEcY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 00:32:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbZFDEcQ
+	id S1752562AbZFDEfk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 00:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750858AbZFDEfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 00:32:16 -0400
-Received: from mga14.intel.com ([143.182.124.37]:21119 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750858AbZFDEcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 00:32:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,302,1241420400"; 
-   d="scan'208";a="150464328"
-Date: Thu, 4 Jun 2009 12:32:08 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "npiggin@suse.de" <npiggin@suse.de>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [12/16] Refactor truncate to allow direct truncating
-	of page
-Message-ID: <20090604043208.GB15682@localhost>
-References: <20090603846.816684333@firstfloor.org> <20090603184646.B915B1D0292@basil.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090603184646.B915B1D0292@basil.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 4 Jun 2009 00:35:33 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:39082 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbZFDEfd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 00:35:33 -0400
+Date: Thu, 4 Jun 2009 13:31:38 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH mmotm 2/2] memcg: allow mem.limit bigger than
+ memsw.limit iff unlimited
+Message-Id: <20090604133138.d8286db9.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090603174641.445e3012.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090603114518.301cef4d.nishimura@mxp.nes.nec.co.jp>
+	<20090603115027.80f9169b.nishimura@mxp.nes.nec.co.jp>
+	<20090603125228.368ecaf7.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090603140102.72b04b6f.nishimura@mxp.nes.nec.co.jp>
+	<20090603174641.445e3012.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 02:46:46AM +0800, Andi Kleen wrote:
+On Wed, 3 Jun 2009 17:46:41 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Wed, 3 Jun 2009 14:01:02 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 > 
-> From: Nick Piggin <npiggin@suse.de>
+> > On Wed, 3 Jun 2009 12:52:28 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > On Wed, 3 Jun 2009 11:50:27 +0900
+> > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > 
+> > > > Now users cannot set mem.limit bigger than memsw.limit.
+> > > > This patch allows mem.limit bigger than memsw.limit iff mem.limit==unlimited.
+> > > > 
+> > > > By this, users can set memsw.limit without setting mem.limit.
+> > > > I think it's usefull if users want to limit memsw only.
+> > > > They must set mem.limit first and memsw.limit to the same value now for this purpose.
+> > > > They can save the first step by this patch.
+> > > > 
+> > > 
+> > > I don't like this. No benefits to users.
+> > > The user should know when they set memsw.limit they have to set memory.limit.
+> > > This just complicates things.
+> > > 
+> > Hmm, I think there is a user who cares only limitting logical memory(mem+swap),
+> > not physical memory, and wants kswapd to reclaim physical memory when congested. 
+> > At least, I'm a such user.
+> > 
+> > Do you disagree even if I add a file like "memory.allow_limit_memsw_only" ?
+> > 
 > 
-> Extract out truncate_inode_page() out of the truncate path so that
-> it can be used by memory-failure.c
+> How about removing memory.limit < memsw.limit condition completely ?
 > 
-> [AK: description, headers, fix typos]
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> ---
->  include/linux/mm.h |    2 ++
->  mm/truncate.c      |   24 ++++++++++++------------
->  2 files changed, 14 insertions(+), 12 deletions(-)
-> 
-> Index: linux/mm/truncate.c
-> ===================================================================
-> --- linux.orig/mm/truncate.c	2009-06-03 19:37:38.000000000 +0200
-> +++ linux/mm/truncate.c	2009-06-03 20:13:43.000000000 +0200
-> @@ -135,6 +135,16 @@
->  	return ret;
->  }
->  
-> +void truncate_inode_page(struct address_space *mapping, struct page *page)
-> +{
-> +	if (page_mapped(page)) {
-> +		unmap_mapping_range(mapping,
-> +		  (loff_t)page->index<<PAGE_CACHE_SHIFT,
-> +		  PAGE_CACHE_SIZE, 0);
-> +	}
-> +	truncate_complete_page(mapping, page);
-> +}
-> +
+It might be good idea.
+IMHO, there is no critical reason it must be checked by kernel, but I'm not sure.
 
-Small style cleanup:
+All I wanted to do was "let users who cares only about memsw.limit
+ignore mem.limit completely". That's why, I treated only the "unlimited"(not set
+mem.limit) case as special.
+But, as you say, there is no reason it must be implemented in kernel.
+(We can use a middle-ware or something.)
 
----
- mm/truncate.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I'll drop this and consider more.
 
---- sound-2.6.orig/mm/truncate.c
-+++ sound-2.6/mm/truncate.c
-@@ -139,8 +139,8 @@ void truncate_inode_page(struct address_
- {
- 	if (page_mapped(page)) {
- 		unmap_mapping_range(mapping,
--		  (loff_t)page->index<<PAGE_CACHE_SHIFT,
--		  PAGE_CACHE_SIZE, 0);
-+				    (loff_t)page->index << PAGE_CACHE_SHIFT,
-+				    PAGE_CACHE_SIZE, 0);
- 	}
- 	truncate_complete_page(mapping, page);
- }
+
+Thanks,
+Daisuke Nishimura.
