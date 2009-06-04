@@ -1,159 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756008AbZFDOjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZFDOkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756008AbZFDOjV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 10:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbZFDOjI
+	id S1757472AbZFDOkL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 10:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbZFDOkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 10:39:08 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:51168 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754199AbZFDOjG convert rfc822-to-8bit (ORCPT
+	Thu, 4 Jun 2009 10:40:00 -0400
+Received: from windsormachine.com ([216.8.138.2]:38479 "EHLO
+	router.windsormachine.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbZFDOj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 10:39:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=CQGQ3/5X0pL7gCLmRrcvXaSYIW4h2ikAdb9XQuVnCZCYegzz5es5HnwlDD0J2PtTkQ
-         493Q8zu25s+WRnWxe6c1xrlTnVY5vsTKjbh2WQ9hca6bNaa6dT+iEzaZ19lo3K+rrX+K
-         ojjh5I68Y/wUk7kIJxdiHA1jtLfo1hY9gCWh4=
-From: Florian Fainelli <florian@openwrt.org>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: Re: [PATCH 1/8] add lib/gcd.c
-Date: Thu, 4 Jun 2009 16:39:03 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux-MIPS <linux-mips@linux-mips.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Takashi Iwai <tiwai@suse.de>, Ralf Baechle <ralf@linux-mips.org>
-References: <200906041615.10467.florian@openwrt.org> <4A27DAAD.5000303@ru.mvista.com>
-In-Reply-To: <4A27DAAD.5000303@ru.mvista.com>
+	Thu, 4 Jun 2009 10:39:59 -0400
+Date: Thu, 4 Jun 2009 10:40:01 -0400 (EDT)
+From: Mike Dresser <mdresser_l@windsormachine.com>
+To: Christoph Hellwig <hch@infradead.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alex Samad <alex@samad.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Chinner <david@fromorbit.com>
+Subject: Re: [Bug #13375] Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
+In-Reply-To: <20090604143406.GA19536@infradead.org>
+Message-ID: <alpine.DEB.1.10.0906041038500.15712@router.windsormachine.com>
+References: <THxQaUP0K2D.A.QkF.UVbIKB@chimera> <PkPeJtNB3KO.A._pF.ZVbIKB@chimera> <20090530231018.GA29992@samad.com.au> <200906012221.38854.rjw@sisk.pl> <4A27DA01.8060105@windsormachine.com> <20090604143406.GA19536@infradead.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200906041639.04868.florian@openwrt.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-scanner: Scanned by Xamime-LT 0.1.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sergei,
+On Thu, 4 Jun 2009, Christoph Hellwig wrote:
 
-Le Thursday 04 June 2009 16:31:09 Sergei Shtylyov, vous avez écrit :
-> Hello.
->
-> Florian Fainelli wrote:
-> > This patch adds lib/gcd.c which contains a greatest
-> > common divider implementation taken from
-> > sound/core/pcm_timer.c
-> >
-> > Signed-off-by: Florian Fainelli <florian@openwrt.org>
->
-> [...]
->
-> > diff --git a/lib/gcd.c b/lib/gcd.c
-> > new file mode 100644
-> > index 0000000..fbf81a8
-> > --- /dev/null
-> > +++ b/lib/gcd.c
-> > @@ -0,0 +1,20 @@
-> > +#include <linux/gcd.h>
-> > +#include <linux/module.h>
-> > +
-> > +/* Greatest common divisor */
-> > +unsigned long gcd(unsigned long a, unsigned long b)
-> > +{
-> > +	unsigned long r;
-> > +
-> > +	if (a < b) {
-> > +		r = a;
-> > +		a = b;
-> > +	b = r;
->
->     Fix indentation please.
+> Can you please also run with CONFIG_XFS_DEBUG enabled so that all
+> kinds of asserts might trigger?
 
-Fixed in the following version. Also putting David in copy since it
-he was not in copy of the first patch and could not know why there
-is a following patch on net/netfilter/ipvs/ip_vs_wrr.c to use lib/gcd.c
---
-From: Florian Fainelli <florian@openwrt.org>
+The help for that option says the "code will be HUGE and SLOW"
 
-This patch adds lib/gcd.c which contains a greatest
-common divider implementation taken from
-sound/core/pcm_timer.c
+How much of a slowdown are we likely talking about?
 
-Changes from v1:
-- fixed indentation
-- use EXPORT_SYMBOL_GPL instead of EXPORT_SYMBOL as
-suggested by Ralf Baechle
+Mike
 
-Signed-off-by: Florian Fainelli <florian@openwrt.org>
---
-diff --git a/include/linux/gcd.h b/include/linux/gcd.h
-new file mode 100644
-index 0000000..69f5e8a
---- /dev/null
-+++ b/include/linux/gcd.h
-@@ -0,0 +1,8 @@
-+#ifndef _GCD_H
-+#define _GCD_H
-+
-+#include <linux/compiler.h>
-+
-+unsigned long gcd(unsigned long a, unsigned long b) __attribute_const__;
-+
-+#endif /* _GCD_H */
-diff --git a/lib/Kconfig b/lib/Kconfig
-index 8ade0a7..70a9906 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -10,6 +10,9 @@ menu "Library routines"
- config BITREVERSE
- 	tristate
- 
-+config GCD
-+	bool
-+
- config GENERIC_FIND_FIRST_BIT
- 	bool
- 
-diff --git a/lib/Makefile b/lib/Makefile
-index 33a40e4..389bdd2 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -57,6 +57,7 @@ obj-$(CONFIG_CRC_ITU_T)	+= crc-itu-t.o
- obj-$(CONFIG_CRC32)	+= crc32.o
- obj-$(CONFIG_CRC7)	+= crc7.o
- obj-$(CONFIG_LIBCRC32C)	+= libcrc32c.o
-+obj-$(CONFIG_GCD)	+= gcd.o
- obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
- 
- obj-$(CONFIG_ZLIB_INFLATE) += zlib_inflate/
-diff --git a/lib/gcd.c b/lib/gcd.c
-new file mode 100644
-index 0000000..6634741
---- /dev/null
-+++ b/lib/gcd.c
-@@ -0,0 +1,20 @@
-+#include <linux/gcd.h>
-+#include <linux/module.h>
-+
-+/* Greatest common divisor */
-+unsigned long gcd(unsigned long a, unsigned long b)
-+{
-+	unsigned long r;
-+
-+	if (a < b) {
-+		r = a;
-+		a = b;
-+		b = r;
-+	}
-+	while ((r = a % b) != 0) {
-+		a = b;
-+		b = r;
-+	}
-+	return b;
-+}
-+EXPORT_SYMBOL_GPL(gcd);
+
