@@ -1,190 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbZFDFiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756481AbZFDFic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755717AbZFDFiW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 01:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZFDFiI
+	id S1756481AbZFDFic (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 01:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbZFDFiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 01:38:08 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58365 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbZFDFiH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 01:38:07 -0400
-Message-ID: <4A275DDC.6020507@cn.fujitsu.com>
-Date: Thu, 04 Jun 2009 13:38:36 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Zhaolei <zhaolei@cn.fujitsu.com>, mingo@elte.hu,
-       LKML <linux-kernel@vger.kernel.org>, kosaki.motohiro@jp.fujitsu.com,
-       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
-Subject: Re: [PATCH 1/3] ftrace: add tracepoint for timer
-References: <4A167615.7050208@cn.fujitsu.com> <alpine.LFD.2.00.0905262334030.1762@localhost.localdomain> <4A1CED66.7030805@cn.fujitsu.com> <alpine.LFD.2.00.0905271202260.3397@localhost.localdomain> <4A1F41C5.7000803@cn.fujitsu.com> <alpine.LFD.2.00.0905290935030.3397@localhost.localdomain> <4A25E575.5000601@cn.fujitsu.com> <alpine.LFD.2.00.0906031756590.3419@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0906031756590.3419@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 4 Jun 2009 01:38:16 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:56113 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755505AbZFDFiO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 01:38:14 -0400
+Date: Thu, 4 Jun 2009 14:33:18 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] remove memory.limit v.s. memsw.limit comparison.
+Message-Id: <20090604143318.a86eafb1.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090604141043.9a1064fd.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090604141043.9a1064fd.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 4 Jun 2009 14:10:43 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Removes memory.limit < memsw.limit at setting limit check completely.
+> 
+> The limitation "memory.limit <= memsw.limit" was added just because
+> it seems sane ...if memory.limit > memsw.limit, only memsw.limit works.
+> 
+> But To implement this limitation, we needed to use private mutex and make
+> the code a bit complated.
+> As Nishimura pointed out, in real world, there are people who only want
+> to use memsw.limit.
+> 
+> Then, this patch removes the check. user-land library or middleware can check
+> this in userland easily if this really concerns.
+> 
+> And this is a good change to charge-and-reclaim.
+> 
+> Now, memory.limit is always checked before memsw.limit
+> and it may do swap-out. But, if memory.limit == memsw.limit, swap-out is
+> finally no help and hits memsw.limit again. So, let's allow the condition
+> memory.limit > memsw.limit. Then we can skip unnecesary swap-out.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
+I welcome this change very much :)
 
-Thomas Gleixner wrote:
-
-> No, this is _wrong_. You need to look at the full source. I added some
-> extra comments
-> 
-> 	new_base = __get_cpu_var(tvec_bases);
-> 
-> 	if (base != new_base) {
-> 
-> + 	   	 /* current timer base is on a different CPU */
-> 
-> 		/*
-> 		 * We are trying to schedule the timer on the local CPU.
-> 		 * However we can't change timer's base while it is running,
-> 		 * otherwise del_timer_sync() can't detect that the timer's
-> 		 * handler yet has not finished. This also guarantees that
-> 		 * the timer is serialized wrt itself.
-> 		 */
-> 		if (likely(base->running_timer != timer)) {
-> 			/* See the comment in lock_timer_base() */
-> 			timer_set_base(timer, NULL);
-> 			spin_unlock(&base->lock);
-> 			base = new_base;
-> 			spin_lock(&base->lock);
-> 			timer_set_base(timer, base);
-> -		}
-> +		} else
-> +		  /*
-> +		   * we know that that
-> +		   * the callback is running on a different CPU and we need
-> +		   * to keep base unchanged, so smp_processor_id() is
-> +		   * telling you the wrong information.
-> +		   */
-> +	}
-> 
->> We can not add the timer to the current CPUs by using add_timer_on(), selects
-> 
->   We can add the timer to the current CPU by using add_timer_on() as well.
-> 
->> the timer base in this function as below code:
->> 	struct tvec_base *base = per_cpu(tvec_bases, cpu);
->> In this case, We can know the timer is added to 'cpu'.
->>
->> So, I add trace_timer_start() in __mod_timer() and add_timer_on()in my patch.
-> 
->   Still in the __mod_timer() case the tracing info can be wrong and
->   tracing wrong information is worse than tracing no information.
-> 
->   Your patch could result in a trace which confuses the hell out of
->   people looking at it:
-> 
->   ....... 0..... activate_timer on cpu 0
->   
->   some time later
-> 
->   ....... 2..... expire timer on cpu 2
-> 
->   And the guy who needs to analyse that trace would rip his hairs out
->   to find out how the timer moved from cpu 0 to cpu 2
->  
->> In hrtimer, all timer is added to the current CPU which can be getted by using
->> smp_processor_id() in probe function, so it not has 'cpu' argument in my patch.
-> 
->   Wrong again. Read the code in switch_hrtimer_base(). It does the
->   same thing as the timer base selection logic in __mod_timer()
->  
-
-Hi tglx: 
-
-Thanks for you correct my mistake again.  :-) 
-
-It's hard to detect which cpu the timer add, we can remove the 'cpu' parameter
-in trace_timer_start() as your suggestion, like this:
-
-TRACE_EVENT(timer_start,
-
-	TP_PROTO(struct timer_list *timer),
-
-	TP_ARGS(timer),
-
-	TP_STRUCT__entry(
-		__field( void *,	timer		)
-		__field( void *,	function	)
-		__field( unsigned long,	expires		)
-	),
-	......
-}
-
->> In addition, we do better not put trace_timer_start() and debug_timer_activate
->> in one function, have two reasons:
->> 1: for trace_timer_start()'s logic, the timer start event is completed in 
->>    internal_add_timer(), in other words: the timer is not start before
->>    internal_add_timer().
-> 
->  Oh well. So where is the difference of tracing it before or after the
->  list add happened ? That's complete irrelevant.
->  
-
-Yes, maybe it's not important.
-
->> 2: as Zhaolei says in the last mail, the timer's data may changed after
->>    debug_timer_activate().
-> 
->  Really ? What is going to change ? Nothing in the normal case, in the
->  case the timer is active then it is removed first. Also it depends on
->  how you do this:
-> 
-> void debug_and_trace_timer_activate(....)
-> {
-> 	debug_timer_activate(...);
-> 	trace_timer_activate(...);
-> }
-> 
-> in the timer code:
-> 
-> -      debug_timer_activate(...);
-> +      debug_and_trace_timer_activate(...);
-> 
-> So this does not change the order of functions at all, but it avoids
-> sprinkling the real code with tons of extra crap.
-> 
-
-See below code:
-
-static inline int
-__mod_timer(......)
-{
-	......
-	......
-	
-	debug_timer_activate(timer);
-
-	new_base = __get_cpu_var(tvec_bases);
-	......
-	......
-	
-	timer->expires = expires;	*
-	internal_add_timer(base, timer);
-	trace_timer_start(...)
-	......
-}
-( this example is in Zhaolei's reply)
-
-timer->expires can be changed at *, if we put trace_timer_start() and
-debug_timer_activate() together, we can't get the right value of timer->expires.
-
-In addition, do you agree my humble opinion about not put __init_timer() and
-debug_timer_init() together? (can be found at:
-http://marc.info/?l=linux-kernel&m=124399744614127&w=2)
-If you agree with it, we do better to detach other event.
+	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
 Thanks,
-Xiao Guangrong
+Daisuke Nishimura.
 
-> Thanks,
+> ---
+>  Documentation/cgroups/memory.txt |   15 +++++++++++----
+>  mm/memcontrol.c                  |   33 +--------------------------------
+>  2 files changed, 12 insertions(+), 36 deletions(-)
 > 
-> 	tglx
-> 
+> Index: mmotm-2.6.30-Jun3/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.30-Jun3.orig/mm/memcontrol.c
+> +++ mmotm-2.6.30-Jun3/mm/memcontrol.c
+> @@ -1713,14 +1713,11 @@ int mem_cgroup_shmem_charge_fallback(str
+>  	return ret;
+>  }
+>  
+> -static DEFINE_MUTEX(set_limit_mutex);
+> -
+>  static int mem_cgroup_resize_limit(struct mem_cgroup *memcg,
+>  				unsigned long long val)
+>  {
+>  	int retry_count;
+>  	int progress;
+> -	u64 memswlimit;
+>  	int ret = 0;
+>  	int children = mem_cgroup_count_children(memcg);
+>  	u64 curusage, oldusage;
+> @@ -1739,20 +1736,7 @@ static int mem_cgroup_resize_limit(struc
+>  			ret = -EINTR;
+>  			break;
+>  		}
+> -		/*
+> -		 * Rather than hide all in some function, I do this in
+> -		 * open coded manner. You see what this really does.
+> -		 * We have to guarantee mem->res.limit < mem->memsw.limit.
+> -		 */
+> -		mutex_lock(&set_limit_mutex);
+> -		memswlimit = res_counter_read_u64(&memcg->memsw, RES_LIMIT);
+> -		if (memswlimit < val) {
+> -			ret = -EINVAL;
+> -			mutex_unlock(&set_limit_mutex);
+> -			break;
+> -		}
+>  		ret = res_counter_set_limit(&memcg->res, val);
+> -		mutex_unlock(&set_limit_mutex);
+>  
+>  		if (!ret)
+>  			break;
+> @@ -1774,7 +1758,7 @@ static int mem_cgroup_resize_memsw_limit
+>  					unsigned long long val)
+>  {
+>  	int retry_count;
+> -	u64 memlimit, oldusage, curusage;
+> +	u64 oldusage, curusage;
+>  	int children = mem_cgroup_count_children(memcg);
+>  	int ret = -EBUSY;
+>  
+> @@ -1786,24 +1770,9 @@ static int mem_cgroup_resize_memsw_limit
+>  			ret = -EINTR;
+>  			break;
+>  		}
+> -		/*
+> -		 * Rather than hide all in some function, I do this in
+> -		 * open coded manner. You see what this really does.
+> -		 * We have to guarantee mem->res.limit < mem->memsw.limit.
+> -		 */
+> -		mutex_lock(&set_limit_mutex);
+> -		memlimit = res_counter_read_u64(&memcg->res, RES_LIMIT);
+> -		if (memlimit > val) {
+> -			ret = -EINVAL;
+> -			mutex_unlock(&set_limit_mutex);
+> -			break;
+> -		}
+>  		ret = res_counter_set_limit(&memcg->memsw, val);
+> -		mutex_unlock(&set_limit_mutex);
+> -
+>  		if (!ret)
+>  			break;
+> -
+>  		mem_cgroup_hierarchical_reclaim(memcg, GFP_KERNEL, true, true);
+>  		curusage = res_counter_read_u64(&memcg->memsw, RES_USAGE);
+>  		/* Usage is reduced ? */
+> Index: mmotm-2.6.30-Jun3/Documentation/cgroups/memory.txt
+> ===================================================================
+> --- mmotm-2.6.30-Jun3.orig/Documentation/cgroups/memory.txt
+> +++ mmotm-2.6.30-Jun3/Documentation/cgroups/memory.txt
+> @@ -155,11 +155,18 @@ usage of mem+swap is limited by memsw.li
+>  Note: why 'mem+swap' rather than swap.
+>  The global LRU(kswapd) can swap out arbitrary pages. Swap-out means
+>  to move account from memory to swap...there is no change in usage of
+> -mem+swap.
+> +mem+swap. In other words, when we want to limit the usage of swap
+> +without affecting global LRU, mem+swap limit is better than just limiting
+> +swap from OS point of view.
+> +
+> +
+> +memory.limit v.s. memsw.limit
+> +
+> +There are no guarantee that memsw.limit is bigger than memory.limit
+> +in the kernel. The user should notice what he really wants and use
+> +proper size for limitation. Of course, if memsw.limit < memory.limit,
+> +only memsw.limit works sane.
+>  
+> -In other words, when we want to limit the usage of swap without affecting
+> -global LRU, mem+swap limit is better than just limiting swap from OS point
+> -of view.
+>  
+>  2.5 Reclaim
+>  
 > 
