@@ -1,40 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757586AbZFDJPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757758AbZFDJPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757586AbZFDJPR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 05:15:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbZFDJPF
+	id S1757758AbZFDJPf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 05:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbZFDJPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 05:15:05 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:42107 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751181AbZFDJPE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 05:15:04 -0400
-Date: Thu, 4 Jun 2009 11:17:19 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>
-Cc: tabbott@mit.edu, sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: sparc generic read_mostly patches
-Message-ID: <20090604091719.GB9571@uranus.ravnborg.org>
-References: <20090604.015340.134497874.davem@davemloft.net>
-Mime-Version: 1.0
+	Thu, 4 Jun 2009 05:15:22 -0400
+Received: from mga03.intel.com ([143.182.124.21]:62259 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757588AbZFDJPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 05:15:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,304,1241420400"; 
+   d="scan'208";a="150550026"
+Date: Thu, 4 Jun 2009 17:07:37 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
+	in the VM v5
+Message-ID: <20090604090737.GB18421@localhost>
+References: <20090603846.816684333@firstfloor.org> <20090603184648.2E2131D028F@basil.firstfloor.org> <20090604032441.GC5740@localhost> <20090604051346.GM1065@one.firstfloor.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090604.015340.134497874.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090604051346.GM1065@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 01:53:40AM -0700, David Miller wrote:
+On Thu, Jun 04, 2009 at 01:13:46PM +0800, Andi Kleen wrote:
+> On Thu, Jun 04, 2009 at 11:24:41AM +0800, Wu Fengguang wrote:
+> > On Thu, Jun 04, 2009 at 02:46:47AM +0800, Andi Kleen wrote:
+> > 
+> > [snip]
+> > 
+> > This patch is full of this style error (the old version didn't have
+> > this problem though):
 > 
-> Tim, I'm fine with these changes, so you can add my:
+> I don't see that here. At least nothing new compared to old.
 > 
-> Acked-by: David S. Miller <davem@davemloft.net>
+> > 
+> >         ERROR: code indent should use tabs where possible
 > 
-> I would apply these directly to sparc-next-2.6 but the
-> infrastructure isn't upstream yet so...
+> It's checkpath clean for me, except for a few > 80 lines on printks,
+> one list_for_each_entry_safe (which I think checkpatch is wrong on) and
+> the meminfo comma error which I also think checkpath.pl is wrong on too.
 
-My bad - expect to look at it this weekend.
+OK, that's fine. Maybe some email server expanded tabs in between.
+I wonder whether its the send side or the receive side, ie. whether
+it affected more people..
 
-	Sam
+> > > +               page_cache_release(p);
+> > > +
+> > > +       /*
+> > > +        * Now truncate the page in the page cache. This is really
+> > > +        * more like a "temporary hole punch"
+> > > +        * Don't do this for block devices when someone else
+> > > +        * has a reference, because it could be file system metadata
+> > > +        * and that's not safe to truncate.
+> > > +        */
+> > > +       mapping = page_mapping(p);
+> > > +       if (mapping && S_ISBLK(mapping->host->i_mode) && page_count(p) > 1) {
+> > 
+> > Shall use (page_count > 2) to count for the page cache reference.
+> 
+> I think the page cache reference got dropped in
+> 
+> 	  if (!isolate_lru_page(p))
+>                 page_cache_release(p);
+> 
+> So it should be only one if there are no other users
+
+Ah right!
+
+> > Or can we base the test on busy buffers instead of page count?  Nick?
+> 
+> At least the S_ISBLK test is the best one I came up with. I'm not 
+> saying it's the absolutely best.
+
+Yes I agree with the S_ISBLK test and was questioning the page count
+test. btw, one exception to the S_ISBLK test is btrfs, which does not
+use blockdev for metadata.
+
+> > > +       SetPageError(p);
+> > > +       /* TBD: print more information about the file. */
+> > > +       if (mapping) {
+> > > +               /*
+> > > +                * IO error will be reported by write(), fsync(), etc.
+> > > +                * who check the mapping.
+> > 
+> > btw, here are some side notes on EIO.
+> > 
+> > close() *may* also report it. NFS will sync file on close.
+> 
+> I think the comment is already too verbose, sure there are other
+> details too that it doesn't describe. It's not trying to be a
+> full reference on linux error reporting. So I prefer to not
+> add more cases.
+
+Yes, I was not asking for expanding the long comment :-)
+
+> > > +                * at the wrong time.
+> > > +                *
+> > > +                * So right now we assume that the application DTRT on
+> > 
+> > DTRT = do the return value test?
+> 
+> Do The Right Thing
+
+OK.
+
+> > > +};
+> > > +
+> > > +static void action_result(unsigned long pfn, char *msg, int ret)
+> > 
+> > rename 'ret' to 'action'?
+> 
+> But's not an action (as in a page state handler), it's a return value?
+> (RECOVERED, FAILED etc.) I can name it result.
+
+Ah yes, it's return code.
+
+> > > +        * need this to decide if we should kill or just drop the page.
+> > > +        */
+> > > +       mapping = page_mapping(p);
+> > > +       if (!PageDirty(p) && !PageAnon(p) && !PageSwapBacked(p) &&
+> > 
+> > !PageAnon(p) could be removed: the below non-zero mapping check will
+> > do the work implicitly.
+> 
+> You mean !page_mapped?  Ok.
+
+I mean to do
+                mapping = page_mapping(p);
+                if (!PageDirty(p) && !PageSwapBacked(p) && 
+                    mapping && mapping_cap_account_dirty(mapping)) {
+
+Because for anonymous pages, page_mapping == NULL.
+
+> > > +                       kill = 0;
+> > > +                       printk(KERN_INFO
+> > > +       "MCE %#lx: corrupted page was clean: dropped without side effects\n",
+> > > +                               pfn);
+> > > +                       ttu |= TTU_IGNORE_HWPOISON;
+> > 
+> > Why not put the two assignment lines together? :)
+> 
+> Ok. But that was your patch @)
+
+Yes, so is the above one ;)
+ 
+> > > +        * Try a few times (RED-PEN better strategy?)
+> > > +        */
+> > > +       for (i = 0; i < N_UNMAP_TRIES; i++) {
+> > > +               ret = try_to_unmap(p, ttu);
+> > > +               if (ret == SWAP_SUCCESS)
+> > > +                       break;
+> > > +               pr_debug("MCE %#lx: try_to_unmap retry needed %d\n", pfn,  ret);
+> > 
+> > Can we make it a printk? This is a serious accident.
+> 
+> I think it can actually happen due to races, e.g. when a remap
+> is currently in process.
+
+When it happened, the page may not be isolated from pte and page cache,
+and thus very likely to damage the system. So add a warning when failed?
+
+--- sound-2.6.orig/mm/memory-failure.c
++++ sound-2.6/mm/memory-failure.c
+@@ -660,6 +660,10 @@ static void hwpoison_user_mappings(struc
+ 			break;
+ 		pr_debug("MCE %#lx: try_to_unmap retry needed %d\n", pfn,  ret);
+ 	}
++	if (ret != SWAP_SUCCESS)
++		printk(KERN_ERR
++		       "MCE %#lx: failed to unmap page (mapcount=%d)!\n",
++		       pfn, page_mapcount(p));
+ 
+ 	/*
+ 	 * Now that the dirty bit has been propagated to the
+
+> > > +        */
+> > > +       hwpoison_user_mappings(p, pfn, trapno);
+> > > +
+> > > +       /*
+> > > +        * Torn down by someone else?
+> > > +        */
+> > > +       if (PageLRU(p) && !PageSwapCache(p) && p->mapping == NULL) {
+> > > +               action_result(pfn, "already unmapped LRU", IGNORED);
+> > 
+> > "NULL mapping LRU" or "already truncated page"?
+> > At least page_mapped != page_mapping.
+> 
+> It's "already truncated" now.
+
+Thanks.
+ 
+> > > @@ -1311,6 +1311,20 @@
+> > >                 .mode           = 0644,
+> > >                 .proc_handler   = &scan_unevictable_handler,
+> > >         },
+> > > +#ifdef CONFIG_MEMORY_FAILURE
+> > > +       {
+> > > +               .ctl_name       = CTL_UNNUMBERED,
+> > > +               .procname       = "memory_failure_early_kill",
+> > > +               .data           = &sysctl_memory_failure_early_kill,
+> > > +               .maxlen         = sizeof(vm_highmem_is_dirtyable),
+> > 
+> > s/vm_highmem_is_dirtyable/sysctl_memory_failure_early_kill/
+> 
+> Fixed thanks.
+> 
+> > >   * Documentation/sysctl/ctl_unnumbered.txt
+> > > Index: linux/fs/proc/meminfo.c
+> > > ===================================================================
+> > > --- linux.orig/fs/proc/meminfo.c        2009-06-03 19:37:38.000000000 +0200
+> > > +++ linux/fs/proc/meminfo.c     2009-06-03 20:13:43.000000000 +0200
+> > > @@ -95,7 +95,11 @@
+> > >                 "Committed_AS:   %8lu kB\n"
+> > >                 "VmallocTotal:   %8lu kB\n"
+> > >                 "VmallocUsed:    %8lu kB\n"
+> > > -               "VmallocChunk:   %8lu kB\n",
+> > > +               "VmallocChunk:   %8lu kB\n"
+> > > +#ifdef CONFIG_MEMORY_FAILURE
+> > > +               "BadPages:       %8lu kB\n"
+> > 
+> > "HWPoison:" or something like that? 
+> > People is more likely to misinterpret "BadPages".
+> 
+> I'll name it HardwareCorrupted. That makes it too long, but it's hopefully
+> clearer.
+
+That's OK. Maybe we need a standalone alignment patch for /proc/meminfo ;-)
+ 
+> > >                 vmi.used >> 10,
+> > >                 vmi.largest_chunk >> 10
+> > > +#ifdef CONFIG_MEMORY_FAILURE
+> > > +               ,atomic_long_read(&mce_bad_pages) << (PAGE_SHIFT - 10)
+> > 
+> > ERROR: space required after that ','
+> 
+> That's one of the cases where checkpatch.pl is stupid. The lone comma
+> with a space looks absolutely ridiculous to me. I refuse to do ridiculous
+> things things just for checkpatch.pl deficiencies.
+
+OK.
+ 
+> > >           Enable the KSM kernel module to allow page sharing of equal pages
+> > >           among different tasks.
+> > > 
+> > > +config MEMORY_FAILURE
+> > > +       bool
+> > > +
+> > 
+> > Do we have code to automatically enable/disable CONFIG_MEMORY_FAILURE
+> > based on hardware capability?
+> 
+> Yes the architecture can enable it. There's also another patch
+> which always enables it for testing.
+
+OK.
+ 
+> > > +
+> > > +Control how to kill processes when uncorrected memory error (typically
+> > > +a 2bit error in a memory module) is detected in the background by hardware.
+> > > +
+> > > +1: Kill all processes that have the corrupted page mapped as soon as the
+> > > +corruption is detected.
+> > > +
+> > > +0: Only unmap the page from all processes and only kill a process
+> > > +who tries to access it.
+> > 
+> > Note that
+> > - no process will be killed if the page data is clean and can be
+> >   safely reloaded from disk
+> > - pages in swap cache is always late killed.
+> 
+> I clarified that
+
+Thanks,
+Fengguang
