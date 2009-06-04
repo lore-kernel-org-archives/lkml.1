@@ -1,85 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbZFDOKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbZFDOMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755753AbZFDOKy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 10:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbZFDOKn
+	id S1756628AbZFDOMs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 10:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbZFDOMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 10:10:43 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:58347 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751977AbZFDOKm convert rfc822-to-8bit (ORCPT
+	Thu, 4 Jun 2009 10:12:38 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:42435 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751099AbZFDOMh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 10:10:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=mFbco0fFKCMbJoj0pb+Zs3qmLCn5KJmdD/Yi3pbLcNLdX0uTMGoKFhv+wOGbG8X2Mp
-         k4WxTGJBo8i4B85NVfV3Syo22iL6OVrTH+guY5BPl3/wkb5XYZHt70KX71tBzb9Gm/Wk
-         ME7HnMF4bgrgsysA7gqudXvaXXUiWBUdlLBiM=
-MIME-Version: 1.0
-In-Reply-To: <20090604134455.GB2839@tuxdriver.com>
-References: <1243868091-5315-1-git-send-email-dbaryshkov@gmail.com>
-	 <1243868091-5315-2-git-send-email-dbaryshkov@gmail.com>
-	 <1243868091-5315-3-git-send-email-dbaryshkov@gmail.com>
-	 <1243868091-5315-4-git-send-email-dbaryshkov@gmail.com>
-	 <20090603173214.6d3997f7.akpm@linux-foundation.org>
-	 <20090604111634.GA28064@doriath.ww600.siemens.net>
-	 <20090604134455.GB2839@tuxdriver.com>
-Date: Thu, 4 Jun 2009 18:10:41 +0400
-Message-ID: <bc64b4640906040710p5c7c941fi3341599bc3157b79@mail.gmail.com>
-Subject: Re: [PATCH 03/10] net: add IEEE 802.15.4 socket family implementation
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+	Thu, 4 Jun 2009 10:12:37 -0400
+Subject: Re: [PATCH 4/6] net: add NL802154 interface for configuration of
+ 802.15.4 devices
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       slapin@ossfans.org, maxim.osipov@siemens.com,
-       dmitry.baryshkov@siemens.com, oliver.fendt@siemens.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+       sfr@canb.auug.org.au, slapin@ossfans.org
+In-Reply-To: <20090603122744.GC20508@doriath.ww600.siemens.net>
+References: <1244021629-18409-4-git-send-email-dbaryshkov@gmail.com>
+	 <1244021629-18409-5-git-send-email-dbaryshkov@gmail.com>
+	 <1244021964.10665.5.camel@johannes.local>
+	 <20090603.030911.162861804.davem@davemloft.net>
+	 <20090603105256.GB20508@doriath.ww600.siemens.net>
+	 <1244027110.1693.9.camel@johannes.local>
+	 <20090603122744.GC20508@doriath.ww600.siemens.net>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-1bMfWXsvCYywcrD7EZsF"
+Date: Thu, 04 Jun 2009 16:12:29 +0200
+Message-Id: <1244124749.22576.71.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/4 John W. Linville <linville@tuxdriver.com>:
-> On Thu, Jun 04, 2009 at 03:16:34PM +0400, Dmitry Eremin-Solenikov wrote:
->> On Wed, Jun 03, 2009 at 05:32:14PM -0700, Andrew Morton wrote:
->> > On Mon,  1 Jun 2009 18:54:44 +0400
->> > Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
->
->> > > + switch (addr->addr_type) {
->> > > + case IEEE802154_ADDR_LONG:
->> > > +         rtnl_lock();
->> > > +         dev = dev_getbyhwaddr(net, ARPHRD_IEEE802154, addr->hwaddr);
->> > > +         if (dev)
->> > > +                 dev_hold(dev);
->> > > +         rtnl_unlock();
->> > > +         break;
->> > > + case IEEE802154_ADDR_SHORT:
->> > > +         if (addr->pan_id != 0xffff && addr->short_addr != IEEE802154_ADDR_UNDEF && addr->short_addr != 0xffff) {
->> > > +                 struct net_device *tmp;
->> > > +
->> > > +                 rtnl_lock();
->> > > +
->> > > +                 for_each_netdev(net, tmp) {
->> > > +                         if (tmp->type == ARPHRD_IEEE802154) {
->> > > +                                 if (IEEE802154_MLME_OPS(tmp)->get_pan_id(tmp) == addr->pan_id
->> > > +                                   && IEEE802154_MLME_OPS(tmp)->get_short_addr(tmp) == addr->short_addr) {
->> >
->> > You must use very wide xterms :(
->>
->> ~120 chars in width :)  We prefer to have a single code line split between
->> several screen lines, rather than split it manually in some weird places
->> just to justify width of 80 chars.
->
-> Hopefully you realize that many find this difficult to read -- I just
-> can't spread my eyes far enough to comprehend the lines.
->
-> 80 chars is not a hard limit, but it is a good goal.  120 is too wide.
 
-We do try to fit the lines into 80 chars, but when that seems logical.
-I strongly dislike breaking comparations between lines.
+--=-1bMfWXsvCYywcrD7EZsF
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-With best wishes
-Dmitry
+On Wed, 2009-06-03 at 16:27 +0400, Dmitry Eremin-Solenikov wrote:
+
+> > > +/* commands */
+> > > +/* REQ should be responded with CONF
+> > > + * and INDIC with RESP
+> > > + */
+> > > +enum {
+> >=20
+> > kernel-doc explaining the commands would be immensely helpful.
+>=20
+> What explanations whould you like to see? These commands are described
+> in the IEEE 802.15.4 standard.
+
+Well, for example which arguments they require...
+
+> > > +#ifdef __KERNEL__
+> > > +struct net_device;
+> > > +
+> > > +int ieee802154_nl_assoc_indic(struct net_device *dev, struct ieee802=
+154_addr *addr, u8 cap);
+> > > +int ieee802154_nl_assoc_confirm(struct net_device *dev, u16 short_ad=
+dr, u8 status);
+> > > +int ieee802154_nl_disassoc_indic(struct net_device *dev, struct ieee=
+802154_addr *addr, u8 reason);
+> > > +int ieee802154_nl_disassoc_confirm(struct net_device *dev, u8 status=
+);
+> > > +int ieee802154_nl_scan_confirm(struct net_device *dev, u8 status, u8=
+ scan_type, u32 unscanned,
+> > > +		u8 *edl/*, struct list_head *pan_desc_list */);
+> > > +int ieee802154_nl_beacon_indic(struct net_device *dev, u16 panid, u1=
+6 coord_addr); /* TODO */
+> > > +#endif
+> >=20
+> > Why not just use two header files, one in net/ and one in linux/?
+>=20
+> What would you suggest to put into the linux/ header and what in the
+> net/ one?
+
+userspace vs. in-kernel separation
+
+> > > +static int ieee802154_nl_put_failure(struct sk_buff *msg)
+> > > +{
+> > > +	void *hdr =3D genlmsg_data(NLMSG_DATA(msg->data)); /* XXX: nlh is r=
+ight at the start of msg */
+> > > +	genlmsg_cancel(msg, hdr);
+> > > +	nlmsg_free(msg);
+> > > +	return -ENOBUFS;
+> > > +}
+> >=20
+> > This seems weird.
+>=20
+> Why?
+
+Because it's strange to cancel then free?
+
+> > > +static int ieee802154_associate_req(struct sk_buff *skb, struct genl=
+_info *info)
+> > > +{
+> > > +	struct net_device *dev;
+> > > +	struct ieee802154_addr addr;
+> > > +	int ret =3D -EINVAL;
+> > > +
+> > > +	if (!info->attrs[IEEE802154_ATTR_CHANNEL]
+> > > +	 || !info->attrs[IEEE802154_ATTR_COORD_PAN_ID]
+> > > +	 || (!info->attrs[IEEE802154_ATTR_COORD_HW_ADDR] && !info->attrs[IE=
+EE802154_ATTR_COORD_SHORT_ADDR])
+> > > +	 || !info->attrs[IEEE802154_ATTR_CAPABILITY])
+> > > +		return -EINVAL;
+> >=20
+> > That's some odd coding style.
+>=20
+> Could you please elaborate this? What seems odd to you?
+
+if (X
+    && Y)
+
+vs
+
+if (X &&
+    Y)
+
+where the latter is used for all other sources files in the kernel. Try
+applying that to _all_ your patches while you rework the sources to fit
+into 80 columns.
+
+johannes
+
+--=-1bMfWXsvCYywcrD7EZsF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKJ9ZKAAoJEODzc/N7+QmaP30P/2eTUPIJOD7ZyD5sC7zCXkXm
+cUDPVT9ozDBrfMVIpB7uNPFJb/2Jfrr5wEcZCwZ56el4Cq4vB6NqlpkXZ1zs6uGJ
+7ISjqQmVK/iKzfPH7tUR4j6cvrEwPdiX87moeX6M+HXxBkiw2p8jJNtJZexdoYIK
+ETIO6QjsT8ABnWAjrkttVp96z21HtXwPELNIVh88hnMO4vK94fNC872MwyMjY2n+
+KY4oMFrCcgvbawVqDBYdtWLVslVV33d9COF2OTjLTvkc9aR2AAXnd1kpZOMPkB9s
+FNdKNIZoNwhLPM0re4plGfW5JELvDt9GNtd6eJ8p/+dxnK0RYL7USLzX7NsuvK1u
+JoqADzPm02EoqbFZ3M+EeKX4apajo9UNspEmuegCruIr4yTKMYHp9RIby4dIL+zK
+WGfEGf+orGWyL9LcURck0USOlajbMqJ591WSr5LEcbUPw1Qrkia6peZs8ZvuH+V0
+sY1rAXu26/drCk5BPMdRHiQmPCwTWB2ZsDH/6MGv4HNXkZe8qPUZ3PX83wHBgs4r
+vd4pmXOl4J4hUN+kH7S3g6MsxY8GynGeCm5OcKl7UBal6XEDdKfize5+1FSybZ6Z
+YOZxmI0CR3HGyCNiBT1vmDJ5BvGnMzLZuBMU9lME7EHs+WbohF7yGuaTKNjNxO/t
+TgM7Vve/X9JNgOcnsPLv
+=zBxM
+-----END PGP SIGNATURE-----
+
+--=-1bMfWXsvCYywcrD7EZsF--
+
