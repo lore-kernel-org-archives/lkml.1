@@ -1,152 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbZFDFrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755653AbZFDFzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754790AbZFDFrS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 01:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbZFDFrJ
+	id S1755653AbZFDFzf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 01:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbZFDFz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 01:47:09 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47409 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750733AbZFDFrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 01:47:08 -0400
-Date: Thu, 4 Jun 2009 07:47:08 +0200
-From: Michal Marek <mmarek@suse.cz>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] kbuild: some scripts/config improvements (try 2)
-Message-ID: <20090604054708.GA2241@sepie.suse.cz>
-References: <20090525144320.GA22686@sepie.suse.cz> <20090603192520.GC3100@uranus.ravnborg.org> <20090603201645.GG1065@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090603201645.GG1065@one.firstfloor.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 4 Jun 2009 01:55:26 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:39995 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750923AbZFDFzZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 01:55:25 -0400
+Subject: Re: [Bug #13306] hibernate slow on _second_ run
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <200906032351.01900.rjw@sisk.pl>
+References: <4to6E2myxvG.A.muC.aIbIKB@chimera>
+	 <200906032305.07551.rjw@sisk.pl> <1244064315.22576.5.camel@johannes.local>
+	 <200906032351.01900.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-oFVFyLrKa5StFa/ETwHj"
+Date: Thu, 04 Jun 2009 07:55:18 +0200
+Message-Id: <1244094918.22576.6.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 10:16:46PM +0200, Andi Kleen wrote:
-> On Wed, Jun 03, 2009 at 09:25:20PM +0200, Sam Ravnborg wrote:
-> > On Mon, May 25, 2009 at 04:43:20PM +0200, Michal Marek wrote:
-> > > Hi,
-> > > 
-> > > I simplified the awk script a bit, made it awk ... && mv and removed the
-> > > --set option.
-> > > 
-> > > Michal Marek (3):
-> > >   kbuild: handle non-existing options in scripts/config
-> > >   kbuild: simplify argument loop in scripts/config
-> > >   kbuild: add generic --set-str option to scripts/config
-> > 
-> > Andi - do I have your ack on this serie?
-> 
-> Reluctantly -- most bits are ok, but the awk change seems quite overcomplicated
-> and I don't like it particularly.
 
-What about this one? The other two patches apply apply at slightly
-different offsets.
+--=-oFVFyLrKa5StFa/ETwHj
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Subject: [PATCH 1/3] kbuild: handle non-existing options in scripts/config
+On Wed, 2009-06-03 at 23:51 +0200, Rafael J.=20
+> > > Can you please send me /proc/interrupts from the affected box?
+> >=20
+> > $ cat /proc/interrupts=20
+> >             CPU0       CPU1      =20
+> >    0:    1820687          0   IO-APIC-edge      timer
+> >    7:          1          0   IO-APIC-edge   =20
+> >    9:      38721          0   IO-APIC-fasteoi   acpi
+> >   16:        940          0   IO-APIC-fasteoi   HDA Intel
+> >   17:        517          0   IO-APIC-fasteoi   ohci_hcd:usb4
+> >   18:     289829          0   IO-APIC-fasteoi   ohci_hcd:usb3
+> >   19:    2035671          0   IO-APIC-fasteoi   ehci_hcd:usb2
+> >   20:         32          0   IO-APIC-fasteoi   ehci_hcd:usb1
+> >   25:     515569          0   PCI-MSI-edge      ahci
+> >   26:          0          0   PCI-MSI-edge      eth0
+> >  NMI:          0          0   Non-maskable interrupts
+> >  LOC:     152936     638337   Local timer interrupts
+> >  SPU:          0          0   Spurious interrupts
+> >  RES:     317238     581858   Rescheduling interrupts
+> >  CAL:         43        128   Function call interrupts
+> >  TLB:      60645      53553   TLB shootdowns
+> >  TRM:          0          0   Thermal event interrupts
+> >  THR:          0          0   Threshold APIC interrupts
+> >  ERR:          1
+> >  MIS:          0
+>=20
+> Hmm.  The patch shouldn't matter for this box, except for one thing:
+> check_irq_resend() on resume.  Interesting.
 
-If an option does not exist in .config, set it at the end of the file.
+Yeah, well, turns out it didn't help anyway:
 
-Signed-off-by: Michal Marek <mmarek@suse.cz>
----
- scripts/config |   36 ++++++++++++++++++------------------
- 1 files changed, 18 insertions(+), 18 deletions(-)
+[30490.846160] ACPI: Waking up from system sleep state S4
+[30491.371450] HDA Intel 0000:00:08.0: restoring config space at offset 0x1=
+ (was 0xb00006, writing 0xb00002)
+[30491.379411] forcedeth 0000:00:0a.0: restoring config space at offset 0x1=
+ (was 0xb00003, writing 0xb00007)
+[30491.387352] ahci 0000:00:0b.0: restoring config space at offset 0x1 (was=
+ 0xb00403, writing 0xb00407)
+[30511.970606] pci 0000:00:03.2: PME# disabled
 
-diff --git a/scripts/config b/scripts/config
-index db6084b..30825a5 100755
---- a/scripts/config
-+++ b/scripts/config
-@@ -26,8 +26,6 @@ options:
- 
- config doesn't check the validity of the .config file. This is done at next
-  make time.
--The options need to be already in the file before they can be changed,
--but sometimes you can cheat with the --*-after options.
- EOL
- 	exit 1
- }
-@@ -45,8 +43,18 @@ checkarg() {
- 	ARG="`echo $ARG | tr a-z A-Z`"
- }
- 
--replace() {
--	sed -i -e "$@" $FN
-+set_var() {
-+	local name=$1 new=$2 before=$3
-+
-+	name_re="^($name=|# $name is not set)"
-+	before_re="^($before=|# $before is not set)"
-+	if test -n "$before" && grep -Eq "$before_re" "$FN"; then
-+		sed -ri "/$before_re/a $new" "$FN"
-+	elif grep -Eq "$name_re" "$FN"; then
-+		sed -ri "s:$name_re.*:$new:" "$FN"
-+	else
-+		echo "$new" >>"$FN"
-+	fi
- }
- 
- if [ "$1" = "--file" ]; then
-@@ -70,20 +78,19 @@ while [ "$1" != "" ] ; do
- 	case "$CMD" in
- 	--enable|-e)
- 		checkarg "$1"
--		replace "s/# CONFIG_$ARG is not set/CONFIG_$ARG=y/"
-+		set_var "CONFIG_$ARG" "CONFIG_$ARG=y"
- 		shift
- 		;;
- 
- 	--disable|-d)
- 		checkarg "$1"
--		replace "s/CONFIG_$ARG=[my]/# CONFIG_$ARG is not set/"
-+		set_var "CONFIG_$ARG" "# CONFIG_$ARG is not set"
- 		shift
- 		;;
- 
- 	--module|-m)
- 		checkarg "$1"
--		replace "s/CONFIG_$ARG=y/CONFIG_$ARG=m/" \
--			-e "s/# CONFIG_$ARG is not set/CONFIG_$ARG=m/"
-+		set_var "CONFIG_$ARG" "CONFIG_$ARG=m"
- 		shift
- 		;;
- 
-@@ -109,9 +116,7 @@ while [ "$1" != "" ] ; do
- 		A=$ARG
- 		checkarg "$2"
- 		B=$ARG
--		replace "/CONFIG_$A=[my]/aCONFIG_$B=y" \
--			-e "/# CONFIG_$ARG is not set/a/CONFIG_$ARG=y" \
--			-e "s/# CONFIG_$ARG is not set/CONFIG_$ARG=y/"
-+		set_var "CONFIG_$B" "CONFIG_$B=y" "CONFIG_$A"
- 		shift
- 		shift
- 		;;
-@@ -121,9 +126,7 @@ while [ "$1" != "" ] ; do
- 		A=$ARG
- 		checkarg "$2"
- 		B=$ARG
--		replace "/CONFIG_$A=[my]/a# CONFIG_$B is not set" \
--		-e "/# CONFIG_$ARG is not set/a/# CONFIG_$ARG is not set" \
--		-e "s/CONFIG_$ARG=[my]/# CONFIG_$ARG is not set/"
-+		set_var "CONFIG_$B" "# CONFIG_$B is not set" "CONFIG_$A"
- 		shift
- 		shift
- 		;;
-@@ -133,10 +136,7 @@ while [ "$1" != "" ] ; do
- 		A=$ARG
- 		checkarg "$2"
- 		B=$ARG
--		replace "/CONFIG_$A=[my]/aCONFIG_$B=m" \
--			-e "/# CONFIG_$ARG is not set/a/CONFIG_$ARG=m" \
--			-e "s/CONFIG_$ARG=y/CONFIG_$ARG=m/" \
--			-e "s/# CONFIG_$ARG is not set/CONFIG_$ARG=m/"
-+		set_var "CONFIG_$B" "CONFIG_$B=m" "CONFIG_$A"
- 		shift
- 		shift
- 		;;
--- 
-1.6.3
+The problem doesn't always happen. But now that it happens here again,
+maybe I can try ftrace again...
+
+johannes
+
+--=-oFVFyLrKa5StFa/ETwHj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKJ2HCAAoJEODzc/N7+QmaorsP/3EgTATytB5nREXpIGJK+C02
+i3YF4Eox2z+6RQP4p92f6wQV6wSGiJgIF6t8IfT/igK1d6N6ITpiRKW0tNZ5gpWE
+/NvsW+MX/kKVtvAhP5259bCC5aFGW/0LYTqSpf5ff6toFp33/RMn1+hI+T0iaVeF
+Z7JwfBm5+DHpWf/90te5H+bex5eol6mz6yZxqd8yG4fiz+W8gg0O94rj4XujunlM
+df6bMNYzgOnBDo1DcS3nWl933fQ+snwm5KZjeLnVDq8GXG/4JG41CnzITkxJ8vyD
+1RtTvZz/1UfEs2wTPptNLpRb7aCCbXhSOpvSuWyf+VUUrjuf59OTdgeSFn5Z/JZQ
+2Qp4a9+7Zf0JiUKU8OXzwBZXlcyFyIhYeAoR1/7Lvcj7/ZUyrynt9TeQsVZyvZEv
+bq9u4U70Oq6okrmwieY8vAm0pBQTgFZLCxPra+fM86F1wxCdNBllzFdfCWSQ9gVz
+NgKFyKOQ0F6nzyiAV/tYFW1/TMiHUyDaerOgGUqZeFhmJEZmMOZr3EgLLS/UxHYw
+ZFk1YOcQUZ2dtzJcbVYia5B+3/ZI62sXkv23ifXRH96JdNasqp7ToD8JZ1OzDYvI
+v96BJuJ8VwE9wdQTkifYMucu0+J0Mn061PopKNf0xFZ1bv8lR0dsV2lgAXVXEwNu
+JWycHjPqtPKWpxb1MdMY
+=MPyW
+-----END PGP SIGNATURE-----
+
+--=-oFVFyLrKa5StFa/ETwHj--
 
