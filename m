@@ -1,105 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758281AbZFDQ2I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbZFDQcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758281AbZFDQ2I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 12:28:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757150AbZFDQUD
+	id S1757841AbZFDQcf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 12:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbZFDQc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 12:20:03 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:48904 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757381AbZFDQTq (ORCPT
+	Thu, 4 Jun 2009 12:32:26 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:40420 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751885AbZFDQcZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 12:19:46 -0400
-Message-Id: <20090604161903.765486755@de.ibm.com>
-References: <20090604161847.513682672@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 04 Jun 2009 18:19:05 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Frank Blaschka <frank.blaschka@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 18/38] pm: ctcm driver power management callbacks
-Content-Disposition: inline; filename=pm_ctcm.patch
+	Thu, 4 Jun 2009 12:32:25 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
+Date: Thu, 4 Jun 2009 11:21:28 -0500
+User-Agent: KMail/1.9.9
+Cc: Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harald Welte <HaraldWelte@viatech.com>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <e9e943910906040900j6f334f29l42a9f5a57e9a1c8f@mail.gmail.com> <alpine.LFD.2.01.0906040910280.4880@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0906040910280.4880@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906041121.30845.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frank Blaschka <frank.blaschka@de.ibm.com>
+On Thu June 4 2009, Linus Torvalds wrote:
+> 
+> On Thu, 4 Jun 2009, Duane Griffin wrote:
+> > 
+> > There have been reports of hangs on various VIA C7 machines going back
+> > a year now. The version of the kernel doesn't seem to matter, but the
+> > version of glibc does. Unfortunately there hasn't been much progress
+> > in getting to the bottom of it.
+> > 
+> > See here (and other linked reports):
+> > http://bugs.gentoo.org/show_bug.cgi?id=228263
+> 
+> Hmm. That looks like a CPU problem, but hey, it might be that the glibc 
+> version thing is just coincidence, and just changes timings or whatever, 
+> and the problem is in the chipsets.
+> 
+> So at least from that particular report it smells very much 
+> non-kernel-related.
+> 
+> That said, even if it isn't kernel-related, it might be fixable with some 
+> kernel patch that changes the setup of the CPU/chipset. But we'd need VIA 
+> to help with anythign like that.
+> 
 
-Signed-off-by: Frank Blaschka <frank.blaschka@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
- drivers/s390/net/ctcm_main.c |   37 ++++++++++++++++++++++++++++++++++++-
- 1 file changed, 36 insertions(+), 1 deletion(-)
+That is one of my pending questions - -
+(It is included as a comment at the appropriate point in my patchset.)
 
-Index: linux-2.6/drivers/s390/net/ctcm_main.c
-===================================================================
---- linux-2.6.orig/drivers/s390/net/ctcm_main.c
-+++ linux-2.6/drivers/s390/net/ctcm_main.c
-@@ -1,7 +1,7 @@
- /*
-  * drivers/s390/net/ctcm_main.c
-  *
-- * Copyright IBM Corp. 2001, 2007
-+ * Copyright IBM Corp. 2001, 2009
-  * Author(s):
-  *	Original CTC driver(s):
-  *		Fritz Elfert (felfert@millenux.com)
-@@ -1690,6 +1690,38 @@ static void ctcm_remove_device(struct cc
- 	put_device(&cgdev->dev);
- }
- 
-+static int ctcm_pm_suspend(struct ccwgroup_device *gdev)
-+{
-+	struct ctcm_priv *priv = dev_get_drvdata(&gdev->dev);
-+
-+	if (gdev->state == CCWGROUP_OFFLINE)
-+		return 0;
-+	netif_device_detach(priv->channel[READ]->netdev);
-+	ctcm_close(priv->channel[READ]->netdev);
-+	ccw_device_set_offline(gdev->cdev[1]);
-+	ccw_device_set_offline(gdev->cdev[0]);
-+	return 0;
-+}
-+
-+static int ctcm_pm_resume(struct ccwgroup_device *gdev)
-+{
-+	struct ctcm_priv *priv = dev_get_drvdata(&gdev->dev);
-+	int rc;
-+
-+	if (gdev->state == CCWGROUP_OFFLINE)
-+		return 0;
-+	rc = ccw_device_set_online(gdev->cdev[1]);
-+	if (rc)
-+		goto err_out;
-+	rc = ccw_device_set_online(gdev->cdev[0]);
-+	if (rc)
-+		goto err_out;
-+	ctcm_open(priv->channel[READ]->netdev);
-+err_out:
-+	netif_device_attach(priv->channel[READ]->netdev);
-+	return rc;
-+}
-+
- static struct ccwgroup_driver ctcm_group_driver = {
- 	.owner       = THIS_MODULE,
- 	.name        = CTC_DRIVER_NAME,
-@@ -1699,6 +1731,9 @@ static struct ccwgroup_driver ctcm_group
- 	.remove      = ctcm_remove_device,
- 	.set_online  = ctcm_new_device,
- 	.set_offline = ctcm_shutdown_device,
-+	.freeze	     = ctcm_pm_suspend,
-+	.thaw	     = ctcm_pm_resume,
-+	.restore     = ctcm_pm_resume,
- };
- 
- 
+The VIA processors have MCR's not MTRR's - -
+The C7-M processor uses "in-order retirement" not "out-of-order" - -
+I think the MCR's **should not** be set for "weak ordered writes" -
 
--- 
-blue skies,
-   Martin.
+_But_ until I hear the recommendation of the Silicon Growers department...
 
-"Reality continues to ruin my life." - Calvin.
+Mike
+
+> 			Linus
+> 
+> 
+
 
