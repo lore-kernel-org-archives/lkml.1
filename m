@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755046AbZFDQ5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752361AbZFDRDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755046AbZFDQ5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 12:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZFDQ5c
+	id S1752361AbZFDRDd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 13:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbZFDRDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 12:57:32 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53427 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbZFDQ5c (ORCPT
+	Thu, 4 Jun 2009 13:03:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37324 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750790AbZFDRDZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 12:57:32 -0400
-Date: Thu, 4 Jun 2009 12:57:33 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Philipp Reh <sefi@s-e-f-i.de>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: When does Linux drop UDP packets?
-In-Reply-To: <alpine.DEB.2.00.0906041228170.14994@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.2.00.0906041257000.14994@gandalf.stny.rr.com>
-References: <20090604145347.GA27692@miyuki> <20090604155741.GA8999@goodmis.org> <20090604161015.GA17303@miyuki> <alpine.DEB.2.00.0906041222450.14994@gandalf.stny.rr.com> <alpine.DEB.2.00.0906041228170.14994@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 4 Jun 2009 13:03:25 -0400
+Date: Thu, 4 Jun 2009 10:03:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Michael S. Zick" <lkml@morethan.org>
+cc: Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harald Welte <HaraldWelte@viatech.com>
+Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
+In-Reply-To: <200906041121.30845.lkml@morethan.org>
+Message-ID: <alpine.LFD.2.01.0906040948480.4880@localhost.localdomain>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <e9e943910906040900j6f334f29l42a9f5a57e9a1c8f@mail.gmail.com> <alpine.LFD.2.01.0906040910280.4880@localhost.localdomain> <200906041121.30845.lkml@morethan.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,48 +29,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 4 Jun 2009, Steven Rostedt wrote:
 
+On Thu, 4 Jun 2009, Michael S. Zick wrote:
 > 
-> Oh, btw, you don't need to strip LKML from replys (or any Cc), unless it 
-> is off topic.  LKML is a public forum, and as long as things are on topic, 
-> it is nice to show others the solutions that are found.
-> 
-> > 
-> > On Thu, 4 Jun 2009, Philipp Reh wrote:
-> > 
-> > > I'm not really sure it is dropped but tcpdump sees the packet and
-> > > recvfrom doesn't see it, so I think that the kernel might drop it
-> > > somewhere when processing the IP stack logic.
-> > 
-> > Looking at the udp stack, selinux plays a role, and looks like it will 
-> > drop a packet if it is not in the routing table.
-> > 
-> > Try:
-> > 
-> > # setenforce 0
-> > 
-> > and see if you start seeing packets.
-> 
-> BTW, I used ftrace to look into this:
-> 
-> Enable:
-> 
-> 	CONFIG_FTRACE
-> 	CONFIG_FUNCTION_TRACER
-> 	CONFIG_FUNCITON_GRAPH_TRACER
-> 	CONFIG_DYNAMIC_FTRACE
-> 
-> Compile and boot:
-> 
-> # mount -t debugfs nodev /sys/kernel/debug
-> # cd /sys/kernel/debug
-> # echo udp_rcv > set_graph_function
-> # echo function_graph > current_tracer
-> # cat trace
-> 
+> The C7-M processor uses "in-order retirement" not "out-of-order" - -
+> I think the MCR's **should not** be set for "weak ordered writes" -
 
-Could you do the above and send me (off list) the output of the trace?
+In-order retirement does not really imply anything at all about how write 
+ordering works out. In most CPU parlance, you'd say that you've "retired" 
+a write instruction when it has completed in the write queue - but it 
+would not mean anything in particular for memory ordering.
 
--- Steve
+Of course, I don't think the C7 is just in-order retirement, I think it's 
+pretty much in-order everything. Usually you only specify that 
+"retirement" part when there is some out-of-order execution in other parts 
+of the pipeline, but I think the C7 is entirely in-order pipeline, 
+although I suspect the FPU side is likely somewhat separated.
 
+But still, with a write buffer (and _no_ sane x86 does not have a write 
+buffer), that doesn't actually mean that the cache and memory accesses are 
+necessarily entirely in-order.
+
+That said, how all the internal CPU registers are set is all black magic. 
+
+			Linus
