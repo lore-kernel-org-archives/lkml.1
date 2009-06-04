@@ -1,195 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbZFDLjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbZFDLoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757396AbZFDLjS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 07:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754395AbZFDLjG
+	id S1756818AbZFDLoV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 07:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbZFDLoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 07:39:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60036 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754109AbZFDLjE (ORCPT
+	Thu, 4 Jun 2009 07:44:11 -0400
+Received: from mail-qy0-f200.google.com ([209.85.221.200]:41752 "EHLO
+	mail-qy0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754554AbZFDLoJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 07:39:04 -0400
-Date: Thu, 4 Jun 2009 04:37:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Ingo Molnar <mingo@elte.hu>, Joerg Engel <joern@logfs.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch] procfs: provide stack information for threads
-Message-Id: <20090604043750.e1031e01.akpm@linux-foundation.org>
-In-Reply-To: <1244114628.31230.3.camel@wall-e>
-References: <1238511505.364.61.camel@matrix>
-	<20090401193135.GA12316@elte.hu>
-	<1244114628.31230.3.camel@wall-e>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Jun 2009 07:44:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=xa9ngXBOISPn4GFZurKmHqyCaKNRjqgelR2nxGZ34whvOK4HB8/JBCB16dCDFdt8/G
+         Qa6g4CoZzR/Epip4VXqoBv10fZeO9L9GiytCQstvLVd+y4q4fqfWWG5PVGr2AHimVwMG
+         HExCga+nJfLvOAjS3F3QDr6V9mCUIx/0LTCkM=
+Message-ID: <4A27B37F.1060307@gmail.com>
+Date: Thu, 04 Jun 2009 07:43:59 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, davidel@xmailserver.org,
+       paulmck@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [KVM-RFC PATCH 0/2] irqfd: use POLLHUP notification for close()
+References: <20090602151135.29746.91320.stgit@dev.haskins.net> <20090602160434.GA6827@redhat.com> <4A254FD7.5090302@novell.com> <20090602162021.GB6827@redhat.com> <4A255484.6060401@novell.com> <20090602165949.GD6827@redhat.com> <4A256431.2080101@novell.com> <20090603063956.GA8134@redhat.com> <4A27A10C.2050405@redhat.com>
+In-Reply-To: <4A27A10C.2050405@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig455CD13D7B9610358673AFBE"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Jun 2009 13:23:48 +0200 Stefani Seibold <stefani@seibold.net> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig455CD13D7B9610358673AFBE
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> Hi everybody,
-> 
-> This is the latest version of the formaly named "detailed stack info"
-> patch which give you a better overview of the userland application stack
-> usage, especially for embedded linux.
-> 
-> Currently you are only able to dump the main process/thread stack usage
-> which is showed in /proc/pid/status by the "VmStk" Value. But you get no
-> information about the consumed stack memory of the the threads.
-> 
-> There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which
-> marks the vm mapping where the thread stack pointer reside with "[thread
-> stack xxxxxxxx]". xxxxxxxx is the start address of the stack.
-> 
-> Also there is a new entry "stack usage" in /proc/<pid>/{task/*,}/status
-> which will you give the current stack usage in kb.
-> 
-> I also fixed stack base address in /proc/<pid>/task/*/stat to the base
-> address of the associated thread stack and not the one of the main
-> process. This makes more sense.
-> 
-> Changes since last posting:
-> 
->  - Redesigned everything what was suggested by Andrew
+Avi Kivity wrote:
+> Michael S. Tsirkin wrote:
+>> On Tue, Jun 02, 2009 at 01:41:05PM -0400, Gregory Haskins wrote:
+>> =20
+>>>> And having close not clean up the state unless you do an ioctl
+>>>> first is
+>>>> very messy IMO - I don't think you'll find any such examples in
+>>>> kernel.
+>>>>
+>>>>        =20
+>>> I agree, and that is why I am advocating this POLLHUP solution.  It w=
+as
+>>> only this other way to begin with because the technology didn't exist=
 
-You didn't account for some of my comments.  I'll repeat the ones which
-I recall below.
+>>> until Davide showed me the light.
+>>>
+>>> Problem with your request is that I already looked into what is
+>>> essentially a bi-directional reference problem (for a different reaso=
+n)
+>>> when I started the POLLHUP series.  Its messy to do this in a way tha=
+t
+>>> doesn't negatively impact the fast path (introducing locking, etc) or=
 
->  - slime done
+>>> make my head explode making sure it doesn't race.  Afaict, we would
+>>> need
+>>> to solve this problem to do what you are proposing (patches welcome).=
 
-What's "slime"?
+>>>
+>>> If this hybrid decoupled-deassign + unified-close is indeed an
+>>> important
+>>> feature set, I suggest that we still consider this POLLHUP series for=
 
-> +static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
-> +					struct task_struct *p)
-> +{
-> +	unsigned long	i;
-> +	struct page	*page;
-> +	unsigned long	stkpage;
-> +
-> +	stkpage = KSTK_ESP(p) & PAGE_MASK;
-> +
-> +#ifdef CONFIG_STACK_GROWSUP
-> +	for (i = vma->vm_end; i-PAGE_SIZE > stkpage; i -= PAGE_SIZE) {
-> +
-> +		page = follow_page(vma, i-PAGE_SIZE, 0);
-> +
-> +		if (!IS_ERR(page) && page)
+>>> inclusion, and then someone can re-introduce DEASSIGN support in the
+>>> future as a CAP bit extension.  That way we at least get the desirabl=
+e
+>>> close() properties that we both seem in favor of, and get this advanc=
+ed
+>>> use case when we need it (and can figure out the locking design).
+>>>
+>>>    =20
+>>
+>> FWIW, I took a look and yes, it is non-trivial.
+>> I concur, we can always add the deassign ioctl later.
+>>  =20
+>
+> I agree that deassign is needed for reasons of symmetry, and that it
+> can be added later.
+>
+Cool.
 
-Shouldn't this be !page?
+FYI: Davide's patch has been accepted into -mm (Andrew CC'd).  I am not
+sure of the protocol here, but I assume this means you can now safely
+pull it from -mm into kvm.git so the prerequisite for 2/2 is properly met=
+=2E
 
-> +			break;
-> +	}
-> +	return i - (p->stack_start & PAGE_MASK);
-> +#else
-> +	for (i = vma->vm_start; i+PAGE_SIZE <= stkpage; i += PAGE_SIZE) {
-> +
-> +		page = follow_page(vma, i, 0);
-> +
-> +		if (!IS_ERR(page) && page)
-
-Ditto
-
-> +			break;
-> +	}
-> +	return (p->stack_start & PAGE_MASK) - i + PAGE_SIZE;
-> +#endif
-> +}
-> +
-> +static inline void task_show_stack_usage(struct seq_file *m,
-> +						struct task_struct *p)
-> +{
-> +	struct vm_area_struct	*vma;
-> +	struct mm_struct	*mm;
-> +
-> +	mm = get_task_mm(p);
-> +
-> +	if (mm) {
-> +		vma = find_vma(mm, p->stack_start);
-> +
-> +		if (vma)
-> +			seq_printf(m, "Stack usage:\t%lu kB\n",
-> +				get_stack_usage_in_bytes(vma, p) >> 10);
-> +
-> +		mmput(mm);
-> +	}
-> +}
-> +
->  int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
->  			struct pid *pid, struct task_struct *task)
->  {
-> @@ -340,6 +389,7 @@
->  	task_show_regs(m, task);
->  #endif
->  	task_context_switch_counts(m, task);
-> +	task_show_stack_usage(m, task);
->  	return 0;
->  }
->  
-> @@ -481,7 +531,7 @@
->  		rsslim,
->  		mm ? mm->start_code : 0,
->  		mm ? mm->end_code : 0,
-> -		(permitted && mm) ? mm->start_stack : 0,
-> +		(permitted) ? task->stack_start : 0,
->  		esp,
->  		eip,
->  		/* The signal information here is obsolete.
-> diff -u -N -r linux-2.6.30.orig/fs/proc/task_mmu.c linux-2.6.30/fs/proc/task_mmu.c
-> --- linux-2.6.30.orig/fs/proc/task_mmu.c	2009-06-04 09:29:47.000000000 +0200
-> +++ linux-2.6.30/fs/proc/task_mmu.c	2009-06-04 09:32:35.000000000 +0200
-> @@ -242,6 +242,20 @@
->  				} else if (vma->vm_start <= mm->start_stack &&
->  					   vma->vm_end >= mm->start_stack) {
->  					name = "[stack]";
-> +				} else {
-> +					unsigned long stack_start;
-> +
-> +					stack_start =
-> +						((struct proc_maps_private *)
-> +						m->private)->task->stack_start;
-
-I'd suggested a clearer/cleaner way of implementing this.
-
-> +					if (vma->vm_start <= stack_start &&
-> +					    vma->vm_end >= stack_start) {
-> +						pad_len_spaces(m, len);
-> +						seq_printf(m,
-> +						 "[thread stack: %08lx]",
-> +						 stack_start);
-> +					}
->  				}
->  			} else {
->  				name = "[vdso]";
-> diff -u -N -r linux-2.6.30.orig/include/linux/sched.h linux-2.6.30/include/linux/sched.h
-> --- linux-2.6.30.orig/include/linux/sched.h	2009-06-04 09:29:47.000000000 +0200
-> +++ linux-2.6.30/include/linux/sched.h	2009-06-04 09:32:35.000000000 +0200
-> @@ -1429,6 +1429,7 @@
->  	/* state flags for use by tracers */
->  	unsigned long trace;
->  #endif
-> +	unsigned long stack_start;
->  };
->  
->  /* Future-safe accessor for struct task_struct's cpus_allowed. */
-> diff -u -N -r linux-2.6.30.orig/kernel/fork.c linux-2.6.30/kernel/fork.c
-> --- linux-2.6.30.orig/kernel/fork.c	2009-06-04 09:29:47.000000000 +0200
-> +++ linux-2.6.30/kernel/fork.c	2009-06-04 13:15:35.000000000 +0200
-> @@ -1092,6 +1092,8 @@
->  	if (unlikely(current->ptrace))
->  		ptrace_fork(p, clone_flags);
->  
-> +	p->stack_start = stack_start;
-
-OK, that got simpler.
-
-> Signed-off-by: Stefani Seibold <stefani@seibold.net>
-
-This should be positioned at the end of the changelog, ahead of the
-patch itself.
+-Greg
 
 
+--------------enig455CD13D7B9610358673AFBE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkons4QACgkQP5K2CMvXmqGPQQCfYjfZaVjDSxRtvYY9b0SKyDCK
+7GoAn2Y3fxC+4qPtljfwF/4wBVCgUJnF
+=mcd8
+-----END PGP SIGNATURE-----
+
+--------------enig455CD13D7B9610358673AFBE--
