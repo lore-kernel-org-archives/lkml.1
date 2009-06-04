@@ -1,98 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZFDX1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753127AbZFDXfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754495AbZFDX1u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 19:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbZFDX1n
+	id S1753127AbZFDXfd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 19:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZFDXfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 19:27:43 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:34950 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751798AbZFDX1m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 19:27:42 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Dave Jones <davej@redhat.com>
-Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
-Date: Thu, 4 Jun 2009 18:26:40 -0500
-User-Agent: KMail/1.9.9
-Cc: Harald Welte <HaraldWelte@viatech.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <20090604214301.GB20822@redhat.com> <200906041700.17852.lkml@morethan.org>
-In-Reply-To: <200906041700.17852.lkml@morethan.org>
+	Thu, 4 Jun 2009 19:35:25 -0400
+Received: from plexity.net ([206.123.115.38]:41030 "EHLO plexity.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751202AbZFDXfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 19:35:25 -0400
+Date: Thu, 4 Jun 2009 23:33:49 +0000
+From: Deepak Saxena <dsaxena@plexity.net>
+To: Pierre Ossman <pierre@ossman.eu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MMC: Add 400ms to CAFE SD controller resume path
+Message-ID: <20090604233349.GA2545@plexity.net>
+Reply-To: dsaxena@plexity.net
+References: <20090513200556.GA7882@plexity.net> <20090522135150.7e0716d6@mjolnir.ossman.eu> <20090528013629.0173522b.akpm@linux-foundation.org> <20090528104823.0a551ecb@mjolnir.ossman.eu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906041826.42856.lkml@morethan.org>
+In-Reply-To: <20090528104823.0a551ecb@mjolnir.ossman.eu>
+Organization: Plexity, LLC
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu June 4 2009, Michael S. Zick wrote:
-> On Thu June 4 2009, Dave Jones wrote:
-> > On Thu, Jun 04, 2009 at 04:38:13PM -0500, Michael S. Zick wrote:
->
-
-I have it now, you where speaking of the "product vendor Centaur"
-not a specific model name "Centaur".
-
-Which I translate into: that statement block needs to be converted into
-(possibly nested) switch statement(s).
-Since there is not a "model check" in it only a "Series" and "Vendor" check.
-
-Yuck.
-Mike
-
-> >  > I have already preceded that chunk of code with a printk and confirmed
-> >  > that x86_clflush_size is properly set to 64 bytes (somewhere else).
-> >  > 
-> >  > So your suggestion is the obvious one for the C7-M,
-> >  > I don't know about any other makes/models. 
-> >  > 
-> >  > This machine's C7-M is being reported as a "stepping 0" ??
-> >  > What is earlier than a stepping 0 ??
+On May 28 2009, at 10:48, Pierre Ossman was caught saying:
+> On Thu, 28 May 2009 01:36:29 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Fri, 22 May 2009 13:51:50 +0200 Pierre Ossman <pierre@ossman.eu> wrote:
 > > 
-> > Earlier model numbers.
-> > (Stepping gets reset to 0 every time they bump the model)
+> > > 
+> > > Reading through that report, I don't believe you properly worked around
+> > > the bug. You only avoid bug 1339, but that's only mildly related.
+> > > 
+> > > What this workaround does is to make sure that MMC_UNSAFE_RESUME
+> > > actually works. But if you change cards during suspend, the VFS bug
+> > > should reappear and you'll corrupt the partition table.
+> > 
+> > What do you think the VFS did wrong here?
 > > 
 > 
-> So 6.model=13.stepping=0 should do it for the (or this) C7-M, correct?
-> Your mention of "earlier models" will not apply until there is a
-> stepping >0 for a model=13, correct?
-> 
-> Would a good practice be to put a "WARN_ON" in there in case a stepping
-> greater than =0 happens to execute the code?
-> In addition to checking specificly for 6.13.0 (rather than just 6.13).
-> 
-> Hmmm...
-> But that is making a big mess of a small mess -
-> Why not just do the assignment you suggest for 6.model>=13?
-> 
-> Models earlier than 13 are evidently working (due to lack of
-> bug reports or other noise on this list).
-> 
-> Mike
-> > 	Dave
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> > 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+> Might be the block layer as well. Somehow requests associated with an
+> old block device end up on the queue of a new block device. I don't
+> see how this can happen given Linux' device model, but somehow it does.
 
+The request is not ending up in the queue of the new device.  If I 
+recall correctyl What is happening is that userspace does an unmount on the 
+old device when it receives the notification that it is gone (since it is not 
+redected and a new entry is created). By the time that unmount is called, the 
+various data structures for the device has been zeroed out but the various 
+operation pointers are !NULL, so when we go back to write the superblock for 
+the mounted partition, we overwrite the device's partition table as the
+partition offset is now 0. The main issue here is that the kernel is allowing 
+an I/O to a device that is technically still there but not from the kernel's
+POV.
+ 
+~Deepak
+
+-- 
+In the end, they will not say, "those were dark times,"  they will ask
+"why were their poets silent?" - Bertold Brecht
 
