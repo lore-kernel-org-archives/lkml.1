@@ -1,41 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbZFDTPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbZFDTSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754253AbZFDTPX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 15:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbZFDTPM
+	id S1752661AbZFDTSp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 15:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbZFDTSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 15:15:12 -0400
-Received: from cs20.apochromatic.org ([204.152.189.161]:56774 "EHLO
-	cs20.apochromatic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751297AbZFDTPM (ORCPT
+	Thu, 4 Jun 2009 15:18:38 -0400
+Received: from tango.0pointer.de ([85.214.72.216]:37039 "EHLO
+	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbZFDTSi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 15:15:12 -0400
-Date: Thu, 4 Jun 2009 20:15:13 +0100
-From: Matt Fleming <matt@console-pimps.org>
-To: Stefan Bader <stefan.bader@canonical.com>
-Cc: Pierre Ossman <pierre@ossman.eu>, Jens Axboe <axboe@kernel.dk>,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@canonical.com>
-Subject: Re: [PATCH] mmc: prevent dangling block device from accessing
-	stale queues
-Message-ID: <20090604191513.GA5702@console-pimps.org>
-References: <4A280BD4.9080908@canonical.com> <20090604202900.57f31d6a@mjolnir.ossman.eu> <4A2819DA.7040603@canonical.com>
+	Thu, 4 Jun 2009 15:18:38 -0400
+Date: Thu, 4 Jun 2009 21:18:13 +0200
+From: Lennart Poettering <mzxreary@0pointer.de>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-media@vger.kernel.org
+Subject: [PATCH] V4L/pwc - use usb_interface as parent, not usb_device
+Message-ID: <20090604191813.GA6281@tango.0pointer.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A2819DA.7040603@canonical.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Organization: Red Hat, Inc.
+User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 09:00:42PM +0200, Stefan Bader wrote:
->
-> Hm, not sure this is what you wanted to know... On the launchpad report 
-> there are logs which I took with lots of printk's enabled. This shows that 
-> after resume the queue receives a request from mmcblk0 (which no longer 
-> exists) but uses the same pointer as mmcblk1 which was just created.
->
+The current code creates a sysfs device path where the video4linux
+device is child of the usb device itself instead of the interface it
+belongs to. That is evil and confuses udev.
 
-Maybe I'm missing something, but why is the device instance being
-destroyed during a suspend? E.g why do you have mmcblk0 before suspend and
-mmcblk1 after suspend?
+This patch does basically the same thing as Kay's similar patch for the
+ov511 driver:
+
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=ce96d0a44a4f8d1bb3dc12b5e98cb688c1bc730d
+
+(Resent 2nd time, due to missing Signed-off-by)
+
+Lennart
+
+Signed-off-by: Lennart Poettering <mzxreary@0pointer.de>
+---
+ drivers/media/video/pwc/pwc-if.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/media/video/pwc/pwc-if.c b/drivers/media/video/pwc/pwc-if.c
+index 7c542ca..92d4177 100644
+--- a/drivers/media/video/pwc/pwc-if.c
++++ b/drivers/media/video/pwc/pwc-if.c
+@@ -1783,7 +1783,7 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id
+ 		return -ENOMEM;
+ 	}
+ 	memcpy(pdev->vdev, &pwc_template, sizeof(pwc_template));
+-	pdev->vdev->parent = &(udev->dev);
++	pdev->vdev->parent = &intf->dev;
+ 	strcpy(pdev->vdev->name, name);
+ 	video_set_drvdata(pdev->vdev, pdev);
+ 
+-- 
+1.6.2.2
+
+
+
+Lennart
+
+-- 
+Lennart Poettering                        Red Hat, Inc.
+lennart [at] poettering [dot] net         ICQ# 11060553
+http://0pointer.net/lennart/           GnuPG 0x1A015CC4
