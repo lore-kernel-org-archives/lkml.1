@@ -1,115 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbZFDIHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbZFDIJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757222AbZFDIHe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 04:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbZFDIHT
+	id S1757430AbZFDIJO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 04:09:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbZFDIJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 04:07:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44733 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753211AbZFDIHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 04:07:17 -0400
-Date: Thu, 4 Jun 2009 08:06:33 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       rostedt@goodmis.org, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       rostedt@goodmis.org, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf top: Reduce default filter threshold
-Message-ID: <tip-6e53cdf11dfc8d302ebb67e7112d1baf8d7c66d4@git.kernel.org>
-Git-Commit-ID: 6e53cdf11dfc8d302ebb67e7112d1baf8d7c66d4
-X-Mailer: tip-git-log-daemon
+	Thu, 4 Jun 2009 04:09:00 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:25732 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754166AbZFDII7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 04:08:59 -0400
+From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
+To: ext Takashi Iwai <tiwai@suse.de>
+Subject: Re: linux-next: sound tree build failure
+Date: Thu, 4 Jun 2009 11:08:13 +0300
+User-Agent: KMail/1.11.3 (Linux/2.6.29-gentoo-r5; KDE/4.2.3; i686; ; )
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+References: <20090604173342.b7dbca6d.sfr@canb.auug.org.au> <s5hk53s4e9w.wl%tiwai@suse.de>
+In-Reply-To: <s5hk53s4e9w.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 04 Jun 2009 08:06:35 +0000 (UTC)
+Message-Id: <200906041108.13829.peter.ujfalusi@nokia.com>
+X-OriginalArrivalTime: 04 Jun 2009 08:08:11.0252 (UTC) FILETIME=[9A371B40:01C9E4EB]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6e53cdf11dfc8d302ebb67e7112d1baf8d7c66d4
-Gitweb:     http://git.kernel.org/tip/6e53cdf11dfc8d302ebb67e7112d1baf8d7c66d4
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Thu, 4 Jun 2009 08:53:05 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 4 Jun 2009 09:02:12 +0200
+On Thursday 04 June 2009 11:03:07 ext Takashi Iwai wrote:
+> At Thu, 4 Jun 2009 17:33:42 +1000,
+>
+> Stephen Rothwell wrote:
+> > Hi Takashi,
+> >
+> > Today's linux-next build (powerpc allyesconfig) failed like this:
+> >
+> > sound/soc/codecs/twl4030.c: In function 'twl4030_read_reg_cache':
+> > sound/soc/codecs/twl4030.c:152: error: 'cache' undeclared (first use in
+> > this function)
+> >
+> > Caused by commit 16a30fbb0d3aa4ee829a2dd3d0e314e2b5ae96a9 ("ASoC:
+> > TWL4030: Use reg_cache in twl4030_init_chip").
+> >
+> > I reverted that commit for today.
+>
+> Thanks.  It's likely a cut-and-paste error in that commit.
+> I fixed now on sound git tree.
 
-perf top: Reduce default filter threshold
+Yes, it was a cut-and-paste error. I have also made the patch to fix it.
+I'll not send it, thanks Takashi for fixing it.
 
-On idle systems 'perf top' comes up empty by default, because the event
-count filter is set to 100.
+It is so embarrassing, since this is the second time that my patch broke the 
+linux-next build.
+I'll try to be even more careful in the future.
 
-Reduce it to 5 instead.
+Again, sorry about this.
 
-Also add an option to limit the number of functions displayed.
+>
+> Takashi
 
-Reported-by: Steven Rostedt <rostedt@goodmis.org>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- Documentation/perf_counter/builtin-top.c |   13 ++++++++-----
- 1 files changed, 8 insertions(+), 5 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-top.c b/Documentation/perf_counter/builtin-top.c
-index 7c907e2..3f7778b 100644
---- a/Documentation/perf_counter/builtin-top.c
-+++ b/Documentation/perf_counter/builtin-top.c
-@@ -64,9 +64,10 @@ static int			default_interval = 100000;
- static int			event_count[MAX_COUNTERS];
- static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
- 
--static __u64			count_filter		       = 100;
-+static __u64			count_filter			=  5;
-+static int			print_entries			= 15;
- 
--static int			target_pid				= -1;
-+static int			target_pid			= -1;
- static int			profile_cpu			= -1;
- static int			nr_cpus				=  0;
- static unsigned int		realtime_prio			=  0;
-@@ -254,7 +255,7 @@ static void print_sym_table(void)
- 		struct symbol *sym = (struct symbol *)(syme + 1);
- 		float pcnt;
- 
--		if (++printed > 18 || syme->snap_count < count_filter)
-+		if (++printed > print_entries || syme->snap_count < count_filter)
- 			continue;
- 
- 		pcnt = 100.0 - (100.0 * ((sum_kevents - syme->snap_count) /
-@@ -650,7 +651,7 @@ static const struct option options[] = {
- 		    "number of seconds to delay between refreshes"),
- 	OPT_BOOLEAN('D', "dump-symtab", &dump_symtab,
- 			    "dump the symbol table used for profiling"),
--	OPT_INTEGER('f', "--count-filter", &count_filter,
-+	OPT_INTEGER('f', "count-filter", &count_filter,
- 		    "only display functions with more events than this"),
- 	OPT_BOOLEAN('g', "group", &group,
- 			    "put the counters into a counter group"),
-@@ -662,8 +663,10 @@ static const struct option options[] = {
- 		    "track mmap events"),
- 	OPT_BOOLEAN('U', "use-munmap", &use_munmap,
- 		    "track munmap events"),
--	OPT_INTEGER('F', "--freq", &freq,
-+	OPT_INTEGER('F', "freq", &freq,
- 		    "profile at this frequency"),
-+	OPT_INTEGER('E', "entries", &print_entries,
-+		    "display this many functions"),
- 	OPT_END()
- };
- 
+-- 
+Péter
