@@ -1,73 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbZFDAVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZFDAW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754365AbZFDAVQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 20:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZFDAVB
+	id S1754715AbZFDAW0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 20:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753406AbZFDAWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 20:21:01 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:55311 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753406AbZFDAVA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 20:21:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=RTqkcIqzeql0NQ78an6xoeIqvWtW2A2xU5SbldP6dx8ADxWzVgb7mMgRNtB5sRn/F/
-         aGrIZtbb4dtXkr8tHwAM0Rmg53xiPdt0Yk2OsZejbQHXrxaLQCcaKJFxC+nb7JeNB+rc
-         dHwLnUvjE2VncfLZT+5fcuuF/+MxSDQ8BwjUY=
-Subject: Re: [PATCH v3] MFD: PCAP driver
-From: Daniel Ribeiro <drwyrm@gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Harald Welte <laforge@gnumonks.org>,
-       Philipp Zabel <philipp.zabel@gmail.com>,
-       openezx-devel <openezx-devel@lists.openezx.org>,
-       linux-next <linux-next@vger.kernel.org>
-In-Reply-To: <10f740e80906030738x3b42de18n189367b28a730c56@mail.gmail.com>
-References: <1243399356.2263.46.camel@brutus>
-	 <10f740e80906030738x3b42de18n189367b28a730c56@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 03 Jun 2009 21:20:56 -0300
-Message-Id: <1244074856.4767.26.camel@brutus>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 3 Jun 2009 20:22:19 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:57204 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753489AbZFDAWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 20:22:18 -0400
+Message-ID: <4A27134A.2080209@linux.vnet.ibm.com>
+Date: Wed, 03 Jun 2009 17:20:26 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
+MIME-Version: 1.0
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, torvalds@linux-foundation.org,
+       xemul@parallels.com, orenl@cs.columbia.edu, serue@us.ibm.com,
+       dave@linux.vnet.ibm.com, mingo@elte.hu
+Subject: Re: [PATCH 07/38] pidns 1/2: make create_pid_namespace() accept parent
+ pidns
+References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com> <1242968132-1044-7-git-send-email-adobriyan@gmail.com>
+In-Reply-To: <1242968132-1044-7-git-send-email-adobriyan@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Qua, 2009-06-03 às 16:38 +0200, Geert Uytterhoeven escreveu: 
-> > +config EZX_PCAP
-> > +       bool "PCAP Support"
-> > +       depends on SPI_MASTER
+Alexey Dobriyan wrote:
+> create_pid_namespace() creates everything, but caller has to assign parent
+> pidns by hand, which is unnatural. At the moment of call new ->level has
+> to be taken from somewhere and parent pidns is already available.
 > 
-> It also has to depend on GENERIC_HARDIRQS, as it needs set_irq_type():
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Acked-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-Hi Geert, sorry for this. :)
-
-
-
-Fix EZX_PCAP dependency
-
-Signed-off-by: Daniel Ribeiro <drwyrm@gmail.com>
-
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 060ee14..6557d60 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -243,7 +243,7 @@ config PCF50633_GPIO
- 
- config EZX_PCAP
- 	bool "PCAP Support"
--	depends on SPI_MASTER
-+	depends on GENERIC_HARDIRQS && SPI_MASTER
- 	help
- 	  This enables the PCAP ASIC present on EZX Phones. This is
- 	  needed for MMC, TouchScreen, Sound, USB, etc..
-
--- 
-Daniel Ribeiro
+> ---
+>  kernel/pid_namespace.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
+> index 2d1001b..495d5de 100644
+> --- a/kernel/pid_namespace.c
+> +++ b/kernel/pid_namespace.c
+> @@ -67,9 +67,10 @@ err_alloc:
+>  	return NULL;
+>  }
+>  
+> -static struct pid_namespace *create_pid_namespace(unsigned int level)
+> +static struct pid_namespace *create_pid_namespace(struct pid_namespace *parent_pid_ns)
+>  {
+>  	struct pid_namespace *ns;
+> +	unsigned int level = parent_pid_ns->level + 1;
+>  	int i;
+>  
+>  	ns = kmem_cache_zalloc(pid_ns_cachep, GFP_KERNEL);
+> @@ -86,6 +87,7 @@ static struct pid_namespace *create_pid_namespace(unsigned int level)
+>  
+>  	kref_init(&ns->kref);
+>  	ns->level = level;
+> +	ns->parent = get_pid_ns(parent_pid_ns);
+>  
+>  	set_bit(0, ns->pidmap[0].page);
+>  	atomic_set(&ns->pidmap[0].nr_free, BITS_PER_PAGE - 1);
+> @@ -125,9 +127,7 @@ struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *old
+>  	if (flags & CLONE_THREAD)
+>  		goto out_put;
+>  
+> -	new_ns = create_pid_namespace(old_ns->level + 1);
+> -	if (!IS_ERR(new_ns))
+> -		new_ns->parent = get_pid_ns(old_ns);
+> +	new_ns = create_pid_namespace(old_ns);
+>  
+>  out_put:
+>  	put_pid_ns(old_ns);
 
