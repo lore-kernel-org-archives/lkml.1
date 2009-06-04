@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbZFDNMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbZFDNNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756073AbZFDNMa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 09:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbZFDNMJ
+	id S1756038AbZFDNNT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 09:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbZFDNNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 09:12:09 -0400
-Received: from av8-1-sn3.vrr.skanova.net ([81.228.9.183]:38153 "EHLO
-	av8-1-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755086AbZFDNMH (ORCPT
+	Thu, 4 Jun 2009 09:13:07 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34917 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752458AbZFDNNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 09:12:07 -0400
-X-Greylist: delayed 1139 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Jun 2009 09:12:07 EDT
-Message-ID: <4A27C3B0.5000605@mocean-labs.com>
-Date: Thu, 04 Jun 2009 14:53:04 +0200
-From: =?UTF-8?B?UmljaGFyZCBSwprDtmpmb3Jz?= 
-	<richard.rojfors.ext@mocean-labs.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] gpio: Added timbgpio
-References: <4A262F54.3090106@mocean-labs.com> <20090604005119.6b4f80e0.akpm@linux-foundation.org>
-In-Reply-To: <20090604005119.6b4f80e0.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Jun 2009 09:13:05 -0400
+Date: Thu, 4 Jun 2009 15:20:23 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Avi Kivity <avi@redhat.com>
+Cc: Andi Kleen <andi@firstfloor.org>, ying.huang@intel.com,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [2/2] KVM: Add VT-x machine check support
+Message-ID: <20090604132023.GC1065@one.firstfloor.org>
+References: <20090604112.650907584@firstfloor.org> <20090604111205.C47C31D0282@basil.firstfloor.org> <4A27B481.5020003@redhat.com> <20090604125123.GY1065@one.firstfloor.org> <4A27C2BF.3090108@redhat.com> <20090604130107.GA1065@one.firstfloor.org> <4A27C7B6.6030709@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A27C7B6.6030709@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 03 Jun 2009 10:07:48 +0200 Richard R____jfors  <richard.rojfors.ext@mocean-labs.com> wrote:
+On Thu, Jun 04, 2009 at 04:10:14PM +0300, Avi Kivity wrote:
+> Andi Kleen wrote:
+> >>vmcs access work because we have a preempt notifier called when we are 
+> >>scheduled in, and will execute vmclear/vmptrld as necessary.  Look at 
+> >>kvm_preempt_ops in virt/kvm_main.c.
+> >>    
+> >
+> >I see. So we need to move that check earlier. Do you have a preference
+> >where it should be?
+> >  
 > 
->> Supplied is a GPIO driver for the Timberdale FPGA found on the
->> Intel Atom board Russellville.
->>
->> ...
->>
->> +EXPORT_SYMBOL(timbgpio_gpio_flnk_lvl_ctrl);
->> +EXPORT_SYMBOL(timbgpio_gpio_int_ctrl);
->> +EXPORT_SYMBOL(timbgpio_gpio_lvl_ctrl);
->> +EXPORT_SYMBOL(timbgpio_gpio_int_clr);
-> 
-> Why all these module exports?
+> There's no good place as it breaks the nice exit handler table.  You 
+> could put it in vmx_complete_interrupts() next to NMI handling.
 
-Internal stuff, I will remove it.
+I think I came up with a easy cheesy but not too bad solution now that should 
+work. It simply remembers the CPU in the vcpu structure and schedules back to 
+it. That's fine for this purpose. 
 
->> ...
->>
->> +config GPIO_TIMBERDALE
->> +	tristate "Support for timberdale GPIO"
->> +	depends on MFD_TIMBERDALE && GPIOLIB
->> +	---help---
->> +	Add support for GPIO usage of some pins of the timberdale FPGA.
->> +
-> 
-> I cannot find anything which sets MFD_TIMBERDALE anywhere?
+Currently testing the patch.
 
-Sorry, I realize I have to come back with a bigger patch set.
+-Andi
 
-Timberdale is the MFD driver for the FPGA which among other expose this GPIO device.
-This patch set will depend on patches in i2c-ocores and xilinx_spi which I have posted
-earlier on the corresponding mailinglists.
-Shall I repost those driver changes within this patch set, or can I leave them out?
-
---Richard
+-- 
+ak@linux.intel.com -- Speaking for myself only.
