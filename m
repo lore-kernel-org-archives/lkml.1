@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbZFDKZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbZFDK0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048AbZFDKZb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 06:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbZFDKZT
+	id S1753687AbZFDK0h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 06:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbZFDK02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 06:25:19 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39205 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752346AbZFDKZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 06:25:18 -0400
-Message-ID: <4A27A10C.2050405@redhat.com>
-Date: Thu, 04 Jun 2009 13:25:16 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 4 Jun 2009 06:26:28 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:41457 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752555AbZFDK01 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 06:26:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kfaBc1ApInF5rkgdtp4dIZrFKrnIvUJCmIdzGXW7kWGLwEkKa8lbPpDRYeszZHhcoz
+         abm8WopwdZfuI64EFvfHX6tddaEE41rhpQYtg1RC/90Ykaxq509NFdrC4CHf/PQopuXz
+         Xje8huQYFwimb29MaVUcvtafpBvKvwGPXWYJ4=
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, davidel@xmailserver.org,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [KVM-RFC PATCH 0/2] irqfd: use POLLHUP notification for close()
-References: <20090602151135.29746.91320.stgit@dev.haskins.net> <20090602160434.GA6827@redhat.com> <4A254FD7.5090302@novell.com> <20090602162021.GB6827@redhat.com> <4A255484.6060401@novell.com> <20090602165949.GD6827@redhat.com> <4A256431.2080101@novell.com> <20090603063956.GA8134@redhat.com>
-In-Reply-To: <20090603063956.GA8134@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <18973.54100.522638.314377@samba.org>
+References: <1241199689.13073.6.camel@norville.austin.ibm.com>
+	 <87bpqbaji9.fsf@devron.myhome.or.jp>
+	 <18940.9039.850580.48730@samba.org>
+	 <87ab5v9381.fsf@devron.myhome.or.jp>
+	 <18940.10942.989329.993465@samba.org>
+	 <87ocub7ngh.fsf@devron.myhome.or.jp>
+	 <18940.12667.429391.927727@samba.org>
+	 <8763gj7m23.fsf@devron.myhome.or.jp>
+	 <ce9ab5790905270505i530febcerfda874f5049c6c93@mail.gmail.com>
+	 <18973.54100.522638.314377@samba.org>
+Date: Thu, 4 Jun 2009 15:56:28 +0530
+Message-ID: <ce9ab5790906040326t8deb5fbs600c8c8cd93d9746@mail.gmail.com>
+Subject: Re: [PATCH] Add CONFIG_VFAT_NO_CREATE_WITH_LONGNAMES option
+From: vimal singh <vimal.newwork@gmail.com>
+To: tridge@samba.org
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Steve French <sfrench@us.ibm.com>, Mingming Cao <cmm@us.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael S. Tsirkin wrote:
-> On Tue, Jun 02, 2009 at 01:41:05PM -0400, Gregory Haskins wrote:
->   
->>> And having close not clean up the state unless you do an ioctl first is
->>> very messy IMO - I don't think you'll find any such examples in kernel.
->>>
->>>   
->>>       
->> I agree, and that is why I am advocating this POLLHUP solution.  It was
->> only this other way to begin with because the technology didn't exist
->> until Davide showed me the light.
->>
->> Problem with your request is that I already looked into what is
->> essentially a bi-directional reference problem (for a different reason)
->> when I started the POLLHUP series.  Its messy to do this in a way that
->> doesn't negatively impact the fast path (introducing locking, etc) or
->> make my head explode making sure it doesn't race.  Afaict, we would need
->> to solve this problem to do what you are proposing (patches welcome).
->>
->> If this hybrid decoupled-deassign + unified-close is indeed an important
->> feature set, I suggest that we still consider this POLLHUP series for
->> inclusion, and then someone can re-introduce DEASSIGN support in the
->> future as a CAP bit extension.  That way we at least get the desirable
->> close() properties that we both seem in favor of, and get this advanced
->> use case when we need it (and can figure out the locking design).
->>
->>     
+On Thu, May 28, 2009 at 5:27 AM,  <tridge@samba.org> wrote:
+> Hi Vimal,
 >
-> FWIW, I took a look and yes, it is non-trivial.
-> I concur, we can always add the deassign ioctl later.
->   
+>  > Any conclusion has been reached reagarding this patch...?
+>
+> We've been working to resolve some of the issues people raised (for
+> example, a public explanation on why the patch is needed). We have
+> also been working towards an improved version of the patch. Sorry it's
+> taking so long, but we hope to be able to post a new patch soon.
+Is there any problem in previous patch, which you looking to fix in
+the new version? Or these are all non-technical issues.
+Can I take this patch for as of now?
 
-I agree that deassign is needed for reasons of symmetry, and that it can 
-be added later.
+-vimal
+
+>
+> Cheers, Tridge
+>
+
+
 
 -- 
-error compiling committee.c: too many arguments to function
+---
+Regards,
+\/ | |\/| /-\ |_
 
+____      __o
+------   -\<,
+-----  ( )/ ( )
