@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbZFDVnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbZFDVxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754824AbZFDVnf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 17:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbZFDVnX
+	id S1754467AbZFDVxS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 17:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZFDVxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 17:43:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43034 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754803AbZFDVnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 17:43:22 -0400
-Date: Thu, 4 Jun 2009 17:43:01 -0400
-From: Dave Jones <davej@redhat.com>
-To: "Michael S. Zick" <lkml@morethan.org>
-Cc: Harald Welte <HaraldWelte@viatech.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
-Message-ID: <20090604214301.GB20822@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"Michael S. Zick" <lkml@morethan.org>,
-	Harald Welte <HaraldWelte@viatech.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Duane Griffin <duaneg@dghda.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906041601.33400.lkml@morethan.org> <20090604212454.GA20822@redhat.com> <200906041638.15480.lkml@morethan.org>
+	Thu, 4 Jun 2009 17:53:06 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:39939 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751060AbZFDVxF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 17:53:05 -0400
+From: Dave McCracken <dcm@mccr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native kernels
+Date: Thu, 4 Jun 2009 16:52:54 -0500
+User-Agent: KMail/1.11.2 (Linux/2.6.28; KDE/4.2.2; x86_64; ; )
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Nick Piggin <npiggin@suse.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>
+References: <4A0B62F7.5030802@goop.org> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200906041638.15480.lkml@morethan.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200906041652.55298.dcm@mccr.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 04:38:13PM -0500, Michael S. Zick wrote:
- > I have already preceded that chunk of code with a printk and confirmed
- > that x86_clflush_size is properly set to 64 bytes (somewhere else).
- > 
- > So your suggestion is the obvious one for the C7-M,
- > I don't know about any other makes/models. 
- > 
- > This machine's C7-M is being reported as a "stepping 0" ??
- > What is earlier than a stepping 0 ??
+On Thursday 04 June 2009, Linus Torvalds wrote:
+> On Thu, 4 Jun 2009, Rusty Russell wrote:
+> > > Turn off HIGHMEM64G, please (and HIGHMEM4G too, for that matter - you
+> > > can't compare it to a no-highmem case).
+> >
+> > Thanks, your point is demonstrated below.  I don't think HIGHMEM4G is
+> > unreasonable for a distro tho, so I turned that on instead.
+>
+> Well, I agree that HIGHMEM4G is a reasonable thing to turn on.
+>
+> The thing I disagree with is that it's at all valid to then compare to
+> some all-software feature thing. HIGHMEM doesn't expand any esoteric
+> capability that some people might use - it's about regular RAM for regular
+> users.
 
-Earlier model numbers.
-(Stepping gets reset to 0 every time they bump the model)
+I think you're missing the point of Rusty's benchmark.  I see his exercise as 
+"compare a kernel configured as a distro would vs a custom-built kernel 
+configured for the exact target environment".  In that light, questions about 
+the CONFIG options Rusty used should be based on whether most distros would 
+use them in their stock kernels as opposed to how necessary they are.
 
-	Dave
+What I see as the message of his benchmark is if you care about performance 
+you should be customizing your kernel anyway.  Distro kernels are slow.  An 
+option that makes the distro kernel a bit slower is no big deal since anyone 
+who wants speed should already be rebuilding their kernel.
+
+Don't get me wrong.  I think it's always a good idea to minimize any 
+performance penalty, even under specific configurations.  I just think 
+criticizing it because distros might enable it is a poor argument.
+
+Dave McCracken
+Oracle Corp.
 
