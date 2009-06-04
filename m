@@ -1,90 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbZFDIoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZFDIpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755916AbZFDIoT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 04:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbZFDIoF
+	id S1756194AbZFDIpW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 04:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbZFDIpI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 04:44:05 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56620 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbZFDIoD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 04:44:03 -0400
-Message-ID: <4A2788FA.2050606@jp.fujitsu.com>
-Date: Thu, 04 Jun 2009 17:42:34 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 4 Jun 2009 04:45:08 -0400
+Received: from www.tglx.de ([62.245.132.106]:57863 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751091AbZFDIpH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 04:45:07 -0400
+Date: Thu, 4 Jun 2009 10:44:38 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+cc: Zhaolei <zhaolei@cn.fujitsu.com>, mingo@elte.hu,
+       LKML <linux-kernel@vger.kernel.org>, kosaki.motohiro@jp.fujitsu.com,
+       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
+Subject: Re: [PATCH 1/3] ftrace: add tracepoint for timer
+In-Reply-To: <4A275DDC.6020507@cn.fujitsu.com>
+Message-ID: <alpine.LFD.2.00.0906041017220.3419@localhost.localdomain>
+References: <4A167615.7050208@cn.fujitsu.com> <alpine.LFD.2.00.0905262334030.1762@localhost.localdomain> <4A1CED66.7030805@cn.fujitsu.com> <alpine.LFD.2.00.0905271202260.3397@localhost.localdomain> <4A1F41C5.7000803@cn.fujitsu.com>
+ <alpine.LFD.2.00.0905290935030.3397@localhost.localdomain> <4A25E575.5000601@cn.fujitsu.com> <alpine.LFD.2.00.0906031756590.3419@localhost.localdomain> <4A275DDC.6020507@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>
-CC: lenb@kernel.org, linux-acpi@vger.kernel.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH v2 07/11] ACPI: acpi_pci_unbind should clean up properly
- after	acpi_pci_bind
-References: <20090604054504.18802.21690.stgit@bob.kio> <20090604055852.18802.22743.stgit@bob.kio>
-In-Reply-To: <20090604055852.18802.22743.stgit@bob.kio>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> In acpi_pci_bind, we add _PRT information for non-bridge devices, but
-> we never delete that information in acpi_pci_unbind.
+On Thu, 4 Jun 2009, Xiao Guangrong wrote:
+> > void debug_and_trace_timer_activate(....)
+> > {
+> > 	debug_timer_activate(...);
+> > 	trace_timer_activate(...);
+> > }
+> > 
+> > in the timer code:
+> > 
+> > -      debug_timer_activate(...);
+> > +      debug_and_trace_timer_activate(...);
+> > 
+> > So this does not change the order of functions at all, but it avoids
+> > sprinkling the real code with tons of extra crap.
+> > 
 > 
-> We also set device->ops.bind and device->ops.unbind, but never clear
-> them out.
+> See below code:
 > 
-> Let's make acpi_pci_unbind clean up what we did in acpi_pci_bind.
-> 
-> Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
-> 
->  drivers/acpi/pci_bind.c |   11 +++++++++--
->  1 files changed, 9 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/acpi/pci_bind.c b/drivers/acpi/pci_bind.c
-> index 62cb383..5fa1c5e 100644
-> --- a/drivers/acpi/pci_bind.c
-> +++ b/drivers/acpi/pci_bind.c
-> @@ -106,14 +106,21 @@ EXPORT_SYMBOL(acpi_get_pci_id);
->  
->  static int acpi_pci_unbind(struct acpi_device *device)
->  {
-> +	struct pci_bus *bus;
->  	struct pci_dev *dev;
->  
->  	dev = acpi_get_pci_dev(device->handle);
->  	if (!dev)
->  		return 0;
->  
-> -	if (dev->subordinate)
-> -		acpi_pci_irq_del_prt(dev->subordinate);
-> +	if (dev->subordinate) {
-> +		bus = dev->subordinate;
-> +		device->ops.bind = NULL;
-> +		device->ops.unbind = NULL;
-> +	 } else
-> +		bus = dev->bus;
-> +
-> +	acpi_pci_irq_del_prt(bus);
->  
+> static inline int
+> __mod_timer(......)
+> {
+> 	......
+> 	......
+>
+ 	
+- 	debug_timer_activate(timer);
++	debug_and_trace_timer_activate(timer, expires);
 
-I have a concern about this change.
+  Does the trick nicely
 
-The acpi_pci_irq_del_prt() against dev->bus removes not only
-the _PRT entries for PCI function corresponding to specified
-acpi_device, but also other _PRT entries for working PCI
-devices/functions on the same bus. As a result, interrupt
-initialization for those PCI functions would no longer work
-properly after that.
+> In addition, do you agree my humble opinion about not put __init_timer() and
+> debug_timer_init() together? (can be found at:
 
-So I think we should not call acpi_pci_irq_del_prt() against
-dev->bus.
+No, I do not agree at all. I still see no value in those extra trace
+points. As I showed you above you can hide all in extra arguments to a
+combined debug_trace_xxx() function.
+
+> http://marc.info/?l=linux-kernel&m=124399744614127&w=2)
+
+>> But TRACE_EVENT not only be used in ftrace but also be used in
+>> other probe module. Maybe detailed information of timer is
+>> requisite in other probe funtion.  In this case, we must put
+>> trace_timer_init() after __init_timer().
+
+Please stop this handwaving about potential use cases. I still have
+not seen a single technical argument which explains the benefit of
+those extra trace points. If we follow your "maybe its needed" logic
+then we have to add yet another dozen of tracepoints into the same
+functions to gather all possible states which might be there.
+
+Tracing is important but it needs to be done unintrusive to the code
+and you have to apply common sense which information is really
+valuable and necessary. Gathering random crap just because it might be
+necessary at some point is useless.
+
+Get your gear together, sit down and think hard about which
+information a tracer or a probe needs to have to give us a useful
+insight into a particular object or function.
+
+As long as there is no technical convincing argument that the gathered
+information is really useful I'm not going to apply any of those
+patches to the code I maintain.
 
 Thanks,
-Kenji Kaneshige
 
-
+	tglx
