@@ -1,89 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbZFDLxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbZFDLxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756872AbZFDLxZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 07:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbZFDLxM
+	id S1757647AbZFDLxt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 07:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756194AbZFDLxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 07:53:12 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:17784 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754166AbZFDLxJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 07:53:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=Z8tT0dN0hDik4xJzmJiRd1MFgGqJNrQHwpYw1lEEGtMWyHM7CDUQPUzyUr7YEwbmwr
-         jtyH7RzEttlZ5X24qMNny+z1jidn/kzBGoCZ4YJz8IjtRe1ohaUSgcWYB0bKcvlo03/R
-         PbgMuNQWhv/Bhev6xsJCm6LNNc5GcvrdaKg2E=
-Message-ID: <4A27B597.7090003@gmail.com>
-Date: Thu, 04 Jun 2009 07:52:55 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Thu, 4 Jun 2009 07:53:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60949 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754687AbZFDLxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 07:53:40 -0400
+Date: Thu, 4 Jun 2009 13:53:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2][GIT PULL] tracing: add trace_stack interface
+Message-ID: <20090604115334.GA26925@elte.hu>
+References: <alpine.DEB.2.00.0905192043090.7816@gandalf.stny.rr.com> <alpine.DEB.2.00.0905192108560.7816@gandalf.stny.rr.com> <20090603214814.GA5193@nowhere>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, davidel@xmailserver.org,
-       paulmck@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [KVM-RFC PATCH 0/2] irqfd: use POLLHUP notification for close()
-References: <20090602151135.29746.91320.stgit@dev.haskins.net> <20090602160434.GA6827@redhat.com> <4A254FD7.5090302@novell.com> <20090602162021.GB6827@redhat.com> <4A255484.6060401@novell.com> <20090602165949.GD6827@redhat.com> <4A256431.2080101@novell.com> <20090603063956.GA8134@redhat.com> <4A27A10C.2050405@redhat.com> <4A27B37F.1060307@gmail.com> <4A27B4F0.9060603@redhat.com>
-In-Reply-To: <4A27B4F0.9060603@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigEB0AB4986039C3D6C731A131"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090603214814.GA5193@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigEB0AB4986039C3D6C731A131
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->>> I agree that deassign is needed for reasons of symmetry, and that it
->>> can be added later.
->>>
->>>    =20
->> Cool.
->>
->> FYI: Davide's patch has been accepted into -mm (Andrew CC'd).  I am no=
-t
->> sure of the protocol here, but I assume this means you can now safely
->> pull it from -mm into kvm.git so the prerequisite for 2/2 is properly
->> met.
->>  =20
->
-> I'm not sure either.
->
-> But I think I saw a "Thanks for catching that" for 2/2?
->
-Ah, right!  I queued that fix up eons ago after David's feedback and
-forgot that it was there waiting for me ;)
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-Since Paul ok'd (I think?) the srcu design, and the only other feedback
-was the key-bitmap thing from Davide, I will go ahead and push a v2 with
-just that one fix (unless there is any other feedback?)
+> On Tue, May 19, 2009 at 09:09:40PM -0400, Steven Rostedt wrote:
+> > 
+> > Ingo,
+> > 
+> > I rebased because I forgot to add EXPORT_SYMBOL_GPL.
+> > 
+> > -- Steve
+> > 
+> > Please pull the latest tip/tracing/ftrace tree, which can be found at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> > tip/tracing/ftrace
+> > 
+> > 
+> > Steven Rostedt (1):
+> >       tracing: add trace_stack interface
+> > 
+> > ----
+> >  include/linux/kernel.h |    2 ++
+> >  kernel/trace/trace.c   |   16 ++++++++++++++++
+> >  2 files changed, 18 insertions(+), 0 deletions(-)
+> > ---------------------------
+> > commit 9f6b28655254b91c48f684b367ac14bfec0e180a
+> > Author: Steven Rostedt <srostedt@redhat.com>
+> > Date:   Tue May 19 18:54:16 2009 -0400
+> > 
+> >     tracing: add trace_stack interface
+> >     
+> >     This patch adds the global function
+> >     
+> >       void trace_stack(void)
+> >     
+> >     This allows a developer to find where a function is called. For example,
+> >     if you want to know who calls __netif_reschedule, you can add
+> >     
+> >      static inline void __netif_reschedule(struct Qdisc *q)
+> >      {
+> >      	struct softnet_data *sd;
+> >      	unsigned long flags;
+> >     
+> >     +	trace_stack();
+> >      	local_irq_save(flags);
+> >      	sd = &__get_cpu_var(softnet_data);
+> >      	q->next_sched = sd->output_queue;
+> >     
+> >     And see the following in the trace output:
+> >     
+> >      <= __ftrace_trace_stack
+> >      <= trace_stack
+> >      <= __netif_schedule
+> >      <= dev_watchdog
+> >      <= run_timer_softirq
+> >      <= __do_softirq
+> >      <= call_softirq
+> >      <= do_softirq
+> >      <= irq_exit
+> >     
+> >     Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> 
+> 
+> I wanted to use it to get the recursive locking points in reiserfs
+> but I can't find it.
+> 
+> Has it been merged in -tip ?
 
--Greg
+hm, Steve has not sent it along AFAICS. There were no objections 
+from me.
 
-
---------------enigEB0AB4986039C3D6C731A131
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkontaIACgkQP5K2CMvXmqEqPQCdE2ioHk0/aNuold2ERChmdQae
-HKwAnRSkCFhTg/sbXhOT+VK6vUFySOUn
-=Hd4K
------END PGP SIGNATURE-----
-
---------------enigEB0AB4986039C3D6C731A131--
+	Ingo
