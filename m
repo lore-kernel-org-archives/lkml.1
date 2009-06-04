@@ -1,49 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757737AbZFDJfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbZFDJl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757737AbZFDJfr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 05:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZFDJfj
+	id S1757193AbZFDJl3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 05:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbZFDJlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 05:35:39 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:35320 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753580AbZFDJfi (ORCPT
+	Thu, 4 Jun 2009 05:41:22 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:25848
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751153AbZFDJlV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 05:35:38 -0400
-To: csaba@gluster.com
-CC: miklos@szeredi.hu, avati@gluster.com, muirj@nortel.com,
-       fuse-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, dl-hacking@gluster.com
-In-reply-to: <100d90a90906040232ofd2b5ebw8c8d5f677b13e840@mail.gmail.com>
-	(message from Csaba Henk on Thu, 4 Jun 2009 11:32:32 +0200)
-Subject: Re: [PATCH] fuse: cache invalidation calls
-References: <1119562997.1044731244033504415.JavaMail.root@mb1>
-	 <E1MC99F-0004l5-JF@pomaz-ex.szeredi.hu> <100d90a90906040232ofd2b5ebw8c8d5f677b13e840@mail.gmail.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Message-Id: <E1MC9MC-0004nV-Ri@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 04 Jun 2009 11:35:32 +0200
+	Thu, 4 Jun 2009 05:41:21 -0400
+Message-ID: <4A2796C0.6080702@panasas.com>
+Date: Thu, 04 Jun 2009 12:41:20 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Artem Bityutskiy <dedekind@infradead.org>
+CC: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: Re: [PATCH v2 04/17] EXOFS: do not manipulate s_dirt directly
+References: <1244112114-23144-1-git-send-email-dedekind@infradead.org> <1244112114-23144-5-git-send-email-dedekind@infradead.org>
+In-Reply-To: <1244112114-23144-5-git-send-email-dedekind@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Jun 2009 09:41:23.0926 (UTC) FILETIME=[9FB56F60:01C9E4F8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Jun 2009, Csaba Henk wrote:
-> On Thu, Jun 4, 2009 at 11:22 AM, Miklos Szeredi <miklos@szeredi.hu> wrote:
-> > On Wed, 3 Jun 2009, Anand Avati wrote:
-> >> I was wondering how the userland libfuse would be made aware of the
-> >> presence of these two notification features?
-> >
-> > Here's a patch against fuse CVS.  It's also from John Muir.
+On 06/04/2009 01:41 PM, Artem Bityutskiy wrote:
+> From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 > 
-> In fact, what we were meditating about is the lack of the
-> FUSE_KERNEL_MINOR_VERSION bump. Without that, how do the two parties
-> negotiate if the rev inval messages are understood? One of John's
-> patches in his patchset had it bumped though...
+> ... use new VFS helpers instead.
+> 
+> Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+> Cc: Boaz Harrosh <bharrosh@panasas.com>
 
-Yes, I removed that intentionally as hopefully this will go in 2.6.31
-with the other 10 -> 11 API changes.
+Acked-by: Boaz Harrosh <bharrosh@panasas.com>
+> ---
+>  fs/exofs/inode.c |    2 +-
+>  fs/exofs/super.c |    4 ++--
+>  2 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/fs/exofs/inode.c b/fs/exofs/inode.c
+> index ba8d9fa..80d3d03 100644
+> --- a/fs/exofs/inode.c
+> +++ b/fs/exofs/inode.c
+> @@ -1066,7 +1066,7 @@ struct inode *exofs_new_inode(struct inode *dir, int mode)
+>  
+>  	sbi = sb->s_fs_info;
+>  
+> -	sb->s_dirt = 1;
+> +	mark_sb_dirty(sb);
+>  	inode->i_uid = current->cred->fsuid;
+>  	if (dir->i_mode & S_ISGID) {
+>  		inode->i_gid = dir->i_gid;
+> diff --git a/fs/exofs/super.c b/fs/exofs/super.c
+> index 49e16af..9cf9738 100644
+> --- a/fs/exofs/super.c
+> +++ b/fs/exofs/super.c
+> @@ -241,7 +241,7 @@ static void exofs_write_super(struct super_block *sb)
+>  		EXOFS_ERR("exofs_write_super: exofs_sync_op failed.\n");
+>  		goto out;
+>  	}
+> -	sb->s_dirt = 0;
+> +	mark_sb_clean(sb);
+>  
+>  out:
+>  	if (or)
+> @@ -262,7 +262,7 @@ static void exofs_put_super(struct super_block *sb)
+>  
+>  	lock_kernel();
+>  
+> -	if (sb->s_dirt)
+> +	if (is_sb_dirty(sb))
+>  		exofs_write_super(sb);
+>  
+>  	/* make sure there are no pending commands */
 
-Thanks,
-Miklos
