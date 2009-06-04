@@ -1,129 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752684AbZFDTUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbZFDTVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752684AbZFDTUQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 15:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbZFDTUF
+	id S1751894AbZFDTVS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 15:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbZFDTVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 15:20:05 -0400
-Received: from tango.0pointer.de ([85.214.72.216]:52227 "EHLO
-	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbZFDTUE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 15:20:04 -0400
-Date: Thu, 4 Jun 2009 21:19:41 +0200
-From: Lennart Poettering <mzxreary@0pointer.de>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-media@vger.kernel.org
-Subject: [PATCH] V4L: Generate KEY_CAMERA instead of BTN_0 key events on
-	input devices
-Message-ID: <20090604191941.GB6281@tango.0pointer.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: Red Hat, Inc.
-User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
+	Thu, 4 Jun 2009 15:21:08 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:60019 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750998AbZFDTVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 15:21:07 -0400
+Date: Thu, 4 Jun 2009 21:21:03 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: Stefan Bader <stefan.bader@canonical.com>
+Cc: Jens Axboe <axboe@kernel.dk>, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@canonical.com>
+Subject: Re: [PATCH] mmc: prevent dangling block device from accessing stale
+ queues
+Message-ID: <20090604212103.33570174@mjolnir.ossman.eu>
+In-Reply-To: <4A2819DA.7040603@canonical.com>
+References: <4A280BD4.9080908@canonical.com>
+	<20090604202900.57f31d6a@mjolnir.ossman.eu>
+	<4A2819DA.7040603@canonical.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-10512-1244143267-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A bunch of V4L drivers generate BTN_0 instead of KEY_CAMERA key presses.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-X11 is able to handle KEY_CAMERA automatically these days while BTN_0 is
-not treated at all. Thus it would be of big benefit if the camera
-drivers would consistently generate KEY_CAMERA. Some drivers (uvc)
-already do, this patch updates the remaining drivers to do the same.
+--=_freyr.ossman.eu-10512-1244143267-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-I only possess a limited set of webcams, so this isn't tested with
-all cameras. The patch is rather trivial and compile tested, so I'd say
-it's still good enough to get merged. You decide!
+On Thu, 04 Jun 2009 21:00:42 +0200
+Stefan Bader <stefan.bader@canonical.com> wrote:
 
-(Resent 2nd time, due to missing Signed-off-by)
+> Pierre Ossman wrote:
+> >=20
+> > You seem to have dug a bit further than I've had time for. Do you have
+> > anything substantial to back this up:
+> >=20
+> >> +	/*
+> >> +	 * Calling blk_cleanup_queue() would be too soon here. As long as
+> >> +	 * the gendisk has a reference to it and is not released we should
+> >> +	 * keep the queue. It has been shutdown and will not accept any new
+> >> +	 * requests, so that should be safe.
+> >> +	 */
+> >=20
+>=20
+> This is mostly based on the debug output. But it seems hard to get around=
+ of it=20
+> without having a way to increment the refcount of the queue. It is probab=
+ly not=20
+> the most common use case to remove a device while it is mounted.
+> Hm, not sure this is what you wanted to know... On the launchpad report t=
+here=20
+> are logs which I took with lots of printk's enabled. This shows that afte=
+r=20
+> resume the queue receives a request from mmcblk0 (which no longer exists)=
+ but=20
+> uses the same pointer as mmcblk1 which was just created.
+>=20
 
-Lennart
+I was hoping you had dug around in the block layer and had some idea
+why gendisk requires someone else to keep the queue around for it. Is
+it just a simple case of a missing reference, or is there some
+architectural problem?
 
-Signed-off-by: Lennart Poettering <mzxreary@0pointer.de>
----
- drivers/media/video/pwc/pwc-if.c                  |    4 ++--
- drivers/media/video/usbvideo/konicawc.c           |    4 ++--
- drivers/media/video/usbvideo/quickcam_messenger.c |    4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
+> > This part from the launchpad report also seems incredibly broken:
+> >=20
+> >> What makes the whole thing a disaster is the fact that the block devic=
+e queue objects are taken from a slub cache. Which means on resume, the new=
+ly created block device will get the same queue object as the old one, init=
+ializes it and
+> >> after the tasks have been resumed, ext3 feels obliged to write out the=
+ invalidated superblocks (still not sure why it goes for sector 0) which wi=
+ll happily migrate to the new block device and cause confusion.
+>=20
+> I don't think that part is that much broken. It is more a unfortunate res=
+ult of=20
+> the previous events. Maybe the part of ext3 writing to sector 0 is a bit=
+=20
+> worrying as I would only expect it to update the mount information which =
+I hink=20
+> is somewhere around sector 10.
+>=20
 
-diff --git a/drivers/media/video/pwc/pwc-if.c b/drivers/media/video/pwc/pwc-if.c
-index 92d4177..db25c30 100644
---- a/drivers/media/video/pwc/pwc-if.c
-+++ b/drivers/media/video/pwc/pwc-if.c
-@@ -601,7 +601,7 @@ static void pwc_snapshot_button(struct pwc_device *pdev, int down)
- 
- #ifdef CONFIG_USB_PWC_INPUT_EVDEV
- 	if (pdev->button_dev) {
--		input_report_key(pdev->button_dev, BTN_0, down);
-+		input_report_key(pdev->button_dev, KEY_CAMERA, down);
- 		input_sync(pdev->button_dev);
- 	}
- #endif
-@@ -1847,7 +1847,7 @@ static int usb_pwc_probe(struct usb_interface *intf, const struct usb_device_id
- 	usb_to_input_id(pdev->udev, &pdev->button_dev->id);
- 	pdev->button_dev->dev.parent = &pdev->udev->dev;
- 	pdev->button_dev->evbit[0] = BIT_MASK(EV_KEY);
--	pdev->button_dev->keybit[BIT_WORD(BTN_0)] = BIT_MASK(BTN_0);
-+	pdev->button_dev->keybit[BIT_WORD(KEY_CAMERA)] = BIT_MASK(KEY_CAMERA);
- 
- 	rc = input_register_device(pdev->button_dev);
- 	if (rc) {
-diff --git a/drivers/media/video/usbvideo/konicawc.c b/drivers/media/video/usbvideo/konicawc.c
-index 900ec21..31d57f2 100644
---- a/drivers/media/video/usbvideo/konicawc.c
-+++ b/drivers/media/video/usbvideo/konicawc.c
-@@ -240,7 +240,7 @@ static void konicawc_register_input(struct konicawc *cam, struct usb_device *dev
- 	input_dev->dev.parent = &dev->dev;
- 
- 	input_dev->evbit[0] = BIT_MASK(EV_KEY);
--	input_dev->keybit[BIT_WORD(BTN_0)] = BIT_MASK(BTN_0);
-+	input_dev->keybit[BIT_WORD(KEY_CAMERA)] = BIT_MASK(KEY_CAMERA);
- 
- 	error = input_register_device(cam->input);
- 	if (error) {
-@@ -263,7 +263,7 @@ static void konicawc_unregister_input(struct konicawc *cam)
- static void konicawc_report_buttonstat(struct konicawc *cam)
- {
- 	if (cam->input) {
--		input_report_key(cam->input, BTN_0, cam->buttonsts);
-+		input_report_key(cam->input, KEY_CAMERA, cam->buttonsts);
- 		input_sync(cam->input);
- 	}
- }
-diff --git a/drivers/media/video/usbvideo/quickcam_messenger.c b/drivers/media/video/usbvideo/quickcam_messenger.c
-index fd112f0..803d3e4 100644
---- a/drivers/media/video/usbvideo/quickcam_messenger.c
-+++ b/drivers/media/video/usbvideo/quickcam_messenger.c
-@@ -103,7 +103,7 @@ static void qcm_register_input(struct qcm *cam, struct usb_device *dev)
- 	input_dev->dev.parent = &dev->dev;
- 
- 	input_dev->evbit[0] = BIT_MASK(EV_KEY);
--	input_dev->keybit[BIT_WORD(BTN_0)] = BIT_MASK(BTN_0);
-+	input_dev->keybit[BIT_WORD(KEY_CAMERA)] = BIT_MASK(KEY_CAMERA);
- 
- 	error = input_register_device(cam->input);
- 	if (error) {
-@@ -126,7 +126,7 @@ static void qcm_unregister_input(struct qcm *cam)
- static void qcm_report_buttonstat(struct qcm *cam)
- {
- 	if (cam->input) {
--		input_report_key(cam->input, BTN_0, cam->button_sts);
-+		input_report_key(cam->input, KEY_CAMERA, cam->button_sts);
- 		input_sync(cam->input);
- 	}
- }
--- 
-1.6.2.2
+The incredibly broken part is how requests for the old queue wind up on
+the new queue. Such a thing should never be possible.
 
+Rgds
+--=20
+     -- Pierre Ossman
 
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-Lennart
+--=_freyr.ossman.eu-10512-1244143267-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
--- 
-Lennart Poettering                        Red Hat, Inc.
-lennart [at] poettering [dot] net         ICQ# 11060553
-http://0pointer.net/lennart/           GnuPG 0x1A015CC4
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkooHqMACgkQ7b8eESbyJLgkdwCfdBfsBFikn59iXGMSosNHDYBX
+esIAoMtSPtDDCR3mKz69V9BAAWx1HqCH
+=Wo2p
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-10512-1244143267-0001-2--
