@@ -1,108 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbZFDQjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbZFDQj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756228AbZFDQjM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 12:39:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbZFDQi6
+	id S1756558AbZFDQj1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 12:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbZFDQjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 12:38:58 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:53947 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753151AbZFDQi5 (ORCPT
+	Thu, 4 Jun 2009 12:39:17 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:36512 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753298AbZFDQjP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 12:38:57 -0400
-Date: Thu, 4 Jun 2009 09:38:40 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Gary Hade <garyhade@us.ibm.com>, mingo@elte.hu, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
-       x86@kernel.org, yinghai@kernel.org, lcm@us.ibm.com
-Subject: Re: [RESEND] [PATCH v2] [BUGFIX] x86/x86_64: fix CPU offlining
-	triggered "inactive" device IRQ interrruption
-Message-ID: <20090604163840.GB7233@us.ibm.com>
-References: <20090602193202.GB7282@us.ibm.com> <m1hbyxv8ep.fsf@fess.ebiederm.org>
+	Thu, 4 Jun 2009 12:39:15 -0400
+Date: Thu, 4 Jun 2009 12:38:44 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       tglx@linutronix.de, hpa@zytor.com, mel@csn.ul.ie,
+       suresh.b.siddha@intel.com, linux-kernel@vger.kernel.org,
+       viro@zeniv.linux.org.uk, rusty@rustcorp.com.au, steiner@sgi.com,
+       rientjes@google.com
+Subject: Re: [RESEND PATCH] mm: clear N_HIGH_MEMORY map before se set it
+ again -v2
+In-Reply-To: <4A2758CB.9090404@kernel.org>
+Message-ID: <alpine.DEB.1.10.0906041236520.5377@gentwo.org>
+References: <4A05269D.8000701@kernel.org> <20090512111623.GG25923@csn.ul.ie> <4A0A64FB.4080504@kernel.org> <20090513145950.GB28097@csn.ul.ie> <4A0C4910.7090508@kernel.org> <4A0C4A2A.6080009@kernel.org> <20090514095414.ba8356e5.akpm@linux-foundation.org>
+ <4A0C4F67.5080802@kernel.org> <20090514102554.b3a36f19.akpm@linux-foundation.org> <4A0C563A.3020100@kernel.org> <4A2758CB.9090404@kernel.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1hbyxv8ep.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 04:55:26AM -0700, Eric W. Biederman wrote:
-> Gary Hade <garyhade@us.ibm.com> writes:
-> 
-> > Impact: Eliminates a race that can leave the system in an
-> >         unusable state
-> >
-> > During rapid offlining of multiple CPUs there is a chance
-> > that an IRQ affinity move destination CPU will be offlined
-> > before the IRQ affinity move initiated during the offlining
-> > of a previous CPU completes.  This can happen when the device
-> > is not very active and thus fails to generate the IRQ that is
-> > needed to complete the IRQ affinity move before the move
-> > destination CPU is offlined.  When this happens there is an
-> > -EBUSY return from __assign_irq_vector() during the offlining
-> > of the IRQ move destination CPU which prevents initiation of
-> > a new IRQ affinity move operation to an online CPU.  This
-> > leaves the IRQ affinity set to an offlined CPU.
-> >
-> > I have been able to reproduce the problem on some of our
-> > systems using the following script.  When the system is idle
-> > the problem often reproduces during the first CPU offlining
-> > sequence.
-> 
-> Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
-> 
-> fixup_irqs() is broken for allowing such a thing.
+Ok. The N_HIGH_MEMORY bit is set for all onlines nodes in a loop
+that follows the code you modified. The patch insures that bits do not
+remain set that earlier arch / core code may have set.
 
-When fixup_irqs() calls the set_affinity function:
-                   ...
-  if (desc->chip->set_affinity)
-  	desc->chip->set_affinity(irq, affinity);
-                   ...
-it receives no feedback so it obviously expects the set_affinity
-function or it's called functions to do the right thing by preventing
-or correctly handling any problems that should arise.  In the case of
-this bug there is obviously a problem happening during the set_affinity
-function call that needs to be resolved and/or properly handled.
+Could you make the description clearer?
 
-When you made your "x86_64 irq: Safely cleanup an irq after moving it."
-changes (re: http://lkml.org/lkml/2007/2/23/92) you added the check
-to __assign_irq_vector() that causes it to return -EBUSY if the
-migration of the IRQ is still in progress:
-+	if ((cfg->move_in_progress) || cfg->move_cleanup_count)
-+		return -EBUSY;
-+
-However, you did not add any code to other functions on the
-call stack to properly deal with this error.  When doing this
-you may have assumed (as I may have also assumed) that the underlying
-code was solid enough that the handling was not needed.  Unfortunately,
-you apparently did not anticipate the case where an idle or relatively
-idle device may not generate the IRQ needed to complete the move
-before the CPU that is still handling that IRQ is offlined.
+Otherwise
 
-My fix only addresses the issue that caused the -EBUSY return
-and subsequent mess.  It does not address the omitted handling
-for this error condition.  If we were to add the handling to
-fixup_irq() and the arch and non-arch specific functions above
-it on the call stack as you may be suggesting, it would be quite
-involved because of all the things that would need to be undone.
-
-I am not certain that my fix plugs the very last hole that could
-cause the -EBUSY return from __assign_irq_vector() so maybe we
-should at least add a warning or BUG_ON to make the unhandled
-error more obvious in the future.  I would be happy to provide
-this via a separate patch.
-
-Thanks,
-Gary
-
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+Acked-by: Christoph Lameter <cl@linux-foundation.org>
 
