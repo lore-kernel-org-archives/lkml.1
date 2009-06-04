@@ -1,123 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbZFDLA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZFDLMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754515AbZFDLA2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 07:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbZFDLAR
+	id S1755881AbZFDLMW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 07:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbZFDLMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 07:00:17 -0400
-Received: from mga03.intel.com ([143.182.124.21]:61708 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753648AbZFDLAP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 07:00:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,305,1241420400"; 
-   d="scan'208";a="150582867"
-Date: Thu, 4 Jun 2009 18:59:59 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Robin Holt <holt@sgi.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v4] zone_reclaim is always 0 by default
-Message-ID: <20090604105959.GA22118@localhost>
-References: <20090604192236.9761.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090604192236.9761.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 4 Jun 2009 07:12:07 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55284 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753342AbZFDLMG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 07:12:06 -0400
+From: Andi Kleen <andi@firstfloor.org>
+Message-Id: <20090604112.650907584@firstfloor.org>
+To: avi@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [1/2] x86: MCE: Define MCE_VECTOR
+Date: Thu,  4 Jun 2009 13:12:04 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 06:23:15PM +0800, KOSAKI Motohiro wrote:
-> 
-> Current linux policy is, zone_reclaim_mode is enabled by default if the machine
-> has large remote node distance. it's because we could assume that large distance
-> mean large server until recently.
-> 
-> Unfortunately, recent modern x86 CPU (e.g. Core i7, Opeteron) have P2P transport
-> memory controller. IOW it's seen as NUMA from software view.
-> Some Core i7 machine has large remote node distance.
-> 
-> Yanmin reported zone_reclaim_mode=1 cause large apache regression.
-> 
->     One Nehalem machine has 12GB memory,
->     but there is always 2GB free although applications accesses lots of files.
->     Eventually we located the root cause as zone_reclaim_mode=1.
-> 
-> Actually, zone_reclaim_mode=1 mean "I dislike remote node allocation rather than
-> disk access", it makes performance improvement to HPC workload.
-> but it makes performance degression to desktop, file server and web server.
-> 
-> In general, workload depended configration shouldn't put into default settings.
-> 
-> However, current code is long standing about two year. Highest POWER and IA64 HPC machine
-> (only) use this setting.
-> 
-> Thus, x86 and almost rest architecture change default setting, but Only power and ia64
-> remain current configuration for backward-compatibility.
 
-The above lines are too long. Limit to 72 cols in general could be
-better as git-log may add additional leading white spaces.
+[This patch is already in the "mce3" branch in mce3 tip, but I'm including
+it here because it's needed for the next patch.]
 
-Thank you for all the efforts!
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-Acked-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ arch/x86/include/asm/irq_vectors.h |    1 +
+ 1 file changed, 1 insertion(+)
 
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Cc: Christoph Lameter <cl@linux-foundation.org>
-> Cc: Rik van Riel <riel@redhat.com>
-> Cc: Robin Holt <holt@sgi.com>
-> Cc: "Zhang, Yanmin" <yanmin.zhang@intel.com>
-> Cc: Wu Fengguang <fengguang.wu@intel.com>
-> Cc: linux-ia64@vger.kernel.org
-> Cc: linuxppc-dev@ozlabs.org
-> ---
->  arch/powerpc/include/asm/topology.h |    6 ++++++
->  include/linux/topology.h            |    7 +------
->  2 files changed, 7 insertions(+), 6 deletions(-)
-> 
-> Index: b/include/linux/topology.h
-> ===================================================================
-> --- a/include/linux/topology.h
-> +++ b/include/linux/topology.h
-> @@ -54,12 +54,7 @@ int arch_update_cpu_topology(void);
->  #define node_distance(from,to)	((from) == (to) ? LOCAL_DISTANCE : REMOTE_DISTANCE)
->  #endif
->  #ifndef RECLAIM_DISTANCE
-> -/*
-> - * If the distance between nodes in a system is larger than RECLAIM_DISTANCE
-> - * (in whatever arch specific measurement units returned by node_distance())
-> - * then switch on zone reclaim on boot.
-> - */
-> -#define RECLAIM_DISTANCE 20
-> +#define RECLAIM_DISTANCE INT_MAX
->  #endif
->  #ifndef PENALTY_FOR_NODE_WITH_CPUS
->  #define PENALTY_FOR_NODE_WITH_CPUS	(1)
-> Index: b/arch/powerpc/include/asm/topology.h
-> ===================================================================
-> --- a/arch/powerpc/include/asm/topology.h
-> +++ b/arch/powerpc/include/asm/topology.h
-> @@ -10,6 +10,12 @@ struct device_node;
->  
->  #include <asm/mmzone.h>
->  
-> +/*
-> + * Distance above which we begin to use zone reclaim
-
-s/begin to/default to/ ?
-
-> + */
-> +#define RECLAIM_DISTANCE 20
-> +
-> +
->  static inline int cpu_to_node(int cpu)
->  {
->  	return numa_cpu_lookup_table[cpu];
-> 
+Index: linux/arch/x86/include/asm/irq_vectors.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/irq_vectors.h	2009-05-27 21:48:38.000000000 +0200
++++ linux/arch/x86/include/asm/irq_vectors.h	2009-05-27 21:48:38.000000000 +0200
+@@ -25,6 +25,7 @@
+  */
+ 
+ #define NMI_VECTOR			0x02
++#define MCE_VECTOR			0x12
+ 
+ /*
+  * IDT vectors usable for external interrupt sources start
