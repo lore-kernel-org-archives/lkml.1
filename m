@@ -1,85 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752997AbZFDSIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752521AbZFDSMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752997AbZFDSIa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 14:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZFDSIW
+	id S1752521AbZFDSMS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 14:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbZFDSMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 14:08:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46412 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751630AbZFDSIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 14:08:21 -0400
-Date: Thu, 4 Jun 2009 21:06:11 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org, avi@redhat.com,
-       bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
-       herber@gondor.apana.org.au, chrisw@sous-sol.org, shemminger@vyatta.com
-Subject: Re: [RFC PATCH v2 03/19] vbus: add connection-client helper
-	infrastructure
-Message-ID: <20090604180611.GA16387@redhat.com>
-References: <20090409155200.32740.19358.stgit@dev.haskins.net> <20090409163057.32740.27829.stgit@dev.haskins.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090409163057.32740.27829.stgit@dev.haskins.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 4 Jun 2009 14:12:07 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:51060 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751347AbZFDSMG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 14:12:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=D/h1P9AYCeBPmWCqYT8iC85nRyqlu2A4a9nuKZBJlUaHRGm42IWlEbPaqYSQI59P8s
+         VvtxCqIMMk6LOxTYpfDJGHPrOzzdZumMeIm+nUa7iSNAApVXTakxwHfMi/Lae8cohhdV
+         ap6VgVYRviwrNFcSEDi1APzsRB+UJ1cQWa1o8=
+From: Philipp Zabel <philipp.zabel@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ian Molton <ian@mnementh.co.uk>, Pierre Ossman <pierre@ossman.eu>
+Subject: [PATCH 0/7] ASIC3 support for tmio_mmc
+Date: Thu,  4 Jun 2009 20:12:30 +0200
+Message-Id: <1244139157-16404-1-git-send-email-philipp.zabel@gmail.com>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 09, 2009 at 12:30:57PM -0400, Gregory Haskins wrote:
-> +static unsigned long
-> +task_memctx_copy_to(struct vbus_memctx *ctx, void *dst, const void *src,
-> +		    unsigned long n)
-> +{
-> +	struct task_memctx *tm = to_task_memctx(ctx);
-> +	struct task_struct *p = tm->task;
-> +
-> +	while (n) {
-> +		unsigned long offset = ((unsigned long)dst)%PAGE_SIZE;
-> +		unsigned long len = PAGE_SIZE - offset;
-> +		int ret;
-> +		struct page *pg;
-> +		void *maddr;
-> +
-> +		if (len > n)
-> +			len = n;
-> +
-> +		down_read(&p->mm->mmap_sem);
-> +		ret = get_user_pages(p, p->mm,
-> +				     (unsigned long)dst, 1, 1, 0, &pg, NULL);
-> +
-> +		if (ret != 1) {
-> +			up_read(&p->mm->mmap_sem);
-> +			break;
-> +		}
-> +
-> +		maddr = kmap_atomic(pg, KM_USER0);
-> +		memcpy(maddr + offset, src, len);
-> +		kunmap_atomic(maddr, KM_USER0);
-> +		set_page_dirty_lock(pg);
-> +		put_page(pg);
-> +		up_read(&p->mm->mmap_sem);
-> +
-> +		src += len;
-> +		dst += len;
-> +		n -= len;
-> +	}
-> +
-> +	return n;
-> +}
+I've broken the long lines in patches 1-3 and merged the fix into patch 2:
+ [PATCH 1/7] MFD,mmc: tmio_mmc: make HCLK configurable (v2)
+ [PATCH 2/7] mmc: tmio_mmc: add bus_shift support (v2)
+ [PATCH 3/7] mmc: tmio_mmc: don't use set_irq_type (v2)
+ [PATCH 4/7] mmc: tmio_mmc: correct probe return value for num_resources != 3
+Also I've added three new patches for your consideration. Patch 5 delays mapping
+of the SD control registers because mfd_cell->enable has to enable the RAM first.
+Patch 6 fixes a bug in the SDCLK divider calculation and patch 7 finally enables
+compilation of tmio_mmc for ASIC3:
+ [PATCH 5/7] mmc: tmio_mmc: map SD control registers after enabling the MFD cell
+ [PATCH 6/7] mmc: tmio_mmc: fix SDCLK divider setting
+ [PATCH 7/7] mmc: tmio_mmc: allow compilation for ASIC3
 
-BTW, why did you decide to use get_user_pages?
-Would switch_mm + copy_to_user work as well
-avoiding page walk if all pages are present?
-
-Also - if we just had vmexit because a process executed
-io (or hypercall), can't we just do copy_to_user there?
-Avi, I think at some point you said that we can?
-
-
--- 
-MST
+regards
+Philipp
