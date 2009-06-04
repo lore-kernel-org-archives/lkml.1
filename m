@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757035AbZFDJGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbZFDJHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757035AbZFDJGw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 05:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbZFDJGo
+	id S1757194AbZFDJHL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 05:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbZFDJG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 05:06:44 -0400
-Received: from smtp109.sbc.mail.gq1.yahoo.com ([67.195.14.39]:34458 "HELO
-	smtp109.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753580AbZFDJGn (ORCPT
+	Thu, 4 Jun 2009 05:06:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41148 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755220AbZFDJG5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 05:06:43 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=J8R5I+VhEpDhgqGjmHtp/NDdBUmd8jlanxzlvHa1+gWr2RJ60OpNFfZqmdT/vlWKFzmTdfsq0y/WNGyH5tvHaa/ZS7k/ol0u1qzlZFd7c+uQHXgC+mjkjQS2QWNdqsP5NS98Ftq9gp26EQQBgVGkyc7hZIp6kC2ZsnxicmMIv+A=  ;
-X-YMail-OSG: QLHvYAIVM1lrDLEmy4ToW87Ifewcna_Ho8xIpClswAUtJZW3qMQ_ydlpe0GcIhsn9_CsGyO9UkP9jgjbdQ7RKrAN8VzZ8HOHqYhvyUKX17oYp1MUGwdgc4b4yp1khYmQynGNu8uVmrdROfptZbQaYzvjmL_J7Up_V.YMquQJKzlZH9NfPBGN4XIha9a2wBsHPA10iRSJUXlXd0SrAnJKpBOSnH7IMYtO6Jpg48rg1wFXmbuiEyDgi_pTrhVDTaOYcHiJBbqMYjjJEaM4__dzJs.8WSDAQgpWmPdeUQEqnlr254PQ.24-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH] gpio sysfs: add a "toggle" value
-Date: Thu, 4 Jun 2009 02:06:43 -0700
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <1244017019-28163-1-git-send-email-vapier@gentoo.org> <200906040127.24740.david-b@pacbell.net> <8bd0f97a0906040152h1fa57f5crd96faa37322a1b40@mail.gmail.com>
-In-Reply-To: <8bd0f97a0906040152h1fa57f5crd96faa37322a1b40@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200906040206.44144.david-b@pacbell.net>
+	Thu, 4 Jun 2009 05:06:57 -0400
+Date: Thu, 4 Jun 2009 02:06:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Minkyu Kang <mk7.kang@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       kyungmin.park@samsung.com, Anton Vorontsov <cbou@mail.ru>
+Subject: Re: [PATCH v2] add MAX17040 Fuel Gauge driver
+Message-Id: <20090604020624.4d39e0a3.akpm@linux-foundation.org>
+In-Reply-To: <4A278C08.5000206@samsung.com>
+References: <4A278C08.5000206@samsung.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 June 2009, Mike Frysinger wrote:
-> my next request was for a 1 letter command set and chaining
-> operations.  say you want to toggle a gpio line 4 times, having to go
-> between kernel and userspace for that seems kind of heavy.
-> echo TTTT > value
+On Thu, 04 Jun 2009 17:55:36 +0900 Minkyu Kang <mk7.kang@samsung.com> wrote:
 
-Having that kind of stuff in kernelspace seems wrong;
-if you're going that route, embed Guile or something.  ;)
+> +	INIT_DELAYED_WORK_DEFERRABLE(&chip->work, max17040_work);
+> +	schedule_delayed_work(&chip->work, MAX17040_DELAY);
+> +
+> +	bat_ps.properties = max17040_battery_props;
+> +	bat_ps.num_properties = ARRAY_SIZE(max17040_battery_props);
+> +
+> +	ret = power_supply_register(&client->dev, &bat_ps);
+> +	if (ret) {
+> +		dev_err(&max17040->client->dev,
+> +				"failed: power supply register\n");
+> +		cancel_delayed_work(&chip->work);
+> +		i2c_set_clientdata(client, NULL);
+> +		kfree(chip);
+> +		max17040 = NULL;
+> +		return -1;
+> +	}
+> +
+> +	return 0;
+> +}
 
-The "TTTT" thing could as easily be scripted in BASH.
-
+Wouldn't it be better to start the delayed_work after the
+power_supply_register() has succeeded?
 
