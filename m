@@ -1,60 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbZFDUdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbZFDUdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbZFDUdb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 16:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZFDUdX
+	id S1754570AbZFDUdv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 16:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZFDUdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 16:33:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40174 "EHLO mx2.redhat.com"
+	Thu, 4 Jun 2009 16:33:44 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:42268 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752255AbZFDUdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 16:33:22 -0400
-Date: Thu, 4 Jun 2009 16:33:13 -0400
-From: Dave Jones <davej@redhat.com>
-To: "Michael S. Zick" <lkml@morethan.org>
-Cc: Harald Welte <HaraldWelte@viatech.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
-Message-ID: <20090604203313.GA19286@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"Michael S. Zick" <lkml@morethan.org>,
-	Harald Welte <HaraldWelte@viatech.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Duane Griffin <duaneg@dghda.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906041121.30845.lkml@morethan.org> <20090604174059.GB9823@prithivi.gnumonks.org> <200906041312.45847.lkml@morethan.org>
+	id S1752075AbZFDUdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 16:33:43 -0400
+Date: Thu, 4 Jun 2009 22:33:44 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: "Luck, Tony" <tony.luck@intel.com>, Robert Hancock <hancockrwd@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next end of partition problems?
+Message-ID: <20090604203344.GE11363@kernel.dk>
+References: <4a25b8e987329b28c@agluck-desktop.sc.intel.com> <4A25F5F7.9020506@gmail.com> <4a26ee864930956be@agluck-desktop.sc.intel.com> <x497hzsp2hz.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906041312.45847.lkml@morethan.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <x497hzsp2hz.fsf@segfault.boston.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 01:12:43PM -0500, Michael S. Zick wrote:
- > On Thu June 4 2009, Harald Welte wrote:
- > > On Thu, Jun 04, 2009 at 11:21:28AM -0500, Michael S. Zick wrote:
- > > 
- > > > That is one of my pending questions - -
- > > > (It is included as a comment at the appropriate point in my patchset.)
- > > > 
- > > > The VIA processors have MCR's not MTRR's - -
- > > 
- > > AFAIK, that was true for processors like the Winhcip / C6, i.e. earlier than
- > > the C3.  The C3, C7 and later support 8 intel-style MTRR's.
- > > 
- > 
- > Super!  A specific breakage!
- > 
- > The c7 setup code is re-using the c6 setup code (MCR's) - -
- > Will "if 0" out the appropriate parts and arrange for the MTRR setup.
+On Thu, Jun 04 2009, Jeff Moyer wrote:
+> "Luck, Tony" <tony.luck@intel.com> writes:
+> 
+> >> What kind of controller/drive is this?
+> >
+> > lspci says the controller is:
+> > 06:02.0 SCSI storage controller: LSI Logic / Symbios Logic 53c1030 PCI-X Fusion-MPT Dual Ultra320 SCSI (rev 07)
+> >
+> > console log says drive is:
+> > scsi 0:0:1:0: Direct-Access     SEAGATE  ST318406LC       010A PQ: 0 ANSI: 3
+> >  target0:0:1: Beginning Domain Validation
+> >  target0:0:1: Ending Domain Validation
+> >  target0:0:1: FAST-80 WIDE SCSI 160.0 MB/s DT (12.5 ns, offset 63)
+> > sd 0:0:1:0: [sdb] 35843670 512-byte hardware sectors: (18.3 GB/17.0 GiB)
+> > sd 0:0:1:0: [sdb] Write Protect is off
+> > sd 0:0:1:0: [sdb] Mode Sense: 9f 00 10 08
+> > scsi 0:0:6:0: Processor         ESG-SHV  SCA HSBP M17     1.0D PQ: 0 ANSI: 2
+> >  target0:0:6: Beginning Domain Validation
+> > sd 0:0:1:0: [sdb] Write cache: enabled, read cache: enabled, supports DPO and FUA
+> >  target0:0:6: Ending Domain Validation
+> >  target0:0:6: asynchronous
+> >  sdb: sdb1 sdb2 sdb3
+> > sd 0:0:1:0: [sdb] Attached SCSI disk
+> >
+> > A git bisect between v2.6.30-rc7(good) and next-20090602(bad) points
+> > the finger at this commit (and reverting this change from next-20090602
+> > confirms it introduces this problem):
+> >
+> >
+> > commit db2dbb12dc47a50c7a4c5678f526014063e486f6
+> > Author: Jeff Moyer <jmoyer@redhat.com>
+> > Date:   Wed Apr 22 14:08:13 2009 +0200
+> >
+> >     block: implement blkdev_readpages
+> >     
+> >     Doing a proper block dev ->readpages() speeds up the crazy dump(8)
+> >     approach of using interleaved process IO.
+> >     
+> >     Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
+> >     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> >
+> > diff --git a/fs/block_dev.c b/fs/block_dev.c
+> > index f45dbc1..a85fe31 100644
+> > --- a/fs/block_dev.c
+> > +++ b/fs/block_dev.c
+> > @@ -331,6 +331,12 @@ static int blkdev_readpage(struct file * file, struct page * page)
+> >  	return block_read_full_page(page, blkdev_get_block);
+> >  }
+> >  
+> > +static int blkdev_readpages(struct file *file, struct address_space *mapping,
+> > +			struct list_head *pages, unsigned nr_pages)
+> > +{
+> > +	return mpage_readpages(mapping, pages, nr_pages, blkdev_get_block);
+> > +}
+> > +
+> >  static int blkdev_write_begin(struct file *file, struct address_space *mapping,
+> >  			loff_t pos, unsigned len, unsigned flags,
+> >  			struct page **pagep, void **fsdata)
+> > @@ -1399,6 +1405,7 @@ static int blkdev_releasepage(struct page *page, gfp_t wait)
+> >  
+> >  static const struct address_space_operations def_blk_aops = {
+> >  	.readpage	= blkdev_readpage,
+> > +	.readpages	= blkdev_readpages,
+> >  	.writepage	= blkdev_writepage,
+> >  	.sync_page	= block_sync_page,
+> >  	.write_begin	= blkdev_write_begin,
+> >
+> >
+> > On a random hunch, I wondered whether this error message was connected to
+> > the fact that ia64 kernel has a 64K page size.  I re-built using a 4k
+> > pagesize ... and this also make the partition overrun message go away.
+> >
+> > So is it plausible that the blkdev_readpages() code is resulting in some
+> > readahead of a page that overlaps the partition end?  The partition size
+> > (15832057 * 1K block according to /proc/partitions) is not a multiple of
+> > the 64K page size ... but then it isn't a multiple of 4K either :-(
+> 
+> Thanks for digging into this, Tony.  I'll take a look at it today.
+> Jens, you can feel free to pull this for now.  I never did get you real
+> data showing the improvement anyway, so I'll try to do that as well.
 
-It's not touching the MCRs.   C7's are family 6. The MCR code is only
-called for family 5. (Winchips)   Look at the switch statement
-in init_centaur()
+OK, I'll revert it for now.
 
-	Dave
+-- 
+Jens Axboe
 
