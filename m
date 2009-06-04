@@ -1,197 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753581AbZFDUOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZFDUQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753581AbZFDUOw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 16:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbZFDUOf
+	id S1754232AbZFDUQQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 16:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbZFDUQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 16:14:35 -0400
-Received: from waste.org ([66.93.16.53]:36105 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752398AbZFDUOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 16:14:33 -0400
-Subject: Re: [PATCH] crypto: add optional continuous repetition test to
- entropy store based rngs
-From: Matt Mackall <mpm@selenic.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       herbert@gondor.apana.org.au, davem@davemloft.net
-In-Reply-To: <20090604195030.GA11300@hmsreliant.think-freely.org>
-References: <20090604195030.GA11300@hmsreliant.think-freely.org>
-Content-Type: text/plain
-Date: Thu, 04 Jun 2009 15:14:10 -0500
-Message-Id: <1244146450.22069.216.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Jun 2009 16:16:01 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:65530 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752565AbZFDUQA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 16:16:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=fVCkoTVwcTUd635miCYuEHFO7kxXA39Obp7QOnPeqpTO4mlhVet6KAhzrG5bb1WB8V
+         SjKcfQkGrma8osJXaefuBR6yKY4VZ7xClSxtNpK2I+Y6yJvbOOGPVtmTXbtsSHDJsvk2
+         FbNsG8xZqjb7n8r7fYSD1C+T2fwlRyZtMaOE8=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH] perfcounter: fix warn_unused_result warnings in perfcounter utils
+Date: Thu,  4 Jun 2009 22:15:58 +0200
+Message-Id: <1244146558-8635-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-04 at 15:50 -0400, Neil Horman wrote:
-> FIPS-140 requires that all random number generators implement continuous self
-> tests in which each extracted block of data is compared against the last block
-> for repetition.  The ansi_cprng implements such a test, but it would be nice if
-> the hw rng's did the same thing.  Obviously its not something thats always
-> needed, but it seems like it would be a nice feature to have on occasion.  I've
-> written the below patch which allows individual entropy stores to be flagged as
-> desiring a continuous test to be run on them as is extracted.  By default this
-> option is off, but is enabled in the event that fips mode is selected during
-> bootup.
-> 
-> Neil
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> 
-> diff --git a/crypto/internal.h b/crypto/internal.h
-> index fc76e1f..150d389 100644
-> --- a/crypto/internal.h
-> +++ b/crypto/internal.h
-> @@ -26,12 +26,6 @@
->  #include <linux/rwsem.h>
->  #include <linux/slab.h>
->  
-> -#ifdef CONFIG_CRYPTO_FIPS
-> -extern int fips_enabled;
-> -#else
-> -#define fips_enabled 0
-> -#endif
-> -
->  /* Crypto notification events. */
->  enum {
->  	CRYPTO_MSG_ALG_REQUEST,
-> diff --git a/drivers/char/random.c b/drivers/char/random.c
-> index 8c74448..fbdfc70 100644
-> --- a/drivers/char/random.c
-> +++ b/drivers/char/random.c
-> @@ -250,6 +250,8 @@
->  #include <asm/irq.h>
->  #include <asm/io.h>
->  
-> +#include <crypto/algapi.h>
-> +
+Fix warnings for return values that we don't care.
 
-I think we'd rather not make random.c incestuous with crypto/.
+util/quote.c:222: attention : ignoring return value of ‘fwrite’, declared with attribute warn_unused_result
+util/quote.c:235: attention : ignoring return value of ‘fwrite’, declared with attribute warn_unused_result
+util/quote.c: In function ‘write_name_quotedpfx’:
+util/quote.c:290: attention : ignoring return value of ‘fwrite’, declared with attribute warn_unused_result
 
->  /*
->   * Configuration information
->   */
-> @@ -400,6 +402,7 @@ module_param(debug, bool, 0644);
->   **********************************************************************/
->  
->  struct entropy_store;
-> +#define ENT_F_CONT_TEST 1
->  struct entropy_store {
->  	/* read-only data: */
->  	struct poolinfo *poolinfo;
-> @@ -413,6 +416,8 @@ struct entropy_store {
->  	unsigned add_ptr;
->  	int entropy_count;
->  	int input_rotate;
-> +	int flags;
-> +	__u8 *last_data;
->  };
->  
->  static __u32 input_pool_data[INPUT_POOL_WORDS];
-> @@ -424,7 +429,9 @@ static struct entropy_store input_pool = {
->  	.name = "input",
->  	.limit = 1,
->  	.lock = __SPIN_LOCK_UNLOCKED(&input_pool.lock),
-> -	.pool = input_pool_data
-> +	.pool = input_pool_data,
-> +	.flags = 0,
-> +	.last_data = NULL
->  };
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ Documentation/perf_counter/util/quote.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-No need to null-initialize these things.
-
->  static struct entropy_store blocking_pool = {
-> @@ -433,7 +440,9 @@ static struct entropy_store blocking_pool = {
->  	.limit = 1,
->  	.pull = &input_pool,
->  	.lock = __SPIN_LOCK_UNLOCKED(&blocking_pool.lock),
-> -	.pool = blocking_pool_data
-> +	.pool = blocking_pool_data,
-> +	.flags = 0,
-> +	.last_data = NULL
->  };
->  
->  static struct entropy_store nonblocking_pool = {
-> @@ -441,7 +450,9 @@ static struct entropy_store nonblocking_pool = {
->  	.name = "nonblocking",
->  	.pull = &input_pool,
->  	.lock = __SPIN_LOCK_UNLOCKED(&nonblocking_pool.lock),
-> -	.pool = nonblocking_pool_data
-> +	.pool = nonblocking_pool_data,
-> +	.flags = 0,
-> +	.last_data = NULL
->  };
->  
->  /*
-> @@ -852,12 +863,21 @@ static ssize_t extract_entropy(struct entropy_store *r, void *buf,
->  {
->  	ssize_t ret = 0, i;
->  	__u8 tmp[EXTRACT_SIZE];
-> +	unsigned long flags;
->  
->  	xfer_secondary_pool(r, nbytes);
->  	nbytes = account(r, nbytes, min, reserved);
->  
->  	while (nbytes) {
->  		extract_buf(r, tmp);
-> +
-> +		if (r->flags & ENT_F_CONT_TEST) {
-> +			spin_lock_irqsave(&r->lock, flags);
-> +			if (!memcmp(tmp, r->last_data, EXTRACT_SIZE))
-> +				panic("Hardware RNG duplicated output!\n");
-> +			memcpy(r->last_data, tmp, EXTRACT_SIZE);
-> +			spin_unlock_irqrestore(&r->lock, flags);
-> +		}
-
-This should go in extract_buf. I think we can avoid adding flags to the
-pool struct by simply checking that last_data is not null.
-
->  		i = min_t(int, nbytes, EXTRACT_SIZE);
->  		memcpy(buf, tmp, i);
->  		nbytes -= i;
-> @@ -940,6 +960,14 @@ static void init_std_data(struct entropy_store *r)
->  	now = ktime_get_real();
->  	mix_pool_bytes(r, &now, sizeof(now));
->  	mix_pool_bytes(r, utsname(), sizeof(*(utsname())));
-> +	/* Enable continuous test in fips mode */
-> +	if (fips_enabled) {
-> +		r->last_data = kmalloc(EXTRACT_SIZE, GFP_KERNEL);
-> +		if (r->last_data)
-> +			r->flags |= ENT_F_CONT_TEST;
-> +		else
-> +			panic("Could not alloc data for rng test\n");
-> +	} 
->  }
->  
->  static int rand_initialize(void)
-> diff --git a/include/crypto/algapi.h b/include/crypto/algapi.h
-> index 0105454..88e9535 100644
-> --- a/include/crypto/algapi.h
-> +++ b/include/crypto/algapi.h
-> @@ -20,6 +20,12 @@ struct module;
->  struct rtattr;
->  struct seq_file;
->  
-> +#ifdef CONFIG_CRYPTO_FIPS
-> +extern int fips_enabled;
-> +#else
-> +#define fips_enabled 0
-> +#endif
-> +
->  struct crypto_type {
->  	unsigned int (*ctxsize)(struct crypto_alg *alg, u32 type, u32 mask);
->  	unsigned int (*extsize)(struct crypto_alg *alg,
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+diff --git a/Documentation/perf_counter/util/quote.c b/Documentation/perf_counter/util/quote.c
+index 7a49fcf..f18c521 100644
+--- a/Documentation/perf_counter/util/quote.c
++++ b/Documentation/perf_counter/util/quote.c
+@@ -201,8 +201,9 @@ static size_t quote_c_style_counted(const char *name, ssize_t maxlen,
+ 	} while (0)
+ #define EMITBUF(s, l)                           \
+ 	do {                                        \
++		int __ret;				\
+ 		if (sb) strbuf_add(sb, (s), (l));       \
+-		if (fp) fwrite((s), (l), 1, fp);        \
++		if (fp) __ret = fwrite((s), (l), 1, fp);        \
+ 		count += (l);                           \
+ 	} while (0)
+ 
+@@ -287,7 +288,9 @@ extern void write_name_quotedpfx(const char *pfx, size_t pfxlen,
+ 		quote_c_style(name, NULL, fp, 1);
+ 		fputc('"', fp);
+ 	} else {
+-		fwrite(pfx, pfxlen, 1, fp);
++		int ret;
++
++		ret = fwrite(pfx, pfxlen, 1, fp);
+ 		fputs(name, fp);
+ 	}
+ 	fputc(terminator, fp);
 -- 
-http://selenic.com : development and support for Mercurial and Linux
-
+1.6.2.3
 
