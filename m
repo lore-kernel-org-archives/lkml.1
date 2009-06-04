@@ -1,87 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbZFDXpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbZFDXrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbZFDXpm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 19:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbZFDXpd
+	id S1752933AbZFDXrR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 19:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbZFDXrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 19:45:33 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:14082 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752105AbZFDXpc (ORCPT
+	Thu, 4 Jun 2009 19:47:03 -0400
+Received: from mga07.intel.com ([143.182.124.22]:64974 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752350AbZFDXrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 19:45:32 -0400
-X-IMAP-Sender: achiang
-Date: Thu, 4 Jun 2009 17:35:21 -0600
-X-OfflineIMAP-x602587130-6c646c-494e424f582e4f7574626f78: 1244159045-0930350799886-v6.0.3
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: lenb@kernel.org, linux-acpi@vger.kernel.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH v2 07/11] ACPI: acpi_pci_unbind should clean up
-	properly after acpi_pci_bind
-Message-ID: <20090604233521.GA12900@ethanol>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, lenb@kernel.org,
-	linux-acpi@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-References: <20090604054504.18802.21690.stgit@bob.kio> <20090604055852.18802.22743.stgit@bob.kio> <4A2788FA.2050606@jp.fujitsu.com>
+	Thu, 4 Jun 2009 19:47:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,307,1241420400"; 
+   d="scan'208";a="150873169"
+Date: Fri, 5 Jun 2009 01:49:12 +0200
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Philipp Zabel <philipp.zabel@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] MFD: ASIC3: add clock handling for MFD cells
+Message-ID: <20090604234911.GC5460@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <1244140576-18006-1-git-send-email-philipp.zabel@gmail.com> <1244140576-18006-3-git-send-email-philipp.zabel@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A2788FA.2050606@jp.fujitsu.com>
+In-Reply-To: <1244140576-18006-3-git-send-email-philipp.zabel@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
->>  
->
-> I have a concern about this change.
->
-> The acpi_pci_irq_del_prt() against dev->bus removes not only
-> the _PRT entries for PCI function corresponding to specified
-> acpi_device, but also other _PRT entries for working PCI
-> devices/functions on the same bus. As a result, interrupt
-> initialization for those PCI functions would no longer work
-> properly after that.
->
-> So I think we should not call acpi_pci_irq_del_prt() against
-> dev->bus.
+Hi Philipp,
 
-Thanks for the review. I agree with you.
+On Thu, Jun 04, 2009 at 08:36:11PM +0200, Philipp Zabel wrote:
+> +
+> +struct asic3_clk {
+> +	int enabled;
+You probably want to use a kref here.
 
-Here is a respun version of this patch.
+> +static int asic3_clk_enable(struct asic3 *asic, struct asic3_clk *clk)
+> +{
+> +	unsigned long flags;
+> +	u32 cdex;
+> +
+> +	spin_lock_irqsave(&asic->lock, flags);
+> +	if (clk->enabled++ == 0) {
+using the kref API here would definitely be nicer.
 
-From: Alex Chiang <achiang@hp.com>
+Cheers,
+Samuel.
 
-ACPI: acpi_pci_unbind should clean up properly after acpi_pci_bind
+> +		cdex = asic3_read_register(asic, ASIC3_OFFSET(CLOCK, CDEX));
+> +		cdex |= clk->cdex;
+> +		asic3_write_register(asic, ASIC3_OFFSET(CLOCK, CDEX), cdex);
+> +	}
+> +	spin_unlock_irqrestore(&asic->lock, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +static void asic3_clk_disable(struct asic3 *asic, struct asic3_clk *clk)
+> +{
+> +	unsigned long flags;
+> +	u32 cdex;
+> +
+> +	WARN_ON(clk->enabled == 0);
+> +
+> +	spin_lock_irqsave(&asic->lock, flags);
+> +	if (--clk->enabled == 0) {
+> +		cdex = asic3_read_register(asic, ASIC3_OFFSET(CLOCK, CDEX));
+> +		cdex &= ~clk->cdex;
+> +		asic3_write_register(asic, ASIC3_OFFSET(CLOCK, CDEX), cdex);
+> +	}
+> +	spin_unlock_irqrestore(&asic->lock, flags);
+> +}
+>  
+>  /* Core */
+>  static int __init asic3_probe(struct platform_device *pdev)
+> @@ -638,6 +713,11 @@ static int __init asic3_probe(struct platform_device *pdev)
+>  		goto out_irq;
+>  	}
+>  
+> +	/* Making a per-device copy is only needed for the
+> +	 * theoretical case of multiple ASIC3s on one board:
+> +	 */
+> +	memcpy(asic->clocks, asic3_clk_init, sizeof(asic3_clk_init));
+> +
+>  	dev_info(asic->dev, "ASIC3 Core driver\n");
+>  
+>  	return 0;
+> -- 
+> 1.6.3.1
+> 
 
-In acpi_pci_bind, we set device->ops.bind and device->ops.unbind, but
-never clear them out.
-
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-diff --git a/drivers/acpi/pci_bind.c b/drivers/acpi/pci_bind.c
-index 62cb383..c9cc650 100644
---- a/drivers/acpi/pci_bind.c
-+++ b/drivers/acpi/pci_bind.c
-@@ -109,11 +109,13 @@ static int acpi_pci_unbind(struct acpi_device *device)
- 	struct pci_dev *dev;
- 
- 	dev = acpi_get_pci_dev(device->handle);
--	if (!dev)
-+	if (!dev || !dev->subordinate)
- 		return 0;
- 
--	if (dev->subordinate)
--		acpi_pci_irq_del_prt(dev->subordinate);
-+	acpi_pci_irq_del_prt(dev->subordinate);
-+
-+	device->ops.bind = NULL;
-+	device->ops.unbind = NULL;
- 
- 	pci_dev_put(dev);
- 	return 0;
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
