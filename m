@@ -1,73 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbZFDPcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756617AbZFDPhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756248AbZFDPcT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 11:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbZFDPcL
+	id S1756617AbZFDPhR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 11:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbZFDPhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 11:32:11 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:41144 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754507AbZFDPcK (ORCPT
+	Thu, 4 Jun 2009 11:37:05 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:58391 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751971AbZFDPhE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 11:32:10 -0400
-Message-ID: <4A27E8EC.3090606@nortel.com>
-Date: Thu, 04 Jun 2009 09:31:56 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Thu, 4 Jun 2009 11:37:04 -0400
+Date: Thu, 4 Jun 2009 21:06:58 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: David Daney <ddaney@caviumnetworks.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 11/12] hw-breakpoints: ftrace plugin for kernel symbol
+	tracing using HW Breakpoint interfaces
+Message-ID: <20090604153658.GA5336@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <1243982616-18212-1-git-send-email-fweisbec@gmail.com> <1243982616-18212-12-git-send-email-fweisbec@gmail.com> <4A25B1C8.7030708@caviumnetworks.com>
 MIME-Version: 1.0
-To: George Dunlap <george.dunlap@eu.citrix.com>
-CC: Frans Pop <elendil@planet.nl>, Bill Davidsen <davidsen@tmr.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "davem@davemloft.net" <davem@davemloft.net>,
-       "jeremy@goop.org" <jeremy@goop.org>, "mingo@elte.hu" <mingo@elte.hu>,
-       Dan Magenheimer <dan.magenheimer@oracle.com>,
-       "avi@redhat.com" <avi@redhat.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       "xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
-       ksrinivasan <ksrinivasan@novell.com>,
-       "EAnderson@novell.com" <EAnderson@novell.com>,
-       "wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
-       Stephen Spector <stephen.spector@citrix.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>
-Subject: Re: Xen is a feature
-References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org> <20090528.210559.137121893.davem@davemloft.net> <4A1FCE8E.2060604@eu.citrix.com> <alpine.LFD.2.00.0905311607560.3379@localhost.localdomain> <4A26D3D8.6080002@tmr.com> <alpine.LFD.2.00.0906032204220.3419@localhost.localdomain> <alpine.LFD.2.00.0906032204220.3419@localhost.localdomain> <4A26FB3B.6010205@tmr.com> <200906040129.07852.elendil@planet.nl> <4A27CA44.3060604@eu.citrix.com>
-In-Reply-To: <4A27CA44.3060604@eu.citrix.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Jun 2009 15:32:03.0108 (UTC) FILETIME=[9C09D640:01C9E529]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A25B1C8.7030708@caviumnetworks.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-George Dunlap wrote:
-> Frans Pop wrote:
-> 
->>! The kernel policy always was and still is to accept only those
->>! features which have a technical benefit **to the code base**.
+On Tue, Jun 02, 2009 at 04:12:08PM -0700, David Daney wrote:
+> Frederic Weisbecker wrote:
+>> From: K.Prasad <prasad@linux.vnet.ibm.com>
+>>
+>> This patch adds an ftrace plugin to detect and profile memory access over kernel
+>> variables. It uses HW Breakpoint interfaces to 'watch memory addresses.
+>>
+>> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+>> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+>> ---
+>>  kernel/trace/Kconfig          |   21 ++
+>>  kernel/trace/Makefile         |    1 +
+>>  kernel/trace/trace.h          |   23 ++
+>>  kernel/trace/trace_ksym.c     |  525 +++++++++++++++++++++++++++++++++++++++++
+>>  kernel/trace/trace_selftest.c |   53 ++++
+>>  5 files changed, 623 insertions(+), 0 deletions(-)
+>>  create mode 100644 kernel/trace/trace_ksym.c
+> [...]
+>> +	entry->ksym_hbp->info.name = ksymname;
+>> +	entry->ksym_hbp->info.type = op;
+>> +	entry->ksym_addr = entry->ksym_hbp->info.address = addr;
+>> +#ifdef CONFIG_X86
+>> +	entry->ksym_hbp->info.len = HW_BREAKPOINT_LEN_4;
+>> +#endif
+>
+> What if the symbol referred to an object of size other than 4?  This  
+> would clearly be incorrect in that case.
+>
 
-> If (hypothetically) we merged Xen into Linux, then (people are 
-> suggesting) the coolness of Xen would actually contribute to the 
-> coolness of Linux ("add technical benefit to the code base").  People 
-> would feel like working on the interface between linux-xen and the rest 
-> of linux would be making their own piece of software, Linux, work 
-> better, rather than feeling like they have to work with some foreign 
-> project that doesn't make their code any cooler.
+I don't see a way in which we could automatically detect the size of a
+variable using the symbol name and use that as the 'len' (as this would
+be the ideal case). However, in this case we can circumvent this problem by
+using the least of the possible lengths (HW_BREAKPOINT_LEN_1 for x86)
+as it would be valid for symbols of all sizes. I will change this.
+Thanks for pointing it out!
 
-I suspect that there is an element of this.
+>> +	entry->ksym_hbp->triggered = (void *)ksym_hbp_handler;
+>> +
+>> +	ret = register_kernel_hw_breakpoint(entry->ksym_hbp);
+>
+> I hate to sound like a broken record, but could some one explain to me  
+> again why it is a good idea to design a new API that requires processor  
+> specific #ifdefs to be sprinkled all around generic kernel code?
+>
+> Back in:
+> http://lkml.org/lkml/2008/12/4/329
+> and
+> http://lkml.org/lkml/2009/5/21/189
+>
+> I raised doubts about this hw-breakpoint thing being generic and the  
+> responses made think that the processor specific portions would be  
+> isolated in the processor specific parts of the kernel.  I now see that  
+> I was wrong.
+>
+> When we add sparc, MIPS, ppc...  Support it would be nice to not have to  
+> add all our own #ifdefs to this, but instead have a generic interface  
+> that will not need changes.
+>
+> David Daney
 
-There is also the factor that if Xen was merged into linux, we would
-then be able to work towards a sane(r) virtualization layer that would
-be useful for KVM, Xen, and possibly others.  This provides a technical
-benefit to the code base by introducing a more logical organization
-rather than having ad-hoc changes sprinkled all over.
+One of the ways in which we could do this for 'len' field is to allow
+numeric lengths to be specified (as suggested by David Gibson in another
+mail thread), say "entry->ksym_hbp->info.len = 4;".
 
-Chris
+The length encoding based on register layout can be done in
+arch-specific code. I think this would make the code more usable and I
+should be implementing it in a patch soon.
+
+As far as the 'type' information is concerned, some of the common
+breakpoint types (such as HW_BREAKPOINT_READ, HW_BREAKPOINT_WRITE,
+HW_BREAKPOINT_EXECUTE) can be defined in generic files and as NULL
+for those architectures that don't implement them.
+
+However it might be a source of confusion to the end-user about
+supported breakpoint types on a given architecture.
+
+Thanks,
+K.Prasad
 
