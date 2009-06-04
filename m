@@ -1,90 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757619AbZFDLXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbZFDLYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757619AbZFDLXF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 07:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757131AbZFDLWo
+	id S1756006AbZFDLYl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 07:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754452AbZFDLYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 07:22:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47566 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754585AbZFDLWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 07:22:41 -0400
-Date: Thu, 4 Jun 2009 11:21:46 GMT
-From: tip-bot for Yong Wang <yong.y.wang@linux.intel.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, arjan@linux.intel.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, yong.y.wang@intel.com,
-       yong.y.wang@linux.intel.com, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       arjan@linux.intel.com, efault@gmx.de, yong.y.wang@intel.com,
-       yong.y.wang@linux.intel.com, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <20090603084225.GA6553@ywang-moblin2.bj.intel.com>
-References: <20090603084225.GA6553@ywang-moblin2.bj.intel.com>
-Subject: [tip:perfcounters/core] perf_counter: Documentation update
-Message-ID: <tip-3aff27ca84fa94311ae99189e54fed8d83b69fc1@git.kernel.org>
-Git-Commit-ID: 3aff27ca84fa94311ae99189e54fed8d83b69fc1
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 04 Jun 2009 11:21:48 +0000 (UTC)
+	Thu, 4 Jun 2009 07:24:34 -0400
+Received: from www84.your-server.de ([213.133.104.84]:32918 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751512AbZFDLYd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 07:24:33 -0400
+Subject: [patch] procfs: provide stack information for threads
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Joerg Engel <joern@logfs.org>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20090401193135.GA12316@elte.hu>
+References: <1238511505.364.61.camel@matrix>
+	 <20090401193135.GA12316@elte.hu>
+Content-Type: text/plain
+Date: Thu, 04 Jun 2009 13:23:48 +0200
+Message-Id: <1244114628.31230.3.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  3aff27ca84fa94311ae99189e54fed8d83b69fc1
-Gitweb:     http://git.kernel.org/tip/3aff27ca84fa94311ae99189e54fed8d83b69fc1
-Author:     Yong Wang <yong.y.wang@linux.intel.com>
-AuthorDate: Wed, 3 Jun 2009 16:42:25 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 4 Jun 2009 13:20:12 +0200
+Hi everybody,
 
-perf_counter: Documentation update
+This is the latest version of the formaly named "detailed stack info"
+patch which give you a better overview of the userland application stack
+usage, especially for embedded linux.
 
-The 'nmi' bit is no longer there.
+Currently you are only able to dump the main process/thread stack usage
+which is showed in /proc/pid/status by the "VmStk" Value. But you get no
+information about the consumed stack memory of the the threads.
 
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-LKML-Reference: <20090603084225.GA6553@ywang-moblin2.bj.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which
+marks the vm mapping where the thread stack pointer reside with "[thread
+stack xxxxxxxx]". xxxxxxxx is the start address of the stack.
 
+Also there is a new entry "stack usage" in /proc/<pid>/{task/*,}/status
+which will you give the current stack usage in kb.
 
----
- Documentation/perf_counter/design.txt |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
+I also fixed stack base address in /proc/<pid>/task/*/stat to the base
+address of the associated thread stack and not the one of the main
+process. This makes more sense.
 
-diff --git a/Documentation/perf_counter/design.txt b/Documentation/perf_counter/design.txt
-index 9930c4b..d325076 100644
---- a/Documentation/perf_counter/design.txt
-+++ b/Documentation/perf_counter/design.txt
-@@ -48,7 +48,6 @@ struct perf_counter_hw_event {
-         __u32                   read_format;
+Changes since last posting:
+
+ - Redesigned everything what was suggested by Andrew
+ - slime done
+
+The patch is against 2.6.30-rc7 and tested with on intel and ppc
+architectures.
+
+Greetings,
+Stefani
+
+ fs/exec.c             |    2 +
+ fs/proc/array.c       |   52 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ fs/proc/task_mmu.c    |   14 +++++++++++++
+ include/linux/sched.h |    1 
+ kernel/fork.c         |    2 +
+ 5 files changed, 70 insertions(+), 1 deletion(-)
+
+-patch begins here--------------------------------------------------------------
+
+diff -u -N -r linux-2.6.30.orig/fs/exec.c linux-2.6.30/fs/exec.c
+--- linux-2.6.30.orig/fs/exec.c	2009-06-04 09:29:47.000000000 +0200
++++ linux-2.6.30/fs/exec.c	2009-06-04 09:32:35.000000000 +0200
+@@ -1328,6 +1328,8 @@
+ 	if (retval < 0)
+ 		goto out;
  
-         __u64                   disabled       :  1, /* off by default        */
--                                nmi            :  1, /* NMI sampling          */
-                                 inherit        :  1, /* children inherit it   */
-                                 pinned         :  1, /* must always be on PMU */
-                                 exclusive      :  1, /* only group on PMU     */
-@@ -195,12 +194,6 @@ The 'disabled' bit specifies whether the counter starts out disabled
- or enabled.  If it is initially disabled, it can be enabled by ioctl
- or prctl (see below).
++	current->stack_start = current->mm->start_stack;
++
+ 	/* execve succeeded */
+ 	current->fs->in_exec = 0;
+ 	current->in_execve = 0;
+diff -u -N -r linux-2.6.30.orig/fs/proc/array.c linux-2.6.30/fs/proc/array.c
+--- linux-2.6.30.orig/fs/proc/array.c	2009-06-04 09:29:47.000000000 +0200
++++ linux-2.6.30/fs/proc/array.c	2009-06-04 10:37:53.000000000 +0200
+@@ -321,6 +321,55 @@
+ 			p->nivcsw);
+ }
  
--The 'nmi' bit specifies, for hardware events, whether the counter
--should be set up to request non-maskable interrupts (NMIs) or normal
--interrupts.  This bit is ignored if the user doesn't have
--CAP_SYS_ADMIN privilege (i.e. is not root) or if the CPU doesn't
--generate NMIs from hardware counters.
--
- The 'inherit' bit, if set, specifies that this counter should count
- events on descendant tasks as well as the task specified.  This only
- applies to new descendents, not to any existing descendents at the
++static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
++					struct task_struct *p)
++{
++	unsigned long	i;
++	struct page	*page;
++	unsigned long	stkpage;
++
++	stkpage = KSTK_ESP(p) & PAGE_MASK;
++
++#ifdef CONFIG_STACK_GROWSUP
++	for (i = vma->vm_end; i-PAGE_SIZE > stkpage; i -= PAGE_SIZE) {
++
++		page = follow_page(vma, i-PAGE_SIZE, 0);
++
++		if (!IS_ERR(page) && page)
++			break;
++	}
++	return i - (p->stack_start & PAGE_MASK);
++#else
++	for (i = vma->vm_start; i+PAGE_SIZE <= stkpage; i += PAGE_SIZE) {
++
++		page = follow_page(vma, i, 0);
++
++		if (!IS_ERR(page) && page)
++			break;
++	}
++	return (p->stack_start & PAGE_MASK) - i + PAGE_SIZE;
++#endif
++}
++
++static inline void task_show_stack_usage(struct seq_file *m,
++						struct task_struct *p)
++{
++	struct vm_area_struct	*vma;
++	struct mm_struct	*mm;
++
++	mm = get_task_mm(p);
++
++	if (mm) {
++		vma = find_vma(mm, p->stack_start);
++
++		if (vma)
++			seq_printf(m, "Stack usage:\t%lu kB\n",
++				get_stack_usage_in_bytes(vma, p) >> 10);
++
++		mmput(mm);
++	}
++}
++
+ int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
+ 			struct pid *pid, struct task_struct *task)
+ {
+@@ -340,6 +389,7 @@
+ 	task_show_regs(m, task);
+ #endif
+ 	task_context_switch_counts(m, task);
++	task_show_stack_usage(m, task);
+ 	return 0;
+ }
+ 
+@@ -481,7 +531,7 @@
+ 		rsslim,
+ 		mm ? mm->start_code : 0,
+ 		mm ? mm->end_code : 0,
+-		(permitted && mm) ? mm->start_stack : 0,
++		(permitted) ? task->stack_start : 0,
+ 		esp,
+ 		eip,
+ 		/* The signal information here is obsolete.
+diff -u -N -r linux-2.6.30.orig/fs/proc/task_mmu.c linux-2.6.30/fs/proc/task_mmu.c
+--- linux-2.6.30.orig/fs/proc/task_mmu.c	2009-06-04 09:29:47.000000000 +0200
++++ linux-2.6.30/fs/proc/task_mmu.c	2009-06-04 09:32:35.000000000 +0200
+@@ -242,6 +242,20 @@
+ 				} else if (vma->vm_start <= mm->start_stack &&
+ 					   vma->vm_end >= mm->start_stack) {
+ 					name = "[stack]";
++				} else {
++					unsigned long stack_start;
++
++					stack_start =
++						((struct proc_maps_private *)
++						m->private)->task->stack_start;
++
++					if (vma->vm_start <= stack_start &&
++					    vma->vm_end >= stack_start) {
++						pad_len_spaces(m, len);
++						seq_printf(m,
++						 "[thread stack: %08lx]",
++						 stack_start);
++					}
+ 				}
+ 			} else {
+ 				name = "[vdso]";
+diff -u -N -r linux-2.6.30.orig/include/linux/sched.h linux-2.6.30/include/linux/sched.h
+--- linux-2.6.30.orig/include/linux/sched.h	2009-06-04 09:29:47.000000000 +0200
++++ linux-2.6.30/include/linux/sched.h	2009-06-04 09:32:35.000000000 +0200
+@@ -1429,6 +1429,7 @@
+ 	/* state flags for use by tracers */
+ 	unsigned long trace;
+ #endif
++	unsigned long stack_start;
+ };
+ 
+ /* Future-safe accessor for struct task_struct's cpus_allowed. */
+diff -u -N -r linux-2.6.30.orig/kernel/fork.c linux-2.6.30/kernel/fork.c
+--- linux-2.6.30.orig/kernel/fork.c	2009-06-04 09:29:47.000000000 +0200
++++ linux-2.6.30/kernel/fork.c	2009-06-04 13:15:35.000000000 +0200
+@@ -1092,6 +1092,8 @@
+ 	if (unlikely(current->ptrace))
+ 		ptrace_fork(p, clone_flags);
+ 
++	p->stack_start = stack_start;
++
+ 	/* Perform scheduler related setup. Assign this task to a CPU. */
+ 	sched_fork(p, clone_flags);
+
+Signed-off-by: Stefani Seibold <stefani@seibold.net>
+
+
