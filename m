@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757724AbZFDMnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbZFDMna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757724AbZFDMnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 08:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756872AbZFDMnJ
+	id S1757968AbZFDMna (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 08:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757722AbZFDMnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 08:43:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49830 "EHLO hera.kernel.org"
+	Thu, 4 Jun 2009 08:43:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49835 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757221AbZFDMnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 08:43:08 -0400
-Subject: [PATCH 6/6] headers_check fix: mn10300, setup.h
+	id S1757796AbZFDMnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 08:43:18 -0400
+Subject: [PATCH 0/6] headers_check fix patches 20090604
 From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+To: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       Tony Luck <tony.luck@intel.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Greg Ungerer <gerg@snapgear.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Michael Abbott <michael@araneidae.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>, yasutake.koichi@jp.panasonic.com,
-       linux-am33-list@redhat.com
-In-Reply-To: <1244119039.5172.39.camel@ht.satnam>
-References: <1244118232.5172.26.camel@ht.satnam>
-	 <1244118476.5172.29.camel@ht.satnam>  <1244118599.5172.31.camel@ht.satnam>
-	 <1244118714.5172.33.camel@ht.satnam>  <1244118949.5172.37.camel@ht.satnam>
-	 <1244119039.5172.39.camel@ht.satnam>
+       David Howells <dhowells@redhat.com>
 Content-Type: text/plain
-Date: Thu, 04 Jun 2009 18:08:18 +0530
-Message-Id: <1244119098.5172.40.camel@ht.satnam>
+Date: Thu, 04 Jun 2009 17:53:52 +0530
+Message-Id: <1244118232.5172.26.camel@ht.satnam>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -31,33 +31,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Please Review :
 
-fix the following 'make headers_check' warnings:
+Jaswinder Singh Rajput (6):
+      headers_check fix: arm, hwcap.h
+      headers_check fix: ia64, fpswa.h
+      headers_check fix: m68k, swab.h
+      headers_check fix: mips, ioctl.h
+      headers_check fix: mn10300, ptrace.h
+      headers_check fix: mn10300, setup.h
 
-  usr/include/asm-mn10300/setup.h:14: extern's make no sense in userspace
-  usr/include/asm-mn10300/setup.h:15: extern's make no sense in userspace
+ arch/arm/include/asm/hwcap.h      |    5 +++--
+ arch/ia64/include/asm/fpswa.h     |    3 ++-
+ arch/m68k/include/asm/swab.h      |    2 +-
+ arch/mips/include/asm/ioctl.h     |    4 ++++
+ arch/mn10300/include/asm/ptrace.h |    5 ++---
+ arch/mn10300/include/asm/setup.h  |    3 ++-
+ 6 files changed, 14 insertions(+), 8 deletions(-)
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/mn10300/include/asm/setup.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/arch/mn10300/include/asm/setup.h b/arch/mn10300/include/asm/setup.h
-index 08356c8..c229d1e 100644
---- a/arch/mn10300/include/asm/setup.h
-+++ b/arch/mn10300/include/asm/setup.h
-@@ -11,7 +11,8 @@
- #ifndef _ASM_SETUP_H
- #define _ASM_SETUP_H
- 
-+#ifdef __KERNEL__
- extern void __init unit_setup(void);
- extern void __init unit_init_IRQ(void);
--
-+#endif
- #endif /* _ASM_SETUP_H */
--- 
-1.6.0.6
-
-
+Thanks,
+--
+JSR
 
