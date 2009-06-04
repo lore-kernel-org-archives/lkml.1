@@ -1,97 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZFDTBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbZFDTCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754085AbZFDTBs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 15:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbZFDTBk
+	id S1754438AbZFDTCV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 15:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbZFDTCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 15:01:40 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:55770 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751091AbZFDTBk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 15:01:40 -0400
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Message-Id: <5DFB5844-7C2C-4987-BC20-6CC81E0BF1BD@sgi.com>
-From: Felix Blyakher <felixb@sgi.com>
-To: Artem Bityutskiy <dedekind@infradead.org>
-In-Reply-To: <1244112114-23144-2-git-send-email-dedekind@infradead.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Thu, 4 Jun 2009 15:02:14 -0400
+Received: from mga02.intel.com ([134.134.136.20]:2665 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751346AbZFDTCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 15:02:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,306,1241420400"; 
+   d="scan'208";a="521834479"
+Subject: [patch] x64: Avoid irq_chip mask/unmask in fixup_irqs for
+ interrupt-remapping
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com, andi@linux.intel.com,
+       travis@sgi.com, steiner@sgi.com
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Thu, 04 Jun 2009 11:59:49 -0700
+Message-Id: <1244141989.27006.10369.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v926)
-Subject: Re: [PATCH v2 01/17] VFS: introduce helpers for manipulation s_dirty flag
-Date: Thu, 4 Jun 2009 14:01:40 -0500
-References: <1244112114-23144-1-git-send-email-dedekind@infradead.org> <1244112114-23144-2-git-send-email-dedekind@infradead.org>
-X-Mailer: Apple Mail (2.926)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: x64: Avoid irq_chip mask/unmask in fixup_irqs for interrupt-remapping
 
-On Jun 4, 2009, at 5:41 AM, Artem Bityutskiy wrote:
+In the presence of interrupt-remapping, irqs will be migrated in the
+process context and we don't do (and there is no need to) irq_chip mask/unmask
+while migrating the interrupt.
 
-> From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
->
-> This patch introduces 3 new VFS helpers: 'mark_sb_dirty()',
-> 'mark_sb_clean()', and 'sb_is_dirty()'.
+Similarly fix the fixup_irqs() that get called during cpu offline and avoid
+calling irq_chip mask/unmask for irqs that are ok to be migrated in the
+process context.
 
-Should the name be is_sb_dirty() for consistency?
+While we didn't observe any race condition with the existing code,
+this change takes complete advantage of interrupt-remapping in
+the newer generation platforms and avoids any potential HW lockup's
+(that often worry Eric :)
 
-Felix
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+---
 
-> The helpers simply
-> set 'sb->s_dirt' or test 'sb->s_dirt'. The plan is to make
-> every FS use these helpers instead of manipulating
-> 'sb->s_dirt' directly. And the further plan is to stop the
-> periodic write-back when there is no dirt.
->
-> This patch is just a preparation. No functional changes yet.
->
-> Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-> Cc: Christoph Hellwig <hch@infradead.org>
-> Cc: Al Viro <viro@zeniv.linux.org.uk>
-> ---
-> include/linux/fs.h |   17 +++++++++++++++++
-> 1 files changed, 17 insertions(+), 0 deletions(-)
->
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 73242c3..2d67017 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -1782,6 +1782,23 @@ extern int get_sb_pseudo(struct  
-> file_system_type *, char *,
-> extern void simple_set_mnt(struct vfsmount *mnt, struct super_block  
-> *sb);
-> int __put_super_and_need_restart(struct super_block *sb);
->
-> +/*
-> + * Note, VFS does not provide any protection for the super block  
-> clean/dirty
-> + * state. File-systems should take care of this.
-> + */
-> +static inline void mark_sb_dirty(struct super_block *sb)
-> +{
-> +	sb->s_dirt = 1;
-> +}
-> +static inline void mark_sb_clean(struct super_block *sb)
-> +{
-> +	sb->s_dirt = 0;
-> +}
-> +static inline int sb_is_dirty(struct super_block *sb)
-> +{
-> +	return sb->s_dirt;
-> +}
-> +
-> /* Alas, no aliases. Too much hassle with bringing module.h  
-> everywhere */
-> #define fops_get(fops) \
-> 	(((fops) && try_module_get((fops)->owner) ? (fops) : NULL))
-> -- 
-> 1.6.0.6
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/arch/x86/kernel/irq_64.c b/arch/x86/kernel/irq_64.c
+index 977d8b4..82265a5 100644
+--- a/arch/x86/kernel/irq_64.c
++++ b/arch/x86/kernel/irq_64.c
+@@ -95,7 +95,7 @@ void fixup_irqs(void)
+ 			affinity = cpu_all_mask;
+ 		}
+ 
+-		if (desc->chip->mask)
++		if (!(desc->status & IRQ_MOVE_PCNTXT) && desc->chip->mask)
+ 			desc->chip->mask(irq);
+ 
+ 		if (desc->chip->set_affinity)
+@@ -103,7 +103,7 @@ void fixup_irqs(void)
+ 		else if (!(warned++))
+ 			set_affinity = 0;
+ 
+-		if (desc->chip->unmask)
++		if (!(desc->status & IRQ_MOVE_PCNTXT) && desc->chip->unmask)
+ 			desc->chip->unmask(irq);
+ 
+ 		spin_unlock(&desc->lock);
+
 
