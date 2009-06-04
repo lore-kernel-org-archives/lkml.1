@@ -1,97 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZFDUvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbZFDUyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753230AbZFDUvK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 16:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbZFDUuz
+	id S1752462AbZFDUyv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 16:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbZFDUyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 16:50:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48260 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752172AbZFDUuy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 16:50:54 -0400
-Date: Thu, 4 Jun 2009 13:50:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Salman Qazi <sqazi@google.com>
-Cc: linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: A bug in read operation for /dev/zero and a proposed fix.
-Message-Id: <20090604135050.ceb6bf18.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.00.0906041330170.32557@bumblebee1.mtv.corp.google.com>
-References: <alpine.DEB.1.00.0906041330170.32557@bumblebee1.mtv.corp.google.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Jun 2009 16:54:45 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37304 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750814AbZFDUyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 16:54:44 -0400
+Date: Thu, 4 Jun 2009 22:49:58 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] cpuhotplug: introduce try_get_online_cpus() take 2
+Message-ID: <20090604204958.GA5071@redhat.com>
+References: <4A1F9CEA.1070705@cn.fujitsu.com> <20090530015342.GA21502@linux.vnet.ibm.com> <20090530043739.GA12157@in.ibm.com> <4A27708C.6030703@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A27708C.6030703@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Jun 2009 13:32:55 -0700 (PDT)
-Salman Qazi <sqazi@google.com> wrote:
+On 06/04, Lai Jiangshan wrote:
+>
+> - Lockless for get_online_cpus()'s fast path
+> - Introduce try_get_online_cpus()
 
-> While running 20 parallel instances of dd as follows:
-> 
-> #!/bin/bash
-> 
-> for i in `seq 1 20`; do
->          dd if=/dev/zero of=/export/hda3/dd_$i bs=1073741824 count=1 &
-> done
-> wait
-> 
-> on a 16G machine, we noticed that rather than just killing the
-> processes, the entire kernel went down.  Stracing dd reveals that it first
-> does an mmap2, which makes 1GB worth of zero page mappings.  Then it 
-> performs
-> a read on those pages from /dev/zero, and finally it performs a write. 
-> The
-> machine died during the reads.  Looking at the code, it was noticed that
-> /dev/zero's read operation had been changed at some point from giving
-> zero page mappings to actually zeroing the page.  The zeroing of the
-> pages causes physical pages to be allocated to the process.
+I think this can work...
 
-erk, Nick broke dd(1):
+> @@ -50,10 +57,20 @@ void get_online_cpus(void)
+>  	might_sleep();
+>  	if (cpu_hotplug.active_writer == current)
+>  		return;
+> -	mutex_lock(&cpu_hotplug.lock);
+> -	cpu_hotplug.refcount++;
+> -	mutex_unlock(&cpu_hotplug.lock);
+>
+> +	if (unlikely(!atomic_inc_not_zero(&cpu_hotplug.refcount))) {
+> +		DEFINE_WAIT(wait);
+> +
+> +		for (;;) {
+> +			prepare_to_wait(&cpu_hotplug.sleeping_readers, &wait,
+> +					TASK_UNINTERRUPTIBLE);
+> +			if (atomic_inc_not_zero(&cpu_hotplug.refcount))
+> +				break;
+> +			schedule();
+> +		}
+> +
+> +		finish_wait(&cpu_hotplug.sleeping_readers, &wait);
+> +	}
+>  }
 
-  commit 557ed1fa2620dc119adb86b34c614e152a629a80
-  Author: Nick Piggin <npiggin@suse.de>
-  Date:   Tue Oct 16 01:24:40 2007 -0700
+Looks like the code above can be replaced with
 
-      remove ZERO_PAGE
+	wait_event(atomic_inc_not_zero(&cpu_hotplug.refcount));
+
+>  static void cpu_hotplug_done(void)
+>  {
+>  	cpu_hotplug.active_writer = NULL;
+> -	mutex_unlock(&cpu_hotplug.lock);
+> +	atomic_inc(&cpu_hotplug.refcount);
+> +
+> +	if (waitqueue_active(&cpu_hotplug.sleeping_readers))
+> +		wake_up(&cpu_hotplug.sleeping_readers);
+>  }
+
+This looks racy.
+
+Suppose that the new reader comes right before atomic_inc(). The first
+inc_not_zero() fails, the readear does prepare_to_wait(), the 2nd
+inc_not_zero() fails too.
+
+cpu_hotplug_done() does atomic_inc().
+
+What guarantees we must see waitqueue_active() == T?
+
+I think cpu_hotplug_done() should do unconditional wake_up(). This path
+is slow anyway, "if (waitqueue_active())" does not buy too much. In this
+case .sleeping_readers->lock closes the race.
+
+Unless I missed something, of course.
 
 
-This is the first report I've seen of problems arising from that
-change.
+Minor, but I'd suggest to use wake_up_all(). This does not make any
+difference because we do not have WQ_FLAG_EXCLUSIVE waiters, but imho
+looks a bit cleaner.
 
->  But, when
-> the process exhausts all the memory that it can, the kernel cannot kill
-> it, as it is still in the kernel mode allocating more memory. 
-> Consequently,
-> the kernel eventually crashes.
-> 
-> To fix this, I propose that when a fatal signal is pending during
-> /dev/zero read operation, we simply return and let the user process die.
-> Here is a patch that does that.
-> 
-> Signed-off-by: Salman Qazi <sqazi@google.com>
-> ---
-> diff --git a/drivers/char/mem.c b/drivers/char/mem.c
-> index 8f05c38..2ffa36e 100644
-> --- a/drivers/char/mem.c
-> +++ b/drivers/char/mem.c
-> @@ -696,6 +696,11 @@ static ssize_t read_zero(struct file * file, char __user * buf,
->   			break;
->   		buf += chunk;
->   		count -= chunk;
-> +		/* The exit code here doesn't actually matter, as userland
-> +		 * will never see it.
-> +		 */
-> +		if (fatal_signal_pending(current))
-> +			return -ENOMEM;
->   		cond_resched();
->   	}
->   	return written ? written : -EFAULT;
 
-OK.  I think.
+Hmm. It seems to me that cpu_hotplug_done() needs mb__before_atomic_inc()
+before atomic_inc. Otherwise, "active_writer = NULL" can be re-ordered with
+atomic_inc(). If the new reader does get_online_cpus() + put_online_cpus()
+quicky, it can see active_writer != NULL.
 
-It's presumptuous to return -ENOMEM: we don't _know_ that this signal
-came from the oom-killer.  It would be better to return -EINTR here.
+Oleg.
+
