@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbZFDJGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757035AbZFDJGw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756885AbZFDJGj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 05:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbZFDJGc
+	id S1757035AbZFDJGw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 05:06:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbZFDJGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 05:06:32 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:61560 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753580AbZFDJGb (ORCPT
+	Thu, 4 Jun 2009 05:06:44 -0400
+Received: from smtp109.sbc.mail.gq1.yahoo.com ([67.195.14.39]:34458 "HELO
+	smtp109.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753580AbZFDJGn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 05:06:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vovQs2EH2rD/EJBB76xCPPR4RJswSFinWvOINiCD36kg0eeMTVFCn5NukXLIoVv04Y
-         76BRlhmMYYCaxRD1MRiHsYFBYlJQitvrZ5flxefcrTUdsCvexilpmysGGvegFWcnSxnP
-         SywZFxaOPWl75JGQ0MTr6b7wkwqD7MaWfjpGc=
-Date: Thu, 4 Jun 2009 17:08:39 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, ying.huang@intel.com, W.Li@Sun.COM,
-       michaele@au1.ibm.com, mingo@elte.hu, heicars2@linux.vnet.ibm.com,
-       mschwid2@linux.vnet.ibm.com
-Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
-Message-ID: <20090604090839.GB7030@cr0.nay.redhat.com>
-References: <20090602114359.129247921@linux.vnet.ibm.com> <20090602114402.951631599@linux.vnet.ibm.com> <20090602150324.c706b1d2.akpm@linux-foundation.org> <4A266546.5080601@linux.vnet.ibm.com> <4A26961E.7040207@linux.vnet.ibm.com>
+	Thu, 4 Jun 2009 05:06:43 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=J8R5I+VhEpDhgqGjmHtp/NDdBUmd8jlanxzlvHa1+gWr2RJ60OpNFfZqmdT/vlWKFzmTdfsq0y/WNGyH5tvHaa/ZS7k/ol0u1qzlZFd7c+uQHXgC+mjkjQS2QWNdqsP5NS98Ftq9gp26EQQBgVGkyc7hZIp6kC2ZsnxicmMIv+A=  ;
+X-YMail-OSG: QLHvYAIVM1lrDLEmy4ToW87Ifewcna_Ho8xIpClswAUtJZW3qMQ_ydlpe0GcIhsn9_CsGyO9UkP9jgjbdQ7RKrAN8VzZ8HOHqYhvyUKX17oYp1MUGwdgc4b4yp1khYmQynGNu8uVmrdROfptZbQaYzvjmL_J7Up_V.YMquQJKzlZH9NfPBGN4XIha9a2wBsHPA10iRSJUXlXd0SrAnJKpBOSnH7IMYtO6Jpg48rg1wFXmbuiEyDgi_pTrhVDTaOYcHiJBbqMYjjJEaM4__dzJs.8WSDAQgpWmPdeUQEqnlr254PQ.24-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Subject: Re: [PATCH] gpio sysfs: add a "toggle" value
+Date: Thu, 4 Jun 2009 02:06:43 -0700
+User-Agent: KMail/1.9.10
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <1244017019-28163-1-git-send-email-vapier@gentoo.org> <200906040127.24740.david-b@pacbell.net> <8bd0f97a0906040152h1fa57f5crd96faa37322a1b40@mail.gmail.com>
+In-Reply-To: <8bd0f97a0906040152h1fa57f5crd96faa37322a1b40@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <4A26961E.7040207@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906040206.44144.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 05:26:22PM +0200, Peter Oberparleiter wrote:
->Peter Oberparleiter wrote:
->> Andrew Morton wrote:
->>> On Tue, 02 Jun 2009 13:44:02 +0200
->>> Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
->>>> +	/* Duplicate gcov_info. */
->>>> +	active = num_counter_active(info);
->>>> +	dup = kzalloc(sizeof(struct gcov_info) +
->>>> +		      sizeof(struct gcov_ctr_info) * active, GFP_KERNEL);
->>> 
->>> How large can this allocation be?
->> 
->> Hm, good question. Having a look at my test system, I see coverage data 
->> files of up to 60kb size. With counters making up the largest part of 
->> those, I'd guess the allocation size can be around ~55kb. I assume that 
->> makes it a candidate for vmalloc?
->
->A further run with debug output showed that the maximum size is
->actually around 4k, so in my opinion, there is no need to switch
->to vmalloc.
+On Thursday 04 June 2009, Mike Frysinger wrote:
+> my next request was for a 1 letter command set and chaining
+> operations.  say you want to toggle a gpio line 4 times, having to go
+> between kernel and userspace for that seems kind of heavy.
+> echo TTTT > value
 
-Unless you want virtually continious memory, you don't need to
-bother vmalloc().
+Having that kind of stuff in kernelspace seems wrong;
+if you're going that route, embed Guile or something.  ;)
 
-kmalloc() and get_free_pages() are all fine for this.
+The "TTTT" thing could as easily be scripted in BASH.
+
+
