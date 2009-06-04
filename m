@@ -1,127 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753721AbZFDWm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbZFDWmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753721AbZFDWm1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 18:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbZFDWmQ
+	id S1754837AbZFDWmv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 18:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZFDWmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 18:42:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40345 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752331AbZFDWmP (ORCPT
+	Thu, 4 Jun 2009 18:42:42 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:17083 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752782AbZFDWml (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 18:42:15 -0400
-Date: Thu, 4 Jun 2009 15:41:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Florian Fainelli <florian@openwrt.org>
-Cc: sshtylyov@ru.mvista.com, davem@davemloft.net, netdev@vger.kernel.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, tiwai@suse.de,
-       ralf@linux-mips.org
-Subject: Re: [PATCH 1/8] add lib/gcd.c
-Message-Id: <20090604154142.71985f17.akpm@linux-foundation.org>
-In-Reply-To: <200906041639.04868.florian@openwrt.org>
-References: <200906041615.10467.florian@openwrt.org>
-	<4A27DAAD.5000303@ru.mvista.com>
-	<200906041639.04868.florian@openwrt.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Jun 2009 18:42:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=eQ4Mn5H+Lh1VIrRe39WzCDGwjiDJxO1fcPcI981BrAMwBvcCJD7okzAFNaxRdOClzR
+         p//9Wkcqc9NoDKQIG2EALA/iJ7og3t82Q/ISjyRw6koV6K86+t8iC0xEfY3iJ/cePztN
+         QMSD4IuJoWPIY/n32ggqw81iuhz+s4uJwgbbk=
+Date: Fri, 5 Jun 2009 02:42:39 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, xemul@parallels.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, mingo@elte.hu, linux-fsdevel@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 1/9] exec_path 1/9: introduce ->exec_path and switch
+	/proc/*/exe
+Message-ID: <20090604224239.GA10666@x200.localdomain>
+References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org> <20090531215427.GA29534@x200.localdomain> <20090531151953.8f8b14b5.akpm@linux-foundation.org> <20090603230422.GB853@x200.localdomain> <20090604075532.GU9285@us.ibm.com> <alpine.LFD.2.01.0906040803410.4880@localhost.localdomain> <20090604213033.GZ9285@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090604213033.GZ9285@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Jun 2009 16:39:03 +0200
-Florian Fainelli <florian@openwrt.org> wrote:
-
-> This patch adds lib/gcd.c which contains a greatest
-> common divider implementation taken from
-> sound/core/pcm_timer.c
+On Thu, Jun 04, 2009 at 02:30:33PM -0700, Matt Helsley wrote:
+> On Thu, Jun 04, 2009 at 08:07:23AM -0700, Linus Torvalds wrote:
+> > On Thu, 4 Jun 2009, Matt Helsley wrote:
+> > > 
+> > > Doesn't this pin the vfs mount of the executable for the lifetime of
+> > > the task?
+> > 
+> > Well, yes, but so does the current code.
 > 
-> Changes from v1:
-> - fixed indentation
-> - use EXPORT_SYMBOL_GPL instead of EXPORT_SYMBOL as
-> suggested by Ralf Baechle
+> Not quite. The current code pins it as long as the corresponding VMAs
+> are mapped -- not for the lifetime of the task.
+> 
+> > Sure, in _theory_ it can be a non-mmap executable (maybe people still have 
+> > those old OMAGIC a.out executables), and in _theory_ you could unmap the 
+> > executable even if it was originally mmap'ed, but neither of those is 
+> > exactly common, are they?
+> 
+> Not common to my knowledge, no.
+> 
+> > 
+> > So in practice, nothing has changed wrt lifetime of the executable.
+> 
+> Almost all of the time, yes.
 
-I'm not sure about the _GPL change really - it's just a little helper
-function.  But whatever - I'm trained to avoid that issue.
+And year ago executable wasn't pinned at all, so if you're opposing
+widening of time executable is pinned, you should revert your own patch
+which introduced it in first place.
 
-I made some changes:
-
-From: Andrew Morton <akpm@linux-foundation.org>
-
-- use swap() (pointed out by Joe)
-
-- Just add gcd.o to lib-y, reove Kconfig changes.
-
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Florian Fainelli <florian@openwrt.org>
-Cc: Julius Volz <juliusv@google.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Simon Horman <horms@verge.net.au>
-Cc: Takashi Iwai <tiwai@suse.de>
-Cc: Joe Perches <joe@perches.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- lib/Kconfig  |    3 ---
- lib/Makefile |    3 +--
- lib/gcd.c    |    8 +++-----
- 3 files changed, 4 insertions(+), 10 deletions(-)
-
-diff -puN lib/Kconfig~lib-add-lib-gcdc-fix lib/Kconfig
---- a/lib/Kconfig~lib-add-lib-gcdc-fix
-+++ a/lib/Kconfig
-@@ -10,9 +10,6 @@ menu "Library routines"
- config BITREVERSE
- 	tristate
- 
--config GCD
--	bool
--
- config GENERIC_FIND_FIRST_BIT
- 	bool
- 
-diff -puN lib/Makefile~lib-add-lib-gcdc-fix lib/Makefile
---- a/lib/Makefile~lib-add-lib-gcdc-fix
-+++ a/lib/Makefile
-@@ -12,7 +12,7 @@ lib-y := ctype.o string.o vsprintf.o cmd
- 	 idr.o int_sqrt.o extable.o prio_tree.o \
- 	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
- 	 proportions.o prio_heap.o ratelimit.o show_mem.o \
--	 is_single_threaded.o plist.o decompress.o
-+	 is_single_threaded.o plist.o decompress.o gcd.o
- 
- lib-$(CONFIG_MMU) += ioremap.o
- lib-$(CONFIG_SMP) += cpumask.o
-@@ -57,7 +57,6 @@ obj-$(CONFIG_CRC_ITU_T)	+= crc-itu-t.o
- obj-$(CONFIG_CRC32)	+= crc32.o
- obj-$(CONFIG_CRC7)	+= crc7.o
- obj-$(CONFIG_LIBCRC32C)	+= libcrc32c.o
--obj-$(CONFIG_GCD)	+= gcd.o
- obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
- 
- obj-$(CONFIG_ZLIB_INFLATE) += zlib_inflate/
-diff -puN lib/gcd.c~lib-add-lib-gcdc-fix lib/gcd.c
---- a/lib/gcd.c~lib-add-lib-gcdc-fix
-+++ a/lib/gcd.c
-@@ -1,3 +1,4 @@
-+#include <linux/kernel.h>
- #include <linux/gcd.h>
- #include <linux/module.h>
- 
-@@ -6,11 +7,8 @@ unsigned long gcd(unsigned long a, unsig
- {
- 	unsigned long r;
- 
--	if (a < b) {
--		r = a;
--		a = b;
--		b = r;
--	}
-+	if (a < b)
-+		swap(a, b);
- 	while ((r = a % b) != 0) {
- 		a = b;
- 		b = r;
-_
-
+->exec_path merely makes /proc/*/exe very unheuristical (binfmt loader
+decides, nothing else) and suitable for other code as demonstrated.
