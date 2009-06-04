@@ -1,113 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbZFDUdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbZFDUhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754570AbZFDUdv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 16:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZFDUdo
+	id S1753555AbZFDUhR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 16:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZFDUhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 16:33:44 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:42268 "EHLO kernel.dk"
+	Thu, 4 Jun 2009 16:37:06 -0400
+Received: from kroah.org ([198.145.64.141]:53926 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752075AbZFDUdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 16:33:43 -0400
-Date: Thu, 4 Jun 2009 22:33:44 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: "Luck, Tony" <tony.luck@intel.com>, Robert Hancock <hancockrwd@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next end of partition problems?
-Message-ID: <20090604203344.GE11363@kernel.dk>
-References: <4a25b8e987329b28c@agluck-desktop.sc.intel.com> <4A25F5F7.9020506@gmail.com> <4a26ee864930956be@agluck-desktop.sc.intel.com> <x497hzsp2hz.fsf@segfault.boston.devel.redhat.com>
+	id S1751151AbZFDUhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 16:37:05 -0400
+Date: Thu, 4 Jun 2009 13:10:13 -0700
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Subject: Linux Driver Project Status Report as of June 2009
+Message-ID: <20090604201013.GB16252@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <x497hzsp2hz.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04 2009, Jeff Moyer wrote:
-> "Luck, Tony" <tony.luck@intel.com> writes:
-> 
-> >> What kind of controller/drive is this?
-> >
-> > lspci says the controller is:
-> > 06:02.0 SCSI storage controller: LSI Logic / Symbios Logic 53c1030 PCI-X Fusion-MPT Dual Ultra320 SCSI (rev 07)
-> >
-> > console log says drive is:
-> > scsi 0:0:1:0: Direct-Access     SEAGATE  ST318406LC       010A PQ: 0 ANSI: 3
-> >  target0:0:1: Beginning Domain Validation
-> >  target0:0:1: Ending Domain Validation
-> >  target0:0:1: FAST-80 WIDE SCSI 160.0 MB/s DT (12.5 ns, offset 63)
-> > sd 0:0:1:0: [sdb] 35843670 512-byte hardware sectors: (18.3 GB/17.0 GiB)
-> > sd 0:0:1:0: [sdb] Write Protect is off
-> > sd 0:0:1:0: [sdb] Mode Sense: 9f 00 10 08
-> > scsi 0:0:6:0: Processor         ESG-SHV  SCA HSBP M17     1.0D PQ: 0 ANSI: 2
-> >  target0:0:6: Beginning Domain Validation
-> > sd 0:0:1:0: [sdb] Write cache: enabled, read cache: enabled, supports DPO and FUA
-> >  target0:0:6: Ending Domain Validation
-> >  target0:0:6: asynchronous
-> >  sdb: sdb1 sdb2 sdb3
-> > sd 0:0:1:0: [sdb] Attached SCSI disk
-> >
-> > A git bisect between v2.6.30-rc7(good) and next-20090602(bad) points
-> > the finger at this commit (and reverting this change from next-20090602
-> > confirms it introduces this problem):
-> >
-> >
-> > commit db2dbb12dc47a50c7a4c5678f526014063e486f6
-> > Author: Jeff Moyer <jmoyer@redhat.com>
-> > Date:   Wed Apr 22 14:08:13 2009 +0200
-> >
-> >     block: implement blkdev_readpages
-> >     
-> >     Doing a proper block dev ->readpages() speeds up the crazy dump(8)
-> >     approach of using interleaved process IO.
-> >     
-> >     Signed-off-by: Jeff Moyer <jmoyer@redhat.com>
-> >     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> >
-> > diff --git a/fs/block_dev.c b/fs/block_dev.c
-> > index f45dbc1..a85fe31 100644
-> > --- a/fs/block_dev.c
-> > +++ b/fs/block_dev.c
-> > @@ -331,6 +331,12 @@ static int blkdev_readpage(struct file * file, struct page * page)
-> >  	return block_read_full_page(page, blkdev_get_block);
-> >  }
-> >  
-> > +static int blkdev_readpages(struct file *file, struct address_space *mapping,
-> > +			struct list_head *pages, unsigned nr_pages)
-> > +{
-> > +	return mpage_readpages(mapping, pages, nr_pages, blkdev_get_block);
-> > +}
-> > +
-> >  static int blkdev_write_begin(struct file *file, struct address_space *mapping,
-> >  			loff_t pos, unsigned len, unsigned flags,
-> >  			struct page **pagep, void **fsdata)
-> > @@ -1399,6 +1405,7 @@ static int blkdev_releasepage(struct page *page, gfp_t wait)
-> >  
-> >  static const struct address_space_operations def_blk_aops = {
-> >  	.readpage	= blkdev_readpage,
-> > +	.readpages	= blkdev_readpages,
-> >  	.writepage	= blkdev_writepage,
-> >  	.sync_page	= block_sync_page,
-> >  	.write_begin	= blkdev_write_begin,
-> >
-> >
-> > On a random hunch, I wondered whether this error message was connected to
-> > the fact that ia64 kernel has a 64K page size.  I re-built using a 4k
-> > pagesize ... and this also make the partition overrun message go away.
-> >
-> > So is it plausible that the blkdev_readpages() code is resulting in some
-> > readahead of a page that overlaps the partition end?  The partition size
-> > (15832057 * 1K block according to /proc/partitions) is not a multiple of
-> > the 64K page size ... but then it isn't a multiple of 4K either :-(
-> 
-> Thanks for digging into this, Tony.  I'll take a look at it today.
-> Jens, you can feel free to pull this for now.  I never did get you real
-> data showing the improvement anyway, so I'll try to do that as well.
 
-OK, I'll revert it for now.
+Linux Driver Project Status Report as of June 2009
 
--- 
-Jens Axboe
+The Linux Driver Project (LDP) is now over two years old.  It sprang up
+out of the complaints from some users and companies that there was a
+real "Linux driver problem".  The perception was that Linux did not have
+good driver support, and that closed source drivers were potentially
+taking over some device types.
 
+It turns out, that almost all hardware is currently already supported on
+Linux, with almost all major vendors shipping Linux drivers.
+
+So last year, I proposed the following goals:
+  1) Continue to write new drivers for any company that wishes to have
+     them developed.  These drivers are all to be released under the
+     GPLv2 and included in the main Linux kernel source tree hosted at
+     kernel.org.  Future maintenance of these drivers will be done either
+     by members of the original company, or by the community members,
+     depending on the wishes of the company.
+  2) Continue to be a focal point for companies to learn about the Linux
+     development process and become part of the kernel community if they
+     wish to.  I hope to enlist more people to help out with this
+     process, but if not, my airline miles logged will continue to
+     increase.
+  3) Work more in an open development manner, hosting all experimental
+     and development code in a public git tree, getting daily testing in
+     the linux-next tree on all architectures.
+
+
+Goal one (write drivers) has been very successful.  Myself and many
+other members of the LDP have written new drivers for a wide range of
+different hardware devices, and gotten them merged into the main kernel
+tree.  Several more are currently under development and we are averaging
+about 2 querys a month for different drivers from different companies.
+
+This work will continue to happen in the following year, as everyone
+involved seems to be happy with it.  However, there will be a few
+procedural changes in how this is working, to help resolve some of the
+issues that have occurred.  For more details about this, see the
+discussion on the LDP development mailing list.
+
+
+Goal two (educate people) has been reasonably successful.  While working
+with many companies, we have helped them become maintainers of their own
+codebases within the kernel, integrating them into the main kernel
+development process, allowing themself to control their drivers and
+direction for their Linux support much easier.  However the need for
+training on how to do this kind of development, and even just basic
+Linux kernel development skills is in very high demand.  Hopefully
+through the new Linux Foundation effort of providing training, this need
+can be met.  Although I still expect myself and other members of the LDP
+to continue to travel and speak about this topic.
+
+
+Goal three (work in the open) has succeeded even better than I had
+expected.  At the Linux Kernel Summit last year, the drivers/staging/
+tree was created, allowing us a place within the main Linux kernel tree
+for drivers to be merged that were not yet of the high kernel quality
+standards.  This has allowed many users the ability to use their
+hardware with Linux much earlier than previously possible, and it has
+allowed a common place for the community to contribute patches and fixes
+for these drivers.  This has aliviated the need to hunt over the
+internet for various drivers.
+
+The staging tree has also provided a place for developers wishing to get
+into Linux kernel development to easily help out and start working on
+code.  Often times it is only the lack of knowing what to work on that
+keeps many people from participating in kernel development.  This
+portion of the kernel tree provides ample opportunities for people to
+help out with.
+
+
+So, what is next for the LDP?  As the previous three goals worked so
+well this past year, I propose just continuing them in the following
+manner:
+  - We will work with any company that wishes to have Linux kernel
+    drivers written for them, doing the work, for free, and merging the
+    result into the mainline kernel tree.
+  - We will work with any company that wishes to have us work to merge
+    their existing Linux kernel drivers into the main kernel tree.
+  - We will maintain the staging tree, containing "pre-mergable" code,
+    to provide a centralized point for users to use new hardware sooner,
+    and for developers to be able to join the kernel community.
+  - We will work on education and training of companies and developers
+    about how the Linux kernel development process works, and help them
+    achive the technical knowledge to participate fully within it.
+
+
+Thanks
+
+I'd first like to thank my employer, Novell, for giving me the
+opportunity to work on this project full time.  Their acceptance and
+support for the LDP is amazing and has been what has allowed it to
+survive and produce such great results.
+
+I'd also like to thank all of the developers who have offered to help
+out with this project.  Your volunteering to participate is amazing and
+shows the strength of the Linux developer community.
+
+I'd also like to thank Tomasz Grzegurzko for maintaining and keeping the
+linuxdriverproject.org domain and server up and running so well.  Also
+thanks to the OSU Open Source Labs for your domain and bandwidth support
+of the project.
