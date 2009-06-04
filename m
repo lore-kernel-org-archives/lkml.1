@@ -1,67 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbZFDMzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbZFDM52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758526AbZFDMzo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 08:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbZFDMzh
+	id S1755269AbZFDM52 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 08:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbZFDM5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 08:55:37 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39963 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755154AbZFDMzh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 08:55:37 -0400
-Date: Thu, 4 Jun 2009 15:02:55 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [6/16] HWPOISON: Add various poison checks in mm/memory.c
-Message-ID: <20090604130255.GB1065@one.firstfloor.org>
-References: <20090603846.816684333@firstfloor.org> <20090603184639.1933B1D028F@basil.firstfloor.org> <20090604042603.GA15682@localhost> <20090604051915.GN1065@one.firstfloor.org> <20090604115533.GB22118@localhost> <20090604125228.GZ1065@one.firstfloor.org> <20090604125026.GA29026@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090604125026.GA29026@localhost>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 4 Jun 2009 08:57:21 -0400
+Received: from cantor.suse.de ([195.135.220.2]:58962 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752104AbZFDM5V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 08:57:21 -0400
+Date: Thu, 4 Jun 2009 14:57:22 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Masanori Kobayasi <zap03216@nifty.ne.jp>
+Cc: abhay_salunke@dell.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Documentation/dell_rbu.txt: remove a period from end of
+ command-line
+In-Reply-To: <20090604.211229.31648111.ZAP03216@nifty.ne.jp>
+Message-ID: <alpine.LNX.2.00.0906041456240.7457@wotan.suse.de>
+References: <20090604.211229.31648111.ZAP03216@nifty.ne.jp>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 08:50:26PM +0800, Wu Fengguang wrote:
-> On Thu, Jun 04, 2009 at 08:52:28PM +0800, Andi Kleen wrote:
-> > On Thu, Jun 04, 2009 at 07:55:33PM +0800, Wu Fengguang wrote:
-> > > On Thu, Jun 04, 2009 at 01:19:15PM +0800, Andi Kleen wrote:
-> > > > On Thu, Jun 04, 2009 at 12:26:03PM +0800, Wu Fengguang wrote:
-> > > > > On Thu, Jun 04, 2009 at 02:46:38AM +0800, Andi Kleen wrote:
-> > > > > >
-> > > > > > Bail out early when hardware poisoned pages are found in page fault handling.
-> > > > >
-> > > > > I suspect this patch is also not absolutely necessary: the poisoned
-> > > > > page will normally have been isolated already.
-> > > >
-> > > > It's needed to prevent new pages comming in when there is a parallel
-> > > > fault while the memory failure handling is in process.
-> > > > Otherwise the pages could get remapped in that small window.
-> > > 
-> > > This patch makes no difference at least for file pages, including tmpfs.
-> > 
-> > I was more thinking of anonymous pages with multiple mappers (e.g.
-> > COW after fork)
-> 
-> I guess they are handled by do_anonymous_page() or do_wp_page(),
-> instead of do_linear_fault()/do_nonlinear_fault()?
+On Thu, 4 Jun 2009, Masanori Kobayasi wrote:
 
-You're right. Sorry was a little confused in my earlier reply.
+> Documentation/dell_rbu.txt: remove a period from end of command-line.
 
-I think what I meant is: what happens during the window
-when the page has just the poison bit set, but is not isolated/unmapped yet.
-During that window I want new mappers to not come in.
-That is why that check is there.
-
--Andi
+Applied, thanks.
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Jiri Kosina
