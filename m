@@ -1,90 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbZFDIxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbZFDIzD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759016AbZFDIxg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 04:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757681AbZFDItx
+	id S1759300AbZFDIzD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 04:55:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758448AbZFDIyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 04:49:53 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:19414 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757479AbZFDIt0 (ORCPT
+	Thu, 4 Jun 2009 04:54:52 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:35260 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752949AbZFDIyv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 04:49:26 -0400
-From: Artem Bityutskiy <dedekind@infradead.org>
+	Thu, 4 Jun 2009 04:54:51 -0400
+Message-ID: <4A278BA7.6040007@nokia.com>
+Date: Thu, 04 Jun 2009 11:53:59 +0300
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
 To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>, xfs-masters@oss.sgi.com,
-       Felix Blyakher <felixb@sgi.com>
-Subject: [PATCH v2 16/17] XFS: do not manipulate s_dirt directly
-Date: Thu,  4 Jun 2009 13:41:53 +0300
-Message-Id: <1244112114-23144-17-git-send-email-dedekind@infradead.org>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1244112114-23144-1-git-send-email-dedekind@infradead.org>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH v2 00/17] abstract out the super block clean/dirty state
 References: <1244112114-23144-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 04 Jun 2009 08:48:44.0720 (UTC) FILETIME=[44ACDB00:01C9E4F1]
+In-Reply-To: <1244112114-23144-1-git-send-email-dedekind@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 04 Jun 2009 08:54:00.0062 (UTC) FILETIME=[00A239E0:01C9E4F2]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Artem Bityutskiy wrote:
+> From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+> 
+> Hi,
+> 
+> here is a set of trivial patches which encapsulate the 'sb->s_dirt' variable
+> into 3 new helper VFS functions:
+> 
+> * static inline void mark_sb_dirty(struct super_block *sb)
+> * static inline void mark_sb_clean(struct super_block *sb)
+> * static inline int sb_is_dirty(struct super_block *sb)
+> 
+> With these patches the whole Linux kernel tree has only 3 places where
+> 'sb->s_dirt' is referred.
 
-... use new VFS helpers instead.
+Sorry, forgot to mention that the patches were made on top of
+the VFS tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git for-next
 
-Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: xfs-masters@oss.sgi.com
-Cc: Felix Blyakher <felixb@sgi.com>
----
- fs/xfs/linux-2.6/xfs_super.c |    6 +++---
- fs/xfs/xfs_trans.c           |    2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+commit f932bb0daca28ffe69ec876043cac00bc9b50147
+Author: Theodore Ts'o <tytso@mit.edu>
+Date:   Tue May 12 07:37:56 2009 -0400
 
-diff --git a/fs/xfs/linux-2.6/xfs_super.c b/fs/xfs/linux-2.6/xfs_super.c
-index d29218e..4c25456 100644
---- a/fs/xfs/linux-2.6/xfs_super.c
-+++ b/fs/xfs/linux-2.6/xfs_super.c
-@@ -1114,7 +1114,7 @@ xfs_fs_write_super(
- {
- 	if (!(sb->s_flags & MS_RDONLY))
- 		xfs_sync_fsdata(XFS_M(sb), 0);
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- }
- 
- STATIC int
-@@ -1141,7 +1141,7 @@ xfs_fs_sync_super(
- 		error = xfs_quiesce_data(mp);
- 	else
- 		error = xfs_sync_fsdata(mp, 0);
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- 
- 	if (unlikely(laptop_mode)) {
- 		int	prev_sync_seq = mp->m_sync_seq;
-@@ -1447,7 +1447,7 @@ xfs_fs_fill_super(
- 
- 	XFS_SEND_MOUNT(mp, DM_RIGHT_NULL, mtpt, mp->m_fsname);
- 
--	sb->s_dirt = 1;
-+	mark_sb_dirty(sb);
- 	sb->s_magic = XFS_SB_MAGIC;
- 	sb->s_blocksize = mp->m_sb.sb_blocksize;
- 	sb->s_blocksize_bits = ffs(sb->s_blocksize) - 1;
-diff --git a/fs/xfs/xfs_trans.c b/fs/xfs/xfs_trans.c
-index 8570b82..2552bae 100644
---- a/fs/xfs/xfs_trans.c
-+++ b/fs/xfs/xfs_trans.c
-@@ -629,7 +629,7 @@ xfs_trans_apply_sb_deltas(
- 				  offsetof(xfs_dsb_t, sb_frextents) +
- 				  sizeof(sbp->sb_frextents) - 1);
- 
--	tp->t_mountp->m_super->s_dirt = 1;
-+	mark_sb_dirty(tp->t_mountp->m_super);
- }
- 
- /*
+    Fix nobh_truncate_page() to not pass stack garbage to get_block()
+
+And they are also available at
+git://git.infradead.org/users/dedekind/misc-2.6.git sb-helpers-v1
+
 -- 
-1.6.0.6
-
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
