@@ -1,59 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757651AbZFDIC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbZFDIDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757651AbZFDIC6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 04:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbZFDICi
+	id S1757420AbZFDIDc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 04:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbZFDIDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 04:02:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56429 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752652AbZFDICf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 04:02:35 -0400
-Date: Thu, 4 Jun 2009 04:02:01 -0400
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, sam@ravnborg.org,
-       Amerigo Wang <amwang@redhat.com>, linux-kbuild@vger.kernel.org
-Message-Id: <20090604080415.7005.4049.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090604080406.7005.27662.sendpatchset@localhost.localdomain>
-References: <20090604080406.7005.27662.sendpatchset@localhost.localdomain>
-Subject: [Patch 2/2] kbuild: clean up scripts/headers.sh
+	Thu, 4 Jun 2009 04:03:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39117 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757737AbZFDIDA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 04:03:00 -0400
+Date: Thu, 4 Jun 2009 01:02:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Feuerer <peter@piie.net>
+Cc: Borislav Petkov <petkovbb@googlemail.com>, Len Brown <len.brown@intel.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Request driver inclusion - acer aspire one fan control
+Message-Id: <20090604010250.a168f07f.akpm@linux-foundation.org>
+In-Reply-To: <20090603232401.f1897968.peter@piie.net>
+References: <cone.1244020249.943312.16292.1000@arca>
+	<9ea470500906030514q1f52be64x2ff73a3d27ac62fa@mail.gmail.com>
+	<20090603232401.f1897968.peter@piie.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 3 Jun 2009 23:24:01 +0200 Peter Feuerer <peter@piie.net> wrote:
 
-'drop' variable is unused.
+> Acerhdf is a driver for Acer Aspire One netbooks. It allows to access
+> the temperature sensor and to control the fan.
+> 
+> Signed-off-by: Peter Feuerer <peter@piie.net>
+> Reviewed-by: Borislav Petkov <petkovbb@gmail.com>
+> Tested-by: Borislav Petkov <petkovbb@gmail.com>
+> 
+>
+> ...
+>
+> +/*
+> + * if you want the module to be started in kernel mode,
+> + * define the following:
+> + */
+> +#undef START_IN_KERNEL_MODE
 
-'ppc' and 'sparc64' directories don't exist in arch/,
-and I think their headers can be well exported, so
-just remove them.
+What does this mean?
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
+afacit this functionality is already there at runtime via the
+module/boot parameter, so we don't need the compile-time knob?
 
-------
-diff --git a/scripts/headers.sh b/scripts/headers.sh
-index d33426f..0308ecc 100755
---- a/scripts/headers.sh
-+++ b/scripts/headers.sh
-@@ -15,19 +15,12 @@ do_command()
- 	fi
- }
- 
--# Do not try this architecture
--drop="generic um ppc sparc64 cris"
--
- archs=$(ls ${srctree}/arch)
- 
- for arch in ${archs}; do
- 	case ${arch} in
- 	um)        # no userspace export
- 		;;
--	ppc)       # headers exported by powerpc
--		;;
--	sparc64)   # headers exported by sparc
--		;;
- 	cris)      # headers export are known broken
- 		;;
- 	*)
+> +#define VERSION "0.5.5"
+
+That must be a record version number for an initial submission :)
+
+> +/*
+> + * According to the Atom N270 datasheet,
+> + * (http://download.intel.com/design/processor/datashts/320032.pdf) the
+> + * CPU's optimal operating limits denoted in junction temperature as
+> + * measured by the on-die thermal monitor are within 0 <= Tj <= 90. So,
+> + * assume 89__C is critical temperature.
+> + */
+> +#define ACERHDF_TEMP_CRIT 89
+> +#define ACERHDF_FAN_AUTO 1
+> +#define ACERHDF_FAN_OFF 0
+> +
+> +/*
+> + * No matter what value the user puts into the fanon variable, turn on the fan
+> + * at 80 degree Celsius to prevent hardware damage
+> + */
+> +#define ACERHDF_MAX_FANON 80
+> +
+> +/*
+> + * Maximal interval between to temperature checks is 20 seconds, as the die
+> + * can get hot really fast under heavy load
+> + */
+> +#define ACERHDF_MAX_INTERVAL 20
+> +
+> +#define ACERHDF_ERROR -0xffff
+
+Gad.  I had to write a C program to check that.  0xffff0001.  I wonder
+if the compiler treats this as a signed or unsigned thing.
+
+Can this be simplified?
+
+> +
+> +
+> +#ifdef START_IN_KERNEL_MODE
+> +static int kernelmode = 1;
+> +#else
+> +static int kernelmode;
+> +#endif
+> +
+> +static unsigned int interval = 10;
+> +static unsigned int fanon = 63;
+> +static unsigned int fanoff = 58;
+> +static unsigned int verbose;
+> +static unsigned int fanstate = ACERHDF_FAN_AUTO;
+> +static int disable_kernelmode;
+> +static int bios_version = -1;
+> +static char force_bios[16];
+> +static unsigned int prev_interval;
+> +struct thermal_zone_device *acerhdf_thz_dev;
+> +struct thermal_cooling_device *acerhdf_cool_dev;
+> +struct platform_device *acerhdf_device;
+> +
+> +module_param(kernelmode, uint, 0);
+> +MODULE_PARM_DESC(kernelmode, "Kernel mode on / off");
+
+What's kernel mode?  This should be explained in the code somewhere so
+I'm the last to ask.
+
+>
+> ...
+>
+> +MODULE_LICENSE("GPL");
+> +MODULE_AUTHOR("Peter Feuerer");
+> +MODULE_DESCRIPTION("Aspire One temperature and fan driver");
+> +MODULE_ALIAS("dmi:*:*Acer*:*:");
+> +MODULE_ALIAS("dmi:*:*Gateway*:*:");
+> +MODULE_ALIAS("dmi:*:*Packard Bell*:*:");
+
+It's a nice-looking driver.
