@@ -1,175 +1,417 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbZFDH64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757595AbZFDH7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756946AbZFDH64 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 03:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbZFDH6q
+	id S1757595AbZFDH7O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 03:59:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756141AbZFDH6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 03:58:46 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:63251 "EHLO atmel-es2.atmel.fr"
+	Thu, 4 Jun 2009 03:58:47 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:63225 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754420AbZFDH6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754620AbZFDH6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 4 Jun 2009 03:58:45 -0400
 From: Nicolas Ferre <nicolas.ferre@atmel.com>
 To: avictor.za@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk
 Cc: patrice.vilchez@atmel.com, linux-kernel@vger.kernel.org,
        Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH 2/3] at91: Support for at91sam9g45: clocks management
-Date: Thu,  4 Jun 2009 10:48:01 +0200
-Message-Id: <1244105282-31456-2-git-send-email-nicolas.ferre@atmel.com>
+Subject: [PATCH 1/3] at91: Basic support for at91sam9g45 series: header files.
+Date: Thu,  4 Jun 2009 10:48:00 +0200
+Message-Id: <1244105282-31456-1-git-send-email-nicolas.ferre@atmel.com>
 X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1244105282-31456-1-git-send-email-nicolas.ferre@atmel.com>
-References: <1244105282-31456-1-git-send-email-nicolas.ferre@atmel.com>
-Message-Id: <4a78a0b84331f1fb5ea111657992b3557f70a1b3.1244104625.git.nicolas.ferre@atmel.com>
-In-Reply-To: <0c80319114935c723d3bac8992e6b4d8fc464b0b.1244104624.git.nicolas.ferre@atmel.com>
-References: <0c80319114935c723d3bac8992e6b4d8fc464b0b.1244104624.git.nicolas.ferre@atmel.com>
+Message-Id: <0c80319114935c723d3bac8992e6b4d8fc464b0b.1244104624.git.nicolas.ferre@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the at91sam9g45 series support to the AT91 generic clock file.
-This takes care of the particularities of the PMC for this series.
-It also takes advantage of the management by functionalities of
-those PLLs and clocks.
+AT91sam9g45 series is an ARM 926ej-s SOC family clocked at 400/133MHz.
+It embedds USB high speed host and device, LCD, DDR2 RAM, and a full set of
+peripherals.
+
+Here is the basic header file support for this product series.
 
 Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 ---
- arch/arm/mach-at91/clock.c |   62 ++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 52 insertions(+), 10 deletions(-)
+ arch/arm/mach-at91/include/mach/at91sam9g45.h      |  138 ++++++++++++++++++
+ .../mach-at91/include/mach/at91sam9g45_matrix.h    |  153 ++++++++++++++++++++
+ arch/arm/mach-at91/include/mach/cpu.h              |   16 ++
+ arch/arm/mach-at91/include/mach/hardware.h         |    2 +
+ arch/arm/mach-at91/include/mach/timex.h            |    5 +
+ 5 files changed, 314 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-at91/include/mach/at91sam9g45.h
+ create mode 100644 arch/arm/mach-at91/include/mach/at91sam9g45_matrix.h
 
-diff --git a/arch/arm/mach-at91/clock.c b/arch/arm/mach-at91/clock.c
-index bac578f..6396680 100644
---- a/arch/arm/mach-at91/clock.c
-+++ b/arch/arm/mach-at91/clock.c
-@@ -47,20 +47,25 @@
-  * Chips have some kind of clocks : group them by functionality
-  */
- #define cpu_has_utmi()		(  cpu_is_at91cap9() \
--				|| cpu_is_at91sam9rl())
-+				|| cpu_is_at91sam9rl() \
-+				|| cpu_is_at91sam9g45())
- 
--#define cpu_has_800M_plla()	(cpu_is_at91sam9g20())
-+#define cpu_has_800M_plla()	(  cpu_is_at91sam9g20() \
-+				|| cpu_is_at91sam9g45())
- 
--#define cpu_has_pllb()		(!cpu_is_at91sam9rl())
-+#define cpu_has_300M_plla()	(0)
- 
--#define cpu_has_upll()		(0)
-+#define cpu_has_pllb()		(!(cpu_is_at91sam9rl() \
-+				|| cpu_is_at91sam9g45()))
+diff --git a/arch/arm/mach-at91/include/mach/at91sam9g45.h b/arch/arm/mach-at91/include/mach/at91sam9g45.h
+new file mode 100644
+index 0000000..2c42cf5
+--- /dev/null
++++ b/arch/arm/mach-at91/include/mach/at91sam9g45.h
+@@ -0,0 +1,138 @@
++/*
++ * Chip-specific header file for the AT91SAM9G45 family
++ *
++ *  Copyright (C) 2008-2009 Atmel Corporation.
++ *
++ * Common definitions.
++ * Based on AT91SAM9G45 preliminary datasheet.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
 +
-+#define cpu_has_upll()		(cpu_is_at91sam9g45())
- 
- /* USB host HS & FS */
- #define cpu_has_uhp()		(!cpu_is_at91sam9rl())
- 
- /* USB device FS only */
--#define cpu_has_udpfs()		(!cpu_is_at91sam9rl())
--
-+#define cpu_has_udpfs()		(!(cpu_is_at91sam9rl() \
-+				|| cpu_is_at91sam9g45()))
- 
- static LIST_HEAD(clocks);
- static DEFINE_SPINLOCK(clk_lock);
-@@ -133,6 +138,13 @@ static void pmc_uckr_mode(struct clk *clk, int is_on)
- {
- 	unsigned int uckr = at91_sys_read(AT91_CKGR_UCKR);
- 
-+	if (cpu_is_at91sam9g45()) {
-+		if (is_on)
-+			uckr |= AT91_PMC_BIASEN;
-+		else
-+			uckr &= ~AT91_PMC_BIASEN;
-+	}
++#ifndef AT91SAM9G45_H
++#define AT91SAM9G45_H
 +
- 	if (is_on) {
- 		is_on = AT91_PMC_LOCKU;
- 		at91_sys_write(AT91_CKGR_UCKR, uckr | clk->pmc_mask);
-@@ -310,6 +322,7 @@ long clk_round_rate(struct clk *clk, unsigned long rate)
- 	unsigned long	flags;
- 	unsigned	prescale;
- 	unsigned long	actual;
-+	unsigned long	prev = ULONG_MAX;
- 
- 	if (!clk_is_programmable(clk))
- 		return -EINVAL;
-@@ -317,8 +330,16 @@ long clk_round_rate(struct clk *clk, unsigned long rate)
- 
- 	actual = clk->parent->rate_hz;
- 	for (prescale = 0; prescale < 7; prescale++) {
--		if (actual && actual <= rate)
-+		if (actual > rate)
-+			prev = actual;
++/*
++ * Peripheral identifiers/interrupts.
++ */
++#define AT91_ID_FIQ		0	/* Advanced Interrupt Controller (FIQ) */
++#define AT91_ID_SYS		1	/* System Controller Interrupt */
++#define AT91SAM9G45_ID_PIOA	2	/* Parallel I/O Controller A */
++#define AT91SAM9G45_ID_PIOB	3	/* Parallel I/O Controller B */
++#define AT91SAM9G45_ID_PIOC	4	/* Parallel I/O Controller C */
++#define AT91SAM9G45_ID_PIODE	5	/* Parallel I/O Controller D and E */
++#define AT91SAM9G45_ID_TRNG	6	/* True Random Number Generator */
++#define AT91SAM9G45_ID_US0	7	/* USART 0 */
++#define AT91SAM9G45_ID_US1	8	/* USART 1 */
++#define AT91SAM9G45_ID_US2	9	/* USART 2 */
++#define AT91SAM9G45_ID_US3	10	/* USART 3 */
++#define AT91SAM9G45_ID_MCI0	11	/* High Speed Multimedia Card Interface 0 */
++#define AT91SAM9G45_ID_TWI0	12	/* Two-Wire Interface 0 */
++#define AT91SAM9G45_ID_TWI1	13	/* Two-Wire Interface 1 */
++#define AT91SAM9G45_ID_SPI0	14	/* Serial Peripheral Interface 0 */
++#define AT91SAM9G45_ID_SPI1	15	/* Serial Peripheral Interface 1 */
++#define AT91SAM9G45_ID_SSC0	16	/* Synchronous Serial Controller 0 */
++#define AT91SAM9G45_ID_SSC1	17	/* Synchronous Serial Controller 1 */
++#define AT91SAM9G45_ID_TCB	18	/* Timer Counter 0, 1, 2, 3, 4 and 5 */
++#define AT91SAM9G45_ID_PWMC	19	/* Pulse Width Modulation Controller */
++#define AT91SAM9G45_ID_TSC	20	/* Touch Screen ADC Controller */
++#define AT91SAM9G45_ID_DMA	21	/* DMA Controller */
++#define AT91SAM9G45_ID_UHPHS	22	/* USB Host High Speed */
++#define AT91SAM9G45_ID_LCDC	23	/* LCD Controller */
++#define AT91SAM9G45_ID_AC97C	24	/* AC97 Controller */
++#define AT91SAM9G45_ID_EMAC	25	/* Ethernet MAC */
++#define AT91SAM9G45_ID_ISI	26	/* Image Sensor Interface */
++#define AT91SAM9G45_ID_UDPHS	27	/* USB Device High Speed */
++#define AT91SAM9G45_ID_AESTDESSHA 28	/* AES + T-DES + SHA */
++#define AT91SAM9G45_ID_MCI1	29	/* High Speed Multimedia Card Interface 1 */
++#define AT91SAM9G45_ID_VDEC	30	/* Video Decoder */
++#define AT91SAM9G45_ID_IRQ0	31	/* Advanced Interrupt Controller */
 +
-+		if (actual && actual <= rate) {
-+			if ((prev - rate) < (rate - actual)) {
-+				actual = prev;
-+				prescale--;
-+			}
- 			break;
-+		}
- 		actual >>= 1;
- 	}
- 
-@@ -373,6 +394,10 @@ int clk_set_parent(struct clk *clk, struct clk *parent)
- 		return -EBUSY;
- 	if (!clk_is_primary(parent) || !clk_is_programmable(clk))
- 		return -EINVAL;
++/*
++ * User Peripheral physical base addresses.
++ */
++#define AT91SAM9G45_BASE_UDPHS		0xfff78000
++#define AT91SAM9G45_BASE_TCB0		0xfff7c000
++#define AT91SAM9G45_BASE_TC0		0xfff7c000
++#define AT91SAM9G45_BASE_TC1		0xfff7c040
++#define AT91SAM9G45_BASE_TC2		0xfff7c080
++#define AT91SAM9G45_BASE_MCI0		0xfff80000
++#define AT91SAM9G45_BASE_TWI0		0xfff84000
++#define AT91SAM9G45_BASE_TWI1		0xfff88000
++#define AT91SAM9G45_BASE_US0		0xfff8c000
++#define AT91SAM9G45_BASE_US1		0xfff90000
++#define AT91SAM9G45_BASE_US2		0xfff94000
++#define AT91SAM9G45_BASE_US3		0xfff98000
++#define AT91SAM9G45_BASE_SSC0		0xfff9c000
++#define AT91SAM9G45_BASE_SSC1		0xfffa0000
++#define AT91SAM9G45_BASE_SPI0		0xfffa4000
++#define AT91SAM9G45_BASE_SPI1		0xfffa8000
++#define AT91SAM9G45_BASE_AC97C		0xfffac000
++#define AT91SAM9G45_BASE_TSC		0xfffb0000
++#define AT91SAM9G45_BASE_ISI		0xfffb4000
++#define AT91SAM9G45_BASE_PWMC		0xfffb8000
++#define AT91SAM9G45_BASE_EMAC		0xfffbc000
++#define AT91SAM9G45_BASE_AES		0xfffc0000
++#define AT91SAM9G45_BASE_TDES		0xfffc4000
++#define AT91SAM9G45_BASE_SHA		0xfffc8000
++#define AT91SAM9G45_BASE_TRNG		0xfffcc000
++#define AT91SAM9G45_BASE_MCI1		0xfffd0000
++#define AT91SAM9G45_BASE_TCB1		0xfffd4000
++#define AT91SAM9G45_BASE_TC3		0xfffd4000
++#define AT91SAM9G45_BASE_TC4		0xfffd4040
++#define AT91SAM9G45_BASE_TC5		0xfffd4080
++#define AT91_BASE_SYS			0xffffe200
 +
-+	if (cpu_is_at91sam9rl() && parent->id == AT91_PMC_CSS_PLLB)
-+		return -EINVAL;
++/*
++ * System Peripherals (offset from AT91_BASE_SYS)
++ */
++#define AT91_ECC	(0xffffe200 - AT91_BASE_SYS)
++#define AT91_DDRSDRC1	(0xffffe400 - AT91_BASE_SYS)
++#define AT91_DDRSDRC0	(0xffffe600 - AT91_BASE_SYS)
++#define AT91_SMC	(0xffffe800 - AT91_BASE_SYS)
++#define AT91_MATRIX	(0xffffea00 - AT91_BASE_SYS)
++#define AT91_DMA	(0xffffec00 - AT91_BASE_SYS)
++#define AT91_DBGU	(0xffffee00 - AT91_BASE_SYS)
++#define AT91_AIC	(0xfffff000 - AT91_BASE_SYS)
++#define AT91_PIOA	(0xfffff200 - AT91_BASE_SYS)
++#define AT91_PIOB	(0xfffff400 - AT91_BASE_SYS)
++#define AT91_PIOC	(0xfffff600 - AT91_BASE_SYS)
++#define AT91_PIOD	(0xfffff800 - AT91_BASE_SYS)
++#define AT91_PIOE	(0xfffffa00 - AT91_BASE_SYS)
++#define AT91_PMC	(0xfffffc00 - AT91_BASE_SYS)
++#define AT91_RSTC	(0xfffffd00 - AT91_BASE_SYS)
++#define AT91_SHDWC	(0xfffffd10 - AT91_BASE_SYS)
++#define AT91_RTT	(0xfffffd20 - AT91_BASE_SYS)
++#define AT91_PIT	(0xfffffd30 - AT91_BASE_SYS)
++#define AT91_WDT	(0xfffffd40 - AT91_BASE_SYS)
++#define AT91_GPBR	(0xfffffd60 - AT91_BASE_SYS)
++#define AT91_RTC	(0xfffffdb0 - AT91_BASE_SYS)
 +
- 	spin_lock_irqsave(&clk_lock, flags);
++#define AT91_USART0	AT91SAM9G45_BASE_US0
++#define AT91_USART1	AT91SAM9G45_BASE_US1
++#define AT91_USART2	AT91SAM9G45_BASE_US2
++#define AT91_USART3	AT91SAM9G45_BASE_US3
++
++/*
++ * Internal Memory.
++ */
++#define AT91SAM9G45_SRAM_BASE	0x00300000	/* Internal SRAM base address */
++#define AT91SAM9G45_SRAM_SIZE	SZ_64K		/* Internal SRAM size (64Kb) */
++
++#define AT91SAM9G45_ROM_BASE	0x00400000	/* Internal ROM base address */
++#define AT91SAM9G45_ROM_SIZE	SZ_64K		/* Internal ROM size (64Kb) */
++
++#define AT91SAM9G45_LCDC_BASE	0x00500000	/* LCD Controller */
++#define AT91SAM9G45_UDPHS_FIFO	0x00600000	/* USB Device HS controller */
++#define AT91SAM9G45_OHCI_BASE	0x00700000	/* USB Host controller (OHCI) */
++#define AT91SAM9G45_EHCI_BASE	0x00800000	/* USB Host controller (EHCI) */
++#define AT91SAM9G45_VDEC_BASE	0x00900000	/* Video Decoder Controller */
++
++#define CONFIG_DRAM_BASE	AT91_CHIPSELECT_6
++
++#define CONSISTENT_DMA_SIZE	SZ_4M
++
++#endif
+diff --git a/arch/arm/mach-at91/include/mach/at91sam9g45_matrix.h b/arch/arm/mach-at91/include/mach/at91sam9g45_matrix.h
+new file mode 100644
+index 0000000..c972d60
+--- /dev/null
++++ b/arch/arm/mach-at91/include/mach/at91sam9g45_matrix.h
+@@ -0,0 +1,153 @@
++/*
++ * Matrix-centric header file for the AT91SAM9G45 family
++ *
++ *  Copyright (C) 2008-2009 Atmel Corporation.
++ *
++ * Memory Controllers (MATRIX, EBI) - System peripherals registers.
++ * Based on AT91SAM9G45 preliminary datasheet.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#ifndef AT91SAM9G45_MATRIX_H
++#define AT91SAM9G45_MATRIX_H
++
++#define AT91_MATRIX_MCFG0	(AT91_MATRIX + 0x00)	/* Master Configuration Register 0 */
++#define AT91_MATRIX_MCFG1	(AT91_MATRIX + 0x04)	/* Master Configuration Register 1 */
++#define AT91_MATRIX_MCFG2	(AT91_MATRIX + 0x08)	/* Master Configuration Register 2 */
++#define AT91_MATRIX_MCFG3	(AT91_MATRIX + 0x0C)	/* Master Configuration Register 3 */
++#define AT91_MATRIX_MCFG4	(AT91_MATRIX + 0x10)	/* Master Configuration Register 4 */
++#define AT91_MATRIX_MCFG5	(AT91_MATRIX + 0x14)	/* Master Configuration Register 5 */
++#define AT91_MATRIX_MCFG6	(AT91_MATRIX + 0x18)	/* Master Configuration Register 6 */
++#define AT91_MATRIX_MCFG7	(AT91_MATRIX + 0x1C)	/* Master Configuration Register 7 */
++#define AT91_MATRIX_MCFG8	(AT91_MATRIX + 0x20)	/* Master Configuration Register 8 */
++#define AT91_MATRIX_MCFG9	(AT91_MATRIX + 0x24)	/* Master Configuration Register 9 */
++#define AT91_MATRIX_MCFG10	(AT91_MATRIX + 0x28)	/* Master Configuration Register 10 */
++#define AT91_MATRIX_MCFG11	(AT91_MATRIX + 0x2C)	/* Master Configuration Register 11 */
++#define		AT91_MATRIX_ULBT	(7 << 0)	/* Undefined Length Burst Type */
++#define			AT91_MATRIX_ULBT_INFINITE	(0 << 0)
++#define			AT91_MATRIX_ULBT_SINGLE		(1 << 0)
++#define			AT91_MATRIX_ULBT_FOUR		(2 << 0)
++#define			AT91_MATRIX_ULBT_EIGHT		(3 << 0)
++#define			AT91_MATRIX_ULBT_SIXTEEN	(4 << 0)
++#define			AT91_MATRIX_ULBT_THIRTYTWO	(5 << 0)
++#define			AT91_MATRIX_ULBT_SIXTYFOUR	(6 << 0)
++#define			AT91_MATRIX_ULBT_128		(7 << 0)
++
++#define AT91_MATRIX_SCFG0	(AT91_MATRIX + 0x40)	/* Slave Configuration Register 0 */
++#define AT91_MATRIX_SCFG1	(AT91_MATRIX + 0x44)	/* Slave Configuration Register 1 */
++#define AT91_MATRIX_SCFG2	(AT91_MATRIX + 0x48)	/* Slave Configuration Register 2 */
++#define AT91_MATRIX_SCFG3	(AT91_MATRIX + 0x4C)	/* Slave Configuration Register 3 */
++#define AT91_MATRIX_SCFG4	(AT91_MATRIX + 0x50)	/* Slave Configuration Register 4 */
++#define AT91_MATRIX_SCFG5	(AT91_MATRIX + 0x54)	/* Slave Configuration Register 5 */
++#define AT91_MATRIX_SCFG6	(AT91_MATRIX + 0x58)	/* Slave Configuration Register 6 */
++#define AT91_MATRIX_SCFG7	(AT91_MATRIX + 0x5C)	/* Slave Configuration Register 7 */
++#define		AT91_MATRIX_SLOT_CYCLE		(0x1ff << 0)	/* Maximum Number of Allowed Cycles for a Burst */
++#define		AT91_MATRIX_DEFMSTR_TYPE	(3    << 16)	/* Default Master Type */
++#define			AT91_MATRIX_DEFMSTR_TYPE_NONE	(0 << 16)
++#define			AT91_MATRIX_DEFMSTR_TYPE_LAST	(1 << 16)
++#define			AT91_MATRIX_DEFMSTR_TYPE_FIXED	(2 << 16)
++#define		AT91_MATRIX_FIXED_DEFMSTR	(0xf  << 18)	/* Fixed Index of Default Master */
++
++#define AT91_MATRIX_PRAS0	(AT91_MATRIX + 0x80)	/* Priority Register A for Slave 0 */
++#define AT91_MATRIX_PRBS0	(AT91_MATRIX + 0x84)	/* Priority Register B for Slave 0 */
++#define AT91_MATRIX_PRAS1	(AT91_MATRIX + 0x88)	/* Priority Register A for Slave 1 */
++#define AT91_MATRIX_PRBS1	(AT91_MATRIX + 0x8C)	/* Priority Register B for Slave 1 */
++#define AT91_MATRIX_PRAS2	(AT91_MATRIX + 0x90)	/* Priority Register A for Slave 2 */
++#define AT91_MATRIX_PRBS2	(AT91_MATRIX + 0x94)	/* Priority Register B for Slave 2 */
++#define AT91_MATRIX_PRAS3	(AT91_MATRIX + 0x98)	/* Priority Register A for Slave 3 */
++#define AT91_MATRIX_PRBS3	(AT91_MATRIX + 0x9C)	/* Priority Register B for Slave 3 */
++#define AT91_MATRIX_PRAS4	(AT91_MATRIX + 0xA0)	/* Priority Register A for Slave 4 */
++#define AT91_MATRIX_PRBS4	(AT91_MATRIX + 0xA4)	/* Priority Register B for Slave 4 */
++#define AT91_MATRIX_PRAS5	(AT91_MATRIX + 0xA8)	/* Priority Register A for Slave 5 */
++#define AT91_MATRIX_PRBS5	(AT91_MATRIX + 0xAC)	/* Priority Register B for Slave 5 */
++#define AT91_MATRIX_PRAS6	(AT91_MATRIX + 0xB0)	/* Priority Register A for Slave 6 */
++#define AT91_MATRIX_PRBS6	(AT91_MATRIX + 0xB4)	/* Priority Register B for Slave 6 */
++#define AT91_MATRIX_PRAS7	(AT91_MATRIX + 0xB8)	/* Priority Register A for Slave 7 */
++#define AT91_MATRIX_PRBS7	(AT91_MATRIX + 0xBC)	/* Priority Register B for Slave 7 */
++#define		AT91_MATRIX_M0PR		(3 << 0)	/* Master 0 Priority */
++#define		AT91_MATRIX_M1PR		(3 << 4)	/* Master 1 Priority */
++#define		AT91_MATRIX_M2PR		(3 << 8)	/* Master 2 Priority */
++#define		AT91_MATRIX_M3PR		(3 << 12)	/* Master 3 Priority */
++#define		AT91_MATRIX_M4PR		(3 << 16)	/* Master 4 Priority */
++#define		AT91_MATRIX_M5PR		(3 << 20)	/* Master 5 Priority */
++#define		AT91_MATRIX_M6PR		(3 << 24)	/* Master 6 Priority */
++#define		AT91_MATRIX_M7PR		(3 << 28)	/* Master 7 Priority */
++#define		AT91_MATRIX_M8PR		(3 << 0)	/* Master 8 Priority (in Register B) */
++#define		AT91_MATRIX_M9PR		(3 << 4)	/* Master 9 Priority (in Register B) */
++#define		AT91_MATRIX_M10PR		(3 << 8)	/* Master 10 Priority (in Register B) */
++#define		AT91_MATRIX_M11PR		(3 << 12)	/* Master 11 Priority (in Register B) */
++
++#define AT91_MATRIX_MRCR	(AT91_MATRIX + 0x100)	/* Master Remap Control Register */
++#define		AT91_MATRIX_RCB0		(1 << 0)	/* Remap Command for AHB Master 0 (ARM926EJ-S Instruction Master) */
++#define		AT91_MATRIX_RCB1		(1 << 1)	/* Remap Command for AHB Master 1 (ARM926EJ-S Data Master) */
++#define		AT91_MATRIX_RCB2		(1 << 2)
++#define		AT91_MATRIX_RCB3		(1 << 3)
++#define		AT91_MATRIX_RCB4		(1 << 4)
++#define		AT91_MATRIX_RCB5		(1 << 5)
++#define		AT91_MATRIX_RCB6		(1 << 6)
++#define		AT91_MATRIX_RCB7		(1 << 7)
++#define		AT91_MATRIX_RCB8		(1 << 8)
++#define		AT91_MATRIX_RCB9		(1 << 9)
++#define		AT91_MATRIX_RCB10		(1 << 10)
++#define		AT91_MATRIX_RCB11		(1 << 11)
++
++#define AT91_MATRIX_TCMR	(AT91_MATRIX + 0x110)	/* TCM Configuration Register */
++#define		AT91_MATRIX_ITCM_SIZE		(0xf << 0)	/* Size of ITCM enabled memory block */
++#define			AT91_MATRIX_ITCM_0		(0 << 0)
++#define			AT91_MATRIX_ITCM_32		(6 << 0)
++#define		AT91_MATRIX_DTCM_SIZE		(0xf << 4)	/* Size of DTCM enabled memory block */
++#define			AT91_MATRIX_DTCM_0		(0 << 4)
++#define			AT91_MATRIX_DTCM_32		(6 << 4)
++#define			AT91_MATRIX_DTCM_64		(7 << 4)
++#define		AT91_MATRIX_TCM_NWS		(0x1 << 11)	/* Wait state TCM register */
++#define			AT91_MATRIX_TCM_NO_WS		(0x0 << 11)
++#define			AT91_MATRIX_TCM_ONE_WS		(0x1 << 11)
++
++#define AT91_MATRIX_VIDEO	(AT91_MATRIX + 0x118)	/* Video Mode Configuration Register */
++#define		AT91C_VDEC_SEL			(0x1 <<  0) /* Video Mode Selection */
++#define			AT91C_VDEC_SEL_OFF		(0 << 0)
++#define			AT91C_VDEC_SEL_ON		(1 << 0)
++
++#define AT91_MATRIX_EBICSA	(AT91_MATRIX + 0x128)	/* EBI Chip Select Assignment Register */
++#define		AT91_MATRIX_EBI_CS1A		(1 << 1)	/* Chip Select 1 Assignment */
++#define			AT91_MATRIX_EBI_CS1A_SMC		(0 << 1)
++#define			AT91_MATRIX_EBI_CS1A_SDRAMC		(1 << 1)
++#define		AT91_MATRIX_EBI_CS3A		(1 << 3)	/* Chip Select 3 Assignment */
++#define			AT91_MATRIX_EBI_CS3A_SMC		(0 << 3)
++#define			AT91_MATRIX_EBI_CS3A_SMC_SMARTMEDIA	(1 << 3)
++#define		AT91_MATRIX_EBI_CS4A		(1 << 4)	/* Chip Select 4 Assignment */
++#define			AT91_MATRIX_EBI_CS4A_SMC		(0 << 4)
++#define			AT91_MATRIX_EBI_CS4A_SMC_CF0		(1 << 4)
++#define		AT91_MATRIX_EBI_CS5A		(1 << 5)	/* Chip Select 5 Assignment */
++#define			AT91_MATRIX_EBI_CS5A_SMC		(0 << 5)
++#define			AT91_MATRIX_EBI_CS5A_SMC_CF1		(1 << 5)
++#define		AT91_MATRIX_EBI_DBPUC		(1 << 8)	/* Data Bus Pull-up Configuration */
++#define			AT91_MATRIX_EBI_DBPU_ON			(0 << 8)
++#define			AT91_MATRIX_EBI_DBPU_OFF		(1 << 8)
++#define		AT91_MATRIX_EBI_VDDIOMSEL	(1 << 16)	/* Memory voltage selection */
++#define			AT91_MATRIX_EBI_VDDIOMSEL_1_8V		(0 << 16)
++#define			AT91_MATRIX_EBI_VDDIOMSEL_3_3V		(1 << 16)
++#define		AT91_MATRIX_EBI_EBI_IOSR	(1 << 17)	/* EBI I/O slew rate selection */
++#define			AT91_MATRIX_EBI_EBI_IOSR_REDUCED	(0 << 17)
++#define			AT91_MATRIX_EBI_EBI_IOSR_NORMAL		(1 << 17)
++#define		AT91_MATRIX_EBI_DDR_IOSR	(1 << 18)	/* DDR2 dedicated port I/O slew rate selection */
++#define			AT91_MATRIX_EBI_DDR_IOSR_REDUCED	(0 << 18)
++#define			AT91_MATRIX_EBI_DDR_IOSR_NORMAL		(1 << 18)
++
++#define AT91_MATRIX_WPMR	(AT91_MATRIX + 0x1E4)	/* Write Protect Mode Register */
++#define		AT91_MATRIX_WPMR_WPEN		(1 << 0)	/* Write Protect ENable */
++#define			AT91_MATRIX_WPMR_WP_WPDIS		(0 << 0)
++#define			AT91_MATRIX_WPMR_WP_WPEN		(1 << 0)
++#define		AT91_MATRIX_WPMR_WPKEY		(0xFFFFFF << 8)	/* Write Protect KEY */
++
++#define AT91_MATRIX_WPSR	(AT91_MATRIX + 0x1E8)	/* Write Protect Status Register */
++#define		AT91_MATRIX_WPSR_WPVS		(1 << 0)	/* Write Protect Violation Status */
++#define			AT91_MATRIX_WPSR_NO_WPV		(0 << 0)
++#define			AT91_MATRIX_WPSR_WPV		(1 << 0)
++#define		AT91_MATRIX_WPSR_WPVSRC		(0xFFFF << 8)	/* Write Protect Violation Source */
++
++#endif
+diff --git a/arch/arm/mach-at91/include/mach/cpu.h b/arch/arm/mach-at91/include/mach/cpu.h
+index c554c3e..b73e7bf 100644
+--- a/arch/arm/mach-at91/include/mach/cpu.h
++++ b/arch/arm/mach-at91/include/mach/cpu.h
+@@ -23,6 +23,7 @@
+ #define ARCH_ID_AT91SAM9263	0x019607a0
+ #define ARCH_ID_AT91SAM9G20	0x019905a0
+ #define ARCH_ID_AT91SAM9RL64	0x019b03a0
++#define ARCH_ID_AT91SAM9G45	0x819b05a0
+ #define ARCH_ID_AT91CAP9	0x039A03A0
  
- 	clk->rate_hz = parent->rate_hz;
-@@ -637,6 +662,7 @@ int __init at91_clock_init(unsigned long main_clock)
- {
- 	unsigned tmp, freq, mckr;
- 	int i;
-+	int pll_overclock = false;
+ #define ARCH_ID_AT91SAM9XE128	0x329973a0
+@@ -39,6 +40,15 @@ static inline unsigned long at91_cpu_identify(void)
+ 	return (at91_sys_read(AT91_DBGU_CIDR) & ~AT91_CIDR_VERSION);
+ }
  
- 	/*
- 	 * When the bootloader initialized the main oscillator correctly,
-@@ -654,12 +680,25 @@ int __init at91_clock_init(unsigned long main_clock)
++#define ARCH_EXID_AT91SAM9M11	0x00000001
++#define ARCH_EXID_AT91SAM9M10	0x00000002
++#define ARCH_EXID_AT91SAM9G45	0x00000004
++
++static inline unsigned long at91_exid_identify(void)
++{
++	return at91_sys_read(AT91_DBGU_EXID);
++}
++
  
- 	/* report if PLLA is more than mildly overclocked */
- 	plla.rate_hz = at91_pll_rate(&plla, main_clock, at91_sys_read(AT91_CKGR_PLLAR));
--	if ((!cpu_has_800M_plla() && plla.rate_hz > 209000000)
--	   || (cpu_has_800M_plla() && plla.rate_hz > 800000000))
-+	if (cpu_has_300M_plla()) {
-+		if (plla.rate_hz > 300000000)
-+			pll_overclock = true;
-+	} else if (cpu_has_800M_plla()) {
-+		if (plla.rate_hz > 800000000)
-+			pll_overclock = true;
-+	} else {
-+		if (plla.rate_hz > 209000000)
-+			pll_overclock = true;
-+	}
-+	if (pll_overclock)
- 		pr_info("Clocks: PLLA overclocked, %ld MHz\n", plla.rate_hz / 1000000);
+ #define ARCH_FAMILY_AT91X92	0x09200000
+ #define ARCH_FAMILY_AT91SAM9	0x01900000
+@@ -99,6 +109,12 @@ static inline unsigned long at91cap9_rev_identify(void)
+ #define cpu_is_at91sam9rl()	(0)
+ #endif
  
-+	if (cpu_is_at91sam9g45()) {
-+		mckr = at91_sys_read(AT91_PMC_MCKR);
-+		plla.rate_hz /= (1 << ((mckr & AT91_PMC_PLLADIV2) >> 12));	/* plla divisor by 2 */
-+	}
++#ifdef CONFIG_ARCH_AT91SAM9G45
++#define cpu_is_at91sam9g45()	(at91_cpu_identify() == ARCH_ID_AT91SAM9G45)
++#else
++#define cpu_is_at91sam9g45()	(0)
++#endif
++
+ #ifdef CONFIG_ARCH_AT91CAP9
+ #define cpu_is_at91cap9()	(at91_cpu_identify() == ARCH_ID_AT91CAP9)
+ #define cpu_is_at91cap9_revB()	(at91cap9_rev_identify() == ARCH_REVISION_CAP9_B)
+diff --git a/arch/arm/mach-at91/include/mach/hardware.h b/arch/arm/mach-at91/include/mach/hardware.h
+index da0b681..f086917 100644
+--- a/arch/arm/mach-at91/include/mach/hardware.h
++++ b/arch/arm/mach-at91/include/mach/hardware.h
+@@ -26,6 +26,8 @@
+ #include <mach/at91sam9263.h>
+ #elif defined(CONFIG_ARCH_AT91SAM9RL)
+ #include <mach/at91sam9rl.h>
++#elif defined(CONFIG_ARCH_AT91SAM9G45)
++#include <mach/at91sam9g45.h>
+ #elif defined(CONFIG_ARCH_AT91CAP9)
+ #include <mach/at91cap9.h>
+ #elif defined(CONFIG_ARCH_AT91X40)
+diff --git a/arch/arm/mach-at91/include/mach/timex.h b/arch/arm/mach-at91/include/mach/timex.h
+index d84c994..38f6c42 100644
+--- a/arch/arm/mach-at91/include/mach/timex.h
++++ b/arch/arm/mach-at91/include/mach/timex.h
+@@ -62,6 +62,11 @@
+ #define AT91SAM9_MASTER_CLOCK	132096000
+ #define CLOCK_TICK_RATE		(AT91SAM9_MASTER_CLOCK/16)
  
--	if (cpu_has_upll() && !cpu_has_pllb()) {
-+	if (!cpu_has_pllb() && cpu_has_upll()) {
- 		/* setup UTMI clock as the fourth primary clock
- 		 * (instead of pllb) */
- 		utmi_clk.type |= CLK_TYPE_PRIMARY;
-@@ -701,6 +740,9 @@ int __init at91_clock_init(unsigned long main_clock)
- 			freq / ((mckr & AT91_PMC_MDIV) >> 7) : freq;	/* mdiv ; (x >> 7) = ((x >> 8) * 2) */
- 		if (mckr & AT91_PMC_PDIV)
- 			freq /= 2;		/* processor clock division */
-+	} else if (cpu_is_at91sam9g45()) {
-+		mck.rate_hz = (mckr & AT91_PMC_MDIV) == AT91SAM9_PMC_MDIV_3 ?
-+			freq / 3 : freq / (1 << ((mckr & AT91_PMC_MDIV) >> 8));	/* mdiv */
- 	} else {
- 		mck.rate_hz = freq / (1 << ((mckr & AT91_PMC_MDIV) >> 8));      /* mdiv */
- 	}
++#elif defined(CONFIG_ARCH_AT91SAM9G45)
++
++#define AT91SAM9_MASTER_CLOCK	133333333
++#define CLOCK_TICK_RATE		(AT91SAM9_MASTER_CLOCK/16)
++
+ #elif defined(CONFIG_ARCH_AT91CAP9)
+ 
+ #define AT91CAP9_MASTER_CLOCK	100000000
 -- 
 1.5.3.7
 
