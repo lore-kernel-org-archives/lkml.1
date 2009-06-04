@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755526AbZFDMDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbZFDMEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755526AbZFDMDS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 08:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbZFDMDF
+	id S1756591AbZFDMEg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 08:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbZFDME3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 08:03:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37411 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751512AbZFDMDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 08:03:03 -0400
-Message-ID: <4A27B7D2.50503@redhat.com>
-Date: Thu, 04 Jun 2009 15:02:26 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 4 Jun 2009 08:04:29 -0400
+Received: from ftp.linux-mips.org ([213.58.128.207]:33883 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754109AbZFDME2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 08:04:28 -0400
+Date: Thu, 4 Jun 2009 13:04:23 +0100 (WEST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Roel Kluin <roel.kluin@gmail.com>
+cc: davem@davemloft.net, lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] serial: off by one
+In-Reply-To: <4A270541.4050900@gmail.com>
+Message-ID: <alpine.LFD.1.10.0906041303510.332@ftp.linux-mips.org>
+References: <4A270541.4050900@gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, davidel@xmailserver.org,
-       paulmck@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [KVM-RFC PATCH 0/2] irqfd: use POLLHUP notification for close()
-References: <20090602151135.29746.91320.stgit@dev.haskins.net> <20090602160434.GA6827@redhat.com> <4A254FD7.5090302@novell.com> <20090602162021.GB6827@redhat.com> <4A255484.6060401@novell.com> <20090602165949.GD6827@redhat.com> <4A256431.2080101@novell.com> <20090603063956.GA8134@redhat.com> <4A27A10C.2050405@redhat.com> <4A27B37F.1060307@gmail.com> <4A27B4F0.9060603@redhat.com> <4A27B597.7090003@gmail.com>
-In-Reply-To: <4A27B597.7090003@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> Since Paul ok'd (I think?) the srcu design, and the only other feedback
-> was the key-bitmap thing from Davide, I will go ahead and push a v2 with
-> just that one fix (unless there is any other feedback?)
->   
+On Thu, 4 Jun 2009, Roel Kluin wrote:
 
-I'll do a detailed review on your next posting.  When I see a long 
-thread I go hide under the bed, where there is no Internet access.
+> In zs_console_putchar() occurs:
+> 
+> 	if (zs_transmit_drain(zport, irq))
+> 		write_zsdata(zport, ch);
+> 
+> However if in zs_transmit_drain() no empty Tx Buffer occurs, limit reaches
+> -1 => true, and the write still occurs.
+> 
+> This patch changes postfix to prefix decrements in this and similar
+> functions to prevent similar mistakes in the future. This decreases the
+> iterations with one but the chosen loop count was arbitrary anyway.
+> 
+> In sunhv limit reaches -1, not 0, so the test is off by one.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 
--- 
-error compiling committee.c: too many arguments to function
+Acked-by: Maciej W. Rozycki <macro@linux-mips.org>
 
+  Maciej
