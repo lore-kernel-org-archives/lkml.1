@@ -1,177 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbZFDTuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbZFDTzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754144AbZFDTuo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 15:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbZFDTuf
+	id S1753036AbZFDTzm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 15:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZFDTze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 15:50:35 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:33568 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752331AbZFDTue (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 15:50:34 -0400
-Date: Thu, 4 Jun 2009 15:50:30 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: mpm@selenic.com, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Cc: nhorman@tuxdriver.com, herbert@gondor.apana.org.au, davem@davemloft.net
-Subject: [PATCH] crypto: add optional continuous repetition test to entropy
-	store based rngs
-Message-ID: <20090604195030.GA11300@hmsreliant.think-freely.org>
+	Thu, 4 Jun 2009 15:55:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47256 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750998AbZFDTzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 15:55:33 -0400
+Date: Thu, 4 Jun 2009 19:54:45 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbec@gmail.com, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbec@gmail.com, mtosatti@redhat.com, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <1244141284-7507-1-git-send-email-fweisbec@gmail.com>
+References: <1244141284-7507-1-git-send-email-fweisbec@gmail.com>
+Subject: [tip:perfcounters/core] perf_counter: Sleep before refresh using poll in perf top
+Message-ID: <tip-0f5486b5c71a831a713ce356d8d06822e3c7c379@git.kernel.org>
+Git-Commit-ID: 0f5486b5c71a831a713ce356d8d06822e3c7c379
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.0 (-)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 04 Jun 2009 19:54:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FIPS-140 requires that all random number generators implement continuous self
-tests in which each extracted block of data is compared against the last block
-for repetition.  The ansi_cprng implements such a test, but it would be nice if
-the hw rng's did the same thing.  Obviously its not something thats always
-needed, but it seems like it would be a nice feature to have on occasion.  I've
-written the below patch which allows individual entropy stores to be flagged as
-desiring a continuous test to be run on them as is extracted.  By default this
-option is off, but is enabled in the event that fips mode is selected during
-bootup.
+Commit-ID:  0f5486b5c71a831a713ce356d8d06822e3c7c379
+Gitweb:     http://git.kernel.org/tip/0f5486b5c71a831a713ce356d8d06822e3c7c379
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Thu, 4 Jun 2009 20:48:04 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 4 Jun 2009 21:44:53 +0200
 
-Neil
+perf_counter: Sleep before refresh using poll in perf top
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+perf top is refreshed every delay_secs the thread runs in such
+loop:
 
-diff --git a/crypto/internal.h b/crypto/internal.h
-index fc76e1f..150d389 100644
---- a/crypto/internal.h
-+++ b/crypto/internal.h
-@@ -26,12 +26,6 @@
- #include <linux/rwsem.h>
- #include <linux/slab.h>
+while (sleep(delay_secs)) {
+	print_sym_table();
+}
+
+At the end of print_sym_table(), poll is used without sleep delay
+to check if we have something from stdin.
+
+It means that this check is done only every delay_secs, which can
+be higher that 2 secs if the user defined a custom refresh rate.
+
+We can drop sleep() here and directly use poll to wait between
+refresh periods, so that the reaction after the user stops perf top
+after typing "Enter" is immediate and doesn't suffer from the
+delay_secs latency.
+
+Nb: poll doesn't add any overhead that can parasite perf top measures
+since it sleeps the entire timeout here.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <1244141284-7507-1-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ Documentation/perf_counter/builtin-top.c |   20 +++++++++-----------
+ 1 files changed, 9 insertions(+), 11 deletions(-)
+
+diff --git a/Documentation/perf_counter/builtin-top.c b/Documentation/perf_counter/builtin-top.c
+index 31c00ba..28cbde4 100644
+--- a/Documentation/perf_counter/builtin-top.c
++++ b/Documentation/perf_counter/builtin-top.c
+@@ -204,7 +204,7 @@ static void print_sym_table(void)
+ 			list_remove_active_sym(syme);
+ 	}
  
--#ifdef CONFIG_CRYPTO_FIPS
--extern int fips_enabled;
--#else
--#define fips_enabled 0
--#endif
+-	write(1, CONSOLE_CLEAR, strlen(CONSOLE_CLEAR));
++	puts(CONSOLE_CLEAR);
+ 
+ 	printf(
+ "------------------------------------------------------------------------------\n");
+@@ -278,23 +278,21 @@ static void print_sym_table(void)
+ 		color_fprintf(stdout, color, "%4.1f%%", pcnt);
+ 		printf(" - %016llx : %s\n", sym->start, sym->name);
+ 	}
 -
- /* Crypto notification events. */
- enum {
- 	CRYPTO_MSG_ALG_REQUEST,
-diff --git a/drivers/char/random.c b/drivers/char/random.c
-index 8c74448..fbdfc70 100644
---- a/drivers/char/random.c
-+++ b/drivers/char/random.c
-@@ -250,6 +250,8 @@
- #include <asm/irq.h>
- #include <asm/io.h>
- 
-+#include <crypto/algapi.h>
-+
- /*
-  * Configuration information
-  */
-@@ -400,6 +402,7 @@ module_param(debug, bool, 0644);
-  **********************************************************************/
- 
- struct entropy_store;
-+#define ENT_F_CONT_TEST 1
- struct entropy_store {
- 	/* read-only data: */
- 	struct poolinfo *poolinfo;
-@@ -413,6 +416,8 @@ struct entropy_store {
- 	unsigned add_ptr;
- 	int entropy_count;
- 	int input_rotate;
-+	int flags;
-+	__u8 *last_data;
- };
- 
- static __u32 input_pool_data[INPUT_POOL_WORDS];
-@@ -424,7 +429,9 @@ static struct entropy_store input_pool = {
- 	.name = "input",
- 	.limit = 1,
- 	.lock = __SPIN_LOCK_UNLOCKED(&input_pool.lock),
--	.pool = input_pool_data
-+	.pool = input_pool_data,
-+	.flags = 0,
-+	.last_data = NULL
- };
- 
- static struct entropy_store blocking_pool = {
-@@ -433,7 +440,9 @@ static struct entropy_store blocking_pool = {
- 	.limit = 1,
- 	.pull = &input_pool,
- 	.lock = __SPIN_LOCK_UNLOCKED(&blocking_pool.lock),
--	.pool = blocking_pool_data
-+	.pool = blocking_pool_data,
-+	.flags = 0,
-+	.last_data = NULL
- };
- 
- static struct entropy_store nonblocking_pool = {
-@@ -441,7 +450,9 @@ static struct entropy_store nonblocking_pool = {
- 	.name = "nonblocking",
- 	.pull = &input_pool,
- 	.lock = __SPIN_LOCK_UNLOCKED(&nonblocking_pool.lock),
--	.pool = nonblocking_pool_data
-+	.pool = nonblocking_pool_data,
-+	.flags = 0,
-+	.last_data = NULL
- };
- 
- /*
-@@ -852,12 +863,21 @@ static ssize_t extract_entropy(struct entropy_store *r, void *buf,
- {
- 	ssize_t ret = 0, i;
- 	__u8 tmp[EXTRACT_SIZE];
-+	unsigned long flags;
- 
- 	xfer_secondary_pool(r, nbytes);
- 	nbytes = account(r, nbytes, min, reserved);
- 
- 	while (nbytes) {
- 		extract_buf(r, tmp);
-+
-+		if (r->flags & ENT_F_CONT_TEST) {
-+			spin_lock_irqsave(&r->lock, flags);
-+			if (!memcmp(tmp, r->last_data, EXTRACT_SIZE))
-+				panic("Hardware RNG duplicated output!\n");
-+			memcpy(r->last_data, tmp, EXTRACT_SIZE);
-+			spin_unlock_irqrestore(&r->lock, flags);
-+		}
- 		i = min_t(int, nbytes, EXTRACT_SIZE);
- 		memcpy(buf, tmp, i);
- 		nbytes -= i;
-@@ -940,6 +960,14 @@ static void init_std_data(struct entropy_store *r)
- 	now = ktime_get_real();
- 	mix_pool_bytes(r, &now, sizeof(now));
- 	mix_pool_bytes(r, utsname(), sizeof(*(utsname())));
-+	/* Enable continuous test in fips mode */
-+	if (fips_enabled) {
-+		r->last_data = kmalloc(EXTRACT_SIZE, GFP_KERNEL);
-+		if (r->last_data)
-+			r->flags |= ENT_F_CONT_TEST;
-+		else
-+			panic("Could not alloc data for rng test\n");
-+	} 
+-	{
+-		struct pollfd stdin_poll = { .fd = 0, .events = POLLIN };
+-
+-		if (poll(&stdin_poll, 1, 0) == 1) {
+-			printf("key pressed - exiting.\n");
+-			exit(0);
+-		}
+-	}
  }
  
- static int rand_initialize(void)
-diff --git a/include/crypto/algapi.h b/include/crypto/algapi.h
-index 0105454..88e9535 100644
---- a/include/crypto/algapi.h
-+++ b/include/crypto/algapi.h
-@@ -20,6 +20,12 @@ struct module;
- struct rtattr;
- struct seq_file;
- 
-+#ifdef CONFIG_CRYPTO_FIPS
-+extern int fips_enabled;
-+#else
-+#define fips_enabled 0
-+#endif
+ static void *display_thread(void *arg)
+ {
++	struct pollfd stdin_poll = { .fd = 0, .events = POLLIN };
++	int delay_msecs = delay_secs * 1000;
 +
- struct crypto_type {
- 	unsigned int (*ctxsize)(struct crypto_alg *alg, u32 type, u32 mask);
- 	unsigned int (*extsize)(struct crypto_alg *alg,
+ 	printf("PerfTop refresh period: %d seconds\n", delay_secs);
+ 
+-	while (!sleep(delay_secs))
++	do {
+ 		print_sym_table();
++	} while (!poll(&stdin_poll, 1, delay_msecs) == 1);
++
++	printf("key pressed - exiting.\n");
++	exit(0);
+ 
+ 	return NULL;
+ }
