@@ -1,203 +1,376 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754269AbZFDUVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753477AbZFDUZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754269AbZFDUVl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 16:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZFDUVe
+	id S1753477AbZFDUZT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 16:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZFDUZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 16:21:34 -0400
-Received: from www84.your-server.de ([213.133.104.84]:57328 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbZFDUVd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 16:21:33 -0400
-Subject: [patch] procfs: provide stack information for threads
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090401193135.GA12316@elte.hu>
-References: <1238511505.364.61.camel@matrix>
-	 <20090401193135.GA12316@elte.hu>
-Content-Type: text/plain
-Date: Thu, 04 Jun 2009 22:21:13 +0200
-Message-Id: <1244146873.20012.6.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Thu, 4 Jun 2009 16:25:08 -0400
+Received: from smtp6-g21.free.fr ([212.27.42.6]:58725 "EHLO smtp6-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751327AbZFDUZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 16:25:07 -0400
+Message-ID: <4A282D98.6020004@free.fr>
+Date: Thu, 04 Jun 2009 22:24:56 +0200
+From: matthieu castet <castet.matthieu@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081204 Iceape/1.1.14 (Debian-1.1.14-1)
+MIME-Version: 1.0
+To: wim@iguana.be, Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-mips@linux-mips.org
+CC: Aleksandar Radovanovic <biblbroks@sezampro.rs>
+Subject: add bcm47xx watchdog driver
+Content-Type: multipart/mixed;
+ boundary="------------080108070107090500060202"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the newest version of the formaly named "detailed stack info"
-patch which give you a better overview of the userland application stack
-usage, especially for embedded linux.
-
-Currently you are only able to dump the main process/thread stack usage
-which is showed in /proc/pid/status by the "VmStk" Value. But you get no
-information about the consumed stack memory of the the threads.
-
-There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which
-marks the vm mapping where the thread stack pointer reside with "[thread
-stack xxxxxxxx]". xxxxxxxx is the start address of the stack.
-
-Also there is a new entry "stack usage" in /proc/<pid>/{task/*,}/status
-which will you give the current stack usage in kb.
-
-I also fixed stack base address in /proc/<pid>/task/*/stat to the base
-address of the associated thread stack and not the one of the main
-process. This makes more sense.
-
-Changes since last posting:
-
- - Code cleanup suggested by Andrew
-
-The patch is against 2.6.30-rc7 and tested with on intel and ppc
-architectures.
+This is a multi-part message in MIME format.
+--------------080108070107090500060202
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
 
- fs/exec.c             |    2 +
- fs/proc/array.c       |   52 +++++++++++++++++++++++++++++++++++++++++++++++++-
- fs/proc/task_mmu.c    |   14 +++++++++++++
- include/linux/sched.h |    1 
- kernel/fork.c         |    2 +
- 5 files changed, 70 insertions(+), 1 deletion(-)
+--------------080108070107090500060202
+Content-Type: text/x-diff;
+ name="bcm47xx_watchdog.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="bcm47xx_watchdog.diff"
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
+This add watchdog driver for broadcom 47xx device.
+It uses the ssb subsytem to access embeded watchdog device.
 
-diff -u -N -r linux-2.6.30.orig/fs/exec.c linux-2.6.30/fs/exec.c
---- linux-2.6.30.orig/fs/exec.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/fs/exec.c	2009-06-04 09:32:35.000000000 +0200
-@@ -1328,6 +1328,8 @@
- 	if (retval < 0)
- 		goto out;
+Because the watchdog timeout is very short (about 2s), a soft timer is used
+to increase the watchdog period.
+
+Note : A patch for exporting the ssb_watchdog_timer_set will
+be submitted on next linux-mips merge. Without this patch it can't 
+be build as a module.
+
+Signed-off-by: Aleksandar Radovanovic <biblbroks@sezampro.rs>
+Signed-off-by: Matthieu CASTET <castet.matthieu@free.fr>
+Index: linux-2.6/drivers/watchdog/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/Kconfig	2009-05-25 22:22:02.000000000 +0200
++++ linux-2.6/drivers/watchdog/Kconfig	2009-05-25 22:26:06.000000000 +0200
+@@ -764,6 +764,12 @@
+ 	help
+ 	  Hardware driver for the built-in watchdog timer on TXx9 MIPS SoCs.
  
-+	current->stack_start = current->mm->start_stack;
++config BCM47XX_WDT
++    tristate "Broadcom BCM47xx Watchdog Timer"
++    depends on BCM47XX
++    help
++      Hardware driver for the Broadcom BCM47xx Watchog Timer.
 +
- 	/* execve succeeded */
- 	current->fs->in_exec = 0;
- 	current->in_execve = 0;
-diff -u -N -r linux-2.6.30.orig/fs/proc/array.c linux-2.6.30/fs/proc/array.c
---- linux-2.6.30.orig/fs/proc/array.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/fs/proc/array.c	2009-06-04 10:37:53.000000000 +0200
-@@ -321,6 +321,55 @@
- 			p->nivcsw);
- }
+ # PARISC Architecture
  
-+static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
-+					struct task_struct *p)
-+{
-+	unsigned long	i;
-+	struct page	*page;
-+	unsigned long	stkpage;
+ # POWERPC Architecture
+Index: linux-2.6/drivers/watchdog/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/Makefile	2009-05-25 22:22:02.000000000 +0200
++++ linux-2.6/drivers/watchdog/Makefile	2009-05-25 23:02:27.000000000 +0200
+@@ -105,6 +105,7 @@
+ obj-$(CONFIG_SIBYTE_WDOG) += sb_wdog.o
+ obj-$(CONFIG_AR7_WDT) += ar7_wdt.o
+ obj-$(CONFIG_TXX9_WDT) += txx9wdt.o
++obj-$(CONFIG_BCM47XX_WDT) += bcm47xx_wdt.o
+ 
+ # PARISC Architecture
+ 
+Index: linux-2.6/drivers/watchdog/bcm47xx_wdt.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/drivers/watchdog/bcm47xx_wdt.c	2009-05-25 23:29:25.000000000 +0200
+@@ -0,0 +1,289 @@
++/*
++ *  Watchdog driver for Broadcom BCM47XX
++ *
++ *  Copyright (C) 2008 Aleksandar Radovanovic <biblbroks@sezampro.rs>
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ */
 +
-+	stkpage = KSTK_ESP(p) & PAGE_MASK;
++#include <linux/bitops.h>
++#include <linux/errno.h>
++#include <linux/fs.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/miscdevice.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/notifier.h>
++#include <linux/types.h>
++#include <linux/uaccess.h>
++#include <linux/watchdog.h>
++#include <linux/timer.h>
++#include <linux/jiffies.h>
++#include <linux/ssb/ssb_embedded.h>
++#include <asm/mach-bcm47xx/bcm47xx.h>
 +
-+#ifdef CONFIG_STACK_GROWSUP
-+	for (i = vma->vm_end; i-PAGE_SIZE > stkpage; i -= PAGE_SIZE) {
++#define DRV_NAME		"bcm47xx_wdt"
 +
-+		page = follow_page(vma, i-PAGE_SIZE, 0);
++#define WDT_DEFAULT_TIME	30	/* seconds */
++#define WDT_MAX_TIME		256	/* seconds */
 +
-+		if (!IS_ERR(page) && page)
-+			break;
-+	}
-+	return i - (p->stack_start & PAGE_MASK);
-+#else
-+	for (i = vma->vm_start; i+PAGE_SIZE <= stkpage; i += PAGE_SIZE) {
++static int wdt_time = WDT_DEFAULT_TIME;
++static int nowayout = WATCHDOG_NOWAYOUT;
 +
-+		page = follow_page(vma, i, 0);
++module_param(wdt_time, int, 0);
++MODULE_PARM_DESC(wdt_time, "Watchdog time in seconds. (default="
++				__MODULE_STRING(WDT_DEFAULT_TIME) ")");
 +
-+		if (!IS_ERR(page) && page)
-+			break;
-+	}
-+	return (p->stack_start & PAGE_MASK) - i + PAGE_SIZE;
++#ifdef CONFIG_WATCHDOG_NOWAYOUT
++module_param(nowayout, int, 0);
++MODULE_PARM_DESC(nowayout,
++		"Watchdog cannot be stopped once started (default="
++				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
 +#endif
++
++static struct platform_device *bcm47xx_wdt_platform_device;
++
++static unsigned long bcm47xx_wdt_busy;
++static char expect_release;
++static struct timer_list wdt_timer;
++static atomic_t ticks;
++
++static inline void bcm47xx_wdt_hw_start(void)
++{
++	/* this is 2,5s on 100Mhz clock  and 2s on 133 Mhz */
++	ssb_watchdog_timer_set(&ssb_bcm47xx, 0xfffffff);
 +}
 +
-+static inline void task_show_stack_usage(struct seq_file *m,
-+						struct task_struct *p)
++static inline int bcm47xx_wdt_hw_stop(void)
 +{
-+	struct vm_area_struct	*vma;
-+	struct mm_struct	*mm;
++	return ssb_watchdog_timer_set(&ssb_bcm47xx, 0);
++}
 +
-+	mm = get_task_mm(p);
-+
-+	if (mm) {
-+		vma = find_vma(mm, p->stack_start);
-+
-+		if (vma)
-+			seq_printf(m, "Stack usage:\t%lu kB\n",
-+				get_stack_usage_in_bytes(vma, p) >> 10);
-+
-+		mmput(mm);
++static void bcm47xx_timer_tick(unsigned long unused)
++{
++	if(!atomic_dec_and_test(&ticks)) {
++		bcm47xx_wdt_hw_start();
++		mod_timer(&wdt_timer, jiffies + HZ);
++	}
++	else {
++		printk(KERN_CRIT PFX "Watchdog will fire soon!!!.\n");
 +	}
 +}
 +
- int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
- 			struct pid *pid, struct task_struct *task)
- {
-@@ -340,6 +389,7 @@
- 	task_show_regs(m, task);
- #endif
- 	task_context_switch_counts(m, task);
-+	task_show_stack_usage(m, task);
- 	return 0;
- }
- 
-@@ -481,7 +531,7 @@
- 		rsslim,
- 		mm ? mm->start_code : 0,
- 		mm ? mm->end_code : 0,
--		(permitted && mm) ? mm->start_stack : 0,
-+		(permitted) ? task->stack_start : 0,
- 		esp,
- 		eip,
- 		/* The signal information here is obsolete.
-diff -u -N -r linux-2.6.30.orig/fs/proc/task_mmu.c linux-2.6.30/fs/proc/task_mmu.c
---- linux-2.6.30.orig/fs/proc/task_mmu.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/fs/proc/task_mmu.c	2009-06-04 22:10:47.000000000 +0200
-@@ -242,6 +242,20 @@
- 				} else if (vma->vm_start <= mm->start_stack &&
- 					   vma->vm_end >= mm->start_stack) {
- 					name = "[stack]";
-+				} else {
-+					unsigned long stack_start;
-+					struct proc_maps_private *pmp;
++static inline void bcm47xx_wdt_pet(void)
++{
++	atomic_set(&ticks, wdt_time);
++}
 +
-+					pmp = m->private;
-+					stack_start = pmp->task->stack_start;
++static void bcm47xx_wdt_start(void)
++{
++	bcm47xx_wdt_pet();
++	bcm47xx_timer_tick(0);
++}
 +
-+					if (vma->vm_start <= stack_start &&
-+					    vma->vm_end >= stack_start) {
-+						pad_len_spaces(m, len);
-+						seq_printf(m,
-+						 "[thread stack: %08lx]",
-+						 stack_start);
-+					}
- 				}
- 			} else {
- 				name = "[vdso]";
-diff -u -N -r linux-2.6.30.orig/include/linux/sched.h linux-2.6.30/include/linux/sched.h
---- linux-2.6.30.orig/include/linux/sched.h	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/include/linux/sched.h	2009-06-04 09:32:35.000000000 +0200
-@@ -1429,6 +1429,7 @@
- 	/* state flags for use by tracers */
- 	unsigned long trace;
- #endif
-+	unsigned long stack_start;
- };
- 
- /* Future-safe accessor for struct task_struct's cpus_allowed. */
-diff -u -N -r linux-2.6.30.orig/kernel/fork.c linux-2.6.30/kernel/fork.c
---- linux-2.6.30.orig/kernel/fork.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/kernel/fork.c	2009-06-04 13:15:35.000000000 +0200
-@@ -1092,6 +1092,8 @@
- 	if (unlikely(current->ptrace))
- 		ptrace_fork(p, clone_flags);
- 
-+	p->stack_start = stack_start;
++static void bcm47xx_wdt_pause(void)
++{
++	del_timer(&wdt_timer);
++	bcm47xx_wdt_hw_stop();
++}
 +
- 	/* Perform scheduler related setup. Assign this task to a CPU. */
- 	sched_fork(p, clone_flags);
- 
++static void bcm47xx_wdt_stop(void)
++{
++	bcm47xx_wdt_pause();
++}
++
++static int bcm47xx_wdt_settimeout(int new_time)
++{
++	if ((new_time <= 0) || (new_time > WDT_MAX_TIME))
++		return -EINVAL;
++
++	wdt_time = new_time;
++	return 0;
++}
++
++static int bcm47xx_wdt_open(struct inode *inode, struct file *file)
++{
++	if (test_and_set_bit(0, &bcm47xx_wdt_busy))
++		return -EBUSY;
++
++	bcm47xx_wdt_start();
++	return nonseekable_open(inode, file);
++}
++
++static int bcm47xx_wdt_release(struct inode *inode, struct file *file)
++{
++	if (expect_release == 42) {
++		bcm47xx_wdt_stop();
++	} else {
++		printk(KERN_CRIT DRV_NAME ": Unexpected close, not stopping watchdog!\n");
++		bcm47xx_wdt_start();
++	}
++
++	clear_bit(0, &bcm47xx_wdt_busy);
++	expect_release = 0;
++	return 0;
++}
++
++static ssize_t bcm47xx_wdt_write (struct file *file, const char __user *data,
++			      size_t len, loff_t * ppos)
++{
++	if (len) {
++		if (!nowayout) {
++			size_t i;
++
++			expect_release = 0;
++
++			for (i = 0; i != len; i++) {
++				char c;
++				if (get_user(c, data + i))
++					return -EFAULT;
++				if (c == 'V')
++					expect_release = 42;
++			}
++		}
++		bcm47xx_wdt_pet();
++	}
++	return len;
++}
++
++static struct watchdog_info bcm47xx_wdt_info = {
++	.identity 	= DRV_NAME,
++	.options 	= WDIOF_SETTIMEOUT |
++				WDIOF_KEEPALIVEPING |
++				WDIOF_MAGICCLOSE,
++};
++
++static long bcm47xx_wdt_ioctl(struct file *file,
++					unsigned int cmd, unsigned long arg)
++{
++	void __user *argp = (void __user *)arg;
++	int __user *p = argp;
++	int new_value, retval = -EINVAL;;
++
++	switch (cmd) {
++	case WDIOC_GETSUPPORT:
++		return copy_to_user(argp, &bcm47xx_wdt_info,
++				sizeof(bcm47xx_wdt_info)) ? -EFAULT : 0;
++
++	case WDIOC_GETSTATUS:
++	case WDIOC_GETBOOTSTATUS:
++		return put_user(0, p);
++
++	case WDIOC_SETOPTIONS:
++		if (get_user(new_value, p))
++			return -EFAULT;
++
++		if (new_value & WDIOS_DISABLECARD) {
++			bcm47xx_wdt_stop();
++			retval = 0;
++		}
++
++		if (new_value & WDIOS_ENABLECARD) {
++			bcm47xx_wdt_start();
++			retval = 0;
++		}
++
++		return retval;
++
++	case WDIOC_KEEPALIVE:
++		bcm47xx_wdt_pet();
++		return 0;
++
++	case WDIOC_SETTIMEOUT:
++		if (get_user(new_value, p))
++			return -EFAULT;
++
++		if (bcm47xx_wdt_settimeout(new_value))
++			return -EINVAL;
++
++		bcm47xx_wdt_pet();
++
++	case WDIOC_GETTIMEOUT:
++		return put_user(wdt_time, p);
++
++	default:
++		return -ENOTTY;
++	}
++}
++
++static int bcm47xx_wdt_notify_sys(struct notifier_block *this, unsigned long code,
++	void *unused)
++{
++	if (code == SYS_DOWN || code == SYS_HALT)
++		bcm47xx_wdt_stop();
++	return NOTIFY_DONE;
++}
++
++static const struct file_operations bcm47xx_wdt_fops = {
++	.owner		= THIS_MODULE,
++	.llseek		= no_llseek,
++	.unlocked_ioctl	= bcm47xx_wdt_ioctl,
++	.open		= bcm47xx_wdt_open,
++	.release	= bcm47xx_wdt_release,
++	.write		= bcm47xx_wdt_write,
++};
++
++static struct miscdevice bcm47xx_wdt_miscdev = {
++	.minor		= WATCHDOG_MINOR,
++	.name		= "watchdog",
++	.fops		= &bcm47xx_wdt_fops,
++};
++
++static struct notifier_block bcm47xx_wdt_notifier = {
++	.notifier_call = bcm47xx_wdt_notify_sys,
++};
++
++static int __init bcm47xx_wdt_init(void)
++{
++	int ret;
++
++	if (bcm47xx_wdt_hw_stop() < 0)
++		return -ENODEV;
++
++	setup_timer(&wdt_timer, bcm47xx_timer_tick, 0L);
++
++	if (bcm47xx_wdt_settimeout(wdt_time)) {
++		bcm47xx_wdt_settimeout(WDT_DEFAULT_TIME);
++		printk(KERN_INFO DRV_NAME ": wdt_time value must be 1 <= wdt_time <= 256, using %d\n",
++			wdt_time);
++	}
++
++	ret = register_reboot_notifier(&bcm47xx_wdt_notifier);
++	if (ret)
++		ret;
++
++	ret = misc_register(&bcm47xx_wdt_miscdev);
++	if (ret) {
++		unregister_reboot_notifier(&bcm47xx_wdt_notifier);
++		return ret;
++	}
++
++	printk(KERN_INFO "BCM47xx Watchdog Timer enabled (%d seconds%s)\n",
++				wdt_time, nowayout ? ", nowayout" : "");
++	return 0;
++}
++
++static void __exit bcm47xx_wdt_exit(void)
++{
++	if (!nowayout)
++		bcm47xx_wdt_stop();
++
++	misc_deregister(&bcm47xx_wdt_miscdev);
++
++	unregister_reboot_notifier(&bcm47xx_wdt_notifier);
++
++	return 0;
++}
++
++module_init(bcm47xx_wdt_init);
++module_exit(bcm47xx_wdt_exit);
++
++MODULE_AUTHOR("Aleksandar Radovanovic");
++MODULE_DESCRIPTION("Watchdog driver for Broadcom BCM47xx");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
++MODULE_ALIAS("platform:bcm47xx_wdt");
 
-
+--------------080108070107090500060202--
