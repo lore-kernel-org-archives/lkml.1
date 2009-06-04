@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756607AbZFDIsH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbZFDItF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756607AbZFDIsH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 04:48:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZFDIr5
+	id S1757341AbZFDItF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 04:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbZFDIsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 04:47:57 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:64378 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751683AbZFDIr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 04:47:56 -0400
-Message-ID: <4A2789D2.2000001@atmel.com>
-Date: Thu, 04 Jun 2009 10:46:10 +0200
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Ben Dooks <ben-linux@fluff.org>
-CC: avictor.za@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
-       patrice.vilchez@atmel.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] at91: Support for at91sam9g45: clocks management
-References: <0c80319114935c723d3bac8992e6b4d8fc464b0b.1244104624.git.nicolas.ferre@atmel.com> <4a78a0b84331f1fb5ea111657992b3557f70a1b3.1244104625.git.nicolas.ferre@atmel.com> <20090604083332.GA3331@fluff.org.uk>
-In-Reply-To: <20090604083332.GA3331@fluff.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Jun 2009 04:48:50 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:34033 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752949AbZFDIst (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 04:48:49 -0400
+From: Artem Bityutskiy <dedekind@infradead.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       "Tigran A. Aivazian" <tigran@aivazian.fsnet.co.uk>
+Subject: [PATCH v2 03/17] BFS: do not manipulate s_dirt directly
+Date: Thu,  4 Jun 2009 13:41:40 +0300
+Message-Id: <1244112114-23144-4-git-send-email-dedekind@infradead.org>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1244112114-23144-1-git-send-email-dedekind@infradead.org>
+References: <1244112114-23144-1-git-send-email-dedekind@infradead.org>
+X-OriginalArrivalTime: 04 Jun 2009 08:48:36.0310 (UTC) FILETIME=[3FA99760:01C9E4F1]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Dooks :
-> On Thu, Jun 04, 2009 at 10:48:01AM +0200, Nicolas Ferre wrote:
->> Add the at91sam9g45 series support to the AT91 generic clock file.
->> This takes care of the particularities of the PMC for this series.
->> It also takes advantage of the management by functionalities of
->> those PLLs and clocks.
->>
->> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> 
-> personally, please don't post between open and subscriber only lists,
-> this should really only be sent to linux-arm-kernel.
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 
-Ah ? Reading SubmittingPatches document, I see in section 6:
-"Unless you have a reason NOT to do so, CC linux-kernel@vger.kernel.org"
+... use new VFS helpers instead.
 
-Is posting in "open" and "subscriber only" lists is a reason?
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: Tigran A. Aivazian <tigran@aivazian.fsnet.co.uk>
+---
+ fs/bfs/inode.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-
->> ---
->>  arch/arm/mach-at91/clock.c |   62 ++++++++++++++++++++++++++++++++++++-------
->>  1 files changed, 52 insertions(+), 10 deletions(-)
->>
->> diff --git a/arch/arm/mach-at91/clock.c b/arch/arm/mach-at91/clock.c
->> index bac578f..6396680 100644
->> --- a/arch/arm/mach-at91/clock.c
->> +++ b/arch/arm/mach-at91/clock.c
->> @@ -47,20 +47,25 @@
->>   * Chips have some kind of clocks : group them by functionality
->>   */
->>  #define cpu_has_utmi()		(  cpu_is_at91cap9() \
-> 
-> how does this pass checkpatch? no spaces after (.
-
-Well, true, it does not. But, have a look at the result, it is so
-prettier with those spaces: cpu_is_ directives are aligned.
-
-It's a matter of taste and I considered breaking the rule here was not
-so serious...
-
-Thanks Ben.
-
-Regards,
+diff --git a/fs/bfs/inode.c b/fs/bfs/inode.c
+index 3a9a136..7ab0792 100644
+--- a/fs/bfs/inode.c
++++ b/fs/bfs/inode.c
+@@ -219,7 +219,7 @@ static void bfs_put_super(struct super_block *s)
+ 
+ 	lock_kernel();
+ 
+-	if (s->s_dirt)
++	if (sb_is_dirty(s))
+ 		bfs_write_super(s);
+ 
+ 	brelse(info->si_sbh);
+@@ -255,7 +255,7 @@ static void bfs_write_super(struct super_block *s)
+ 	mutex_lock(&info->bfs_lock);
+ 	if (!(s->s_flags & MS_RDONLY))
+ 		mark_buffer_dirty(info->si_sbh);
+-	s->s_dirt = 0;
++	mark_sb_clean(s);
+ 	mutex_unlock(&info->bfs_lock);
+ }
+ 
+@@ -464,7 +464,7 @@ static int bfs_fill_super(struct super_block *s, void *data, int silent)
+ 	brelse(bh);
+ 	if (!(s->s_flags & MS_RDONLY)) {
+ 		mark_buffer_dirty(info->si_sbh);
+-		s->s_dirt = 1;
++		mark_sb_dirty(s);
+ 	} 
+ 	dump_imap("read_super", s);
+ 	mutex_init(&info->bfs_lock);
 -- 
-Nicolas Ferre
+1.6.0.6
 
