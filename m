@@ -1,50 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760179AbZFDQ3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbZFDQ2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760179AbZFDQ3k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 12:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758975AbZFDQXq
+	id S1760057AbZFDQ2w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 12:28:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757566AbZFDQUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 12:23:46 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48425 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758850AbZFDQXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 12:23:45 -0400
-Date: Thu, 4 Jun 2009 09:00:23 -0700
-From: Greg KH <gregkh@suse.de>
-To: Yunpeng Gao <yunpeng.gao@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: linux-next: Tree for June 3 (staging)
-Message-ID: <20090604160023.GA20118@suse.de>
-References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au> <4A2695C1.2060104@oracle.com> <20090603152558.GA25725@suse.de> <4A269971.1050004@oracle.com> <20090603231152.GA18701@suse.de> <20090604232610.GA16053@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090604232610.GA16053@intel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 4 Jun 2009 12:20:18 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:40369 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757561AbZFDQUO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 12:20:14 -0400
+Message-Id: <20090604161904.626534361@de.ibm.com>
+References: <20090604161847.513682672@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 04 Jun 2009 18:19:08 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 21/38] pm: vmwatchdog power management callbacks.
+Content-Disposition: inline; filename=pm_vmwatchdog.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 05, 2009 at 07:26:10AM +0800, Yunpeng Gao wrote:
-> Hi Greg,
->    I have fixed these compiling bugs in file ffsport.c.
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 
-Great.
+This patch implements suspend/hibernation for the vmwatchdog driver. The 
+pm_notifier_callchain is used to get control on PM events. Since watchdog
+operation and suspend cannot work together in a reliable fashion, the open
+flag is also used to prevent suspend and open from happening at the same
+time.
+The watchdog can also be active with no open file descriptor. This patch
+adds another flag which is only changed in vmwdt_keep_alive and
+vmwdt_disable.
 
->    But just found that my email client (Outlook) will replace
->    TAB with blanks automatically. So, unfortunately, all the
->    TABs in my first submission patch have been changed to
->    blanks by the Outlook.
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+ drivers/s390/char/vmwatchdog.c |   81 ++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 76 insertions(+), 5 deletions(-)
 
-Heh.
+Index: linux-2.6/drivers/s390/char/vmwatchdog.c
+===================================================================
+--- linux-2.6.orig/drivers/s390/char/vmwatchdog.c
++++ linux-2.6/drivers/s390/char/vmwatchdog.c
+@@ -1,17 +1,23 @@
+ /*
+  * Watchdog implementation based on z/VM Watchdog Timer API
+  *
++ * Copyright IBM Corp. 2004,2009
++ *
+  * The user space watchdog daemon can use this driver as
+  * /dev/vmwatchdog to have z/VM execute the specified CP
+  * command when the timeout expires. The default command is
+  * "IPL", which which cause an immediate reboot.
+  */
++#define KMSG_COMPONENT "vmwatchdog"
++#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++
+ #include <linux/init.h>
+ #include <linux/fs.h>
+ #include <linux/kernel.h>
+ #include <linux/miscdevice.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/suspend.h>
+ #include <linux/watchdog.h>
+ #include <linux/smp_lock.h>
+ 
+@@ -43,6 +49,9 @@ static unsigned int vmwdt_interval = 60;
+ static unsigned long vmwdt_is_open;
+ static int vmwdt_expect_close;
+ 
++#define VMWDT_OPEN	0	/* devnode is open or suspend in progress */
++#define VMWDT_RUNNING	1	/* The watchdog is armed */
++
+ enum vmwdt_func {
+ 	/* function codes */
+ 	wdt_init   = 0,
+@@ -92,6 +101,7 @@ static int vmwdt_keepalive(void)
+ 	EBC_TOUPPER(ebc_cmd, MAX_CMDLEN);
+ 
+ 	func = vmwdt_conceal ? (wdt_init | wdt_conceal) : wdt_init;
++	set_bit(VMWDT_RUNNING, &vmwdt_is_open);
+ 	ret = __diag288(func, vmwdt_interval, ebc_cmd, len);
+ 	WARN_ON(ret != 0);
+ 	kfree(ebc_cmd);
+@@ -102,6 +112,7 @@ static int vmwdt_disable(void)
+ {
+ 	int ret = __diag288(wdt_cancel, 0, "", 0);
+ 	WARN_ON(ret != 0);
++	clear_bit(VMWDT_RUNNING, &vmwdt_is_open);
+ 	return ret;
+ }
+ 
+@@ -123,13 +134,13 @@ static int vmwdt_open(struct inode *i, s
+ {
+ 	int ret;
+ 	lock_kernel();
+-	if (test_and_set_bit(0, &vmwdt_is_open)) {
++	if (test_and_set_bit(VMWDT_OPEN, &vmwdt_is_open)) {
+ 		unlock_kernel();
+ 		return -EBUSY;
+ 	}
+ 	ret = vmwdt_keepalive();
+ 	if (ret)
+-		clear_bit(0, &vmwdt_is_open);
++		clear_bit(VMWDT_OPEN, &vmwdt_is_open);
+ 	unlock_kernel();
+ 	return ret ? ret : nonseekable_open(i, f);
+ }
+@@ -139,7 +150,7 @@ static int vmwdt_close(struct inode *i, 
+ 	if (vmwdt_expect_close == 42)
+ 		vmwdt_disable();
+ 	vmwdt_expect_close = 0;
+-	clear_bit(0, &vmwdt_is_open);
++	clear_bit(VMWDT_OPEN, &vmwdt_is_open);
+ 	return 0;
+ }
+ 
+@@ -223,6 +234,57 @@ static ssize_t vmwdt_write(struct file *
+ 	return count;
+ }
+ 
++static int vmwdt_resume(void)
++{
++	clear_bit(VMWDT_OPEN, &vmwdt_is_open);
++	return NOTIFY_DONE;
++}
++
++/*
++ * It makes no sense to go into suspend while the watchdog is running.
++ * Depending on the memory size, the watchdog might trigger, while we
++ * are still saving the memory.
++ * We reuse the open flag to ensure that suspend and watchdog open are
++ * exclusive operations
++ */
++static int vmwdt_suspend(void)
++{
++	if (test_and_set_bit(VMWDT_OPEN, &vmwdt_is_open)) {
++		pr_err("The watchdog is in use. "
++			"This prevents hibernation or suspend.\n");
++		return NOTIFY_BAD;
++	}
++	if (test_bit(VMWDT_RUNNING, &vmwdt_is_open)) {
++		clear_bit(VMWDT_OPEN, &vmwdt_is_open);
++		pr_err("The watchdog is running. "
++			"This prevents hibernation or suspend.\n");
++		return NOTIFY_BAD;
++	}
++	return NOTIFY_DONE;
++}
++
++/*
++ * This function is called for suspend and resume.
++ */
++static int vmwdt_power_event(struct notifier_block *this, unsigned long event,
++			     void *ptr)
++{
++	switch (event) {
++	case PM_POST_HIBERNATION:
++	case PM_POST_SUSPEND:
++		return vmwdt_resume();
++	case PM_HIBERNATION_PREPARE:
++	case PM_SUSPEND_PREPARE:
++		return vmwdt_suspend();
++	default:
++		return NOTIFY_DONE;
++	}
++}
++
++static struct notifier_block vmwdt_power_notifier = {
++	.notifier_call = vmwdt_power_event,
++};
++
+ static const struct file_operations vmwdt_fops = {
+ 	.open    = &vmwdt_open,
+ 	.release = &vmwdt_close,
+@@ -244,12 +306,21 @@ static int __init vmwdt_init(void)
+ 	ret = vmwdt_probe();
+ 	if (ret)
+ 		return ret;
+-	return misc_register(&vmwdt_dev);
++	ret = register_pm_notifier(&vmwdt_power_notifier);
++	if (ret)
++		return ret;
++	ret = misc_register(&vmwdt_dev);
++	if (ret) {
++		unregister_pm_notifier(&vmwdt_power_notifier);
++		return ret;
++	}
++	return 0;
+ }
+ module_init(vmwdt_init);
+ 
+ static void __exit vmwdt_exit(void)
+ {
+-	WARN_ON(misc_deregister(&vmwdt_dev) != 0);
++	unregister_pm_notifier(&vmwdt_power_notifier);
++	misc_deregister(&vmwdt_dev);
+ }
+ module_exit(vmwdt_exit);
 
->    So I'd like to use the Mutt email client and re-submit
->    the patch as below (the bug-fix of ffsport.c has been included).
->    Does it make sense?
+-- 
+blue skies,
+   Martin.
 
-Sure, I can replace the existing patch with this one if you want me to.
-I'll go queue it up.
+"Reality continues to ruin my life." - Calvin.
 
-thanks,
-
-greg k-h
