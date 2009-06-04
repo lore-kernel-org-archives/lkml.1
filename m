@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbZFDRyF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752079AbZFDR4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752127AbZFDRyF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 13:54:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbZFDRx4
+	id S1752079AbZFDR4V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 13:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZFDR4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 13:53:56 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:33451 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbZFDRxz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 13:53:55 -0400
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, James Morris <jmorris@namei.org>,
-       vibi sreenivasan <vibi_sreenivasan@cms.com>,
-       Jiri Slaby <jirislaby@gmail.com>, Eric Paris <eparis@redhat.com>,
-       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: [PATCH] integrity: ima audit dentry_open failure
-Date: Thu,  4 Jun 2009 13:53:10 -0400
-Message-Id: <1244137990-12678-1-git-send-email-zohar@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.6.0.6
+	Thu, 4 Jun 2009 13:56:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57144 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751718AbZFDR4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 13:56:10 -0400
+Date: Thu, 4 Jun 2009 13:55:36 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Michael S. Zick" <lkml@morethan.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harald Welte <HaraldWelte@viatech.com>
+Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
+Message-ID: <20090604175536.GA4939@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Michael S. Zick" <lkml@morethan.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Duane Griffin <duaneg@dghda.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Harald Welte <HaraldWelte@viatech.com>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <alpine.LFD.2.01.0906040948480.4880@localhost.localdomain> <alpine.LFD.2.01.0906041004000.4880@localhost.localdomain> <200906041227.10529.lkml@morethan.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906041227.10529.lkml@morethan.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Until we start appraising measurements, the ima_path_check()
-return code should always be 0.
+On Thu, Jun 04, 2009 at 12:27:07PM -0500, Michael S. Zick wrote:
+ 
+ > > Features like that easily put a huge stress on power regulators etc, if 
+ > > they result in sudden changes in current draw.  Underspecced capacitors 
+ > > etc can cause CPU "brown-outs", which in turn can easily cause total 
+ > > failure. 
+ > 
+ > There is also a possible thermal issue with these machines - -
+ > I doubt that VIA runs their qualification testing in bake ovens;
+ > which is what NetBook cases amount too.  ;)
 
-- Update the ima_path_check() return code comment
-- Instead of the pr_info, audit the dentry_open failure
-
-Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
-
----
- security/integrity/ima/ima_main.c |   13 +++++++++----
- 1 files changed, 9 insertions(+), 4 deletions(-)
-
-diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
-index a2eb233..6f61187 100644
---- a/security/integrity/ima/ima_main.c
-+++ b/security/integrity/ima/ima_main.c
-@@ -149,8 +149,8 @@ static void ima_update_counts(struct ima_iint_cache *iint, int mask)
-  *	- Opening a file for read when already open for write,
-  * 	  could result in a file measurement error.
-  *
-- * Return 0 on success, an error code on failure.
-- * (Based on the results of appraise_measurement().)
-+ * Always return 0 and audit dentry_open failures.
-+ * (Return code will be based upon measurement appraisal.)
-  */
- int ima_path_check(struct path *path, int mask, int update_counts)
- {
-@@ -189,8 +189,13 @@ int ima_path_check(struct path *path, int mask, int update_counts)
- 		file = dentry_open(dentry, mnt, O_RDONLY | O_LARGEFILE,
- 				   current_cred());
- 		if (IS_ERR(file)) {
--			pr_info("%s dentry_open failed\n", dentry->d_name.name);
--			rc = PTR_ERR(file);
-+			int audit_info = 0;
-+
-+			integrity_audit_msg(AUDIT_INTEGRITY_PCR, inode,
-+					    dentry->d_name.name,
-+					    "add_measurement",
-+					    "dentry_open failed",
-+					    1, audit_info);
- 			file = NULL;
- 			goto out;
- 		}
--- 
-1.6.0.6
-
+FWIW, they do, I've toured their facility and seen those ovens ;)
+I forget just how high they bake them at, but it was something ridiculous
+that even netbooks won't come close to.
+ 
+	Dave
