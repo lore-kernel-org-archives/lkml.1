@@ -1,104 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbZFDVaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbZFDVar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755187AbZFDVaa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 17:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbZFDV2f
+	id S1755330AbZFDVar (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 17:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754723AbZFDV2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 17:28:35 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40866 "EHLO
+	Thu, 4 Jun 2009 17:28:37 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40870 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754670AbZFDV2d (ORCPT
+	with ESMTP id S1754687AbZFDV2f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 17:28:33 -0400
+	Thu, 4 Jun 2009 17:28:35 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200906041128.112757038@firstfloor.org>
 In-Reply-To: <200906041128.112757038@firstfloor.org>
-To: fengguang.wu@intel.com, akpm@linux-foundation.org, npiggin@suse.de,
+To: npiggin@suse.de, akpm@linux-foundation.org, npiggin@suse.de,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        fengguang.wu@intel.com
-Subject: [PATCH] [10/15] HWPOISON: check and isolate corrupted free pages v2
-Message-Id: <20090604212822.11E331D0290@basil.firstfloor.org>
-Date: Thu,  4 Jun 2009 23:28:21 +0200 (CEST)
+Subject: [PATCH] [11/15] HWPOISON: Refactor truncate to allow direct truncating of page v2
+Message-Id: <20090604212823.16F901D0293@basil.firstfloor.org>
+Date: Thu,  4 Jun 2009 23:28:23 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Wu Fengguang <fengguang.wu@intel.com>
+From: Nick Piggin <npiggin@suse.de>
 
-If memory corruption hits the free buddy pages, we can safely ignore them.
-No one will access them until page allocation time, then prep_new_page()
-will automatically check and isolate PG_hwpoison page for us (for 0-order
-allocation).
+Extract out truncate_inode_page() out of the truncate path so that
+it can be used by memory-failure.c
 
-This patch expands prep_new_page() to check every component page in a high
-order page allocation, in order to completely stop PG_hwpoison pages from
-being recirculated.
+[AK: description, headers, fix typos]
+v2: Some white space changes from Fengguang Wu 
 
-Note that the common case -- only allocating a single page, doesn't
-do any more work than before. Allocating > order 0 does a bit more work,
-but that's relatively uncommon.
-
-This simple implementation may drop some innocent neighbor pages, hopefully
-it is not a big problem because the event should be rare enough.
-
-This patch adds some runtime costs to high order page users.
-
-[AK: Improved description]
-
-v2: Andi Kleen:
-Port to -mm code
-Move check into separate function.
-Don't dump stack in bad_pages for hwpoisoned pages.
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- mm/page_alloc.c |   20 +++++++++++++++++++-
- 1 file changed, 19 insertions(+), 1 deletion(-)
+ include/linux/mm.h |    2 ++
+ mm/truncate.c      |   24 ++++++++++++------------
+ 2 files changed, 14 insertions(+), 12 deletions(-)
 
-Index: linux/mm/page_alloc.c
+Index: linux/mm/truncate.c
 ===================================================================
---- linux.orig/mm/page_alloc.c
-+++ linux/mm/page_alloc.c
-@@ -237,6 +237,12 @@ static void bad_page(struct page *page)
- 	static unsigned long nr_shown;
- 	static unsigned long nr_unshown;
+--- linux.orig/mm/truncate.c
++++ linux/mm/truncate.c
+@@ -135,6 +135,16 @@ invalidate_complete_page(struct address_
+ 	return ret;
+ }
  
-+	/* Don't complain about poisoned pages */
-+	if (PageHWPoison(page)) {
-+		__ClearPageBuddy(page);
-+		return;
++void truncate_inode_page(struct address_space *mapping, struct page *page)
++{
++	if (page_mapped(page)) {
++		unmap_mapping_range(mapping,
++				   (loff_t)page->index << PAGE_CACHE_SHIFT,
++				   PAGE_CACHE_SIZE, 0);
 +	}
-+
- 	/*
- 	 * Allow a burst of 60 reports, then keep quiet for that minute;
- 	 * or allow a steady drip of one report per second.
-@@ -650,7 +656,7 @@ static inline void expand(struct zone *z
- /*
-  * This page is about to be returned from the page allocator
-  */
--static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
-+static inline int check_new_page(struct page *page)
- {
- 	if (unlikely(page_mapcount(page) |
- 		(page->mapping != NULL)  |
-@@ -659,6 +665,18 @@ static int prep_new_page(struct page *pa
- 		bad_page(page);
- 		return 1;
- 	}
-+	return 0;
++	truncate_complete_page(mapping, page);
 +}
 +
-+static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
-+{
-+	int i;
-+
-+	for (i = 0; i < (1 << order); i++) {
-+		struct page *p = page + i;
-+		if (unlikely(check_new_page(p)))
-+			return 1;
-+	}
+ /**
+  * truncate_inode_pages - truncate range of pages specified by start & end byte offsets
+  * @mapping: mapping to truncate
+@@ -196,12 +206,7 @@ void truncate_inode_pages_range(struct a
+ 				unlock_page(page);
+ 				continue;
+ 			}
+-			if (page_mapped(page)) {
+-				unmap_mapping_range(mapping,
+-				  (loff_t)page_index<<PAGE_CACHE_SHIFT,
+-				  PAGE_CACHE_SIZE, 0);
+-			}
+-			truncate_complete_page(mapping, page);
++			truncate_inode_page(mapping, page);
+ 			unlock_page(page);
+ 		}
+ 		pagevec_release(&pvec);
+@@ -238,15 +243,10 @@ void truncate_inode_pages_range(struct a
+ 				break;
+ 			lock_page(page);
+ 			wait_on_page_writeback(page);
+-			if (page_mapped(page)) {
+-				unmap_mapping_range(mapping,
+-				  (loff_t)page->index<<PAGE_CACHE_SHIFT,
+-				  PAGE_CACHE_SIZE, 0);
+-			}
++			truncate_inode_page(mapping, page);
+ 			if (page->index > next)
+ 				next = page->index;
+ 			next++;
+-			truncate_complete_page(mapping, page);
+ 			unlock_page(page);
+ 		}
+ 		pagevec_release(&pvec);
+Index: linux/include/linux/mm.h
+===================================================================
+--- linux.orig/include/linux/mm.h
++++ linux/include/linux/mm.h
+@@ -811,6 +811,8 @@ static inline void unmap_shared_mapping_
+ extern int vmtruncate(struct inode * inode, loff_t offset);
+ extern int vmtruncate_range(struct inode * inode, loff_t offset, loff_t end);
  
- 	set_page_private(page, 0);
- 	set_page_refcounted(page);
++void truncate_inode_page(struct address_space *mapping, struct page *page);
++
+ #ifdef CONFIG_MMU
+ extern int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 			unsigned long address, int write_access);
