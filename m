@@ -1,97 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752681AbZFDSbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbZFDSfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752681AbZFDSbb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 14:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbZFDSbU
+	id S1752790AbZFDSfv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 14:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbZFDSfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 14:31:20 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:34308 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751327AbZFDSbT (ORCPT
+	Thu, 4 Jun 2009 14:35:44 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:3497 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750994AbZFDSfo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 14:31:19 -0400
-Message-ID: <4A2812E3.6090108@novell.com>
-Date: Thu, 04 Jun 2009 14:30:59 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
-       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
-       anthony@codemonkey.ws, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, bhutchings@solarflare.com, andi@firstfloor.org,
-       gregkh@suse.de, herber@gondor.apana.org.au, chrisw@sous-sol.org,
-       shemminger@vyatta.com
-Subject: Re: [RFC PATCH v2 03/19] vbus: add connection-client helper infrastructure
-References: <20090409155200.32740.19358.stgit@dev.haskins.net> <20090409163057.32740.27829.stgit@dev.haskins.net> <20090604180611.GA16387@redhat.com> <4A280FE2.2090101@novell.com> <4A281161.8010109@redhat.com>
-In-Reply-To: <4A281161.8010109@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigB0D4C7096C08A012074AC706"
+	Thu, 4 Jun 2009 14:35:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=AGLDSGhfBonOfEBMGf487EG1ydEzCAPvkyHJWl1k8sOFACmtmZbt5FTCdT44XPCsh7
+         exABik2NAn3lO1dtj3mg6pQv2cLSjGXeLUMYoTEzm0fQaQwZSGAX7PC/lOgvlH93nidz
+         9uS6EB5lp1x22zNx9cyFenkLPxYbxq+YppcLc=
+From: Philipp Zabel <philipp.zabel@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Samuel Ortiz <sameo@openedhand.com>
+Subject: [PATCH 0/7] ASIC3 updates
+Date: Thu,  4 Jun 2009 20:36:09 +0200
+Message-Id: <1244140576-18006-1-git-send-email-philipp.zabel@gmail.com>
+X-Mailer: git-send-email 1.6.3.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigB0D4C7096C08A012074AC706
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->
->  =20
->>> BTW, why did you decide to use get_user_pages?
->>> Would switch_mm + copy_to_user work as well
->>> avoiding page walk if all pages are present?
->>>      =20
->>
->> Well, basic c_t_u() won't work because its likely not "current" if you=
+here are a few ASIC3 updates, enabling the DS1WM (w1/master) and
+SDIO/MMC (mmc/host) cells. Patch 1 adds functions to change EXTCF
+and SDHWCTRL registers, which will also be needed for PCMCIA.
 
->> are updating the ring from some other task, but I think you have alrea=
-dy
->> figured that out based on the switch_mm suggestion.  The simple truth =
-is
->> I was not familiar with switch_mm at the time I wrote this (nor am I
->> now).  If this is a superior method that allows you to acquire
->> c_t_u(some_other_ctx) like behavior, I see no problem in changing.  I
->> will look into this, and thanks for the suggestion!
->>  =20
->
-> copy_to_user() is significantly faster than get_user_pages() + kmap()
-> + memcmp() (or their variants).
->
+I tried to write the clock handling code in patch 2 in a way that should
+make it easy to convert to the clk API, if we'll ever get a common struct
+clk oder clkops across architectures.
 
-Oh, I don't doubt that (in fact, I was pretty sure that was the case
-based on some of the optimizations I could see in studying the c_t_u()
-path).  I just didn't realize there were other ways to do it if its a
-non "current" task. ;)
+Patch 5 removes the unneeded SD/SDIO controller register definitions,
+since the tmio_mmc driver should take care of that.
 
-I guess the enigma for me right now is what cost does switch_mm have?=20
-(Thats not a slam against the suggested approach...I really do not know
-and am curious).
-
-As an aside, note that we seem to be reviewing v2, where v3 is really
-the last set I pushed.  I think this patch is more or less the same
-across both iterations, but FYI that I would recommend looking at v3
-instead.
-
--Greg
-
-
---------------enigB0D4C7096C08A012074AC706
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkooEuYACgkQlOSOBdgZUxkmfgCeJqaWFdY127W4daE380kxoXPK
-BRcAnjZzRdKA19iXdzdlnEnucN9PQv0T
-=i/rM
------END PGP SIGNATURE-----
-
---------------enigB0D4C7096C08A012074AC706--
+regards
+Philipp
