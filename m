@@ -1,118 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbZFDVbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbZFDVa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbZFDVbR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 17:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbZFDV2m
+	id S1755403AbZFDVa6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 17:30:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636AbZFDV2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 17:28:42 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40882 "EHLO
+	Thu, 4 Jun 2009 17:28:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40875 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754371AbZFDV2l (ORCPT
+	with ESMTP id S1754753AbZFDV2j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 17:28:41 -0400
+	Thu, 4 Jun 2009 17:28:39 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200906041128.112757038@firstfloor.org>
 In-Reply-To: <200906041128.112757038@firstfloor.org>
 To: akpm@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, fengguang.wu@intel.com
-Subject: [PATCH] [14/15] HWPOISON: Add madvise() based injector for hardware poisoned pages v3
-Message-Id: <20090604212826.5919C1D028F@basil.firstfloor.org>
-Date: Thu,  4 Jun 2009 23:28:26 +0200 (CEST)
+Subject: [PATCH] [9/15] HWPOISON: Handle hardware poisoned pages in try_to_unmap
+Message-Id: <20090604212820.E807A1D028F@basil.firstfloor.org>
+Date: Thu,  4 Jun 2009 23:28:20 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: optional, useful for debugging
+When a page has the poison bit set replace the PTE with a poison entry. 
+This causes the right error handling to be done later when a process runs 
+into it.
 
-Add a new madvice sub command to inject poison for some
-pages in a process' address space.  This is useful for
-testing the poison page handling.
-
-Open issues:
-
-- This patch allows root to tie up arbitary amounts of memory.
-Should this be disabled inside containers?
-- There's a small race window between getting the page and injecting.
-The patch drops the ref count because otherwise memory_failure
-complains about dangling references. In theory with a multi threaded
-injector one could inject poison for a process foreign page this way.
-Not a serious issue right now.
-
-v2: Use write flag for get_user_pages to make sure to always get
-a fresh page
-v3: Don't request write mapping (Fengguang Wu)
+Also add a new flag to not do that (needed for the memory-failure handler
+later)
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/asm-generic/mman-common.h |    1 +
- mm/madvise.c                      |   36 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 37 insertions(+)
+ include/linux/rmap.h |    1 +
+ mm/rmap.c            |    9 ++++++++-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
-Index: linux/mm/madvise.c
+Index: linux/mm/rmap.c
 ===================================================================
---- linux.orig/mm/madvise.c
-+++ linux/mm/madvise.c
-@@ -207,6 +207,38 @@ static long madvise_remove(struct vm_are
- 	return error;
- }
+--- linux.orig/mm/rmap.c
++++ linux/mm/rmap.c
+@@ -943,7 +943,14 @@ static int try_to_unmap_one(struct page
+ 	/* Update high watermark before we lower rss */
+ 	update_hiwater_rss(mm);
  
-+#ifdef CONFIG_MEMORY_FAILURE
-+/*
-+ * Error injection support for memory error handling.
-+ */
-+static int madvise_hwpoison(unsigned long start, unsigned long end)
-+{
-+	/*
-+	 * RED-PEN
-+	 * This allows to tie up arbitary amounts of memory.
-+	 * Might be a good idea to disable it inside containers even for root.
-+	 */
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+	for (; start < end; start += PAGE_SIZE) {
-+		struct page *p;
-+		int ret = get_user_pages(current, current->mm, start, 1,
-+						0, 0, &p, NULL);
-+		if (ret != 1)
-+			return ret;
-+		put_page(p);
-+		/*
-+		 * RED-PEN page can be reused in a short window, but otherwise
-+		 * we'll have to fight with the reference count.
-+		 */
-+		printk(KERN_INFO "Injecting memory failure for page %lx at %lx\n",
-+		       page_to_pfn(p), start);
-+		memory_failure(page_to_pfn(p), 0);
-+	}
-+	return 0;
-+}
-+#endif
-+
- static long
- madvise_vma(struct vm_area_struct *vma, struct vm_area_struct **prev,
- 		unsigned long start, unsigned long end, int behavior)
-@@ -307,6 +339,10 @@ SYSCALL_DEFINE3(madvise, unsigned long,
- 	int write;
- 	size_t len;
+-	if (PageAnon(page)) {
++	if (PageHWPoison(page) && !(flags & TTU_IGNORE_HWPOISON)) {
++		if (PageAnon(page))
++			dec_mm_counter(mm, anon_rss);
++		else if (!is_migration_entry(pte_to_swp_entry(*pte)))
++			dec_mm_counter(mm, file_rss);
++		set_pte_at(mm, address, pte,
++				swp_entry_to_pte(make_hwpoison_entry(page)));
++	} else if (PageAnon(page)) {
+ 		swp_entry_t entry = { .val = page_private(page) };
  
-+#ifdef CONFIG_MEMORY_FAILURE
-+	if (behavior == MADV_HWPOISON)
-+		return madvise_hwpoison(start, start+len_in);
-+#endif
- 	if (!madvise_behavior_valid(behavior))
- 		return error;
- 
-Index: linux/include/asm-generic/mman-common.h
+ 		if (PageSwapCache(page)) {
+Index: linux/include/linux/rmap.h
 ===================================================================
---- linux.orig/include/asm-generic/mman-common.h
-+++ linux/include/asm-generic/mman-common.h
-@@ -34,6 +34,7 @@
- #define MADV_REMOVE	9		/* remove these pages & resources */
- #define MADV_DONTFORK	10		/* don't inherit across fork */
- #define MADV_DOFORK	11		/* do inherit across fork */
-+#define MADV_HWPOISON	12		/* poison a page for testing */
+--- linux.orig/include/linux/rmap.h
++++ linux/include/linux/rmap.h
+@@ -93,6 +93,7 @@ enum ttu_flags {
  
- /* compatibility flags */
- #define MAP_FILE	0
+ 	TTU_IGNORE_MLOCK = (1 << 8),	/* ignore mlock */
+ 	TTU_IGNORE_ACCESS = (1 << 9),	/* don't age */
++	TTU_IGNORE_HWPOISON = (1 << 10),/* corrupted page is recoverable */
+ };
+ #define TTU_ACTION(x) ((x) & TTU_ACTION_MASK)
+ 
