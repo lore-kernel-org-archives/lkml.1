@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbZFDMvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757615AbZFDMxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757845AbZFDMvo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 08:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbZFDMvf
+	id S1757615AbZFDMxo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 08:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbZFDMxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 08:51:35 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:49324 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751692AbZFDMve (ORCPT
+	Thu, 4 Jun 2009 08:53:36 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:6163 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754395AbZFDMxf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 08:51:34 -0400
-Date: Thu, 4 Jun 2009 13:51:19 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
-Message-ID: <20090604125119.GB24491@flint.arm.linux.org.uk>
-Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <200905282104.55818.arnd@arndb.de> <200906011111.28521.arnd@arndb.de> <20090604165703N.fujita.tomonori@lab.ntt.co.jp> <200906041235.34686.arnd@arndb.de>
+	Thu, 4 Jun 2009 08:53:35 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906041235.34686.arnd@arndb.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090603115611.6bbbaf55.akpm@linux-foundation.org>
+References: <1244041518-32229-1-git-send-email-ext-denis.2.karpov@nokia.com> 
+	<20090603115611.6bbbaf55.akpm@linux-foundation.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Thu, 4 Jun 2009 14:53:21 +0200
+Message-ID: <ac3eb2510906040553j294f1015wfb7deb4b4fc63afc@mail.gmail.com>
+Subject: Re: [PATCH 0/4] FS: userspace notification of errors
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Denis Karpov <ext-denis.2.karpov@nokia.com>, axboe@kernel.dk,
+       hirofumi@mail.parknet.co.jp, linux-ext4@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       adrian.hunter@nokia.com, artem.bityutskiy@nokia.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 12:35:34PM +0000, Arnd Bergmann wrote:
-> static inline int
-> dma_supported(struct device *dev, u64 mask)
-> {
-> 	/*
-> 	 * dma_supported means that dma_alloc_{non,}coherent
-> 	 * will succeed in finding an addressable page.
-> 	 */
-> 	u64 zone_dma_max_pfn;
-> 	struct pgdat *pgdat;
-> 	struct zone *zone;
-> 
-> 	for_each_online_pgdat(pgdat) {
-> 		/* the first zone on each node is most likely to fit in the mask */
-> 		zone = pgdat->node_zones[0];
-> 		if (populated_zone(zone) {
-> 			max_dma_pfn = zone->zone_start_pfn + zone->spanned_pages);
-> 			/* max_dma_pfn is actually constant, we could store it
-> 			    somewhere instead of looking it up every time. */
-> 			if (mask < (max_dma_pfn << PAGE_SHIFT))
+On Wed, Jun 3, 2009 at 20:56, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed,  3 Jun 2009 18:05:14 +0300 Denis Karpov <ext-denis.2.karpov@nokia.com> wrote:
 
-And here we go promoting dma-mask-is-not-a-mask-but-a-limit (which I
-brought up in the KS thread on linux-arch.)
+> hm, I'm uncertain on the desirability or otherwise of the overall feature.
+>
+> Are there users or distros or device manufacturers asking for this?
+> Where did the requirement come from?
 
-It's fine if your DMA-able memory starts at physical address 0 and ends
-somewhere else, but this is no longer the case with embedded platforms.
-As pointed out in the other thread, there are platforms which have two
-separate banks of memory, the one at the lower physical address is not
-DMA capable.
+I think we really need something like this to propagate such errors to
+userpace. Printing something to the kernel log is not an useful
+interface in any way. But I don't think we want it that way, not with
+uevents, not with sysfs, and not tied to block devices.
 
-This means that treating the DMA mask as a limit does not work for these
-platforms (and, sometimes, treating it as a real mask also doesn't work.)
+Uevents should not be used for error reporting, unless it is well
+defined within the _device_ context, which a filesystem on top of a
+blockdev isn't. We could argue to get events for bad blocks of a
+device, but I don't think we want filesystem related stuff ever in
+device uevents. For the same reason, there should be no unconditional
+fs-specific sysfs file below a block device.
 
-A good step forward would be to get a concensus on this stupid DMA mask
-thing.  Is it a _mask_, or is it a _limit_?  If it's a mask then let's
-start treating it as such throughout the kernel code.  If it's a limit,
-let's rename the damned thing so everyone knows that.
+Block device interfaces for filesystems can not handle device-less
+virtual mounts which are common these days. There is no direct
+relation from the device to the filesystem - so this would only work
+for simple direct mounts, which isn't sufficient for a higher-level
+interface like this.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+And I don't think we want several event sources for the same thing,
+uevents _and_ pollable sysfs files.
+
+We already raise events on /proc/self/mountinfo when the mount tree
+changes, I guess that's where fs specific stuff belongs, and it will
+work with all kind of filesystem setups, regardless of the devices
+below it. This is also the established interface for flags and options
+and the current state of the filesystem, and does not mix filesystem
+options into block device interfaces.
+
+/proc/self/mountinfo could also work properly with namespaces which
+might have different meaning for a device in a different namespace.
+
+Thanks,
+Kay
