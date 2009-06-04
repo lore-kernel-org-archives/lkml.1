@@ -1,111 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbZFDHei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbZFDHhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757218AbZFDHei (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 03:34:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbZFDHea
+	id S1754554AbZFDHhh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 03:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbZFDHha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 03:34:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52249 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751153AbZFDHe3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 03:34:29 -0400
-Date: Thu, 4 Jun 2009 07:33:49 GMT
-From: tip-bot for Arnaldo Carvalho de Melo <acme@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, acme@redhat.com,
-       hpa@zytor.com, mingo@redhat.com, eranian@googlemail.com, efault@gmx.de,
-       peterz@infradead.org, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, eranian@googlemail.com,
-       peterz@infradead.org, efault@gmx.de, mtosatti@redhat.com,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf report: Fix rbtree bug
-Message-ID: <tip-a4c43beaff0fe6c83aa2505dce8ffe65db8e0a33@git.kernel.org>
-Git-Commit-ID: a4c43beaff0fe6c83aa2505dce8ffe65db8e0a33
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 04 Jun 2009 07:33:50 +0000 (UTC)
+	Thu, 4 Jun 2009 03:37:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54751 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751650AbZFDHh3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 03:37:29 -0400
+Date: Thu, 4 Jun 2009 00:37:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Minkyu Kang <mk7.kang@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       kyungmin.park@samsung.com, Anton Vorontsov <cbou@mail.ru>
+Subject: Re: [PATCH] add MAX17040 Fuel Gauge driver
+Message-Id: <20090604003717.b6941159.akpm@linux-foundation.org>
+In-Reply-To: <4A25DB40.6010904@samsung.com>
+References: <4A25DB40.6010904@samsung.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a4c43beaff0fe6c83aa2505dce8ffe65db8e0a33
-Gitweb:     http://git.kernel.org/tip/a4c43beaff0fe6c83aa2505dce8ffe65db8e0a33
-Author:     Arnaldo Carvalho de Melo <acme@redhat.com>
-AuthorDate: Wed, 3 Jun 2009 23:02:33 -0300
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 4 Jun 2009 09:27:21 +0200
+On Wed, 03 Jun 2009 11:09:04 +0900 Minkyu Kang <mk7.kang@samsung.com> wrote:
 
-perf report: Fix rbtree bug
+> The MAX17040 is a I2C interfaced Fuel Gauge systems for lithium-ion batteries
+> This patch adds support the MAX17040 Fuel Gauge
+> 
+> Signed-off-by: Minkyu Kang <mk7.kang@samsung.com>
+> ---
+>  drivers/power/Kconfig            |    8 +
+>  drivers/power/Makefile           |    3 +-
+>  drivers/power/max17040_battery.c |  304 ++++++++++++++++++++++++++++++++++++++
+>  include/linux/max17040_battery.h |   19 +++
 
-Ingo Molnar reported:
+Please Cc Anton Vorontsov <cbou@mail.ru> on drivers/power patches.
 
-> FYI, i just got this crash (segfault) in perf report after
-> collecting a long profile from Xorg:
 >
-> Starting program: /home/mingo/tip/Documentation/perf_counter/perf report
-> [Thread debugging using libthread_db enabled]
-> Detaching after fork from child process 20008.
-> [New Thread 0x7f92fd62a6f0 (LWP 20005)]
+> ...
 >
-> Program received signal SIGSEGV, Segmentation fault.
-> 0x000000000041031a in __rb_erase_color (node=0x142c090, parent=0x0,
-> root=0x881918)
->     at util/rbtree.c:143
-> 143			if (parent->rb_left == node)
+> +static int __devinit max17040_probe(struct i2c_client *client,
+> +			const struct i2c_device_id *id)
+> +{
+> +	struct max17040_chip *chip;
+> +	int ret;
+> +
+> +	chip = kzalloc(sizeof(struct max17040_chip), GFP_KERNEL);
+> +	if (!chip)
+> +		return -ENOMEM;
+> +
+> +	chip->client = client;
+> +	pdata = client->dev.platform_data;
+> +
+> +	i2c_set_clientdata(client, chip);
+> +	max17040 = chip;
+> +
+> +	max17040_reset();
+> +
+> +	max17040_get_version();
+> +
+> +	INIT_DELAYED_WORK_DEFERRABLE(&chip->work, max17040_work);
+> +	schedule_delayed_work(&chip->work, MAX17040_DELAY);
+> +
+> +	bat_ps.properties = max17040_battery_props;
+> +	bat_ps.num_properties = ARRAY_SIZE(max17040_battery_props);
+> +
+> +	ret = power_supply_register(&client->dev, &bat_ps);
+> +	if (ret) {
+> +		dev_err(&max17040->client->dev,
+> +				"failed: power supply register\n");
+> +		kfree(chip);
+> +		max17040 = NULL;
+> +		i2c_set_clientdata(client, NULL);
+> +		return -1;
 
-It was a problem introduced in this cset:
+This leaves the delayed work still pending.
 
- perf report: Fix comm sorting - 8229289b607682f90b946ad2c319526303c17700
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int __devexit max17040_remove(struct i2c_client *client)
+> +{
+> +	struct max17040_chip *chip = i2c_get_clientdata(client);
+> +
+> +	kfree(chip);
+> +	max17040 = NULL;
+> +	i2c_set_clientdata(client, NULL);
+> +	power_supply_unregister(&bat_ps);
+> +	return 0;
+> +}
 
-This patch should fix it.
+Shouldn't max17040_remove() also cancel the delayed_work?
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Stephane Eranian <eranian@googlemail.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> +static int max17040_suspend(struct i2c_client *client,
+> +		pm_message_t state)
+> +{
+> +	struct max17040_chip *chip = i2c_get_clientdata(client);
+> +
+> +	cancel_delayed_work(&chip->work);
+> +	return 0;
+> +}
+> +
+> +static int max17040_resume(struct i2c_client *client)
+> +{
+> +	struct max17040_chip *chip = i2c_get_clientdata(client);
+> +
+> +	schedule_delayed_work(&chip->work, MAX17040_DELAY);
+> +	return 0;
+> +}
 
-
----
- Documentation/perf_counter/builtin-report.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index 6003cc3..86f23f0 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -699,17 +699,18 @@ static void output__resort(void)
- {
- 	struct rb_node *next;
- 	struct hist_entry *n;
-+	struct rb_root *tree = &hist;
- 
- 	if (sort__need_collapse)
--		next = rb_first(&collapse_hists);
--	else
--		next = rb_first(&hist);
-+		tree = &collapse_hists;
-+
-+	next = rb_first(tree);
- 
- 	while (next) {
- 		n = rb_entry(next, struct hist_entry, rb_node);
- 		next = rb_next(&n->rb_node);
- 
--		rb_erase(&n->rb_node, &hist);
-+		rb_erase(&n->rb_node, tree);
- 		output__insert_entry(n);
- 	}
- }
