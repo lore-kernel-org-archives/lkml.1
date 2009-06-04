@@ -1,70 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbZFDWmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753273AbZFDWnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754837AbZFDWmv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 18:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZFDWmm
+	id S1753273AbZFDWnZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 18:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbZFDWnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 18:42:42 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:17083 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752782AbZFDWml (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 18:42:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=eQ4Mn5H+Lh1VIrRe39WzCDGwjiDJxO1fcPcI981BrAMwBvcCJD7okzAFNaxRdOClzR
-         p//9Wkcqc9NoDKQIG2EALA/iJ7og3t82Q/ISjyRw6koV6K86+t8iC0xEfY3iJ/cePztN
-         QMSD4IuJoWPIY/n32ggqw81iuhz+s4uJwgbbk=
-Date: Fri, 5 Jun 2009 02:42:39 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, xemul@parallels.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       dave@linux.vnet.ibm.com, mingo@elte.hu, linux-fsdevel@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 1/9] exec_path 1/9: introduce ->exec_path and switch
-	/proc/*/exe
-Message-ID: <20090604224239.GA10666@x200.localdomain>
-References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org> <20090531215427.GA29534@x200.localdomain> <20090531151953.8f8b14b5.akpm@linux-foundation.org> <20090603230422.GB853@x200.localdomain> <20090604075532.GU9285@us.ibm.com> <alpine.LFD.2.01.0906040803410.4880@localhost.localdomain> <20090604213033.GZ9285@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090604213033.GZ9285@us.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 4 Jun 2009 18:43:14 -0400
+Received: from sh.osrg.net ([192.16.179.4]:59959 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753376AbZFDWnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 18:43:13 -0400
+Date: Fri, 5 Jun 2009 07:43:01 +0900
+To: just.for.lkml@googlemail.com
+Cc: jens.axboe@oracle.com, fujita.tomonori@lab.ntt.co.jp, bharrosh@panasas.com,
+       hancockrwd@gmail.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: sata_sil24 0000:04:00.0: DMA-API: device driver frees DMA sg
+ list 	with different entry count [map count=13] [unmap count=10]
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <64bb37e0906041107i18faee5etd6dbb05838740bed@mail.gmail.com>
+References: <20090604164418F.fujita.tomonori@lab.ntt.co.jp>
+	<20090604075309.GU11363@kernel.dk>
+	<64bb37e0906041107i18faee5etd6dbb05838740bed@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090605074246R.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 05 Jun 2009 07:43:03 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 02:30:33PM -0700, Matt Helsley wrote:
-> On Thu, Jun 04, 2009 at 08:07:23AM -0700, Linus Torvalds wrote:
-> > On Thu, 4 Jun 2009, Matt Helsley wrote:
-> > > 
-> > > Doesn't this pin the vfs mount of the executable for the lifetime of
-> > > the task?
-> > 
-> > Well, yes, but so does the current code.
-> 
-> Not quite. The current code pins it as long as the corresponding VMAs
-> are mapped -- not for the lifetime of the task.
-> 
-> > Sure, in _theory_ it can be a non-mmap executable (maybe people still have 
-> > those old OMAGIC a.out executables), and in _theory_ you could unmap the 
-> > executable even if it was originally mmap'ed, but neither of those is 
-> > exactly common, are they?
-> 
-> Not common to my knowledge, no.
-> 
-> > 
-> > So in practice, nothing has changed wrt lifetime of the executable.
-> 
-> Almost all of the time, yes.
+On Thu, 4 Jun 2009 20:07:36 +0200
+Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
 
-And year ago executable wasn't pinned at all, so if you're opposing
-widening of time executable is pinned, you should revert your own patch
-which introduced it in first place.
+> On Thu, Jun 4, 2009 at 9:53 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
+> > On Thu, Jun 04 2009, FUJITA Tomonori wrote:
+> >> On Thu, 04 Jun 2009 10:15:14 +0300
+> >> Boaz Harrosh <bharrosh@panasas.com> wrote:
+> >>
+> >> > On 06/04/2009 09:33 AM, FUJITA Tomonori wrote:
+> >> > > On Thu, 4 Jun 2009 08:12:34 +0200
+> >> > > Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+> >> > >
+> >> > >> On Thu, Jun 4, 2009 at 2:02 AM, FUJITA Tomonori
+> >> > >> <fujita.tomonori@lab.ntt.co.jp> wrote:
+> >> > >>> On Wed, 3 Jun 2009 21:30:32 +0200
+> >> > >>> Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+> >> > >>>> Still happens with 2.6.30-rc8 (see trace at the end of the email)
+> >> > >>>>
+> >> > >>>> As orig_n_elem is only used two times in libata-core.c I suspected a
+> >> > >>>> corruption of the qc->sg, but adding checks for this did not trigger.
+> >> > >>>> So I looked into lib/dma-debug.c.
+> >> > >>>> It seems add_dma_entry() does not protect against adding the same
+> >> > >>>> entry twice.
+> >> > >>> Do you mean that add_dma_entry() doesn't protect against adding a new
+> >> > >>> entry identical to the existing entry, right?
+> >> > >> Yes, as I read the hash bucket code in lib/dma-debug.c a second entry
+> >> > >> from the same device and the same address will just be added to the
+> >> > >> list and on unmap it will always return the first entry.
+> >> > >
+> >> > > It means that two different DMA operations will be performed against
+> >> > > the same dma addresss on the same device at the same time. It doesn't
+> >> > > happen unless there is a bug in a driver, an IOMMU or somewhere, as I
+> >> > > wrote in the previous mail.
+> >> > >
+> >> >
+> >> > What about the draining buffers used by libata. Are they not the same buffer
+> >> > for all devices for all requests?
+> >>
+> >> I'm not sure if the drain buffer is used like that. But is there
+> >> easier ways to see the same buffer; e.g. sending the same buffer twice
+> >> with DIO?
+> >
+> > I'm pretty sure we discussed this some months ago, the intel iommu
+> > driver had a similar bug iirc. Lets say you want to write the same 4kb
+> > block to two spots on the disk. You prepare and submit that with
+> > O_DIRECT and using aio. On a device with NCQ, that could easily map the
+> > same page twice. Or, perhaps more likely, doing 512b writes and not
+> > getting all of them merged.
+> 
+> I have a even better theory: RAID1
+> There are two disk on this sil24 controller that are uses as an RAID1
+> to form my root partition.
+> 
+> That also fits the pattern of the very large number of duplicate dma
+> mappings (as each data block needs to be written twice), but that the
+> DMA-API debug check only triggers during heavier load: Most of the
+> time both drives are in sync and so the write request should be
+> idential, so it does not matter which entry gets returned from the
+> hash bucket.
+> But when I run 'updatedb' to trigger this error the read request
+> disturb the pattern and the write requests also become asymetric.
+> 
+> >> As I wrote, I assume that he uses GART IOMMU;
+> 
+> [    0.010000] Checking aperture...
+> [    0.010000] No AGP bridge found
+> [    0.010000] Node 0: aperture @ a7f0000000 size 32 MB
+> [    0.010000] Aperture beyond 4GB. Ignoring.
+> [    0.010000] Your BIOS doesn't leave a aperture memory hole
+> [    0.010000] Please enable the IOMMU option in the BIOS setup
+> (sadly my BIOS does not have such an option...)
+> [    0.010000] This costs you 64 MB of RAM
+> [    0.010000] Mapping aperture over 65536 KB of RAM @ 20000000
+> [    0.010000] Memory: 4057512k/4718592k available (4674k kernel code,
+> 524868k absent, 136212k reserved
+> , 2520k data, 1172k init)
+> [snip]
+> [    1.304386] DMA-API: preallocated 32768 debug entries
+> [    1.309439] DMA-API: debugging enabled by kernel config
+> [    1.310123] PCI-DMA: Disabling AGP.
+> [    1.313711] PCI-DMA: aperture base @ 20000000 size 65536 KB
+> [    1.320002] PCI-DMA: using GART IOMMU.
+> [    1.323763] PCI-DMA: Reserving 64MB of IOMMU area in the AGP aperture
+> [    1.330640] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
+> [    1.340007] hpet0: 3 comparators, 32-bit 25.000000 MHz counter
 
-->exec_path merely makes /proc/*/exe very unheuristical (binfmt loader
-decides, nothing else) and suitable for other code as demonstrated.
+You use GART IOMMU. So I thought that you shouldn't hit this problem
+because an IOMMU gives an unique dma address per dma mapping... but I
+forgot one really important thing about GART, it's not real IOMMU
+hardware. It does address remapping only when necessary (an address
+can be accessed by a device). It's possible that you see multiple DMA
+transfers performed against the same dma address on one device at the
+same time.
+
+
+> >> it allocates an unique
+> >> dma address per dma mapping operation.
+> >>
+> >> However, dma-debug is broken wrt this, I guess.
+> >
+> > Seems so.
+> 
+> Yes, as the md code for RAID1 has a very good cause to send the same
+> memory page twice to this device.
+
+Yeah, now it's clear for me why you hit this bug.
+
+I'm not sure there is any simple way to fix dma-debug wrt this. I
+think that it's better to just disable it since 2.6.30 will be
+released shortly.
