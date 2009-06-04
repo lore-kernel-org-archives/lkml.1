@@ -1,72 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757615AbZFDMxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbZFDMx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757615AbZFDMxo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 08:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbZFDMxg
+	id S1757412AbZFDMx7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 08:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbZFDMxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 08:53:36 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:6163 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754395AbZFDMxf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 08:53:35 -0400
+	Thu, 4 Jun 2009 08:53:48 -0400
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:42698 "EHLO h5.dl5rb.org.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755878AbZFDMxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 08:53:38 -0400
+Date: Thu, 4 Jun 2009 13:46:31 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-mips <linux-mips@linux-mips.org>,
+       Michael Abbott <michael@araneidae.co.uk>
+Subject: Re: [PATCH 4/6] headers_check fix: mips, ioctl.h
+Message-ID: <20090604124631.GB19459@linux-mips.org>
+References: <1244118232.5172.26.camel@ht.satnam> <1244118476.5172.29.camel@ht.satnam> <1244118599.5172.31.camel@ht.satnam> <1244118714.5172.33.camel@ht.satnam> <1244118949.5172.37.camel@ht.satnam>
 MIME-Version: 1.0
-In-Reply-To: <20090603115611.6bbbaf55.akpm@linux-foundation.org>
-References: <1244041518-32229-1-git-send-email-ext-denis.2.karpov@nokia.com> 
-	<20090603115611.6bbbaf55.akpm@linux-foundation.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Thu, 4 Jun 2009 14:53:21 +0200
-Message-ID: <ac3eb2510906040553j294f1015wfb7deb4b4fc63afc@mail.gmail.com>
-Subject: Re: [PATCH 0/4] FS: userspace notification of errors
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Denis Karpov <ext-denis.2.karpov@nokia.com>, axboe@kernel.dk,
-       hirofumi@mail.parknet.co.jp, linux-ext4@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       adrian.hunter@nokia.com, artem.bityutskiy@nokia.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244118949.5172.37.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 3, 2009 at 20:56, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Wed,  3 Jun 2009 18:05:14 +0300 Denis Karpov <ext-denis.2.karpov@nokia.com> wrote:
+On Thu, Jun 04, 2009 at 06:05:49PM +0530, Jaswinder Singh Rajput wrote:
 
-> hm, I'm uncertain on the desirability or otherwise of the overall feature.
->
-> Are there users or distros or device manufacturers asking for this?
-> Where did the requirement come from?
+> Make ioctl.h compatible with asm-generic/ioctl.h and userspace
+> 
+> fix the following 'make headers_check' warning:
+> 
+>   usr/include/asm-mips/ioctl.h:64: extern's make no sense in userspace
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-I think we really need something like this to propagate such errors to
-userpace. Printing something to the kernel log is not an useful
-interface in any way. But I don't think we want it that way, not with
-uevents, not with sysfs, and not tied to block devices.
+Thanks, applied.
 
-Uevents should not be used for error reporting, unless it is well
-defined within the _device_ context, which a filesystem on top of a
-blockdev isn't. We could argue to get events for bad blocks of a
-device, but I don't think we want filesystem related stuff ever in
-device uevents. For the same reason, there should be no unconditional
-fs-specific sysfs file below a block device.
-
-Block device interfaces for filesystems can not handle device-less
-virtual mounts which are common these days. There is no direct
-relation from the device to the filesystem - so this would only work
-for simple direct mounts, which isn't sufficient for a higher-level
-interface like this.
-
-And I don't think we want several event sources for the same thing,
-uevents _and_ pollable sysfs files.
-
-We already raise events on /proc/self/mountinfo when the mount tree
-changes, I guess that's where fs specific stuff belongs, and it will
-work with all kind of filesystem setups, regardless of the devices
-below it. This is also the established interface for flags and options
-and the current state of the filesystem, and does not mix filesystem
-options into block device interfaces.
-
-/proc/self/mountinfo could also work properly with namespaces which
-might have different meaning for a device in a different namespace.
-
-Thanks,
-Kay
+   Ralf
