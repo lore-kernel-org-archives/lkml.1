@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbZFDJl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754392AbZFDJy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757193AbZFDJl3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 05:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbZFDJlW
+	id S1754392AbZFDJy0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 05:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbZFDJyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 05:41:22 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:25848
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751153AbZFDJlV (ORCPT
+	Thu, 4 Jun 2009 05:54:18 -0400
+Received: from n22a.bullet.mail.mud.yahoo.com ([68.142.207.188]:39064 "HELO
+	n22a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751107AbZFDJyR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 05:41:21 -0400
-Message-ID: <4A2796C0.6080702@panasas.com>
-Date: Thu, 04 Jun 2009 12:41:20 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Thu, 4 Jun 2009 05:54:17 -0400
+X-Greylist: delayed 370 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Jun 2009 05:54:17 EDT
+X-Yahoo-Newman-Id: 836652.3816.bm@omp402.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=I7lFrrwAFpMeo3rLFCQgI6uw7gIdFi8a7hjCbDeli9ASWr+gvYmSPv8an52EouEUwzRGgGquiu2Vexbvbdz6YHH5wUyZpNo7o0mgSmsLJf09TlHyrTeDgUugzMY3zFtG/vZWluJDMLP+mV9PMh2TEAFFEvCyvmUVmxRZtoAw4fY=  ;
+X-YMail-OSG: B.HtUv4VM1lVZNH_qq4j0GQtC_7NN.ZrHjFhh.f6_Ncoe_JkmjstChtzfc4vm4rN9kp.b.rXW0igN1A8G5MM.d9iXGBiPC1Pam0zW4S5X55O69jxFuHh28zxptYv6BKeFLZBVRQwfakzMXNIXLpvaLBTOSgUI.QoryQ7iGB4Hl0FKeliQlUZtz0at4KcE95IKlEEkElRzEwGIfaDHwlamtIPX4AIC0BanJPCW6fkDel.OLrGrZQ0PJ7_2pLDx4XnpJ9HDJ3VlFVu8_g-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Subject: Re: [PATCH] gpio sysfs: add a "toggle" value
+Date: Thu, 4 Jun 2009 02:48:07 -0700
+User-Agent: KMail/1.9.10
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <1244017019-28163-1-git-send-email-vapier@gentoo.org> <200906040215.48264.david-b@pacbell.net> <8bd0f97a0906040220k6f56b944n733a2b3469faaccb@mail.gmail.com>
+In-Reply-To: <8bd0f97a0906040220k6f56b944n733a2b3469faaccb@mail.gmail.com>
 MIME-Version: 1.0
-To: Artem Bityutskiy <dedekind@infradead.org>
-CC: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: Re: [PATCH v2 04/17] EXOFS: do not manipulate s_dirt directly
-References: <1244112114-23144-1-git-send-email-dedekind@infradead.org> <1244112114-23144-5-git-send-email-dedekind@infradead.org>
-In-Reply-To: <1244112114-23144-5-git-send-email-dedekind@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Jun 2009 09:41:23.0926 (UTC) FILETIME=[9FB56F60:01C9E4F8]
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200906040248.07922.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/04/2009 01:41 PM, Artem Bityutskiy wrote:
-> From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+On Thursday 04 June 2009, Mike Frysinger wrote:
+> > I don't like the idea of embedding any kind of interpreter
+> > in the sysfs interface, but that's the direction you seem
+> > to be heading ...
 > 
-> ... use new VFS helpers instead.
-> 
-> Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-> Cc: Boaz Harrosh <bharrosh@panasas.com>
+> i dont view the userspace GPIO interface as a simple "i want to wiggle
+> pins for fun and testing".  i see it as a dynamic method for building
+> userspace drivers for simple devices.
 
-Acked-by: Boaz Harrosh <bharrosh@panasas.com>
-> ---
->  fs/exofs/inode.c |    2 +-
->  fs/exofs/super.c |    4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/fs/exofs/inode.c b/fs/exofs/inode.c
-> index ba8d9fa..80d3d03 100644
-> --- a/fs/exofs/inode.c
-> +++ b/fs/exofs/inode.c
-> @@ -1066,7 +1066,7 @@ struct inode *exofs_new_inode(struct inode *dir, int mode)
->  
->  	sbi = sb->s_fs_info;
->  
-> -	sb->s_dirt = 1;
-> +	mark_sb_dirty(sb);
->  	inode->i_uid = current->cred->fsuid;
->  	if (dir->i_mode & S_ISGID) {
->  		inode->i_gid = dir->i_gid;
-> diff --git a/fs/exofs/super.c b/fs/exofs/super.c
-> index 49e16af..9cf9738 100644
-> --- a/fs/exofs/super.c
-> +++ b/fs/exofs/super.c
-> @@ -241,7 +241,7 @@ static void exofs_write_super(struct super_block *sb)
->  		EXOFS_ERR("exofs_write_super: exofs_sync_op failed.\n");
->  		goto out;
->  	}
-> -	sb->s_dirt = 0;
-> +	mark_sb_clean(sb);
->  
->  out:
->  	if (or)
-> @@ -262,7 +262,7 @@ static void exofs_put_super(struct super_block *sb)
->  
->  	lock_kernel();
->  
-> -	if (sb->s_dirt)
-> +	if (is_sb_dirty(sb))
->  		exofs_write_super(sb);
->  
->  	/* make sure there are no pending commands */
+I don't.  I see it as an adjunct to real drivers.  Or maybe
+we just differ on what "simple" means here.
+
+
+> as such, having a very simple 
+> "command language" for optimizing the interaction provides a pretty
+> good trade off between kernel complexity and lowering overhead imo.
+
+If that's what you want, why don't you write a custom driver
+that provides the kind of command interpreter you want?
 
