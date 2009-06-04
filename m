@@ -1,60 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbZFDISD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbZFDI1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbZFDISD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 04:18:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZFDIRs
+	id S1757289AbZFDI1Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 04:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbZFDI1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 04:17:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56897 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751945AbZFDIRr (ORCPT
+	Thu, 4 Jun 2009 04:27:13 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:62466 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751080AbZFDI1M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 04:17:47 -0400
-Date: Thu, 4 Jun 2009 01:17:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] console: make blank timeout value a boot option
-Message-Id: <20090604011740.5879732c.akpm@linux-foundation.org>
-In-Reply-To: <20090604074407.GX26148@buzzloop.caiaq.de>
-References: <1243953993-18608-1-git-send-email-daniel@caiaq.de>
-	<20090604002325.5b1284de.akpm@linux-foundation.org>
-	<20090604074407.GX26148@buzzloop.caiaq.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 4 Jun 2009 04:27:12 -0400
+Message-ID: <4A27853F.8060109@linux.vnet.ibm.com>
+Date: Thu, 04 Jun 2009 10:26:39 +0200
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, andi@firstfloor.org, ying.huang@intel.com,
+       W.Li@Sun.COM, michaele@au1.ibm.com, mingo@elte.hu,
+       heicars2@linux.vnet.ibm.com, mschwid2@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
+References: <20090602114359.129247921@linux.vnet.ibm.com> <20090602114402.951631599@linux.vnet.ibm.com> <20090602150324.c706b1d2.akpm@linux-foundation.org> <4A266546.5080601@linux.vnet.ibm.com>	<4A26961E.7040207@linux.vnet.ibm.com> <20090603143923.a5387555.akpm@linux-foundation.org>
+In-Reply-To: <20090603143923.a5387555.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Jun 2009 09:44:09 +0200 Daniel Mack <daniel@caiaq.de> wrote:
-
-> On Thu, Jun 04, 2009 at 12:23:25AM -0700, Andrew Morton wrote:
-> > > --- a/Documentation/kernel-parameters.txt
-> > > +++ b/Documentation/kernel-parameters.txt
-> > > @@ -545,6 +545,10 @@ and is between 256 and 4096 characters. It is defined in the file
-> > >  			console=brl,ttyS0
-> > >  		For now, only VisioBraille is supported.
-> > >  
-> > > +	consoleblank=	[KNL] The console blank (screen saver) timeout in
-> > > +			seconds. Defaults to 10*60 = 10mins. A value of 0
-> > > +			disables the blank timer.
-> > > +
-> > 
-> > It would be better to make this alterable at runtime, rather than at
-> > boot time.  Perhaps another VT ioctl.
+Andrew Morton wrote:
+> On Wed, 03 Jun 2009 17:26:22 +0200
+> Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
 > 
-> That's already possible - there is an ioctl for that. It's just not
-> configurable at boot time, and that occured to be very annoying when
-> developing systems that won't fully boot up for >10mins. You have no way
-> to wake up the console then.
+>>> Right - the sscanf would make sense if kernel parameters could contain 
+>>> spaces (in that case it catches <number><blanks><garbage> input) which 
+>>> it can't so strtoul() would indeed make more sense. I'll prepare an 
+>>> updated patch and send it out later today.
+>> See below for the updated patch that uses strtoul instead of sscanf.
+>> This patch replaces kernel-constructor-support.patch in the -mm tree:
+> 
+> umm, no it doesn't.  I get the below incremental patch, against
+> gcov-add-gcov-profiling-infrastructure.patch:
 
-Oh.  Your changelog sucked :)
+Ah, right. That answers my question whether further changes should be 
+posted as complete or incremental patches.
 
-> Is there any concern why that shouldn't be a kernel option?
+> --- a/kernel/gcov/fs.c~gcov-add-gcov-profiling-infrastructure-update
+> +++ a/kernel/gcov/fs.c
+> @@ -70,15 +70,8 @@ static int gcov_persist = 1;
+> 
+>  static int __init gcov_persist_setup(char *str)
+>  {
+> -	int val;
+> -	char delim;
+> -
+> -	if (sscanf(str, "%d %c", &val, &delim) != 1) {
+> -		pr_warning("invalid gcov_persist parameter '%s'\n", str);
+> -		return 0;
+> -	}
+> -	pr_info("setting gcov_persist to %d\n", val);
+> -	gcov_persist = val;
+> +	gcov_persist = simple_strtoul(str, NULL, 0);
+> +	pr_info("setting gcov_persist to %d\n", gcov_persist);
+> 
+>  	return 1;
+>  }
+> _
+> 
+> arguably we should use strict_strtoul(), but the kernel is a lot less
+> fussy about boot parameters than it is with sysfs writes, etc.  If you
+> fat-finger your grub.conf, you lose and we don't tell you.
 
-I suppose it makes sense.  You really have systems which take more than
-ten minutes to start running initscripts?  Poor you.
+Agreed. Which leads me to another question: is it ok to post many small 
+patches for -mm for minor changes like this one (simple_ -> strict_) or 
+do you rather prefer these to be collected into somewhat larger patches 
+that fix multiple minor issues?
 
-Please resend with a more complete description?
