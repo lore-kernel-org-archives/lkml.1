@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757889AbZFDMFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbZFDMTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757889AbZFDMFk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 08:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757326AbZFDMFD
+	id S1754877AbZFDMTZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 08:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbZFDMTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 08:05:03 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33670 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757648AbZFDMFA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 08:05:00 -0400
-Date: Thu, 4 Jun 2009 12:04:39 GMT
-From: tip-bot for Steven Whitehouse <swhiteho@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, swhiteho@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, rostedt@goodmis.org, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, swhiteho@redhat.com,
-       linux-kernel@vger.kernel.org, rostedt@goodmis.org, tglx@linutronix.de
-In-Reply-To: <1243868015.29604.542.camel@localhost.localdomain>
-References: <1243868015.29604.542.camel@localhost.localdomain>
-Subject: [tip:tracing/core] tracing: add exports to use __print_symbolic and __print_flags from a module
-Message-ID: <tip-ec081ddc3d90aab35bc0de19a358b964978837cf@git.kernel.org>
-Git-Commit-ID: ec081ddc3d90aab35bc0de19a358b964978837cf
-X-Mailer: tip-git-log-daemon
+	Thu, 4 Jun 2009 08:19:17 -0400
+Received: from ns1.siteground150.com ([67.15.243.6]:58158 "EHLO
+	serv01.siteground150.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753279AbZFDMTR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 08:19:17 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 04 Jun 2009 12:04:39 +0000 (UTC)
+Date: Thu, 04 Jun 2009 07:19:10 -0500
+From: <lkml@reliableembeddedsystems.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Robert Berger <robert.berger@reliableembeddedsystems.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: http://patchwork.kernel.org/patch/26483/ broke my system boot
+In-Reply-To: <20090604073240.GC7504@balbir.in.ibm.com>
+References: <20090603143944.GF29326@balbir.in.ibm.com> <20090603194526.GG3100@uranus.ravnborg.org> <20090604063144.GB7504@balbir.in.ibm.com> <21fac393599ff68ff8edab1bade68ab2@reliableembeddedsystems.com> <20090604073240.GC7504@balbir.in.ibm.com>
+Message-ID: <bf880e5a7d70d6f19345403cd1560e62@reliableembeddedsystems.com>
+User-Agent: RoundCube Webmail/0.2
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground150.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - reliableembeddedsystems.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ec081ddc3d90aab35bc0de19a358b964978837cf
-Gitweb:     http://git.kernel.org/tip/ec081ddc3d90aab35bc0de19a358b964978837cf
-Author:     Steven Whitehouse <swhiteho@redhat.com>
-AuthorDate: Mon, 1 Jun 2009 15:53:35 +0100
-Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Mon, 1 Jun 2009 23:25:29 -0400
+Hi Balbir,
 
-tracing: add exports to use __print_symbolic and __print_flags from a module
+Even when I do a native compile things look good to me.
 
-A patch to allow the use of __print_symbolic and __print_flags
-from a module. This allows the current GFS2 tracing patch to
-build.
+make v=1 INSTALL_MOD_PATH=/tmp modules_install
 
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-LKML-Reference: <1243868015.29604.542.camel@localhost.localdomain>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+  INSTALL arch/x86/crypto/aes-i586.ko
+  INSTALL arch/x86/crypto/salsa20-i586.ko
+  INSTALL arch/x86/crypto/twofish-i586.ko
+  INSTALL arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.ko
+  ... and so on until the end.
 
+Is the depmod in your default path /sbin/depmod or something else?
 
----
- kernel/trace/trace_output.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+Do you have the environment variable DEPMOD defined?
 
-diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index c12d95d..0fe3b22 100644
---- a/kernel/trace/trace_output.c
-+++ b/kernel/trace/trace_output.c
-@@ -17,6 +17,7 @@
- static DECLARE_RWSEM(trace_event_mutex);
- 
- DEFINE_PER_CPU(struct trace_seq, ftrace_event_seq);
-+EXPORT_PER_CPU_SYMBOL(ftrace_event_seq);
- 
- static struct hlist_head event_hash[EVENT_HASHSIZE] __read_mostly;
- 
-@@ -250,6 +251,7 @@ ftrace_print_flags_seq(struct trace_seq *p, const char *delim,
- 
- 	return p->buffer;
- }
-+EXPORT_SYMBOL(ftrace_print_flags_seq);
- 
- const char *
- ftrace_print_symbols_seq(struct trace_seq *p, unsigned long val,
-@@ -275,6 +277,7 @@ ftrace_print_symbols_seq(struct trace_seq *p, unsigned long val,
- 
- 	return p->buffer;
- }
-+EXPORT_SYMBOL(ftrace_print_symbols_seq);
- 
- #ifdef CONFIG_KRETPROBES
- static inline const char *kretprobed(const char *name)
+Do you see any errors when you do make modules_install with my patch?
+
+Regards,
+
+Robert
+
+On Thu, 4 Jun 2009 15:32:40 +0800, Balbir Singh <balbir@linux.vnet.ibm.com>
+wrote:
+> * lkml@reliableembeddedsystems.com <lkml@reliableembeddedsystems.com>
+> [2009-06-04 01:47:18]:
+> 
+>> Hi Balbir and all,
+>> 
+>> Sorry for the trouble and the missing changelog. I'm still learning;)
+>> 
+>> Can you please elaborate a bit more what exactly is broken?
+>> Are you cross- or native compiling?
+>> 
+> 
+> I am doing a native compile.
