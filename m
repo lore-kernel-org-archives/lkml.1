@@ -1,210 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbZFDLYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbZFDLff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006AbZFDLYl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 07:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754452AbZFDLYe
+	id S1754451AbZFDLff (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 07:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbZFDLfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 07:24:34 -0400
-Received: from www84.your-server.de ([213.133.104.84]:32918 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751512AbZFDLYd (ORCPT
+	Thu, 4 Jun 2009 07:35:25 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:17783 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753053AbZFDLfY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 07:24:33 -0400
-Subject: [patch] procfs: provide stack information for threads
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Joerg Engel <joern@logfs.org>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20090401193135.GA12316@elte.hu>
-References: <1238511505.364.61.camel@matrix>
-	 <20090401193135.GA12316@elte.hu>
-Content-Type: text/plain
-Date: Thu, 04 Jun 2009 13:23:48 +0200
-Message-Id: <1244114628.31230.3.camel@wall-e>
+	Thu, 4 Jun 2009 07:35:24 -0400
+Date: Thu, 4 Jun 2009 13:35:15 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] staging: Add missing __devexit_p()
+Message-ID: <20090604133515.030697ea@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everybody,
+The remove function uses __devexit, so the .remove assignment needs
+__devexit_p() to fix a build error with hotplug disabled.
 
-This is the latest version of the formaly named "detailed stack info"
-patch which give you a better overview of the userland application stack
-usage, especially for embedded linux.
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+---
+Inspired from recent similar fixes from Mike Frysinger.
 
-Currently you are only able to dump the main process/thread stack usage
-which is showed in /proc/pid/status by the "VmStk" Value. But you get no
-information about the consumed stack memory of the the threads.
+ drivers/staging/altpciechdma/altpciechdma.c |    2 +-
+ drivers/staging/slicoss/slicoss.c           |    2 +-
+ drivers/staging/sxg/sxg.c                   |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which
-marks the vm mapping where the thread stack pointer reside with "[thread
-stack xxxxxxxx]". xxxxxxxx is the start address of the stack.
-
-Also there is a new entry "stack usage" in /proc/<pid>/{task/*,}/status
-which will you give the current stack usage in kb.
-
-I also fixed stack base address in /proc/<pid>/task/*/stat to the base
-address of the associated thread stack and not the one of the main
-process. This makes more sense.
-
-Changes since last posting:
-
- - Redesigned everything what was suggested by Andrew
- - slime done
-
-The patch is against 2.6.30-rc7 and tested with on intel and ppc
-architectures.
-
-Greetings,
-Stefani
-
- fs/exec.c             |    2 +
- fs/proc/array.c       |   52 +++++++++++++++++++++++++++++++++++++++++++++++++-
- fs/proc/task_mmu.c    |   14 +++++++++++++
- include/linux/sched.h |    1 
- kernel/fork.c         |    2 +
- 5 files changed, 70 insertions(+), 1 deletion(-)
-
--patch begins here--------------------------------------------------------------
-
-diff -u -N -r linux-2.6.30.orig/fs/exec.c linux-2.6.30/fs/exec.c
---- linux-2.6.30.orig/fs/exec.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/fs/exec.c	2009-06-04 09:32:35.000000000 +0200
-@@ -1328,6 +1328,8 @@
- 	if (retval < 0)
- 		goto out;
- 
-+	current->stack_start = current->mm->start_stack;
-+
- 	/* execve succeeded */
- 	current->fs->in_exec = 0;
- 	current->in_execve = 0;
-diff -u -N -r linux-2.6.30.orig/fs/proc/array.c linux-2.6.30/fs/proc/array.c
---- linux-2.6.30.orig/fs/proc/array.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/fs/proc/array.c	2009-06-04 10:37:53.000000000 +0200
-@@ -321,6 +321,55 @@
- 			p->nivcsw);
- }
- 
-+static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
-+					struct task_struct *p)
-+{
-+	unsigned long	i;
-+	struct page	*page;
-+	unsigned long	stkpage;
-+
-+	stkpage = KSTK_ESP(p) & PAGE_MASK;
-+
-+#ifdef CONFIG_STACK_GROWSUP
-+	for (i = vma->vm_end; i-PAGE_SIZE > stkpage; i -= PAGE_SIZE) {
-+
-+		page = follow_page(vma, i-PAGE_SIZE, 0);
-+
-+		if (!IS_ERR(page) && page)
-+			break;
-+	}
-+	return i - (p->stack_start & PAGE_MASK);
-+#else
-+	for (i = vma->vm_start; i+PAGE_SIZE <= stkpage; i += PAGE_SIZE) {
-+
-+		page = follow_page(vma, i, 0);
-+
-+		if (!IS_ERR(page) && page)
-+			break;
-+	}
-+	return (p->stack_start & PAGE_MASK) - i + PAGE_SIZE;
-+#endif
-+}
-+
-+static inline void task_show_stack_usage(struct seq_file *m,
-+						struct task_struct *p)
-+{
-+	struct vm_area_struct	*vma;
-+	struct mm_struct	*mm;
-+
-+	mm = get_task_mm(p);
-+
-+	if (mm) {
-+		vma = find_vma(mm, p->stack_start);
-+
-+		if (vma)
-+			seq_printf(m, "Stack usage:\t%lu kB\n",
-+				get_stack_usage_in_bytes(vma, p) >> 10);
-+
-+		mmput(mm);
-+	}
-+}
-+
- int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
- 			struct pid *pid, struct task_struct *task)
- {
-@@ -340,6 +389,7 @@
- 	task_show_regs(m, task);
- #endif
- 	task_context_switch_counts(m, task);
-+	task_show_stack_usage(m, task);
- 	return 0;
- }
- 
-@@ -481,7 +531,7 @@
- 		rsslim,
- 		mm ? mm->start_code : 0,
- 		mm ? mm->end_code : 0,
--		(permitted && mm) ? mm->start_stack : 0,
-+		(permitted) ? task->stack_start : 0,
- 		esp,
- 		eip,
- 		/* The signal information here is obsolete.
-diff -u -N -r linux-2.6.30.orig/fs/proc/task_mmu.c linux-2.6.30/fs/proc/task_mmu.c
---- linux-2.6.30.orig/fs/proc/task_mmu.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/fs/proc/task_mmu.c	2009-06-04 09:32:35.000000000 +0200
-@@ -242,6 +242,20 @@
- 				} else if (vma->vm_start <= mm->start_stack &&
- 					   vma->vm_end >= mm->start_stack) {
- 					name = "[stack]";
-+				} else {
-+					unsigned long stack_start;
-+
-+					stack_start =
-+						((struct proc_maps_private *)
-+						m->private)->task->stack_start;
-+
-+					if (vma->vm_start <= stack_start &&
-+					    vma->vm_end >= stack_start) {
-+						pad_len_spaces(m, len);
-+						seq_printf(m,
-+						 "[thread stack: %08lx]",
-+						 stack_start);
-+					}
- 				}
- 			} else {
- 				name = "[vdso]";
-diff -u -N -r linux-2.6.30.orig/include/linux/sched.h linux-2.6.30/include/linux/sched.h
---- linux-2.6.30.orig/include/linux/sched.h	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/include/linux/sched.h	2009-06-04 09:32:35.000000000 +0200
-@@ -1429,6 +1429,7 @@
- 	/* state flags for use by tracers */
- 	unsigned long trace;
- #endif
-+	unsigned long stack_start;
+--- linux-2.6.30-rc8.orig/drivers/staging/altpciechdma/altpciechdma.c	2009-06-04 12:49:27.000000000 +0200
++++ linux-2.6.30-rc8/drivers/staging/altpciechdma/altpciechdma.c	2009-06-04 12:52:47.000000000 +0200
+@@ -1151,7 +1151,7 @@ static struct pci_driver pci_driver = {
+ 	.name = DRV_NAME,
+ 	.id_table = ids,
+ 	.probe = probe,
+-	.remove = remove,
++	.remove = __devexit_p(remove),
+ 	/* resume, suspend are optional */
  };
  
- /* Future-safe accessor for struct task_struct's cpus_allowed. */
-diff -u -N -r linux-2.6.30.orig/kernel/fork.c linux-2.6.30/kernel/fork.c
---- linux-2.6.30.orig/kernel/fork.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/kernel/fork.c	2009-06-04 13:15:35.000000000 +0200
-@@ -1092,6 +1092,8 @@
- 	if (unlikely(current->ptrace))
- 		ptrace_fork(p, clone_flags);
+--- linux-2.6.30-rc8.orig/drivers/staging/slicoss/slicoss.c	2009-04-22 09:51:03.000000000 +0200
++++ linux-2.6.30-rc8/drivers/staging/slicoss/slicoss.c	2009-06-04 12:52:26.000000000 +0200
+@@ -4049,7 +4049,7 @@ static struct pci_driver slic_driver = {
+ 	.name = DRV_NAME,
+ 	.id_table = slic_pci_tbl,
+ 	.probe = slic_entry_probe,
+-	.remove = slic_entry_remove,
++	.remove = __devexit_p(slic_entry_remove),
+ };
  
-+	p->stack_start = stack_start;
-+
- 	/* Perform scheduler related setup. Assign this task to a CPU. */
- 	sched_fork(p, clone_flags);
+ static int __init slic_module_init(void)
+--- linux-2.6.30-rc8.orig/drivers/staging/sxg/sxg.c	2009-04-22 09:51:03.000000000 +0200
++++ linux-2.6.30-rc8/drivers/staging/sxg/sxg.c	2009-06-04 12:52:12.000000000 +0200
+@@ -4516,7 +4516,7 @@ static struct pci_driver sxg_driver = {
+ 	.name = sxg_driver_name,
+ 	.id_table = sxg_pci_tbl,
+ 	.probe = sxg_entry_probe,
+-	.remove = sxg_entry_remove,
++	.remove = __devexit_p(sxg_entry_remove),
+ #if SXG_POWER_MANAGEMENT_ENABLED
+ 	.suspend = sxgpm_suspend,
+ 	.resume = sxgpm_resume,
 
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
 
-
+-- 
+Jean Delvare
