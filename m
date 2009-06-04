@@ -1,78 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbZFDNK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbZFDNKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754873AbZFDNK1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 09:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbZFDNKO
+	id S1753691AbZFDNKl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 09:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754147AbZFDNKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 09:10:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47895 "EHLO hera.kernel.org"
+	Thu, 4 Jun 2009 09:10:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42710 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750731AbZFDNKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 09:10:13 -0400
-Date: Thu, 4 Jun 2009 13:09:31 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter tools: Build with native optimization
-Message-ID: <tip-af794b94ae8a16fb4a9da6ce640c122efb44e2a0@git.kernel.org>
-Git-Commit-ID: af794b94ae8a16fb4a9da6ce640c122efb44e2a0
-X-Mailer: tip-git-log-daemon
+	id S1753691AbZFDNKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 09:10:17 -0400
+Message-ID: <4A27C7B6.6030709@redhat.com>
+Date: Thu, 04 Jun 2009 16:10:14 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 04 Jun 2009 13:09:33 +0000 (UTC)
+To: Andi Kleen <andi@firstfloor.org>
+CC: ying.huang@intel.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [2/2] KVM: Add VT-x machine check support
+References: <20090604112.650907584@firstfloor.org> <20090604111205.C47C31D0282@basil.firstfloor.org> <4A27B481.5020003@redhat.com> <20090604125123.GY1065@one.firstfloor.org> <4A27C2BF.3090108@redhat.com> <20090604130107.GA1065@one.firstfloor.org>
+In-Reply-To: <20090604130107.GA1065@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  af794b94ae8a16fb4a9da6ce640c122efb44e2a0
-Gitweb:     http://git.kernel.org/tip/af794b94ae8a16fb4a9da6ce640c122efb44e2a0
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Thu, 4 Jun 2009 13:58:13 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 4 Jun 2009 14:00:52 +0200
+Andi Kleen wrote:
+>> vmcs access work because we have a preempt notifier called when we are 
+>> scheduled in, and will execute vmclear/vmptrld as necessary.  Look at 
+>> kvm_preempt_ops in virt/kvm_main.c.
+>>     
+>
+> I see. So we need to move that check earlier. Do you have a preference
+> where it should be?
+>   
 
-perf_counter tools: Build with native optimization
+There's no good place as it breaks the nice exit handler table.  You 
+could put it in vmx_complete_interrupts() next to NMI handling.
 
-Build the tools with -march=native by default.
+-- 
+error compiling committee.c: too many arguments to function
 
-No measurable difference in speed though, compared to the
-default, on a Nehalem testbox.
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- Documentation/perf_counter/Makefile |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/perf_counter/Makefile b/Documentation/perf_counter/Makefile
-index 005709b..414399c 100644
---- a/Documentation/perf_counter/Makefile
-+++ b/Documentation/perf_counter/Makefile
-@@ -159,7 +159,7 @@ uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
- 
- # CFLAGS and LDFLAGS are for the users to override from the command line.
- 
--CFLAGS = -ggdb3 -Wall -Werror -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement -O6
-+CFLAGS = -ggdb3 -Wall -Werror -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement -O6 -march=native
- LDFLAGS = -lpthread -lrt -lelf
- ALL_CFLAGS = $(CFLAGS)
- ALL_LDFLAGS = $(LDFLAGS)
