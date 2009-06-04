@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbZFDNRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbZFDNU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756639AbZFDNRR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 09:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZFDNRI
+	id S1753912AbZFDNU3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 09:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751099AbZFDNUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 09:17:08 -0400
-Received: from mga14.intel.com ([143.182.124.37]:34297 "EHLO mga14.intel.com"
+	Thu, 4 Jun 2009 09:20:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36170 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752661AbZFDNRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 09:17:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,305,1241420400"; 
-   d="scan'208";a="150624688"
-Date: Thu, 4 Jun 2009 21:16:59 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [6/16] HWPOISON: Add various poison checks in
-	mm/memory.c
-Message-ID: <20090604131659.GB29103@localhost>
-References: <20090603846.816684333@firstfloor.org> <20090603184639.1933B1D028F@basil.firstfloor.org> <20090604042603.GA15682@localhost> <20090604051915.GN1065@one.firstfloor.org> <20090604115533.GB22118@localhost> <20090604125228.GZ1065@one.firstfloor.org> <20090604125026.GA29026@localhost> <20090604130255.GB1065@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090604130255.GB1065@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1750731AbZFDNUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 09:20:20 -0400
+Subject: Re: [KVM PATCH v4 3/3] kvm: add iosignalfd support
+From: Mark McLoughlin <markmc@redhat.com>
+Reply-To: Mark McLoughlin <markmc@redhat.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Gregory Haskins <ghaskins@novell.com>, Avi Kivity <avi@redhat.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Davide Libenzi <davidel@xmailserver.org>, mtosatti@redhat.com
+In-Reply-To: <4A26F35E.1090307@gmail.com>
+References: <20090526191010.20860.75372.stgit@dev.haskins.net>
+	 <20090526191539.20860.1385.stgit@dev.haskins.net>
+	 <4A1D01F8.8080508@redhat.com> <4A1D285C.9050008@novell.com>
+	 <4A1D2DD8.2050709@redhat.com> <1243445144.16318.15.camel@blaa>
+	 <4A1D7AFD.40004@novell.com> <1243446484.4852.13.camel@blaa>
+	 <4A26F35E.1090307@gmail.com>
+Content-Type: text/plain
+Date: Thu, 04 Jun 2009 14:20:15 +0100
+Message-Id: <1244121615.2824.23.camel@blaa>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 09:02:55PM +0800, Andi Kleen wrote:
-> On Thu, Jun 04, 2009 at 08:50:26PM +0800, Wu Fengguang wrote:
-> > On Thu, Jun 04, 2009 at 08:52:28PM +0800, Andi Kleen wrote:
-> > > On Thu, Jun 04, 2009 at 07:55:33PM +0800, Wu Fengguang wrote:
-> > > > On Thu, Jun 04, 2009 at 01:19:15PM +0800, Andi Kleen wrote:
-> > > > > On Thu, Jun 04, 2009 at 12:26:03PM +0800, Wu Fengguang wrote:
-> > > > > > On Thu, Jun 04, 2009 at 02:46:38AM +0800, Andi Kleen wrote:
-> > > > > > >
-> > > > > > > Bail out early when hardware poisoned pages are found in page fault handling.
-> > > > > >
-> > > > > > I suspect this patch is also not absolutely necessary: the poisoned
-> > > > > > page will normally have been isolated already.
-> > > > >
-> > > > > It's needed to prevent new pages comming in when there is a parallel
-> > > > > fault while the memory failure handling is in process.
-> > > > > Otherwise the pages could get remapped in that small window.
-> > > > 
-> > > > This patch makes no difference at least for file pages, including tmpfs.
-> > > 
-> > > I was more thinking of anonymous pages with multiple mappers (e.g.
-> > > COW after fork)
-> > 
-> > I guess they are handled by do_anonymous_page() or do_wp_page(),
-> > instead of do_linear_fault()/do_nonlinear_fault()?
-> 
-> You're right. Sorry was a little confused in my earlier reply.
-> 
-> I think what I meant is: what happens during the window
-> when the page has just the poison bit set, but is not isolated/unmapped yet.
-> During that window I want new mappers to not come in.
-> That is why that check is there.
+Hi Greg,
 
-As soon as the poisoned page is locked, it is in safe hand - the new
-mappers will have to wait, and then find it either truncated (mapping
-== NULL) for file pages, or its PTE updated through the pte_same()
-checks in do_wp_page().  do_anonymous_page() is safe because it
-allocates the good new page.
+On Wed, 2009-06-03 at 18:04 -0400, Gregory Haskins wrote:
+> Hi Mark,
+>   So with the v5 release of iosignalfd, we now have the notion of a
+> "trigger", the API of which is as follows:
+> 
+> -----------------------
+> /*!
+>  * \brief Assign an eventfd to an IO port (PIO or MMIO)
+>  *
+>  * Assigns an eventfd based file-descriptor to a specific PIO or MMIO
+>  * address range.  Any guest writes to the specified range will generate
+>  * an eventfd signal.
+>  *
+>  * A data-match pointer can be optionally provided in "trigger" and only
+>  * writes which match this value exactly will generate an event.  The length
+>  * of the trigger is established by the length of the overall IO range, and
+>  * therefore must be in a natural byte-width for the IO routines of your
+>  * particular architecture (e.g. 1, 2, 4, or 8 bytes on x86_64).
 
-We lock the page immediately after setting PG_hwpoison, so the window
-is small enough :)
+This looks like it'll work fine for virtio-pci.
 
 Thanks,
-Fengguang
+Mark.
+
