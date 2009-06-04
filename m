@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZFDATR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754365AbZFDAVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbZFDATR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 20:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbZFDATF
+	id S1754365AbZFDAVQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 20:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZFDAVB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 20:19:05 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:50445 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753875AbZFDATD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 20:19:03 -0400
-Message-ID: <4A271287.50103@linux.vnet.ibm.com>
-Date: Wed, 03 Jun 2009 17:17:11 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, torvalds@linux-foundation.org,
-       xemul@parallels.com, orenl@cs.columbia.edu, serue@us.ibm.com,
-       dave@linux.vnet.ibm.com, mingo@elte.hu
-Subject: Re: [PATCH 08/38] pidns 2/2: rewrite copy_pid_ns()
-References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com> <1242968132-1044-8-git-send-email-adobriyan@gmail.com>
-In-Reply-To: <1242968132-1044-8-git-send-email-adobriyan@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Jun 2009 20:21:01 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:55311 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753406AbZFDAVA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 20:21:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=RTqkcIqzeql0NQ78an6xoeIqvWtW2A2xU5SbldP6dx8ADxWzVgb7mMgRNtB5sRn/F/
+         aGrIZtbb4dtXkr8tHwAM0Rmg53xiPdt0Yk2OsZejbQHXrxaLQCcaKJFxC+nb7JeNB+rc
+         dHwLnUvjE2VncfLZT+5fcuuF/+MxSDQ8BwjUY=
+Subject: Re: [PATCH v3] MFD: PCAP driver
+From: Daniel Ribeiro <drwyrm@gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Harald Welte <laforge@gnumonks.org>,
+       Philipp Zabel <philipp.zabel@gmail.com>,
+       openezx-devel <openezx-devel@lists.openezx.org>,
+       linux-next <linux-next@vger.kernel.org>
+In-Reply-To: <10f740e80906030738x3b42de18n189367b28a730c56@mail.gmail.com>
+References: <1243399356.2263.46.camel@brutus>
+	 <10f740e80906030738x3b42de18n189367b28a730c56@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 03 Jun 2009 21:20:56 -0300
+Message-Id: <1244074856.4767.26.camel@brutus>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> copy_pid_ns() is a perfect example of a case where unwinding leads to more
-> code and makes it less clear. Watch the diffstat.
+Em Qua, 2009-06-03 às 16:38 +0200, Geert Uytterhoeven escreveu: 
+> > +config EZX_PCAP
+> > +       bool "PCAP Support"
+> > +       depends on SPI_MASTER
 > 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-Acked-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> It also has to depend on GENERIC_HARDIRQS, as it needs set_irq_type():
 
-> ---
->  kernel/pid_namespace.c |   18 +++---------------
->  1 files changed, 3 insertions(+), 15 deletions(-)
-> 
-> diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
-> index 495d5de..821722a 100644
-> --- a/kernel/pid_namespace.c
-> +++ b/kernel/pid_namespace.c
-> @@ -116,23 +116,11 @@ static void destroy_pid_namespace(struct pid_namespace *ns)
->  
->  struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *old_ns)
->  {
-> -	struct pid_namespace *new_ns;
-> -
-> -	BUG_ON(!old_ns);
-> -	new_ns = get_pid_ns(old_ns);
->  	if (!(flags & CLONE_NEWPID))
-> -		goto out;
-> -
-> -	new_ns = ERR_PTR(-EINVAL);
-> +		return get_pid_ns(old_ns);
->  	if (flags & CLONE_THREAD)
-> -		goto out_put;
-> -
-> -	new_ns = create_pid_namespace(old_ns);
-> -
-> -out_put:
-> -	put_pid_ns(old_ns);
-> -out:
-> -	return new_ns;
-> +		return ERR_PTR(-EINVAL);
-> +	return create_pid_namespace(old_ns);
->  }
->  
->  void free_pid_ns(struct kref *kref)
+Hi Geert, sorry for this. :)
+
+
+
+Fix EZX_PCAP dependency
+
+Signed-off-by: Daniel Ribeiro <drwyrm@gmail.com>
+
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index 060ee14..6557d60 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -243,7 +243,7 @@ config PCF50633_GPIO
+ 
+ config EZX_PCAP
+ 	bool "PCAP Support"
+-	depends on SPI_MASTER
++	depends on GENERIC_HARDIRQS && SPI_MASTER
+ 	help
+ 	  This enables the PCAP ASIC present on EZX Phones. This is
+ 	  needed for MMC, TouchScreen, Sound, USB, etc..
+
+-- 
+Daniel Ribeiro
 
