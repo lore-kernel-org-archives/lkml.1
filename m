@@ -1,69 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbZFDIJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbZFDILF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757430AbZFDIJO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 04:09:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbZFDIJA
+	id S1757339AbZFDILF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 04:11:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbZFDIKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 04:09:00 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:25732 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754166AbZFDII7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 04:08:59 -0400
-From: Peter Ujfalusi <peter.ujfalusi@nokia.com>
-To: ext Takashi Iwai <tiwai@suse.de>
-Subject: Re: linux-next: sound tree build failure
-Date: Thu, 4 Jun 2009 11:08:13 +0300
-User-Agent: KMail/1.11.3 (Linux/2.6.29-gentoo-r5; KDE/4.2.3; i686; ; )
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-References: <20090604173342.b7dbca6d.sfr@canb.auug.org.au> <s5hk53s4e9w.wl%tiwai@suse.de>
-In-Reply-To: <s5hk53s4e9w.wl%tiwai@suse.de>
+	Thu, 4 Jun 2009 04:10:48 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:39750 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752445AbZFDIKr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 04:10:47 -0400
+Date: Thu, 4 Jun 2009 01:10:46 -0700
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, xemul@parallels.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, mingo@elte.hu, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 1/9] exec_path 1/9: introduce ->exec_path and switch
+	/proc/*/exe
+Message-ID: <20090604081046.GV9285@us.ibm.com>
+References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org> <20090531215427.GA29534@x200.localdomain> <20090531151953.8f8b14b5.akpm@linux-foundation.org> <20090603230422.GB853@x200.localdomain> <20090604075532.GU9285@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906041108.13829.peter.ujfalusi@nokia.com>
-X-OriginalArrivalTime: 04 Jun 2009 08:08:11.0252 (UTC) FILETIME=[9A371B40:01C9E4EB]
-X-Nokia-AV: Clean
+In-Reply-To: <20090604075532.GU9285@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 June 2009 11:03:07 ext Takashi Iwai wrote:
-> At Thu, 4 Jun 2009 17:33:42 +1000,
->
-> Stephen Rothwell wrote:
-> > Hi Takashi,
-> >
-> > Today's linux-next build (powerpc allyesconfig) failed like this:
-> >
-> > sound/soc/codecs/twl4030.c: In function 'twl4030_read_reg_cache':
-> > sound/soc/codecs/twl4030.c:152: error: 'cache' undeclared (first use in
-> > this function)
-> >
-> > Caused by commit 16a30fbb0d3aa4ee829a2dd3d0e314e2b5ae96a9 ("ASoC:
-> > TWL4030: Use reg_cache in twl4030_init_chip").
-> >
-> > I reverted that commit for today.
->
-> Thanks.  It's likely a cut-and-paste error in that commit.
-> I fixed now on sound git tree.
+On Thu, Jun 04, 2009 at 12:55:32AM -0700, Matt Helsley wrote:
+> On Thu, Jun 04, 2009 at 03:04:22AM +0400, Alexey Dobriyan wrote:
+> > On Sun, May 31, 2009 at 03:19:53PM -0700, Andrew Morton wrote:
+> > > On Mon, 1 Jun 2009 01:54:27 +0400 Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> > > 
+> > > > And BTW, there is something unnatural when executable path is attached
+> > > > to mm_struct(!) not task_struct,
+> > > 
+> > > mm_struct is the central object for a heavyweight process.  All threads
+> > > within that process share the same executable path (don't they?) so
+> > > attaching the executable path to the mm seems OK to me.
+> > 
+> > OK, let's try this:
+> > 
+> > 
+> > [PATCH 1/9] exec_path 1/9: introduce ->exec_path and switch /proc/*/exe
+> > 
+> > ->exec_path marks executable which is associated with running task.
+> > Binfmt loader decides which executable is such and can, in theory,
+> > assign anything. Unlike current status quo when first VM_EXECUTABLE mapping is
+> > sort of marks running executable.
+> > 
+> > If executable unmaps its all VM_EXECUTABLE mappings, /proc/*/exe ceases
+> > to exists, ick! And userpsace can't even use MAP_EXECUTABLE.
+> 
+> Suprising but intentional and unavoidable. More below..
+> 
+> > 
+> > Tasks which aren't created by running clone(2) and execve(2)
+> > (read: kernel threads) get empty ->exec_path and
+> > 
+> > ->exec_path is copied on clone(2) and put at do_exit() time.
+> 
+> Doesn't this pin the vfs mount of the executable for the lifetime of
+> the task?
+> 
+> That was one of Al Viro's objections to early revisions of the exe_file
+> patches. It's the reason the exe_file patches kept track of the number of
+> VM_EXECUTABLE mappings with num_exe_file_vmas.
+> 
+> I've cc'd Al so he can confirm/deny my recollection of this. Basically
+> some programs need to be able to umount the filesystem that back their
+> executables. Being able to unmap these regions was effectively a
+> userspace API for unpinning these mounts. I needed to preserve that API,
+> hence the VMA ugliness of exe_file that you object to with the exe_file
+> patches.
+> 
+> I think patches 2-7 look great and could be adapted to use exe_file instead
+> of ->exec_path.
 
-Yes, it was a cut-and-paste error. I have also made the patch to fix it.
-I'll not send it, thanks Takashi for fixing it.
+Well, except 5 and 6.
 
-It is so embarrassing, since this is the second time that my patch broke the 
-linux-next build.
-I'll try to be even more careful in the future.
+Alternately, I think you could use the same VMA code with ->exec_path to avoid
+pinning the vfs mount. However, then it would probably be best to move
+it into the mm just like exe_file...
 
-Again, sorry about this.
-
->
-> Takashi
-
--- 
-Péter
+> 
+> Cheers,
+> 	-Matt Helsley
