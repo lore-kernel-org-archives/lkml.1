@@ -1,128 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbZFDQeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756228AbZFDQjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758577AbZFDQeS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 12:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbZFDQeK
+	id S1756228AbZFDQjM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 12:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbZFDQi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 12:34:10 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:52621 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752661AbZFDQeK (ORCPT
+	Thu, 4 Jun 2009 12:38:58 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:53947 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753151AbZFDQi5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 12:34:10 -0400
-Date: Thu, 4 Jun 2009 12:34:11 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Philipp Reh <sefi@s-e-f-i.de>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: When does Linux drop UDP packets?
-In-Reply-To: <alpine.DEB.2.00.0906041222450.14994@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.2.00.0906041228170.14994@gandalf.stny.rr.com>
-References: <20090604145347.GA27692@miyuki> <20090604155741.GA8999@goodmis.org> <20090604161015.GA17303@miyuki> <alpine.DEB.2.00.0906041222450.14994@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 4 Jun 2009 12:38:57 -0400
+Date: Thu, 4 Jun 2009 09:38:40 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Gary Hade <garyhade@us.ibm.com>, mingo@elte.hu, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
+       x86@kernel.org, yinghai@kernel.org, lcm@us.ibm.com
+Subject: Re: [RESEND] [PATCH v2] [BUGFIX] x86/x86_64: fix CPU offlining
+	triggered "inactive" device IRQ interrruption
+Message-ID: <20090604163840.GB7233@us.ibm.com>
+References: <20090602193202.GB7282@us.ibm.com> <m1hbyxv8ep.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1hbyxv8ep.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Oh, btw, you don't need to strip LKML from replys (or any Cc), unless it 
-is off topic.  LKML is a public forum, and as long as things are on topic, 
-it is nice to show others the solutions that are found.
-
+On Wed, Jun 03, 2009 at 04:55:26AM -0700, Eric W. Biederman wrote:
+> Gary Hade <garyhade@us.ibm.com> writes:
 > 
-> On Thu, 4 Jun 2009, Philipp Reh wrote:
+> > Impact: Eliminates a race that can leave the system in an
+> >         unusable state
+> >
+> > During rapid offlining of multiple CPUs there is a chance
+> > that an IRQ affinity move destination CPU will be offlined
+> > before the IRQ affinity move initiated during the offlining
+> > of a previous CPU completes.  This can happen when the device
+> > is not very active and thus fails to generate the IRQ that is
+> > needed to complete the IRQ affinity move before the move
+> > destination CPU is offlined.  When this happens there is an
+> > -EBUSY return from __assign_irq_vector() during the offlining
+> > of the IRQ move destination CPU which prevents initiation of
+> > a new IRQ affinity move operation to an online CPU.  This
+> > leaves the IRQ affinity set to an offlined CPU.
+> >
+> > I have been able to reproduce the problem on some of our
+> > systems using the following script.  When the system is idle
+> > the problem often reproduces during the first CPU offlining
+> > sequence.
 > 
-> > I'm not really sure it is dropped but tcpdump sees the packet and
-> > recvfrom doesn't see it, so I think that the kernel might drop it
-> > somewhere when processing the IP stack logic.
+> Nacked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 > 
-> Looking at the udp stack, selinux plays a role, and looks like it will 
-> drop a packet if it is not in the routing table.
-> 
-> Try:
-> 
-> # setenforce 0
-> 
-> and see if you start seeing packets.
+> fixup_irqs() is broken for allowing such a thing.
 
-BTW, I used ftrace to look into this:
+When fixup_irqs() calls the set_affinity function:
+                   ...
+  if (desc->chip->set_affinity)
+  	desc->chip->set_affinity(irq, affinity);
+                   ...
+it receives no feedback so it obviously expects the set_affinity
+function or it's called functions to do the right thing by preventing
+or correctly handling any problems that should arise.  In the case of
+this bug there is obviously a problem happening during the set_affinity
+function call that needs to be resolved and/or properly handled.
 
-Enable:
+When you made your "x86_64 irq: Safely cleanup an irq after moving it."
+changes (re: http://lkml.org/lkml/2007/2/23/92) you added the check
+to __assign_irq_vector() that causes it to return -EBUSY if the
+migration of the IRQ is still in progress:
++	if ((cfg->move_in_progress) || cfg->move_cleanup_count)
++		return -EBUSY;
++
+However, you did not add any code to other functions on the
+call stack to properly deal with this error.  When doing this
+you may have assumed (as I may have also assumed) that the underlying
+code was solid enough that the handling was not needed.  Unfortunately,
+you apparently did not anticipate the case where an idle or relatively
+idle device may not generate the IRQ needed to complete the move
+before the CPU that is still handling that IRQ is offlined.
 
-	CONFIG_FTRACE
-	CONFIG_FUNCTION_TRACER
-	CONFIG_FUNCITON_GRAPH_TRACER
-	CONFIG_DYNAMIC_FTRACE
+My fix only addresses the issue that caused the -EBUSY return
+and subsequent mess.  It does not address the omitted handling
+for this error condition.  If we were to add the handling to
+fixup_irq() and the arch and non-arch specific functions above
+it on the call stack as you may be suggesting, it would be quite
+involved because of all the things that would need to be undone.
 
-Compile and boot:
+I am not certain that my fix plugs the very last hole that could
+cause the -EBUSY return from __assign_irq_vector() so maybe we
+should at least add a warning or BUG_ON to make the unhandled
+error more obvious in the future.  I would be happy to provide
+this via a separate patch.
 
-# mount -t debugfs nodev /sys/kernel/debug
-# cd /sys/kernel/debug
-# echo udp_rcv > set_graph_function
-# echo function_graph > current_tracer
-# cat trace
+Thanks,
+Gary
 
-and this is what I see:
-
-# tracer: function_graph
-#
-# CPU  DURATION                  FUNCTION CALLS
-# |     |   |                     |   |   |   |
- 1)               |  udp_rcv() {
- 1)               |    __udp4_lib_rcv() {
- 1)               |      __udp4_lib_lookup() {
- 1)   0.584 us    |        T.757();
- 1)   2.905 us    |      }
- 1)               |      udp_queue_rcv_skb() {
- 1)   0.584 us    |        nf_reset();
- 1)   0.996 us    |        _spin_lock();
- 1)               |        __udp_queue_rcv_skb() {
- 1)               |          sock_queue_rcv_skb() {
- 1)               |            sk_filter() {
- 1)               |              security_sock_rcv_skb() {
- 1)               |                selinux_socket_sock_rcv_skb() {
- 1)               |                  selinux_parse_skb() {
- 1)   0.584 us    |                    skb_header_pointer();
- 1)   0.569 us    |                    skb_header_pointer();
- 1)   3.074 us    |                  }
- 1)               |                  selinux_netlbl_sock_rcv_skb() {
- 1)   0.561 us    |                    netlbl_enabled();
- 1)   1.748 us    |                  }
- 1)   6.792 us    |                }
- 1)   8.095 us    |              }
- 1)               |              local_bh_disable() {
- 1)   0.599 us    |                __local_bh_disable();
- 1)   1.790 us    |              }
- 1)               |              local_bh_enable() {
- 1)               |                _local_bh_enable_ip() {
- 1)   0.566 us    |                  T.445();
- 1)   1.906 us    |                }
- 1)   3.149 us    |              }
- 1) + 15.722 us   |            }
- 1)               |            skb_queue_tail() {
- 1)   1.059 us    |              _spin_lock_irqsave();
- 1)               |              _spin_unlock_irqrestore() {
- 1)   0.596 us    |                T.263();
- 1)   1.913 us    |              }
- 1)   4.718 us    |            }
- 1)   0.565 us    |            sock_flag();
- 1)               |            sock_def_readable() {
- 1)   0.981 us    |              _read_lock();
- 1)               |              __wake_up_sync_key() {
- 1)   0.887 us    |                _spin_lock_irqsave();
- 1)               |                __wake_up_common() {
- 1)               |                  pollwake() {
- 1)               |                    default_wake_function() {
- 1)               |                      try_to_wake_up() {
- 1)               |                        task_rq_lock() {
- 1)   0.951 us    |                          _spin_lock();
- 1)   2.030 us    |                        }
- 1)   0.768 us    |                        update_rq_clock();
- 1)               |                        select_task_rq_fair() {
- 1)   0.501 us    |                          effective_load();
- 1)   0.494 us    |                          effective_load();
-
--- Steve
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
 
