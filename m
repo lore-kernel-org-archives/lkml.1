@@ -1,136 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbZFDVYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbZFDVZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492AbZFDVYz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 17:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZFDVYs
+	id S1754524AbZFDVZj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 17:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbZFDVZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 17:24:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35793 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751364AbZFDVYr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 17:24:47 -0400
-Date: Thu, 4 Jun 2009 14:23:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch] procfs: provide stack information for threads
-Message-Id: <20090604142358.95af81d5.akpm@linux-foundation.org>
-In-Reply-To: <1244146873.20012.6.camel@wall-e>
-References: <1238511505.364.61.camel@matrix>
-	<20090401193135.GA12316@elte.hu>
-	<1244146873.20012.6.camel@wall-e>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Jun 2009 17:25:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52283 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751364AbZFDVZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 17:25:32 -0400
+Date: Thu, 4 Jun 2009 17:24:54 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Michael S. Zick" <lkml@morethan.org>
+Cc: Harald Welte <HaraldWelte@viatech.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
+Message-ID: <20090604212454.GA20822@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Michael S. Zick" <lkml@morethan.org>,
+	Harald Welte <HaraldWelte@viatech.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Duane Griffin <duaneg@dghda.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906041312.45847.lkml@morethan.org> <20090604203313.GA19286@redhat.com> <200906041601.33400.lkml@morethan.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906041601.33400.lkml@morethan.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 04 Jun 2009 22:21:13 +0200
-Stefani Seibold <stefani@seibold.net> wrote:
+On Thu, Jun 04, 2009 at 04:01:30PM -0500, Michael S. Zick wrote:
 
-> This is the newest version of the formaly named "detailed stack info"
-> patch which give you a better overview of the userland application stack
-> usage, especially for embedded linux.
-> 
-> Currently you are only able to dump the main process/thread stack usage
-> which is showed in /proc/pid/status by the "VmStk" Value. But you get no
-> information about the consumed stack memory of the the threads.
-> 
-> There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which
-> marks the vm mapping where the thread stack pointer reside with "[thread
-> stack xxxxxxxx]". xxxxxxxx is the start address of the stack.
-> 
-> Also there is a new entry "stack usage" in /proc/<pid>/{task/*,}/status
-> which will you give the current stack usage in kb.
-> 
-> I also fixed stack base address in /proc/<pid>/task/*/stat to the base
-> address of the associated thread stack and not the one of the main
-> process. This makes more sense.
-> 
-> Changes since last posting:
-> 
->  - Code cleanup suggested by Andrew
-> 
-> The patch is against 2.6.30-rc7 and tested with on intel and ppc
-> architectures.
+ > But while your here, what is your opinion on this one,
+ > in: int __init pcibios_init(void)
+ > 
+ > - - - - -
+ >         pci_cache_line_size = 32 >> 2;
+ >         if (c->x86 >= 6
+ >         && (c->x86_vendor == X86_VENDOR_AMD) || (c->x86_vendor == X86_VENDOR_CENTAUR))
+ >                 pci_cache_line_size = 64 >> 2;  /* K7 & K8 and VIA C7-M */
+ >         else if (c->x86 > 6 && c->x86_vendor == X86_VENDOR_INTEL)
+ >                 pci_cache_line_size = 128 >> 2; /* P4 */
+ > 
+ > Mike
 
-OK, we're getting there.
+C7's L1 cachelines are 64 bytes, so it's right in that case,
+but the earlier Centaur CPUs are 32 bytes, so it should be checking steppings.
 
-> +static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
-> +					struct task_struct *p)
-> +{
-> +	unsigned long	i;
-> +	struct page	*page;
-> +	unsigned long	stkpage;
-> +
-> +	stkpage = KSTK_ESP(p) & PAGE_MASK;
-> +
-> +#ifdef CONFIG_STACK_GROWSUP
-> +	for (i = vma->vm_end; i-PAGE_SIZE > stkpage; i -= PAGE_SIZE) {
-> +
-> +		page = follow_page(vma, i-PAGE_SIZE, 0);
-> +
-> +		if (!IS_ERR(page) && page)
-> +			break;
-> +	}
-> +	return i - (p->stack_start & PAGE_MASK);
-> +#else
-> +	for (i = vma->vm_start; i+PAGE_SIZE <= stkpage; i += PAGE_SIZE) {
-> +
-> +		page = follow_page(vma, i, 0);
-> +
-> +		if (!IS_ERR(page) && page)
-> +			break;
-> +	}
-> +	return (p->stack_start & PAGE_MASK) - i + PAGE_SIZE;
-> +#endif
-> +}
-> +
-> +static inline void task_show_stack_usage(struct seq_file *m,
-> +						struct task_struct *p)
-> +{
-> +	struct vm_area_struct	*vma;
-> +	struct mm_struct	*mm;
-> +
-> +	mm = get_task_mm(p);
-> +
-> +	if (mm) {
-> +		vma = find_vma(mm, p->stack_start);
-> +
-> +		if (vma)
-> +			seq_printf(m, "Stack usage:\t%lu kB\n",
-> +				get_stack_usage_in_bytes(vma, p) >> 10);
-> +
-> +		mmput(mm);
-> +	}
-> +}
+Or better yet, why not just set it to boot_cpu_data->x86_clflush_size ?
 
-Both follow_page() and find_vma() require locking: down_read(mmap_sem)
-or down_write(mmap_sem).  down_read() is appropriate here.
-
-> +				} else {
-> +					unsigned long stack_start;
-> +					struct proc_maps_private *pmp;
-> +
-> +					pmp = m->private;
-> +					stack_start = pmp->task->stack_start;
-> +
-> +					if (vma->vm_start <= stack_start &&
-> +					    vma->vm_end >= stack_start) {
-> +						pad_len_spaces(m, len);
-> +						seq_printf(m,
-> +						 "[thread stack: %08lx]",
-> +						 stack_start);
-> +					}
-
-You're making changes to the user interface but it's not terribly clear
-what they look like.  Please include sample output from the affected
-procfs files so that we can review the proposed changes.
-
-Please update the userspace documentation to reflect the changes. 
-Documentation/filesystems/proc.txt documents VmStk, so probably that is
-the appropriate place.
+	Dave
 
