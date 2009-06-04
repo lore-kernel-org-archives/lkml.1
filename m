@@ -1,151 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756628AbZFDOMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbZFDOPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756628AbZFDOMs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 10:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbZFDOMi
+	id S1755600AbZFDOPY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 10:15:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbZFDOPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 10:12:38 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:42435 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbZFDOMh (ORCPT
+	Thu, 4 Jun 2009 10:15:14 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:61807 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbZFDOPN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 10:12:37 -0400
-Subject: Re: [PATCH 4/6] net: add NL802154 interface for configuration of
- 802.15.4 devices
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       sfr@canb.auug.org.au, slapin@ossfans.org
-In-Reply-To: <20090603122744.GC20508@doriath.ww600.siemens.net>
-References: <1244021629-18409-4-git-send-email-dbaryshkov@gmail.com>
-	 <1244021629-18409-5-git-send-email-dbaryshkov@gmail.com>
-	 <1244021964.10665.5.camel@johannes.local>
-	 <20090603.030911.162861804.davem@davemloft.net>
-	 <20090603105256.GB20508@doriath.ww600.siemens.net>
-	 <1244027110.1693.9.camel@johannes.local>
-	 <20090603122744.GC20508@doriath.ww600.siemens.net>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-1bMfWXsvCYywcrD7EZsF"
-Date: Thu, 04 Jun 2009 16:12:29 +0200
-Message-Id: <1244124749.22576.71.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+	Thu, 4 Jun 2009 10:15:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:date:subject:mime-version:x-uid:x-length:to
+         :content-type:content-transfer-encoding:content-disposition
+         :message-id;
+        b=CZEY3Fqj8NnX3XG+PmZqd14DqTBOkeyWNu8oITn/DC3PVNs5oRyt9XxrgOPTDIw4YL
+         OMNvGxN62W/vBrVMkStSpVxbdoyw6mptQQa7Lfkr8/jW/9v46hOtcTceBpc//VRUQH2j
+         XnLRQ1RSbZN7y+d2Q7dDcwlAc4rIswx94/xik=
+From: Florian Fainelli <florian@openwrt.org>
+Date: Thu, 4 Jun 2009 16:15:07 +0200
+Subject: [PATCH 1/8] add lib/gcd.c
+MIME-Version: 1.0
+X-Length: 2489
+To: "Linux-MIPS" <linux-mips@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Takashi Iwai <tiwai@suse.de>, Ralf Baechle <ralf@linux-mips.org>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906041615.10467.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch adds lib/gcd.c which contains a greatest
+common divider implementation taken from
+sound/core/pcm_timer.c
 
---=-1bMfWXsvCYywcrD7EZsF
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2009-06-03 at 16:27 +0400, Dmitry Eremin-Solenikov wrote:
-
-> > > +/* commands */
-> > > +/* REQ should be responded with CONF
-> > > + * and INDIC with RESP
-> > > + */
-> > > +enum {
-> >=20
-> > kernel-doc explaining the commands would be immensely helpful.
->=20
-> What explanations whould you like to see? These commands are described
-> in the IEEE 802.15.4 standard.
-
-Well, for example which arguments they require...
-
-> > > +#ifdef __KERNEL__
-> > > +struct net_device;
-> > > +
-> > > +int ieee802154_nl_assoc_indic(struct net_device *dev, struct ieee802=
-154_addr *addr, u8 cap);
-> > > +int ieee802154_nl_assoc_confirm(struct net_device *dev, u16 short_ad=
-dr, u8 status);
-> > > +int ieee802154_nl_disassoc_indic(struct net_device *dev, struct ieee=
-802154_addr *addr, u8 reason);
-> > > +int ieee802154_nl_disassoc_confirm(struct net_device *dev, u8 status=
-);
-> > > +int ieee802154_nl_scan_confirm(struct net_device *dev, u8 status, u8=
- scan_type, u32 unscanned,
-> > > +		u8 *edl/*, struct list_head *pan_desc_list */);
-> > > +int ieee802154_nl_beacon_indic(struct net_device *dev, u16 panid, u1=
-6 coord_addr); /* TODO */
-> > > +#endif
-> >=20
-> > Why not just use two header files, one in net/ and one in linux/?
->=20
-> What would you suggest to put into the linux/ header and what in the
-> net/ one?
-
-userspace vs. in-kernel separation
-
-> > > +static int ieee802154_nl_put_failure(struct sk_buff *msg)
-> > > +{
-> > > +	void *hdr =3D genlmsg_data(NLMSG_DATA(msg->data)); /* XXX: nlh is r=
-ight at the start of msg */
-> > > +	genlmsg_cancel(msg, hdr);
-> > > +	nlmsg_free(msg);
-> > > +	return -ENOBUFS;
-> > > +}
-> >=20
-> > This seems weird.
->=20
-> Why?
-
-Because it's strange to cancel then free?
-
-> > > +static int ieee802154_associate_req(struct sk_buff *skb, struct genl=
-_info *info)
-> > > +{
-> > > +	struct net_device *dev;
-> > > +	struct ieee802154_addr addr;
-> > > +	int ret =3D -EINVAL;
-> > > +
-> > > +	if (!info->attrs[IEEE802154_ATTR_CHANNEL]
-> > > +	 || !info->attrs[IEEE802154_ATTR_COORD_PAN_ID]
-> > > +	 || (!info->attrs[IEEE802154_ATTR_COORD_HW_ADDR] && !info->attrs[IE=
-EE802154_ATTR_COORD_SHORT_ADDR])
-> > > +	 || !info->attrs[IEEE802154_ATTR_CAPABILITY])
-> > > +		return -EINVAL;
-> >=20
-> > That's some odd coding style.
->=20
-> Could you please elaborate this? What seems odd to you?
-
-if (X
-    && Y)
-
-vs
-
-if (X &&
-    Y)
-
-where the latter is used for all other sources files in the kernel. Try
-applying that to _all_ your patches while you rework the sources to fit
-into 80 columns.
-
-johannes
-
---=-1bMfWXsvCYywcrD7EZsF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKJ9ZKAAoJEODzc/N7+QmaP30P/2eTUPIJOD7ZyD5sC7zCXkXm
-cUDPVT9ozDBrfMVIpB7uNPFJb/2Jfrr5wEcZCwZ56el4Cq4vB6NqlpkXZ1zs6uGJ
-7ISjqQmVK/iKzfPH7tUR4j6cvrEwPdiX87moeX6M+HXxBkiw2p8jJNtJZexdoYIK
-ETIO6QjsT8ABnWAjrkttVp96z21HtXwPELNIVh88hnMO4vK94fNC872MwyMjY2n+
-KY4oMFrCcgvbawVqDBYdtWLVslVV33d9COF2OTjLTvkc9aR2AAXnd1kpZOMPkB9s
-FNdKNIZoNwhLPM0re4plGfW5JELvDt9GNtd6eJ8p/+dxnK0RYL7USLzX7NsuvK1u
-JoqADzPm02EoqbFZ3M+EeKX4apajo9UNspEmuegCruIr4yTKMYHp9RIby4dIL+zK
-WGfEGf+orGWyL9LcURck0USOlajbMqJ591WSr5LEcbUPw1Qrkia6peZs8ZvuH+V0
-sY1rAXu26/drCk5BPMdRHiQmPCwTWB2ZsDH/6MGv4HNXkZe8qPUZ3PX83wHBgs4r
-vd4pmXOl4J4hUN+kH7S3g6MsxY8GynGeCm5OcKl7UBal6XEDdKfize5+1FSybZ6Z
-YOZxmI0CR3HGyCNiBT1vmDJ5BvGnMzLZuBMU9lME7EHs+WbohF7yGuaTKNjNxO/t
-TgM7Vve/X9JNgOcnsPLv
-=zBxM
------END PGP SIGNATURE-----
-
---=-1bMfWXsvCYywcrD7EZsF--
-
+Signed-off-by: Florian Fainelli <florian@openwrt.org>
+---
+diff --git a/include/linux/gcd.h b/include/linux/gcd.h
+new file mode 100644
+index 0000000..69f5e8a
+--- /dev/null
++++ b/include/linux/gcd.h
+@@ -0,0 +1,8 @@
++#ifndef _GCD_H
++#define _GCD_H
++
++#include <linux/compiler.h>
++
++unsigned long gcd(unsigned long a, unsigned long b) __attribute_const__;
++
++#endif /* _GCD_H */
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 8ade0a7..70a9906 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -10,6 +10,9 @@ menu "Library routines"
+ config BITREVERSE
+ 	tristate
+ 
++config GCD
++	bool
++
+ config GENERIC_FIND_FIRST_BIT
+ 	bool
+ 
+diff --git a/lib/Makefile b/lib/Makefile
+index 33a40e4..389bdd2 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -57,6 +57,7 @@ obj-$(CONFIG_CRC_ITU_T)	+= crc-itu-t.o
+ obj-$(CONFIG_CRC32)	+= crc32.o
+ obj-$(CONFIG_CRC7)	+= crc7.o
+ obj-$(CONFIG_LIBCRC32C)	+= libcrc32c.o
++obj-$(CONFIG_GCD)	+= gcd.o
+ obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
+ 
+ obj-$(CONFIG_ZLIB_INFLATE) += zlib_inflate/
+diff --git a/lib/gcd.c b/lib/gcd.c
+new file mode 100644
+index 0000000..fbf81a8
+--- /dev/null
++++ b/lib/gcd.c
+@@ -0,0 +1,20 @@
++#include <linux/gcd.h>
++#include <linux/module.h>
++
++/* Greatest common divisor */
++unsigned long gcd(unsigned long a, unsigned long b)
++{
++	unsigned long r;
++
++	if (a < b) {
++		r = a;
++		a = b;
++	b = r;
++	}
++	while ((r = a % b) != 0) {
++		a = b;
++		b = r;
++	}
++	return b;
++}
++EXPORT_SYMBOL(gcd);
