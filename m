@@ -1,132 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756979AbZFDQAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755391AbZFDQAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756979AbZFDQAE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 12:00:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZFDP7z
+	id S1755391AbZFDQAW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 12:00:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbZFDQAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 11:59:55 -0400
-Received: from tango.tkos.co.il ([62.219.50.35]:55148 "EHLO tango.tkos.co.il"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753904AbZFDP7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 11:59:54 -0400
-Date: Thu, 4 Jun 2009 18:58:39 +0300
-From: Baruch Siach <baruch@tkos.co.il>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH v3] gpio: driver for PrimeCell PL061 GPIO controller
-Message-ID: <20090604155824.GA25782@tarshish>
-References: <1243975690-12073-1-git-send-email-baruch@tkos.co.il> <20090604092835.GJ29926@n2100.arm.linux.org.uk>
+	Thu, 4 Jun 2009 12:00:03 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:53800 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757368AbZFDQAB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 12:00:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=SMdd7cBk8bvCzVRbN3HtCiPQmawPqY9SM4ih8uY3VSfuYoGwor50wLdlwZj0/4o3t3
+         SSWmPv1s0qWX2UxO/LyvKHCdDpitir85hVwAexuN6VadsXvOfCZkayapGnHh96eX7gk+
+         O+Q7iQJ3CiH/hfIWDviyIjJRntGo+Wx3S2YH4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090604092835.GJ29926@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.01.0906040817090.4880@localhost.localdomain>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain>
+	 <200906040856.10512.lkml@morethan.org>
+	 <200906040958.46018.lkml@morethan.org>
+	 <alpine.LFD.2.01.0906040817090.4880@localhost.localdomain>
+Date: Thu, 4 Jun 2009 17:00:01 +0100
+X-Google-Sender-Auth: b342a5a40c78e0b5
+Message-ID: <e9e943910906040900j6f334f29l42a9f5a57e9a1c8f@mail.gmail.com>
+Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
+From: Duane Griffin <duaneg@dghda.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Michael S. Zick" <lkml@morethan.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harald Welte <HaraldWelte@viatech.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russell,
+2009/6/4 Linus Torvalds <torvalds@linux-foundation.org>:
+> On Thu, 4 Jun 2009, Michael S. Zick wrote:
+>> Well, that one isn't anything to brag about"
+>
+> So what's the problem on that machine? Is the VIA C7-M (or some random
+> device in it) just buggy and it eventually hangs, or what? Has _any_
+> kernel ever worked on that machine for longer than an hour or two?
 
-Thank you very much for your review. See my comments below.
+There have been reports of hangs on various VIA C7 machines going back
+a year now. The version of the kernel doesn't seem to matter, but the
+version of glibc does. Unfortunately there hasn't been much progress
+in getting to the bottom of it.
 
-On Thu, Jun 04, 2009 at 10:28:35AM +0100, Russell King - ARM Linux wrote:
-> On Tue, Jun 02, 2009 at 11:48:10PM +0300, Baruch Siach wrote:
-> > +static u32 (*pl061_pending_irq)(int irq);
-> 
-> Hmm, not sure this is entirely a good idea, especially when some
-> platforms may have more than one of these.  It'll work provided they
-> all point at the same function, but if they don't, it's bad news.
-> 
-> IRQs do have the ability to have chip specific data attached to them.
-> See set_irq_chip_data() and get_irq_chip_data().
+See here (and other linked reports):
+http://bugs.gentoo.org/show_bug.cgi?id=228263
 
-The trouble is that my chip has two PL061 blocks that are both connected to 
-the same IRQ on the VIC. The driver, then, has no way to know which PL061 has 
-triggered the interrupt. That's why I moved this responsibility to the 
-platform code.
-
-A different approach would be to use a per-IRQ linked list containing all 
-PL061s connected to this IRQ.  Is this a reasonable solution?
-
-> 
-> > +static unsigned int pl061_irq_startup(unsigned irq)
-> > +{
-> > +	int ret;
-> > +
-> > +	ret = gpio_request(irq_to_gpio(irq), "IRQ");
-> > +	if (ret < 0) {
-> > +		pr_warning("%s: warning: gpio_request(%d) returned %d\n",
-> > +				__func__, irq_to_gpio(irq), ret);
-> > +		return 0;
-> > +	}
-> > +
-> > +	gpio_direction_input(irq_to_gpio(irq));
-> 
-> I thought that it was not expected that claiming an interrupt would claim
-> a GPIO automatically - in other words, it's the responsibility of the
-> driver or platform itself to claim GPIOs for interrupts and ensure that
-> they're properly configured.
-
-OK. I guess that emitting a warning in the case of an un-claimed GPIO is OK,  
-isn't it?
-
-> > +static int __init pl061_probe(struct amba_device *dev, struct amba_id 
-> > *id)
-> > +{
-> > +	struct pl061_platform_data *pdata;
-> > +	struct pl061_gpio *chip;
-> > +	int ret, irq, i;
-> > +
-> > +	pdata = dev->dev.platform_data;
-> > +	if (pdata == NULL)
-> > +		return -ENODEV;
-> 
-> -EINVAL would be better.
-
-OK.
-
-> > +
-> > +	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
-> > +	if (chip == NULL)
-> > +		return -ENOMEM;
-> > +
-> > +	if (request_mem_region(dev->res.start, SZ_4K, "pl061") == NULL) {
-> 
-> It would be better to keep SZ_* constants out of what are essentially
-> generic drivers - or we move them into some generic kernel header (but
-> I don't hold out that much hope of that happening.)
-
-OK.
-
-> > diff --git a/include/linux/amba/pl061.h b/include/linux/amba/pl061.h
-> > new file mode 100644
-> > index 0000000..9e18fa3
-> > --- /dev/null
-> > +++ b/include/linux/amba/pl061.h
-> > @@ -0,0 +1,18 @@
-> > +/* platform data for the PL061 GPIO driver */
-> > +
-> > +#define GPIODIR 0x400
-> > +#define GPIOIS  0x404
-> > +#define GPIOIBE 0x408
-> > +#define GPIOIEV 0x40C
-> > +#define GPIOIE  0x410
-> > +#define GPIORIS 0x414
-> > +#define GPIOMIS 0x418
-> > +#define GPIOIC  0x41C
-> 
-> I think it would make sense to have the above register definitions in
-> the .c file.
-
-I put the register definitions here for the platform code that needs access to 
-those registers to determine IRQ sources.
-
-baruch
+Cheers,
+Duane.
 
 -- 
-                                                     ~. .~   Tk Open Systems
-=}------------------------------------------------ooO--U--Ooo------------{=
-   - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
+"I never could learn to drink that blood and call it wine" - Bob Dylan
