@@ -1,83 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbZFDLVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZFDLWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757301AbZFDLVQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 07:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZFDLVF
+	id S1755881AbZFDLWZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 07:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754452AbZFDLWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 07:21:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47636 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753580AbZFDLVE (ORCPT
+	Thu, 4 Jun 2009 07:22:18 -0400
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:52074 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754109AbZFDLWR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 07:21:04 -0400
-Date: Thu, 4 Jun 2009 04:20:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Florian Fainelli <florian@openwrt.org>
-Cc: linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 2/9] add support for the TI VLYNQ bus
-Message-Id: <20090604042032.51ece7a9.akpm@linux-foundation.org>
-In-Reply-To: <200906041252.19613.florian@openwrt.org>
-References: <200906011358.28359.florian@openwrt.org>
-	<20090601220854.a9ddd5ce.akpm@linux-foundation.org>
-	<200906041252.19613.florian@openwrt.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 4 Jun 2009 07:22:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=MDZQi+g/RrK2pXA8Q6Hx+qBk1Og7EOvWgR8dUFDGC/t9JDyDHL9rezioLsaargo+M/
+         m8Pjz3CtZf8AUk20/ztuRAoRwh55I2DSQ/Zrtjm8evWRg9j0PFacLdWnY+XVnuq5ioh2
+         BpqDLTOOQAHVKr0SNNmguAJDBUU4HtZ//Acos=
+Subject: Re: [PATCH v2 2/6] mips dynamic function tracer support
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Wang Liming <liming.wang@windriver.com>, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Nicholas Mc Guire <der.herr@hofr.at>
+In-Reply-To: <alpine.DEB.2.00.0906030841040.14994@gandalf.stny.rr.com>
+References: <cover.1243604390.git.wuzj@lemote.com>
+	 <a00a91f6fc79b7d20b5b2193086e879dcafded46.1243604390.git.wuzj@lemote.com>
+	 <4A22281B.7020908@windriver.com>
+	 <b00321320906020915n7ba241eqb3cb0de877af514d@mail.gmail.com>
+	 <4A26129E.1080008@windriver.com>
+	 <alpine.DEB.2.00.0906030841040.14994@gandalf.stny.rr.com>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Thu, 04 Jun 2009 19:20:34 +0800
+Message-Id: <1244114434.31146.48.camel@falcon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Jun 2009 12:52:18 +0200 Florian Fainelli <florian@openwrt.org> wrote:
+hi, Steven
 
-> Le Tuesday 02 June 2009 07:08:54 Andrew Morton, vous avez __crit__:
-> > On Mon, 1 Jun 2009 13:58:27 +0200 Florian Fainelli <florian@openwrt.org> 
-> wrote:
-> > > This patch adds support for the TI VLYNQ high-speed,
-> > > serial and packetized bus. This bus allows external
-> > > devices to be connected to the System-on-Chip and
-> > > appear in the main system memory just like any memory
-> > > mapped peripheral. It is widely used in TI's networking
-> > > and mutlimedia SoC, including the AR7 SoC.
-> > >
-> > >
-> > > ...
-> > >
-> > > +struct vlynq_regs {
-> > > +	u32 revision;
-> > > +	u32 control;
-> > > +	u32 status;
-> > > +	u32 int_prio;
-> > > +	u32 int_status;
-> > > +	u32 int_pending;
-> > > +	u32 int_ptr;
-> > > +	u32 tx_offset;
-> > > +	struct vlynq_mapping rx_mapping[4];
-> > > +	u32 chip;
-> > > +	u32 autonego;
-> > > +	u32 unused[6];
-> > > +	u32 int_device[8];
-> > > +};
-> > > +
-> > > +#define vlynq_reg_read(reg) readl(&(reg))
-> > > +#define vlynq_reg_write(reg, val)  writel(val, &(reg))
-> >
-> > grumble.  These just make the code harder to follow.  it'd be better to
-> > open-code readl() and writel() at the callsites.
+> Note, PowerPC uses a trampoline from modules to kernel core. I think MIPS 
+> just calls mcount differently. That is, it does a full 32bit address call
+> (64 bit for 64 bit archs?). Something like:
 > 
-> I do not understand how to fix this. Would an inlined accessors be a better 
-> solution for you?
+> 	lui	v1, _mcount
+> 	addiu	v1, v1, _mcount
+> 	jalr	v1
+> 	addiu	sp, sp, -8
+> 
+> Then a nop would not do. Due to preemption, we can not modify more than 
+> one line. But you could modify it to:
+> 
+> 	b	1f
+> 	addiu	v1, v1, _mcount
+> 	jalr	v1
+> 	addiu	sp, sp, -8
+> 1:
+> 
+> Clobbering v1 should not be an issue since it is already used to store 
+> _mcount. That is, we still do the addiu v1,v1,_mcount with that branch. 
+> But v1 should be ignored.
+> 
 
-Just remove the accessors altogether.  Each place where there is a call
-to vlynq_reg_read(), replace that with a call to readl().
+sorry, I'm not clear what you said above, could you give more
+explanation on it, thanks! 
 
-Unless there's a reason not to do this.  For example, some hardware
-might require a udelay(1) before each writel(), or some platforms might
-want to use outl()/inl().  In cases like these, sure, standalone
-functions are needed to handle them.
+I think "jal _mcount" itself will not work in static and dynamic ftrace.
+something like what you described above should be used instead. perhaps
+a PATCH can be sent to gcc or we use some tricks in kernel.
 
-But if vlynq_reg_read() and vlynq_reg_write() will never do anything
-apart from a bare readl()/writel() then let's just remove them
-altogether, as they add nothing.
+if we not use the method of modifying the kernel code in run time(avoid
+preemption?), can we link something as following to the modules:
+
+_mcount_trampoline:
+	PTR_LA	t0, _mcount
+	jalr	t0
+
+and then we replace the original "jal _mcount" in every module to "jal
+_mcount_trampoline" with a perl script.
+
+this solution maybe work for static ftrace. does it?
+
+but in dynamic ftrace, when ftrace is enabled and set_filter_function is
+set, the place of filtered function will be substituted to "jal
+ftrace_caller", this will not work since ftrace_caller is a function
+like _mcount, which will not reached in modules. so, this ftrace_caller
+should be substituted to something like this:
+
+ftrace_caller_trampoline:
+	PTR_LA	t0, ftrace_caller
+	jalr	t0
+
+and ftrace_caller_trampoline should be linked to modules too. or we
+substituted it to the above _mcount_trampoline, but change "PTR_LA t0,
+_mcount" to "PTR_LA t0, ftrace_caller".
+
+does this work?
+
+thanks!
+Wu Zhangjin
 
