@@ -1,44 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbZFDQj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbZFDQkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756558AbZFDQj1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 12:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbZFDQjR
+	id S1757339AbZFDQkT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 12:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbZFDQkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 12:39:17 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:36512 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753298AbZFDQjP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 12:39:15 -0400
-Date: Thu, 4 Jun 2009 12:38:44 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, mel@csn.ul.ie,
-       suresh.b.siddha@intel.com, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, rusty@rustcorp.com.au, steiner@sgi.com,
-       rientjes@google.com
-Subject: Re: [RESEND PATCH] mm: clear N_HIGH_MEMORY map before se set it
- again -v2
-In-Reply-To: <4A2758CB.9090404@kernel.org>
-Message-ID: <alpine.DEB.1.10.0906041236520.5377@gentwo.org>
-References: <4A05269D.8000701@kernel.org> <20090512111623.GG25923@csn.ul.ie> <4A0A64FB.4080504@kernel.org> <20090513145950.GB28097@csn.ul.ie> <4A0C4910.7090508@kernel.org> <4A0C4A2A.6080009@kernel.org> <20090514095414.ba8356e5.akpm@linux-foundation.org>
- <4A0C4F67.5080802@kernel.org> <20090514102554.b3a36f19.akpm@linux-foundation.org> <4A0C563A.3020100@kernel.org> <4A2758CB.9090404@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 4 Jun 2009 12:40:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50123 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753854AbZFDQkC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 12:40:02 -0400
+Subject: Re: [dm-devel] Re: ANNOUNCE: mdadm 3.0 - A tool for managing Soft 
+ RAID under Linux
+From: Heinz Mauelshagen <heinzm@redhat.com>
+Reply-To: heinzm@redhat.com
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: device-mapper development <dm-devel@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-raid@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Ed Ciechanowski <ed.ciechanowski@intel.com>,
+       Jacek Danecki <jacek.danecki@intel.com>
+In-Reply-To: <e9c3a7c20906031026s49a5a694hb91db40dc05a2580@mail.gmail.com>
+References: <18980.48553.328662.80987@notabene.brown>
+	 <4A25876A.1010901@garzik.org> <18981.62579.171350.910761@notabene.brown>
+	 <1244040123.6938.19.camel@o>
+	 <e9c3a7c20906031026s49a5a694hb91db40dc05a2580@mail.gmail.com>
+Content-Type: text/plain
+Organization: Red Hat GmbH
+Date: Thu, 04 Jun 2009 18:38:56 +0200
+Message-Id: <1244133536.5541.48.camel@o>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok. The N_HIGH_MEMORY bit is set for all onlines nodes in a loop
-that follows the code you modified. The patch insures that bits do not
-remain set that earlier arch / core code may have set.
+On Wed, 2009-06-03 at 10:26 -0700, Dan Williams wrote:
+> On Wed, Jun 3, 2009 at 7:42 AM, Heinz Mauelshagen <heinzm@redhat.com> wrote:
+> > On Wed, 2009-06-03 at 13:56 +1000, Neil Brown wrote:
+> >> As for integrating the two code bases.... people have been suggesting
+> >> that for years, but I suspect few of them have looked deeply at the
+> >> practicalities.  Apparently it was suggested at the recent "storage
+> >> summit".  However as the primary md and dm developers were absent, I
+> >> have doubts about how truly well-informed that conversation could have
+> >> been.
+> >
+> > Agreed, we'd need face-time and talk issues through in order to come up
+> > with any such plan for md+dm integration.
+> >
+> 
+> What are your general impressions of dmraid using md kernel
+> infrastructure for raid level support?
 
-Could you make the description clearer?
+At the time of the dmraid project start, we already had libdevmapper
+which was suitable to handle in-kernel device manipulation with no
+adequate on the MD side so it was the appropriate interface to use.
 
-Otherwise
+Cheers,
+Heinz
 
-Acked-by: Christoph Lameter <cl@linux-foundation.org>
+> 
+> Thanks,
+> Dan
 
