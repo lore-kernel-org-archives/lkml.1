@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbZFDPxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbZFDP5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755848AbZFDPxo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 11:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755124AbZFDPxg
+	id S1756695AbZFDP5s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 11:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZFDP5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 11:53:36 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:24356 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755063AbZFDPxg (ORCPT
+	Thu, 4 Jun 2009 11:57:41 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:47942 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753489AbZFDP5l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 11:53:36 -0400
-Message-ID: <4A27EEB8.6030408@oracle.com>
-Date: Thu, 04 Jun 2009 08:56:40 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 4 Jun 2009 11:57:41 -0400
+Date: Thu, 4 Jun 2009 11:57:41 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Philipp Reh <sefi@s-e-f-i.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: When does Linux drop UDP packets?
+Message-ID: <20090604155741.GA8999@goodmis.org>
+References: <20090604145347.GA27692@miyuki>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: linux-next: Tree for June 4 (staging)
-References: <20090604175657.1565ecba.sfr@canb.auug.org.au>
-In-Reply-To: <20090604175657.1565ecba.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt009.oracle.com [141.146.116.18]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010206.4A27EDF7.02E5:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090604145347.GA27692@miyuki>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi all,
+On Thu, Jun 04, 2009 at 04:53:47PM +0200, Philipp Reh wrote:
+> Dear list,
 > 
-> Changes since 20090603:
+> I have the following setting in which a client that resides on the same
+> physical network as a server wants to receive any UDP packet that
+> arrives on any of its interfaces sent by that server.
+> 
+> The code sets the broadcast flag, calls bind to INADDR_ANY and
+> uses recvfrom from there on.
+> 
+> Let's say the server resides in the subnet 192.168.6.255 and the
+> client in 192.168.3.255. The server uses its real IP as the packet's
+> sender ip (192.168.6.5).
 
-drivers/staging/vt6655/built-in.o: In function `rotr1':
-(.text+0x1a883): multiple definition of `rotr1'
-drivers/staging/rt2860/built-in.o:(.text+0x17a9a): first defined here
-drivers/staging/vt6655/built-in.o: In function `tkip_sbox':
-(.text+0x1a850): multiple definition of `tkip_sbox'
-drivers/staging/rt2860/built-in.o:(.text+0x17a6b): first defined here
-drivers/staging/vt6655/built-in.o: In function `xor_32':
-(.text+0x1e938): multiple definition of `xor_32'
-drivers/staging/rt2860/built-in.o:(.text+0x1803c): first defined here
-drivers/staging/vt6655/built-in.o: In function `xor_128':
-(.text+0x1e910): multiple definition of `xor_128'
-drivers/staging/rt2860/built-in.o:(.text+0x18018): first defined here
+You don't say what the client IP is. Let's assume that it is 192.168.3.1
+for simplicity.
 
+> 
+> Now the first problem I've encountered is the following:
+> If the client removes its default route and doesn't have any route
+> pointing into the subnet the server is in, the packets get discarded
+> (still tcpdump sees them).
+> 
 
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+Are you saying that the server sent to 192.168.3.1 with source ip of
+192.168.6.5 and the client did not see it?
+
+> The second problem is that if the server uses the broadcast address as
+> its sender address (255.255.255.255), the packets get always discarded
+> (again, tcpdump sees them).
+
+Again, what was the destination IP address?
+
+> Now if the server fakes its sender address to be in the client's subnet,
+> every packet arrives again.
+
+So the only thing you change is the sender address?
+
+What tools are you using to read the packets, and how do you know it is
+dropped?
+
+-- Steve
+
+> 
+> So my real question is:
+> When does Linux discard packets and how can I prevent it from doing
+> that?
