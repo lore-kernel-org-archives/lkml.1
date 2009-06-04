@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbZFDSOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753561AbZFDSN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbZFDSOb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 14:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbZFDSNx
+	id S1753561AbZFDSN4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 14:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZFDSNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 14:13:53 -0400
-Received: from kroah.org ([198.145.64.141]:46241 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754066AbZFDSNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 14:13:52 -0400
-Date: Thu, 4 Jun 2009 10:56:12 -0700
-From: Greg KH <greg@kroah.com>
-To: Pranith Kumar <pranith.hacks@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [TRIVIAL][PATCH 1/1] Fix warning in staging/otus/ioctl.c
-Message-ID: <20090604175612.GB18605@kroah.com>
-References: <430c80e90905290054n7416802cq7128394db5de036d@mail.gmail.com> <20090602214745.GB25921@kroah.com> <430c80e90906022349l6fa7a9b4lb73f0ab1980b3e63@mail.gmail.com> <20090603152152.GB25560@kroah.com> <4A27616C.6030802@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A27616C.6030802@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 4 Jun 2009 14:13:22 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:11354 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753634AbZFDSNV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 14:13:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=hwINbp55tCiDxj0Kq8y9ZLcGBR9Kn/evpfxW3YRoKTbqnrsSzX07fjB/ZPa76HF3Qa
+         XSvNOkUBmeVYqCHvLrTG9xLcJWANy89E6ob1EN4u563OnubyO0qhij81/0MpIfwZeVrK
+         CNAVpOft91u0/AfCVvcYwv2gVFHPr0zjfX+20=
+From: Philipp Zabel <philipp.zabel@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ian Molton <ian@mnementh.co.uk>, Pierre Ossman <pierre@ossman.eu>,
+       Philipp Zabel <philipp.zabel@gmail.com>
+Subject: [PATCH 6/7] mmc: tmio_mmc: fix SDCLK divider setting
+Date: Thu,  4 Jun 2009 20:12:36 +0200
+Message-Id: <1244139157-16404-7-git-send-email-philipp.zabel@gmail.com>
+X-Mailer: git-send-email 1.6.3.1
+In-Reply-To: <1244139157-16404-1-git-send-email-philipp.zabel@gmail.com>
+References: <1244139157-16404-1-git-send-email-philipp.zabel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 11:23:48AM +0530, Pranith Kumar wrote:
-> Greg KH wrote:
-> > On Wed, Jun 03, 2009 at 12:19:26PM +0530, Pranith Kumar wrote:
-> >   
-> >> I am using Gmail, which does this. I haven't figured out how to
-> >> configure this thing yet.
-> >>     
-> >
-> > Please try reading Documentation/email-clients.txt and try again.
-> >
-> >   
-> 
-> Ok, I've configured my email client now. Resubmitting patch.
-> 
-> Signed-off-by: D Pranith Kumar <bobby.prani@gmail.com>
-> 
-> diff --git a/drivers/staging/otus/ioctl.c b/drivers/staging/otus/ioctl.c
-> index ce04218..5e8bd94 100644
-> --- a/drivers/staging/otus/ioctl.c
-> +++ b/drivers/staging/otus/ioctl.c
-> @@ -2045,6 +2045,7 @@ int usbdrv_wpa_ioctl(struct net_device *dev, 
-> struct athr_wlan_param *zdparm)
->      struct zsKeyInfo keyInfo;
->      struct usbdrv_private *macp = dev->ml_priv;
->      u16_t vapId = 0;
-> +    int ii;
+Except for the SDCLK = HCLK (divider bypassed) case, the clock
+setting resulted in double the requested frequency.
+The smallest possible frequency (f_max/512) is configured with
+a divider setting 0x80, not 0x40.
 
-Nope, the patch is linewrapped and the whitespace is still messed up :(
+Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
+---
+ drivers/mmc/host/tmio_mmc.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Care to retry?
+diff --git a/drivers/mmc/host/tmio_mmc.c b/drivers/mmc/host/tmio_mmc.c
+index fe6d2b6..9f6e180 100644
+--- a/drivers/mmc/host/tmio_mmc.c
++++ b/drivers/mmc/host/tmio_mmc.c
+@@ -44,10 +44,10 @@ static void tmio_mmc_set_clock(struct tmio_mmc_host *host, int new_clock)
+ 			clock <<= 1;
+ 			clk >>= 1;
+ 		}
+-		if (clk & 0x1)
+-			clk = 0x20000;
++		if (clk == 0)
++			clk = 0x8000 << 1;
+ 
+-		clk >>= 2;
++		clk >>= 1;
+ 		sd_config_write8(host, CNF_SD_CLK_MODE, (clk & 0x8000) ? 0 : 1);
+ 		clk |= 0x100;
+ 	}
+-- 
+1.6.3.1
 
-thanks,
-
-greg k-h
