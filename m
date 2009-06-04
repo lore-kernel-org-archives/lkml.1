@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbZFDIQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbZFDISD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756370AbZFDIQZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 04:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbZFDIQO
+	id S1756116AbZFDISD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 04:18:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZFDIRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 04:16:14 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:8794 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751181AbZFDIQM convert rfc822-to-8bit (ORCPT
+	Thu, 4 Jun 2009 04:17:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56897 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751945AbZFDIRr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 04:16:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vOvW9Kj+auWMWXNbIKuLY6/J4N4RzxXk0Gvs5Qhc2XTHKiuLlBanvMdjX48NaE8Wx8
-         dvOfP4m9alfONkp77x7FtIF9K0ooxv1Lsz1RkqTDPMQOa+/5suG7/x11oT2whRddq/3m
-         3dQfkdVOqdS9Dv7Nqv8y2LDrRimY/WUTLRmOw=
-MIME-Version: 1.0
-In-Reply-To: <20090604005435.d3671419.akpm@linux-foundation.org>
-References: <1244017019-28163-1-git-send-email-vapier@gentoo.org>
-	 <20090604005435.d3671419.akpm@linux-foundation.org>
-Date: Thu, 4 Jun 2009 04:16:14 -0400
-Message-ID: <8bd0f97a0906040116v659d0cdetaff267f4241be175@mail.gmail.com>
-Subject: Re: [PATCH] gpio sysfs: add a "toggle" value
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 4 Jun 2009 04:17:47 -0400
+Date: Thu, 4 Jun 2009 01:17:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] console: make blank timeout value a boot option
+Message-Id: <20090604011740.5879732c.akpm@linux-foundation.org>
+In-Reply-To: <20090604074407.GX26148@buzzloop.caiaq.de>
+References: <1243953993-18608-1-git-send-email-daniel@caiaq.de>
+	<20090604002325.5b1284de.akpm@linux-foundation.org>
+	<20090604074407.GX26148@buzzloop.caiaq.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 4, 2009 at 03:54, Andrew Morton wrote:
-> On Wed,  3 Jun 2009 04:16:59 -0400 Mike Frysinger wrote:
->> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
->
-> -ENOCHANGELOGAGAIN
+On Thu, 4 Jun 2009 09:44:09 +0200 Daniel Mack <daniel@caiaq.de> wrote:
 
-it's pretty damned self explanatory
+> On Thu, Jun 04, 2009 at 12:23:25AM -0700, Andrew Morton wrote:
+> > > --- a/Documentation/kernel-parameters.txt
+> > > +++ b/Documentation/kernel-parameters.txt
+> > > @@ -545,6 +545,10 @@ and is between 256 and 4096 characters. It is defined in the file
+> > >  			console=brl,ttyS0
+> > >  		For now, only VisioBraille is supported.
+> > >  
+> > > +	consoleblank=	[KNL] The console blank (screen saver) timeout in
+> > > +			seconds. Defaults to 10*60 = 10mins. A value of 0
+> > > +			disables the blank timer.
+> > > +
+> > 
+> > It would be better to make this alterable at runtime, rather than at
+> > boot time.  Perhaps another VT ioctl.
+> 
+> That's already possible - there is an ioctl for that. It's just not
+> configurable at boot time, and that occured to be very annoying when
+> developing systems that won't fully boot up for >10mins. You have no way
+> to wake up the console then.
 
->> diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
->> index 51a8d41..7f79732 100644
->> --- a/drivers/gpio/gpiolib.c
->> +++ b/drivers/gpio/gpiolib.c
->> @@ -274,7 +274,12 @@ static ssize_t gpio_value_store(struct device *dev,
->>       else {
->>               long            value;
->>
->> -             status = strict_strtol(buf, 0, &value);
->> +             if (sysfs_streq(buf, "toggle")) {
->> +                     value = !gpio_get_value_cansleep(gpio);
->> +                     status = 0;
->> +             } else
->> +                     status = strict_strtol(buf, 0, &value);
->> +
->>               if (status == 0) {
->>                       gpio_set_value_cansleep(gpio, value != 0);
->>                       status = size;
->
-> A suitable place to document this is Documentation/gpio.txt.
+Oh.  Your changelog sucked :)
 
-yes, but i wanted to make sure David didnt reject the idea before i
-spend time writing documentation.
--mike
+> Is there any concern why that shouldn't be a kernel option?
+
+I suppose it makes sense.  You really have systems which take more than
+ten minutes to start running initscripts?  Poor you.
+
+Please resend with a more complete description?
