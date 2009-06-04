@@ -1,210 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbZFDWx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZFDWxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755111AbZFDWx0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 18:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbZFDWxS
+	id S1755242AbZFDWxv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 18:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbZFDWxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 18:53:18 -0400
-Received: from mga06.intel.com ([134.134.136.21]:33170 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751878AbZFDWxS (ORCPT
+	Thu, 4 Jun 2009 18:53:44 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:41189 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752168AbZFDWxn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 18:53:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,307,1241420400"; 
-   d="scan'208";a="418998806"
-Date: Fri, 5 Jun 2009 00:55:26 +0200
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Ian Molton <ian@mnementh.co.uk>,
-       Pierre Ossman <pierre@ossman.eu>
-Subject: Re: [PATCH 1/7] MFD,mmc: tmio_mmc: make HCLK configurable
-Message-ID: <20090604225525.GA5460@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <1244139157-16404-1-git-send-email-philipp.zabel@gmail.com> <1244139157-16404-2-git-send-email-philipp.zabel@gmail.com>
+	Thu, 4 Jun 2009 18:53:43 -0400
+From: Goswin von Brederlow <goswin-v-b@web.de>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Goswin von Brederlow <goswin-v-b@web.de>,
+       Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org
+Subject: Re: include/linux/aio_abi.h and IOCB_CMD_POLL
+References: <87d49k6h45.fsf@frosties.localdomain>
+	<E1MCCnb-0005Bc-09@pomaz-ex.szeredi.hu>
+	<87hbyw6n9b.fsf@frosties.localdomain>
+	<alpine.DEB.1.10.0906040814360.21635@makko.or.mcafeemobile.com>
+Date: Fri, 05 Jun 2009 00:53:43 +0200
+In-Reply-To: <alpine.DEB.1.10.0906040814360.21635@makko.or.mcafeemobile.com>
+	(Davide Libenzi's message of "Thu, 4 Jun 2009 08:19:36 -0700 (PDT)")
+Message-ID: <87zlcnwqyw.fsf@frosties.localdomain>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) XEmacs/21.4.22 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244139157-16404-2-git-send-email-philipp.zabel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Provags-ID: V01U2FsdGVkX19pvl4u5J+2c1XkkBHDDWaLo39Rr3Z8TxE5e9n+
+	crf/nmK1IgBSd+jvqYaeJFbG566Frwd8Hmt/Hc+JgYLc9NX5QH
+	s3KLPkAXQ=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Philip,
+Davide Libenzi <davidel@xmailserver.org> writes:
 
-On Thu, Jun 04, 2009 at 08:12:31PM +0200, Philipp Zabel wrote:
-> The Toshiba parts all have a 24 MHz HCLK, but HTC ASIC3 has a 24.576 MHz HCLK
-> and AMD Imageon w228x's HCLK is 80 MHz. With this patch, the MFD driver
-> provides the HCLK frequency to tmio_mmc via mfd_cell->driver_data.
-Applied to my for-next branch, many thanks.
+> On Thu, 4 Jun 2009, Goswin von Brederlow wrote:
+>
+>> Miklos Szeredi <miklos@szeredi.hu> writes:
+>> 
+>> > On Thu, 04 Jun 2009, Goswin von Brederlow wrote:
+>> >> 3) Are there any alternatives to libaio that don't use threads and
+>> >>    support polling?
+>> >
+>> > There are the poll, select and epoll interfaces that block, but are
+>> > able to multiplex events from many file descriptors.
+>> 
+>> Unfortunately libaio does not use an fd to pass events between user
+>> and kernel space so one can't use poll, select or epoll to wait for
+>> /dev/fuse or libaio to have some work pending. And none of them
+>> replace libaio functionality in respect to read/write.
+>
+> You can use the eventfd bridge between epoll/poll/select and AIO, that is 
+> available by quite some time.
+> This is an old example I made when the patch was posted:
+>
+> http://www.xmailserver.org/eventfd-aio-test.c
+>
+> This uses direct syscall interface, but you get the idea on how to do that 
+> with libaio (that I never used).
+
+Thanks. That example explains it nicely. There really should be
+comments in libaio.h and an /usr/share/doc/libaio/examples/.
+
+In case you wonder the libaio just wraps the system calls and provides
+helpers in libaio.h. Basically the first 200 lines of the example are
+libaio.h. Not 1:1 but nearly. The only difference is that io_prep_* do
+not take an eventfd argument but there is
+
+static inline void io_set_eventfd(struct iocb *iocb, int eventfd)
+
+instead.
 
 
-> Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
-> Acked-by: Ian Molton <ian@mnementh.co.uk>
-> Cc: Samuel Ortiz <sameo@openedhand.com>
-> Cc: Pierre Ossman <pierre@ossman.eu>
-> ---
->  drivers/mfd/t7l66xb.c       |    5 +++++
->  drivers/mfd/tc6387xb.c      |    5 +++++
->  drivers/mfd/tc6393xb.c      |    5 +++++
->  drivers/mmc/host/tmio_mmc.c |   24 +++++++++++-------------
->  include/linux/mfd/tmio.h    |    7 +++++++
->  5 files changed, 33 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/mfd/t7l66xb.c b/drivers/mfd/t7l66xb.c
-> index e9f4323..875f7a8 100644
-> --- a/drivers/mfd/t7l66xb.c
-> +++ b/drivers/mfd/t7l66xb.c
-> @@ -108,6 +108,10 @@ static int t7l66xb_mmc_disable(struct platform_device *mmc)
->  
->  /*--------------------------------------------------------------------------*/
->  
-> +static const struct tmio_mmc_data t7166xb_mmc_data = {
-> +	.hclk = 24000000,
-> +};
-> +
->  static const struct resource t7l66xb_mmc_resources[] = {
->  	{
->  		.start = 0x800,
-> @@ -149,6 +153,7 @@ static struct mfd_cell t7l66xb_cells[] = {
->  		.name = "tmio-mmc",
->  		.enable = t7l66xb_mmc_enable,
->  		.disable = t7l66xb_mmc_disable,
-> +		.driver_data = &t7166xb_mmc_data,
->  		.num_resources = ARRAY_SIZE(t7l66xb_mmc_resources),
->  		.resources = t7l66xb_mmc_resources,
->  	},
-> diff --git a/drivers/mfd/tc6387xb.c b/drivers/mfd/tc6387xb.c
-> index 43222c1..c3993ac 100644
-> --- a/drivers/mfd/tc6387xb.c
-> +++ b/drivers/mfd/tc6387xb.c
-> @@ -75,6 +75,10 @@ static int tc6387xb_mmc_disable(struct platform_device *mmc)
->  
->  /*--------------------------------------------------------------------------*/
->  
-> +const static struct tmio_mmc_data tc6387xb_mmc_data = {
-> +	.hclk = 24000000,
-> +};
-> +
->  static struct resource tc6387xb_mmc_resources[] = {
->  	{
->  		.start = 0x800,
-> @@ -98,6 +102,7 @@ static struct mfd_cell tc6387xb_cells[] = {
->  		.name = "tmio-mmc",
->  		.enable = tc6387xb_mmc_enable,
->  		.disable = tc6387xb_mmc_disable,
-> +		.driver_data = &tc6387xb_mmc_data,
->  		.num_resources = ARRAY_SIZE(tc6387xb_mmc_resources),
->  		.resources = tc6387xb_mmc_resources,
->  	},
-> diff --git a/drivers/mfd/tc6393xb.c b/drivers/mfd/tc6393xb.c
-> index 77a12fc..9d2abb5 100644
-> --- a/drivers/mfd/tc6393xb.c
-> +++ b/drivers/mfd/tc6393xb.c
-> @@ -136,6 +136,10 @@ static int tc6393xb_nand_enable(struct platform_device *nand)
->  	return 0;
->  }
->  
-> +const static struct tmio_mmc_data tc6393xb_mmc_data = {
-> +	.hclk = 24000000,
-> +};
-> +
->  static struct resource __devinitdata tc6393xb_nand_resources[] = {
->  	{
->  		.start	= 0x1000,
-> @@ -351,6 +355,7 @@ static struct mfd_cell __devinitdata tc6393xb_cells[] = {
->  	},
->  	[TC6393XB_CELL_MMC] = {
->  		.name = "tmio-mmc",
-> +		.driver_data = &tc6393xb_mmc_data,
->  		.num_resources = ARRAY_SIZE(tc6393xb_mmc_resources),
->  		.resources = tc6393xb_mmc_resources,
->  	},
-> diff --git a/drivers/mmc/host/tmio_mmc.c b/drivers/mmc/host/tmio_mmc.c
-> index 63fbd5b..49df71e 100644
-> --- a/drivers/mmc/host/tmio_mmc.c
-> +++ b/drivers/mmc/host/tmio_mmc.c
-> @@ -35,23 +35,14 @@
->  
->  #include "tmio_mmc.h"
->  
-> -/*
-> - * Fixme - documentation conflicts on what the clock values are for the
-> - * various dividers.
-> - * One document I have says that its a divisor of a 24MHz clock, another 33.
-> - * This probably depends on HCLK for a given platform, so we may need to
-> - * require HCLK be passed to us from the MFD core.
-> - *
-> - */
-> -
->  static void tmio_mmc_set_clock(struct tmio_mmc_host *host, int new_clock)
->  {
->  	void __iomem *cnf = host->cnf;
->  	void __iomem *ctl = host->ctl;
-> -	u32 clk = 0, clock;
-> +	u32 clk = 0, clock, f_min = host->mmc->f_min;
->  
->  	if (new_clock) {
-> -		for (clock = 46875, clk = 0x100; new_clock >= (clock<<1); ) {
-> +		for (clock = f_min, clk = 0x100; new_clock >= (clock<<1); ) {
->  			clock <<= 1;
->  			clk >>= 1;
->  		}
-> @@ -545,6 +536,7 @@ out:
->  static int __devinit tmio_mmc_probe(struct platform_device *dev)
->  {
->  	struct mfd_cell	*cell = (struct mfd_cell *)dev->dev.platform_data;
-> +	struct tmio_mmc_data *pdata;
->  	struct resource *res_ctl, *res_cnf;
->  	struct tmio_mmc_host *host;
->  	struct mmc_host *mmc;
-> @@ -560,6 +552,12 @@ static int __devinit tmio_mmc_probe(struct platform_device *dev)
->  		goto out;
->  	}
->  
-> +	pdata = cell->driver_data;
-> +	if (!pdata || !pdata->hclk) {
-> +		ret = -EINVAL;
-> +		goto out;
-> +	}
-> +
->  	mmc = mmc_alloc_host(sizeof(struct tmio_mmc_host), &dev->dev);
->  	if (!mmc)
->  		goto out;
-> @@ -578,8 +576,8 @@ static int __devinit tmio_mmc_probe(struct platform_device *dev)
->  
->  	mmc->ops = &tmio_mmc_ops;
->  	mmc->caps = MMC_CAP_4_BIT_DATA;
-> -	mmc->f_min = 46875; /* 24000000 / 512 */
-> -	mmc->f_max = 24000000;
-> +	mmc->f_max = pdata->hclk;
-> +	mmc->f_min = mmc->f_max / 512;
->  	mmc->ocr_avail = MMC_VDD_32_33 | MMC_VDD_33_34;
->  
->  	/* Enable the MMC/SD Control registers */
-> diff --git a/include/linux/mfd/tmio.h b/include/linux/mfd/tmio.h
-> index 516d955..c377118 100644
-> --- a/include/linux/mfd/tmio.h
-> +++ b/include/linux/mfd/tmio.h
-> @@ -19,6 +19,13 @@
->  	} while (0)
->  
->  /*
-> + * data for the MMC controller
-> + */
-> +struct tmio_mmc_data {
-> +	unsigned int		hclk;
-> +};
-> +
-> +/*
->   * data for the NAND controller
->   */
->  struct tmio_nand_data {
-> -- 
-> 1.6.3.1
-> 
+Now I have 2 ways of doing this. Always with the choices. :)
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+MfG
+        Goswin
