@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbZFDMyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbZFDMzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758608AbZFDMyS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 08:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758211AbZFDMxz
+	id S1758526AbZFDMzo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 08:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752527AbZFDMzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 08:53:55 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:60986 "EHLO
+	Thu, 4 Jun 2009 08:55:37 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39963 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758304AbZFDMxy (ORCPT
+	with ESMTP id S1755154AbZFDMzh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 08:53:54 -0400
-Date: Thu, 4 Jun 2009 15:01:07 +0200
+	Thu, 4 Jun 2009 08:55:37 -0400
+Date: Thu, 4 Jun 2009 15:02:55 +0200
 From: Andi Kleen <andi@firstfloor.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: Andi Kleen <andi@firstfloor.org>, ying.huang@intel.com,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [2/2] KVM: Add VT-x machine check support
-Message-ID: <20090604130107.GA1065@one.firstfloor.org>
-References: <20090604112.650907584@firstfloor.org> <20090604111205.C47C31D0282@basil.firstfloor.org> <4A27B481.5020003@redhat.com> <20090604125123.GY1065@one.firstfloor.org> <4A27C2BF.3090108@redhat.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [6/16] HWPOISON: Add various poison checks in mm/memory.c
+Message-ID: <20090604130255.GB1065@one.firstfloor.org>
+References: <20090603846.816684333@firstfloor.org> <20090603184639.1933B1D028F@basil.firstfloor.org> <20090604042603.GA15682@localhost> <20090604051915.GN1065@one.firstfloor.org> <20090604115533.GB22118@localhost> <20090604125228.GZ1065@one.firstfloor.org> <20090604125026.GA29026@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A27C2BF.3090108@redhat.com>
+In-Reply-To: <20090604125026.GA29026@localhost>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 03:49:03PM +0300, Avi Kivity wrote:
-> Andi Kleen wrote:
-> >>This assumption is incorrect.  This code is executed after preemption 
-> >>has been enabled, and we may have even slept before reaching it.
-> >>    
-> >
-> >The only thing that counts here is the context before the machine
-> >check event. If there was a vmexit we know it was in guest context.
-> >
-> >The only requirement we have is that we're running still on the same
-> >CPU. I assume that's true, otherwise the vmcb accesses wouldn't work?
-> >  
+On Thu, Jun 04, 2009 at 08:50:26PM +0800, Wu Fengguang wrote:
+> On Thu, Jun 04, 2009 at 08:52:28PM +0800, Andi Kleen wrote:
+> > On Thu, Jun 04, 2009 at 07:55:33PM +0800, Wu Fengguang wrote:
+> > > On Thu, Jun 04, 2009 at 01:19:15PM +0800, Andi Kleen wrote:
+> > > > On Thu, Jun 04, 2009 at 12:26:03PM +0800, Wu Fengguang wrote:
+> > > > > On Thu, Jun 04, 2009 at 02:46:38AM +0800, Andi Kleen wrote:
+> > > > > >
+> > > > > > Bail out early when hardware poisoned pages are found in page fault handling.
+> > > > >
+> > > > > I suspect this patch is also not absolutely necessary: the poisoned
+> > > > > page will normally have been isolated already.
+> > > >
+> > > > It's needed to prevent new pages comming in when there is a parallel
+> > > > fault while the memory failure handling is in process.
+> > > > Otherwise the pages could get remapped in that small window.
+> > > 
+> > > This patch makes no difference at least for file pages, including tmpfs.
+> > 
+> > I was more thinking of anonymous pages with multiple mappers (e.g.
+> > COW after fork)
 > 
-> It's not true, we're in preemptible context and may have even slept.
-> 
-> vmcs access work because we have a preempt notifier called when we are 
-> scheduled in, and will execute vmclear/vmptrld as necessary.  Look at 
-> kvm_preempt_ops in virt/kvm_main.c.
+> I guess they are handled by do_anonymous_page() or do_wp_page(),
+> instead of do_linear_fault()/do_nonlinear_fault()?
 
-I see. So we need to move that check earlier. Do you have a preference
-where it should be?
+You're right. Sorry was a little confused in my earlier reply.
+
+I think what I meant is: what happens during the window
+when the page has just the poison bit set, but is not isolated/unmapped yet.
+During that window I want new mappers to not come in.
+That is why that check is there.
 
 -Andi
 
