@@ -1,73 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbZFDGBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbZFDGLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758079AbZFDGBv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 02:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757549AbZFDGAY
+	id S1756132AbZFDGLc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 02:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZFDGLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 02:00:24 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:59535 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757541AbZFDGAV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 02:00:21 -0400
-X-Greylist: delayed 37292 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Jun 2009 02:00:21 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=O5RZGfPJNhLhZE75ztNMhFAAiReNKvKkgJB0/lY68ytD01RbzUy8xwFzvNgce91z92
-         yEe/E5Lh/TC0gWCVNTrb7HFwUIUQ62aUjTuqmkpo+5PWZJp/G2npnArLSo4c1n66QCKl
-         uGYCqOrlbTfPtejdWtOEeauDLZofGxcLb2nu0=
+	Thu, 4 Jun 2009 02:11:22 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:60446 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751871AbZFDGLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 02:11:21 -0400
+From: Neil Brown <neilb@suse.de>
+To: Dan Williams <dan.j.williams@intel.com>
+Date: Thu, 4 Jun 2009 16:11:43 +1000
 MIME-Version: 1.0
-In-Reply-To: <1244060503.11698.3.camel@localhost>
-References: <64bb37e0905261214g2957924ar837339367f320d4c@mail.gmail.com>
-	 <4A1C7DDB.9010605@gmail.com>
-	 <64bb37e0906031230m22234268k9fdcd43dc1d35f18@mail.gmail.com>
-	 <1244060503.11698.3.camel@localhost>
-Date: Thu, 4 Jun 2009 08:00:22 +0200
-Message-ID: <64bb37e0906032300h5ff0878agf312ba43df2d991@mail.gmail.com>
-Subject: Re: sata_sil24 0000:04:00.0: DMA-API: device driver frees DMA sg list 
-	with different entry count [map count=13] [unmap count=10]
-From: Torsten Kaiser <just.for.lkml@googlemail.com>
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: Robert Hancock <hancockrwd@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18983.26015.413162.445846@notabene.brown>
+Cc: linux-raid@vger.kernel.org, maan@systemlinux.org,
+       linux-kernel@vger.kernel.org, yur@emcraft.com, hpa@zytor.com
+Subject: Re: [PATCH v2 05/11] md/raid5: add scribble region for buffer lists
+In-Reply-To: message from Dan Williams on Monday May 18
+References: <20090519005647.4104.81119.stgit@dwillia2-linux.ch.intel.com>
+	<20090519005951.4104.27062.stgit@dwillia2-linux.ch.intel.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 3, 2009 at 10:21 PM, Kasper Sandberg <lkml@metanurb.dk> wrote:
-> On Wed, 2009-06-03 at 21:30 +0200, Torsten Kaiser wrote:
->> On Wed, May 27, 2009 at 1:40 AM, Robert Hancock <hancockrwd@gmail.com> wrote:
->> > Torsten Kaiser wrote:
->> >>
->> >> On upgrading to 2.6.30-rc1 I enable the DMA-Debugging option
->> >> CONFIG_DMA_API_DEBUG=y
->> >> Since then I get the following or similar errors on each boot:
->> >
->> > Please retest with a newer -rc, this patch likely fixes it:
->> >
->> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5825627c9463581fd9e70f8285685889ae5bb9bb
->> >
->>
->> Still happens with 2.6.30-rc8 (see trace at the end of the email)
->>
-> <snip>
->
-> Does this actually give you any problems? should I be scared to give .30
-> a test?
+On Monday May 18, dan.j.williams@intel.com wrote:
+> Hang some memory off of each stripe_head which can be used for storing
+> the buffer lists used in parity calculations.  Include space for dma
+> address conversions and pass that to async_tx via the
+> async_submit_ctl.scribble pointer.
+> 
+> [ Impact: move memory pressure from stack to heap ]
 
-No, other then the warning from this debug code I do not have any problems.
+I've finally had a look at this and I cannot say that I like it.
 
-As I'm using Gentoo unstable this is triggered most often when I
-install an upgrade to some package.
-I would expect, if this really would write wrong data to the harddisk,
-I would have already destroyed my system.
+We don't really need one scribble-buffer per stripe_head.
+And in fact, that isn't even enough because you find you need a mutex
+to avoid multiple-use.
 
-So while I think there is a problem somewhere that should be fixed,
-I'm still using the .30 kernel for my system.
+We really want one scribble-buffer per thread, or per CPU, or
+something like that.
 
-Torsten
+You could possibly handle it a bit like ->spare_page, though we cope
+with that being NULL some times, and you might not be able to do that
+with scribble-buffer.
+How do the async-raid6 patches cope with possible multiple users of
+->spare_page now that the computations are async and so possible in
+parallel? 
+
+Maybe a little mempool would be best?.... though given that in most
+cases, the stack solution is really quite adequate it would be good to
+make sure the replacement isn't too heavy-weight....
+
+I'm not sure what would be best, but I really don't like the current
+proposal.
+
+NeilBrown
+
+
+> 
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> ---
+>  drivers/md/raid5.c |   61 ++++++++++++++++++++++++++++++++++++++++++----------
+>  drivers/md/raid5.h |    5 ++++
+>  2 files changed, 54 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+> index e1920f2..0e456a6 100644
+> --- a/drivers/md/raid5.c
+> +++ b/drivers/md/raid5.c
+> @@ -275,6 +275,9 @@ static void shrink_buffers(struct stripe_head *sh, int num)
+>  	struct page *p;
+>  	int i;
+>  
+> +	kfree(sh->scribble);
+> +	sh->scribble = NULL;
+> +
+>  	for (i=0; i<num ; i++) {
+>  		p = sh->dev[i].page;
+>  		if (!p)
+> @@ -284,10 +287,26 @@ static void shrink_buffers(struct stripe_head *sh, int num)
+>  	}
+>  }
+>  
+> +static size_t scribble_len(int num)
+> +{
+> +	size_t len;
+> +
+> +	/* return enough space for an array of page pointers and dma
+> +	 * addresses for the ddf raid6 layout
+> +	 */
+> +	len = sizeof(struct page *) * (num+2) + sizeof(addr_conv_t) * (num+2);
+> +
+> +	return len;
+> +}
+> +
+>  static int grow_buffers(struct stripe_head *sh, int num)
+>  {
+>  	int i;
+>  
+> +	sh->scribble = kmalloc(scribble_len(num), GFP_KERNEL);
+> +	if (!sh->scribble)
+> +		return 1;
+> +
+>  	for (i=0; i<num; i++) {
+>  		struct page *page;
+>  
+> @@ -641,11 +660,16 @@ static void ops_complete_compute5(void *stripe_head_ref)
+>  	release_stripe(sh);
+>  }
+>  
+> +/* return a pointer to the address conversion region of the scribble buffer */
+> +static addr_conv_t *sh_to_addr_conv(struct stripe_head *sh)
+> +{
+> +	return sh->scribble + sizeof(struct page *) * (sh->disks + 2);
+> +}
+> +
+>  static struct dma_async_tx_descriptor *ops_run_compute5(struct stripe_head *sh)
+>  {
+> -	/* kernel stack size limits the total number of disks */
+>  	int disks = sh->disks;
+> -	struct page *xor_srcs[disks];
+> +	struct page **xor_srcs = sh->scribble;
+>  	int target = sh->ops.target;
+>  	struct r5dev *tgt = &sh->dev[target];
+>  	struct page *xor_dest = tgt->page;
+> @@ -665,7 +689,7 @@ static struct dma_async_tx_descriptor *ops_run_compute5(struct stripe_head *sh)
+>  	atomic_inc(&sh->count);
+>  
+>  	init_async_submit(&submit, ASYNC_TX_XOR_ZERO_DST, NULL,
+> -			  ops_complete_compute5, sh, NULL);
+> +			  ops_complete_compute5, sh, sh_to_addr_conv(sh));
+>  	if (unlikely(count == 1))
+>  		tx = async_memcpy(xor_dest, xor_srcs[0], 0, 0, STRIPE_SIZE, &submit);
+>  	else
+> @@ -685,9 +709,8 @@ static void ops_complete_prexor(void *stripe_head_ref)
+>  static struct dma_async_tx_descriptor *
+>  ops_run_prexor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
+>  {
+> -	/* kernel stack size limits the total number of disks */
+>  	int disks = sh->disks;
+> -	struct page *xor_srcs[disks];
+> +	struct page **xor_srcs = sh->scribble;
+>  	int count = 0, pd_idx = sh->pd_idx, i;
+>  	struct async_submit_ctl submit;
+>  
+> @@ -705,7 +728,7 @@ ops_run_prexor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
+>  	}
+>  
+>  	init_async_submit(&submit, ASYNC_TX_XOR_DROP_DST, tx,
+> -			  ops_complete_prexor, sh, NULL);
+> +			  ops_complete_prexor, sh, sh_to_addr_conv(sh));
+>  	tx = async_xor(xor_dest, xor_srcs, 0, count, STRIPE_SIZE, &submit);
+>  
+>  	return tx;
+> @@ -776,9 +799,8 @@ static void ops_complete_postxor(void *stripe_head_ref)
+>  static void
+>  ops_run_postxor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
+>  {
+> -	/* kernel stack size limits the total number of disks */
+>  	int disks = sh->disks;
+> -	struct page *xor_srcs[disks];
+> +	struct page **xor_srcs = sh->scribble;
+>  	struct async_submit_ctl submit;
+>  	int count = 0, pd_idx = sh->pd_idx, i;
+>  	struct page *xor_dest;
+> @@ -818,7 +840,8 @@ ops_run_postxor(struct stripe_head *sh, struct dma_async_tx_descriptor *tx)
+>  
+>  	atomic_inc(&sh->count);
+>  
+> -	init_async_submit(&submit, flags, tx, ops_complete_postxor, sh, NULL);
+> +	init_async_submit(&submit, flags, tx, ops_complete_postxor, sh,
+> +			  sh_to_addr_conv(sh));
+>  	if (unlikely(count == 1))
+>  		tx = async_memcpy(xor_dest, xor_srcs[0], 0, 0, STRIPE_SIZE, &submit);
+>  	else
+> @@ -839,9 +862,8 @@ static void ops_complete_check(void *stripe_head_ref)
+>  
+>  static void ops_run_check(struct stripe_head *sh)
+>  {
+> -	/* kernel stack size limits the total number of disks */
+>  	int disks = sh->disks;
+> -	struct page *xor_srcs[disks];
+> +	struct page **xor_srcs = sh->scribble;
+>  	struct dma_async_tx_descriptor *tx;
+>  	struct async_submit_ctl submit;
+>  
+> @@ -857,7 +879,7 @@ static void ops_run_check(struct stripe_head *sh)
+>  			xor_srcs[count++] = dev->page;
+>  	}
+>  
+> -	init_async_submit(&submit, 0, NULL, NULL, NULL, NULL);
+> +	init_async_submit(&submit, 0, NULL, NULL, NULL, sh_to_addr_conv(sh));
+>  	tx = async_xor_val(xor_dest, xor_srcs, 0, count, STRIPE_SIZE,
+>  			   &sh->ops.zero_sum_result, &submit);
+>  
+> @@ -871,6 +893,7 @@ static void raid5_run_ops(struct stripe_head *sh, unsigned long ops_request)
+>  	int overlap_clear = 0, i, disks = sh->disks;
+>  	struct dma_async_tx_descriptor *tx = NULL;
+>  
+> +	mutex_lock(&sh->scribble_lock);
+>  	if (test_bit(STRIPE_OP_BIOFILL, &ops_request)) {
+>  		ops_run_biofill(sh);
+>  		overlap_clear++;
+> @@ -903,6 +926,7 @@ static void raid5_run_ops(struct stripe_head *sh, unsigned long ops_request)
+>  			if (test_and_clear_bit(R5_Overlap, &dev->flags))
+>  				wake_up(&sh->raid_conf->wait_for_overlap);
+>  		}
+> +	mutex_unlock(&sh->scribble_lock);
+>  }
+>  
+>  static int grow_one_stripe(raid5_conf_t *conf)
+> @@ -914,6 +938,7 @@ static int grow_one_stripe(raid5_conf_t *conf)
+>  	memset(sh, 0, sizeof(*sh) + (conf->raid_disks-1)*sizeof(struct r5dev));
+>  	sh->raid_conf = conf;
+>  	spin_lock_init(&sh->lock);
+> +	mutex_init(&sh->scribble_lock);
+>  
+>  	if (grow_buffers(sh, conf->raid_disks)) {
+>  		shrink_buffers(sh, conf->raid_disks);
+> @@ -1007,6 +1032,7 @@ static int resize_stripes(raid5_conf_t *conf, int newsize)
+>  
+>  		nsh->raid_conf = conf;
+>  		spin_lock_init(&nsh->lock);
+> +		mutex_init(&nsh->scribble_lock);
+>  
+>  		list_add(&nsh->lru, &newstripes);
+>  	}
+> @@ -1038,6 +1064,7 @@ static int resize_stripes(raid5_conf_t *conf, int newsize)
+>  			nsh->dev[i].page = osh->dev[i].page;
+>  		for( ; i<newsize; i++)
+>  			nsh->dev[i].page = NULL;
+> +		nsh->scribble = osh->scribble;
+>  		kmem_cache_free(conf->slab_cache, osh);
+>  	}
+>  	kmem_cache_destroy(conf->slab_cache);
+> @@ -1058,8 +1085,18 @@ static int resize_stripes(raid5_conf_t *conf, int newsize)
+>  
+>  	/* Step 4, return new stripes to service */
+>  	while(!list_empty(&newstripes)) {
+> +		void *scribble;
+> +
+>  		nsh = list_entry(newstripes.next, struct stripe_head, lru);
+>  		list_del_init(&nsh->lru);
+> +
+> +		scribble = kmalloc(scribble_len(newsize), GFP_NOIO);
+> +		if (scribble) {
+> +			kfree(nsh->scribble);
+> +			nsh->scribble = scribble;
+> +		} else
+> +			err = -ENOMEM;
+> +
+>  		for (i=conf->raid_disks; i < newsize; i++)
+>  			if (nsh->dev[i].page == NULL) {
+>  				struct page *p = alloc_page(GFP_NOIO);
+> diff --git a/drivers/md/raid5.h b/drivers/md/raid5.h
+> index 52ba999..6ab0ccd 100644
+> --- a/drivers/md/raid5.h
+> +++ b/drivers/md/raid5.h
+> @@ -211,6 +211,11 @@ struct stripe_head {
+>  	int			disks;		/* disks in stripe */
+>  	enum check_states	check_state;
+>  	enum reconstruct_states reconstruct_state;
+> +	void			*scribble;	/* space for constructing buffer
+> +						 * lists and performing address
+> +						 * conversions
+> +						 */
+> +	struct mutex		scribble_lock; /* no concurrent scribbling */
+>  	/* stripe_operations
+>  	 * @target - STRIPE_OP_COMPUTE_BLK target
+>  	 */
