@@ -1,107 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757647AbZFDLxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbZFDLzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757647AbZFDLxt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 07:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756194AbZFDLxl
+	id S1757842AbZFDLzs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 07:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbZFDLzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 07:53:41 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60949 "EHLO mx3.mail.elte.hu"
+	Thu, 4 Jun 2009 07:55:41 -0400
+Received: from mga14.intel.com ([143.182.124.37]:12436 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754687AbZFDLxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 07:53:40 -0400
-Date: Thu, 4 Jun 2009 13:53:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v2][GIT PULL] tracing: add trace_stack interface
-Message-ID: <20090604115334.GA26925@elte.hu>
-References: <alpine.DEB.2.00.0905192043090.7816@gandalf.stny.rr.com> <alpine.DEB.2.00.0905192108560.7816@gandalf.stny.rr.com> <20090603214814.GA5193@nowhere>
+	id S1754832AbZFDLzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 07:55:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,305,1241420400"; 
+   d="scan'208";a="150598163"
+Date: Thu, 4 Jun 2009 19:55:33 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [6/16] HWPOISON: Add various poison checks in
+	mm/memory.c
+Message-ID: <20090604115533.GB22118@localhost>
+References: <20090603846.816684333@firstfloor.org> <20090603184639.1933B1D028F@basil.firstfloor.org> <20090604042603.GA15682@localhost> <20090604051915.GN1065@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090603214814.GA5193@nowhere>
+In-Reply-To: <20090604051915.GN1065@one.firstfloor.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jun 04, 2009 at 01:19:15PM +0800, Andi Kleen wrote:
+> On Thu, Jun 04, 2009 at 12:26:03PM +0800, Wu Fengguang wrote:
+> > On Thu, Jun 04, 2009 at 02:46:38AM +0800, Andi Kleen wrote:
+> > >
+> > > Bail out early when hardware poisoned pages are found in page fault handling.
+> >
+> > I suspect this patch is also not absolutely necessary: the poisoned
+> > page will normally have been isolated already.
+>
+> It's needed to prevent new pages comming in when there is a parallel
+> fault while the memory failure handling is in process.
+> Otherwise the pages could get remapped in that small window.
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+This patch makes no difference at least for file pages, including tmpfs.
 
-> On Tue, May 19, 2009 at 09:09:40PM -0400, Steven Rostedt wrote:
-> > 
-> > Ingo,
-> > 
-> > I rebased because I forgot to add EXPORT_SYMBOL_GPL.
-> > 
-> > -- Steve
-> > 
-> > Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> > tip/tracing/ftrace
-> > 
-> > 
-> > Steven Rostedt (1):
-> >       tracing: add trace_stack interface
-> > 
-> > ----
-> >  include/linux/kernel.h |    2 ++
-> >  kernel/trace/trace.c   |   16 ++++++++++++++++
-> >  2 files changed, 18 insertions(+), 0 deletions(-)
-> > ---------------------------
-> > commit 9f6b28655254b91c48f684b367ac14bfec0e180a
-> > Author: Steven Rostedt <srostedt@redhat.com>
-> > Date:   Tue May 19 18:54:16 2009 -0400
-> > 
-> >     tracing: add trace_stack interface
-> >     
-> >     This patch adds the global function
-> >     
-> >       void trace_stack(void)
-> >     
-> >     This allows a developer to find where a function is called. For example,
-> >     if you want to know who calls __netif_reschedule, you can add
-> >     
-> >      static inline void __netif_reschedule(struct Qdisc *q)
-> >      {
-> >      	struct softnet_data *sd;
-> >      	unsigned long flags;
-> >     
-> >     +	trace_stack();
-> >      	local_irq_save(flags);
-> >      	sd = &__get_cpu_var(softnet_data);
-> >      	q->next_sched = sd->output_queue;
-> >     
-> >     And see the following in the trace output:
-> >     
-> >      <= __ftrace_trace_stack
-> >      <= trace_stack
-> >      <= __netif_schedule
-> >      <= dev_watchdog
-> >      <= run_timer_softirq
-> >      <= __do_softirq
-> >      <= call_softirq
-> >      <= do_softirq
-> >      <= irq_exit
-> >     
-> >     Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> 
-> 
-> I wanted to use it to get the recursive locking points in reiserfs
-> but I can't find it.
-> 
-> Has it been merged in -tip ?
+In filemap_fault(), it will first do find_lock_page(), which will lock
+the page and then double check if the page->mapping is NULL.  If so,
+it drops that page and re-find/re-create one in the radix tree.
 
-hm, Steve has not sent it along AFAICS. There were no objections 
-from me.
+That logic automatically avoids the poisoned page that is being
+processed, because the poisoned page is now being locked, and when
+find_lock_page() eventually is able to lock it, its page->mapping
+will be NULL. So the PageHWPoison(vmf.page) test will never be true
+for filemap_fault.
 
-	Ingo
+shmem_fault() calls shmem_getpage() to get the page, which will return
+EIO on !uptodate page. It then returns VM_FAULT_SIGBUS on its own.
+
+> > > --- linux.orig/mm/memory.c	2009-06-03 19:36:23.000000000 +0200
+> > > +++ linux/mm/memory.c	2009-06-03 19:36:23.000000000 +0200
+> > > @@ -2797,6 +2797,9 @@
+> > >  	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
+> > >  		return ret;
+> > >
+> > > +	if (unlikely(PageHWPoison(vmf.page)))
+> > > +		return VM_FAULT_HWPOISON;
+> > > +
+> >
+> > Direct return with locked page could lockup someone later.
+> > Either drop this patch or fix it with this check?
+>
+> Fair point. Fixed.
+
+OK, thanks.
+
+Fengguang
