@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758562AbZFDMum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757845AbZFDMvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758562AbZFDMum (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 08:50:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756511AbZFDMuf
+	id S1757845AbZFDMvo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 08:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbZFDMvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 08:50:35 -0400
-Received: from mga03.intel.com ([143.182.124.21]:7775 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755592AbZFDMue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 08:50:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,305,1241420400"; 
-   d="scan'208";a="150615714"
-Date: Thu, 4 Jun 2009 20:50:26 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [6/16] HWPOISON: Add various poison checks in
-	mm/memory.c
-Message-ID: <20090604125026.GA29026@localhost>
-References: <20090603846.816684333@firstfloor.org> <20090603184639.1933B1D028F@basil.firstfloor.org> <20090604042603.GA15682@localhost> <20090604051915.GN1065@one.firstfloor.org> <20090604115533.GB22118@localhost> <20090604125228.GZ1065@one.firstfloor.org>
+	Thu, 4 Jun 2009 08:51:35 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:49324 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751692AbZFDMve (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 08:51:34 -0400
+Date: Thu, 4 Jun 2009 13:51:19 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
+Message-ID: <20090604125119.GB24491@flint.arm.linux.org.uk>
+Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+References: <200905282104.55818.arnd@arndb.de> <200906011111.28521.arnd@arndb.de> <20090604165703N.fujita.tomonori@lab.ntt.co.jp> <200906041235.34686.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090604125228.GZ1065@one.firstfloor.org>
+In-Reply-To: <200906041235.34686.arnd@arndb.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 08:52:28PM +0800, Andi Kleen wrote:
-> On Thu, Jun 04, 2009 at 07:55:33PM +0800, Wu Fengguang wrote:
-> > On Thu, Jun 04, 2009 at 01:19:15PM +0800, Andi Kleen wrote:
-> > > On Thu, Jun 04, 2009 at 12:26:03PM +0800, Wu Fengguang wrote:
-> > > > On Thu, Jun 04, 2009 at 02:46:38AM +0800, Andi Kleen wrote:
-> > > > >
-> > > > > Bail out early when hardware poisoned pages are found in page fault handling.
-> > > >
-> > > > I suspect this patch is also not absolutely necessary: the poisoned
-> > > > page will normally have been isolated already.
-> > >
-> > > It's needed to prevent new pages comming in when there is a parallel
-> > > fault while the memory failure handling is in process.
-> > > Otherwise the pages could get remapped in that small window.
-> > 
-> > This patch makes no difference at least for file pages, including tmpfs.
+On Thu, Jun 04, 2009 at 12:35:34PM +0000, Arnd Bergmann wrote:
+> static inline int
+> dma_supported(struct device *dev, u64 mask)
+> {
+> 	/*
+> 	 * dma_supported means that dma_alloc_{non,}coherent
+> 	 * will succeed in finding an addressable page.
+> 	 */
+> 	u64 zone_dma_max_pfn;
+> 	struct pgdat *pgdat;
+> 	struct zone *zone;
 > 
-> I was more thinking of anonymous pages with multiple mappers (e.g.
-> COW after fork)
+> 	for_each_online_pgdat(pgdat) {
+> 		/* the first zone on each node is most likely to fit in the mask */
+> 		zone = pgdat->node_zones[0];
+> 		if (populated_zone(zone) {
+> 			max_dma_pfn = zone->zone_start_pfn + zone->spanned_pages);
+> 			/* max_dma_pfn is actually constant, we could store it
+> 			    somewhere instead of looking it up every time. */
+> 			if (mask < (max_dma_pfn << PAGE_SHIFT))
 
-I guess they are handled by do_anonymous_page() or do_wp_page(),
-instead of do_linear_fault()/do_nonlinear_fault()?
+And here we go promoting dma-mask-is-not-a-mask-but-a-limit (which I
+brought up in the KS thread on linux-arch.)
 
-Thanks,
-Fengguang
+It's fine if your DMA-able memory starts at physical address 0 and ends
+somewhere else, but this is no longer the case with embedded platforms.
+As pointed out in the other thread, there are platforms which have two
+separate banks of memory, the one at the lower physical address is not
+DMA capable.
 
+This means that treating the DMA mask as a limit does not work for these
+platforms (and, sometimes, treating it as a real mask also doesn't work.)
+
+A good step forward would be to get a concensus on this stupid DMA mask
+thing.  Is it a _mask_, or is it a _limit_?  If it's a mask then let's
+start treating it as such throughout the kernel code.  If it's a limit,
+let's rename the damned thing so everyone knows that.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
