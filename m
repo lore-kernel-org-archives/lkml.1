@@ -1,135 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbZFDKlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbZFDKrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757187AbZFDKlW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 06:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZFDKlO
+	id S1756557AbZFDKrw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 06:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZFDKrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 06:41:14 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:41185 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751169AbZFDKlN (ORCPT
+	Thu, 4 Jun 2009 06:47:43 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:60222 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751512AbZFDKrm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 06:41:13 -0400
-X-SpamScore: -3
-X-BigFish: VPS-3(zz4015Lzz1202hzzz32i6bh17ch61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KKPN0E-01-PHL-01
-Date: Thu, 4 Jun 2009 12:40:16 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: detect use of extended APIC ID for AMD CPUs
-Message-ID: <20090604104016.GT5736@alberich.amd.com>
+	Thu, 4 Jun 2009 06:47:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=jDD8dnPWcu7xFOSuLzje++nNCFg1vFnK5kkG9Jv8TUjTh+DBFEQIqs43J7Ec8yI2nH
+         ET/zHEacpj+LMW6qO32jgFSlbmvKQJ+4WmCApZ+9uY6ik5xhZK0wM2QyjyZS9r+10yc0
+         2NYFwOHi0L9+4Sg6ow2yXFH2/4vQNOODevYnQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 04 Jun 2009 10:41:03.0542 (UTC) FILETIME=[F5537D60:01C9E500]
+In-Reply-To: <5d5443650906040216h2314b7bbt1ae2e89c709b566e@mail.gmail.com>
+References: <4A278C08.5000206@samsung.com>
+	 <5d5443650906040216h2314b7bbt1ae2e89c709b566e@mail.gmail.com>
+Date: Thu, 4 Jun 2009 19:47:43 +0900
+Message-ID: <1f3430fb0906040347m1079def5j7d820e18a9375eaa@mail.gmail.com>
+Subject: Re: [PATCH v2] add MAX17040 Fuel Gauge driver
+From: Minkyu Kang <promsoft@gmail.com>
+To: Trilok Soni <soni.trilok@gmail.com>
+Cc: Minkyu Kang <mk7.kang@samsung.com>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, linux-i2c@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, Trilok
 
-Booting a 32-bit kernel on Magny-Cours results in the following panic
+> Adding linux-i2c mailing list, so not deleting any code.
 
-  ...
-  Using APIC driver default
-  ...
-  Overriding APIC driver with bigsmp
-  ...
-  Getting VERSION: 80050010
-  Getting VERSION: 80050010
-  Getting ID: 10000000
-  Getting ID: ef000000
-  Getting LVT0: 700
-  Getting LVT1: 10000
-  Kernel panic - not syncing: Boot APIC ID in local APIC unexpected (16 vs 0)
-  Pid: 1, comm: swapper Not tainted 2.6.30-rcX #2
-  Call Trace:
-   [<c05194da>] ? panic+0x38/0xd3
-   [<c0743102>] ? native_smp_prepare_cpus+0x259/0x31f
-   [<c073b19d>] ? kernel_init+0x3e/0x141
-   [<c073b15f>] ? kernel_init+0x0/0x141
-   [<c020325f>] ? kernel_thread_helper+0x7/0x10
+Ok, I will.
 
-The reason is that default_get_apic_id handled extension of local APIC
-ID field just in case of XAPIC.
-Thus for this AMD CPU, default_get_apic_id() returns 0 and
-bigsmp_get_apic_id() returns 16 which leads to the respective kernel
-panic.
+>> +static struct max17040_chip *max17040;
+>> +static struct max17040_platform_data *pdata;
+>
+> May be you want to move this pdata under chip structure.
+>
+>> +       i2c_set_clientdata(client, chip);
+>
+> Please add i2c_check_functionality check before doing any smbus
+> read/write operations.
+>
 
-This patch introduces a Linux specific feature flag to indicate
-support for extended APIC id (8 bits instead of 4 bits width) and sets
-the flag on AMD CPUs if applicable.
+Ok, that's better.
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/include/asm/apic.h       |    2 +-
- arch/x86/include/asm/cpufeature.h |    1 +
- arch/x86/kernel/cpu/amd.c         |    9 +++++++++
- 3 files changed, 11 insertions(+), 1 deletions(-)
+>> +       max17040 = chip;
+>
+> This means that we support only one instance of this chip, right?
+>
 
-Normally you would run 64-bit kernel on such a CPU which correctly
-handles 8-bit APIC id. So this is not a big issue, but it's still a
-bug in the 32-bit case.
-
-Patch is against tip/master plus 5 patches from
-"[PATCH 0/5 v3] x86: adapt CPU topology detection for AMD Magny-Cours"
-Please apply.
+Yes right.. but, I think that is not a good way.
+I'll modify it, too. thanks :)
 
 
-Thanks,
-
-Andreas
-
-diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
-index 229d0be..bb7d479 100644
---- a/arch/x86/include/asm/apic.h
-+++ b/arch/x86/include/asm/apic.h
-@@ -402,7 +402,7 @@ static inline unsigned default_get_apic_id(unsigned long x)
- {
- 	unsigned int ver = GET_APIC_VERSION(apic_read(APIC_LVR));
- 
--	if (APIC_XAPIC(ver))
-+	if (APIC_XAPIC(ver) || boot_cpu_has(X86_FEATURE_EXTD_APICID))
- 		return (x >> 24) & 0xFF;
- 	else
- 		return (x >> 24) & 0x0F;
-diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
-index 7abe596..6143bfb 100644
---- a/arch/x86/include/asm/cpufeature.h
-+++ b/arch/x86/include/asm/cpufeature.h
-@@ -95,6 +95,7 @@
- #define X86_FEATURE_NONSTOP_TSC	(3*32+24) /* TSC does not stop in C states */
- #define X86_FEATURE_CLFLUSH_MONITOR (3*32+25) /* "" clflush reqd with monitor */
- #define X86_FEATURE_AMD_DCM     (3*32+26) /* multi-node processor */
-+#define X86_FEATURE_EXTD_APICID	(3*32+27) /* has extended APICID (8 bits) */
- 
- /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
- #define X86_FEATURE_XMM3	(4*32+ 0) /* "pni" SSE-3 */
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index 8c27925..551adb8 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -409,6 +409,15 @@ static void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
- 		    (c->x86_model == 8 && c->x86_mask >= 8))
- 			set_cpu_cap(c, X86_FEATURE_K6_MTRR);
- #endif
-+#ifdef CONFIG_X86_LOCAL_APIC
-+	/* check CPU config space for extended APIC ID */
-+	if (c->x86 >= 0xf) {
-+		unsigned int val;
-+		val = read_pci_config(0, 24, 0, 0x68);
-+		if ((val & ((1 << 17) | (1 << 18))) == ((1 << 17) | (1 << 18)))
-+			set_cpu_cap(c, X86_FEATURE_EXTD_APICID);
-+	}
-+#endif
- }
- 
- static void __cpuinit init_amd(struct cpuinfo_x86 *c)
 -- 
-1.6.0.4
-
-
-
+from. prom.
+promsoft.net
