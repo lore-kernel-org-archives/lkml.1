@@ -1,190 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752855AbZFDSh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbZFDSon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752855AbZFDSh6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 14:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZFDShO
+	id S1753139AbZFDSon (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 14:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbZFDSof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 14:37:14 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:20279 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753652AbZFDShM (ORCPT
+	Thu, 4 Jun 2009 14:44:35 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:57542 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751327AbZFDSof convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 14:37:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=MloL83NSKaWJkAzy3dwH11+1Pvt7vKRJad7L1fO0lfmbjv3SjklXSsBJ8OzFiBXXIo
-         6P/JCL/950wfFbc15X0BkrnnQhUskRvGv+RgxkPKdY5tamBmGHqBEgS7Hziw/9C4tfC9
-         KSp/oI9Kq2f+drrZoc8MiVOMymLEcBXQ+x5rg=
-From: Philipp Zabel <philipp.zabel@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Samuel Ortiz <sameo@openedhand.com>,
-       Philipp Zabel <philipp.zabel@gmail.com>
-Subject: [PATCH 7/7] MFD: ASIC3: enable SD/SDIO cell
-Date: Thu,  4 Jun 2009 20:36:16 +0200
-Message-Id: <1244140576-18006-8-git-send-email-philipp.zabel@gmail.com>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1244140576-18006-1-git-send-email-philipp.zabel@gmail.com>
-References: <1244140576-18006-1-git-send-email-philipp.zabel@gmail.com>
+	Thu, 4 Jun 2009 14:44:35 -0400
+Message-ID: <4A281600.7040406@cosmosbay.com>
+Date: Thu, 04 Jun 2009 20:44:16 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: david@lang.hm
+CC: Steven Rostedt <rostedt@goodmis.org>, Philipp Reh <sefi@s-e-f-i.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: When does Linux drop UDP packets?
+References: <20090604145347.GA27692@miyuki> <20090604155741.GA8999@goodmis.org> <alpine.DEB.1.10.0906041050290.7953@asgard>
+In-Reply-To: <alpine.DEB.1.10.0906041050290.7953@asgard>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This enables the ASIC3's SD/SDIO MFD cell, supported by the tmio_mmc driver.
+david@lang.hm a écrit :
+> On Thu, 4 Jun 2009, Steven Rostedt wrote:
+> 
+>> On Thu, Jun 04, 2009 at 04:53:47PM +0200, Philipp Reh wrote:
+>>> Dear list,
+>>>
+>>> I have the following setting in which a client that resides on the same
+>>> physical network as a server wants to receive any UDP packet that
+>>> arrives on any of its interfaces sent by that server.
+>>>
+>>> The code sets the broadcast flag, calls bind to INADDR_ANY and
+>>> uses recvfrom from there on.
+>>>
+>>> Let's say the server resides in the subnet 192.168.6.255 and the
+>>> client in 192.168.3.255. The server uses its real IP as the packet's
+>>> sender ip (192.168.6.5).
+>>
+>> You don't say what the client IP is. Let's assume that it is 192.168.3.1
+>> for simplicity.
+>>
+>>>
+>>> Now the first problem I've encountered is the following:
+>>> If the client removes its default route and doesn't have any route
+>>> pointing into the subnet the server is in, the packets get discarded
+>>> (still tcpdump sees them).
+>>>
+>>
+>> Are you saying that the server sent to 192.168.3.1 with source ip of
+>> 192.168.6.5 and the client did not see it?
+>>
+>>> The second problem is that if the server uses the broadcast address as
+>>> its sender address (255.255.255.255), the packets get always discarded
+>>> (again, tcpdump sees them).
+>>
+>> Again, what was the destination IP address?
+>>
+>>> Now if the server fakes its sender address to be in the client's subnet,
+>>> every packet arrives again.
+>>
+>> So the only thing you change is the sender address?
+>>
+>> What tools are you using to read the packets, and how do you know it is
+>> dropped?
+> 
+> 
+> I have seen the same thing. I have syslog servers on one subnet without
+> a default route. If I configure a server on another subnet to send it
+> logs I can see the packets with tcpdump, but syslogd will not record them.
+> 
+> If I configure a route on the recieving box that makes it think that it
+> can get to the sender (note that the route can be completely bogus,
+> pointing at a wrong or non-existing gateway) the kernel is happy and the
+> packets show up to syslogd
+> 
+> the systems I am running do _not_ have selinux on them.
+> 
+> I have seen this as far back as 2.6.12 so it's not a recent change.
+> 
+> if you need examples with IP addresses
+> 
+> box 1
+> IP 10.1.1.2
+> 
+> router
+> IP 10.1.1.1
+> IP 192.168.1.1
+> 
+> box 2
+> IP 192.168.1.2
+> 
+> If I configure box 2 to have a route to box1, but do not configure box 1
+> to have any route (including not having a default route) that would get
+> it to a 192.168.1.x subnet tcpdump on box 1 will show the syslog
+> packets, but syslog (and any non-pcap tool) will not see the packets)
+> 
+> if I configure a route on box 1 to have a default route of 10.1.1.3
+> (which does not exist, so cannot possibly route packets anywhere) then
+> everything works.
 
-Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
----
- drivers/mfd/asic3.c |  111 +++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 108 insertions(+), 3 deletions(-)
+I guess you need to change rp_filter settings
 
-diff --git a/drivers/mfd/asic3.c b/drivers/mfd/asic3.c
-index cfe8b32..f25cc1e 100644
---- a/drivers/mfd/asic3.c
-+++ b/drivers/mfd/asic3.c
-@@ -27,6 +27,7 @@
- #include <linux/mfd/asic3.h>
- #include <linux/mfd/core.h>
- #include <linux/mfd/ds1wm.h>
-+#include <linux/mfd/tmio.h>
- 
- enum {
- 	ASIC3_CLOCK_SPI,
-@@ -714,11 +715,101 @@ static struct mfd_cell asic3_cell_ds1wm = {
- 	.resources     = ds1wm_resources,
- };
- 
-+static struct tmio_mmc_data asic3_mmc_data = {
-+	.hclk = 24576000,
-+};
-+
-+static struct resource asic3_mmc_resources[] = {
-+	{
-+		.start = ASIC3_SD_CTRL_BASE,
-+		.end   = ASIC3_SD_CTRL_BASE + 0x3ff,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = ASIC3_SD_CONFIG_BASE,
-+		.end   = ASIC3_SD_CONFIG_BASE + 0x1ff,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = 0,
-+		.end   = 0,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+};
-+
-+static int asic3_mmc_enable(struct platform_device *pdev)
-+{
-+	struct device *dev = pdev->dev.parent;
-+	struct asic3 *asic = dev->driver_data;
-+
-+	/* Not sure if it must be done bit by bit, but leaving as-is */
-+	asic3_set_sdhwctrl(asic, ASIC3_SDHWCTRL_LEVCD, 1);
-+	asic3_set_sdhwctrl(asic, ASIC3_SDHWCTRL_LEVWP, 1);
-+	asic3_set_sdhwctrl(asic, ASIC3_SDHWCTRL_SUSPEND, 0);
-+	asic3_set_sdhwctrl(asic, ASIC3_SDHWCTRL_PCLR, 0);
-+
-+	asic3_clk_enable(asic, &asic->clocks[ASIC3_CLOCK_EX0]);
-+	/* CLK32 used for card detection and for interruption detection
-+	 * when HCLK is stopped.
-+	 */
-+	asic3_clk_enable(asic, &asic->clocks[ASIC3_CLOCK_EX1]);
-+	msleep(1);
-+
-+	/* HCLK 24.576 MHz, BCLK 12.288 MHz: */
-+	asic3_write_register(asic, ASIC3_OFFSET(CLOCK, SEL),
-+		CLOCK_SEL_CX | CLOCK_SEL_SD_HCLK_SEL);
-+
-+	asic3_clk_enable(asic, &asic->clocks[ASIC3_CLOCK_SD_HOST]);
-+	asic3_clk_enable(asic, &asic->clocks[ASIC3_CLOCK_SD_BUS]);
-+	msleep(1);
-+
-+	asic3_set_extcf_select(dev, ASIC3_EXTCF_SD_MEM_ENABLE, 1);
-+
-+	/* Enable SD card slot 3.3V power supply */
-+	asic3_set_sdhwctrl(asic, ASIC3_SDHWCTRL_SDPWR, 1);
-+
-+	return 0;
-+}
-+
-+static int asic3_mmc_disable(struct platform_device *pdev)
-+{
-+	struct device *dev = pdev->dev.parent;
-+	struct asic3 *asic = dev->driver_data;
-+
-+	/* Put in suspend mode */
-+	asic3_set_sdhwctrl(asic, ASIC3_SDHWCTRL_SUSPEND, 1);
-+
-+	/* Disable clocks */
-+	asic3_clk_disable(asic, &asic->clocks[ASIC3_CLOCK_SD_HOST]);
-+	asic3_clk_disable(asic, &asic->clocks[ASIC3_CLOCK_SD_BUS]);
-+	asic3_clk_disable(asic, &asic->clocks[ASIC3_CLOCK_EX0]);
-+	asic3_clk_disable(asic, &asic->clocks[ASIC3_CLOCK_EX1]);
-+	return 0;
-+}
-+
-+static struct mfd_cell asic3_cell_mmc = {
-+	.name = "tmio-mmc",
-+	.enable = asic3_mmc_enable,
-+	.disable = asic3_mmc_disable,
-+	.driver_data = &asic3_mmc_data,
-+	.num_resources = ARRAY_SIZE(asic3_mmc_resources),
-+	.resources = asic3_mmc_resources,
-+};
-+
- static int __init asic3_mfd_probe(struct platform_device *pdev,
- 				  struct resource *mem)
- {
- 	struct asic3 *asic = platform_get_drvdata(pdev);
--	int ret;
-+	struct resource *mem_sdio;
-+	int irq, ret;
-+
-+	mem_sdio = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+	if (!mem_sdio)
-+		dev_dbg(asic->dev, "no SDIO MEM resource\n");
-+
-+	irq = platform_get_irq(pdev, 1);
-+	if (irq < 0)
-+		dev_dbg(asic->dev, "no SDIO IRQ resource\n");
- 
- 	/* DS1WM */
- 	asic3_set_extcf_select(&pdev->dev, ASIC3_EXTCF_OWM_SMB, 0);
-@@ -730,16 +821,30 @@ static int __init asic3_mfd_probe(struct platform_device *pdev,
- 	asic3_cell_ds1wm.platform_data = &asic3_cell_ds1wm;
- 	asic3_cell_ds1wm.data_size = sizeof(asic3_cell_ds1wm);
- 
-+	/* MMC */
-+	asic3_mmc_resources[0].start >>= (2 - asic->bus_shift);
-+	asic3_mmc_resources[0].end   >>= (2 - asic->bus_shift);
-+	asic3_mmc_resources[1].start >>= (2 - asic->bus_shift);
-+	asic3_mmc_resources[1].end   >>= (2 - asic->bus_shift);
-+
-+	asic3_cell_mmc.platform_data = &asic3_cell_mmc;
-+	asic3_cell_mmc.data_size = sizeof(asic3_cell_mmc);
-+
- 	ret = mfd_add_devices(&pdev->dev, pdev->id,
- 			&asic3_cell_ds1wm, 1, mem, asic->irq_base);
-+	if (ret < 0)
-+		goto out;
- 
-+	if (mem_sdio && (irq >= 0))
-+		ret = mfd_add_devices(&pdev->dev, pdev->id,
-+			&asic3_cell_mmc, 1, mem_sdio, irq);
-+
-+ out:
- 	return ret;
- }
- 
- static void asic3_mfd_remove(struct platform_device *pdev)
- {
--	struct asic3 *asic = platform_get_drvdata(pdev);
--
- 	mfd_remove_devices(&pdev->dev);
- }
- 
--- 
-1.6.3.1
+Documentation/networking/ip-sysctl.txt
+
+rp_filter - INTEGER
+
+        0 - No source validation.
+        1 - Strict mode as defined in RFC3704 Strict Reverse Path
+            Each incoming packet is tested against the FIB and if the interface
+            is not the best reverse path the packet check will fail.
+            By default failed packets are discarded.
+        2 - Loose mode as defined in RFC3704 Loose Reverse Path
+            Each incoming packet's source address is also tested against the FIB
+            and if the source address is not reachable via any interface
+            the packet check will fail.
+
+        Current recommended practice in RFC3704 is to enable strict mode
+        to prevent IP spoofing from DDos attacks. If using asymmetric routing
+        or other complicated routing, then loose mode is recommended.
+
+        conf/all/rp_filter must also be set to non-zero to do source validation
+        on the interface
+
+        Default value is 0. Note that some distributions enable it
+        in startup scripts.
+
+
+> 
+>>> So my real question is:
+>>> When does Linux discard packets and how can I prevent it from doing
+>>> that?
+> 
+> for this problem, set a default route that points at a non-existing
+> gateway and I believe that your problem will go away.
+
 
