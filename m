@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbZFDUdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbZFDUdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807AbZFDUdS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 16:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbZFDUdG
+	id S1754445AbZFDUdb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 16:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZFDUdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 16:33:06 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:59023 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751713AbZFDUdF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 16:33:05 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:subject:message-id:user-agent:mime-version:content-type;
-	b=hoCPRi8NG0gDDYobEp6NSG16XPXW6a5yTTrtNsfjIIE7+AzEiSLa7mwv49ns4k/j3
-	EyObXpXzOsn04PcORUtkA==
-Date: Thu, 4 Jun 2009 13:32:55 -0700 (PDT)
-From: Salman Qazi <sqazi@google.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: A bug in read operation for /dev/zero and a proposed fix.
-Message-ID: <alpine.DEB.1.00.0906041330170.32557@bumblebee1.mtv.corp.google.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Thu, 4 Jun 2009 16:33:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40174 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752255AbZFDUdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 16:33:22 -0400
+Date: Thu, 4 Jun 2009 16:33:13 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Michael S. Zick" <lkml@morethan.org>
+Cc: Harald Welte <HaraldWelte@viatech.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
+Message-ID: <20090604203313.GA19286@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Michael S. Zick" <lkml@morethan.org>,
+	Harald Welte <HaraldWelte@viatech.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Duane Griffin <duaneg@dghda.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906041121.30845.lkml@morethan.org> <20090604174059.GB9823@prithivi.gnumonks.org> <200906041312.45847.lkml@morethan.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906041312.45847.lkml@morethan.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While running 20 parallel instances of dd as follows:
+On Thu, Jun 04, 2009 at 01:12:43PM -0500, Michael S. Zick wrote:
+ > On Thu June 4 2009, Harald Welte wrote:
+ > > On Thu, Jun 04, 2009 at 11:21:28AM -0500, Michael S. Zick wrote:
+ > > 
+ > > > That is one of my pending questions - -
+ > > > (It is included as a comment at the appropriate point in my patchset.)
+ > > > 
+ > > > The VIA processors have MCR's not MTRR's - -
+ > > 
+ > > AFAIK, that was true for processors like the Winhcip / C6, i.e. earlier than
+ > > the C3.  The C3, C7 and later support 8 intel-style MTRR's.
+ > > 
+ > 
+ > Super!  A specific breakage!
+ > 
+ > The c7 setup code is re-using the c6 setup code (MCR's) - -
+ > Will "if 0" out the appropriate parts and arrange for the MTRR setup.
 
-#!/bin/bash
+It's not touching the MCRs.   C7's are family 6. The MCR code is only
+called for family 5. (Winchips)   Look at the switch statement
+in init_centaur()
 
-for i in `seq 1 20`; do
-         dd if=/dev/zero of=/export/hda3/dd_$i bs=1073741824 count=1 &
-done
-wait
+	Dave
 
-on a 16G machine, we noticed that rather than just killing the
-processes, the entire kernel went down.  Stracing dd reveals that it first
-does an mmap2, which makes 1GB worth of zero page mappings.  Then it 
-performs
-a read on those pages from /dev/zero, and finally it performs a write. 
-The
-machine died during the reads.  Looking at the code, it was noticed that
-/dev/zero's read operation had been changed at some point from giving
-zero page mappings to actually zeroing the page.  The zeroing of the
-pages causes physical pages to be allocated to the process.  But, when
-the process exhausts all the memory that it can, the kernel cannot kill
-it, as it is still in the kernel mode allocating more memory. 
-Consequently,
-the kernel eventually crashes.
-
-To fix this, I propose that when a fatal signal is pending during
-/dev/zero read operation, we simply return and let the user process die.
-Here is a patch that does that.
-
-Signed-off-by: Salman Qazi <sqazi@google.com>
----
-diff --git a/drivers/char/mem.c b/drivers/char/mem.c
-index 8f05c38..2ffa36e 100644
---- a/drivers/char/mem.c
-+++ b/drivers/char/mem.c
-@@ -696,6 +696,11 @@ static ssize_t read_zero(struct file * file, char __user * buf,
-  			break;
-  		buf += chunk;
-  		count -= chunk;
-+		/* The exit code here doesn't actually matter, as userland
-+		 * will never see it.
-+		 */
-+		if (fatal_signal_pending(current))
-+			return -ENOMEM;
-  		cond_resched();
-  	}
-  	return written ? written : -EFAULT;
