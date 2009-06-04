@@ -1,107 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbZFDBsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757175AbZFDBsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbZFDBsa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 21:48:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755704AbZFDBrq
+	id S1757175AbZFDBsm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 21:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbZFDBsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 21:47:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40360 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756072AbZFDBro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 21:47:44 -0400
-Date: Wed, 3 Jun 2009 21:46:46 -0400
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: jdike@addtoit.com, rusty@rustcorp.com.au, hch@infradead.org,
-       Amerigo Wang <amwang@redhat.com>, mingo@elte.hu,
-       akpm@linux-foundation.org
-Message-Id: <20090604014858.6332.68218.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090604014813.6332.18486.sendpatchset@localhost.localdomain>
-References: <20090604014813.6332.18486.sendpatchset@localhost.localdomain>
-Subject: [Patch 5/5] module: merge module_alloc() finally
+	Wed, 3 Jun 2009 21:48:04 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36515 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756819AbZFDBsB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 21:48:01 -0400
+Date: Thu, 4 Jun 2009 10:46:28 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch][v2] swap: virtual swap readahead
+Message-Id: <20090604104628.99520342.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090602223738.GA15475@cmpxchg.org>
+References: <20090602223738.GA15475@cmpxchg.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 3 Jun 2009 00:37:39 +0200
+Johannes Weiner <hannes@cmpxchg.org> wrote:
 
-As Christoph Hellwig suggested, module_alloc() actually can be
-unified for i386 and x86_64 (of course, also UML).
+> Hi Andrew,
+> 
+> I redid the qsbench runs with a bigger page cluster (2^4).  It shows
+> improvement on both versions, the patched one still performing better.
+> Rik hinted me that we can make the default even bigger when we are
+> better at avoiding reading unrelated pages.  I am currently testing
+> this.  Here are the timings for 2^4 (i.e. twice the) ra pages:
+> 
+> vanilla:
+> 1 x 2048M [20 runs]  user 101.41/101.06 [1.42] system 11.02/10.83 [0.92] real 368.44/361.31 [48.47]
+> 2 x 1024M [20 runs]  user 101.42/101.23 [0.66] system 12.98/13.01 [0.56] real 338.45/338.56 [2.94]
+> 4 x 540M [20 runs]  user 101.75/101.62 [1.03] system 10.05/9.52 [1.53] real 371.97/351.88 [77.69]
+> 8 x 280M [20 runs]  user 103.35/103.33 [0.63] system 9.80/9.59 [1.72] real 453.48/473.21 [115.61]
+> 16 x 128M [20 runs]  user 91.04/91.00 [0.86] system 8.95/9.41 [2.06] real 312.16/342.29 [100.53]
+> 
+> vswapra:
+> 1 x 2048M [20 runs]  user 98.47/98.32 [1.33] system 9.85/9.90 [0.92] real 373.95/382.64 [26.77]
+> 2 x 1024M [20 runs]  user 96.89/97.00 [0.44] system 9.52/9.48 [1.49] real 288.43/281.55 [53.12]
+> 4 x 540M [20 runs]  user 98.74/98.70 [0.92] system 7.62/7.83 [1.25] real 291.15/296.94 [54.85]
+> 8 x 280M [20 runs]  user 100.68/100.59 [0.53] system 7.59/7.62 [0.41] real 305.12/311.29 [26.09]
+> 16 x 128M [20 runs]  user 88.67/88.50 [1.02] system 6.06/6.22 [0.72] real 205.29/221.65 [42.06]
+> 
+> Furthermore I changed the patch to leave shmem alone for now and added
+> documentation for the new approach.  And I adjusted the changelog a
+> bit.
+> 
+> Andi, I think the NUMA policy is already taken care of.  Can you have
+> another look at it?  Other than that you gave positive feedback - can
+> I add your acked-by?
+> 
+> 	Hannes
+> 
+> ---
+> The current swap readahead implementation reads a physically
+> contiguous group of swap slots around the faulting page to take
+> advantage of the disk head's position and in the hope that the
+> surrounding pages will be needed soon as well.
+> 
+> This works as long as the physical swap slot order approximates the
+> LRU order decently, otherwise it wastes memory and IO bandwidth to
+> read in pages that are unlikely to be needed soon.
+> 
+> However, the physical swap slot layout diverges from the LRU order
+> with increasing swap activity, i.e. high memory pressure situations,
+> and this is exactly the situation where swapin should not waste any
+> memory or IO bandwidth as both are the most contended resources at
+> this point.
+> 
+> Another approximation for LRU-relation is the VMA order as groups of
+> VMA-related pages are usually used together.
+> 
+> This patch combines both the physical and the virtual hint to get a
+> good approximation of pages that are sensible to read ahead.
+> 
+> When both diverge, we either read unrelated data, seek heavily for
+> related data, or, what this patch does, just decrease the readahead
+> efforts.
+> 
+> To achieve this, we have essentially two readahead windows of the same
+> size: one spans the virtual, the other one the physical neighborhood
+> of the faulting page.  We only read where both areas overlap.
+> 
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> Reviewed-by: Rik van Riel <riel@redhat.com>
+> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Cc: Andi Kleen <andi@firstfloor.org>
+> ---
+>  mm/swap_state.c |  115 ++++++++++++++++++++++++++++++++++++++++++++++++--------
+>  1 file changed, 99 insertions(+), 16 deletions(-)
+> 
+> version 2:
+>   o fall back to physical ra window for shmem
+>   o add documentation to the new ra algorithm
+> 
+> qsbench, 20 runs, 1.7GB RAM, 2GB swap, "mean (standard deviation) median":
+> 
+> 		vanilla				vswapra
+> 
+> 1  x 2048M	391.25 ( 71.76) 384.56		445.55 (83.19) 415.41
+> 2  x 1024M	384.25 ( 75.00) 423.08		290.26 (31.38) 299.51
+> 4  x  540M	553.91 (100.02) 554.57		336.58 (52.49) 331.52
+> 8  x  280M	561.08 ( 82.36) 583.12		319.13 (43.17) 307.69
+> 16 x  128M	285.51 (113.20) 236.62		214.24 (62.37) 214.15
+> 
+> --- a/mm/swap_state.c
+> +++ b/mm/swap_state.c
+> @@ -325,27 +325,14 @@ struct page *read_swap_cache_async(swp_e
+>  	return found_page;
+>  }
+>  
+> -/**
+> - * swapin_readahead - swap in pages in hope we need them soon
+> - * @entry: swap entry of this memory
+> - * @gfp_mask: memory allocation flags
+> - * @vma: user vma this address belongs to
+> - * @addr: target address for mempolicy
+> - *
+> - * Returns the struct page for entry and addr, after queueing swapin.
+> - *
+> +/*
+>   * Primitive swap readahead code. We simply read an aligned block of
+>   * (1 << page_cluster) entries in the swap area. This method is chosen
+>   * because it doesn't cost us any seek time.  We also make sure to queue
+>   * the 'original' request together with the readahead ones...
+> - *
+> - * This has been extended to use the NUMA policies from the mm triggering
+> - * the readahead.
+> - *
+> - * Caller must hold down_read on the vma->vm_mm if vma is not NULL.
+>   */
+> -struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
+> -			struct vm_area_struct *vma, unsigned long addr)
+> +static struct page *swapin_readahead_phys(swp_entry_t entry, gfp_t gfp_mask,
+> +				struct vm_area_struct *vma, unsigned long addr)
+>  {
+>  	int nr_pages;
+>  	struct page *page;
+> @@ -371,3 +358,99 @@ struct page *swapin_readahead(swp_entry_
+>  	lru_add_drain();	/* Push any new pages onto the LRU now */
+>  	return read_swap_cache_async(entry, gfp_mask, vma, addr);
+>  }
+> +
+> +/**
+> + * swapin_readahead - swap in pages in hope we need them soon
+> + * @entry: swap entry of this memory
+> + * @gfp_mask: memory allocation flags
+> + * @vma: user vma this address belongs to
+> + * @addr: target address for mempolicy
+> + *
+> + * Returns the struct page for entry and addr, after queueing swapin.
+> + *
+> + * The readahead window is the virtual area around the faulting page,
+> + * where the physical proximity of the swap slots is taken into
+> + * account as well.
+> + *
+> + * While the swap allocation algorithm tries to keep LRU-related pages
+> + * together on the swap backing, it is not reliable on heavy thrashing
+> + * systems where concurrent reclaimers allocate swap slots and/or most
+> + * anonymous memory pages are already in swap cache.
+> + *
+> + * On the virtual side, subgroups of VMA-related pages are usually
+> + * used together, which gives another hint to LRU relationship.
+> + *
+> + * By taking both aspects into account, we get a good approximation of
+> + * which pages are sensible to read together with the faulting one.
+> + *
+> + * This has been extended to use the NUMA policies from the mm
+> + * triggering the readahead.
+> + *
+> + * Caller must hold down_read on the vma->vm_mm if vma is not NULL.
+> + */
+> +struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
+> +			struct vm_area_struct *vma, unsigned long addr)
+> +{
+> +	unsigned long start, pos, end;
+> +	unsigned long pmin, pmax;
+> +	int cluster, window;
+> +
+> +	if (!vma || !vma->vm_mm)	/* XXX: shmem case */
+> +		return swapin_readahead_phys(entry, gfp_mask, vma, addr);
+> +
+> +	cluster = 1 << page_cluster;
+> +	window = cluster << PAGE_SHIFT;
+> +
+> +	/* Physical range to read from */
+> +	pmin = swp_offset(entry) & ~(cluster - 1);
+> +	pmax = pmin + cluster;
+> +
+> +	/* Virtual range to read from */
+> +	start = addr & ~(window - 1);
+> +	end = start + window;
+> +
+> +	for (pos = start; pos < end; pos += PAGE_SIZE) {
+> +		struct page *page;
+> +		swp_entry_t swp;
+> +		spinlock_t *ptl;
+> +		pgd_t *pgd;
+> +		pud_t *pud;
+> +		pmd_t *pmd;
+> +		pte_t *pte;
+> +
+> +		pgd = pgd_offset(vma->vm_mm, pos);
+> +		if (!pgd_present(*pgd))
+> +			continue;
+> +		pud = pud_offset(pgd, pos);
+> +		if (!pud_present(*pud))
+> +			continue;
+> +		pmd = pmd_offset(pud, pos);
+> +		if (!pmd_present(*pmd))
+> +			continue;
+> +		pte = pte_offset_map_lock(vma->vm_mm, pmd, pos, &ptl);
+> +		if (!is_swap_pte(*pte)) {
+> +			pte_unmap_unlock(pte, ptl);
+> +			continue;
+> +		}
+> +		swp = pte_to_swp_entry(*pte);
+> +		pte_unmap_unlock(pte, ptl);
+> +
+> +		if (swp_type(swp) != swp_type(entry))
+> +			continue;
+> +		/*
+> +		 * Dont move the disk head too far away.  This also
+> +		 * throttles readahead while thrashing, where virtual
+> +		 * order diverges more and more from physical order.
+> +		 */
+> +		if (swp_offset(swp) > pmax)
+> +			continue;
+> +		if (swp_offset(swp) < pmin)
+> +			continue;
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: 'Ingo Molnar' <mingo@elte.hu>
+I wonder (I just wonder..) can we add code like following here ?
 
----
-Index: linux-2.6/arch/x86/include/asm/pgtable_32_types.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/pgtable_32_types.h
-+++ linux-2.6/arch/x86/include/asm/pgtable_32_types.h
-@@ -46,6 +46,10 @@ extern bool __vmalloc_start_set; /* set 
- # define VMALLOC_END	(FIXADDR_START - 2 * PAGE_SIZE)
- #endif
- 
-+#define MODULES_VADDR	VMALLOC_START
-+#define MODULES_END	VMALLOC_END
-+#define MODULES_LEN	(MODULES_VADDR - MODULES_END)
-+
- #define MAXMEM	(VMALLOC_END - PAGE_OFFSET - __VMALLOC_RESERVE)
- 
- #endif /* _ASM_X86_PGTABLE_32_DEFS_H */
-Index: linux-2.6/arch/um/include/asm/pgtable.h
-===================================================================
---- linux-2.6.orig/arch/um/include/asm/pgtable.h
-+++ linux-2.6/arch/um/include/asm/pgtable.h
-@@ -53,16 +53,21 @@ extern unsigned long end_iomem;
- #else
- # define VMALLOC_END	(FIXADDR_START-2*PAGE_SIZE)
- #endif
-+#define MODULES_VADDR	VMALLOC_START
-+#define MODULES_END	VMALLOC_END
-+#define MODULES_LEN	(MODULES_VADDR - MODULES_END)
- 
- #define _PAGE_TABLE	(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER | _PAGE_ACCESSED | _PAGE_DIRTY)
- #define _KERNPG_TABLE	(_PAGE_PRESENT | _PAGE_RW | _PAGE_ACCESSED | _PAGE_DIRTY)
- #define _PAGE_CHG_MASK	(PAGE_MASK | _PAGE_ACCESSED | _PAGE_DIRTY)
--
-+#define __PAGE_KERNEL_EXEC                                              \
-+        (_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED)
- #define PAGE_NONE	__pgprot(_PAGE_PROTNONE | _PAGE_ACCESSED)
- #define PAGE_SHARED	__pgprot(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER | _PAGE_ACCESSED)
- #define PAGE_COPY	__pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED)
- #define PAGE_READONLY	__pgprot(_PAGE_PRESENT | _PAGE_USER | _PAGE_ACCESSED)
- #define PAGE_KERNEL	__pgprot(_PAGE_PRESENT | _PAGE_RW | _PAGE_DIRTY | _PAGE_ACCESSED)
-+#define PAGE_KERNEL_EXEC	__pgprot(__PAGE_KERNEL_EXEC)
- 
- /*
-  * The i386 can't do page protection for execute, and considers that the same
-Index: linux-2.6/arch/x86/kernel/module.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/module.c
-+++ linux-2.6/arch/x86/kernel/module.c
-@@ -35,14 +35,6 @@
- #define DEBUGP(fmt...)
- #endif
- 
--#if defined(CONFIG_UML) || defined(CONFIG_X86_32)
--void *module_alloc(unsigned long size)
--{
--	if (size == 0)
--		return NULL;
--	return vmalloc_exec(size);
--}
--#else /*X86_64*/
- void *module_alloc(unsigned long size)
- {
- 	struct vm_struct *area;
-@@ -57,9 +49,9 @@ void *module_alloc(unsigned long size)
- 	if (!area)
- 		return NULL;
- 
--	return __vmalloc_area(area, GFP_KERNEL, PAGE_KERNEL_EXEC);
-+	return __vmalloc_area(area, GFP_KERNEL | __GFP_HIGHMEM,
-+					PAGE_KERNEL_EXEC);
- }
--#endif
- 
- static void trim_init_extable(struct module *m)
- {
+   /* we do _readahead_ here. Then, we don't want to add too much jobs to vm/IO*/
+   if (swp != entry)
+	gfp_mask &= ~__GFP_WAIT
+> +		page = read_swap_cache_async(swp, gfp_mask, vma, pos);
+
+too slow ?
+
+Bye.
+-Kame
+
+> +		if (!page)
+> +			continue;
+> +		page_cache_release(page);
+> +	}
+> +	lru_add_drain();	/* Push any new pages onto the LRU now */
+> +	return read_swap_cache_async(entry, gfp_mask, vma, addr);
+> +}
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
