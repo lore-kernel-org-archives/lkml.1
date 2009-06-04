@@ -1,62 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbZFDTuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbZFDTuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753876AbZFDTuY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 15:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZFDTuM
+	id S1754144AbZFDTuo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 15:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbZFDTuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 15:50:12 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:34281 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752315AbZFDTuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 15:50:11 -0400
-Date: Thu, 4 Jun 2009 21:50:13 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, tytso@mit.edu, chris.mason@oracle.com,
-       david@fromorbit.com, hch@infradead.org, jack@suse.cz,
-       yanmin_zhang@linux.intel.com, richard@rsk.demon.co.uk,
-       damien.wyart@free.fr
-Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
-Message-ID: <20090604195013.GB11363@kernel.dk>
-References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com> <20090604152040.GA6007@nowhere> <20090604120726.708a2211.akpm@linux-foundation.org> <20090604191309.GA4862@nowhere>
+	Thu, 4 Jun 2009 15:50:35 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:33568 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752331AbZFDTue (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 15:50:34 -0400
+Date: Thu, 4 Jun 2009 15:50:30 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: mpm@selenic.com, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Cc: nhorman@tuxdriver.com, herbert@gondor.apana.org.au, davem@davemloft.net
+Subject: [PATCH] crypto: add optional continuous repetition test to entropy
+	store based rngs
+Message-ID: <20090604195030.GA11300@hmsreliant.think-freely.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090604191309.GA4862@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04 2009, Frederic Weisbecker wrote:
-> On Thu, Jun 04, 2009 at 12:07:26PM -0700, Andrew Morton wrote:
-> > On Thu, 4 Jun 2009 17:20:44 +0200 Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > I've just tested it on UP in a single disk.
-> > 
-> > I must say, I'm stunned at the amount of testing which people are
-> > performing on this patchset.  Normally when someone sends out a
-> > patchset it just sort of lands with a dull thud.
-> > 
-> > I'm not sure what Jens did right to make all this happen, but thanks!
-> 
-> 
-> I don't know how he did either. I was reading theses patches and *something*
-> pushed me to my testbox, and then I tested...
-> 
-> Jens, how do you do that?
+FIPS-140 requires that all random number generators implement continuous self
+tests in which each extracted block of data is compared against the last block
+for repetition.  The ansi_cprng implements such a test, but it would be nice if
+the hw rng's did the same thing.  Obviously its not something thats always
+needed, but it seems like it would be a nice feature to have on occasion.  I've
+written the below patch which allows individual entropy stores to be flagged as
+desiring a continuous test to be run on them as is extracted.  By default this
+option is off, but is enabled in the event that fips mode is selected during
+bootup.
 
-Heh, not sure :-)
+Neil
 
-But indeed, thanks for the testing. It looks quite interesting. I'm
-guessing it probably has to do with who ends up doing the balancing and
-that the flusher threads block, it may change the picture a bit. So it
-may just be that it'll require a few vm tweaks. I'll definitely look
-into it and try and reproduce your results.
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
-Did you run it a 2nd time on each drive and check if the results were
-(approximately) consistent on the two drives?
-
--- 
-Jens Axboe
-
+diff --git a/crypto/internal.h b/crypto/internal.h
+index fc76e1f..150d389 100644
+--- a/crypto/internal.h
++++ b/crypto/internal.h
+@@ -26,12 +26,6 @@
+ #include <linux/rwsem.h>
+ #include <linux/slab.h>
+ 
+-#ifdef CONFIG_CRYPTO_FIPS
+-extern int fips_enabled;
+-#else
+-#define fips_enabled 0
+-#endif
+-
+ /* Crypto notification events. */
+ enum {
+ 	CRYPTO_MSG_ALG_REQUEST,
+diff --git a/drivers/char/random.c b/drivers/char/random.c
+index 8c74448..fbdfc70 100644
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -250,6 +250,8 @@
+ #include <asm/irq.h>
+ #include <asm/io.h>
+ 
++#include <crypto/algapi.h>
++
+ /*
+  * Configuration information
+  */
+@@ -400,6 +402,7 @@ module_param(debug, bool, 0644);
+  **********************************************************************/
+ 
+ struct entropy_store;
++#define ENT_F_CONT_TEST 1
+ struct entropy_store {
+ 	/* read-only data: */
+ 	struct poolinfo *poolinfo;
+@@ -413,6 +416,8 @@ struct entropy_store {
+ 	unsigned add_ptr;
+ 	int entropy_count;
+ 	int input_rotate;
++	int flags;
++	__u8 *last_data;
+ };
+ 
+ static __u32 input_pool_data[INPUT_POOL_WORDS];
+@@ -424,7 +429,9 @@ static struct entropy_store input_pool = {
+ 	.name = "input",
+ 	.limit = 1,
+ 	.lock = __SPIN_LOCK_UNLOCKED(&input_pool.lock),
+-	.pool = input_pool_data
++	.pool = input_pool_data,
++	.flags = 0,
++	.last_data = NULL
+ };
+ 
+ static struct entropy_store blocking_pool = {
+@@ -433,7 +440,9 @@ static struct entropy_store blocking_pool = {
+ 	.limit = 1,
+ 	.pull = &input_pool,
+ 	.lock = __SPIN_LOCK_UNLOCKED(&blocking_pool.lock),
+-	.pool = blocking_pool_data
++	.pool = blocking_pool_data,
++	.flags = 0,
++	.last_data = NULL
+ };
+ 
+ static struct entropy_store nonblocking_pool = {
+@@ -441,7 +450,9 @@ static struct entropy_store nonblocking_pool = {
+ 	.name = "nonblocking",
+ 	.pull = &input_pool,
+ 	.lock = __SPIN_LOCK_UNLOCKED(&nonblocking_pool.lock),
+-	.pool = nonblocking_pool_data
++	.pool = nonblocking_pool_data,
++	.flags = 0,
++	.last_data = NULL
+ };
+ 
+ /*
+@@ -852,12 +863,21 @@ static ssize_t extract_entropy(struct entropy_store *r, void *buf,
+ {
+ 	ssize_t ret = 0, i;
+ 	__u8 tmp[EXTRACT_SIZE];
++	unsigned long flags;
+ 
+ 	xfer_secondary_pool(r, nbytes);
+ 	nbytes = account(r, nbytes, min, reserved);
+ 
+ 	while (nbytes) {
+ 		extract_buf(r, tmp);
++
++		if (r->flags & ENT_F_CONT_TEST) {
++			spin_lock_irqsave(&r->lock, flags);
++			if (!memcmp(tmp, r->last_data, EXTRACT_SIZE))
++				panic("Hardware RNG duplicated output!\n");
++			memcpy(r->last_data, tmp, EXTRACT_SIZE);
++			spin_unlock_irqrestore(&r->lock, flags);
++		}
+ 		i = min_t(int, nbytes, EXTRACT_SIZE);
+ 		memcpy(buf, tmp, i);
+ 		nbytes -= i;
+@@ -940,6 +960,14 @@ static void init_std_data(struct entropy_store *r)
+ 	now = ktime_get_real();
+ 	mix_pool_bytes(r, &now, sizeof(now));
+ 	mix_pool_bytes(r, utsname(), sizeof(*(utsname())));
++	/* Enable continuous test in fips mode */
++	if (fips_enabled) {
++		r->last_data = kmalloc(EXTRACT_SIZE, GFP_KERNEL);
++		if (r->last_data)
++			r->flags |= ENT_F_CONT_TEST;
++		else
++			panic("Could not alloc data for rng test\n");
++	} 
+ }
+ 
+ static int rand_initialize(void)
+diff --git a/include/crypto/algapi.h b/include/crypto/algapi.h
+index 0105454..88e9535 100644
+--- a/include/crypto/algapi.h
++++ b/include/crypto/algapi.h
+@@ -20,6 +20,12 @@ struct module;
+ struct rtattr;
+ struct seq_file;
+ 
++#ifdef CONFIG_CRYPTO_FIPS
++extern int fips_enabled;
++#else
++#define fips_enabled 0
++#endif
++
+ struct crypto_type {
+ 	unsigned int (*ctxsize)(struct crypto_alg *alg, u32 type, u32 mask);
+ 	unsigned int (*extsize)(struct crypto_alg *alg,
