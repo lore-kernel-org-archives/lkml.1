@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbZFDQkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbZFDQoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757339AbZFDQkT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 12:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbZFDQkE
+	id S1757187AbZFDQoz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 12:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbZFDQoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 12:40:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50123 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753854AbZFDQkC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 12:40:02 -0400
-Subject: Re: [dm-devel] Re: ANNOUNCE: mdadm 3.0 - A tool for managing Soft 
- RAID under Linux
-From: Heinz Mauelshagen <heinzm@redhat.com>
-Reply-To: heinzm@redhat.com
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: device-mapper development <dm-devel@redhat.com>,
-       Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-raid@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Ed Ciechanowski <ed.ciechanowski@intel.com>,
-       Jacek Danecki <jacek.danecki@intel.com>
-In-Reply-To: <e9c3a7c20906031026s49a5a694hb91db40dc05a2580@mail.gmail.com>
-References: <18980.48553.328662.80987@notabene.brown>
-	 <4A25876A.1010901@garzik.org> <18981.62579.171350.910761@notabene.brown>
-	 <1244040123.6938.19.camel@o>
-	 <e9c3a7c20906031026s49a5a694hb91db40dc05a2580@mail.gmail.com>
-Content-Type: text/plain
-Organization: Red Hat GmbH
-Date: Thu, 04 Jun 2009 18:38:56 +0200
-Message-Id: <1244133536.5541.48.camel@o>
-Mime-Version: 1.0
+	Thu, 4 Jun 2009 12:44:44 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:38889 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753356AbZFDQon (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 12:44:43 -0400
+Message-ID: <4A27FAB1.2000602@oracle.com>
+Date: Thu, 04 Jun 2009 09:47:45 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Corentin Chary <corentincj@iksaif.net>,
+       acpi4asus-user@lists.sourceforge.net
+Subject: [PATCH -next] eeepc: fix pci & hotplug selects
+References: <20090604175657.1565ecba.sfr@canb.auug.org.au>
+In-Reply-To: <20090604175657.1565ecba.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt009.oracle.com [141.146.116.18]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010204.4A27F9F0.02B3:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-03 at 10:26 -0700, Dan Williams wrote:
-> On Wed, Jun 3, 2009 at 7:42 AM, Heinz Mauelshagen <heinzm@redhat.com> wrote:
-> > On Wed, 2009-06-03 at 13:56 +1000, Neil Brown wrote:
-> >> As for integrating the two code bases.... people have been suggesting
-> >> that for years, but I suspect few of them have looked deeply at the
-> >> practicalities.  Apparently it was suggested at the recent "storage
-> >> summit".  However as the primary md and dm developers were absent, I
-> >> have doubts about how truly well-informed that conversation could have
-> >> been.
-> >
-> > Agreed, we'd need face-time and talk issues through in order to come up
-> > with any such plan for md+dm integration.
-> >
-> 
-> What are your general impressions of dmraid using md kernel
-> infrastructure for raid level support?
+I hit another manifestation of this problem today.  Patch below.
+Only the patch description (error log) has changed.
 
-At the time of the dmraid project start, we already had libdevmapper
-which was suitable to handle in-kernel device manipulation with no
-adequate on the MD side so it was the appropriate interface to use.
+---
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Cheers,
-Heinz
+EEEPC_LAPTOP selects HOTPLUG_PCI.  This causes failures (build error below)
+when CONFIG_HOTPLUG is not enabled, so additionally select HOTPLUG since
+kconfig 'select' doesn't follow its dependency chain.
+Also, only select HOTPLUG_PCI if PCI is already enabled.
 
-> 
-> Thanks,
-> Dan
+drivers/pci/hotplug/fakephp.c:55: error: implicit declaration of function 'pci_rescan_bus'
+ERROR: "pci_scan_slot" [drivers/pci/hotplug/pciehp.ko] undefined!
+ERROR: "pci_scan_bridge" [drivers/pci/hotplug/pciehp.ko] undefined!
+ERROR: "pci_scan_slot" [drivers/pci/hotplug/pci_hotplug.ko] undefined!
+ERROR: "pci_add_new_bus" [drivers/pci/hotplug/pci_hotplug.ko] undefined!
 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: Corentin Chary <corentincj@iksaif.net>
+---
+ drivers/platform/x86/Kconfig |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- linux-next-20090604.orig/drivers/platform/x86/Kconfig
++++ linux-next-20090604/drivers/platform/x86/Kconfig
+@@ -340,7 +340,8 @@ config EEEPC_LAPTOP
+ 	depends on RFKILL || RFKILL = n
+ 	select BACKLIGHT_CLASS_DEVICE
+ 	select HWMON
+-	select HOTPLUG_PCI
++	select HOTPLUG
++	select HOTPLUG_PCI if PCI
+ 	---help---
+ 	  This driver supports the Fn-Fx keys on Eee PC laptops.
+ 	  It also adds the ability to switch camera/wlan on/off.
