@@ -1,83 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755677AbZFDAFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbZFDAQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755677AbZFDAFc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 20:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbZFDAFW
+	id S1755884AbZFDAQy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 20:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbZFDAQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 20:05:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53452 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752104AbZFDAFV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 20:05:21 -0400
-Date: Wed, 3 Jun 2009 17:05:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, slapin@ossfans.org,
-       maxim.osipov@siemens.com, dmitry.baryshkov@siemens.com,
-       oliver.fendt@siemens.com, linux@youmustbejoking.demon.co.uk
-Subject: Re: [PATCH 01/10] crc-itu-t: add bit-reversed calculation
-Message-Id: <20090603170506.a10cc38f.akpm@linux-foundation.org>
-In-Reply-To: <1243868091-5315-2-git-send-email-dbaryshkov@gmail.com>
-References: <1243868091-5315-1-git-send-email-dbaryshkov@gmail.com>
-	<1243868091-5315-2-git-send-email-dbaryshkov@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 3 Jun 2009 20:16:46 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:50133 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753665AbZFDAQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 20:16:46 -0400
+Date: Wed, 3 Jun 2009 17:16:47 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 2/2] cpuhotplug: introduce try_get_online_cpus()
+Message-ID: <20090604001647.GA9057@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <4A1F9CEE.5090305@cn.fujitsu.com> <20090529133118.1c7b16c2.akpm@linux-foundation.org> <200906011701.51637.rusty@rustcorp.com.au> <20090601161931.GC6698@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090601161931.GC6698@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon,  1 Jun 2009 18:54:42 +0400
-Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
-
-> From: Darren Salt <linux@youmustbejoking.demon.co.uk>
+On Mon, Jun 01, 2009 at 09:19:31AM -0700, Paul E. McKenney wrote:
+> On Mon, Jun 01, 2009 at 05:01:50PM +0930, Rusty Russell wrote:
+> > On Sat, 30 May 2009 06:01:18 am Andrew Morton wrote:
+> > > I do think that we should look at
+> > > alternative (non-trylocky) ways of fixing them.
+> > 
+> > Speculating: we could add a "keep_cpu()" (FIXME: improve name) which is kind 
+> > of like get_cpu() only doesn't disable preemption and only stops *this* cpu 
+> > from going down.
+> > 
+> > Not sure where that gets us, but if someone's going to dig deep into this it 
+> > might help.
 > 
-> ..
->
->  static inline u16 crc_itu_t_byte(u16 crc, const u8 data)
->  {
->  	return (crc << 8) ^ crc_itu_t_table[((crc >> 8) ^ data) & 0xff];
->  }
->  
-> +static inline u16 crc_itu_t_bitreversed_byte(u16 crc, const u8 data)
-> +{
-> +	return (crc << 8) ^ crc_itu_t_table[((crc >> 8) ^ bitrev8(data)) & 0xff];
-> +}
+> I have been beating up on the approach of disabling preemption to pin down
+> a single CPU, and although it is working, it is no faster than simply
+> doing get_online_cpus() and it is much much more subtle and complex.
+> I am not sure that I have all the races properly accounted for, and I
+> am failing to see the point of having something quite this ugly in the
+> kernel when much simpler alternatives exist.
+> 
+> The main vulnerability is the possibility that someone will invoke
+> synchroniize_rcu_expedited() while holding a mutex that is also acquired
+> in a CPU-hotplug notifier, as Lai noted.  But this is easily handled
+> given a primitive that will say whether the current CPU is executing in a
+> CPU-hotplug notifier.  This primitive is permitted to sometimes mistakenly
+> say that the current CPU is executing in a CPU-hotplug notifier when it
+> is not (as long as it doesn't do so too often), but not vice versa.
+> 
+> One way to implement this would be to have such a primitive simply say
+> whether or not a CPU-hotplug operation is currently in effect.  Yes, this
+> is racy, but not when it matters -- you cannot possibly exit a CPU-hotplug
+> operation while executing in a CPU-hotplug notifier.  For example,
+> the following exported from kernel/cpu.c would work just fine:
+> 
+> 	bool cpu_hotplug_in_progress(void)
+> 	{
+> 		return cpu_hotplug.active_writer != NULL;
+> 	}
+> 
+> I believe that we should be OK moving forward with an updated version of
+> http://lkml.org/lkml/2009/5/22/332 even without the deadlock avoidance.
+> Having the deadlock avoidance would be better, of course, so I will use
+> something like the above on the next patch.
 
-I suspect that inlining these was a mistake, but one which we make often.
+Of course, the above does not actually solve the deadlock, instead
+merely making it less likely to occur.  I have absolutely no idea what
+I was thinking!
 
->  #endif /* CRC_ITU_T_H */
->  
-> diff --git a/lib/crc-itu-t.c b/lib/crc-itu-t.c
-> index a63472b..5562fdd 100644
-> --- a/lib/crc-itu-t.c
-> +++ b/lib/crc-itu-t.c
-> @@ -64,6 +64,24 @@ u16 crc_itu_t(u16 crc, const u8 *buffer, size_t len)
->  }
->  EXPORT_SYMBOL(crc_itu_t);
->  
-> +/**
-> + * crc_itu_t_bitreversed - Compute the CRC-ITU-T for the data buffer;
-> + * the buffer content is assumed to be bit-reversed
+Back to try_get_online_cpus().
 
-kerneldoc doesn't support the breaking of this information across
-multiple lines.  It'll need to be done as a single 120-column line.
-
-
-> + * @crc:     previous CRC value
-> + * @buffer:  data pointer
-> + * @len:     number of bytes in the buffer
-> + *
-> + * Returns the updated CRC value
-> + */
-> +u16 crc_itu_t_bitreversed(u16 crc, const u8 *buffer, size_t len)
-> +{
-> +	while (len--)
-> +		crc = crc_itu_t_bitreversed_byte(crc, *buffer++);
-> +	return crc;
-> +}
-> +EXPORT_SYMBOL(crc_itu_t_bitreversed);
-
+							Thanx, Paul
