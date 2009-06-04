@@ -1,127 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbZFDTzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbZFDT60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753036AbZFDTzm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 15:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZFDTze
+	id S1753657AbZFDT60 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 15:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZFDT6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 15:55:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47256 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbZFDTzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 15:55:33 -0400
-Date: Thu, 4 Jun 2009 19:54:45 GMT
-From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       fweisbec@gmail.com, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       fweisbec@gmail.com, mtosatti@redhat.com, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <1244141284-7507-1-git-send-email-fweisbec@gmail.com>
-References: <1244141284-7507-1-git-send-email-fweisbec@gmail.com>
-Subject: [tip:perfcounters/core] perf_counter: Sleep before refresh using poll in perf top
-Message-ID: <tip-0f5486b5c71a831a713ce356d8d06822e3c7c379@git.kernel.org>
-Git-Commit-ID: 0f5486b5c71a831a713ce356d8d06822e3c7c379
-X-Mailer: tip-git-log-daemon
+	Thu, 4 Jun 2009 15:58:19 -0400
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:47775 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751077AbZFDT6S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 15:58:18 -0400
+X-Greylist: delayed 491 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Jun 2009 15:58:18 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=NBtsVfLCiXvu9mYyAr40AHGgDPWnlIr3WIyq+EAwbGdvGRNVduVahg1ed+64ymajvP
+         EJ4441ww7k4yvLfIM9Vz4rdpkNGbSEJuocvQKnB/VEaxPFZ8SjArkW6uf62swGQ4D3L+
+         DelQO1ejPgyQdoL2n03yEU/CTsdyG4Ckpzxgw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 04 Jun 2009 19:54:46 +0000 (UTC)
+In-Reply-To: <87iqjedf2a.fsf@basil.nowhere.org>
+References: <alpine.DEB.2.00.0906021141010.19390@bicker>
+	 <87iqjedf2a.fsf@basil.nowhere.org>
+Date: Thu, 4 Jun 2009 21:50:08 +0200
+Message-ID: <a63d67fe0906041250v6e4252c2g594322a3a49e7307@mail.gmail.com>
+Subject: Re: smatch 1.53 released
+From: Dan Carpenter <error27@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0f5486b5c71a831a713ce356d8d06822e3c7c379
-Gitweb:     http://git.kernel.org/tip/0f5486b5c71a831a713ce356d8d06822e3c7c379
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Thu, 4 Jun 2009 20:48:04 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 4 Jun 2009 21:44:53 +0200
+On 6/2/09, Andi Kleen <andi@firstfloor.org> wrote:
+> Dan Carpenter <error27@gmail.com> writes:
+>
+>> Smatch is a source code checker for C.  Right now the focus is on checking
+>>
+>> for kernel bugs.
+>
+> Could you give a quick overview on what kinds of bugs it looks for
+> and where the limitations are?
+>
 
-perf_counter: Sleep before refresh using poll in perf top
+It's pretty good at finding locking bugs.  It also checks for double
+kfree() bugs, null pointer dereferences and also if you check for null
+instead of checking for PTR_ERR().  There is a check for using kfree()
+instead of kfree_skb() as well.
 
-perf top is refreshed every delay_secs the thread runs in such
-loop:
+The cool thing about smatch is that it's pretty easy to write custom
+checks.  It's uses sparse as a C parser so you have to look through
+expression.h to figure out how to do the pattern matching.  There is a
+small example script which shows how that works.
+http://repo.or.cz/w/smatch.git?a=blob;f=check_template.c
 
-while (sleep(delay_secs)) {
-	print_sym_table();
+So you use sparse to grep the code for locking functions and then you
+use set_state() to set the state to "locked".
+
+If your code looks like this:
+lock_kernel();
+if (foo) {
+        unlock_kernel();
+} else {
+        frob();
+}
+<--  Here the state can be either "locked" or "unlocked".
+Calling get_state() here will tell you that it is state &merged.  You
+can use get_possible() to get a list of possible states it could be.
+
+Say later code looked like this:
+if (!foo) {
+<--  Here the state is "locked" because of the !foo.  Smatch figures
+this out automatically, that comes from the "implications" module.  Do
+other code checkers do this?  I'm pretty proud of the feature either
+way.  :)
 }
 
-At the end of print_sym_table(), poll is used without sleep delay
-to check if we have something from stdin.
+So basically you grep for locking functions and you set the state
+based on that, then you grep for return statements and check that the
+state is correct or print an error.  Smatch tracks the code paths in
+the background and merges states or sets implied states.
 
-It means that this check is done only every delay_secs, which can
-be higher that 2 secs if the user defined a custom refresh rate.
+Limitations:  The big limitation is that smatch only does one pass
+through the code so loops aren't handled correctly.  Eventually it
+will do two passes.
 
-We can drop sleep() here and directly use poll to wait between
-refresh periods, so that the reaction after the user stops perf top
-after typing "Enter" is immediate and doesn't suffer from the
-delay_secs latency.
+A lot of null dereference false positives come from places where it's
+hard to tell if a loop is true at least once.
+x = NULL;
+while (param--) {
+        x = &something;
+}
+x->member;
+Someone reading the code probably knows what param is and that it's
+non-zero at the start.  There is a "--assume-loops" option to make
+smatch assume loops go through once.
 
-Nb: poll doesn't add any overhead that can parasite perf top measures
-since it sleeps the entire timeout here.
+Many of the locking false positives come from places where the unlock
+happens in a seperate function.  It should be relatively straight
+forward to make a list functions to say that if frob_the_module()
+returns -12, or -14 that implies it unlocked a certain lock.  I
+haven't done this yet.
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1244141284-7507-1-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Otherwise, it's still very young code.  Ideally smatch would know the
+possible values of every variable in a function but right now many
+variables just default to &undefined.  The implication code is not as
+good as it could be.  Also I don't have a good way to build call trees
+yet.  There is a lot of work to do at every level.
 
+Still, it doesn't hurt to run smatch on your code before submitting a
+patch.  There is an easy script for this:  kchecker /path/to/code.c.
+Some of my accepted kernel patches have had bugs which could have been
+caught by the current version of smatch...
 
----
- Documentation/perf_counter/builtin-top.c |   20 +++++++++-----------
- 1 files changed, 9 insertions(+), 11 deletions(-)
+regards,
+dan carpenter
 
-diff --git a/Documentation/perf_counter/builtin-top.c b/Documentation/perf_counter/builtin-top.c
-index 31c00ba..28cbde4 100644
---- a/Documentation/perf_counter/builtin-top.c
-+++ b/Documentation/perf_counter/builtin-top.c
-@@ -204,7 +204,7 @@ static void print_sym_table(void)
- 			list_remove_active_sym(syme);
- 	}
- 
--	write(1, CONSOLE_CLEAR, strlen(CONSOLE_CLEAR));
-+	puts(CONSOLE_CLEAR);
- 
- 	printf(
- "------------------------------------------------------------------------------\n");
-@@ -278,23 +278,21 @@ static void print_sym_table(void)
- 		color_fprintf(stdout, color, "%4.1f%%", pcnt);
- 		printf(" - %016llx : %s\n", sym->start, sym->name);
- 	}
--
--	{
--		struct pollfd stdin_poll = { .fd = 0, .events = POLLIN };
--
--		if (poll(&stdin_poll, 1, 0) == 1) {
--			printf("key pressed - exiting.\n");
--			exit(0);
--		}
--	}
- }
- 
- static void *display_thread(void *arg)
- {
-+	struct pollfd stdin_poll = { .fd = 0, .events = POLLIN };
-+	int delay_msecs = delay_secs * 1000;
-+
- 	printf("PerfTop refresh period: %d seconds\n", delay_secs);
- 
--	while (!sleep(delay_secs))
-+	do {
- 		print_sym_table();
-+	} while (!poll(&stdin_poll, 1, delay_msecs) == 1);
-+
-+	printf("key pressed - exiting.\n");
-+	exit(0);
- 
- 	return NULL;
- }
+> Thanks,
+>
+> -Andi
+>
+> --
+> ak@linux.intel.com -- Speaking for myself only.
+>
