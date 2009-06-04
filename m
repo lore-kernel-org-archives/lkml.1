@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZFDDt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755796AbZFDD6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756194AbZFDDt4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 23:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814AbZFDDts
+	id S1755796AbZFDD6k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 23:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZFDD6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 23:49:48 -0400
-Received: from cantor.suse.de ([195.135.220.2]:45779 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753941AbZFDDts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 23:49:48 -0400
-Date: Wed, 3 Jun 2009 20:40:38 -0700
-From: Greg KH <gregkh@suse.de>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       garyhade@us.ibm.com, pbadari@us.ibm.com,
-       "y-goto@jp.fujitsu.com" <y-goto@jp.fujitsu.com>, ebiederm@xmission.com
-Subject: Re: sysfs_create_link_nowarn still remains (Was Re: mmotm
-	2009-06-03-16-33 uploaded
-Message-ID: <20090604034038.GA25656@suse.de>
-References: <200906032353.n53Nre5r019806@imap1.linux-foundation.org> <20090604123813.96c2c5a9.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 3 Jun 2009 23:58:32 -0400
+Received: from colo3.heeltoe.com ([207.210.106.184]:36180 "EHLO
+	colo3.heeltoe.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751153AbZFDD6b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 23:58:31 -0400
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] forced recalibration for the OLPC hgpk touchpad 
+From: Paul Fox <pgf@laptop.org>
+cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dilinger@laptop.org, dsaxena@laptop.org
+In-reply-to: <200906030804.57340.dmitry.torokhov@gmail.com> 
+References: <3026.1243972079@foxharp.boston.ma.us> <200906030804.57340.dmitry.torokhov@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090604123813.96c2c5a9.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="us-ascii"
+Content-ID: <19414.1244087913.1@foxharp.boston.ma.us>
+Date: Wed, 03 Jun 2009 23:58:33 -0400
+Message-ID: <19417.1244087913@foxharp.boston.ma.us>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 12:38:13PM +0900, KAMEZAWA Hiroyuki wrote:
-> On Wed, 03 Jun 2009 16:33:52 -0700
-> akpm@linux-foundation.org wrote:
-> 
-> > The mm-of-the-moment snapshot 2009-06-03-16-33 has been uploaded to
-> > 
-> >    http://userweb.kernel.org/~akpm/mmotm/
-> > 
-> > and will soon be available at
-> > 
-> >    git://git.zen-sources.org/zen/mmotm.git
-> > 
-> It seems sysfs_create_link_nowarn() is removed in linux-next.patch but
-> driver/base/node.c still includes it.
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=c04fc586c1a480ba198f03ae7b6cbd7b57380b91
-> 
-> How should we fix it ? Folllowing is a quick hack for compile but ...
-> should be clarified by memory hotplug guys.
+dmitry wrote:
+ > Hi Paul,
+ > 
+ > On Tuesday 02 June 2009 12:47:59 pgf@laptop.org wrote:
+ > > The OLPC XO laptop incorporates a combination touchpad/tablet
+ > > device which unfortunately requires frequent recalibration.  The
+ > > driver will force this automatically when various suspicious
+ > > behaviors are observed, and the user can recalibrate manually
+ > > (with a special keyboard sequence).  There's currently no way,
+ > > however, for an external program to cause recalibration.
+ > >
+ > > This patch creates a new node in /sys which, when written with '1',
+ > > will force a touchpad recalibration.  No other writes (or reads)
+ > > of this node are supported.
+ > >
+ > 
+ > 
+ > Instead of creating a new sysfs attribute maybe we should make
+ > the touchpad recalibrate upon resume (reconnect)? Userspace can
+ > already request reconnect via sysfs.
 
-I already dropped the removal patch, a few hours ago, look in the
-linux-next and lkml archives :)
+dmitry -- thanks for the suggestion.
 
-thanks,
+i took a look, and tried it.  the problem is that doing a full
+reset of the touchpad takes quite a long time -- 1.1 or 1.2
+seconds.  recalibration deprives the user of their touchpad for
+long enough as it is -- i don't think we can afford that time.
+(remember that this is a workaround for bad hardware -- the XO
+no longer uses this touchpad at least partly due to this very
+issue, but there are enough in use that we're still trying to
+improve things.)
 
-greg k-h
+paul
+=---------------------
+ paul fox, pgf@laptop.org
