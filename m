@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbZFDO7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbZFDPBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355AbZFDO7J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 10:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbZFDO65
+	id S1755961AbZFDPBd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 11:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZFDPB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 10:58:57 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:38235 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbZFDO65 (ORCPT
+	Thu, 4 Jun 2009 11:01:26 -0400
+Received: from smtp-ha02.de.mxcluster.de ([193.200.237.58]:51169 "EHLO
+	smtp-ha02.de.mxcluster.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751099AbZFDPBZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 10:58:57 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
-Date: Thu, 4 Jun 2009 09:58:43 -0500
-User-Agent: KMail/1.9.9
-Cc: Harald Welte <HaraldWelte@viatech.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906040856.10512.lkml@morethan.org>
-In-Reply-To: <200906040856.10512.lkml@morethan.org>
+	Thu, 4 Jun 2009 11:01:25 -0400
+X-Greylist: delayed 453 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Jun 2009 11:01:25 EDT
+Date: Thu, 4 Jun 2009 16:53:47 +0200
+From: Philipp Reh <sefi@s-e-f-i.de>
+To: linux-kernel@vger.kernel.org
+Subject: When does Linux drop UDP packets?
+Message-ID: <20090604145347.GA27692@miyuki>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906040958.46018.lkml@morethan.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu June 4 2009, Michael S. Zick wrote:
-> On Tue June 2 2009, Linus Torvalds wrote:
-> > 
-> > This is almost certainly the last -rc, and I debated even doing it. But 
-> > rather than just do 2.6.30, I decided that I'd be better off doing a last 
-> > -rc8 and then a real release probably this weekend.
-> > 
-> > This has mostly driver and arch updates, with perhaps the intel drm/kms 
-> > and network driver changes standing out, but there's powerpc, blackfin and 
-> > arm updates too. Admittedly, the two biggest parts of the powerpc update 
-> > are a revert and a defconfig update.
-> > 
-> > A lot of small stuff, fixing a few regressions (and at least one bugzilla 
-> > entry going back to 2.6.24). The small stuff does matter. Please test.
-> > 
-> > 		Linus
-> > 
-> 
-> Today's first 2.6.30-rc8 build for VIA NetBooks is posted.
-> Details at:
-> http://forum.netbookuser.com/viewtopic.php?pid=7034#p7034
-> 
-> - - summary - -
-> 
-> This is the kernel.org repository tag: 2.6.30-rc8 codebase ***without*** local patches;
-> Using the same configuration as the record holding (-09149), variable speed kernel.
-> 
+Dear list,
 
-Well, that one isn't anything to brag about"
+I have the following setting in which a client that resides on the same
+physical network as a server wants to receive any UDP packet that
+arrives on any of its interfaces sent by that server.
 
-top - 09:45:44 up  1:44,  2 users,  load average: 1.46, 1.48, 1.47
-Tasks: 116 total,   1 running, 115 sleeping,   0 stopped,   0 zombie
-Cpu(s): 30.3%us,  8.3%sy,  0.0%ni, 60.6%id,  0.0%wa,  0.9%hi,  0.0%si,  0.0%st
-Mem:    446720k total,   419160k used,    27560k free,    26352k buffers
-Swap:  2199324k total,        0k used,  2199324k free,   214908k cached
-- - - -
- 3208 mszick    20   0  156m 8752 7424 S 19.4  2.0  16:21.69 pulseaudio
- 3392 mszick    20   0  311m  44m  23m S 10.2 10.1  11:38.47 vlc
- 3937 root      20   0  2448 1188  920 R  3.7  0.3   3:18.88 top
-   49 root      15  -5     0    0    0 S  2.8  0.0   2:55.46 hd-audio0
- 3009 root      20   0  222m  24m 7372 S  0.9  5.5   1:14.42 Xorg
- 3798 root      20   0  8500 3048 2456 S  0.9  0.7   1:08.91 sshd
-    1 root      20   0  3084 1888  564 S  0.0  0.4   0:01.58 init
-    2 root      15  -5     0    0    0 S  0.0  0.0   0:00.00 kthreadd
+The code sets the broadcast flag, calls bind to INADDR_ANY and
+uses recvfrom from there on.
 
-Testing the -09155 now (-09154 + local patches).
+Let's say the server resides in the subnet 192.168.6.255 and the
+client in 192.168.3.255. The server uses its real IP as the packet's
+sender ip (192.168.6.5).
 
-Mike
-> The -09149 announcement is at:
-> http://forum.netbookuser.com/viewtopic.php?pid=7002#p7002
-> (Note: that build had local patches.)
-> 
-> I have also re-posted the record holding (-09143lk), fixed speed build, see above links.
+Now the first problem I've encountered is the following:
+If the client removes its default route and doesn't have any route
+pointing into the subnet the server is in, the packets get discarded
+(still tcpdump sees them).
 
-> mike 
+The second problem is that if the server uses the broadcast address as
+its sender address (255.255.255.255), the packets get always discarded
+(again, tcpdump sees them).
 
+Now if the server fakes its sender address to be in the client's subnet,
+every packet arrives again.
+
+So my real question is:
+When does Linux discard packets and how can I prevent it from doing
+that?
+
+As I'm not yet subscribed to the list, please CC me directly.
+
+Cheers,
+Philipp
 
