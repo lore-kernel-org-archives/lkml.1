@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbZFDWEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbZFDWIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504AbZFDWEt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 18:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752014AbZFDWEm
+	id S1754701AbZFDWIY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 18:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbZFDWIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 18:04:42 -0400
-Received: from tundra.namei.org ([65.99.196.166]:55751 "EHLO tundra.namei.org"
+	Thu, 4 Jun 2009 18:08:16 -0400
+Received: from main.gmane.org ([80.91.229.2]:43914 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751505AbZFDWEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 18:04:42 -0400
-Date: Fri, 5 Jun 2009 08:03:40 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, vibi sreenivasan <vibi_sreenivasan@cms.com>,
-       Jiri Slaby <jirislaby@gmail.com>, Eric Paris <eparis@redhat.com>,
-       David Safford <safford@watson.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH] integrity: ima audit dentry_open failure
-In-Reply-To: <1244137990-12678-1-git-send-email-zohar@linux.vnet.ibm.com>
-Message-ID: <alpine.LRH.2.00.0906050803290.9543@tundra.namei.org>
-References: <1244137990-12678-1-git-send-email-zohar@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752065AbZFDWIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 18:08:15 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Alexander Clouter <alex@digriz.org.uk>
+Subject: Re: When does Linux drop UDP packets?
+Date: Thu, 4 Jun 2009 23:03:23 +0100
+Message-ID: <buslf6-j24.ln1@woodchuck.wormnet.eu>
+References: <20090604145347.GA27692@miyuki>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: woodchuck.wormnet.eu
+User-Agent: tin/1.9.3-20080506 ("Dalintober") (UNIX) (Linux/2.6.26-1-sparc64 (sparc64))
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Jun 2009, Mimi Zohar wrote:
-
-> Until we start appraising measurements, the ima_path_check()
-> return code should always be 0.
+Philipp Reh <sefi@s-e-f-i.de> wrote:
 > 
-> - Update the ima_path_check() return code comment
-> - Instead of the pr_info, audit the dentry_open failure
+> I have the following setting in which a client that resides on the same
+> physical network as a server wants to receive any UDP packet that
+> arrives on any of its interfaces sent by that server.
 > 
-> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
+Read up about multicasting, it will do what you want, does not depend on
+the IP address of the destination workstation and will also cross 
+subnets if you want it to.
 
+It's dead easy to transmit and receive multicast traffic, broadcasting 
+network traffic is so 1980's :)
 
-Applied to
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+> As I'm not yet subscribed to the list, please CC me directly.
+> 
+Have a look at GMANE for following large volumn mailing lists.
 
+Cheers
 
 -- 
-James Morris
-<jmorris@namei.org>
+Alexander Clouter
+.sigmonster says: Familiarity breeds attempt.
+
