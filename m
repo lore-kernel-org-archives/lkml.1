@@ -1,82 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbZFDAQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZFDATR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755884AbZFDAQy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 3 Jun 2009 20:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbZFDAQq
+	id S1754817AbZFDATR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 3 Jun 2009 20:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbZFDATF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 3 Jun 2009 20:16:46 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:50133 "EHLO e3.ny.us.ibm.com"
+	Wed, 3 Jun 2009 20:19:05 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:50445 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753665AbZFDAQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 3 Jun 2009 20:16:46 -0400
-Date: Wed, 3 Jun 2009 17:16:47 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 2/2] cpuhotplug: introduce try_get_online_cpus()
-Message-ID: <20090604001647.GA9057@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <4A1F9CEE.5090305@cn.fujitsu.com> <20090529133118.1c7b16c2.akpm@linux-foundation.org> <200906011701.51637.rusty@rustcorp.com.au> <20090601161931.GC6698@linux.vnet.ibm.com>
+	id S1753875AbZFDATD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 3 Jun 2009 20:19:03 -0400
+Message-ID: <4A271287.50103@linux.vnet.ibm.com>
+Date: Wed, 03 Jun 2009 17:17:11 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090601161931.GC6698@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, torvalds@linux-foundation.org,
+       xemul@parallels.com, orenl@cs.columbia.edu, serue@us.ibm.com,
+       dave@linux.vnet.ibm.com, mingo@elte.hu
+Subject: Re: [PATCH 08/38] pidns 2/2: rewrite copy_pid_ns()
+References: <1242968132-1044-1-git-send-email-adobriyan@gmail.com> <1242968132-1044-8-git-send-email-adobriyan@gmail.com>
+In-Reply-To: <1242968132-1044-8-git-send-email-adobriyan@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 01, 2009 at 09:19:31AM -0700, Paul E. McKenney wrote:
-> On Mon, Jun 01, 2009 at 05:01:50PM +0930, Rusty Russell wrote:
-> > On Sat, 30 May 2009 06:01:18 am Andrew Morton wrote:
-> > > I do think that we should look at
-> > > alternative (non-trylocky) ways of fixing them.
-> > 
-> > Speculating: we could add a "keep_cpu()" (FIXME: improve name) which is kind 
-> > of like get_cpu() only doesn't disable preemption and only stops *this* cpu 
-> > from going down.
-> > 
-> > Not sure where that gets us, but if someone's going to dig deep into this it 
-> > might help.
+Alexey Dobriyan wrote:
+> copy_pid_ns() is a perfect example of a case where unwinding leads to more
+> code and makes it less clear. Watch the diffstat.
 > 
-> I have been beating up on the approach of disabling preemption to pin down
-> a single CPU, and although it is working, it is no faster than simply
-> doing get_online_cpus() and it is much much more subtle and complex.
-> I am not sure that I have all the races properly accounted for, and I
-> am failing to see the point of having something quite this ugly in the
-> kernel when much simpler alternatives exist.
-> 
-> The main vulnerability is the possibility that someone will invoke
-> synchroniize_rcu_expedited() while holding a mutex that is also acquired
-> in a CPU-hotplug notifier, as Lai noted.  But this is easily handled
-> given a primitive that will say whether the current CPU is executing in a
-> CPU-hotplug notifier.  This primitive is permitted to sometimes mistakenly
-> say that the current CPU is executing in a CPU-hotplug notifier when it
-> is not (as long as it doesn't do so too often), but not vice versa.
-> 
-> One way to implement this would be to have such a primitive simply say
-> whether or not a CPU-hotplug operation is currently in effect.  Yes, this
-> is racy, but not when it matters -- you cannot possibly exit a CPU-hotplug
-> operation while executing in a CPU-hotplug notifier.  For example,
-> the following exported from kernel/cpu.c would work just fine:
-> 
-> 	bool cpu_hotplug_in_progress(void)
-> 	{
-> 		return cpu_hotplug.active_writer != NULL;
-> 	}
-> 
-> I believe that we should be OK moving forward with an updated version of
-> http://lkml.org/lkml/2009/5/22/332 even without the deadlock avoidance.
-> Having the deadlock avoidance would be better, of course, so I will use
-> something like the above on the next patch.
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Acked-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-Of course, the above does not actually solve the deadlock, instead
-merely making it less likely to occur.  I have absolutely no idea what
-I was thinking!
+> ---
+>  kernel/pid_namespace.c |   18 +++---------------
+>  1 files changed, 3 insertions(+), 15 deletions(-)
+> 
+> diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
+> index 495d5de..821722a 100644
+> --- a/kernel/pid_namespace.c
+> +++ b/kernel/pid_namespace.c
+> @@ -116,23 +116,11 @@ static void destroy_pid_namespace(struct pid_namespace *ns)
+>  
+>  struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *old_ns)
+>  {
+> -	struct pid_namespace *new_ns;
+> -
+> -	BUG_ON(!old_ns);
+> -	new_ns = get_pid_ns(old_ns);
+>  	if (!(flags & CLONE_NEWPID))
+> -		goto out;
+> -
+> -	new_ns = ERR_PTR(-EINVAL);
+> +		return get_pid_ns(old_ns);
+>  	if (flags & CLONE_THREAD)
+> -		goto out_put;
+> -
+> -	new_ns = create_pid_namespace(old_ns);
+> -
+> -out_put:
+> -	put_pid_ns(old_ns);
+> -out:
+> -	return new_ns;
+> +		return ERR_PTR(-EINVAL);
+> +	return create_pid_namespace(old_ns);
+>  }
+>  
+>  void free_pid_ns(struct kref *kref)
 
-Back to try_get_online_cpus().
-
-							Thanx, Paul
