@@ -1,128 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760205AbZFDQ3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760107AbZFDQ32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760205AbZFDQ3x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 12:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758995AbZFDQ3X
+	id S1760107AbZFDQ32 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 12:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbZFDQUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 12:29:23 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:49614 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760117AbZFDQ3V (ORCPT
+	Thu, 4 Jun 2009 12:20:22 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:40400 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757694AbZFDQUS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 12:29:21 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
-Date: Thu, 4 Jun 2009 17:29:08 +0100
-User-Agent: KMail/1.11.90 (Linux/2.6.30-5-generic; KDE/4.2.85; x86_64; ; )
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <200905282104.55818.arnd@arndb.de> <20090604143803.GD24491@flint.arm.linux.org.uk> <20090604144909.GE24491@flint.arm.linux.org.uk>
-In-Reply-To: <20090604144909.GE24491@flint.arm.linux.org.uk>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906041729.10513.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+uamWcQQma8Q7IdQbWeZ5vF979st8gey30yE3
- HQbkg+izAep2G9VH8WQebNEEvnmZmqO5yYvKdv/BfR8gf6jJZt
- qFuf80HTaAlgbENEswgX/xIiSCeWGWe
+	Thu, 4 Jun 2009 12:20:18 -0400
+Message-Id: <20090604161908.529698385@de.ibm.com>
+References: <20090604161847.513682672@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 04 Jun 2009 18:19:24 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 37/38] pm: dcssblk power management callbacks.
+Content-Disposition: inline; filename=pm_dcssblk.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 June 2009, Russell King wrote:
-> The following assumption has been made by the kernel:
-> 
-> 	maximum_physical_address = dma_mask
-> 
-> Yes, that's _physical_ address, not bus specific DMA address:
+From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
 
-Right, this is an oversimplification that I did not expect the kernel
-to make, and it seems to stem from the days before we had the dma
-mapping API.
+Signed-off-by: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+ drivers/s390/block/dcssblk.c |  132 +++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 115 insertions(+), 17 deletions(-)
+
+Index: linux-2.6/drivers/s390/block/dcssblk.c
+===================================================================
+--- linux-2.6.orig/drivers/s390/block/dcssblk.c
++++ linux-2.6/drivers/s390/block/dcssblk.c
+@@ -14,10 +14,11 @@
+ #include <linux/init.h>
+ #include <linux/slab.h>
+ #include <linux/blkdev.h>
+-#include <asm/extmem.h>
+-#include <asm/io.h>
+ #include <linux/completion.h>
+ #include <linux/interrupt.h>
++#include <linux/platform_device.h>
++#include <asm/extmem.h>
++#include <asm/io.h>
  
-> void blk_queue_bounce_limit(struct request_queue *q, u64 dma_mask)
-> {
->         unsigned long b_pfn = dma_mask >> PAGE_SHIFT;
-> ...
->         q->bounce_pfn = b_pfn;
-> }
-> 
-> static unsigned int __blk_recalc_rq_segments(struct request_queue *q,
->                                              struct bio *bio)
-> {
-> ...
->                         high = page_to_pfn(bv->bv_page) > q->bounce_pfn;
-> }
-> 
-> It's not "is this page DMA-able according to the DMA mask" it's effectively
-> "is this page's physical address greater than the maximum physical address
-> that can be DMA'd from".
-> 
-> As I've already pointed out, there are ARM platforms where this is just
-> a total nonsense.
+ #define DCSSBLK_NAME "dcssblk"
+ #define DCSSBLK_MINORS_PER_DISK 1
+@@ -940,11 +941,94 @@ dcssblk_check_params(void)
+ }
+ 
+ /*
++ * Suspend / Resume
++ */
++static int dcssblk_freeze(struct device *dev)
++{
++	struct dcssblk_dev_info *dev_info;
++	int rc = 0;
++
++	list_for_each_entry(dev_info, &dcssblk_devices, lh) {
++		switch (dev_info->segment_type) {
++			case SEG_TYPE_SR:
++			case SEG_TYPE_ER:
++			case SEG_TYPE_SC:
++				if (!dev_info->is_shared)
++					rc = -EINVAL;
++				break;
++			default:
++				rc = -EINVAL;
++				break;
++		}
++		if (rc)
++			break;
++	}
++	if (rc)
++		pr_err("Suspend failed because device %s is writeable.\n",
++		       dev_info->segment_name);
++	return rc;
++}
++
++static int dcssblk_restore(struct device *dev)
++{
++	struct dcssblk_dev_info *dev_info;
++	struct segment_info *entry;
++	unsigned long start, end;
++	int rc = 0;
++
++	list_for_each_entry(dev_info, &dcssblk_devices, lh) {
++		list_for_each_entry(entry, &dev_info->seg_list, lh) {
++			segment_unload(entry->segment_name);
++			rc = segment_load(entry->segment_name, SEGMENT_SHARED,
++					  &start, &end);
++			if (rc < 0) {
++// TODO in_use check ?
++				segment_warning(rc, entry->segment_name);
++				goto out_panic;
++			}
++			if (start != entry->start || end != entry->end) {
++				pr_err("Mismatch of start / end address after "
++				       "resuming device %s\n",
++				       entry->segment_name);
++				goto out_panic;
++			}
++		}
++	}
++	return 0;
++out_panic:
++	panic("fatal dcssblk resume error\n");
++}
++
++static int dcssblk_thaw(struct device *dev)
++{
++	return 0;
++}
++
++static struct dev_pm_ops dcssblk_pm_ops = {
++	.freeze		= dcssblk_freeze,
++	.thaw		= dcssblk_thaw,
++	.restore	= dcssblk_restore,
++};
++
++static struct platform_driver dcssblk_pdrv = {
++	.driver = {
++		.name	= "dcssblk",
++		.owner	= THIS_MODULE,
++		.pm	= &dcssblk_pm_ops,
++	},
++};
++
++static struct platform_device *dcssblk_pdev;
++
++
++/*
+  * The init/exit functions.
+  */
+ static void __exit
+ dcssblk_exit(void)
+ {
++	platform_device_unregister(dcssblk_pdev);
++	platform_driver_unregister(&dcssblk_pdrv);
+ 	root_device_unregister(dcssblk_root_dev);
+ 	unregister_blkdev(dcssblk_major, DCSSBLK_NAME);
+ }
+@@ -954,30 +1038,44 @@ dcssblk_init(void)
+ {
+ 	int rc;
+ 
+-	dcssblk_root_dev = root_device_register("dcssblk");
+-	if (IS_ERR(dcssblk_root_dev))
+-		return PTR_ERR(dcssblk_root_dev);
+-	rc = device_create_file(dcssblk_root_dev, &dev_attr_add);
+-	if (rc) {
+-		root_device_unregister(dcssblk_root_dev);
++	rc = platform_driver_register(&dcssblk_pdrv);
++	if (rc)
+ 		return rc;
++
++	dcssblk_pdev = platform_device_register_simple("dcssblk", -1, NULL,
++							0);
++	if (IS_ERR(dcssblk_pdev)) {
++		rc = PTR_ERR(dcssblk_pdev);
++		goto out_pdrv;
+ 	}
+-	rc = device_create_file(dcssblk_root_dev, &dev_attr_remove);
+-	if (rc) {
+-		root_device_unregister(dcssblk_root_dev);
+-		return rc;
++
++	dcssblk_root_dev = root_device_register("dcssblk");
++	if (IS_ERR(dcssblk_root_dev)) {
++		rc = PTR_ERR(dcssblk_root_dev);
++		goto out_pdev;
+ 	}
++	rc = device_create_file(dcssblk_root_dev, &dev_attr_add);
++	if (rc)
++		goto out_root;
++	rc = device_create_file(dcssblk_root_dev, &dev_attr_remove);
++	if (rc)
++		goto out_root;
+ 	rc = register_blkdev(0, DCSSBLK_NAME);
+-	if (rc < 0) {
+-		root_device_unregister(dcssblk_root_dev);
+-		return rc;
+-	}
++	if (rc < 0)
++		goto out_root;
+ 	dcssblk_major = rc;
+ 	init_rwsem(&dcssblk_devices_sem);
+ 
+ 	dcssblk_check_params();
+-
+ 	return 0;
++
++out_root:
++	root_device_unregister(dcssblk_root_dev);
++out_pdev:
++	platform_device_unregister(dcssblk_pdev);
++out_pdrv:
++	platform_driver_unregister(&dcssblk_pdrv);
++	return rc;
+ }
+ 
+ module_init(dcssblk_init);
 
-Agreed. I still think that a per-device limit combined with the set of
-per-bus remapping rules should handle all cases right, but the block
-bounce buffer handling seems to prevent that. Looking at
-scsi_cacluclate_bounce_limit:
+-- 
+blue skies,
+   Martin.
 
-u64 scsi_calculate_bounce_limit(struct Scsi_Host *shost)
-{
-	struct device *host_dev;
-	u64 bounce_limit = 0xffffffff;
+"Reality continues to ruin my life." - Calvin.
 
-	if (shost->unchecked_isa_dma)
-		return BLK_BOUNCE_ISA;
-	/*
-	 * Platforms with virtual-DMA translation
-	 * hardware have no practical limit.
-	 */
-	if (!PCI_DMA_BUS_IS_PHYS)
-		return BLK_BOUNCE_ANY;
-
-	host_dev = scsi_get_device(shost);
-	if (host_dev && host_dev->dma_mask)
-		bounce_limit = *host_dev->dma_mask;
-
-	return bounce_limit;
-}
-
-This is more or less hardcoding all the common cases
-(ISA, PCI with IOMMU, and phys address limit per device),
-but not the one you are interested in.
-
-The bounce buffer handling is more or less an older and simpler
-way of doing the swiotlb, maybe you can simply unset the
-(horribly misnamed) PCI_DMA_BUS_IS_PHYS in order to effectively
-disable bounce buffers at the block layer and instead do them
-in the dma mapping layer in the form of swiotlb.
-
-Are there similar problems outside of the block layer?
-It seems that in networking, device drivers themselves are
-always in charge of the allocation, so unlike block drivers,
-they can do the right thing on all platforms that have this
-problem.
-
-> As I say, what is the DMA mask?  Is it really a limit?
-
-I still don't think this is the right question to ask. The way that
-the code is structured, it's very clear that it treats a mask and
-a limit the same way. Simply assuming that it's a mask that can contain
-zeroes gets you into trouble.
-
-> Is it really supposed to be a mask?
-
-Would it solve any problem if it were a mask? All uses essentially
-come down to the point where you allocate memory and decide between
-GFP_DMA, GFP_DMA32, GFP_NORMAL or GFP_HIGHMEM. If none of them
-fit into the mask, you still lose. Also, a bitmask is not enough
-to encode a range, as I mentioned before.
-
-	Arnd <><
