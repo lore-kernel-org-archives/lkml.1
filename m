@@ -1,59 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbZFDO07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbZFDO2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757405AbZFDO07 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 10:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbZFDO0v
+	id S1756541AbZFDO2Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 10:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZFDO2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 10:26:51 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38431 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753284AbZFDO0v (ORCPT
+	Thu, 4 Jun 2009 10:28:16 -0400
+Received: from windsormachine.com ([216.8.138.2]:54567 "EHLO
+	router.windsormachine.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754395AbZFDO2P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 10:26:51 -0400
-Date: Thu, 4 Jun 2009 16:26:50 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Trivial patch monkey <trivial@kernel.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: SubmittingPatches: fix typo
-Message-ID: <20090604142650.GA29615@elf.ucw.cz>
+	Thu, 4 Jun 2009 10:28:15 -0400
+Message-ID: <4A27DA01.8060105@windsormachine.com>
+Date: Thu, 04 Jun 2009 10:28:17 -0400
+From: Mike Dresser <mdresser_l@windsormachine.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Alex Samad <alex@samad.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Chinner <david@fromorbit.com>
+Subject: Re: [Bug #13375] Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
+References: <THxQaUP0K2D.A.QkF.UVbIKB@chimera> <PkPeJtNB3KO.A._pF.ZVbIKB@chimera> <20090530231018.GA29992@samad.com.au> <200906012221.38854.rjw@sisk.pl>
+In-Reply-To: <200906012221.38854.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
+X-scanner: Scanned by Xamime-LT 0.1.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I am testing 2.6.30-rc8 on the server that has issues with 2.6.29.4, 
+I'll most likely know tonight or tomorrow morning if that kernel fixes 
+it.. I noticed a lot of xfs changes in rc8 so I figured it was worth a try.
 
-Fix typo.
-
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-
----
-commit f561456a19a7fd16cccd81084e6fa00070f36a6f
-tree 89a93fd0ab436001347aac2b1c505c65c8dcdc55
-parent 7fc5b2aaf21b1b3c3db361e22d9b0fa1d4d845ef
-author Pavel <pavel@ucw.cz> Thu, 04 Jun 2009 16:26:20 +0200
-committer Pavel <pavel@ucw.cz> Thu, 04 Jun 2009 16:26:20 +0200
-
- Documentation/SubmittingPatches |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/SubmittingPatches b/Documentation/SubmittingPatches
-index f309d3c..c282380 100644
---- a/Documentation/SubmittingPatches
-+++ b/Documentation/SubmittingPatches
-@@ -444,7 +444,7 @@ offer a Reviewed-by tag for a patch.  This tag serves to give credit to
- reviewers and to inform maintainers of the degree of review which has been
- done on the patch.  Reviewed-by: tags, when supplied by reviewers known to
- understand the subject area and to perform thorough reviews, will normally
--increase the liklihood of your patch getting into the kernel.
-+increase the likelihood of your patch getting into the kernel.
- 
- 
- 15) The canonical patch format
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
