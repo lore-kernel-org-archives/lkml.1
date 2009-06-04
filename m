@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbZFDQVP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758417AbZFDQWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbZFDQVP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 12:21:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbZFDQTO
+	id S1758417AbZFDQWG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 12:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756811AbZFDQTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 12:19:14 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:48351 "EHLO
+	Thu, 4 Jun 2009 12:19:21 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:48481 "EHLO
 	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755200AbZFDQTB (ORCPT
+	with ESMTP id S1755719AbZFDQTD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 12:19:01 -0400
-Message-Id: <20090604161902.332403109@de.ibm.com>
+	Thu, 4 Jun 2009 12:19:03 -0400
+Message-Id: <20090604161904.066653742@de.ibm.com>
 References: <20090604161847.513682672@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 04 Jun 2009 18:18:59 +0200
+Date: Thu, 04 Jun 2009 18:19:06 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
        linux-pm@lists.linux-foundation.org
 Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Hans-Joachim Picht <hans@linux.vnet.ibm.com>,
+       Frank Blaschka <frank.blaschka@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 12/38] pm: add kernel_page_present
-Content-Disposition: inline; filename=pm_kernel_page_present.patch
+Subject: [patch 19/38] pm: claw driver power management callbacks
+Content-Disposition: inline; filename=pm_claw.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hans-Joachim Picht <hans@linux.vnet.ibm.com>
+From: Frank Blaschka <frank.blaschka@de.ibm.com>
 
-Fix the following build failure caused by make allyesconfig using
-CONFIG_HIBERNATION and CONFIG_DEBUG_PAGEALLOC
-
-kernel/built-in.o: In function `saveable_page':
-kernel/power/snapshot.c:897: undefined reference to `kernel_page_present'
-kernel/built-in.o: In function `safe_copy_page':
-kernel/power/snapshot.c:948: undefined reference to `kernel_page_present'
-make: *** [.tmp_vmlinux1] Error 1
-
-Signed-off-by: Hans-Joachim Picht <hans@linux.vnet.ibm.com>
+Signed-off-by: Frank Blaschka <frank.blaschka@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
- arch/s390/mm/pgtable.c |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ drivers/s390/net/claw.c |   14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/arch/s390/mm/pgtable.c
+Index: linux-2.6/drivers/s390/net/claw.c
 ===================================================================
---- linux-2.6.orig/arch/s390/mm/pgtable.c
-+++ linux-2.6/arch/s390/mm/pgtable.c
-@@ -313,3 +313,22 @@ int s390_enable_sie(void)
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(s390_enable_sie);
-+
-+#ifdef CONFIG_DEBUG_PAGEALLOC
-+#ifdef CONFIG_HIBERNATION
-+bool kernel_page_present(struct page *page)
+--- linux-2.6.orig/drivers/s390/net/claw.c
++++ linux-2.6/drivers/s390/net/claw.c
+@@ -3,12 +3,12 @@
+  *    ESCON CLAW network driver
+  *
+  *  Linux for zSeries version
+- *    Copyright (C) 2002,2005 IBM Corporation
++ *    Copyright IBM Corp. 2002, 2009
+  *  Author(s) Original code written by:
+- *              Kazuo Iimura (iimura@jp.ibm.com)
++ *              Kazuo Iimura <iimura@jp.ibm.com>
+  *   	      Rewritten by
+- *              Andy Richter (richtera@us.ibm.com)
+- *              Marc Price (mwprice@us.ibm.com)
++ *              Andy Richter <richtera@us.ibm.com>
++ *              Marc Price <mwprice@us.ibm.com>
+  *
+  *    sysfs parms:
+  *   group x.x.rrrr,x.x.wwww
+@@ -253,6 +253,11 @@ static void claw_free_wrt_buf(struct net
+ /* Functions for unpack reads   */
+ static void unpack_read(struct net_device *dev);
+ 
++static int claw_pm_prepare(struct ccwgroup_device *gdev)
 +{
-+        unsigned long addr;
-+	int cc;
-+
-+	addr = page_to_phys(page);
-+	asm("lra %1,0(%1)\n"
-+	    "ipm %0\n"
-+            "srl %0,28"
-+	    :"=d"(cc),"+a"(addr)::"cc");
-+	return cc == 0;
++	return -EPERM;
 +}
 +
-+#endif /* CONFIG_HIBERNATION */
-+#endif /* CONFIG_DEBUG_PAGEALLOC */
-+
+ /* ccwgroup table  */
+ 
+ static struct ccwgroup_driver claw_group_driver = {
+@@ -264,6 +269,7 @@ static struct ccwgroup_driver claw_group
+         .remove      = claw_remove_device,
+         .set_online  = claw_new_device,
+         .set_offline = claw_shutdown_device,
++	.prepare     = claw_pm_prepare,
+ };
+ 
+ /*
 
 -- 
 blue skies,
