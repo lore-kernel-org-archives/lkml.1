@@ -1,322 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbZFDH5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZFDH5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbZFDH5R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 03:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbZFDH5C
+	id S1757472AbZFDH5a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 03:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbZFDH5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 03:57:02 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56703 "EHLO smtps.tip.net.au"
+	Thu, 4 Jun 2009 03:57:21 -0400
+Received: from sh.osrg.net ([192.16.179.4]:41490 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753759AbZFDH47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 03:56:59 -0400
-Date: Thu, 4 Jun 2009 17:56:57 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for June 4
-Message-Id: <20090604175657.1565ecba.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	id S1754186AbZFDH5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 03:57:20 -0400
+Date: Thu, 4 Jun 2009 16:57:12 +0900
+To: arnd@arndb.de
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org, lethal@linux-sh.org, chris@zankel.net
+Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <200906011111.28521.arnd@arndb.de>
+References: <200905282104.55818.arnd@arndb.de>
+	<20090601130319A.fujita.tomonori@lab.ntt.co.jp>
+	<200906011111.28521.arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__4_Jun_2009_17_56_57_+1000_mTX0+xm0W7CLVmb0"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090604165703N.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 04 Jun 2009 16:57:14 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__4_Jun_2009_17_56_57_+1000_mTX0+xm0W7CLVmb0
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 1 Jun 2009 11:11:27 +0100
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-Hi all,
+> On Monday 01 June 2009, FUJITA Tomonori wrote:
+> > On Thu, 28 May 2009 21:04:55 +0100
+> > > I've added this version to
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/arnd/asm-generic#next
+> > > 
+> > > I also have patches to convert the existing architectures to use
+> > > it, but I plan to submit those to the arch maintainers once asm-generic
+> > > series has been merged.
+> > 
+> > IMO, this need to be merged with some users. We don't want to merge
+> > something that nobody wants to use.
+> 
+> I've deliberately kept my asm-generic tree free from architecture specific
+> code for now, in order to make the merging process much easier.
 
-Changes since 20090603:
+I understand what you mean however we need to merge something
+useful. I don't say that you need to merge everything together however
+we can't know if this is useful or not unless you show how some
+architectures use it.
 
-This tree fails to build for powerpc allyesconfig.
 
-The mips tree gained a conflict against the arm tree.
+> I do have branches in there that convert x86 and microblaze to use
 
-The net tree lost a conflict.
+x86? How can it use asm-generic-linear.h?
 
-The mmc tree gained a build failure, so I used the version from
-next-20090603.
 
-The trivial tree lost its conflict.
+> all the files that they can share with the generic implementation
+> and the plan is to do more of those over time, but to avoid dealing
+> with all arch maintainers at the same time.
+> 
+> Would it be ok for you if I only do this on microblaze for now (which
+> does not have a dma-mapping.h yet) and leave the conversion of
+> more architectures for later?
+> Otherwise, I'd probably just skip dma-mapping.h in its entirety
+> because there is a different is a simpler alternative for new architectures
+> (setting CONFIG_NO_DMA).
 
-The sound tree gained a build failure for which I reverted a commit.
+At least one architecture sounds fine to me.
 
-The ubi tree lost its build failure.
 
-The driver-core tree lost a conflict.
+> > > +static inline dma_addr_t
+> > > +dma_map_single(struct device *dev, void *ptr, size_t size,
+> > > +	       enum dma_data_direction direction)
+> > > +{
+> > > +	dma_addr_t dma_addr = virt_to_bus(ptr);
+> > > +	BUG_ON(!valid_dma_direction(direction));
+> > > +
+> > > +	if (!dma_coherent_dev(dev))
+> > > +		dma_cache_sync(dev, ptr, size, direction);
+> > 
+> > Where can I find dma_coherent_dev?
+> > 
+> > I don't fancy this since this is architecture-specific stuff (not
+> > generic things).
+> 
+> I made this up in order to deal with the different requirements of
+> the architectures I converted. In SH, it's truly device specific
+> (pci may be coherent, others are never), on cris it returns false
+> and on most others always true.
 
-The usb tree lost a conflict.
+I know what you are trying here.
 
-----------------------------------------------------------------------------
+However, dma_cache_sync() is an exported function to drivers; which
+should be used only with a buffer returned by dma_alloc_noncoherent()
+(see DMA-API.txt). So using dma_cache_sync() in this way is confusing
+to me.
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+I might misunderstand dma_cache_sync (recently I learned what it
+should do).
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
 
-Below is a summary of the state of the merge.
+> Architectures like x86 and frv could use this hook to do th
+> global flush_write_buffers() but still return zero so that
+> dma_sync_sg_for_device does not have to iterate all SG
+> elements doing nothing for them.
+> 
+> Maybe it should be named __dma_coherent_dev() to make clear
+> that it is a helper internal to dma_mapping.h and not supposed to
+> be used by device drivers.
 
-We are up to 142 trees (counting Linus' and 19 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
+Might be. However, we have dma_is_consistent() for a different purpose
+so it might be confusing anyway.
 
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
 
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
+> > > +static inline void
+> > > +dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, size_t size,
+> > > +			enum dma_data_direction direction)
+> > > +{
+> > > +	debug_dma_sync_single_for_cpu(dev, dma_handle, size, direction);
+> > > +}
+> > > +
+> > > +static inline void
+> > > +dma_sync_single_range_for_cpu(struct device *dev, dma_addr_t dma_handle,
+> > > +			      unsigned long offset, size_t size,
+> > > +			      enum dma_data_direction direction)
+> > > +{
+> > > +	debug_dma_sync_single_range_for_cpu(dev, dma_handle,
+> > > +					    offset, size, direction);
+> > > +}
+> > 
+> > This looks wrong. You put dma_coherent_dev hook in sync_*_for_device
+> > but why you don't need it sync_*_for_cpu. It's architecture
+> > specific. Some need both, some need either, and some need nothing.
+> 
+> It took me a while to find out what the architectures do in case of
+> dma_sync_single_for_*. The noncoherent implementations all flush
+> and invalidate the dcache in _for_device, which seems reasonable.
+> 
+> In arch/sh and arch/xtensa, we also flush and invalidate the
+> dcache in *_for_cpu.
+> This does not seem to make sense to me, because there should
+> not be any valid cache lines for that region at that time. My plan 
+> was to submit patches to sh and xtensa to no longer flush the
+> dcache in _for_cpu with that argument before submitting the patch
+> to use the common code. Maybe Paul or Chris can comment on
+> whether there is any reason for the dma flush here, if there is
+> one, we probably should also flush in dma_unmap_*.
+> 
+> AFAICT, the _for_cpu hooks are only required for swiotlb
+> or for an obscure HW implementation of an IOMMU.
 
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+? Why we don't need to remove stale cache after DMA_FROM_DEVICE
+transfer?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
 
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-CONFLICT (content): Merge conflict in arch/arm/mach-pxa/viper.c
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging configfs/linux-next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
-Merging vfs/for-next
-CONFLICT (content): Merge conflict in fs/ext4/super.c
-CONFLICT (content): Merge conflict in fs/fuse/inode.c
-CONFLICT (delete/modify): fs/gfs2/ops_super.c deleted in HEAD and modified =
-in vfs/for-next. Version vfs/for-next of fs/gfs2/ops_super.c left in tree.
-CONFLICT (content): Merge conflict in fs/reiserfs/super.c
-$ git rm -f fs/gfs2/ops_super.c
-Applying: vfs/gfs2: fixup merge for file removal
-Applying: vfs: fix mismerge of fs/reiserfs/xattr.c
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/for-next
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-CONFLICT (content): Merge conflict in arch/x86/include/asm/mce.h
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in include/linux/mmc/sdio_ids.h
-Merging wireless/master
-CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
-e.txt
-CONFLICT (content): Merge conflict in drivers/platform/x86/Kconfig
-CONFLICT (content): Merge conflict in drivers/platform/x86/toshiba_acpi.c
-[master 1982f67] Revert "oqo: select INPUT_POLLDEV"
-[master 8178a24] Revert "x86: oqo: depends on INPUT_POLLDEV"
-[master 0196460] Revert "oqo: dev_set_name()"
-[master ad8cf59] Revert "platform/x86: Add oqo-wmi driver for model 2 OQO b=
-acklight and rfkill control"
-Merging mtd/master
-CONFLICT (content): Merge conflict in drivers/mtd/nand/mxc_nand.c
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/powernow-=
-k8.c
-Merging cifs/master
-Merging mmc/next
-$ git reset --hard HEAD^
-Merging refs/next/20090603/mmc
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-CONFLICT (content): Merge conflict in drivers/ide/ide-atapi.c
-CONFLICT (content): Merge conflict in drivers/ide/ide-cd.c
-CONFLICT (content): Merge conflict in drivers/ide/ide-floppy.c
-CONFLICT (content): Merge conflict in drivers/ide/ide-tape.c
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Applying: md: fix fallout from block tree API change
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging tracing/auto-tracing-next
-CONFLICT (content): Merge conflict in block/blk-sysfs.c
-CONFLICT (content): Merge conflict in net/core/drop_monitor.c
-CONFLICT (content): Merge conflict in net/core/net-traces.c
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-CONFLICT (content): Merge conflict in kernel/sched.c
-Merging generic-ipi/auto-generic-ipi-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in drivers/pci/intr_remapping.c
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging kmemleak/kmemleak
-CONFLICT (delete/modify): arch/x86/kernel/vmlinux_32.lds.S deleted in HEAD =
-and modified in kmemleak/kmemleak. Version kmemleak/kmemleak of arch/x86/ke=
-rnel/vmlinux_32.lds.S left in tree.
-CONFLICT (delete/modify): arch/x86/kernel/vmlinux_64.lds.S deleted in HEAD =
-and modified in kmemleak/kmemleak. Version kmemleak/kmemleak of arch/x86/ke=
-rnel/vmlinux_64.lds.S left in tree.
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-CONFLICT (content): Merge conflict in mm/slob.c
-$ git rm -f arch/x86/kernel/vmlinux_32.lds.S arch/x86/kernel/vmlinux_64.lds=
-.S
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in arch/x86/mm/fault.c
-CONFLICT (content): Merge conflict in include/linux/ring_buffer.h
-CONFLICT (content): Merge conflict in include/linux/slab.h
-CONFLICT (content): Merge conflict in kernel/trace/ring_buffer.c
-CONFLICT (content): Merge conflict in mm/Makefile
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging edac-amd/for-next
-Merging fsnotify/for-next
-Merging asm-generic/next
-CONFLICT (content): Merge conflict in arch/arm/include/asm/page.h
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in arch/x86/kernel/microcode_core.c
-CONFLICT (content): Merge conflict in drivers/base/firmware_class.c
-CONFLICT (content): Merge conflict in init/main.c
-Merging quilt/usb
-CONFLICT (content): Merge conflict in drivers/usb/class/cdc-acm.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/ftdi_sio.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
-Merging quilt/staging
-CONFLICT (content): Merge conflict in drivers/staging/rt2860/common/mlme.c
-CONFLICT (content): Merge conflict in drivers/staging/rt2870/common/mlme.c
-CONFLICT (content): Merge conflict in drivers/staging/rt3070/common/mlme.c
-Merging scsi-post-merge/master
-CONFLICT (content): Merge conflict in include/Kbuild
-[master 532d875] Revert "ASoC: TWL4030: Use reg_cache in twl4030_init_chip"
+> > > +static inline int
+> > > +dma_supported(struct device *dev, u64 mask)
+> > > +{
+> > > +	/*
+> > > +	 * we fall back to GFP_DMA when the mask isn't all 1s,
+> > > +	 * so we can't guarantee allocations that must be
+> > > +	 * within a tighter range than GFP_DMA.
+> > > +	 */
+> > > +	if (mask < 0x00ffffff)
+> > > +		return 0;
+> > 
+> > I think that this is pretty architecture specific.
+> 
+> Yes, I wondered about this one. I suspect that the same code got
+> copied blindly from x86 into all the other architectures. The
+> same code exists in arm, cris, frv and mn10300, while avr32, sh
+> and xtensa seem to assume that nobody passes a smaller than
+> 24-bit mask in there and always return 1. They clearly could not
+> handle that situation either, so the version I chose is the
+> conservative approach.
 
---Signature=_Thu__4_Jun_2009_17_56_57_+1000_mTX0+xm0W7CLVmb0
-Content-Type: application/pgp-signature
+I think that it's better not have this in
+dma-mapping-linear.h. Everyone blindly copies it from x86 but they are
+not correct.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkonfkkACgkQjjKRsyhoI8w7ngCgrzg5CBtcyYCEs2rP5mJbr+SA
-bWkAoJgyTexTcAjI/xrftcAfsmf5ryFX
-=+5Jq
------END PGP SIGNATURE-----
-
---Signature=_Thu__4_Jun_2009_17_56_57_+1000_mTX0+xm0W7CLVmb0--
