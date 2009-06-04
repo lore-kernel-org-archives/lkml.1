@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbZFDQRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755772AbZFDQTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755299AbZFDQRL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 12:17:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbZFDQQ7
+	id S1755772AbZFDQTO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 12:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbZFDQTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 12:16:59 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:45158 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753036AbZFDQQ6 (ORCPT
+	Thu, 4 Jun 2009 12:19:00 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:46575 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753036AbZFDQS7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 12:16:58 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Duane Griffin <duaneg@dghda.com>
-Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
-Date: Thu, 4 Jun 2009 11:08:27 -0500
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Harald Welte <HaraldWelte@viatech.com>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <alpine.LFD.2.01.0906040817090.4880@localhost.localdomain> <e9e943910906040900j6f334f29l42a9f5a57e9a1c8f@mail.gmail.com>
-In-Reply-To: <e9e943910906040900j6f334f29l42a9f5a57e9a1c8f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906041108.29557.lkml@morethan.org>
+	Thu, 4 Jun 2009 12:18:59 -0400
+Message-Id: <20090604161847.513682672@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 04 Jun 2009 18:18:47 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [patch 00/38] power management / hibernate support for s390
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu June 4 2009, Duane Griffin wrote:
-> 2009/6/4 Linus Torvalds <torvalds@linux-foundation.org>:
-> > On Thu, 4 Jun 2009, Michael S. Zick wrote:
-> >> Well, that one isn't anything to brag about"
-> >
-> > So what's the problem on that machine? Is the VIA C7-M (or some random
-> > device in it) just buggy and it eventually hangs, or what? Has _any_
-> > kernel ever worked on that machine for longer than an hour or two?
-> 
-> There have been reports of hangs on various VIA C7 machines going back
-> a year now. The version of the kernel doesn't seem to matter, but the
-> version of glibc does. Unfortunately there hasn't been much progress
-> in getting to the bottom of it.
-> 
+Greetings,
+this patch set implements hibernation support for s390. All s390
+specific buses grow pm callbacks and all the s390 device drivers
+are modified to make use of the callbacks. This allows to do
 
-There have been recent tweaks to the futex service in the
-kernel, this might interact with how a particular glibc
-expects them to work.
+echo disk > /sys/power/state
 
-I also add a few tweaks in my local patches to futex.etc,
-so it may need more in mainline (un-proven at this point).
+to save the state of the running linux image to swap. A normal
+ipl (alias boot) of the same kernel will detect the stored image
+on swap and resume the save image. Works for guests under z/VM
+and for LPARs.
 
-It seems to make a difference with pulse-audio - -
-which is my "test program".
+The patches are meant to be applied on top of the s390 tree found
+at
+	git://git390.marist.edu/pub/scm/linux-2.6.git features
 
-Mike
-> See here (and other linked reports):
-> http://bugs.gentoo.org/show_bug.cgi?id=228263
-> 
-> Cheers,
-> Duane.
-> 
+Have fun..
+-- 
+blue skies,
+   Martin.
 
+"Reality continues to ruin my life." - Calvin.
 
