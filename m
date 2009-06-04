@@ -1,89 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbZFDV2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbZFDV2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754139AbZFDV2c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 17:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbZFDV2P
+	id S1754727AbZFDV2o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 17:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbZFDV2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 17:28:15 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40828 "EHLO
+	Thu, 4 Jun 2009 17:28:16 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:40832 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752824AbZFDV2O (ORCPT
+	with ESMTP id S1753883AbZFDV2P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 17:28:14 -0400
+	Thu, 4 Jun 2009 17:28:15 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200906041128.112757038@firstfloor.org>
 In-Reply-To: <200906041128.112757038@firstfloor.org>
 To: akpm@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, fengguang.wu@intel.com
-Subject: [PATCH] [1/15] HWPOISON: Add page flag for poisoned pages
-Message-Id: <20090604212811.888C91D0290@basil.firstfloor.org>
-Date: Thu,  4 Jun 2009 23:28:11 +0200 (CEST)
+Subject: [PATCH] [2/15] HWPOISON: Export some rmap vma locking to outside world
+Message-Id: <20090604212812.D86311D028F@basil.firstfloor.org>
+Date: Thu,  4 Jun 2009 23:28:12 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hardware poisoned pages need special handling in the VM and shouldn't be 
-touched again. This requires a new page flag. Define it here.
+Needed for later patch that walks rmap entries on its own.
 
-The page flags wars seem to be over, so it shouldn't be a problem
-to get a new one.
+This used to be very frowned upon, but memory-failure.c does
+some rather specialized rmap walking and rmap has been stable
+for quite some time, so I think it's ok now to export it.
 
-v2: Add TestSetHWPoison (suggested by Johannes Weiner)
-
-Acked-by: Christoph Lameter <cl@linux.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/linux/page-flags.h |   17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+ include/linux/rmap.h |    6 ++++++
+ mm/rmap.c            |    4 ++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-Index: linux/include/linux/page-flags.h
+Index: linux/include/linux/rmap.h
 ===================================================================
---- linux.orig/include/linux/page-flags.h
-+++ linux/include/linux/page-flags.h
-@@ -51,6 +51,9 @@
-  * PG_buddy is set to indicate that the page is free and in the buddy system
-  * (see mm/page_alloc.c).
-  *
-+ * PG_hwpoison indicates that a page got corrupted in hardware and contains
-+ * data with incorrect ECC bits that triggered a machine check. Accessing is
-+ * not safe since it may cause another machine check. Don't touch!
-  */
- 
- /*
-@@ -102,6 +105,9 @@ enum pageflags {
- #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
- 	PG_uncached,		/* Page has been mapped as uncached */
- #endif
-+#ifdef CONFIG_MEMORY_FAILURE
-+	PG_hwpoison,		/* hardware poisoned page. Don't touch */
-+#endif
- 	__NR_PAGEFLAGS,
- 
- 	/* Filesystems */
-@@ -263,6 +269,15 @@ PAGEFLAG(Uncached, uncached)
- PAGEFLAG_FALSE(Uncached)
+--- linux.orig/include/linux/rmap.h
++++ linux/include/linux/rmap.h
+@@ -115,6 +115,12 @@ int try_to_munlock(struct page *);
+ int page_wrprotect(struct page *page, int *odirect_sync, int count_offset);
  #endif
  
-+#ifdef CONFIG_MEMORY_FAILURE
-+PAGEFLAG(HWPoison, hwpoison)
-+TESTSETFLAG(HWPoison, hwpoison)
-+#define __PG_HWPOISON (1UL << PG_hwpoison)
-+#else
-+PAGEFLAG_FALSE(HWPoison)
-+#define __PG_HWPOISON 0
-+#endif
++/*
++ * Called by memory-failure.c to kill processes.
++ */
++struct anon_vma *page_lock_anon_vma(struct page *page);
++void page_unlock_anon_vma(struct anon_vma *anon_vma);
 +
- static inline int PageUptodate(struct page *page)
- {
- 	int ret = test_bit(PG_uptodate, &(page)->flags);
-@@ -387,7 +402,7 @@ static inline void __ClearPageTail(struc
- 	 1 << PG_private | 1 << PG_private_2 | \
- 	 1 << PG_buddy	 | 1 << PG_writeback | 1 << PG_reserved | \
- 	 1 << PG_slab	 | 1 << PG_swapcache | 1 << PG_active | \
--	 1 << PG_unevictable | __PG_MLOCKED)
-+	 1 << PG_unevictable | __PG_MLOCKED | __PG_HWPOISON)
+ #else	/* !CONFIG_MMU */
  
- /*
-  * Flags checked when a page is prepped for return by the page allocator.
+ #define anon_vma_init()		do {} while (0)
+Index: linux/mm/rmap.c
+===================================================================
+--- linux.orig/mm/rmap.c
++++ linux/mm/rmap.c
+@@ -191,7 +191,7 @@ void __init anon_vma_init(void)
+  * Getting a lock on a stable anon_vma from a page off the LRU is
+  * tricky: page_lock_anon_vma rely on RCU to guard against the races.
+  */
+-static struct anon_vma *page_lock_anon_vma(struct page *page)
++struct anon_vma *page_lock_anon_vma(struct page *page)
+ {
+ 	struct anon_vma *anon_vma;
+ 	unsigned long anon_mapping;
+@@ -211,7 +211,7 @@ out:
+ 	return NULL;
+ }
+ 
+-static void page_unlock_anon_vma(struct anon_vma *anon_vma)
++void page_unlock_anon_vma(struct anon_vma *anon_vma)
+ {
+ 	spin_unlock(&anon_vma->lock);
+ 	rcu_read_unlock();
