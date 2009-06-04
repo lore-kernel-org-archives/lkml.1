@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbZFDTF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbZFDTGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965AbZFDTF0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 15:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbZFDTFI
+	id S1754451AbZFDTGB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 15:06:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbZFDTFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 15:05:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54050 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751346AbZFDTFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 15:05:06 -0400
-Message-ID: <4A281AA9.50209@redhat.com>
-Date: Thu, 04 Jun 2009 22:04:09 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
-       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
-       anthony@codemonkey.ws, rusty@rustcorp.com.au, netdev@vger.kernel.org,
-       kvm@vger.kernel.org, bhutchings@solarflare.com, andi@firstfloor.org,
-       gregkh@suse.de, herber@gondor.apana.org.au, chrisw@sous-sol.org,
-       shemminger@vyatta.com
-Subject: Re: [RFC PATCH v2 03/19] vbus: add connection-client helper infrastructure
-References: <20090409155200.32740.19358.stgit@dev.haskins.net> <20090409163057.32740.27829.stgit@dev.haskins.net> <20090604180611.GA16387@redhat.com> <4A280FE2.2090101@novell.com> <4A281161.8010109@redhat.com> <4A2812E3.6090108@novell.com>
-In-Reply-To: <4A2812E3.6090108@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 4 Jun 2009 15:05:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53217 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752547AbZFDTFs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 15:05:48 -0400
+Date: Thu, 4 Jun 2009 12:03:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joe Perches <joe@perches.com>
+Cc: Florian Fainelli <florian@openwrt.org>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       Linux-MIPS <linux-mips@linux-mips.org>, linux-kernel@vger.kernel.org,
+       Takashi Iwai <tiwai@suse.de>, Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH 1/8] add lib/gcd.c
+Message-Id: <20090604120340.079f6cdf.akpm@linux-foundation.org>
+In-Reply-To: <1244131044.3631.14.camel@Joe-Laptop.home>
+References: <200906041615.10467.florian@openwrt.org>
+	<4A27DAAD.5000303@ru.mvista.com>
+	<200906041639.04868.florian@openwrt.org>
+	<1244131044.3631.14.camel@Joe-Laptop.home>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> Oh, I don't doubt that (in fact, I was pretty sure that was the case
-> based on some of the optimizations I could see in studying the c_t_u()
-> path).  I just didn't realize there were other ways to do it if its a
-> non "current" task. ;)
->
-> I guess the enigma for me right now is what cost does switch_mm have? 
-> (Thats not a slam against the suggested approach...I really do not know
-> and am curious).
->   
+On Thu, 04 Jun 2009 08:57:24 -0700 Joe Perches <joe@perches.com> wrote:
 
-switch_mm() is probably very cheap (reloads cr3), but it does dirty the 
-current cpu's tlb.  When the kernel needs to flush a process' tlb, it 
-will have to IPI that cpu in addition to all others.  This takes place, 
-for example, after munmap() or after a page is swapped out (though 
-significant batching is done there).
+> On Thu, 2009-06-04 at 16:39 +0200, Florian Fainelli wrote:
+> > diff --git a/lib/gcd.c b/lib/gcd.c
+> > new file mode 100644
+> > index 0000000..6634741
+> > --- /dev/null
+> > +++ b/lib/gcd.c
+> > @@ -0,0 +1,20 @@
+> > +#include <linux/gcd.h>
+> > +#include <linux/module.h>
+> > +
+> > +/* Greatest common divisor */
+> > +unsigned long gcd(unsigned long a, unsigned long b)
+> > +{
+> > +	unsigned long r;
+> > +
+> > +	if (a < b) {
+> > +		r = a;
+> > +		a = b;
+> > +		b = r;
+> 	swap(a, b)
 
-It's still plenty cheaper in my estimation.
+yup
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+> > +	}
+> > +	while ((r = a % b) != 0) {
+> > +		a = b;
+> > +		b = r;
+> > +	}
+> > +	return b;
+> > +}
+> > +EXPORT_SYMBOL_GPL(gcd);
+> 
+> Shouldn't a generic gcd protect against a div0
+> if gcd(0,0)?
+
+nope.  It's a caller bug, there's nothing the callee can do to fix it,
+so an oops is a fine response.
 
