@@ -1,97 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753923AbZFDSNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbZFDSSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753923AbZFDSNn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 14:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbZFDSNF
+	id S1752663AbZFDSSd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 14:18:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbZFDSSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 14:13:05 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:11354 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753244AbZFDSNE (ORCPT
+	Thu, 4 Jun 2009 14:18:22 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:58113 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751151AbZFDSSV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 14:13:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=lzaj+kkeF3rxZtB1h91UOmVms2Vb/0yjD1xvwMTwAUBEmBVj+qRD9df5Iz6e5twAoH
-         utY334g3I0Ow5rLEzkwrW3GS6K6K4/OdtoON5dYqpmFNqo5hRwoYqfYB+BQOzWkpZtGb
-         lb6W5QNRuiF+pIbLW22wyh76spVuFGJlkP6sg=
-From: Philipp Zabel <philipp.zabel@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Ian Molton <ian@mnementh.co.uk>, Pierre Ossman <pierre@ossman.eu>,
-       Philipp Zabel <philipp.zabel@gmail.com>, Ian Molton <spyro@f2s.com>
-Subject: [PATCH 5/7] mmc: tmio_mmc: map SD control registers after enabling the MFD cell
-Date: Thu,  4 Jun 2009 20:12:35 +0200
-Message-Id: <1244139157-16404-6-git-send-email-philipp.zabel@gmail.com>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1244139157-16404-1-git-send-email-philipp.zabel@gmail.com>
-References: <1244139157-16404-1-git-send-email-philipp.zabel@gmail.com>
+	Thu, 4 Jun 2009 14:18:21 -0400
+Message-ID: <4A280FE2.2090101@novell.com>
+Date: Thu, 04 Jun 2009 14:18:10 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+MIME-Version: 1.0
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
+       netdev@vger.kernel.org, kvm@vger.kernel.org, avi@redhat.com,
+       bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
+       herber@gondor.apana.org.au, chrisw@sous-sol.org, shemminger@vyatta.com
+Subject: Re: [RFC PATCH v2 03/19] vbus: add connection-client helper infrastructure
+References: <20090409155200.32740.19358.stgit@dev.haskins.net> <20090409163057.32740.27829.stgit@dev.haskins.net> <20090604180611.GA16387@redhat.com>
+In-Reply-To: <20090604180611.GA16387@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigA341847BB9D50AC04914441E"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ASIC3 can disable the memory, so we need to wait for mfd_cell->enable
-to enable the memory before we can map the SD control registers.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigA341847BB9D50AC04914441E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: Pierre Ossman <pierre@ossman.eu>
-Cc: Ian Molton <spyro@f2s.com>
----
- drivers/mmc/host/tmio_mmc.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+Michael S. Tsirkin wrote:
+> On Thu, Apr 09, 2009 at 12:30:57PM -0400, Gregory Haskins wrote:
+>  =20
+>> +static unsigned long
+>> +task_memctx_copy_to(struct vbus_memctx *ctx, void *dst, const void *s=
+rc,
+>> +		    unsigned long n)
+>> +{
+>> +	struct task_memctx *tm =3D to_task_memctx(ctx);
+>> +	struct task_struct *p =3D tm->task;
+>> +
+>> +	while (n) {
+>> +		unsigned long offset =3D ((unsigned long)dst)%PAGE_SIZE;
+>> +		unsigned long len =3D PAGE_SIZE - offset;
+>> +		int ret;
+>> +		struct page *pg;
+>> +		void *maddr;
+>> +
+>> +		if (len > n)
+>> +			len =3D n;
+>> +
+>> +		down_read(&p->mm->mmap_sem);
+>> +		ret =3D get_user_pages(p, p->mm,
+>> +				     (unsigned long)dst, 1, 1, 0, &pg, NULL);
+>> +
+>> +		if (ret !=3D 1) {
+>> +			up_read(&p->mm->mmap_sem);
+>> +			break;
+>> +		}
+>> +
+>> +		maddr =3D kmap_atomic(pg, KM_USER0);
+>> +		memcpy(maddr + offset, src, len);
+>> +		kunmap_atomic(maddr, KM_USER0);
+>> +		set_page_dirty_lock(pg);
+>> +		put_page(pg);
+>> +		up_read(&p->mm->mmap_sem);
+>> +
+>> +		src +=3D len;
+>> +		dst +=3D len;
+>> +		n -=3D len;
+>> +	}
+>> +
+>> +	return n;
+>> +}
+>>    =20
+>
+> BTW, why did you decide to use get_user_pages?
+> Would switch_mm + copy_to_user work as well
+> avoiding page walk if all pages are present?
+>  =20
 
-diff --git a/drivers/mmc/host/tmio_mmc.c b/drivers/mmc/host/tmio_mmc.c
-index b576640..fe6d2b6 100644
---- a/drivers/mmc/host/tmio_mmc.c
-+++ b/drivers/mmc/host/tmio_mmc.c
-@@ -493,11 +493,6 @@ static int tmio_mmc_resume(struct platform_device *dev)
- 	struct tmio_mmc_host *host = mmc_priv(mmc);
- 	int ret = 0;
- 
--	/* Enable the MMC/SD Control registers */
--	sd_config_write16(host, CNF_CMD, SDCREN);
--	sd_config_write32(host, CNF_CTL_BASE,
--		(dev->resource[0].start >> host->bus_shift) & 0xfffe);
--
- 	/* Tell the MFD core we are ready to be enabled */
- 	if (cell->enable) {
- 		ret = cell->enable(dev);
-@@ -505,6 +500,11 @@ static int tmio_mmc_resume(struct platform_device *dev)
- 			goto out;
- 	}
- 
-+	/* Enable the MMC/SD Control registers */
-+	sd_config_write16(host, CNF_CMD, SDCREN);
-+	sd_config_write32(host, CNF_CTL_BASE,
-+		(dev->resource[0].start >> host->bus_shift) & 0xfffe);
-+
- 	mmc_resume_host(mmc);
- 
- out:
-@@ -563,11 +563,6 @@ static int __devinit tmio_mmc_probe(struct platform_device *dev)
- 	mmc->f_min = mmc->f_max / 512;
- 	mmc->ocr_avail = MMC_VDD_32_33 | MMC_VDD_33_34;
- 
--	/* Enable the MMC/SD Control registers */
--	sd_config_write16(host, CNF_CMD, SDCREN);
--	sd_config_write32(host, CNF_CTL_BASE,
--		(dev->resource[0].start >> host->bus_shift) & 0xfffe);
--
- 	/* Tell the MFD core we are ready to be enabled */
- 	if (cell->enable) {
- 		ret = cell->enable(dev);
-@@ -575,6 +570,11 @@ static int __devinit tmio_mmc_probe(struct platform_device *dev)
- 			goto unmap_cnf;
- 	}
- 
-+	/* Enable the MMC/SD Control registers */
-+	sd_config_write16(host, CNF_CMD, SDCREN);
-+	sd_config_write32(host, CNF_CTL_BASE,
-+		(dev->resource[0].start >> host->bus_shift) & 0xfffe);
-+
- 	/* Disable SD power during suspend */
- 	sd_config_write8(host, CNF_PWR_CTL_3, 0x01);
- 
--- 
-1.6.3.1
+Well, basic c_t_u() won't work because its likely not "current" if you
+are updating the ring from some other task, but I think you have already
+figured that out based on the switch_mm suggestion.  The simple truth is
+I was not familiar with switch_mm at the time I wrote this (nor am I
+now).  If this is a superior method that allows you to acquire
+c_t_u(some_other_ctx) like behavior, I see no problem in changing.  I
+will look into this, and thanks for the suggestion!
 
+> Also - if we just had vmexit because a process executed
+> io (or hypercall), can't we just do copy_to_user there?
+> Avi, I think at some point you said that we can?
+>  =20
+
+Right, and yes that will work I believe.  We could always do a "if (p =3D=
+=3D
+current)" check to test for this.  To date, I don't typically do
+anything mem-ops related directly in vcpu context so this wasn't an
+issue...but that doesn't mean someone wont try in the future. =20
+Therefore, I agree we should strive to optimize it if we can.
+>
+>  =20
+
+Thanks Michael,
+-Greg
+
+
+--------------enigA341847BB9D50AC04914441E
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkooD+cACgkQlOSOBdgZUxlkNACfQEOjtMv7FON0XSvCmRZPVi8q
+lpYAn15HANx1OAqDecKTdkK+y+hBPX87
+=jdq7
+-----END PGP SIGNATURE-----
+
+--------------enigA341847BB9D50AC04914441E--
