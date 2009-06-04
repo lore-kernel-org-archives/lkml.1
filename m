@@ -1,100 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752309AbZFDSsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752973AbZFDSs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752309AbZFDSsS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 14:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbZFDSsI
+	id S1752973AbZFDSs6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 14:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751732AbZFDSsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 14:48:08 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:35604 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751630AbZFDSsH (ORCPT
+	Thu, 4 Jun 2009 14:48:51 -0400
+Received: from mail06do.versatel.de ([89.245.129.26]:35255 "EHLO
+	mail06do.versatel.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751151AbZFDSsu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 14:48:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=LkqsfvWUGcVSnWtRYEmct5roLh4vVRAa6zcE5pm/ske1ycmCDKp9iu8Z1HqNTlPqTG
-         1cySf6eVqSomX6dio8Zl6GnQpNRxlij9Hm0pjtXPzdydvOfgv7SvC5qfFJcNSW0i7q3L
-         a/G04262temw9ZUAcslS3u9JnpWPPK5WpIyw4=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH] perfcounter: sleep before refresh using poll in perf top
-Date: Thu,  4 Jun 2009 20:48:04 +0200
-Message-Id: <1244141284-7507-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+	Thu, 4 Jun 2009 14:48:50 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Jun 2009 14:48:49 EDT
+Message-ID: <20090604204206.vnjm4ggns64g08c0@webmail.versatel.de>
+Date: Thu,  4 Jun 2009 20:42:06 +0200
+From: WEBMAIL SERVICE HELP DESK <servicedesk@webmail.info>
+Reply-to: upgrading.dept@j-mail.info
+To: undisclosed-recipients:;
+Subject: Webmail Account Verification Update ! ! !
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=ISO-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.0.3)
+X-Originating-IP: 41.211.254.97
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-perf top is refreshed every delay_secs the thread runs in such
-loop:
+Dear Webmail User,
 
-while (sleep(delay_secs)) {
-	print_sym_table();
-}
+The Webmail Program that periodically checks the size of your e-mail
+space is sending you this information. The program runs weekly to
+ensure your inbox does not grow too large, thus  preventing you from
+receiving or sending new e-mail. As this message is being sent, you
+have 18 megabytes (MB) or more stored in  your inbox. To help us reset
+your space in our database, please  enter your current user
+name (_________________) password  (_______________)
 
-At the end of print_sym_table(), poll is used without sleep delay
-to check if we have something from stdin.
+You will receive a periodic alert if your inbox size is between 18
+and 20 MB. If your inbox size is 20 MB, a program on your Webmail
+will move your oldest e-mails to a folder in your home directory to
+ensure you can continue receiving incoming e-mail. You will be
+notified this has taken place. If your inbox grows to 25 MB, you will
+be unable to receive new e-mail and it will be returned to  sender.
+All this is programmed to ensure your e-mail continues to function
+well. Thank you for your cooperation and understanding.
 
-It means that this check is done only every delay_secs, which can
-be higher that 2 secs if the user defined a custom refresh rate.
+Information Technology Services Apologizes for any inconvenience caused
+by this required work.
 
-We can drop sleep() here and directly use poll to wait between
-refresh periods, so that the reaction after the user stops perf top
-after typing "Enter" is immediate and doesn't suffer from the
-delay_secs latency.
-
-Nb: poll doesn't add any overhead that can parasite perf top measures
-since it sleeps the entire timeout here.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- Documentation/perf_counter/builtin-top.c |   18 ++++++++----------
- 1 files changed, 8 insertions(+), 10 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-top.c b/Documentation/perf_counter/builtin-top.c
-index 31c00ba..a31beb3 100644
---- a/Documentation/perf_counter/builtin-top.c
-+++ b/Documentation/perf_counter/builtin-top.c
-@@ -278,23 +278,21 @@ static void print_sym_table(void)
- 		color_fprintf(stdout, color, "%4.1f%%", pcnt);
- 		printf(" - %016llx : %s\n", sym->start, sym->name);
- 	}
--
--	{
--		struct pollfd stdin_poll = { .fd = 0, .events = POLLIN };
--
--		if (poll(&stdin_poll, 1, 0) == 1) {
--			printf("key pressed - exiting.\n");
--			exit(0);
--		}
--	}
- }
- 
- static void *display_thread(void *arg)
- {
-+	struct pollfd stdin_poll = { .fd = 0, .events = POLLIN };
-+	int delay_msecs = delay_secs * 1000;
-+
- 	printf("PerfTop refresh period: %d seconds\n", delay_secs);
- 
--	while (!sleep(delay_secs))
-+	do {
- 		print_sym_table();
-+	} while (!poll(&stdin_poll, 1, delay_msecs) == 1);
-+
-+	printf("key pressed - exiting.\n");
-+	exit(0);
- 
- 	return NULL;
- }
--- 
-1.6.2.3
+IT Service Desk.
 
