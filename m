@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753092AbZFDRMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753160AbZFDRO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753092AbZFDRMU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 13:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbZFDRML
+	id S1753160AbZFDRO7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 13:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbZFDROw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 13:12:11 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:46355 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751867AbZFDRMK (ORCPT
+	Thu, 4 Jun 2009 13:14:52 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:39350 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbZFDROw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 13:12:10 -0400
-Date: Thu, 4 Jun 2009 13:11:53 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       tglx@linutronix.de, hpa@zytor.com, mel@csn.ul.ie,
-       suresh.b.siddha@intel.com, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, rusty@rustcorp.com.au, steiner@sgi.com,
-       rientjes@google.com
-Subject: Re: [RESEND PATCH] mm: clear N_HIGH_MEMORY map before se set it
- again -v2
-In-Reply-To: <4A27FAD4.2010104@kernel.org>
-Message-ID: <alpine.DEB.1.10.0906041309230.8080@gentwo.org>
-References: <4A05269D.8000701@kernel.org> <20090512111623.GG25923@csn.ul.ie> <4A0A64FB.4080504@kernel.org> <20090513145950.GB28097@csn.ul.ie> <4A0C4910.7090508@kernel.org> <4A0C4A2A.6080009@kernel.org> <20090514095414.ba8356e5.akpm@linux-foundation.org>
- <4A0C4F67.5080802@kernel.org> <20090514102554.b3a36f19.akpm@linux-foundation.org> <4A0C563A.3020100@kernel.org> <4A2758CB.9090404@kernel.org> <alpine.DEB.1.10.0906041236520.5377@gentwo.org> <4A27FAD4.2010104@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 4 Jun 2009 13:14:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=YogjIGLPbKeznLhSujUSx5G/SEVvnBJvnN+FSeoaQGUbCC8iw5xrKyiNgLyu7Wif0C
+         V+Mjj0nMtSkwBGdRlhoV01zEpVcUbE4gxm+ffPAlEMBQJ5QA+b+KImUdfaLKWEs5TfN4
+         /gdI+tzUT6ufjqbctEOEN6oMTM39Q4x4QyWPM=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH] perfcounter: don't keep warnings treated as errors as default
+Date: Thu,  4 Jun 2009 19:14:48 +0200
+Message-Id: <1244135688-5542-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Jun 2009, Yinghai Lu wrote:
+Building userspace perfcounter tools gives such warning:
 
-> in case some system strange SRAT table. some kind of small range form some node
-> or with mem= boot option etc. that node will not be onlined.
-> In the early checking, the bit in node_states[N_HIGH_MEMORY] for the
-> node is set even that node has less RAM like 1M.
+cc1: warnings being treated as errors
+builtin-top.c: In function ‘print_sym_table’:
+builtin-top.c:207: erreur: ignoring return value of ‘write’, declared with attribute warn_unused_result
+make: *** [builtin-top.o] Erreur 1
 
-Maybe we can replace that with:
+It's about checking if a write was successful on stdout.
+The real point here is that treating each warning as errors by default
+can be avoided, especially for such harmless warning.
 
-SRAT tables may contains nodes of very small size. The arch code may
-decide to not activate such a node. However, currently the early boot code
-sets N_HIGH_MEMORY for such nodes. These nodes therefore seem to be active
-although these nodes have no present pages.
+This patch drop -Werror from perfcounter tools makefile.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ Documentation/perf_counter/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/perf_counter/Makefile b/Documentation/perf_counter/Makefile
+index c9ec458..9b42897 100644
+--- a/Documentation/perf_counter/Makefile
++++ b/Documentation/perf_counter/Makefile
+@@ -159,7 +159,7 @@ uname_V := $(shell sh -c 'uname -v 2>/dev/null || echo not')
+ 
+ # CFLAGS and LDFLAGS are for the users to override from the command line.
+ 
+-CFLAGS = -ggdb3 -Wall -Werror -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement -O6 -march=native
++CFLAGS = -ggdb3 -Wall -Wstrict-prototypes -Wmissing-declarations -Wmissing-prototypes -std=gnu99 -Wdeclaration-after-statement -O6 -march=native
+ LDFLAGS = -lpthread -lrt -lelf
+ ALL_CFLAGS = $(CFLAGS)
+ ALL_LDFLAGS = $(LDFLAGS)
+-- 
+1.6.2.3
 
