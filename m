@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbZFDFU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbZFDF0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755520AbZFDFU2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 01:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbZFDFUV
+	id S1756072AbZFDF0W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 01:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbZFDF0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 01:20:21 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45145 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750923AbZFDFUV (ORCPT
+	Thu, 4 Jun 2009 01:26:13 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59084 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbZFDF0M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 01:20:21 -0400
-Date: Thu, 4 Jun 2009 07:27:38 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [10/16] HWPOISON: Handle poisoned pages in set_page_dirty()
-Message-ID: <20090604052738.GR1065@one.firstfloor.org>
-References: <20090603846.816684333@firstfloor.org> <20090603184644.190E71D0281@basil.firstfloor.org> <20090604003621.GA12210@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090604003621.GA12210@localhost>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 4 Jun 2009 01:26:12 -0400
+Message-Id: <20090604052612.802684387@goodmis.org>
+References: <20090604052540.528802957@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 04 Jun 2009 01:25:41 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 1/6] tracing/function-profiler: do not free per cpu variable stat
+Content-Disposition: inline; filename=0001-tracing-function-profiler-do-not-free-per-cpu-variab.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 08:36:21AM +0800, Wu Fengguang wrote:
-> On Thu, Jun 04, 2009 at 02:46:43AM +0800, Andi Kleen wrote:
-> > 
-> > Bail out early in set_page_dirty for poisoned pages. We don't want any
-> > of the dirty accounting done or file system write back started, because
-> > the page will be just thrown away.
->  
-> I'm afraid this patch is not necessary and could be harmful.
-> 
-> It is not necessary because a poisoned page will normally already be
-> isolated from page cache, or likely cannot be isolated because it has
-> dirty buffers.
+From: Steven Rostedt <srostedt@redhat.com>
 
-Hmm I think I had a case when I originally wrote the code where it was needed.
-But I can't clearly remember now what it was.
+The per cpu variable stat is freeded if we fail to allocate a name
+on start up. This was due to stat at first being allocated in the
+initial design. But since then, it has become a static per cpu variable
+but the free on error was not removed.
 
-But you're right the page cache isolation should normally take care of it.
+Also added __init annotation to the function that this is in.
 
-> It is harmful because it put the page into dirty state without queuing
-> it for IO by moving it to s_io. When more normal pages are dirtied
-> later, __set_page_dirty_nobuffers() won't move the inode into s_io,
-> hence delaying the writeback of good pages for arbitrary long time.
+[ Impact: prevent possible memory corruption on low mem at boot up ]
 
-That's a good point.
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/ftrace.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-I dropped the patch for now.
-
--Andi
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index d6973df..134e580 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -766,7 +766,7 @@ static struct tracer_stat function_stats __initdata = {
+ 	.stat_show	= function_stat_show
+ };
+ 
+-static void ftrace_profile_debugfs(struct dentry *d_tracer)
++static __init void ftrace_profile_debugfs(struct dentry *d_tracer)
+ {
+ 	struct ftrace_profile_stat *stat;
+ 	struct dentry *entry;
+@@ -784,7 +784,6 @@ static void ftrace_profile_debugfs(struct dentry *d_tracer)
+ 			 * The files created are permanent, if something happens
+ 			 * we still do not free memory.
+ 			 */
+-			kfree(stat);
+ 			WARN(1,
+ 			     "Could not allocate stat file for cpu %d\n",
+ 			     cpu);
+@@ -811,7 +810,7 @@ static void ftrace_profile_debugfs(struct dentry *d_tracer)
+ }
+ 
+ #else /* CONFIG_FUNCTION_PROFILER */
+-static void ftrace_profile_debugfs(struct dentry *d_tracer)
++static __init void ftrace_profile_debugfs(struct dentry *d_tracer)
+ {
+ }
+ #endif /* CONFIG_FUNCTION_PROFILER */
+-- 
+1.6.3.1
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
