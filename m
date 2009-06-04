@@ -1,184 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbZFDOKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbZFDOKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756139AbZFDOKX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 10:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZFDOKL
+	id S1755753AbZFDOKy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 10:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbZFDOKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 10:10:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59416 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753053AbZFDOKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 10:10:10 -0400
-Date: Thu, 4 Jun 2009 14:09:33 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       mtosatti@redhat.com, tglx@linutronix.de, cjashfor@linux.vnet.ibm.com,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf report: Add consistent spacing rules
-Message-ID: <tip-71dd8945d8d827ab101cd287f9480ef22fc7c1b6@git.kernel.org>
-Git-Commit-ID: 71dd8945d8d827ab101cd287f9480ef22fc7c1b6
-X-Mailer: tip-git-log-daemon
+	Thu, 4 Jun 2009 10:10:43 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:58347 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751977AbZFDOKm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 10:10:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=mFbco0fFKCMbJoj0pb+Zs3qmLCn5KJmdD/Yi3pbLcNLdX0uTMGoKFhv+wOGbG8X2Mp
+         k4WxTGJBo8i4B85NVfV3Syo22iL6OVrTH+guY5BPl3/wkb5XYZHt70KX71tBzb9Gm/Wk
+         ME7HnMF4bgrgsysA7gqudXvaXXUiWBUdlLBiM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 04 Jun 2009 14:09:34 +0000 (UTC)
+In-Reply-To: <20090604134455.GB2839@tuxdriver.com>
+References: <1243868091-5315-1-git-send-email-dbaryshkov@gmail.com>
+	 <1243868091-5315-2-git-send-email-dbaryshkov@gmail.com>
+	 <1243868091-5315-3-git-send-email-dbaryshkov@gmail.com>
+	 <1243868091-5315-4-git-send-email-dbaryshkov@gmail.com>
+	 <20090603173214.6d3997f7.akpm@linux-foundation.org>
+	 <20090604111634.GA28064@doriath.ww600.siemens.net>
+	 <20090604134455.GB2839@tuxdriver.com>
+Date: Thu, 4 Jun 2009 18:10:41 +0400
+Message-ID: <bc64b4640906040710p5c7c941fi3341599bc3157b79@mail.gmail.com>
+Subject: Re: [PATCH 03/10] net: add IEEE 802.15.4 socket family implementation
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+       slapin@ossfans.org, maxim.osipov@siemens.com,
+       dmitry.baryshkov@siemens.com, oliver.fendt@siemens.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  71dd8945d8d827ab101cd287f9480ef22fc7c1b6
-Gitweb:     http://git.kernel.org/tip/71dd8945d8d827ab101cd287f9480ef22fc7c1b6
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Thu, 4 Jun 2009 15:16:56 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 4 Jun 2009 15:04:41 +0200
+2009/6/4 John W. Linville <linville@tuxdriver.com>:
+> On Thu, Jun 04, 2009 at 03:16:34PM +0400, Dmitry Eremin-Solenikov wrote:
+>> On Wed, Jun 03, 2009 at 05:32:14PM -0700, Andrew Morton wrote:
+>> > On Mon,  1 Jun 2009 18:54:44 +0400
+>> > Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> wrote:
+>
+>> > > + switch (addr->addr_type) {
+>> > > + case IEEE802154_ADDR_LONG:
+>> > > +         rtnl_lock();
+>> > > +         dev = dev_getbyhwaddr(net, ARPHRD_IEEE802154, addr->hwaddr);
+>> > > +         if (dev)
+>> > > +                 dev_hold(dev);
+>> > > +         rtnl_unlock();
+>> > > +         break;
+>> > > + case IEEE802154_ADDR_SHORT:
+>> > > +         if (addr->pan_id != 0xffff && addr->short_addr != IEEE802154_ADDR_UNDEF && addr->short_addr != 0xffff) {
+>> > > +                 struct net_device *tmp;
+>> > > +
+>> > > +                 rtnl_lock();
+>> > > +
+>> > > +                 for_each_netdev(net, tmp) {
+>> > > +                         if (tmp->type == ARPHRD_IEEE802154) {
+>> > > +                                 if (IEEE802154_MLME_OPS(tmp)->get_pan_id(tmp) == addr->pan_id
+>> > > +                                   && IEEE802154_MLME_OPS(tmp)->get_short_addr(tmp) == addr->short_addr) {
+>> >
+>> > You must use very wide xterms :(
+>>
+>> ~120 chars in width :)  We prefer to have a single code line split between
+>> several screen lines, rather than split it manually in some weird places
+>> just to justify width of 80 chars.
+>
+> Hopefully you realize that many find this difficult to read -- I just
+> can't spread my eyes far enough to comprehend the lines.
+>
+> 80 chars is not a hard limit, but it is a good goal.  120 is too wide.
 
-perf report: Add consistent spacing rules
+We do try to fit the lines into 80 chars, but when that seems logical.
+I strongly dislike breaking comparations between lines.
 
-Make the sort header and the print function have the same column width.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- Documentation/perf_counter/builtin-report.c |   34 +++++++++++++++------------
- 1 files changed, 19 insertions(+), 15 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index be392e0..e930b4e 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -344,11 +344,11 @@ sort__thread_cmp(struct hist_entry *left, struct hist_entry *right)
- static size_t
- sort__thread_print(FILE *fp, struct hist_entry *self)
- {
--	return fprintf(fp, " %16s:%5d", self->thread->comm ?: "", self->thread->pid);
-+	return fprintf(fp, "%16s:%5d", self->thread->comm ?: "", self->thread->pid);
- }
- 
- static struct sort_entry sort_thread = {
--	.header = "         Command: Pid ",
-+	.header = "         Command:  Pid",
- 	.cmp	= sort__thread_cmp,
- 	.print	= sort__thread_print,
- };
-@@ -382,11 +382,11 @@ sort__comm_collapse(struct hist_entry *left, struct hist_entry *right)
- static size_t
- sort__comm_print(FILE *fp, struct hist_entry *self)
- {
--	return fprintf(fp, "  %16s", self->thread->comm);
-+	return fprintf(fp, "%16s", self->thread->comm);
- }
- 
- static struct sort_entry sort_comm = {
--	.header		= "          Command",
-+	.header 	= "         Command",
- 	.cmp		= sort__comm_cmp,
- 	.collapse	= sort__comm_collapse,
- 	.print		= sort__comm_print,
-@@ -416,13 +416,13 @@ static size_t
- sort__dso_print(FILE *fp, struct hist_entry *self)
- {
- 	if (self->dso)
--		return fprintf(fp, "  %-25s", self->dso->name);
-+		return fprintf(fp, "%-25s", self->dso->name);
- 
--	return fprintf(fp, "  %016llx         ", (__u64)self->ip);
-+	return fprintf(fp, "%016llx         ", (__u64)self->ip);
- }
- 
- static struct sort_entry sort_dso = {
--	.header = " Shared Object            ",
-+	.header = "Shared Object            ",
- 	.cmp	= sort__dso_cmp,
- 	.print	= sort__dso_print,
- };
-@@ -449,18 +449,18 @@ sort__sym_print(FILE *fp, struct hist_entry *self)
- 	size_t ret = 0;
- 
- 	if (verbose)
--		ret += fprintf(fp, "  %#018llx", (__u64)self->ip);
-+		ret += fprintf(fp, "%#018llx  ", (__u64)self->ip);
- 
- 	if (self->sym)
--		ret += fprintf(fp, "  %s", self->sym->name);
-+		ret += fprintf(fp, "%s", self->sym->name);
- 	else
--		ret += fprintf(fp, "  %#016llx", (__u64)self->ip);
-+		ret += fprintf(fp, "%#016llx", (__u64)self->ip);
- 
- 	return ret;
- }
- 
- static struct sort_entry sort_sym = {
--	.header = " Symbol",
-+	.header = "Symbol",
- 	.cmp	= sort__sym_cmp,
- 	.print	= sort__sym_print,
- };
-@@ -553,8 +553,10 @@ hist_entry__fprintf(FILE *fp, struct hist_entry *self, uint64_t total_samples)
- 	} else
- 		ret = fprintf(fp, "%12d ", self->count);
- 
--	list_for_each_entry(se, &hist_entry__sort_list, list)
-+	list_for_each_entry(se, &hist_entry__sort_list, list) {
-+		fprintf(fp, "  ");
- 		ret += se->print(fp, self);
-+	}
- 
- 	ret += fprintf(fp, "\n");
- 
-@@ -721,13 +723,14 @@ static size_t output__fprintf(FILE *fp, uint64_t total_samples)
- 	struct rb_node *nd;
- 	size_t ret = 0;
- 
-+	fprintf(fp, "\n");
- 	fprintf(fp, "#\n");
- 	fprintf(fp, "# (%Ld profiler events)\n", (__u64)total_samples);
- 	fprintf(fp, "#\n");
- 
- 	fprintf(fp, "# Overhead");
- 	list_for_each_entry(se, &hist_entry__sort_list, list)
--		fprintf(fp, " %s", se->header);
-+		fprintf(fp, "  %s", se->header);
- 	fprintf(fp, "\n");
- 
- 	fprintf(fp, "# ........");
-@@ -735,7 +738,7 @@ static size_t output__fprintf(FILE *fp, uint64_t total_samples)
- 		int i;
- 
- 		fprintf(fp, "  ");
--		for (i = 0; i < strlen(se->header)-1; i++)
-+		for (i = 0; i < strlen(se->header); i++)
- 			fprintf(fp, ".");
- 	}
- 	fprintf(fp, "\n");
-@@ -749,9 +752,10 @@ static size_t output__fprintf(FILE *fp, uint64_t total_samples)
- 
- 	if (!strcmp(sort_order, default_sort_order)) {
- 		fprintf(fp, "#\n");
--		fprintf(fp, "# ( For more details, try: perf report --sort comm,dso,symbol )\n");
-+		fprintf(fp, "# (For more details, try: perf report --sort comm,dso,symbol)\n");
- 		fprintf(fp, "#\n");
- 	}
-+	fprintf(fp, "\n");
- 
- 	return ret;
- }
+-- 
+With best wishes
+Dmitry
