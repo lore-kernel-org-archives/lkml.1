@@ -1,114 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbZFETPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbZFETPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753671AbZFETPi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 15:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbZFETP2
+	id S1754420AbZFETPt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 15:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZFETPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 15:15:28 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:46693 "EHLO kernel.dk"
+	Fri, 5 Jun 2009 15:15:35 -0400
+Received: from mail.lang.hm ([64.81.33.126]:34732 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751702AbZFETP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 15:15:27 -0400
-Date: Fri, 5 Jun 2009 21:15:28 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, tytso@mit.edu, chris.mason@oracle.com,
-       david@fromorbit.com, hch@infradead.org, jack@suse.cz,
-       yanmin_zhang@linux.intel.com, richard@rsk.demon.co.uk,
-       damien.wyart@free.fr
-Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
-Message-ID: <20090605191528.GV11363@kernel.dk>
-References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com> <20090604152040.GA6007@nowhere> <20090604120726.708a2211.akpm@linux-foundation.org> <20090604191309.GA4862@nowhere> <20090604195013.GB11363@kernel.dk> <20090604201012.GD11363@kernel.dk> <20090604223449.GA13780@nowhere>
+	id S1753179AbZFETPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 15:15:34 -0400
+Date: Fri, 5 Jun 2009 12:15:27 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: Alexander Clouter <alex@digriz.org.uk>
+cc: linux-kernel@vger.kernel.org, sefi@s-e-f-i.de
+Subject: Re: When does Linux drop UDP packets?
+In-Reply-To: <20090605191025.GG2014@woodchuck>
+Message-ID: <alpine.DEB.1.10.0906051214140.9159@asgard>
+References: <20090604145347.GA27692@miyuki> <buslf6-j24.ln1@woodchuck.wormnet.eu> <alpine.DEB.1.10.0906041618200.7953@asgard> <20090605191025.GG2014@woodchuck>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090604223449.GA13780@nowhere>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 05 2009, Frederic Weisbecker wrote:
-> On Thu, Jun 04, 2009 at 10:10:12PM +0200, Jens Axboe wrote:
-> > On Thu, Jun 04 2009, Jens Axboe wrote:
-> > > On Thu, Jun 04 2009, Frederic Weisbecker wrote:
-> > > > On Thu, Jun 04, 2009 at 12:07:26PM -0700, Andrew Morton wrote:
-> > > > > On Thu, 4 Jun 2009 17:20:44 +0200 Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > > > > 
-> > > > > > I've just tested it on UP in a single disk.
-> > > > > 
-> > > > > I must say, I'm stunned at the amount of testing which people are
-> > > > > performing on this patchset.  Normally when someone sends out a
-> > > > > patchset it just sort of lands with a dull thud.
-> > > > > 
-> > > > > I'm not sure what Jens did right to make all this happen, but thanks!
-> > > > 
-> > > > 
-> > > > I don't know how he did either. I was reading theses patches and *something*
-> > > > pushed me to my testbox, and then I tested...
-> > > > 
-> > > > Jens, how do you do that?
-> > > 
-> > > Heh, not sure :-)
-> > > 
-> > > But indeed, thanks for the testing. It looks quite interesting. I'm
-> > > guessing it probably has to do with who ends up doing the balancing and
-> > > that the flusher threads block, it may change the picture a bit. So it
-> > > may just be that it'll require a few vm tweaks. I'll definitely look
-> > > into it and try and reproduce your results.
-> > > 
-> > > Did you run it a 2nd time on each drive and check if the results were
-> > > (approximately) consistent on the two drives?
-> > 
-> > each partition... What IO scheduler did you use on hda?
-> 
-> 
-> CFQ.
-> 
->  
-> > The main difference with this test case is that before we had two super
-> > blocks, each with lists of dirty inodes. pdflush would attack those. Now
-> > we have both the inodes from the two supers on a single set of lists on
-> > the bdi. So either we have some ordering issue there (which is causing
-> > the unfairness), or something else is.
-> 
-> 
-> Yeah.
-> But although these flushers are per-bdi, with a single list (well, three)
-> of dirty inodes, it looks like the writeback is still performed per
-> superblock, I mean the bdi work gives the concerned superblock
-> and the bdi list is iterated in generic_sync_wb_inodes() which
-> only processes the inodes for the given superblock. So there is
-> a bit of a per superblock serialization there and....
+On Fri, 5 Jun 2009, Alexander Clouter wrote:
 
-But in most cases sb == NULL, which means that the writeback does not
-care. It should only pass in a valid sb if someone explicitly wants to
-sync that sb.
+> Hi,
+>
+> * david@lang.hm <david@lang.hm> [2009-06-04 16:19:56-0700]:
+>>
+>> On Thu, 4 Jun 2009, Alexander Clouter wrote:
+>>
+>>> Philipp Reh <sefi@s-e-f-i.de> wrote:
+>>>>
+>>>> I have the following setting in which a client that resides on the same
+>>>> physical network as a server wants to receive any UDP packet that
+>>>> arrives on any of its interfaces sent by that server.
+>>>>
+>>> Read up about multicasting, it will do what you want, does not depend on
+>>> the IP address of the destination workstation and will also cross
+>>> subnets if you want it to.
+>>>
+>>> It's dead easy to transmit and receive multicast traffic, broadcasting
+>>> network traffic is so 1980's :)
+>>
+>> there is only a difference between multicast and broadcast traffic if you
+>> are spanning subnets.
+>>
+> Well yes and no.  Broadcast traffic is *always* handled by the kernel as
+> only the kernel can tell if it is interested in it or not.  With
+> multicast the NIC is configured to only pass particular
+> Ethernet multicast packets up to the kernel.
+>
+> By using broadcast traffic the load (okay, hardly a big problem
+> now-a-days) hits *all* the workstations on the subnet, with multicast,
+> only those interested in the traffic receive it.
 
-But the way that the lists are organized now does definitely open some
-windows of unfairness for a test like yours. It's on the top of the
-investigate list for monday.
+true, but only for some NICs, and even those tend to have a fairly small 
+number of slots for the filters. past these limits the OS handles it all 
+just like broadcasts.
 
-> > So perhaps you can try with noop on hda to see if that changes the
-> > picture?
-> 
-> 
-> 
-> The result with noop is even more impressive.
-> 
-> See: http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop.pdf
-> 
-> Also a comparison, noop with pdflush against noop with bdi writeback:
-> 
-> http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop-cmp.pdf
-
-OK, so things aren't exactly peachy here to begin with. It may not
-actually BE an issue, or at least now a new one, but that doesn't mean
-that we should not attempt to quantify the impact.
-
-How are you starting these runs? With a test like this, even a small
-difference in start time can make a huge difference.
-
--- 
-Jens Axboe
-
+David Lang
