@@ -1,203 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806AbZFEKoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbZFEKpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753806AbZFEKoR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 06:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbZFEKoF
+	id S1753597AbZFEKpX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 06:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZFEKpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 06:44:05 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:43905 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751346AbZFEKoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 06:44:04 -0400
+	Fri, 5 Jun 2009 06:45:09 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:58666 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751815AbZFEKpG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 06:45:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fDPlUlK0pbS0/k2JUPt7F7PCfND9ah3wJngTqR0kxMjCCNlsb7yCIYw61Jv73oQmRN
+         Ek3HMJjfi5biWQNieko0HB/raOtxrFU3WTepc/at2v5hoBIu7jHrZA1OXFgYqj8OJPaM
+         k0NGjjgf07h1rrfrD2md+1cKYbNijSjS4adZg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18984.63207.824631.459239@cargo.ozlabs.ibm.com>
-Date: Fri, 5 Jun 2009 20:43:51 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: Code atomic[64]_read and atomic[64]_set in C not CPP
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+In-Reply-To: <20090605094619.GB23085@build.ossfans.org>
+References: <1244168990-28355-4-git-send-email-dbaryshkov@gmail.com>
+	 <1244184737.22576.94.camel@johannes.local>
+	 <20090605071529.GA7064@doriath.ww600.siemens.net>
+	 <20090605.005418.07362083.davem@davemloft.net>
+	 <20090605091229.GA25280@doriath.ww600.siemens.net>
+	 <20090605094619.GB23085@build.ossfans.org>
+Date: Fri, 5 Jun 2009 14:45:06 +0400
+Message-ID: <bc64b4640906050345t5ed23d7bxc8a777a4a0ada147@mail.gmail.com>
+Subject: Re: [PATCH 3/5] net: add NL802154 interface for configuration of 
+	802.15.4 devices
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Sergey Lapin <slapin@ossfans.org>
+Cc: David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, sfr@canb.auug.org.au
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Occasionally we get bugs where atomic_read or atomic_set are used on
-atomic64_t variables or vice versa.  These bugs don't generate
-warnings on x86 because atomic_read and atomic_set are coded as macros
-rather than C functions, so we don't get any type-checking on their
-arguments; similarly for atomic64_read and atomic64_set in 64-bit
-kernels.
+2009/6/5 Sergey Lapin <slapin@ossfans.org>:
+>> @@ -0,0 +1,523 @@
+>> +/*
+>> + * Netlink inteface for IEEE 802.15.4 stack
+>> + *
+>> + * Copyright 2007, 2008 Siemens AG
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2
+>> + * as published by the Free Software Foundation.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + * You should have received a copy of the GNU General Public License along
+>> + * with this program; if not, write to the Free Software Foundation, Inc.,
+>> + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+>> + *
+>> + * Written by:
+>> + * Sergey Lapin <sergey.lapin@siemens.com>
+> Dmitry, please toss all my @siemens.com addresses from all patches, since my
+> access is already disabled and it's pointless to have invalid emails
+> in source tree. Please replace them with @ossfans.org ones.
 
-This converts them to C functions so that the arguments are
-type-checked and bugs like this will get caught more easily.
-It also converts atomic_cmpxchg and atomic_xchg, and atomic64_cmpxchg
-and atomic64_xchg on 64-bit, so we get type-checking on their
-arguments too.
+Could you please send an incremental patch on top of this serie? I
+hope that my last
+push can be pulled/merged and I don't want to redo all commits.
 
-Compiling a typical 64-bit x86 config, this generates no new warnings,
-and the vmlinux text is 86 bytes smaller.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-I have no idea why the text gets smaller with this patch, sorry.
-
-By the way, I noticed while I was doing this that atomic64_t is
-unsigned on 32-bit x86 but signed on 64-bit x86.  Somebody might
-like to make them consistent one day.
-
- arch/x86/include/asm/atomic_32.h |   25 +++++++++++++++++-----
- arch/x86/include/asm/atomic_64.h |   42 ++++++++++++++++++++++++++++++-------
- 2 files changed, 53 insertions(+), 14 deletions(-)
-
-diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
-index aff9f1f..0c466cb 100644
---- a/arch/x86/include/asm/atomic_32.h
-+++ b/arch/x86/include/asm/atomic_32.h
-@@ -19,7 +19,10 @@
-  *
-  * Atomically reads the value of @v.
-  */
--#define atomic_read(v)		((v)->counter)
-+static inline int atomic_read(const atomic_t *v)
-+{
-+	return v->counter;
-+}
- 
- /**
-  * atomic_set - set atomic variable
-@@ -28,7 +31,10 @@
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic_set(v, i)	(((v)->counter) = (i))
-+static inline void atomic_set(atomic_t *v, int i)
-+{
-+	v->counter = i;
-+}
- 
- /**
-  * atomic_add - add integer to atomic variable
-@@ -200,8 +206,15 @@ static inline int atomic_sub_return(int i, atomic_t *v)
- 	return atomic_add_return(-i, v);
- }
- 
--#define atomic_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
--#define atomic_xchg(v, new) (xchg(&((v)->counter), (new)))
-+static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+	return cmpxchg(&v->counter, old, new);
-+}
-+
-+static inline int atomic_xchg(atomic_t *v, int new)
-+{
-+	return xchg(&v->counter, new);
-+}
- 
- /**
-  * atomic_add_unless - add unless the number is already a given value
-@@ -306,7 +319,7 @@ atomic64_xchg(atomic64_t *ptr, unsigned long long new_val)
- 	unsigned long long old_val;
- 
- 	do {
--		old_val = atomic_read(ptr);
-+		old_val = __atomic64_read(ptr);
- 	} while (atomic64_cmpxchg(ptr, old_val, new_val) != old_val);
- 
- 	return old_val;
-@@ -354,7 +367,7 @@ atomic64_add_return(unsigned long long delta, atomic64_t *ptr)
- 	unsigned long long old_val, new_val;
- 
- 	do {
--		old_val = atomic_read(ptr);
-+		old_val = __atomic64_read(ptr);
- 		new_val = old_val + delta;
- 
- 	} while (atomic64_cmpxchg(ptr, old_val, new_val) != old_val);
-diff --git a/arch/x86/include/asm/atomic_64.h b/arch/x86/include/asm/atomic_64.h
-index 8c21731..7d5282e 100644
---- a/arch/x86/include/asm/atomic_64.h
-+++ b/arch/x86/include/asm/atomic_64.h
-@@ -18,7 +18,10 @@
-  *
-  * Atomically reads the value of @v.
-  */
--#define atomic_read(v)		((v)->counter)
-+static inline int atomic_read(const atomic_t *v)
-+{
-+	return v->counter;
-+}
- 
- /**
-  * atomic_set - set atomic variable
-@@ -27,7 +30,10 @@
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic_set(v, i)		(((v)->counter) = (i))
-+static inline void atomic_set(atomic_t *v, int i)
-+{
-+	v->counter = i;
-+}
- 
- /**
-  * atomic_add - add integer to atomic variable
-@@ -192,7 +198,10 @@ static inline int atomic_sub_return(int i, atomic_t *v)
-  * Atomically reads the value of @v.
-  * Doesn't imply a read memory barrier.
-  */
--#define atomic64_read(v)		((v)->counter)
-+static inline long atomic64_read(const atomic64_t *v)
-+{
-+	return v->counter;
-+}
- 
- /**
-  * atomic64_set - set atomic64 variable
-@@ -201,7 +210,10 @@ static inline int atomic_sub_return(int i, atomic_t *v)
-  *
-  * Atomically sets the value of @v to @i.
-  */
--#define atomic64_set(v, i)		(((v)->counter) = (i))
-+static inline void atomic64_set(atomic64_t *v, long i)
-+{
-+	v->counter = i;
-+}
- 
- /**
-  * atomic64_add - add integer to atomic64 variable
-@@ -355,11 +367,25 @@ static inline long atomic64_sub_return(long i, atomic64_t *v)
- #define atomic64_inc_return(v)  (atomic64_add_return(1, (v)))
- #define atomic64_dec_return(v)  (atomic64_sub_return(1, (v)))
- 
--#define atomic64_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
--#define atomic64_xchg(v, new) (xchg(&((v)->counter), new))
-+static inline long atomic64_cmpxchg(atomic64_t *v, long old, long new)
-+{
-+	return cmpxchg(&v->counter, old, new);
-+}
-+
-+static inline long atomic64_xchg(atomic64_t *v, long new)
-+{
-+	return xchg(&v->counter, new);
-+}
- 
--#define atomic_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
--#define atomic_xchg(v, new) (xchg(&((v)->counter), (new)))
-+static inline long atomic_cmpxchg(atomic_t *v, int old, int new)
-+{
-+	return cmpxchg(&v->counter, old, new);
-+}
-+
-+static inline long atomic_xchg(atomic_t *v, int new)
-+{
-+	return xchg(&v->counter, new);
-+}
- 
- /**
-  * atomic_add_unless - add unless the number is a given value
 -- 
-1.6.0.4
-
+With best wishes
+Dmitry
