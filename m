@@ -1,74 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZFEJv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbZFEJxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756192AbZFEJv1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 05:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbZFEJvV
+	id S1753912AbZFEJxs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 05:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbZFEJxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 05:51:21 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:4178 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753330AbZFEJvU (ORCPT
+	Fri, 5 Jun 2009 05:53:40 -0400
+Received: from mail-pz0-f171.google.com ([209.85.222.171]:57170 "EHLO
+	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751165AbZFEJxk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 05:51:20 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=iV6oHeTgECpp8/9fQBiuPspoOyPExQYsEfZabjPUs4eNf8yKgQVW9Ztz3+SFGZkdK
-	1+Wgivh/2590AnkJIjzTQ==
+	Fri, 5 Jun 2009 05:53:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JIRy1FdqkZWvb2vq6uqIVLpDR07tLyOK2ip/NxPTBss0zwEksip5JySuQPrHAjNht7
+         5gerTdqHrc4ybxjK7OwvL7IbzjfPMG590hbR6N/7VFUekgOV6XfaS245vcPAMmA2Cwyr
+         o6ckPWSBWzBah6jXssHZhFVGH9qSecFvQqH4U=
+Date: Fri, 5 Jun 2009 17:55:54 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, ying.huang@intel.com, W.Li@Sun.COM,
+       michaele@au1.ibm.com, mingo@elte.hu, heicars2@linux.vnet.ibm.com,
+       mschwid2@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
+Message-ID: <20090605095554.GD8354@cr0.nay.redhat.com>
+References: <20090602114359.129247921@linux.vnet.ibm.com> <20090602114402.951631599@linux.vnet.ibm.com> <20090602150324.c706b1d2.akpm@linux-foundation.org> <4A266546.5080601@linux.vnet.ibm.com> <4A26961E.7040207@linux.vnet.ibm.com> <20090604090839.GB7030@cr0.nay.redhat.com> <4A28E3F8.5050908@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20090605094811.GD4601@linux.vnet.ibm.com>
-References: <20090604053649.GA3701@in.ibm.com>
-	 <6599ad830906050153i1afd104fqe70f681317349142@mail.gmail.com>
-	 <20090605092733.GA27486@in.ibm.com>
-	 <6599ad830906050232n11aa30d8xfcda0a279a482f32@mail.gmail.com>
-	 <20090605094811.GD4601@linux.vnet.ibm.com>
-Date: Fri, 5 Jun 2009 02:51:18 -0700
-Message-ID: <6599ad830906050251h18f4e037h182f61aa80a5b046@mail.gmail.com>
-Subject: Re: [RFC] CPU hard limits
-From: Paul Menage <menage@google.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>, Avi Kivity <avi@redhat.com>,
-       kvm@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A28E3F8.5050908@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 5, 2009 at 2:48 AM, Dhaval Giani<dhaval@linux.vnet.ibm.com> wrote:
->> > Now if 11th group with same shares comes in, then each group will now
->> > get 9% of CPU and that 10% guarantee breaks.
+On Fri, Jun 05, 2009 at 11:23:04AM +0200, Peter Oberparleiter wrote:
+> Amerigo Wang wrote:
+>> On Wed, Jun 03, 2009 at 05:26:22PM +0200, Peter Oberparleiter wrote:
+>>> Peter Oberparleiter wrote:
+>>>> Andrew Morton wrote:
+>>>>> On Tue, 02 Jun 2009 13:44:02 +0200
+>>>>> Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
+>>>>>> +	/* Duplicate gcov_info. */
+>>>>>> +	active = num_counter_active(info);
+>>>>>> +	dup = kzalloc(sizeof(struct gcov_info) +
+>>>>>> +		      sizeof(struct gcov_ctr_info) * active, GFP_KERNEL);
+>>>>> How large can this allocation be?
+>>>> Hm, good question. Having a look at my test system, I see coverage 
+>>>> data files of up to 60kb size. With counters making up the largest 
+>>>> part of those, I'd guess the allocation size can be around ~55kb. I 
+>>>> assume that makes it a candidate for vmalloc?
+>>> A further run with debug output showed that the maximum size is
+>>> actually around 4k, so in my opinion, there is no need to switch
+>>> to vmalloc.
 >>
->> So you're trying to guarantee 11 cgroups that they can each get 10% of
->> the CPU? That's called over-committing, and while there's nothing
->> wrong with doing that if you're confident that they'll not all need
->> their 10% at the same time, there's no way to *guarantee* them all
->> 10%. You can guarantee them all 9% and hope the extra 1% is spare for
->> those that need it (over-committing), or you can guarantee 10 of them
->> 10% and give the last one 0 shares.
+>> Unless you want virtually continious memory, you don't need to
+>> bother vmalloc().
 >>
->> How would you propose to guarantee 11 cgroups each 10% of the CPU
->> using hard limits?
->>
+>> kmalloc() and get_free_pages() are all fine for this.
 >
-> You cannot guarantee 10% to 11 groups on any system (unless I am missing
-> something). The sum of guarantees cannot exceed 100%.
+> kmalloc() requires contiguous pages to serve an allocation request  
+> larger than a single page. The longer a kernel runs, the more fragmented  
+> the pool of free pages gets and the probability to find enough  
+> contiguous free pages is significantly reduced.
+>
+> In this case (having had a 3rd look), I found allocations of up to  
+> ~50kb, so to be sure, I'll switch that particular allocation to 
+> vmalloc().
+>
 
-That's exactly my point. I was trying to counter Bharata's statement, which was:
+Well, at least get_free_pages() is fine, 50Kb is about 16 pages on x86,
+so the order is 4, not big for get_free_pages()...
 
-> > Now if 11th group with same shares comes in, then each group will now
-> > get 9% of CPU and that 10% guarantee breaks.
-
-which seemed to be implying that this was a drawback of using shares
-to implement guarantees.
-
-Paul
+And note that vmalloc() needs extra efforts to do page mapping...
