@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbZFEIju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755502AbZFEIxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475AbZFEIju (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 04:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZFEIjf
+	id S1755502AbZFEIxb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 04:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbZFEIxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 04:39:35 -0400
-Received: from mga01.intel.com ([192.55.52.88]:62987 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750701AbZFEIje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 04:39:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,310,1241420400"; 
-   d="scan'208";a="696739090"
-Subject: Re: [PATCH -v4] x86: MCE: Re-implement MCE log ring buffer as
- per-CPU ring buffer
-From: Huang Ying <ying.huang@intel.com>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A28D738.8010202@jp.fujitsu.com>
-References: <1244085090.8361.360.camel@yhuang-dev.sh.intel.com>
-	 <4A28C2E2.4090309@jp.fujitsu.com>
-	 <1244189284.8361.514.camel@yhuang-dev.sh.intel.com>
-	 <4A28D738.8010202@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Fri, 05 Jun 2009 16:39:34 +0800
-Message-Id: <1244191174.8361.517.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Fri, 5 Jun 2009 04:53:21 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:60377 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbZFEIxU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 04:53:20 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=J/vBWJYr2RRk/64vgfyWMGxn+UpMUa+k11gvHscYjU4fnPS3hfl0kHYXClzY2HeMd
+	Qoig7U7gIi2vDKZ8EMSnw==
+MIME-Version: 1.0
+In-Reply-To: <20090604053649.GA3701@in.ibm.com>
+References: <20090604053649.GA3701@in.ibm.com>
+Date: Fri, 5 Jun 2009 01:53:15 -0700
+Message-ID: <6599ad830906050153i1afd104fqe70f681317349142@mail.gmail.com>
+Subject: Re: [RFC] CPU hard limits
+From: Paul Menage <menage@google.com>
+To: bharata@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelyanov <xemul@openvz.org>, Avi Kivity <avi@redhat.com>,
+       kvm@vger.kernel.org,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Herbert Poetzl <herbert@13thfloor.at>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-05 at 16:28 +0800, Hidetoshi Seto wrote:
-> Huang Ying wrote:
-> > On Fri, 2009-06-05 at 15:01 +0800, Hidetoshi Seto wrote:
-> >> Huang Ying wrote:
-> >>>  struct mce_log {
-> >>> -	char signature[12]; /* "MACHINECHECK" */
-> >>> +	char signature[12]; /* "MACHINECHEC2" */
-> >>>  	unsigned len;	    /* = MCE_LOG_LEN */
-> >>> -	unsigned next;
-> >>>  	unsigned flags;
-> >>>  	unsigned pad0;
-> >>> -	struct mce entry[MCE_LOG_LEN];
-> >>> +	struct mce_log_cpu *mcelog_cpus;
-> >>>  };
-> >> What is this *mcelog_cpus to be used for?
-> >> It seems it will point one of per-CPU buffers (maybe cpu#0's buffer)
-> >> if I have read the following mce_log_init() correctly.
-> > 
-> > It is mainly used by something like kdump, which can search
-> > "MACHINECHEC2", and analyze mce_log. mcelog_cpus can help kdump find the
-> > real mcelog storage.
-> 
-> Hum, but it help tools only to find one of buffers, not to find all.
-> 
-> I think it would be better help for tools if we have another signature
-> on struct mce_log_cpu, e.g.: 
-> 
->  +struct mce_log_cpu {
-> + 	char signature[**];	/* "MCE_LOG_CPU_VER_1" or so */
-> +	__u32 cpuid;		/* cpuid or extcpu, same as struct mce */
->  +	int head;
->  +	int tail;
->  +	unsigned long flags;
->  +	struct mce entry[MCE_LOG_LEN];
->  +};
-> 
-> How about this?
+On Wed, Jun 3, 2009 at 10:36 PM, Bharata B
+Rao<bharata@linux.vnet.ibm.com> wrote:
+> - Hard limits can be used to provide guarantees.
+>
 
-+	mcelog.mcelog_cpus = &per_cpu_var(mce_log_cpus);
+This claim (and the subsequent long thread it generated on how limits
+can provide guarantees) confused me a bit.
 
-So mcelog.mcelog_cpus are pointed to the buffers of all CPUs, not just
-that of one CPU. You can find them by analyzing PER cpu data structure.
+Why do we need limits to provide guarantees when we can already
+provide guarantees via shares?
 
-Best Regards,
-Huang Ying
+Suppose 10 cgroups each want 10% of the machine's CPU. We can just
+give each cgroup an equal share, and they're guaranteed 10% if they
+try to use it; if they don't use it, other cgroups can get access to
+the idle cycles.
 
+Suppose cgroup A wants a guarantee of 50% and two others, B and C,
+want guarantees of 15% each; give A 50 shares and B and C 15 shares
+each. In this case, if they all run flat out they'll get 62%/19%/19%,
+which is within their SLA.
 
+That's not to say that hard limits can't be useful in their own right
+- e.g. for providing reproducible loadtesting conditions by
+controlling how much CPU a service can use during the load test. But I
+don't see why using them to implement guarantees is either necessary
+or desirable.
+
+(Unless I'm missing some crucial point ...)
+
+Paul
