@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754634AbZFELQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbZFELQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754634AbZFELQg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 07:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbZFELOV
+	id S1755961AbZFELQs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 07:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbZFELO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 07:14:21 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:49381 "EHLO
+	Fri, 5 Jun 2009 07:14:27 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:49403 "EHLO
 	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753366AbZFELOT (ORCPT
+	with ESMTP id S1754931AbZFELOY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 07:14:19 -0400
+	Fri, 5 Jun 2009 07:14:24 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Al Viro <viro@ZenIV.linux.org.uk>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH v2.1 04/17] EXOFS: do not manipulate s_dirt directly
-Date: Fri,  5 Jun 2009 16:05:42 +0300
-Message-Id: <1244207155-2092-5-git-send-email-dedekind@infradead.org>
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       linux-ext4@vger.kernel.org
+Subject: [PATCH v2.1 05/17] EXT2: do not manipulate s_dirt directly
+Date: Fri,  5 Jun 2009 16:05:43 +0300
+Message-Id: <1244207155-2092-6-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
 References: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 05 Jun 2009 11:12:52.0063 (UTC) FILETIME=[914E6EF0:01C9E5CE]
+X-OriginalArrivalTime: 05 Jun 2009 11:12:54.0431 (UTC) FILETIME=[92B7C2F0:01C9E5CE]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,47 +33,111 @@ From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 ... use new VFS helpers instead.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Acked-by: Boaz Harrosh <bharrosh@panasas.com>
+Cc: linux-ext4@vger.kernel.org
 ---
- fs/exofs/inode.c |    2 +-
- fs/exofs/super.c |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ fs/ext2/balloc.c |    4 ++--
+ fs/ext2/ialloc.c |    4 ++--
+ fs/ext2/super.c  |    8 ++++----
+ fs/ext2/xattr.c  |    2 +-
+ 4 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/fs/exofs/inode.c b/fs/exofs/inode.c
-index ba8d9fa..80d3d03 100644
---- a/fs/exofs/inode.c
-+++ b/fs/exofs/inode.c
-@@ -1066,7 +1066,7 @@ struct inode *exofs_new_inode(struct inode *dir, int mode)
+diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
+index 7f8d2e5..a3de92b 100644
+--- a/fs/ext2/balloc.c
++++ b/fs/ext2/balloc.c
+@@ -164,7 +164,7 @@ static void release_blocks(struct super_block *sb, int count)
+ 		struct ext2_sb_info *sbi = EXT2_SB(sb);
  
- 	sbi = sb->s_fs_info;
+ 		percpu_counter_add(&sbi->s_freeblocks_counter, count);
+-		sb->s_dirt = 1;
++		mark_sb_dirty(sb);
+ 	}
+ }
+ 
+@@ -179,7 +179,7 @@ static void group_adjust_blocks(struct super_block *sb, int group_no,
+ 		free_blocks = le16_to_cpu(desc->bg_free_blocks_count);
+ 		desc->bg_free_blocks_count = cpu_to_le16(free_blocks + count);
+ 		spin_unlock(sb_bgl_lock(sbi, group_no));
+-		sb->s_dirt = 1;
++		mark_sb_dirty(sb);
+ 		mark_buffer_dirty(bh);
+ 	}
+ }
+diff --git a/fs/ext2/ialloc.c b/fs/ext2/ialloc.c
+index 15387c9..bb8cf4e 100644
+--- a/fs/ext2/ialloc.c
++++ b/fs/ext2/ialloc.c
+@@ -81,7 +81,7 @@ static void ext2_release_inode(struct super_block *sb, int group, int dir)
+ 	spin_unlock(sb_bgl_lock(EXT2_SB(sb), group));
+ 	if (dir)
+ 		percpu_counter_dec(&EXT2_SB(sb)->s_dirs_counter);
+-	sb->s_dirt = 1;
++	mark_sb_dirty(sb);
+ 	mark_buffer_dirty(bh);
+ }
+ 
+@@ -548,7 +548,7 @@ got:
+ 	}
+ 	spin_unlock(sb_bgl_lock(sbi, group));
  
 -	sb->s_dirt = 1;
 +	mark_sb_dirty(sb);
- 	inode->i_uid = current->cred->fsuid;
- 	if (dir->i_mode & S_ISGID) {
- 		inode->i_gid = dir->i_gid;
-diff --git a/fs/exofs/super.c b/fs/exofs/super.c
-index 49e16af..9cf9738 100644
---- a/fs/exofs/super.c
-+++ b/fs/exofs/super.c
-@@ -241,7 +241,7 @@ static void exofs_write_super(struct super_block *sb)
- 		EXOFS_ERR("exofs_write_super: exofs_sync_op failed.\n");
- 		goto out;
- 	}
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- 
- out:
- 	if (or)
-@@ -262,7 +262,7 @@ static void exofs_put_super(struct super_block *sb)
+ 	mark_buffer_dirty(bh2);
+ 	inode->i_uid = current_fsuid();
+ 	if (test_opt (sb, GRPID))
+diff --git a/fs/ext2/super.c b/fs/ext2/super.c
+index f5b7fad..4f054d5 100644
+--- a/fs/ext2/super.c
++++ b/fs/ext2/super.c
+@@ -116,7 +116,7 @@ static void ext2_put_super (struct super_block * sb)
  
  	lock_kernel();
  
 -	if (sb->s_dirt)
 +	if (is_sb_dirty(sb))
- 		exofs_write_super(sb);
+ 		ext2_write_super(sb);
  
- 	/* make sure there are no pending commands */
+ 	ext2_xattr_put_super(sb);
+@@ -1107,7 +1107,7 @@ static void ext2_commit_super (struct super_block * sb,
+ {
+ 	es->s_wtime = cpu_to_le32(get_seconds());
+ 	mark_buffer_dirty(EXT2_SB(sb)->s_sbh);
+-	sb->s_dirt = 0;
++	mark_sb_clean(sb);
+ }
+ 
+ static void ext2_sync_super(struct super_block *sb, struct ext2_super_block *es)
+@@ -1117,7 +1117,7 @@ static void ext2_sync_super(struct super_block *sb, struct ext2_super_block *es)
+ 	es->s_wtime = cpu_to_le32(get_seconds());
+ 	mark_buffer_dirty(EXT2_SB(sb)->s_sbh);
+ 	sync_dirty_buffer(EXT2_SB(sb)->s_sbh);
+-	sb->s_dirt = 0;
++	mark_sb_clean(sb);
+ }
+ 
+ /*
+@@ -1148,7 +1148,7 @@ void ext2_write_super (struct super_block * sb)
+ 		} else
+ 			ext2_commit_super (sb, es);
+ 	}
+-	sb->s_dirt = 0;
++	mark_sb_clean(sb);
+ 	unlock_kernel();
+ }
+ 
+diff --git a/fs/ext2/xattr.c b/fs/ext2/xattr.c
+index 7913531..1673ee4 100644
+--- a/fs/ext2/xattr.c
++++ b/fs/ext2/xattr.c
+@@ -343,7 +343,7 @@ static void ext2_xattr_update_super_block(struct super_block *sb)
+ 		return;
+ 
+ 	EXT2_SET_COMPAT_FEATURE(sb, EXT2_FEATURE_COMPAT_EXT_ATTR);
+-	sb->s_dirt = 1;
++	mark_sb_dirty(sb);
+ 	mark_buffer_dirty(EXT2_SB(sb)->s_sbh);
+ }
+ 
 -- 
 1.6.0.6
 
