@@ -1,453 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbZFENmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755610AbZFENlH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755929AbZFENmI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 09:42:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZFENlZ
+	id S1755610AbZFENlH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 09:41:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbZFENkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 09:41:25 -0400
-Received: from av9-1-sn3.vrr.skanova.net ([81.228.9.185]:44747 "EHLO
-	av9-1-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754099AbZFENkm (ORCPT
+	Fri, 5 Jun 2009 09:40:49 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:55161 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755121AbZFENkq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 09:40:42 -0400
-Message-ID: <4A29205A.7030108@mocean-labs.com>
-Date: Fri, 05 Jun 2009 15:40:42 +0200
-From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Fri, 5 Jun 2009 09:40:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=bDFUjYhOh45BR5CbH7kLlVrSQZF5k+EoyGmhgQ5pjlwgD4Dt1ZlZpZzTlhgriyvhP/
+         LtZbwh9Ps+Qky7N2Ybbcu93QxeR8Jsveleo7T6kOukPniqibZyynrt1P+atOSzDYqHes
+         PCH1876swSj5Qt9vKnBvOLZ0lwmvokoKk+Kq4=
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 4/9] MFD: Adding Timberdale DMA driver
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <1244207921.23850.17.camel@localhost.localdomain>
+References: <1244168990-28355-1-git-send-email-dbaryshkov@gmail.com>
+	 <1244168990-28355-2-git-send-email-dbaryshkov@gmail.com>
+	 <1244168990-28355-3-git-send-email-dbaryshkov@gmail.com>
+	 <1244168990-28355-4-git-send-email-dbaryshkov@gmail.com>
+	 <1244168990-28355-5-git-send-email-dbaryshkov@gmail.com>
+	 <1244207921.23850.17.camel@localhost.localdomain>
+Date: Fri, 5 Jun 2009 17:40:45 +0400
+Message-ID: <bc64b4640906050640n77bddf37u8e549dff72508c2d@mail.gmail.com>
+Subject: Re: [PATCH 4/5] ieee802154: add documentation about our stack
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, slapin@ossfans.org, davem@davemloft.net,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support for the Timberdale FPGA internal DMA engine
+2009/6/5 Marcel Holtmann <marcel@holtmann.org>:
+> Hi Dmitry,
+>
+>> Add MAINTAINERS entry and a small text describing our stack interfaces,
+>> how to hook the drivers, etc.
+>>
+>> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+>> Signed-off-by: Sergey Lapin <slapin@ossfans.org>
+>> ---
+>>  Documentation/networking/ieee802154.txt |   76 +++++++++++++++++++++++++++++++
+>>  MAINTAINERS                             |   12 +++++
+>>  2 files changed, 88 insertions(+), 0 deletions(-)
+>>  create mode 100644 Documentation/networking/ieee802154.txt
+>>
+>> diff --git a/Documentation/networking/ieee802154.txt b/Documentation/networking/ieee802154.txt
+>> new file mode 100644
+>> index 0000000..a0280ad
+>> --- /dev/null
+>> +++ b/Documentation/networking/ieee802154.txt
+>> @@ -0,0 +1,76 @@
+>> +
+>> +             Linux IEEE 802.15.4 implementation
+>> +
+>> +
+>> +Introduction
+>> +============
+>> +
+>> +The Linux-ZigBee project goal is to provide complete implementation
+>> +of IEEE 802.15.4 / ZigBee / 6LoWPAN protocols. IEEE 802.15.4 is a stack
+>> +of protocols for organizing Low-Rate Wireless Personal Area Networks.
+>> +
+>> +Currently only IEEE 802.15.4 layer is implemented. We have choosen
+>> +to use plain Berkeley socket API, the generic Linux networking stack
+>> +to transfer IEEE 802.15.4 messages and a special protocol over genetlink
+>> +for configuration/management
+>> +
+>> +
+>> +Socket API
+>> +==========
+>> +
+>> +int sd = socket(PF_IEEE802154, SOCK_DGRAM, 0);
+>> +.....
+>> +
+>> +The address family, socket addresses etc. are defined in the
+>> +include/net/ieee802154/af_ieee802154.h header or in the special header
+>> +in our userspace package (see either linux-zigbee sourceforge download page
+>> +or git tree at git://linux-zigbee.git.sourceforge.net/gitroot/linux-zigbee).
+>> +
+>> +One can use SOCK_RAW for passing raw data towards device xmit function. YMMV.
+>> +
+>> +
+>> +MLME - MAC Level Management
+>> +============================
+>> +
+>> +Most of IEEE 802.15.4 MLME interfaces are directly mapped on netlink commands.
+>> +See the include/net/ieee802154/nl802154.h header. Our userspace tools package
+>> +(see above) provides CLI configuration utility for radio interfaces and simple
+>> +coordinator for IEEE 802.15.4 networks as an example users of MLME protocol.
+>> +
+>> +
+>> +Kernel side
+>> +=============
+>> +
+>> +Like with WiFi, there are several types of devices implementing IEEE 802.15.4.
+>> +1) 'HardMAC'. The MAC layer is implemented in the device itself, the device
+>> +   exports MLME and data API.
+>> +2) 'SoftMAC' or just radio. These types of devices are just radio transceivers
+>> +   possibly with some kinds of acceleration like automatic CRC computation and
+>> +   comparation, automagic ACK handling, address matching, etc.
+>> +
+>> +Those types of devices require different approach to be hooked into Linux kernel.
+>> +
+>> +
+>> +HardMAC
+>> +=======
+>> +
+>> +See the header include/net/ieee802154/netdevice.h. You have to implement Linux
+>> +net_device, with .type = ARPHRD_IEEE802154. Data is exchanged with socket family
+>> +code via plain sk_buffs. The control block of sk_buffs will contain additional
+>> +info as described in the struct ieee802154_mac_cb.
+>
+> are you sending IP packets over this ARPHRD_IEEE802154 network devices
+> or are you just abusing it as a control interface. If it is the later
+> then can we please stop doing this. I really dislike these irda0,
+> wmaster0 and alike stuff. If you can't configure it as real IP device,
+> you should not use struct net_device at all from my point of view. For
+> all your control details you have netlink so no need for an extra device
+> here unless it can actually talk IP (or similar like IPX etc.).
 
-This driver gives other drivers the possibility to start DMA directly
-between IP block inside the FPGA and the main memory
+Hmm. Once I've thought about it, as net_device seemed a Really Big Thing to me
+to be used for our stack. However from the beginning we wanted to use plain BSD
+sockets API, we wanted to use sk_buffs (of course) for the whole
+message interface.
+And when prototyping lowpan_device, I ended duplicating lots of net_device
+functionality on my own.
+Either we have to develop some lightweight "net_device" abstracted from IP & Ko,
+but containing sk_buff queues, header ops, etc, or end up with functionality
+duplication and hacks like in bluetooth (where skb->dev is used to store hci_dev
+instead of net_device).
 
-Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
----
-Index: linux-2.6.30-rc7/drivers/mfd/Kconfig
-===================================================================
---- linux-2.6.30-rc7/drivers/mfd/Kconfig	(revision 861)
-+++ linux-2.6.30-rc7/drivers/mfd/Kconfig	(working copy)
-@@ -241,6 +241,13 @@
- 	 Say yes here if you want to include support GPIO for pins on
- 	 the PCF50633 chip.
+Hmm. AX.25, AppleTalk, CAN, DecNet, most of other procotols sitting inside
+Linux kernel do use net_device structure, why should we differ?
 
-+config MFD_TIMBERDALE_DMA
-+	tristate "Support for timberdale DMA"
-+	depends on MFD_TIMBERDALE
-+	---help---
-+	Add support the DMA block inside the timberdale FPGA. This to be able
-+	to do DMA transfers directly to some of the blocks inside the FPGA
-+
- endmenu
+Moreover, once we implement 6lowpan support (an encapsulation for IPv6 frames
+into IEEE 802.15.4 ones) it will be possible to send IPv6 frames directly over
+IEEE 802.15.4.
 
- menu "Multimedia Capabilities Port drivers"
-Index: linux-2.6.30-rc7/drivers/mfd/timbdma.c
-===================================================================
---- linux-2.6.30-rc7/drivers/mfd/timbdma.c	(revision 0)
-+++ linux-2.6.30-rc7/drivers/mfd/timbdma.c	(revision 864)
-@@ -0,0 +1,302 @@
-+/*
-+ * timbdma.c timberdale FPGA DMA driver
-+ * Copyright (c) 2009 Intel Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+/* Supports:
-+ * Timberdale FPGA DMA engine
-+ */
-+
-+#include <linux/version.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/interrupt.h>
-+#include <linux/platform_device.h>
-+
-+#include <linux/mfd/timbdma.h>
-+
-+static struct timbdma_dev *self_g;
-+
-+static irqreturn_t timbdma_handleinterrupt(int irq, void *devid)
-+{
-+	struct timbdma_dev *dev = (struct timbdma_dev *)devid;
-+	int ipr;
-+	int i;
-+
-+	ipr = ioread32(dev->membase + timbdma_ctrlmap_TIMBPEND);
-+
-+	/* ack */
-+	iowrite32(ipr, dev->membase + timbdma_ctrlmap_TIMBSTATUS);
-+
-+	/* call the callbacks */
-+	for (i = 0; i < DMA_IRQS; i++) {
-+		int mask = 1 << i;
-+		if ((ipr & mask) && dev->callbacks[i])
-+			dev->callbacks[i](mask, dev->callback_data[i]);
-+	}
-+
-+	if (ipr)
-+		return IRQ_HANDLED;
-+	else
-+		return IRQ_NONE;
-+}
-+
-+
-+void timb_start_dma(u32 flag, unsigned long buf, int len, int bytes_per_row)
-+{
-+	int i;
-+	unsigned long irqflags;
-+	struct timbdma_dev *dev = self_g;
-+
-+	spin_lock_irqsave(&dev->lock, irqflags);
-+
-+	/* now enable the DMA transfer */
-+	for (i = 0; i < DMA_IRQS; i++)
-+		if (flag & (1 << i)) {
-+			u32 offset = i / 2 * 0x40;
-+
-+			if (!(i % 2)) {
-+				/* RX */
-+				/* bytes per row */
-+				iowrite32(bytes_per_row, dev->membase + offset +
-+					timbdma_dmacfg_BPERROW);
-+				/* address high */
-+				iowrite32(0, dev->membase + offset +
-+					timbdma_dmacfg_RXSTARTH);
-+				/* address low */
-+				iowrite32(buf, dev->membase + offset +
-+					timbdma_dmacfg_RXSTARTL);
-+				/* Length */
-+				iowrite32(len, dev->membase + offset +
-+					timbdma_dmacfg_RXLENGTH);
-+				/* Clear rx sw read pointer */
-+				iowrite32(0, dev->membase + offset +
-+					timbdma_dmacfg_RXSWRP);
-+				/* enable the transfer */
-+				iowrite32(1, dev->membase + offset +
-+					timbdma_dmacfg_RXENABLE);
-+			} else {
-+				/* TX */
-+				/* address high */
-+				iowrite32(0, dev->membase + offset +
-+					timbdma_dmacfg_TXSTARTH);
-+				/* address low */
-+				iowrite32(buf, dev->membase + offset +
-+					timbdma_dmacfg_TXSTARTL);
-+				/* Length */
-+				iowrite32(len, dev->membase + offset +
-+					timbdma_dmacfg_TXLENGTH);
-+				/* Set tx sw write pointer */
-+				iowrite32(len, dev->membase + offset +
-+					timbdma_dmacfg_TXSWWP);
-+			}
-+
-+			/* only allow one bit in the flag field */
-+			break;
-+		}
-+	spin_unlock_irqrestore(&dev->lock, irqflags);
-+}
-+EXPORT_SYMBOL(timb_start_dma);
-+
-+void *timb_stop_dma(u32 flags)
-+{
-+	int i;
-+	unsigned long irqflags;
-+	struct timbdma_dev *dev = self_g;
-+	void *result = 0;
-+
-+	spin_lock_irqsave(&dev->lock, irqflags);
-+
-+	/* now disable the DMA transfers */
-+	for (i = 0; i < DMA_IRQS; i++)
-+		if (flags & (1 << i)) {
-+			/*
-+				RX enable registers are located at:
-+				0x14
-+				0x54
-+				0x94
-+
-+				TX SW pointer registers are located at:
-+				0x24
-+				0x64
-+			*/
-+			u32 offset = i / 2 * 0x40;
-+			u32 result_offset = offset;
-+			if (!(i % 2)) {
-+				/* even -> RX enable */
-+				offset += timbdma_dmacfg_RXENABLE;
-+				result_offset += timbdma_dmacfg_RXFPGAWP;
-+			} else {
-+				/* odd -> TX SW pointer reg */
-+				offset += timbdma_dmacfg_TXSWWP;
-+				result_offset = timbdma_dmacfg_TXFPGARP;
-+			}
-+
-+			iowrite32(0, dev->membase + offset);
-+			/* check how far the FPGA has written/read */
-+			result = (void *)ioread32(dev->membase + result_offset);
-+		}
-+
-+	/* ack any pending IRQs */
-+	iowrite32(flags, dev->membase + timbdma_ctrlmap_TIMBSTATUS);
-+
-+	spin_unlock_irqrestore(&dev->lock, irqflags);
-+
-+	return result;
-+}
-+EXPORT_SYMBOL(timb_stop_dma);
-+
-+void timb_set_dma_interruptcb(u32 flags, timbdma_interruptcb icb, void *data)
-+{
-+	int i;
-+	unsigned long irqflags;
-+	struct timbdma_dev *dev = self_g;
-+	u32 ier;
-+
-+	spin_lock_irqsave(&dev->lock, irqflags);
-+
-+	for (i = 0; i < DMA_IRQS; i++)
-+		if (flags & (1 << i)) {
-+			dev->callbacks[i] = icb;
-+			dev->callback_data[i] = data;
-+		}
-+
-+	/* Ack any pending IRQ */
-+	iowrite32(flags, dev->membase + timbdma_ctrlmap_TIMBSTATUS);
-+
-+	/* if a null callback is given -> clear interrupt, else -> enable */
-+	ier = ioread32(dev->membase + timbdma_ctrlmap_TIMBENABLE);
-+	if (icb != NULL)
-+		ier |= flags;
-+	else
-+		ier &= ~flags;
-+	iowrite32(ier, dev->membase + timbdma_ctrlmap_TIMBENABLE);
-+
-+	spin_unlock_irqrestore(&dev->lock, irqflags);
-+}
-+EXPORT_SYMBOL(timb_set_dma_interruptcb);
-+
-+static int timbdma_probe(struct platform_device *dev)
-+{
-+	int err, irq;
-+	struct timbdma_dev *self;
-+	struct resource *iomem;
-+
-+	iomem = platform_get_resource(dev, IORESOURCE_MEM, 0);
-+	if (!iomem) {
-+		err = -EINVAL;
-+		goto err_mem;
-+	}
-+
-+	self = kzalloc(sizeof(*self), GFP_KERNEL);
-+	if (!self) {
-+		err = -EINVAL;
-+		goto err_mem;
-+	}
-+
-+	spin_lock_init(&self->lock);
-+
-+	if (!request_mem_region(iomem->start,
-+		resource_size(iomem), "timb-dma")) {
-+		err = -EBUSY;
-+		goto err_request;
-+	}
-+
-+	self->membase = ioremap(iomem->start, resource_size(iomem));
-+	if (!self->membase) {
-+		printk(KERN_ERR "timbdma: Failed to remap I/O memory\n");
-+		err = -ENOMEM;
-+		goto err_ioremap;
-+	}
-+
-+	/* register interrupt */
-+	irq = platform_get_irq(dev, 0);
-+	if (irq < 0) {
-+		err = irq;
-+		goto err_get_irq;
-+	}
-+
-+	/* request IRQ */
-+	err = request_irq(irq, timbdma_handleinterrupt, IRQF_SHARED,
-+			  "timb-dma", self);
-+	if (err) {
-+		printk(KERN_ERR "timbdma: Failed to request IRQ\n");
-+		goto err_get_irq;
-+	}
-+
-+	platform_set_drvdata(dev, self);
-+
-+	/* assign the global pointer */
-+	self_g = self;
-+
-+	return 0;
-+
-+err_get_irq:
-+	iounmap(self->membase);
-+err_ioremap:
-+	release_mem_region(iomem->start, resource_size(iomem));
-+err_request:
-+	kfree(self);
-+err_mem:
-+	printk(KERN_ERR "timberdale: Failed to register Timberdale DMA: %d\n",
-+		err);
-+
-+	return err;
-+}
-+
-+static int timbdma_remove(struct platform_device *dev)
-+{
-+	struct timbdma_dev *self = platform_get_drvdata(dev);
-+	struct resource *iomem = platform_get_resource(dev, IORESOURCE_MEM, 0);
-+
-+	free_irq(platform_get_irq(dev, 0), self);
-+	iounmap(self->membase);
-+	release_mem_region(iomem->start, resource_size(iomem));
-+	kfree(self);
-+	self_g = NULL;
-+	return 0;
-+}
-+
-+static struct platform_driver timbdma_platform_driver = {
-+	.driver = {
-+		.name	= "timb-dma",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= timbdma_probe,
-+	.remove		= timbdma_remove,
-+};
-+
-+/*--------------------------------------------------------------------------*/
-+
-+static int __init timbdma_init(void)
-+{
-+	self_g = NULL;
-+	return platform_driver_register(&timbdma_platform_driver);
-+}
-+
-+static void __exit timbdma_exit(void)
-+{
-+	platform_driver_unregister(&timbdma_platform_driver);
-+}
-+
-+module_init(timbdma_init);
-+module_exit(timbdma_exit);
-+
-+MODULE_DESCRIPTION("Timberdale DMA driver");
-+MODULE_AUTHOR("Mocean Laboratories <info@mocean-labs.com>");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:timb-dma");
-+
-Index: linux-2.6.30-rc7/drivers/mfd/Makefile
-===================================================================
---- linux-2.6.30-rc7/drivers/mfd/Makefile	(revision 861)
-+++ linux-2.6.30-rc7/drivers/mfd/Makefile	(working copy)
-@@ -40,4 +40,6 @@
-
- obj-$(CONFIG_MFD_PCF50633)	+= pcf50633-core.o
- obj-$(CONFIG_PCF50633_ADC)	+= pcf50633-adc.o
--obj-$(CONFIG_PCF50633_GPIO)	+= pcf50633-gpio.o
-\ No newline at end of file
-+obj-$(CONFIG_PCF50633_GPIO)	+= pcf50633-gpio.o
-+
-+obj-$(CONFIG_MFD_TIMBERDALE_DMA)	+= timbdma.o
-Index: linux-2.6.30-rc7/include/linux/mfd/timbdma.h
-===================================================================
---- linux-2.6.30-rc7/include/linux/mfd/timbdma.h	(revision 0)
-+++ linux-2.6.30-rc7/include/linux/mfd/timbdma.h	(revision 889)
-@@ -0,0 +1,76 @@
-+/*
-+ * timbdma.h timberdale FPGA DMA driver defines
-+ * Copyright (c) 2009 Intel Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+/* Supports:
-+ * Timberdale FPGA DMA engine
-+ */
-+
-+#ifndef _TIMBDMA_H
-+#define _TIMBDMA_H
-+
-+#include <linux/spinlock.h>
-+
-+
-+#define DMA_IRQ_UART_RX		0x01
-+#define DMA_IRQ_UART_TX		0x02
-+#define DMA_IRQ_MLB_RX		0x04
-+#define DMA_IRQ_MLB_TX		0x08
-+#define DMA_IRQ_VIDEO_RX	0x10
-+#define DMA_IRQ_VIDEO_DROP	0x20
-+#define DMA_IRQS		6
-+
-+
-+typedef int (*timbdma_interruptcb)(u32 flag, void *data);
-+
-+#define timbdma_ctrlmap_DMACFGBTUART	0x000000
-+#define timbdma_ctrlmap_DMACFGMLBSY	0x000040
-+#define timbdma_ctrlmap_DMACFGVIDEO	0x000080
-+#define timbdma_ctrlmap_TIMBSTATUS	0x080000
-+#define timbdma_ctrlmap_TIMBPEND	0x080004
-+#define timbdma_ctrlmap_TIMBENABLE	0x080008
-+#define timbdma_ctrlmap_VIDEOBUFFER	0x200000
-+
-+#define timbdma_dmacfg_RXSTARTH	0x00
-+#define timbdma_dmacfg_RXSTARTL	0x04
-+#define timbdma_dmacfg_RXLENGTH	0x08
-+#define timbdma_dmacfg_RXFPGAWP	0x0C
-+#define timbdma_dmacfg_RXSWRP	0x10
-+#define timbdma_dmacfg_RXENABLE	0x14
-+#define timbdma_dmacfg_TXSTARTH	0x18
-+#define timbdma_dmacfg_TXSTARTL	0x1C
-+#define timbdma_dmacfg_TXLENGTH	0x20
-+#define timbdma_dmacfg_TXSWWP	0x24
-+#define timbdma_dmacfg_TXFPGARP	0x28
-+#define timbdma_dmacfg_TXBEFINT	0x2C
-+#define timbdma_dmacfg_BPERROW	0x30
-+
-+struct timbdma_dev {
-+	void __iomem		*membase;
-+	timbdma_interruptcb	callbacks[DMA_IRQS];
-+	void			*callback_data[DMA_IRQS];
-+	spinlock_t		lock; /* mutual exclusion */
-+};
-+
-+void timb_start_dma(u32 flag, unsigned long buf, int len, int bytes_per_row);
-+
-+void *timb_stop_dma(u32 flags);
-+
-+void timb_set_dma_interruptcb(u32 flags, timbdma_interruptcb icb, void *data);
-+
-+#endif /* _TIMBDMA_H */
-+
+-- 
+With best wishes
+Dmitry
