@@ -1,82 +1,313 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756311AbZFENno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbZFENmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756311AbZFENno (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 09:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755277AbZFENnh
+	id S1756159AbZFENmv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 09:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755928AbZFENmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 09:43:37 -0400
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:46437 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755155AbZFENng (ORCPT
+	Fri, 5 Jun 2009 09:42:00 -0400
+Received: from av9-1-sn3.vrr.skanova.net ([81.228.9.185]:44906 "EHLO
+	av9-1-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755957AbZFENl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 09:43:36 -0400
-Date: Fri, 5 Jun 2009 19:13:20 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Paul Menage <menage@google.com>, bharata@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>, kvm@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Subject: Re: [RFC] CPU hard limits
-Message-ID: <20090605134320.GA3994@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20090604053649.GA3701@in.ibm.com> <6599ad830906050153i1afd104fqe70f681317349142@mail.gmail.com> <4A291753.7090205@redhat.com>
+	Fri, 5 Jun 2009 09:41:59 -0400
+Message-ID: <4A2920A8.8040407@mocean-labs.com>
+Date: Fri, 05 Jun 2009 15:42:00 +0200
+From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
+	<richard.rojfors.ext@mocean-labs.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A291753.7090205@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 9/9] gpio: Added timbgpio
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 05, 2009 at 04:02:11PM +0300, Avi Kivity wrote:
-> Paul Menage wrote:
->> On Wed, Jun 3, 2009 at 10:36 PM, Bharata B
->> Rao<bharata@linux.vnet.ibm.com> wrote:
->>   
->>> - Hard limits can be used to provide guarantees.
->>>
->>>     
->>
->> This claim (and the subsequent long thread it generated on how limits
->> can provide guarantees) confused me a bit.
->>
->> Why do we need limits to provide guarantees when we can already
->> provide guarantees via shares?
->>
->> Suppose 10 cgroups each want 10% of the machine's CPU. We can just
->> give each cgroup an equal share, and they're guaranteed 10% if they
->> try to use it; if they don't use it, other cgroups can get access to
->> the idle cycles.
->>
->> Suppose cgroup A wants a guarantee of 50% and two others, B and C,
->> want guarantees of 15% each; give A 50 shares and B and C 15 shares
->> each. In this case, if they all run flat out they'll get 62%/19%/19%,
->> which is within their SLA.
->>
->> That's not to say that hard limits can't be useful in their own right
->> - e.g. for providing reproducible loadtesting conditions by
->> controlling how much CPU a service can use during the load test. But I
->> don't see why using them to implement guarantees is either necessary
->> or desirable.
->>
->> (Unless I'm missing some crucial point ...)
->>   
->
-> How many shares does a cgroup with a 0% guarantee get?
->
+Supplied is a GPIO driver for the Timberdale FPGA found on the
+Intel Atom board Russellville.
 
-Shares cannot be used to provide guarantees. All they decide is what
-propotion groups can get CPU time. (yes, shares is a bad name, weight
-shows the intent better).
+Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
+---
+Index: linux-2.6.30-rc7/drivers/gpio/timbgpio.c
+===================================================================
+--- linux-2.6.30-rc7/drivers/gpio/timbgpio.c	(revision 0)
++++ linux-2.6.30-rc7/drivers/gpio/timbgpio.c	(revision 892)
+@@ -0,0 +1,247 @@
++/*
++ * timbgpio.c timberdale FPGA GPIO driver
++ * Copyright (c) 2009 Intel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++/* Supports:
++ * Timberdale FPGA GPIO
++ */
++
++#include <linux/module.h>
++#include <linux/gpio.h>
++#include <linux/pci.h>
++#include <linux/platform_device.h>
++#include <linux/interrupt.h>
++
++#define DRIVER_NAME "timb-gpio"
++
++#define TIMB_NR_GPIOS		16
++
++#define TGPIOVAL		0
++#define TGPIODIR		0x04
++#define TGPIOINT		0x08
++#define TGPIOINT_STATUS		0x0c
++#define TGPIOINT_PENDING	0x10
++#define TGPIOINT_CLR		0x14
++#define TGPIOFLK		0x18
++#define TGPIOLVL		0x1c
++
++struct timbgpio {
++	void __iomem		*membase;
++	struct mutex		lock; /* mutual exclusion */
++	struct pci_dev		*pdev;
++	struct gpio_chip	gpio;
++};
++
++static u32 timbgpio_configure(struct gpio_chip *gpio, unsigned nr,
++						unsigned off, unsigned val)
++{
++	struct timbgpio *tgpio = container_of(gpio, struct timbgpio, gpio);
++
++	u32 config, oldconfig, wconfig;
++
++	mutex_lock(&tgpio->lock);
++	config = ioread32(tgpio->membase + off);
++	oldconfig = config;
++
++	if (val)
++		config |= (1 << nr);
++	else
++		config &= ~(1 << nr);
++
++	iowrite32(config, tgpio->membase + off);
++	wconfig = ioread32(tgpio->membase + off);
++	mutex_unlock(&tgpio->lock);
++
++	return oldconfig;
++}
++
++static int timbgpio_gpio_direction_input(struct gpio_chip *gpio, unsigned nr)
++{
++	timbgpio_configure(gpio, nr, TGPIODIR, 1);
++	return 0;
++}
++
++static int timbgpio_gpio_get(struct gpio_chip *gpio, unsigned nr)
++{
++	struct timbgpio *tgpio = container_of(gpio, struct timbgpio, gpio);
++	u32 value;
++
++	value = ioread32(tgpio->membase + TGPIOVAL);
++	return (value & (1 << nr)) ? 1 : 0;
++}
++
++static int timbgpio_gpio_direction_output(struct gpio_chip *gpio,
++						unsigned nr, int val)
++{
++	timbgpio_configure(gpio, nr, TGPIODIR, 0);
++	return 0;
++}
++
++
++
++static void timbgpio_gpio_set(struct gpio_chip *gpio,
++				unsigned nr, int val)
++{
++	timbgpio_configure(gpio, nr, TGPIOVAL, val);
++}
++
++static irqreturn_t timbgpio_handleinterrupt(int irq, void *devid)
++{
++	struct timbgpio *tgpio = (struct timbgpio *)devid;
++
++	iowrite32(0xffffffff, tgpio->membase + TGPIOINT_CLR);
++
++	return IRQ_HANDLED;
++}
++
++static int timbgpio_probe(struct platform_device *dev)
++{
++	int err, irq;
++	struct gpio_chip *gc;
++	struct timbgpio *tgpio;
++	struct resource *iomem;
++
++	iomem = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (!iomem) {
++		err = -EINVAL;
++		goto err_mem;
++	}
++
++	tgpio = kzalloc(sizeof(*tgpio), GFP_KERNEL);
++	if (!tgpio) {
++		err = -EINVAL;
++		goto err_mem;
++	}
++
++	mutex_init(&tgpio->lock);
++
++	if (!request_mem_region(iomem->start, resource_size(iomem),
++		DRIVER_NAME)) {
++		err = -EBUSY;
++		goto err_request;
++	}
++
++	tgpio->membase = ioremap(iomem->start, resource_size(iomem));
++	if (!tgpio->membase) {
++		err = -ENOMEM;
++		goto err_ioremap;
++	}
++
++	gc = &tgpio->gpio;
++
++	gc->label = DRIVER_NAME;
++	gc->owner = THIS_MODULE;
++	gc->direction_input = timbgpio_gpio_direction_input;
++	gc->get = timbgpio_gpio_get;
++	gc->direction_output = timbgpio_gpio_direction_output;
++	gc->set = timbgpio_gpio_set;
++	gc->dbg_show = NULL;
++	gc->base = 0;
++	gc->ngpio = TIMB_NR_GPIOS;
++	gc->can_sleep = 0;
++
++	err = gpiochip_add(gc);
++	if (err)
++		goto err_chipadd;
++
++	platform_set_drvdata(dev, tgpio);
++
++	/* register interrupt */
++	irq = platform_get_irq(dev, 0);
++	if (irq < 0)
++		goto err_get_irq;
++
++	/* clear pending interrupts */
++	iowrite32(0xffffffff, tgpio->membase + TGPIOINT_CLR);
++	iowrite32(0x0, tgpio->membase + TGPIOINT);
++
++	/* request IRQ */
++	err = request_irq(irq, timbgpio_handleinterrupt, IRQF_SHARED,
++		DRIVER_NAME, tgpio);
++	if (err) {
++		printk(KERN_ERR DRIVER_NAME": Failed to request IRQ\n");
++		goto err_get_irq;
++	}
++
++	return err;
++
++err_get_irq:
++	err = gpiochip_remove(&tgpio->gpio);
++	if (err)
++		printk(KERN_ERR DRIVER_NAME": failed to remove gpio_chip\n");
++err_chipadd:
++	iounmap(tgpio->membase);
++err_ioremap:
++	release_mem_region(iomem->start, resource_size(iomem));
++err_request:
++	kfree(tgpio);
++err_mem:
++	printk(KERN_ERR DRIVER_NAME": Failed to register GPIOs: %d\n", err);
++
++	return err;
++}
++
++static int timbgpio_remove(struct platform_device *dev)
++{
++	int err;
++	struct timbgpio *tgpio = platform_get_drvdata(dev);
++	struct resource *iomem = platform_get_resource(dev, IORESOURCE_MEM, 0);
++
++	/* disable interrupts */
++	iowrite32(0x0, tgpio->membase + TGPIOINT);
++
++	free_irq(platform_get_irq(dev, 0), tgpio);
++	err = gpiochip_remove(&tgpio->gpio);
++	if (err)
++		printk(KERN_ERR DRIVER_NAME": failed to remove gpio_chip\n");
++
++	iounmap(tgpio->membase);
++	release_mem_region(iomem->start, resource_size(iomem));
++	kfree(tgpio);
++
++	return 0;
++}
++
++static struct platform_driver timbgpio_platform_driver = {
++	.driver = {
++		.name	= DRIVER_NAME,
++		.owner	= THIS_MODULE,
++	},
++	.probe		= timbgpio_probe,
++	.remove		= timbgpio_remove,
++};
++
++/*--------------------------------------------------------------------------*/
++
++static int __init timbgpio_init(void)
++{
++	return platform_driver_register(&timbgpio_platform_driver);
++}
++
++static void __exit timbgpio_exit(void)
++{
++	platform_driver_unregister(&timbgpio_platform_driver);
++}
++
++module_init(timbgpio_init);
++module_exit(timbgpio_exit);
++
++MODULE_DESCRIPTION("Timberdale GPIO driver");
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("Mocean Laboratories");
++MODULE_ALIAS("platform:"DRIVER_NAME);
++
+Index: linux-2.6.30-rc7/drivers/gpio/Kconfig
+===================================================================
+--- linux-2.6.30-rc7/drivers/gpio/Kconfig	(revision 861)
++++ linux-2.6.30-rc7/drivers/gpio/Kconfig	(working copy)
+@@ -161,6 +161,12 @@
 
-thanks,
--- 
-regards,
-Dhaval
+ 	  If unsure, say N.
+
++config GPIO_TIMBERDALE
++	tristate "Support for timberdale GPIO"
++	depends on MFD_TIMBERDALE && GPIOLIB
++	---help---
++	Add support for GPIO usage of some pins of the timberdale FPGA.
++
+ comment "SPI GPIO expanders:"
+
+ config GPIO_MAX7301
+
+Index: linux-2.6.30-rc7/drivers/gpio/Makefile
+===================================================================
+--- linux-2.6.30-rc7/drivers/gpio/Makefile	(revision 861)
++++ linux-2.6.30-rc7/drivers/gpio/Makefile	(working copy)
+@@ -12,5 +12,6 @@
+ obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
+ obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
+ obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
++obj-$(CONFIG_GPIO_TIMBERDALE)	+= timbgpio.o
+ obj-$(CONFIG_GPIO_MC33880)	+= mc33880.o
+
