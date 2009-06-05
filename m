@@ -1,48 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbZFECWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbZFEC2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754668AbZFECWu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 22:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbZFECWm
+	id S1754212AbZFEC2T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 22:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbZFEC2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 22:22:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33046 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751202AbZFECWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 22:22:41 -0400
-Subject: Re: [Patch 1/2] kbuild: two trivial fixes for check headers
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kbuild@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <20090604103909.GA10102@uranus.ravnborg.org>
-References: <20090604080406.7005.27662.sendpatchset@localhost.localdomain>
-	 <20090604091519.GA9571@uranus.ravnborg.org> <4A27927E.9090800@redhat.com>
-	 <20090604103909.GA10102@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Fri, 05 Jun 2009 07:53:44 +0530
-Message-Id: <1244168624.2522.11.camel@ht.satnam>
+	Thu, 4 Jun 2009 22:28:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38310 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751347AbZFEC2G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 22:28:06 -0400
+Date: Thu, 4 Jun 2009 19:27:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       jason.wessel@windriver.com, kgdb-bugreport@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kgdbts: unify/generalize gdb breakpoint adjustment
+Message-Id: <20090604192723.36874fcb.akpm@linux-foundation.org>
+In-Reply-To: <8bd0f97a0906041850v4a41082fkf9726ae1bdd299cb@mail.gmail.com>
+References: <1243927050-30685-1-git-send-email-vapier@gentoo.org>
+	<20090604175030.55cc4a68.akpm@linux-foundation.org>
+	<8bd0f97a0906041755q7588ba76l1e4e1eb8bdbe336@mail.gmail.com>
+	<20090604180420.2805fcdd.akpm@linux-foundation.org>
+	<8bd0f97a0906041850v4a41082fkf9726ae1bdd299cb@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-04 at 12:39 +0200, Sam Ravnborg wrote:
+On Thu, 4 Jun 2009 21:50:49 -0400 Mike Frysinger <vapier.adi@gmail.com> wrote:
 
-> So if you touch this I would ask you not to consider a single line
-> in jffs-user.h - but rather take a critiacal look at the whole
-> file and fix any issues there is.
-> And then to send it to the mtd people (dwmw2).
-> I did not look at the file but just looking at yout patch
-> the "undef jemode_to_cpu" looks fishy in an exported header.
+> On Thu, Jun 4, 2009 at 21:04, Andrew Morton wrote:
+> > On Thu, 4 Jun 2009 20:55:40 -0400 Mike Frysinger wrote:
+> >> On Thu, Jun 4, 2009 at 20:50, Andrew Morton wrote:
+> >> > On Tue, __2 Jun 2009 03:17:30 -0400 Mike Frysinger wrote:
+> >> >> + __ __ instruction_pointer(&kgdbts_regs) += offset;
+> >> >
+> >> > instruction_pointer() cannot be used as an lvalue, thankfully.
+> >> >
+> >> > x86_64:
+> >> >
+> >> > drivers/misc/kgdbts.c: In function 'check_and_rewind_pc':
+> >> > drivers/misc/kgdbts.c:306: error: invalid lvalue in assignment
+> >>
+> >> should be easy to fix:
+> >> --- a/arch/x86/include/asm/ptrace.h
+> >> +++ b/arch/x86/include/asm/ptrace.h
+> >> @@ -236,10 +236,7 @@
+> >> __#endif
+> >> __}
+> >>
+> >> -static inline unsigned long instruction_pointer(struct pt_regs *regs)
+> >> -{
+> >> - __ return regs->ip;
+> >> -}
+> >> +#define instruction_pointer(regs) ((regs)->ip)
+> >>
+> >> __static inline unsigned long frame_pointer(struct pt_regs *regs)
+> >> __{
+> >
+> > argh, that's soooooo tasteless. __Look, this:
+> >
+> > __ __ __ __instruction_pointer(&kgdbts_regs) += offset;
+> >
+> > is just daft. __It's not C!
+
+Gets frustrating when I say correct things and your first reaction is
+to argue.
+
+> it is C.  taste is one thing, but valid C is still valid C.
+
+It can be compiled.  But it is not idiomatically C.  You can implement
+any level of stupidity with the preprocessor and compile the result. 
+That doesn't make it desirable.
+
+Plus all the other things I said which you ignored.  Plus the
+conversion to a macros weakens typechecking.
+
+> > It makes no sense to define something which
+> > looks like a function and to then assign values to it. __It means that
+> > instruction_pointer() _must_ be implemented as a macro, violating basic
+> > concepts of encapsualtion/layering/hiding/etc.
+> >
+> > Doing
+> >
+> > void instruction_pointer_set(struct pt_regs *regs, some_suitable_type val);
+> >
+> > will save many vomit bags.
 > 
+> and force everyone to implement the same copy & paste set of get/set
+> modifiers ?  x86 is the only one where instruction_pointer() isnt a
+> define.
 
-David already have patches to remove whole jffs-user.h file and AFAIK he
-already queued it. So no point of touching this file.
+Please, look at ia64:
 
-Thanks,
---
-JSR
-
+# define instruction_pointer(regs) ((regs)->cr_iip + ia64_psr(regs)->ri)
