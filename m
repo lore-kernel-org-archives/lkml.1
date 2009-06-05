@@ -1,102 +1,299 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751345AbZFEThS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbZFEThn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751345AbZFEThS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 15:37:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbZFEThE
+	id S1755955AbZFEThn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 15:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbZFETha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 15:37:04 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:51318 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754114AbZFEThD (ORCPT
+	Fri, 5 Jun 2009 15:37:30 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:56092 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751678AbZFETh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 15:37:03 -0400
-X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
-	times
-Message-Id: <20090605191852.373830111@gentwo.org>
-References: <20090605191819.376530498@gentwo.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 05 Jun 2009 15:18:30 -0400
-From: cl@linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>
-Cc: mingo@elte.hu
-Cc: rusty@rustcorp.com.au
-Cc: davem@davemloft.net
-Subject: [this_cpu_xx 11/11] RCU: Use this_cpu operations
-Content-Disposition: inline; filename=this_cpu_rcu
+	Fri, 5 Jun 2009 15:37:27 -0400
+To: Badari Pulavarty <pbadari@gmail.com>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Eric W. Biederman" <ebiederm@maxwell.arastra.com>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 07/23] vfs: Teach sendfile,splice,tee,and vmsplice to use file_hotplug_lock
+References: <m1oct739xu.fsf@fess.ebiederm.org>
+	<1243893048-17031-7-git-send-email-ebiederm@xmission.com>
+	<1244072363.6383.15.camel@badari-desktop>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 05 Jun 2009 12:37:25 -0700
+In-Reply-To: <1244072363.6383.15.camel@badari-desktop> (Badari Pulavarty's message of "Wed\, 03 Jun 2009 16\:39\:23 -0700")
+Message-ID: <m1y6s64glm.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: pbadari@gmail.com, ebiederm@aristanetworks.com, ebiederm@maxwell.arastra.com, hch@infradead.org, akpm@linux-foundation.org, npiggin@suse.de, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org, adobriyan@gmail.com, tj@kernel.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-RCU does not do dynamic allocations but it increments per cpu variables
-a lot. These instructions results in a move to a register and then back
-to memory. This patch will make it use the inc/dec instructions on x86
-that do not need a register.
+Badari Pulavarty <pbadari@gmail.com> writes:
 
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+> On Mon, 2009-06-01 at 14:50 -0700, Eric W. Biederman wrote:
+>> From: Eric W. Biederman <ebiederm@maxwell.arastra.com>
+>> 
+>> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+>> ---
+>>  fs/read_write.c |   28 +++++++++----
+>>  fs/splice.c     |  111 +++++++++++++++++++++++++++++++++++++-----------------
+>>  2 files changed, 95 insertions(+), 44 deletions(-)
+>> 
+>> diff --git a/fs/read_write.c b/fs/read_write.c
+>> index 718baea..c473d74 100644
+>> --- a/fs/read_write.c
+>> +++ b/fs/read_write.c
+>> @@ -861,21 +861,24 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+>>  		goto out;
+>>  	if (!(in_file->f_mode & FMODE_READ))
+>>  		goto fput_in;
+>> +	retval = -EIO;
+>> +	if (!file_hotplug_read_trylock(in_file))
+>> +		goto fput_in;
+>>  	retval = -EINVAL;
+>>  	in_inode = in_file->f_path.dentry->d_inode;
+>>  	if (!in_inode)
+>> -		goto fput_in;
+>> +		goto unlock_in;
+>>  	if (!in_file->f_op || !in_file->f_op->splice_read)
+>> -		goto fput_in;
+>> +		goto unlock_in;
+>>  	retval = -ESPIPE;
+>>  	if (!ppos)
+>>  		ppos = &in_file->f_pos;
+>>  	else
+>>  		if (!(in_file->f_mode & FMODE_PREAD))
+>> -			goto fput_in;
+>> +			goto unlock_in;
+>>  	retval = rw_verify_area(READ, in_file, ppos, count);
+>>  	if (retval < 0)
+>> -		goto fput_in;
+>> +		goto unlock_in;
+>>  	count = retval;
+>>  
+>>  	/*
+>> @@ -884,16 +887,19 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+>>  	retval = -EBADF;
+>>  	out_file = fget_light(out_fd, &fput_needed_out);
+>>  	if (!out_file)
+>> -		goto fput_in;
+>> +		goto unlock_in;
+>>  	if (!(out_file->f_mode & FMODE_WRITE))
+>>  		goto fput_out;
+>> +	retval = -EIO;
+>> +	if (!file_hotplug_read_trylock(out_file))
+>> +		goto fput_out;
+>>  	retval = -EINVAL;
+>>  	if (!out_file->f_op || !out_file->f_op->sendpage)
+>> -		goto fput_out;
+>> +		goto unlock_out;
+>>  	out_inode = out_file->f_path.dentry->d_inode;
+>>  	retval = rw_verify_area(WRITE, out_file, &out_file->f_pos, count);
+>>  	if (retval < 0)
+>> -		goto fput_out;
+>> +		goto unlock_out;
+>>  	count = retval;
+>>  
+>>  	if (!max)
+>> @@ -902,11 +908,11 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+>>  	pos = *ppos;
+>>  	retval = -EINVAL;
+>>  	if (unlikely(pos < 0))
+>> -		goto fput_out;
+>> +		goto unlock_out;
+>>  	if (unlikely(pos + count > max)) {
+>>  		retval = -EOVERFLOW;
+>>  		if (pos >= max)
+>> -			goto fput_out;
+>> +			goto unlock_out;
+>>  		count = max - pos;
+>>  	}
+>>  
+>> @@ -933,8 +939,12 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+>>  	if (*ppos > max)
+>>  		retval = -EOVERFLOW;
+>>  
+>> +unlock_out:
+>> +	file_hotplug_read_unlock(out_file);
+>>  fput_out:
+>>  	fput_light(out_file, fput_needed_out);
+>> +unlock_in:
+>> +	file_hotplug_read_unlock(in_file);
+>>  fput_in:
+>>  	fput_light(in_file, fput_needed_in);
+>>  out:
+>> diff --git a/fs/splice.c b/fs/splice.c
+>> index 666953d..fc6b3a5 100644
+>> --- a/fs/splice.c
+>> +++ b/fs/splice.c
+>> @@ -1464,15 +1464,21 @@ SYSCALL_DEFINE4(vmsplice, int, fd, const struct iovec __user *, iov,
+>>  
+>>  	error = -EBADF;
+>>  	file = fget_light(fd, &fput);
+>> -	if (file) {
+>> -		if (file->f_mode & FMODE_WRITE)
+>> -			error = vmsplice_to_pipe(file, iov, nr_segs, flags);
+>> -		else if (file->f_mode & FMODE_READ)
+>> -			error = vmsplice_to_user(file, iov, nr_segs, flags);
+>> +	if (!file)
+>> +		goto out;
+>>  
+>> -		fput_light(file, fput);
+>> -	}
+>> +	if (!file_hotplug_read_trylock(file))
+>> +		goto fput_file;
+>>  
+>> +	if (file->f_mode & FMODE_WRITE)
+>> +		error = vmsplice_to_pipe(file, iov, nr_segs, flags);
+>> +	else if (file->f_mode & FMODE_READ)
+>> +		error = vmsplice_to_user(file, iov, nr_segs, flags);
+>> +
+>> +	file_hotplug_read_unlock(file);
+>> +fput_file:
+>> +	fput_light(file, fput);
+>> +out:
+>>  	return error;
+>>  }
+>>  
+>> @@ -1489,21 +1495,39 @@ SYSCALL_DEFINE6(splice, int, fd_in, loff_t __user *, off_in,
+>>  
+>>  	error = -EBADF;
+>>  	in = fget_light(fd_in, &fput_in);
+>> -	if (in) {
+>> -		if (in->f_mode & FMODE_READ) {
+>> -			out = fget_light(fd_out, &fput_out);
+>> -			if (out) {
+>> -				if (out->f_mode & FMODE_WRITE)
+>> -					error = do_splice(in, off_in,
+>> -							  out, off_out,
+>> -							  len, flags);
+>> -				fput_light(out, fput_out);
+>> -			}
+>> -		}
+>> +	if (!in)
+>> +		goto out;
+>>  
+>> -		fput_light(in, fput_in);
+>> -	}
+>> +	if (!(in->f_mode & FMODE_READ))
+>> +		goto fput_in;
+>> +
+>> +	error = -EIO;
+>> +	if (!file_hotplug_read_trylock(in))
+>> +		goto fput_in;
+>> +
+>> +	error = -EBADF;
+>> +	out = fget_light(fd_out, &fput_out);
+>> +	if (!out)
+>> +		goto unlock_in;
+>> +
+>> +	if (!(out->f_mode & FMODE_WRITE))
+>> +		goto fput_out;
+>> +
+>> +	error = -EIO;
+>> +	if (!file_hotplug_read_trylock(out))
+>> +		goto fput_out;
+>> +
+>> +	error = do_splice(in, off_in, out, off_out, len, flags);
+>>  
+>> +	file_hotplug_read_unlock(out);
+>> +fput_out:
+>> +	fput_light(out, fput_out);
+>> +unlock_in:
+>> +	file_hotplug_read_unlock(in);
+>> +fput_in:
+>> +	fput_light(in, fput_in);
+>> +
+>> +out:
+>>  	return error;
+>>  }
+>>  
+>> @@ -1703,27 +1727,44 @@ static long do_tee(struct file *in, struct file *out, size_t len,
+>>  
+>>  SYSCALL_DEFINE4(tee, int, fdin, int, fdout, size_t, len, unsigned int, flags)
+>>  {
+>> -	struct file *in;
+>> -	int error, fput_in;
+>> +	struct file *in, *out;
+>> +	int error, fput_in, fput_out;
+>>  
+>>  	if (unlikely(!len))
+>>  		return 0;
+>>  
+>>  	error = -EBADF;
+>>  	in = fget_light(fdin, &fput_in);
+>> -	if (in) {
+>> -		if (in->f_mode & FMODE_READ) {
+>> -			int fput_out;
+>> -			struct file *out = fget_light(fdout, &fput_out);
+>> -
+>> -			if (out) {
+>> -				if (out->f_mode & FMODE_WRITE)
+>> -					error = do_tee(in, out, len, flags);
+>> -				fput_light(out, fput_out);
+>> -			}
+>> -		}
+>> - 		fput_light(in, fput_in);
+>> - 	}
+>> +	if (!in)
+>> +		goto out;
+>> +
+>> +	if (!(in->f_mode & FMODE_READ))
+>> +		goto unlock_in;   <<<<<<<
+>
+> Shouldn't this be
+> 		goto fput_in; 
 
----
- kernel/rcupreempt.c |    4 ++--
- kernel/rcutorture.c |    8 ++++----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+Good point.  That is a bug.
 
-Index: linux-2.6/kernel/rcutorture.c
-===================================================================
---- linux-2.6.orig/kernel/rcutorture.c	2009-06-04 14:26:42.000000000 -0500
-+++ linux-2.6/kernel/rcutorture.c	2009-06-04 14:38:05.000000000 -0500
-@@ -709,13 +709,13 @@ static void rcu_torture_timer(unsigned l
- 		/* Should not happen, but... */
- 		pipe_count = RCU_TORTURE_PIPE_LEN;
- 	}
--	++__get_cpu_var(rcu_torture_count)[pipe_count];
-+	__this_cpu_inc(per_cpu_var(rcu_torture_count)[pipe_count]);
- 	completed = cur_ops->completed() - completed;
- 	if (completed > RCU_TORTURE_PIPE_LEN) {
- 		/* Should not happen, but... */
- 		completed = RCU_TORTURE_PIPE_LEN;
- 	}
--	++__get_cpu_var(rcu_torture_batch)[completed];
-+	__this_cpu_inc(per_cpu_var(rcu_torture_batch)[completed]);
- 	preempt_enable();
- 	cur_ops->readunlock(idx);
- }
-@@ -764,13 +764,13 @@ rcu_torture_reader(void *arg)
- 			/* Should not happen, but... */
- 			pipe_count = RCU_TORTURE_PIPE_LEN;
- 		}
--		++__get_cpu_var(rcu_torture_count)[pipe_count];
-+		__this_cpu_inc(per_cpu_var(rcu_torture_count)[pipe_count]);
- 		completed = cur_ops->completed() - completed;
- 		if (completed > RCU_TORTURE_PIPE_LEN) {
- 			/* Should not happen, but... */
- 			completed = RCU_TORTURE_PIPE_LEN;
- 		}
--		++__get_cpu_var(rcu_torture_batch)[completed];
-+		__this_cpu_inc(per_cpu_var(rcu_torture_batch)[completed]);
- 		preempt_enable();
- 		cur_ops->readunlock(idx);
- 		schedule();
-Index: linux-2.6/kernel/rcupreempt.c
-===================================================================
---- linux-2.6.orig/kernel/rcupreempt.c	2009-06-04 14:28:53.000000000 -0500
-+++ linux-2.6/kernel/rcupreempt.c	2009-06-04 14:39:35.000000000 -0500
-@@ -173,7 +173,7 @@ void rcu_enter_nohz(void)
- 	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
- 
- 	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
--	__get_cpu_var(rcu_dyntick_sched).dynticks++;
-+	__this_cpu_inc(per_cpu_var(rcu_dyntick_sched).dynticks);
- 	WARN_ON_RATELIMIT(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1, &rs);
- }
- 
-@@ -181,7 +181,7 @@ void rcu_exit_nohz(void)
- {
- 	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
- 
--	__get_cpu_var(rcu_dyntick_sched).dynticks++;
-+	__this_cpu_inc(per_cpu_var(rcu_dyntick_sched).dynticks);
- 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
- 	WARN_ON_RATELIMIT(!(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1),
- 				&rs);
+> ? btw, its confusing to have labels and variables with same name:
+> fput_in and fput_out. You may want to rename labels ?
 
--- 
+Mayhap.  I didn't start that one, although I am clearly spreading
+it around here.  Do you have a better naming suggestion?
+
+>> +	error = -EIO;
+>> +	if (!file_hotplug_read_trylock(in))
+>> +		goto fput_in;
+>> +
+>> +	error = -EBADF;
+>> +	out = fget_light(fdout, &fput_out);
+>> +	if (!out)
+>> +		goto unlock_in;
+>> +
+>> +	if (!(out->f_mode & FMODE_WRITE))
+>> +		goto fput_out;
+>> +
+>> +	if (!file_hotplug_read_trylock(out))
+>> +		goto fput_out;
+>> +
+>> +	error = do_tee(in, out, len, flags);
+>> +
+>> +	file_hotplug_read_unlock(out);
+>> +fput_out:
+>> +	fput_light(out, fput_out);
+>> +unlock_in:
+>> +	file_hotplug_read_unlock(in);
+>> +fput_in:
+>> +	fput_light(in, fput_in);
+>> +out:
+>>  	return error;
+>>  }
+
+
+Eric
