@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbZFEE6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbZFEFJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965AbZFEE6S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 00:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbZFEE6L
+	id S1754895AbZFEFJn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 01:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750788AbZFEFJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 00:58:11 -0400
-Received: from ozlabs.org ([203.10.76.45]:40599 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750973AbZFEE6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 00:58:11 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] cpumask: alloc blank cpumask left over
-Date: Fri, 5 Jun 2009 14:28:07 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <4A2835D8.6040903@kernel.org> <4A28362B.7040804@kernel.org>
-In-Reply-To: <4A28362B.7040804@kernel.org>
+	Fri, 5 Jun 2009 01:09:33 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:41860 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750763AbZFEFJc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 01:09:32 -0400
+Message-ID: <4A28A882.8070503@nortel.com>
+Date: Thu, 04 Jun 2009 23:09:22 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: balbir@linux.vnet.ibm.com
+CC: Avi Kivity <avi@redhat.com>, bharata@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelyanov <xemul@openvz.org>, kvm@vger.kernel.org,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Herbert Poetzl <herbert@13thfloor.at>
+Subject: Re: [RFC] CPU hard limits
+References: <20090604053649.GA3701@in.ibm.com> <4A27BBCA.5020606@redhat.com> <20090605030309.GA3872@in.ibm.com> <4A28921C.6010802@redhat.com> <661de9470906042137u603e2997n80c270bf7f6191ad@mail.gmail.com> <4A28A2AB.3060108@redhat.com> <20090605044946.GA11755@balbir.in.ibm.com>
+In-Reply-To: <20090605044946.GA11755@balbir.in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906051428.08299.rusty@rustcorp.com.au>
+X-OriginalArrivalTime: 05 Jun 2009 05:09:29.0291 (UTC) FILETIME=[CDD771B0:01C9E59B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Jun 2009 06:31:31 am Yinghai Lu wrote:
-> avoid suprise when MAXSMP is enabled
->
-> Signed-off-by: Yinghai Lu <yinghai.lu@kernel.org>
+Balbir Singh wrote:
 
-I understand the temptation, but two questions arise:
-1) Shouldn't we actually audit to see if any of these are currently problems, 
-and
-2) Should the non-MAXSMP alloc_cpumask_var_node (currently a noop) zero the 
-mask if __GFP_ZERO is set?
+> But then there is no other way to make a *guarantee*, guarantees come
+> at a cost of idling resources, no? Can you show me any other
+> combination that will provide the guarantee and without idling the
+> system for the specified guarantees?
 
-Thanks,
-Rusty.
+The example given was two 10% guaranteed groups and one best-effort
+group.  Why would this require idling resources?
+
+If I have a hog in each group, the requirements would be met if the
+groups got 33, 33, and 33.  (Or 10/10/80, for that matter.)  If the
+second and third groups go idle, why not let the first group use 100% of
+the cpu?
+
+The only hard restriction is that the sum of the guarantees must be less
+than 100%.
+
+Chris
