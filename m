@@ -1,95 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbZFEEhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755003AbZFEEh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753260AbZFEEhn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 00:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750775AbZFEEhf
+	id S1755003AbZFEEh3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 00:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbZFEEhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 00:37:35 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:55081 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750813AbZFEEhe (ORCPT
+	Fri, 5 Jun 2009 00:37:18 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:41158 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750788AbZFEEhQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 00:37:34 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Harald Welte <HaraldWelte@viatech.com>
-Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
-Date: Thu, 4 Jun 2009 23:37:31 -0500
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906041423.35191.lkml@morethan.org> <200906041532.57933.lkml@morethan.org>
-In-Reply-To: <200906041532.57933.lkml@morethan.org>
+	Fri, 5 Jun 2009 00:37:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=iG6T4lkm/Ay1FF4oqOw55N8MNHk5MN/xzxpx4I/SJA57dgbJpZQgkb+B6TbUjgPpNu
+         rzsLllOqikeRuI9UzjkZQjlFRSkiumlJySdaBrvc3JjjLt8+okFE9GUxe7ftljF6RVoC
+         YtGswrxECeFuLZ7by37RcFO2qanpvR9ytQfAg=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906042337.34073.lkml@morethan.org>
+In-Reply-To: <4A28921C.6010802@redhat.com>
+References: <20090604053649.GA3701@in.ibm.com> <4A27BBCA.5020606@redhat.com>
+	 <20090605030309.GA3872@in.ibm.com> <4A28921C.6010802@redhat.com>
+Date: Fri, 5 Jun 2009 12:37:17 +0800
+X-Google-Sender-Auth: bd7673979346291a
+Message-ID: <661de9470906042137u603e2997n80c270bf7f6191ad@mail.gmail.com>
+Subject: Re: [RFC] CPU hard limits
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelyanov <xemul@openvz.org>, kvm@vger.kernel.org,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Herbert Poetzl <herbert@13thfloor.at>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu June 4 2009, Michael S. Zick wrote:
-> On Thu June 4 2009, Michael S. Zick wrote:
-> > On Thu June 4 2009, Michael S. Zick wrote:
-> > > On Thu June 4 2009, Harald Welte wrote:
-> > > > On Thu, Jun 04, 2009 at 11:21:28AM -0500, Michael S. Zick wrote:
-> > > > 
-> > > 
-> > > @Linus - -
-> > > The Debian/Ubuntu distribution kernels require irqpoll (2.6.28+) -
-> > > I took that out very early in my testing, when that problem got fixed -
-> > > I will also try putting that back in, it might be needed for
-> > > some of its side-effects on the processor/chipset.
-> > > 
-> > 
-> > It looks like I stopped using irqpoll on 4/10 (-rc1)
-> > http://forum.netbookuser.com/viewtopic.php?pid=6708#p6708
-> > 
-> > Am re-testing the "virgin" kernel build with both command options now:
-> > http://forum.netbookuser.com/viewtopic.php?pid=7037#p7037
-> > 
-> > Will post if it has less than 6 months of up-time.  ;)
-> > 
-> 
-> About 6 months less than 6 months up-time ;)
-> 
-> 2.6.30-rc8 - no special cmd line options: 1h45m
-> 2.6.30-rc8 - idle=poll irqpoll options: 1h08m
-> 
+On Fri, Jun 5, 2009 at 11:33 AM, Avi Kivity <avi@redhat.com> wrote:
+> Bharata B Rao wrote:
+>>>
+>>> Another way is to place the 8 groups in a container group, and limit
+>>>  that to 80%. But that doesn't work if I want to provide guarantees to
+>>>  several groups.
+>>>
+>>
+>> Hmm why not ? Reduce the guarantee of the container group and provide
+>> the same to additional groups ?
+>>
+>
+> This method produces suboptimal results:
+>
+> $ cgroup-limits 10 10 0
+> [50.0, 50.0, 40.0]
+>
+> I want to provide two 10% guaranteed groups and one best-effort group.
+>  Using the limits method, no group can now use more than 50% of the
+> resources.  However, having the first group use 90% of the resources does
+> not violate any guarantees, but it not allowed by the solution.
+>
 
-2.6.30-rc8-ce1200v-09155 - uptime: 5 hours+, still running.
-Ship it.
+How, it works out fine in my calculation
 
-Details:
-http://forum.netbookuser.com/viewtopic.php?pid=7039#p7039
+50 + 40 for G2 and G3, make sure that G1 gets 10%, since others are
+limited to 90%
+50 + 40 for G1 and G3, make sure that G2 gets 10%, since others are
+limited to 90%
+50 + 50 for G1 and G2, make sure that G3 gets 0%, since others are
+limited to 100%
 
-Mike
+Now if we really have zeros, I would recommend using
 
-> Summary:
-> Phooey!
-> 
-> Mike
-> 
-> > Mike
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> > 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+cgroup-limits 10 10 and you'll see that you'll get 90, 90 as output.
 
+Adding zeros to the calcuation is not recommended. Does that help?
 
+Balbir
