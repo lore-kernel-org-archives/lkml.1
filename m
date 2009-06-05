@@ -1,66 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbZFEUV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbZFEUZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755076AbZFEUV1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 16:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbZFEUVU
+	id S1752463AbZFEUZP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 16:25:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbZFEUZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 16:21:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33164 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751247AbZFEUVT (ORCPT
+	Fri, 5 Jun 2009 16:25:03 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:35091 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751247AbZFEUZA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 16:21:19 -0400
-Date: Fri, 5 Jun 2009 13:20:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: nishimura@mxp.nes.nec.co.jp
-Cc: d-nishimura@mtf.biglobe.ne.jp, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com, menage@google.com
-Subject: Re: [PATCH mmotm] memcg: add interface to reset limits
-Message-Id: <20090605132031.02f79021.akpm@linux-foundation.org>
-In-Reply-To: <20090605222245.6920061a.d-nishimura@mtf.biglobe.ne.jp>
-References: <20090603114518.301cef4d.nishimura@mxp.nes.nec.co.jp>
-	<20090603114908.52c3aed5.nishimura@mxp.nes.nec.co.jp>
-	<4A26072B.8040207@cn.fujitsu.com>
-	<20090603144347.81ec2ce1.nishimura@mxp.nes.nec.co.jp>
-	<20090605222245.6920061a.d-nishimura@mtf.biglobe.ne.jp>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Jun 2009 16:25:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kXXXrJp2+JaPKU2Vnf+PhNcQkZW5TuOaG8oylOZ102BvFZODVYmdNbhwZDS8XksiY/
+         H8syQmeboVcgyHgjY+r2rsHI2cFG8L3dMiVAyMNZ7t1Rymhqfo52xjq4Fq8gCW/Br7A8
+         /ycPRa4QAEoSpTzL0VlE4bVUB1jCBKQjwRi+8=
+MIME-Version: 1.0
+In-Reply-To: <20090605182015.GA10342@8bytes.org>
+References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp>
+	 <20090605104132.GE24836@amd.com>
+	 <64bb37e0906050852g2be64c7elb2872a6129d13f56@mail.gmail.com>
+	 <20090605182015.GA10342@8bytes.org>
+Date: Fri, 5 Jun 2009 22:25:01 +0200
+Message-ID: <64bb37e0906051325t5eab883excf9e58aaf7cef3b@mail.gmail.com>
+Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
+From: Torsten Kaiser <just.for.lkml@googlemail.com>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       lethal@linux-sh.org, hancockrwd@gmail.com, jens.axboe@oracle.com,
+       bharrosh@panasas.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Jun 2009 22:22:45 +0900
-Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> wrote:
-
-> We don't have interface to reset mem.limit or memsw.limit now.
-> 
-> This patch allows to reset mem.limit or memsw.limit when they are
-> being set to -1.
-> 
-> ...
+On Fri, Jun 5, 2009 at 8:20 PM, Joerg Roedel <joro@8bytes.org> wrote:
+> On Fri, Jun 05, 2009 at 05:52:27PM +0200, Torsten Kaiser wrote:
+>>
+>> This doesn't look right to me.
+>> The comment above says "returns the entry from the hash which fits
+>> best", but this will always return NULL, if there are are multiple
+>> entrys, but no perfect match.
 >
-> @@ -133,6 +133,16 @@ int res_counter_memparse_write_strategy(const char *buf,
->  					unsigned long long *res)
->  {
->  	char *end;
-> +
-> +	/* return RESOURCE_MAX(unlimited) if "-1" is specified */
-> +	if (*buf == '-') {
-> +		*res = simple_strtoull(buf + 1, &end, 10);
-> +		if (*res != 1 || *end != '\0')
-> +			return -EINVAL;
-> +		*res = RESOURCE_MAX;
-> +		return 0;
-> +	}
+> This is intentional. If there is no perfect-fit there is no way to tell
+> which entry was meant. So we potentially report wrong errors with a
+> wrong mapping backtrace which confuses even more than the wrong
+> "DMA-API: device driver tries to free DMA memory it has not allocated".
 
-The test for (*end != '\0') would be unneeded if strict_strtoull() had
-been used.
+Ah, OK.
+I thought that reporting a (maybe) wrong difference in map/unmap would
+be better that a definitely wrong message "freed not allocated
+memory". And if the fuzzy matcher would warn about the fuzzy match, a
+developer would know that this difference might be wrong.
 
+>> Should there be a warning if more then one possible match were found?
+>
+> True. That would be better. But I tried to keep the code change as small
+> as possible without disabling the feature completly.
 
-> +
->  	/* FIXME - make memparse() take const char* args */
->  	*res = memparse((char *)buf, &end);
->  	if (*end != '\0')
+OK, it just looked like the code did something else the comment said.
+
+>> * driver maps address 'a' with size 1
+>> * driver maps same address 'a' with size 2
+>> * driver wrongly unmaps the second allocation with size 1
+>>   -> no warning, because the first allocation is returned
+>
+> Hmm, I am not sure if we can handle this situation correctly in the
+> dma-debug code. There is no unique key to identify a mapping request
+> which allows to assign an unmap request to it. Currently dma-debug uses
+> device and dma-address. But that seems not to be sufficient. The
+> best-fit algorithm is also a but fuzzy of course.
+
+Yes, I just read pci-gart_64.c to see if there is a better key.
+The API always seems to include size and direction too.
+
+Would it work to to use all device, address, size and direction as
+key, as the proposes exact matcher does?
+This would obvious not work with the current diagnostics in
+check_unmap, as not even single near matches would be returned.
+But if you would move the diagnostics from check_unmap into
+hash_bucket_find it could work:
+If hash_bucket_find does not find a perfect match, it could output:
+* no match -> tries to free DMA memory it has not allocated
+* 1 match -> warn about any differences (size, type, cpu-address, sg
+list count, direction)
+* 2+ matches, with perfect match -> no warning; set flag in other matches.
+* 2+ matches, without perfect match -> list differences from all
+matches; set flag in other matches after returning the best
+
+If differences from a flagged match are output, add a note, that this
+warning is unreliable because of these possible map/unmap mismatches.
+
+>> * driver wants to correctly unmap the first allocation
+>>   -> wrong warning about this unmap because size mismatch
+>
+> Ok, at least we get a warning about a bug. Not very useful because it
+> reports the wrong bug. Is this the situation which triggered the
+> original bug report?
+
+No, the original report was with a correctly working driver that just
+confused the dma-debugging code into issuing wrong warnings:
+http://marc.info/?l=linux-kernel&m=124336530609750&w=2
+
+This constructed case was just me trying to find more evil cases that
+are currently not covered.
+
+Your patch would blame the correctly programmed second unmap for
+"freeing unallocated memory",
+my proposal would blame it for the size difference, but with a note
+that there was a concurrent second map at the same address.
+
+And in a case where the code maps the same address twice but wants to
+unmap it wrong, it would correctly output both possible, but
+mismatching maps, instead of the wrong "unallocated memory" warning.
+
+>> Also what about sg_call_ents and sg_mapped_ents?
+>> Could it be possible to get the same address/size with different sg-counts.
+>
+> It looks not forbidden in the API. So I guess this can happen too.
+
+Should it then be added to the fuzzy matcher?
+Otherwise I would except the warnings like "DMA-API: device driver
+frees DMA sg list with different entry count [map count=2] [unmap
+count=1]" to still trigger. (I didn't have the time to test your patch
+yet)
+
+Torsten
