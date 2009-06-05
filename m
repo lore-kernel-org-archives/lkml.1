@@ -1,62 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755682AbZFEKDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZFEKM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755682AbZFEKDb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 06:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbZFEKDW
+	id S1754203AbZFEKM7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 06:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbZFEKMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 06:03:22 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:5468 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752052AbZFEKDV (ORCPT
+	Fri, 5 Jun 2009 06:12:50 -0400
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:36172 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbZFEKMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 06:03:21 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=khWzlXpKkxmzpJhCgwxIQ18Qnk4YJgiv9jg2on979Stju5T5aJU7T1ZxB0WA/jAYZ
-	nOvJjlp4iBkRpl3knnAJw==
+	Fri, 5 Jun 2009 06:12:49 -0400
+Message-ID: <4A28EF7D.5030704@linux.vnet.ibm.com>
+Date: Fri, 05 Jun 2009 12:12:13 +0200
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-In-Reply-To: <20090605095931.GE4601@linux.vnet.ibm.com>
-References: <20090604053649.GA3701@in.ibm.com>
-	 <6599ad830906050153i1afd104fqe70f681317349142@mail.gmail.com>
-	 <20090605092733.GA27486@in.ibm.com>
-	 <6599ad830906050232n11aa30d8xfcda0a279a482f32@mail.gmail.com>
-	 <20090605094811.GD4601@linux.vnet.ibm.com>
-	 <6599ad830906050251h18f4e037h182f61aa80a5b046@mail.gmail.com>
-	 <20090605095931.GE4601@linux.vnet.ibm.com>
-Date: Fri, 5 Jun 2009 03:03:18 -0700
-Message-ID: <6599ad830906050303r404c325anc60ded4f45a50b95@mail.gmail.com>
-Subject: Re: [RFC] CPU hard limits
-From: Paul Menage <menage@google.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>, Avi Kivity <avi@redhat.com>,
-       kvm@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, ying.huang@intel.com, W.Li@Sun.COM,
+       michaele@au1.ibm.com, mingo@elte.hu, heicars2@linux.vnet.ibm.com,
+       mschwid2@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
+References: <20090602114359.129247921@linux.vnet.ibm.com> <20090602114402.951631599@linux.vnet.ibm.com> <20090602150324.c706b1d2.akpm@linux-foundation.org> <4A266546.5080601@linux.vnet.ibm.com>	<4A26961E.7040207@linux.vnet.ibm.com> <20090604090839.GB7030@cr0.nay.redhat.com> <4A28E3F8.5050908@linux.vnet.ibm.com> <20090605023434.8a49d673.akpm@linux-foundation.org>
+In-Reply-To: <20090605023434.8a49d673.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 5, 2009 at 2:59 AM, Dhaval Giani<dhaval@linux.vnet.ibm.com> wrote:
->
-> I think we are focusing on the wrong use case here. Guarantees is just a
-> useful side-effect we get by using hard limits. I think the more
-> important use case is where the provider wants to limit the amount of
-> time a user gets (such as in a cloud).
->
-> Maybe we should direct our attention in solving that problem? :)
->
+Andrew Morton wrote:
+> On Fri, 05 Jun 2009 11:23:04 +0200 Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
+> 
+>> Amerigo Wang wrote:
+>>> On Wed, Jun 03, 2009 at 05:26:22PM +0200, Peter Oberparleiter wrote:
+>>>> Peter Oberparleiter wrote:
+>>>>> Andrew Morton wrote:
+>>>>>> On Tue, 02 Jun 2009 13:44:02 +0200
+>>>>>> Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
+>>>>>>> +	/* Duplicate gcov_info. */
+>>>>>>> +	active = num_counter_active(info);
+>>>>>>> +	dup = kzalloc(sizeof(struct gcov_info) +
+>>>>>>> +		      sizeof(struct gcov_ctr_info) * active, GFP_KERNEL);
+>>>>>> How large can this allocation be?
+>>>>> Hm, good question. Having a look at my test system, I see coverage data 
+>>>>> files of up to 60kb size. With counters making up the largest part of 
+>>>>> those, I'd guess the allocation size can be around ~55kb. I assume that 
+>>>>> makes it a candidate for vmalloc?
+>>>> A further run with debug output showed that the maximum size is
+>>>> actually around 4k, so in my opinion, there is no need to switch
+>>>> to vmalloc.
+>>> Unless you want virtually continious memory, you don't need to
+>>> bother vmalloc().
+>>>
+>>> kmalloc() and get_free_pages() are all fine for this.
+>> kmalloc() requires contiguous pages to serve an allocation request 
+>> larger than a single page. The longer a kernel runs, the more fragmented 
+>> the pool of free pages gets and the probability to find enough 
+>> contiguous free pages is significantly reduced.
+>>
+>> In this case (having had a 3rd look), I found allocations of up to 
+>> ~50kb, so to be sure, I'll switch that particular allocation to vmalloc().
+> 
+> Well, vmalloc() isn't magic.  It can suffer internal fragmentation of
+> the fixed-sized virtual address arena.
+> 
+> Is it possible to redo the data structures so that the large array
+> isn't needed?  Use a list, or move the data elsewhere or such?
 
-Yes, that case and the "predictable load test behaviour" case are both
-good reasons for hard limits.
+Unfortunately not - the format of the data is dictated by gcc. Any 
+attempt to break it down into page-sized chunks would only imitate what 
+vmalloc() already does.
 
-Paul
+Note though that this function is not called very often - it's only used 
+to preserve coverage data for modules which are unloaded. And I only saw 
+the 50kb counter data size for one file: kernel/sched.c (using a 
+debugging patch).
+
+So hm, I'm not sure about this anymore. I can also leave it at kmalloc() 
+- chances are slim that anyone will actually experience a problem and if 
+they do, they get an "order-n allocation failed" message so theres a 
+hint at the cause for the problem.
+
