@@ -1,75 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZFEBhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753701AbZFEBrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbZFEBhW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 21:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZFEBhL
+	id S1753701AbZFEBrj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 21:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbZFEBrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 21:37:11 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:39158 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752255AbZFEBhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 21:37:10 -0400
-Date: Fri, 5 Jun 2009 11:37:07 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       =?UTF-8?B?Ik1pY2hhxYIgTWlyb3PFgmF3Ig==?= <mirq-linux@rere.qmqm.pl>
-Subject: linux-next: mmc tree build warning
-Message-Id: <20090605113707.0f87467f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__5_Jun_2009_11_37_07_+1000_v8EHFvHXLFMcbyLf"
+	Thu, 4 Jun 2009 21:47:31 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:39767 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752138AbZFEBrb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 21:47:31 -0400
+To: suresh.b.siddha@intel.com
+Cc: "mingo\@elte.hu" <mingo@elte.hu>, "hpa\@zytor.com" <hpa@zytor.com>,
+       "tglx\@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ak\@linux.intel.com" <ak@linux.intel.com>,
+       "travis\@sgi.com" <travis@sgi.com>,
+       "steiner\@sgi.com" <steiner@sgi.com>, Gary Hade <garyhade@us.ibm.com>
+Subject: Re: [patch] x64: Avoid irq_chip mask/unmask in fixup_irqs for interrupt-remapping
+References: <1244141989.27006.10369.camel@localhost.localdomain>
+	<m1iqjbd243.fsf@fess.ebiederm.org>
+	<1244164694.27006.10374.camel@localhost.localdomain>
+	<1244164783.27006.10375.camel@localhost.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 04 Jun 2009 18:47:25 -0700
+In-Reply-To: <1244164783.27006.10375.camel@localhost.localdomain> (Suresh Siddha's message of "Thu\, 04 Jun 2009 18\:19\:43 -0700")
+Message-ID: <m1vdnb4fki.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: suresh.b.siddha@intel.com, garyhade@us.ibm.com, steiner@sgi.com, travis@sgi.com, ak@linux.intel.com, linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com, mingo@elte.hu
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__5_Jun_2009_11_37_07_+1000_v8EHFvHXLFMcbyLf
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Suresh Siddha <suresh.b.siddha@intel.com> writes:
 
-Hi Pierre,
+> On Thu, 2009-06-04 at 18:18 -0700, Suresh Siddha wrote:
+>> On Thu, 2009-06-04 at 16:13 -0700, Eric W. Biederman wrote:
+>> > Suresh Siddha <suresh.b.siddha@intel.com> writes:
+>> > 
+>> > > From: Suresh Siddha <suresh.b.siddha@intel.com>
+>> > > Subject: x64: Avoid irq_chip mask/unmask in fixup_irqs for interrupt-remapping
+>> > >
+>> > > In the presence of interrupt-remapping, irqs will be migrated in the
+>> > > process context and we don't do (and there is no need to) irq_chip mask/unmask
+>> > > while migrating the interrupt.
+>> > >
+>> > > Similarly fix the fixup_irqs() that get called during cpu offline and avoid
+>> > > calling irq_chip mask/unmask for irqs that are ok to be migrated in the
+>> > > process context.
+>> > >
+>> > > While we didn't observe any race condition with the existing code,
+>> > > this change takes complete advantage of interrupt-remapping in
+>> > > the newer generation platforms and avoids any potential HW lockup's
+>> > > (that often worry Eric :)
+>> > 
+>> > You now apparently fail to migrate the irq threads in tandem with
+>> > the rest of the irqs.
+>> 
+>> Eric, Are you referring to Gary's issues? As far as I understand, they
+>> don't happen in the presence of interrupt-remapping.
+>> 
+>> Can you ack this patch, as this avoid touching IO-APIC and MSI entries
+>> and does fixup_irqs() in a much more reliable fashion.
+>
+> in the presence of interrupt-remapping ofcourse :)
 
-Today's linux-next build (x86_64 allmodconfig) produced this warnings:
+As far as this patch goes it looks like an improvement.
 
-drivers/misc/cb710/debug.c: In function 'cb710_read_regs_8':
-drivers/misc/cb710/debug.c:100: warning: suggest parentheses around operand=
- of '!' or change '&' to '&&' or '!' to '~'
-drivers/misc/cb710/debug.c: In function 'cb710_read_regs_16':
-drivers/misc/cb710/debug.c:101: warning: suggest parentheses around operand=
- of '!' or change '&' to '&&' or '!' to '~'
-drivers/misc/cb710/debug.c: In function 'cb710_read_regs_32':
-drivers/misc/cb710/debug.c:102: warning: suggest parentheses around operand=
- of '!' or change '&' to '&&' or '!' to '~'
-In file included from drivers/mmc/host/cb710-mmc.h:13,
-                 from drivers/mmc/host/cb710-mmc.c:15:
-include/linux/cb710.h:14:1: warning: "DEBUG" redefined
-<command-line>: warning: this is the location of the previous definition
-drivers/mmc/host/cb710-mmc.c: In function 'cb710_mmc_set_transfer_size':
-drivers/mmc/host/cb710-mmc.c:222: warning: format '%d' expects type 'int', =
-but argument 4 has type 'size_t'
-drivers/mmc/host/cb710-mmc.c:222: warning: format '%d' expects type 'int', =
-but argument 6 has type 'size_t'
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-All introduced by commit ecb9ca267b42dc8c9a35eeaf75c002159fa52602 ("mmc:
-Driver for CB710/720 memory card reader (MMC part)").
+However after looking at Gary's issues I see some things that are still wrong
+on this path.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+1) We don't do the part of irq migration that moves irq threads.
+   We aren't using irq threads yet but still
 
---Signature=_Fri__5_Jun_2009_11_37_07_+1000_v8EHFvHXLFMcbyLf
-Content-Type: application/pgp-signature
+   If we could figure out how to call irq_set_affinity for the IRQ_MOVE_PCNTXT
+   code path that would make the maintenance a lot simpler.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+2) We still diverge on 32bit vs 64bit for no reason.
+   I expect the fixed 64bit version should be moved into apic/io_apic.c
 
-iEYEARECAAYFAkoodsMACgkQjjKRsyhoI8ySOACdG6IZbBCnzu9zxq3O4iQdiM7l
-TXUAoKJKdANxXAmpDnFMS2cseAP9iUPI
-=oJj3
------END PGP SIGNATURE-----
+3) We still enable irqs for a short while after this to let things drain.
+   I am wondering if that is really necessary.    It does very simply
+   allow the irq cleanup ipi to happen, and it unjams any irqs that happened
+   before we migrated them.
 
---Signature=_Fri__5_Jun_2009_11_37_07_+1000_v8EHFvHXLFMcbyLf--
+   If we wanted to very strictly follow the rules I guess we could do something
+   like the cleanup_ipi by hand on the cpu that is going down and rebroadcast
+   all of the pending irqs to another cpu to process.
+
+Eric
