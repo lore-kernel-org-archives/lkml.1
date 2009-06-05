@@ -1,135 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbZFEOsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbZFEOtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044AbZFEOsA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 10:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbZFEOru
+	id S1755172AbZFEOtw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 10:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbZFEOtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 10:47:50 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58805 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754156AbZFEOrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 10:47:49 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX18xaE5zbU8x0PtZgNxFy0pNfZ3SRAOI8IHaHucrXt
-	SZv2IQwvCHhgoc
-Date: Fri, 5 Jun 2009 16:47:48 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Junio C Hamano <gitster@pobox.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, git@vger.kernel.org
-Subject: Re: [BUG? ext4] git working tree getting out of date
-	"spontaneously"
-Message-ID: <20090605144748.GB764@atjola.homenet>
-References: <20090605122444.GA11035@atjola.homenet> <20090605132126.GB11035@atjola.homenet> <20090605141209.GA764@atjola.homenet>
+	Fri, 5 Jun 2009 10:49:45 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:58295 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbZFEOtn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 10:49:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=H410CnabW5J39rSTo47GS9P7onYNkTx3Flww2HaUbchpufSQ8adr8Uu4DmK1DVt0hT
+         OThNok5DJTw9O8jNWe/g9RwEEEpBK5UTZFYNpZe8Ih1g6X44nUqGDKiIJ3p3JqPLcjXY
+         m3i1qF6biqIRFxT+uurOVcG1am2X76Fexksa8=
+Message-ID: <4A293084.5010400@tuffmail.co.uk>
+Date: Fri, 05 Jun 2009 15:49:40 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090605141209.GA764@atjola.homenet>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.48
+To: Aioanei Rares <krnl.list@gmail.com>
+CC: linux-ext4@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Mild filesystem corruption on ext4 (no journal)
+References: <4A28F83F.4030704@tuffmail.co.uk> <4A292E61.3050204@gmail.com>
+In-Reply-To: <4A292E61.3050204@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009.06.05 16:12:09 +0200, Björn Steinbrink wrote:
-> On 2009.06.05 15:21:26 +0200, Björn Steinbrink wrote:
-> > On 2009.06.05 14:24:44 +0200, Björn Steinbrink wrote:
-> > > Hi,
-> > > 
-> > > can't make any sense out of this at all:
-> > > 
-> > > doener@atjola:git (master) $ git reset --hard HEAD@{1}
-> > > HEAD is now at b11cf09 Merge branch 'da/pretty-tempname'
-> > > doener@atjola:git (master) $ git update-ref refs/remotes/origin/master HEAD
-> > > 
-> > > doener@atjola:git (master) $ git pull
-> > > >From git://git.kernel.org/pub/scm/git/git
-> > >    b11cf09..6096d75  master     -> origin/master
-> > > Updating b11cf09..6096d75
-> > > Fast forward
-> > >  Documentation/RelNotes-1.6.3.2.txt     |   12 +++++-------
-> > >  Documentation/git.txt                  |    7 ++++++-
-> > >  contrib/completion/git-completion.bash |   12 ++++++++++--
-> > >  grep.c                                 |    6 +++++-
-> > >  4 files changed, 26 insertions(+), 11 deletions(-)
-> > > 
-> > > doener@atjola:git (master) $ git diff-index --name-only HEAD
-> > > doener@atjola:git (master) $ git diff-index --name-only --cached HEAD
-> > > 
-> > > *wait a minute, doing nothing*
-> > > 
-> > > doener@atjola:git (master) $ git diff-index --name-only HEAD
-> > > Documentation/RelNotes-1.6.3.2.txt
-> > > Documentation/git.txt
-> > > contrib/completion/git-completion.bash
-> > > grep.c
-> > 
-> > Hm, looks like this is not a git bug. Went back to 1.5.4, and even that
-> > shows the error. So I actually looked at the files, and indeed, the file
-> > in the working tree gets modified. stat(1) shows:
-> > 
-> > Right after the merge:
-> >   File: `grep.c'
-> >   Size: 16274           Blocks: 32         IO Block: 4096   regular file
-> > Device: fd03h/64771d    Inode: 5933481     Links: 1
-> > Access: (0644/-rw-r--r--)  Uid: ( 1000/  doener)   Gid: ( 1000/  doener)
-> > Access: 2009-06-05 15:02:14.000000000 +0200
-> > Modify: 2009-06-05 15:02:14.000000000 +0200
-> > Change: 2009-06-05 15:02:14.000000000 +0200
-> > 
-> > 60 seconds later:
-> >   File: `grep.c'
-> >   Size: 16274           Blocks: 32         IO Block: 4096   regular file
-> > Device: fd03h/64771d    Inode: 5933481     Links: 1
-> > Access: (0644/-rw-r--r--)  Uid: ( 1000/  doener)   Gid: ( 1000/  doener)
-> > Access: 2009-06-05 15:02:14.000000000 +0200
-> > Modify: 2009-06-05 15:02:14.000000000 +0200
-> > Change: 2009-06-05 15:02:48.000000000 +0200
-> > 
-> > So the ctime got modified. I don't have any fancy indexing stuff
-> > running, and inotify doesn't see any events either while the ctime is
-> > changed.
-> > 
-> > The only thing I changed lately was upgrading to 2.6.30-rc8 and going
-> > from ext3 to ext4. As the ctime change always seems to happen around 30
-> > seconds after the real change, I kind of suspect ext4 to be guilty.
-> > Ted, is that possible?
-> > 
-> > FS is mounted as:
-> > /dev/mapper/vg0-home on /home type ext4 (rw,noatime,nodiratime,barrier=0)
-> 
-> Hm, yup, seems to be ext4 related, doesn't happen on tmpfs.
+Aioanei Rares wrote:
+> Alan Jenkins wrote:
+>> Hi,
+>>
+>> I run ext4 without a journal on my cheap netbook with a 4 gig SSD.  I 
+>> suspect "without a journal" is significant, I don't think I'm doing 
+>> anything else strange.
+>>
+>> When I upgrade libc from 2.7 (debian stable) to 2.9 (debian 
+>> unstable), the locale breaks every reboot, and I have to repair it by 
+>> running locale-gen.  This happened now when I only upgraded libc, in 
+>> order to play with signalfd().  It also happened before, when I 
+>> upgraded the entire machine to debian unstable (which I later reverted).
+>>
+>> The problem is that /usr/lib/locale/locale-archive gets corrupted 
+>> when I reboot.  The exact corruption differs with each reboot (i.e. 
+>> the md5sum differs).  Last time, the first ~70K was overwritten with 
+>> data from xorg.log and my web browsing history.  I have copies of the 
+>> original and corrupted state which I can send, the full file is 1.3 
+>> megs, but I can limit it to the first 70K, since that's all that was 
+>> corrupted.
+>>
+>> To try and rule out a faulty userspace program, I marked the file as 
+>> read-only (chmod a-w) and immutable (chattr +i).  After a reboot, the 
+>> file was still read-only and immutable, yet it still became corrupted.
+>>
+>> Also, I ran md5sum in the shutdown scripts, after mounting the root 
+>> filesystem read-only (which is also preceeded by a sync in a 
+>> different script).  This showed that the file did not appear 
+>> corrupted at this point.  (Though maybe it was ok in page-cache, but 
+>> corrupted on-disk).
+>>
+>> The locale-archive file is read by the libc locale routines using 
+>> mmap().  The mapping is read only and is not modified.  It seems 
+>> likely that some process has it mapped when the kernel shuts down.
+>>
+>> I tried reproducing this by writting a minimal daemon which maps a 
+>> copy of the locale-archive file, and starting it just before the 
+>> filesystem is remounted read-only.  It didn't work though; this copy 
+>> of the locale-archive file remained uncorrupted.
+>>
+>> I forced a fsck on boot, and the filesystem was reported to be 
+>> clean.  I am currently running with e2fsprogs v1.41.6 (from debian 
+>> unstable), and a custom-built kernel, 2.6.30-rc7.
+>>
+>> Thanks in advance!
+>> Alan
+>> -- 
+>> To unsubscribe from this list: send the line "unsubscribe 
+>> linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> I suspect, although I might be wrong, that this is not a kernel-related
+> problem.
 
-OK, so I tested a bit more. And my /home is really just ext3 mounted
-with the ext4 driver:
+"To try and rule out a faulty userspace program, I marked the file as 
+read-only (chmod a-w) and immutable (chattr +i).  After a reboot, the 
+file was still read-only and immutable, yet it still became corrupted."
 
-Filesystem features:      has_journal resize_inode dir_index filetype
-needs_recovery sparse_super large_file
+Since the immutable bit is not respected, I tend to think it is a kernel 
+problem.  Unless the filesystem isn't getting unmounted/flushed properly 
+for some reason... but I thought the modern kernel had that covered.
 
-While my /tmp actually got the ext4 features:
-Filesystem features:      has_journal ext_attr resize_inode dir_index
-filetype needs_recovery extent sparse_super large_file uninit_bg
+I agree it is very suspicious this happens only after upgrading libc.  
+I'll see if I can find an individual change in libc locale-handling that 
+might trigger this.
 
-And on /tmp, ctime doesn't change.
-
-Playing around a bit more, the ctime change is easily reproducable for
-me, without waiting 30-60 seconds. Just running sync will do:
-
-rm foo # We need a new file to be created
-echo 123 > foo
-stat foo
-sleep 2
-sync
-stat foo
-
-
-On /home, that sequence shows ctime having changed after the sync, while
-on /tmp, no such change happens.
-
-Is this a fault on my side? I thought I had read that you could just
-mount ext3 filesystems without any changes and benefit from delayed
-allocation and such. Hm?
-
-Björn
+Thanks
+Alan
