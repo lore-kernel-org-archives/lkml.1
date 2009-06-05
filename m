@@ -1,96 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbZFEPIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbZFEPIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755174AbZFEPIh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 11:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbZFEPIX
+	id S1756342AbZFEPIs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 11:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbZFEPI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 11:08:23 -0400
-Received: from ozlabs.org ([203.10.76.45]:55226 "EHLO ozlabs.org"
+	Fri, 5 Jun 2009 11:08:26 -0400
+Received: from ozlabs.org ([203.10.76.45]:55234 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752672AbZFEPIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 11:08:21 -0400
+	id S1752767AbZFEPIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 11:08:22 -0400
 From: Rusty Russell <rusty@rustcorp.com.au>
-To: paulmck@linux.vnet.ibm.com
-Subject: Re: [RFC PATCH v2 00/19] virtual-bus
-Date: Sat, 6 Jun 2009 00:25:57 +0930
+To: Amerigo Wang <amwang@redhat.com>
+Subject: Re: [Patch 4/5] module: trim exception table in module_free()
+Date: Sat, 6 Jun 2009 00:38:02 +0930
 User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Gregory Haskins <gregory.haskins@gmail.com>,
-       "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
-       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
-       anthony@codemonkey.ws, netdev@vger.kernel.org, kvm@vger.kernel.org,
-       bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
-       herber@gondor.apana.org.au, chrisw@sous-sol.org, shemminger@vyatta.com
-References: <20090409155200.32740.19358.stgit@dev.haskins.net> <200906051425.02924.rusty@rustcorp.com.au> <20090605053010.GD7125@linux.vnet.ibm.com>
-In-Reply-To: <20090605053010.GD7125@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, jdike@addtoit.com, hch@infradead.org,
+       mingo@elte.hu, akpm@linux-foundation.org,
+       David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org
+References: <20090604014813.6332.18486.sendpatchset@localhost.localdomain> <200906041800.54696.rusty@rustcorp.com.au> <4A278C62.8000801@redhat.com>
+In-Reply-To: <4A278C62.8000801@redhat.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200906060025.57961.rusty@rustcorp.com.au>
+Message-Id: <200906060038.03089.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Jun 2009 03:00:10 pm Paul E. McKenney wrote:
-> On Fri, Jun 05, 2009 at 02:25:01PM +0930, Rusty Russell wrote:
-> > +	/* lg->eventfds is RCU-protected */
-> > +	preempt_disable();
+On Thu, 4 Jun 2009 06:27:06 pm Amerigo Wang wrote:
+> Rusty Russell wrote:
+> > I've taken this one to make it more generic.  I'll leave the x86
+> > maintainers to apply the rest.
 >
-> Suggest changing to rcu_read_lock() to match the synchronize_rcu().
+> Thank you. But this one depends on the previous, I don't think you can
+> apply this without the previous ones.
 
-Ah yes, much better.  As I was implementing it I warred with myself since
-lguest aims for simplicity above all else.  But since we only ever add things
-to the array, RCU probably is simpler.
+Here's what I ended up with: I need to rig up a test and make sure it goes to
+all the maintainers and linux-next.
 
-> > +	for (i = 0; i < cpu->lg->num_eventfds; i++) {
-> > +		if (cpu->lg->eventfds[i].addr == cpu->pending_notify) {
-> > +			eventfd_signal(cpu->lg->eventfds[i].event, 1);
->
-> Shouldn't this be something like the following?
->
-> 		p = rcu_dereference(cpu->lg->eventfds);
-> 		if (p[i].addr == cpu->pending_notify) {
-> 			eventfd_signal(p[i].event, 1);
+Subject: module: trim exception table on init free.
 
-Hmm, need to read num_eventfds first, too.  It doesn't matter if we get the old
-->num_eventfds and the new ->eventfds, but the other way around would be bad.
+It's theoretically possible that there are exception table entries
+which point into the (freed) init text of modules.  These could cause
+future problems if other modules get loaded into that memory and cause
+an exception as we'd see the wrong fixup.
 
-Here's the inter-diff:
+Amerigo fixed this long-standing FIXME in the x86 version, but this
+patch is more general.
 
-diff --git a/drivers/lguest/lguest_user.c b/drivers/lguest/lguest_user.c
---- a/drivers/lguest/lguest_user.c
-+++ b/drivers/lguest/lguest_user.c
-@@ -39,18 +39,24 @@ static int break_guest_out(struct lg_cpu
- 
- bool send_notify_to_eventfd(struct lg_cpu *cpu)
- {
--	unsigned int i;
-+	unsigned int i, num;
-+	struct lg_eventfds *eventfds;
-+
-+	/* Make sure we grab the total number before accessing the array. */
-+	cpu->lg->num_eventfds = num;
-+	rmb();
- 
- 	/* lg->eventfds is RCU-protected */
- 	rcu_read_lock();
--	for (i = 0; i < cpu->lg->num_eventfds; i++) {
--		if (cpu->lg->eventfds[i].addr == cpu->pending_notify) {
--			eventfd_signal(cpu->lg->eventfds[i].event, 1);
-+	eventfds = rcu_dereference(cpu->lg->eventfds);
-+	for (i = 0; i < num; i++) {
-+		if (eventfds[i].addr == cpu->pending_notify) {
-+			eventfd_signal(eventfds[i].event, 1);
- 			cpu->pending_notify = 0;
- 			break;
- 		}
- 	}
--	preempt_enable();
-+	rcu_read_unlock();
- 	return cpu->pending_notify == 0;
+This implements trim_init_extable(); most archs are simple since they
+use the standard lib/extable.c sort code.  Alpha and IA64 use relative
+addresses in their fixups, so thier trimming is a slight variation.
+
+Sparc32 is unique; it doesn't seem to define ARCH_HAS_SORT_EXTABLE,
+yet it defines its own sort_extable() which overrides the one in lib.
+It doesn't sort, so we have to mark deleted entries instead of
+actually trimming them.
+
+Inspired-by: Amerigo Wang <amwang@redhat.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ arch/alpha/mm/extable.c             |   19 +++++++++++++++++++
+ arch/ia64/mm/extable.c              |   24 ++++++++++++++++++++++++
+ arch/sparc/include/asm/uaccess_32.h |    3 +++
+ arch/sparc/mm/extable.c             |   27 +++++++++++++++++++++++++++
+ include/linux/module.h              |    1 +
+ kernel/module.c                     |    1 +
+ lib/extable.c                       |   17 +++++++++++++++++
+ 7 files changed, 92 insertions(+)
+
+diff --git a/arch/alpha/mm/extable.c b/arch/alpha/mm/extable.c
+--- a/arch/alpha/mm/extable.c
++++ b/arch/alpha/mm/extable.c
+@@ -48,6 +48,25 @@ void sort_extable(struct exception_table
+ 	     cmp_ex, swap_ex);
  }
  
-Thanks!
-Rusty.
++/*
++ * Any entry referring to the module init will be at the beginning or
++ * the end.
++ */
++void trim_init_extable(struct module *m)
++{
++	/*trim the beginning*/
++	while (m->num_exentries &&
++	       within_module_init(ex_to_addr(&m->extable[0]), m)) {
++		m->extable++;
++		m->num_exentries--;
++	}
++	/*trim the end*/
++	while (m->num_exentries &&
++	       within_module_init(ex_to_addr(&m->extable[m->num_exentries-1]),
++				  m))
++		m->num_exentries--;
++}
++
+ const struct exception_table_entry *
+ search_extable(const struct exception_table_entry *first,
+ 	       const struct exception_table_entry *last,
+diff --git a/arch/ia64/mm/extable.c b/arch/ia64/mm/extable.c
+--- a/arch/ia64/mm/extable.c
++++ b/arch/ia64/mm/extable.c
+@@ -53,6 +53,30 @@ void sort_extable (struct exception_tabl
+ 	     cmp_ex, swap_ex);
+ }
+ 
++static inline unsigned long ex_to_addr(const struct exception_table_entry *x)
++{
++	return (unsigned long)&x->insn + x->insn;
++}
++
++/*
++ * Any entry referring to the module init will be at the beginning or
++ * the end.
++ */
++void trim_init_extable(struct module *m)
++{
++	/*trim the beginning*/
++	while (m->num_exentries &&
++	       within_module_init(ex_to_addr(&m->extable[0]), m)) {
++		m->extable++;
++		m->num_exentries--;
++	}
++	/*trim the end*/
++	while (m->num_exentries &&
++	       within_module_init(ex_to_addr(&m->extable[m->num_exentries-1]),
++				  m))
++		m->num_exentries--;
++}
++
+ const struct exception_table_entry *
+ search_extable (const struct exception_table_entry *first,
+ 		const struct exception_table_entry *last,
+diff --git a/arch/sparc/include/asm/uaccess_32.h b/arch/sparc/include/asm/uaccess_32.h
+--- a/arch/sparc/include/asm/uaccess_32.h
++++ b/arch/sparc/include/asm/uaccess_32.h
+@@ -17,6 +17,9 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
++#define ARCH_HAS_SORT_EXTABLE
++#define ARCH_HAS_SEARCH_EXTABLE
++
+ /* Sparc is not segmented, however we need to be able to fool access_ok()
+  * when doing system calls from kernel mode legitimately.
+  *
+diff --git a/arch/sparc/mm/extable.c b/arch/sparc/mm/extable.c
+--- a/arch/sparc/mm/extable.c
++++ b/arch/sparc/mm/extable.c
+@@ -28,6 +28,10 @@ search_extable(const struct exception_ta
+ 	 *	word 3: last insn address + 4 bytes
+ 	 *	word 4: fixup code address
+ 	 *
++	 * Deleted entries are encoded as:
++	 *	word 1: unused
++	 *	word 2: -1
++	 *
+ 	 * See asm/uaccess.h for more details.
+ 	 */
+ 
+@@ -39,6 +43,10 @@ search_extable(const struct exception_ta
+ 			continue;
+ 		}
+ 
++		/* A deleted entry; see trim_init_extable */
++		if (walk->fixup == -1)
++			continue;
++
+ 		if (walk->insn == value)
+ 			return walk;
+ 	}
+@@ -57,6 +65,25 @@ search_extable(const struct exception_ta
+         return NULL;
+ }
+ 
++/* We could memmove them around; easier to mark the trimmed ones. */
++void trim_init_extable(struct module *m)
++{
++	unsigned int i;
++	bool range;
++
++	for (i = 0; i < m->num_exentries; i += range ? 2 : 1) {
++		range = m->extable[i].fixup == 0;
++
++		if (within_module_init(m->extable[i].insn)) {
++			m->extable[i].fixup = -1;
++			if (range)
++				m->extable[i+1].fixup = -1;
++		}
++		if (range)
++			i++;
++	}
++}
++
+ /* Special extable search, which handles ranges.  Returns fixup */
+ unsigned long search_extables_range(unsigned long addr, unsigned long *g2)
+ {
+diff --git a/include/linux/module.h b/include/linux/module.h
+--- a/include/linux/module.h
++++ b/include/linux/module.h
+@@ -77,6 +77,7 @@ search_extable(const struct exception_ta
+ void sort_extable(struct exception_table_entry *start,
+ 		  struct exception_table_entry *finish);
+ void sort_main_extable(void);
++void trim_init_extable(struct module *m);
+ 
+ #ifdef MODULE
+ #define MODULE_GENERIC_TABLE(gtype,name)			\
+diff --git a/kernel/module.c b/kernel/module.c
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2394,6 +2394,7 @@ SYSCALL_DEFINE3(init_module, void __user
+ 	mutex_lock(&module_mutex);
+ 	/* Drop initial reference. */
+ 	module_put(mod);
++	trim_init_extable(mod);
+ 	module_free(mod, mod->module_init);
+ 	mod->module_init = NULL;
+ 	mod->init_size = 0;
+diff --git a/lib/extable.c b/lib/extable.c
+--- a/lib/extable.c
++++ b/lib/extable.c
+@@ -39,6 +39,23 @@ void sort_extable(struct exception_table
+ 	sort(start, finish - start, sizeof(struct exception_table_entry),
+ 	     cmp_ex, NULL);
+ }
++
++/*
++ * If the exception table is sorted, any referring to the module init
++ * will be at the beginning or the end.
++ */
++void trim_init_extable(struct module *m)
++{
++	/*trim the beginning*/
++	while (m->num_exentries && within_module_init(m->extable[0].insn, m)) {
++		m->extable++;
++		m->num_exentries--;
++	}
++	/*trim the end*/
++	while (m->num_exentries &&
++		within_module_init(m->extable[m->num_exentries-1].insn, m))
++		m->num_exentries--;
++}
+ #endif
+ 
+ #ifndef ARCH_HAS_SEARCH_EXTABLE
+
