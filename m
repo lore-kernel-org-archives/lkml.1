@@ -1,135 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbZFEMqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752628AbZFEMyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbZFEMqg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 08:46:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbZFEMq0
+	id S1752628AbZFEMyn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 08:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbZFEMye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 08:46:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51828 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753765AbZFEMqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 08:46:24 -0400
-Date: Fri, 5 Jun 2009 12:45:51 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf record, top: Implement --freq
-Message-ID: <tip-cf1f45744c6fa3501e0a6f0ddc418f0ef27e725b@git.kernel.org>
-Git-Commit-ID: cf1f45744c6fa3501e0a6f0ddc418f0ef27e725b
-X-Mailer: tip-git-log-daemon
+	Fri, 5 Jun 2009 08:54:34 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:35214 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbZFEMyd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 08:54:33 -0400
+Message-ID: <4A291580.90305@novell.com>
+Date: Fri, 05 Jun 2009 08:54:24 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 05 Jun 2009 12:45:52 +0000 (UTC)
+To: Avi Kivity <avi@redhat.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       "Michael S. Tsirkin" <mst@redhat.com>, linux-kernel@vger.kernel.org,
+       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
+       anthony@codemonkey.ws, netdev@vger.kernel.org, kvm@vger.kernel.org,
+       bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
+       herber@gondor.apana.org.au, chrisw@sous-sol.org, shemminger@vyatta.com
+Subject: Re: [RFC PATCH v2 00/19] virtual-bus
+References: <20090409155200.32740.19358.stgit@dev.haskins.net> <49E0C93E.5030205@redhat.com> <4A28172D.6010906@gmail.com> <200906051425.02924.rusty@rustcorp.com.au> <4A290800.1030803@novell.com> <4A29154B.2000600@redhat.com>
+In-Reply-To: <4A29154B.2000600@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig8D93EF3B98F81FFA65C28AEC"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  cf1f45744c6fa3501e0a6f0ddc418f0ef27e725b
-Gitweb:     http://git.kernel.org/tip/cf1f45744c6fa3501e0a6f0ddc418f0ef27e725b
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Fri, 5 Jun 2009 13:27:02 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 5 Jun 2009 13:39:23 +0200
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig8D93EF3B98F81FFA65C28AEC
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-perf record, top: Implement --freq
+Avi Kivity wrote:
+> Gregory Haskins wrote:
+>>> @@ -1,6 +1,6 @@
+>>>  config LGUEST
+>>>      tristate "Linux hypervisor example code"
+>>> -    depends on X86_32 && EXPERIMENTAL && !X86_PAE && FUTEX
+>>> +    depends on X86_32 && EXPERIMENTAL && !X86_PAE && EVENTFD
+>>>      =20
+>>
+>> Note to self:  we probably need a similar line in KVM now.
+>>
+>>  =20
+>
+> 'select EVENTFD' is more appropriate.
+>
+>
 
-Support frequency-based profiling and make it the default.
-
-(Also add a Hz printout in perf top.)
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Yeah, I was thinking the same...
 
 
----
- Documentation/perf_counter/builtin-record.c |   10 +++++++++-
- Documentation/perf_counter/builtin-top.c    |   13 +++++++++----
- 2 files changed, 18 insertions(+), 5 deletions(-)
+--------------enig8D93EF3B98F81FFA65C28AEC
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-diff --git a/Documentation/perf_counter/builtin-record.c b/Documentation/perf_counter/builtin-record.c
-index 7f2d7ce..e2301f3 100644
---- a/Documentation/perf_counter/builtin-record.c
-+++ b/Documentation/perf_counter/builtin-record.c
-@@ -27,6 +27,7 @@ static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
- static int			nr_cpus				= 0;
- static unsigned int		page_size;
- static unsigned int		mmap_pages			= 128;
-+static int			freq				= 0;
- static int			output;
- static const char		*output_name			= "perf.data";
- static int			group				= 0;
-@@ -347,9 +348,10 @@ static void create_counter(int counter, int cpu, pid_t pid)
- 	attr.config		= event_id[counter];
- 	attr.sample_period	= event_count[counter];
- 	attr.sample_type	= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
-+	attr.freq		= freq;
- 	attr.mmap		= track;
- 	attr.comm		= track;
--	attr.inherit	= (cpu < 0) && inherit;
-+	attr.inherit		= (cpu < 0) && inherit;
- 
- 	track = 0; /* only the first counter needs these */
- 
-@@ -520,6 +522,8 @@ static const struct option options[] = {
- 		    "output file name"),
- 	OPT_BOOLEAN('i', "inherit", &inherit,
- 		    "child tasks inherit counters"),
-+	OPT_INTEGER('F', "freq", &freq,
-+		    "profile at this frequency"),
- 	OPT_INTEGER('m', "mmap-pages", &mmap_pages,
- 		    "number of mmap data pages"),
- 	OPT_END()
-@@ -540,6 +544,10 @@ int cmd_record(int argc, const char **argv, const char *prefix)
- 		event_id[0] = 0;
- 	}
- 
-+	if (freq) {
-+		default_interval = freq;
-+		freq = 1;
-+	}
- 	for (counter = 0; counter < nr_counters; counter++) {
- 		if (event_count[counter])
- 			continue;
-diff --git a/Documentation/perf_counter/builtin-top.c b/Documentation/perf_counter/builtin-top.c
-index 28cbde4..2fee595 100644
---- a/Documentation/perf_counter/builtin-top.c
-+++ b/Documentation/perf_counter/builtin-top.c
-@@ -74,8 +74,8 @@ static int			nr_cpus				=  0;
- static unsigned int		realtime_prio			=  0;
- static int			group				=  0;
- static unsigned int		page_size;
--static unsigned int		mmap_pages			=  16;
--static int			freq				= 0;
-+static unsigned int		mmap_pages			= 16;
-+static int			freq				=  0;
- 
- static char			*sym_filter;
- static unsigned long		filter_start;
-@@ -212,8 +212,13 @@ static void print_sym_table(void)
- 		events_per_sec,
- 		100.0 - (100.0*((events_per_sec-kevents_per_sec)/events_per_sec)));
- 
--	if (nr_counters == 1)
--		printf("%d ", event_count[0]);
-+	if (nr_counters == 1) {
-+		printf("%d", event_count[0]);
-+		if (freq)
-+			printf("Hz ");
-+		else
-+			printf(" ");
-+	}
- 
- 	for (counter = 0; counter < nr_counters; counter++) {
- 		if (counter)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkopFYUACgkQlOSOBdgZUxm4MACfWX4f1R457GUaKLhvV5PpDBla
+d8QAnAqUiNQvt+u87l9/yfhTnFyVe469
+=4kST
+-----END PGP SIGNATURE-----
+
+--------------enig8D93EF3B98F81FFA65C28AEC--
