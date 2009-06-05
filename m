@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbZFEKs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbZFEKwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752918AbZFEKs2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 06:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbZFEKsT
+	id S1752999AbZFEKwy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 06:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbZFEKwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 06:48:19 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:45155 "EHLO
+	Fri, 5 Jun 2009 06:52:46 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:40427 "EHLO
 	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbZFEKsS (ORCPT
+	with ESMTP id S1750745AbZFEKwp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 06:48:18 -0400
+	Fri, 5 Jun 2009 06:52:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=izv8v8y+VxvK05wmF4U6DKc1bIO8UabAg/vxAAYCScIupGBT8zYL7gHkYDXiH9psfw
-         z1+N2l8XNiKKRsGmunqSjKa8JQQqH9ZD/RVqsIxAbqpixiNdWenEOuEY3i2AOs5xWOz3
-         /osRPXadZdpJ1xz+XuOoCYtd2Foo+HLWJeS7s=
-Message-ID: <4A28F83F.4030704@tuffmail.co.uk>
-Date: Fri, 05 Jun 2009 11:49:35 +0100
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=llZ3Dwo52nPv/d7qK8G5RuYdxD8bRKwu8JewLN4sWTeuwo4R/JpqxiFQ4OkKN/rQn4
+         BNHiXAI/vMzrkG9a2e10OLwdn2M8AVjdcLQj6sxgHpxQB+3whQfczLlF+8d+qVRe6+GC
+         yI/jy+bAL7TBGG1pTlfaX0xY/kRmT8EY5L0HU=
+Message-ID: <4A28F94A.6040500@tuffmail.co.uk>
+Date: Fri, 05 Jun 2009 11:54:02 +0100
 From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: linux-ext4@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Mild filesystem corruption on ext4 (no journal)
+To: Joe Perches <joe@perches.com>
+CC: acpi4asus-user@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>, Corentin Chary <corentincj@iksaif.net>,
+       Matthew Garrett <mjg@redhat.com>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+Subject: Re: [PATCH] eeepc-laptop.c: use pr_fmt and pr_<level>
+References: <1244197103.3631.40.camel@Joe-Laptop.home>
+In-Reply-To: <1244197103.3631.40.camel@Joe-Laptop.home>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Joe Perches wrote:
+> Convert the unusual printk(EEEPC_<level> uses to
+> the more standard pr_fmt and pr_<level>(.
+>
+> Signed-off-by: Joe Perches <joe@perches.com>
+>
+> diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
+> index 353a898..94cacdd 100644
+> --- a/drivers/platform/x86/eeepc-laptop.c
+> +++ b/drivers/platform/x86/eeepc-laptop.c
+> @@ -16,6 +16,8 @@
+>   *  GNU General Public License for more details.
+>   */
+>  
+> +#define pr_fmt(fmt) EEEPC_HOTK_FILE ": " fmt
+>
+>   
 
-I run ext4 without a journal on my cheap netbook with a 4 gig SSD.  I 
-suspect "without a journal" is significant, I don't think I'm doing 
-anything else strange.
+Is EEEPC_HOTK_FILE used anywhere else?  It would be clearer if you were 
+able to just use "eeepc: " or whatever and remove the definition of 
+EEEPC_HOTK_FILE.
 
-When I upgrade libc from 2.7 (debian stable) to 2.9 (debian unstable), 
-the locale breaks every reboot, and I have to repair it by running 
-locale-gen.  This happened now when I only upgraded libc, in order to 
-play with signalfd().  It also happened before, when I upgraded the 
-entire machine to debian unstable (which I later reverted).
-
-The problem is that /usr/lib/locale/locale-archive gets corrupted when I 
-reboot.  The exact corruption differs with each reboot (i.e. the md5sum 
-differs).  Last time, the first ~70K was overwritten with data from 
-xorg.log and my web browsing history.  I have copies of the original and 
-corrupted state which I can send, the full file is 1.3 megs, but I can 
-limit it to the first 70K, since that's all that was corrupted.
-
-To try and rule out a faulty userspace program, I marked the file as 
-read-only (chmod a-w) and immutable (chattr +i).  After a reboot, the 
-file was still read-only and immutable, yet it still became corrupted.
-
-Also, I ran md5sum in the shutdown scripts, after mounting the root 
-filesystem read-only (which is also preceeded by a sync in a different 
-script).  This showed that the file did not appear corrupted at this 
-point.  (Though maybe it was ok in page-cache, but corrupted on-disk).
-
-The locale-archive file is read by the libc locale routines using 
-mmap().  The mapping is read only and is not modified.  It seems likely 
-that some process has it mapped when the kernel shuts down.
-
-I tried reproducing this by writting a minimal daemon which maps a copy 
-of the locale-archive file, and starting it just before the filesystem 
-is remounted read-only.  It didn't work though; this copy of the 
-locale-archive file remained uncorrupted.
-
-I forced a fsck on boot, and the filesystem was reported to be clean.  I 
-am currently running with e2fsprogs v1.41.6 (from debian unstable), and 
-a custom-built kernel, 2.6.30-rc7.
-
-Thanks in advance!
+Thanks for the cleanup
 Alan
+
