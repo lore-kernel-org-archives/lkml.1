@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751302AbZFEQsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315AbZFEQsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751302AbZFEQsS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 12:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbZFEQsC
+	id S1754315AbZFEQsn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 12:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbZFEQse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 12:48:02 -0400
-Received: from mail.lang.hm ([64.81.33.126]:40972 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751988AbZFEQsB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 12:48:01 -0400
-Date: Fri, 5 Jun 2009 09:47:37 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: only a single core (out of 8) initialized
-In-Reply-To: <20090604202933.d7c24c3d.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0906050946530.7953@asgard>
-References: <alpine.DEB.1.10.0906041949030.7953@asgard> <20090604202933.d7c24c3d.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 5 Jun 2009 12:48:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57472 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752676AbZFEQse (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 12:48:34 -0400
+Date: Fri, 5 Jun 2009 09:48:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Helsley <matthltc@us.ibm.com>, xemul@parallels.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, mingo@elte.hu, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 1/9] exec_path 1/9: introduce ->exec_path and switch
+ /proc/*/exe
+In-Reply-To: <20090605160943.GA5262@x200.localdomain>
+Message-ID: <alpine.LFD.2.01.0906050942450.6847@localhost.localdomain>
+References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org> <20090531215427.GA29534@x200.localdomain> <20090531151953.8f8b14b5.akpm@linux-foundation.org> <20090603230422.GB853@x200.localdomain> <20090605104517.GA11713@infradead.org>
+ <alpine.LFD.2.01.0906050808551.6847@localhost.localdomain> <20090605154147.GA16766@x200.localdomain> <alpine.LFD.2.01.0906050848520.6847@localhost.localdomain> <20090605160943.GA5262@x200.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Jun 2009, Andrew Morton wrote:
 
-> On Thu, 4 Jun 2009 19:52:36 -0700 (PDT) david@lang.hm wrote:
->
->> this is 2.6.30-rc7
->
-> Were any earlier kernels OK?
 
-sorry, I missed this question.
+On Fri, 5 Jun 2009, Alexey Dobriyan wrote:
+> 
+> It's borrowed by kernel thread of course, not userspace task.
 
-I was running 2.6.29.1 when I noticed this problem. I haven't tried older 
-kernels yet.
+.. and even if it is, what's the problem? 
 
-David Lang
+That kernel thread has borroed whe VM for a while. It effectively _is_ a 
+thread of the process now. So it's technically not even wrong to 
+explicitly allow things like /proc/*/exe to see it as such.
 
->>  with a patch added to debug a nv sata driver
->> incompatibility with the Intel SSDs on a tyan motherboard
->>
->> on one system it sees all 8 cores, on the other system it only initializes
->> one core.
->>
->> can anyone help me spot what's going wrong in the one that's only seeing a
->> single core? If I'm reading things correctly it's seeing both sockets for
->> the NUMA setup, but then only initializing one core on the first socket.
->
-> good:
-> 	SMP: Allowing 8 CPUs, 4 hotplug CPUs
->
-> bad:
-> 	SMP: Allowing 1 CPUs, 0 hotplug CPUs
->
-> perhaps due to
-> 	ACPI: No APIC-table, disabling MPS
->
-> You could have a poke around in arch/x86/kernel/smpboot.c() and find
-> out what happened here.  I'd be suspecting this code triggered:
->
->        /* no processor from mptable or madt */
->        if (!num_processors)
->                num_processors = 1;
->
-> because ACPI doesn't like that board.
->
-> Did you look into updating the BIOS?
->
->
+But you can hide it by just checking some flag in the thread structure if 
+you really want to.
+
+But when creating a regular thread, you should _not_ need to take a 
+spinlock and duplicate the executable path!
+
+		Linus
