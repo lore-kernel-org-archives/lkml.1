@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756855AbZFEXo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbZFEXol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756855AbZFEXo3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 19:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbZFEXlX
+	id S1756861AbZFEXol (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 19:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbZFEXlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 19:41:23 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:36390 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753751AbZFEXlJ (ORCPT
+	Fri, 5 Jun 2009 19:41:35 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:45073 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755487AbZFEXlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 19:41:09 -0400
+	Fri, 5 Jun 2009 19:41:12 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Cc: Frans Pop <elendil@planet.nl>, Andres Salomon <dilinger@debian.org>,
+Cc: Markus Heidelberg <markus.heidelberg@web.de>,
        Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 09/39] kbuild, deb-pkg: generate debian/copyright file
-Date: Sat,  6 Jun 2009 01:42:27 +0200
-Message-Id: <1244245377-17441-9-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 28/39] kconfig qconf: fix namespace for Horizontal and Vertical enum values
+Date: Sat,  6 Jun 2009 01:42:46 +0200
+Message-Id: <1244245377-17441-28-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.3.rc3.40.g75b44
 In-Reply-To: <20090605233720.GA13588@uranus.ravnborg.org>
 References: <20090605233720.GA13588@uranus.ravnborg.org>
@@ -25,75 +25,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frans Pop <elendil@planet.nl>
+From: Markus Heidelberg <markus.heidelberg@web.de>
 
-On Thursday 23 April 2009, Frans Pop wrote:
-Add a basic debian/copyright to the binary packages.
+They were used as QSplitter::Horizontal resp. QSplitter::Vertical, but
+are defined in the 'Qt' namespace.
 
-Based on an earlier patch from Maximilian Attems.
+Fixes the following compiler errors after a quick conversion with 'qt3to4',
+which occured with g++ 3.4.6 and 4.1.2, but not anymore with 4.3.2.
 
-Signed-off-by: Frans Pop <elendil@planet.nl>
-Acked-by: maximilian attems <max@stro.at>
-Cc: Andres Salomon <dilinger@debian.org>
+scripts/kconfig/qconf.cc: In constructor 'ConfigSearchWindow::ConfigSearchWindow(ConfigMainWindow*, const char*)':
+scripts/kconfig/qconf.cc:1213: error: 'Vertical' is not a member of 'QSplitter'
+
+scripts/kconfig/qconf.cc: In constructor 'ConfigMainWindow::ConfigMainWindow()':
+scripts/kconfig/qconf.cc:1304: error: 'Horizontal' is not a member of 'QSplitter'
+scripts/kconfig/qconf.cc:1311: error: 'Vertical' is not a member of 'QSplitter'
+
+Signed-off-by: Markus Heidelberg <markus.heidelberg@web.de>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/package/builddeb |   28 +++++++++++++++++++++++++---
- 1 files changed, 25 insertions(+), 3 deletions(-)
+ scripts/kconfig/qconf.cc |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/scripts/package/builddeb b/scripts/package/builddeb
-index 0449147..122becc 100644
---- a/scripts/package/builddeb
-+++ b/scripts/package/builddeb
-@@ -15,6 +15,8 @@ set -e
- create_package() {
- 	local pname="$1" pdir="$2"
+diff --git a/scripts/kconfig/qconf.cc b/scripts/kconfig/qconf.cc
+index 2bd6ed0..7433dac 100644
+--- a/scripts/kconfig/qconf.cc
++++ b/scripts/kconfig/qconf.cc
+@@ -1199,7 +1199,7 @@ ConfigSearchWindow::ConfigSearchWindow(ConfigMainWindow* parent, const char *nam
+ 	layout1->addLayout(layout2);
  
-+	cp debian/copyright "$pdir/usr/share/doc/$pname/"
-+
- 	# Fix ownership and permissions
- 	chown -R root:root "$pdir"
- 	chmod -R go-w "$pdir"
-@@ -43,10 +45,10 @@ fi
+ 	split = new QSplitter(this);
+-	split->setOrientation(QSplitter::Vertical);
++	split->setOrientation(Qt::Vertical);
+ 	list = new ConfigView(split, name);
+ 	list->list->mode = listMode;
+ 	info = new ConfigInfoView(split, name);
+@@ -1290,14 +1290,14 @@ ConfigMainWindow::ConfigMainWindow(void)
+ 		move(x, y);
  
- # Setup the directory structure
- rm -rf "$tmpdir" "$fwdir"
--mkdir -p "$tmpdir/DEBIAN" "$tmpdir/lib" "$tmpdir/boot"
--mkdir -p "$fwdir/DEBIAN" "$fwdir/lib"
-+mkdir -p "$tmpdir/DEBIAN" "$tmpdir/lib" "$tmpdir/boot" "$tmpdir/usr/share/doc/$packagename"
-+mkdir -p "$fwdir/DEBIAN" "$fwdir/lib" "$fwdir/usr/share/doc/$fwpackagename"
- if [ "$ARCH" = "um" ] ; then
--	mkdir -p "$tmpdir/usr/lib/uml/modules/$version" "$tmpdir/usr/share/doc/$packagename" "$tmpdir/usr/bin"
-+	mkdir -p "$tmpdir/usr/lib/uml/modules/$version" "$tmpdir/usr/bin"
- fi
+ 	split1 = new QSplitter(this);
+-	split1->setOrientation(QSplitter::Horizontal);
++	split1->setOrientation(Qt::Horizontal);
+ 	setCentralWidget(split1);
  
- # Build and install the kernel
-@@ -103,6 +105,26 @@ linux ($packageversion) unstable; urgency=low
-  -- $name  $(date -R)
- EOF
+ 	menuView = new ConfigView(split1, "menu");
+ 	menuList = menuView->list;
  
-+# Generate copyright file
-+cat <<EOF > debian/copyright
-+This is a packacked upstream version of the Linux kernel.
-+
-+The sources may be found at most Linux ftp sites, including:
-+ftp://ftp.kernel.org/pub/linux/kernel
-+
-+Copyright: 1991 - 2009 Linus Torvalds and others.
-+
-+The git repository for mainline kernel development is at:
-+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-+
-+    This program is free software; you can redistribute it and/or modify
-+    it under the terms of the GNU General Public License as published by
-+    the Free Software Foundation; version 2 dated June, 1991.
-+
-+On Debian GNU/Linux systems, the complete text of the GNU General Public
-+License version 2 can be found in \`/usr/share/common-licenses/GPL-2'.
-+EOF
-+
- # Generate a control file
- cat <<EOF > debian/control
- Source: linux
+ 	split2 = new QSplitter(split1);
+-	split2->setOrientation(QSplitter::Vertical);
++	split2->setOrientation(Qt::Vertical);
+ 
+ 	// create config tree
+ 	configView = new ConfigView(split2, "config");
 -- 
 1.6.3.rc3.40.g75b44
 
