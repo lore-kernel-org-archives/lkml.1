@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754304AbZFEKCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbZFEKC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754304AbZFEKCo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 06:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZFEKCh
+	id S1754048AbZFEKC7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 06:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbZFEKCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 06:02:37 -0400
-Received: from cantor.suse.de ([195.135.220.2]:59057 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751693AbZFEKCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 06:02:37 -0400
-From: Jean Delvare <jdelvare@suse.de>
-Organization: SuSE Linux
-To: Ingo Molnar <mingo@elte.hu>, x86@kernel.org
-Subject: [PATCH] x86: quirk for reboot stalls on a Dell Optiplex 360
-Date: Fri, 5 Jun 2009 12:02:38 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Steve Conklin <steve.conklin@canonical.com>,
-       Leann Ogasawara <leann.ogasawara@canonical.com>, stable@kernel.org,
-       linux-kernel@vger.kernel.org
+	Fri, 5 Jun 2009 06:02:48 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:15071 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754793AbZFEKCr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 06:02:47 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=TI5YMUA9+Dc97u9ThkA3+apu8nWMLPK+GV8BZdpPyLvhdlcuOEUCSBpxNk+eRXFK8
+	tf3kSFV3MhvGNzZc8iMDQ==
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+In-Reply-To: <20090605095527.GM11755@balbir.in.ibm.com>
+References: <20090604053649.GA3701@in.ibm.com>
+	 <6599ad830906050153i1afd104fqe70f681317349142@mail.gmail.com>
+	 <20090605093625.GI11755@balbir.in.ibm.com>
+	 <6599ad830906050248m2c569e5bx44fb3bbddf46f8b1@mail.gmail.com>
+	 <20090605095527.GM11755@balbir.in.ibm.com>
+Date: Fri, 5 Jun 2009 03:02:46 -0700
+Message-ID: <6599ad830906050302v70c54e7cu89a52d57f9fe72e6@mail.gmail.com>
+Subject: Re: [RFC] CPU hard limits
+From: Paul Menage <menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelyanov <xemul@openvz.org>, Avi Kivity <avi@redhat.com>,
+       kvm@vger.kernel.org,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Herbert Poetzl <herbert@13thfloor.at>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906051202.38311.jdelvare@suse.de>
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Dell Optiplex 360 hangs on reboot, just like the Optiplex 330, so
-the same quirk is needed.
+On Fri, Jun 5, 2009 at 2:55 AM, Balbir Singh<balbir@linux.vnet.ibm.com> wrote:
+>
+> What about applications running as root, that can create their own
+> groups? How about multiple instances of the same application started?
+> Do applications need to know that creating a group will hurt
+> guarantees provided to others?
 
-Signed-off-by: Jean Delvare <jdelvare@suse.de>
-Cc: Leann Ogasawara <leann.ogasawara@canonical.com>
-Cc: Steve Conklin <steve.conklin@canonical.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/reboot.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+Yes, of course. If you're handing out guarantees, but other users
+can/will create cgroups with whatever parameters they like and won't
+respect the guarantees that you've made, then those guarantees are
+worthless. How do hard limits help in that situation?
 
---- linux-2.6.30-rc8.orig/arch/x86/kernel/reboot.c	2009-06-03 10:06:32.000000000 +0200
-+++ linux-2.6.30-rc8/arch/x86/kernel/reboot.c	2009-06-05 11:19:28.000000000 +0200
-@@ -192,6 +192,15 @@ static struct dmi_system_id __initdata r
- 			DMI_MATCH(DMI_BOARD_NAME, "0KP561"),
- 		},
- 	},
-+	{   /* Handle problems with rebooting on Dell Optiplex 360 with 0T656F */
-+		.callback = set_bios_reboot,
-+		.ident = "Dell OptiPlex 360",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Dell Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex 360"),
-+			DMI_MATCH(DMI_BOARD_NAME, "0T656F"),
-+		},
-+	},
- 	{	/* Handle problems with rebooting on Dell 2400's */
- 		.callback = set_bios_reboot,
- 		.ident = "Dell PowerEdge 2400",
-
--- 
-Jean Delvare
-Suse L3
+Paul
