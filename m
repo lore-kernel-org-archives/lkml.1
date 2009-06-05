@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZFEDH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZFEDIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbZFEDH7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 23:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZFEDHu
+	id S1754978AbZFEDIT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 23:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbZFEDHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 23:07:50 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52555 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752255AbZFEDHt (ORCPT
+	Thu, 4 Jun 2009 23:07:55 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:35129 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754712AbZFEDHy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 23:07:49 -0400
-Date: Fri, 5 Jun 2009 12:06:18 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Julian Phillips <julian@quantumfyre.co.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: A question about using a private anonymous mmap
-Message-Id: <20090605120618.0c074050.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.LNX.2.00.0906041740110.21303@reaper.quantumfyre.co.uk>
-References: <alpine.LNX.2.00.0906041740110.21303@reaper.quantumfyre.co.uk>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Jun 2009 23:07:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=IC1WEKPP3ZoNPvE/tPDeeWmAHu8pnZjlfiIa32R+xeGwlmmXhlz1XYkN4HQ8It4rq4
+         /yb8KqyU82SyghvyQdM8s0/Swimp9DJ5CXenyopIdDIW2iwYeii1nN6cQl8dHRhFS1ch
+         p6v7+UHJhgHbUUAsAF8JygYCdi7jWolzpF+qM=
+MIME-Version: 1.0
+In-Reply-To: <200906031101.56577.rjw@sisk.pl>
+References: <20090601101614.10720.93804.sendpatchset@rx1.opensource.se>
+	 <200906012133.32074.rjw@sisk.pl>
+	 <aec7e5c30906012133w74d7d843jccad99c564a308ec@mail.gmail.com>
+	 <200906031101.56577.rjw@sisk.pl>
+Date: Fri, 5 Jun 2009 12:07:56 +0900
+Message-ID: <aec7e5c30906042007t26915c05rd8ef375b8d4a353c@mail.gmail.com>
+Subject: Re: [PATCH] Driver Core: Add platform device arch data V2
+From: Magnus Damm <magnus.damm@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, paul@pwsan.com, khilman@deeprootsystems.com,
+       gregkh@suse.de, stern@rowland.harvard.edu,
+       linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Jun 2009 17:48:29 +0100 (BST)
-Julian Phillips <julian@quantumfyre.co.uk> wrote:
+On Wed, Jun 3, 2009 at 6:01 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> On Tuesday 02 June 2009, Magnus Damm wrote:
+>> If you guys dislike adding arch specific data to struct platform
+>> device then for SuperH we can just (mis)use the arch specific data in
+>> struct device instead. I'm afraid that solution wastes memory since
+>> the data will only be used for platform devices anyway. So I prefer
+>> adding arch specific data to struct platform_device instead of struct
+>> device if possible.
+>
+> BTW, what is the difference really?  You can always put
+> dev.platform_data = NULL for devices that don't have any platform data,
+> can't you?
 
-> I have a program which creates a reasonably large private anonymous map. 
-> The program then writes into a few places in the map, but ends up reading 
-> from all of them.
-> 
-> When I run this program on a system running 2.6.20.7 the process only ever 
-> seems to use enough memory to hold the data that has actually been written 
-> (well - in units of PAGE_SIZE).  When I run the program on a system 
-> running 2.6.24.5 then as it reads the map the amount of memory used 
-> continues to increase until the complete map has actually been allocated 
-> (and since the total size is greater than the physically available RAM 
-> causes swapping).  Basically I seem to be seeing copy-on-read instead of 
-> copy-on-write type behaviour.
-> 
-> Is this an expected change, and is there any option I can tweak to get the 
-> old behaviour back?
-> 
+So the convention is that dev.platform_data points to driver-specific
+data. It may or may not be required by the driver. The format of this
+data is driver specific and should be the same across architectures.
 
-It comes from removal of ZERO_PAGE.
+What I'm trying to add with struct pdev_archdata is a place for
+architecture specific data. This data is needed by architecture
+specific code (for example runtime PM), and since it's architecture
+specific it should _never_ be touched by device driver code. Exactly
+like struct dev_archdata but for platform devices.
 
-IMHO, What you can do is mmap(/dev/zero, MAP_PRIVATE) instead of ANON.
+Like I said, we _could_ use struct device for this purpose, but it
+sounds like suboptimal software design to me. Using struct device
+means that we put data where it doesn't belong. I'd like to add
+_platform_ _device_ _specific_ data, not data that should be present
+in all struct devices in the system but only used in some cases.
 
-Thanks,
--Kame
+Cheers,
 
-> TIA,
-> 
-> -- 
-> Julian
-> 
->   ---
-> I can't die until the government finds a safe place to bury my liver.
->  		-- Phil Harris
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+/ magnus
