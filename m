@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbZFEOgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZFEOga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753898AbZFEOgP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 10:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZFEOf7
+	id S1754093AbZFEOga (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 10:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbZFEOgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 10:35:59 -0400
-Received: from mail-px0-f202.google.com ([209.85.216.202]:59463 "EHLO
-	mail-px0-f202.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbZFEOf6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 10:35:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=hpsA2duiBU34i92E0sPC91Du2TZ0/Tq/3mdLv+LzaVQcvVWDIaLfMklFwIXLyOt6Kn
-         B5EEf5ia1Trfzz+f/dpNf0mW8WtWyt+RIIISfl/sSJcEqAmVHk9vXsz4/Du/66r4pyDb
-         lD5tQN2FDHpHuRR2j0sTReSOXBaSI39wMnWeM=
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Rik van Riel <riel@redhat.com>, Nick Piggin <npiggin@suse.de>
-Subject: [RFC] remove page_table_lock in anon_vma_prepare
-Date: Fri,  5 Jun 2009 23:35:53 +0900
-Message-Id: <1244212553-21629-1-git-send-email-minchan.kim@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
+	Fri, 5 Jun 2009 10:36:05 -0400
+Received: from ozlabs.org ([203.10.76.45]:47246 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752689AbZFEOgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 10:36:03 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [RFC PATCH v2 00/19] virtual-bus
+Date: Sat, 6 Jun 2009 00:05:46 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Gregory Haskins <gregory.haskins@gmail.com>,
+       "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
+       linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, netdev@vger.kernel.org,
+       kvm@vger.kernel.org, bhutchings@solarflare.com, andi@firstfloor.org,
+       gregkh@suse.de, herber@gondor.apana.org.au, chrisw@sous-sol.org,
+       shemminger@vyatta.com
+References: <20090409155200.32740.19358.stgit@dev.haskins.net> <200906051425.02924.rusty@rustcorp.com.au> <4A290800.1030803@novell.com>
+In-Reply-To: <4A290800.1030803@novell.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906060005.47127.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As I looked over the page_table_lock, it related to page table not anon_vma
+On Fri, 5 Jun 2009 09:26:48 pm Gregory Haskins wrote:
+> Hi Rusty,
+>
+> Rusty Russell wrote:
+> > On Fri, 5 Jun 2009 04:19:17 am Gregory Haskins wrote:
+> >> Avi Kivity wrote:
+> >>> Gregory Haskins wrote:
+> >>> One idea is similar to signalfd() or eventfd()
+> >>
+> >> And thus the "kvm-eventfd" (irqfd/iosignalfd) interface project was
+> >> born. ;)
+> >
+> > The lguest patch queue already has such an interface :)
+>
+> Cool!  Ultimately I think it will be easier if both lguest+kvm support
+> the same eventfd notion so this is good you are already moving in the
+> same direction.
 
-I think anon_vma->lock can protect race against threads.
-Do I miss something ?
+Not really; lguest doesn't do PCI.
 
-If I am right, we can remove unnecessary page_table_lock holding
-in anon_vma_prepare. We can get performance benefit. 
+> > And I have a partially complete in-kernel virtio_pci patch with the same
+> > trick.
+>
+> I thought lguest didn't use pci?  Or do you just mean that you have an
+> in-kernel virtio-net for lguest?
 
-Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Rik van Riel <riel@redhat.com>
-Cc: Nick Piggin <npiggin@suse.de>
----
- mm/rmap.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+No, this was for kvm.  Sorry for the confusion.
 
-diff --git a/mm/rmap.c b/mm/rmap.c
-index b5c6e12..65b4877 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -113,14 +113,11 @@ int anon_vma_prepare(struct vm_area_struct *vma)
- 		}
- 		spin_lock(&anon_vma->lock);
- 
--		/* page_table_lock to protect against threads */
--		spin_lock(&mm->page_table_lock);
- 		if (likely(!vma->anon_vma)) {
- 			vma->anon_vma = anon_vma;
- 			list_add_tail(&vma->anon_vma_node, &anon_vma->head);
- 			allocated = NULL;
- 		}
--		spin_unlock(&mm->page_table_lock);
- 
- 		spin_unlock(&anon_vma->lock);
- 		if (unlikely(allocated))
--- 
-1.5.6.5
+> Other than the potential rcu issues that Paul already addressed, looks
+> good.  FWIW: this looks like what we are calling "iosignalfd" on the kvm
+> land (unless I am misunderstanding).  Do you have the equivalent of
+> "irqfd" going the other way?
 
+Yes; lguest uses write() (offset indicates cpu #) rather than ioctls, but 
+anyone can do the LHREQ_IRQ write to queue an interrupt for delivery.
+
+So the threads just get the same /dev/lguest fd and it's simple.
+
+Thanks!
+Rusty.
