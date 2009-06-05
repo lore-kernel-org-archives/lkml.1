@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754166AbZFEWRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbZFEWU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754166AbZFEWRT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 18:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbZFEWRF
+	id S1755238AbZFEWU0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 18:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbZFEWUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 18:17:05 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:38299 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752639AbZFEWRD (ORCPT
+	Fri, 5 Jun 2009 18:20:16 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:55430 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751247AbZFEWUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 18:17:03 -0400
-Date: Sat, 6 Jun 2009 00:19:20 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: dubious section mismatch test (was Re: [PULL] soc-camera: one commit as v4l2-dev preparation)
-Message-ID: <20090605221920.GL29008@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0905071841331.9460@axis700.grange> <20090509062726.22d18182@pedra.chehab.org> <Pine.LNX.4.64.0905091430100.3515@axis700.grange> <20090509165416.GA25534@uranus.ravnborg.org> <Pine.LNX.4.64.0905092113280.10748@axis700.grange>
-Mime-Version: 1.0
+	Fri, 5 Jun 2009 18:20:14 -0400
+Date: Fri, 5 Jun 2009 15:20:04 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "travis@sgi.com" <travis@sgi.com>, "steiner@sgi.com" <steiner@sgi.com>,
+       Gary Hade <garyhade@us.ibm.com>, lcm@us.ibm.com
+Subject: Re: [patch] x64: Avoid irq_chip mask/unmask in fixup_irqs for
+	interrupt-remapping
+Message-ID: <20090605222004.GE7514@us.ibm.com>
+References: <1244141989.27006.10369.camel@localhost.localdomain> <m1iqjbd243.fsf@fess.ebiederm.org> <1244164694.27006.10374.camel@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0905092113280.10748@axis700.grange>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1244164694.27006.10374.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 10, 2009 at 08:33:03PM +0200, Guennadi Liakhovetski wrote:
-> On Sat, 9 May 2009, Sam Ravnborg wrote:
-> 
-> > On Sat, May 09, 2009 at 06:13:13PM +0200, Guennadi Liakhovetski wrote:
-> > > On Sat, 9 May 2009, Mauro Carvalho Chehab wrote:
-> > > 
-> > > > WARNING: /home/v4l/master/v4l/soc_camera.o(.data+0x0): Section mismatch in reference from the variable soc_camera_pdrv to the function .devinit.text:soc_camera_pdrv_probe()
-> > > > The variable soc_camera_pdrv references
-> > > > the function __devinit soc_camera_pdrv_probe()
-> > > > If the reference is valid then annotate the
-> > > > variable with __init* (see linux/init.h) or name the variable:
-> > > > *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
-> > > > 
-> > > > WARNING: /home/v4l/master/v4l/soc_camera.o(.data+0x8): Section mismatch in reference from the variable soc_camera_pdrv to the function .devexit.text:soc_camera_pdrv_remove()
-> > > > The variable soc_camera_pdrv references
-> > > > the function __devexit soc_camera_pdrv_remove()
-> > > > If the reference is valid then annotate the
-> > > > variable with __exit* (see linux/init.h) or name the variable:
-> > > > *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
-> > > 
-> > > FWIW, I find this test dubious. Matching on symbol names doesn't seem like 
-> > > a good idea to me. Can we introduce a new marker instead something like
-> > > 
-> > > static struct whatever_driver __driver driver = {
-> > > 	.probe	= my_probe,
-> > > 	.remove	= __exit_p(my_remove),
-> > > };
-> > > 
-> > > to put them in a new special section? Or is there a better solution?
+On Thu, Jun 04, 2009 at 06:18:14PM -0700, Suresh Siddha wrote:
+> On Thu, 2009-06-04 at 16:13 -0700, Eric W. Biederman wrote:
+> > Suresh Siddha <suresh.b.siddha@intel.com> writes:
 > > 
-> > We already have that:
-> > __refdata would be your choice in this case.
+> > > From: Suresh Siddha <suresh.b.siddha@intel.com>
+> > > Subject: x64: Avoid irq_chip mask/unmask in fixup_irqs for interrupt-remapping
+> > >
+> > > In the presence of interrupt-remapping, irqs will be migrated in the
+> > > process context and we don't do (and there is no need to) irq_chip mask/unmask
+> > > while migrating the interrupt.
+> > >
+> > > Similarly fix the fixup_irqs() that get called during cpu offline and avoid
+> > > calling irq_chip mask/unmask for irqs that are ok to be migrated in the
+> > > process context.
+> > >
+> > > While we didn't observe any race condition with the existing code,
+> > > this change takes complete advantage of interrupt-remapping in
+> > > the newer generation platforms and avoids any potential HW lockup's
+> > > (that often worry Eric :)
+> > 
+> > You now apparently fail to migrate the irq threads in tandem with
+> > the rest of the irqs.
 > 
-> Aha, great! Then also the warning text should be changed, shouldn't it?
+> Eric, Are you referring to Gary's issues? As far as I understand, they
+> don't happen in the presence of interrupt-remapping.
 
-Yep - included __refdata in the warning now.
+Suresh,
+We do not currently have the h/w on which to test this assertion
+but it seems like there is a good chance that at least the race that
+  http://lkml.org/lkml/2009/6/2/377
+fixes could reproduce there.
 
-	Sam
+The other problem that is repaired by
+  http://lkml.org/lkml/2009/6/2/378
+depends on the i/o redirection table write with remote IRR bit
+set lockup anomaly that the interrupt-remapping code may avoid
+or perhaps is not even present with that h/w.  My proposed fix
+for the problem is based on previous interrupt-remapping code
+that you recently removed with
+  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=0280f7c416c652a2fd95d166f52b199ae61122c0
+If I correctly understand your justification for the change
+it sounds like the interrupt-remapping code now "avoids" the problem.
+
+Thanks,
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
