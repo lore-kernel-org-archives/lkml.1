@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315AbZFEQsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbZFEQu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754315AbZFEQsn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 12:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbZFEQse
+	id S1756002AbZFEQu1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 12:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZFEQuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 12:48:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57472 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752676AbZFEQse (ORCPT
+	Fri, 5 Jun 2009 12:50:18 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:49472 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752733AbZFEQuR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 12:48:34 -0400
-Date: Fri, 5 Jun 2009 09:48:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alexey Dobriyan <adobriyan@gmail.com>
-cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matt Helsley <matthltc@us.ibm.com>, xemul@parallels.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       dave@linux.vnet.ibm.com, mingo@elte.hu, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 1/9] exec_path 1/9: introduce ->exec_path and switch
- /proc/*/exe
-In-Reply-To: <20090605160943.GA5262@x200.localdomain>
-Message-ID: <alpine.LFD.2.01.0906050942450.6847@localhost.localdomain>
-References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org> <20090531215427.GA29534@x200.localdomain> <20090531151953.8f8b14b5.akpm@linux-foundation.org> <20090603230422.GB853@x200.localdomain> <20090605104517.GA11713@infradead.org>
- <alpine.LFD.2.01.0906050808551.6847@localhost.localdomain> <20090605154147.GA16766@x200.localdomain> <alpine.LFD.2.01.0906050848520.6847@localhost.localdomain> <20090605160943.GA5262@x200.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Fri, 5 Jun 2009 12:50:17 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: linux-kernel@vger.kernel.org
+Subject: [Compile Warning] 2.6.30-rc8 build
+Date: Fri, 5 Jun 2009 11:50:15 -0500
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906051150.17889.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Group;
 
+I can't argue with gcc on this one either:
 
-On Fri, 5 Jun 2009, Alexey Dobriyan wrote:
-> 
-> It's borrowed by kernel thread of course, not userspace task.
+drivers/scsi/sd.c: In function 'sd_read_capacity':
+drivers/scsi/sd.c:1451: warning: comparison is always false due to limited range of data type
 
-.. and even if it is, what's the problem? 
+It reads to my eyes as if the function can never
+select read_capacity_16 for very large devices.
 
-That kernel thread has borroed whe VM for a while. It effectively _is_ a 
-thread of the process now. So it's technically not even wrong to 
-explicitly allow things like /proc/*/exe to see it as such.
+Suggestions?
 
-But you can hide it by just checking some flag in the thread structure if 
-you really want to.
-
-But when creating a regular thread, you should _not_ need to take a 
-spinlock and duplicate the executable path!
-
-		Linus
+Mike
