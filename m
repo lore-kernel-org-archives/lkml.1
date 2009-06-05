@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755722AbZFELPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZFELRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755722AbZFELPx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 07:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZFELNq
+	id S1756014AbZFELRA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 07:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755172AbZFELOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 07:13:46 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:36839 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754593AbZFELNl (ORCPT
+	Fri, 5 Jun 2009 07:14:34 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:49436 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755045AbZFELOb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 07:13:41 -0400
+	Fri, 5 Jun 2009 07:14:31 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Al Viro <viro@ZenIV.linux.org.uk>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>, users@nilfs.org,
-       KONISHI Ryusuke <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [PATCH v2.1 11/17] NILFS: do not manipulate s_dirt directly
-Date: Fri,  5 Jun 2009 16:05:49 +0300
-Message-Id: <1244207155-2092-12-git-send-email-dedekind@infradead.org>
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Subject: [PATCH v2.1 13/17] SYSV: do not manipulate s_dirt directly
+Date: Fri,  5 Jun 2009 16:05:51 +0300
+Message-Id: <1244207155-2092-14-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
 References: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 05 Jun 2009 11:13:08.0859 (UTC) FILETIME=[9B514CB0:01C9E5CE]
+X-OriginalArrivalTime: 05 Jun 2009 11:13:12.0937 (UTC) FILETIME=[9DBF8D90:01C9E5CE]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,95 +32,79 @@ From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 ... use new VFS helpers instead.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: users@nilfs.org
-Cc: KONISHI Ryusuke <konishi.ryusuke@lab.ntt.co.jp>
+Cc: Christoph Hellwig <hch@infradead.org>
 ---
- fs/nilfs2/segment.c   |    2 +-
- fs/nilfs2/super.c     |   18 +++++++++---------
- fs/nilfs2/the_nilfs.c |    2 +-
- 3 files changed, 11 insertions(+), 11 deletions(-)
+ fs/sysv/inode.c |    8 ++++----
+ fs/sysv/super.c |    2 +-
+ fs/sysv/sysv.h  |    2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
-index fb70ec3..0dcac79 100644
---- a/fs/nilfs2/segment.c
-+++ b/fs/nilfs2/segment.c
-@@ -2069,7 +2069,7 @@ static void nilfs_segctor_complete_write(struct nilfs_sc_info *sci)
- 	if (update_sr) {
- 		nilfs_set_last_segment(nilfs, segbuf->sb_pseg_start,
- 				       segbuf->sb_sum.seg_seq, nilfs->ns_cno++);
--		sbi->s_super->s_dirt = 1;
-+		mark_sb_dirty(sbi->s_super);
+diff --git a/fs/sysv/inode.c b/fs/sysv/inode.c
+index a3f45fc..3c5ea5c 100644
+--- a/fs/sysv/inode.c
++++ b/fs/sysv/inode.c
+@@ -31,7 +31,7 @@
+ #include <asm/byteorder.h>
+ #include "sysv.h"
  
- 		clear_bit(NILFS_SC_HAVE_DELTA, &sci->sc_flags);
- 		clear_bit(NILFS_SC_DIRTY, &sci->sc_flags);
-diff --git a/fs/nilfs2/super.c b/fs/nilfs2/super.c
-index 7262e84..6f3707b 100644
---- a/fs/nilfs2/super.c
-+++ b/fs/nilfs2/super.c
-@@ -307,7 +307,7 @@ int nilfs_commit_super(struct nilfs_sb_info *sbi, int dupsb)
- 		memcpy(sbp[1], sbp[0], nilfs->ns_sbsize);
- 		nilfs->ns_sbwtime[1] = t;
+-/* This is only called on sync() and umount(), when s_dirt=1. */
++/* This is only called on sync() and umount(), when the super block is dirty. */
+ static void sysv_write_super(struct super_block *sb)
+ {
+ 	struct sysv_sb_info *sbi = SYSV_SB(sb);
+@@ -55,7 +55,7 @@ static void sysv_write_super(struct super_block *sb)
+ 		mark_buffer_dirty(sbi->s_bh2);
  	}
--	sbi->s_super->s_dirt = 0;
-+	mark_sb_clean(sbi->s_super);
- 	return nilfs_sync_super(sbi, dupsb);
+ clean:
+-	sb->s_dirt = 0;
++	mark_sb_clean(sb);
+ 	unlock_kernel();
+ 	unlock_super(sb);
  }
- 
-@@ -318,7 +318,7 @@ static void nilfs_put_super(struct super_block *sb)
+@@ -67,7 +67,7 @@ static int sysv_remount(struct super_block *sb, int *flags, char *data)
+ 	if (sbi->s_forced_ro)
+ 		*flags |= MS_RDONLY;
+ 	if (!(*flags & MS_RDONLY))
+-		sb->s_dirt = 1;
++		mark_sb_dirty(sb);
+ 	unlock_super(sb);
+ 	return 0;
+ }
+@@ -78,7 +78,7 @@ static void sysv_put_super(struct super_block *sb)
  
  	lock_kernel();
  
 -	if (sb->s_dirt)
 +	if (is_sb_dirty(sb))
- 		nilfs_write_super(sb);
+ 		sysv_write_super(sb);
  
- 	nilfs_detach_segment_constructor(sbi);
-@@ -344,17 +344,17 @@ static void nilfs_put_super(struct super_block *sb)
-  * @sb: super_block
-  *
-  * nilfs_write_super() gets a fs-dependent lock, writes super block(s), and
-- * clears s_dirt.  This function is called in the section protected by
-- * lock_super().
-+ * clears the superblock.  This function is called in the section protected
-+ * by lock_super().
-  *
-- * The s_dirt flag is managed by each filesystem and we protect it by ns_sem
-- * of the struct the_nilfs.  Lock order must be as follows:
-+ * The super block s_dirt flag is managed by each filesystem and we protect
-+ * it by ns_sem of the struct the_nilfs.  Lock order must be as follows:
-  *
-  *   1. lock_super()
-  *   2.    down_write(&nilfs->ns_sem)
-  *
-- * Inside NILFS, locking ns_sem is enough to protect s_dirt and the buffer
-- * of the super block (nilfs->ns_sbp[]).
-+ * Inside NILFS, locking ns_sem is enough to protect the super block s_dirt
-+ * and the buffer of the super block (nilfs->ns_sbp[]).
-  *
-  * In most cases, VFS functions call lock_super() before calling these
-  * methods.  So we must be careful not to bring on deadlocks when using
-@@ -383,7 +383,7 @@ static void nilfs_write_super(struct super_block *sb)
- 		dupsb = sbp[1] && t > nilfs->ns_sbwtime[1] + NILFS_ALTSB_FREQ;
- 		nilfs_commit_super(sbi, dupsb);
- 	}
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- 	up_write(&nilfs->ns_sem);
+ 	if (!(sb->s_flags & MS_RDONLY)) {
+diff --git a/fs/sysv/super.c b/fs/sysv/super.c
+index 5a903da..f0d3679 100644
+--- a/fs/sysv/super.c
++++ b/fs/sysv/super.c
+@@ -347,7 +347,7 @@ static int complete_read_super(struct super_block *sb, int silent, int size)
+ 		sb->s_flags |= MS_RDONLY;
+ 	if (sbi->s_truncate)
+ 		sb->s_root->d_op = &sysv_dentry_operations;
+-	sb->s_dirt = 1;
++	mark_sb_dirty(sb);
+ 	return 1;
  }
  
-diff --git a/fs/nilfs2/the_nilfs.c b/fs/nilfs2/the_nilfs.c
-index 7f65b3b..5b02f50 100644
---- a/fs/nilfs2/the_nilfs.c
-+++ b/fs/nilfs2/the_nilfs.c
-@@ -278,7 +278,7 @@ int load_nilfs(struct the_nilfs *nilfs, struct nilfs_sb_info *sbi)
- 			goto failed;
- 		}
- 		if (ri.ri_need_recovery == NILFS_RECOVERY_SR_UPDATED)
--			sbi->s_super->s_dirt = 1;
-+			mark_sb_dirty(sbi->s_super);
- 	}
+diff --git a/fs/sysv/sysv.h b/fs/sysv/sysv.h
+index 5784a31..4d1b784 100644
+--- a/fs/sysv/sysv.h
++++ b/fs/sysv/sysv.h
+@@ -118,7 +118,7 @@ static inline void dirty_sb(struct super_block *sb)
+ 	mark_buffer_dirty(sbi->s_bh1);
+ 	if (sbi->s_bh1 != sbi->s_bh2)
+ 		mark_buffer_dirty(sbi->s_bh2);
+-	sb->s_dirt = 1;
++	mark_sb_dirty(sb);
+ }
  
- 	set_nilfs_loaded(nilfs);
+ 
 -- 
 1.6.0.6
 
