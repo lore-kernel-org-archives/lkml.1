@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbZFEI3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbZFEIeD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756391AbZFEI3G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 04:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbZFEI2r
+	id S1755209AbZFEIeD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 04:34:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZFEIdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 04:28:47 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50848 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751398AbZFEI2q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 04:28:46 -0400
-Message-ID: <4A28D738.8010202@jp.fujitsu.com>
-Date: Fri, 05 Jun 2009 17:28:40 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -v4] x86: MCE: Re-implement MCE log ring buffer as per-CPU
- ring buffer
-References: <1244085090.8361.360.camel@yhuang-dev.sh.intel.com>	 <4A28C2E2.4090309@jp.fujitsu.com> <1244189284.8361.514.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1244189284.8361.514.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+	Fri, 5 Jun 2009 04:33:45 -0400
+Received: from sh.osrg.net ([192.16.179.4]:52275 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751379AbZFEIdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 04:33:43 -0400
+Date: Fri, 5 Jun 2009 17:33:14 +0900
+To: mingo@elte.hu, lethal@linux-sh.org
+Cc: joerg.roedel@amd.com, just.for.lkml@googlemail.com, hancockrwd@gmail.com,
+       jens.axboe@oracle.com, bharrosh@panasas.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: [PATCH] dma-debug: disable DMA_API_DEBUG for now
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090605173232N.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 05 Jun 2009 17:33:15 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying wrote:
-> On Fri, 2009-06-05 at 15:01 +0800, Hidetoshi Seto wrote:
->> Huang Ying wrote:
->>>  struct mce_log {
->>> -	char signature[12]; /* "MACHINECHECK" */
->>> +	char signature[12]; /* "MACHINECHEC2" */
->>>  	unsigned len;	    /* = MCE_LOG_LEN */
->>> -	unsigned next;
->>>  	unsigned flags;
->>>  	unsigned pad0;
->>> -	struct mce entry[MCE_LOG_LEN];
->>> +	struct mce_log_cpu *mcelog_cpus;
->>>  };
->> What is this *mcelog_cpus to be used for?
->> It seems it will point one of per-CPU buffers (maybe cpu#0's buffer)
->> if I have read the following mce_log_init() correctly.
-> 
-> It is mainly used by something like kdump, which can search
-> "MACHINECHEC2", and analyze mce_log. mcelog_cpus can help kdump find the
-> real mcelog storage.
+dma-debugs wrongly assumes that no multiple DMA transfers are
+performed against the same dma address on one device at the same
+time. However it's true only with hardware IOMMUs. For example, an
+application can easily send the same buffer twice with different
+lengths to one device by using DIO and AIO. If these requests are not
+unmapped in the same order in which they were mapped,
+hash_bucket_find() finds a wrong entry and gives a false warning.
 
-Hum, but it help tools only to find one of buffers, not to find all.
+We should fix this before 2.6.30 release. Seems that there is no
+easy way to fix it. I think that it's better to just disable
+dma-debug for now.
 
-I think it would be better help for tools if we have another signature
-on struct mce_log_cpu, e.g.: 
+Torsten Kaiser found this bug with the RAID1 configuration:
 
- +struct mce_log_cpu {
-+ 	char signature[**];	/* "MCE_LOG_CPU_VER_1" or so */
-+	__u32 cpuid;		/* cpuid or extcpu, same as struct mce */
- +	int head;
- +	int tail;
- +	unsigned long flags;
- +	struct mce entry[MCE_LOG_LEN];
- +};
+http://marc.info/?t=124336541900008&r=1&w=2
 
-How about this?
+Reported-by: Torsten Kaiser <just.for.lkml@googlemail.com>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/sh/Kconfig  |    1 -
+ arch/x86/Kconfig |    1 -
+ 2 files changed, 0 insertions(+), 2 deletions(-)
 
-
-Thanks,
-H.Seto
+diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+index e7390dd..4fb19d7 100644
+--- a/arch/sh/Kconfig
++++ b/arch/sh/Kconfig
+@@ -14,7 +14,6 @@ config SUPERH
+ 	select HAVE_GENERIC_DMA_COHERENT
+ 	select HAVE_IOREMAP_PROT if MMU
+ 	select HAVE_ARCH_TRACEHOOK
+-	select HAVE_DMA_API_DEBUG
+ 	help
+ 	  The SuperH is a RISC processor targeted for use in embedded systems
+ 	  and consumer electronics; it was also used in the Sega Dreamcast
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index a6efe0a..b3cf490 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -42,7 +42,6 @@ config X86
+ 	select HAVE_GENERIC_DMA_COHERENT if X86_32
+ 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
+ 	select USER_STACKTRACE_SUPPORT
+-	select HAVE_DMA_API_DEBUG
+ 	select HAVE_KERNEL_GZIP
+ 	select HAVE_KERNEL_BZIP2
+ 	select HAVE_KERNEL_LZMA
+-- 
+1.6.0.6
 
