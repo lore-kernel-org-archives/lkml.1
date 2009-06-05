@@ -1,108 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZFES1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756314AbZFES2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbZFES1M (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 14:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbZFES05
+	id S1756314AbZFES2n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 14:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbZFES2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 14:26:57 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:41559 "EHLO e1.ny.us.ibm.com"
+	Fri, 5 Jun 2009 14:28:34 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43719 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752651AbZFES04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 14:26:56 -0400
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: linux-usb@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Arnd Bergmann <arnd@arndb.de>
-Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux-Next <linux-next@vger.kernel.org>, Jon Smirl <jonsmirl@gmail.com>,
-       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-       Roman Weissgaerber <weissg@vienna.at>,
+	id S1752469AbZFES2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 14:28:33 -0400
+Message-ID: <4A296343.4050005@suse.com>
+Date: Fri, 05 Jun 2009 14:26:11 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
        Stephen Rothwell <sfr@canb.auug.org.au>,
-       Subrata Modak <subrata@linux.vnet.ibm.com>, kernel@wantstofly.org
-Date: Fri, 05 Jun 2009 13:26:51 -0500
-Message-Id: <20090605182651.24094.36577.sendpatchset@elm3a191.beaverton.ibm.com>
-Subject: Re: [BUILD FAILURE 02/04] Next June 04:PPC64 randconfig [drivers/usb/host/ohci-hcd.o]
+       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Subject: Re: [PATCH 1/2] kill-the-bkl/reiserfs: acquire the inode mutex safely
+References: <1242496922-6330-1-git-send-email-fweisbec@gmail.com>	 <1242496922-6330-2-git-send-email-fweisbec@gmail.com> <9b1675090905292005p2b53de7dy9e36f84368d76f01@mail.gmail.com>
+In-Reply-To: <9b1675090905292005p2b53de7dy9e36f84368d76f01@mail.gmail.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On Thu, 2009-06-04 at 10:07 -0400, Jon Smirl wrote:
->On Thu, Jun 4, 2009 at 9:31 AM, Subrata Modak
-> <subrata@linux.vnet.ibm.com> wrote:
-> > CC      drivers/usb/host/ohci-hcd.o
-> > In file included from drivers/usb/host/ohci-hcd.c:1060:
-> > drivers/usb/host/ohci-ppc-of.c:242:2: error: #error "No endianess selected for ppc-of-ohci"
-> > make[3]: *** [drivers/usb/host/ohci-hcd.o] Error 1
-> > make[2]: *** [drivers/usb/host] Error 2
-> > make[1]: *** [drivers/usb] Error 2
-> > make: *** [drivers] Error 2
-> >
-> > I reported this earlier, and there were some discussions:
-> > http://groups.google.co.kr/group/linux.kernel/browse_thread/thread/edff9d5572d3d225
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Trenton D. Adams wrote:
+> On Sat, May 16, 2009 at 12:02 PM, Frederic Weisbecker
+> <fweisbec@gmail.com> wrote:
+>> While searching a pathname, an inode mutex can be acquired
+>> in do_lookup() which calls reiserfs_lookup() which in turn
+>> acquires the write lock.
+>>
+>> On the other side reiserfs_fill_super() can acquire the write_lock
+>> and then call reiserfs_lookup_privroot() which can acquire an
+>> inode mutex (the root of the mount point).
+>>
+>> So we theoretically risk an AB - BA lock inversion that could lead
+>> to a deadlock.
+>>
+>> As for other lock dependencies found since the bkl to mutex
+>> conversion, the fix is to use reiserfs_mutex_lock_safe() which
+>> drops the lock dependency to the write lock.
+>>
 > 
-> Proposed patch by Arnd should fix this. It has not been merged.
-> http://lkml.org/lkml/2009/4/22/49
+> I'm curious, did this get applied, and is it related to the following?
+>  I was having these in 2.6.30-rc3.  I am now on 2.6.30-rc7 as of
+> today.  I haven't seen them today.  But then again, I only seen this
+> happen one time.
+> 
+> May 27 01:56:12 tdamac INFO: task pdflush:15370 blocked for more than
+> 120 seconds.
+> May 27 01:56:12 tdamac "echo 0 >
+> /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> May 27 01:56:12 tdamac pdflush       D ffff8800518a0000     0 15370      2
+> May 27 01:56:12 tdamac ffff880025023b50 0000000000000046
+> 0000000025023a90 000000000000d7a0
+> May 27 01:56:12 tdamac 0000000000004000 0000000000011440
+> 000000000000ca78 ffff880045e71568
+> May 27 01:56:12 tdamac ffff880045e7156c ffff8800518a0000
+> ffff880067f54230 ffff8800518a0380
+> May 27 01:56:12 tdamac Call Trace:
+> May 27 01:56:12 tdamac [<ffffffff80687d1b>] ? __mutex_lock_slowpath+0xe2/0x124
+> May 27 01:56:12 tdamac [<ffffffff80687d13>] __mutex_lock_slowpath+0xda/0x124
+> May 27 01:56:12 tdamac [<ffffffff8068809e>] mutex_lock+0x1e/0x36
+> May 27 01:56:12 tdamac [<ffffffff803087ae>] flush_commit_list+0x150/0x689
+> May 27 01:56:12 tdamac [<ffffffff8022f8e5>] ? __wake_up+0x43/0x50
+> May 27 01:56:12 tdamac [<ffffffff8030ad8a>] do_journal_end+0xb4a/0xd6c
+> May 27 01:56:12 tdamac [<ffffffff8023053d>] ? dequeue_entity+0x1b/0x1df
+> May 27 01:56:12 tdamac [<ffffffff8030b020>] journal_end_sync+0x74/0x7d
+> May 27 01:56:12 tdamac [<ffffffff802fd2fd>] reiserfs_sync_fs+0x41/0x67
+> May 27 01:56:12 tdamac [<ffffffff80688091>] ? mutex_lock+0x11/0x36
+> May 27 01:56:12 tdamac [<ffffffff802fd331>] reiserfs_write_super+0xe/0x10
+> May 27 01:56:12 tdamac [<ffffffff802a532a>] sync_supers+0x61/0xa6
+> May 27 01:56:12 tdamac [<ffffffff8027e140>] wb_kupdate+0x32/0x128
+> May 27 01:56:12 tdamac [<ffffffff8027ee7c>] pdflush+0x140/0x21f
+> May 27 01:56:12 tdamac [<ffffffff8027e10e>] ? wb_kupdate+0x0/0x128
+> May 27 01:56:12 tdamac [<ffffffff8027ed3c>] ? pdflush+0x0/0x21f
+> May 27 01:56:12 tdamac [<ffffffff8024fb26>] kthread+0x56/0x83
+> May 27 01:56:12 tdamac [<ffffffff8020beba>] child_rip+0xa/0x20
+> May 27 01:56:12 tdamac [<ffffffff8024fad0>] ? kthread+0x0/0x83
+> May 27 01:56:12 tdamac [<ffffffff8020beb0>] ? child_rip+0x0/0x20
 
-Correct, it fixes the issue. However, since few changes might have gone
-to the Kconfig, the patch does not apply cleanly. Below is the patch, just
-a retake of the earlier one, but on the latest code. 
+Can you capture a sysrq+t when this happens? The lock is properly
+released, but I have a hunch that another thread is doing ordered
+writeback that's taking a while. That happens under the j_commit_mutex.
 
-David,
+- -Jeff
 
-Can you please pickup the following patch ?
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>,
-Resent-by: Subrata Modak <subrata@linux.vnet.ibm.com>
----
-
---- linux-2.6.30-rc8/drivers/usb/host/Kconfig.orig	2009-06-05 10:31:30.000000000 -0500
-+++ linux-2.6.30-rc8/drivers/usb/host/Kconfig	2009-06-05 10:37:53.000000000 -0500
-@@ -181,26 +181,26 @@ config USB_OHCI_HCD_PPC_SOC
- 	  Enables support for the USB controller on the MPC52xx or
- 	  STB03xxx processor chip.  If unsure, say Y.
- 
--config USB_OHCI_HCD_PPC_OF
--	bool "OHCI support for PPC USB controller on OF platform bus"
--	depends on USB_OHCI_HCD && PPC_OF
--	default y
--	---help---
--	  Enables support for the USB controller PowerPC present on the
--	  OpenFirmware platform bus.
--
- config USB_OHCI_HCD_PPC_OF_BE
--	bool "Support big endian HC"
--	depends on USB_OHCI_HCD_PPC_OF
--	default y
-+	bool "OHCI support for OF platform bus (big endian)"
-+	depends on USB_OHCI_HCD && PPC_OF
- 	select USB_OHCI_BIG_ENDIAN_DESC
- 	select USB_OHCI_BIG_ENDIAN_MMIO
-+	---help---
-+	Enables support for big-endian USB controllers present on the
-+	OpenFirmware platform bus.
- 
- config USB_OHCI_HCD_PPC_OF_LE
--	bool "Support little endian HC"
--	depends on USB_OHCI_HCD_PPC_OF
--	default n
-+	bool "OHCI support for OF platform bus (little endian)"
-+	depends on USB_OHCI_HCD && PPC_OF
- 	select USB_OHCI_LITTLE_ENDIAN
-+	---help---
-+	Enables support for little-endian USB controllers present on the
-+	OpenFirmware platform bus.
-+
-+	config USB_OHCI_HCD_PPC_OF
-+	bool
-+	default USB_OHCI_HCD_PPC_OF_BE || USB_OHCI_HCD_PPC_OF_LE
- 
- config USB_OHCI_HCD_PCI
- 	bool "OHCI support for PCI-bus USB controllers"
-
----
-Regards--
-Subrata
->
+iEYEARECAAYFAkopY0MACgkQLPWxlyuTD7IM0gCdGepeXFcB68gcCaXCb3Z/KTg9
+F5MAn3rOomgVzmXfI4DKtIHqKxwLNDj0
+=qzqo
+-----END PGP SIGNATURE-----
