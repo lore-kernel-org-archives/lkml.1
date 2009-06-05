@@ -1,69 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZFEMoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753082AbZFEMoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752703AbZFEMoB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 08:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbZFEMnw
+	id S1753082AbZFEMoW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 08:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbZFEMoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 08:43:52 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:63265 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751088AbZFEMnv convert rfc822-to-8bit (ORCPT
+	Fri, 5 Jun 2009 08:44:05 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:51399 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752743AbZFEMoE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 08:43:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bqmBDWWRfj1BW6uY1TfJYNX3xEZvrLU66W7yyjoWy+qZ7deqs34eeadATRUSS3ktgd
-         pIqTpamLnVCzR41uVCHwrnWjakbbB5QwRJw66niVCdXfcPUpWvkP+P7WCVTgWHQvkFXa
-         MbGff7CE+RoltjacV3vDtroI9npDQNS7CyPrs=
-MIME-Version: 1.0
-In-Reply-To: <20090605114245.175499e1@lxorguk.ukuu.org.uk>
-References: <c5bd819b0906021525l13ee9282j1fb270e141985f66@mail.gmail.com>
-	 <c5bd819b0906030435w466368cbsd48be91a97597437@mail.gmail.com>
-	 <20090603131407.57c490ed@lxorguk.ukuu.org.uk>
-	 <c5bd819b0906030552w6f23185etb394f83c8b630e6@mail.gmail.com>
-	 <20090603140140.491a8ea8@lxorguk.ukuu.org.uk>
-	 <c5bd819b0906030639o5f9c34ffg500e132d3a0b5117@mail.gmail.com>
-	 <c5bd819b0906040750w75e0389cod2a03b89ce838d1b@mail.gmail.com>
-	 <20090605100505.41b3b818@lxorguk.ukuu.org.uk>
-	 <c5bd819b0906050335i4e813887sc8f4d901da86a1aa@mail.gmail.com>
-	 <20090605114245.175499e1@lxorguk.ukuu.org.uk>
-Date: Fri, 5 Jun 2009 14:43:51 +0200
-Message-ID: <c5bd819b0906050543l42320f0r44e0306a7638b1b9@mail.gmail.com>
-Subject: Re: Kernel 2.6.30rc7 limits IDE to UDMA33
-From: Grozdan <neutrino8@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: hancockrwd@gmail.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 5 Jun 2009 08:44:04 -0400
+Subject: Re: [PATCH] eeepc-laptop: enable camera by default
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Corentin Chary <corentin.chary@gmail.com>
+Cc: acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <71cd59b00906050446g7310d24el94f0d137dc0e0ecf@mail.gmail.com>
+References: <Pine.LNX.4.64.0906051157460.22218@melkki.cs.Helsinki.FI>
+	 <71cd59b00906050446g7310d24el94f0d137dc0e0ecf@mail.gmail.com>
+Date: Fri, 05 Jun 2009 15:44:04 +0300
+Message-Id: <1244205844.23533.21.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/5 Alan Cox <alan@lxorguk.ukuu.org.uk>:
->> I've relayed your reply to the pata_amd user on the forum. As for my
->> case with pata_via, until this is fixed, is there any way to force it
->> to use a higher UDMA? Is there a flag that can be passed in, for
->
-> In your case given the BIOS appears to be informing us you have a 40wire
-> cable there isn't much that can be fixed
->
->> example, in /sys somewhere? hdparm fails to set a higher UDMA and I
->> looked at sdparm but don't see anything in it to increase UDMA...
->
-> Tejun some time ago added stuff to override all of these things:
->
-> See Documentation/kernel-parameters.txt
->
->        libata.force=
->
-> which will let you override all sorts of autodetection for quirky boards
->
+Hi Corentin,
 
-Thanks, I will try out the kernel params. However, I still wonder why
-older kernels have no problems setting the correct UDMA while 2.6.30
-does have problems. Something must have definitely changed in this
-latest kernel. I'll go dig in my BIOS to see if I may need to
-change/force something.
+On Fri, 2009-06-05 at 13:46 +0200, Corentin Chary wrote:
+> First, I think a one line
+> set_acpi(CM_ASL_CAMERA, 1);
+> with a small comment is better. (If it fails, it's because there no
+> camera, so we don't mind).
+
+OK, I've included an updated version of the patch.
+
+On Fri, 2009-06-05 at 13:46 +0200, Corentin Chary wrote:
+> Anyway, I'm not sure it's a good idea to enable the camera by default.
+> It depends how many power the camera is using (when idle). Coud you
+> check that (with power top maybe ?).
+
+People who prefer power savings over functional camera can always
+disable it. If you look at the amount of "my camera doesn't" work bug
+reports, I think it's pretty evident that we should enable it by default
+or provide a config option that does it.
+
+That said, I am more than happy to measure this but I need a little bit
+more information to get started as I have never used powertop. So what
+is it exactly you want me to do?
+
+			Pekka
+
+>From 8a0abd12147c18e8cbc939134af5ae40b44300f0 Mon Sep 17 00:00:00 2001
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+Date: Fri, 5 Jun 2009 11:30:07 +0300
+Subject: [PATCH] eeepc-laptop: enable camera by default
+
+If we leave the camera disabled by default, userspace programs (e.g.
+Skype, Cheese) leave the user out in the cold saying that the machine
+"has no camera." Therefore, it's better to enable camera by default and
+let people who really don't want it just disable the thing.
+
+Cc: <acpi4asus-user@lists.sourceforge.net>
+Cc: Len Brown <len.brown@intel.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ drivers/platform/x86/eeepc-laptop.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
+index 353a898..6a8426f 100644
+--- a/drivers/platform/x86/eeepc-laptop.c
++++ b/drivers/platform/x86/eeepc-laptop.c
+@@ -334,6 +334,19 @@ static int eeepc_bluetooth_rfkill_state(void *data, enum rfkill_state *state)
+ }
+ 
+ /*
++ * Camera helpers
++ */
++
++static void eeepc_enable_camera(void)
++{
++	/*
++	 * If the following call to set_acpi() fails, it's because there's no
++	 * camera so we can ignore the error.
++	 */
++	set_acpi(CM_ASL_CAMERA, 1);
++}
++
++/*
+  * Sys helpers
+  */
+ static int parse_arg(const char *buf, unsigned long count, int *val)
+@@ -996,6 +1009,9 @@ static int __init eeepc_laptop_init(void)
+ 	result = eeepc_hwmon_init(dev);
+ 	if (result)
+ 		goto fail_hwmon;
++
++	eeepc_enable_camera();
++
+ 	/* Register platform stuff */
+ 	result = platform_driver_register(&platform_driver);
+ 	if (result)
+-- 
+1.5.6.3
+
+
+
