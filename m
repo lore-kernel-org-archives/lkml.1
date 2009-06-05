@@ -1,118 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbZFESm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753011AbZFESpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753936AbZFESm6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 14:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbZFESmu
+	id S1753011AbZFESpj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 14:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZFESpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 14:42:50 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:15180 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751191AbZFESmu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 14:42:50 -0400
-X-Trace: 210465305/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.119.199/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.119.199
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApMCAGoDKUpPRXfH/2dsb2JhbAAI0WaECgU
-X-IronPort-AV: E=Sophos;i="4.41,312,1241391600"; 
-   d="scan'208";a="210465305"
-Date: Fri, 5 Jun 2009 19:26:37 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Minchan Kim <minchan.kim@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Rik van Riel <riel@redhat.com>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [RFC] remove page_table_lock in anon_vma_prepare
-In-Reply-To: <1244212553-21629-1-git-send-email-minchan.kim@gmail.com>
-Message-ID: <Pine.LNX.4.64.0906051906000.14826@sister.anvils>
-References: <1244212553-21629-1-git-send-email-minchan.kim@gmail.com>
+	Fri, 5 Jun 2009 14:45:31 -0400
+Received: from kroah.org ([198.145.64.141]:43855 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750876AbZFESpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 14:45:31 -0400
+Date: Fri, 5 Jun 2009 11:26:18 -0700
+From: Greg KH <greg@kroah.com>
+To: Subrata Modak <subrata@linux.vnet.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-Next <linux-next@vger.kernel.org>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [BUILD FAILURE 01/04] Next June 04:PPC64 randconfig
+	[drivers/staging/comedi/drivers.o]
+Message-ID: <20090605182618.GA11853@kroah.com>
+References: <20090605182625.24093.7808.sendpatchset@elm3a191.beaverton.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090605182625.24093.7808.sendpatchset@elm3a191.beaverton.ibm.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Jun 2009, Minchan Kim wrote:
-
-> As I looked over the page_table_lock, it related to page table not anon_vma
+On Fri, Jun 05, 2009 at 01:26:25PM -0500, Subrata Modak wrote:
+> >On Thu, 2009-06-04 at 22:40 +0200, Geert Uytterhoeven wrote:
+> >On Thu, Jun 4, 2009 at 20:07, Greg KH <greg@kroah.com> wrote:
+> > > On Thu, Jun 04, 2009 at 07:01:32PM +0530, Subrata Modak wrote:
+> > >> CC [M]  drivers/staging/comedi/drivers.o
+> > >> drivers/staging/comedi/drivers.c: In function ‘comedi_buf_alloc’:
+> > >> drivers/staging/comedi/drivers.c:496: error: ‘PAGE_KERNEL_NOCACHE’ undeclared (first use in this function)
+> > >> drivers/staging/comedi/drivers.c:496: error: (Each undeclared identifier is reported only once
+> > >> drivers/staging/comedi/drivers.c:496: error: for each function it appears in.)
+> > >> make[3]: *** [drivers/staging/comedi/drivers.o] Error 1
+> > >> make[2]: *** [drivers/staging/comedi] Error 2
+> > >> make[1]: *** [drivers/staging] Error 2
+> > >> make: *** [drivers] Error 2
+> > >>
+> > >> Is it still normal to expect this failure ?
+> > >
+> > > No.
+> > >
+> > >> I reported them long back during April:
+> > >> http://www.gossamer-threads.com/lists/linux/kernel/1065227,
+> > >
+> > > Yes, and I took some patches that were supposed to fix this.  I can't
+> > > duplicate this here, care to send a patch that would fix it?
 > 
-> I think anon_vma->lock can protect race against threads.
-> Do I miss something ?
+> I tried this. But, with some catch. ‘PAGE_KERNEL_NOCACHE’ seems to be the
+> choice for majority of architectures like frv, m32r, sh, x86, etc, as Geert
+> mentions below. However, i believe POWERPC defines it as ‘PAGE_KERNEL_NC‘
+> found at arch/powerpc/include/asm/pte-common.h.
 > 
-> If I am right, we can remove unnecessary page_table_lock holding
-> in anon_vma_prepare. We can get performance benefit. 
+> Paul/Banjamin,
+> Can you please confirm this ?
 > 
-> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Cc: Rik van Riel <riel@redhat.com>
-> Cc: Nick Piggin <npiggin@suse.de>
+> The below patch fixes the build error.
 
-No, NAK to this one.  Look above the context shown in the patch:
+Ick, that's a mess.
 
-		anon_vma = find_mergeable_anon_vma(vma);
-		allocated = NULL;
-		if (!anon_vma) {
-			anon_vma = anon_vma_alloc();
-			if (unlikely(!anon_vma))
-				return -ENOMEM;
-			allocated = anon_vma;
-		}
-		spin_lock(&anon_vma->lock);
+> +#ifdef __powerpc64__
+> +				vmap(pages, n_pages, VM_MAP,
+> +				PAGE_KERNEL_NC);
+> +#else
+>  				vmap(pages, n_pages, VM_MAP,
+>  				PAGE_KERNEL_NOCACHE);
+> +#endif
 
-So if find_mergeable_anon_vma failed to find a suitable neighbouring
-vma to share with, we'll have got the anon_vma from anon_vma_alloc().
+Should the comedi layer just not be using PAGE_KERNEL_NOCACHE here?  I
+can't believe that we need to do something like this in a driver.  What
+should the proper fix for this be?
 
-Two threads could perfectly well do that concurrently (mmap_sem is
-held only for reading), each allocating a separate fresh anon_vma,
-then they'd each do spin_lock(&anon_vma->lock), but on _different_
-anon_vmas, so wouldn't exclude each other at all: we need a common
-lock to exclude that race, and abuse page_table_lock for the purpose.
+thanks,
 
-(As I expect you've noticed, we used not to bother with the spin_lock
-on anon_vma->lock when we'd freshly allocated the anon_vma, it looks
-as if it's unnecessary.  But in fact Nick and Linus found there's a
-subtle reason why it is necessary even then - hopefully the git log
-explains it, or I could look up the mails if you want, but at this
-moment the details escape me.
-
-And do we need the page_table_lock even when find_mergeable_anon_vma
-succeeds?  That also looks as if it's unnecessary, but I've the ghost
-of a memory that it's needed even for that case: I seem to remember
-that there can be a benign race where find_mergeable_anon_vma called
-by concurrent threads could actually return different anon_vmas.
-That also is something I don't want to think too deeply into at
-this instant, but beg me if you wish!)
-
-Hugh
-
-> ---
->  mm/rmap.c |    3 ---
->  1 files changed, 0 insertions(+), 3 deletions(-)
-> 
-> diff --git a/mm/rmap.c b/mm/rmap.c
-> index b5c6e12..65b4877 100644
-> --- a/mm/rmap.c
-> +++ b/mm/rmap.c
-> @@ -113,14 +113,11 @@ int anon_vma_prepare(struct vm_area_struct *vma)
->  		}
->  		spin_lock(&anon_vma->lock);
->  
-> -		/* page_table_lock to protect against threads */
-> -		spin_lock(&mm->page_table_lock);
->  		if (likely(!vma->anon_vma)) {
->  			vma->anon_vma = anon_vma;
->  			list_add_tail(&vma->anon_vma_node, &anon_vma->head);
->  			allocated = NULL;
->  		}
-> -		spin_unlock(&mm->page_table_lock);
->  
->  		spin_unlock(&anon_vma->lock);
->  		if (unlikely(allocated))
-> -- 
-> 1.5.6.5
+greg k-h
