@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbZFEXol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757005AbZFEXow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756861AbZFEXol (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 19:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbZFEXlf
+	id S1757005AbZFEXow (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 19:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755973AbZFEXlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 19:41:35 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:45073 "EHLO
+	Fri, 5 Jun 2009 19:41:21 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:45055 "EHLO
 	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755487AbZFEXlM (ORCPT
+	with ESMTP id S1753554AbZFEXlJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 19:41:12 -0400
+	Fri, 5 Jun 2009 19:41:09 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Cc: Markus Heidelberg <markus.heidelberg@web.de>,
+Cc: Frans Pop <elendil@planet.nl>, Andres Salomon <dilinger@debian.org>,
        Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 28/39] kconfig qconf: fix namespace for Horizontal and Vertical enum values
-Date: Sat,  6 Jun 2009 01:42:46 +0200
-Message-Id: <1244245377-17441-28-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 08/39] kbuild, deb-pkg: improve changelog entry and package descriptions
+Date: Sat,  6 Jun 2009 01:42:26 +0200
+Message-Id: <1244245377-17441-8-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.3.rc3.40.g75b44
 In-Reply-To: <20090605233720.GA13588@uranus.ravnborg.org>
 References: <20090605233720.GA13588@uranus.ravnborg.org>
@@ -25,57 +25,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Markus Heidelberg <markus.heidelberg@web.de>
+From: Frans Pop <elendil@planet.nl>
 
-They were used as QSplitter::Horizontal resp. QSplitter::Vertical, but
-are defined in the 'Qt' namespace.
-
-Fixes the following compiler errors after a quick conversion with 'qt3to4',
-which occured with g++ 3.4.6 and 4.1.2, but not anymore with 4.3.2.
-
-scripts/kconfig/qconf.cc: In constructor 'ConfigSearchWindow::ConfigSearchWindow(ConfigMainWindow*, const char*)':
-scripts/kconfig/qconf.cc:1213: error: 'Vertical' is not a member of 'QSplitter'
-
-scripts/kconfig/qconf.cc: In constructor 'ConfigMainWindow::ConfigMainWindow()':
-scripts/kconfig/qconf.cc:1304: error: 'Horizontal' is not a member of 'QSplitter'
-scripts/kconfig/qconf.cc:1311: error: 'Vertical' is not a member of 'QSplitter'
-
-Signed-off-by: Markus Heidelberg <markus.heidelberg@web.de>
+Signed-off-by: Frans Pop <elendil@planet.nl>
+Acked-by: maximilian attems <max@stro.at>
+Cc: Andres Salomon <dilinger@debian.org>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/kconfig/qconf.cc |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ scripts/package/builddeb |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/scripts/kconfig/qconf.cc b/scripts/kconfig/qconf.cc
-index 2bd6ed0..7433dac 100644
---- a/scripts/kconfig/qconf.cc
-+++ b/scripts/kconfig/qconf.cc
-@@ -1199,7 +1199,7 @@ ConfigSearchWindow::ConfigSearchWindow(ConfigMainWindow* parent, const char *nam
- 	layout1->addLayout(layout2);
+diff --git a/scripts/package/builddeb b/scripts/package/builddeb
+index c01f812..0449147 100644
+--- a/scripts/package/builddeb
++++ b/scripts/package/builddeb
+@@ -98,7 +98,7 @@ name="Kernel Compiler <$(id -nu)@$(hostname -f)>"
+ cat <<EOF > debian/changelog
+ linux ($packageversion) unstable; urgency=low
  
- 	split = new QSplitter(this);
--	split->setOrientation(QSplitter::Vertical);
-+	split->setOrientation(Qt::Vertical);
- 	list = new ConfigView(split, name);
- 	list->list->mode = listMode;
- 	info = new ConfigInfoView(split, name);
-@@ -1290,14 +1290,14 @@ ConfigMainWindow::ConfigMainWindow(void)
- 		move(x, y);
+-  * A standard release
++  * Custom built Linux kernel.
  
- 	split1 = new QSplitter(this);
--	split1->setOrientation(QSplitter::Horizontal);
-+	split1->setOrientation(Qt::Horizontal);
- 	setCentralWidget(split1);
+  -- $name  $(date -R)
+ EOF
+@@ -126,7 +126,7 @@ Description: User Mode Linux kernel, version $version
+  many other things.
+  .
+  This package contains the Linux kernel, modules and corresponding other
+- files version $version
++ files, version: $version.
+ EOF
  
- 	menuView = new ConfigView(split1, "menu");
- 	menuList = menuView->list;
+ else
+@@ -138,7 +138,7 @@ Suggests: $fwpackagename
+ Architecture: any
+ Description: Linux kernel, version $version
+  This package contains the Linux kernel, modules and corresponding other
+- files version $version
++ files, version: $version.
+ EOF
  
- 	split2 = new QSplitter(split1);
--	split2->setOrientation(QSplitter::Vertical);
-+	split2->setOrientation(Qt::Vertical);
+ fi
+@@ -152,7 +152,7 @@ if [ -e "$tmpdir/lib/firmware" ]; then
+ Package: $fwpackagename
+ Architecture: all
+ Description: Linux kernel firmware, version $version
+- This package contains firmware from the Linux kernel, version $version
++ This package contains firmware from the Linux kernel, version $version.
+ EOF
  
- 	// create config tree
- 	configView = new ConfigView(split2, "config");
+ 	create_package "$fwpackagename" "$fwdir"
 -- 
 1.6.3.rc3.40.g75b44
 
