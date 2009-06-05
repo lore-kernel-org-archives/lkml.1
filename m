@@ -1,47 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbZFEEEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751391AbZFEEH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753876AbZFEEEY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 00:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbZFEED6
+	id S1751391AbZFEEH6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 00:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739AbZFEEHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 00:03:58 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:44644 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750701AbZFEED5 (ORCPT
+	Fri, 5 Jun 2009 00:07:50 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:49672 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750706AbZFEEHu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 00:03:57 -0400
-Message-ID: <4A289928.7040508@oracle.com>
-Date: Fri, 05 Jun 2009 12:03:52 +0800
-From: Tao Ma <tao.ma@oracle.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: /proc/kcore has a unreasonable size(281474974617600) in x86_64 2.6.30-rc8.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 5 Jun 2009 00:07:50 -0400
+Date: Fri, 5 Jun 2009 13:04:45 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: nishimura@mxp.nes.nec.co.jp,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] remove memory.limit v.s. memsw.limit comparison.
+Message-Id: <20090605130445.447ca03a.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090605011019.GG7504@balbir.in.ibm.com>
+References: <20090604141043.9a1064fd.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090604123625.GE7504@balbir.in.ibm.com>
+	<0921392c77890fc84fa69653ae4f31d9.squirrel@webmail-b.css.fujitsu.com>
+	<20090605011019.GG7504@balbir.in.ibm.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt002.oracle.com [141.146.116.11]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4A28992C.00D8:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi list,
-       In 2.6.30-rc8, /proc/kcore in x86_64's size is unreasonable large 
-to be 281474974617600.
-While in a x86 box, it is 931131392 which looks sane.
+On Fri, 5 Jun 2009 09:10:19 +0800, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-06-05 00:45:03]:
+> 
+> > Balbir Singh wrote:
+> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-06-04
+> > > 14:10:43]:
+> > >
+> > >> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > >>
+> > >> Removes memory.limit < memsw.limit at setting limit check completely.
+> > >>
+> > >> The limitation "memory.limit <= memsw.limit" was added just because
+> > >> it seems sane ...if memory.limit > memsw.limit, only memsw.limit works.
+> > >>
+> > >> But To implement this limitation, we needed to use private mutex and
+> > >> make
+> > >> the code a bit complated.
+> > >> As Nishimura pointed out, in real world, there are people who only want
+> > >> to use memsw.limit.
+> > >>
+> > >> Then, this patch removes the check. user-land library or middleware can
+> > >> check
+> > >> this in userland easily if this really concerns.
+> > >>
+> > >> And this is a good change to charge-and-reclaim.
+> > >>
+> > >> Now, memory.limit is always checked before memsw.limit
+> > >> and it may do swap-out. But, if memory.limit == memsw.limit, swap-out is
+> > >> finally no help and hits memsw.limit again. So, let's allow the
+> > >> condition
+> > >> memory.limit > memsw.limit. Then we can skip unnecesary swap-out.
+> > >>
+> > >> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > >> ---
+> > >
+> > > There is one other option, we could set memory.limit_in_bytes ==
+> > > memory.memsw.limit_in_bytes provided it is set to LONG_LONG_MAX. I am
+> > > not convinced that we should allow memsw.limit_in_bytes to be less
+> > > that limit_in_bytes, it will create confusion and the API is already
+> > > exposed.
+> > >
+> > Ahhhh, I get your point.
+> >  if memory.memsw.limit_in_bytes < memory.limit_in_bytes, no swap will
+> >  be used bacause currnet try_to_free_pages() for memcg skips swap-out.
+> >  Then, only global-LRU will use swap.
+> >  This behavior is not easy to understand.
+> > 
+> > Sorry, I don't push this patch as this is. But adding documentation about
+> > "What happens when you set memory.limit == memsw.limit" will be necessary.
+> > 
+> > ...maybe give all jobs to user-land and keep the kernel as it is now
+> > is a good choice.
+> 
+> Yes, probably and with libcgroup and configuration, defaults should
+> not be hard to setup. Worst case we can use a script to setup both the
+> values.
+> 
+> > 
+> > BTW, I'd like to avoid useless swap-out in memory.limit == memsw.limit case.
+> > If someone has good idea, please :(
+> >
+> 
+> Are you seeing swap even with memory.limit == memory.memsw.limit? Only
+> global pressure should cause swapout, no? 
+> 
+I don't remember in detail, but I could see swap usage by "free" command
+even when I set "memory.limit == memory.memsw.limit" long ago, the usage
+was small though.
+It cannot be helped in current implementation, because mem.limit is checked
+before memsw.limit, and it is a waste of cpu time to scan anon-lru when
+"memory.limit == memory.memsw.limit".
 
-[root@test8 ~]# ll /proc/kcore
--r-------- 1 root root 281474974617600 Jun  5 11:15 /proc/kcore
 
-[root@ocfs2-test9 ~]$ ll /proc/kcore
--r-------- 1 root root 931131392 Jun  5 11:58 /proc/kcore
-
-I just noticed this when kexec fails in "Can't find kernel text map area 
-from kcore".
-
-Is there something wrong?
-
-Regards,
-Tao
-
+Thanks,
+Daisuke Nishimura.
