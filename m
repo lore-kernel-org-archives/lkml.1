@@ -1,97 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbZFETce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbZFETeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbZFETce (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 15:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZFETc1
+	id S1753179AbZFETeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 15:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbZFETeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 15:32:27 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56461 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751379AbZFETc0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 15:32:26 -0400
-Message-ID: <4A29723C.2030102@suse.com>
-Date: Fri, 05 Jun 2009 15:30:04 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 5 Jun 2009 15:34:04 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:46276 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbZFETeC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 15:34:02 -0400
+To: Nick Piggin <npiggin@suse.de>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
+       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Eric W. Biederman" <ebiederm@aristanetworks.com>
+Subject: Re: [PATCH 03/23] vfs: Generalize the file_list
+References: <m1oct739xu.fsf@fess.ebiederm.org>
+	<1243893048-17031-3-git-send-email-ebiederm@xmission.com>
+	<20090602070642.GD31556@wotan.suse.de>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 05 Jun 2009 12:33:59 -0700
+In-Reply-To: <20090602070642.GD31556@wotan.suse.de> (Nick Piggin's message of "Tue\, 2 Jun 2009 09\:06\:42 +0200")
+Message-ID: <m1ab4m5vbs.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Reiserfs <reiserfs-devel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Alexander Beregalov <a.beregalov@gmail.com>
-Subject: Re: [PATCH 1/2] kill-the-bkl/reiserfs: acquire the inode mutex safely
-References: <1242496922-6330-1-git-send-email-fweisbec@gmail.com>	 <1242496922-6330-2-git-send-email-fweisbec@gmail.com>	 <9b1675090905292005p2b53de7dy9e36f84368d76f01@mail.gmail.com>	 <4A296343.4050005@suse.com> <9b1675090906051206we136e88k6a14194963726709@mail.gmail.com>
-In-Reply-To: <9b1675090906051206we136e88k6a14194963726709@mail.gmail.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: npiggin@suse.de, ebiederm@aristanetworks.com, hch@infradead.org, akpm@linux-foundation.org, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org, adobriyan@gmail.com, tj@kernel.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Nick Piggin <npiggin@suse.de> writes:
 
-Trenton D. Adams wrote:
-> FYI: I never did anything specific that I knew of, so I didn't
-> actually notice a delay.  I was rsyncing to a USB key at the time.
-> And seeing it took over an hour, I walked away, so I wouldn't have
-> noticed it.  But, I could fiddle around a little to see if I could get
-> some sort of delay going on.  Any ideas on what I should try?  Then I
-> can do the sysreq+t for you if I can reproduce.
+>> fs_may_remount_ro and mark_files_ro have been modified to walk the
+>> inode list to find all of the inodes and then to walk the file list
+>> on those inodes.  It can be a slightly longer walk as we frequently
+>> cache inodes that we do not have open but the overall complexity
+>> should be about the same,
+>
+> Well not really. I have a couple of orders of magnitude more cached
+> inodes than open files here.
 
-Well if the rsync triggered it, that's a good start. 
+Good point.
 
-Try applying the following patch as well. It will cause the hung task detector
-to do a sysrq+t automatically so it's not as much of a guessing game. You'll need to boot with 
-hung_task_show_state=1.
+>> --- a/include/linux/fs.h
+>> +++ b/include/linux/fs.h
+>> @@ -699,6 +699,11 @@ static inline int mapping_writably_mapped(struct address_space *mapping)
+>>  	return mapping->i_mmap_writable != 0;
+>>  }
+>>  
+>> +struct file_list {
+>> +	spinlock_t		lock;
+>> +	struct list_head	list;
+>> +};
+>> +
+>>  /*
+>>   * Use sequence counter to get consistent i_size on 32-bit processors.
+>>   */
+>> @@ -764,6 +769,7 @@ struct inode {
+>>  	struct list_head	inotify_watches; /* watches on this inode */
+>>  	struct mutex		inotify_mutex;	/* protects the watches list */
+>>  #endif
+>> +	struct file_list	i_files;
+>>  
+>>  	unsigned long		i_state;
+>>  	unsigned long		dirtied_when;	/* jiffies of first dirtying */
+>> @@ -934,9 +940,15 @@ struct file {
+>>  	unsigned long f_mnt_write_state;
+>>  #endif
+>>  };
+>> -extern spinlock_t files_lock;
+>> -#define file_list_lock() spin_lock(&files_lock);
+>> -#define file_list_unlock() spin_unlock(&files_lock);
+>> +
+>> +static inline void file_list_lock(struct file_list *files)
+>> +{
+>> +	spin_lock(&files->lock);
+>> +}
+>> +static inline void file_list_unlock(struct file_list *files)
+>> +{
+>> +	spin_unlock(&files->lock);
+>> +}
+>
+> I don't really like this. It's just a list head. Get rid of
+> all these wrappers and crap I'd say. In fact, starting with my
+> patch to unexport files_lock and remove these wrappers would
+> be reasonable, wouldn't it?
 
-- -Jeff
+I don't really mind killing the wrappers.
 
-- ---
- kernel/hung_task.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+I do mind your patch because it makes the list going through
+the tty's something very different.  In my view of the world
+that is the only use case is what I'm working to move up more
+into the vfs layer.  So orphaning it seems wrong.
 
-- --- a/kernel/hung_task.c
-+++ b/kernel/hung_task.c
-@@ -56,6 +56,14 @@ static int __init hung_task_panic_setup(
- }
- __setup("hung_task_panic=", hung_task_panic_setup);
- 
-+unsigned int __read_mostly sysctl_hung_task_show_state;
-+static int __init hung_task_show_state_setup(char *str)
-+{
-+	sysctl_hung_task_show_state = simple_strtoul(str, NULL, 0);
-+	return 1;
-+}
-+__setup("hung_task_show_state=", hung_task_show_state_setup);
-+
- static int
- hung_task_panic(struct notifier_block *this, unsigned long event, void *ptr)
- {
-@@ -102,6 +110,9 @@ static void check_hung_task(struct task_
- 
- 	touch_nmi_watchdog();
- 
-+	if (sysctl_hung_task_show_state)
-+		show_state();
-+
- 	if (sysctl_hung_task_panic)
- 		panic("hung_task: blocked tasks");
- }
+> Increasing the size of the struct inode by 24 bytes hurts.
+> Even when you decrapify it and can reuse i_lock or something,
+> then it is still 16 bytes on 64-bit.
 
-- -- 
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+We can get it even smaller if we make it an hlist.  A hlist_head is
+only a single pointer.  This size growth appears to be one of the
+biggest weakness of the code.
 
-iEYEARECAAYFAkopcjwACgkQLPWxlyuTD7IEdgCfVVzIL/DA0stfnYEW6aixFwxM
-qIEAnjJjyn6HQAbVIicRYzvNcGvPwbiq
-=z8Pn
------END PGP SIGNATURE-----
+> I haven't looked through all the patches... but this is to
+> speed up a slowpath operation, isn't it? Or does revoke
+> need to be especially performant?
+
+This was more about simplicity rather than performance.  The
+performance gain is using a per inode lock instead of a global lock.
+Which keeps cache lines from bouncing.
+
+> So this patch is purely a perofrmance improvement? Then I think
+> it needs to be justified with numbers and the downsides (bloating
+> struct inode in particulra) to be changelogged.
+
+Certainly the cost.
+
+One of the things I have discovered since I wrote this patch is the
+i_devices list.  Which means we don't necessarily need to have heads
+in places other than struct inode.  A character device driver (aka the
+tty code) can walk it's inode list and from each inode walk the file
+list.  I need to check the locking on that one.
+
+If that simplification works we can move all maintenance of the file
+list into the vfs and not need a separate file list concept.  I will
+take a look.
+
+Eric
