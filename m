@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756626AbZFESJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbZFESM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756626AbZFESJs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 14:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755626AbZFESJj
+	id S1756338AbZFESM6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 14:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbZFESMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 14:09:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34008 "EHLO mx2.redhat.com"
+	Fri, 5 Jun 2009 14:12:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37414 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755103AbZFESJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 14:09:39 -0400
-Date: Fri, 5 Jun 2009 14:08:04 -0400
-To: linux-kernel@vger.kernel.org
-Cc: fweisbec@gmail.com, mingo@elte.hu, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-       jiayingz@google.com, mbligh@google.com, roland@redhat.com,
-       fche@redhat.com
-Message-Id: <2c9a74b51d467fcd1e19ffeca35d721bda158d2e.1244222378.git.jbaron@redhat.com>
-In-Reply-To: <cover.1244222378.git.jbaron@redhat.com>
-References: <cover.1244222378.git.jbaron@redhat.com>
-From: Jason Baron <jbaron@redhat.com>
-Subject: [PATCH 1/2] allow TP_printk() to have no args
+	id S1752924AbZFESMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 14:12:50 -0400
+Message-ID: <4A29601F.3070802@redhat.com>
+Date: Fri, 05 Jun 2009 13:12:47 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+CC: Aioanei Rares <krnl.list@gmail.com>, linux-ext4@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Mild filesystem corruption on ext4 (no journal)
+References: <4A28F83F.4030704@tuffmail.co.uk> <4A292E61.3050204@gmail.com> <4A293084.5010400@tuffmail.co.uk> <4A2937CC.7070503@redhat.com> <4A294B15.9070209@tuffmail.co.uk>
+In-Reply-To: <4A294B15.9070209@tuffmail.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch allows TP_printk() to take no args. otherwise there is a stray
-',' which causes a compile error.
+Alan Jenkins wrote:
+> Eric Sandeen wrote:
 
-Signed-off-by: Jason Baron <jbaron@redhat.com>
+>> Maybe you could try some things in your shutdown script, such as
+>> explicitly fsyncing the file, or bmapping it with filefrag, or dropping
+>> caches and rereading it... see what the state is just before the
+>> shutdown compared to after the reboot.
+>>
+>> -Eric
+>>   
+> 
+> Dropping caches (and running sync first) had no effect on the result of 
+> md5sum.  Hopefully that narrows it down a bit.
 
----
- include/trace/ftrace.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+And did the reread after dropping caches have the right data?
 
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index edb02bc..d861e21 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -114,7 +114,7 @@
- #define __entry field
- 
- #undef TP_printk
--#define TP_printk(fmt, args...) fmt "\n", args
-+#define TP_printk(fmt, ...) fmt "\n", ##__VA_ARGS__
- 
- #undef __get_str
- #define __get_str(field)	((char *)__entry + __entry->__str_loc_##field)
--- 
-1.6.0.6
+Did the block numbers reported by filefrag -v change post-boot?
 
+-Eric
