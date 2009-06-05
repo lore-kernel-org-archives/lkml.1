@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbZFELQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbZFELPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755961AbZFELQs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 07:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755090AbZFELO1
+	id S1755344AbZFELPH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 07:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZFELNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 07:14:27 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:49403 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754931AbZFELOY (ORCPT
+	Fri, 5 Jun 2009 07:13:35 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:36816 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754445AbZFELNd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 07:14:24 -0400
+	Fri, 5 Jun 2009 07:13:33 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Al Viro <viro@ZenIV.linux.org.uk>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Christoph Hellwig <hch@infradead.org>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       linux-ext4@vger.kernel.org
-Subject: [PATCH v2.1 05/17] EXT2: do not manipulate s_dirt directly
-Date: Fri,  5 Jun 2009 16:05:43 +0300
-Message-Id: <1244207155-2092-6-git-send-email-dedekind@infradead.org>
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: [PATCH v2.1 01/17] VFS: introduce helpers for manipulation s_dirty flag
+Date: Fri,  5 Jun 2009 16:05:39 +0300
+Message-Id: <1244207155-2092-2-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
 References: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 05 Jun 2009 11:12:54.0431 (UTC) FILETIME=[92B7C2F0:01C9E5CE]
+X-OriginalArrivalTime: 05 Jun 2009 11:12:44.0313 (UTC) FILETIME=[8CAFE090:01C9E5CE]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,114 +30,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 
-... use new VFS helpers instead.
+This patch introduces 3 new VFS helpers: 'mark_sb_dirty()',
+'mark_sb_clean()', and 'is_sb_dirty()'. The helpers simply
+set 'sb->s_dirt' or test 'sb->s_dirt'. The plan is to make
+every FS use these helpers instead of manipulating
+'sb->s_dirt' directly. And the further plan is to stop the
+periodic write-back when there is no dirt.
+
+This patch is just a preparation. No functional changes yet.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: linux-ext4@vger.kernel.org
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/ext2/balloc.c |    4 ++--
- fs/ext2/ialloc.c |    4 ++--
- fs/ext2/super.c  |    8 ++++----
- fs/ext2/xattr.c  |    2 +-
- 4 files changed, 9 insertions(+), 9 deletions(-)
+ include/linux/fs.h |   17 +++++++++++++++++
+ 1 files changed, 17 insertions(+), 0 deletions(-)
 
-diff --git a/fs/ext2/balloc.c b/fs/ext2/balloc.c
-index 7f8d2e5..a3de92b 100644
---- a/fs/ext2/balloc.c
-+++ b/fs/ext2/balloc.c
-@@ -164,7 +164,7 @@ static void release_blocks(struct super_block *sb, int count)
- 		struct ext2_sb_info *sbi = EXT2_SB(sb);
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 73242c3..2d67017 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1782,6 +1782,23 @@ extern int get_sb_pseudo(struct file_system_type *, char *,
+ extern void simple_set_mnt(struct vfsmount *mnt, struct super_block *sb);
+ int __put_super_and_need_restart(struct super_block *sb);
  
- 		percpu_counter_add(&sbi->s_freeblocks_counter, count);
--		sb->s_dirt = 1;
-+		mark_sb_dirty(sb);
- 	}
- }
- 
-@@ -179,7 +179,7 @@ static void group_adjust_blocks(struct super_block *sb, int group_no,
- 		free_blocks = le16_to_cpu(desc->bg_free_blocks_count);
- 		desc->bg_free_blocks_count = cpu_to_le16(free_blocks + count);
- 		spin_unlock(sb_bgl_lock(sbi, group_no));
--		sb->s_dirt = 1;
-+		mark_sb_dirty(sb);
- 		mark_buffer_dirty(bh);
- 	}
- }
-diff --git a/fs/ext2/ialloc.c b/fs/ext2/ialloc.c
-index 15387c9..bb8cf4e 100644
---- a/fs/ext2/ialloc.c
-+++ b/fs/ext2/ialloc.c
-@@ -81,7 +81,7 @@ static void ext2_release_inode(struct super_block *sb, int group, int dir)
- 	spin_unlock(sb_bgl_lock(EXT2_SB(sb), group));
- 	if (dir)
- 		percpu_counter_dec(&EXT2_SB(sb)->s_dirs_counter);
--	sb->s_dirt = 1;
-+	mark_sb_dirty(sb);
- 	mark_buffer_dirty(bh);
- }
- 
-@@ -548,7 +548,7 @@ got:
- 	}
- 	spin_unlock(sb_bgl_lock(sbi, group));
- 
--	sb->s_dirt = 1;
-+	mark_sb_dirty(sb);
- 	mark_buffer_dirty(bh2);
- 	inode->i_uid = current_fsuid();
- 	if (test_opt (sb, GRPID))
-diff --git a/fs/ext2/super.c b/fs/ext2/super.c
-index f5b7fad..4f054d5 100644
---- a/fs/ext2/super.c
-+++ b/fs/ext2/super.c
-@@ -116,7 +116,7 @@ static void ext2_put_super (struct super_block * sb)
- 
- 	lock_kernel();
- 
--	if (sb->s_dirt)
-+	if (is_sb_dirty(sb))
- 		ext2_write_super(sb);
- 
- 	ext2_xattr_put_super(sb);
-@@ -1107,7 +1107,7 @@ static void ext2_commit_super (struct super_block * sb,
- {
- 	es->s_wtime = cpu_to_le32(get_seconds());
- 	mark_buffer_dirty(EXT2_SB(sb)->s_sbh);
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- }
- 
- static void ext2_sync_super(struct super_block *sb, struct ext2_super_block *es)
-@@ -1117,7 +1117,7 @@ static void ext2_sync_super(struct super_block *sb, struct ext2_super_block *es)
- 	es->s_wtime = cpu_to_le32(get_seconds());
- 	mark_buffer_dirty(EXT2_SB(sb)->s_sbh);
- 	sync_dirty_buffer(EXT2_SB(sb)->s_sbh);
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- }
- 
- /*
-@@ -1148,7 +1148,7 @@ void ext2_write_super (struct super_block * sb)
- 		} else
- 			ext2_commit_super (sb, es);
- 	}
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- 	unlock_kernel();
- }
- 
-diff --git a/fs/ext2/xattr.c b/fs/ext2/xattr.c
-index 7913531..1673ee4 100644
---- a/fs/ext2/xattr.c
-+++ b/fs/ext2/xattr.c
-@@ -343,7 +343,7 @@ static void ext2_xattr_update_super_block(struct super_block *sb)
- 		return;
- 
- 	EXT2_SET_COMPAT_FEATURE(sb, EXT2_FEATURE_COMPAT_EXT_ATTR);
--	sb->s_dirt = 1;
-+	mark_sb_dirty(sb);
- 	mark_buffer_dirty(EXT2_SB(sb)->s_sbh);
- }
- 
++/*
++ * Note, VFS does not provide any protection for the super block clean/dirty
++ * state. File-systems should take care of this.
++ */
++static inline void mark_sb_dirty(struct super_block *sb)
++{
++	sb->s_dirt = 1;
++}
++static inline void mark_sb_clean(struct super_block *sb)
++{
++	sb->s_dirt = 0;
++}
++static inline int is_sb_dirty(struct super_block *sb)
++{
++	return sb->s_dirt;
++}
++
+ /* Alas, no aliases. Too much hassle with bringing module.h everywhere */
+ #define fops_get(fops) \
+ 	(((fops) && try_module_get((fops)->owner) ? (fops) : NULL))
 -- 
 1.6.0.6
 
