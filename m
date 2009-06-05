@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbZFEDfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbZFEDjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492AbZFEDfp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 23:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbZFEDfg
+	id S1754930AbZFEDjU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 23:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbZFEDjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 23:35:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44515 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752247AbZFEDff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 23:35:35 -0400
-Message-ID: <4A28921C.6010802@redhat.com>
-Date: Fri, 05 Jun 2009 06:33:48 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 4 Jun 2009 23:39:13 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:56369 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752247AbZFEDjM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 23:39:12 -0400
+Message-Id: <200906050339.n553d684048041@www262.sakura.ne.jp>
+Subject: Re: [2.6.30-rc8] gcc 3.3 : __udivdi3 undefined.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com
 MIME-Version: 1.0
-To: bharata@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>, kvm@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Subject: Re: [RFC] CPU hard limits
-References: <20090604053649.GA3701@in.ibm.com> <4A27BBCA.5020606@redhat.com> <20090605030309.GA3872@in.ibm.com>
-In-Reply-To: <20090605030309.GA3872@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Date: Fri, 05 Jun 2009 12:39:06 +0900
+References: <200906050038.n550c4Ja010907@www262.sakura.ne.jp> <20090605023835.GA7933@cr0.nay.redhat.com> <20090604201733.746928c6.akpm@linux-foundation.org>
+In-Reply-To: <20090604201733.746928c6.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 05062009 #2086045, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bharata B Rao wrote:
->> Another way is to place the 8 groups in a container group, and limit  
->> that to 80%. But that doesn't work if I want to provide guarantees to  
->> several groups.
->>     
->
-> Hmm why not ? Reduce the guarantee of the container group and provide
-> the same to additional groups ?
->   
+Andrew Morton wrote:
+> Do
+> 
+> 	make arch/x86/mm/pageattr.s
+> 
+> then have a look in pageattr.s to find the __udivdi3 callsite.
+> 
+> It might not even be in arch/x86/mm/pageattr.o at all.  If not, keep
+> building .s files in that directory until you find it.
+> 
+> Building with CONFIG_DEBUG_INFO=1 will allow you to find the exact C
+> file-n-line where the __udivdi3() call is being emmitted (look at the
+> .loc lines).
 
-This method produces suboptimal results:
+$ make -k CONFIG_DEBUG_INFO=1 `echo arch/x86/mm/*.c | sed -e 's/\.c/.s/g'`
+(...snipped...)
+$ grep __udivdi3 arch/x86/mm/*.s
+arch/x86/mm/memtest.s:.globl __udivdi3
+arch/x86/mm/memtest.s:  call    __udivdi3
 
-$ cgroup-limits 10 10 0
-[50.0, 50.0, 40.0]
 
-I want to provide two 10% guaranteed groups and one best-effort group.  
-Using the limits method, no group can now use more than 50% of the 
-resources.  However, having the first group use 90% of the resources 
-does not violate any guarantees, but it not allowed by the solution.
 
-#!/usr/bin/python
-
-def calculate_limits(g, R):
-    N = len(g)
-    if N == 1:
-        return [R]
-
-    s = sum([R - gi for gi in g])
-    return [(s - (R - gi) - (N - 2) * (R - gi)) / (N - 1)
-            for gi in g]
-
-import sys
-print calculate_limits([float(x) for x in sys.argv[1:]], 100)
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+Tetsuo Handa wrote:
+> "make allnoconfig" compiles fine. Maybe config dependent?
+It was because "make allnoconfig" skips arch/x86/mm/memtest.c .
