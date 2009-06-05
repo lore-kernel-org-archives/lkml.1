@@ -1,130 +1,453 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755685AbZFENlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbZFENmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755685AbZFENlx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 09:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbZFENlL
+	id S1755929AbZFENmI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 09:42:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZFENlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 09:41:11 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:44948 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755203AbZFENlH (ORCPT
+	Fri, 5 Jun 2009 09:41:25 -0400
+Received: from av9-1-sn3.vrr.skanova.net ([81.228.9.185]:44747 "EHLO
+	av9-1-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754099AbZFENkm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 09:41:07 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Harald Welte <HaraldWelte@viatech.com>
-Subject: Re: VIA PowerSaver (Re: Linux 2.6.30-rc8 [also: VIA Support])
-Date: Fri, 5 Jun 2009 08:41:04 -0500
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <alpine.LFD.2.01.0906041038130.4880@localhost.localdomain> <20090605110627.GH4421@prithivi.gnumonks.org>
-In-Reply-To: <20090605110627.GH4421@prithivi.gnumonks.org>
+	Fri, 5 Jun 2009 09:40:42 -0400
+Message-ID: <4A29205A.7030108@mocean-labs.com>
+Date: Fri, 05 Jun 2009 15:40:42 +0200
+From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
+	<richard.rojfors.ext@mocean-labs.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906050841.07227.lkml@morethan.org>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 4/9] MFD: Adding Timberdale DMA driver
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri June 5 2009, Harald Welte wrote:
-> Hi Linus and Michael,
-> 
-> On Thu, Jun 04, 2009 at 10:46:00AM -0700, Linus Torvalds wrote:
->  
-> > On Thu, 4 Jun 2009, Michael S. Zick wrote:
-> > >
-> > > Yes, I build test cases with and without - -
-> > > It was a fixed-speed kernel build that first hit the 4 hour up-time mark.
-> > > I just reposted that build today (the -09143lk).
-> > > 
-> > > > Features like that easily put a huge stress on power regulators etc, if 
-> > > > they result in sudden changes in current draw.  Underspecced capacitors 
-> > > > etc can cause CPU "brown-outs", which in turn can easily cause total 
-> > > > failure. 
-> > > 
-> > > There is also a possible thermal issue with these machines - -
-> > > I doubt that VIA runs their qualification testing in bake ovens;
-> > > which is what NetBook cases amount too.  ;)
-> > 
-> > If the fixed-speed case runs for longer, it's not likely to be a thermal 
-> > issue. The fixed speed case should be the higher-power one.
-> > 
-> > So it can easily be a weak power setup (insufficient grounding, bad 
-> > capacitors etc). But it could also be external bus issues, in case VIA 
-> > power management also impact the external bus (eg "stopclock" like 
-> > behavior on the CPU<->chipset bus).
-> 
-> I'm not intending to disagree with you, I just wanted to quote from
-> a not [yet] public document on the C7-M.  This quote describes model A
-> (family 6, model 10(hex A), stepping 0-15):
-> ===============
-> Enhanced PowerSaver technology allows the dynamic adjustment of the operating
-> frequency and operating voltage. The VIA C7-M can only change from the
-> highest supported performance state to the lowest supported performance state:
-> intermediate performance states are not guaranteed to work and are not offi-
-> cially supported. System software can use Enhanced PowerSaver to request the
-> sufficient amount of performance. Each individual performance state (P-State)
-> is described in the system bios according to 8.4.4 of the ACPI 3.0
-> specification.  
-> 
-> The VIA C7-M processor incorporates two on-chip core clock PLLs. This allows
-> the processor to ping-pong between two frequencies instantaneously. In the
-> simplest scenario, where there are only two clock frequencies of interest and
-> no voltage changes, the transition can be instantaneous with no latency. In
-> more complex scenarios, where there are multiple clock frequencies of interest,
-> the "old" frequency can continue to be used while the new frequency is ramped
-> up. The transition is still instantaneous from a software point of view (code
-> still executes), but there is a latency associated with switching to the ramp-
-> ing "new" frequency.
->
+Support for the Timberdale FPGA internal DMA engine
 
-This appears to be what the e_powersaver is trying to do - -
-It just needs to do it better.  ;)
+This driver gives other drivers the possibility to start DMA directly
+between IP block inside the FPGA and the main memory
 
-The current behavior ends up as 9 speeds, (I.E: 8 steps) of twice the FSB 
-frequency.  I do show "stats/time_in_state" for all of them.
+Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
+---
+Index: linux-2.6.30-rc7/drivers/mfd/Kconfig
+===================================================================
+--- linux-2.6.30-rc7/drivers/mfd/Kconfig	(revision 861)
++++ linux-2.6.30-rc7/drivers/mfd/Kconfig	(working copy)
+@@ -241,6 +241,13 @@
+ 	 Say yes here if you want to include support GPIO for pins on
+ 	 the PCF50633 chip.
 
-It is one heck of a system, It will be nice if I can make it work - -
-If it has to be turned into a two-speed system, so be it.
++config MFD_TIMBERDALE_DMA
++	tristate "Support for timberdale DMA"
++	depends on MFD_TIMBERDALE
++	---help---
++	Add support the DMA block inside the timberdale FPGA. This to be able
++	to do DMA transfers directly to some of the blocks inside the FPGA
++
+ endmenu
 
-= = = =
+ menu "Multimedia Capabilities Port drivers"
+Index: linux-2.6.30-rc7/drivers/mfd/timbdma.c
+===================================================================
+--- linux-2.6.30-rc7/drivers/mfd/timbdma.c	(revision 0)
++++ linux-2.6.30-rc7/drivers/mfd/timbdma.c	(revision 864)
+@@ -0,0 +1,302 @@
++/*
++ * timbdma.c timberdale FPGA DMA driver
++ * Copyright (c) 2009 Intel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++/* Supports:
++ * Timberdale FPGA DMA engine
++ */
++
++#include <linux/version.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/interrupt.h>
++#include <linux/platform_device.h>
++
++#include <linux/mfd/timbdma.h>
++
++static struct timbdma_dev *self_g;
++
++static irqreturn_t timbdma_handleinterrupt(int irq, void *devid)
++{
++	struct timbdma_dev *dev = (struct timbdma_dev *)devid;
++	int ipr;
++	int i;
++
++	ipr = ioread32(dev->membase + timbdma_ctrlmap_TIMBPEND);
++
++	/* ack */
++	iowrite32(ipr, dev->membase + timbdma_ctrlmap_TIMBSTATUS);
++
++	/* call the callbacks */
++	for (i = 0; i < DMA_IRQS; i++) {
++		int mask = 1 << i;
++		if ((ipr & mask) && dev->callbacks[i])
++			dev->callbacks[i](mask, dev->callback_data[i]);
++	}
++
++	if (ipr)
++		return IRQ_HANDLED;
++	else
++		return IRQ_NONE;
++}
++
++
++void timb_start_dma(u32 flag, unsigned long buf, int len, int bytes_per_row)
++{
++	int i;
++	unsigned long irqflags;
++	struct timbdma_dev *dev = self_g;
++
++	spin_lock_irqsave(&dev->lock, irqflags);
++
++	/* now enable the DMA transfer */
++	for (i = 0; i < DMA_IRQS; i++)
++		if (flag & (1 << i)) {
++			u32 offset = i / 2 * 0x40;
++
++			if (!(i % 2)) {
++				/* RX */
++				/* bytes per row */
++				iowrite32(bytes_per_row, dev->membase + offset +
++					timbdma_dmacfg_BPERROW);
++				/* address high */
++				iowrite32(0, dev->membase + offset +
++					timbdma_dmacfg_RXSTARTH);
++				/* address low */
++				iowrite32(buf, dev->membase + offset +
++					timbdma_dmacfg_RXSTARTL);
++				/* Length */
++				iowrite32(len, dev->membase + offset +
++					timbdma_dmacfg_RXLENGTH);
++				/* Clear rx sw read pointer */
++				iowrite32(0, dev->membase + offset +
++					timbdma_dmacfg_RXSWRP);
++				/* enable the transfer */
++				iowrite32(1, dev->membase + offset +
++					timbdma_dmacfg_RXENABLE);
++			} else {
++				/* TX */
++				/* address high */
++				iowrite32(0, dev->membase + offset +
++					timbdma_dmacfg_TXSTARTH);
++				/* address low */
++				iowrite32(buf, dev->membase + offset +
++					timbdma_dmacfg_TXSTARTL);
++				/* Length */
++				iowrite32(len, dev->membase + offset +
++					timbdma_dmacfg_TXLENGTH);
++				/* Set tx sw write pointer */
++				iowrite32(len, dev->membase + offset +
++					timbdma_dmacfg_TXSWWP);
++			}
++
++			/* only allow one bit in the flag field */
++			break;
++		}
++	spin_unlock_irqrestore(&dev->lock, irqflags);
++}
++EXPORT_SYMBOL(timb_start_dma);
++
++void *timb_stop_dma(u32 flags)
++{
++	int i;
++	unsigned long irqflags;
++	struct timbdma_dev *dev = self_g;
++	void *result = 0;
++
++	spin_lock_irqsave(&dev->lock, irqflags);
++
++	/* now disable the DMA transfers */
++	for (i = 0; i < DMA_IRQS; i++)
++		if (flags & (1 << i)) {
++			/*
++				RX enable registers are located at:
++				0x14
++				0x54
++				0x94
++
++				TX SW pointer registers are located at:
++				0x24
++				0x64
++			*/
++			u32 offset = i / 2 * 0x40;
++			u32 result_offset = offset;
++			if (!(i % 2)) {
++				/* even -> RX enable */
++				offset += timbdma_dmacfg_RXENABLE;
++				result_offset += timbdma_dmacfg_RXFPGAWP;
++			} else {
++				/* odd -> TX SW pointer reg */
++				offset += timbdma_dmacfg_TXSWWP;
++				result_offset = timbdma_dmacfg_TXFPGARP;
++			}
++
++			iowrite32(0, dev->membase + offset);
++			/* check how far the FPGA has written/read */
++			result = (void *)ioread32(dev->membase + result_offset);
++		}
++
++	/* ack any pending IRQs */
++	iowrite32(flags, dev->membase + timbdma_ctrlmap_TIMBSTATUS);
++
++	spin_unlock_irqrestore(&dev->lock, irqflags);
++
++	return result;
++}
++EXPORT_SYMBOL(timb_stop_dma);
++
++void timb_set_dma_interruptcb(u32 flags, timbdma_interruptcb icb, void *data)
++{
++	int i;
++	unsigned long irqflags;
++	struct timbdma_dev *dev = self_g;
++	u32 ier;
++
++	spin_lock_irqsave(&dev->lock, irqflags);
++
++	for (i = 0; i < DMA_IRQS; i++)
++		if (flags & (1 << i)) {
++			dev->callbacks[i] = icb;
++			dev->callback_data[i] = data;
++		}
++
++	/* Ack any pending IRQ */
++	iowrite32(flags, dev->membase + timbdma_ctrlmap_TIMBSTATUS);
++
++	/* if a null callback is given -> clear interrupt, else -> enable */
++	ier = ioread32(dev->membase + timbdma_ctrlmap_TIMBENABLE);
++	if (icb != NULL)
++		ier |= flags;
++	else
++		ier &= ~flags;
++	iowrite32(ier, dev->membase + timbdma_ctrlmap_TIMBENABLE);
++
++	spin_unlock_irqrestore(&dev->lock, irqflags);
++}
++EXPORT_SYMBOL(timb_set_dma_interruptcb);
++
++static int timbdma_probe(struct platform_device *dev)
++{
++	int err, irq;
++	struct timbdma_dev *self;
++	struct resource *iomem;
++
++	iomem = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (!iomem) {
++		err = -EINVAL;
++		goto err_mem;
++	}
++
++	self = kzalloc(sizeof(*self), GFP_KERNEL);
++	if (!self) {
++		err = -EINVAL;
++		goto err_mem;
++	}
++
++	spin_lock_init(&self->lock);
++
++	if (!request_mem_region(iomem->start,
++		resource_size(iomem), "timb-dma")) {
++		err = -EBUSY;
++		goto err_request;
++	}
++
++	self->membase = ioremap(iomem->start, resource_size(iomem));
++	if (!self->membase) {
++		printk(KERN_ERR "timbdma: Failed to remap I/O memory\n");
++		err = -ENOMEM;
++		goto err_ioremap;
++	}
++
++	/* register interrupt */
++	irq = platform_get_irq(dev, 0);
++	if (irq < 0) {
++		err = irq;
++		goto err_get_irq;
++	}
++
++	/* request IRQ */
++	err = request_irq(irq, timbdma_handleinterrupt, IRQF_SHARED,
++			  "timb-dma", self);
++	if (err) {
++		printk(KERN_ERR "timbdma: Failed to request IRQ\n");
++		goto err_get_irq;
++	}
++
++	platform_set_drvdata(dev, self);
++
++	/* assign the global pointer */
++	self_g = self;
++
++	return 0;
++
++err_get_irq:
++	iounmap(self->membase);
++err_ioremap:
++	release_mem_region(iomem->start, resource_size(iomem));
++err_request:
++	kfree(self);
++err_mem:
++	printk(KERN_ERR "timberdale: Failed to register Timberdale DMA: %d\n",
++		err);
++
++	return err;
++}
++
++static int timbdma_remove(struct platform_device *dev)
++{
++	struct timbdma_dev *self = platform_get_drvdata(dev);
++	struct resource *iomem = platform_get_resource(dev, IORESOURCE_MEM, 0);
++
++	free_irq(platform_get_irq(dev, 0), self);
++	iounmap(self->membase);
++	release_mem_region(iomem->start, resource_size(iomem));
++	kfree(self);
++	self_g = NULL;
++	return 0;
++}
++
++static struct platform_driver timbdma_platform_driver = {
++	.driver = {
++		.name	= "timb-dma",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= timbdma_probe,
++	.remove		= timbdma_remove,
++};
++
++/*--------------------------------------------------------------------------*/
++
++static int __init timbdma_init(void)
++{
++	self_g = NULL;
++	return platform_driver_register(&timbdma_platform_driver);
++}
++
++static void __exit timbdma_exit(void)
++{
++	platform_driver_unregister(&timbdma_platform_driver);
++}
++
++module_init(timbdma_init);
++module_exit(timbdma_exit);
++
++MODULE_DESCRIPTION("Timberdale DMA driver");
++MODULE_AUTHOR("Mocean Laboratories <info@mocean-labs.com>");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:timb-dma");
++
+Index: linux-2.6.30-rc7/drivers/mfd/Makefile
+===================================================================
+--- linux-2.6.30-rc7/drivers/mfd/Makefile	(revision 861)
++++ linux-2.6.30-rc7/drivers/mfd/Makefile	(working copy)
+@@ -40,4 +40,6 @@
 
-Note:  This is one of VIA's claims to fame - and a good one - -
-and different than what the cpufreq stuff was probably tested with.
-
-Most other brands of CPU will "stall" (or some such) internally while
-re-syncing the core clock chain (there-by "stalling" the code progress) -
-The VIA processors do not - they keep on computing - something the
-general code may not account for.  ;)
-
-Since I have a machine that is sensitive to this, I can test other
-ways of doing something other than the two speed solution.
-
->                                                                       
-> VIA C7-M allows for a clean hardware approach to processor operating point
-> transitions. The transitions are performed instantaneously from a software and
-> functional point of view. Snoops and interrupts, for example, are unaffected by
-> transitions.
-> ===============
-> 
-> A C7-M model D (family 6, model 13(hex D), stepping 0-15) has advanced performance
-> states, they use an inflection ratio, as well as adaptive-p-state control and
-> adaptive overclocking, as well as iteravie P-state transitions and adaptive
-> thermal control.  I'm not yet aware of all the details, but have requested them.
-> 
-> In any case, the problems that have been reported by Michael were "Model A",
-> so those particular deatils shouldn't matter at this point.
->
-
-dmesg is reporting it as an "Model D" - I will check if that reporting is correct. 
-Tell the Silicon Grower's department "Thanks" for the recommendation of what to look for.
-
-Mike
-> Regards,
-
-
+ obj-$(CONFIG_MFD_PCF50633)	+= pcf50633-core.o
+ obj-$(CONFIG_PCF50633_ADC)	+= pcf50633-adc.o
+-obj-$(CONFIG_PCF50633_GPIO)	+= pcf50633-gpio.o
+\ No newline at end of file
++obj-$(CONFIG_PCF50633_GPIO)	+= pcf50633-gpio.o
++
++obj-$(CONFIG_MFD_TIMBERDALE_DMA)	+= timbdma.o
+Index: linux-2.6.30-rc7/include/linux/mfd/timbdma.h
+===================================================================
+--- linux-2.6.30-rc7/include/linux/mfd/timbdma.h	(revision 0)
++++ linux-2.6.30-rc7/include/linux/mfd/timbdma.h	(revision 889)
+@@ -0,0 +1,76 @@
++/*
++ * timbdma.h timberdale FPGA DMA driver defines
++ * Copyright (c) 2009 Intel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++/* Supports:
++ * Timberdale FPGA DMA engine
++ */
++
++#ifndef _TIMBDMA_H
++#define _TIMBDMA_H
++
++#include <linux/spinlock.h>
++
++
++#define DMA_IRQ_UART_RX		0x01
++#define DMA_IRQ_UART_TX		0x02
++#define DMA_IRQ_MLB_RX		0x04
++#define DMA_IRQ_MLB_TX		0x08
++#define DMA_IRQ_VIDEO_RX	0x10
++#define DMA_IRQ_VIDEO_DROP	0x20
++#define DMA_IRQS		6
++
++
++typedef int (*timbdma_interruptcb)(u32 flag, void *data);
++
++#define timbdma_ctrlmap_DMACFGBTUART	0x000000
++#define timbdma_ctrlmap_DMACFGMLBSY	0x000040
++#define timbdma_ctrlmap_DMACFGVIDEO	0x000080
++#define timbdma_ctrlmap_TIMBSTATUS	0x080000
++#define timbdma_ctrlmap_TIMBPEND	0x080004
++#define timbdma_ctrlmap_TIMBENABLE	0x080008
++#define timbdma_ctrlmap_VIDEOBUFFER	0x200000
++
++#define timbdma_dmacfg_RXSTARTH	0x00
++#define timbdma_dmacfg_RXSTARTL	0x04
++#define timbdma_dmacfg_RXLENGTH	0x08
++#define timbdma_dmacfg_RXFPGAWP	0x0C
++#define timbdma_dmacfg_RXSWRP	0x10
++#define timbdma_dmacfg_RXENABLE	0x14
++#define timbdma_dmacfg_TXSTARTH	0x18
++#define timbdma_dmacfg_TXSTARTL	0x1C
++#define timbdma_dmacfg_TXLENGTH	0x20
++#define timbdma_dmacfg_TXSWWP	0x24
++#define timbdma_dmacfg_TXFPGARP	0x28
++#define timbdma_dmacfg_TXBEFINT	0x2C
++#define timbdma_dmacfg_BPERROW	0x30
++
++struct timbdma_dev {
++	void __iomem		*membase;
++	timbdma_interruptcb	callbacks[DMA_IRQS];
++	void			*callback_data[DMA_IRQS];
++	spinlock_t		lock; /* mutual exclusion */
++};
++
++void timb_start_dma(u32 flag, unsigned long buf, int len, int bytes_per_row);
++
++void *timb_stop_dma(u32 flags);
++
++void timb_set_dma_interruptcb(u32 flags, timbdma_interruptcb icb, void *data);
++
++#endif /* _TIMBDMA_H */
++
