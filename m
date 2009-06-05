@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752965AbZFEKkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbZFEKlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752965AbZFEKkQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 06:40:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbZFEKkF
+	id S1753456AbZFEKlz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 06:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZFEKlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 06:40:05 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:59224 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbZFEKkE (ORCPT
+	Fri, 5 Jun 2009 06:41:47 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55603 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750999AbZFEKlq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 06:40:04 -0400
-Date: Fri, 5 Jun 2009 12:39:29 +0200
-From: Harald Welte <HaraldWelte@viatech.com>
-To: "Michael S. Zick" <lkml@morethan.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
-Message-ID: <20090605103929.GE4421@prithivi.gnumonks.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <alpine.LFD.2.01.0906041004000.4880@localhost.localdomain> <20090605071902.GD6411@prithivi.gnumonks.org> <200906050227.42295.lkml@morethan.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906050227.42295.lkml@morethan.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 5 Jun 2009 06:41:46 -0400
+Date: Fri, 5 Jun 2009 11:42:45 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Grozdan <neutrino8@gmail.com>
+Cc: hancockrwd@gmail.com, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Kernel 2.6.30rc7 limits IDE to UDMA33
+Message-ID: <20090605114245.175499e1@lxorguk.ukuu.org.uk>
+In-Reply-To: <c5bd819b0906050335i4e813887sc8f4d901da86a1aa@mail.gmail.com>
+References: <c5bd819b0906021525l13ee9282j1fb270e141985f66@mail.gmail.com>
+	<4A25F688.9000407@gmail.com>
+	<c5bd819b0906030435w466368cbsd48be91a97597437@mail.gmail.com>
+	<20090603131407.57c490ed@lxorguk.ukuu.org.uk>
+	<c5bd819b0906030552w6f23185etb394f83c8b630e6@mail.gmail.com>
+	<20090603140140.491a8ea8@lxorguk.ukuu.org.uk>
+	<c5bd819b0906030639o5f9c34ffg500e132d3a0b5117@mail.gmail.com>
+	<c5bd819b0906040750w75e0389cod2a03b89ce838d1b@mail.gmail.com>
+	<20090605100505.41b3b818@lxorguk.ukuu.org.uk>
+	<c5bd819b0906050335i4e813887sc8f4d901da86a1aa@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
+> I've relayed your reply to the pata_amd user on the forum. As for my
+> case with pata_via, until this is fixed, is there any way to force it
+> to use a higher UDMA? Is there a flag that can be passed in, for
 
-On Fri, Jun 05, 2009 at 02:27:40AM -0500, Michael S. Zick wrote:
+In your case given the BIOS appears to be informing us you have a 40wire
+cable there isn't much that can be fixed
 
-> > As a side note: The C7-M actually uses the same software interface as Intel CPU
-> > for doing the power transitions (ACPI Performance States).   Only very early C7
-> > models used the cpufreq/e_powersaver.c driver.
-> 
-> What is "very early C7 models" in terms of cpuid results?
+> example, in /sys somewhere? hdparm fails to set a higher UDMA and I
+> looked at sdparm but don't see anything in it to increase UDMA...
 
-I've inquired about that.
+Tejun some time ago added stuff to override all of these things:
 
-Looking at he code, the driver only seems to checking for a minimum CPUID
-value, but doesn't contain a maximum.
+See Documentation/kernel-parameters.txt
 
-Regards,
--- 
-- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
-============================================================================
-VIA Free and Open Source Software Liaison
+	libata.force=
+
+which will let you override all sorts of autodetection for quirky boards
