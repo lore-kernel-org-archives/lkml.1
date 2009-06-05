@@ -1,82 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755561AbZFEH6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbZFEICi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755561AbZFEH6T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 03:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbZFEH6H
+	id S1755403AbZFEICi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 04:02:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbZFEICW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 03:58:07 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:32206 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752904AbZFEH6G (ORCPT
+	Fri, 5 Jun 2009 04:02:22 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:56631 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157AbZFEICV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 03:58:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=X9KZXcxJL+3jJWzSOTwGgtoRDqjlW6U55RFkc5N+EUwlSYUwEgjjvjGINQ+elR1aHd
-         33h8u0ZHlJ0D2o4eqoNq3H7I3/SH9TOmfXVWFkd1JPduVXxWIIhxE9RZrD5iLOw8YGm6
-         +AtDhUeQt7LYDmTQpjU3v+BQiKzELF7u/LFRQ=
-Date: Fri, 5 Jun 2009 16:00:19 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Tao Ma <tao.ma@oracle.com>
-Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64
-	2.6.30-rc8.
-Message-ID: <20090605080019.GD8171@cr0.nay.redhat.com>
-References: <4A289928.7040508@oracle.com> <20090605054902.GF7962@cr0.nay.redhat.com> <4A28B63E.1080004@oracle.com> <20090605064316.GB8171@cr0.nay.redhat.com> <4A28C1A4.9050708@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A28C1A4.9050708@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 5 Jun 2009 04:02:21 -0400
+Subject: Re: Intel 915GM MCHBAR bug
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: eric@anholt.net, intel-gfx@lists.freedesktop.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable@kernel.org
+In-Reply-To: <20090604112738.4c01d35e@jbarnes-x200>
+References: <4A242C81.6020906@cs.helsinki.fi>
+	 <20090604112738.4c01d35e@jbarnes-x200>
+Date: Fri, 05 Jun 2009 11:02:21 +0300
+Message-Id: <1244188941.23533.16.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 05, 2009 at 02:56:36PM +0800, Tao Ma wrote:
->
->
-> Amerigo Wang wrote:
->> On Fri, Jun 05, 2009 at 02:07:58PM +0800, Tao Ma wrote:
->>>
->>> Amerigo Wang wrote:
->>>> On Fri, Jun 05, 2009 at 12:03:52PM +0800, Tao Ma wrote:
->>>>> Hi list,
->>>>>       In 2.6.30-rc8, /proc/kcore in x86_64's size is unreasonable 
->>>>> large  to be 281474974617600.
->>>>> While in a x86 box, it is 931131392 which looks sane.
->>>>>
->>>>> [root@test8 ~]# ll /proc/kcore
->>>>> -r-------- 1 root root 281474974617600 Jun  5 11:15 /proc/kcore
->>>>>
->>>>> [root@ocfs2-test9 ~]$ ll /proc/kcore
->>>>> -r-------- 1 root root 931131392 Jun  5 11:58 /proc/kcore
->>>> Hmm, what is your physical RAM size on test8?
->>>> /proc/kcore looks fine on my x86_64 box.
->>> Only 4G.
->>
->> Hmm, my x86_box has 8G mem, the size of kcore looks much
->> saner than the above huge number, but it is still wrong
->> according to what the man page describes...
->>
->> Please do what Andrew said, it will be helpful.
->>
->>>>> I just noticed this when kexec fails in "Can't find kernel text 
->>>>> map area  from kcore".
->>>>>
->>>>> Is there something wrong?
->>>> It looks like that error message is from userspace?
->>> I just started kdump and get the error message.
->>
->> IIRC, kdump should use /proc/vmcore, instead of /proc/kcore...
->> nothing related.
-> in el5, when start kdump service it will do something like
-> /sbin/kexec --args-linux -p '--command-line=ro root=LABEL=/ rhgb quiet  
-> irqpoll maxcpus=1' --initrd=/boot/initrd-2.6.18-53.el5kdump.img  
-> /boot/vmlinuz-2.6.18-53.el5
->
-> And the error message is from there.
+Hi Jesse,
 
->From /sbin/kexec? I just checked the source code of kexec-tools,
-I haven't found that message...
+(I am cc'ing linux-kernel.)
+
+On Mon, 01 Jun 2009 22:31:13 +0300
+> Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> 
+> > Hi Jesse,
+> > 
+> > I am seeing this on my Eee PC 701 which is running a Ubuntu 
+> > 2.6.28-11.42-generic stock kernel:
+> > 
+> > [   76.826966] [drm:i915_gem_detect_bit_6_swizzle] *ERROR* Couldn't
+> > read from MCHBAR.  Disabling tiling.
+> > [   76.827215] [drm] Initialized i915 1.6.0 20080730 on minor 0
+> > [   76.834037] [drm:i915_setparam] *ERROR* unknown parameter 4
+> > [   76.834104] [drm:i915_getparam] *ERROR* Unknown parameter 6
+> > 
+> > Google turned up this patch
+> > 
+> > http://lists.freedesktop.org/archives/intel-gfx/2009-January/001186.html
+> > 
+> > but I don't seem to find it mainline kernel.
+> > 
+> > Was the bug fixed in some other way? It seem that distributions have
+> > not yet picked up your patch and I am unsure if it's in any of the
+> > -stable kernels.
+
+On Thu, 2009-06-04 at 11:27 +0100, Jesse Barnes wrote:
+> I think Eric acked it but may not have pushed it to drm-intel-next
+> yet.  Should happen in the next week or two though as we prepare the
+> merge window series.
+
+OK, thanks for the info! FYI, I tested 2.6.30-rc8 with your patch
+applied and everything works smoothly on my EeePC 701. I did not test
+plain 2.6.30-rc8 as I expect it to show same kind of behavior as Ubuntu
+distro kernel. Is this correct or do you want me to test 2.6.30-rc8 too?
+
+I wonder why the patch hasn't received more attention as it's a pretty
+critical bug. The _default_ Ubuntu 9.04 netbook remix installation is
+completely broken for EeePC 701 (and probably others as well) without
+the patch. And it's not as if I'm the only one that suffers from it. A
+quick Google search reveals that a lot of people are hitting it.
+
+So I really do think we need to merge this patch to the upcoming 2.6.31
+ASAP and backport it to -stable after it has gotten some more testing.
+
+			Pekka
+
