@@ -1,195 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753915AbZFEQAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbZFEQBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753915AbZFEQAb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 12:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbZFEQAJ
+	id S1755571AbZFEQBY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 12:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbZFEQBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 12:00:09 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:50415 "EHLO
+	Fri, 5 Jun 2009 12:01:17 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:55562 "EHLO
 	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755284AbZFEQAG convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1751798AbZFEQBQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 12:00:06 -0400
+	Fri, 5 Jun 2009 12:01:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=nJQOoWR+8hAm3HM0Fx9r6o8tS5rcmK3J35rf+l5SrLUygGr6FeljGn/riRVe9yPZAV
-         iGVJtso5ww7Mm55m9G5LV+j2SkmMsrRvRrHuJshILsw4AJWLXk3BTutnz+j0dquxMRdX
-         PJegFlb9QZPogddFvi7samjt4iheCULV3Opi8=
+        b=HYoXi4cFWpGYOWY5c9843V/TnkgIEwri8f2OXlurFCNwAx33b12AP3RyDk7IEzmr0o
+         PNm4VtF/8r50jLPlugazEIkHM1X6rVzt+pKKj0XxGVte/feGY8B+E7NaNSYWAIkyEd38
+         do1PSVyVdqSEjRCgBkr3lM5B7x6nXmAaNRQkc=
 MIME-Version: 1.0
-In-Reply-To: <1244211945.23850.53.camel@localhost.localdomain>
-References: <1244168990-28355-1-git-send-email-dbaryshkov@gmail.com>
-	 <1244168990-28355-2-git-send-email-dbaryshkov@gmail.com>
-	 <1244168990-28355-3-git-send-email-dbaryshkov@gmail.com>
-	 <1244168990-28355-4-git-send-email-dbaryshkov@gmail.com>
-	 <1244168990-28355-5-git-send-email-dbaryshkov@gmail.com>
-	 <1244207921.23850.17.camel@localhost.localdomain>
-	 <bc64b4640906050640n77bddf37u8e549dff72508c2d@mail.gmail.com>
-	 <1244211945.23850.53.camel@localhost.localdomain>
-Date: Fri, 5 Jun 2009 20:00:06 +0400
-Message-ID: <bc64b4640906050900y233aecd3j24dddb4fd9d2820@mail.gmail.com>
-Subject: Re: [PATCH 4/5] ieee802154: add documentation about our stack
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, slapin@ossfans.org, davem@davemloft.net,
-       Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <1244216712.3631.117.camel@Joe-Laptop.home>
+References: <1244197103.3631.40.camel@Joe-Laptop.home>
+	 <4A28F94A.6040500@tuffmail.co.uk>
+	 <1244199633.3631.43.camel@Joe-Laptop.home>
+	 <71cd59b00906050457i29638577o9eeb5e8fa8eb087c@mail.gmail.com>
+	 <1244216712.3631.117.camel@Joe-Laptop.home>
+Date: Fri, 5 Jun 2009 18:01:16 +0200
+Message-ID: <71cd59b00906050901p71c7483fja5b3c74744f93384@mail.gmail.com>
+Subject: Re: [PATCH] eeepc-laptop.c: use pr_fmt and pr_<level>
+From: Corentin Chary <corentin.chary@gmail.com>
+To: Joe Perches <joe@perches.com>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       acpi4asus-user@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       Matthew Garrett <mjg@redhat.com>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/5 Marcel Holtmann <marcel@holtmann.org>:
-> Hi Dmitry,
+On Fri, Jun 5, 2009 at 5:45 PM, Joe Perches<joe@perches.com> wrote:
+> On Fri, 2009-06-05 at 13:57 +0200, Corentin Chary wrote:
+>> On Fri, Jun 5, 2009 at 1:00 PM, Joe Perches<joe@perches.com> wrote:
+>> > On Fri, 2009-06-05 at 11:54 +0100, Alan Jenkins wrote:
+>> >> Is EEEPC_HOTK_FILE used anywhere else?  It would be clearer if you were
+>> >> able to just use "eeepc: " or whatever and remove the definition of
+>> >> EEEPC_HOTK_FILE.
+>> > It is used elsewhere and perhaps it'd be better to use KBUILD_MODNAME.
+>> I think we can't use KBUILD_MODNAME because "eeepc" is used for
+>> platform_device, backlight and input device. Using "eeepc-laptop"
+>> would break compatibility.
 >
->> >> Add MAINTAINERS entry and a small text describing our stack interfaces,
->> >> how to hook the drivers, etc.
->> >>
->> >> Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
->> >> Signed-off-by: Sergey Lapin <slapin@ossfans.org>
->> >> ---
->> >>  Documentation/networking/ieee802154.txt |   76 +++++++++++++++++++++++++++++++
->> >>  MAINTAINERS                             |   12 +++++
->> >>  2 files changed, 88 insertions(+), 0 deletions(-)
->> >>  create mode 100644 Documentation/networking/ieee802154.txt
->> >>
->> >> diff --git a/Documentation/networking/ieee802154.txt b/Documentation/networking/ieee802154.txt
->> >> new file mode 100644
->> >> index 0000000..a0280ad
->> >> --- /dev/null
->> >> +++ b/Documentation/networking/ieee802154.txt
->> >> @@ -0,0 +1,76 @@
->> >> +
->> >> +             Linux IEEE 802.15.4 implementation
->> >> +
->> >> +
->> >> +Introduction
->> >> +============
->> >> +
->> >> +The Linux-ZigBee project goal is to provide complete implementation
->> >> +of IEEE 802.15.4 / ZigBee / 6LoWPAN protocols. IEEE 802.15.4 is a stack
->> >> +of protocols for organizing Low-Rate Wireless Personal Area Networks.
->> >> +
->> >> +Currently only IEEE 802.15.4 layer is implemented. We have choosen
->> >> +to use plain Berkeley socket API, the generic Linux networking stack
->> >> +to transfer IEEE 802.15.4 messages and a special protocol over genetlink
->> >> +for configuration/management
->> >> +
->> >> +
->> >> +Socket API
->> >> +==========
->> >> +
->> >> +int sd = socket(PF_IEEE802154, SOCK_DGRAM, 0);
->> >> +.....
->> >> +
->> >> +The address family, socket addresses etc. are defined in the
->> >> +include/net/ieee802154/af_ieee802154.h header or in the special header
->> >> +in our userspace package (see either linux-zigbee sourceforge download page
->> >> +or git tree at git://linux-zigbee.git.sourceforge.net/gitroot/linux-zigbee).
->> >> +
->> >> +One can use SOCK_RAW for passing raw data towards device xmit function. YMMV.
->> >> +
->> >> +
->> >> +MLME - MAC Level Management
->> >> +============================
->> >> +
->> >> +Most of IEEE 802.15.4 MLME interfaces are directly mapped on netlink commands.
->> >> +See the include/net/ieee802154/nl802154.h header. Our userspace tools package
->> >> +(see above) provides CLI configuration utility for radio interfaces and simple
->> >> +coordinator for IEEE 802.15.4 networks as an example users of MLME protocol.
->> >> +
->> >> +
->> >> +Kernel side
->> >> +=============
->> >> +
->> >> +Like with WiFi, there are several types of devices implementing IEEE 802.15.4.
->> >> +1) 'HardMAC'. The MAC layer is implemented in the device itself, the device
->> >> +   exports MLME and data API.
->> >> +2) 'SoftMAC' or just radio. These types of devices are just radio transceivers
->> >> +   possibly with some kinds of acceleration like automatic CRC computation and
->> >> +   comparation, automagic ACK handling, address matching, etc.
->> >> +
->> >> +Those types of devices require different approach to be hooked into Linux kernel.
->> >> +
->> >> +
->> >> +HardMAC
->> >> +=======
->> >> +
->> >> +See the header include/net/ieee802154/netdevice.h. You have to implement Linux
->> >> +net_device, with .type = ARPHRD_IEEE802154. Data is exchanged with socket family
->> >> +code via plain sk_buffs. The control block of sk_buffs will contain additional
->> >> +info as described in the struct ieee802154_mac_cb.
->> >
->> > are you sending IP packets over this ARPHRD_IEEE802154 network devices
->> > or are you just abusing it as a control interface. If it is the later
->> > then can we please stop doing this. I really dislike these irda0,
->> > wmaster0 and alike stuff. If you can't configure it as real IP device,
->> > you should not use struct net_device at all from my point of view. For
->> > all your control details you have netlink so no need for an extra device
->> > here unless it can actually talk IP (or similar like IPX etc.).
->>
->> Hmm. Once I've thought about it, as net_device seemed a Really Big Thing to me
->> to be used for our stack. However from the beginning we wanted to use plain BSD
->> sockets API, we wanted to use sk_buffs (of course) for the whole
->> message interface.
->> And when prototyping lowpan_device, I ended duplicating lots of net_device
->> functionality on my own.
->> Either we have to develop some lightweight "net_device" abstracted from IP & Ko,
->> but containing sk_buff queues, header ops, etc, or end up with functionality
->> duplication and hacks like in bluetooth (where skb->dev is used to store hci_dev
->> instead of net_device).
->
-> that skb->dev pointer is typed as net_device is just a cosmetic detail
-> from my point of view. And having Bluetooth use it as hci_dev is not
-> actually a hack. We just can't send Bluetooth HCI skb directly to the IP
-> layer, but we also don't do that ;)
->
->> Hmm. AX.25, AppleTalk, CAN, DecNet, most of other procotols sitting inside
->> Linux kernel do use net_device structure, why should we differ?
->
-> Don't know about CAN since I never looked deep enough into it. However
-> for the other, they do transport some sort of networking packets over
-> it. So my point is as long as I can use ifconfig of ip to set an address
-> on these interfaces and route them it makes sense to. Just to reuse
-> net_device because it is convenient for a control interface sounds wrong
-> to me. The IrDA stuff is one big example of this.
+> What compatibility would it break?
+> Logging messages are not guaranteed to be stable across versions.
 
-Hmm. Let's make things clear: do you request for ip/ifconfig to be working
- upon a net_device or do you request that network packets are transmitted
-over the net_device?
-
->> Moreover, once we implement 6lowpan support (an encapsulation for IPv6 frames
->> into IEEE 802.15.4 ones) it will be possible to send IPv6 frames directly over
->> IEEE 802.15.4.
->
-> So using the socket interfaces has nothing do with the net_device you
-> are creating. So that argument doesn't work for me. Even mac80211
-> nowadays uses a proper hardware abstraction (ieee80211_hw and
-> ieee80211_ops) and you should do the same.
-
-We have more or less the same abstraction for the simple radios (if you'd like,
-please check the serie at the branch for-review-v2, or the serie that was posted
-several days ago. Basically simple radio provide interface for packet rx/tx,
-energy detection, etc. Then mac802154 (mac80211 analogy) comes into play:
-all radio packets, queue processing, etc. are guided by master interface, which
-multiplexes packets  from/to one or several ARPHRD_IEEE802154 interfaces.
-Those interfaces then decode if the packet is beacon, command or data frame,
-passes data frames to socket family, calls netlink callbacks for commands, etc.
-
-While I understand that master interface can be dropped/replaced by
-non-net_device thing, I think that logical interfaces should be provided
-via net_device. Please correct me if I'm wrong here.
-
-For HardMAC (that part that is presented in this patchseri) we've cut
-this scheme
-directly at ARPHRD_IEEE802154 device. The device driver on it's own sends/
-receives data frames via hardware and calls MLME callbacks where appropriate.
-
-> Once you have actually implemented 6lowpan then these are the ones that
-> should use net_device and show up within ifconfig.
+for platform_device backlight and input device it would change the
+"/sys" paths (eg: /sys/class/backlight/eeepc)
+Thanks for the patch, will be applied soon =)
 
 -- 
-With best wishes
-Dmitry
+Corentin Chary
+http://xf.iksaif.net - http://uffs.org
