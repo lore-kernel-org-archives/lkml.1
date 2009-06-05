@@ -1,64 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbZFELNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbZFELNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbZFELNT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 07:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbZFELNE
+	id S1753207AbZFELNl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 07:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbZFELNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 07:13:04 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:52207 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751433AbZFELND (ORCPT
+	Fri, 5 Jun 2009 07:13:15 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:49219 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753037AbZFELNN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 07:13:03 -0400
+	Fri, 5 Jun 2009 07:13:13 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Al Viro <viro@ZenIV.linux.org.uk>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>
-Subject: [PATCH v2.1 00/17] abstract out the super block clean/dirty state
-Date: Fri,  5 Jun 2009 16:05:38 +0300
-Message-Id: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
+       Christoph Hellwig <hch@infradead.org>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: [PATCH v2.1 07/17] FAT: do not manipulate s_dirt directly
+Date: Fri,  5 Jun 2009 16:05:45 +0300
+Message-Id: <1244207155-2092-8-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.6.0.6
-X-OriginalArrivalTime: 05 Jun 2009 11:12:42.0157 (UTC) FILETIME=[8B66E5D0:01C9E5CE]
+In-Reply-To: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
+References: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
+X-OriginalArrivalTime: 05 Jun 2009 11:12:59.0087 (UTC) FILETIME=[957E35F0:01C9E5CE]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 
-here is an updated sent of trivial patches which abstract out the super block
-clean/dirty state. This is the same as v2, but it has 'sb_is_dirty()' renamed
-to 'is_sb_dirty()'. The v2 patches were here:
-http://marc.info/?l=linux-kernel&m=124410571830989&w=2
+... use new VFS helpers instead.
 
-This patchset introduces the following 3 new helper VFS functions:
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+ fs/fat/fatent.c |    8 ++++----
+ fs/fat/inode.c  |    4 ++--
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-* static inline void mark_sb_dirty(struct super_block *sb)
-* static inline void mark_sb_clean(struct super_block *sb)
-* static inline int is_sb_dirty(struct super_block *sb)
+diff --git a/fs/fat/fatent.c b/fs/fat/fatent.c
+index da6eea4..fa19a9d 100644
+--- a/fs/fat/fatent.c
++++ b/fs/fat/fatent.c
+@@ -495,7 +495,7 @@ int fat_alloc_clusters(struct inode *inode, int *cluster, int nr_cluster)
+ 				sbi->prev_free = entry;
+ 				if (sbi->free_clusters != -1)
+ 					sbi->free_clusters--;
+-				sb->s_dirt = 1;
++				mark_sb_dirty(sb);
+ 
+ 				cluster[idx_clus] = entry;
+ 				idx_clus++;
+@@ -517,7 +517,7 @@ int fat_alloc_clusters(struct inode *inode, int *cluster, int nr_cluster)
+ 	/* Couldn't allocate the free entries */
+ 	sbi->free_clusters = 0;
+ 	sbi->free_clus_valid = 1;
+-	sb->s_dirt = 1;
++	mark_sb_dirty(sb);
+ 	err = -ENOSPC;
+ 
+ out:
+@@ -578,7 +578,7 @@ int fat_free_clusters(struct inode *inode, int cluster)
+ 		ops->ent_put(&fatent, FAT_ENT_FREE);
+ 		if (sbi->free_clusters != -1) {
+ 			sbi->free_clusters++;
+-			sb->s_dirt = 1;
++			mark_sb_dirty(sb);
+ 		}
+ 
+ 		if (nr_bhs + fatent.nr_bhs > MAX_BUF_PER_PAGE) {
+@@ -668,7 +668,7 @@ int fat_count_free_clusters(struct super_block *sb)
+ 	}
+ 	sbi->free_clusters = free;
+ 	sbi->free_clus_valid = 1;
+-	sb->s_dirt = 1;
++	mark_sb_dirty(sb);
+ 	fatent_brelse(&fatent);
+ out:
+ 	unlock_fat(sbi);
+diff --git a/fs/fat/inode.c b/fs/fat/inode.c
+index 2292cbf..f3b6410 100644
+--- a/fs/fat/inode.c
++++ b/fs/fat/inode.c
+@@ -442,7 +442,7 @@ static void fat_clear_inode(struct inode *inode)
+ static void fat_write_super(struct super_block *sb)
+ {
+ 	lock_super(sb);
+-	sb->s_dirt = 0;
++	mark_sb_clean(sb);
+ 
+ 	if (!(sb->s_flags & MS_RDONLY))
+ 		fat_clusters_flush(sb);
+@@ -455,7 +455,7 @@ static void fat_put_super(struct super_block *sb)
+ 
+ 	lock_kernel();
+ 
+-	if (sb->s_dirt)
++	if (is_sb_dirty(sb))
+ 		fat_write_super(sb);
+ 
+ 	if (sbi->nls_disk) {
+-- 
+1.6.0.6
 
-With these patches the whole Linux kernel tree has only 3 places where
-'sb->s_dirt' is referred.
-
-These patches were previously sent as part of periodic write-back optimization
-series here: http://marc.info/?l=linux-kernel&m=124342331127886&w=2
-
-Because of the overlap with Jens' "per-bdi write-back" work, I have to work
-on top of Jens' patches. However, it would be easier for me if my preparation
-"abstracting sb->s_dirt" patches were merged earlier, at 2.6.31 merge window.
-I think they make sense in general. I would then continue working on the second
-part separately.
-
-The patches were made on top of the VFS tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git for-next
-
-commit f932bb0daca28ffe69ec876043cac00bc9b50147
-Author: Theodore Ts'o <tytso@mit.edu>
-Date:   Tue May 12 07:37:56 2009 -0400
-
-    Fix nobh_truncate_page() to not pass stack garbage to get_block()
-
-And they are also available at
-git://git.infradead.org/users/dedekind/misc-2.6.git sb-helpers-v2
-
-Thanks.
