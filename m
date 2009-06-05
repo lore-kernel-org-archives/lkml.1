@@ -1,293 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240AbZFEPh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752628AbZFEPl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754240AbZFEPh1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 11:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbZFEPhS
+	id S1752628AbZFEPl7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 11:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbZFEPlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 11:37:18 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:54092 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752079AbZFEPhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 11:37:16 -0400
-Date: Fri, 5 Jun 2009 08:37:14 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@redhat.com>,
-       dipankar@in.ibm.com
-Subject: Re: [PATCH] cpuhotplug: introduce try_get_online_cpus() take 2
-Message-ID: <20090605153714.GB6778@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <4A1F9CEA.1070705@cn.fujitsu.com> <20090530015342.GA21502@linux.vnet.ibm.com> <20090530043739.GA12157@in.ibm.com> <4A27708C.6030703@cn.fujitsu.com>
+	Fri, 5 Jun 2009 11:41:49 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:38295 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751190AbZFEPls (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 11:41:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Ot8KMbMXsxElAP11CoSvjrsf9u21zZ1XnPLr81BgXRBPcfXiXH+bJ6YnMHnw5SeliT
+         2Mc5BVUGWjOYKH0ICGfGl7HoWhV91XwewAWfKTKBj5zw4+OljM90sgGsFbRPCzkKQEI6
+         FWF/5kZiYlASKprRa1mzI88v5kFbFwmEmzSwo=
+Date: Fri, 5 Jun 2009 19:41:47 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matt Helsley <matthltc@us.ibm.com>, xemul@parallels.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, mingo@elte.hu, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 1/9] exec_path 1/9: introduce ->exec_path and switch
+	/proc/*/exe
+Message-ID: <20090605154147.GA16766@x200.localdomain>
+References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org> <20090531215427.GA29534@x200.localdomain> <20090531151953.8f8b14b5.akpm@linux-foundation.org> <20090603230422.GB853@x200.localdomain> <20090605104517.GA11713@infradead.org> <alpine.LFD.2.01.0906050808551.6847@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A27708C.6030703@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <alpine.LFD.2.01.0906050808551.6847@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 02:58:20PM +0800, Lai Jiangshan wrote:
-> Gautham R Shenoy wrote:
-> > On Fri, May 29, 2009 at 06:53:42PM -0700, Paul E. McKenney wrote:
-> >> On Fri, May 29, 2009 at 04:29:30PM +0800, Lai Jiangshan wrote:
-> >>> Current get_online_cpus()/put_online_cpus() re-implement
-> >>> a rw_semaphore, so it is converted to a real rw_semaphore in this fix.
-> >>> It simplifies codes, and is good for read.
-> >>>
-> >>> And misc fix:
-> >>> 1) Add comments for cpu_hotplug.active_writer.
-> >>> 2) The theoretical disadvantage described in cpu_hotplug_begin()'s
-> >>>    comments is no longer existed when we use rw_semaphore,
-> >>>    so this part of comments was removed.
-> >>>
-> >>> [Impact: improve get_online_cpus()/put_online_cpus() ]
-> >> Actually, it turns out that for my purposes it is only necessary to check:
-> >>
-> >> 	cpu_hotplug.active_writer != NULL
-> >>
-> >> The only time that it is unsafe to invoke get_online_cpus() is when
-> >> in a notifier, and in that case the value of cpu_hotplug.active_writer
-> >> is stable.  There could be false positives, but these are harmless, as
-> >> the fallback is simply synchronize_sched().
-> >>
-> >> Even this is only needed should the deadlock scenario you pointed out
-> >> arise in practice.
-> >>
-> >> As Oleg noted, there are some "interesting" constraints on
-> >> get_online_cpus().  Adding Gautham Shenoy to CC for his views.
+On Fri, Jun 05, 2009 at 08:10:50AM -0700, Linus Torvalds wrote:
+> On Fri, 5 Jun 2009, Christoph Hellwig wrote:
+> >
+> > On Thu, Jun 04, 2009 at 03:04:22AM +0400, Alexey Dobriyan wrote:
+> > > ->exec_path is copied on clone(2) and put at do_exit() time.
+> > > 
+> > > ->exec_path is going to replace struct mm_struct::exe_file et al
+> > > and allows to remove VM_EXECUTABLE flag while keeping readlink("/proc/*/exe")
+> > > without loop over all VMAs.
 > > 
-> > So, to put it in a sentence, get_online_cpus()/put_online_cpus() is a
-> > read-write semaphore with read-preference while allowing writer to
-> > downgrade to a reader when required.
-> > 
-> > Read-preference was one of the ways of allowing unsuspecting functions
-> > which need the protection against cpu-hotplug to end up seeking help of
-> > functions which also need protection against cpu-hotplug. IOW allow a
-> > single context to call get_online_cpus() without giving away to circular
-> > deadlock. A fair reader-write lock wouldn't allow that since in the
-> > presence of a write, the recursive reads would block, thereby causing a
-> > deadlock.
-> > 
-> > Also, around the time when this design was chosen, we had a whole bunch
-> > of functions which did try to take the original "cpu_hotplug_mutex"
-> > recursively. We could do well to use Lai's implementation if such
-> > functions have mended their ways since this would make it a lot simpler
-> > :-) . But I suspect it is easier said than done!
-> > 
-> > BTW, I second the idea of try_get_online_cpus(). I had myself proposed
-> > this idea a year back. http://lkml.org/lkml/2008/4/29/222.
-> > 
-> > 
-> > 
-> 
-> Add CC to Peter Zijlstra <peterz@infradead.org>
-> 
-> (This patch is against mainline but not for inclusion, it will adapted
-> against -mm when request)
-> 
-> Requst For Comments and Reviewing Hungeringly.
-> 
-> - Lockless for get_online_cpus()'s fast path
-> - Introduce try_get_online_cpus()
+> > Why don't you leave it in mm_struct?  That'll avoid having to mess with
+> > it in clone,
 
-One question for Gautham Shenoy -- are non-atomic CPU-hotplug notifiers
-always invoked from the task that did the cpu_hotplug_begin()?
+There is no mess in clone:
 
-If so, well and good.  If not, then it would not be possible to
-expedite RCU grace periods from within CPU-hotplug notifiers.
+	+       get_task_exec_path(current, &p->exec_path);
 
-							Thanx, Paul
+and there is no mess in exit:
 
-> ---
-> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-> index 2643d84..63b216c 100644
-> --- a/include/linux/cpu.h
-> +++ b/include/linux/cpu.h
-> @@ -104,6 +104,7 @@ extern struct sysdev_class cpu_sysdev_class;
+	+       set_task_exec_path(tsk, &(struct path){ .mnt = NULL, .dentry = NULL });
+
+> > and given that exec always replaces the whole VM it's a more natural fit anyway.
 > 
->  extern void get_online_cpus(void);
->  extern void put_online_cpus(void);
-> +extern int try_get_online_cpus(void);
->  #define hotcpu_notifier(fn, pri) {				\
->  	static struct notifier_block fn##_nb __cpuinitdata =	\
->  		{ .notifier_call = fn, .priority = pri };	\
-> @@ -117,6 +118,7 @@ int cpu_down(unsigned int cpu);
+> Oh, I didn't even notice that, because I just assumed it was in mm_struct 
+> already due to the earlier discussion.
 > 
->  #define get_online_cpus()	do { } while (0)
->  #define put_online_cpus()	do { } while (0)
-> +static inline int try_get_online_cpus(void) { return 1; }
->  #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
->  /* These aren't inline functions due to a GCC bug. */
->  #define register_hotcpu_notifier(nb)	({ (void)(nb); 0; })
-> diff --git a/kernel/cpu.c b/kernel/cpu.c
-> index 395b697..54d6e0d 100644
-> --- a/kernel/cpu.c
-> +++ b/kernel/cpu.c
-> @@ -14,6 +14,8 @@
->  #include <linux/kthread.h>
->  #include <linux/stop_machine.h>
->  #include <linux/mutex.h>
-> +#include <asm/atomic.h>
-> +#include <linux/wait.h>
-> 
->  #ifdef CONFIG_SMP
->  /* Serializes the updates to cpu_online_mask, cpu_present_mask */
-> @@ -26,21 +28,26 @@ static __cpuinitdata RAW_NOTIFIER_HEAD(cpu_chain);
->   */
->  static int cpu_hotplug_disabled;
-> 
-> +/*
-> + * @cpu_hotplug is a special read-write semaphore with these semantics:
-> + * 1) It is read-preference and allows reader-in-reader recursion.
-> + * 2) It allows writer to downgrade to a reader when required.
-> + *    (allows reader-in-writer recursion.)
-> + * 3) It allows only one thread to require the write-side lock at most.
-> + *    (cpu_add_remove_lock ensures it.)
-> + */
->  static struct {
->  	struct task_struct *active_writer;
-> -	struct mutex lock; /* Synchronizes accesses to refcount, */
-> -	/*
-> -	 * Also blocks the new readers during
-> -	 * an ongoing cpu hotplug operation.
-> -	 */
-> -	int refcount;
-> +	wait_queue_head_t sleeping_readers;
-> +	/* refcount = 0 means the writer owns the lock. */
-> +	atomic_t refcount;
->  } cpu_hotplug;
-> 
->  void __init cpu_hotplug_init(void)
->  {
->  	cpu_hotplug.active_writer = NULL;
-> -	mutex_init(&cpu_hotplug.lock);
-> -	cpu_hotplug.refcount = 0;
-> +	init_waitqueue_head(&cpu_hotplug.sleeping_readers);
-> +	atomic_set(&cpu_hotplug.refcount, 1);
->  }
-> 
->  #ifdef CONFIG_HOTPLUG_CPU
-> @@ -50,10 +57,20 @@ void get_online_cpus(void)
->  	might_sleep();
->  	if (cpu_hotplug.active_writer == current)
->  		return;
-> -	mutex_lock(&cpu_hotplug.lock);
-> -	cpu_hotplug.refcount++;
-> -	mutex_unlock(&cpu_hotplug.lock);
-> 
-> +	if (unlikely(!atomic_inc_not_zero(&cpu_hotplug.refcount))) {
-> +		DEFINE_WAIT(wait);
-> +
-> +		for (;;) {
-> +			prepare_to_wait(&cpu_hotplug.sleeping_readers, &wait,
-> +					TASK_UNINTERRUPTIBLE);
-> +			if (atomic_inc_not_zero(&cpu_hotplug.refcount))
-> +				break;
-> +			schedule();
-> +		}
-> +
-> +		finish_wait(&cpu_hotplug.sleeping_readers, &wait);
-> +	}
->  }
->  EXPORT_SYMBOL_GPL(get_online_cpus);
-> 
-> @@ -61,14 +78,27 @@ void put_online_cpus(void)
->  {
->  	if (cpu_hotplug.active_writer == current)
->  		return;
-> -	mutex_lock(&cpu_hotplug.lock);
-> -	if (!--cpu_hotplug.refcount && unlikely(cpu_hotplug.active_writer))
-> -		wake_up_process(cpu_hotplug.active_writer);
-> -	mutex_unlock(&cpu_hotplug.lock);
-> 
-> +	if (unlikely(atomic_dec_and_test(&cpu_hotplug.refcount))) {
-> +		smp_mb__after_atomic_dec();
-> +		BUG_ON(!cpu_hotplug.active_writer);
-> +		wake_up_process(cpu_hotplug.active_writer);
-> +	}
->  }
->  EXPORT_SYMBOL_GPL(put_online_cpus);
-> 
-> +int try_get_online_cpus(void)
-> +{
-> +	if (cpu_hotplug.active_writer == current)
-> +		return 1;
-> +
-> +	if (likely(atomic_inc_not_zero(&cpu_hotplug.refcount)))
-> +		return 1;
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(try_get_online_cpus);
-> +
->  #endif	/* CONFIG_HOTPLUG_CPU */
-> 
->  /*
-> @@ -86,46 +116,41 @@ void cpu_maps_update_done(void)
->  }
-> 
->  /*
-> - * This ensures that the hotplug operation can begin only when the
-> - * refcount goes to zero.
-> + * This ensures that the hotplug operation can begin only when
-> + * there is no ongoing reader.
->   *
->   * Note that during a cpu-hotplug operation, the new readers, if any,
-> - * will be blocked by the cpu_hotplug.lock
-> + * will be blocked and queued at cpu_hotplug.sleeping_readers.
->   *
->   * Since cpu_hotplug_begin() is always called after invoking
->   * cpu_maps_update_begin(), we can be sure that only one writer is active.
->   *
-> - * Note that theoretically, there is a possibility of a livelock:
-> - * - Refcount goes to zero, last reader wakes up the sleeping
-> - *   writer.
-> - * - Last reader unlocks the cpu_hotplug.lock.
-> - * - A new reader arrives at this moment, bumps up the refcount.
-> - * - The writer acquires the cpu_hotplug.lock finds the refcount
-> - *   non zero and goes to sleep again.
-> - *
-> - * However, this is very difficult to achieve in practice since
-> - * get_online_cpus() not an api which is called all that often.
-> - *
->   */
->  static void cpu_hotplug_begin(void)
->  {
->  	cpu_hotplug.active_writer = current;
-> +	smp_mb__before_atomic_dec();
-> +	atomic_dec(&cpu_hotplug.refcount);
-> 
->  	for (;;) {
-> -		mutex_lock(&cpu_hotplug.lock);
-> -		if (likely(!cpu_hotplug.refcount))
-> +		set_current_state(TASK_UNINTERRUPTIBLE);
-> +		if (!atomic_read(&cpu_hotplug.refcount))
->  			break;
-> -		__set_current_state(TASK_UNINTERRUPTIBLE);
-> -		mutex_unlock(&cpu_hotplug.lock);
->  		schedule();
->  	}
-> +
-> +	__set_current_state(TASK_RUNNING);
->  }
-> 
->  static void cpu_hotplug_done(void)
->  {
->  	cpu_hotplug.active_writer = NULL;
-> -	mutex_unlock(&cpu_hotplug.lock);
-> +	atomic_inc(&cpu_hotplug.refcount);
-> +
-> +	if (waitqueue_active(&cpu_hotplug.sleeping_readers))
-> +		wake_up(&cpu_hotplug.sleeping_readers);
->  }
-> +
->  /* Need to know about CPUs going up/down? */
->  int __ref register_cpu_notifier(struct notifier_block *nb)
->  {
-> 
-> 
+> So I concur with Christoph - that field should be in the mm_struct. The 
+> executable is a "mapping" issue,
+
+This mapping issue is what created VM_EXECUTABLE/MAP_EXECUTABLE in
+the first place, I assume? Never mind it's cheap hack.
+
+> and goes along with task->mm, and should be there, not in task_struct.
+
+Because ->mm can be borrowed to unrelated task and user has to check
+for it.
+
+> So it should be copied at fork() time when you do the dup_mm(), not 
+> anywhere else.
