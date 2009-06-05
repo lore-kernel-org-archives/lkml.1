@@ -1,81 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbZFEQlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755531AbZFEQnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbZFEQlz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 12:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbZFEQlq
+	id S1755531AbZFEQnR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 12:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbZFEQnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 12:41:46 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:44385 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751162AbZFEQlp (ORCPT
+	Fri, 5 Jun 2009 12:43:07 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:48037 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751162AbZFEQnG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 12:41:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=uQNgXaBji9WFxWcBqXwWz5kwnQs2z7Msd0qmdLxvlq9wsQfvIFQXDgvgNZbadM5TsG
-         LTm2/rG+ws91xDCslOqD1W94fr2vdozezE0sHpI4Ofc4qw1KMCJ703W6eNZ93mdHkkfS
-         tv/CTrkOW8QCL7ukjru78k+KvR6HHsGYdSF08=
-Message-ID: <4A294B15.9070209@tuffmail.co.uk>
-Date: Fri, 05 Jun 2009 17:43:01 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 5 Jun 2009 12:43:06 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: linux-kernel@vger.kernel.org
+Subject: [Compile Warning] 2.6.30-rc8 build
+Date: Fri, 5 Jun 2009 11:43:03 -0500
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@redhat.com>
-CC: Aioanei Rares <krnl.list@gmail.com>, linux-ext4@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Mild filesystem corruption on ext4 (no journal)
-References: <4A28F83F.4030704@tuffmail.co.uk> <4A292E61.3050204@gmail.com> <4A293084.5010400@tuffmail.co.uk> <4A2937CC.7070503@redhat.com>
-In-Reply-To: <4A2937CC.7070503@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906051143.06119.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> Alan Jenkins wrote:
->   
->> Aioanei Rares wrote:
->>     
->
->   
->>> I suspect, although I might be wrong, that this is not a kernel-related
->>> problem.
->>>       
->> "To try and rule out a faulty userspace program, I marked the file as 
->> read-only (chmod a-w) and immutable (chattr +i).  After a reboot, the 
->> file was still read-only and immutable, yet it still became corrupted."
->>
->> Since the immutable bit is not respected, I tend to think it is a kernel 
->> problem.  Unless the filesystem isn't getting unmounted/flushed properly 
->> for some reason... but I thought the modern kernel had that covered.
->>
->> I agree it is very suspicious this happens only after upgrading libc.  
->> I'll see if I can find an individual change in libc locale-handling that 
->> might trigger this.
->>     
->
-> Maybe you could try some things in your shutdown script, such as
-> explicitly fsyncing the file, or bmapping it with filefrag, or dropping
-> caches and rereading it... see what the state is just before the
-> shutdown compared to after the reboot.
->
-> -Eric
->   
+Group,
 
-Dropping caches (and running sync first) had no effect on the result of 
-md5sum.  Hopefully that narrows it down a bit.
+To my reading of the function, I think gcc has a point:
 
-Thanks to your prodding though, I have another interesting finding:
+drivers/serial/8250.c: In function 'serial8250_shutdown':
+drivers/serial/8250.c:1685: warning: 'i' may be used uninitialized in this function
 
-If I remove the corrupted file and copy a "known good" copy into it's 
-place, then the corruption doesn't happen.  I've verified this a couple 
-of times.  The corruption only occurs if the file was created by 
-"locale-gen".
+It does read as if the code might try to initialize
+the 'lock' field of a null pointer.
 
-I'll continue to try work out why :-).
+Suggestions?
 
-Thanks
-Alan
+Mike
