@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755280AbZFEPU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbZFEPW0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755280AbZFEPU4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 11:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbZFEPUr
+	id S1755575AbZFEPW0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 11:22:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZFEPWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 11:20:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38887 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751088AbZFEPUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 11:20:46 -0400
-Message-ID: <4A2937CC.7070503@redhat.com>
-Date: Fri, 05 Jun 2009 10:20:44 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 5 Jun 2009 11:22:17 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:43156 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbZFEPWQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 11:22:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=KhVCdeHbH3V21rxOqz0avUqWfMLiGrnXdwtsCVtK9IRg/8jJlz44paXo2ESDcpvNkJ
+         vtmjoBKV6SCclM2JOFV3Is/U3zCSMKRs5di/Fl80fAOoIH++QtKdLG78iTwqQTnH72vc
+         fGd5eLY72YkqXaaFDSKFI5CEdvF1skXX1Aj80=
 MIME-Version: 1.0
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-CC: Aioanei Rares <krnl.list@gmail.com>, linux-ext4@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Mild filesystem corruption on ext4 (no journal)
-References: <4A28F83F.4030704@tuffmail.co.uk> <4A292E61.3050204@gmail.com> <4A293084.5010400@tuffmail.co.uk>
-In-Reply-To: <4A293084.5010400@tuffmail.co.uk>
+In-Reply-To: <Pine.LNX.4.44L0.0906051112370.10297-100000@netrider.rowland.org>
+References: <4A2931F5.1090709@tuffmail.co.uk>
+	 <Pine.LNX.4.44L0.0906051112370.10297-100000@netrider.rowland.org>
+Date: Fri, 5 Jun 2009 18:22:15 +0300
+X-Google-Sender-Auth: afd7a54158babfad
+Message-ID: <84144f020906050822x46c4f9cbmbad7ff6a2942c174@mail.gmail.com>
+Subject: Re: [PATCH] eeepc-laptop: enable camera by default
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       Corentin Chary <corentin.chary@gmail.com>,
+       acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
+       linux-kernel@vger.kernel.org, USB list <linux-usb@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
-> Aioanei Rares wrote:
+Hi Alan,
 
->> I suspect, although I might be wrong, that this is not a kernel-related
->> problem.
-> 
-> "To try and rule out a faulty userspace program, I marked the file as 
-> read-only (chmod a-w) and immutable (chattr +i).  After a reboot, the 
-> file was still read-only and immutable, yet it still became corrupted."
-> 
-> Since the immutable bit is not respected, I tend to think it is a kernel 
-> problem.  Unless the filesystem isn't getting unmounted/flushed properly 
-> for some reason... but I thought the modern kernel had that covered.
-> 
-> I agree it is very suspicious this happens only after upgrading libc.  
-> I'll see if I can find an individual change in libc locale-handling that 
-> might trigger this.
+On Fri, 5 Jun 2009, Alan Jenkins wrote:
+>> Auto-suspend white-listing would be done on the basis of USB ids
+>> (vendor, product).  At the moment it's expected that userspace should
+>> take ownership of it.  There's no infrastructure for in-kernel
+>> whitelisting.  I think.
 
-Maybe you could try some things in your shutdown script, such as
-explicitly fsyncing the file, or bmapping it with filefrag, or dropping
-caches and rereading it... see what the state is just before the
-shutdown compared to after the reboot.
+On Fri, Jun 5, 2009 at 6:13 PM, Alan Stern<stern@rowland.harvard.edu> wrote:
+> That's right.  We found it was hopeless to try doing this in the kernel
+> so we dumped the whole mess into userspace.
 
--Eric
+:-)
+
+I prefer that the kernel takes care of this things because, quite
+frankly, I usually end up fighting with user-space more than I ever do
+with the kernel. But don't mind me, I really have no say in USB
+development. I am just happy to have a working camera and can hand
+over the laptop back to my better half :-).
+
+                        Pekka
