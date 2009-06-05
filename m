@@ -1,165 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbZFEP0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240AbZFEPh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755725AbZFEP0K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 11:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZFEPZ7
+	id S1754240AbZFEPh1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 11:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbZFEPhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 11:25:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51204 "EHLO mx2.suse.de"
+	Fri, 5 Jun 2009 11:37:18 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:54092 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751637AbZFEPZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 11:25:58 -0400
-Subject: Re: [PATCH] x86: clean up vdso-layout.lds.S
-From: Petr Tesarik <ptesarik@suse.cz>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <1243865115.24278.8.camel@nathan.suse.cz>
-References: <1243865115.24278.8.camel@nathan.suse.cz>
-Content-Type: text/plain; charset="UTF-8"
-Organization: SUSE LINUX
-Date: Fri, 05 Jun 2009 17:25:59 +0200
-Message-Id: <1244215559.1604.12.camel@nathan.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
+	id S1752079AbZFEPhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 11:37:16 -0400
+Date: Fri, 5 Jun 2009 08:37:14 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@redhat.com>,
+       dipankar@in.ibm.com
+Subject: Re: [PATCH] cpuhotplug: introduce try_get_online_cpus() take 2
+Message-ID: <20090605153714.GB6778@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <4A1F9CEA.1070705@cn.fujitsu.com> <20090530015342.GA21502@linux.vnet.ibm.com> <20090530043739.GA12157@in.ibm.com> <4A27708C.6030703@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A27708C.6030703@cn.fujitsu.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Petr Tesarik píše v Po 01. 06. 2009 v 16:05 +0200:
-> The handling of various sections in the VDSO linker script
-> looks pretty haphazard. This patch cleans it up in this
-> regards:
+On Thu, Jun 04, 2009 at 02:58:20PM +0800, Lai Jiangshan wrote:
+> Gautham R Shenoy wrote:
+> > On Fri, May 29, 2009 at 06:53:42PM -0700, Paul E. McKenney wrote:
+> >> On Fri, May 29, 2009 at 04:29:30PM +0800, Lai Jiangshan wrote:
+> >>> Current get_online_cpus()/put_online_cpus() re-implement
+> >>> a rw_semaphore, so it is converted to a real rw_semaphore in this fix.
+> >>> It simplifies codes, and is good for read.
+> >>>
+> >>> And misc fix:
+> >>> 1) Add comments for cpu_hotplug.active_writer.
+> >>> 2) The theoretical disadvantage described in cpu_hotplug_begin()'s
+> >>>    comments is no longer existed when we use rw_semaphore,
+> >>>    so this part of comments was removed.
+> >>>
+> >>> [Impact: improve get_online_cpus()/put_online_cpus() ]
+> >> Actually, it turns out that for my purposes it is only necessary to check:
+> >>
+> >> 	cpu_hotplug.active_writer != NULL
+> >>
+> >> The only time that it is unsafe to invoke get_online_cpus() is when
+> >> in a notifier, and in that case the value of cpu_hotplug.active_writer
+> >> is stable.  There could be false positives, but these are harmless, as
+> >> the fallback is simply synchronize_sched().
+> >>
+> >> Even this is only needed should the deadlock scenario you pointed out
+> >> arise in practice.
+> >>
+> >> As Oleg noted, there are some "interesting" constraints on
+> >> get_online_cpus().  Adding Gautham Shenoy to CC for his views.
+> > 
+> > So, to put it in a sentence, get_online_cpus()/put_online_cpus() is a
+> > read-write semaphore with read-preference while allowing writer to
+> > downgrade to a reader when required.
+> > 
+> > Read-preference was one of the ways of allowing unsuspecting functions
+> > which need the protection against cpu-hotplug to end up seeking help of
+> > functions which also need protection against cpu-hotplug. IOW allow a
+> > single context to call get_online_cpus() without giving away to circular
+> > deadlock. A fair reader-write lock wouldn't allow that since in the
+> > presence of a write, the recursive reads would block, thereby causing a
+> > deadlock.
+> > 
+> > Also, around the time when this design was chosen, we had a whole bunch
+> > of functions which did try to take the original "cpu_hotplug_mutex"
+> > recursively. We could do well to use Lai's implementation if such
+> > functions have mended their ways since this would make it a lot simpler
+> > :-) . But I suspect it is easier said than done!
+> > 
+> > BTW, I second the idea of try_get_online_cpus(). I had myself proposed
+> > this idea a year back. http://lkml.org/lkml/2008/4/29/222.
+> > 
+> > 
+> > 
 > 
->  - re-order sections to more closely match the result of
->    a normal shared link
->  - discard sections which are not useful to user-space
->  - issue a linker error if a section is encountered which
->    is known not to work
->  - check that the .got section is empty, except for the
->    three entries defined by the ABI
+> Add CC to Peter Zijlstra <peterz@infradead.org>
 > 
-> Signed-off-by: Petr Tesarik <ptesarik@suse.cz>
+> (This patch is against mainline but not for inclusion, it will adapted
+> against -mm when request)
+> 
+> Requst For Comments and Reviewing Hungeringly.
+> 
+> - Lockless for get_online_cpus()'s fast path
+> - Introduce try_get_online_cpus()
 
-Any comments on this? It doesn't change anything. It only makes it
-harder to break vDSOs by accident (such as the latest buglet with TSC
-synchronization).
+One question for Gautham Shenoy -- are non-atomic CPU-hotplug notifiers
+always invoked from the task that did the cpu_hotplug_begin()?
 
-Petr Tesarik
+If so, well and good.  If not, then it would not be possible to
+expedite RCU grace periods from within CPU-hotplug notifiers.
+
+							Thanx, Paul
 
 > ---
->  Makefile          |    5 ++--
->  vdso-layout.lds.S |   57 +++++++++++++++++++++++++++++++++++++++++++++---------
->  2 files changed, 51 insertions(+), 11 deletions(-)
+> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+> index 2643d84..63b216c 100644
+> --- a/include/linux/cpu.h
+> +++ b/include/linux/cpu.h
+> @@ -104,6 +104,7 @@ extern struct sysdev_class cpu_sysdev_class;
 > 
-> diff --git a/arch/x86/vdso/Makefile b/arch/x86/vdso/Makefile
-> index 16a9020..8c7f06a 100644
-> --- a/arch/x86/vdso/Makefile
-> +++ b/arch/x86/vdso/Makefile
-> @@ -23,7 +23,8 @@ $(obj)/vdso.o: $(obj)/vdso.so
->  
->  targets += vdso.so vdso.so.dbg vdso.lds $(vobjs-y)
->  
-> -export CPPFLAGS_vdso.lds += -P -C
-> +vdso-cppflags = -P -C
-> +export CPPFLAGS_vdso.lds += -m64 $(vdso-cppflags)
->  
->  VDSO_LDFLAGS_vdso.lds = -m elf_x86_64 -Wl,-soname=linux-vdso.so.1 \
->  		      	-Wl,-z,max-page-size=4096 -Wl,-z,common-page-size=4096
-> @@ -68,7 +69,7 @@ vdso32.so-$(VDSO32-y)		+= sysenter
->  
->  vdso32-images			= $(vdso32.so-y:%=vdso32-%.so)
->  
-> -CPPFLAGS_vdso32.lds = $(CPPFLAGS_vdso.lds)
-> +CPPFLAGS_vdso32.lds = -m32 $(vdso-cppflags)
->  VDSO_LDFLAGS_vdso32.lds = -m elf_i386 -Wl,-soname=linux-gate.so.1
->  
->  # This makes sure the $(obj) subdirectory exists even though vdso32/
-> diff --git a/arch/x86/vdso/vdso-layout.lds.S b/arch/x86/vdso/vdso-layout.lds.S
-> index 634a2cf..1f4b215 100644
-> --- a/arch/x86/vdso/vdso-layout.lds.S
-> +++ b/arch/x86/vdso/vdso-layout.lds.S
-> @@ -22,16 +22,15 @@ SECTIONS
->  	.eh_frame	: { KEEP (*(.eh_frame)) }	:text
->  
->  	.dynamic	: { *(.dynamic) }		:text	:dynamic
-> +	.got		: { *(.got.plt) *(.got) }	:text
->  
-> -	.rodata		: { *(.rodata*) }		:text
-> +	.rodata		: {
-> +		*(.rodata .rodata.* .gnu.linkonce.r.*)
-> +	}
->  	.data		: {
-> -	      *(.data*)
-> -	      *(.sdata*)
-> -	      *(.got.plt) *(.got)
-> -	      *(.gnu.linkonce.d.*)
-> -	      *(.bss*)
-> -	      *(.dynbss*)
-> -	      *(.gnu.linkonce.b.*)
-> +		*(.data .data.* .gnu.linkonce.d.*)
-> +		*(.bss .bss.* .gnu.linkonce.b.*)
-> +		*(COMMON)
->  	}
->  
->  	.altinstructions	: { *(.altinstructions) }
-> @@ -43,9 +42,49 @@ SECTIONS
->  	 */
->  	. = ALIGN(0x100);
->  
-> -	.text		: { *(.text*) }			:text	=0x90909090
-> +	.text		: {
-> +		*(.text .text.* .gnu.linkonce.t.*)
-> +	}						:text	=0x90909090
+>  extern void get_online_cpus(void);
+>  extern void put_online_cpus(void);
+> +extern int try_get_online_cpus(void);
+>  #define hotcpu_notifier(fn, pri) {				\
+>  	static struct notifier_block fn##_nb __cpuinitdata =	\
+>  		{ .notifier_call = fn, .priority = pri };	\
+> @@ -117,6 +118,7 @@ int cpu_down(unsigned int cpu);
+> 
+>  #define get_online_cpus()	do { } while (0)
+>  #define put_online_cpus()	do { } while (0)
+> +static inline int try_get_online_cpus(void) { return 1; }
+>  #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
+>  /* These aren't inline functions due to a GCC bug. */
+>  #define register_hotcpu_notifier(nb)	({ (void)(nb); 0; })
+> diff --git a/kernel/cpu.c b/kernel/cpu.c
+> index 395b697..54d6e0d 100644
+> --- a/kernel/cpu.c
+> +++ b/kernel/cpu.c
+> @@ -14,6 +14,8 @@
+>  #include <linux/kthread.h>
+>  #include <linux/stop_machine.h>
+>  #include <linux/mutex.h>
+> +#include <asm/atomic.h>
+> +#include <linux/wait.h>
+> 
+>  #ifdef CONFIG_SMP
+>  /* Serializes the updates to cpu_online_mask, cpu_present_mask */
+> @@ -26,21 +28,26 @@ static __cpuinitdata RAW_NOTIFIER_HEAD(cpu_chain);
+>   */
+>  static int cpu_hotplug_disabled;
+> 
+> +/*
+> + * @cpu_hotplug is a special read-write semaphore with these semantics:
+> + * 1) It is read-preference and allows reader-in-reader recursion.
+> + * 2) It allows writer to downgrade to a reader when required.
+> + *    (allows reader-in-writer recursion.)
+> + * 3) It allows only one thread to require the write-side lock at most.
+> + *    (cpu_add_remove_lock ensures it.)
+> + */
+>  static struct {
+>  	struct task_struct *active_writer;
+> -	struct mutex lock; /* Synchronizes accesses to refcount, */
+> -	/*
+> -	 * Also blocks the new readers during
+> -	 * an ongoing cpu hotplug operation.
+> -	 */
+> -	int refcount;
+> +	wait_queue_head_t sleeping_readers;
+> +	/* refcount = 0 means the writer owns the lock. */
+> +	atomic_t refcount;
+>  } cpu_hotplug;
+> 
+>  void __init cpu_hotplug_init(void)
+>  {
+>  	cpu_hotplug.active_writer = NULL;
+> -	mutex_init(&cpu_hotplug.lock);
+> -	cpu_hotplug.refcount = 0;
+> +	init_waitqueue_head(&cpu_hotplug.sleeping_readers);
+> +	atomic_set(&cpu_hotplug.refcount, 1);
+>  }
+> 
+>  #ifdef CONFIG_HOTPLUG_CPU
+> @@ -50,10 +57,20 @@ void get_online_cpus(void)
+>  	might_sleep();
+>  	if (cpu_hotplug.active_writer == current)
+>  		return;
+> -	mutex_lock(&cpu_hotplug.lock);
+> -	cpu_hotplug.refcount++;
+> -	mutex_unlock(&cpu_hotplug.lock);
+> 
+> +	if (unlikely(!atomic_inc_not_zero(&cpu_hotplug.refcount))) {
+> +		DEFINE_WAIT(wait);
 > +
-> +	/* We would need a more sophisticated dynamic linker for the
-> +	 * vDSO to make the following sections work.  Put them into
-> +	 * a special section and raise a link-time error if they get
-> +	 * used.
-> +	 */
-> +	.broken		: {
-> +		/* Code in the Procedure Linkage Table will segfault */
-> +		*(.plt)
+> +		for (;;) {
+> +			prepare_to_wait(&cpu_hotplug.sleeping_readers, &wait,
+> +					TASK_UNINTERRUPTIBLE);
+> +			if (atomic_inc_not_zero(&cpu_hotplug.refcount))
+> +				break;
+> +			schedule();
+> +		}
 > +
-> +		/* Relocation will not be done, so any pointers will
-> +		 * still point to the prelinked address, which is wrong
-> +		 */
-> +		*(.data.rel.ro*)
-> +		*(.gnu.linkonce.d.rel.ro.*)
-> +
-> +		/* Initialization/termination won't work this way */
-> +		*(.init) *(.fini)
-> +		*(.preinit_array) *(.init_array*)
-> +		*(.fini_array*)
-> +
-> +		/* Thread-local data cannot be defined like this */
-> +		*(.tdata .tdata.* .gnu.linkonce.td.*)
-> +		*(.tbss .tbss.* .gnu.linkonce.tb.*)
-> +		*(.tcommon)
-> +	}
-> +
-> +	/* These sections are not useful */
-> +	/DISCARD/	: {
-> +		*(.gnu.warning.*)
-> +		*(.note.GNU-stack)
+> +		finish_wait(&cpu_hotplug.sleeping_readers, &wait);
 > +	}
 >  }
->  
-> +ASSERT(!SIZEOF(.broken), "VDSO contains sections that don't work properly");
+>  EXPORT_SYMBOL_GPL(get_online_cpus);
+> 
+> @@ -61,14 +78,27 @@ void put_online_cpus(void)
+>  {
+>  	if (cpu_hotplug.active_writer == current)
+>  		return;
+> -	mutex_lock(&cpu_hotplug.lock);
+> -	if (!--cpu_hotplug.refcount && unlikely(cpu_hotplug.active_writer))
+> -		wake_up_process(cpu_hotplug.active_writer);
+> -	mutex_unlock(&cpu_hotplug.lock);
+> 
+> +	if (unlikely(atomic_dec_and_test(&cpu_hotplug.refcount))) {
+> +		smp_mb__after_atomic_dec();
+> +		BUG_ON(!cpu_hotplug.active_writer);
+> +		wake_up_process(cpu_hotplug.active_writer);
+> +	}
+>  }
+>  EXPORT_SYMBOL_GPL(put_online_cpus);
+> 
+> +int try_get_online_cpus(void)
+> +{
+> +	if (cpu_hotplug.active_writer == current)
+> +		return 1;
 > +
-> +/* Check that GOT has only the three entries defined by the ABI */
-> +ASSERT(SIZEOF(.got) == 3*__SIZEOF_POINTER__,
-> +	"Found extra GOT entries. Check your use of external vars.");
+> +	if (likely(atomic_inc_not_zero(&cpu_hotplug.refcount)))
+> +		return 1;
 > +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(try_get_online_cpus);
+> +
+>  #endif	/* CONFIG_HOTPLUG_CPU */
+> 
 >  /*
->   * Very old versions of ld do not recognize this name token; use the constant.
+> @@ -86,46 +116,41 @@ void cpu_maps_update_done(void)
+>  }
+> 
+>  /*
+> - * This ensures that the hotplug operation can begin only when the
+> - * refcount goes to zero.
+> + * This ensures that the hotplug operation can begin only when
+> + * there is no ongoing reader.
+>   *
+>   * Note that during a cpu-hotplug operation, the new readers, if any,
+> - * will be blocked by the cpu_hotplug.lock
+> + * will be blocked and queued at cpu_hotplug.sleeping_readers.
+>   *
+>   * Since cpu_hotplug_begin() is always called after invoking
+>   * cpu_maps_update_begin(), we can be sure that only one writer is active.
+>   *
+> - * Note that theoretically, there is a possibility of a livelock:
+> - * - Refcount goes to zero, last reader wakes up the sleeping
+> - *   writer.
+> - * - Last reader unlocks the cpu_hotplug.lock.
+> - * - A new reader arrives at this moment, bumps up the refcount.
+> - * - The writer acquires the cpu_hotplug.lock finds the refcount
+> - *   non zero and goes to sleep again.
+> - *
+> - * However, this is very difficult to achieve in practice since
+> - * get_online_cpus() not an api which is called all that often.
+> - *
 >   */
+>  static void cpu_hotplug_begin(void)
+>  {
+>  	cpu_hotplug.active_writer = current;
+> +	smp_mb__before_atomic_dec();
+> +	atomic_dec(&cpu_hotplug.refcount);
+> 
+>  	for (;;) {
+> -		mutex_lock(&cpu_hotplug.lock);
+> -		if (likely(!cpu_hotplug.refcount))
+> +		set_current_state(TASK_UNINTERRUPTIBLE);
+> +		if (!atomic_read(&cpu_hotplug.refcount))
+>  			break;
+> -		__set_current_state(TASK_UNINTERRUPTIBLE);
+> -		mutex_unlock(&cpu_hotplug.lock);
+>  		schedule();
+>  	}
+> +
+> +	__set_current_state(TASK_RUNNING);
+>  }
+> 
+>  static void cpu_hotplug_done(void)
+>  {
+>  	cpu_hotplug.active_writer = NULL;
+> -	mutex_unlock(&cpu_hotplug.lock);
+> +	atomic_inc(&cpu_hotplug.refcount);
+> +
+> +	if (waitqueue_active(&cpu_hotplug.sleeping_readers))
+> +		wake_up(&cpu_hotplug.sleeping_readers);
+>  }
+> +
+>  /* Need to know about CPUs going up/down? */
+>  int __ref register_cpu_notifier(struct notifier_block *nb)
+>  {
 > 
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
