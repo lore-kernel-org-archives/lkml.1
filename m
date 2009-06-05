@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbZFEXra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbZFEXsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757405AbZFEXra (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 19:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755633AbZFEXlw
+	id S1757528AbZFEXsH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 19:48:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756208AbZFEXlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 19:41:52 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:45075 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754420AbZFEXlN (ORCPT
+	Fri, 5 Jun 2009 19:41:55 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:36405 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755498AbZFEXlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 19:41:13 -0400
+	Fri, 5 Jun 2009 19:41:12 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
 Cc: Markus Heidelberg <markus.heidelberg@web.de>,
        Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 32/39] kconfig: do not hardcode "include/config/auto.conf" filename
-Date: Sat,  6 Jun 2009 01:42:50 +0200
-Message-Id: <1244245377-17441-32-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 25/39] kconfig: resort the documentation of the environment variables
+Date: Sat,  6 Jun 2009 01:42:43 +0200
+Message-Id: <1244245377-17441-25-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.3.rc3.40.g75b44
 In-Reply-To: <20090605233720.GA13588@uranus.ravnborg.org>
 References: <20090605233720.GA13588@uranus.ravnborg.org>
@@ -27,113 +27,189 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Markus Heidelberg <markus.heidelberg@web.de>
 
-Regardless of KCONFIG_AUTOCONFIG, the filename written as a Make target
-into "include/config/auto.conf.cmd" was always the default one.
+All the KCONFIG_ environment variables were previously located in a
+section "Environment variables in 'menuconfig'", but neither are they
+restricted to 'menuconfig' nor are they all used by 'menuconfig'.
 
-Of course this doesn't make it work for the Kernel kbuild system, since
-there the filename is hardcoded at several places in the Makefiles.
+Introduce the following three sections for these variables:
+  * Environment variables for '*config'
+  * Environment variables for '{allyes/allmod/allno/rand}config'
+  * Environment variables for 'silentoldconfig'
+
+Furthermore this puts MENUCONFIG_MODE next to MENUCONFIG_COLOR into a
+common section "User interface options for 'menuconfig'".
 
 Signed-off-by: Markus Heidelberg <markus.heidelberg@web.de>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/kconfig/confdata.c |   20 ++++++++++++--------
- scripts/kconfig/lkc.h      |    1 +
- scripts/kconfig/util.c     |    6 +++---
- 3 files changed, 16 insertions(+), 11 deletions(-)
+ Documentation/kbuild/kconfig.txt |  116 +++++++++++++++++++------------------
+ 1 files changed, 60 insertions(+), 56 deletions(-)
 
-diff --git a/scripts/kconfig/confdata.c b/scripts/kconfig/confdata.c
-index 273d738..a04da34 100644
---- a/scripts/kconfig/confdata.c
-+++ b/scripts/kconfig/confdata.c
-@@ -41,6 +41,13 @@ const char *conf_get_configname(void)
- 	return name ? name : ".config";
- }
+diff --git a/Documentation/kbuild/kconfig.txt b/Documentation/kbuild/kconfig.txt
+index 26a7c0a..849b5e5 100644
+--- a/Documentation/kbuild/kconfig.txt
++++ b/Documentation/kbuild/kconfig.txt
+@@ -35,48 +35,26 @@ new .config files to see the differences:
  
-+const char *conf_get_autoconfig_name(void)
-+{
-+	char *name = getenv("KCONFIG_AUTOCONFIG");
+ (Yes, we need something better here.)
+ 
+-
+-======================================================================
+-menuconfig
+---------------------------------------------------
+-
+-SEARCHING for CONFIG symbols
+-
+-Searching in menuconfig:
+-
+-	The Search function searches for kernel configuration symbol
+-	names, so you have to know something close to what you are
+-	looking for.
+-
+-	Example:
+-		/hotplug
+-		This lists all config symbols that contain "hotplug",
+-		e.g., HOTPLUG, HOTPLUG_CPU, MEMORY_HOTPLUG.
+-
+-	For search help, enter / followed TAB-TAB-TAB (to highlight
+-	<Help>) and Enter.  This will tell you that you can also use
+-	regular expressions (regexes) in the search string, so if you
+-	are not interested in MEMORY_HOTPLUG, you could try
+-
+-		/^hotplug
+-
+-
+ ______________________________________________________________________
+-Color Themes for 'menuconfig'
++Environment variables for '*config'
+ 
+-It is possible to select different color themes using the variable
+-MENUCONFIG_COLOR.  To select a theme use:
++KCONFIG_CONFIG
++--------------------------------------------------
++This environment variable can be used to specify a default kernel config
++file name to override the default name of ".config".
+ 
+-	make MENUCONFIG_COLOR=<theme> menuconfig
++KCONFIG_OVERWRITECONFIG
++--------------------------------------------------
++If you set KCONFIG_OVERWRITECONFIG in the environment, Kconfig will not
++break symlinks when .config is a symlink to somewhere else.
+ 
+-Available themes are:
+-  mono       => selects colors suitable for monochrome displays
+-  blackbg    => selects a color scheme with black background
+-  classic    => theme with blue background. The classic look
+-  bluetitle  => a LCD friendly version of classic. (default)
++KCONFIG_NOTIMESTAMP
++--------------------------------------------------
++If this environment variable exists and is non-null, the timestamp line
++in generated .config files is omitted.
+ 
+ ______________________________________________________________________
+-Environment variables in 'menuconfig'
++Environment variables for '{allyes/allmod/allno/rand}config'
+ 
+ KCONFIG_ALLCONFIG
+ --------------------------------------------------
+@@ -95,8 +73,7 @@ values.
+ This enables you to create "miniature" config (miniconfig) or custom
+ config files containing just the config symbols that you are interested
+ in.  Then the kernel config system generates the full .config file,
+-including dependencies of your miniconfig file, based on the miniconfig
+-file.
++including symbols of your miniconfig file.
+ 
+ This 'KCONFIG_ALLCONFIG' file is a config file which contains
+ (usually a subset of all) preset config symbols.  These variable
+@@ -113,26 +90,14 @@ These examples will disable most options (allnoconfig) but enable or
+ disable the options that are explicitly listed in the specified
+ mini-config files.
+ 
++______________________________________________________________________
++Environment variables for 'silentoldconfig'
 +
-+	return name ? name : "include/config/auto.conf";
-+}
+ KCONFIG_NOSILENTUPDATE
+ --------------------------------------------------
+ If this variable has a non-blank value, it prevents silent kernel
+ config udpates (requires explicit updates).
+ 
+-KCONFIG_CONFIG
+---------------------------------------------------
+-This environment variable can be used to specify a default kernel config
+-file name to override the default name of ".config".
+-
+-KCONFIG_OVERWRITECONFIG
+---------------------------------------------------
+-If you set KCONFIG_OVERWRITECONFIG in the environment, Kconfig will not
+-break symlinks when .config is a symlink to somewhere else.
+-
+-KCONFIG_NOTIMESTAMP
+---------------------------------------------------
+-If this environment variable exists and is non-null, the timestamp line
+-in generated .config files is omitted.
+-
+ KCONFIG_AUTOCONFIG
+ --------------------------------------------------
+ This environment variable can be set to specify the path & name of the
+@@ -143,15 +108,54 @@ KCONFIG_AUTOHEADER
+ This environment variable can be set to specify the path & name of the
+ "autoconf.h" (header) file.  Its default value is "include/linux/autoconf.h".
+ 
 +
- static char *conf_expand_value(const char *in)
- {
- 	struct symbol *sym;
-@@ -555,15 +562,14 @@ int conf_write(const char *name)
++======================================================================
++menuconfig
++--------------------------------------------------
++
++SEARCHING for CONFIG symbols
++
++Searching in menuconfig:
++
++	The Search function searches for kernel configuration symbol
++	names, so you have to know something close to what you are
++	looking for.
++
++	Example:
++		/hotplug
++		This lists all config symbols that contain "hotplug",
++		e.g., HOTPLUG, HOTPLUG_CPU, MEMORY_HOTPLUG.
++
++	For search help, enter / followed TAB-TAB-TAB (to highlight
++	<Help>) and Enter.  This will tell you that you can also use
++	regular expressions (regexes) in the search string, so if you
++	are not interested in MEMORY_HOTPLUG, you could try
++
++		/^hotplug
++
+ ______________________________________________________________________
+-menuconfig User Interface Options
+-----------------------------------------------------------------------
++User interface options for 'menuconfig'
++
++MENUCONFIG_COLOR
++--------------------------------------------------
++It is possible to select different color themes using the variable
++MENUCONFIG_COLOR.  To select a theme use:
++
++	make MENUCONFIG_COLOR=<theme> menuconfig
++
++Available themes are:
++  mono       => selects colors suitable for monochrome displays
++  blackbg    => selects a color scheme with black background
++  classic    => theme with blue background. The classic look
++  bluetitle  => a LCD friendly version of classic. (default)
++
+ MENUCONFIG_MODE
+ --------------------------------------------------
+ This mode shows all sub-menus in one large tree.
  
- int conf_split_config(void)
- {
--	char *name, path[128];
-+	const char *name;
-+	char path[128];
- 	char *s, *d, c;
- 	struct symbol *sym;
- 	struct stat sb;
- 	int res, i, fd;
+ Example:
+-	MENUCONFIG_MODE=single_menu make menuconfig
++	make MENUCONFIG_MODE=single_menu menuconfig
++
  
--	name = getenv("KCONFIG_AUTOCONFIG");
--	if (!name)
--		name = "include/config/auto.conf";
-+	name = conf_get_autoconfig_name();
- 	conf_read_simple(name, S_DEF_AUTO);
- 
- 	if (chdir("include/config"))
-@@ -670,7 +676,7 @@ int conf_write_autoconf(void)
- {
- 	struct symbol *sym;
- 	const char *str;
--	char *name;
-+	const char *name;
- 	FILE *out, *out_h;
- 	time_t now;
- 	int i, l;
-@@ -773,9 +779,7 @@ int conf_write_autoconf(void)
- 		name = "include/linux/autoconf.h";
- 	if (rename(".tmpconfig.h", name))
- 		return 1;
--	name = getenv("KCONFIG_AUTOCONFIG");
--	if (!name)
--		name = "include/config/auto.conf";
-+	name = conf_get_autoconfig_name();
- 	/*
- 	 * This must be the last step, kbuild has a dependency on auto.conf
- 	 * and this marks the successful completion of the previous steps.
-diff --git a/scripts/kconfig/lkc.h b/scripts/kconfig/lkc.h
-index 4a9af6f..f379b0b 100644
---- a/scripts/kconfig/lkc.h
-+++ b/scripts/kconfig/lkc.h
-@@ -74,6 +74,7 @@ char *zconf_curname(void);
- 
- /* confdata.c */
- const char *conf_get_configname(void);
-+const char *conf_get_autoconfig_name(void);
- char *conf_get_default_confname(void);
- void sym_set_change_count(int count);
- void sym_add_change_count(int count);
-diff --git a/scripts/kconfig/util.c b/scripts/kconfig/util.c
-index 3cc9f93..b6b2a46 100644
---- a/scripts/kconfig/util.c
-+++ b/scripts/kconfig/util.c
-@@ -46,8 +46,8 @@ int file_write_dep(const char *name)
- 		else
- 			fprintf(out, "\t%s\n", file->name);
- 	}
--	fprintf(out, "\ninclude/config/auto.conf: \\\n"
--		     "\t$(deps_config)\n\n");
-+	fprintf(out, "\n%s: \\\n"
-+		     "\t$(deps_config)\n\n", conf_get_autoconfig_name());
- 
- 	expr_list_for_each_sym(sym_env_list, e, sym) {
- 		struct property *prop;
-@@ -61,7 +61,7 @@ int file_write_dep(const char *name)
- 		if (!value)
- 			value = "";
- 		fprintf(out, "ifneq \"$(%s)\" \"%s\"\n", env_sym->name, value);
--		fprintf(out, "include/config/auto.conf: FORCE\n");
-+		fprintf(out, "%s: FORCE\n", conf_get_autoconfig_name());
- 		fprintf(out, "endif\n");
- 	}
- 
+ ======================================================================
+ xconfig
 -- 
 1.6.3.rc3.40.g75b44
 
