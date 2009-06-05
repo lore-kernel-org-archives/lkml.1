@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbZFETPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbZFETQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbZFETPt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 15:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZFETPf
+	id S1754949AbZFETQU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 15:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZFETQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 15:15:35 -0400
-Received: from mail.lang.hm ([64.81.33.126]:34732 "EHLO bifrost.lang.hm"
+	Fri, 5 Jun 2009 15:16:09 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:33759 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753179AbZFETPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 15:15:34 -0400
-Date: Fri, 5 Jun 2009 12:15:27 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: Alexander Clouter <alex@digriz.org.uk>
-cc: linux-kernel@vger.kernel.org, sefi@s-e-f-i.de
-Subject: Re: When does Linux drop UDP packets?
-In-Reply-To: <20090605191025.GG2014@woodchuck>
-Message-ID: <alpine.DEB.1.10.0906051214140.9159@asgard>
-References: <20090604145347.GA27692@miyuki> <buslf6-j24.ln1@woodchuck.wormnet.eu> <alpine.DEB.1.10.0906041618200.7953@asgard> <20090605191025.GG2014@woodchuck>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1752992AbZFETQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 15:16:08 -0400
+Date: Fri, 5 Jun 2009 21:16:10 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, tytso@mit.edu, chris.mason@oracle.com,
+       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
+       jack@suse.cz, richard@rsk.demon.co.uk, damien.wyart@free.fr
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
+Message-ID: <20090605191610.GW11363@kernel.dk>
+References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com> <20090604152040.GA6007@nowhere> <1244164487.2560.146.camel@ymzhang>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244164487.2560.146.camel@ymzhang>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Jun 2009, Alexander Clouter wrote:
+On Fri, Jun 05 2009, Zhang, Yanmin wrote:
+> On Thu, 2009-06-04 at 17:20 +0200, Frederic Weisbecker wrote:
+> > Hi,
+> >
+> >
+> > On Thu, May 28, 2009 at 01:46:33PM +0200, Jens Axboe wrote:
+> > > Hi,
+> > >
+> > > Here's the 9th version of the writeback patches. Changes since v8:
+> 
+> > I've just tested it on UP in a single disk.
+> >
+> > I've run two parallels dbench tests on two partitions and
+> > tried it with this patch and without.
+> I also tested V9 with multiple-dbench workload by starting multiple
+> dbench tasks and every task has 4 processes to do I/O on one partition (file
+> system). Mostly I use JBODs which have 7/11/13 disks.
+> 
+> I didn't find result regression between ???vanilla and V9 kernel on
+> this workload.
 
-> Hi,
->
-> * david@lang.hm <david@lang.hm> [2009-06-04 16:19:56-0700]:
->>
->> On Thu, 4 Jun 2009, Alexander Clouter wrote:
->>
->>> Philipp Reh <sefi@s-e-f-i.de> wrote:
->>>>
->>>> I have the following setting in which a client that resides on the same
->>>> physical network as a server wants to receive any UDP packet that
->>>> arrives on any of its interfaces sent by that server.
->>>>
->>> Read up about multicasting, it will do what you want, does not depend on
->>> the IP address of the destination workstation and will also cross
->>> subnets if you want it to.
->>>
->>> It's dead easy to transmit and receive multicast traffic, broadcasting
->>> network traffic is so 1980's :)
->>
->> there is only a difference between multicast and broadcast traffic if you
->> are spanning subnets.
->>
-> Well yes and no.  Broadcast traffic is *always* handled by the kernel as
-> only the kernel can tell if it is interested in it or not.  With
-> multicast the NIC is configured to only pass particular
-> Ethernet multicast packets up to the kernel.
->
-> By using broadcast traffic the load (okay, hardly a big problem
-> now-a-days) hits *all* the workstations on the subnet, with multicast,
-> only those interested in the traffic receive it.
+Ah that's good, thanks for that result as well :-)
 
-true, but only for some NICs, and even those tend to have a fairly small 
-number of slots for the filters. past these limits the OS handles it all 
-just like broadcasts.
+-- 
+Jens Axboe
 
-David Lang
