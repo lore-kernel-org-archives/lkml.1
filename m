@@ -1,79 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbZFEMof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751945AbZFEMqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754096AbZFEMof (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 08:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZFEMoZ
+	id S1751945AbZFEMqZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 08:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbZFEMqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 08:44:25 -0400
-Received: from wa4ehsobe004.messaging.microsoft.com ([216.32.181.14]:10748
-	"EHLO WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751345AbZFEMoY convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 08:44:24 -0400
-X-SpamScore: -27
-X-BigFish: VPS-27(zz1418M1432R98dR1805Mzz1202hzzz32i6bh17ch43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KKRNDN-04-35T-01
-Date: Fri, 5 Jun 2009 14:44:12 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: torvalds@linux-foundation.org, mingo@elte.hu, lethal@linux-sh.org,
-       just.for.lkml@googlemail.com, hancockrwd@gmail.com,
-       jens.axboe@oracle.com, bharrosh@panasas.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
-Message-ID: <20090605124412.GF24836@amd.com>
-References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp> <20090605104132.GE24836@amd.com> <20090605203753K.fujita.tomonori@lab.ntt.co.jp>
+	Fri, 5 Jun 2009 08:46:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51824 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751013AbZFEMqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 08:46:16 -0400
+Date: Fri, 5 Jun 2009 12:45:39 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf record: Split out counter creation into a helper function
+Message-ID: <tip-f250c030a87273f8838a2302bee7c2b4d03e9151@git.kernel.org>
+Git-Commit-ID: f250c030a87273f8838a2302bee7c2b4d03e9151
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090605203753K.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 05 Jun 2009 12:44:12.0783 (UTC) FILETIME=[5411EFF0:01C9E5DB]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 05 Jun 2009 12:45:40 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 05, 2009 at 08:38:22PM +0900, FUJITA Tomonori wrote:
-> On Fri, 5 Jun 2009 12:41:33 +0200
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
+Commit-ID:  f250c030a87273f8838a2302bee7c2b4d03e9151
+Gitweb:     http://git.kernel.org/tip/f250c030a87273f8838a2302bee7c2b4d03e9151
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Fri, 5 Jun 2009 13:18:41 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 5 Jun 2009 13:29:57 +0200
 
-> I thought about something like this fix however we can do better; with
-> this fix, we could overlook a bad hardware IOMMU bug.
+perf record: Split out counter creation into a helper function
 
-I don't buy this yet. Can you explain what kind of hardware IOMMU bug we
-can miss here? For the match in my patch it is still strictly necessary
-that the dma address matches.
-
-> I think that the better fix can handle both cases per device:
-> 
-> - multiple identical dma addresses should not happen (with devices
->   behind hardware IOMMU)
-> - multiple identical dma addresses could happen
-> 
-> 
-> It's better to use a strict-fit algorithm (as we do now) with the
-> former. It's pretty difficult to do something better than a best-fit
-> algorithm with the latter though.
-
-When we understand the same under 'strict-fit' this will not work I
-think. The idea behind dma-debug is to find the cases where the
-dma_unmap parameters are not equal to the dma_map parameters. If we use
-strict-fit we risk to oversee some sets of these cases because there is
-no dma_debug_entry which strictly matches the reference value.
-
-Regards,
-
-Joerg
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+---
+ Documentation/perf_counter/builtin-record.c |  100 ++++++++++++++-------------
+ 1 files changed, 53 insertions(+), 47 deletions(-)
 
+diff --git a/Documentation/perf_counter/builtin-record.c b/Documentation/perf_counter/builtin-record.c
+index bf59df5..7f2d7ce 100644
+--- a/Documentation/perf_counter/builtin-record.c
++++ b/Documentation/perf_counter/builtin-record.c
+@@ -336,65 +336,71 @@ static void synthesize_events(void)
+ 	closedir(proc);
+ }
+ 
+-static void open_counters(int cpu, pid_t pid)
++static int group_fd;
++
++static void create_counter(int counter, int cpu, pid_t pid)
+ {
+ 	struct perf_counter_attr attr;
+-	int counter, group_fd;
+ 	int track = 1;
+ 
+-	if (pid > 0) {
+-		pid_synthesize_comm_event(pid, 0);
+-		pid_synthesize_mmap_events(pid);
+-	}
++	memset(&attr, 0, sizeof(attr));
++	attr.config		= event_id[counter];
++	attr.sample_period	= event_count[counter];
++	attr.sample_type	= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
++	attr.mmap		= track;
++	attr.comm		= track;
++	attr.inherit	= (cpu < 0) && inherit;
+ 
+-	group_fd = -1;
+-	for (counter = 0; counter < nr_counters; counter++) {
++	track = 0; /* only the first counter needs these */
+ 
+-		memset(&attr, 0, sizeof(attr));
+-		attr.config		= event_id[counter];
+-		attr.sample_period	= event_count[counter];
+-		attr.sample_type	= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
+-		attr.mmap		= track;
+-		attr.comm		= track;
+-		attr.inherit	= (cpu < 0) && inherit;
++	fd[nr_cpu][counter] = sys_perf_counter_open(&attr, pid, cpu, group_fd, 0);
+ 
+-		track = 0; // only the first counter needs these
++	if (fd[nr_cpu][counter] < 0) {
++		int err = errno;
+ 
+-		fd[nr_cpu][counter] =
+-			sys_perf_counter_open(&attr, pid, cpu, group_fd, 0);
++		error("syscall returned with %d (%s)\n",
++				fd[nr_cpu][counter], strerror(err));
++		if (err == EPERM)
++			printf("Are you root?\n");
++		exit(-1);
++	}
++	assert(fd[nr_cpu][counter] >= 0);
++	fcntl(fd[nr_cpu][counter], F_SETFL, O_NONBLOCK);
+ 
+-		if (fd[nr_cpu][counter] < 0) {
+-			int err = errno;
++	/*
++	 * First counter acts as the group leader:
++	 */
++	if (group && group_fd == -1)
++		group_fd = fd[nr_cpu][counter];
++
++	event_array[nr_poll].fd = fd[nr_cpu][counter];
++	event_array[nr_poll].events = POLLIN;
++	nr_poll++;
++
++	mmap_array[nr_cpu][counter].counter = counter;
++	mmap_array[nr_cpu][counter].prev = 0;
++	mmap_array[nr_cpu][counter].mask = mmap_pages*page_size - 1;
++	mmap_array[nr_cpu][counter].base = mmap(NULL, (mmap_pages+1)*page_size,
++			PROT_READ, MAP_SHARED, fd[nr_cpu][counter], 0);
++	if (mmap_array[nr_cpu][counter].base == MAP_FAILED) {
++		error("failed to mmap with %d (%s)\n", errno, strerror(errno));
++		exit(-1);
++	}
++}
+ 
+-			error("syscall returned with %d (%s)\n",
+-					fd[nr_cpu][counter], strerror(err));
+-			if (err == EPERM)
+-				printf("Are you root?\n");
+-			exit(-1);
+-		}
+-		assert(fd[nr_cpu][counter] >= 0);
+-		fcntl(fd[nr_cpu][counter], F_SETFL, O_NONBLOCK);
++static void open_counters(int cpu, pid_t pid)
++{
++	int counter;
+ 
+-		/*
+-		 * First counter acts as the group leader:
+-		 */
+-		if (group && group_fd == -1)
+-			group_fd = fd[nr_cpu][counter];
+-
+-		event_array[nr_poll].fd = fd[nr_cpu][counter];
+-		event_array[nr_poll].events = POLLIN;
+-		nr_poll++;
+-
+-		mmap_array[nr_cpu][counter].counter = counter;
+-		mmap_array[nr_cpu][counter].prev = 0;
+-		mmap_array[nr_cpu][counter].mask = mmap_pages*page_size - 1;
+-		mmap_array[nr_cpu][counter].base = mmap(NULL, (mmap_pages+1)*page_size,
+-				PROT_READ, MAP_SHARED, fd[nr_cpu][counter], 0);
+-		if (mmap_array[nr_cpu][counter].base == MAP_FAILED) {
+-			error("failed to mmap with %d (%s)\n", errno, strerror(errno));
+-			exit(-1);
+-		}
++	if (pid > 0) {
++		pid_synthesize_comm_event(pid, 0);
++		pid_synthesize_mmap_events(pid);
+ 	}
++
++	group_fd = -1;
++	for (counter = 0; counter < nr_counters; counter++)
++		create_counter(counter, cpu, pid);
++
+ 	nr_cpu++;
+ }
+ 
