@@ -1,84 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZFEKM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbZFEKSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754203AbZFEKM7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 06:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbZFEKMu
+	id S1752867AbZFEKSi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 06:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbZFEKSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 06:12:50 -0400
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:36172 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751433AbZFEKMt (ORCPT
+	Fri, 5 Jun 2009 06:18:30 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3657 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbZFEKS3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 06:12:49 -0400
-Message-ID: <4A28EF7D.5030704@linux.vnet.ibm.com>
-Date: Fri, 05 Jun 2009 12:12:13 +0200
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, ying.huang@intel.com, W.Li@Sun.COM,
-       michaele@au1.ibm.com, mingo@elte.hu, heicars2@linux.vnet.ibm.com,
-       mschwid2@linux.vnet.ibm.com
-Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
-References: <20090602114359.129247921@linux.vnet.ibm.com> <20090602114402.951631599@linux.vnet.ibm.com> <20090602150324.c706b1d2.akpm@linux-foundation.org> <4A266546.5080601@linux.vnet.ibm.com>	<4A26961E.7040207@linux.vnet.ibm.com> <20090604090839.GB7030@cr0.nay.redhat.com> <4A28E3F8.5050908@linux.vnet.ibm.com> <20090605023434.8a49d673.akpm@linux-foundation.org>
-In-Reply-To: <20090605023434.8a49d673.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 5 Jun 2009 06:18:29 -0400
+Subject: [PATCH] eeepc-laptop.c: use pr_fmt and pr_<level>
+From: Joe Perches <joe@perches.com>
+To: acpi4asus-user@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
+Cc: Len Brown <len.brown@intel.com>, Corentin Chary <corentincj@iksaif.net>,
+       Matthew Garrett <mjg@redhat.com>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Content-Type: text/plain
+Date: Fri, 05 Jun 2009 03:18:23 -0700
+Message-Id: <1244197103.3631.40.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 05 Jun 2009 11:23:04 +0200 Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
-> 
->> Amerigo Wang wrote:
->>> On Wed, Jun 03, 2009 at 05:26:22PM +0200, Peter Oberparleiter wrote:
->>>> Peter Oberparleiter wrote:
->>>>> Andrew Morton wrote:
->>>>>> On Tue, 02 Jun 2009 13:44:02 +0200
->>>>>> Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
->>>>>>> +	/* Duplicate gcov_info. */
->>>>>>> +	active = num_counter_active(info);
->>>>>>> +	dup = kzalloc(sizeof(struct gcov_info) +
->>>>>>> +		      sizeof(struct gcov_ctr_info) * active, GFP_KERNEL);
->>>>>> How large can this allocation be?
->>>>> Hm, good question. Having a look at my test system, I see coverage data 
->>>>> files of up to 60kb size. With counters making up the largest part of 
->>>>> those, I'd guess the allocation size can be around ~55kb. I assume that 
->>>>> makes it a candidate for vmalloc?
->>>> A further run with debug output showed that the maximum size is
->>>> actually around 4k, so in my opinion, there is no need to switch
->>>> to vmalloc.
->>> Unless you want virtually continious memory, you don't need to
->>> bother vmalloc().
->>>
->>> kmalloc() and get_free_pages() are all fine for this.
->> kmalloc() requires contiguous pages to serve an allocation request 
->> larger than a single page. The longer a kernel runs, the more fragmented 
->> the pool of free pages gets and the probability to find enough 
->> contiguous free pages is significantly reduced.
->>
->> In this case (having had a 3rd look), I found allocations of up to 
->> ~50kb, so to be sure, I'll switch that particular allocation to vmalloc().
-> 
-> Well, vmalloc() isn't magic.  It can suffer internal fragmentation of
-> the fixed-sized virtual address arena.
-> 
-> Is it possible to redo the data structures so that the large array
-> isn't needed?  Use a list, or move the data elsewhere or such?
+Convert the unusual printk(EEEPC_<level> uses to
+the more standard pr_fmt and pr_<level>(.
 
-Unfortunately not - the format of the data is dictated by gcc. Any 
-attempt to break it down into page-sized chunks would only imitate what 
-vmalloc() already does.
+Signed-off-by: Joe Perches <joe@perches.com>
 
-Note though that this function is not called very often - it's only used 
-to preserve coverage data for modules which are unloaded. And I only saw 
-the 50kb counter data size for one file: kernel/sched.c (using a 
-debugging patch).
+diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
+index 353a898..94cacdd 100644
+--- a/drivers/platform/x86/eeepc-laptop.c
++++ b/drivers/platform/x86/eeepc-laptop.c
+@@ -16,6 +16,8 @@
+  *  GNU General Public License for more details.
+  */
+ 
++#define pr_fmt(fmt) EEEPC_HOTK_FILE ": " fmt
++
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+@@ -40,11 +42,6 @@
+ #define EEEPC_HOTK_DEVICE_NAME	"Hotkey"
+ #define EEEPC_HOTK_HID		"ASUS010"
+ 
+-#define EEEPC_LOG	EEEPC_HOTK_FILE ": "
+-#define EEEPC_ERR	KERN_ERR	EEEPC_LOG
+-#define EEEPC_WARNING	KERN_WARNING	EEEPC_LOG
+-#define EEEPC_NOTICE	KERN_NOTICE	EEEPC_LOG
+-#define EEEPC_INFO	KERN_INFO	EEEPC_LOG
+ 
+ /*
+  * Definitions for Asus EeePC
+@@ -258,7 +255,7 @@ static int set_acpi(int cm, int value)
+ 		if (method == NULL)
+ 			return -ENODEV;
+ 		if (write_acpi_int(ehotk->handle, method, value, NULL))
+-			printk(EEEPC_WARNING "Error writing %s\n", method);
++			pr_warning("Error writing %s\n", method);
+ 	}
+ 	return 0;
+ }
+@@ -271,7 +268,7 @@ static int get_acpi(int cm)
+ 		if (method == NULL)
+ 			return -ENODEV;
+ 		if (read_acpi_int(ehotk->handle, method, &value))
+-			printk(EEEPC_WARNING "Error reading %s\n", method);
++			pr_warning("Error reading %s\n", method);
+ 	}
+ 	return value;
+ }
+@@ -468,26 +465,23 @@ static int eeepc_hotk_check(void)
+ 	if (ehotk->device->status.present) {
+ 		if (write_acpi_int(ehotk->handle, "INIT", ehotk->init_flag,
+ 				    &buffer)) {
+-			printk(EEEPC_ERR "Hotkey initialization failed\n");
++			pr_err("Hotkey initialization failed\n");
+ 			return -ENODEV;
+ 		} else {
+-			printk(EEEPC_NOTICE "Hotkey init flags 0x%x\n",
+-			       ehotk->init_flag);
++			pr_notice("Hotkey init flags 0x%x\n", ehotk->init_flag);
+ 		}
+ 		/* get control methods supported */
+ 		if (read_acpi_int(ehotk->handle, "CMSG"
+ 				   , &ehotk->cm_supported)) {
+-			printk(EEEPC_ERR
+-			       "Get control methods supported failed\n");
++			pr_err("Get control methods supported failed\n");
+ 			return -ENODEV;
+ 		} else {
+-			printk(EEEPC_INFO
+-			       "Get control methods supported: 0x%x\n",
+-			       ehotk->cm_supported);
++			pr_info("Get control methods supported: 0x%x\n",
++				ehotk->cm_supported);
+ 		}
+ 		ehotk->inputdev = input_allocate_device();
+ 		if (!ehotk->inputdev) {
+-			printk(EEEPC_INFO "Unable to allocate input device\n");
++			pr_info("Unable to allocate input device\n");
+ 			return 0;
+ 		}
+ 		ehotk->inputdev->name = "Asus EeePC extra buttons";
+@@ -506,12 +500,12 @@ static int eeepc_hotk_check(void)
+ 		}
+ 		result = input_register_device(ehotk->inputdev);
+ 		if (result) {
+-			printk(EEEPC_INFO "Unable to register input device\n");
++			pr_info("Unable to register input device\n");
+ 			input_free_device(ehotk->inputdev);
+ 			return 0;
+ 		}
+ 	} else {
+-		printk(EEEPC_ERR "Hotkey device not present, aborting\n");
++		pr_err("Hotkey device not present, aborting\n");
+ 		return -EINVAL;
+ 	}
+ 	return 0;
+@@ -539,7 +533,7 @@ static void eeepc_rfkill_notify(acpi_handle handle, u32 event, void *data)
+ 		return;
+ 
+ 	if (!bus) {
+-		printk(EEEPC_WARNING "Unable to find PCI bus 1?\n");
++		pr_warning("Unable to find PCI bus 1?\n");
+ 		return;
+ 	}
+ 
+@@ -556,7 +550,7 @@ static void eeepc_rfkill_notify(acpi_handle handle, u32 event, void *data)
+ 		if (dev) {
+ 			pci_bus_assign_resources(bus);
+ 			if (pci_bus_add_device(dev))
+-				printk(EEEPC_ERR "Unable to hotplug wifi\n");
++				pr_err("Unable to hotplug wifi\n");
+ 		}
+ 	} else {
+ 		dev = pci_get_slot(bus, 0);
+@@ -629,8 +623,7 @@ static int eeepc_register_rfkill_notifier(char *node)
+ 						     eeepc_rfkill_notify,
+ 						     NULL);
+ 		if (ACPI_FAILURE(status))
+-			printk(EEEPC_WARNING
+-			       "Failed to register notify on %s\n", node);
++			pr_warning("Failed to register notify on %s\n", node);
+ 	} else
+ 		return -ENODEV;
+ 
+@@ -649,8 +642,7 @@ static void eeepc_unregister_rfkill_notifier(char *node)
+ 						     ACPI_SYSTEM_NOTIFY,
+ 						     eeepc_rfkill_notify);
+ 		if (ACPI_FAILURE(status))
+-			printk(EEEPC_ERR
+-			       "Error removing rfkill notify handler %s\n",
++			pr_err("Error removing rfkill notify handler %s\n",
+ 				node);
+ 	}
+ }
+@@ -662,7 +654,7 @@ static int eeepc_hotk_add(struct acpi_device *device)
+ 
+ 	if (!device)
+ 		 return -EINVAL;
+-	printk(EEEPC_NOTICE EEEPC_HOTK_NAME "\n");
++	pr_notice(EEEPC_HOTK_NAME "\n");
+ 	ehotk = kzalloc(sizeof(struct eeepc_hotk), GFP_KERNEL);
+ 	if (!ehotk)
+ 		return -ENOMEM;
+@@ -678,7 +670,7 @@ static int eeepc_hotk_add(struct acpi_device *device)
+ 	status = acpi_install_notify_handler(ehotk->handle, ACPI_SYSTEM_NOTIFY,
+ 					     eeepc_hotk_notify, ehotk);
+ 	if (ACPI_FAILURE(status))
+-		printk(EEEPC_ERR "Error installing notify handler\n");
++		pr_err("Error installing notify handler\n");
+ 
+ 	eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P6");
+ 	eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P7");
+@@ -766,7 +758,7 @@ static int eeepc_hotk_remove(struct acpi_device *device, int type)
+ 	status = acpi_remove_notify_handler(ehotk->handle, ACPI_SYSTEM_NOTIFY,
+ 					    eeepc_hotk_notify);
+ 	if (ACPI_FAILURE(status))
+-		printk(EEEPC_ERR "Error removing notify handler\n");
++		pr_err("Error removing notify handler\n");
+ 
+ 	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
+ 	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
+@@ -936,8 +928,7 @@ static int eeepc_backlight_init(struct device *dev)
+ 	bd = backlight_device_register(EEEPC_HOTK_FILE, dev,
+ 				       NULL, &eeepcbl_ops);
+ 	if (IS_ERR(bd)) {
+-		printk(EEEPC_ERR
+-		       "Could not register eeepc backlight device\n");
++		pr_err("Could not register eeepc backlight device\n");
+ 		eeepc_backlight_device = NULL;
+ 		return PTR_ERR(bd);
+ 	}
+@@ -956,8 +947,7 @@ static int eeepc_hwmon_init(struct device *dev)
+ 
+ 	hwmon = hwmon_device_register(dev);
+ 	if (IS_ERR(hwmon)) {
+-		printk(EEEPC_ERR
+-		       "Could not register eeepc hwmon device\n");
++		pr_err("Could not register eeepc hwmon device\n");
+ 		eeepc_hwmon_device = NULL;
+ 		return PTR_ERR(hwmon);
+ 	}
+@@ -990,8 +980,7 @@ static int __init eeepc_laptop_init(void)
+ 		if (result)
+ 			goto fail_backlight;
+ 	} else
+-		printk(EEEPC_INFO "Backlight controlled by ACPI video "
+-		       "driver\n");
++		pr_info("Backlight controlled by ACPI video driver\n");
+ 
+ 	result = eeepc_hwmon_init(dev);
+ 	if (result)
 
-So hm, I'm not sure about this anymore. I can also leave it at kmalloc() 
-- chances are slim that anyone will actually experience a problem and if 
-they do, they get an "order-n allocation failed" message so theres a 
-hint at the cause for the problem.
 
