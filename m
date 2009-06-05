@@ -1,113 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753714AbZFEVBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752533AbZFEVOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753714AbZFEVBp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 17:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbZFEVBi
+	id S1752533AbZFEVOw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 17:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZFEVOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 17:01:38 -0400
-Received: from ottmail.xandros.com ([142.46.212.35]:60972 "EHLO
-	ottmail.xandros.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752153AbZFEVBh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 17:01:37 -0400
-Date: Fri, 5 Jun 2009 17:01:29 -0400
-From: Woody Suwalski <woodys@xandros.com>
-To: Corentin Chary <corentin.chary@gmail.com>
-cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
-       acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
-       linux-kernel@vger.kernel.org
-Message-ID: <4A2987A9.2010202@xandros.com>
-In-Reply-To: <71cd59b00906050446g7310d24el94f0d137dc0e0ecf@mail.gmail.com>
-References: <Pine.LNX.4.64.0906051157460.22218@melkki.cs.Helsinki.FI>
-References: <71cd59b00906050446g7310d24el94f0d137dc0e0ecf@mail.gmail.com>
-Subject: Re: [PATCH] eeepc-laptop: enable camera by default
-x-scalix-Hops: 1
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
+	Fri, 5 Jun 2009 17:14:42 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58642 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752001AbZFEVOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 17:14:41 -0400
+Date: Fri, 5 Jun 2009 23:14:38 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, tytso@mit.edu, chris.mason@oracle.com,
+       david@fromorbit.com, hch@infradead.org, jack@suse.cz,
+       yanmin_zhang@linux.intel.com, richard@rsk.demon.co.uk,
+       damien.wyart@free.fr
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
+Message-ID: <20090605211438.GA11650@duck.suse.cz>
+References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com> <20090604152040.GA6007@nowhere> <20090604120726.708a2211.akpm@linux-foundation.org> <20090604191309.GA4862@nowhere> <20090604195013.GB11363@kernel.dk> <20090604201012.GD11363@kernel.dk> <20090604223449.GA13780@nowhere> <20090605191528.GV11363@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII";
-	format="flowed"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090605191528.GV11363@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corentin Chary wrote:
-> On Fri, Jun 5, 2009 at 10:59 AM, Pekka J Enberg<penberg@cs.helsinki.fi> wrote:
->   
->> From: Pekka Enberg <penberg@cs.helsinki.fi>
->>
->> If we leave the camera disabled by default, userspace programs (e.g.
->> Skype, Cheese) leave the user out in the cold saying that the machine "has
->> no camera." Therefore, it's better to enable camera by default and let
->> people who really don't want it just disable the thing.
->>
->> Cc: <acpi4asus-user@lists.sourceforge.net>
->> Cc: Len Brown <len.brown@intel.com>
->> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
->> ---
->>  drivers/platform/x86/eeepc-laptop.c |   16 ++++++++++++++++
->>  1 files changed, 16 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
->> index 353a898..c0f8eb1 100644
->> --- a/drivers/platform/x86/eeepc-laptop.c
->> +++ b/drivers/platform/x86/eeepc-laptop.c
->> @@ -334,6 +334,19 @@ static int eeepc_bluetooth_rfkill_state(void *data, enum rfkill_state *state)
->>  }
->>
->>  /*
->> + * Camera helpers
->> + */
->> +
->> +static void eeepc_enable_camera(void)
->> +{
->> +       int err;
->> +
->> +       err = set_acpi(CM_ASL_CAMERA, 1);
->> +       if (err)
->> +               printk(EEEPC_WARNING "Unable to enable camera %d\n", err);
->> +}
->> +
->> +/*
->>  * Sys helpers
->>  */
->>  static int parse_arg(const char *buf, unsigned long count, int *val)
->> @@ -996,6 +1009,9 @@ static int __init eeepc_laptop_init(void)
->>        result = eeepc_hwmon_init(dev);
->>        if (result)
->>                goto fail_hwmon;
->> +
->> +       eeepc_enable_camera();
->> +
->>        /* Register platform stuff */
->>        result = platform_driver_register(&platform_driver);
->>        if (result)
->> --
->> 1.5.6.3
->>
->>
->>     
->
-> Hi,
-> First, I think a one line
-> set_acpi(CM_ASL_CAMERA, 1);
-> with a small comment is better. (If it fails, it's because there no
-> camera, so we don't mind).
->
-> Anyway, I'm not sure it's a good idea to enable the camera by default.
-> It depends how many
-> power the camera is using (when idle). Coud you check that (with power
-> top maybe ?).
->
-> Thanks
->   
- From our old measurements:
+On Fri 05-06-09 21:15:28, Jens Axboe wrote:
+> On Fri, Jun 05 2009, Frederic Weisbecker wrote:
+> > The result with noop is even more impressive.
+> > 
+> > See: http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop.pdf
+> > 
+> > Also a comparison, noop with pdflush against noop with bdi writeback:
+> > 
+> > http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop-cmp.pdf
+> 
+> OK, so things aren't exactly peachy here to begin with. It may not
+> actually BE an issue, or at least now a new one, but that doesn't mean
+> that we should not attempt to quantify the impact.
+  What looks interesting is also the overall throughput. With pdflush we
+get to 2.5 MB/s + 26 MB/s while with per-bdi we get to 2.7 MB/s + 13 MB/s.
+So per-bdi seems to be *more* fair but throughput suffers a lot (which
+might be inevitable due to incurred seeks).
+  Frederic, how much does dbench achieve for you just on one partition
+(test both consecutively if possible) with as many threads as have those
+two dbench instances together? Thanks.
 
- idle camera is ~20mA out of ~650mA total power... (measured on 901 model).
-
-Woody
-
+									Honza
 -- 
-Woody Suwalski, Xandros, Ottawa, Canada, 1-613-842-3498 x414
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
