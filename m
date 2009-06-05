@@ -1,134 +1,531 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbZFEUZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752734AbZFEUaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbZFEUZP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 16:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbZFEUZD
+	id S1752734AbZFEUaj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 16:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbZFEUab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 16:25:03 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:35091 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751247AbZFEUZA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 16:25:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=kXXXrJp2+JaPKU2Vnf+PhNcQkZW5TuOaG8oylOZ102BvFZODVYmdNbhwZDS8XksiY/
-         H8syQmeboVcgyHgjY+r2rsHI2cFG8L3dMiVAyMNZ7t1Rymhqfo52xjq4Fq8gCW/Br7A8
-         /ycPRa4QAEoSpTzL0VlE4bVUB1jCBKQjwRi+8=
+	Fri, 5 Jun 2009 16:30:31 -0400
+Received: from smtp6-g21.free.fr ([212.27.42.6]:53914 "EHLO smtp6-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751005AbZFEUab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 16:30:31 -0400
+Message-ID: <4A29805D.60205@free.fr>
+Date: Fri, 05 Jun 2009 22:30:21 +0200
+From: matthieu castet <castet.matthieu@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081204 Iceape/1.1.14 (Debian-1.1.14-1)
 MIME-Version: 1.0
-In-Reply-To: <20090605182015.GA10342@8bytes.org>
-References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp>
-	 <20090605104132.GE24836@amd.com>
-	 <64bb37e0906050852g2be64c7elb2872a6129d13f56@mail.gmail.com>
-	 <20090605182015.GA10342@8bytes.org>
-Date: Fri, 5 Jun 2009 22:25:01 +0200
-Message-ID: <64bb37e0906051325t5eab883excf9e58aaf7cef3b@mail.gmail.com>
-Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
-From: Torsten Kaiser <just.for.lkml@googlemail.com>
-To: Joerg Roedel <joro@8bytes.org>
-Cc: Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-       lethal@linux-sh.org, hancockrwd@gmail.com, jens.axboe@oracle.com,
-       bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: wim@iguana.be, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+       biblbroks@sezampro.rs
+Subject: Re: add bcm47xx watchdog driver
+References: <4A282D98.6020004@free.fr> <20090605124813.d7666ed0.akpm@linux-foundation.org>
+In-Reply-To: <20090605124813.d7666ed0.akpm@linux-foundation.org>
+Content-Type: multipart/mixed;
+ boundary="------------050009010201040002080707"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 5, 2009 at 8:20 PM, Joerg Roedel <joro@8bytes.org> wrote:
-> On Fri, Jun 05, 2009 at 05:52:27PM +0200, Torsten Kaiser wrote:
+This is a multi-part message in MIME format.
+--------------050009010201040002080707
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
+
+Andrew Morton wrote:
+> On Thu, 04 Jun 2009 22:24:56 +0200
+> matthieu castet <castet.matthieu@free.fr> wrote:
+> 
 >>
->> This doesn't look right to me.
->> The comment above says "returns the entry from the hash which fits
->> best", but this will always return NULL, if there are are multiple
->> entrys, but no perfect match.
->
-> This is intentional. If there is no perfect-fit there is no way to tell
-> which entry was meant. So we potentially report wrong errors with a
-> wrong mapping backtrace which confuses even more than the wrong
-> "DMA-API: device driver tries to free DMA memory it has not allocated".
+>> This add watchdog driver for broadcom 47xx device.
+>> It uses the ssb subsytem to access embeded watchdog device.
+>>
+>> Because the watchdog timeout is very short (about 2s), a soft timer is used
+>> to increase the watchdog period.
+>>
+>> Note : A patch for exporting the ssb_watchdog_timer_set will
+>> be submitted on next linux-mips merge. Without this patch it can't 
+>> be build as a module.
+>>
+>>
+>> ...
+>>
+>> --- linux-2.6.orig/drivers/watchdog/Kconfig	2009-05-25 22:22:02.000000000 +0200
+>> +++ linux-2.6/drivers/watchdog/Kconfig	2009-05-25 22:26:06.000000000 +0200
+>> @@ -764,6 +764,12 @@
+>>  	help
+>>  	  Hardware driver for the built-in watchdog timer on TXx9 MIPS SoCs.
+>>  
+>> +config BCM47XX_WDT
+>> +    tristate "Broadcom BCM47xx Watchdog Timer"
+>> +    depends on BCM47XX
+>> +    help
+>> +      Hardware driver for the Broadcom BCM47xx Watchog Timer.
+>> +
+> 
+> Please indent the kconfig body with a single tab character.
+> 
+Done
 
-Ah, OK.
-I thought that reporting a (maybe) wrong difference in map/unmap would
-be better that a definitely wrong message "freed not allocated
-memory". And if the fuzzy matcher would warn about the fuzzy match, a
-developer would know that this difference might be wrong.
+>> ...
+>>
+>> +#define DRV_NAME		"bcm47xx_wdt"
+>> +
+>> +#define WDT_DEFAULT_TIME	30	/* seconds */
+>> +#define WDT_MAX_TIME		256	/* seconds */
+>> +
+>> +static int wdt_time = WDT_DEFAULT_TIME;
+>> +static int nowayout = WATCHDOG_NOWAYOUT;
+>> +
+>> +module_param(wdt_time, int, 0);
+>> +MODULE_PARM_DESC(wdt_time, "Watchdog time in seconds. (default="
+>> +				__MODULE_STRING(WDT_DEFAULT_TIME) ")");
+>> +
+>> +#ifdef CONFIG_WATCHDOG_NOWAYOUT
+>> +module_param(nowayout, int, 0);
+>> +MODULE_PARM_DESC(nowayout,
+>> +		"Watchdog cannot be stopped once started (default="
+>> +				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
+>> +#endif
+> 
+> hm, now what's happening with the third arg to module_param()?
+I don't understand what you mean.
+This thing is common in watchdog drivers. For example 
+drivers/watchdog/at91rm9200_wdt.c does the same thing.
 
->> Should there be a warning if more then one possible match were found?
->
-> True. That would be better. But I tried to keep the code change as small
-> as possible without disabling the feature completly.
+> 
+>> +static struct platform_device *bcm47xx_wdt_platform_device;
+>> +
+>> +static unsigned long bcm47xx_wdt_busy;
+>> +static char expect_release;
+>> +static struct timer_list wdt_timer;
+>> +static atomic_t ticks;
+>> +
+>> +static inline void bcm47xx_wdt_hw_start(void)
+>> +{
+>> +	/* this is 2,5s on 100Mhz clock  and 2s on 133 Mhz */
+>> +	ssb_watchdog_timer_set(&ssb_bcm47xx, 0xfffffff);
+>> +}
+>> +
+>> +static inline int bcm47xx_wdt_hw_stop(void)
+>> +{
+>> +	return ssb_watchdog_timer_set(&ssb_bcm47xx, 0);
+>> +}
+>> +
+>> +static void bcm47xx_timer_tick(unsigned long unused)
+>> +{
+>> +	if(!atomic_dec_and_test(&ticks)) {
+> 
+> Please pass this patch (and all others) through scripts/checkpatch.pl
+> and review the resulting output.
+Done, everything is ok, expect a printk line over 80 characters.
 
-OK, it just looked like the code did something else the comment said.
+> 
+>> +		bcm47xx_wdt_hw_start();
+>> +		mod_timer(&wdt_timer, jiffies + HZ);
+>> +	}
+>> +	else {
+>> +		printk(KERN_CRIT PFX "Watchdog will fire soon!!!.\n");
+>> +	}
+>> +}
+>> +
+>> +static inline void bcm47xx_wdt_pet(void)
+>> +{
+>> +	atomic_set(&ticks, wdt_time);
+>> +}
+> 
+> What does "pet" stand for?
+> 
+A watchdog timer is a computer hardware timing device that triggers a 
+system reset if the main program, due to some fault condition, such as a 
+hang, neglects to regularly service the watchdog (writing a “service 
+pulse” to it, also referred to as “petting the dog” [1]
 
->> * driver maps address 'a' with size 1
->> * driver maps same address 'a' with size 2
->> * driver wrongly unmaps the second allocation with size 1
->>   -> no warning, because the first allocation is returned
->
-> Hmm, I am not sure if we can handle this situation correctly in the
-> dma-debug code. There is no unique key to identify a mapping request
-> which allows to assign an unmap request to it. Currently dma-debug uses
-> device and dma-address. But that seems not to be sufficient. The
-> best-fit algorithm is also a but fuzzy of course.
+[1] http://en.wikipedia.org/wiki/Watchdog_timer
 
-Yes, I just read pci-gart_64.c to see if there is a better key.
-The API always seems to include size and direction too.
+But I can change the name if you want. Note that pet appear in 
+drivers/watchdog/sb_wdog.c and drivers/watchdog/sbc_epx_c3.c
 
-Would it work to to use all device, address, size and direction as
-key, as the proposes exact matcher does?
-This would obvious not work with the current diagnostics in
-check_unmap, as not even single near matches would be returned.
-But if you would move the diagnostics from check_unmap into
-hash_bucket_find it could work:
-If hash_bucket_find does not find a perfect match, it could output:
-* no match -> tries to free DMA memory it has not allocated
-* 1 match -> warn about any differences (size, type, cpu-address, sg
-list count, direction)
-* 2+ matches, with perfect match -> no warning; set flag in other matches.
-* 2+ matches, without perfect match -> list differences from all
-matches; set flag in other matches after returning the best
+>> +static void bcm47xx_wdt_start(void)
+>> +{
+>> +	bcm47xx_wdt_pet();
+>> +	bcm47xx_timer_tick(0);
+>> +}
+>> +
+>> +static void bcm47xx_wdt_pause(void)
+>> +{
+>> +	del_timer(&wdt_timer);
+> 
+> Should this be del_timer_sync()?  The timer callback can still be
+> executing after del_timer() returns.
+Yes, changed to del_timer_sync()
 
-If differences from a flagged match are output, add a note, that this
-warning is unreliable because of these possible map/unmap mismatches.
+>> +static int bcm47xx_wdt_release(struct inode *inode, struct file *file)
+>> +{
+>> +	if (expect_release == 42) {
+>> +		bcm47xx_wdt_stop();
+>> +	} else {
+>> +		printk(KERN_CRIT DRV_NAME ": Unexpected close, not stopping watchdog!\n");
+> 
+> Can this happen?
+yes : this is a common pattern in watchdog driver (check for example 
+softdog) :
+- expect_release is in bss (set to 0)
+- we set expect_release to this magic value, only if we get a write with 
+a special character and we are not in nowayout.
+- So for example doing a "cat /dev/watchdog" should go in this path.
 
->> * driver wants to correctly unmap the first allocation
->>   -> wrong warning about this unmap because size mismatch
->
-> Ok, at least we get a warning about a bug. Not very useful because it
-> reports the wrong bug. Is this the situation which triggered the
-> original bug report?
+> 
+>> +		bcm47xx_wdt_start();
+>> +	}
+>> +
+>> +	clear_bit(0, &bcm47xx_wdt_busy);
+>> +	expect_release = 0;
+>> +	return 0;
+>> +}
+>> +
 
-No, the original report was with a correctly working driver that just
-confused the dma-debugging code into issuing wrong warnings:
-http://marc.info/?l=linux-kernel&m=124336530609750&w=2
+Thanks for the review.
 
-This constructed case was just me trying to find more evil cases that
-are currently not covered.
+I attach a new version.
 
-Your patch would blame the correctly programmed second unmap for
-"freeing unallocated memory",
-my proposal would blame it for the size difference, but with a note
-that there was a concurrent second map at the same address.
+--------------050009010201040002080707
+Content-Type: text/x-diff;
+ name="bcm47xx_watchdog_v3.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="bcm47xx_watchdog_v3.diff"
 
-And in a case where the code maps the same address twice but wants to
-unmap it wrong, it would correctly output both possible, but
-mismatching maps, instead of the wrong "unallocated memory" warning.
+This add watchdog driver for broadcom 47xx device.
+It uses the ssb subsytem to access embeded watchdog device.
 
->> Also what about sg_call_ents and sg_mapped_ents?
->> Could it be possible to get the same address/size with different sg-counts.
->
-> It looks not forbidden in the API. So I guess this can happen too.
+Because the watchdog timeout is very short (about 2s), a soft timer is used
+to increase the watchdog period.
 
-Should it then be added to the fuzzy matcher?
-Otherwise I would except the warnings like "DMA-API: device driver
-frees DMA sg list with different entry count [map count=2] [unmap
-count=1]" to still trigger. (I didn't have the time to test your patch
-yet)
+Note : A patch for exporting the ssb_watchdog_timer_set will
+be submitted on next linux-mips merge. Without this patch it can't 
+be build as a module.
 
-Torsten
+Signed-off-by: Aleksandar Radovanovic <biblbroks@sezampro.rs>
+Signed-off-by: Matthieu CASTET <castet.matthieu@free.fr>
+Index: linux-2.6/drivers/watchdog/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/Kconfig	2009-05-25 22:22:02.000000000 +0200
++++ linux-2.6/drivers/watchdog/Kconfig	2009-06-05 22:05:19.000000000 +0200
+@@ -764,6 +764,12 @@
+ 	help
+ 	  Hardware driver for the built-in watchdog timer on TXx9 MIPS SoCs.
+ 
++config BCM47XX_WDT
++	tristate "Broadcom BCM47xx Watchdog Timer"
++	depends on BCM47XX
++	help
++	  Hardware driver for the Broadcom BCM47xx Watchog Timer.
++
+ # PARISC Architecture
+ 
+ # POWERPC Architecture
+Index: linux-2.6/drivers/watchdog/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/Makefile	2009-05-25 22:22:02.000000000 +0200
++++ linux-2.6/drivers/watchdog/Makefile	2009-05-25 23:02:27.000000000 +0200
+@@ -105,6 +105,7 @@
+ obj-$(CONFIG_SIBYTE_WDOG) += sb_wdog.o
+ obj-$(CONFIG_AR7_WDT) += ar7_wdt.o
+ obj-$(CONFIG_TXX9_WDT) += txx9wdt.o
++obj-$(CONFIG_BCM47XX_WDT) += bcm47xx_wdt.o
+ 
+ # PARISC Architecture
+ 
+Index: linux-2.6/drivers/watchdog/bcm47xx_wdt.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/drivers/watchdog/bcm47xx_wdt.c	2009-06-05 22:25:37.000000000 +0200
+@@ -0,0 +1,286 @@
++/*
++ *  Watchdog driver for Broadcom BCM47XX
++ *
++ *  Copyright (C) 2008 Aleksandar Radovanovic <biblbroks@sezampro.rs>
++ *  Copyright (C) 2009 Matthieu CASTET <castet.matthieu@free.fr>
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ */
++
++#include <linux/bitops.h>
++#include <linux/errno.h>
++#include <linux/fs.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/miscdevice.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/reboot.h>
++#include <linux/types.h>
++#include <linux/uaccess.h>
++#include <linux/watchdog.h>
++#include <linux/timer.h>
++#include <linux/jiffies.h>
++#include <linux/ssb/ssb_embedded.h>
++#include <asm/mach-bcm47xx/bcm47xx.h>
++
++#define DRV_NAME		"bcm47xx_wdt"
++
++#define WDT_DEFAULT_TIME	30	/* seconds */
++#define WDT_MAX_TIME		256	/* seconds */
++
++static int wdt_time = WDT_DEFAULT_TIME;
++static int nowayout = WATCHDOG_NOWAYOUT;
++
++module_param(wdt_time, int, 0);
++MODULE_PARM_DESC(wdt_time, "Watchdog time in seconds. (default="
++				__MODULE_STRING(WDT_DEFAULT_TIME) ")");
++
++#ifdef CONFIG_WATCHDOG_NOWAYOUT
++module_param(nowayout, int, 0);
++MODULE_PARM_DESC(nowayout,
++		"Watchdog cannot be stopped once started (default="
++				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++#endif
++
++static unsigned long bcm47xx_wdt_busy;
++static char expect_release;
++static struct timer_list wdt_timer;
++static atomic_t ticks;
++
++static inline void bcm47xx_wdt_hw_start(void)
++{
++	/* this is 2,5s on 100Mhz clock  and 2s on 133 Mhz */
++	ssb_watchdog_timer_set(&ssb_bcm47xx, 0xfffffff);
++}
++
++static inline int bcm47xx_wdt_hw_stop(void)
++{
++	return ssb_watchdog_timer_set(&ssb_bcm47xx, 0);
++}
++
++static void bcm47xx_timer_tick(unsigned long unused)
++{
++	if (!atomic_dec_and_test(&ticks)) {
++		bcm47xx_wdt_hw_start();
++		mod_timer(&wdt_timer, jiffies + HZ);
++	} else {
++		printk(KERN_CRIT DRV_NAME "Watchdog will fire soon!!!\n");
++	}
++}
++
++static inline void bcm47xx_wdt_pet(void)
++{
++	atomic_set(&ticks, wdt_time);
++}
++
++static void bcm47xx_wdt_start(void)
++{
++	bcm47xx_wdt_pet();
++	bcm47xx_timer_tick(0);
++}
++
++static void bcm47xx_wdt_pause(void)
++{
++	del_timer_sync(&wdt_timer);
++	bcm47xx_wdt_hw_stop();
++}
++
++static void bcm47xx_wdt_stop(void)
++{
++	bcm47xx_wdt_pause();
++}
++
++static int bcm47xx_wdt_settimeout(int new_time)
++{
++	if ((new_time <= 0) || (new_time > WDT_MAX_TIME))
++		return -EINVAL;
++
++	wdt_time = new_time;
++	return 0;
++}
++
++static int bcm47xx_wdt_open(struct inode *inode, struct file *file)
++{
++	if (test_and_set_bit(0, &bcm47xx_wdt_busy))
++		return -EBUSY;
++
++	bcm47xx_wdt_start();
++	return nonseekable_open(inode, file);
++}
++
++static int bcm47xx_wdt_release(struct inode *inode, struct file *file)
++{
++	if (expect_release == 42) {
++		bcm47xx_wdt_stop();
++	} else {
++		printk(KERN_CRIT DRV_NAME
++			": Unexpected close, not stopping watchdog!\n");
++		bcm47xx_wdt_start();
++	}
++
++	clear_bit(0, &bcm47xx_wdt_busy);
++	expect_release = 0;
++	return 0;
++}
++
++static ssize_t bcm47xx_wdt_write(struct file *file, const char __user *data,
++			      size_t len, loff_t *ppos)
++{
++	if (len) {
++		if (!nowayout) {
++			size_t i;
++
++			expect_release = 0;
++
++			for (i = 0; i != len; i++) {
++				char c;
++				if (get_user(c, data + i))
++					return -EFAULT;
++				if (c == 'V')
++					expect_release = 42;
++			}
++		}
++		bcm47xx_wdt_pet();
++	}
++	return len;
++}
++
++static struct watchdog_info bcm47xx_wdt_info = {
++	.identity 	= DRV_NAME,
++	.options 	= WDIOF_SETTIMEOUT |
++				WDIOF_KEEPALIVEPING |
++				WDIOF_MAGICCLOSE,
++};
++
++static long bcm47xx_wdt_ioctl(struct file *file,
++					unsigned int cmd, unsigned long arg)
++{
++	void __user *argp = (void __user *)arg;
++	int __user *p = argp;
++	int new_value, retval = -EINVAL;;
++
++	switch (cmd) {
++	case WDIOC_GETSUPPORT:
++		return copy_to_user(argp, &bcm47xx_wdt_info,
++				sizeof(bcm47xx_wdt_info)) ? -EFAULT : 0;
++
++	case WDIOC_GETSTATUS:
++	case WDIOC_GETBOOTSTATUS:
++		return put_user(0, p);
++
++	case WDIOC_SETOPTIONS:
++		if (get_user(new_value, p))
++			return -EFAULT;
++
++		if (new_value & WDIOS_DISABLECARD) {
++			bcm47xx_wdt_stop();
++			retval = 0;
++		}
++
++		if (new_value & WDIOS_ENABLECARD) {
++			bcm47xx_wdt_start();
++			retval = 0;
++		}
++
++		return retval;
++
++	case WDIOC_KEEPALIVE:
++		bcm47xx_wdt_pet();
++		return 0;
++
++	case WDIOC_SETTIMEOUT:
++		if (get_user(new_value, p))
++			return -EFAULT;
++
++		if (bcm47xx_wdt_settimeout(new_value))
++			return -EINVAL;
++
++		bcm47xx_wdt_pet();
++
++	case WDIOC_GETTIMEOUT:
++		return put_user(wdt_time, p);
++
++	default:
++		return -ENOTTY;
++	}
++}
++
++static int bcm47xx_wdt_notify_sys(struct notifier_block *this,
++	   unsigned long code, void *unused)
++{
++	if (code == SYS_DOWN || code == SYS_HALT)
++		bcm47xx_wdt_stop();
++	return NOTIFY_DONE;
++}
++
++static const struct file_operations bcm47xx_wdt_fops = {
++	.owner		= THIS_MODULE,
++	.llseek		= no_llseek,
++	.unlocked_ioctl	= bcm47xx_wdt_ioctl,
++	.open		= bcm47xx_wdt_open,
++	.release	= bcm47xx_wdt_release,
++	.write		= bcm47xx_wdt_write,
++};
++
++static struct miscdevice bcm47xx_wdt_miscdev = {
++	.minor		= WATCHDOG_MINOR,
++	.name		= "watchdog",
++	.fops		= &bcm47xx_wdt_fops,
++};
++
++static struct notifier_block bcm47xx_wdt_notifier = {
++	.notifier_call = bcm47xx_wdt_notify_sys,
++};
++
++static int __init bcm47xx_wdt_init(void)
++{
++	int ret;
++
++	if (bcm47xx_wdt_hw_stop() < 0)
++		return -ENODEV;
++
++	setup_timer(&wdt_timer, bcm47xx_timer_tick, 0L);
++
++	if (bcm47xx_wdt_settimeout(wdt_time)) {
++		bcm47xx_wdt_settimeout(WDT_DEFAULT_TIME);
++		printk(KERN_INFO DRV_NAME
++			": wdt_time value must be 1 <= wdt_time <= 256, using %d\n",
++			wdt_time);
++	}
++
++	ret = register_reboot_notifier(&bcm47xx_wdt_notifier);
++	if (ret)
++		return ret;
++
++	ret = misc_register(&bcm47xx_wdt_miscdev);
++	if (ret) {
++		unregister_reboot_notifier(&bcm47xx_wdt_notifier);
++		return ret;
++	}
++
++	printk(KERN_INFO "BCM47xx Watchdog Timer enabled (%d seconds%s)\n",
++				wdt_time, nowayout ? ", nowayout" : "");
++	return 0;
++}
++
++static void __exit bcm47xx_wdt_exit(void)
++{
++	if (!nowayout)
++		bcm47xx_wdt_stop();
++
++	misc_deregister(&bcm47xx_wdt_miscdev);
++
++	unregister_reboot_notifier(&bcm47xx_wdt_notifier);
++}
++
++module_init(bcm47xx_wdt_init);
++module_exit(bcm47xx_wdt_exit);
++
++MODULE_AUTHOR("Aleksandar Radovanovic");
++MODULE_DESCRIPTION("Watchdog driver for Broadcom BCM47xx");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
+
+--------------050009010201040002080707--
