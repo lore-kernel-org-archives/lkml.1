@@ -1,108 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbZFESWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZFES0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756128AbZFESWR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 14:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbZFESWD
+	id S1756014AbZFES0j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 14:26:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbZFES0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 14:22:03 -0400
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:38557 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752119AbZFESWC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 14:22:02 -0400
-X-Trace: 210087082/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.42.194/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.42.194
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApMCACj/KEpQKSrC/2dsb2JhbAAI0VaCP4FLBQ
-X-IronPort-AV: E=Sophos;i="4.41,312,1241391600"; 
-   d="scan'208";a="210087082"
-Date: Fri, 5 Jun 2009 19:05:54 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Minchan Kim <minchan.kim@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH][mmtom] remove file arguement of swap_readpage
-In-Reply-To: <1244212423-18629-1-git-send-email-minchan.kim@gmail.com>
-Message-ID: <Pine.LNX.4.64.0906051904060.14826@sister.anvils>
-References: <1244212423-18629-1-git-send-email-minchan.kim@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 5 Jun 2009 14:26:31 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:54968 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752451AbZFES0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 14:26:30 -0400
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>, Greg KH <greg@kroah.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-Next <linux-next@vger.kernel.org>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Subrata Modak <subrata@linux.vnet.ibm.com>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       Michael Ellerman <michael@ellerman.id.au>
+Date: Fri, 05 Jun 2009 13:26:25 -0500
+Message-Id: <20090605182625.24093.7808.sendpatchset@elm3a191.beaverton.ibm.com>
+Subject: Re: [BUILD FAILURE 01/04] Next June 04:PPC64 randconfig [drivers/staging/comedi/drivers.o]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Jun 2009, Minchan Kim wrote:
+>On Thu, 2009-06-04 at 22:40 +0200, Geert Uytterhoeven wrote:
+>On Thu, Jun 4, 2009 at 20:07, Greg KH <greg@kroah.com> wrote:
+> > On Thu, Jun 04, 2009 at 07:01:32PM +0530, Subrata Modak wrote:
+> >> CC [M]  drivers/staging/comedi/drivers.o
+> >> drivers/staging/comedi/drivers.c: In function ‘comedi_buf_alloc’:
+> >> drivers/staging/comedi/drivers.c:496: error: ‘PAGE_KERNEL_NOCACHE’ undeclared (first use in this function)
+> >> drivers/staging/comedi/drivers.c:496: error: (Each undeclared identifier is reported only once
+> >> drivers/staging/comedi/drivers.c:496: error: for each function it appears in.)
+> >> make[3]: *** [drivers/staging/comedi/drivers.o] Error 1
+> >> make[2]: *** [drivers/staging/comedi] Error 2
+> >> make[1]: *** [drivers/staging] Error 2
+> >> make: *** [drivers] Error 2
+> >>
+> >> Is it still normal to expect this failure ?
+> >
+> > No.
+> >
+> >> I reported them long back during April:
+> >> http://www.gossamer-threads.com/lists/linux/kernel/1065227,
+> >
+> > Yes, and I took some patches that were supposed to fix this.  I can't
+> > duplicate this here, care to send a patch that would fix it?
 
-> The file argument resulted from address_space's readpage
-> long time ago.
-> 
-> Now we don't use it any more. Let's remove unnecessary
-> argement.
-> 
-> This patch cleans up swap_readpage.
-> It doesn't affect behavior of function.
-> 
-> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Cc: Rik van Riel <riel@redhat.com>
+I tried this. But, with some catch. ‘PAGE_KERNEL_NOCACHE’ seems to be the
+choice for majority of architectures like frv, m32r, sh, x86, etc, as Geert
+mentions below. However, i believe POWERPC defines it as ‘PAGE_KERNEL_NC‘
+found at arch/powerpc/include/asm/pte-common.h.
 
-Okay, yes: but don't be surprised if someone sends in a patch
-to put it back, as in the other readpage()s.
+Paul/Banjamin,
+Can you please confirm this ?
 
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+The below patch fixes the build error.
 
-> ---
->  include/linux/swap.h |    2 +-
->  mm/page_io.c         |    2 +-
->  mm/swap_state.c      |    2 +-
->  3 files changed, 3 insertions(+), 3 deletions(-)
+Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+---
+
+--- linux-2.6.30-rc8/drivers/staging/comedi/drivers.c.orig	2009-06-05 12:46:35.000000000 -0500
++++ linux-2.6.30-rc8/drivers/staging/comedi/drivers.c	2009-06-05 13:03:31.000000000 -0500
+@@ -43,9 +43,13 @@
+ #include <linux/vmalloc.h>
+ #include <linux/cdev.h>
+ #include <linux/dma-mapping.h>
+-
+ #include <asm/io.h>
+ #include <asm/system.h>
++#ifdef __powerpc64__
++#include <asm/pte-common.h>
++#else
++#include <asm/pgtable.h>
++#endif
+ 
+ static int postconfig(struct comedi_device *dev);
+ static int insn_rw_emulate_bits(struct comedi_device *dev, struct comedi_subdevice *s,
+@@ -492,8 +496,13 @@ int comedi_buf_alloc(struct comedi_devic
+ 		}
+ 		if (i == n_pages) {
+ 			async->prealloc_buf =
++#ifdef __powerpc64__
++				vmap(pages, n_pages, VM_MAP,
++				PAGE_KERNEL_NC);
++#else
+ 				vmap(pages, n_pages, VM_MAP,
+ 				PAGE_KERNEL_NOCACHE);
++#endif
+ 		}
+ 		if (pages) {
+ 			vfree(pages);
+
+---
+Regards--
+Subrata
+
+> PAGE_KERNEL_NOCACHE is defined on a few architectures only, namely
+> frv, m32r, mn10300, sh, and x86[*]. On all others, it will fail.
 > 
-> diff --git a/include/linux/swap.h b/include/linux/swap.h
-> index 2dedc2d..c88b366 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -256,7 +256,7 @@ extern void swap_unplug_io_fn(struct backing_dev_info *, struct page *);
->  
->  #ifdef CONFIG_SWAP
->  /* linux/mm/page_io.c */
-> -extern int swap_readpage(struct file *, struct page *);
-> +extern int swap_readpage(struct page *);
->  extern int swap_writepage(struct page *page, struct writeback_control *wbc);
->  extern void end_swap_bio_read(struct bio *bio, int err);
->  
-> diff --git a/mm/page_io.c b/mm/page_io.c
-> index 3023c47..c6f3e50 100644
-> --- a/mm/page_io.c
-> +++ b/mm/page_io.c
-> @@ -120,7 +120,7 @@ out:
->  	return ret;
->  }
->  
-> -int swap_readpage(struct file *file, struct page *page)
-> +int swap_readpage(struct page *page)
->  {
->  	struct bio *bio;
->  	int ret = 0;
-> diff --git a/mm/swap_state.c b/mm/swap_state.c
-> index b62e7f5..42cd38e 100644
-> --- a/mm/swap_state.c
-> +++ b/mm/swap_state.c
-> @@ -313,7 +313,7 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
->  			 * Initiate read into locked page and return.
->  			 */
->  			lru_cache_add_anon(new_page);
-> -			swap_readpage(NULL, new_page);
-> +			swap_readpage(new_page);
->  			return new_page;
->  		}
->  		ClearPageSwapBacked(new_page);
-> -- 
-> 1.5.6.5
+> [*] Interestingly, sparc refers to it in one of its include files,
+> without providing a
+>     definition, Probably that code is unused.
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 > 
