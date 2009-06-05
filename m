@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbZFEGFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbZFEGIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755366AbZFEGFw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 02:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZFEGFn
+	id S1755351AbZFEGIR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 02:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZFEGIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 02:05:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45423 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750768AbZFEGFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 02:05:42 -0400
-Message-ID: <4A28B539.3050001@redhat.com>
-Date: Fri, 05 Jun 2009 09:03:37 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 5 Jun 2009 02:08:06 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:46942 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526AbZFEGIG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 02:08:06 -0400
+Message-ID: <4A28B63E.1080004@oracle.com>
+Date: Fri, 05 Jun 2009 14:07:58 +0800
+From: Tao Ma <tao.ma@oracle.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>, kvm@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Subject: Re: [RFC] CPU hard limits
-References: <20090604053649.GA3701@in.ibm.com> <4A27BBCA.5020606@redhat.com> <20090605030309.GA3872@in.ibm.com> <4A28921C.6010802@redhat.com> <661de9470906042137u603e2997n80c270bf7f6191ad@mail.gmail.com> <4A28A2AB.3060108@redhat.com> <20090605044946.GA11755@balbir.in.ibm.com> <20090605051050.GB11755@balbir.in.ibm.com> <4A28AB67.7040800@redhat.com> <20090605052755.GE11755@balbir.in.ibm.com>
-In-Reply-To: <20090605052755.GE11755@balbir.in.ibm.com>
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64
+ 2.6.30-rc8.
+References: <4A289928.7040508@oracle.com> <20090605054902.GF7962@cr0.nay.redhat.com>
+In-Reply-To: <20090605054902.GF7962@cr0.nay.redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt002.oracle.com [141.146.116.11]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010207.4A28B643.0057:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
->> I think so.  Given guarantees G1..Gn (0 <= Gi <= 1; sum(Gi) <= 1), and a  
->> cpu hog running in each group, how would the algorithm divide resources?
+
+
+Amerigo Wang wrote:
+> On Fri, Jun 05, 2009 at 12:03:52PM +0800, Tao Ma wrote:
+>> Hi list,
+>>       In 2.6.30-rc8, /proc/kcore in x86_64's size is unreasonable large  
+>> to be 281474974617600.
+>> While in a x86 box, it is 931131392 which looks sane.
 >>
->>     
->
-> As per the matrix calculation, but as soon as we reach an idle point,
-> we redistribute the b/w and start a new quantum so to speak, where all
-> groups are charged up to their hard limits.
->
-> For your question, if there is a CPU hog running, it would be as per
-> the matrix calculation, since the system has no idle point during the
-> bandwidth period.
->   
+>> [root@test8 ~]# ll /proc/kcore
+>> -r-------- 1 root root 281474974617600 Jun  5 11:15 /proc/kcore
+>>
+>> [root@ocfs2-test9 ~]$ ll /proc/kcore
+>> -r-------- 1 root root 931131392 Jun  5 11:58 /proc/kcore
+> 
+> Hmm, what is your physical RAM size on test8?
+> /proc/kcore looks fine on my x86_64 box.
+Only 4G.
+> 
+>> I just noticed this when kexec fails in "Can't find kernel text map area  
+>> from kcore".
+>>
+>> Is there something wrong?
+> 
+> It looks like that error message is from userspace?
+I just started kdump and get the error message.
 
-So the groups with guarantees get a priority boost.  That's not a good 
-side effect.
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+Regards,
+Tao
