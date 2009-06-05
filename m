@@ -1,91 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbZFEPH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbZFEPIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756058AbZFEPH3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 11:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbZFEPHV
+	id S1755174AbZFEPIh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 11:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbZFEPIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 11:07:21 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:38216 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752224AbZFEPHU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 11:07:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=iAZsBXXH+H/WW/Q0+QdLC4zXy8rODieugMkBpEkQe5Xa+4sEk9qLgprqVpkjULebdm
-         lLp6HFZKHi3lkbeLhuhPaJWRJMPl9j65/L/JKA+RS5Bgyf2ZiQ+QcdbR1pcNRMPe6k0l
-         kC2qwjSybGO9fkVJabOSFaf8RMR+7Dq+YmsFo=
-Message-ID: <4A2934F5.4050601@tuffmail.co.uk>
-Date: Fri, 05 Jun 2009 16:08:37 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 5 Jun 2009 11:08:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:55226 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752672AbZFEPIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 11:08:21 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: paulmck@linux.vnet.ibm.com
+Subject: Re: [RFC PATCH v2 00/19] virtual-bus
+Date: Sat, 6 Jun 2009 00:25:57 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Gregory Haskins <gregory.haskins@gmail.com>,
+       "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
+       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
+       anthony@codemonkey.ws, netdev@vger.kernel.org, kvm@vger.kernel.org,
+       bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
+       herber@gondor.apana.org.au, chrisw@sous-sol.org, shemminger@vyatta.com
+References: <20090409155200.32740.19358.stgit@dev.haskins.net> <200906051425.02924.rusty@rustcorp.com.au> <20090605053010.GD7125@linux.vnet.ibm.com>
+In-Reply-To: <20090605053010.GD7125@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Corentin Chary <corentin.chary@gmail.com>,
-       acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
-       linux-kernel@vger.kernel.org, USB list <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH] eeepc-laptop: enable camera by default
-References: <Pine.LNX.4.64.0906051157460.22218@melkki.cs.Helsinki.FI>	 <71cd59b00906050446g7310d24el94f0d137dc0e0ecf@mail.gmail.com>	 <1244205844.23533.21.camel@penberg-laptop>	 <71cd59b00906050602s5c9b9a31ne11b6aaf7546f58c@mail.gmail.com>	 <1244209873.23533.29.camel@penberg-laptop>	 <9b2b86520906050738kea062c9n1b2c0e767d6eb0aa@mail.gmail.com> <1244213412.23533.41.camel@penberg-laptop> <4A2931F5.1090709@tuffmail.co.uk>
-In-Reply-To: <4A2931F5.1090709@tuffmail.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906060025.57961.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
-> Pekka Enberg wrote:
->> Hi Alan,
->>
->> On Fri, 2009-06-05 at 15:38 +0100, Alan Jenkins wrote:
->>  
->>> Ok.  I didn't bother shutting down my system, but I get a similar
->>> difference; 16 wakeups/s disabled v.s. 25 enabled.  Anecdotally,
->>> disabling the camera does help battery life, and presumably Asus had
->>> good reason to implement it!  (The shipped OS "fixes" the usability
->>> problem by patching the camera apps).
->>>
->>> BUT I found that autosuspend didn't seem to break anything, and
->>> enabling it also got me down to 16 wakeups/s.  I think this is ideal
->>> because autosuspend is automatic so I can save power without manual
->>> toggling.
->>>
->>> Here's some magic to enable autosuspend:
->>>
->>> # echo -n auto > /sys/bus/usb/drivers/uvcvideo/*:*/../power/level
->>>
->>> Ideally this wants to be enabled automatically using a udev rule.
->>>     
->>
->> Can the kernel do this by default for this specific driver on eeepc?
->>
->>             Pekka
->>
->>   
+On Fri, 5 Jun 2009 03:00:10 pm Paul E. McKenney wrote:
+> On Fri, Jun 05, 2009 at 02:25:01PM +0930, Rusty Russell wrote:
+> > +	/* lg->eventfds is RCU-protected */
+> > +	preempt_disable();
 >
-> Auto-suspend white-listing would be done on the basis of USB ids 
-> (vendor, product).  At the moment it's expected that userspace should 
-> take ownership of it.  There's no infrastructure for in-kernel 
-> whitelisting.  I think.
+> Suggest changing to rcu_read_lock() to match the synchronize_rcu().
+
+Ah yes, much better.  As I was implementing it I warred with myself since
+lguest aims for simplicity above all else.  But since we only ever add things
+to the array, RCU probably is simpler.
+
+> > +	for (i = 0; i < cpu->lg->num_eventfds; i++) {
+> > +		if (cpu->lg->eventfds[i].addr == cpu->pending_notify) {
+> > +			eventfd_signal(cpu->lg->eventfds[i].event, 1);
 >
-> Large lists in udev rules can work, there are already lists of USB 
-> devices to set permissions for libusb access, e.g. for libmtp.
+> Shouldn't this be something like the following?
 >
-> [CC usb list - in the hope someone will point out if I got this wrong 
-> :-)]
->
-> Alan
+> 		p = rcu_dereference(cpu->lg->eventfds);
+> 		if (p[i].addr == cpu->pending_notify) {
+> 			eventfd_signal(p[i].event, 1);
 
-Btw I've now tested the udev rule, you can just dump this in a new 
-.rules file under /etc/udev/rules.d:
+Hmm, need to read num_eventfds first, too.  It doesn't matter if we get the old
+->num_eventfds and the new ->eventfds, but the other way around would be bad.
 
-SUBSYSTEM=="usb", ATTR{idVendor}=="eb1a", ATTR{idProduct}=="2761", ATTR{power/level}="auto"
+Here's the inter-diff:
 
-
-Not sure who I should submit it to though :-).  debian-eeepc would take 
-it, but perhaps it should go in udev's default rules.
-
-Regards
-Alan
+diff --git a/drivers/lguest/lguest_user.c b/drivers/lguest/lguest_user.c
+--- a/drivers/lguest/lguest_user.c
++++ b/drivers/lguest/lguest_user.c
+@@ -39,18 +39,24 @@ static int break_guest_out(struct lg_cpu
+ 
+ bool send_notify_to_eventfd(struct lg_cpu *cpu)
+ {
+-	unsigned int i;
++	unsigned int i, num;
++	struct lg_eventfds *eventfds;
++
++	/* Make sure we grab the total number before accessing the array. */
++	cpu->lg->num_eventfds = num;
++	rmb();
+ 
+ 	/* lg->eventfds is RCU-protected */
+ 	rcu_read_lock();
+-	for (i = 0; i < cpu->lg->num_eventfds; i++) {
+-		if (cpu->lg->eventfds[i].addr == cpu->pending_notify) {
+-			eventfd_signal(cpu->lg->eventfds[i].event, 1);
++	eventfds = rcu_dereference(cpu->lg->eventfds);
++	for (i = 0; i < num; i++) {
++		if (eventfds[i].addr == cpu->pending_notify) {
++			eventfd_signal(eventfds[i].event, 1);
+ 			cpu->pending_notify = 0;
+ 			break;
+ 		}
+ 	}
+-	preempt_enable();
++	rcu_read_unlock();
+ 	return cpu->pending_notify == 0;
+ }
+ 
+Thanks!
+Rusty.
