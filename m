@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751708AbZFENRI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752258AbZFENTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751708AbZFENRI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 09:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbZFENRA
+	id S1752258AbZFENTB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 09:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbZFENSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 09:17:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46029 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751013AbZFENQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 09:16:59 -0400
-Message-ID: <4A291A2F.3090201@redhat.com>
-Date: Fri, 05 Jun 2009 16:14:23 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 5 Jun 2009 09:18:54 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:50797 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751329AbZFENSx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 09:18:53 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Harald Welte <HaraldWelte@viatech.com>
+Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
+Date: Fri, 5 Jun 2009 08:18:42 -0500
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906050227.42295.lkml@morethan.org> <20090605103929.GE4421@prithivi.gnumonks.org>
+In-Reply-To: <20090605103929.GE4421@prithivi.gnumonks.org>
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>, kvm@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Subject: Re: [RFC] CPU hard limits
-References: <20090605030309.GA3872@in.ibm.com> <4A28921C.6010802@redhat.com> <661de9470906042137u603e2997n80c270bf7f6191ad@mail.gmail.com> <4A28A2AB.3060108@redhat.com> <20090605044946.GA11755@balbir.in.ibm.com> <20090605051050.GB11755@balbir.in.ibm.com> <4A28AB67.7040800@redhat.com> <20090605052755.GE11755@balbir.in.ibm.com> <20090605053159.GB3872@in.ibm.com> <4A28B4CE.4010004@redhat.com> <20090605093947.GJ11755@balbir.in.ibm.com>
-In-Reply-To: <20090605093947.GJ11755@balbir.in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906050818.44701.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
->> That's the limit part.  I'd like to be able to specify limits and  
->> guarantees on the same host and for the same groups; I don't think that  
->> works when you advance the bandwidth period.
->>     
->
-> Yes, this feature needs to be configurable. But your use case for both
-> limits and guarantees is interesting. We spoke to Peter and he was
-> convinced only of the guarantee use case. Could you please help
-> elaborate your use case, so that we can incorporate it into RFC v2 we
-> send out. Peter is opposed to having hard limits and is convinced that
-> they are not generally useful, so far I seen you and Paul say it is
-> useful, any arguments you have or any +1 from you will help us. Peter
-> I am not back stabbing you :)
->   
+On Fri June 5 2009, Harald Welte wrote:
+> Hi Michael,
+> 
+> On Fri, Jun 05, 2009 at 02:27:40AM -0500, Michael S. Zick wrote:
+> 
+> > > As a side note: The C7-M actually uses the same software interface as Intel CPU
+> > > for doing the power transitions (ACPI Performance States).   Only very early C7
+> > > models used the cpufreq/e_powersaver.c driver.
+> > 
+> > What is "very early C7 models" in terms of cpuid results?
+> 
+> I've inquired about that.
+> 
+> Looking at he code, the driver only seems to checking for a minimum CPUID
+> value, but doesn't contain a maximum.
+> 
 
-I am selling virtual private servers.  A 10% cpu share costs $x/month, 
-and I guarantee you'll get that 10%, or your money back.  On the other 
-hand, I want to limit cpu usage to that 10% (maybe a little more) so 
-people don't buy 10% shares and use 100% on my underutilized servers.  
-If they want 100%, let them pay for 100%.
+That is the way I read it also.
 
->> I think we need to treat guarantees as first-class goals, not something  
->> derived from limits (in fact I think guarantees are more useful as they  
->> can be used to provide SLAs).
->>     
->
-> Even limits are useful for SLA's since your b/w available changes
-> quite drastically as we add or remove groups. There are other use
-> cases for limits as well
+Mike
+> Regards,
 
-SLAs are specified in terms of guarantees on a service, not on limits on 
-others.  If we could use limits to provide guarantees, that would be 
-fine, but it doesn't quite work out.
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
 
