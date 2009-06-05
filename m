@@ -1,131 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753393AbZFEMOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753849AbZFEMS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753393AbZFEMOU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 08:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbZFEMOJ
+	id S1753849AbZFEMS1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 08:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbZFEMSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 08:14:09 -0400
-Received: from sh.osrg.net ([192.16.179.4]:54793 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751264AbZFEMOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 08:14:08 -0400
-Date: Fri, 05 Jun 2009 21:04:10 +0900 (JST)
-Message-Id: <20090605.210410.112169966.ryusuke@osrg.net>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: viro@zeniv.linux.org.uk, Artem.Bityutskiy@nokia.com,
-       konishi.ryusuke@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
-       hch@infradead.org, linux-fsdevel@vger.kernel.org, users@nilfs.org
-Subject: Re: [PATCH v2.1 11/17] NILFS: do not manipulate s_dirt directly
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-In-Reply-To: <1244207155-2092-12-git-send-email-dedekind@infradead.org>
-References: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
-	<1244207155-2092-12-git-send-email-dedekind@infradead.org>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 5 Jun 2009 08:18:18 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:28185 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbZFEMSR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 08:18:17 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=KVZCuJoz4J832nPPBizcREfcAOi78P3ZJ9xa32hiV8EkTIg0HNohxrZOzzUdiqX7F
+	wEd+xytoybI8pTi0jDzMg==
+MIME-Version: 1.0
+In-Reply-To: <20090605113217.GA20786@in.ibm.com>
+References: <20090604053649.GA3701@in.ibm.com>
+	 <6599ad830906050153i1afd104fqe70f681317349142@mail.gmail.com>
+	 <20090605113217.GA20786@in.ibm.com>
+Date: Fri, 5 Jun 2009 05:18:13 -0700
+Message-ID: <6599ad830906050518t6cd7d477h36a187f2eaf55578@mail.gmail.com>
+Subject: Re: [RFC] CPU hard limits
+From: Paul Menage <menage@google.com>
+To: vatsa@in.ibm.com
+Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelyanov <xemul@openvz.org>, Avi Kivity <avi@redhat.com>,
+       kvm@vger.kernel.org,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Herbert Poetzl <herbert@13thfloor.at>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 05 Jun 2009 21:04:11 +0900 (JST)
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  5 Jun 2009 16:05:49 +0300, Artem Bityutskiy wrote:
-> From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-> 
-> ... use new VFS helpers instead.
-> 
-> Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-> Cc: users@nilfs.org
-> Cc: KONISHI Ryusuke <konishi.ryusuke@lab.ntt.co.jp>
+On Fri, Jun 5, 2009 at 4:32 AM, Srivatsa Vaddagiri<vatsa@in.ibm.com> wrote:
+>
+> I think the interval over which we need guarantee matters here. Shares
+> can generally provide guaranteed share of resource over longer (sometimes
+> minutes) intervals. For high-priority bursty workloads, the latency in
+> achieving guaranteed resource usage matters.
 
-Acked-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Well yes, it's true that you *could* just enforce shares over a
+granularity of minutes, and limits over a granularity of milliseconds.
+But why would you? It could well make sense that you can adjust the
+granularity over which shares are enforced - e.g. for batch jobs, only
+enforcing over minutes or tens of seconds might be fine. But if you're
+doing the fine-grained accounting and scheduling required for the
+tight hard limit enforcement, it doesn't seem as though it should be
+much harder to enforce shares at the same granularity for those
+cgroups that matter. In fact I thought that's what CFS already did -
+updated the virtual time accounting at each context switch, and picked
+the runnable child with the oldest virtual time. (Maybe someone like
+Ingo or Peter who's more familiar than I with the CFS implementation
+could comment here?)
 
-> ---
->  fs/nilfs2/segment.c   |    2 +-
->  fs/nilfs2/super.c     |   18 +++++++++---------
->  fs/nilfs2/the_nilfs.c |    2 +-
->  3 files changed, 11 insertions(+), 11 deletions(-)
-> 
-> diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
-> index fb70ec3..0dcac79 100644
-> --- a/fs/nilfs2/segment.c
-> +++ b/fs/nilfs2/segment.c
-> @@ -2069,7 +2069,7 @@ static void nilfs_segctor_complete_write(struct nilfs_sc_info *sci)
->  	if (update_sr) {
->  		nilfs_set_last_segment(nilfs, segbuf->sb_pseg_start,
->  				       segbuf->sb_sum.seg_seq, nilfs->ns_cno++);
-> -		sbi->s_super->s_dirt = 1;
-> +		mark_sb_dirty(sbi->s_super);
->  
->  		clear_bit(NILFS_SC_HAVE_DELTA, &sci->sc_flags);
->  		clear_bit(NILFS_SC_DIRTY, &sci->sc_flags);
-> diff --git a/fs/nilfs2/super.c b/fs/nilfs2/super.c
-> index 7262e84..6f3707b 100644
-> --- a/fs/nilfs2/super.c
-> +++ b/fs/nilfs2/super.c
-> @@ -307,7 +307,7 @@ int nilfs_commit_super(struct nilfs_sb_info *sbi, int dupsb)
->  		memcpy(sbp[1], sbp[0], nilfs->ns_sbsize);
->  		nilfs->ns_sbwtime[1] = t;
->  	}
-> -	sbi->s_super->s_dirt = 0;
-> +	mark_sb_clean(sbi->s_super);
->  	return nilfs_sync_super(sbi, dupsb);
->  }
->  
-> @@ -318,7 +318,7 @@ static void nilfs_put_super(struct super_block *sb)
->  
->  	lock_kernel();
->  
-> -	if (sb->s_dirt)
-> +	if (is_sb_dirty(sb))
->  		nilfs_write_super(sb);
->  
->  	nilfs_detach_segment_constructor(sbi);
-> @@ -344,17 +344,17 @@ static void nilfs_put_super(struct super_block *sb)
->   * @sb: super_block
->   *
->   * nilfs_write_super() gets a fs-dependent lock, writes super block(s), and
-> - * clears s_dirt.  This function is called in the section protected by
-> - * lock_super().
-> + * clears the superblock.  This function is called in the section protected
-> + * by lock_super().
->   *
-> - * The s_dirt flag is managed by each filesystem and we protect it by ns_sem
-> - * of the struct the_nilfs.  Lock order must be as follows:
-> + * The super block s_dirt flag is managed by each filesystem and we protect
-> + * it by ns_sem of the struct the_nilfs.  Lock order must be as follows:
->   *
->   *   1. lock_super()
->   *   2.    down_write(&nilfs->ns_sem)
->   *
-> - * Inside NILFS, locking ns_sem is enough to protect s_dirt and the buffer
-> - * of the super block (nilfs->ns_sbp[]).
-> + * Inside NILFS, locking ns_sem is enough to protect the super block s_dirt
-> + * and the buffer of the super block (nilfs->ns_sbp[]).
->   *
->   * In most cases, VFS functions call lock_super() before calling these
->   * methods.  So we must be careful not to bring on deadlocks when using
-> @@ -383,7 +383,7 @@ static void nilfs_write_super(struct super_block *sb)
->  		dupsb = sbp[1] && t > nilfs->ns_sbwtime[1] + NILFS_ALTSB_FREQ;
->  		nilfs_commit_super(sbi, dupsb);
->  	}
-> -	sb->s_dirt = 0;
-> +	mark_sb_clean(sb);
->  	up_write(&nilfs->ns_sem);
->  }
->  
-> diff --git a/fs/nilfs2/the_nilfs.c b/fs/nilfs2/the_nilfs.c
-> index 7f65b3b..5b02f50 100644
-> --- a/fs/nilfs2/the_nilfs.c
-> +++ b/fs/nilfs2/the_nilfs.c
-> @@ -278,7 +278,7 @@ int load_nilfs(struct the_nilfs *nilfs, struct nilfs_sb_info *sbi)
->  			goto failed;
->  		}
->  		if (ri.ri_need_recovery == NILFS_RECOVERY_SR_UPDATED)
-> -			sbi->s_super->s_dirt = 1;
-> +			mark_sb_dirty(sbi->s_super);
->  	}
->  
->  	set_nilfs_loaded(nilfs);
-> -- 
-> 1.6.0.6
+> By having hard-limits, we are
+> "reserving" (potentially idle) slots where the high-priority group can run and
+> claim its guaranteed share almost immediately.
+
+But you can always create an "idle" slot by forcibly preempting
+whatever's running currently when you need to - you don't need to keep
+the CPU deliberately idle just in case a cgroup with a guarantee wakes
+up.
+
+Paul
