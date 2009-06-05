@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755066AbZFEOFC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZFEOHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755066AbZFEOFC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 10:05:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbZFEOEx
+	id S1755287AbZFEOHT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 10:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZFEOHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 10:04:53 -0400
-Received: from nbd.name ([88.198.39.176]:47111 "EHLO ds10.mine.nu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753629AbZFEOEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 10:04:53 -0400
-Message-ID: <4A2925F8.6060602@openwrt.org>
-Date: Fri, 05 Jun 2009 16:04:40 +0200
-From: Felix Fietkau <nbd@openwrt.org>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: Bob Copeland <me@bobcopeland.com>
-CC: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, rathamahata@gmail.com,
-       ognjen.maric@gmail.com, rjw@sisk.pl, stable@kernel.org
-Subject: Re: [PATCH] mac80211: fix minstrel single-rate memory corruption
-References: <1244204510-14007-1-git-send-email-me@bobcopeland.com>
-In-Reply-To: <1244204510-14007-1-git-send-email-me@bobcopeland.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 5 Jun 2009 10:07:09 -0400
+Received: from viefep16-int.chello.at ([62.179.121.36]:35486 "EHLO
+	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751329AbZFEOHI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 10:07:08 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [tip:perfcounters/core] perf report: Deal with maps
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090605135735.GP7805@ghostprotocols.net>
+References: <tip-fc54db5105d01ad691a7d747064c7890e17f936c@git.kernel.org>
+	 <20090605135735.GP7805@ghostprotocols.net>
+Content-Type: text/plain
+Date: Fri, 05 Jun 2009 16:06:24 +0200
+Message-Id: <1244210784.13761.4411.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bob Copeland wrote:
-> The minstrel rate controller periodically looks up rate indexes in
-> a sampling table.  When accessing a specific row and column, minstrel
-> correctly does a bounds check which, on the surface, appears to handle
-> the case where mi->n_rates < 2.  However, mi->sample_idx is actually
-> defined as an unsigned, so the right hand side is taken to be a huge
-> positive number when negative, and the check will always fail.
+On Fri, 2009-06-05 at 10:57 -0300, Arnaldo Carvalho de Melo wrote:
+> Em Fri, Jun 05, 2009 at 01:21:54PM +0000, tip-bot for Peter Zijlstra escreveu:
+> > Commit-ID:  fc54db5105d01ad691a7d747064c7890e17f936c
+> > Gitweb:     http://git.kernel.org/tip/fc54db5105d01ad691a7d747064c7890e17f936c
+> > Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > AuthorDate: Fri, 5 Jun 2009 14:04:59 +0200
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Fri, 5 Jun 2009 14:46:41 +0200
+> > 
+> > perf report: Deal with maps
+> > 
+> > In order to deal with [vdso] maps generalize the ip->symbol path
+> > a bit and allow to override some bits with custom functions.
+> > 
+> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Cc: Mike Galbraith <efault@gmx.de>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> > LKML-Reference: <new-submission>
+> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > 
+> > 
+> > ---
+> >  Documentation/perf_counter/builtin-report.c |   37 +++++++++++++++++++++++++-
+> >  Documentation/perf_counter/util/symbol.c    |    1 +
+> >  Documentation/perf_counter/util/symbol.h    |    1 +
+> >  3 files changed, 37 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+> > index eb5424f..9783d1e 100644
+> > --- a/Documentation/perf_counter/builtin-report.c
+> > +++ b/Documentation/perf_counter/builtin-report.c
+> > @@ -79,6 +79,7 @@ typedef union event_union {
+> >  
+> >  static LIST_HEAD(dsos);
+> >  static struct dso *kernel_dso;
+> > +static struct dso *vdso;
+> >  
+> >  static void dsos__add(struct dso *dso)
+> >  {
+> > @@ -136,6 +137,11 @@ static void dsos__fprintf(FILE *fp)
+> >  		dso__fprintf(pos, fp);
+> >  }
+> >  
+> > +static struct symbol *vdso__find_symbol(struct dso *dso, uint64_t ip)
+> > +{
+> > +	return dso__find_symbol(kernel_dso, ip);
+> > +}
 > 
-> Consequently, the RC will overrun the array and cause random memory
-> corruption when communicating with a peer that has only a single rate.
-> The max value of mi->sample_idx is around 25 so casting to int should
-> have no ill effects.
-> 
-> Without the change, uptime is a few minutes under load with an AP
-> that has a single hard-coded rate, and both the AP and STA could
-> potentially crash.  With the change, both lasted 12 hours with a
-> steady load.
-> 
-> Thanks to Ognjen Maric for providing the single-rate clue so I could
-> reproduce this.
-> 
-> This fixes http://bugzilla.kernel.org/show_bug.cgi?id=12490 on the
-> regression list (also http://bugzilla.kernel.org/show_bug.cgi?id=13000).
-> 
-> Cc: stable@kernel.org
-> Reported-by: Sergey S. Kostyliov <rathamahata@gmail.com>
-> Reported-by: Ognjen Maric <ognjen.maric@gmail.com>
-> Signed-off-by: Bob Copeland <me@bobcopeland.com>
-> ---
-> 
-> John & Felix, the patch itself may be too subtle so feel free to do it a
-> different way.  However this is as minimal as it gets so I hope it can
-> be applied quickly to stable, and mainline if not too late.
-How about changing the type of sample_idx to signed instead of casting
-it? It's just a cosmetic thing, so even if you leave at this you get my
-Acked-by: Felix Fietkau <nbd@openwrt.org>
+> Cut'n'paste error? s/kernel_dso/vdso/g
 
-- Felix
+Ah, no, intentional cheating ;-)
+
+the kernel dso includes the vdso symbols
+
+
