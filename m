@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbZFEIMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbZFEINX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756657AbZFEIMZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 04:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbZFEIGK
+	id S1756783AbZFEINX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 04:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbZFEIGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 04:06:10 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:37479 "EHLO smtp.gentoo.org"
+	Fri, 5 Jun 2009 04:06:15 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:37483 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755128AbZFEIFb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 04:05:31 -0400
+	id S1753784AbZFEIFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 04:05:33 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 18/62] Blackfin: simplify BF561 coreb driver greatly
-Date: Fri,  5 Jun 2009 04:04:27 -0400
-Message-Id: <1244189111-19639-19-git-send-email-vapier@gentoo.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org,
+       Robin Getz <robin.getz@analog.com>
+Subject: [PATCH 21/62] Blackfin: fix early L1 relocation crash
+Date: Fri,  5 Jun 2009 04:04:30 -0400
+Message-Id: <1244189111-19639-22-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1244189111-19639-1-git-send-email-vapier@gentoo.org>
 References: <1244189111-19639-1-git-send-email-vapier@gentoo.org>
@@ -22,486 +23,202 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since 90% of this driver can be handled in user space, move it to the
-corebld user space application.
+From: Robin Getz <robin.getz@analog.com>
 
+Our early L1 relocate code may implicitly call code which lives in L1
+memory.  This is due to the dma_memcpy() rewrite that made the DMA code
+lockless and safe to be used by multiple processes.  If we start the
+early DMA memcpy to relocate things into L1 instruction but then our
+DMA memcpy code calls a function that lives in L1, things fall apart.
+As such, create a small dedicated DMA memcpy routine that we can assume
+sanity at boot time.
+
+Reported-by: Filip Van Rillaer <filip.vanrillaer@oneaccess-net.com>
+Signed-off-by: Robin Getz <robin.getz@analog.com>
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/mach-bf561/Kconfig |   15 +--
- arch/blackfin/mach-bf561/coreb.c |  396 +++-----------------------------------
- 2 files changed, 33 insertions(+), 378 deletions(-)
+ arch/blackfin/include/asm/dma.h     |    2 +
+ arch/blackfin/kernel/bfin_dma_5xx.c |   81 +++++++++++++++++++++++++++++++++++
+ arch/blackfin/kernel/setup.c        |   51 ++++++++++++----------
+ 3 files changed, 111 insertions(+), 23 deletions(-)
 
-diff --git a/arch/blackfin/mach-bf561/Kconfig b/arch/blackfin/mach-bf561/Kconfig
-index 638ec38..6965dd5 100644
---- a/arch/blackfin/mach-bf561/Kconfig
-+++ b/arch/blackfin/mach-bf561/Kconfig
-@@ -9,22 +9,9 @@ if (!SMP)
- comment "Core B Support"
+diff --git a/arch/blackfin/include/asm/dma.h b/arch/blackfin/include/asm/dma.h
+index e4f7b80..46c5618 100644
+--- a/arch/blackfin/include/asm/dma.h
++++ b/arch/blackfin/include/asm/dma.h
+@@ -253,5 +253,7 @@ static inline void clear_dma_irqstat(unsigned int channel)
+ void *dma_memcpy(void *dest, const void *src, size_t count);
+ void *safe_dma_memcpy(void *dest, const void *src, size_t count);
+ void blackfin_dma_early_init(void);
++void early_dma_memcpy(void *dest, const void *src, size_t count);
++void early_dma_memcpy_done(void);
  
- config BF561_COREB
--	bool "Enable Core B support"
-+	bool "Enable Core B loader"
- 	default y
- 
--config BF561_COREB_RESET
--	bool "Enable Core B reset support"
--	default n
--	help
--	  This requires code in the application that is loaded
--	  into Core B. In order to reset, the application needs
--	  to install an interrupt handler for Supplemental
--	  Interrupt 0, that sets RETI to 0xff600000 and writes
--	  bit 11 of SICB_SYSCR when bit 5 of SICA_SYSCR is 0.
--	  This causes Core B to stall when Supplemental Interrupt
--	  0 is set, and will reset PC to 0xff600000 when
--	  COREB_SRAM_INIT is cleared.
--
- endif
- 
- comment "Interrupt Priority Assignment"
-diff --git a/arch/blackfin/mach-bf561/coreb.c b/arch/blackfin/mach-bf561/coreb.c
-index 8598098..93635a7 100644
---- a/arch/blackfin/mach-bf561/coreb.c
-+++ b/arch/blackfin/mach-bf561/coreb.c
-@@ -1,406 +1,74 @@
--/*
-- * File:         arch/blackfin/mach-bf561/coreb.c
-- * Based on:
-- * Author:
-+/* Load firmware into Core B on a BF561
-  *
-- * Created:
-- * Description:  Handle CoreB on a BF561
-- *
-- * Modified:
-- *               Copyright 2004-2006 Analog Devices Inc.
-- *
-- * Bugs:         Enter bugs at http://blackfin.uclinux.org/
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, see the file COPYING, or write
-- * to the Free Software Foundation, Inc.,
-- * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ * Copyright 2004-2009 Analog Devices Inc.
-+ * Licensed under the GPL-2 or later.
-+ */
-+
-+/* The Core B reset func requires code in the application that is loaded into
-+ * Core B.  In order to reset, the application needs to install an interrupt
-+ * handler for Supplemental Interrupt 0, that sets RETI to 0xff600000 and
-+ * writes bit 11 of SICB_SYSCR when bit 5 of SICA_SYSCR is 0.  This causes Core
-+ * B to stall when Supplemental Interrupt 0 is set, and will reset PC to
-+ * 0xff600000 when COREB_SRAM_INIT is cleared.
-  */
- 
--#include <linux/mm.h>
--#include <linux/miscdevice.h>
- #include <linux/device.h>
--#include <linux/ioport.h>
--#include <linux/module.h>
--#include <linux/uaccess.h>
- #include <linux/fs.h>
--#include <asm/dma.h>
--#include <asm/cacheflush.h>
--
--#define MODULE_VER		"v0.1"
--
--static spinlock_t coreb_lock;
--static wait_queue_head_t coreb_dma_wait;
--
--#define COREB_IS_OPEN		0x00000001
--#define COREB_IS_RUNNING	0x00000010
-+#include <linux/kernel.h>
-+#include <linux/miscdevice.h>
-+#include <linux/module.h>
- 
--#define CMD_COREB_INDEX		1
- #define CMD_COREB_START		2
- #define CMD_COREB_STOP		3
- #define CMD_COREB_RESET		4
- 
--#define COREB_MINOR		229
--
--static unsigned long coreb_status = 0;
--static unsigned long coreb_base = 0xff600000;
--static unsigned long coreb_size = 0x4000;
--int coreb_dma_done;
--
--static loff_t coreb_lseek(struct file *file, loff_t offset, int origin);
--static ssize_t coreb_read(struct file *file, char *buf, size_t count,
--			  loff_t * ppos);
--static ssize_t coreb_write(struct file *file, const char *buf, size_t count,
--			   loff_t * ppos);
--static int coreb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--		       unsigned long arg);
--static int coreb_open(struct inode *inode, struct file *file);
--static int coreb_release(struct inode *inode, struct file *file);
--
--static irqreturn_t coreb_dma_interrupt(int irq, void *dev_id)
--{
--	clear_dma_irqstat(CH_MEM_STREAM2_DEST);
--	coreb_dma_done = 1;
--	wake_up_interruptible(&coreb_dma_wait);
--	return IRQ_HANDLED;
--}
--
--static ssize_t coreb_write(struct file *file, const char *buf, size_t count,
--			   loff_t * ppos)
--{
--	unsigned long p = *ppos;
--	ssize_t wrote = 0;
--
--	if (p + count > coreb_size)
--		return -EFAULT;
--
--	while (count > 0) {
--		int len = count;
--
--		if (len > PAGE_SIZE)
--			len = PAGE_SIZE;
--
--		coreb_dma_done = 0;
--
--		flush_dcache_range((unsigned long)buf, (unsigned long)(buf+len));
--		/* Source Channel */
--		set_dma_start_addr(CH_MEM_STREAM2_SRC, (unsigned long)buf);
--		set_dma_x_count(CH_MEM_STREAM2_SRC, len);
--		set_dma_x_modify(CH_MEM_STREAM2_SRC, sizeof(char));
--		set_dma_config(CH_MEM_STREAM2_SRC, 0);
--		/* Destination Channel */
--		set_dma_start_addr(CH_MEM_STREAM2_DEST, coreb_base + p);
--		set_dma_x_count(CH_MEM_STREAM2_DEST, len);
--		set_dma_x_modify(CH_MEM_STREAM2_DEST, sizeof(char));
--		set_dma_config(CH_MEM_STREAM2_DEST, WNR | RESTART | DI_EN);
--
--		enable_dma(CH_MEM_STREAM2_SRC);
--		enable_dma(CH_MEM_STREAM2_DEST);
--
--		wait_event_interruptible(coreb_dma_wait, coreb_dma_done);
--
--		disable_dma(CH_MEM_STREAM2_SRC);
--		disable_dma(CH_MEM_STREAM2_DEST);
--
--		count -= len;
--		wrote += len;
--		buf += len;
--		p += len;
--	}
--	*ppos = p;
--	return wrote;
--}
--
--static ssize_t coreb_read(struct file *file, char *buf, size_t count,
--			  loff_t * ppos)
--{
--	unsigned long p = *ppos;
--	ssize_t read = 0;
--
--	if ((p + count) > coreb_size)
--		return -EFAULT;
--
--	while (count > 0) {
--		int len = count;
--
--		if (len > PAGE_SIZE)
--			len = PAGE_SIZE;
--
--		coreb_dma_done = 0;
--
--		invalidate_dcache_range((unsigned long)buf, (unsigned long)(buf+len));
--		/* Source Channel */
--		set_dma_start_addr(CH_MEM_STREAM2_SRC, coreb_base + p);
--		set_dma_x_count(CH_MEM_STREAM2_SRC, len);
--		set_dma_x_modify(CH_MEM_STREAM2_SRC, sizeof(char));
--		set_dma_config(CH_MEM_STREAM2_SRC, 0);
--		/* Destination Channel */
--		set_dma_start_addr(CH_MEM_STREAM2_DEST, (unsigned long)buf);
--		set_dma_x_count(CH_MEM_STREAM2_DEST, len);
--		set_dma_x_modify(CH_MEM_STREAM2_DEST, sizeof(char));
--		set_dma_config(CH_MEM_STREAM2_DEST, WNR | RESTART | DI_EN);
--
--		enable_dma(CH_MEM_STREAM2_SRC);
--		enable_dma(CH_MEM_STREAM2_DEST);
--
--		wait_event_interruptible(coreb_dma_wait, coreb_dma_done);
--
--		disable_dma(CH_MEM_STREAM2_SRC);
--		disable_dma(CH_MEM_STREAM2_DEST);
--
--		count -= len;
--		read += len;
--		buf += len;
--		p += len;
--	}
--
--	return read;
--}
--
--static loff_t coreb_lseek(struct file *file, loff_t offset, int origin)
-+static int
-+coreb_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
+ #endif
+diff --git a/arch/blackfin/kernel/bfin_dma_5xx.c b/arch/blackfin/kernel/bfin_dma_5xx.c
+index 8531693..704419e 100644
+--- a/arch/blackfin/kernel/bfin_dma_5xx.c
++++ b/arch/blackfin/kernel/bfin_dma_5xx.c
+@@ -232,6 +232,87 @@ void blackfin_dma_resume(void)
+ void __init blackfin_dma_early_init(void)
  {
--	loff_t ret;
--
--	mutex_lock(&file->f_dentry->d_inode->i_mutex);
--
--	switch (origin) {
--	case 0 /* SEEK_SET */ :
--		if (offset < coreb_size) {
--			file->f_pos = offset;
--			ret = file->f_pos;
--		} else
--			ret = -EINVAL;
--		break;
--	case 1 /* SEEK_CUR */ :
--		if ((offset + file->f_pos) < coreb_size) {
--			file->f_pos += offset;
--			ret = file->f_pos;
--		} else
--			ret = -EINVAL;
--	default:
--		ret = -EINVAL;
--	}
--	mutex_unlock(&file->f_dentry->d_inode->i_mutex);
--	return ret;
--}
--
--/* No BKL needed here */
--static int coreb_open(struct inode *inode, struct file *file)
--{
--	spin_lock_irq(&coreb_lock);
--
--	if (coreb_status & COREB_IS_OPEN)
--		goto out_busy;
--
--	coreb_status |= COREB_IS_OPEN;
--
--	spin_unlock_irq(&coreb_lock);
--	return 0;
--
-- out_busy:
--	spin_unlock_irq(&coreb_lock);
--	return -EBUSY;
--}
--
--static int coreb_release(struct inode *inode, struct file *file)
--{
--	spin_lock_irq(&coreb_lock);
--	coreb_status &= ~COREB_IS_OPEN;
--	spin_unlock_irq(&coreb_lock);
--	return 0;
--}
--
--static int coreb_ioctl(struct inode *inode, struct file *file,
--		       unsigned int cmd, unsigned long arg)
--{
--	int retval = 0;
--	int coreb_index = 0;
-+	int ret = 0;
+ 	bfin_write_MDMA_S0_CONFIG(0);
++	bfin_write_MDMA_S1_CONFIG(0);
++}
++
++void __init early_dma_memcpy(void *pdst, const void *psrc, size_t size)
++{
++	unsigned long dst = (unsigned long)pdst;
++	unsigned long src = (unsigned long)psrc;
++	struct dma_register *dst_ch, *src_ch;
++
++	/* We assume that everything is 4 byte aligned, so include
++	 * a basic sanity check
++	 */
++	BUG_ON(dst % 4);
++	BUG_ON(src % 4);
++	BUG_ON(size % 4);
++
++	/* Force a sync in case a previous config reset on this channel
++	 * occurred.  This is needed so subsequent writes to DMA registers
++	 * are not spuriously lost/corrupted.
++	 */
++	__builtin_bfin_ssync();
++
++	src_ch = 0;
++	/* Find an avalible memDMA channel */
++	while (1) {
++		if (!src_ch || src_ch == (struct dma_register *)MDMA_S1_NEXT_DESC_PTR) {
++			dst_ch = (struct dma_register *)MDMA_D0_NEXT_DESC_PTR;
++			src_ch = (struct dma_register *)MDMA_S0_NEXT_DESC_PTR;
++		} else {
++			dst_ch = (struct dma_register *)MDMA_D1_NEXT_DESC_PTR;
++			src_ch = (struct dma_register *)MDMA_S1_NEXT_DESC_PTR;
++		}
++
++		if (!bfin_read16(&src_ch->cfg)) {
++			break;
++		} else {
++			if (bfin_read16(&src_ch->irq_status) & DMA_DONE)
++				bfin_write16(&src_ch->cfg, 0);
++		}
++
++	}
++
++	/* Destination */
++	bfin_write32(&dst_ch->start_addr, dst);
++	bfin_write16(&dst_ch->x_count, size >> 2);
++	bfin_write16(&dst_ch->x_modify, 1 << 2);
++	bfin_write16(&dst_ch->irq_status, DMA_DONE | DMA_ERR);
++
++	/* Source */
++	bfin_write32(&src_ch->start_addr, src);
++	bfin_write16(&src_ch->x_count, size >> 2);
++	bfin_write16(&src_ch->x_modify, 1 << 2);
++	bfin_write16(&src_ch->irq_status, DMA_DONE | DMA_ERR);
++
++	/* Enable */
++	bfin_write16(&src_ch->cfg, DMAEN | WDSIZE_32);
++	bfin_write16(&dst_ch->cfg, WNR | DI_EN | DMAEN | WDSIZE_32);
++
++	/* Since we are atomic now, don't use the workaround ssync */
++	__builtin_bfin_ssync();
++}
++
++void __init early_dma_memcpy_done(void)
++{
++	while ((bfin_read_MDMA_S0_CONFIG() && !(bfin_read_MDMA_D0_IRQ_STATUS() & DMA_DONE)) ||
++	       (bfin_read_MDMA_S1_CONFIG() && !(bfin_read_MDMA_D1_IRQ_STATUS() & DMA_DONE)))
++		continue;
++
++	bfin_write_MDMA_D0_IRQ_STATUS(DMA_DONE | DMA_ERR);
++	bfin_write_MDMA_D1_IRQ_STATUS(DMA_DONE | DMA_ERR);
++	/*
++	 * Now that DMA is done, we would normally flush cache, but
++	 * i/d cache isn't running this early, so we don't bother,
++	 * and just clear out the DMA channel for next time
++	 */
++	bfin_write_MDMA_S0_CONFIG(0);
++	bfin_write_MDMA_S1_CONFIG(0);
++	bfin_write_MDMA_D0_CONFIG(0);
++	bfin_write_MDMA_D1_CONFIG(0);
++
++	__builtin_bfin_ssync();
+ }
  
- 	switch (cmd) {
--	case CMD_COREB_INDEX:
--		if (copy_from_user(&coreb_index, (int *)arg, sizeof(int))) {
--			retval = -EFAULT;
--			break;
--		}
+ /**
+diff --git a/arch/blackfin/kernel/setup.c b/arch/blackfin/kernel/setup.c
+index a58687b..0838eaf 100644
+--- a/arch/blackfin/kernel/setup.c
++++ b/arch/blackfin/kernel/setup.c
+@@ -150,40 +150,45 @@ void __init bfin_relocate_l1_mem(void)
+ 	unsigned long l1_data_b_length;
+ 	unsigned long l2_length;
+ 
++	/*
++	 * due to the ALIGN(4) in the arch/blackfin/kernel/vmlinux.lds.S
++	 * we know that everything about l1 text/data is nice and aligned,
++	 * so copy by 4 byte chunks, and don't worry about overlapping
++	 * src/dest.
++	 *
++	 * We can't use the dma_memcpy functions, since they can call
++	 * scheduler functions which might be in L1 :( and core writes
++	 * into L1 instruction cause bad access errors, so we are stuck,
++	 * we are required to use DMA, but can't use the common dma
++	 * functions. We can't use memcpy either - since that might be
++	 * going to be in the relocated L1
++	 */
++
+ 	blackfin_dma_early_init();
+ 
++	/* if necessary, copy _stext_l1 to _etext_l1 to L1 instruction SRAM */
+ 	l1_code_length = _etext_l1 - _stext_l1;
+-	if (l1_code_length > L1_CODE_LENGTH)
+-		panic("L1 Instruction SRAM Overflow\n");
+-	/* cannot complain as printk is not available as yet.
+-	 * But we can continue booting and complain later!
+-	 */
 -
--		spin_lock_irq(&coreb_lock);
--		switch (coreb_index) {
--		case 0:
--			coreb_base = 0xff600000;
--			coreb_size = 0x4000;
--			break;
--		case 1:
--			coreb_base = 0xff610000;
--			coreb_size = 0x4000;
--			break;
--		case 2:
--			coreb_base = 0xff500000;
--			coreb_size = 0x8000;
--			break;
--		case 3:
--			coreb_base = 0xff400000;
--			coreb_size = 0x8000;
--			break;
--		default:
--			retval = -EINVAL;
--			break;
--		}
--		spin_unlock_irq(&coreb_lock);
+-	/* Copy _stext_l1 to _etext_l1 to L1 instruction SRAM */
+-	dma_memcpy(_stext_l1, _l1_lma_start, l1_code_length);
++	if (l1_code_length)
++		early_dma_memcpy(_stext_l1, _l1_lma_start, l1_code_length);
+ 
++	/* if necessary, copy _sdata_l1 to _sbss_l1 to L1 data bank A SRAM */
+ 	l1_data_a_length = _sbss_l1 - _sdata_l1;
+-	if (l1_data_a_length > L1_DATA_A_LENGTH)
+-		panic("L1 Data SRAM Bank A Overflow\n");
 -
--		mutex_lock(&file->f_dentry->d_inode->i_mutex);
--		file->f_pos = 0;
--		mutex_unlock(&file->f_dentry->d_inode->i_mutex);
--		break;
- 	case CMD_COREB_START:
--		spin_lock_irq(&coreb_lock);
--		if (coreb_status & COREB_IS_RUNNING) {
--			retval = -EBUSY;
--			break;
--		}
--		printk(KERN_INFO "Starting Core B\n");
--		coreb_status |= COREB_IS_RUNNING;
- 		bfin_write_SICA_SYSCR(bfin_read_SICA_SYSCR() & ~0x0020);
--		SSYNC();
--		spin_unlock_irq(&coreb_lock);
- 		break;
--#if defined(CONFIG_BF561_COREB_RESET)
- 	case CMD_COREB_STOP:
--		spin_lock_irq(&coreb_lock);
--		printk(KERN_INFO "Stopping Core B\n");
- 		bfin_write_SICA_SYSCR(bfin_read_SICA_SYSCR() | 0x0020);
- 		bfin_write_SICB_SYSCR(bfin_read_SICB_SYSCR() | 0x0080);
--		coreb_status &= ~COREB_IS_RUNNING;
--		spin_unlock_irq(&coreb_lock);
- 		break;
- 	case CMD_COREB_RESET:
--		printk(KERN_INFO "Resetting Core B\n");
- 		bfin_write_SICB_SYSCR(bfin_read_SICB_SYSCR() | 0x0080);
- 		break;
--#endif
-+	default:
-+		ret = -EINVAL;
-+		break;
+-	/* Copy _sdata_l1 to _sbss_l1 to L1 data bank A SRAM */
+-	dma_memcpy(_sdata_l1, _l1_lma_start + l1_code_length, l1_data_a_length);
++	if (l1_data_a_length)
++		early_dma_memcpy(_sdata_l1, _l1_lma_start + l1_code_length, l1_data_a_length);
+ 
++	/* if necessary, copy _sdata_b_l1 to _sbss_b_l1 to L1 data bank B SRAM */
+ 	l1_data_b_length = _sbss_b_l1 - _sdata_b_l1;
+-	if (l1_data_b_length > L1_DATA_B_LENGTH)
+-		panic("L1 Data SRAM Bank B Overflow\n");
+-
+-	/* Copy _sdata_b_l1 to _sbss_b_l1 to L1 data bank B SRAM */
+-	dma_memcpy(_sdata_b_l1, _l1_lma_start + l1_code_length +
++	if (l1_data_b_length)
++		early_dma_memcpy(_sdata_b_l1, _l1_lma_start + l1_code_length +
+ 			l1_data_a_length, l1_data_b_length);
+ 
++	early_dma_memcpy_done();
++
++	/* if necessary, copy _stext_l2 to _edata_l2 to L2 SRAM */
+ 	if (L2_LENGTH != 0) {
+ 		l2_length = _sbss_l2 - _stext_l2;
+-		if (l2_length > L2_LENGTH)
+-			panic("L2 SRAM Overflow\n");
+-
+-		/* Copy _stext_l2 to _edata_l2 to L2 SRAM */
+-		dma_memcpy(_stext_l2, _l2_lma_start, l2_length);
++		if (l2_length)
++			memcpy(_stext_l2, _l2_lma_start, l2_length);
  	}
- 
--	return retval;
-+	CSYNC();
-+
-+	return ret;
  }
  
- static struct file_operations coreb_fops = {
--	.owner = THIS_MODULE,
--	.llseek = coreb_lseek,
--	.read = coreb_read,
--	.write = coreb_write,
--	.ioctl = coreb_ioctl,
--	.open = coreb_open,
--	.release = coreb_release
-+	.owner   = THIS_MODULE,
-+	.ioctl   = coreb_ioctl,
- };
- 
- static struct miscdevice coreb_dev = {
--	COREB_MINOR,
--	"coreb",
--	&coreb_fops
-+	.minor = MISC_DYNAMIC_MINOR,
-+	.name  = "coreb",
-+	.fops  = &coreb_fops,
- };
- 
--static ssize_t coreb_show_status(struct device *dev, struct device_attribute *attr, char *buf)
-+static int __init bf561_coreb_init(void)
- {
--	return sprintf(buf,
--		       "Base Address:\t0x%08lx\n"
--		       "Core B is %s\n"
--		       "SICA_SYSCR:\t%04x\n"
--		       "SICB_SYSCR:\t%04x\n"
--		       "\n"
--		       "IRQ Status:\tCore A\t\tCore B\n"
--		       "ISR0:\t\t%08x\t\t%08x\n"
--		       "ISR1:\t\t%08x\t\t%08x\n"
--		       "IMASK0:\t\t%08x\t\t%08x\n"
--		       "IMASK1:\t\t%08x\t\t%08x\n",
--		       coreb_base,
--		       coreb_status & COREB_IS_RUNNING ? "running" : "stalled",
--		       bfin_read_SICA_SYSCR(), bfin_read_SICB_SYSCR(),
--		       bfin_read_SICA_ISR0(), bfin_read_SICB_ISR0(),
--		       bfin_read_SICA_ISR1(), bfin_read_SICB_ISR0(),
--		       bfin_read_SICA_IMASK0(), bfin_read_SICB_IMASK0(),
--		       bfin_read_SICA_IMASK1(), bfin_read_SICB_IMASK1());
--}
--
--static DEVICE_ATTR(coreb_status, S_IRUGO, coreb_show_status, NULL);
--
--int __init bf561_coreb_init(void)
--{
--	init_waitqueue_head(&coreb_dma_wait);
--
--	spin_lock_init(&coreb_lock);
--	/* Request the core memory regions for Core B */
--	if (request_mem_region(0xff600000, 0x4000,
--			       "Core B - Instruction SRAM") == NULL)
--		goto exit;
--
--	if (request_mem_region(0xFF610000, 0x4000,
--			       "Core B - Instruction SRAM") == NULL)
--		goto release_instruction_a_sram;
--
--	if (request_mem_region(0xFF500000, 0x8000,
--			       "Core B - Data Bank B SRAM") == NULL)
--		goto release_instruction_b_sram;
--
--	if (request_mem_region(0xff400000, 0x8000,
--			       "Core B - Data Bank A SRAM") == NULL)
--		goto release_data_b_sram;
--
--	if (request_dma(CH_MEM_STREAM2_DEST, "Core B - DMA Destination") < 0)
--		goto release_data_a_sram;
--
--	if (request_dma(CH_MEM_STREAM2_SRC, "Core B - DMA Source") < 0)
--		goto release_dma_dest;
--
--	set_dma_callback(CH_MEM_STREAM2_DEST, coreb_dma_interrupt, NULL);
--
--	misc_register(&coreb_dev);
--
--	if (device_create_file(coreb_dev.this_device, &dev_attr_coreb_status))
--		goto release_dma_src;
--
--	printk(KERN_INFO "BF561 Core B driver %s initialized.\n", MODULE_VER);
--	return 0;
--
-- release_dma_src:
--	free_dma(CH_MEM_STREAM2_SRC);
-- release_dma_dest:
--	free_dma(CH_MEM_STREAM2_DEST);
-- release_data_a_sram:
--	release_mem_region(0xff400000, 0x8000);
-- release_data_b_sram:
--	release_mem_region(0xff500000, 0x8000);
-- release_instruction_b_sram:
--	release_mem_region(0xff610000, 0x4000);
-- release_instruction_a_sram:
--	release_mem_region(0xff600000, 0x4000);
-- exit:
--	return -ENOMEM;
-+	return misc_register(&coreb_dev);
- }
-+module_init(bf561_coreb_init);
- 
--void __exit bf561_coreb_exit(void)
-+static void __exit bf561_coreb_exit(void)
- {
--	device_remove_file(coreb_dev.this_device, &dev_attr_coreb_status);
- 	misc_deregister(&coreb_dev);
--
--	release_mem_region(0xff610000, 0x4000);
--	release_mem_region(0xff600000, 0x4000);
--	release_mem_region(0xff500000, 0x8000);
--	release_mem_region(0xff400000, 0x8000);
--
--	free_dma(CH_MEM_STREAM2_DEST);
--	free_dma(CH_MEM_STREAM2_SRC);
- }
--
--module_init(bf561_coreb_init);
- module_exit(bf561_coreb_exit);
- 
- MODULE_AUTHOR("Bas Vermeulen <bvermeul@blackstar.xs4all.nl>");
 -- 
 1.6.3.1
 
