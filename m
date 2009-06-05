@@ -1,299 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbZFEThn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751699AbZFETrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755955AbZFEThn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 15:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbZFETha
+	id S1751699AbZFETrc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 15:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZFETrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 15:37:30 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:56092 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbZFETh1 (ORCPT
+	Fri, 5 Jun 2009 15:47:24 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:45070 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbZFETrX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 15:37:27 -0400
-To: Badari Pulavarty <pbadari@gmail.com>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+	Fri, 5 Jun 2009 15:47:23 -0400
+Date: Fri, 5 Jun 2009 21:49:38 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: balbir@linux.vnet.ibm.com,
+       Robert Berger <robert.berger@reliableembeddedsystems.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Eric W. Biederman" <ebiederm@maxwell.arastra.com>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-Subject: Re: [PATCH 07/23] vfs: Teach sendfile,splice,tee,and vmsplice to use file_hotplug_lock
-References: <m1oct739xu.fsf@fess.ebiederm.org>
-	<1243893048-17031-7-git-send-email-ebiederm@xmission.com>
-	<1244072363.6383.15.camel@badari-desktop>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 05 Jun 2009 12:37:25 -0700
-In-Reply-To: <1244072363.6383.15.camel@badari-desktop> (Badari Pulavarty's message of "Wed\, 03 Jun 2009 16\:39\:23 -0700")
-Message-ID: <m1y6s64glm.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: http://patchwork.kernel.org/patch/26483/ broke my system boot
+Message-ID: <20090605194938.GA23195@uranus.ravnborg.org>
+References: <20090603143944.GF29326@balbir.in.ibm.com> <20090603194526.GG3100@uranus.ravnborg.org> <20090604063144.GB7504@balbir.in.ibm.com> <1244186233.11597.106.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: pbadari@gmail.com, ebiederm@aristanetworks.com, ebiederm@maxwell.arastra.com, hch@infradead.org, akpm@linux-foundation.org, npiggin@suse.de, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org, adobriyan@gmail.com, tj@kernel.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <1244186233.11597.106.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Badari Pulavarty <pbadari@gmail.com> writes:
+On Fri, Jun 05, 2009 at 03:17:12AM -0400, Jon Masters wrote:
+> On Thu, 2009-06-04 at 14:31 +0800, Balbir Singh wrote:
+> > * Sam Ravnborg <sam@ravnborg.org> [2009-06-03 21:45:26]:
+> > 
+> > > On Wed, Jun 03, 2009 at 10:39:44PM +0800, Balbir Singh wrote:
+> > > > After spending some time figuring out why my system failed to reboot,
+> > > > checking config options, kernel version, modules installed. I figured
+> > > > out that the patch in http://patchwork.kernel.org/patch/26483/ broke
+> > > > the system boot on the latest mmotm. Reverting it helped my system
+> > > > call depmod and hence boot.
+> > > > 
+> > > > The patch is really unhelpful, since the changelog is completely
+> > > > empty. Sigh!
+> > > 
+> > > Yeah, sorry for not nak'ing it earlier. Has been busy.
+> > > Andrew removed it from -mm and I notified the author about the
+> > > problems with the patch (in private mail it seems - I just replied to what I had).
+> > 
+> > Cool! Thanks for the update. I'll get the latest mmotm and test as
+> > well.
+> 
+> The general idea of using the cross-depmod is good though :) We have had
+> a few people recently run their newer host depmod and wonder why their
+> older embedded device can't read the new binary index files.
 
-> On Mon, 2009-06-01 at 14:50 -0700, Eric W. Biederman wrote:
->> From: Eric W. Biederman <ebiederm@maxwell.arastra.com>
->> 
->> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
->> ---
->>  fs/read_write.c |   28 +++++++++----
->>  fs/splice.c     |  111 +++++++++++++++++++++++++++++++++++++-----------------
->>  2 files changed, 95 insertions(+), 44 deletions(-)
->> 
->> diff --git a/fs/read_write.c b/fs/read_write.c
->> index 718baea..c473d74 100644
->> --- a/fs/read_write.c
->> +++ b/fs/read_write.c
->> @@ -861,21 +861,24 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
->>  		goto out;
->>  	if (!(in_file->f_mode & FMODE_READ))
->>  		goto fput_in;
->> +	retval = -EIO;
->> +	if (!file_hotplug_read_trylock(in_file))
->> +		goto fput_in;
->>  	retval = -EINVAL;
->>  	in_inode = in_file->f_path.dentry->d_inode;
->>  	if (!in_inode)
->> -		goto fput_in;
->> +		goto unlock_in;
->>  	if (!in_file->f_op || !in_file->f_op->splice_read)
->> -		goto fput_in;
->> +		goto unlock_in;
->>  	retval = -ESPIPE;
->>  	if (!ppos)
->>  		ppos = &in_file->f_pos;
->>  	else
->>  		if (!(in_file->f_mode & FMODE_PREAD))
->> -			goto fput_in;
->> +			goto unlock_in;
->>  	retval = rw_verify_area(READ, in_file, ppos, count);
->>  	if (retval < 0)
->> -		goto fput_in;
->> +		goto unlock_in;
->>  	count = retval;
->>  
->>  	/*
->> @@ -884,16 +887,19 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
->>  	retval = -EBADF;
->>  	out_file = fget_light(out_fd, &fput_needed_out);
->>  	if (!out_file)
->> -		goto fput_in;
->> +		goto unlock_in;
->>  	if (!(out_file->f_mode & FMODE_WRITE))
->>  		goto fput_out;
->> +	retval = -EIO;
->> +	if (!file_hotplug_read_trylock(out_file))
->> +		goto fput_out;
->>  	retval = -EINVAL;
->>  	if (!out_file->f_op || !out_file->f_op->sendpage)
->> -		goto fput_out;
->> +		goto unlock_out;
->>  	out_inode = out_file->f_path.dentry->d_inode;
->>  	retval = rw_verify_area(WRITE, out_file, &out_file->f_pos, count);
->>  	if (retval < 0)
->> -		goto fput_out;
->> +		goto unlock_out;
->>  	count = retval;
->>  
->>  	if (!max)
->> @@ -902,11 +908,11 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
->>  	pos = *ppos;
->>  	retval = -EINVAL;
->>  	if (unlikely(pos < 0))
->> -		goto fput_out;
->> +		goto unlock_out;
->>  	if (unlikely(pos + count > max)) {
->>  		retval = -EOVERFLOW;
->>  		if (pos >= max)
->> -			goto fput_out;
->> +			goto unlock_out;
->>  		count = max - pos;
->>  	}
->>  
->> @@ -933,8 +939,12 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
->>  	if (*ppos > max)
->>  		retval = -EOVERFLOW;
->>  
->> +unlock_out:
->> +	file_hotplug_read_unlock(out_file);
->>  fput_out:
->>  	fput_light(out_file, fput_needed_out);
->> +unlock_in:
->> +	file_hotplug_read_unlock(in_file);
->>  fput_in:
->>  	fput_light(in_file, fput_needed_in);
->>  out:
->> diff --git a/fs/splice.c b/fs/splice.c
->> index 666953d..fc6b3a5 100644
->> --- a/fs/splice.c
->> +++ b/fs/splice.c
->> @@ -1464,15 +1464,21 @@ SYSCALL_DEFINE4(vmsplice, int, fd, const struct iovec __user *, iov,
->>  
->>  	error = -EBADF;
->>  	file = fget_light(fd, &fput);
->> -	if (file) {
->> -		if (file->f_mode & FMODE_WRITE)
->> -			error = vmsplice_to_pipe(file, iov, nr_segs, flags);
->> -		else if (file->f_mode & FMODE_READ)
->> -			error = vmsplice_to_user(file, iov, nr_segs, flags);
->> +	if (!file)
->> +		goto out;
->>  
->> -		fput_light(file, fput);
->> -	}
->> +	if (!file_hotplug_read_trylock(file))
->> +		goto fput_file;
->>  
->> +	if (file->f_mode & FMODE_WRITE)
->> +		error = vmsplice_to_pipe(file, iov, nr_segs, flags);
->> +	else if (file->f_mode & FMODE_READ)
->> +		error = vmsplice_to_user(file, iov, nr_segs, flags);
->> +
->> +	file_hotplug_read_unlock(file);
->> +fput_file:
->> +	fput_light(file, fput);
->> +out:
->>  	return error;
->>  }
->>  
->> @@ -1489,21 +1495,39 @@ SYSCALL_DEFINE6(splice, int, fd_in, loff_t __user *, off_in,
->>  
->>  	error = -EBADF;
->>  	in = fget_light(fd_in, &fput_in);
->> -	if (in) {
->> -		if (in->f_mode & FMODE_READ) {
->> -			out = fget_light(fd_out, &fput_out);
->> -			if (out) {
->> -				if (out->f_mode & FMODE_WRITE)
->> -					error = do_splice(in, off_in,
->> -							  out, off_out,
->> -							  len, flags);
->> -				fput_light(out, fput_out);
->> -			}
->> -		}
->> +	if (!in)
->> +		goto out;
->>  
->> -		fput_light(in, fput_in);
->> -	}
->> +	if (!(in->f_mode & FMODE_READ))
->> +		goto fput_in;
->> +
->> +	error = -EIO;
->> +	if (!file_hotplug_read_trylock(in))
->> +		goto fput_in;
->> +
->> +	error = -EBADF;
->> +	out = fget_light(fd_out, &fput_out);
->> +	if (!out)
->> +		goto unlock_in;
->> +
->> +	if (!(out->f_mode & FMODE_WRITE))
->> +		goto fput_out;
->> +
->> +	error = -EIO;
->> +	if (!file_hotplug_read_trylock(out))
->> +		goto fput_out;
->> +
->> +	error = do_splice(in, off_in, out, off_out, len, flags);
->>  
->> +	file_hotplug_read_unlock(out);
->> +fput_out:
->> +	fput_light(out, fput_out);
->> +unlock_in:
->> +	file_hotplug_read_unlock(in);
->> +fput_in:
->> +	fput_light(in, fput_in);
->> +
->> +out:
->>  	return error;
->>  }
->>  
->> @@ -1703,27 +1727,44 @@ static long do_tee(struct file *in, struct file *out, size_t len,
->>  
->>  SYSCALL_DEFINE4(tee, int, fdin, int, fdout, size_t, len, unsigned int, flags)
->>  {
->> -	struct file *in;
->> -	int error, fput_in;
->> +	struct file *in, *out;
->> +	int error, fput_in, fput_out;
->>  
->>  	if (unlikely(!len))
->>  		return 0;
->>  
->>  	error = -EBADF;
->>  	in = fget_light(fdin, &fput_in);
->> -	if (in) {
->> -		if (in->f_mode & FMODE_READ) {
->> -			int fput_out;
->> -			struct file *out = fget_light(fdout, &fput_out);
->> -
->> -			if (out) {
->> -				if (out->f_mode & FMODE_WRITE)
->> -					error = do_tee(in, out, len, flags);
->> -				fput_light(out, fput_out);
->> -			}
->> -		}
->> - 		fput_light(in, fput_in);
->> - 	}
->> +	if (!in)
->> +		goto out;
->> +
->> +	if (!(in->f_mode & FMODE_READ))
->> +		goto unlock_in;   <<<<<<<
->
-> Shouldn't this be
-> 		goto fput_in; 
+But then the patch would lok like this - no?
 
-Good point.  That is a bug.
-
-> ? btw, its confusing to have labels and variables with same name:
-> fput_in and fput_out. You may want to rename labels ?
-
-Mayhap.  I didn't start that one, although I am clearly spreading
-it around here.  Do you have a better naming suggestion?
-
->> +	error = -EIO;
->> +	if (!file_hotplug_read_trylock(in))
->> +		goto fput_in;
->> +
->> +	error = -EBADF;
->> +	out = fget_light(fdout, &fput_out);
->> +	if (!out)
->> +		goto unlock_in;
->> +
->> +	if (!(out->f_mode & FMODE_WRITE))
->> +		goto fput_out;
->> +
->> +	if (!file_hotplug_read_trylock(out))
->> +		goto fput_out;
->> +
->> +	error = do_tee(in, out, len, flags);
->> +
->> +	file_hotplug_read_unlock(out);
->> +fput_out:
->> +	fput_light(out, fput_out);
->> +unlock_in:
->> +	file_hotplug_read_unlock(in);
->> +fput_in:
->> +	fput_light(in, fput_in);
->> +out:
->>  	return error;
->>  }
+index 610d1c3..05c5744 100644
+--- a/Makefile
++++ b/Makefile
+@@ -325,7 +325,8 @@ OBJCOPY             = $(CROSS_COMPILE)objcopy
+ OBJDUMP                = $(CROSS_COMPILE)objdump
+ AWK            = awk
+ GENKSYMS       = scripts/genksyms/genksyms
+-DEPMOD         = /sbin/depmod
++DEPMOD         = $(if $(shell which $(CROSS_COMPILE)depmod),
++                       $(CROSS_COMPILE)depmod,/sbin/depmod)
+ KALLSYMS       = scripts/kallsyms
+ PERL           = perl
+ CHECK          = sparse
 
 
-Eric
+	Sam
