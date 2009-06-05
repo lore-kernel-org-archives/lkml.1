@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752479AbZFECWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbZFECWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752479AbZFECWS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 22:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbZFECWJ
+	id S1754668AbZFECWu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 22:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752161AbZFECWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 22:22:09 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50604 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbZFECWI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 22:22:08 -0400
-Date: Fri, 5 Jun 2009 11:20:36 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: balbir@linux.vnet.ibm.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] remove memory.limit v.s. memsw.limit comparison.
-Message-Id: <20090605112036.2dd64ab1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090605093420.0b208c33.nishimura@mxp.nes.nec.co.jp>
-References: <20090604141043.9a1064fd.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090604123625.GE7504@balbir.in.ibm.com>
-	<0921392c77890fc84fa69653ae4f31d9.squirrel@webmail-b.css.fujitsu.com>
-	<20090605093420.0b208c33.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 4 Jun 2009 22:22:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33046 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751202AbZFECWl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 22:22:41 -0400
+Subject: Re: [Patch 1/2] kbuild: two trivial fixes for check headers
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kbuild@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <20090604103909.GA10102@uranus.ravnborg.org>
+References: <20090604080406.7005.27662.sendpatchset@localhost.localdomain>
+	 <20090604091519.GA9571@uranus.ravnborg.org> <4A27927E.9090800@redhat.com>
+	 <20090604103909.GA10102@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Fri, 05 Jun 2009 07:53:44 +0530
+Message-Id: <1244168624.2522.11.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Jun 2009 09:34:20 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > Sorry, I don't push this patch as this is. But adding documentation about
-> > "What happens when you set memory.limit == memsw.limit" will be necessary.
-> > 
-> I agree.
-> 
-I'd like to prepare some.
+On Thu, 2009-06-04 at 12:39 +0200, Sam Ravnborg wrote:
 
-> > ...maybe give all jobs to user-land and keep the kernel as it is now
-> > is a good choice.
-> > 
-> > BTW, I'd like to avoid useless swap-out in memory.limit == memsw.limit case.
-> > If someone has good idea, please :(
-> > 
-> I think so too.
+> So if you touch this I would ask you not to consider a single line
+> in jffs-user.h - but rather take a critiacal look at the whole
+> file and fix any issues there is.
+> And then to send it to the mtd people (dwmw2).
+> I did not look at the file but just looking at yout patch
+> the "undef jemode_to_cpu" looks fishy in an exported header.
 > 
-> From my simple thoughts, how about changing __mem_cgroup_try_charge() like:
-> 
-> 1. initialize "noswap" as "bool noswap = !!(mem->res.limit == mem->memsw.limit)".
-> 2. add check "if (mem->res.limit == mem->memsw.limit)" on charge failure to mem->res
->    and set "noswap" to true if needed. 
-> 3. charge mem->memsw before mem->res.
-> 
-> There would be other ideas, but I prefer 1 among these choices.
-> 
-ok, thank you for advices.
 
-Regards,
--Kame
+David already have patches to remove whole jffs-user.h file and AFAIK he
+already queued it. So no point of touching this file.
 
-
-> 
-> Thanks,
-> Daisuke Nishimura.
-> 
+Thanks,
+--
+JSR
 
