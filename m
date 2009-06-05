@@ -1,39 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbZFERup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbZFERvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756582AbZFERup (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 13:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbZFERui
+	id S1755076AbZFERvV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 13:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZFERvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 13:50:38 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:20429 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751233AbZFERui (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 13:50:38 -0400
-X-IronPort-AV: E=Sophos;i="4.41,312,1241395200"; 
-   d="scan'208";a="173134651"
-From: Roland Dreier <rdreier@cisco.com>
-To: lkml@MoreThan.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Compile Warning] 2.6.30-rc8 build
-References: <200906051143.06119.lkml@morethan.org> <ada63fawq7y.fsf@cisco.com>
-	<200906051240.52615.lkml@morethan.org>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 05 Jun 2009 10:50:39 -0700
-In-Reply-To: <200906051240.52615.lkml@morethan.org> (Michael S. Zick's message
-	of "Fri, 5 Jun 2009 12:40:50 -0500")
-Message-ID: <adaoct2vac0.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Fri, 5 Jun 2009 13:51:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41133 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751233AbZFERvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 13:51:12 -0400
+Message-ID: <4A295AFB.80909@kernel.org>
+Date: Fri, 05 Jun 2009 10:50:51 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 05 Jun 2009 17:50:39.0799 (UTC) FILETIME=[2395EC70:01C9E606]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+To: Tao Ma <tao.ma@oracle.com>
+CC: Amerigo Wang <xiyou.wangcong@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@linux.intel.com>
+Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64
+ 2.6.30-rc8.
+References: <4A289928.7040508@oracle.com> <20090604223805.2962e826.akpm@linux-foundation.org> <4A28C262.5020605@oracle.com> <20090605075614.GC8171@cr0.nay.redhat.com> <4A28DDEB.4000409@oracle.com> <2375c9f90906050209h191df8fav36fc9507654c5ca6@mail.gmail.com> <20090605021424.ba352b0f.akpm@linux-foundation.org> <4A28E5C9.6010408@oracle.com> <20090605095155.GC8354@cr0.nay.redhat.com> <4A292B0D.8030807@oracle.com>
+In-Reply-To: <4A292B0D.8030807@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tao Ma wrote:
+> 
+> 
+> Amerigo Wang wrote:
+>> On Fri, Jun 05, 2009 at 05:30:49PM +0800, Tao Ma wrote:
+>>>> Please send the boot logs: dmesg -s 1000000 > foo
+>>> attached.
+>>
+>>> #######high memory 18446612137615818752, size_t 18446612137615818752
+>>> #######kcore size 5301604352, PAGE_OFFSET 0, PAGE_SIZE 4096
+>>
+>>
+>> These two lines must be added by yourself...
+>>
+>> What?!
+>> How can PAGE_OFFSET be 0??
+>> Can you show us these two printk() you just added?
+>>
+>> And, the size of kcore is not the crazy number in the subject...
+>> This one is much saner..
+> Sorry, I used the wrong printk. the correct one is:
+> #######high memory 18446612137615818752, size_t 18446612137615818752
+> #######kcore size 5301604352, PAGE_OFFSET 18446612132314218496,
+> PAGE_SIZE 4096
+> 
 
- > I'll stick an "i = something" at the top (NULL?) just to shut up gcc.
+%lx should be used.
 
-you can do uninitialized_var(i) as a zero-overhead way to handle this.
+also you compiler doesn't like
+
+high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
+
+in setup.c?
+
+YH
+
