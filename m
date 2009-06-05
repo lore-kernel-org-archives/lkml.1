@@ -1,80 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752053AbZFEKAD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754203AbZFEKBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752053AbZFEKAD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 06:00:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbZFEJ7x
+	id S1754203AbZFEKBU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 06:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZFEKBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 05:59:53 -0400
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:44651 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751165AbZFEJ7w (ORCPT
+	Fri, 5 Jun 2009 06:01:09 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:65501 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750984AbZFEKBI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 05:59:52 -0400
-Date: Fri, 5 Jun 2009 15:29:31 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>, Avi Kivity <avi@redhat.com>,
-       kvm@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Subject: Re: [RFC] CPU hard limits
-Message-ID: <20090605095931.GE4601@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20090604053649.GA3701@in.ibm.com> <6599ad830906050153i1afd104fqe70f681317349142@mail.gmail.com> <20090605092733.GA27486@in.ibm.com> <6599ad830906050232n11aa30d8xfcda0a279a482f32@mail.gmail.com> <20090605094811.GD4601@linux.vnet.ibm.com> <6599ad830906050251h18f4e037h182f61aa80a5b046@mail.gmail.com>
+	Fri, 5 Jun 2009 06:01:08 -0400
+From: Karsten Keil <isdn@linux-pingi.de>
+Reply-To: isdn@linux-pingi.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: mISDN: WARNING: at kernel/softirq.c:124 local_bh_enable+0x8f/0xb0()
+Date: Fri, 5 Jun 2009 12:01:03 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: Mathias Kretschmer <psoting@blx4.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au> <200906050007.13507.psoting@blx4.net> <20090604195948.9c7af254.akpm@linux-foundation.org>
+In-Reply-To: <20090604195948.9c7af254.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <6599ad830906050251h18f4e037h182f61aa80a5b046@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906051201.04185.isdn@linux-pingi.de>
+X-Provags-ID: V01U2FsdGVkX18t3vDP0mkkiKg2qoVQSd6NM1LMHnQgL25KHTQ
+ 0oiV16li2oF1M274THIBE5w8ViMcnTDOGjItAeLBoaMMdxXEzE
+ YeNjuE+1BopOYnTVkicnIZvAtSksQzM
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 05, 2009 at 02:51:18AM -0700, Paul Menage wrote:
-> On Fri, Jun 5, 2009 at 2:48 AM, Dhaval Giani<dhaval@linux.vnet.ibm.com> wrote:
-> >> > Now if 11th group with same shares comes in, then each group will now
-> >> > get 9% of CPU and that 10% guarantee breaks.
-> >>
-> >> So you're trying to guarantee 11 cgroups that they can each get 10% of
-> >> the CPU? That's called over-committing, and while there's nothing
-> >> wrong with doing that if you're confident that they'll not all need
-> >> their 10% at the same time, there's no way to *guarantee* them all
-> >> 10%. You can guarantee them all 9% and hope the extra 1% is spare for
-> >> those that need it (over-committing), or you can guarantee 10 of them
-> >> 10% and give the last one 0 shares.
-> >>
-> >> How would you propose to guarantee 11 cgroups each 10% of the CPU
-> >> using hard limits?
-> >>
+Hi,
+
+I'm currently see this too from time to time, but have no idea about it.
+
+On Freitag, 5. Juni 2009 04:59:48 Andrew Morton wrote:
+> (cc's added)
+>
+> On Fri, 5 Jun 2009 00:07:12 +0200 Mathias Kretschmer <psoting@blx4.net> 
+wrote:
+> > Hi *,
 > >
-> > You cannot guarantee 10% to 11 groups on any system (unless I am missing
-> > something). The sum of guarantees cannot exceed 100%.
-> 
-> That's exactly my point. I was trying to counter Bharata's statement, which was:
-> 
-> > > Now if 11th group with same shares comes in, then each group will now
-> > > get 9% of CPU and that 10% guarantee breaks.
-> 
-> which seemed to be implying that this was a drawback of using shares
-> to implement guarantees.
-> 
+> > the following pops up from time to time when I place a call (might also
+> > happened on incoming calls).
+> >
+> > machine is an AMD K8 dual core running a x86_64 2.6.29.4-grsec kernel.
+> >
+> > please, let me know if you need more details.
+> >
+> > cheers,
+> >
+> > Mathias
+> >
+> > [88563.318126] ------------[ cut here ]------------
+> > [88563.318129] WARNING: at kernel/softirq.c:124
+> > local_bh_enable+0x8f/0xb0() [88563.318130] Hardware name: empty
+> > [88563.318132] Modules linked in: usbtouchscreen dvb_usb_cinergyT2 dummy
+> > bonding snd_emu10k1 snd_rawmidi snd_ac97_codec ath9k ac97_bus snd_pcm
+> > snd_page_alloc snd_util_mem forcedeth snd_hwdep
+> > [88563.318141] Pid: 826, comm: mISDN_hfc-pci.1 Not tainted 2.6.29.4-grsec
+> > #13 [88563.318142] Call Trace:
+> > [88563.318147]  [<ffffffff8025909a>] warn_slowpath+0xea/0x160
+> > [88563.318149]  [<ffffffff8025ee0f>] local_bh_enable+0x8f/0xb0
+> > [88563.318152]  [<ffffffff8065f284>] sk_filter+0x44/0xa0
+> > [88563.318154]  [<ffffffff8064548d>] sock_queue_rcv_skb+0x5d/0x120
+> > [88563.318156]  [<ffffffff8060410f>] mISDN_send+0x4f/0xa0
+> > [88563.318159]  [<ffffffff8060790e>] l2up_create+0x7e/0x100
+> > [88563.318161]  [<ffffffff8060b6e0>] l2_got_tei+0x0/0x90
+> > [88563.318163]  [<ffffffff8060b722>] l2_got_tei+0x42/0x90
+> > [88563.318164]  [<ffffffff80602d32>] mISDN_FsmEvent+0x82/0x100
+> > [88563.318167]  [<ffffffff8060cb00>] tei_id_assign+0x0/0x120
+> > [88563.318168]  [<ffffffff80602d32>] mISDN_FsmEvent+0x82/0x100
+> > [88563.318170]  [<ffffffff8060e373>] mgr_send+0x4d3/0x660
+> > [88563.318172]  [<ffffffff8061ac8e>] hfcpci_l2l1D+0x19e/0x2f0
+> > [88563.318174]  [<ffffffff80606591>] mISDNStackd+0x431/0x680
+> > [88563.318177]  [<ffffffff80270950>] autoremove_wake_function+0x0/0x30
+> > [88563.318179]  [<ffffffff80606160>] mISDNStackd+0x0/0x680
+> > [88563.318181]  [<ffffffff80270547>] kthread+0x47/0x80
+> > [88563.318183]  [<ffffffff802226fa>] child_rip+0xa/0x20
+> > [88563.318185]  [<ffffffff80270500>] kthread+0x0/0x80
+> > [88563.318186]  [<ffffffff802226f0>] child_rip+0x0/0x20
+> > [88563.318188] ---[ end trace 2a7bb9b2f669de5a ]---
+>
+> hm, tricky, who disabled interrupts? 
+Yes, indeed I have no idea what exactely is going on.
 
-OK :). Glad to see I did not get it wrong.
+> It could be
+>
+> 	spin_lock_irqsave(&hc->lock, flags);
+>
+> in hfcpci_l2l1D().
 
-I think we are focusing on the wrong use case here. Guarantees is just a
-useful side-effect we get by using hard limits. I think the more
-important use case is where the provider wants to limit the amount of
-time a user gets (such as in a cloud).
+I do not think that this function is really in the call trace, in my dumps I 
+see also traces without  hfcpci_l2l1D in it.
+And I see no way back to mgr_send from hfcpci_l2l1D from the design
+the HW functions are decoupled from the stack thread via queues, so
+here should be no direct callback.
 
-Maybe we should direct our attention in solving that problem? :)
+The common part is, that it seems always happen on successful TEI
+assign.
 
-thanks,
--- 
-regards,
-Dhaval
+Karsten
+
