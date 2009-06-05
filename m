@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbZFEDHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZFEDH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754220AbZFEDHn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 23:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZFEDHe
+	id S1754817AbZFEDH7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 23:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZFEDHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 23:07:34 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:33485 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751364AbZFEDHd (ORCPT
+	Thu, 4 Jun 2009 23:07:50 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52555 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752255AbZFEDHt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 23:07:33 -0400
-Date: Fri, 5 Jun 2009 11:07:30 +0800
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: bharata@linux.vnet.ibm.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, kvm@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC] CPU hard limits
-Message-ID: <20090605030730.GB28932@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090604053649.GA3701@in.ibm.com> <4A27BBCA.5020606@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <4A27BBCA.5020606@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 4 Jun 2009 23:07:49 -0400
+Date: Fri, 5 Jun 2009 12:06:18 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Julian Phillips <julian@quantumfyre.co.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: A question about using a private anonymous mmap
+Message-Id: <20090605120618.0c074050.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.LNX.2.00.0906041740110.21303@reaper.quantumfyre.co.uk>
+References: <alpine.LNX.2.00.0906041740110.21303@reaper.quantumfyre.co.uk>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Avi Kivity <avi@redhat.com> [2009-06-04 15:19:22]:
+On Thu, 4 Jun 2009 17:48:29 +0100 (BST)
+Julian Phillips <julian@quantumfyre.co.uk> wrote:
 
-> Bharata B Rao wrote:
-> > 2. Need for hard limiting CPU resource
-> > --------------------------------------
-> > - Pay-per-use: In enterprise systems that cater to multiple clients/customers
-> >   where a customer demands a certain share of CPU resources and pays only
-> >   that, CPU hard limits will be useful to hard limit the customer's job
-> >   to consume only the specified amount of CPU resource.
-> > - In container based virtualization environments running multiple containers,
-> >   hard limits will be useful to ensure a container doesn't exceed its
-> >   CPU entitlement.
-> > - Hard limits can be used to provide guarantees.
-> >   
-> How can hard limits provide guarantees?
+> I have a program which creates a reasonably large private anonymous map. 
+> The program then writes into a few places in the map, but ends up reading 
+> from all of them.
 > 
-> Let's take an example where I have 1 group that I wish to guarantee a 
-> 20% share of the cpu, and anther 8 groups with no limits or guarantees.
+> When I run this program on a system running 2.6.20.7 the process only ever 
+> seems to use enough memory to hold the data that has actually been written 
+> (well - in units of PAGE_SIZE).  When I run the program on a system 
+> running 2.6.24.5 then as it reads the map the amount of memory used 
+> continues to increase until the complete map has actually been allocated 
+> (and since the total size is greater than the physically available RAM 
+> causes swapping).  Basically I seem to be seeing copy-on-read instead of 
+> copy-on-write type behaviour.
 > 
-> One way to achieve the guarantee is to hard limit each of the 8 other 
-> groups to 10%; the sum total of the limits is 80%, leaving 20% for the 
-> guarantee group. The downside is the arbitrary limit imposed on the 
-> other groups.
+> Is this an expected change, and is there any option I can tweak to get the 
+> old behaviour back?
 > 
-> Another way is to place the 8 groups in a container group, and limit 
-> that to 80%. But that doesn't work if I want to provide guarantees to 
-> several groups.
->
 
-Hi, Avi,
+It comes from removal of ZERO_PAGE.
 
-Take a look at
-http://wiki.openvz.org/Containers/Guarantees_for_resources
-and the associated program in the wiki page.
+IMHO, What you can do is mmap(/dev/zero, MAP_PRIVATE) instead of ANON.
 
--- 
-	Balbir
+Thanks,
+-Kame
+
+> TIA,
+> 
+> -- 
+> Julian
+> 
+>   ---
+> I can't die until the government finds a safe place to bury my liver.
+>  		-- Phil Harris
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
