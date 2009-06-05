@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbZFEIUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757178AbZFEIVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757898AbZFEIUx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 04:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbZFEIGw
+	id S1757178AbZFEIVL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 04:21:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbZFEIGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 04:06:52 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:37574 "EHLO smtp.gentoo.org"
+	Fri, 5 Jun 2009 04:06:53 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:37483 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755431AbZFEIGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 04:06:06 -0400
+	id S1755657AbZFEIGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 04:06:08 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
 Cc: uclinux-dist-devel@blackfin.uclinux.org, Graf Yang <graf.yang@analog.com>
-Subject: [PATCH 43/62] Blackfin: drop unused reserve_pda() function
-Date: Fri,  5 Jun 2009 04:04:52 -0400
-Message-Id: <1244189111-19639-44-git-send-email-vapier@gentoo.org>
+Subject: [PATCH 44/62] Blackfin: merge sram init functions
+Date: Fri,  5 Jun 2009 04:04:53 -0400
+Message-Id: <1244189111-19639-45-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1244189111-19639-1-git-send-email-vapier@gentoo.org>
 References: <1244189111-19639-1-git-send-email-vapier@gentoo.org>
@@ -24,72 +24,74 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Graf Yang <graf.yang@analog.com>
 
-The Per-processor Data Area isn't actually reserved by this function, and
-all it ended up doing was issuing a printk(), so punt it.
+Now that the sram_init() function exists only to call the bfin_sram_init()
+after the punting of the reserve_pda() function, simply merge the two to
+avoid pointless overhead.
 
 Signed-off-by: Graf Yang <graf.yang@analog.com>
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/include/asm/pda.h |    2 --
- arch/blackfin/mach-common/smp.c |    3 ---
- arch/blackfin/mm/init.c         |   10 ----------
- 3 files changed, 0 insertions(+), 15 deletions(-)
+ arch/blackfin/mm/blackfin_sram.h |    1 -
+ arch/blackfin/mm/init.c          |    9 ---------
+ arch/blackfin/mm/sram-alloc.c    |    5 ++++-
+ 3 files changed, 4 insertions(+), 11 deletions(-)
 
-diff --git a/arch/blackfin/include/asm/pda.h b/arch/blackfin/include/asm/pda.h
-index a671427..b42555c 100644
---- a/arch/blackfin/include/asm/pda.h
-+++ b/arch/blackfin/include/asm/pda.h
-@@ -64,8 +64,6 @@ struct blackfin_pda {			/* Per-processor Data Area */
+diff --git a/arch/blackfin/mm/blackfin_sram.h b/arch/blackfin/mm/blackfin_sram.h
+index 8cb0945..bc00628 100644
+--- a/arch/blackfin/mm/blackfin_sram.h
++++ b/arch/blackfin/mm/blackfin_sram.h
+@@ -30,7 +30,6 @@
+ #ifndef __BLACKFIN_SRAM_H__
+ #define __BLACKFIN_SRAM_H__
  
- extern struct blackfin_pda cpu_pda[];
+-extern void bfin_sram_init(void);
+ extern void *l1sram_alloc(size_t);
  
--void reserve_pda(void);
--
- #endif	/* __ASSEMBLY__ */
- 
- #endif /* _ASM_BLACKFIN_PDA_H */
-diff --git a/arch/blackfin/mach-common/smp.c b/arch/blackfin/mach-common/smp.c
-index b669595..3b8ebae 100644
---- a/arch/blackfin/mach-common/smp.c
-+++ b/arch/blackfin/mach-common/smp.c
-@@ -369,9 +369,6 @@ static void __cpuinit setup_secondary(unsigned int cpu)
- 	bfin_write_ILAT(ilat);
- 	CSYNC();
- 
--	/* Reserve the PDA space for the secondary CPU. */
--	reserve_pda();
--
- 	/* Enable interrupt levels IVG7-15. IARs have been already
- 	 * programmed by the boot CPU.  */
- 	bfin_irq_flags |= IMASK_IVG15 |
+ #endif
 diff --git a/arch/blackfin/mm/init.c b/arch/blackfin/mm/init.c
-index 00543c8..9a62b30 100644
+index 9a62b30..014a55a 100644
 --- a/arch/blackfin/mm/init.c
 +++ b/arch/blackfin/mm/init.c
-@@ -134,12 +134,6 @@ asmlinkage void __init init_pda(void)
- #endif
+@@ -175,15 +175,6 @@ void __init mem_init(void)
+ 		initk, codek, datak, DMA_UNCACHED_REGION >> 10, (reservedpages << (PAGE_SHIFT-10)));
  }
  
--void __cpuinit reserve_pda(void)
+-static int __init sram_init(void)
 -{
--	printk(KERN_INFO "PDA for CPU%u reserved at %p\n", smp_processor_id(),
--					&cpu_pda[smp_processor_id()]);
--}
+-	/* Initialize the blackfin L1 Memory. */
+-	bfin_sram_init();
 -
- void __init mem_init(void)
+-	return 0;
+-}
+-pure_initcall(sram_init);
+-
+ static void __init free_init_pages(const char *what, unsigned long begin, unsigned long end)
  {
- 	unsigned int codek = 0, datak = 0, initk = 0;
-@@ -186,10 +180,6 @@ static int __init sram_init(void)
- 	/* Initialize the blackfin L1 Memory. */
- 	bfin_sram_init();
- 
--	/* Reserve the PDA space for the boot CPU right after we
--	 * initialized the scratch memory allocator.
--	 */
--	reserve_pda();
- 	return 0;
+ 	unsigned long addr;
+diff --git a/arch/blackfin/mm/sram-alloc.c b/arch/blackfin/mm/sram-alloc.c
+index 530d139..36376d8 100644
+--- a/arch/blackfin/mm/sram-alloc.c
++++ b/arch/blackfin/mm/sram-alloc.c
+@@ -223,7 +223,7 @@ static void __init l2_sram_init(void)
+ 	spin_lock_init(&l2_sram_lock);
  }
- pure_initcall(sram_init);
+ 
+-void __init bfin_sram_init(void)
++static int __init bfin_sram_init(void)
+ {
+ 	sram_piece_cache = kmem_cache_create("sram_piece_cache",
+ 				sizeof(struct sram_piece),
+@@ -233,7 +233,10 @@ void __init bfin_sram_init(void)
+ 	l1_data_sram_init();
+ 	l1_inst_sram_init();
+ 	l2_sram_init();
++
++	return 0;
+ }
++pure_initcall(bfin_sram_init);
+ 
+ /* SRAM allocate function */
+ static void *_sram_alloc(size_t size, struct sram_piece *pfree_head,
 -- 
 1.6.3.1
 
