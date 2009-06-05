@@ -1,53 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755091AbZFETTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZFETTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755091AbZFETTR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 15:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZFETTB
+	id S1755487AbZFETTb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 15:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZFETTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 15:19:01 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60496 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752015AbZFETTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 15:19:00 -0400
-Subject: Re: [PATCH -tip] x86: cpu/proc.c adding extended_cpuid_level for
- /proc/cpuinfo
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Borislav Petkov <borislav.petkov@amd.com>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A09A688.6080603@zytor.com>
-References: <1242112482.3283.1.camel@localhost.localdomain>
-	 <20090512133950.GA15474@aftab> <1242136177.14832.0.camel@ht.satnam>
-	 <20090512141027.GA19143@aftab>  <4A09A688.6080603@zytor.com>
-Content-Type: text/plain
-Date: Sat, 06 Jun 2009 00:50:06 +0530
-Message-Id: <1244229606.2507.6.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Jun 2009 15:19:04 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:49292 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752754AbZFETTC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 15:19:02 -0400
+X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
+	times
+Message-Id: <20090605191851.393195588@gentwo.org>
+References: <20090605191819.376530498@gentwo.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 05 Jun 2009 15:18:25 -0400
+From: cl@linux-foundation.org
+To: linux-kernel@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
+       Eric Biederman <ebiederm@aristanetworks.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David L Stevens <dlstevens@us.ibm.com>
+Cc: mingo@elte.hu
+Cc: rusty@rustcorp.com.au
+Cc: davem@davemloft.net
+Subject: [this_cpu_xx 06/11] Eliminate get/put_cpu
+Content-Disposition: inline; filename=this_cpu_ptr_eliminate_get_put_cpu
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-12 at 09:40 -0700, H. Peter Anvin wrote:
-> Borislav Petkov wrote:
-> >>>
-> >> why we need cpuid_level ?
-> > 
-> > It is already visible in userspace. I think you've got an answer to a
-> > very similar question already:
-> > 
-> > http://marc.info/?l=linux-kernel&m=124206571628464
-> > 
-> 
-> extended_cpuid_level should be motivated, but probably does make sense.
->  It hardly "completes" /proc/cpuinfo; especially if you consider that
-> there are at least three additional ranges in wide use (two used by a
-> single vendor only, and the third by virtualization software.)
-> 
+There are cases where we can use this_cpu_ptr and as the result
+of using this_cpu_ptr() we no longer need to determine the
+current executing cpu.
 
-So how can we complete it.
+In those places no get/put_cpu combination is needed anymore.
+The local cpu variable can be eliminated.
 
---
-JSR
+Preemption still needs to be disabled and enabled since the
+modifications of the per cpu variables is not atomic. There may
+be multiple per cpu variables modified and those must all
+be from the same processor.
 
+cc: Dan Williams <dan.j.williams@intel.com>
+cc: Eric Biederman <ebiederm@aristanetworks.com>
+cc: Stephen Hemminger <shemminger@vyatta.com>
+cc: Trond Myklebust <Trond.Myklebust@netapp.com>
+cc: Herbert Xu <herbert@gondor.apana.org.au>
+cc: David L Stevens <dlstevens@us.ibm.com>
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+
+---
+ drivers/dma/dmaengine.c |   36 +++++++++++++-----------------------
+ drivers/net/veth.c      |    7 +++----
+ 2 files changed, 16 insertions(+), 27 deletions(-)
+
+Index: linux-2.6/drivers/dma/dmaengine.c
+===================================================================
+--- linux-2.6.orig/drivers/dma/dmaengine.c	2009-06-04 13:38:15.000000000 -0500
++++ linux-2.6/drivers/dma/dmaengine.c	2009-06-04 14:19:43.000000000 -0500
+@@ -326,14 +326,7 @@ arch_initcall(dma_channel_table_init);
+  */
+ struct dma_chan *dma_find_channel(enum dma_transaction_type tx_type)
+ {
+-	struct dma_chan *chan;
+-	int cpu;
+-
+-	cpu = get_cpu();
+-	chan = per_cpu_ptr(channel_table[tx_type], cpu)->chan;
+-	put_cpu();
+-
+-	return chan;
++	return this_cpu_read(channel_table[tx_type]->chan);
+ }
+ EXPORT_SYMBOL(dma_find_channel);
+ 
+@@ -803,7 +796,6 @@ dma_async_memcpy_buf_to_buf(struct dma_c
+ 	struct dma_async_tx_descriptor *tx;
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+-	int cpu;
+ 	unsigned long flags;
+ 
+ 	dma_src = dma_map_single(dev->dev, src, len, DMA_TO_DEVICE);
+@@ -822,10 +814,10 @@ dma_async_memcpy_buf_to_buf(struct dma_c
+ 	tx->callback = NULL;
+ 	cookie = tx->tx_submit(tx);
+ 
+-	cpu = get_cpu();
+-	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
+-	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
+-	put_cpu();
++	preempt_disable();
++	__this_cpu_add(chan->local->bytes_transferred, len);
++	__this_cpu_inc(chan->local->memcpy_count);
++	preempt_enable();
+ 
+ 	return cookie;
+ }
+@@ -852,7 +844,6 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
+ 	struct dma_async_tx_descriptor *tx;
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+-	int cpu;
+ 	unsigned long flags;
+ 
+ 	dma_src = dma_map_single(dev->dev, kdata, len, DMA_TO_DEVICE);
+@@ -869,10 +860,10 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
+ 	tx->callback = NULL;
+ 	cookie = tx->tx_submit(tx);
+ 
+-	cpu = get_cpu();
+-	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
+-	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
+-	put_cpu();
++	preempt_disable();
++	__this_cpu_add(chan->local->bytes_transferred, len);
++	__this_cpu_inc(chan->local->memcpy_count);
++	preempt_enable();
+ 
+ 	return cookie;
+ }
+@@ -901,7 +892,6 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
+ 	struct dma_async_tx_descriptor *tx;
+ 	dma_addr_t dma_dest, dma_src;
+ 	dma_cookie_t cookie;
+-	int cpu;
+ 	unsigned long flags;
+ 
+ 	dma_src = dma_map_page(dev->dev, src_pg, src_off, len, DMA_TO_DEVICE);
+@@ -919,10 +909,10 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
+ 	tx->callback = NULL;
+ 	cookie = tx->tx_submit(tx);
+ 
+-	cpu = get_cpu();
+-	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
+-	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
+-	put_cpu();
++	preempt_disable();
++	__this_cpu_add(chan->local->bytes_transferred, len);
++	__this_cpu_inc(chan->local->memcpy_count);
++	preempt_enable();
+ 
+ 	return cookie;
+ }
+Index: linux-2.6/drivers/net/veth.c
+===================================================================
+--- linux-2.6.orig/drivers/net/veth.c	2009-06-04 13:38:15.000000000 -0500
++++ linux-2.6/drivers/net/veth.c	2009-06-04 14:18:00.000000000 -0500
+@@ -153,7 +153,7 @@ static int veth_xmit(struct sk_buff *skb
+ 	struct net_device *rcv = NULL;
+ 	struct veth_priv *priv, *rcv_priv;
+ 	struct veth_net_stats *stats, *rcv_stats;
+-	int length, cpu;
++	int length;
+ 
+ 	skb_orphan(skb);
+ 
+@@ -161,9 +161,8 @@ static int veth_xmit(struct sk_buff *skb
+ 	rcv = priv->peer;
+ 	rcv_priv = netdev_priv(rcv);
+ 
+-	cpu = smp_processor_id();
+-	stats = per_cpu_ptr(priv->stats, cpu);
+-	rcv_stats = per_cpu_ptr(rcv_priv->stats, cpu);
++	stats = this_cpu_ptr(priv->stats);
++	rcv_stats = this_cpu_ptr(rcv_priv->stats);
+ 
+ 	if (!(rcv->flags & IFF_UP))
+ 		goto tx_drop;
+
+-- 
