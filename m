@@ -1,47 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbZFEPE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbZFEPH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755618AbZFEPE0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 11:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbZFEPET
+	id S1756058AbZFEPH3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 11:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbZFEPHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 11:04:19 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46389 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753731AbZFEPES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 11:04:18 -0400
-Message-ID: <4A2933E4.4040502@redhat.com>
-Date: Fri, 05 Jun 2009 11:04:04 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Fri, 5 Jun 2009 11:07:21 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:38216 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752224AbZFEPHU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 11:07:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=iAZsBXXH+H/WW/Q0+QdLC4zXy8rODieugMkBpEkQe5Xa+4sEk9qLgprqVpkjULebdm
+         lLp6HFZKHi3lkbeLhuhPaJWRJMPl9j65/L/JKA+RS5Bgyf2ZiQ+QcdbR1pcNRMPe6k0l
+         kC2qwjSybGO9fkVJabOSFaf8RMR+7Dq+YmsFo=
+Message-ID: <4A2934F5.4050601@tuffmail.co.uk>
+Date: Fri, 05 Jun 2009 16:08:37 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Minchan Kim <minchan.kim@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [PATCH][mmtom] remove file arguement of swap_readpage
-References: <1244212423-18629-1-git-send-email-minchan.kim@gmail.com>
-In-Reply-To: <1244212423-18629-1-git-send-email-minchan.kim@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Corentin Chary <corentin.chary@gmail.com>,
+       acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
+       linux-kernel@vger.kernel.org, USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH] eeepc-laptop: enable camera by default
+References: <Pine.LNX.4.64.0906051157460.22218@melkki.cs.Helsinki.FI>	 <71cd59b00906050446g7310d24el94f0d137dc0e0ecf@mail.gmail.com>	 <1244205844.23533.21.camel@penberg-laptop>	 <71cd59b00906050602s5c9b9a31ne11b6aaf7546f58c@mail.gmail.com>	 <1244209873.23533.29.camel@penberg-laptop>	 <9b2b86520906050738kea062c9n1b2c0e767d6eb0aa@mail.gmail.com> <1244213412.23533.41.camel@penberg-laptop> <4A2931F5.1090709@tuffmail.co.uk>
+In-Reply-To: <4A2931F5.1090709@tuffmail.co.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minchan Kim wrote:
-> The file argument resulted from address_space's readpage
-> long time ago.
-> 
-> Now we don't use it any more. Let's remove unnecessary
-> argement.
-> 
-> This patch cleans up swap_readpage.
-> It doesn't affect behavior of function.
-> 
-> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Cc: Rik van Riel <riel@redhat.com>
+Alan Jenkins wrote:
+> Pekka Enberg wrote:
+>> Hi Alan,
+>>
+>> On Fri, 2009-06-05 at 15:38 +0100, Alan Jenkins wrote:
+>>  
+>>> Ok.  I didn't bother shutting down my system, but I get a similar
+>>> difference; 16 wakeups/s disabled v.s. 25 enabled.  Anecdotally,
+>>> disabling the camera does help battery life, and presumably Asus had
+>>> good reason to implement it!  (The shipped OS "fixes" the usability
+>>> problem by patching the camera apps).
+>>>
+>>> BUT I found that autosuspend didn't seem to break anything, and
+>>> enabling it also got me down to 16 wakeups/s.  I think this is ideal
+>>> because autosuspend is automatic so I can save power without manual
+>>> toggling.
+>>>
+>>> Here's some magic to enable autosuspend:
+>>>
+>>> # echo -n auto > /sys/bus/usb/drivers/uvcvideo/*:*/../power/level
+>>>
+>>> Ideally this wants to be enabled automatically using a udev rule.
+>>>     
+>>
+>> Can the kernel do this by default for this specific driver on eeepc?
+>>
+>>             Pekka
+>>
+>>   
+>
+> Auto-suspend white-listing would be done on the basis of USB ids 
+> (vendor, product).  At the moment it's expected that userspace should 
+> take ownership of it.  There's no infrastructure for in-kernel 
+> whitelisting.  I think.
+>
+> Large lists in udev rules can work, there are already lists of USB 
+> devices to set permissions for libusb access, e.g. for libmtp.
+>
+> [CC usb list - in the hope someone will point out if I got this wrong 
+> :-)]
+>
+> Alan
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
+Btw I've now tested the udev rule, you can just dump this in a new 
+.rules file under /etc/udev/rules.d:
 
--- 
-All rights reversed.
+SUBSYSTEM=="usb", ATTR{idVendor}=="eb1a", ATTR{idProduct}=="2761", ATTR{power/level}="auto"
+
+
+Not sure who I should submit it to though :-).  debian-eeepc would take 
+it, but perhaps it should go in udev's default rules.
+
+Regards
+Alan
