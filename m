@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752824AbZFEA5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbZFEA6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752824AbZFEA5R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 20:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZFEA5I
+	id S1753241AbZFEA6y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 20:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZFEA6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 20:57:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37131 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751077AbZFEA5H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 20:57:07 -0400
-Date: Thu, 4 Jun 2009 17:54:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Samuel Thibault <samuel.thibault@ens-lyon.org>
-cc: Christian Tramnitz <christian@tramnitz.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       George Dunlap <george.dunlap@eu.citrix.com>,
-       David Miller <davem@davemloft.net>, "jeremy@goop.org" <jeremy@goop.org>,
-       Dan Magenheimer <dan.magenheimer@oracle.com>,
-       "avi@redhat.com" <avi@redhat.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "x86@kernel.org" <x86@kernel.org>,
+	Thu, 4 Jun 2009 20:58:46 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:45228 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751364AbZFEA6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 20:58:45 -0400
+Date: Fri, 5 Jun 2009 10:58:42 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Artem.Bityutskiy@nokia.com
+Cc: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       "xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
-       ksrinivasan <ksrinivasan@novell.com>,
-       "EAnderson@novell.com" <EAnderson@novell.com>,
-       "wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
-       Stephen Spector <stephen.spector@citrix.com>, jens.axboe@oracle.com
-Subject: Re: Merge Xen (the hypervisor) into Linux
-In-Reply-To: <20090605000910.GQ8916@const.famille.thibault.fr>
-Message-ID: <alpine.LFD.2.01.0906041753500.8196@localhost.localdomain>
-References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org> <20090528.210559.137121893.davem@davemloft.net> <4A1FCE8E.2060604@eu.citrix.com> <20090602224051.GB32428@goodmis.org> <20090602232843.GA6577@elte.hu>
- <4A262F4B.8010404@tramnitz.com> <alpine.LFD.2.01.0906041151540.4880@localhost.localdomain> <20090605000910.GQ8916@const.famille.thibault.fr>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Dmitry Pervushin <dpervushin@embeddedalley.com>
+Subject: Re: linux-next: ubi tree build failure
+Message-Id: <20090605105842.de948d0b.sfr@canb.auug.org.au>
+In-Reply-To: <4A265DF6.3070602@nokia.com>
+References: <20090603184408.49c7fb1f.sfr@canb.auug.org.au>
+	<4A265DF6.3070602@nokia.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__5_Jun_2009_10_58_42_+1000_C28lS8+=phlo8GoO"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Fri__5_Jun_2009_10_58_42_+1000_C28lS8+=phlo8GoO
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Artem,
 
-On Fri, 5 Jun 2009, Samuel Thibault wrote:
-> 
-> Right.  We should get rid of all the HIGHMEM kmap crap that cripples all
-> the code.
+On Wed, 03 Jun 2009 14:26:46 +0300 Artem Bityutskiy <Artem.Bityutskiy@nokia=
+.com> wrote:
+>
+> Stephen Rothwell wrote:
+> > Today's linux-next build (powerpc ppc44x_defconfig) failed like this:
+> >=20
+> > drivers/mtd/ubi/gluebi.c: In function 'gluebi_get_device':
+> > drivers/mtd/ubi/gluebi.c:126: error: implicit declaration of function '=
+IS_ERR'
+> > drivers/mtd/ubi/gluebi.c:129: error: implicit declaration of function '=
+PTR_ERR'
+>=20
+> It is strange that I do not see these errors on my x86_86
 
-Now you're starting to understand.
+The above was a build for a 32 bit powerpc platform.  This is an instance
+of a general issue when an API is used without explicitly including the
+header files that define the API.  The needed header file may be included
+by some convoluted path that depends on the architecture being built or
+even the particular configuration.
 
-However, the difference between Xen and highmem (which I do hate, and 
-which took a long time and lots of effort to get done) is how many people 
-care. And in particular how many kernel developers do.
+> Any suggestions what I could do to reproduce the build issues?
+> I'll try at least now to build this on x86 (32-bit).=20
 
-Until you can face these obvious facts, please just shut up. Ok?
+Always directly include the header files for APIs you use ...
 
-			Linsu
+I see that this particular problem is now fixed, thanks.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__5_Jun_2009_10_58_42_+1000_C28lS8+=phlo8GoO
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoobcIACgkQjjKRsyhoI8wQSwCgqpoTK7xf/oZmBv8vm0yorBLB
+vhwAnignMO+1LPpU1xWqwNUAM+Tl7eLp
+=Gg+Y
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__5_Jun_2009_10_58_42_+1000_C28lS8+=phlo8GoO--
