@@ -1,90 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708AbZFETTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755759AbZFETTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755708AbZFETTm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 15:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbZFETTJ
+	id S1755759AbZFETTx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 15:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbZFETTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 15:19:09 -0400
-Received: from mail-qy0-f177.google.com ([209.85.221.177]:39063 "EHLO
-	mail-qy0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754206AbZFETTH convert rfc822-to-8bit (ORCPT
+	Fri, 5 Jun 2009 15:19:12 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:60616 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753631AbZFETTH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 5 Jun 2009 15:19:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=B9jCkc8u1/IcywVymTBUxRgN7pnH1E/wQ5SDczKmwyKYcplUXgz8DYD2Rg/4CfR9qe
-         4rUBjE4d0OQanK07EPsItcBu71pG/ifcHX3wo2lry46OmMEGJ/0XR1EblSjmVAiYpsWa
-         peTwFVYMzTu10d3mMH2r0nVBHzsvegiD+UayU=
-MIME-Version: 1.0
-In-Reply-To: <18983.26015.413162.445846@notabene.brown>
-References: <20090519005647.4104.81119.stgit@dwillia2-linux.ch.intel.com>
-	 <20090519005951.4104.27062.stgit@dwillia2-linux.ch.intel.com>
-	 <18983.26015.413162.445846@notabene.brown>
-Date: Fri, 5 Jun 2009 12:19:07 -0700
-X-Google-Sender-Auth: 2014f6eed6a1ea62
-Message-ID: <e9c3a7c20906051219x122f443dtc7836f0c16ae9f27@mail.gmail.com>
-Subject: Re: [PATCH v2 05/11] md/raid5: add scribble region for buffer lists
-From: Dan Williams <dan.j.williams@intel.com>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-raid@vger.kernel.org, maan@systemlinux.org,
-       linux-kernel@vger.kernel.org, yur@emcraft.com, hpa@zytor.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
+	times
+Message-Id: <20090605191851.584051004@gentwo.org>
+References: <20090605191819.376530498@gentwo.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 05 Jun 2009 15:18:26 -0400
+From: cl@linux-foundation.org
+To: linux-kernel@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>, Christoph Hellwig <hch@lst.de>,
+       Olaf Weber <olaf@sgi.com>
+Cc: mingo@elte.hu
+Cc: rusty@rustcorp.com.au
+Cc: davem@davemloft.net
+Subject: [this_cpu_xx 07/11] xfs_icsb_modify_counters does not need "cpu" variable
+Content-Disposition: inline; filename=this_cpu_ptr_xfs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 3, 2009 at 11:11 PM, Neil Brown<neilb@suse.de> wrote:
-> On Monday May 18, dan.j.williams@intel.com wrote:
->> Hang some memory off of each stripe_head which can be used for storing
->> the buffer lists used in parity calculations.  Include space for dma
->> address conversions and pass that to async_tx via the
->> async_submit_ctl.scribble pointer.
->>
->> [ Impact: move memory pressure from stack to heap ]
->
-> I've finally had a look at this and I cannot say that I like it.
->
-> We don't really need one scribble-buffer per stripe_head.
-> And in fact, that isn't even enough because you find you need a mutex
-> to avoid multiple-use.
+The xfs_icsb_modify_counters() function no longer needs the cpu variable
+if we use this_cpu_ptr() and we can get rid of get/put_cpu().
 
-The mutex is probably not necessary, just need to audit the
-stripe_operations state machine to make sure threads don't overlap in
-raid_run_ops()...  but the point is mute when we move to per-cpu
-resources.
+cc: Christoph Hellwig <hch@lst.de>
+Acked-by: Olaf Weber <olaf@sgi.com>
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-> We really want one scribble-buffer per thread, or per CPU, or
-> something like that.
+---
+ fs/xfs/xfs_mount.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-One of the design goals was to prevent the occurrence of the
-softlockup watchdog events which seem to trigger on large raid6
-resyncs.  A per-cpu scheme would still require preempt_disable() while
-the calculation is active, so perhaps we just need a call to
-cond_resched() in raid5d to appease the scheduler.
+Index: linux-2.6/fs/xfs/xfs_mount.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/xfs_mount.c	2009-05-28 15:03:50.000000000 -0500
++++ linux-2.6/fs/xfs/xfs_mount.c	2009-05-28 15:09:05.000000000 -0500
+@@ -2320,12 +2320,12 @@ xfs_icsb_modify_counters(
+ {
+ 	xfs_icsb_cnts_t	*icsbp;
+ 	long long	lcounter;	/* long counter for 64 bit fields */
+-	int		cpu, ret = 0;
++	int		ret = 0;
+ 
+ 	might_sleep();
+ again:
+-	cpu = get_cpu();
+-	icsbp = (xfs_icsb_cnts_t *)per_cpu_ptr(mp->m_sb_cnts, cpu);
++	preempt_disable();
++	icsbp = (xfs_icsb_cnts_t *)this_cpu_ptr(mp->m_sb_cnts);
+ 
+ 	/*
+ 	 * if the counter is disabled, go to slow path
+@@ -2369,11 +2369,11 @@ again:
+ 		break;
+ 	}
+ 	xfs_icsb_unlock_cntr(icsbp);
+-	put_cpu();
++	preempt_enable();
+ 	return 0;
+ 
+ slow_path:
+-	put_cpu();
++	preempt_enable();
+ 
+ 	/*
+ 	 * serialise with a mutex so we don't burn lots of cpu on
+@@ -2421,7 +2421,7 @@ slow_path:
+ 
+ balance_counter:
+ 	xfs_icsb_unlock_cntr(icsbp);
+-	put_cpu();
++	preempt_enable();
+ 
+ 	/*
+ 	 * We may have multiple threads here if multiple per-cpu
 
-> You could possibly handle it a bit like ->spare_page, though we cope
-> with that being NULL some times, and you might not be able to do that
-> with scribble-buffer.
-> How do the async-raid6 patches cope with possible multiple users of
-> ->spare_page now that the computations are async and so possible in
-> parallel?
-
-Currently the code just takes a spare page lock.
-
->
-> Maybe a little mempool would be best?.... though given that in most
-> cases, the stack solution is really quite adequate it would be good to
-> make sure the replacement isn't too heavy-weight....
->
-> I'm not sure what would be best, but I really don't like the current
-> proposal.
->
-
-I'll take a look at a per-cpu implementation.
-
-Thanks,
-Dan
+-- 
