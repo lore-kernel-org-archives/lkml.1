@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZFEEBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751526AbZFEEEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbZFEEBK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 00:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbZFEEAu
+	id S1751526AbZFEEEL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 00:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739AbZFEED6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 00:00:50 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:51450 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751757AbZFEEAt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 00:00:49 -0400
-Message-Id: <200906050400.n5540Sx0052981@www262.sakura.ne.jp>
-Subject: Re: [2.6.30-rc8] gcc 3.3 : __udivdi3 undefined.
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
-       andreas.herrmann3@amd.com, mingo@elte.hu
+	Fri, 5 Jun 2009 00:03:58 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:42277 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750706AbZFEED5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 00:03:57 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: David Howells <dhowells@redhat.com>
+Subject: [PATCH] shm: fix unused warnings on nommu
+Date: Fri,  5 Jun 2009 00:03:52 -0400
+Message-Id: <1244174632-19361-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.3.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Date: Fri, 05 Jun 2009 13:00:28 +0900
-References: <200906050038.n550c4Ja010907@www262.sakura.ne.jp> <20090605023835.GA7933@cr0.nay.redhat.com> <20090604201733.746928c6.akpm@linux-foundation.org> <200906050339.n553d684048041@www262.sakura.ne.jp> <20090604205103.bbfe9af2.akpm@linux-foundation.org>
-In-Reply-To: <20090604205103.bbfe9af2.akpm@linux-foundation.org>
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 05062009 #2086045, status: clean
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Well, that tells us the .c file, but not the location within it. 
-> Please check the .loc info as I suggested.
+The massive nommu update (8feae131) resulted in these warnings:
+ipc/shm.c: In function ‘sys_shmdt’:
+ipc/shm.c:974: warning: unused variable ‘size’
+ipc/shm.c:972: warning: unused variable ‘next’
 
-        .loc 1 51 0
-        movl    -52(%ebp), %ebx #  start_phys_aligned
-        sbbl    %edi, %ebx
-        .loc 1 42 0
-        movl    %edx, -16(%ebp) #  pattern
-        .loc 1 51 0
-        subl    %ecx, %eax      #  size
-        pushl   $0
-        .loc 1 42 0
-        movl    20(%ebp), %edx  #  size
-        .loc 1 51 0
-        sbbl    %ebx, %edx
-        pushl   $8
-.LCFI12:
-        call    __udivdi3
-        popl    %ebx
-        .loc 1 53 0
-        movl    $0, -36(%ebp)   #  start_bad
-        .loc 1 52 0
-        movl    -56(%ebp), %ebx #  start_phys_aligned
-        subl    $1073741824, %ebx
-        .loc 1 56 0
-        cmpl    %edx, -36(%ebp) #  start_bad
-        .loc 1 51 0
-        popl    %esi
-        movl    %edx, %edi
-        movl    %eax, %esi      #  count
-        .loc 1 52 0
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ ipc/shm.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-> Perhaps it's this:
-> 
-> static void __init memtest(u64 pattern, u64 start_phys, u64 size)
-> {
-> 	u64 i, count;
-> 	u64 *start;
-> 	u64 start_bad, last_bad;
-> 	u64 start_phys_aligned;
-> 	size_t incr;
-> 
-> 	incr = sizeof(pattern);
-> 	start_phys_aligned = ALIGN(start_phys, incr);
-> 	count = (size - (start_phys_aligned - start_phys))/incr;
-Bingo!
+diff --git a/ipc/shm.c b/ipc/shm.c
+index faa46da..4259716 100644
+--- a/ipc/shm.c
++++ b/ipc/shm.c
+@@ -969,10 +969,13 @@ SYSCALL_DEFINE3(shmat, int, shmid, char __user *, shmaddr, int, shmflg)
+ SYSCALL_DEFINE1(shmdt, char __user *, shmaddr)
+ {
+ 	struct mm_struct *mm = current->mm;
+-	struct vm_area_struct *vma, *next;
++	struct vm_area_struct *vma;
+ 	unsigned long addr = (unsigned long)shmaddr;
+-	loff_t size = 0;
+ 	int retval = -EINVAL;
++#ifdef CONFIG_MMU
++	loff_t size = 0;
++	struct vm_area_struct *next;
++#endif
+ 
+ 	if (addr & ~PAGE_MASK)
+ 		return retval;
+-- 
+1.6.3.1
 
