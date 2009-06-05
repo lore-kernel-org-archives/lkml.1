@@ -1,68 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbZFENm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbZFENmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbZFENm1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 09:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755850AbZFENlr
+	id S1756076AbZFENmk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 09:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832AbZFENlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 09:41:47 -0400
-Received: from av6-2-sn3.vrr.skanova.net ([81.228.9.180]:49631 "EHLO
-	av6-2-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755837AbZFENlp (ORCPT
+	Fri, 5 Jun 2009 09:41:55 -0400
+Received: from av9-1-sn3.vrr.skanova.net ([81.228.9.185]:44891 "EHLO
+	av9-1-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755915AbZFENlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 09:41:45 -0400
-Message-ID: <4A292099.2020306@mocean-labs.com>
-Date: Fri, 05 Jun 2009 15:41:45 +0200
+	Fri, 5 Jun 2009 09:41:53 -0400
+Message-ID: <4A2920A1.40906@mocean-labs.com>
+Date: Fri, 05 Jun 2009 15:41:53 +0200
 From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
 	<richard.rojfors.ext@mocean-labs.com>
 User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, sameo@linux.intel.com
-Subject: [PATCH 7/9] MFD: Added Timberdale driver
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-serial@vger.kernel.org
+Subject: [PATCH 8/9] SERIAL: Added Timberdale UART driver
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MFD driver for the Timberdale FPGA The FPGA can be found on the
-Intel Atom development board, Russellville for in-vechicle infotainment
-
-The FPGA is connected via PCIe
-
-The driver basically exposes a lot of platform devices for the
-different IPs within the FPGA, and doing IRQ multiplexing
+Driver for the UART found in the Timberdale FPGA
 
 Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
 ---
-Index: linux-2.6.30-rc7/drivers/mfd/Kconfig
+Index: linux-2.6.30-rc7/drivers/serial/timbuart.c
 ===================================================================
---- linux-2.6.30-rc7/drivers/mfd/Kconfig	(revision 861)
-+++ linux-2.6.30-rc7/drivers/mfd/Kconfig	(working copy)
-@@ -241,6 +241,16 @@
- 	 Say yes here if you want to include support GPIO for pins on
- 	 the PCF50633 chip.
-
-+config MFD_TIMBERDALE
-+	bool "Support for the Timberdale FPGA"
-+	select MFD_CORE
-+	---help---
-+	This is the core driver for the timberdale FPGA. This device is a
-+	multifunctioanl device which may provide numerous interfaces.
-+
-+	The timberdale FPGA can be found on the Intel Atom development board
-+	for automotive in-vehicle infontainment board called Russellville.
-+
- config MFD_TIMBERDALE_DMA
- 	tristate "Support for timberdale DMA"
- 	depends on MFD_TIMBERDALE
-Index: linux-2.6.30-rc7/drivers/mfd/timberdale.c
-===================================================================
---- linux-2.6.30-rc7/drivers/mfd/timberdale.c	(revision 0)
-+++ linux-2.6.30-rc7/drivers/mfd/timberdale.c	(revision 888)
-@@ -0,0 +1,686 @@
+--- linux-2.6.30-rc7/drivers/serial/timbuart.c	(revision 0)
++++ linux-2.6.30-rc7/drivers/serial/timbuart.c	(revision 864)
+@@ -0,0 +1,520 @@
 +/*
-+ * timberdale.c timberdale FPGA mfd shim driver
++ * timbuart.c timberdale FPGA UART driver
 + * Copyright (c) 2009 Intel Corporation
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -80,680 +53,514 @@ Index: linux-2.6.30-rc7/drivers/mfd/timberdale.c
 + */
 +
 +/* Supports:
-+ * Timberdale FPGA
++ * Timberdale FPGA UART
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/module.h>
 +#include <linux/pci.h>
-+#include <linux/msi.h>
-+#include <linux/init.h>
 +#include <linux/interrupt.h>
++#include <linux/serial_core.h>
++#include <linux/kernel.h>
 +#include <linux/platform_device.h>
-+#include <linux/mfd/core.h>
-+#include <linux/irq.h>
++#include <linux/ioport.h>
 +
-+#include <linux/i2c.h>
-+#include <linux/i2c-ocores.h>
-+#include <linux/i2c/tsc2007.h>
++#include "timbuart.h"
 +
-+#include <linux/spi/spi.h>
-+#include <linux/spi/xilinx_spi.h>
-+#include <linux/spi/max7301.h>
-+#include <linux/spi/mc33880.h>
-+
-+#include <media/timb_video.h>
-+
-+#include "timberdale.h"
-+
-+struct timberdale_device {
-+	resource_size_t		intc_mapbase;
-+	resource_size_t		ctl_mapbase;
-+	unsigned char __iomem   *intc_membase;
-+	unsigned char __iomem   *ctl_membase;
-+	int			irq_base;
-+	u32			irq_ack_mask;
-+	/* locking from interrupts while modifiying registers */
-+	spinlock_t		lock;
++struct timbuart_port {
++	struct uart_port	port;
++	struct tasklet_struct	tasklet;
++	int			usedma;
++	u8			last_ier;
++	struct platform_device  *dev;
 +};
 +
-+/*--------------------------------------------------------------------------*/
++static int baudrates[] = {9600, 19200, 38400, 57600, 115200, 230400, 460800,
++	921600, 1843200, 3250000};
 +
-+struct tsc2007_platform_data timberdale_tsc2007_platform_data = {
-+	.model = 2003,
-+	.x_plate_ohms = 100
-+};
++static void timbuart_mctrl_check(struct uart_port *port, u8 isr, u8 *ier);
 +
-+struct i2c_board_info timberdale_i2c_board_info[] = {
-+	{
-+		I2C_BOARD_INFO("tsc2003", 0x48),
-+		.platform_data = &timberdale_tsc2007_platform_data,
-+		.irq = IRQ_TIMBERDALE_TSC_INT
-+	},
-+	{
-+		/* Requires jumper JP9 to be off */
-+		I2C_BOARD_INFO("adv7180", 0x42 >> 1),
-+		.irq = IRQ_TIMBERDALE_ADV7180
++static irqreturn_t timbuart_handleinterrupt(int irq, void *devid);
++
++static void timbuart_stop_rx(struct uart_port *port)
++{
++	/* spin lock held by upper layer, disable all RX interrupts */
++	u8 ier = ioread8(port->membase + TIMBUART_IER) & ~RXFLAGS;
++	iowrite8(ier, port->membase + TIMBUART_IER);
++}
++
++static void timbuart_stop_tx(struct uart_port *port)
++{
++	/* spinlock held by upper layer, disable TX interrupt */
++	u8 ier = ioread8(port->membase + TIMBUART_IER) & ~TXBAE;
++	iowrite8(ier, port->membase + TIMBUART_IER);
++}
++
++static void timbuart_start_tx(struct uart_port *port)
++{
++	struct timbuart_port *uart =
++		container_of(port, struct timbuart_port, port);
++
++	/* do not transfer anything here -> fire off the tasklet */
++	tasklet_schedule(&uart->tasklet);
++}
++
++static void timbuart_flush_buffer(struct uart_port *port)
++{
++	u8 ctl = ioread8(port->membase + TIMBUART_CTRL) | TIMBUART_CTRL_FLSHTX;
++
++	iowrite8(ctl, port->membase + TIMBUART_CTRL);
++	iowrite8(TXBF, port->membase + TIMBUART_ISR);
++}
++
++static void timbuart_rx_chars(struct uart_port *port)
++{
++	struct tty_struct *tty = port->info->port.tty;
++
++	while (ioread8(port->membase + TIMBUART_ISR) & RXDP) {
++		u8 ch = ioread8(port->membase + TIMBUART_RXFIFO);
++		port->icount.rx++;
++		tty_insert_flip_char(tty, ch, TTY_NORMAL);
 +	}
-+};
 +
-+static __devinitdata struct ocores_i2c_platform_data
-+timberdale_i2c_platform_data = {
-+	.regstep = 4,
-+	.clock_khz = 62500,
-+	.devices = timberdale_i2c_board_info,
-+	.num_devices = ARRAY_SIZE(timberdale_i2c_board_info)
-+};
++	spin_unlock(&port->lock);
++	tty_flip_buffer_push(port->info->port.tty);
++	spin_lock(&port->lock);
 +
-+const static __devinitconst struct resource timberdale_i2c_resources[] = {
-+	{
-+		.start	= I2COFFSET,
-+		.end	= I2CEND,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	{
-+		.start 	= IRQ_TIMBERDALE_I2C,
-+		.end	= IRQ_TIMBERDALE_I2C,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
++	dev_dbg(port->dev, "%s - total read %d bytes\n",
++		__func__, port->icount.rx);
++}
 +
-+const struct max7301_platform_data timberdale_max7301_platform_data = {
-+	.base = -1
-+};
-+
-+const struct mc33880_platform_data timberdale_mc33880_platform_data = {
-+	.base = -1
-+};
-+
-+struct spi_board_info timberdale_spi_16bit_board_info[] = {
-+	{
-+		.modalias = "max7301",
-+		.max_speed_hz = 26000,
-+		.chip_select = 2,
-+		.mode = SPI_MODE_0,
-+		.platform_data = &timberdale_max7301_platform_data
-+	},
-+};
-+
-+struct spi_board_info timberdale_spi_8bit_board_info[] = {
-+	{
-+		.modalias = "mc33880",
-+		.max_speed_hz = 4000,
-+		.chip_select = 1,
-+		.mode = SPI_MODE_1,
-+		.platform_data = &timberdale_mc33880_platform_data
-+	},
-+};
-+
-+static __devinitdata struct xspi_platform_data timberdale_xspi_platform_data = {
-+	.bus_num = -1,
-+	/* Current(2009-03-06) revision of
-+	 * Timberdale we can handle 3 chip selects
-+	 */
-+	.num_chipselect = 3,
-+	.model = XILINX_SPI_MODEL_DS570,
-+	/* bits per word and devices will be filled in runtime depending
-+	 * on the HW config
-+	 */
-+};
-+
-+const static __devinitconst struct resource timberdale_spi_resources[] = {
-+	{
-+		.start 	= SPIOFFSET,
-+		.end	= SPIEND,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	{
-+		.start	= IRQ_TIMBERDALE_SPI,
-+		.end	= IRQ_TIMBERDALE_SPI,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+const static __devinitconst struct resource timberdale_eth_resources[] = {
-+	{
-+		.start	= ETHOFFSET,
-+		.end	= ETHEND,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	{
-+		.start	= IRQ_TIMBERDALE_ETHSW_IF,
-+		.end	= IRQ_TIMBERDALE_ETHSW_IF,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+const static __devinitconst struct resource timberdale_gpio_resources[] = {
-+	{
-+		.start	= GPIOOFFSET,
-+		.end	= GPIOEND,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	{
-+		.start	= IRQ_TIMBERDALE_GPIO,
-+		.end	= IRQ_TIMBERDALE_GPIO,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+const static __devinitconst struct resource timberdale_most_resources[] = {
-+	{
-+		.start	= MOSTOFFSET,
-+		.end	= MOSTEND,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	{
-+		.start	= IRQ_TIMBERDALE_MLB,
-+		.end	= IRQ_TIMBERDALE_MLB,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+const static __devinitconst struct resource timberdale_uart_resources[] = {
-+	{
-+		.start	= UARTOFFSET,
-+		.end	= UARTEND,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	{
-+		.start	= IRQ_TIMBERDALE_UART,
-+		.end	= IRQ_TIMBERDALE_UART,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+const static __devinitconst struct resource timberdale_i2s_resources[] = {
-+	{
-+		.start	= I2SOFFSET,
-+		.end	= I2SEND,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	{
-+		.start	= IRQ_TIMBERDALE_I2S,
-+		.end	= IRQ_TIMBERDALE_I2S,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static __devinitdata struct timb_video_platform_data
-+	timberdale_video_platform_data = {
-+	.i2c_adapter = 0,
-+	.encoder = "adv7180"
-+};
-+
-+const static __devinitconst struct resource timberdale_video_resources[] = {
-+	{
-+		.start	= LOGIWOFFSET,
-+		.end	= LOGIWEND,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	/*
-+	note that the "frame buffer" is located in DMA area
-+	starting at 0x1200000
-+	*/
-+};
-+
-+const static __devinitconst struct resource timberdale_dma_resources[] = {
-+	{
-+		.start	= DMAOFFSET,
-+		.end	= DMAEND,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	{
-+		.start	= IRQ_TIMBERDALE_DMA,
-+		.end	= IRQ_TIMBERDALE_DMA,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static __devinitdata struct mfd_cell timberdale_cells_bar0[] = {
-+	{
-+		.name = "timb-uart",
-+		.num_resources = ARRAY_SIZE(timberdale_uart_resources),
-+		.resources = timberdale_uart_resources,
-+	},
-+	{
-+		.name = "ocores-i2c",
-+		.num_resources = ARRAY_SIZE(timberdale_i2c_resources),
-+		.resources = timberdale_i2c_resources,
-+		.platform_data = &timberdale_i2c_platform_data,
-+		.data_size = sizeof(timberdale_i2c_platform_data),
-+	},
-+	{
-+		.name = "timb-gpio",
-+		.num_resources = ARRAY_SIZE(timberdale_gpio_resources),
-+		.resources = timberdale_gpio_resources,
-+	},
-+	{
-+		.name = "timb-i2s",
-+		.num_resources = ARRAY_SIZE(timberdale_i2s_resources),
-+		.resources = timberdale_i2s_resources,
-+	},
-+	{
-+		.name = "timb-most",
-+		.num_resources = ARRAY_SIZE(timberdale_most_resources),
-+		.resources = timberdale_most_resources,
-+	},
-+	{
-+		.name = "timb-video",
-+		.num_resources = ARRAY_SIZE(timberdale_video_resources),
-+		.resources = timberdale_video_resources,
-+		.platform_data = &timberdale_video_platform_data,
-+		.data_size = sizeof(timberdale_video_platform_data),
-+	},
-+	{
-+		.name = "xilinx_spi",
-+		.num_resources = ARRAY_SIZE(timberdale_spi_resources),
-+		.resources = timberdale_spi_resources,
-+		.platform_data = &timberdale_xspi_platform_data,
-+		.data_size = sizeof(timberdale_xspi_platform_data),
-+	},
-+	{
-+		.name = "ks8842",
-+		.num_resources = ARRAY_SIZE(timberdale_eth_resources),
-+		.resources = timberdale_eth_resources,
-+	},
-+	{
-+		.name = "timb-dma",
-+		.num_resources = ARRAY_SIZE(timberdale_dma_resources),
-+		.resources = timberdale_dma_resources,
-+	},
-+};
-+
-+static const __devinitconst struct resource timberdale_sdhc_resources[] = {
-+	/* located in bar 1 and bar 2 */
-+	{
-+		.start	= SDHC0OFFSET,
-+		.end	= SDHC0END,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	{
-+		.start	= IRQ_TIMBERDALE_SDHC,
-+		.end	= IRQ_TIMBERDALE_SDHC,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static __devinitdata struct mfd_cell timberdale_cells_bar1[] = {
-+	{
-+		.name = "sdhci",
-+		.num_resources = ARRAY_SIZE(timberdale_sdhc_resources),
-+		.resources = timberdale_sdhc_resources,
-+	},
-+};
-+
-+static __devinitdata struct mfd_cell timberdale_cells_bar2[] = {
-+	{
-+		.name = "sdhci",
-+		.num_resources = ARRAY_SIZE(timberdale_sdhc_resources),
-+		.resources = timberdale_sdhc_resources,
-+	},
-+};
-+
-+/*--------------------------------------------------------------------------*/
-+
-+
-+/* Handle the timberdale interrupt mux */
-+static void timberdale_irq(unsigned int irq, struct irq_desc *desc)
++static void timbuart_tx_chars(struct uart_port *port)
 +{
-+	struct timberdale_device *priv = get_irq_data(irq);
-+	unsigned int i, ipr;
++	struct circ_buf *xmit = &port->info->xmit;
 +
-+	desc->chip->ack(irq);
-+
-+	while ((ipr = ioread32(priv->intc_membase + IPR))) {
-+		for (i = 0; i < TIMBERDALE_NR_IRQS; i++)
-+			if (ipr & (1 << i)) {
-+				priv->irq_ack_mask = 0;
-+				generic_handle_irq(priv->irq_base + i);
-+				if (priv->irq_ack_mask)
-+					iowrite32(priv->irq_ack_mask,
-+						priv->intc_membase + IAR);
-+			}
++	while (!(ioread8(port->membase + TIMBUART_ISR) & TXBF) &&
++		!uart_circ_empty(xmit)) {
++		iowrite8(xmit->buf[xmit->tail],
++			port->membase + TIMBUART_TXFIFO);
++		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
++		port->icount.tx++;
 +	}
++
++	dev_dbg(port->dev,
++		"%s - total written %d bytes, CTL: %x, RTS: %x, baud: %x\n",
++		 __func__,
++		port->icount.tx,
++		ioread8(port->membase + TIMBUART_CTRL),
++		port->mctrl & TIOCM_RTS,
++		ioread8(port->membase + TIMBUART_BAUDRATE));
 +}
 +
-+static void timberdale_irq_mask(unsigned int irq)
++static void timbuart_handle_tx_port(struct uart_port *port, u8 isr, u8 *ier)
 +{
-+	struct timberdale_device *priv = get_irq_chip_data(irq);
-+	unsigned long flags;
++	struct timbuart_port *uart =
++		container_of(port, struct timbuart_port, port);
++	struct circ_buf *xmit = &port->info->xmit;
 +
-+	spin_lock_irqsave(&priv->lock, flags);
-+	iowrite32(1 << (irq - priv->irq_base), priv->intc_membase + CIE);
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+}
++	if (uart_circ_empty(xmit) || uart_tx_stopped(port))
++		return;
 +
-+static void timberdale_irq_unmask(unsigned int irq)
-+{
-+	struct timberdale_device *priv = get_irq_chip_data(irq);
-+	unsigned long flags;
++	if (port->x_char)
++		return;
 +
-+	spin_lock_irqsave(&priv->lock, flags);
-+	iowrite32(1 << (irq - priv->irq_base), priv->intc_membase + SIE);
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+}
++	if (isr & TXFLAGS) {
++		timbuart_tx_chars(port);
++		/* clear all TX interrupts */
++		iowrite8(TXFLAGS, port->membase + TIMBUART_ISR);
 +
-+static void timberdale_irq_ack(unsigned int irq)
-+{
-+	struct timberdale_device *priv = get_irq_chip_data(irq);
-+	unsigned long flags;
-+	u32 ack_mask = 1 << (irq - priv->irq_base);
++		if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
++			uart_write_wakeup(port);
++	} else
++		/* Re-enable any tx interrupt */
++		*ier |= uart->last_ier & TXFLAGS;
 +
-+	spin_lock_irqsave(&priv->lock, flags);
-+	/* if edge triggered, ack directly. Otherwhise ack in the end of
-+	 * irq handler
++	/* enable interrupts if there are chars in the transmit buffer,
++	 * Or if we delivered some bytes and want the almost empty interrupt
++	 * we wake up the upper layer later when we got the interrupt
++	 * to give it some time to go out...
 +	 */
-+	if (ack_mask & IRQ_TIMBERDALE_EDGE_MASK)
-+		iowrite32(ack_mask, priv->intc_membase + IAR);
++	if (!uart_circ_empty(xmit))
++		*ier |= TXBAE;
++
++	dev_dbg(port->dev, "%s - leaving\n", __func__);
++}
++
++void timbuart_handle_rx_port(struct uart_port *port, u8 isr, u8 *ier)
++{
++	if (isr & RXFLAGS) {
++		/* Some RX status is set */
++		if (isr & RXBF) {
++			u8 ctl = ioread8(port->membase + TIMBUART_CTRL) |
++				TIMBUART_CTRL_FLSHRX;
++			iowrite8(ctl, port->membase + TIMBUART_CTRL);
++			port->icount.overrun++;
++		} else if (isr & (RXDP))
++			timbuart_rx_chars(port);
++
++		/* ack all RX interrupts */
++		iowrite8(RXFLAGS, port->membase + TIMBUART_ISR);
++	}
++
++	/* always have the RX interrupts enabled */
++	*ier |= RXBAF | RXBF | RXTT;
++
++	dev_dbg(port->dev, "%s - leaving\n", __func__);
++}
++
++void timbuart_tasklet(unsigned long arg)
++{
++	struct timbuart_port *uart = (struct timbuart_port *)arg;
++	u8 isr, ier = 0;
++
++	spin_lock(&uart->port.lock);
++
++	isr = ioread8(uart->port.membase + TIMBUART_ISR);
++	dev_dbg(uart->port.dev, "%s ISR: %x\n", __func__, isr);
++
++	if (!uart->usedma)
++		timbuart_handle_tx_port(&uart->port, isr, &ier);
++
++	timbuart_mctrl_check(&uart->port, isr, &ier);
++
++	if (!uart->usedma)
++		timbuart_handle_rx_port(&uart->port, isr, &ier);
++
++	iowrite8(ier, uart->port.membase + TIMBUART_IER);
++
++	spin_unlock(&uart->port.lock);
++	dev_dbg(uart->port.dev, "%s leaving\n", __func__);
++}
++
++static unsigned int timbuart_tx_empty(struct uart_port *port)
++{
++	u8 isr = ioread8(port->membase + TIMBUART_ISR);
++
++	return (isr & TXBAE) ? TIOCSER_TEMT : 0;
++}
++
++static unsigned int timbuart_get_mctrl(struct uart_port *port)
++{
++	u8 cts = ioread8(port->membase + TIMBUART_CTRL);
++	dev_dbg(port->dev, "%s - cts %x\n", __func__, cts);
++
++	if (cts & TIMBUART_CTRL_CTS)
++		return TIOCM_CTS | TIOCM_DSR | TIOCM_CAR;
 +	else
-+		priv->irq_ack_mask |= ack_mask;
-+	spin_unlock_irqrestore(&priv->lock, flags);
++		return TIOCM_DSR | TIOCM_CAR;
 +}
 +
-+static struct irq_chip timberdale_chip = {
-+	.name		= "timberdale",
-+	.ack		= timberdale_irq_ack,
-+	.mask		= timberdale_irq_mask,
-+	.unmask		= timberdale_irq_unmask,
-+	.disable	= timberdale_irq_mask,
-+	.enable		= timberdale_irq_unmask,
-+};
-+
-+/*--------------------------------------------------------------------------*/
-+
-+/* Install the IRQ handler */
-+static void timberdale_attach_irq(struct pci_dev *dev)
++static void timbuart_set_mctrl(struct uart_port *port, unsigned int mctrl)
 +{
-+	struct timberdale_device *priv = pci_get_drvdata(dev);
-+	unsigned int irq, irq_base;
++	dev_dbg(port->dev, "%s - %x\n", __func__, mctrl);
 +
-+	irq_base = priv->irq_base;
-+	for (irq = irq_base; irq < irq_base + TIMBERDALE_NR_IRQS; irq++) {
-+		set_irq_chip_and_handler_name(irq, &timberdale_chip,
-+			handle_edge_irq, "mux");
++	if (mctrl & TIOCM_RTS)
++		iowrite8(TIMBUART_CTRL_RTS, port->membase + TIMBUART_CTRL);
++	else
++		iowrite8(TIMBUART_CTRL_RTS, port->membase + TIMBUART_CTRL);
++}
 +
-+		set_irq_chip_data(irq, priv);
++static void timbuart_mctrl_check(struct uart_port *port, u8 isr, u8 *ier)
++{
++	unsigned int cts;
 +
-+#ifdef CONFIG_ARM
-+		set_irq_flags(irq, IRQF_VALID | IRQF_PROBE);
-+#endif
++	if (isr & CTS_DELTA) {
++		/* ack */
++		iowrite8(CTS_DELTA, port->membase + TIMBUART_ISR);
++		cts = timbuart_get_mctrl(port);
++		uart_handle_cts_change(port, cts & TIOCM_CTS);
++		wake_up_interruptible(&port->info->delta_msr_wait);
 +	}
 +
-+	set_irq_data(dev->irq, priv);
-+	set_irq_chained_handler(dev->irq, timberdale_irq);
++	*ier |= CTS_DELTA;
 +}
 +
-+static void timberdale_detach_irq(struct pci_dev *dev)
++static void timbuart_enable_ms(struct uart_port *port)
 +{
-+	struct timberdale_device *priv = pci_get_drvdata(dev);
-+	unsigned int irq, irq_base;
-+
-+	irq_base = priv->irq_base;
-+
-+	set_irq_chained_handler(dev->irq, NULL);
-+	set_irq_data(dev->irq, NULL);
-+
-+	for (irq = irq_base; irq < irq_base + TIMBERDALE_NR_IRQS; irq++) {
-+#ifdef CONFIG_ARM
-+		set_irq_flags(irq, 0);
-+#endif
-+		set_irq_chip(irq, NULL);
-+		set_irq_chip_data(irq, NULL);
-+	}
++	/* N/A */
 +}
 +
-+static int irq_range_free(int irq_start, int num_irq)
++static void timbuart_break_ctl(struct uart_port *port, int ctl)
++{
++	/* N/A */
++}
++
++static int timbuart_startup(struct uart_port *port)
++{
++	struct timbuart_port *uart =
++		container_of(port, struct timbuart_port, port);
++
++	dev_dbg(port->dev, "%s\n", __func__);
++
++	iowrite8(TIMBUART_CTRL_FLSHRX, port->membase + TIMBUART_CTRL);
++	iowrite8(0xff, port->membase + TIMBUART_ISR);
++	/* Enable all but TX interrupts */
++	iowrite8(RXBAF | RXBF | RXTT | CTS_DELTA,
++		port->membase + TIMBUART_IER);
++
++	return request_irq(port->irq, timbuart_handleinterrupt, IRQF_SHARED,
++		"timb-uart", uart);
++}
++
++static void timbuart_shutdown(struct uart_port *port)
++{
++	struct timbuart_port *uart =
++		container_of(port, struct timbuart_port, port);
++	dev_dbg(port->dev, "%s\n", __func__);
++	free_irq(port->irq, uart);
++	iowrite8(0, port->membase + TIMBUART_IER);
++}
++
++static int get_bindex(int baud)
 +{
 +	int i;
 +
-+	for (i = 0; i < num_irq; i++)
-+		if (get_irq_chip(irq_start + i) != &no_irq_chip)
-+			return 0;
++	for (i = 0; i < ARRAY_SIZE(baudrates); i++)
++		if (baud == baudrates[i])
++			return i;
 +
-+	return 1;
++	return -1;
 +}
 +
-+static int __devinit timb_probe(struct pci_dev *dev,
-+	const struct pci_device_id *id)
++static void timbuart_set_termios(struct uart_port *port,
++	struct ktermios *termios,
++	struct ktermios *old)
 +{
-+	struct timberdale_device *priv;
-+	int err, i;
-+	resource_size_t mapbase;
-+	u32 hw_config;
++	unsigned int baud;
++	short bindex;
++	unsigned long flags;
 +
-+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
++	baud = uart_get_baud_rate(port, termios, old, 0, port->uartclk / 16);
++	bindex = get_bindex(baud);
++	dev_dbg(port->dev, "%s - bindex %d\n", __func__, bindex);
 +
-+	spin_lock_init(&priv->lock);
-+	pci_set_drvdata(dev, priv);
-+
-+	err = pci_enable_device(dev);
-+	if (err)
-+		goto err_enable;
-+
-+	mapbase = pci_resource_start(dev, 0);
-+	if (!mapbase) {
-+		printk(KERN_ERR "timberdale: No resource\n");
-+		goto err_start;
-+	}
-+
-+	/* create a resource for the Interrupt controller registers */
-+	priv->intc_mapbase = mapbase + INTCOFFSET;
-+	if (!request_mem_region(priv->intc_mapbase, INTCSIZE, "timb-intc")) {
-+		printk(KERN_ERR "timberdale: Failed to request intc mem\n");
-+		goto err_request;
-+	}
-+
-+	/* create a resource for the PCI master register */
-+	priv->ctl_mapbase = mapbase + CHIPCTLOFFSET;
-+	if (!request_mem_region(priv->ctl_mapbase, CHIPCTLSIZE, "timb-intc")) {
-+		printk(KERN_ERR "timberdale: Failed to request ctl mem\n");
-+		goto err_request_ctl;
-+	}
-+
-+	priv->intc_membase = ioremap(priv->intc_mapbase, INTCSIZE);
-+	if (!priv->intc_membase) {
-+		printk(KERN_ALERT "timberdale: Map error, intc\n");
-+		goto err_ioremap;
-+	}
-+
-+	priv->ctl_membase = ioremap(priv->ctl_mapbase, CHIPCTLSIZE);
-+	if (!priv->ctl_membase) {
-+		printk(KERN_ALERT "timberdale: Map error, ctl\n");
-+		goto err_ioremap_ctl;
-+	}
-+
-+	err = pci_enable_msi(dev);
-+	if (err) {
-+		printk(KERN_WARNING "timberdale: MSI init failed: %d\n", err);
-+		goto err_msi;
-+	}
-+
-+	/* Reset all FPGA PLB peripherals */
-+	iowrite32(0x1, priv->ctl_membase + MAYSVILLERST);
-+
-+	/* read the HW config */
-+	hw_config = ioread32(priv->ctl_membase + TIMB_HW_CONFIG);
-+
-+	/* at this stage the FPGA does not generate a
-+	 * unique interrupt per function, to emulate real interrupts
-+	 * we assign them a faked interrupt which we issue in the
-+	 * interrupt handler. For now just hard code a base number
-+	 */
-+	priv->irq_base = NR_IRQS - TIMBERDALE_NR_IRQS - 1;
-+	while (priv->irq_base >= 0)
-+		if (irq_range_free(priv->irq_base, TIMBERDALE_NR_IRQS))
-+			break;
-+		else
-+			priv->irq_base -= TIMBERDALE_NR_IRQS;
-+
-+	if (priv->irq_base < 0)
-+		goto err_msi;
-+
-+	timberdale_attach_irq(dev);
-+
-+	/* update IRQ offsets in I2C board info */
-+	for (i = 0; i < ARRAY_SIZE(timberdale_i2c_board_info); i++)
-+		timberdale_i2c_board_info[i].irq += priv->irq_base;
-+
-+	/* Update the SPI configuration depending on the HW (8 or 16 bit) */
-+	if (hw_config & TIMB_HW_CONFIG_SPI_8BIT) {
-+		timberdale_xspi_platform_data.bits_per_word = 8;
-+		timberdale_xspi_platform_data.devices =
-+			timberdale_spi_8bit_board_info;
-+		timberdale_xspi_platform_data.num_devices =
-+			ARRAY_SIZE(timberdale_spi_8bit_board_info);
++	if (bindex < 0) {
++		printk(KERN_ALERT "timbuart: Unsupported baud rate\n");
 +	} else {
-+		timberdale_xspi_platform_data.bits_per_word = 16;
-+		timberdale_xspi_platform_data.devices =
-+			timberdale_spi_16bit_board_info;
-+		timberdale_xspi_platform_data.num_devices =
-+			ARRAY_SIZE(timberdale_spi_16bit_board_info);
++		spin_lock_irqsave(&port->lock, flags);
++		iowrite8((u8)bindex, port->membase + TIMBUART_BAUDRATE);
++		uart_update_timeout(port, termios->c_cflag, baud);
++		spin_unlock_irqrestore(&port->lock, flags);
++	}
++}
++
++static const char *timbuart_type(struct uart_port *port)
++{
++	return port->type == PORT_UNKNOWN ? "timbuart" : NULL;
++}
++
++/* We do not request/release mappings of the registers here,
++ * currently it's done in the proble function.
++ */
++static void timbuart_release_port(struct uart_port *port)
++{
++	struct platform_device *pdev = to_platform_device(port->dev);
++	int size =
++		resource_size(platform_get_resource(pdev, IORESOURCE_MEM, 0));
++
++	if (port->flags & UPF_IOREMAP) {
++		iounmap(port->membase);
++		port->membase = NULL;
 +	}
 +
-+	err = mfd_add_devices(&dev->dev, 0,
-+		timberdale_cells_bar0, ARRAY_SIZE(timberdale_cells_bar0),
-+		&dev->resource[0], priv->irq_base);
-+	if (err) {
-+		printk(KERN_WARNING
-+			"timberdale: mfd_add_devices failed: %d\n", err);
-+		goto err_mfd;
++	release_mem_region(port->mapbase, size);
++}
++
++static int timbuart_request_port(struct uart_port *port)
++{
++	struct platform_device *pdev = to_platform_device(port->dev);
++	int size =
++		resource_size(platform_get_resource(pdev, IORESOURCE_MEM, 0));
++
++	if (!request_mem_region(port->mapbase, size, "timb-uart"))
++		return -EBUSY;
++
++	if (port->flags & UPF_IOREMAP) {
++		port->membase = ioremap(port->mapbase, size);
++		if (port->membase == NULL) {
++			release_mem_region(port->mapbase, size);
++			return -ENOMEM;
++		}
 +	}
-+
-+	err = mfd_add_devices(&dev->dev, 1,
-+		timberdale_cells_bar1, ARRAY_SIZE(timberdale_cells_bar1),
-+		&dev->resource[1], priv->irq_base);
-+	if (err) {
-+		printk(KERN_WARNING
-+			"timberdale: mfd_add_devices failed: %d\n", err);
-+		goto err_mfd2;
-+	}
-+
-+	err = mfd_add_devices(&dev->dev, 2,
-+		timberdale_cells_bar2, ARRAY_SIZE(timberdale_cells_bar2),
-+		&dev->resource[2], priv->irq_base);
-+	if (err) {
-+		printk(KERN_WARNING
-+			"timberdale: mfd_add_devices failed: %d\n", err);
-+		goto err_mfd2;
-+	}
-+
-+	printk(KERN_INFO
-+		"Found Timberdale Card. Rev: %d.%d, HW config: 0x%02x\n",
-+		ioread32(priv->ctl_membase + TIMB_REV_MAJOR),
-+		ioread32(priv->ctl_membase + TIMB_REV_MINOR), hw_config);
-+
-+	/* Enable interrupts and wire the hardware interrupts */
-+	iowrite32(0x3, priv->intc_membase + MER);
 +
 +	return 0;
-+
-+err_mfd2:
-+	mfd_remove_devices(&dev->dev);
-+err_mfd:
-+	timberdale_detach_irq(dev);
-+	pci_disable_msi(dev);
-+err_msi:
-+	iounmap(priv->ctl_membase);
-+err_ioremap_ctl:
-+	iounmap(priv->intc_membase);
-+err_ioremap:
-+	release_mem_region(priv->ctl_mapbase, CHIPCTLSIZE);
-+err_request_ctl:
-+	release_mem_region(priv->intc_mapbase, INTCSIZE);
-+err_request:
-+	pci_set_drvdata(dev, NULL);
-+err_start:
-+	pci_disable_device(dev);
-+err_enable:
-+	kfree(priv);
-+	pci_set_drvdata(dev, NULL);
-+	return -ENODEV;
 +}
 +
-+static void __devexit timb_remove(struct pci_dev *dev)
++static irqreturn_t timbuart_handleinterrupt(int irq, void *devid)
 +{
-+	/* clean up any allocated resources and stuff here.
-+	 * like call release_region();
-+	 */
-+	struct timberdale_device *priv;
++	struct timbuart_port *uart = (struct timbuart_port *)devid;
 +
-+	priv = pci_get_drvdata(dev);
++	if (ioread8(uart->port.membase + TIMBUART_IPR)) {
++		uart->last_ier = ioread8(uart->port.membase + TIMBUART_IER);
 +
-+	mfd_remove_devices(&dev->dev);
++		/* disable interrupts, the tasklet enables them again */
++		iowrite8(0, uart->port.membase + TIMBUART_IER);
 +
-+	timberdale_detach_irq(dev);
++		/* fire off bottom half */
++		tasklet_schedule(&uart->tasklet);
 +
-+	iowrite32(0xffffffff, priv->intc_membase + IAR);
-+	iowrite32(0, priv->intc_membase + MER);
-+	iowrite32(0, priv->intc_membase + IER);
-+
-+	iounmap(priv->ctl_membase);
-+	iounmap(priv->intc_membase);
-+	release_mem_region(priv->ctl_mapbase, CHIPCTLSIZE);
-+	release_mem_region(priv->intc_mapbase, INTCSIZE);
-+
-+	pci_disable_msi(dev);
-+	pci_disable_device(dev);
-+	pci_set_drvdata(dev, NULL);
-+	kfree(priv);
++		return IRQ_HANDLED;
++	} else
++		return IRQ_NONE;
 +}
 +
-+static struct pci_device_id timberdale_pci_tbl[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_TIMB, PCI_DEVICE_ID_TIMB) },
-+	{ 0 }
-+};
-+MODULE_DEVICE_TABLE(pci, timberdale_pci_tbl);
++/*
++ * Configure/autoconfigure the port.
++ */
++static void timbuart_config_port(struct uart_port *port, int flags)
++{
++	if (flags & UART_CONFIG_TYPE) {
++		port->type = PORT_TIMBUART;
++		timbuart_request_port(port);
++	}
++}
 +
-+static struct pci_driver timberdale_pci_driver = {
-+	.name = "timberdale",
-+	.id_table = timberdale_pci_tbl,
-+	.probe = timb_probe,
-+	.remove = timb_remove,
++static int timbuart_verify_port(struct uart_port *port,
++	struct serial_struct *ser)
++{
++	/* we don't want the core code to modify any port params */
++	return -EINVAL;
++}
++
++static struct uart_ops timbuart_ops = {
++	.tx_empty = timbuart_tx_empty,
++	.set_mctrl = timbuart_set_mctrl,
++	.get_mctrl = timbuart_get_mctrl,
++	.stop_tx = timbuart_stop_tx,
++	.start_tx = timbuart_start_tx,
++	.flush_buffer = timbuart_flush_buffer,
++	.stop_rx = timbuart_stop_rx,
++	.enable_ms = timbuart_enable_ms,
++	.break_ctl = timbuart_break_ctl,
++	.startup = timbuart_startup,
++	.shutdown = timbuart_shutdown,
++	.set_termios = timbuart_set_termios,
++	.type = timbuart_type,
++	.release_port = timbuart_release_port,
++	.request_port = timbuart_request_port,
++	.config_port = timbuart_config_port,
++	.verify_port = timbuart_verify_port
 +};
 +
-+static int __init timberdale_init(void)
++static struct uart_driver timbuart_driver = {
++	.owner = THIS_MODULE,
++	.driver_name = "timberdale_uart",
++	.dev_name = "ttyTU",
++	.major = TIMBUART_MAJOR,
++	.minor = TIMBUART_MINOR,
++	.nr = 1
++};
++
++static int timbuart_probe(struct platform_device *dev)
 +{
 +	int err;
++	struct timbuart_port *uart;
++	struct resource *iomem;
 +
-+	err = pci_register_driver(&timberdale_pci_driver);
-+	if (err < 0) {
-+		printk(KERN_ERR
-+			"Failed to register PCI driver for %s device.\n",
-+			timberdale_pci_driver.name);
-+		return -ENODEV;
++	dev_dbg(&dev->dev, "%s\n", __func__);
++
++	uart = kzalloc(sizeof(*uart), GFP_KERNEL);
++	if (!uart) {
++		err = -EINVAL;
++		goto err_mem;
 +	}
 +
-+	printk(KERN_INFO "Driver for %s has been successfully registered.\n",
-+		timberdale_pci_driver.name);
++	uart->usedma = 0;
++
++	uart->port.uartclk = 3250000 * 16;
++	uart->port.fifosize  = TIMBUART_FIFO_SIZE;
++	uart->port.regshift  = 2;
++	uart->port.iotype  = UPIO_MEM;
++	uart->port.ops = &timbuart_ops;
++	uart->port.irq = 0;
++	uart->port.flags = UPF_BOOT_AUTOCONF | UPF_IOREMAP;
++	uart->port.line  = 0;
++	uart->port.dev	= &dev->dev;
++
++	iomem = platform_get_resource(dev, IORESOURCE_MEM, 0);
++	if (!iomem) {
++		err = -ENOMEM;
++		goto err_register;
++	}
++	uart->port.mapbase = iomem->start;
++	uart->port.membase = NULL;
++
++	uart->port.irq = platform_get_irq(dev, 0);
++	if (uart->port.irq < 0) {
++		err = -EINVAL;
++		goto err_register;
++	}
++
++	tasklet_init(&uart->tasklet, timbuart_tasklet, (unsigned long)uart);
++
++	err = uart_register_driver(&timbuart_driver);
++	if (err)
++		goto err_register;
++
++	err = uart_add_one_port(&timbuart_driver, &uart->port);
++	if (err)
++		goto err_add_port;
++
++	platform_set_drvdata(dev, uart);
++
++	return 0;
++
++err_add_port:
++	uart_unregister_driver(&timbuart_driver);
++err_register:
++	kfree(uart);
++err_mem:
++	printk(KERN_ERR "timberdale: Failed to register Timberdale UART: %d\n",
++		err);
++
++	return err;
++}
++
++static int timbuart_remove(struct platform_device *dev)
++{
++	struct timbuart_port *uart = platform_get_drvdata(dev);
++
++	tasklet_kill(&uart->tasklet);
++	uart_remove_one_port(&timbuart_driver, &uart->port);
++	uart_unregister_driver(&timbuart_driver);
++	kfree(uart);
 +
 +	return 0;
 +}
 +
-+static void __exit timberdale_exit(void)
-+{
-+	pci_unregister_driver(&timberdale_pci_driver);
++static struct platform_driver timbuart_platform_driver = {
++	.driver = {
++		.name	= "timb-uart",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= timbuart_probe,
++	.remove		= timbuart_remove,
++};
 +
-+	printk(KERN_INFO "Driver for %s has been successfully unregistered.\n",
-+				timberdale_pci_driver.name);
++/*--------------------------------------------------------------------------*/
++
++static int __init timbuart_init(void)
++{
++	return platform_driver_register(&timbuart_platform_driver);
 +}
 +
-+module_init(timberdale_init);
-+module_exit(timberdale_exit);
++static void __exit timbuart_exit(void)
++{
++	platform_driver_unregister(&timbuart_platform_driver);
++}
 +
-+MODULE_AUTHOR("Mocean Laboratories <info@mocean-labs.com>");
-+MODULE_VERSION(DRV_VERSION);
++module_init(timbuart_init);
++module_exit(timbuart_exit);
++
++MODULE_DESCRIPTION("Timberdale UART driver");
 +MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:timb-uart");
 +
-Index: linux-2.6.30-rc7/drivers/mfd/timberdale.h
+Index: linux-2.6.30-rc7/drivers/serial/timbuart.h
 ===================================================================
---- linux-2.6.30-rc7/drivers/mfd/timberdale.h	(revision 0)
-+++ linux-2.6.30-rc7/drivers/mfd/timberdale.h	(revision 864)
-@@ -0,0 +1,123 @@
+--- linux-2.6.30-rc7/drivers/serial/timbuart.h	(revision 0)
++++ linux-2.6.30-rc7/drivers/serial/timbuart.h	(revision 864)
+@@ -0,0 +1,58 @@
 +/*
-+ * timberdale.h timberdale FPGA mfd shim driver defines
++ * timbuart.c timberdale FPGA GPIO driver
 + * Copyright (c) 2009 Intel Corporation
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -771,118 +578,81 @@ Index: linux-2.6.30-rc7/drivers/mfd/timberdale.h
 + */
 +
 +/* Supports:
-+ * Timberdale FPGA
++ * Timberdale FPGA UART
 + */
 +
-+#ifndef MFD_TIMBERDALE_H
-+#define MFD_TIMBERDALE_H
++#ifndef _TIMBUART_H
++#define _TIMBUART_H
 +
-+/* Registers of the interrupt controller */
-+#define ISR		0x00
-+#define IPR		0x04
-+#define IER		0x08
-+#define IAR		0x0c
-+#define SIE		0x10
-+#define CIE		0x14
-+#define MER		0x1c
++#define TIMBUART_FIFO_SIZE	2048
 +
-+/* Registers of the control area */
-+#define TIMB_REV_MAJOR	0x00
-+#define TIMB_REV_MINOR	0x04
-+#define TIMB_HW_CONFIG	0x08
-+#define MAYSVILLERST	0x40
++#define TIMBUART_RXFIFO		0x08
++#define TIMBUART_TXFIFO		0x0c
++#define TIMBUART_IER		0x10
++#define TIMBUART_IPR		0x14
++#define TIMBUART_ISR		0x18
++#define TIMBUART_CTRL		0x1c
++#define TIMBUART_BAUDRATE	0x20
 +
-+/* bits in the TIMB_HW_CONFIG register */
-+#define TIMB_HW_CONFIG_SPI_8BIT	0x80
++#define TIMBUART_CTRL_RTS	0x01
++#define TIMBUART_CTRL_CTS	0x02
++#define TIMBUART_CTRL_FLSHTX	0x40
++#define TIMBUART_CTRL_FLSHRX	0x80
 +
-+#define I2COFFSET	0x0
-+#define I2CEND		0x1f
++#define TXBF		0x01
++#define TXBAE		0x02
++#define CTS_DELTA	0x04
++#define RXDP		0x08
++#define RXBAF		0x10
++#define RXBF		0x20
++#define RXTT		0x40
++#define RXBNAE		0x80
++#define TXBE		0x100
 +
-+#define SPIOFFSET	0x80
-+#define SPIEND		0xff
++#define RXFLAGS (RXDP | RXBAF | RXBF | RXTT | RXBNAE)
++#define TXFLAGS (TXBF | TXBAE)
 +
-+#define ETHOFFSET	0x300
-+#define ETHEND		0x3ff
++#define TIMBUART_MAJOR 204
++#define TIMBUART_MINOR 192
 +
-+#define GPIOOFFSET	0x400
-+#define GPIOEND		0x7ff
++#endif /* _TIMBUART_H */
 +
-+#define CHIPCTLOFFSET	0x800
-+#define CHIPCTLEND	0x8ff
-+#define CHIPCTLSIZE	(CHIPCTLEND - CHIPCTLOFFSET)
-+
-+#define INTCOFFSET	0xc00
-+#define INTCEND		0xfff
-+#define INTCSIZE	(INTCEND - INTCOFFSET)
-+
-+#define MOSTOFFSET	0x1000
-+#define MOSTEND		0x13ff
-+
-+#define UARTOFFSET	0x1400
-+#define UARTEND		0x17ff
-+
-+#define I2SOFFSET	0x1C00
-+#define I2SEND		0x1fff
-+
-+#define LOGIWOFFSET	0x30000
-+#define LOGIWEND	0x37fff
-+
-+#define DMAOFFSET	0x01000000
-+#define DMAEND		0x013fffff
-+
-+/* SDHC0 is placed in PCI bar 1 */
-+#define SDHC0OFFSET	0x00
-+#define SDHC0END	0xff
-+
-+/* SDHC1 is placed in PCI bar 2 */
-+#define SDHC1OFFSET	0x00
-+#define SDHC1END	0xff
-+
-+#define PCI_VENDOR_ID_TIMB	0x10ee
-+#define PCI_DEVICE_ID_TIMB	0xa123
-+#define DRV_VERSION		"0.1"
-+
-+
-+#define IRQ_TIMBERDALE_INIC	0
-+#define IRQ_TIMBERDALE_MLB	1
-+#define IRQ_TIMBERDALE_GPIO	2
-+#define IRQ_TIMBERDALE_I2C	3
-+#define IRQ_TIMBERDALE_UART	4
-+#define IRQ_TIMBERDALE_DMA	5
-+#define IRQ_TIMBERDALE_I2S	6
-+#define IRQ_TIMBERDALE_TSC_INT	7
-+#define IRQ_TIMBERDALE_SDHC	8
-+#define IRQ_TIMBERDALE_ADV7180	9
-+#define IRQ_TIMBERDALE_ETHSW_IF	10
-+#define IRQ_TIMBERDALE_SPI	11
-+
-+#define TIMBERDALE_NR_IRQS	12
-+
-+/* Some of the interrupts are level triggered, some are edge triggered */
-+#define IRQ_TIMBERDALE_EDGE_MASK ((1 << IRQ_TIMBERDALE_ADV7180) | \
-+	(1 << IRQ_TIMBERDALE_TSC_INT) | \
-+	(1 << IRQ_TIMBERDALE_MLB) | (1 << IRQ_TIMBERDALE_INIC))
-+
-+#define IRQ_TIMBERDALE_LEVEL_MASK ((1 << IRQ_TIMBERDALE_SPI) | \
-+	(1 << IRQ_TIMBERDALE_ETHSW_IF) | (1 << IRQ_TIMBERDALE_SDHC) | \
-+	(1 << IRQ_TIMBERDALE_I2S) | (1 << IRQ_TIMBERDALE_UART) | \
-+	(1 << IRQ_TIMBERDALE_I2C) | (1 << IRQ_TIMBERDALE_GPIO) | \
-+	(1 << IRQ_TIMBERDALE_DMA))
-+
-+#define GPIO_PIN_INIC_RST	14
-+#define GPIO_PIN_BT_RST		15
-+
-+
-+#endif
-+
-Index: linux-2.6.30-rc7/drivers/mfd/Makefile
+Index: linux-2.6.30-rc7/drivers/serial/Makefile
 ===================================================================
---- linux-2.6.30-rc7/drivers/mfd/Makefile	(revision 861)
-+++ linux-2.6.30-rc7/drivers/mfd/Makefile	(working copy)
-@@ -42,4 +42,5 @@
- obj-$(CONFIG_PCF50633_ADC)	+= pcf50633-adc.o
- obj-$(CONFIG_PCF50633_GPIO)	+= pcf50633-gpio.o
+--- linux-2.6.30-rc7/drivers/serial/Makefile	(revision 861)
++++ linux-2.6.30-rc7/drivers/serial/Makefile	(working copy)
+@@ -77,3 +77,4 @@
+ obj-$(CONFIG_SERIAL_KS8695) += serial_ks8695.o
+ obj-$(CONFIG_KGDB_SERIAL_CONSOLE) += kgdboc.o
+ obj-$(CONFIG_SERIAL_QE) += ucc_uart.o
++obj-$(CONFIG_SERIAL_TIMBERDALE)	+= timbuart.o
+Index: linux-2.6.30-rc7/drivers/serial/Kconfig
+===================================================================
+--- linux-2.6.30-rc7/drivers/serial/Kconfig	(revision 861)
++++ linux-2.6.30-rc7/drivers/serial/Kconfig	(working copy)
+@@ -1433,4 +1433,11 @@
+ 	default 19200 if (SERIAL_SPORT_BAUD_RATE_19200)
+ 	default 9600 if (SERIAL_SPORT_BAUD_RATE_9600)
 
-+obj-$(CONFIG_MFD_TIMBERDALE)		+= timberdale.o
- obj-$(CONFIG_MFD_TIMBERDALE_DMA)	+= timbdma.o
++config SERIAL_TIMBERDALE
++	tristate "Support for timberdale UART"
++	depends on MFD_TIMBERDALE
++	select SERIAL_CORE
++	---help---
++	Add support for UART controller on timberdale.
++
+ endmenu
+Index: linux-2.6.30-rc7/include/linux/serial_core.h
+===================================================================
+--- linux-2.6.30-rc7/include/linux/serial_core.h	(revision 861)
++++ linux-2.6.30-rc7/include/linux/serial_core.h	(working copy)
+@@ -167,6 +167,9 @@
+ /* MAX3100 */
+ #define PORT_MAX3100    86
 
++/* Timberdale UART */
++#define PORT_TIMBUART	87
++
+ #ifdef __KERNEL__
+
+ #include <linux/compiler.h>
