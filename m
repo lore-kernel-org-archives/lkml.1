@@ -1,75 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbZFESUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbZFESWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754959AbZFESUd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 14:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753634AbZFESUT
+	id S1756128AbZFESWR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 14:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbZFESWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 14:20:19 -0400
-Received: from 8bytes.org ([88.198.83.132]:45142 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752144AbZFESUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 14:20:18 -0400
-Date: Fri, 5 Jun 2009 20:20:17 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-       lethal@linux-sh.org, hancockrwd@gmail.com, jens.axboe@oracle.com,
-       bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
-Message-ID: <20090605182015.GA10342@8bytes.org>
-References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp> <20090605104132.GE24836@amd.com> <64bb37e0906050852g2be64c7elb2872a6129d13f56@mail.gmail.com>
+	Fri, 5 Jun 2009 14:22:03 -0400
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:38557 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752119AbZFESWC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 14:22:02 -0400
+X-Trace: 210087082/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.42.194/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.42.194
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApMCACj/KEpQKSrC/2dsb2JhbAAI0VaCP4FLBQ
+X-IronPort-AV: E=Sophos;i="4.41,312,1241391600"; 
+   d="scan'208";a="210087082"
+Date: Fri, 5 Jun 2009 19:05:54 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Minchan Kim <minchan.kim@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH][mmtom] remove file arguement of swap_readpage
+In-Reply-To: <1244212423-18629-1-git-send-email-minchan.kim@gmail.com>
+Message-ID: <Pine.LNX.4.64.0906051904060.14826@sister.anvils>
+References: <1244212423-18629-1-git-send-email-minchan.kim@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <64bb37e0906050852g2be64c7elb2872a6129d13f56@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 05, 2009 at 05:52:27PM +0200, Torsten Kaiser wrote:
+On Fri, 5 Jun 2009, Minchan Kim wrote:
+
+> The file argument resulted from address_space's readpage
+> long time ago.
 > 
-> This doesn't look right to me.
-> The comment above says "returns the entry from the hash which fits
-> best", but this will always return NULL, if there are are multiple
-> entrys, but no perfect match.
+> Now we don't use it any more. Let's remove unnecessary
+> argement.
+> 
+> This patch cleans up swap_readpage.
+> It doesn't affect behavior of function.
+> 
+> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Cc: Rik van Riel <riel@redhat.com>
 
-This is intentional. If there is no perfect-fit there is no way to tell
-which entry was meant. So we potentially report wrong errors with a
-wrong mapping backtrace which confuses even more than the wrong
-"DMA-API: device driver tries to free DMA memory it has not allocated".
+Okay, yes: but don't be surprised if someone sends in a patch
+to put it back, as in the other readpage()s.
 
-> Should there be a warning if more then one possible match were found?
+Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 
-True. That would be better. But I tried to keep the code change as small
-as possible without disabling the feature completly.
-
-> * driver maps address 'a' with size 1
-> * driver maps same address 'a' with size 2
-> * driver wrongly unmaps the second allocation with size 1
->   -> no warning, because the first allocation is returned
-
-Hmm, I am not sure if we can handle this situation correctly in the
-dma-debug code. There is no unique key to identify a mapping request
-which allows to assign an unmap request to it. Currently dma-debug uses
-device and dma-address. But that seems not to be sufficient. The
-best-fit algorithm is also a but fuzzy of course.
-
-> * driver wants to correctly unmap the first allocation
->   -> wrong warning about this unmap because size mismatch
-
-Ok, at least we get a warning about a bug. Not very useful because it
-reports the wrong bug. Is this the situation which triggered the
-original bug report?
-
-> Also what about sg_call_ents and sg_mapped_ents?
-> Could it be possible to get the same address/size with different sg-counts.
-
-It looks not forbidden in the API. So I guess this can happen too.
-
-Regards,
-
-	Joerg
+> ---
+>  include/linux/swap.h |    2 +-
+>  mm/page_io.c         |    2 +-
+>  mm/swap_state.c      |    2 +-
+>  3 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/swap.h b/include/linux/swap.h
+> index 2dedc2d..c88b366 100644
+> --- a/include/linux/swap.h
+> +++ b/include/linux/swap.h
+> @@ -256,7 +256,7 @@ extern void swap_unplug_io_fn(struct backing_dev_info *, struct page *);
+>  
+>  #ifdef CONFIG_SWAP
+>  /* linux/mm/page_io.c */
+> -extern int swap_readpage(struct file *, struct page *);
+> +extern int swap_readpage(struct page *);
+>  extern int swap_writepage(struct page *page, struct writeback_control *wbc);
+>  extern void end_swap_bio_read(struct bio *bio, int err);
+>  
+> diff --git a/mm/page_io.c b/mm/page_io.c
+> index 3023c47..c6f3e50 100644
+> --- a/mm/page_io.c
+> +++ b/mm/page_io.c
+> @@ -120,7 +120,7 @@ out:
+>  	return ret;
+>  }
+>  
+> -int swap_readpage(struct file *file, struct page *page)
+> +int swap_readpage(struct page *page)
+>  {
+>  	struct bio *bio;
+>  	int ret = 0;
+> diff --git a/mm/swap_state.c b/mm/swap_state.c
+> index b62e7f5..42cd38e 100644
+> --- a/mm/swap_state.c
+> +++ b/mm/swap_state.c
+> @@ -313,7 +313,7 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
+>  			 * Initiate read into locked page and return.
+>  			 */
+>  			lru_cache_add_anon(new_page);
+> -			swap_readpage(NULL, new_page);
+> +			swap_readpage(new_page);
+>  			return new_page;
+>  		}
+>  		ClearPageSwapBacked(new_page);
+> -- 
+> 1.5.6.5
+> 
