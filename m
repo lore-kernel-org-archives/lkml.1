@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbZFEXrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756964AbZFEXsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbZFEXrR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 19:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756176AbZFEXlu
+	id S1756964AbZFEXsY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 19:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbZFEXl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 19:41:50 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:45067 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755253AbZFEXlN (ORCPT
+	Fri, 5 Jun 2009 19:41:56 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:36404 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755501AbZFEXlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 19:41:13 -0400
+	Fri, 5 Jun 2009 19:41:12 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+Cc: Markus Heidelberg <markus.heidelberg@web.de>,
        Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 34/39] scripts/headers_check.pl: correct RE in header CONFIG leak check
-Date: Sat,  6 Jun 2009 01:42:52 +0200
-Message-Id: <1244245377-17441-34-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 27/39] kconfig qconf: fix -Wall compiler warnings
+Date: Sat,  6 Jun 2009 01:42:45 +0200
+Message-Id: <1244245377-17441-27-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.3.rc3.40.g75b44
 In-Reply-To: <20090605233720.GA13588@uranus.ravnborg.org>
 References: <20090605233720.GA13588@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robert P. J. Day <rpjday@crashcourse.ca>
+From: Markus Heidelberg <markus.heidelberg@web.de>
 
-Correct the regular expression in scripts/headers_check.pl to include '_'
-as a valid character in the class; otherwise, the check will report a
-"leaked" symbol of CONFIG_A_B_C as merely CONFIG_A.
+These compiler warnings occure when adding -Wall to HOSTCXXFLAGS in
+/Makefile
 
-This patch will make no difference whatsoever in the current kernel tree
-as the call to the perl routine that does that check is currently
-commented out:
+scripts/kconfig/qconf.h: In constructor ‘ConfigInfoView::ConfigInfoView(QWidget*, const char*)’:
+scripts/kconfig/qconf.h:274: warning: ‘ConfigInfoView::menu’ will be initialized after
+scripts/kconfig/qconf.h:273: warning:   ‘symbol* ConfigInfoView::sym’
+scripts/kconfig/qconf.cc:922: warning:   when initialized here
 
-                &check_include();
-                &check_asm_types();
-                &check_sizetypes();
-                &check_prototypes();
-                # Dropped for now. Too much noise &check_config();
+scripts/kconfig/qconf.cc: In member function ‘void ConfigMainWindow::setMenuLink(menu*)’:
+scripts/kconfig/qconf.cc:1498: warning: enumeration value ‘menuMode’ not handled in switch
+scripts/kconfig/qconf.cc:1498: warning: enumeration value ‘listMode’ not handled in switch
 
-However, I noticed that problem when I was building the yum downloadable
-kernel source rpm for fedora 11 (beta), which *does* run that check, and
-that's where the problem became obvious.
+scripts/kconfig/qconf.cc: In member function ‘void ConfigMainWindow::saveSettings()’:
+scripts/kconfig/qconf.cc:1664: warning: enumeration value ‘menuMode’ not handled in switch
+scripts/kconfig/qconf.cc:1664: warning: enumeration value ‘listMode’ not handled in switch
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Markus Heidelberg <markus.heidelberg@web.de>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/headers_check.pl |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ scripts/kconfig/qconf.cc |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/scripts/headers_check.pl b/scripts/headers_check.pl
-index 3923888..e3fb949 100644
---- a/scripts/headers_check.pl
-+++ b/scripts/headers_check.pl
-@@ -74,7 +74,7 @@ sub check_declarations
- 
- sub check_config
- {
--	if ($line =~ m/[^a-zA-Z0-9_]+CONFIG_([a-zA-Z0-9]+)[^a-zA-Z0-9]/) {
-+	if ($line =~ m/[^a-zA-Z0-9_]+CONFIG_([a-zA-Z0-9_]+)[^a-zA-Z0-9_]/) {
- 		printf STDERR "$filename:$lineno: leaks CONFIG_$1 to userspace where it is not valid\n";
- 	}
+diff --git a/scripts/kconfig/qconf.cc b/scripts/kconfig/qconf.cc
+index 5d0fd38..2bd6ed0 100644
+--- a/scripts/kconfig/qconf.cc
++++ b/scripts/kconfig/qconf.cc
+@@ -920,7 +920,7 @@ void ConfigView::updateListAll(void)
  }
+ 
+ ConfigInfoView::ConfigInfoView(QWidget* parent, const char *name)
+-	: Parent(parent, name), menu(0), sym(0)
++	: Parent(parent, name), sym(0), menu(0)
+ {
+ 	if (name) {
+ 		configSettings->beginGroup(name);
+@@ -1524,6 +1524,8 @@ void ConfigMainWindow::setMenuLink(struct menu *menu)
+ 	case fullMode:
+ 		list = configList;
+ 		break;
++	default:
++		break;
+ 	}
+ 
+ 	if (list) {
+@@ -1673,6 +1675,9 @@ void ConfigMainWindow::saveSettings(void)
+ 	case fullMode :
+ 		entry = "full";
+ 		break;
++
++	default:
++		break;
+ 	}
+ 	configSettings->writeEntry("/listMode", entry);
+ 
 -- 
 1.6.3.rc3.40.g75b44
 
