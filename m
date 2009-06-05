@@ -1,169 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752485AbZFEKmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806AbZFEKoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752485AbZFEKmS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 06:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbZFEKmA
+	id S1753806AbZFEKoR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 06:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbZFEKoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 06:42:00 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:44241 "EHLO
-	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751636AbZFEKl7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 06:41:59 -0400
-X-SpamScore: -22
-X-BigFish: VPS-22(zz1418M1432R98dR936eN148cM1805M10d1Izz1202hzz3198u327alz32i6bh17ch43j64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0KKRHP9-04-8NT-01
-Date: Fri, 5 Jun 2009 12:41:33 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-CC: mingo@elte.hu, lethal@linux-sh.org, just.for.lkml@googlemail.com,
-       hancockrwd@gmail.com, jens.axboe@oracle.com, bharrosh@panasas.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
-Message-ID: <20090605104132.GE24836@amd.com>
-References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp>
+	Fri, 5 Jun 2009 06:44:05 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:43905 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751346AbZFEKoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 06:44:04 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <20090605173232N.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 05 Jun 2009 10:41:33.0612 (UTC) FILETIME=[31A98EC0:01C9E5CA]
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18984.63207.824631.459239@cargo.ozlabs.ibm.com>
+Date: Fri, 5 Jun 2009 20:43:51 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: Code atomic[64]_read and atomic[64]_set in C not CPP
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Occasionally we get bugs where atomic_read or atomic_set are used on
+atomic64_t variables or vice versa.  These bugs don't generate
+warnings on x86 because atomic_read and atomic_set are coded as macros
+rather than C functions, so we don't get any type-checking on their
+arguments; similarly for atomic64_read and atomic64_set in 64-bit
+kernels.
 
-On Fri, Jun 05, 2009 at 05:33:14PM +0900, FUJITA Tomonori wrote:
-> dma-debugs wrongly assumes that no multiple DMA transfers are
-> performed against the same dma address on one device at the same
-> time. However it's true only with hardware IOMMUs. For example, an
-> application can easily send the same buffer twice with different
-> lengths to one device by using DIO and AIO. If these requests are not
-> unmapped in the same order in which they were mapped,
-> hash_bucket_find() finds a wrong entry and gives a false warning.
-> 
-> We should fix this before 2.6.30 release. Seems that there is no
-> easy way to fix it. I think that it's better to just disable
-> dma-debug for now.
-> 
-> Torsten Kaiser found this bug with the RAID1 configuration:
-> 
-> http://marc.info/?t=124336541900008&r=1&w=2
-> 
+This converts them to C functions so that the arguments are
+type-checked and bugs like this will get caught more easily.
+It also converts atomic_cmpxchg and atomic_xchg, and atomic64_cmpxchg
+and atomic64_xchg on 64-bit, so we get type-checking on their
+arguments too.
 
-Argh, I never thought that this can happen. But its not explicitly
-forbidden so we have to handle this situation. Thanks for tracking down
-the bug to this issue.
-However, I think there is a somehow simple fix for the issue. Patch is
-attached. Its the least intrusive way I can think of to fix this
-problem.
-But its up to Linus/Ingo to decide if it can be accepted at this very
-late point in the cycle. Since dma-debug is new with 2.6.30 it will at
-least not introduce any regression. The patch is boot and basically
-load-tested with some disk and network load and showed no issues on my
-test machine. The diffstat looks big but more than the half of the patch
-adds comments to explain what it does. So the diffstat looks bigger than
-the actual change.
-Linus, if you think my patch is not acceptable at this point then please
-apply the patch from FUJITA Tomonori.
+Compiling a typical 64-bit x86 config, this generates no new warnings,
+and the vmlinux text is 86 bytes smaller.
 
-Regards,
-
-	Joerg
-
->From c0baa4d43a674c9cc321af3b23a6d5c9b46d65bd Mon Sep 17 00:00:00 2001
-From: Joerg Roedel <joerg.roedel@amd.com>
-Date: Fri, 5 Jun 2009 12:01:35 +0200
-Subject: [PATCH] dma-debug: change hash_bucket_find from first-fit to best-fit
-
-Some device drivers map the same physical address multiple times to a
-dma address. Without an IOMMU this results in the same dma address being
-put into the dma-debug hash multiple times. With a first-fit match in
-hash_bucket_find() this function may return the wrong dma_debug_entry.
-This can result in false positive warnings. This patch fixes it by
-changing the first-fit behavior of hash_bucket_find() into a best-fit
-algorithm.
-
-Reported-by: Torsten Kaiser <just.for.lkml@googlemail.com>
-Reported-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- lib/dma-debug.c |   43 +++++++++++++++++++++++++++++++++++++++----
- 1 files changed, 39 insertions(+), 4 deletions(-)
+I have no idea why the text gets smaller with this patch, sorry.
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index 69da09a..2b16536 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -185,15 +185,50 @@ static void put_hash_bucket(struct hash_bucket *bucket,
- static struct dma_debug_entry *hash_bucket_find(struct hash_bucket *bucket,
- 						struct dma_debug_entry *ref)
- {
--	struct dma_debug_entry *entry;
-+	struct dma_debug_entry *entry, *ret = NULL;
-+	int matches = 0, match_lvl, last_lvl = 0;
+By the way, I noticed while I was doing this that atomic64_t is
+unsigned on 32-bit x86 but signed on 64-bit x86.  Somebody might
+like to make them consistent one day.
+
+ arch/x86/include/asm/atomic_32.h |   25 +++++++++++++++++-----
+ arch/x86/include/asm/atomic_64.h |   42 ++++++++++++++++++++++++++++++-------
+ 2 files changed, 53 insertions(+), 14 deletions(-)
+
+diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
+index aff9f1f..0c466cb 100644
+--- a/arch/x86/include/asm/atomic_32.h
++++ b/arch/x86/include/asm/atomic_32.h
+@@ -19,7 +19,10 @@
+  *
+  * Atomically reads the value of @v.
+  */
+-#define atomic_read(v)		((v)->counter)
++static inline int atomic_read(const atomic_t *v)
++{
++	return v->counter;
++}
  
- 	list_for_each_entry(entry, &bucket->list, list) {
--		if ((entry->dev_addr == ref->dev_addr) &&
--		    (entry->dev == ref->dev))
-+		if ((entry->dev_addr != ref->dev_addr) ||
-+		    (entry->dev != ref->dev))
-+			continue;
-+
-+		/*
-+		 * Some drivers map the same physical address multiple
-+		 * times. Without a hardware IOMMU this results in the
-+		 * same device addresses being put into the dma-debug
-+		 * hash multiple times too. This can result in false
-+		 * positives being reported. Therfore we implement a
-+		 * best-fit algorithm here which returns the entry from
-+		 * the hash which fits best to the reference value
-+		 * instead of the first-fit.
-+		 */
-+		matches += 1;
-+		match_lvl = 0;
-+		entry->size      == ref->size      ? ++match_lvl : match_lvl;
-+		entry->type      == ref->type      ? ++match_lvl : match_lvl;
-+		entry->direction == ref->direction ? ++match_lvl : match_lvl;
-+
-+		if (match_lvl == 3) {
-+			/* perfect-fit - return the result */
- 			return entry;
-+		} else if (match_lvl > last_lvl) {
-+			/*
-+			 * We found an entry that fits better then the
-+			 * previous one
-+			 */
-+			last_lvl = match_lvl;
-+			ret      = entry;
-+		}
- 	}
+ /**
+  * atomic_set - set atomic variable
+@@ -28,7 +31,10 @@
+  *
+  * Atomically sets the value of @v to @i.
+  */
+-#define atomic_set(v, i)	(((v)->counter) = (i))
++static inline void atomic_set(atomic_t *v, int i)
++{
++	v->counter = i;
++}
  
--	return NULL;
-+	/*
-+	 * If we have multiple matches but no perfect-fit, just return
-+	 * NULL.
-+	 */
-+	ret = (matches == 1) ? ret : NULL;
-+
-+	return ret;
+ /**
+  * atomic_add - add integer to atomic variable
+@@ -200,8 +206,15 @@ static inline int atomic_sub_return(int i, atomic_t *v)
+ 	return atomic_add_return(-i, v);
  }
  
- /*
+-#define atomic_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
+-#define atomic_xchg(v, new) (xchg(&((v)->counter), (new)))
++static inline int atomic_cmpxchg(atomic_t *v, int old, int new)
++{
++	return cmpxchg(&v->counter, old, new);
++}
++
++static inline int atomic_xchg(atomic_t *v, int new)
++{
++	return xchg(&v->counter, new);
++}
+ 
+ /**
+  * atomic_add_unless - add unless the number is already a given value
+@@ -306,7 +319,7 @@ atomic64_xchg(atomic64_t *ptr, unsigned long long new_val)
+ 	unsigned long long old_val;
+ 
+ 	do {
+-		old_val = atomic_read(ptr);
++		old_val = __atomic64_read(ptr);
+ 	} while (atomic64_cmpxchg(ptr, old_val, new_val) != old_val);
+ 
+ 	return old_val;
+@@ -354,7 +367,7 @@ atomic64_add_return(unsigned long long delta, atomic64_t *ptr)
+ 	unsigned long long old_val, new_val;
+ 
+ 	do {
+-		old_val = atomic_read(ptr);
++		old_val = __atomic64_read(ptr);
+ 		new_val = old_val + delta;
+ 
+ 	} while (atomic64_cmpxchg(ptr, old_val, new_val) != old_val);
+diff --git a/arch/x86/include/asm/atomic_64.h b/arch/x86/include/asm/atomic_64.h
+index 8c21731..7d5282e 100644
+--- a/arch/x86/include/asm/atomic_64.h
++++ b/arch/x86/include/asm/atomic_64.h
+@@ -18,7 +18,10 @@
+  *
+  * Atomically reads the value of @v.
+  */
+-#define atomic_read(v)		((v)->counter)
++static inline int atomic_read(const atomic_t *v)
++{
++	return v->counter;
++}
+ 
+ /**
+  * atomic_set - set atomic variable
+@@ -27,7 +30,10 @@
+  *
+  * Atomically sets the value of @v to @i.
+  */
+-#define atomic_set(v, i)		(((v)->counter) = (i))
++static inline void atomic_set(atomic_t *v, int i)
++{
++	v->counter = i;
++}
+ 
+ /**
+  * atomic_add - add integer to atomic variable
+@@ -192,7 +198,10 @@ static inline int atomic_sub_return(int i, atomic_t *v)
+  * Atomically reads the value of @v.
+  * Doesn't imply a read memory barrier.
+  */
+-#define atomic64_read(v)		((v)->counter)
++static inline long atomic64_read(const atomic64_t *v)
++{
++	return v->counter;
++}
+ 
+ /**
+  * atomic64_set - set atomic64 variable
+@@ -201,7 +210,10 @@ static inline int atomic_sub_return(int i, atomic_t *v)
+  *
+  * Atomically sets the value of @v to @i.
+  */
+-#define atomic64_set(v, i)		(((v)->counter) = (i))
++static inline void atomic64_set(atomic64_t *v, long i)
++{
++	v->counter = i;
++}
+ 
+ /**
+  * atomic64_add - add integer to atomic64 variable
+@@ -355,11 +367,25 @@ static inline long atomic64_sub_return(long i, atomic64_t *v)
+ #define atomic64_inc_return(v)  (atomic64_add_return(1, (v)))
+ #define atomic64_dec_return(v)  (atomic64_sub_return(1, (v)))
+ 
+-#define atomic64_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
+-#define atomic64_xchg(v, new) (xchg(&((v)->counter), new))
++static inline long atomic64_cmpxchg(atomic64_t *v, long old, long new)
++{
++	return cmpxchg(&v->counter, old, new);
++}
++
++static inline long atomic64_xchg(atomic64_t *v, long new)
++{
++	return xchg(&v->counter, new);
++}
+ 
+-#define atomic_cmpxchg(v, old, new) (cmpxchg(&((v)->counter), (old), (new)))
+-#define atomic_xchg(v, new) (xchg(&((v)->counter), (new)))
++static inline long atomic_cmpxchg(atomic_t *v, int old, int new)
++{
++	return cmpxchg(&v->counter, old, new);
++}
++
++static inline long atomic_xchg(atomic_t *v, int new)
++{
++	return xchg(&v->counter, new);
++}
+ 
+ /**
+  * atomic_add_unless - add unless the number is a given value
 -- 
-1.6.3.1
-
-
-
-
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+1.6.0.4
 
