@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbZFEOpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbZFEOqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755998AbZFEOpt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 10:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbZFEOpl
+	id S1756031AbZFEOqI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 10:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755928AbZFEOpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 10:45:41 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:36405 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbZFEOpl (ORCPT
+	Fri, 5 Jun 2009 10:45:55 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:44987 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750876AbZFEOpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 10:45:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:to:from:subject;
-        b=YhsKgpJk0iB0Wf1CwE/S14OOBCAY50G++YTTNVSJKkI18sUTT88E9dZwqrPwHyiGcs
-         o1jhyVSoKB45d42TYysgpkvAr+nYZjleKM5atS22dHrChdsZVwNkiGKUvlchIcGLbMbU
-         ylvt4QHqlLhPJL3/u6aDOcsSYhoiMOQ//ZwZc=
-Message-ID: <4a292f95.05a4100a.1a14.0a04@mx.google.com>
-Date: Fri, 05 Jun 2009 07:45:41 -0700 (PDT)
-To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
-       linux-kernel@vger.kernel.org
-To: Leon Woestenberg <leon@sidebranch.com>
-From: leon.woestenberg@gmail.com
-Subject: [PATCH] Add MSI interrupts to DTS of MPC8315E-RDB
+	Fri, 5 Jun 2009 10:45:54 -0400
+Message-ID: <4A292F9E.6020602@nortel.com>
+Date: Fri, 05 Jun 2009 08:45:50 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+MIME-Version: 1.0
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+CC: Avi Kivity <avi@redhat.com>, Paul Menage <menage@google.com>,
+       bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelyanov <xemul@openvz.org>, kvm@vger.kernel.org,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Herbert Poetzl <herbert@13thfloor.at>
+Subject: Re: [RFC] CPU hard limits
+References: <20090604053649.GA3701@in.ibm.com> <6599ad830906050153i1afd104fqe70f681317349142@mail.gmail.com> <4A291753.7090205@redhat.com> <20090605134320.GA3994@linux.vnet.ibm.com>
+In-Reply-To: <20090605134320.GA3994@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Jun 2009 14:45:53.0530 (UTC) FILETIME=[53A785A0:01C9E5EC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The PCIe MSI interrupts are missing from the device tree source, and
-thus were not enabled. This patch adds them.
+Dhaval Giani wrote:
 
-Tested to work on MPC8315E-RDB with custom FPGA PCIe device.
+> Shares cannot be used to provide guarantees. All they decide is what
+> propotion groups can get CPU time. (yes, shares is a bad name, weight
+> shows the intent better).
 
-Signed-off-by: Leon Woestenberg <leon@sidebranch.com>
-Tested-by: Leon Woestenberg <leon@sidebranch.com>
+If I (as the administrator of the system) arbitrarily decide that all
+the shares/weights must add up to 100, they magically become percentage
+guarantees.
 
-diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
-index 3f4c5fb..4f04667 100644
---- a/arch/powerpc/boot/dts/mpc8315erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
-@@ -322,6 +322,21 @@
- 			reg = <0x700 0x100>;
- 			device_type = "ipic";
- 		};
-+
-+		ipic-msi@7c0 {
-+			compatible = "fsl,ipic-msi";
-+                        reg = <0x7c0 0x40>;
-+                        msi-available-ranges = <0 0x100>;
-+			interrupts = < 0x43 0x8
-+						   0x4  0x8
-+						   0x51 0x8
-+						   0x52 0x8
-+						   0x56 0x8
-+						   0x57 0x8
-+						   0x58 0x8
-+						   0x59 0x8 >;
-+			interrupt-parent = < &ipic >;
-+		};
- 	};
- 
- 	pci0: pci@e0008500 {
+Chris
