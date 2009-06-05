@@ -1,100 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbZFELwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751343AbZFELy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753256AbZFELwB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 07:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbZFELvv
+	id S1751343AbZFELy0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 07:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbZFELyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 07:51:51 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:53741 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752180AbZFELvu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 07:51:50 -0400
-Date: Fri, 5 Jun 2009 14:51:27 +0300
-From: Denis Karpov <ext-denis.2.karpov@nokia.com>
-To: "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "axboe@kernel.dk" <axboe@kernel.dk>,
-       "hirofumi@mail.parknet.co.jp" <hirofumi@mail.parknet.co.jp>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>
-Subject: Re: [PATCH 0/4] FS: userspace notification of errors
-Message-ID: <20090605115127.GF28764@smart.research.nokia.com>
-Mail-Followup-To: "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>,
-	Kay Sievers <kay.sievers@vrfy.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"axboe@kernel.dk" <axboe@kernel.dk>,
-	"hirofumi@mail.parknet.co.jp" <hirofumi@mail.parknet.co.jp>,
-	"linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>
-References: <1244041518-32229-1-git-send-email-ext-denis.2.karpov@nokia.com> <20090603115611.6bbbaf55.akpm@linux-foundation.org> <ac3eb2510906040553j294f1015wfb7deb4b4fc63afc@mail.gmail.com> <4A28FC8F.5020802@nokia.com>
+	Fri, 5 Jun 2009 07:54:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33764 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751226AbZFELyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 07:54:15 -0400
+Date: Fri, 5 Jun 2009 13:54:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Lennart Poettering <mzxreary@0pointer.de>
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org
+Subject: Re: [PATCH] scheduler: introduce SCHED_RESET_ON_FORK scheduling
+	policy flag, Second try
+Message-ID: <20090605115410.GA16008@elte.hu>
+References: <20090529083840.GA15516@omega>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A28FC8F.5020802@nokia.com>
+In-Reply-To: <20090529083840.GA15516@omega>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 05 Jun 2009 11:51:33.0081 (UTC) FILETIME=[F8BDAC90:01C9E5D3]
-X-Nokia-AV: Clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.5
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0208]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 05, 2009 at 01:07:59PM +0200, Bityutskiy Artem (Nokia-D/Helsinki) wrote:
-> Kay Sievers wrote:
-> > And I don't think we want several event sources for the same thing,
-> > uevents _and_ pollable sysfs files.
-> > 
-> > We already raise events on /proc/self/mountinfo when the mount tree
-> > changes, I guess that's where fs specific stuff belongs, and it will
-> > work with all kind of filesystem setups, regardless of the devices
-> > below it. This is also the established interface for flags and options
-> > and the current state of the filesystem, and does not mix filesystem
-> > options into block device interfaces.
-> > 
-> > /proc/self/mountinfo could also work properly with namespaces which
-> > might have different meaning for a device in a different namespace.
+
+* Lennart Poettering <mzxreary@0pointer.de> wrote:
+
+> Why expose this via sched_setscheduler() and not other syscalls 
+> such as prctl() or sched_setparam()?
 > 
-> Well, Denis suggests /sys/fs instead. But how would we pass stuff like
-> error code via /proc/self/mountinfo? And what if later some one wants
-> to provide user-space stuff like bogus inode number? 
+> prctl() does not take a pid parameter. Due to that it would be 
+> impossible to modify this flag for other processes than the 
+> current one.
+> 
+> The struct passed to sched_setparam() can unfortunately not be 
+> extended without breaking compatibility, since sched_setparam() 
+> lacks a size parameter.
 
-This is doable, e.g. in the form of optional fields "tag[:value]"
-(field 7, Documentation/filesystems/proc.txti for mountinfo).
+Well, it could be extended, if we wanted to. Right now 
+sched_priority has a valid value of 0 to 100. We could introduce a 
+new value '-1' to mean: 'extended struct sched_param'.
 
-Kay, sorry I didn't answer to your email separately. I tried to summarize
-and address all the posted comments/critiques in a single email earlier 
-in this thread.
-http://marc.info/?l=linux-kernel&m=124412575828015&w=2
+A new getparam syscall could then be introduced - only used by new 
+user-space.
 
-But is using procfs generally a good idea ? Last several years all a lot of
-stuff moved out from procfs into sysfs. Not to forget what procfs is
-originally meant for: storing the proceses related information.
-
-/proc/self/mountinfo solution:
-pros:
-- existing solution
-cons:
-- polling only
-- dedicated userspace tool to poll/parse/act
-- additional parsing overhead and event filtering (mountinfo changes for many
-  reasons)
-- probably this info does not belong to procfs
-
-/sys/fs/<fs>/<volume>/{attributes,..} solution:
-pros:
-- nice hierarchy reflecting structure of entities in the kernel
-- extensible (other errors, conditions, events can be reflected) 
-- no parsing: dedicated file for each attribute
-- uevent interface with existing userspace tool (udev); 
-  (polling is still possible)
-- /sys/fs seems to be a perfect fit for the purpose judging by ext4 example
-cons:
-- uevent interface is unneeded extra(?); can be made optional, per attribute
-- ...
-
-Denis
+	Ingo
