@@ -1,73 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbZFEUtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753323AbZFEU4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753296AbZFEUtv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 16:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZFEUto
+	id S1753323AbZFEU4Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 16:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZFEU4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 16:49:44 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36249 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751005AbZFEUtn (ORCPT
+	Fri, 5 Jun 2009 16:56:18 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:45470 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752001AbZFEU4R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 16:49:43 -0400
-Date: Fri, 5 Jun 2009 21:48:06 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH 1/6] headers_check fix: arm, hwcap.h
-Message-ID: <20090605204805.GA22367@flint.arm.linux.org.uk>
-References: <1244118232.5172.26.camel@ht.satnam> <1244118476.5172.29.camel@ht.satnam> <20090604125306.GC24491@flint.arm.linux.org.uk> <20090604201649.GC13892@uranus.ravnborg.org>
+	Fri, 5 Jun 2009 16:56:17 -0400
+Message-ID: <4A29862D.6030601@zytor.com>
+Date: Fri, 05 Jun 2009 13:55:09 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090604201649.GC13892@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] x86: cpu/proc.c adding extended_cpuid_level for
+ /proc/cpuinfo
+References: <1242112482.3283.1.camel@localhost.localdomain>	 <20090512232122.61f2d7c5.akpm@linux-foundation.org> <1244227115.2507.3.camel@ht.satnam>
+In-Reply-To: <1244227115.2507.3.camel@ht.satnam>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 10:16:49PM +0200, Sam Ravnborg wrote:
-> On Thu, Jun 04, 2009 at 01:53:07PM +0100, Russell King wrote:
-> > On Thu, Jun 04, 2009 at 05:57:56PM +0530, Jaswinder Singh Rajput wrote:
-> > > fix the following 'make headers_check' warning:
-> > 
-> > I think headers_check needs fixing - there's nothing wrong with the
-> > code as it presently stands except the tools obviously can't properly
-> > parse C preprocessor statements.
+Jaswinder Singh Rajput wrote:
+> Hello Andrew,
 > 
-> You are correct that headers_ceck is limited here and this patch
-> take some valid code and refactor it to make it headers_check compatible.
+> On Tue, 2009-05-12 at 23:21 -0700, Andrew Morton wrote:
+>> On Tue, 12 May 2009 12:44:42 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+>>
+>>> +		   "ext cpuid level\t: 0x%x\n"
+>> It's unobvious what "ext" means.  External?
+>>
+>> Can we make it "extended cpuid level"?
+> 
+> extended cpuid level will look like this :
+> 
+> fpu		: yes
+> fpu_exception	: yes
+> cpuid level	: 5
+> wp		: yes
+> extended cpuid level: 0x80000008
+> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe constant_tsc pebs bts pni dtes64 monitor ds_cpl cid
+> 
 
-Okay, here's the question:
+The more I'm thinking about this I think it was a mistake to put cpuid
+level: there in the first place, too.  My opinion is increasingly to
+leave this to x86info or other user-space tools.
 
-Does userspace require anything in the ifdef __ASSEMBLY__ bits?
-
-In any case, passing -D__KERNEL__ or -U__KERNEL__ allows unifdef to
-do the right thing.
-
-The problem which unifdef has is that if it finds a symbol in an
-evaluation that it doesn't know about, it fails the expansion
-entirely, rather than checking whether the expansion always results
-in something which should be omitted.  In other words:
-
-#if defined(__KERNEL__) && (<unknown>)
-
-results in basically an "unknown" answer from the evaluator, where
-we can see perfectly well that the expansion can never be true if
-__KERNEL__ is never set.
-
-So, the trivial answer to the problem if:
-
-#if defined(__KERNEL__) && something-depending-on-__ASSEMBLY__
-
-is to tell unifdef whether we want __ASSEMBLY__ defined or not defined.
-This does shut up the headers_install warning from ARMs hwdef.h.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+	-hpa
