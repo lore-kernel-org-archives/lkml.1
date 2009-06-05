@@ -1,176 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZFETTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708AbZFETTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbZFETTb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 15:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZFETTE
+	id S1755708AbZFETTm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 15:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbZFETTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 15:19:04 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:49292 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752754AbZFETTC (ORCPT
+	Fri, 5 Jun 2009 15:19:09 -0400
+Received: from mail-qy0-f177.google.com ([209.85.221.177]:39063 "EHLO
+	mail-qy0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754206AbZFETTH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 15:19:02 -0400
-X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
-	times
-Message-Id: <20090605191851.393195588@gentwo.org>
-References: <20090605191819.376530498@gentwo.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 05 Jun 2009 15:18:25 -0400
-From: cl@linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>, Dan Williams <dan.j.williams@intel.com>,
-       Eric Biederman <ebiederm@aristanetworks.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David L Stevens <dlstevens@us.ibm.com>
-Cc: mingo@elte.hu
-Cc: rusty@rustcorp.com.au
-Cc: davem@davemloft.net
-Subject: [this_cpu_xx 06/11] Eliminate get/put_cpu
-Content-Disposition: inline; filename=this_cpu_ptr_eliminate_get_put_cpu
+	Fri, 5 Jun 2009 15:19:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=B9jCkc8u1/IcywVymTBUxRgN7pnH1E/wQ5SDczKmwyKYcplUXgz8DYD2Rg/4CfR9qe
+         4rUBjE4d0OQanK07EPsItcBu71pG/ifcHX3wo2lry46OmMEGJ/0XR1EblSjmVAiYpsWa
+         peTwFVYMzTu10d3mMH2r0nVBHzsvegiD+UayU=
+MIME-Version: 1.0
+In-Reply-To: <18983.26015.413162.445846@notabene.brown>
+References: <20090519005647.4104.81119.stgit@dwillia2-linux.ch.intel.com>
+	 <20090519005951.4104.27062.stgit@dwillia2-linux.ch.intel.com>
+	 <18983.26015.413162.445846@notabene.brown>
+Date: Fri, 5 Jun 2009 12:19:07 -0700
+X-Google-Sender-Auth: 2014f6eed6a1ea62
+Message-ID: <e9c3a7c20906051219x122f443dtc7836f0c16ae9f27@mail.gmail.com>
+Subject: Re: [PATCH v2 05/11] md/raid5: add scribble region for buffer lists
+From: Dan Williams <dan.j.williams@intel.com>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-raid@vger.kernel.org, maan@systemlinux.org,
+       linux-kernel@vger.kernel.org, yur@emcraft.com, hpa@zytor.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are cases where we can use this_cpu_ptr and as the result
-of using this_cpu_ptr() we no longer need to determine the
-current executing cpu.
+On Wed, Jun 3, 2009 at 11:11 PM, Neil Brown<neilb@suse.de> wrote:
+> On Monday May 18, dan.j.williams@intel.com wrote:
+>> Hang some memory off of each stripe_head which can be used for storing
+>> the buffer lists used in parity calculations.  Include space for dma
+>> address conversions and pass that to async_tx via the
+>> async_submit_ctl.scribble pointer.
+>>
+>> [ Impact: move memory pressure from stack to heap ]
+>
+> I've finally had a look at this and I cannot say that I like it.
+>
+> We don't really need one scribble-buffer per stripe_head.
+> And in fact, that isn't even enough because you find you need a mutex
+> to avoid multiple-use.
 
-In those places no get/put_cpu combination is needed anymore.
-The local cpu variable can be eliminated.
+The mutex is probably not necessary, just need to audit the
+stripe_operations state machine to make sure threads don't overlap in
+raid_run_ops()...  but the point is mute when we move to per-cpu
+resources.
 
-Preemption still needs to be disabled and enabled since the
-modifications of the per cpu variables is not atomic. There may
-be multiple per cpu variables modified and those must all
-be from the same processor.
+> We really want one scribble-buffer per thread, or per CPU, or
+> something like that.
 
-cc: Dan Williams <dan.j.williams@intel.com>
-cc: Eric Biederman <ebiederm@aristanetworks.com>
-cc: Stephen Hemminger <shemminger@vyatta.com>
-cc: Trond Myklebust <Trond.Myklebust@netapp.com>
-cc: Herbert Xu <herbert@gondor.apana.org.au>
-cc: David L Stevens <dlstevens@us.ibm.com>
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+One of the design goals was to prevent the occurrence of the
+softlockup watchdog events which seem to trigger on large raid6
+resyncs.  A per-cpu scheme would still require preempt_disable() while
+the calculation is active, so perhaps we just need a call to
+cond_resched() in raid5d to appease the scheduler.
 
----
- drivers/dma/dmaengine.c |   36 +++++++++++++-----------------------
- drivers/net/veth.c      |    7 +++----
- 2 files changed, 16 insertions(+), 27 deletions(-)
+> You could possibly handle it a bit like ->spare_page, though we cope
+> with that being NULL some times, and you might not be able to do that
+> with scribble-buffer.
+> How do the async-raid6 patches cope with possible multiple users of
+> ->spare_page now that the computations are async and so possible in
+> parallel?
 
-Index: linux-2.6/drivers/dma/dmaengine.c
-===================================================================
---- linux-2.6.orig/drivers/dma/dmaengine.c	2009-06-04 13:38:15.000000000 -0500
-+++ linux-2.6/drivers/dma/dmaengine.c	2009-06-04 14:19:43.000000000 -0500
-@@ -326,14 +326,7 @@ arch_initcall(dma_channel_table_init);
-  */
- struct dma_chan *dma_find_channel(enum dma_transaction_type tx_type)
- {
--	struct dma_chan *chan;
--	int cpu;
--
--	cpu = get_cpu();
--	chan = per_cpu_ptr(channel_table[tx_type], cpu)->chan;
--	put_cpu();
--
--	return chan;
-+	return this_cpu_read(channel_table[tx_type]->chan);
- }
- EXPORT_SYMBOL(dma_find_channel);
- 
-@@ -803,7 +796,6 @@ dma_async_memcpy_buf_to_buf(struct dma_c
- 	struct dma_async_tx_descriptor *tx;
- 	dma_addr_t dma_dest, dma_src;
- 	dma_cookie_t cookie;
--	int cpu;
- 	unsigned long flags;
- 
- 	dma_src = dma_map_single(dev->dev, src, len, DMA_TO_DEVICE);
-@@ -822,10 +814,10 @@ dma_async_memcpy_buf_to_buf(struct dma_c
- 	tx->callback = NULL;
- 	cookie = tx->tx_submit(tx);
- 
--	cpu = get_cpu();
--	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
--	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
--	put_cpu();
-+	preempt_disable();
-+	__this_cpu_add(chan->local->bytes_transferred, len);
-+	__this_cpu_inc(chan->local->memcpy_count);
-+	preempt_enable();
- 
- 	return cookie;
- }
-@@ -852,7 +844,6 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
- 	struct dma_async_tx_descriptor *tx;
- 	dma_addr_t dma_dest, dma_src;
- 	dma_cookie_t cookie;
--	int cpu;
- 	unsigned long flags;
- 
- 	dma_src = dma_map_single(dev->dev, kdata, len, DMA_TO_DEVICE);
-@@ -869,10 +860,10 @@ dma_async_memcpy_buf_to_pg(struct dma_ch
- 	tx->callback = NULL;
- 	cookie = tx->tx_submit(tx);
- 
--	cpu = get_cpu();
--	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
--	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
--	put_cpu();
-+	preempt_disable();
-+	__this_cpu_add(chan->local->bytes_transferred, len);
-+	__this_cpu_inc(chan->local->memcpy_count);
-+	preempt_enable();
- 
- 	return cookie;
- }
-@@ -901,7 +892,6 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
- 	struct dma_async_tx_descriptor *tx;
- 	dma_addr_t dma_dest, dma_src;
- 	dma_cookie_t cookie;
--	int cpu;
- 	unsigned long flags;
- 
- 	dma_src = dma_map_page(dev->dev, src_pg, src_off, len, DMA_TO_DEVICE);
-@@ -919,10 +909,10 @@ dma_async_memcpy_pg_to_pg(struct dma_cha
- 	tx->callback = NULL;
- 	cookie = tx->tx_submit(tx);
- 
--	cpu = get_cpu();
--	per_cpu_ptr(chan->local, cpu)->bytes_transferred += len;
--	per_cpu_ptr(chan->local, cpu)->memcpy_count++;
--	put_cpu();
-+	preempt_disable();
-+	__this_cpu_add(chan->local->bytes_transferred, len);
-+	__this_cpu_inc(chan->local->memcpy_count);
-+	preempt_enable();
- 
- 	return cookie;
- }
-Index: linux-2.6/drivers/net/veth.c
-===================================================================
---- linux-2.6.orig/drivers/net/veth.c	2009-06-04 13:38:15.000000000 -0500
-+++ linux-2.6/drivers/net/veth.c	2009-06-04 14:18:00.000000000 -0500
-@@ -153,7 +153,7 @@ static int veth_xmit(struct sk_buff *skb
- 	struct net_device *rcv = NULL;
- 	struct veth_priv *priv, *rcv_priv;
- 	struct veth_net_stats *stats, *rcv_stats;
--	int length, cpu;
-+	int length;
- 
- 	skb_orphan(skb);
- 
-@@ -161,9 +161,8 @@ static int veth_xmit(struct sk_buff *skb
- 	rcv = priv->peer;
- 	rcv_priv = netdev_priv(rcv);
- 
--	cpu = smp_processor_id();
--	stats = per_cpu_ptr(priv->stats, cpu);
--	rcv_stats = per_cpu_ptr(rcv_priv->stats, cpu);
-+	stats = this_cpu_ptr(priv->stats);
-+	rcv_stats = this_cpu_ptr(rcv_priv->stats);
- 
- 	if (!(rcv->flags & IFF_UP))
- 		goto tx_drop;
+Currently the code just takes a spare page lock.
 
--- 
+>
+> Maybe a little mempool would be best?.... though given that in most
+> cases, the stack solution is really quite adequate it would be good to
+> make sure the replacement isn't too heavy-weight....
+>
+> I'm not sure what would be best, but I really don't like the current
+> proposal.
+>
+
+I'll take a look at a per-cpu implementation.
+
+Thanks,
+Dan
