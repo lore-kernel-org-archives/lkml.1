@@ -1,43 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZFEAC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752447AbZFEAFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753177AbZFEAC2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 20:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZFEACU
+	id S1752447AbZFEAFU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 20:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZFEAFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 20:02:20 -0400
-Received: from elvis.franken.de ([193.175.24.41]:42980 "EHLO elvis.franken.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751347AbZFEACU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 20:02:20 -0400
-X-Greylist: delayed 5960 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Jun 2009 20:02:20 EDT
-Date: Fri, 5 Jun 2009 00:20:20 +0200
-From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-To: Florian Fainelli <florian@openwrt.org>
-Cc: Linux-MIPS <linux-mips@linux-mips.org>, Ralf Baechle <ralf@linux-mips.org>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-serial@vger.kernel.org
-Subject: Re: [PATCH 8/8] 8250: add Texas Instruments AR7 internal UART
-Message-ID: <20090604222020.GA14843@alpha.franken.de>
-References: <200906041622.47591.florian@openwrt.org>
+	Thu, 4 Jun 2009 20:05:08 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:37856 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751514AbZFEAFH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 20:05:07 -0400
+Date: Thu, 4 Jun 2009 20:04:56 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       herbert@gondor.apana.org.au, davem@davemloft.net
+Subject: Re: [PATCH] crypto: add optional continuous repetition test to
+	entropy store based rngs
+Message-ID: <20090605000456.GA10883@localhost.localdomain>
+References: <20090604195030.GA11300@hmsreliant.think-freely.org> <1244146450.22069.216.camel@calx>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906041622.47591.florian@openwrt.org>
+In-Reply-To: <1244146450.22069.216.camel@calx>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 04:22:46PM +0200, Florian Fainelli wrote:
-> We discussed that in private, there are a couple of things
-> to fix in order to get 8250 working properly with TI AR7 HW.
-> If you can still merge that bit, this would ease future work, thanks !
+On Thu, Jun 04, 2009 at 03:14:10PM -0500, Matt Mackall wrote:
+> On Thu, 2009-06-04 at 15:50 -0400, Neil Horman wrote:
+> > FIPS-140 requires that all random number generators implement continuous self
+> > tests in which each extracted block of data is compared against the last block
+> > for repetition.  The ansi_cprng implements such a test, but it would be nice if
+> > the hw rng's did the same thing.  Obviously its not something thats always
+> > needed, but it seems like it would be a nice feature to have on occasion.  I've
+> > written the below patch which allows individual entropy stores to be flagged as
+> > desiring a continuous test to be run on them as is extracted.  By default this
+> > option is off, but is enabled in the event that fips mode is selected during
+> > bootup.
+> > 
+> > Neil
+> > 
+> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> > 
+> > diff --git a/crypto/internal.h b/crypto/internal.h
+> > index fc76e1f..150d389 100644
+> > --- a/crypto/internal.h
+> > +++ b/crypto/internal.h
+> > @@ -26,12 +26,6 @@
+> >  #include <linux/rwsem.h>
+> >  #include <linux/slab.h>
+> >  
+> > -#ifdef CONFIG_CRYPTO_FIPS
+> > -extern int fips_enabled;
+> > -#else
+> > -#define fips_enabled 0
+> > -#endif
+> > -
+> >  /* Crypto notification events. */
+> >  enum {
+> >  	CRYPTO_MSG_ALG_REQUEST,
+> > diff --git a/drivers/char/random.c b/drivers/char/random.c
+> > index 8c74448..fbdfc70 100644
+> > --- a/drivers/char/random.c
+> > +++ b/drivers/char/random.c
+> > @@ -250,6 +250,8 @@
+> >  #include <asm/irq.h>
+> >  #include <asm/io.h>
+> >  
+> > +#include <crypto/algapi.h>
+> > +
+> 
+> I think we'd rather not make random.c incestuous with crypto/.
+> 
+Not sure what to do about this.  The intent is to provide the external reference
+to the fips_enabled flag (which is either defined as an extern in or #defined to
+0 dependent on CONFIG_CRYPTO_FIPS).  I can cut'n'paste the code block from the
+include file and put it in here, but that seems like a worse solution to me.
+Let me know your thoughts, and I can change this accordingly.
 
-I still have a tree here, which works without any changes to the 8250
-serial driver on a TNETD7300 device.
+As for the other comments, they all seem good to me, let me know what you want
+to do about the above, and I'll respin/repost the patch for you
 
-Thomas.
+Thanks!
+Neil
 
--- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessary a
-good idea.                                                [ RFC1925, 2.3 ]
