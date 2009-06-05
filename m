@@ -1,76 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbZFEKpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZFEKpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753597AbZFEKpX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 06:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZFEKpJ
+	id S1753967AbZFEKpl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 06:45:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZFEKp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 06:45:09 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:58666 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751815AbZFEKpG convert rfc822-to-8bit (ORCPT
+	Fri, 5 Jun 2009 06:45:28 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44754 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752442AbZFEKpZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 06:45:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fDPlUlK0pbS0/k2JUPt7F7PCfND9ah3wJngTqR0kxMjCCNlsb7yCIYw61Jv73oQmRN
-         Ek3HMJjfi5biWQNieko0HB/raOtxrFU3WTepc/at2v5hoBIu7jHrZA1OXFgYqj8OJPaM
-         k0NGjjgf07h1rrfrD2md+1cKYbNijSjS4adZg=
+	Fri, 5 Jun 2009 06:45:25 -0400
+Date: Fri, 5 Jun 2009 06:45:17 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Matt Helsley <matthltc@us.ibm.com>, xemul@parallels.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       dave@linux.vnet.ibm.com, mingo@elte.hu, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 1/9] exec_path 1/9: introduce ->exec_path and switch
+	/proc/*/exe
+Message-ID: <20090605104517.GA11713@infradead.org>
+References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org> <20090531215427.GA29534@x200.localdomain> <20090531151953.8f8b14b5.akpm@linux-foundation.org> <20090603230422.GB853@x200.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <20090605094619.GB23085@build.ossfans.org>
-References: <1244168990-28355-4-git-send-email-dbaryshkov@gmail.com>
-	 <1244184737.22576.94.camel@johannes.local>
-	 <20090605071529.GA7064@doriath.ww600.siemens.net>
-	 <20090605.005418.07362083.davem@davemloft.net>
-	 <20090605091229.GA25280@doriath.ww600.siemens.net>
-	 <20090605094619.GB23085@build.ossfans.org>
-Date: Fri, 5 Jun 2009 14:45:06 +0400
-Message-ID: <bc64b4640906050345t5ed23d7bxc8a777a4a0ada147@mail.gmail.com>
-Subject: Re: [PATCH 3/5] net: add NL802154 interface for configuration of 
-	802.15.4 devices
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: Sergey Lapin <slapin@ossfans.org>
-Cc: David Miller <davem@davemloft.net>, johannes@sipsolutions.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, sfr@canb.auug.org.au
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090603230422.GB853@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/5 Sergey Lapin <slapin@ossfans.org>:
->> @@ -0,0 +1,523 @@
->> +/*
->> + * Netlink inteface for IEEE 802.15.4 stack
->> + *
->> + * Copyright 2007, 2008 Siemens AG
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2
->> + * as published by the Free Software Foundation.
->> + *
->> + * This program is distributed in the hope that it will be useful,
->> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->> + * GNU General Public License for more details.
->> + *
->> + * You should have received a copy of the GNU General Public License along
->> + * with this program; if not, write to the Free Software Foundation, Inc.,
->> + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
->> + *
->> + * Written by:
->> + * Sergey Lapin <sergey.lapin@siemens.com>
-> Dmitry, please toss all my @siemens.com addresses from all patches, since my
-> access is already disabled and it's pointless to have invalid emails
-> in source tree. Please replace them with @ossfans.org ones.
+On Thu, Jun 04, 2009 at 03:04:22AM +0400, Alexey Dobriyan wrote:
+> ->exec_path is copied on clone(2) and put at do_exit() time.
+> 
+> ->exec_path is going to replace struct mm_struct::exe_file et al
+> and allows to remove VM_EXECUTABLE flag while keeping readlink("/proc/*/exe")
+> without loop over all VMAs.
 
-Could you please send an incremental patch on top of this serie? I
-hope that my last
-push can be pulled/merged and I don't want to redo all commits.
+Why don't you leave it in mm_struct?  That'll avoid having to mess with
+it in clone, and given that exec always replaces the whole VM it's a
+more natural fit anyway.
 
-
--- 
-With best wishes
-Dmitry
+But yeah, a path seems much more suitable than keeping a file.
