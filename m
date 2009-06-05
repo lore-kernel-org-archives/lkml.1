@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZFEKpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbZFEKs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753967AbZFEKpl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 06:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbZFEKp2
+	id S1752918AbZFEKs2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 06:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbZFEKsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 06:45:28 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44754 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752442AbZFEKpZ (ORCPT
+	Fri, 5 Jun 2009 06:48:19 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:45155 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751346AbZFEKsS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 06:45:25 -0400
-Date: Fri, 5 Jun 2009 06:45:17 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Matt Helsley <matthltc@us.ibm.com>, xemul@parallels.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       dave@linux.vnet.ibm.com, mingo@elte.hu, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 1/9] exec_path 1/9: introduce ->exec_path and switch
-	/proc/*/exe
-Message-ID: <20090605104517.GA11713@infradead.org>
-References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org> <20090531215427.GA29534@x200.localdomain> <20090531151953.8f8b14b5.akpm@linux-foundation.org> <20090603230422.GB853@x200.localdomain>
+	Fri, 5 Jun 2009 06:48:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=izv8v8y+VxvK05wmF4U6DKc1bIO8UabAg/vxAAYCScIupGBT8zYL7gHkYDXiH9psfw
+         z1+N2l8XNiKKRsGmunqSjKa8JQQqH9ZD/RVqsIxAbqpixiNdWenEOuEY3i2AOs5xWOz3
+         /osRPXadZdpJ1xz+XuOoCYtd2Foo+HLWJeS7s=
+Message-ID: <4A28F83F.4030704@tuffmail.co.uk>
+Date: Fri, 05 Jun 2009 11:49:35 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090603230422.GB853@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: linux-ext4@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Mild filesystem corruption on ext4 (no journal)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 03:04:22AM +0400, Alexey Dobriyan wrote:
-> ->exec_path is copied on clone(2) and put at do_exit() time.
-> 
-> ->exec_path is going to replace struct mm_struct::exe_file et al
-> and allows to remove VM_EXECUTABLE flag while keeping readlink("/proc/*/exe")
-> without loop over all VMAs.
+Hi,
 
-Why don't you leave it in mm_struct?  That'll avoid having to mess with
-it in clone, and given that exec always replaces the whole VM it's a
-more natural fit anyway.
+I run ext4 without a journal on my cheap netbook with a 4 gig SSD.  I 
+suspect "without a journal" is significant, I don't think I'm doing 
+anything else strange.
 
-But yeah, a path seems much more suitable than keeping a file.
+When I upgrade libc from 2.7 (debian stable) to 2.9 (debian unstable), 
+the locale breaks every reboot, and I have to repair it by running 
+locale-gen.  This happened now when I only upgraded libc, in order to 
+play with signalfd().  It also happened before, when I upgraded the 
+entire machine to debian unstable (which I later reverted).
+
+The problem is that /usr/lib/locale/locale-archive gets corrupted when I 
+reboot.  The exact corruption differs with each reboot (i.e. the md5sum 
+differs).  Last time, the first ~70K was overwritten with data from 
+xorg.log and my web browsing history.  I have copies of the original and 
+corrupted state which I can send, the full file is 1.3 megs, but I can 
+limit it to the first 70K, since that's all that was corrupted.
+
+To try and rule out a faulty userspace program, I marked the file as 
+read-only (chmod a-w) and immutable (chattr +i).  After a reboot, the 
+file was still read-only and immutable, yet it still became corrupted.
+
+Also, I ran md5sum in the shutdown scripts, after mounting the root 
+filesystem read-only (which is also preceeded by a sync in a different 
+script).  This showed that the file did not appear corrupted at this 
+point.  (Though maybe it was ok in page-cache, but corrupted on-disk).
+
+The locale-archive file is read by the libc locale routines using 
+mmap().  The mapping is read only and is not modified.  It seems likely 
+that some process has it mapped when the kernel shuts down.
+
+I tried reproducing this by writting a minimal daemon which maps a copy 
+of the locale-archive file, and starting it just before the filesystem 
+is remounted read-only.  It didn't work though; this copy of the 
+locale-archive file remained uncorrupted.
+
+I forced a fsck on boot, and the filesystem was reported to be clean.  I 
+am currently running with e2fsprogs v1.41.6 (from debian unstable), and 
+a custom-built kernel, 2.6.30-rc7.
+
+Thanks in advance!
+Alan
