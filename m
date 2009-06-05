@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbZFESUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbZFESUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755471AbZFESUO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 14:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZFESUD
+	id S1754959AbZFESUd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 14:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753634AbZFESUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 14:20:03 -0400
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:37974 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752651AbZFESUC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 14:20:02 -0400
-X-Trace: 210086260/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.42.194/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.42.194
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApMCACj/KEpQKSrC/2dsb2JhbAAI0VaECgU
-X-IronPort-AV: E=Sophos;i="4.41,312,1241391600"; 
-   d="scan'208";a="210086260"
-Date: Fri, 5 Jun 2009 19:03:52 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Minchan Kim <minchan.kim@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [PATCH][mmtom] remove annotation of gfp_mask in add_to_swap
-In-Reply-To: <1244212237-14128-1-git-send-email-minchan.kim@gmail.com>
-Message-ID: <Pine.LNX.4.64.0906051858160.14826@sister.anvils>
-References: <1244212237-14128-1-git-send-email-minchan.kim@gmail.com>
+	Fri, 5 Jun 2009 14:20:19 -0400
+Received: from 8bytes.org ([88.198.83.132]:45142 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752144AbZFESUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 14:20:18 -0400
+Date: Fri, 5 Jun 2009 20:20:17 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Torsten Kaiser <just.for.lkml@googlemail.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       lethal@linux-sh.org, hancockrwd@gmail.com, jens.axboe@oracle.com,
+       bharrosh@panasas.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
+Message-ID: <20090605182015.GA10342@8bytes.org>
+References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp> <20090605104132.GE24836@amd.com> <64bb37e0906050852g2be64c7elb2872a6129d13f56@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <64bb37e0906050852g2be64c7elb2872a6129d13f56@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Jun 2009, Minchan Kim wrote:
-
-> Hugh removed add_to_swap's gfp_mask argument.
-> (mm: remove gfp_mask from add_to_swap)
-> So we have to remove annotation of gfp_mask  of the function.
-
-"annotation"?  Or "DocBook comment"?  Or "DocBook annotation"?
-
+On Fri, Jun 05, 2009 at 05:52:27PM +0200, Torsten Kaiser wrote:
 > 
-> This patch cleans up add_to_swap function.
-> It doesn't affect behavior of function.
-> 
-> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> This doesn't look right to me.
+> The comment above says "returns the entry from the hash which fits
+> best", but this will always return NULL, if there are are multiple
+> entrys, but no perfect match.
 
-Thanks, yes, my oversight.
+This is intentional. If there is no perfect-fit there is no way to tell
+which entry was meant. So we potentially report wrong errors with a
+wrong mapping backtrace which confuses even more than the wrong
+"DMA-API: device driver tries to free DMA memory it has not allocated".
 
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Should there be a warning if more then one possible match were found?
 
-> ---
->  mm/swap_state.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/swap_state.c b/mm/swap_state.c
-> index b9ca029..b62e7f5 100644
-> --- a/mm/swap_state.c
-> +++ b/mm/swap_state.c
-> @@ -124,7 +124,6 @@ void __delete_from_swap_cache(struct page *page)
->  /**
->   * add_to_swap - allocate swap space for a page
->   * @page: page we want to move to swap
-> - * @gfp_mask: memory allocation flags
->   *
->   * Allocate swap space for the page and add the page to the
->   * swap cache.  Caller needs to hold the page lock. 
-> -- 
-> 1.5.6.5
+True. That would be better. But I tried to keep the code change as small
+as possible without disabling the feature completly.
+
+> * driver maps address 'a' with size 1
+> * driver maps same address 'a' with size 2
+> * driver wrongly unmaps the second allocation with size 1
+>   -> no warning, because the first allocation is returned
+
+Hmm, I am not sure if we can handle this situation correctly in the
+dma-debug code. There is no unique key to identify a mapping request
+which allows to assign an unmap request to it. Currently dma-debug uses
+device and dma-address. But that seems not to be sufficient. The
+best-fit algorithm is also a but fuzzy of course.
+
+> * driver wants to correctly unmap the first allocation
+>   -> wrong warning about this unmap because size mismatch
+
+Ok, at least we get a warning about a bug. Not very useful because it
+reports the wrong bug. Is this the situation which triggered the
+original bug report?
+
+> Also what about sg_call_ents and sg_mapped_ents?
+> Could it be possible to get the same address/size with different sg-counts.
+
+It looks not forbidden in the API. So I guess this can happen too.
+
+Regards,
+
+	Joerg
