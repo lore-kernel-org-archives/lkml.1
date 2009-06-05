@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbZFER2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbZFERbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755109AbZFER2N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 13:28:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbZFER17
+	id S1755725AbZFERbS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 13:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbZFERbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 13:27:59 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:60918 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbZFER16 (ORCPT
+	Fri, 5 Jun 2009 13:31:04 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:53363 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751079AbZFERbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 13:27:58 -0400
-X-IronPort-AV: E=Sophos;i="4.41,312,1241395200"; 
-   d="scan'208";a="173123527"
-From: Roland Dreier <rdreier@cisco.com>
-To: lkml@MoreThan.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Compile Warning] 2.6.30-rc8 build
-References: <200906051150.17889.lkml@morethan.org>
-X-Message-Flag: Warning: May contain useful information
-Date: Fri, 05 Jun 2009 10:28:00 -0700
-In-Reply-To: <200906051150.17889.lkml@morethan.org> (Michael S. Zick's message
-	of "Fri, 5 Jun 2009 11:50:15 -0500")
-Message-ID: <ada1vpywpy7.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 05 Jun 2009 17:28:00.0663 (UTC) FILETIME=[F97A3A70:01C9E602]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Fri, 5 Jun 2009 13:31:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=ZUfJk0RPyxRGncMVOWd161YEZ9u+pgA/Wz998eaWnQjjyIS1uhzebOkEIyAbeegVJ/
+         jKpaOjYTjtjVaVHT0okm+AHBG29PzKj9aMM4voRgDwCFLNFQGh3UtC3edCYJ7Kv9H0zi
+         O+SgFsWnEXp4oYu1A9HbEkH7qrDhTx4pYlfdc=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH] perfcounter: fix zero or negative refresh delay
+Date: Fri,  5 Jun 2009 19:31:01 +0200
+Message-Id: <1244223061-5399-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+If perf top is executed with a zero value for the refresh rate,
+we get a division by zero exception while computing samples_per_sec.
 
- > I can't argue with gcc on this one either:
- > 
- > drivers/scsi/sd.c: In function 'sd_read_capacity':
- > drivers/scsi/sd.c:1451: warning: comparison is always false due to limited range of data type
- > 
- > It reads to my eyes as if the function can never
- > select read_capacity_16 for very large devices.
+Also a zero refresh rate is not possible, neither do we want to
+accept negative values.
 
-The code is:
+[ Impact: fix division by zero in perf top ]
 
-		if ((sizeof(sdkp->capacity) > 4) &&
-		    (sdkp->capacity > 0xffffffffULL)) {
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ Documentation/perf_counter/builtin-top.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-sdkp->capacity is a sector_t, and <linux/types.h> has:
+diff --git a/Documentation/perf_counter/builtin-top.c b/Documentation/perf_counter/builtin-top.c
+index ff7e13c..b2f480b 100644
+--- a/Documentation/perf_counter/builtin-top.c
++++ b/Documentation/perf_counter/builtin-top.c
+@@ -693,6 +693,9 @@ int cmd_top(int argc, const char **argv, const char *prefix)
+ 		event_id[0] = 0;
+ 	}
+ 
++	if (delay_secs < 1)
++		delay_secs = 1;
++
+ 	for (counter = 0; counter < nr_counters; counter++) {
+ 		if (event_count[counter])
+ 			continue;
+-- 
+1.6.2.3
 
-	#ifdef CONFIG_LBD
-	typedef u64 sector_t;
-	typedef u64 blkcnt_t;
-	#else
-	typedef unsigned long sector_t;
-	typedef unsigned long blkcnt_t;
-	#endif
-
-so if you don't set CONFIG_LBD on a 32-bit architecture, then you are
-correct that sd.c won't ever hit the READ_CAPACITY(16) case, and the
-kernel won't be able to handle large SCSI disks.
