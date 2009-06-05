@@ -1,316 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbZFENn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbZFENt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbZFENn0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 09:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756050AbZFENnO
+	id S1754595AbZFENt7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 09:49:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZFENtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 09:43:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46359 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752726AbZFENnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 09:43:12 -0400
-Date: Fri, 5 Jun 2009 13:42:32 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter tools: Clarify events/samples naming
-Message-ID: <tip-2debbc836696f2a815d02630230584a1754a5022@git.kernel.org>
-Git-Commit-ID: 2debbc836696f2a815d02630230584a1754a5022
-X-Mailer: tip-git-log-daemon
+	Fri, 5 Jun 2009 09:49:51 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:49436 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751419AbZFENtu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 09:49:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=lRMpmaXDIfo2w1BjElv5Tm2xzs+nrUuSfTThq+Tibc1/bwQZFkOEpiNmizU2zgOzwB
+         C80tYUFi7KmdFaC8V+tNY93bcpKjLU0xqZBUA//sKq5VI+01/tKKCpJQGEsZkFKUnSoH
+         83TIadqcZx5DsWvngUqucxWbj0IMVmAgeVX1E=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 05 Jun 2009 13:42:33 +0000 (UTC)
+In-Reply-To: <4A291A2F.3090201@redhat.com>
+References: <20090605030309.GA3872@in.ibm.com> <4A28A2AB.3060108@redhat.com>
+	 <20090605044946.GA11755@balbir.in.ibm.com>
+	 <20090605051050.GB11755@balbir.in.ibm.com>
+	 <4A28AB67.7040800@redhat.com>
+	 <20090605052755.GE11755@balbir.in.ibm.com>
+	 <20090605053159.GB3872@in.ibm.com> <4A28B4CE.4010004@redhat.com>
+	 <20090605093947.GJ11755@balbir.in.ibm.com>
+	 <4A291A2F.3090201@redhat.com>
+Date: Fri, 5 Jun 2009 19:12:26 +0530
+X-Google-Sender-Auth: b764497af4873cdd
+Message-ID: <661de9470906050642s7774d601l53e366c77ffa7475@mail.gmail.com>
+Subject: Re: [RFC] CPU hard limits
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelyanov <xemul@openvz.org>, kvm@vger.kernel.org,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Herbert Poetzl <herbert@13thfloor.at>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2debbc836696f2a815d02630230584a1754a5022
-Gitweb:     http://git.kernel.org/tip/2debbc836696f2a815d02630230584a1754a5022
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Fri, 5 Jun 2009 14:29:10 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 5 Jun 2009 14:32:19 +0200
+On Fri, Jun 5, 2009 at 6:44 PM, Avi Kivity<avi@redhat.com> wrote:
+> Balbir Singh wrote:
+>>>
+>>> That's the limit part.  I'd like to be able to specify limits and
+>>>  guarantees on the same host and for the same groups; I don't think that
+>>>  works when you advance the bandwidth period.
+>>>
+>>
+>> Yes, this feature needs to be configurable. But your use case for both
+>> limits and guarantees is interesting. We spoke to Peter and he was
+>> convinced only of the guarantee use case. Could you please help
+>> elaborate your use case, so that we can incorporate it into RFC v2 we
+>> send out. Peter is opposed to having hard limits and is convinced that
+>> they are not generally useful, so far I seen you and Paul say it is
+>> useful, any arguments you have or any +1 from you will help us. Peter
+>> I am not back stabbing you :)
+>>
+>
+> I am selling virtual private servers.  A 10% cpu share costs $x/month, and I
+> guarantee you'll get that 10%, or your money back.  On the other hand, I
+> want to limit cpu usage to that 10% (maybe a little more) so people don't
+> buy 10% shares and use 100% on my underutilized servers.  If they want 100%,
+> let them pay for 100%.
 
-perf_counter tools: Clarify events/samples naming
+Excellent examples, we've covered them in the RFC, could you see if we
+missed anything in terms of use cases? The real question is do we care
+enough to build hard limits control into the CFS group scheduler. I
+believe we should.
 
-A number of places said 'events' while they should say 'samples'.
+>
+>>> I think we need to treat guarantees as first-class goals, not something
+>>>  derived from limits (in fact I think guarantees are more useful as they
+>>>  can be used to provide SLAs).
+>>>
+>>
+>> Even limits are useful for SLA's since your b/w available changes
+>> quite drastically as we add or remove groups. There are other use
+>> cases for limits as well
+>
+> SLAs are specified in terms of guarantees on a service, not on limits on
+> others.  If we could use limits to provide guarantees, that would be fine,
+> but it doesn't quite work out.
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+To be honest, I would disagree here, specifically if you start
+comparing how you would build guarantees in the kernel and compare it
+with the proposed approach. I don't want to harp on the technicality,
+but point out the feasibility for people who care for lower end of the
+guarantee without requiring density. I think the real technical
+discussion should be on here are the use cases, lets agree on the need
+for the feature and go ahead and start prototyping the feature.
 
-
----
- Documentation/perf_counter/builtin-record.c |   22 ++++++------
- Documentation/perf_counter/builtin-report.c |    2 +-
- Documentation/perf_counter/builtin-top.c    |   46 +++++++++++++-------------
- 3 files changed, 35 insertions(+), 35 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-record.c b/Documentation/perf_counter/builtin-record.c
-index e2301f3..d4ad305 100644
---- a/Documentation/perf_counter/builtin-record.c
-+++ b/Documentation/perf_counter/builtin-record.c
-@@ -65,7 +65,7 @@ static unsigned int mmap_read_head(struct mmap_data *md)
- 	return head;
- }
- 
--static long events;
-+static long samples;
- static struct timeval last_read, this_read;
- 
- static __u64 bytes_written;
-@@ -83,7 +83,7 @@ static void mmap_read(struct mmap_data *md)
- 
- 	/*
- 	 * If we're further behind than half the buffer, there's a chance
--	 * the writer will bite our tail and screw up the events under us.
-+	 * the writer will bite our tail and mess up the samples under us.
- 	 *
- 	 * If we somehow ended up ahead of the head, we got messed up.
- 	 *
-@@ -109,7 +109,7 @@ static void mmap_read(struct mmap_data *md)
- 	last_read = this_read;
- 
- 	if (old != head)
--		events++;
-+		samples++;
- 
- 	size = head - old;
- 
-@@ -257,7 +257,7 @@ out_failure:
- 	exit(EXIT_FAILURE);
- }
- 
--static void pid_synthesize_mmap_events(pid_t pid)
-+static void pid_synthesize_mmap_samples(pid_t pid)
- {
- 	char filename[PATH_MAX];
- 	FILE *fp;
-@@ -315,7 +315,7 @@ static void pid_synthesize_mmap_events(pid_t pid)
- 	fclose(fp);
- }
- 
--static void synthesize_events(void)
-+static void synthesize_samples(void)
- {
- 	DIR *proc;
- 	struct dirent dirent, *next;
-@@ -331,7 +331,7 @@ static void synthesize_events(void)
- 			continue;
- 
- 		pid_synthesize_comm_event(pid, 1);
--		pid_synthesize_mmap_events(pid);
-+		pid_synthesize_mmap_samples(pid);
- 	}
- 
- 	closedir(proc);
-@@ -396,7 +396,7 @@ static void open_counters(int cpu, pid_t pid)
- 
- 	if (pid > 0) {
- 		pid_synthesize_comm_event(pid, 0);
--		pid_synthesize_mmap_events(pid);
-+		pid_synthesize_mmap_samples(pid);
- 	}
- 
- 	group_fd = -1;
-@@ -469,17 +469,17 @@ static int __cmd_record(int argc, const char **argv)
- 	}
- 
- 	if (system_wide)
--		synthesize_events();
-+		synthesize_samples();
- 
- 	while (!done) {
--		int hits = events;
-+		int hits = samples;
- 
- 		for (i = 0; i < nr_cpu; i++) {
- 			for (counter = 0; counter < nr_counters; counter++)
- 				mmap_read(&mmap_array[i][counter]);
- 		}
- 
--		if (hits == events)
-+		if (hits == samples)
- 			ret = poll(event_array, nr_poll, 100);
- 	}
- 
-@@ -487,7 +487,7 @@ static int __cmd_record(int argc, const char **argv)
- 	 * Approximate RIP event size: 24 bytes.
- 	 */
- 	fprintf(stderr,
--		"[ perf record: Captured and wrote %.3f MB %s (~%lld events) ]\n",
-+		"[ perf record: Captured and wrote %.3f MB %s (~%lld samples) ]\n",
- 		(double)bytes_written / 1024.0 / 1024.0,
- 		output_name,
- 		bytes_written / 24);
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index ca303fd..5af105c 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -857,7 +857,7 @@ static size_t output__fprintf(FILE *fp, uint64_t total_samples)
- 
- 	fprintf(fp, "\n");
- 	fprintf(fp, "#\n");
--	fprintf(fp, "# (%Ld profiler events)\n", (__u64)total_samples);
-+	fprintf(fp, "# (%Ld samples)\n", (__u64)total_samples);
- 	fprintf(fp, "#\n");
- 
- 	fprintf(fp, "# Overhead");
-diff --git a/Documentation/perf_counter/builtin-top.c b/Documentation/perf_counter/builtin-top.c
-index 2fee595..ff7e13c 100644
---- a/Documentation/perf_counter/builtin-top.c
-+++ b/Documentation/perf_counter/builtin-top.c
-@@ -137,8 +137,8 @@ static double sym_weight(const struct sym_entry *sym)
- 	return weight;
- }
- 
--static long			events;
--static long			userspace_events;
-+static long			samples;
-+static long			userspace_samples;
- static const char		CONSOLE_CLEAR[] = "[H[2J";
- 
- static void __list_insert_active_sym(struct sym_entry *syme)
-@@ -177,14 +177,14 @@ static void print_sym_table(void)
- {
- 	int printed = 0, j;
- 	int counter;
--	float events_per_sec = events/delay_secs;
--	float kevents_per_sec = (events-userspace_events)/delay_secs;
--	float sum_kevents = 0.0;
-+	float samples_per_sec = samples/delay_secs;
-+	float ksamples_per_sec = (samples-userspace_samples)/delay_secs;
-+	float sum_ksamples = 0.0;
- 	struct sym_entry *syme, *n;
- 	struct rb_root tmp = RB_ROOT;
- 	struct rb_node *nd;
- 
--	events = userspace_events = 0;
-+	samples = userspace_samples = 0;
- 
- 	/* Sort the active symbols */
- 	pthread_mutex_lock(&active_symbols_lock);
-@@ -196,7 +196,7 @@ static void print_sym_table(void)
- 		if (syme->snap_count != 0) {
- 			syme->weight = sym_weight(syme);
- 			rb_insert_active_sym(&tmp, syme);
--			sum_kevents += syme->snap_count;
-+			sum_ksamples += syme->snap_count;
- 
- 			for (j = 0; j < nr_counters; j++)
- 				syme->count[j] = zero ? 0 : syme->count[j] * 7 / 8;
-@@ -209,8 +209,8 @@ static void print_sym_table(void)
- 	printf(
- "------------------------------------------------------------------------------\n");
- 	printf( "   PerfTop:%8.0f irqs/sec  kernel:%4.1f%% [",
--		events_per_sec,
--		100.0 - (100.0*((events_per_sec-kevents_per_sec)/events_per_sec)));
-+		samples_per_sec,
-+		100.0 - (100.0*((samples_per_sec-ksamples_per_sec)/samples_per_sec)));
- 
- 	if (nr_counters == 1) {
- 		printf("%d", event_count[0]);
-@@ -246,12 +246,12 @@ static void print_sym_table(void)
- 	printf("------------------------------------------------------------------------------\n\n");
- 
- 	if (nr_counters == 1)
--		printf("             events    pcnt");
-+		printf("             samples    pcnt");
- 	else
--		printf("  weight     events    pcnt");
-+		printf("  weight     samples    pcnt");
- 
- 	printf("         RIP          kernel function\n"
--	       	       "  ______     ______   _____   ________________   _______________\n\n"
-+	       	       "  ______     _______   _____   ________________   _______________\n\n"
- 	);
- 
- 	for (nd = rb_first(&tmp); nd; nd = rb_next(nd)) {
-@@ -263,8 +263,8 @@ static void print_sym_table(void)
- 		if (++printed > print_entries || syme->snap_count < count_filter)
- 			continue;
- 
--		pcnt = 100.0 - (100.0 * ((sum_kevents - syme->snap_count) /
--					 sum_kevents));
-+		pcnt = 100.0 - (100.0 * ((sum_ksamples - syme->snap_count) /
-+					 sum_ksamples));
- 
- 		/*
- 		 * We color high-overhead entries in red, low-overhead
-@@ -276,9 +276,9 @@ static void print_sym_table(void)
- 			color = PERF_COLOR_GREEN;
- 
- 		if (nr_counters == 1)
--			printf("%19.2f - ", syme->weight);
-+			printf("%20.2f - ", syme->weight);
- 		else
--			printf("%8.1f %10ld - ", syme->weight, syme->snap_count);
-+			printf("%9.1f %10ld - ", syme->weight, syme->snap_count);
- 
- 		color_fprintf(stdout, color, "%4.1f%%", pcnt);
- 		printf(" - %016llx : %s\n", sym->start, sym->name);
-@@ -318,7 +318,7 @@ static int symbol_filter(struct dso *self, struct symbol *sym)
- 		return 1;
- 
- 	syme = dso__sym_priv(self, sym);
--	/* Tag events to be skipped. */
-+	/* Tag samples to be skipped. */
- 	if (!strcmp("default_idle", name) ||
- 	    !strcmp("cpu_idle", name) ||
- 	    !strcmp("enter_idle", name) ||
-@@ -405,15 +405,15 @@ static void record_ip(uint64_t ip, int counter)
- 		}
- 	}
- 
--	events--;
-+	samples--;
- }
- 
- static void process_event(uint64_t ip, int counter)
- {
--	events++;
-+	samples++;
- 
- 	if (ip < min_ip || ip > max_ip) {
--		userspace_events++;
-+		userspace_samples++;
- 		return;
- 	}
- 
-@@ -451,7 +451,7 @@ static void mmap_read(struct mmap_data *md)
- 
- 	/*
- 	 * If we're further behind than half the buffer, there's a chance
--	 * the writer will bite our tail and screw up the events under us.
-+	 * the writer will bite our tail and mess up the samples under us.
- 	 *
- 	 * If we somehow ended up ahead of the head, we got messed up.
- 	 *
-@@ -608,14 +608,14 @@ static int __cmd_top(void)
- 	}
- 
- 	while (1) {
--		int hits = events;
-+		int hits = samples;
- 
- 		for (i = 0; i < nr_cpus; i++) {
- 			for (counter = 0; counter < nr_counters; counter++)
- 				mmap_read(&mmap_array[i][counter]);
- 		}
- 
--		if (hits == events)
-+		if (hits == samples)
- 			ret = poll(event_array, nr_poll, 100);
- 	}
- 
+Thanks,
+Balbir
