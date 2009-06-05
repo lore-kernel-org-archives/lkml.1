@@ -1,161 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbZFEGwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbZFEG4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755679AbZFEGwq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 02:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755565AbZFEGwg
+	id S1754784AbZFEG4w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 02:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZFEG4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 02:52:36 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:36359 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755483AbZFEGwe (ORCPT
+	Fri, 5 Jun 2009 02:56:45 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:16635 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbZFEG4o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 02:52:34 -0400
-Date: Fri, 5 Jun 2009 12:22:32 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>
-Subject: Re: [PATCH -tip v9 3/7] kprobes: checks probe address is
-	instruction boudary on x86
-Message-ID: <20090605065232.GB4164@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20090602003709.29255.48248.stgit@localhost.localdomain> <20090602003731.29255.33432.stgit@localhost.localdomain>
+	Fri, 5 Jun 2009 02:56:44 -0400
+Message-ID: <4A28C1A4.9050708@oracle.com>
+Date: Fri, 05 Jun 2009 14:56:36 +0800
+From: Tao Ma <tao.ma@oracle.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090602003731.29255.33432.stgit@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64
+ 2.6.30-rc8.
+References: <4A289928.7040508@oracle.com> <20090605054902.GF7962@cr0.nay.redhat.com> <4A28B63E.1080004@oracle.com> <20090605064316.GB8171@cr0.nay.redhat.com>
+In-Reply-To: <20090605064316.GB8171@cr0.nay.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt004.oracle.com [141.146.116.13]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4A28C1A9.009D:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 01, 2009 at 08:37:31PM -0400, Masami Hiramatsu wrote:
-> Ensure safeness of inserting kprobes by checking whether the specified
-> address is at the first byte of a instruction on x86.
-> This is done by decoding probed function from its head to the probe point.
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Cc: Jim Keniston <jkenisto@us.ibm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
 
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-> ---
+Amerigo Wang wrote:
+> On Fri, Jun 05, 2009 at 02:07:58PM +0800, Tao Ma wrote:
+>>
+>> Amerigo Wang wrote:
+>>> On Fri, Jun 05, 2009 at 12:03:52PM +0800, Tao Ma wrote:
+>>>> Hi list,
+>>>>       In 2.6.30-rc8, /proc/kcore in x86_64's size is unreasonable 
+>>>> large  to be 281474974617600.
+>>>> While in a x86 box, it is 931131392 which looks sane.
+>>>>
+>>>> [root@test8 ~]# ll /proc/kcore
+>>>> -r-------- 1 root root 281474974617600 Jun  5 11:15 /proc/kcore
+>>>>
+>>>> [root@ocfs2-test9 ~]$ ll /proc/kcore
+>>>> -r-------- 1 root root 931131392 Jun  5 11:58 /proc/kcore
+>>> Hmm, what is your physical RAM size on test8?
+>>> /proc/kcore looks fine on my x86_64 box.
+>> Only 4G.
 > 
->  arch/x86/kernel/kprobes.c |   69 +++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 69 insertions(+), 0 deletions(-)
+> Hmm, my x86_box has 8G mem, the size of kcore looks much
+> saner than the above huge number, but it is still wrong
+> according to what the man page describes...
 > 
-> diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-> index 7b5169d..41d524f 100644
-> --- a/arch/x86/kernel/kprobes.c
-> +++ b/arch/x86/kernel/kprobes.c
-> @@ -48,12 +48,14 @@
->  #include <linux/preempt.h>
->  #include <linux/module.h>
->  #include <linux/kdebug.h>
-> +#include <linux/kallsyms.h>
+> Please do what Andrew said, it will be helpful.
 > 
->  #include <asm/cacheflush.h>
->  #include <asm/desc.h>
->  #include <asm/pgtable.h>
->  #include <asm/uaccess.h>
->  #include <asm/alternative.h>
-> +#include <asm/insn.h>
+>>>> I just noticed this when kexec fails in "Can't find kernel text map 
+>>>> area  from kcore".
+>>>>
+>>>> Is there something wrong?
+>>> It looks like that error message is from userspace?
+>> I just started kdump and get the error message.
 > 
->  void jprobe_return_end(void);
-> 
-> @@ -244,6 +246,71 @@ retry:
->  	}
->  }
-> 
-> +/* Recover the probed instruction at addr for further analysis. */
-> +static int recover_probed_instruction(kprobe_opcode_t *buf, unsigned long addr)
-> +{
-> +	struct kprobe *kp;
-> +	kp = get_kprobe((void *)addr);
-> +	if (!kp)
-> +		return -EINVAL;
-> +
-> +	/*
-> +	 *  Basically, kp->ainsn.insn has an original instruction.
-> +	 *  However, RIP-relative instruction can not do single-stepping
-> +	 *  at different place, fix_riprel() tweaks the displacement of
-> +	 *  that instruction. In that case, we can't recover the instruction
-> +	 *  from the kp->ainsn.insn.
-> +	 *
-> +	 *  On the other hand, kp->opcode has a copy of the first byte of
-> +	 *  the probed instruction, which is overwritten by int3. And
-> +	 *  the instruction at kp->addr is not modified by kprobes except
-> +	 *  for the first byte, we can recover the original instruction
-> +	 *  from it and kp->opcode.
-> +	 */
-> +	memcpy(buf, kp->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
-> +	buf[0] = kp->opcode;
-> +	return 0;
-> +}
-> +
-> +/* Dummy buffers for kallsyms_lookup */
-> +static char __dummy_buf[KSYM_NAME_LEN];
-> +
-> +/* Check if paddr is at an instruction boundary */
-> +static int __kprobes can_probe(unsigned long paddr)
-> +{
-> +	int ret;
-> +	unsigned long addr, offset = 0;
-> +	struct insn insn;
-> +	kprobe_opcode_t buf[MAX_INSN_SIZE];
-> +
-> +	if (!kallsyms_lookup(paddr, NULL, &offset, NULL, __dummy_buf))
-> +		return 0;
-> +
-> +	/* Decode instructions */
-> +	addr = paddr - offset;
-> +	while (addr < paddr) {
-> +		kernel_insn_init(&insn, (void *)addr);
-> +		insn_get_opcode(&insn);
-> +
-> +		/* Check if the instruction has been modified. */
-> +		if (OPCODE1(&insn) == BREAKPOINT_INSTRUCTION) {
-> +			ret = recover_probed_instruction(buf, addr);
-> +			if (ret)
-> +				/*
-> +				 * Another debugging subsystem might insert
-> +				 * this breakpoint. In that case, we can't
-> +				 * recover it.
-> +				 */
-> +				return 0;
-> +			kernel_insn_init(&insn, buf);
-> +		}
-> +		insn_get_length(&insn);
-> +		addr += insn.length;
-> +	}
-> +
-> +	return (addr == paddr);
-> +}
-> +
->  /*
->   * Returns non-zero if opcode modifies the interrupt flag.
->   */
-> @@ -359,6 +426,8 @@ static void __kprobes arch_copy_kprobe(struct kprobe *p)
-> 
->  int __kprobes arch_prepare_kprobe(struct kprobe *p)
->  {
-> +	if (!can_probe((unsigned long)p->addr))
-> +		return -EILSEQ;
->  	/* insn: must be on special executable page on x86. */
->  	p->ainsn.insn = get_insn_slot();
->  	if (!p->ainsn.insn)
-> 
-> 
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America), Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
+> IIRC, kdump should use /proc/vmcore, instead of /proc/kcore...
+> nothing related.
+in el5, when start kdump service it will do something like
+/sbin/kexec --args-linux -p '--command-line=ro root=LABEL=/ rhgb quiet 
+irqpoll maxcpus=1' --initrd=/boot/initrd-2.6.18-53.el5kdump.img 
+/boot/vmlinuz-2.6.18-53.el5
+
+And the error message is from there.
+
+Regards,
+Tao
