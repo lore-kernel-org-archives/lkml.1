@@ -1,88 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZFEOHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbZFEOND@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287AbZFEOHT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 10:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZFEOHJ
+	id S1753974AbZFEOND (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 10:13:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbZFEOMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 10:07:09 -0400
-Received: from viefep16-int.chello.at ([62.179.121.36]:35486 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbZFEOHI (ORCPT
+	Fri, 5 Jun 2009 10:12:54 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:37367 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752072AbZFEOMx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 10:07:08 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [tip:perfcounters/core] perf report: Deal with maps
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <20090605135735.GP7805@ghostprotocols.net>
-References: <tip-fc54db5105d01ad691a7d747064c7890e17f936c@git.kernel.org>
-	 <20090605135735.GP7805@ghostprotocols.net>
-Content-Type: text/plain
-Date: Fri, 05 Jun 2009 16:06:24 +0200
-Message-Id: <1244210784.13761.4411.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 5 Jun 2009 10:12:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LeNQtJ/LMMy1nqIAzqErzQ8R13222+UDAS3i6rHLIQoNmSoV/nBZimOUYGywqxixJ4
+         c9Q2qi729Rz8PdwrSktSHJ/YX+Y1RWaC4YdcXgnycN8bdL7RIc+5x2QpFrclXaNdF5Gn
+         M1E2TwkBMcPRCsJTjcYLRdmk2MJqAc0pJg7ZY=
+MIME-Version: 1.0
+In-Reply-To: <4A288F85.6010809@tlinx.org>
+References: <4A288F85.6010809@tlinx.org>
+Date: Fri, 5 Jun 2009 16:12:53 +0200
+Message-ID: <4e5e476b0906050712m33d3cd70kdf60434723f131c1@mail.gmail.com>
+Subject: Re: ionice priority "none: prio 0" v. "none: prio 1" v. best-effort 
+	v. idle?
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Linda Walsh <lkml@tlinx.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-05 at 10:57 -0300, Arnaldo Carvalho de Melo wrote:
-> Em Fri, Jun 05, 2009 at 01:21:54PM +0000, tip-bot for Peter Zijlstra escreveu:
-> > Commit-ID:  fc54db5105d01ad691a7d747064c7890e17f936c
-> > Gitweb:     http://git.kernel.org/tip/fc54db5105d01ad691a7d747064c7890e17f936c
-> > Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > AuthorDate: Fri, 5 Jun 2009 14:04:59 +0200
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Fri, 5 Jun 2009 14:46:41 +0200
-> > 
-> > perf report: Deal with maps
-> > 
-> > In order to deal with [vdso] maps generalize the ip->symbol path
-> > a bit and allow to override some bits with custom functions.
-> > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Cc: Mike Galbraith <efault@gmx.de>
-> > Cc: Paul Mackerras <paulus@samba.org>
-> > Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> > LKML-Reference: <new-submission>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > 
-> > 
-> > ---
-> >  Documentation/perf_counter/builtin-report.c |   37 +++++++++++++++++++++++++-
-> >  Documentation/perf_counter/util/symbol.c    |    1 +
-> >  Documentation/perf_counter/util/symbol.h    |    1 +
-> >  3 files changed, 37 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-> > index eb5424f..9783d1e 100644
-> > --- a/Documentation/perf_counter/builtin-report.c
-> > +++ b/Documentation/perf_counter/builtin-report.c
-> > @@ -79,6 +79,7 @@ typedef union event_union {
-> >  
-> >  static LIST_HEAD(dsos);
-> >  static struct dso *kernel_dso;
-> > +static struct dso *vdso;
-> >  
-> >  static void dsos__add(struct dso *dso)
-> >  {
-> > @@ -136,6 +137,11 @@ static void dsos__fprintf(FILE *fp)
-> >  		dso__fprintf(pos, fp);
-> >  }
-> >  
-> > +static struct symbol *vdso__find_symbol(struct dso *dso, uint64_t ip)
-> > +{
-> > +	return dso__find_symbol(kernel_dso, ip);
-> > +}
-> 
-> Cut'n'paste error? s/kernel_dso/vdso/g
+Hi Linda,
+the ioprio class 'none' is the default class in which all processes
+are put when created, if not specified otherwise (this is in contrast
+with what I read in the man page, where it says Best Effort is the
+default).
+For CFQ (other io schedulers just ignore it), the 'none' class has a
+special meaning, in fact, looking at:
+http://git.kernel.org/?p=linux/kernel/git/aegl/linux-2.6.git;a=blob;f=block/cfq-iosched.c;h=a55a9bd75bd1baf616a3a1b7118acaeee328759f;hb=HEAD#l1579
+you will see that for processes with class 'none', the class and
+priority will be inherited from CPU scheduling (including RT
+scheduling & nice levels).
 
-Ah, no, intentional cheating ;-)
+HTH,
+Corrado
 
-the kernel dso includes the vdso symbols
+On Fri, Jun 5, 2009 at 5:22 AM, Linda Walsh<lkml@tlinx.org> wrote:
+> <-- vim: se sts=4 sw=4 ts=8 nosi sc ai: /--> I was looking at the output of
+> ionice on the various processes
+> running.
+>
+> Other than one I set for 'best-effort' (-c2), the rest all had
+> priorities of
+>   1) "none: prio 0"
+> OR
+>   2) "none: prio 4"
+>
+> Out of 183 process:
+>
+>  79 had "none: prio 0"   and
+> 103 had "none: prio 4"
+> (1 had "best effort, prio 4").
+>
+> Where does priority class  'none' fit in?  above or below 'idle'?
+>
+> Or is 'none' equal to 'best effort' (which is logical in once sense, but
+> strictly, I could argue 'none' is at least below 'best effort', and possibly
+> below idle, as 'idle' at least has been assigned a scheduling priority
+> (vs. processes that have not -- BUT, but definition, idle is clearly meant
+> to be lower precedence, so that would argue, logically, that 'none' is
+> above idle and below 'best_effort' (since processes with no assigned
+> priority would logically be below those assigned as 'best effort'.
+>
+> Within 'besteffort', 0=high, and 7=low.
+>
+> Is the same true in 'none', or are the values 'meaningless'?
+> (In which case, why do they all exist at either 4 or 0?)
+>
+> Since the iopriority DOES NOT correlate with either
+> the cpu priority nor 'nice' value, then how are different
+> processes assigned different priority values?
+> They *seem* to be mostly fixed, but very rarely I'll see maybe
+> 1 process toggle from 0 to 4 or back (but its usually fixed).
+>
+> So why is everything in the 'none' class at either "highest level" (prio
+> 0), OR the mid level of prio=4?  Um...found exception on a 32-bit i386
+> based kernel, all prio's are "none: prio 0". But two different x86_64 bit
+> kernels have "a split", majority in none:prio 4, and a minority of
+> 25-44% in 'none:prio 4'.
+>
+> I'm using the cfq scheduler on all 3 machines.
+>
+> So what is it with 'schedclass'=none?  Is it lower than 'best effort'?  (I'd
+> hope so, or like to see it that way, but wants are nice...:-))...
+>
+> If they *ARE* the same, why are 44% running at highest priority
+> (regardless of cpu prio, 'nice' value, user-id, and the rest at 'mid')?
+>
+> Why so random, but worse, why put any at 'highest' (unless they
+> ask for it).  Wouldn't 'mid' priority be consistent with 'mid-cpu-nice'
+> value of 0 (out of +/-19)?
+>
+> FWIW -- I thought once the priorities varied dynamically based on
+> cpu-nice levels (for cfq, anyway)...it would be VERY nice to see that
+> reflected in the readable ionice data for those processes.
+>
+> Thanks for clarification/enlightenment...
+> Linda
+>
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
 
+
+-- 
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
+The self-confidence of a warrior is not the self-confidence of the average
+man. The average man seeks certainty in the eyes of the onlooker and calls
+that self-confidence. The warrior seeks impeccability in his own eyes and
+calls that humbleness.
+                               Tales of Power - C. Castaneda
