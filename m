@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757806AbZFEXs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbZFEXuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757806AbZFEXs6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 19:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756251AbZFEXl7
+	id S1756343AbZFEXuR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 19:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbZFEXmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 19:41:59 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:36415 "EHLO
+	Fri, 5 Jun 2009 19:42:06 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:36404 "EHLO
 	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755463AbZFEXlL (ORCPT
+	with ESMTP id S1755400AbZFEXlK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 19:41:11 -0400
+	Fri, 5 Jun 2009 19:41:10 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 20/39] kbuild: allow docproc invocation from external
-Date: Sat,  6 Jun 2009 01:42:38 +0200
-Message-Id: <1244245377-17441-20-git-send-email-sam@ravnborg.org>
+Cc: maximilian attems <max@stro.at>, Frans Pop <elendil@planet.nl>,
+       Andres Salomon <dilinger@debian.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH 12/39] kbuild, deb-pkg: fix generated package name
+Date: Sat,  6 Jun 2009 01:42:30 +0200
+Message-Id: <1244245377-17441-12-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.3.rc3.40.g75b44
 In-Reply-To: <20090605233720.GA13588@uranus.ravnborg.org>
 References: <20090605233720.GA13588@uranus.ravnborg.org>
@@ -24,75 +25,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: maximilian attems <max@stro.at>
 
-- getcwd returns path without a slash at the end, add the slash
-- add KBUILD_SRC env support, so that we can specify path for
-  kernel (to know where scripts/kernel-doc resides) and SRCTREE
-  (for searching files referenced in .tmpl) separately
+The binary package that make deb-pkg creates is a linux-image.
+To be fixed may also be the addition of $DEB_ARCH.
 
-[v2]
-- use KBUILD_SRC instead of a newly introduced environment variable
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: maximilian attems <max@stro.at>
+Signed-off-by: Frans Pop <elendil@planet.nl>
+Cc: Andres Salomon <dilinger@debian.org>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/basic/docproc.c |   13 +++++++++----
- 1 files changed, 9 insertions(+), 4 deletions(-)
+ scripts/package/builddeb |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/scripts/basic/docproc.c b/scripts/basic/docproc.c
-index 35bdc68..4c9523e 100644
---- a/scripts/basic/docproc.c
-+++ b/scripts/basic/docproc.c
-@@ -69,7 +69,7 @@ FILELINE * docsection;
- #define NOFUNCTION    "-nofunction"
- #define NODOCSECTIONS "-no-doc-sections"
+diff --git a/scripts/package/builddeb b/scripts/package/builddeb
+index 6d3b7e5..1ade570 100644
+--- a/scripts/package/builddeb
++++ b/scripts/package/builddeb
+@@ -36,7 +36,7 @@ else
+ fi
+ tmpdir="$objtree/debian/tmp"
+ fwdir="$objtree/debian/fwtmp"
+-packagename=linux-$version
++packagename=linux-image-$version
+ fwpackagename=linux-firmware-image
  
--char *srctree;
-+static char *srctree, *kernsrctree;
- 
- void usage (void)
- {
-@@ -77,7 +77,8 @@ void usage (void)
- 	fprintf(stderr, "Input is read from file.tmpl. Output is sent to stdout\n");
- 	fprintf(stderr, "doc: frontend when generating kernel documentation\n");
- 	fprintf(stderr, "depend: generate list of files referenced within file\n");
--	fprintf(stderr, "Environment variable SRCTREE: absolute path to kernel source tree.\n");
-+	fprintf(stderr, "Environment variable SRCTREE: absolute path to sources.\n");
-+	fprintf(stderr, "                     KBUILD_SRC: absolute path to kernel source tree.\n");
- }
- 
- /*
-@@ -96,8 +97,8 @@ void exec_kernel_doc(char **svec)
- 			exit(1);
- 		case  0:
- 			memset(real_filename, 0, sizeof(real_filename));
--			strncat(real_filename, srctree, PATH_MAX);
--			strncat(real_filename, KERNELDOCPATH KERNELDOC,
-+			strncat(real_filename, kernsrctree, PATH_MAX);
-+			strncat(real_filename, "/" KERNELDOCPATH KERNELDOC,
- 					PATH_MAX - strlen(real_filename));
- 			execvp(real_filename, svec);
- 			fprintf(stderr, "exec ");
-@@ -178,6 +179,7 @@ void find_export_symbols(char * filename)
- 		char real_filename[PATH_MAX + 1];
- 		memset(real_filename, 0, sizeof(real_filename));
- 		strncat(real_filename, srctree, PATH_MAX);
-+		strncat(real_filename, "/", PATH_MAX - strlen(real_filename));
- 		strncat(real_filename, filename,
- 				PATH_MAX - strlen(real_filename));
- 		sym = add_new_file(filename);
-@@ -382,6 +384,9 @@ int main(int argc, char *argv[])
- 	srctree = getenv("SRCTREE");
- 	if (!srctree)
- 		srctree = getcwd(NULL, 0);
-+	kernsrctree = getenv("KBUILD_SRC");
-+	if (!kernsrctree)
-+		kernsrctree = srctree;
- 	if (argc != 3) {
- 		usage();
- 		exit(1);
+ if [ "$ARCH" = "um" ] ; then
 -- 
 1.6.3.rc3.40.g75b44
 
