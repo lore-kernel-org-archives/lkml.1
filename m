@@ -1,114 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbZFEQ0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbZFEQ1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048AbZFEQ0N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 12:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZFEQZz
+	id S1755293AbZFEQ1a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 12:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZFEQ1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 12:25:55 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:45336 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751302AbZFEQZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 12:25:53 -0400
-Date: Fri, 5 Jun 2009 09:25:53 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Gregory Haskins <gregory.haskins@gmail.com>,
-       "Michael S. Tsirkin" <mst@redhat.com>, Avi Kivity <avi@redhat.com>,
-       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
-       agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
-       anthony@codemonkey.ws, netdev@vger.kernel.org, kvm@vger.kernel.org,
-       bhutchings@solarflare.com, andi@firstfloor.org, gregkh@suse.de,
-       herber@gondor.apana.org.au, chrisw@sous-sol.org, shemminger@vyatta.com
-Subject: Re: [RFC PATCH v2 00/19] virtual-bus
-Message-ID: <20090605162553.GC6778@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090409155200.32740.19358.stgit@dev.haskins.net> <200906051425.02924.rusty@rustcorp.com.au> <20090605053010.GD7125@linux.vnet.ibm.com> <200906060025.57961.rusty@rustcorp.com.au>
+	Fri, 5 Jun 2009 12:27:22 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:44124 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751670AbZFEQ1V convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 12:27:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=xZ0lgldW9K+HusP3WYc2FescX85UDhq+qYIjPU2TTvnOxYP9kYh9D6kB7ofLBR4kAn
+         eOTmvqbn2XLPG7/Cm1AVOBW1Jb6YzG0IrtnzmsZSeMAyQN/YKsY9+tko10qw9oe9fxTm
+         rGdmyWt44YqK/1KXXCxD8I5i8Bb1z3JwLcFmk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906060025.57961.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20090604234911.GC5460@sortiz.org>
+References: <1244140576-18006-1-git-send-email-philipp.zabel@gmail.com>
+	 <1244140576-18006-3-git-send-email-philipp.zabel@gmail.com>
+	 <20090604234911.GC5460@sortiz.org>
+Date: Fri, 5 Jun 2009 18:27:20 +0200
+Message-ID: <74d0deb30906050927i428f732ehc76ac592c87d44b3@mail.gmail.com>
+Subject: Re: [PATCH 2/7] MFD: ASIC3: add clock handling for MFD cells
+From: pHilipp Zabel <philipp.zabel@gmail.com>
+To: Samuel Ortiz <sameo@openedhand.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 06, 2009 at 12:25:57AM +0930, Rusty Russell wrote:
-> On Fri, 5 Jun 2009 03:00:10 pm Paul E. McKenney wrote:
-> > On Fri, Jun 05, 2009 at 02:25:01PM +0930, Rusty Russell wrote:
-> > > +	/* lg->eventfds is RCU-protected */
-> > > +	preempt_disable();
-> >
-> > Suggest changing to rcu_read_lock() to match the synchronize_rcu().
-> 
-> Ah yes, much better.  As I was implementing it I warred with myself since
-> lguest aims for simplicity above all else.  But since we only ever add things
-> to the array, RCU probably is simpler.
+On Fri, Jun 5, 2009 at 1:49 AM, Samuel Ortiz<sameo@openedhand.com> wrote:
+> Hi Philipp,
+>
+> On Thu, Jun 04, 2009 at 08:36:11PM +0200, Philipp Zabel wrote:
+>> +
+>> +struct asic3_clk {
+>> +     int enabled;
+> You probably want to use a kref here.
+>
+>> +static int asic3_clk_enable(struct asic3 *asic, struct asic3_clk *clk)
+>> +{
+>> +     unsigned long flags;
+>> +     u32 cdex;
+>> +
+>> +     spin_lock_irqsave(&asic->lock, flags);
+>> +     if (clk->enabled++ == 0) {
+> using the kref API here would definitely be nicer.
 
-;-)
+While I agree that the kref API looks nice, I'm not convinced it is
+intended to be used in this case. We are not counting references here.
+There is no way to get the count back from the API, which we need to
+decide whether or not to flip the CDEX bits. We could misuse the
+release function pointer given to kref_put to turn off the clock, but
+I'd prefer to leave it the way it is now.
 
-> > > +	for (i = 0; i < cpu->lg->num_eventfds; i++) {
-> > > +		if (cpu->lg->eventfds[i].addr == cpu->pending_notify) {
-> > > +			eventfd_signal(cpu->lg->eventfds[i].event, 1);
-> >
-> > Shouldn't this be something like the following?
-> >
-> > 		p = rcu_dereference(cpu->lg->eventfds);
-> > 		if (p[i].addr == cpu->pending_notify) {
-> > 			eventfd_signal(p[i].event, 1);
-> 
-> Hmm, need to read num_eventfds first, too.  It doesn't matter if we get the old
-> ->num_eventfds and the new ->eventfds, but the other way around would be bad.
-
-Yep!!!  ;-)
-
-> Here's the inter-diff:
-> 
-> diff --git a/drivers/lguest/lguest_user.c b/drivers/lguest/lguest_user.c
-> --- a/drivers/lguest/lguest_user.c
-> +++ b/drivers/lguest/lguest_user.c
-> @@ -39,18 +39,24 @@ static int break_guest_out(struct lg_cpu
-> 
->  bool send_notify_to_eventfd(struct lg_cpu *cpu)
->  {
-> -	unsigned int i;
-> +	unsigned int i, num;
-> +	struct lg_eventfds *eventfds;
-> +
-> +	/* Make sure we grab the total number before accessing the array. */
-> +	cpu->lg->num_eventfds = num;
-> +	rmb();
-> 
->  	/* lg->eventfds is RCU-protected */
->  	rcu_read_lock();
-> -	for (i = 0; i < cpu->lg->num_eventfds; i++) {
-> -		if (cpu->lg->eventfds[i].addr == cpu->pending_notify) {
-> -			eventfd_signal(cpu->lg->eventfds[i].event, 1);
-> +	eventfds = rcu_dereference(cpu->lg->eventfds);
-> +	for (i = 0; i < num; i++) {
-> +		if (eventfds[i].addr == cpu->pending_notify) {
-> +			eventfd_signal(eventfds[i].event, 1);
->  			cpu->pending_notify = 0;
->  			break;
->  		}
->  	}
-> -	preempt_enable();
-> +	rcu_read_unlock();
->  	return cpu->pending_notify == 0;
->  }
-
-It is possible to get rid of the rmb() and wmb() as well, doing
-something like the following:
-
-	struct lg_eventfds_num {
-		unsigned int n;
-		struct lg_eventfds a[0];
-	}
-
-Then the rcu_dereference() gets you a pointer to a struct lg_eventfds_num,
-which has the array and its length in guaranteed synchronization without
-the need for barriers.
-
-Does this work for you, or is there some complication that I am missing?
-
-							Thanx, Paul
-
+regards
+Philipp
