@@ -1,80 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbZFEAJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbZFEAPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752968AbZFEAJf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 20:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZFEAJ1
+	id S1753364AbZFEAPh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 20:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZFEAP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 20:09:27 -0400
-Received: from solo.fdn.fr ([80.67.169.19]:49355 "EHLO solo.fdn.fr"
+	Thu, 4 Jun 2009 20:15:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58163 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751010AbZFEAJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 20:09:27 -0400
-Date: Fri, 5 Jun 2009 02:09:10 +0200
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christian Tramnitz <christian@tramnitz.com>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       George Dunlap <george.dunlap@eu.citrix.com>,
-       David Miller <davem@davemloft.net>, "jeremy@goop.org" <jeremy@goop.org>,
-       Dan Magenheimer <dan.magenheimer@oracle.com>,
-       "avi@redhat.com" <avi@redhat.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       "xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
-       ksrinivasan <ksrinivasan@novell.com>,
-       "EAnderson@novell.com" <EAnderson@novell.com>,
-       "wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
-       Stephen Spector <stephen.spector@citrix.com>, jens.axboe@oracle.com
-Subject: Re: Merge Xen (the hypervisor) into Linux
-Message-ID: <20090605000910.GQ8916@const.famille.thibault.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	id S1751202AbZFEAP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 20:15:28 -0400
+Date: Thu, 4 Jun 2009 20:15:10 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Michael S. Zick" <lkml@morethan.org>
+Cc: Harald Welte <HaraldWelte@viatech.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
+Message-ID: <20090605001510.GA2479@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Michael S. Zick" <lkml@morethan.org>,
+	Harald Welte <HaraldWelte@viatech.com>,
 	Linus Torvalds <torvalds@linux-foundation.org>,
-	Christian Tramnitz <christian@tramnitz.com>,
-	Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-	George Dunlap <george.dunlap@eu.citrix.com>,
-	David Miller <davem@davemloft.net>,
-	"jeremy@goop.org" <jeremy@goop.org>,
-	Dan Magenheimer <dan.magenheimer@oracle.com>,
-	"avi@redhat.com" <avi@redhat.com>,
-	"xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-	"x86@kernel.org" <x86@kernel.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	Keir Fraser <Keir.Fraser@eu.citrix.com>,
-	"gregkh@suse.de" <gregkh@suse.de>,
-	"kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
-	Ian Pratt <Ian.Pratt@eu.citrix.com>,
-	"xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
-	ksrinivasan <ksrinivasan@novell.com>,
-	"EAnderson@novell.com" <EAnderson@novell.com>,
-	"wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
-	Stephen Spector <stephen.spector@citrix.com>, jens.axboe@oracle.com
-References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org> <20090528.210559.137121893.davem@davemloft.net> <4A1FCE8E.2060604@eu.citrix.com> <20090602224051.GB32428@goodmis.org> <20090602232843.GA6577@elte.hu> <4A262F4B.8010404@tramnitz.com> <alpine.LFD.2.01.0906041151540.4880@localhost.localdomain>
+	Duane Griffin <duaneg@dghda.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <20090604214301.GB20822@redhat.com> <200906041700.17852.lkml@morethan.org> <200906041826.42856.lkml@morethan.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LFD.2.01.0906041151540.4880@localhost.localdomain>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <200906041826.42856.lkml@morethan.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds, le Thu 04 Jun 2009 11:53:45 -0700, a écrit :
-> On Wed, 3 Jun 2009, Christian Tramnitz wrote:
-> >
-> > What a great idea, and while we're doing this let's also drop support
-> > for legacy stuff like PATA and i8042 in mainline. Noone will need it
-> > anyway because their successors are on the market for years... let's
-> > just take it for granted that everyone is using SATA and USB nowadays!
-> 
-> Have you noticed how PATA and i8042 don't screw up anything else? 
+On Thu, Jun 04, 2009 at 06:26:40PM -0500, Michael S. Zick wrote:
+ > On Thu June 4 2009, Michael S. Zick wrote:
+ > > On Thu June 4 2009, Dave Jones wrote:
+ > > > On Thu, Jun 04, 2009 at 04:38:13PM -0500, Michael S. Zick wrote:
+ > >
+ > 
+ > I have it now, you where speaking of the "product vendor Centaur"
+ > not a specific model name "Centaur".
+ > 
+ > Which I translate into: that statement block needs to be converted into
+ > (possibly nested) switch statement(s).
+ > Since there is not a "model check" in it only a "Series" and "Vendor" check.
+ > 
+ > Yuck.
 
-Right.  We should get rid of all the HIGHMEM kmap crap that cripples all
-the code.
+I meant just doing something like this..
 
-Samuel
+(untested)
+
+I'm not sure if the clflush_size==0 case can happen, which is why
+I left the fallback.  Maybe on ancient cpus?
+
+	Dave
+
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index 2202b62..a293c71 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -426,11 +426,14 @@ int __init pcibios_init(void)
+ 	 * and P4. It's also good for 386/486s (which actually have 16)
+ 	 * as quite a few PCI devices do not support smaller values.
+ 	 */
+-	pci_cache_line_size = 32 >> 2;
+-	if (c->x86 >= 6 && c->x86_vendor == X86_VENDOR_AMD)
+-		pci_cache_line_size = 64 >> 2;	/* K7 & K8 */
+-	else if (c->x86 > 6 && c->x86_vendor == X86_VENDOR_INTEL)
+-		pci_cache_line_size = 128 >> 2;	/* P4 */
++
++	if (c->x86_clflush_size > 0)
++		pci_cache_line_size = c->x86_clflush_size >> 2;
++	else
++		pci_cache_line_size = 32 >> 2;
++
++	printk(KERN_DEBUG "PCI: pci_cache_line_size set to %d bytes\n",
++		pci_cache_line_size >> 2);
+ 
+ 	pcibios_resource_survey();
+ 
