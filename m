@@ -1,313 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756159AbZFENmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbZFENoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756159AbZFENmv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 09:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755928AbZFENmA
+	id S1756309AbZFENoA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 09:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756302AbZFENns
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 09:42:00 -0400
-Received: from av9-1-sn3.vrr.skanova.net ([81.228.9.185]:44906 "EHLO
-	av9-1-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755957AbZFENl7 (ORCPT
+	Fri, 5 Jun 2009 09:43:48 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:45812 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756203AbZFENnr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 09:41:59 -0400
-Message-ID: <4A2920A8.8040407@mocean-labs.com>
-Date: Fri, 05 Jun 2009 15:42:00 +0200
-From: =?ISO-8859-15?Q?Richard_R=F6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Fri, 5 Jun 2009 09:43:47 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Harald Welte <HaraldWelte@viatech.com>
+Subject: Re: VIA CPU PCI cache line size (Re: Linux 2.6.30-rc8 [also: VIA Support])
+Date: Fri, 5 Jun 2009 08:43:40 -0500
+User-Agent: KMail/1.9.9
+Cc: Dave Jones <davej@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <20090605001510.GA2479@redhat.com> <20090605110819.GI4421@prithivi.gnumonks.org>
+In-Reply-To: <20090605110819.GI4421@prithivi.gnumonks.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 9/9] gpio: Added timbgpio
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906050843.42593.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Supplied is a GPIO driver for the Timberdale FPGA found on the
-Intel Atom board Russellville.
+On Fri June 5 2009, Harald Welte wrote:
+> On Thu, Jun 04, 2009 at 08:15:10PM -0400, Dave Jones wrote:
+> 
+> > I meant just doing something like this..
+> > 
+> > (untested)
+> > 
+> > I'm not sure if the clflush_size==0 case can happen, which is why
+> > I left the fallback.  Maybe on ancient cpus?
+> 
+> this patch looks fine with me.  I didn't do any testing yet either, though.
+> 
 
-Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
----
-Index: linux-2.6.30-rc7/drivers/gpio/timbgpio.c
-===================================================================
---- linux-2.6.30-rc7/drivers/gpio/timbgpio.c	(revision 0)
-+++ linux-2.6.30-rc7/drivers/gpio/timbgpio.c	(revision 892)
-@@ -0,0 +1,247 @@
-+/*
-+ * timbgpio.c timberdale FPGA GPIO driver
-+ * Copyright (c) 2009 Intel Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+/* Supports:
-+ * Timberdale FPGA GPIO
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/gpio.h>
-+#include <linux/pci.h>
-+#include <linux/platform_device.h>
-+#include <linux/interrupt.h>
-+
-+#define DRIVER_NAME "timb-gpio"
-+
-+#define TIMB_NR_GPIOS		16
-+
-+#define TGPIOVAL		0
-+#define TGPIODIR		0x04
-+#define TGPIOINT		0x08
-+#define TGPIOINT_STATUS		0x0c
-+#define TGPIOINT_PENDING	0x10
-+#define TGPIOINT_CLR		0x14
-+#define TGPIOFLK		0x18
-+#define TGPIOLVL		0x1c
-+
-+struct timbgpio {
-+	void __iomem		*membase;
-+	struct mutex		lock; /* mutual exclusion */
-+	struct pci_dev		*pdev;
-+	struct gpio_chip	gpio;
-+};
-+
-+static u32 timbgpio_configure(struct gpio_chip *gpio, unsigned nr,
-+						unsigned off, unsigned val)
-+{
-+	struct timbgpio *tgpio = container_of(gpio, struct timbgpio, gpio);
-+
-+	u32 config, oldconfig, wconfig;
-+
-+	mutex_lock(&tgpio->lock);
-+	config = ioread32(tgpio->membase + off);
-+	oldconfig = config;
-+
-+	if (val)
-+		config |= (1 << nr);
-+	else
-+		config &= ~(1 << nr);
-+
-+	iowrite32(config, tgpio->membase + off);
-+	wconfig = ioread32(tgpio->membase + off);
-+	mutex_unlock(&tgpio->lock);
-+
-+	return oldconfig;
-+}
-+
-+static int timbgpio_gpio_direction_input(struct gpio_chip *gpio, unsigned nr)
-+{
-+	timbgpio_configure(gpio, nr, TGPIODIR, 1);
-+	return 0;
-+}
-+
-+static int timbgpio_gpio_get(struct gpio_chip *gpio, unsigned nr)
-+{
-+	struct timbgpio *tgpio = container_of(gpio, struct timbgpio, gpio);
-+	u32 value;
-+
-+	value = ioread32(tgpio->membase + TGPIOVAL);
-+	return (value & (1 << nr)) ? 1 : 0;
-+}
-+
-+static int timbgpio_gpio_direction_output(struct gpio_chip *gpio,
-+						unsigned nr, int val)
-+{
-+	timbgpio_configure(gpio, nr, TGPIODIR, 0);
-+	return 0;
-+}
-+
-+
-+
-+static void timbgpio_gpio_set(struct gpio_chip *gpio,
-+				unsigned nr, int val)
-+{
-+	timbgpio_configure(gpio, nr, TGPIOVAL, val);
-+}
-+
-+static irqreturn_t timbgpio_handleinterrupt(int irq, void *devid)
-+{
-+	struct timbgpio *tgpio = (struct timbgpio *)devid;
-+
-+	iowrite32(0xffffffff, tgpio->membase + TGPIOINT_CLR);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int timbgpio_probe(struct platform_device *dev)
-+{
-+	int err, irq;
-+	struct gpio_chip *gc;
-+	struct timbgpio *tgpio;
-+	struct resource *iomem;
-+
-+	iomem = platform_get_resource(dev, IORESOURCE_MEM, 0);
-+	if (!iomem) {
-+		err = -EINVAL;
-+		goto err_mem;
-+	}
-+
-+	tgpio = kzalloc(sizeof(*tgpio), GFP_KERNEL);
-+	if (!tgpio) {
-+		err = -EINVAL;
-+		goto err_mem;
-+	}
-+
-+	mutex_init(&tgpio->lock);
-+
-+	if (!request_mem_region(iomem->start, resource_size(iomem),
-+		DRIVER_NAME)) {
-+		err = -EBUSY;
-+		goto err_request;
-+	}
-+
-+	tgpio->membase = ioremap(iomem->start, resource_size(iomem));
-+	if (!tgpio->membase) {
-+		err = -ENOMEM;
-+		goto err_ioremap;
-+	}
-+
-+	gc = &tgpio->gpio;
-+
-+	gc->label = DRIVER_NAME;
-+	gc->owner = THIS_MODULE;
-+	gc->direction_input = timbgpio_gpio_direction_input;
-+	gc->get = timbgpio_gpio_get;
-+	gc->direction_output = timbgpio_gpio_direction_output;
-+	gc->set = timbgpio_gpio_set;
-+	gc->dbg_show = NULL;
-+	gc->base = 0;
-+	gc->ngpio = TIMB_NR_GPIOS;
-+	gc->can_sleep = 0;
-+
-+	err = gpiochip_add(gc);
-+	if (err)
-+		goto err_chipadd;
-+
-+	platform_set_drvdata(dev, tgpio);
-+
-+	/* register interrupt */
-+	irq = platform_get_irq(dev, 0);
-+	if (irq < 0)
-+		goto err_get_irq;
-+
-+	/* clear pending interrupts */
-+	iowrite32(0xffffffff, tgpio->membase + TGPIOINT_CLR);
-+	iowrite32(0x0, tgpio->membase + TGPIOINT);
-+
-+	/* request IRQ */
-+	err = request_irq(irq, timbgpio_handleinterrupt, IRQF_SHARED,
-+		DRIVER_NAME, tgpio);
-+	if (err) {
-+		printk(KERN_ERR DRIVER_NAME": Failed to request IRQ\n");
-+		goto err_get_irq;
-+	}
-+
-+	return err;
-+
-+err_get_irq:
-+	err = gpiochip_remove(&tgpio->gpio);
-+	if (err)
-+		printk(KERN_ERR DRIVER_NAME": failed to remove gpio_chip\n");
-+err_chipadd:
-+	iounmap(tgpio->membase);
-+err_ioremap:
-+	release_mem_region(iomem->start, resource_size(iomem));
-+err_request:
-+	kfree(tgpio);
-+err_mem:
-+	printk(KERN_ERR DRIVER_NAME": Failed to register GPIOs: %d\n", err);
-+
-+	return err;
-+}
-+
-+static int timbgpio_remove(struct platform_device *dev)
-+{
-+	int err;
-+	struct timbgpio *tgpio = platform_get_drvdata(dev);
-+	struct resource *iomem = platform_get_resource(dev, IORESOURCE_MEM, 0);
-+
-+	/* disable interrupts */
-+	iowrite32(0x0, tgpio->membase + TGPIOINT);
-+
-+	free_irq(platform_get_irq(dev, 0), tgpio);
-+	err = gpiochip_remove(&tgpio->gpio);
-+	if (err)
-+		printk(KERN_ERR DRIVER_NAME": failed to remove gpio_chip\n");
-+
-+	iounmap(tgpio->membase);
-+	release_mem_region(iomem->start, resource_size(iomem));
-+	kfree(tgpio);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver timbgpio_platform_driver = {
-+	.driver = {
-+		.name	= DRIVER_NAME,
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= timbgpio_probe,
-+	.remove		= timbgpio_remove,
-+};
-+
-+/*--------------------------------------------------------------------------*/
-+
-+static int __init timbgpio_init(void)
-+{
-+	return platform_driver_register(&timbgpio_platform_driver);
-+}
-+
-+static void __exit timbgpio_exit(void)
-+{
-+	platform_driver_unregister(&timbgpio_platform_driver);
-+}
-+
-+module_init(timbgpio_init);
-+module_exit(timbgpio_exit);
-+
-+MODULE_DESCRIPTION("Timberdale GPIO driver");
-+MODULE_LICENSE("GPL v2");
-+MODULE_AUTHOR("Mocean Laboratories");
-+MODULE_ALIAS("platform:"DRIVER_NAME);
-+
-Index: linux-2.6.30-rc7/drivers/gpio/Kconfig
-===================================================================
---- linux-2.6.30-rc7/drivers/gpio/Kconfig	(revision 861)
-+++ linux-2.6.30-rc7/drivers/gpio/Kconfig	(working copy)
-@@ -161,6 +161,12 @@
+Although not coded as Dave J. suggests - I have been re-setting the
+that value to the cpu cache line size for a week or two now.
 
- 	  If unsure, say N.
+It doesn't break anything in an obvious way - does seem to help.
 
-+config GPIO_TIMBERDALE
-+	tristate "Support for timberdale GPIO"
-+	depends on MFD_TIMBERDALE && GPIOLIB
-+	---help---
-+	Add support for GPIO usage of some pins of the timberdale FPGA.
-+
- comment "SPI GPIO expanders:"
-
- config GPIO_MAX7301
-
-Index: linux-2.6.30-rc7/drivers/gpio/Makefile
-===================================================================
---- linux-2.6.30-rc7/drivers/gpio/Makefile	(revision 861)
-+++ linux-2.6.30-rc7/drivers/gpio/Makefile	(working copy)
-@@ -12,5 +12,6 @@
- obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
- obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
- obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
-+obj-$(CONFIG_GPIO_TIMBERDALE)	+= timbgpio.o
- obj-$(CONFIG_GPIO_MC33880)	+= mc33880.o
-
+Mike
