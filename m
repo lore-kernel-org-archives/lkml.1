@@ -1,66 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbZFEHAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755696AbZFEHCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572AbZFEHAL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 03:00:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZFEHAA
+	id S1755696AbZFEHCP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 03:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZFEHCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 03:00:00 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:38820 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752843AbZFEG77 (ORCPT
+	Fri, 5 Jun 2009 03:02:00 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33726 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752843AbZFEHCA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 02:59:59 -0400
-Message-ID: <4A28C262.5020605@oracle.com>
-Date: Fri, 05 Jun 2009 14:59:46 +0800
-From: Tao Ma <tao.ma@oracle.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 5 Jun 2009 03:02:00 -0400
+Message-ID: <4A28C2E2.4090309@jp.fujitsu.com>
+Date: Fri, 05 Jun 2009 16:01:54 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64
- 2.6.30-rc8.
-References: <4A289928.7040508@oracle.com> <20090604223805.2962e826.akpm@linux-foundation.org>
-In-Reply-To: <20090604223805.2962e826.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Huang Ying <ying.huang@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -v4] x86: MCE: Re-implement MCE log ring buffer as per-CPU
+ ring buffer
+References: <1244085090.8361.360.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1244085090.8361.360.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4A28C266.012B:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Huang Ying wrote:
+> Re-implement MCE log ring buffer as per-CPU ring buffer for better
+> scalability. Basic design is as follow:
+
+That would be great.  This should be in .31, I think.
+
+Some minor points:
+
+>  struct mce_log {
+> -	char signature[12]; /* "MACHINECHECK" */
+> +	char signature[12]; /* "MACHINECHEC2" */
+>  	unsigned len;	    /* = MCE_LOG_LEN */
+> -	unsigned next;
+>  	unsigned flags;
+>  	unsigned pad0;
+> -	struct mce entry[MCE_LOG_LEN];
+> +	struct mce_log_cpu *mcelog_cpus;
+>  };
+
+What is this *mcelog_cpus to be used for?
+It seems it will point one of per-CPU buffers (maybe cpu#0's buffer)
+if I have read the following mce_log_init() correctly.
+
+> @@ -642,6 +669,16 @@ static int mce_cap_init(void)
+>  	return 0;
+>  }
+>  
+> +/*
+> + * Initialize MCE per-CPU log buffer
+> + */
+> +static __cpuinit void mce_log_init(void)
+> +{
+> +	if (mcelog.mcelog_cpus)
+> +		return;
+> +	mcelog.mcelog_cpus = &per_cpu_var(mce_log_cpus);
+> +}
+> +
+>  static void mce_init(void)
+>  {
+>  	mce_banks_t all_banks;
 
 
-Andrew Morton wrote:
-> On Fri, 05 Jun 2009 12:03:52 +0800 Tao Ma <tao.ma@oracle.com> wrote:
-> 
->> Hi list,
->>        In 2.6.30-rc8, /proc/kcore in x86_64's size is unreasonable large 
->> to be 281474974617600.
->> While in a x86 box, it is 931131392 which looks sane.
->>
->> [root@test8 ~]# ll /proc/kcore
->> -r-------- 1 root root 281474974617600 Jun  5 11:15 /proc/kcore
->>
->> [root@ocfs2-test9 ~]$ ll /proc/kcore
->> -r-------- 1 root root 931131392 Jun  5 11:58 /proc/kcore
->>
->> I just noticed this when kexec fails in "Can't find kernel text map area 
->> from kcore".
->>
->> Is there something wrong?
->>
-> 
-> fs/proc/kcore.c hasn't changed since October last year.  Was 2.6.29 OK?
-> Earlier kernels?
-with 2.6.29, ls shows the same output.
-[root@test8 ~]# ll /proc/kcore
--r-------- 1 root root 281474974617600 Jun  5 14:35 /proc/kcore
+Next,
 
-But the kexec works.
+> +static int mce_empty_cpu(struct mce_log_cpu *mcelog_cpu)
+> +{
+> +	int head, tail;
+> +	head = mcelog_cpu->head;
+> +	tail = mcelog_cpu->tail;
+> +	return head == tail;
+> +}
 
-I just checked .28, the same as .29.
+Are there any race condition?
+Why we cannot have "return (mcelog_cpu->head == mcelog_cpu->tail);"?
 
-Regards,
-Tao
+
+Last,
+
+> +static ssize_t mce_read(struct file *filp, char __user *inubuf, size_t usize,
+> +			loff_t *off)
+> +{
+> +	char __user *ubuf = inubuf;
+> +	struct mce_log_cpu *mcelog_cpu;
+> +	int cpu, new_mce, err = 0;
+> +	static DEFINE_MUTEX(mce_read_mutex);
+> +
+(snip)
+> +	return err ? : ubuf - inubuf;
+>  }
+
+It would be better to put "static DEFINE_MUTEX(mce_read_mutex)" to outside of
+the function.
+
+And it looks work, but I'd prefer:
+	return err ? err : ubuf - inubuf;
+
+
+Overall it looks good.
+Unfortunately there were updates on tip/mce3 so I could not apply this
+patch on the top of the branch.  I'd appreciate it if you could rebase
+this patch again.
+
+
+Thanks,
+H.Seto
+
