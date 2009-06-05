@@ -1,60 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbZFENYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbZFENYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755485AbZFENYA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 09:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754350AbZFENXx
+	id S1755349AbZFENYU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 09:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbZFENX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 09:23:53 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:37784 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753419AbZFENXw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 09:23:52 -0400
-Subject: Re: [PATCH 3/5] net: add NL802154 interface for configuration of 
- 802.15.4 devices
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Sergey Lapin <slapin@ossfans.org>, David Miller <davem@davemloft.net>,
-       johannes@sipsolutions.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       sfr@canb.auug.org.au
-In-Reply-To: <bc64b4640906050345t5ed23d7bxc8a777a4a0ada147@mail.gmail.com>
-References: <1244168990-28355-4-git-send-email-dbaryshkov@gmail.com>
-	 <1244184737.22576.94.camel@johannes.local>
-	 <20090605071529.GA7064@doriath.ww600.siemens.net>
-	 <20090605.005418.07362083.davem@davemloft.net>
-	 <20090605091229.GA25280@doriath.ww600.siemens.net>
-	 <20090605094619.GB23085@build.ossfans.org>
-	 <bc64b4640906050345t5ed23d7bxc8a777a4a0ada147@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 05 Jun 2009 15:23:17 +0200
-Message-Id: <1244208197.23850.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Jun 2009 09:23:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53798 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755441AbZFENXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 09:23:55 -0400
+Date: Fri, 5 Jun 2009 09:22:11 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 10/20] io-conroller: Prepare elevator layer for single
+	queue schedulers
+Message-ID: <20090605132211.GC3491@redhat.com>
+References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com> <1243377729-2176-11-git-send-email-vgoyal@redhat.com> <4A28E293.90402@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A28E293.90402@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
-
-> > Dmitry, please toss all my @siemens.com addresses from all patches, since my
-> > access is already disabled and it's pointless to have invalid emails
-> > in source tree. Please replace them with @ossfans.org ones.
+On Fri, Jun 05, 2009 at 05:17:07PM +0800, Gui Jianfeng wrote:
+> Vivek Goyal wrote:
+> > +				e->ops->elevator_free_sched_queue_fn(e,
+> > +							sched_q);
+> > +				sched_q = NULL;
+> > +				goto queue_fail;
+> > +			}
+> > +		}
+> > +
+> > +		elv_init_ioq(e, ioq, iog, sched_q, IOPRIO_CLASS_BE, 4, 1);
 > 
-> Could you please send an incremental patch on top of this serie? I
-> hope that my last
-> push can be pulled/merged and I don't want to redo all commits.
+> It's better to use IOPRIO_NORM here.
+> 
 
-either start getting used to git-rebase or manual rebase of commits. You
-better be familiar with git before asking people to merge. We are
-expecting you to provide proper trees to pull from a patches to apply.
+Sure. Queued up for next posting.
 
-And since Dave and Johannes already asked you to fix the __KERNEL__ part
-you have to redo the pull request anyway.
+Thanks
+Vivek
 
-Regards
-
-Marcel
-
-
+> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> ---
+>  block/elevator-fq.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+> index f1179aa..3c5f9da 100644
+> --- a/block/elevator-fq.c
+> +++ b/block/elevator-fq.c
+> @@ -2403,7 +2403,8 @@ alloc_ioq:
+>  			}
+>  		}
+>  
+> -		elv_init_ioq(e, ioq, iog, sched_q, IOPRIO_CLASS_BE, 4, 1);
+> +		elv_init_ioq(e, ioq, iog, sched_q, IOPRIO_CLASS_BE,
+> +			     IOPRIO_NORM, 1);
+>  		io_group_set_ioq(iog, ioq);
+>  		elv_mark_ioq_sync(ioq);
+>  		elv_get_iog(iog);
+> -- 
+> 1.5.4.rc3
