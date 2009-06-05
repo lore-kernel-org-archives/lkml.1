@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbZFELQI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbZFELPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755827AbZFELQI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 07:16:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbZFELNw
+	id S1755448AbZFELPX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 07:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbZFELNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 07:13:52 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:36851 "EHLO
+	Fri, 5 Jun 2009 07:13:43 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:36836 "EHLO
 	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754577AbZFELNq (ORCPT
+	with ESMTP id S1754570AbZFELNk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 07:13:46 -0400
+	Fri, 5 Jun 2009 07:13:40 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Al Viro <viro@ZenIV.linux.org.uk>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: [PATCH v2.1 14/17] UDF: do not manipulate s_dirt directly
-Date: Fri,  5 Jun 2009 16:05:52 +0300
-Message-Id: <1244207155-2092-15-git-send-email-dedekind@infradead.org>
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       reiserfs-devel@vger.kernel.org
+Subject: [PATCH v2.1 12/17] reiserfs: do not manipulate s_dirt directly
+Date: Fri,  5 Jun 2009 16:05:50 +0300
+Message-Id: <1244207155-2092-13-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
 References: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 05 Jun 2009 11:13:15.0072 (UTC) FILETIME=[9F055400:01C9E5CE]
+X-OriginalArrivalTime: 05 Jun 2009 11:13:11.0243 (UTC) FILETIME=[9CBD11B0:01C9E5CE]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,56 +33,99 @@ From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 ... use new VFS helpers instead.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Jan Kara <jack@suse.cz>
+Cc: reiserfs-devel@vger.kernel.org
 ---
- fs/udf/super.c   |    6 +++---
- fs/udf/udfdecl.h |    2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ fs/reiserfs/journal.c |    6 +++---
+ fs/reiserfs/resize.c  |    2 +-
+ fs/reiserfs/super.c   |   10 +++++-----
+ 3 files changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/fs/udf/super.c b/fs/udf/super.c
-index e2e06b0..7926436 100644
---- a/fs/udf/super.c
-+++ b/fs/udf/super.c
-@@ -1908,7 +1908,7 @@ static int udf_fill_super(struct super_block *sb, void *options, int silent)
- 	sb->s_op = &udf_sb_ops;
- 	sb->s_export_op = &udf_export_ops;
- 	sb->dq_op = NULL;
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- 	sb->s_magic = UDF_SUPER_MAGIC;
- 	sb->s_time_gran = 1000;
- 
-@@ -2035,7 +2035,7 @@ static void udf_error(struct super_block *sb, const char *function,
- 
- 	if (!(sb->s_flags & MS_RDONLY)) {
- 		/* mark sb error */
--		sb->s_dirt = 1;
-+		mark_sb_dirty(sb);
+diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
+index 77f5bb7..1d2fb0e 100644
+--- a/fs/reiserfs/journal.c
++++ b/fs/reiserfs/journal.c
+@@ -3259,7 +3259,7 @@ int journal_mark_dirty(struct reiserfs_transaction_handle *th,
+ 			       th->t_trans_id, journal->j_trans_id);
  	}
- 	va_start(args, fmt);
- 	vsnprintf(error_buf, sizeof(error_buf), fmt, args);
-@@ -2095,7 +2095,7 @@ static int udf_sync_fs(struct super_block *sb, int wait)
- 		 * the buffer for IO
- 		 */
- 		mark_buffer_dirty(sbi->s_lvid_bh);
--		sb->s_dirt = 0;
-+		mark_sb_clean(sb);
- 		sbi->s_lvid_dirty = 0;
- 	}
- 	mutex_unlock(&sbi->s_alloc_mutex);
-diff --git a/fs/udf/udfdecl.h b/fs/udf/udfdecl.h
-index cac51b7..8ad1818 100644
---- a/fs/udf/udfdecl.h
-+++ b/fs/udf/udfdecl.h
-@@ -119,7 +119,7 @@ static inline void udf_updated_lvid(struct super_block *sb)
- 	WARN_ON_ONCE(((struct logicalVolIntegrityDesc *)
- 		     bh->b_data)->integrityType !=
- 		     cpu_to_le32(LVID_INTEGRITY_TYPE_OPEN));
+ 
 -	sb->s_dirt = 1;
 +	mark_sb_dirty(sb);
- 	UDF_SB(sb)->s_lvid_dirty = 1;
+ 
+ 	prepared = test_clear_buffer_journal_prepared(bh);
+ 	clear_buffer_journal_restore_dirty(bh);
+@@ -3554,7 +3554,7 @@ int reiserfs_flush_old_commits(struct super_block *sb)
+ 			do_journal_end(&th, sb, 1, COMMIT_NOW | WAIT);
+ 		}
+ 	}
+-	return sb->s_dirt;
++	return is_sb_dirty(sb);
  }
  
+ /*
+@@ -3984,7 +3984,7 @@ static int do_journal_end(struct reiserfs_transaction_handle *th,
+ 	 ** it tells us if we should continue with the journal_end, or just return
+ 	 */
+ 	if (!check_journal_end(th, sb, nblocks, flags)) {
+-		sb->s_dirt = 1;
++		mark_sb_dirty(sb);
+ 		wake_queued_writers(sb);
+ 		reiserfs_async_progress_wait(sb);
+ 		goto out;
+diff --git a/fs/reiserfs/resize.c b/fs/reiserfs/resize.c
+index 238e9d9..9157d38 100644
+--- a/fs/reiserfs/resize.c
++++ b/fs/reiserfs/resize.c
+@@ -202,7 +202,7 @@ int reiserfs_resize(struct super_block *s, unsigned long block_count_new)
+ 					  (bmap_nr_new - bmap_nr)));
+ 	PUT_SB_BLOCK_COUNT(s, block_count_new);
+ 	PUT_SB_BMAP_NR(s, bmap_would_wrap(bmap_nr_new) ? : bmap_nr_new);
+-	s->s_dirt = 1;
++	mark_sb_dirty(s);
+ 
+ 	journal_mark_dirty(&th, s, SB_BUFFER_WITH_SB(s));
+ 
+diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
+index 90dcb7b..f45c78f 100644
+--- a/fs/reiserfs/super.c
++++ b/fs/reiserfs/super.c
+@@ -70,8 +70,8 @@ static int reiserfs_sync_fs(struct super_block *s, int wait)
+ 	if (!journal_begin(&th, s, 1))
+ 		if (!journal_end_sync(&th, s, 1))
+ 			reiserfs_flush_old_commits(s);
+-	s->s_dirt = 0;	/* Even if it's not true.
+-			 * We'll loop forever in sync_supers otherwise */
++	mark_sb_clean(s); /* Even if it's not true.
++			   * We'll loop forever in sync_supers otherwise */
+ 	reiserfs_write_unlock(s);
+ 	return 0;
+ }
+@@ -97,7 +97,7 @@ static int reiserfs_freeze(struct super_block *s)
+ 			journal_end_sync(&th, s, 1);
+ 		}
+ 	}
+-	s->s_dirt = 0;
++	mark_sb_clean(s);
+ 	reiserfs_write_unlock(s);
+ 	return 0;
+ }
+@@ -467,7 +467,7 @@ static void reiserfs_put_super(struct super_block *s)
+ 
+ 	lock_kernel();
+ 
+-	if (s->s_dirt)
++	if (is_sb_dirty(s))
+ 		reiserfs_write_super(s);
+ 
+ 	/* change file system state to current state if it was mounted with read-write permissions */
+@@ -1309,7 +1309,7 @@ static int reiserfs_remount(struct super_block *s, int *mount_flags, char *arg)
+ 	err = journal_end(&th, s, 10);
+ 	if (err)
+ 		goto out_err;
+-	s->s_dirt = 0;
++	mark_sb_clean(s);
+ 
+ 	if (!(*mount_flags & MS_RDONLY)) {
+ 		finish_unfinished(s);
 -- 
 1.6.0.6
 
