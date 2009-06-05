@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbZFEFl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751466AbZFEFmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753340AbZFEFl1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 01:41:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbZFEFlU
+	id S1751466AbZFEFmZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 01:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZFEFmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 01:41:20 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59714 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750876AbZFEFlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 01:41:19 -0400
-Date: Fri, 5 Jun 2009 15:41:18 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: linux-next: manual merge of the usb tree with the ttydev tree
-Message-Id: <20090605154118.9e9521f3.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__5_Jun_2009_15_41_18_+1000_5rqt.T=DAPeQA37U"
+	Fri, 5 Jun 2009 01:42:11 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:56019 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754777AbZFEFmJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 01:42:09 -0400
+Message-Id: <200906050539.n555dwAQ077095@www262.sakura.ne.jp>
+Subject: [2.6.30-rc8 KVM] gcc 3.3 dies at emulate_2op_cl().
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: guillaume.thouvenin@ext.bull.net, avi@redhat.com
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Date: Fri, 05 Jun 2009 14:39:58 +0900
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 05062009 #2087110, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__5_Jun_2009_15_41_18_+1000_5rqt.T=DAPeQA37U
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+(Continued from http://lkml.org/lkml/2009/6/4/14 )
+I tried to identify the location of gcc 3.3's internal error using
+"make CONFIG_DEBUG_INFO=1 arch/x86/kvm/x86_emulate.s", and it turned out that
+the location is emulate_2op_cl().
 
-Hi Greg,
+Commenting out like below solves the gcc's internal error.
 
-Today's linux-next merge of the usb tree got a conflict in
-drivers/usb/serial/kobil_sct.c between commit
-d6ba273795c1260745197dc93f64c321c80a5ecc ("tty-usb-use-port") from the
-ttydev tree and commit 8a5870836006ec7dd112082a39e0057b49e5bd91 ("USB:
-usb-serial: replace shutdown with disconnect, release") from the usb tree.
+diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
+index ca91749..561b9b6 100644
+--- a/arch/x86/kvm/x86_emulate.c
++++ b/arch/x86/kvm/x86_emulate.c
+@@ -2070,7 +2070,7 @@ twobyte_insn:
+                break;
+        case 0xa4: /* shld imm8, r, r/m */
+        case 0xa5: /* shld cl, r, r/m */
+-               emulate_2op_cl("shld", c->src2, c->src, c->dst, ctxt->eflags);
++               //emulate_2op_cl("shld", c->src2, c->src, c->dst, ctxt->eflags);
+                break;
+        case 0xab:
+              bts:              /* bts */
+@@ -2080,7 +2080,7 @@ twobyte_insn:
+                break;
+        case 0xac: /* shrd imm8, r, r/m */
+        case 0xad: /* shrd cl, r, r/m */
+-               emulate_2op_cl("shrd", c->src2, c->src, c->dst, ctxt->eflags);
++               //emulate_2op_cl("shrd", c->src2, c->src, c->dst, ctxt->eflags);
+                break;
+        case 0xae:              /* clflush */
+                break;
 
-The latter removed the code (from kobil_shutdown) that the former
-modified, so I just used the latter.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I think something is wrong with emulate_2op_cl() when compiled with gcc 3.3.5 .
 
---Signature=_Fri__5_Jun_2009_15_41_18_+1000_5rqt.T=DAPeQA37U
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoor/4ACgkQjjKRsyhoI8zfVQCgkBYvjTdMqfggvcDiUU7YzC52
-vzoAn0DwD7wUbdBFlIopYVNrPp0OUS7L
-=6K6k
------END PGP SIGNATURE-----
-
---Signature=_Fri__5_Jun_2009_15_41_18_+1000_5rqt.T=DAPeQA37U--
+Regards.
