@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757005AbZFEXow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZFEXpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757005AbZFEXow (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 19:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755973AbZFEXlV
+	id S1757020AbZFEXpK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 19:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756070AbZFEXlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 19:41:21 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:45055 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753554AbZFEXlJ (ORCPT
+	Fri, 5 Jun 2009 19:41:37 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:36426 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755347AbZFEXlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 19:41:09 -0400
+	Fri, 5 Jun 2009 19:41:13 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Cc: Frans Pop <elendil@planet.nl>, Andres Salomon <dilinger@debian.org>,
+Cc: Markus Heidelberg <markus.heidelberg@web.de>,
        Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 08/39] kbuild, deb-pkg: improve changelog entry and package descriptions
-Date: Sat,  6 Jun 2009 01:42:26 +0200
-Message-Id: <1244245377-17441-8-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 29/39] kconfig qconf: add namespace for use of Key_ enum values
+Date: Sat,  6 Jun 2009 01:42:47 +0200
+Message-Id: <1244245377-17441-29-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.3.rc3.40.g75b44
 In-Reply-To: <20090605233720.GA13588@uranus.ravnborg.org>
 References: <20090605233720.GA13588@uranus.ravnborg.org>
@@ -25,56 +25,122 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frans Pop <elendil@planet.nl>
+From: Markus Heidelberg <markus.heidelberg@web.de>
 
-Signed-off-by: Frans Pop <elendil@planet.nl>
-Acked-by: maximilian attems <max@stro.at>
-Cc: Andres Salomon <dilinger@debian.org>
+They are defined in the 'Qt' namespace.
+
+Fixes the following compiler errors after a quick conversion with 'qt3to4',
+which occured with g++ 3.4.6 and 4.1.2, but not anymore with 4.3.2.
+
+scripts/kconfig/qconf.cc: In member function 'virtual void ConfigLineEdit::keyPressEvent(QKeyEvent*)':
+scripts/kconfig/qconf.cc:311: error: 'Key_Escape' was not declared in this scope
+scripts/kconfig/qconf.cc:313: error: 'Key_Return' was not declared in this scope
+scripts/kconfig/qconf.cc:314: error: 'Key_Enter' was not declared in this scope
+
+scripts/kconfig/qconf.cc: In member function 'virtual void ConfigList::keyPressEvent(QKeyEvent*)':
+scripts/kconfig/qconf.cc:653: error: 'Key_Escape' was not declared in this scope
+scripts/kconfig/qconf.cc:666: error: 'Key_Return' was not declared in this scope
+scripts/kconfig/qconf.cc:667: error: 'Key_Enter' was not declared in this scope
+scripts/kconfig/qconf.cc:681: error: 'Key_Space' was not declared in this scope
+scripts/kconfig/qconf.cc:684: error: 'Key_N' was not declared in this scope
+scripts/kconfig/qconf.cc:687: error: 'Key_M' was not declared in this scope
+scripts/kconfig/qconf.cc:690: error: 'Key_Y' was not declared in this scope
+
+scripts/kconfig/qconf.cc: In constructor 'ConfigMainWindow::ConfigMainWindow()':
+scripts/kconfig/qconf.cc:1329: error: 'CTRL' was not declared in this scope
+scripts/kconfig/qconf.cc:1329: error: 'Key_Q' was not declared in this scope
+scripts/kconfig/qconf.cc:1331: error: 'Key_L' was not declared in this scope
+scripts/kconfig/qconf.cc:1333: error: 'Key_S' was not declared in this scope
+scripts/kconfig/qconf.cc:1340: error: 'Key_F' was not declared in this scope
+
+Signed-off-by: Markus Heidelberg <markus.heidelberg@web.de>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/package/builddeb |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ scripts/kconfig/qconf.cc |   28 ++++++++++++++--------------
+ 1 files changed, 14 insertions(+), 14 deletions(-)
 
-diff --git a/scripts/package/builddeb b/scripts/package/builddeb
-index c01f812..0449147 100644
---- a/scripts/package/builddeb
-+++ b/scripts/package/builddeb
-@@ -98,7 +98,7 @@ name="Kernel Compiler <$(id -nu)@$(hostname -f)>"
- cat <<EOF > debian/changelog
- linux ($packageversion) unstable; urgency=low
+diff --git a/scripts/kconfig/qconf.cc b/scripts/kconfig/qconf.cc
+index 7433dac..afae613 100644
+--- a/scripts/kconfig/qconf.cc
++++ b/scripts/kconfig/qconf.cc
+@@ -297,10 +297,10 @@ void ConfigLineEdit::show(ConfigItem* i)
+ void ConfigLineEdit::keyPressEvent(QKeyEvent* e)
+ {
+ 	switch (e->key()) {
+-	case Key_Escape:
++	case Qt::Key_Escape:
+ 		break;
+-	case Key_Return:
+-	case Key_Enter:
++	case Qt::Key_Return:
++	case Qt::Key_Enter:
+ 		sym_set_string_value(item->menu->sym, text().latin1());
+ 		parent()->updateList(item);
+ 		break;
+@@ -639,7 +639,7 @@ void ConfigList::keyPressEvent(QKeyEvent* ev)
+ 	struct menu *menu;
+ 	enum prop_type type;
  
--  * A standard release
-+  * Custom built Linux kernel.
+-	if (ev->key() == Key_Escape && mode != fullMode && mode != listMode) {
++	if (ev->key() == Qt::Key_Escape && mode != fullMode && mode != listMode) {
+ 		emit parentSelected();
+ 		ev->accept();
+ 		return;
+@@ -652,8 +652,8 @@ void ConfigList::keyPressEvent(QKeyEvent* ev)
+ 	item = (ConfigItem*)i;
  
-  -- $name  $(date -R)
- EOF
-@@ -126,7 +126,7 @@ Description: User Mode Linux kernel, version $version
-  many other things.
-  .
-  This package contains the Linux kernel, modules and corresponding other
-- files version $version
-+ files, version: $version.
- EOF
- 
- else
-@@ -138,7 +138,7 @@ Suggests: $fwpackagename
- Architecture: any
- Description: Linux kernel, version $version
-  This package contains the Linux kernel, modules and corresponding other
-- files version $version
-+ files, version: $version.
- EOF
- 
- fi
-@@ -152,7 +152,7 @@ if [ -e "$tmpdir/lib/firmware" ]; then
- Package: $fwpackagename
- Architecture: all
- Description: Linux kernel firmware, version $version
-- This package contains firmware from the Linux kernel, version $version
-+ This package contains firmware from the Linux kernel, version $version.
- EOF
- 
- 	create_package "$fwpackagename" "$fwdir"
+ 	switch (ev->key()) {
+-	case Key_Return:
+-	case Key_Enter:
++	case Qt::Key_Return:
++	case Qt::Key_Enter:
+ 		if (item->goParent) {
+ 			emit parentSelected();
+ 			break;
+@@ -667,16 +667,16 @@ void ConfigList::keyPressEvent(QKeyEvent* ev)
+ 			emit menuSelected(menu);
+ 			break;
+ 		}
+-	case Key_Space:
++	case Qt::Key_Space:
+ 		changeValue(item);
+ 		break;
+-	case Key_N:
++	case Qt::Key_N:
+ 		setValue(item, no);
+ 		break;
+-	case Key_M:
++	case Qt::Key_M:
+ 		setValue(item, mod);
+ 		break;
+-	case Key_Y:
++	case Qt::Key_Y:
+ 		setValue(item, yes);
+ 		break;
+ 	default:
+@@ -1315,18 +1315,18 @@ ConfigMainWindow::ConfigMainWindow(void)
+ 	backAction = new QAction("Back", QPixmap(xpm_back), _("Back"), 0, this);
+ 	  connect(backAction, SIGNAL(activated()), SLOT(goBack()));
+ 	  backAction->setEnabled(FALSE);
+-	QAction *quitAction = new QAction("Quit", _("&Quit"), CTRL+Key_Q, this);
++	QAction *quitAction = new QAction("Quit", _("&Quit"), Qt::CTRL + Qt::Key_Q, this);
+ 	  connect(quitAction, SIGNAL(activated()), SLOT(close()));
+-	QAction *loadAction = new QAction("Load", QPixmap(xpm_load), _("&Load"), CTRL+Key_L, this);
++	QAction *loadAction = new QAction("Load", QPixmap(xpm_load), _("&Load"), Qt::CTRL + Qt::Key_L, this);
+ 	  connect(loadAction, SIGNAL(activated()), SLOT(loadConfig()));
+-	saveAction = new QAction("Save", QPixmap(xpm_save), _("&Save"), CTRL+Key_S, this);
++	saveAction = new QAction("Save", QPixmap(xpm_save), _("&Save"), Qt::CTRL + Qt::Key_S, this);
+ 	  connect(saveAction, SIGNAL(activated()), SLOT(saveConfig()));
+ 	conf_set_changed_callback(conf_changed);
+ 	// Set saveAction's initial state
+ 	conf_changed();
+ 	QAction *saveAsAction = new QAction("Save As...", _("Save &As..."), 0, this);
+ 	  connect(saveAsAction, SIGNAL(activated()), SLOT(saveConfigAs()));
+-	QAction *searchAction = new QAction("Find", _("&Find"), CTRL+Key_F, this);
++	QAction *searchAction = new QAction("Find", _("&Find"), Qt::CTRL + Qt::Key_F, this);
+ 	  connect(searchAction, SIGNAL(activated()), SLOT(searchConfig()));
+ 	QAction *singleViewAction = new QAction("Single View", QPixmap(xpm_single_view), _("Single View"), 0, this);
+ 	  connect(singleViewAction, SIGNAL(activated()), SLOT(showSingleView()));
 -- 
 1.6.3.rc3.40.g75b44
 
