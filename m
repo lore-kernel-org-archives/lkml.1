@@ -1,120 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755198AbZFENXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbZFENXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755198AbZFENXA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 09:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbZFENWi
+	id S1755271AbZFENXX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 09:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbZFENWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 09:22:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59072 "EHLO hera.kernel.org"
+	Fri, 5 Jun 2009 09:22:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53710 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754788AbZFENWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754494AbZFENWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 5 Jun 2009 09:22:36 -0400
-Date: Fri, 5 Jun 2009 13:22:07 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf report: Display user/kernel differentiator
-Message-ID: <tip-8edd4286f99f78fe07fe9196e69d5643da86cada@git.kernel.org>
-Git-Commit-ID: 8edd4286f99f78fe07fe9196e69d5643da86cada
-X-Mailer: tip-git-log-daemon
+Date: Fri, 5 Jun 2009 09:21:44 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 05/20] io-controller: Common hierarchical fair queuing
+	code in elevaotor layer
+Message-ID: <20090605132144.GB3491@redhat.com>
+References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com> <1243377729-2176-6-git-send-email-vgoyal@redhat.com> <4A28E710.5080307@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 05 Jun 2009 13:22:08 +0000 (UTC)
+In-Reply-To: <4A28E710.5080307@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8edd4286f99f78fe07fe9196e69d5643da86cada
-Gitweb:     http://git.kernel.org/tip/8edd4286f99f78fe07fe9196e69d5643da86cada
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Fri, 5 Jun 2009 14:13:18 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 5 Jun 2009 14:13:18 +0200
+On Fri, Jun 05, 2009 at 05:36:16PM +0800, Gui Jianfeng wrote:
+> Vivek Goyal wrote:
+> ...
+> > +#ifdef CONFIG_GROUP_IOSCHED
+> > +extern int io_group_allow_merge(struct request *rq, struct bio *bio);
+> > +extern void io_ioq_move(struct elevator_queue *e, struct io_queue *ioq,
+> 
+> io_ioq_move is not used anymore, removing the dead code.
+> 
 
-perf report: Display user/kernel differentiator
+Thanks Gui. Will include the patch in next posting.
 
-Before:
+Vivek
 
-    25.96%  copy_user_generic_string
-    15.23%  two_op
-    15.19%  one_op
-     6.92%  enough_duration
-     1.23%  alloc_pages_current
-     1.14%  acpi_os_read_port
-     1.08%  _spin_lock
-
-After:
-
-    25.96%  [k] copy_user_generic_string
-    15.23%  [.] two_op
-    15.19%  [.] one_op
-     6.92%  [.] enough_duration
-     1.23%  [k] alloc_pages_current
-     1.14%  [k] acpi_os_read_port
-     1.08%  [k] _spin_lock
-
-The '[k]' differentiator is a quick clue that it's a kernel symbol,
-without having to bring in the full dso column.
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- Documentation/perf_counter/builtin-report.c |   16 +++++++++-------
- 1 files changed, 9 insertions(+), 7 deletions(-)
-
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index 9783d1e..ca303fd 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -504,7 +504,7 @@ sort__comm_print(FILE *fp, struct hist_entry *self)
- }
- 
- static struct sort_entry sort_comm = {
--	.header 	= "         Command",
-+	.header		= "         Command",
- 	.cmp		= sort__comm_cmp,
- 	.collapse	= sort__comm_collapse,
- 	.print		= sort__comm_print,
-@@ -569,10 +569,12 @@ sort__sym_print(FILE *fp, struct hist_entry *self)
- 	if (verbose)
- 		ret += fprintf(fp, "%#018llx  ", (__u64)self->ip);
- 
--	if (self->sym)
--		ret += fprintf(fp, "%s", self->sym->name);
--	else
-+	if (self->sym) {
-+		ret += fprintf(fp, "[%c] %s",
-+			self->dso == kernel_dso ? 'k' : '.', self->sym->name);
-+	} else {
- 		ret += fprintf(fp, "%#016llx", (__u64)self->ip);
-+	}
- 
- 	return ret;
- }
-@@ -586,9 +588,9 @@ static struct sort_entry sort_sym = {
- static int sort__need_collapse = 0;
- 
- struct sort_dimension {
--	char *name;
--	struct sort_entry *entry;
--	int taken;
-+	char			*name;
-+	struct sort_entry	*entry;
-+	int			taken;
- };
- 
- static struct sort_dimension sort_dimensions[] = {
+> Singed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+> ---
+>  block/elevator-fq.h |   11 -----------
+>  1 files changed, 0 insertions(+), 11 deletions(-)
+> 
+> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+> index 1c99e83..24a3af9 100644
+> --- a/block/elevator-fq.h
+> +++ b/block/elevator-fq.h
+> @@ -537,8 +537,6 @@ static inline struct io_group *ioq_to_io_group(struct io_queue *ioq)
+>  
+>  #ifdef CONFIG_GROUP_IOSCHED
+>  extern int io_group_allow_merge(struct request *rq, struct bio *bio);
+> -extern void io_ioq_move(struct elevator_queue *e, struct io_queue *ioq,
+> -					struct io_group *iog);
+>  static inline bfq_weight_t iog_weight(struct io_group *iog)
+>  {
+>  	return iog->entity.weight;
+> @@ -588,15 +586,6 @@ static inline int update_requeue(struct io_queue *ioq, int requeue)
+>  }
+>  
+>  #else /* !GROUP_IOSCHED */
+> -/*
+> - * No ioq movement is needed in case of flat setup. root io group gets cleaned
+> - * up upon elevator exit and before that it has been made sure that both
+> - * active and idle tree are empty.
+> - */
+> -static inline void io_ioq_move(struct elevator_queue *e, struct io_queue *ioq,
+> -					struct io_group *iog)
+> -{
+> -}
+>  
+>  static inline int io_group_allow_merge(struct request *rq, struct bio *bio)
+>  {
+> -- 
+> 1.5.4.rc3
+> 
