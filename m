@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbZFEPW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755277AbZFEPXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbZFEPW0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 11:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZFEPWR
+	id S1755277AbZFEPXd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 11:23:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbZFEPXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 11:22:17 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:43156 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751272AbZFEPWQ convert rfc822-to-8bit (ORCPT
+	Fri, 5 Jun 2009 11:23:24 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:45279 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751683AbZFEPXX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 11:22:16 -0400
+	Fri, 5 Jun 2009 11:23:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=KhVCdeHbH3V21rxOqz0avUqWfMLiGrnXdwtsCVtK9IRg/8jJlz44paXo2ESDcpvNkJ
-         vtmjoBKV6SCclM2JOFV3Is/U3zCSMKRs5di/Fl80fAOoIH++QtKdLG78iTwqQTnH72vc
-         fGd5eLY72YkqXaaFDSKFI5CEdvF1skXX1Aj80=
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=kHxhPDFxAvF0QvhZHb4lyriSLLfk4wCcT3yPxhIxXwdEd635QKrgFtZNQLbC1HK28e
+         NB2xsYctnm7r2uzdg1xXpMVFGwkoQaZnqzH5YzsYRWEk9wZsVERFoWBlT5mlb55X3Vuu
+         /qzJO2XgxHu0gaZ1/HpkjjPqDk+/9NSDaHVLE=
+Message-ID: <4A2936A7.9070309@gmail.com>
+Date: Fri, 05 Jun 2009 11:15:51 -0400
+From: "Alan D. Brunelle" <adbrunelle@gmail.com>
+Reply-To: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.44L0.0906051112370.10297-100000@netrider.rowland.org>
-References: <4A2931F5.1090709@tuffmail.co.uk>
-	 <Pine.LNX.4.44L0.0906051112370.10297-100000@netrider.rowland.org>
-Date: Fri, 5 Jun 2009 18:22:15 +0300
-X-Google-Sender-Auth: afd7a54158babfad
-Message-ID: <84144f020906050822x46c4f9cbmbad7ff6a2942c174@mail.gmail.com>
-Subject: Re: [PATCH] eeepc-laptop: enable camera by default
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Corentin Chary <corentin.chary@gmail.com>,
-       acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
-       linux-kernel@vger.kernel.org, USB list <linux-usb@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
+References: <6.0.0.20.2.20090529142527.071669e0@172.19.0.2> <20090531173604.8cbad7f2.akpm@linux-foundation.org> <6.0.0.20.2.20090601095926.06ee98d8@172.19.0.2>
+In-Reply-To: <6.0.0.20.2.20090601095926.06ee98d8@172.19.0.2>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+Hisashi Hifumi wrote:
+> At 09:36 09/06/01, Andrew Morton wrote:
+>> On Fri, 29 May 2009 14:35:55 +0900 Hisashi Hifumi 
+>> <hifumi.hisashi@oss.ntt.co.jp> wrote:
+>>
+>>> I added blk_run_backing_dev on page_cache_async_readahead
+>>> so readahead I/O is unpluged to improve throughput on 
+>>> especially RAID environment. 
+>> I skipped the last version of this because KOSAKI Motohiro
+>> <kosaki.motohiro@jp.fujitsu.com> said "Please attach blktrace analysis ;)".
+>>
+>> I'm not sure why he asked for that, but he's a smart chap and
+>> presumably had his reasons.
+>>
+>> If you think that such an analysis is unneeded, or isn't worth the time
+>> to generate then please tell us that.  But please don't just ignore the
+>> request!
+> 
+> Hi Andrew.
+> 
+> Sorry for this.
+> 
+> I did not ignore KOSAKI Motohiro's request.
+> I've got blktrace output for both with and without the patch, 
+> but I just did not clarify the reason for throuput improvement
+> from this result.
+> 
+> I do not notice any difference except around unplug behavior by dd.
+> Comments?
 
-On Fri, 5 Jun 2009, Alan Jenkins wrote:
->> Auto-suspend white-listing would be done on the basis of USB ids
->> (vendor, product).  At the moment it's expected that userspace should
->> take ownership of it.  There's no infrastructure for in-kernel
->> whitelisting.  I think.
+Pardon my ignorance on the global issues concerning the patch, but 
+specifically looking at the traces generated by blktrace leads one to 
+also note that the patched version may generate inefficiencies in other 
+places in the kernel by reducing the merging going on. In the unpatched 
+version it looks like (generally) that two incoming bio's are able to be 
+merged to generate a single I/O request. In the patched version - 
+because of the quicker unplug(?) - no such merging is going on. This 
+leads to more work lower in the stack (twice as many I/O operations 
+being managed), perhaps increased interrupts & handling &c. [This may be 
+acceptable if the goal is to decrease latencies on a per-bio basis...]
 
-On Fri, Jun 5, 2009 at 6:13 PM, Alan Stern<stern@rowland.harvard.edu> wrote:
-> That's right.  We found it was hopeless to try doing this in the kernel
-> so we dumped the whole mess into userspace.
+Do you have a place where the raw blktrace data can be retrieved for 
+more in-depth analysis?
 
-:-)
-
-I prefer that the kernel takes care of this things because, quite
-frankly, I usually end up fighting with user-space more than I ever do
-with the kernel. But don't mind me, I really have no say in USB
-development. I am just happy to have a working camera and can hand
-over the laptop back to my better half :-).
-
-                        Pekka
+Regards,
+Alan D. Brunelle
+Hewlett-Packard
