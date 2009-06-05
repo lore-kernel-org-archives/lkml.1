@@ -1,90 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbZFEWGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754166AbZFEWL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755994AbZFEWGr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 18:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZFEWGh
+	id S1754166AbZFEWL0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 18:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZFEWLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 18:06:37 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:50926 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752797AbZFEWGg (ORCPT
+	Fri, 5 Jun 2009 18:11:16 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:53033 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752117AbZFEWLP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 18:06:36 -0400
-Subject: Re: [ANN] Atheros 802.11n USB firmware source code released
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, otus-devel@venema.h4ckr.net,
-       David Woodhouse <dwmw2@infradead.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <43e72e890906051204q22278e4cw6beeae27da50e988@mail.gmail.com>
-References: <43e72e890906051204q22278e4cw6beeae27da50e988@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-f3vsak4YmTXKurATDDCA"
-Date: Sat, 06 Jun 2009 00:06:31 +0200
-Message-Id: <1244239591.7876.30.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+	Fri, 5 Jun 2009 18:11:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=jvRHF6Np1jz/vheiCQwzjmwXpe/NHrUPXZ1iCwEAP1cO1XoY+E8Vg3SMD8qJMl9T6D
+         4j2uM/q90fAxizbZYF88rDW07C/e4ISPrippxriEPxUCR0lYBjHaZYQnWw5pFV4JHwKt
+         9o7bAAkfkAFzv62Q/kanhFjiDau4W+HMLxyAA=
+MIME-Version: 1.0
+In-Reply-To: <20090605182015.GA10342@8bytes.org>
+References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp>
+	 <20090605104132.GE24836@amd.com>
+	 <64bb37e0906050852g2be64c7elb2872a6129d13f56@mail.gmail.com>
+	 <20090605182015.GA10342@8bytes.org>
+Date: Sat, 6 Jun 2009 00:11:15 +0200
+Message-ID: <64bb37e0906051511y766af2d3sc12ee2dd2048d905@mail.gmail.com>
+Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
+From: Torsten Kaiser <just.for.lkml@googlemail.com>
+To: Joerg Roedel <joro@8bytes.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       lethal@linux-sh.org, hancockrwd@gmail.com, jens.axboe@oracle.com,
+       bharrosh@panasas.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jun 5, 2009 at 8:20 PM, Joerg Roedel <joro@8bytes.org> wrote:
+> On Fri, Jun 05, 2009 at 05:52:27PM +0200, Torsten Kaiser wrote:
+>> Should there be a warning if more then one possible match were found?
+>
+> True. That would be better. But I tried to keep the code change as small
+> as possible without disabling the feature completly.
+>
+>> * driver maps address 'a' with size 1
+>> * driver maps same address 'a' with size 2
+>> * driver wrongly unmaps the second allocation with size 1
+>>   -> no warning, because the first allocation is returned
+>
+> Hmm, I am not sure if we can handle this situation correctly in the
+> dma-debug code. There is no unique key to identify a mapping request
+> which allows to assign an unmap request to it. Currently dma-debug uses
+> device and dma-address. But that seems not to be sufficient. The
+> best-fit algorithm is also a but fuzzy of course.
 
---=-f3vsak4YmTXKurATDDCA
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Maybe we just shouldn't try to handle it at all:
 
-On Fri, 2009-06-05 at 12:04 -0700, Luis R. Rodriguez wrote:
-> I'm pleased to announce we have released the source code to our
-> Atheros 802.11n USB Otus/ar9170 device under the GPL. You can grab the
-> source, compile and use it with the upstream ar9170 device driver.
-> Patches are welcomed. The git tree available for this is at:
->=20
-> http://git.sipsolutions.net/ar9170-fw.git
->=20
-> For more information please visit the home page for this project is on
-> our Linux wireless wiki:
->=20
-> http://wireless.kernel.org/en/users/Drivers/ar9170.fw
->=20
-> The ar9170 device driver home page is at:
->=20
-> http://wireless.kernel.org/en/users/Drivers/ar9170
->=20
-> I'd like to thank Johannes Berg and Christian Lamparter for their
-> incredible contributions to the project both firmware and ar9170
-> driver so far without which this would not have been possible.
+static void add_dma_entry(struct dma_debug_entry *entry)
+{
+        struct hash_bucket *bucket;
+        unsigned long flags;
 
-So, plan: I would like to add a command that tells us
-   - it's open source firmware
-   - what additional capabilities the firmware has
-This has to be a command like the debug commands that we can send from
-the firmware unilaterally. Easy to do.
+        bucket = get_hash_bucket(entry, &flags);
+        if(hash_bucket_find(bucket, entry)) {
+                printk(KERN_ERR "DMA-API: device mapped same address twice, "
+                  "this use case cannot be handled currently -
+disabling debugging\n");
+                global_disable = true;
+        }
+        hash_bucket_add(bucket, entry);
+        put_hash_bucket(bucket, &flags);
+}
 
-What I would then like to add is at least proper tx status reporting. I
-would also like to get rid of the key limitation, if possible.
+This would allow this feature to remain for most cased, but would also
+prevent all false warnings.
 
-johannes
-
---=-f3vsak4YmTXKurATDDCA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKKZbjAAoJEODzc/N7+QmagesP+waJHvVERwX6PtDAQjGNTY/C
-eRcPI5pj8Sv4Sk9GdeWPHufl4+m5edgA+0k6DURA6uhwSkDpATy8USSzjNlcB584
-HbTTxixEnjcWfGIw1iqdeUpJXBO0TT4EXZkHrqlLeGE8c/RHc+nlhopOcxMgCsOC
-2gWxWZLsjbTkgljICKg42an9JcNWqmrQprGwy2n4EhGIKJKS9TiqtVUI2Vj8XQtm
-pC+PBAI3EEBsd1xHYyVYfuArqyRs5bYYFO7qrttik5vHsMzKdGOcP1DGsnRzRZvz
-70+gnIms2N8rbElXWT+U5afGv1zFlq0RWPI66fb7QGR3jz+AoyKRAw+MRevGkXcf
-BX2YjczFk6TMpH9GoS8k5ssfxvR5aIp7SudEpwKL+tHlD6FkG0hryMDNGjaB8cyb
-ecIIsSmQC+nuST+98qAiydpdIFODOQCsQErl4wlfExaVAynGBRkxuS/Tdn7XnDlZ
-9/MdeUoUtqFEgXc79R66GGhw0Dt/N7F4z03ahghhvcYGN2CmiBsnJLLzERGOHQUl
-k2ohhITyOcMoljDc/B5a/pM/KQsqVINPAajcm3vuF1Z9ahxYGeImGmnWiauIrShE
-dvhfAgw6kp4DItMfnkPNbmTPXx2Dz73UHVrTqEtuYv/8yUr6UKSoPLIm/sVRG0u8
-WQF3D4jHuFqDFolPujdS
-=gT6u
------END PGP SIGNATURE-----
-
---=-f3vsak4YmTXKurATDDCA--
-
+Torsten
