@@ -1,129 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbZFEBav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZFEBhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753586AbZFEBav (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 21:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbZFEBam
+	id S1753173AbZFEBhW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 21:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZFEBhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 21:30:42 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56765 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752138AbZFEBam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 21:30:42 -0400
-Message-ID: <4A28759D.4040602@cn.fujitsu.com>
-Date: Fri, 05 Jun 2009 09:32:13 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] cpuhotplug: introduce try_get_online_cpus() take 2
-References: <4A1F9CEA.1070705@cn.fujitsu.com> <20090530015342.GA21502@linux.vnet.ibm.com> <20090530043739.GA12157@in.ibm.com> <4A27708C.6030703@cn.fujitsu.com> <20090604204958.GA5071@redhat.com>
-In-Reply-To: <20090604204958.GA5071@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Jun 2009 21:37:11 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:39158 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752255AbZFEBhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 21:37:10 -0400
+Date: Fri, 5 Jun 2009 11:37:07 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       =?UTF-8?B?Ik1pY2hhxYIgTWlyb3PFgmF3Ig==?= <mirq-linux@rere.qmqm.pl>
+Subject: linux-next: mmc tree build warning
+Message-Id: <20090605113707.0f87467f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__5_Jun_2009_11_37_07_+1000_v8EHFvHXLFMcbyLf"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 06/04, Lai Jiangshan wrote:
->> - Lockless for get_online_cpus()'s fast path
->> - Introduce try_get_online_cpus()
-> 
-> I think this can work...
-> 
->> @@ -50,10 +57,20 @@ void get_online_cpus(void)
->>  	might_sleep();
->>  	if (cpu_hotplug.active_writer == current)
->>  		return;
->> -	mutex_lock(&cpu_hotplug.lock);
->> -	cpu_hotplug.refcount++;
->> -	mutex_unlock(&cpu_hotplug.lock);
->>
->> +	if (unlikely(!atomic_inc_not_zero(&cpu_hotplug.refcount))) {
->> +		DEFINE_WAIT(wait);
->> +
->> +		for (;;) {
->> +			prepare_to_wait(&cpu_hotplug.sleeping_readers, &wait,
->> +					TASK_UNINTERRUPTIBLE);
->> +			if (atomic_inc_not_zero(&cpu_hotplug.refcount))
->> +				break;
->> +			schedule();
->> +		}
->> +
->> +		finish_wait(&cpu_hotplug.sleeping_readers, &wait);
->> +	}
->>  }
-> 
-> Looks like the code above can be replaced with
-> 
-> 	wait_event(atomic_inc_not_zero(&cpu_hotplug.refcount));
+--Signature=_Fri__5_Jun_2009_11_37_07_+1000_v8EHFvHXLFMcbyLf
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You are right, but with the atomic_inc_not_zero() has side-effect,
-I'm afraid that wait_event() will be changed in future, and it may
-increases the cpu_hotplug.refcount twice.
+Hi Pierre,
 
-#define wait_event(wq, condition) ......
+Today's linux-next build (x86_64 allmodconfig) produced this warnings:
 
-I consider that @condition should not have side-effect, it should be
-some thing like this:
+drivers/misc/cb710/debug.c: In function 'cb710_read_regs_8':
+drivers/misc/cb710/debug.c:100: warning: suggest parentheses around operand=
+ of '!' or change '&' to '&&' or '!' to '~'
+drivers/misc/cb710/debug.c: In function 'cb710_read_regs_16':
+drivers/misc/cb710/debug.c:101: warning: suggest parentheses around operand=
+ of '!' or change '&' to '&&' or '!' to '~'
+drivers/misc/cb710/debug.c: In function 'cb710_read_regs_32':
+drivers/misc/cb710/debug.c:102: warning: suggest parentheses around operand=
+ of '!' or change '&' to '&&' or '!' to '~'
+In file included from drivers/mmc/host/cb710-mmc.h:13,
+                 from drivers/mmc/host/cb710-mmc.c:15:
+include/linux/cb710.h:14:1: warning: "DEBUG" redefined
+<command-line>: warning: this is the location of the previous definition
+drivers/mmc/host/cb710-mmc.c: In function 'cb710_mmc_set_transfer_size':
+drivers/mmc/host/cb710-mmc.c:222: warning: format '%d' expects type 'int', =
+but argument 4 has type 'size_t'
+drivers/mmc/host/cb710-mmc.c:222: warning: format '%d' expects type 'int', =
+but argument 6 has type 'size_t'
 
-some_number == 2, !some_condition, some_thing_has_done,
-......
+All introduced by commit ecb9ca267b42dc8c9a35eeaf75c002159fa52602 ("mmc:
+Driver for CB710/720 memory card reader (MMC part)").
 
-> 
->>  static void cpu_hotplug_done(void)
->>  {
->>  	cpu_hotplug.active_writer = NULL;
->> -	mutex_unlock(&cpu_hotplug.lock);
->> +	atomic_inc(&cpu_hotplug.refcount);
->> +
->> +	if (waitqueue_active(&cpu_hotplug.sleeping_readers))
->> +		wake_up(&cpu_hotplug.sleeping_readers);
->>  }
-> 
-> This looks racy.
-> 
-> Suppose that the new reader comes right before atomic_inc(). The first
-> inc_not_zero() fails, the readear does prepare_to_wait(), the 2nd
-> inc_not_zero() fails too.
-> 
-> cpu_hotplug_done() does atomic_inc().
-> 
-> What guarantees we must see waitqueue_active() == T?
-> 
-> I think cpu_hotplug_done() should do unconditional wake_up(). This path
-> is slow anyway, "if (waitqueue_active())" does not buy too much. In this
-> case .sleeping_readers->lock closes the race.
-> 
-> Unless I missed something, of course.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-You are definitely right, cpu_hotplug_done() should do unconditional
-wake_up(). waitqueue_active() has no synchronization codes.
+--Signature=_Fri__5_Jun_2009_11_37_07_+1000_v8EHFvHXLFMcbyLf
+Content-Type: application/pgp-signature
 
-> 
-> 
-> Minor, but I'd suggest to use wake_up_all(). This does not make any
-> difference because we do not have WQ_FLAG_EXCLUSIVE waiters, but imho
-> looks a bit cleaner.
-> 
-> 
-> Hmm. It seems to me that cpu_hotplug_done() needs mb__before_atomic_inc()
-> before atomic_inc. Otherwise, "active_writer = NULL" can be re-ordered with
-> atomic_inc(). If the new reader does get_online_cpus() + put_online_cpus()
-> quicky, it can see active_writer != NULL.
-> 
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-The lines "active_writer = NULL" and "atomic_inc()" can exchange,
-there is no code need to synchronize to them.
-get_online_cpus()/put_online_cpus() will see "active_writer != current",
-it just what get_online_cpus()/put_online_cpus() needs.
+iEYEARECAAYFAkoodsMACgkQjjKRsyhoI8ySOACdG6IZbBCnzu9zxq3O4iQdiM7l
+TXUAoKJKdANxXAmpDnFMS2cseAP9iUPI
+=oJj3
+-----END PGP SIGNATURE-----
 
-Lai
-
+--Signature=_Fri__5_Jun_2009_11_37_07_+1000_v8EHFvHXLFMcbyLf--
