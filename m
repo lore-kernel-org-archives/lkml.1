@@ -1,79 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540AbZFER5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756292AbZFER61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756540AbZFER5z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 13:57:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZFER5t
+	id S1756292AbZFER61 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 13:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbZFER6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 13:57:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38716 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752106AbZFER5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 13:57:48 -0400
-Message-ID: <4A295C76.3050900@kernel.org>
-Date: Fri, 05 Jun 2009 10:57:10 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 5 Jun 2009 13:58:15 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:48234 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752813AbZFER6N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 13:58:13 -0400
+X-IronPort-AV: E=Sophos;i="4.41,312,1241395200"; 
+   d="scan'208";a="195539132"
+Date: Fri, 5 Jun 2009 10:58:16 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/5] initdev:kernel: Asynchronously-discovered device
+	synchronization, v5
+Message-ID: <20090605175816.GB18688@cuplxvomd02.corp.sa.net>
+References: <Pine.LNX.4.44L0.0905041100500.3092-100000@iolanthe.rowland.org> <20090505234725.5ab247db@linux-lm>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>
-CC: Avi Kivity <avi@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpumask: alloc blank cpumask left over
-References: <4A2835D8.6040903@kernel.org> <200906051428.08299.rusty@rustcorp.com.au> <4A28B3A9.3010505@kernel.org> <200906052311.57762.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906051026030.6847@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0906051026030.6847@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090505234725.5ab247db@linux-lm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-3; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems we could remove that FIXME now.
-cpumask_size is referred rather later.
+On Tue, May 05, 2009 at 11:47:25AM -0400, Ming Lei wrote:
+> On Mon, 4 May 2009 11:07:52 -0400 (EDT)
+> Alan Stern <stern@rowland.harvard.edu> wrote:
+> 
+> > On Mon, 4 May 2009, Arjan van de Ven wrote:
+...
+> > Isn't there still something missing?  The wait_for_device_probe()  
+> > routine would wait until all attached devices had been probed.  But
+> > why should prepare_namespace() have to wait that long?  Wouldn't it be
+> > better to wait only until the root device has been registered?
+> 
+> Yes, maybe David should merge the following patch into the patch
+> No.5(initdev:kernel: USB and SCSI block init device notification, v3).
+> 
+> Right?
+> 
+> diff --git a/init/do_mounts.c b/init/do_mounts.c
+> index dd7ee5f..22fd773 100644
+> --- a/init/do_mounts.c
+> +++ b/init/do_mounts.c
+> @@ -358,6 +358,12 @@ void __init mount_root(void)
+>  #endif
+>  }
+>  
+> +static int root_dev_done()
+> +{
+> +	return !!(ROOT_DEV = name_to_dev_t(saved_root_name));
+> +}
+> +
+> +
+>  /*
+>   * Prepare the namespace - decide what/where to mount, load ramdisks,
+> etc. */
+> @@ -398,12 +404,12 @@ void __init prepare_namespace(void)
+>  		goto out;
+>  
+>  	/* wait for any asynchronous scanning to complete */
+> -	if ((ROOT_DEV == 0) && root_wait) {
+> +	if (ROOT_DEV == 0 && root_wait) {
+>  		printk(KERN_INFO "Waiting for root device %s...\n",
+>  			saved_root_name);
+> -		while (driver_probe_done() != 0 ||
+> -			(ROOT_DEV = name_to_dev_t(saved_root_name)) ==
+> 0)
+> -			msleep(100);
+> +		do {
+> +			initdev_wait(BOOTDEV_BLOCK, root_dev_done);
+> +		} while (!ROOT_DEV);
+>  		async_synchronize_full();
+>  	}
 
-Subject: [PATCH] use nr_cpumask_bits for cpumask_size calculating
+I have something very similar. I'm not completely comfortable with discarding
+the rootwait flag, though it should be very rarely used once the initdev
+infrastructure is in place.
 
-so alloc_cpusmask_var could save some space when MAXSMP is used aka NR_CPUS
-is 4096 on small conf system
+> Lei Ming
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- include/linux/cpumask.h |    4 +---
- lib/cpumask.c           |    8 --------
- 2 files changed, 1 insertion(+), 11 deletions(-)
-
-Index: linux-2.6/include/linux/cpumask.h
-===================================================================
---- linux-2.6.orig/include/linux/cpumask.h
-+++ linux-2.6/include/linux/cpumask.h
-@@ -996,9 +996,7 @@ static inline int cpulist_parse(const ch
-  */
- static inline size_t cpumask_size(void)
- {
--	/* FIXME: Once all cpumask assignments are eliminated, this
--	 * can be nr_cpumask_bits */
--	return BITS_TO_LONGS(NR_CPUS) * sizeof(long);
-+	return BITS_TO_LONGS(nr_cpumask_bits) * sizeof(long);
- }
- 
- /*
-Index: linux-2.6/lib/cpumask.c
-===================================================================
---- linux-2.6.orig/lib/cpumask.c
-+++ linux-2.6/lib/cpumask.c
-@@ -100,14 +100,6 @@ bool alloc_cpumask_var_node(cpumask_var_
- 		dump_stack();
- 	}
- #endif
--	/* FIXME: Bandaid to save us from old primitives which go to NR_CPUS. */
--	if (*mask) {
--		unsigned char *ptr = (unsigned char *)cpumask_bits(*mask);
--		unsigned int tail;
--		tail = BITS_TO_LONGS(NR_CPUS - nr_cpumask_bits) * sizeof(long);
--		memset(ptr + cpumask_size() - tail, 0, tail);
--	}
--
- 	return *mask != NULL;
- }
- EXPORT_SYMBOL(alloc_cpumask_var_node);
+David VomLehn
