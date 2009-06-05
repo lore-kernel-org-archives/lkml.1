@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZFEO4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753569AbZFEO4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbZFEO4W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 10:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbZFEOzz
+	id S1753569AbZFEO4c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 10:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045AbZFEO4C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 10:55:55 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:44439 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753823AbZFEOzz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 10:55:55 -0400
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: linux-usb@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net,
-       haavard.skinnemoen@atmel.com, patrice.vilchez@atmel.com,
-       Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH] atmel_usba_udc: change way of specifying bias function
-Date: Fri,  5 Jun 2009 17:46:16 +0200
-Message-Id: <1244216776-22760-1-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.3.7
+	Fri, 5 Jun 2009 10:56:02 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40402 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755955AbZFEO4B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 10:56:01 -0400
+Date: Fri, 5 Jun 2009 07:54:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
+ kernels
+In-Reply-To: <200906051416.19311.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.2.01.0906050753550.6847@localhost.localdomain>
+References: <4A0B62F7.5030802@goop.org> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain> <200906051416.19311.rusty@rustcorp.com.au>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The toggle_bias() function was specified differently for avr32 and at91
-architectures. Now, new at91 have the same behavior as avr32.
-Consequently, we change to a particular chip function definition: only for
-at91sam9rl.
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
----
 
- drivers/usb/gadget/atmel_usba_udc.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+On Fri, 5 Jun 2009, Rusty Russell wrote:
+> 
+> Distributions don't ship UP kernels any more; this shows what that costs if 
+> you're actually on a UP box.  If we really don't care, perhaps we should make 
+> CONFIG_SMP=n an option under EMBEDDED for x86.  And we can rip out the complex 
+> patching SMP patching stuff too.
 
-diff --git a/drivers/usb/gadget/atmel_usba_udc.c b/drivers/usb/gadget/atmel_usba_udc.c
-index 563d572..a31df12 100644
---- a/drivers/usb/gadget/atmel_usba_udc.c
-+++ b/drivers/usb/gadget/atmel_usba_udc.c
-@@ -326,13 +326,7 @@ static int vbus_is_present(struct usba_udc *udc)
- 	return 1;
- }
- 
--#if defined(CONFIG_AVR32)
--
--static void toggle_bias(int is_on)
--{
--}
--
--#elif defined(CONFIG_ARCH_AT91)
-+#if defined(CONFIG_ARCH_AT91SAM9RL)
- 
- #include <mach/at91_pmc.h>
- 
-@@ -346,7 +340,13 @@ static void toggle_bias(int is_on)
- 		at91_sys_write(AT91_CKGR_UCKR, uckr & ~(AT91_PMC_BIASEN));
- }
- 
--#endif /* CONFIG_ARCH_AT91 */
-+#else
-+
-+static void toggle_bias(int is_on)
-+{
-+}
-+
-+#endif /* CONFIG_ARCH_AT91SAM9RL */
- 
- static void next_fifo_transaction(struct usba_ep *ep, struct usba_request *req)
- {
--- 
-1.5.3.7
+The complex SMP patching is what makes it _possible_ to not ship UP 
+kernels any more.
 
+The SMP overhead exists, but it would be even higher if we didn't patch 
+things to remove the "lock" prefix.
+
+		Linus
