@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZFECge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZFECgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbZFECge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 22:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZFECg0
+	id S1754809AbZFECgo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 22:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZFECgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 22:36:26 -0400
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:49425 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752296AbZFECg0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 22:36:26 -0400
-X-Greylist: delayed 60132 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Jun 2009 22:36:26 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ZctYY2y2mgS6fM9j8Qs756yK34Sje3+xbwrSPH2NtU+zvM0YbYITE6zTzUJrGOr2tZ
-         EwTC1iU8dO6+pcMvWr0MUadd+5opBZUMQjf/fsZQHUeSPBquKctAx6Q6mcQpxB0C9NYe
-         a6TMNp4dS4rieLWZXVZ3bFK1BupT6LRXWvI5o=
-Date: Fri, 5 Jun 2009 10:38:35 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.30-rc8] gcc 3.3 : __udivdi3 undefined.
-Message-ID: <20090605023835.GA7933@cr0.nay.redhat.com>
-References: <200906050038.n550c4Ja010907@www262.sakura.ne.jp>
+	Thu, 4 Jun 2009 22:36:31 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:51201 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753904AbZFECgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 22:36:31 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906050038.n550c4Ja010907@www262.sakura.ne.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18984.33964.21541.743096@cargo.ozlabs.ibm.com>
+Date: Fri, 5 Jun 2009 12:36:28 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: [PATCH] perf_counter: Fix lockup with interrupting counters
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 05, 2009 at 09:38:04AM +0900, Tetsuo Handa wrote:
->[2.6.30-rc8] gcc 3.3 : __udivdi3 undefined.
->
->"make allmodconfig" + "CONFIG_KVM=n" on 2.6.30-rc8 triggers build failure
->when built with gcc 3.3.5 .
->
-># make -s
->/usr/src/all/vanilla/src/linux-2.6.30-rc8/arch/x86/Makefile:82: stack protector enabled but no compiler support
->WARNING: modpost: Found 2 section mismatch(es).
->To see full details build your kernel with:
->'make CONFIG_DEBUG_SECTION_MISMATCH=y'
->arch/x86/mm/built-in.o(.init.text+0x43f7): In function `__change_page_attr':
->arch/x86/mm/pageattr.c:114: undefined reference to `__udivdi3'
->make: *** [.tmp_vmlinux1] Error 1
->
+Commit 8e3747c1 ("perf_counter: Change data head from u32 to u64")
+changed the type of 'head' in struct perf_mmap_data from atomic_t
+to atomic_long_t, but missed converting one use of atomic_read on
+it to atomic_long_read.  The effect of using atomic_read rather than
+atomic_long_read on powerpc (and other big-endian architectures) is
+that we get the high half of the 64-bit quantity, resulting in the
+cmpxchg retry loop in perf_output_begin spinning forever as soon as
+data->head becomes non-zero.  On little-endian architectures such as
+x86 we would get the low half, resulting in a lockup once data->head
+becomes greater than 4G.
 
-Probably you are compiling on i386?
+This fixes it by using atomic_long_read rather than atomic_read.
 
-Weird... 
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ kernel/perf_counter.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-All the types in __change_page_attr() are either 'long' or 'int', how
-can gcc generate software divide for these integer operations?
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 195712e..a5d3e2a 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -2234,7 +2234,7 @@ static int perf_output_begin(struct perf_output_handle *handle,
+ 	perf_output_lock(handle);
+ 
+ 	do {
+-		offset = head = atomic_read(&data->head);
++		offset = head = atomic_long_read(&data->head);
+ 		head += size;
+ 	} while (atomic_long_cmpxchg(&data->head, offset, head) != offset);
+ 
+-- 
+1.6.0.4
+
