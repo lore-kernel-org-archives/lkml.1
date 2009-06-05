@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbZFESAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbZFESAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756659AbZFESAn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 14:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754943AbZFESA1
+	id S1756739AbZFESAz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 14:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756619AbZFESAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 14:00:27 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53163 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753634AbZFESA0 (ORCPT
+	Fri, 5 Jun 2009 14:00:38 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:4704 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756503AbZFESAg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 14:00:26 -0400
-Date: Fri, 5 Jun 2009 19:01:38 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: lkml@morethan.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Compile Warning] 2.6.30-rc8 build
-Message-ID: <20090605190138.5ac32f94@lxorguk.ukuu.org.uk>
-In-Reply-To: <200906051143.06119.lkml@morethan.org>
-References: <200906051143.06119.lkml@morethan.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Jun 2009 14:00:36 -0400
+X-IronPort-AV: E=Sophos;i="4.41,312,1241395200"; 
+   d="scan'208";a="167644975"
+Date: Fri, 5 Jun 2009 11:00:38 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 1/5] initdev:kernel: Asynchronously-discovered device
+	synchronization, v5
+Message-ID: <20090605180038.GC18688@cuplxvomd02.corp.sa.net>
+References: <20090504074522.13f1ed77@infradead.org> <Pine.LNX.4.44L0.0905041100500.3092-100000@iolanthe.rowland.org> <20090505234725.5ab247db@linux-lm> <d82e647a0905050853q4a1d5066ib71411cbef186c45@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d82e647a0905050853q4a1d5066ib71411cbef186c45@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Jun 2009 11:43:03 -0500
-"Michael S. Zick" <lkml@morethan.org> wrote:
+On Tue, May 05, 2009 at 11:53:38AM -0400, Ming Lei wrote:
+> 2009/5/5 Ming Lei <tom.leiming@gmail.com>:
 
-> Group,
-> 
-> To my reading of the function, I think gcc has a point:
-> 
-> drivers/serial/8250.c: In function 'serial8250_shutdown':
-> drivers/serial/8250.c:1685: warning: 'i' may be used uninitialized in this function
-> 
-> It does read as if the code might try to initialize
-> the 'lock' field of a null pointer.
-> 
-> Suggestions?
+> Also need all block device drivers use initdev_*, much work to do,:-)
 
-Newer gcc ? At least current gcc appears to correctly deduce the code is
-safe.
+Not directly. All interesting block devices funnel through just a few functions
+to make the block device usable. I think I have the right place for the
+initdev_registered() call, but I definitely need feedback on this.
 
-Alan
+> Lei Ming
+
+David VomLehn
