@@ -1,79 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbZFEIg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbZFEIju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755667AbZFEIg3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 04:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZFEIgR
+	id S1755475AbZFEIju (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 04:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZFEIjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 04:36:17 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:57170 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753393AbZFEIgO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 04:36:14 -0400
-Date: Fri, 5 Jun 2009 14:06:13 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Christoph Hellwig <hch@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [PATCH -tip v9 7/7] tracing: add kprobe-based event tracer
-Message-ID: <20090605083613.GC4164@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20090602003709.29255.48248.stgit@localhost.localdomain> <20090602003754.29255.37212.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090602003754.29255.37212.stgit@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 5 Jun 2009 04:39:35 -0400
+Received: from mga01.intel.com ([192.55.52.88]:62987 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750701AbZFEIje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 04:39:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,310,1241420400"; 
+   d="scan'208";a="696739090"
+Subject: Re: [PATCH -v4] x86: MCE: Re-implement MCE log ring buffer as
+ per-CPU ring buffer
+From: Huang Ying <ying.huang@intel.com>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A28D738.8010202@jp.fujitsu.com>
+References: <1244085090.8361.360.camel@yhuang-dev.sh.intel.com>
+	 <4A28C2E2.4090309@jp.fujitsu.com>
+	 <1244189284.8361.514.camel@yhuang-dev.sh.intel.com>
+	 <4A28D738.8010202@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Fri, 05 Jun 2009 16:39:34 +0800
+Message-Id: <1244191174.8361.517.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 01, 2009 at 08:37:54PM -0400, Masami Hiramatsu wrote:
-> Add kprobes-based event tracer on ftrace.
+On Fri, 2009-06-05 at 16:28 +0800, Hidetoshi Seto wrote:
+> Huang Ying wrote:
+> > On Fri, 2009-06-05 at 15:01 +0800, Hidetoshi Seto wrote:
+> >> Huang Ying wrote:
+> >>>  struct mce_log {
+> >>> -	char signature[12]; /* "MACHINECHECK" */
+> >>> +	char signature[12]; /* "MACHINECHEC2" */
+> >>>  	unsigned len;	    /* = MCE_LOG_LEN */
+> >>> -	unsigned next;
+> >>>  	unsigned flags;
+> >>>  	unsigned pad0;
+> >>> -	struct mce entry[MCE_LOG_LEN];
+> >>> +	struct mce_log_cpu *mcelog_cpus;
+> >>>  };
+> >> What is this *mcelog_cpus to be used for?
+> >> It seems it will point one of per-CPU buffers (maybe cpu#0's buffer)
+> >> if I have read the following mce_log_init() correctly.
+> > 
+> > It is mainly used by something like kdump, which can search
+> > "MACHINECHEC2", and analyze mce_log. mcelog_cpus can help kdump find the
+> > real mcelog storage.
 > 
-> This tracer is similar to the events tracer which is based on Tracepoint
-> infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
-> and kretprobe). It probes anywhere where kprobes can probe(this means, all
-> functions body except for __kprobes functions).
+> Hum, but it help tools only to find one of buffers, not to find all.
 > 
-> Similar to the events tracer, this tracer doesn't need to be activated via
-> current_tracer, instead of that, just set probe points via
-> /sys/kernel/debug/tracing/kprobe_events. And you can set filters on each
-> probe events via /sys/kernel/debug/tracing/events/kprobes/<EVENT>/filter.
+> I think it would be better help for tools if we have another signature
+> on struct mce_log_cpu, e.g.: 
 > 
-> This tracer supports following probe arguments for each probe.
+>  +struct mce_log_cpu {
+> + 	char signature[**];	/* "MCE_LOG_CPU_VER_1" or so */
+> +	__u32 cpuid;		/* cpuid or extcpu, same as struct mce */
+>  +	int head;
+>  +	int tail;
+>  +	unsigned long flags;
+>  +	struct mce entry[MCE_LOG_LEN];
+>  +};
 > 
->   %REG  : Fetch register REG
->   sN    : Fetch Nth entry of stack (N >= 0)
->   @ADDR : Fetch memory at ADDR (ADDR should be in kernel)
->   @SYM[+|-offs] : Fetch memory at SYM +|- offs (SYM should be a data symbol)
->   aN    : Fetch function argument. (N >= 0)
->   rv    : Fetch return value.
->   ra    : Fetch return address.
->   +|-offs(FETCHARG) : fetch memory at FETCHARG +|- offs address.
-> 
-> See Documentation/trace/kprobes.txt for details.
-> 
-> Changes from v8:
->  - Fix wrong argument offsets in format.
->  - Remove EVENT_TRACING selection in Kconfig.
->  - Fix debugfs file path.
-> 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Christoph Hellwig <hch@infradead.org>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Tom Zanussi <tzanussi@gmail.com>
+> How about this?
 
-The kprobe usage look fine.
++	mcelog.mcelog_cpus = &per_cpu_var(mce_log_cpus);
 
-Tested on x86 and works fine too! Great work, Masami.
+So mcelog.mcelog_cpus are pointed to the buffers of all CPUs, not just
+that of one CPU. You can find them by analyzing PER cpu data structure.
 
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Best Regards,
+Huang Ying
+
+
