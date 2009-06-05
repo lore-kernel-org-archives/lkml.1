@@ -1,77 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbZFEI7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbZFEJAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755565AbZFEI7u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 04:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZFEI7n
+	id S1755679AbZFEJAv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 05:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZFEJAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 04:59:43 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:36337 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750745AbZFEI7m (ORCPT
+	Fri, 5 Jun 2009 05:00:43 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:49611 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750745AbZFEJAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 04:59:42 -0400
-Date: Fri, 5 Jun 2009 11:59:41 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: corentincj@iksaif.net
-cc: acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] eeepc-laptop: enable camera by default
-Message-ID: <Pine.LNX.4.64.0906051157460.22218@melkki.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 5 Jun 2009 05:00:42 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Harald Welte <HaraldWelte@viatech.com>
+Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
+Date: Fri, 5 Jun 2009 04:00:40 -0500
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906041532.57933.lkml@morethan.org> <200906042337.34073.lkml@morethan.org>
+In-Reply-To: <200906042337.34073.lkml@morethan.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906050400.42737.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Thu June 4 2009, Michael S. Zick wrote:
+> On Thu June 4 2009, Michael S. Zick wrote:
+> > On Thu June 4 2009, Michael S. Zick wrote:
+> > > On Thu June 4 2009, Michael S. Zick wrote:
+> > > > On Thu June 4 2009, Harald Welte wrote:
+> > > > > On Thu, Jun 04, 2009 at 11:21:28AM -0500, Michael S. Zick wrote:
+> > > > > 
+> > > > 
+> > > > @Linus - -
+> > > > The Debian/Ubuntu distribution kernels require irqpoll (2.6.28+) -
+> > > > I took that out very early in my testing, when that problem got fixed -
+> > > > I will also try putting that back in, it might be needed for
+> > > > some of its side-effects on the processor/chipset.
+> > > > 
+> > > 
+> > > It looks like I stopped using irqpoll on 4/10 (-rc1)
+> > > http://forum.netbookuser.com/viewtopic.php?pid=6708#p6708
+> > > 
+> > > Am re-testing the "virgin" kernel build with both command options now:
+> > > http://forum.netbookuser.com/viewtopic.php?pid=7037#p7037
+> > > 
+> > > Will post if it has less than 6 months of up-time.  ;)
+> > > 
+> > 
+> > About 6 months less than 6 months up-time ;)
+> > 
+> > 2.6.30-rc8 - no special cmd line options: 1h45m
+> > 2.6.30-rc8 - idle=poll irqpoll options: 1h08m
+> > 
+> 
+> 2.6.30-rc8-ce1200v-09155 - uptime: 5 hours+, still running.
+> Ship it.
+> 
 
-If we leave the camera disabled by default, userspace programs (e.g. 
-Skype, Cheese) leave the user out in the cold saying that the machine "has 
-no camera." Therefore, it's better to enable camera by default and let 
-people who really don't want it just disable the thing.
+New record: 9h15m
 
-Cc: <acpi4asus-user@lists.sourceforge.net>
-Cc: Len Brown <len.brown@intel.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/platform/x86/eeepc-laptop.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
+But that is bandaid'd enough I can stop with the Black Magic
+and Computer Voodoo - -
 
-diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
-index 353a898..c0f8eb1 100644
---- a/drivers/platform/x86/eeepc-laptop.c
-+++ b/drivers/platform/x86/eeepc-laptop.c
-@@ -334,6 +334,19 @@ static int eeepc_bluetooth_rfkill_state(void *data, enum rfkill_state *state)
- }
- 
- /*
-+ * Camera helpers
-+ */
-+
-+static void eeepc_enable_camera(void)
-+{
-+	int err;
-+
-+	err = set_acpi(CM_ASL_CAMERA, 1);
-+	if (err)
-+		printk(EEEPC_WARNING "Unable to enable camera %d\n", err);
-+}
-+
-+/*
-  * Sys helpers
-  */
- static int parse_arg(const char *buf, unsigned long count, int *val)
-@@ -996,6 +1009,9 @@ static int __init eeepc_laptop_init(void)
- 	result = eeepc_hwmon_init(dev);
- 	if (result)
- 		goto fail_hwmon;
-+
-+	eeepc_enable_camera();
-+
- 	/* Register platform stuff */
- 	result = platform_driver_register(&platform_driver);
- 	if (result)
--- 
-1.5.6.3
+Now just a matter of cutting each problem out of the herd
+and solving each of them. . .  ;)
+
+A likely first candidate is this USB driver with its 28Mbyte
+cry for help in the syslog file.
+
+Mike
+> Details:
+> http://forum.netbookuser.com/viewtopic.php?pid=7039#p7039
+> 
+> Mike
+> 
+> > Summary:
+> > Phooey!
+> > 
+> > Mike
+> > 
+> > > Mike
+> > > 
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > Please read the FAQ at  http://www.tux.org/lkml/
+> > > 
+> > > 
+> > 
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+> > 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+
 
