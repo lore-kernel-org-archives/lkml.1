@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754940AbZFEW26@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755113AbZFEW3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754940AbZFEW26 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 18:28:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752650AbZFEW2u
+	id S1755113AbZFEW3R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 18:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbZFEW2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 18:28:50 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:45551 "EHLO
+	Fri, 5 Jun 2009 18:28:53 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:52272 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752512AbZFEW2t (ORCPT
+	with ESMTP id S1754753AbZFEW2w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 18:28:49 -0400
+	Fri, 5 Jun 2009 18:28:52 -0400
 X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
 	times
-Message-Id: <20090605191851.012334412@gentwo.org>
+Message-Id: <20090605191850.633645745@gentwo.org>
 References: <20090605191819.376530498@gentwo.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 05 Jun 2009 15:18:23 -0400
+Date: Fri, 05 Jun 2009 15:18:21 -0400
 From: cl@linux-foundation.org
 To: linux-kernel@vger.kernel.org
 Cc: Tejun Heo <tj@kernel.org>
 Cc: mingo@elte.hu
 Cc: rusty@rustcorp.com.au
 Cc: davem@davemloft.net
-Subject: [this_cpu_xx 04/11] Use this_cpu ops for network statistics
-Content-Disposition: inline; filename=this_cpu_net
+Subject: [this_cpu_xx 02/11] Use this_cpu operations for SNMP statistics
+Content-Disposition: inline; filename=this_cpu_snmp
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+SNMP statistics macros can be signficantly simplified.
+This will also reduce code size if the arch supports these operations
+in harware.
+
 Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
 ---
- include/net/neighbour.h              |    7 +------
- include/net/netfilter/nf_conntrack.h |    9 ++-------
- 2 files changed, 3 insertions(+), 13 deletions(-)
+ include/net/snmp.h |   37 ++++++++++++-------------------------
+ 1 file changed, 12 insertions(+), 25 deletions(-)
 
-Index: linux-2.6/include/net/neighbour.h
+Index: linux-2.6/include/net/snmp.h
 ===================================================================
---- linux-2.6.orig/include/net/neighbour.h	2009-06-03 16:23:29.000000000 -0500
-+++ linux-2.6/include/net/neighbour.h	2009-06-03 16:36:23.000000000 -0500
-@@ -89,12 +89,7 @@ struct neigh_statistics
- 	unsigned long unres_discards;	/* number of unresolved drops */
- };
+--- linux-2.6.orig/include/net/snmp.h	2009-06-03 13:48:02.000000000 -0500
++++ linux-2.6/include/net/snmp.h	2009-06-03 14:27:51.000000000 -0500
+@@ -136,29 +136,16 @@ struct linux_xfrm_mib {
+ #define SNMP_STAT_BHPTR(name)	(name[0])
+ #define SNMP_STAT_USRPTR(name)	(name[1])
  
--#define NEIGH_CACHE_STAT_INC(tbl, field)				\
--	do {								\
--		preempt_disable();					\
--		(per_cpu_ptr((tbl)->stats, smp_processor_id())->field)++; \
--		preempt_enable();					\
+-#define SNMP_INC_STATS_BH(mib, field) 	\
+-	(per_cpu_ptr(mib[0], raw_smp_processor_id())->mibs[field]++)
+-#define SNMP_INC_STATS_USER(mib, field) \
+-	do { \
+-		per_cpu_ptr(mib[1], get_cpu())->mibs[field]++; \
+-		put_cpu(); \
 -	} while (0)
-+#define NEIGH_CACHE_STAT_INC(tbl, field) this_cpu_inc((tbl)->stats->field)
- 
- struct neighbour
- {
-Index: linux-2.6/include/net/netfilter/nf_conntrack.h
-===================================================================
---- linux-2.6.orig/include/net/netfilter/nf_conntrack.h	2009-06-03 16:23:29.000000000 -0500
-+++ linux-2.6/include/net/netfilter/nf_conntrack.h	2009-06-03 16:37:17.000000000 -0500
-@@ -291,14 +291,9 @@ extern int nf_conntrack_set_hashsize(con
- extern unsigned int nf_conntrack_htable_size;
- extern unsigned int nf_conntrack_max;
- 
--#define NF_CT_STAT_INC(net, count)	\
--	(per_cpu_ptr((net)->ct.stat, raw_smp_processor_id())->count++)
-+#define NF_CT_STAT_INC(net, count) __this_cpu_inc((net)->ct.stat->count)
- #define NF_CT_STAT_INC_ATOMIC(net, count)		\
--do {							\
--	local_bh_disable();				\
--	per_cpu_ptr((net)->ct.stat, raw_smp_processor_id())->count++;	\
--	local_bh_enable();				\
--} while (0)
-+	this_cpu_inc((net)->ct.stat->count)
- 
- #define MODULE_ALIAS_NFCT_HELPER(helper) \
-         MODULE_ALIAS("nfct-helper-" helper)
+-#define SNMP_INC_STATS(mib, field) 	\
+-	do { \
+-		per_cpu_ptr(mib[!in_softirq()], get_cpu())->mibs[field]++; \
+-		put_cpu(); \
+-	} while (0)
+-#define SNMP_DEC_STATS(mib, field) 	\
+-	do { \
+-		per_cpu_ptr(mib[!in_softirq()], get_cpu())->mibs[field]--; \
+-		put_cpu(); \
+-	} while (0)
+-#define SNMP_ADD_STATS_BH(mib, field, addend) 	\
+-	(per_cpu_ptr(mib[0], raw_smp_processor_id())->mibs[field] += addend)
+-#define SNMP_ADD_STATS_USER(mib, field, addend) 	\
+-	do { \
+-		per_cpu_ptr(mib[1], get_cpu())->mibs[field] += addend; \
+-		put_cpu(); \
+-	} while (0)
+-
++#define SNMP_INC_STATS_BH(mib, field)	\
++			__this_cpu_inc(mib[0]->mibs[field])
++#define SNMP_INC_STATS_USER(mib, field)	\
++			this_cpu_inc(mib[1]->mibs[field])
++#define SNMP_INC_STATS(mib, field)	\
++			this_cpu_inc(mib[!in_softirq()]->mibs[field])
++#define SNMP_DEC_STATS(mib, field)	\
++		 	this_cpu_dec(mib[!in_softirq()]->mibs[field])
++#define SNMP_ADD_STATS_BH(mib, field, addend)	\
++			__this_cpu_add(mib[0]->mibs[field], addend)
++#define SNMP_ADD_STATS_USER(mib, field, addend)	\
++			this_cpu_add(mib[1]->mibs[field], addend)
+ #endif
 
 -- 
