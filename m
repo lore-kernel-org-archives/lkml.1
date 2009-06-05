@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbZFELNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbZFELN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753207AbZFELNl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 07:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbZFELNP
+	id S1754701AbZFELN6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 07:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbZFELNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 07:13:15 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:49219 "EHLO
+	Fri, 5 Jun 2009 07:13:22 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:49232 "EHLO
 	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753037AbZFELNN (ORCPT
+	with ESMTP id S1754099AbZFELNU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 07:13:13 -0400
+	Fri, 5 Jun 2009 07:13:20 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Al Viro <viro@ZenIV.linux.org.uk>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Christoph Hellwig <hch@infradead.org>,
        Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: [PATCH v2.1 07/17] FAT: do not manipulate s_dirt directly
-Date: Fri,  5 Jun 2009 16:05:45 +0300
-Message-Id: <1244207155-2092-8-git-send-email-dedekind@infradead.org>
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: [PATCH v2.1 02/17] AFFS: do not manipulate s_dirt directly
+Date: Fri,  5 Jun 2009 16:05:40 +0300
+Message-Id: <1244207155-2092-3-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
 References: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 05 Jun 2009 11:12:59.0087 (UTC) FILETIME=[957E35F0:01C9E5CE]
+X-OriginalArrivalTime: 05 Jun 2009 11:12:46.0915 (UTC) FILETIME=[8E3CE930:01C9E5CE]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,74 +33,65 @@ From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 ... use new VFS helpers instead.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Roman Zippel <zippel@linux-m68k.org>
 ---
- fs/fat/fatent.c |    8 ++++----
- fs/fat/inode.c  |    4 ++--
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ fs/affs/bitmap.c |    4 ++--
+ fs/affs/super.c  |   12 ++++++++----
+ 2 files changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/fs/fat/fatent.c b/fs/fat/fatent.c
-index da6eea4..fa19a9d 100644
---- a/fs/fat/fatent.c
-+++ b/fs/fat/fatent.c
-@@ -495,7 +495,7 @@ int fat_alloc_clusters(struct inode *inode, int *cluster, int nr_cluster)
- 				sbi->prev_free = entry;
- 				if (sbi->free_clusters != -1)
- 					sbi->free_clusters--;
--				sb->s_dirt = 1;
-+				mark_sb_dirty(sb);
+diff --git a/fs/affs/bitmap.c b/fs/affs/bitmap.c
+index dc5ef14..0be510c 100644
+--- a/fs/affs/bitmap.c
++++ b/fs/affs/bitmap.c
+@@ -102,7 +102,7 @@ affs_free_block(struct super_block *sb, u32 block)
+ 	*(__be32 *)bh->b_data = cpu_to_be32(tmp - mask);
  
- 				cluster[idx_clus] = entry;
- 				idx_clus++;
-@@ -517,7 +517,7 @@ int fat_alloc_clusters(struct inode *inode, int *cluster, int nr_cluster)
- 	/* Couldn't allocate the free entries */
- 	sbi->free_clusters = 0;
- 	sbi->free_clus_valid = 1;
+ 	mark_buffer_dirty(bh);
 -	sb->s_dirt = 1;
 +	mark_sb_dirty(sb);
- 	err = -ENOSPC;
+ 	bm->bm_free++;
  
- out:
-@@ -578,7 +578,7 @@ int fat_free_clusters(struct inode *inode, int cluster)
- 		ops->ent_put(&fatent, FAT_ENT_FREE);
- 		if (sbi->free_clusters != -1) {
- 			sbi->free_clusters++;
--			sb->s_dirt = 1;
+ 	mutex_unlock(&sbi->s_bmlock);
+@@ -247,7 +247,7 @@ find_bit:
+ 	*(__be32 *)bh->b_data = cpu_to_be32(tmp + mask);
+ 
+ 	mark_buffer_dirty(bh);
+-	sb->s_dirt = 1;
++	mark_sb_dirty(sb);
+ 
+ 	mutex_unlock(&sbi->s_bmlock);
+ 
+diff --git a/fs/affs/super.c b/fs/affs/super.c
+index 280d361..8c105d5 100644
+--- a/fs/affs/super.c
++++ b/fs/affs/super.c
+@@ -64,9 +64,13 @@ affs_write_super(struct super_block *sb)
+ 				  &AFFS_ROOT_TAIL(sb, sbi->s_root_bh)->disk_change);
+ 		affs_fix_checksum(sb, sbi->s_root_bh);
+ 		mark_buffer_dirty(sbi->s_root_bh);
+-		sb->s_dirt = !clean;	/* redo until bitmap synced */
++		/* redo until bitmap synced */
++		if (clean)
++			mark_sb_clean(sb);
++		else
 +			mark_sb_dirty(sb);
- 		}
+ 	} else
+-		sb->s_dirt = 0;
++		mark_sb_clean(sb);
+ 	unlock_super(sb);
  
- 		if (nr_bhs + fatent.nr_bhs > MAX_BUF_PER_PAGE) {
-@@ -668,7 +668,7 @@ int fat_count_free_clusters(struct super_block *sb)
- 	}
- 	sbi->free_clusters = free;
- 	sbi->free_clus_valid = 1;
--	sb->s_dirt = 1;
-+	mark_sb_dirty(sb);
- 	fatent_brelse(&fatent);
- out:
- 	unlock_fat(sbi);
-diff --git a/fs/fat/inode.c b/fs/fat/inode.c
-index 2292cbf..f3b6410 100644
---- a/fs/fat/inode.c
-+++ b/fs/fat/inode.c
-@@ -442,7 +442,7 @@ static void fat_clear_inode(struct inode *inode)
- static void fat_write_super(struct super_block *sb)
- {
- 	lock_super(sb);
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- 
- 	if (!(sb->s_flags & MS_RDONLY))
- 		fat_clusters_flush(sb);
-@@ -455,7 +455,7 @@ static void fat_put_super(struct super_block *sb)
- 
- 	lock_kernel();
- 
--	if (sb->s_dirt)
-+	if (is_sb_dirty(sb))
- 		fat_write_super(sb);
- 
- 	if (sbi->nls_disk) {
+ 	pr_debug("AFFS: write_super() at %lu, clean=%d\n", get_seconds(), clean);
+@@ -522,8 +526,8 @@ affs_remount(struct super_block *sb, int *flags, char *data)
+ 	if ((*flags & MS_RDONLY) == (sb->s_flags & MS_RDONLY))
+ 		return 0;
+ 	if (*flags & MS_RDONLY) {
+-		sb->s_dirt = 1;
+-		while (sb->s_dirt)
++		mark_sb_dirty(sb);
++		while (is_sb_dirty(sb))
+ 			affs_write_super(sb);
+ 		affs_free_bitmap(sb);
+ 	} else
 -- 
 1.6.0.6
 
