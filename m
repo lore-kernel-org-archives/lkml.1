@@ -1,36 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbZFESFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756376AbZFESHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbZFESFS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 14:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZFESFH
+	id S1756376AbZFESHl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 14:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbZFESHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 14:05:07 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53257 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751233AbZFESFG (ORCPT
+	Fri, 5 Jun 2009 14:07:35 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:54471 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751379AbZFESHe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 14:05:06 -0400
-Date: Fri, 5 Jun 2009 19:06:16 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: lkml@morethan.org
-Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org
-Subject: Re: [Compile Warning] 2.6.30-rc8 build
-Message-ID: <20090605190616.422cda4f@lxorguk.ukuu.org.uk>
-In-Reply-To: <200906051240.52615.lkml@morethan.org>
-References: <200906051143.06119.lkml@morethan.org>
-	<ada63fawq7y.fsf@cisco.com>
-	<200906051240.52615.lkml@morethan.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Jun 2009 14:07:34 -0400
+Message-ID: <4A295FA2.1060401@oracle.com>
+Date: Fri, 05 Jun 2009 11:10:42 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@driverdev.osuosl.org
+CC: Greg KH <gregkh@suse.de>
+Subject: comedi: uses udelay, needs delay.h
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt010.oracle.com [141.146.116.19]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010203.4A295EDF.0034:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Of course, I, just like gcc, did not know the machine had already died.
-> I'll stick an "i = something" at the top (NULL?) just to shut up gcc.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-And it will not get merged. Current gcc understands the code perfectly
-well.
+comedi driver(s) use udelay() so they need to #include delay.h.
 
+drivers/staging/comedi/drivers/adq12b.c: In function 'adq12b_ai_rinsn':
+drivers/staging/comedi/drivers/adq12b.c:328: error: implicit declaration of function 'udelay'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/staging/comedi/comedidev.h |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-next-20090605.orig/drivers/staging/comedi/comedidev.h
++++ linux-next-20090605/drivers/staging/comedi/comedidev.h
+@@ -28,6 +28,7 @@
+ #include <linux/module.h>
+ #include <linux/kdev_t.h>
+ #include <linux/slab.h>
++#include <linux/delay.h>
+ #include <linux/errno.h>
+ #include <linux/spinlock.h>
+ #include <linux/mutex.h>
+
+
+
+-- 
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
