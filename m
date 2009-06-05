@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755294AbZFELOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755722AbZFELPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755294AbZFELOw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 07:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753797AbZFELNa
+	id S1755722AbZFELPx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 07:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZFELNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 07:13:30 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:52257 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754425AbZFELN1 (ORCPT
+	Fri, 5 Jun 2009 07:13:46 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:36839 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754593AbZFELNl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 07:13:27 -0400
+	Fri, 5 Jun 2009 07:13:41 -0400
 From: Artem Bityutskiy <dedekind@infradead.org>
 To: Al Viro <viro@ZenIV.linux.org.uk>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: [PATCH v2.1 08/17] HFS: do not manipulate s_dirt directly
-Date: Fri,  5 Jun 2009 16:05:46 +0300
-Message-Id: <1244207155-2092-9-git-send-email-dedekind@infradead.org>
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>, users@nilfs.org,
+       KONISHI Ryusuke <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [PATCH v2.1 11/17] NILFS: do not manipulate s_dirt directly
+Date: Fri,  5 Jun 2009 16:05:49 +0300
+Message-Id: <1244207155-2092-12-git-send-email-dedekind@infradead.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
 References: <1244207155-2092-1-git-send-email-dedekind@infradead.org>
-X-OriginalArrivalTime: 05 Jun 2009 11:13:01.0275 (UTC) FILETIME=[96CC12B0:01C9E5CE]
+X-OriginalArrivalTime: 05 Jun 2009 11:13:08.0859 (UTC) FILETIME=[9B514CB0:01C9E5CE]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,93 +33,95 @@ From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 ... use new VFS helpers instead.
 
 Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: users@nilfs.org
+Cc: KONISHI Ryusuke <konishi.ryusuke@lab.ntt.co.jp>
 ---
- fs/hfs/extent.c |    2 +-
- fs/hfs/hfs_fs.h |    2 +-
- fs/hfs/inode.c  |    6 +++---
- fs/hfs/super.c  |    4 ++--
- 4 files changed, 7 insertions(+), 7 deletions(-)
+ fs/nilfs2/segment.c   |    2 +-
+ fs/nilfs2/super.c     |   18 +++++++++---------
+ fs/nilfs2/the_nilfs.c |    2 +-
+ 3 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/fs/hfs/extent.c b/fs/hfs/extent.c
-index 2c16316..bff476a 100644
---- a/fs/hfs/extent.c
-+++ b/fs/hfs/extent.c
-@@ -432,7 +432,7 @@ out:
- 		if (inode->i_ino < HFS_FIRSTUSER_CNID)
- 			set_bit(HFS_FLG_ALT_MDB_DIRTY, &HFS_SB(sb)->flags);
- 		set_bit(HFS_FLG_MDB_DIRTY, &HFS_SB(sb)->flags);
--		sb->s_dirt = 1;
-+		mark_sb_dirty(sb);
- 	}
- 	return res;
+diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
+index fb70ec3..0dcac79 100644
+--- a/fs/nilfs2/segment.c
++++ b/fs/nilfs2/segment.c
+@@ -2069,7 +2069,7 @@ static void nilfs_segctor_complete_write(struct nilfs_sc_info *sci)
+ 	if (update_sr) {
+ 		nilfs_set_last_segment(nilfs, segbuf->sb_pseg_start,
+ 				       segbuf->sb_sum.seg_seq, nilfs->ns_cno++);
+-		sbi->s_super->s_dirt = 1;
++		mark_sb_dirty(sbi->s_super);
  
-diff --git a/fs/hfs/hfs_fs.h b/fs/hfs/hfs_fs.h
-index 052387e..3b6631f 100644
---- a/fs/hfs/hfs_fs.h
-+++ b/fs/hfs/hfs_fs.h
-@@ -251,7 +251,7 @@ static inline const char *hfs_mdb_name(struct super_block *sb)
- static inline void hfs_bitmap_dirty(struct super_block *sb)
- {
- 	set_bit(HFS_FLG_BITMAP_DIRTY, &HFS_SB(sb)->flags);
--	sb->s_dirt = 1;
-+	mark_sb_dirty(sb);
+ 		clear_bit(NILFS_SC_HAVE_DELTA, &sci->sc_flags);
+ 		clear_bit(NILFS_SC_DIRTY, &sci->sc_flags);
+diff --git a/fs/nilfs2/super.c b/fs/nilfs2/super.c
+index 7262e84..6f3707b 100644
+--- a/fs/nilfs2/super.c
++++ b/fs/nilfs2/super.c
+@@ -307,7 +307,7 @@ int nilfs_commit_super(struct nilfs_sb_info *sbi, int dupsb)
+ 		memcpy(sbp[1], sbp[0], nilfs->ns_sbsize);
+ 		nilfs->ns_sbwtime[1] = t;
+ 	}
+-	sbi->s_super->s_dirt = 0;
++	mark_sb_clean(sbi->s_super);
+ 	return nilfs_sync_super(sbi, dupsb);
  }
  
- static inline void hfs_buffer_sync(struct buffer_head *bh)
-diff --git a/fs/hfs/inode.c b/fs/hfs/inode.c
-index a1cbff2..b87dcf0 100644
---- a/fs/hfs/inode.c
-+++ b/fs/hfs/inode.c
-@@ -198,7 +198,7 @@ struct inode *hfs_new_inode(struct inode *dir, struct qstr *name, int mode)
- 	insert_inode_hash(inode);
- 	mark_inode_dirty(inode);
- 	set_bit(HFS_FLG_MDB_DIRTY, &HFS_SB(sb)->flags);
--	sb->s_dirt = 1;
-+	mark_sb_dirty(sb);
+@@ -318,7 +318,7 @@ static void nilfs_put_super(struct super_block *sb)
  
- 	return inode;
- }
-@@ -213,7 +213,7 @@ void hfs_delete_inode(struct inode *inode)
- 		if (HFS_I(inode)->cat_key.ParID == cpu_to_be32(HFS_ROOT_CNID))
- 			HFS_SB(sb)->root_dirs--;
- 		set_bit(HFS_FLG_MDB_DIRTY, &HFS_SB(sb)->flags);
--		sb->s_dirt = 1;
-+		mark_sb_dirty(sb);
- 		return;
- 	}
- 	HFS_SB(sb)->file_count--;
-@@ -226,7 +226,7 @@ void hfs_delete_inode(struct inode *inode)
- 		}
- 	}
- 	set_bit(HFS_FLG_MDB_DIRTY, &HFS_SB(sb)->flags);
--	sb->s_dirt = 1;
-+	mark_sb_dirty(sb);
- }
- 
- void hfs_inode_read_fork(struct inode *inode, struct hfs_extent *ext,
-diff --git a/fs/hfs/super.c b/fs/hfs/super.c
-index 3aac417..6b84117 100644
---- a/fs/hfs/super.c
-+++ b/fs/hfs/super.c
-@@ -50,7 +50,7 @@ MODULE_LICENSE("GPL");
- static void hfs_write_super(struct super_block *sb)
- {
- 	lock_super(sb);
--	sb->s_dirt = 0;
-+	mark_sb_clean(sb);
- 
- 	/* sync everything to the buffers */
- 	if (!(sb->s_flags & MS_RDONLY))
-@@ -69,7 +69,7 @@ static void hfs_put_super(struct super_block *sb)
- {
  	lock_kernel();
  
 -	if (sb->s_dirt)
 +	if (is_sb_dirty(sb))
- 		hfs_write_super(sb);
- 	hfs_mdb_close(sb);
- 	/* release the MDB's resources */
+ 		nilfs_write_super(sb);
+ 
+ 	nilfs_detach_segment_constructor(sbi);
+@@ -344,17 +344,17 @@ static void nilfs_put_super(struct super_block *sb)
+  * @sb: super_block
+  *
+  * nilfs_write_super() gets a fs-dependent lock, writes super block(s), and
+- * clears s_dirt.  This function is called in the section protected by
+- * lock_super().
++ * clears the superblock.  This function is called in the section protected
++ * by lock_super().
+  *
+- * The s_dirt flag is managed by each filesystem and we protect it by ns_sem
+- * of the struct the_nilfs.  Lock order must be as follows:
++ * The super block s_dirt flag is managed by each filesystem and we protect
++ * it by ns_sem of the struct the_nilfs.  Lock order must be as follows:
+  *
+  *   1. lock_super()
+  *   2.    down_write(&nilfs->ns_sem)
+  *
+- * Inside NILFS, locking ns_sem is enough to protect s_dirt and the buffer
+- * of the super block (nilfs->ns_sbp[]).
++ * Inside NILFS, locking ns_sem is enough to protect the super block s_dirt
++ * and the buffer of the super block (nilfs->ns_sbp[]).
+  *
+  * In most cases, VFS functions call lock_super() before calling these
+  * methods.  So we must be careful not to bring on deadlocks when using
+@@ -383,7 +383,7 @@ static void nilfs_write_super(struct super_block *sb)
+ 		dupsb = sbp[1] && t > nilfs->ns_sbwtime[1] + NILFS_ALTSB_FREQ;
+ 		nilfs_commit_super(sbi, dupsb);
+ 	}
+-	sb->s_dirt = 0;
++	mark_sb_clean(sb);
+ 	up_write(&nilfs->ns_sem);
+ }
+ 
+diff --git a/fs/nilfs2/the_nilfs.c b/fs/nilfs2/the_nilfs.c
+index 7f65b3b..5b02f50 100644
+--- a/fs/nilfs2/the_nilfs.c
++++ b/fs/nilfs2/the_nilfs.c
+@@ -278,7 +278,7 @@ int load_nilfs(struct the_nilfs *nilfs, struct nilfs_sb_info *sbi)
+ 			goto failed;
+ 		}
+ 		if (ri.ri_need_recovery == NILFS_RECOVERY_SR_UPDATED)
+-			sbi->s_super->s_dirt = 1;
++			mark_sb_dirty(sbi->s_super);
+ 	}
+ 
+ 	set_nilfs_loaded(nilfs);
 -- 
 1.6.0.6
 
