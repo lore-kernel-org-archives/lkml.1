@@ -1,100 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288AbZFERIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbZFERNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753288AbZFERIP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 13:08:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751079AbZFERIC
+	id S1754895AbZFERNV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 13:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZFERNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 13:08:02 -0400
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:43639 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751015AbZFERIB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 13:08:01 -0400
-Message-ID: <4A2950F0.5050309@in.ibm.com>
-Date: Fri, 05 Jun 2009 22:38:00 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Fri, 5 Jun 2009 13:13:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51952 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752743AbZFERNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 13:13:11 -0400
+Date: Fri, 5 Jun 2009 17:12:33 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter tools: Sample and display frequency adjustment changes
+Message-ID: <tip-b2fef0762fdb65cf8702eea93f4e58abeb0ecefc@git.kernel.org>
+Git-Commit-ID: b2fef0762fdb65cf8702eea93f4e58abeb0ecefc
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: zohar@us.ibm.com
-Subject: [IMA] 2.6.30-rc8 : Bug while trying to launch a KVM guest
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 05 Jun 2009 17:12:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I had a x86_64 machine running 2.6.30-rc7-git4 as a KVM Host.
-I configured a KVM guest and was able to boot the guest.
+Commit-ID:  b2fef0762fdb65cf8702eea93f4e58abeb0ecefc
+Gitweb:     http://git.kernel.org/tip/b2fef0762fdb65cf8702eea93f4e58abeb0ecefc
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Fri, 5 Jun 2009 18:07:51 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 5 Jun 2009 18:07:51 +0200
 
-On the KVM host i compiled a 2.6.30-rc8 kernel with
-CONFIG_IMA=y and rebooted the machine into that kernel.
+perf_counter tools: Sample and display frequency adjustment changes
 
-When i tried to launch the KVM guest with 2.6.30-rc8 kernel
-ran into following BUG.
+To allow the debugging of frequency-adjusting counters, sample
+those adjustments and display them in perf report -D.
 
-# qemu-system-x86_64 -hda /local/kvmtest/rhel53.img  -m 512
-rhel53.img dentry_open failed
-BUG: unable to handle kernel paging request at ffffffffffffffe5
-IP: [<ffffffff802cde9d>] fput+0x8/0x1a
-PGD 203067 PUD 204067 PMD 0 
-Oops: 0002 [#2] SMP 
-last sysfs file: /sys/devices/system/cpu/cpu3/cache/index2/shared_cpu_map
-CPU 1 
-Modules linked in: kvm_amd kvm ipv6 sr_mod cdrom fuse loop dm_mod ums_cypress
-bnx2 sg mptctl i2c_piix4 rtc_cmos pcspkr usb_storage button serio_raw rtc_core
-i2c_core rtc_lib shpchp k8temp pci_hotplug usbhid hid ohci_hcd ehci_hcd sd_mod
-crc_t10dif usbcore edd ext3 jbd fan thermal processor thermal_sys hwmon mptsas
-mptscsih mptbase scsi_transport_sas scsi_mod
-Pid: 3068, comm: qemu-system-x86 Tainted: G      D    2.6.30-rc8 #1 BladeCenter
-LS21 -[79716AA]-
-RIP: 0010:[<ffffffff802cde9d>]  [<ffffffff802cde9d>] fput+0x8/0x1a
-RSP: 0018:ffff880128d6dd88  EFLAGS: 00010282
-RAX: ffffffffffffffe5 RBX: ffff880128d2a580 RCX: 0000000000000ccb
-RDX: ffff88002803c000 RSI: 0000000000000046 RDI: ffffffffffffffb5
-RBP: ffff880128d6dd88 R08: 0000000000000000 R09: 0000000000000000
-R10: ffff8800000be360 R11: ffff880128d6db78 R12: ffff88012db6ad60
-R13: ffffffffffffffb5 R14: ffff880128d6de48 R15: ffff88012db6ac00
-FS:  00007f60db16b6f0(0000) GS:ffff88002803c000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: ffffffffffffffe5 CR3: 0000000128d11000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process qemu-system-x86 (pid: 3068, threadinfo ffff880128d6c000, task
-ffff88012c9f1880)
-Stack:
- ffff880128d6ddc8 ffffffff803ac6f1 ffff880128d2a5a8 ffff880126805fc0
- 0000000000009001 0000000000000004 ffff880128d6de48 ffff88012db6acc0
- ffff880128d6de08 ffffffff802d5f3c ffff880128d6de08 0000000000000000
-Call Trace:
- [<ffffffff803ac6f1>] ima_path_check+0x1a5/0x1c3
- [<ffffffff802d5f3c>] may_open+0xc1/0x278
- [<ffffffff802d8620>] do_filp_open+0x498/0x914
- [<ffffffff802abd89>] ? handle_mm_fault+0x35b/0x75e
- [<ffffffff802cb0c9>] ? fd_install+0x30/0x60
- [<ffffffff802e0abd>] ? alloc_fd+0x6d/0x117
- [<ffffffff802cb295>] do_sys_open+0x56/0xd6
- [<ffffffff802cb33e>] sys_open+0x1b/0x1d
- [<ffffffff8020ba6b>] system_call_fastpath+0x16/0x1b
-Code: ff 74 13 41 c7 87 cc 00 00 00 00 00 00 00 4c 89 ff e8 86 43 01 00 41 58
-5b 41 5c 41 5d 41 5e 41 5f c9 c3 55 48 8d 47 30 48 89 e5 <f0> 48 ff 08 0f 94 c2
-84 d2 74 05 e8 47 fe ff ff c9 c3 55 48 89 
-RIP  [<ffffffff802cde9d>] fput+0x8/0x1a
- RSP <ffff880128d6dd88>
-CR2: ffffffffffffffe5
----[ end trace 65e02cf766f19c9b ]---
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Let me know if some more information is required.
 
-Thanks
--Sachin
+---
+ Documentation/perf_counter/builtin-record.c |    2 +-
+ Documentation/perf_counter/builtin-report.c |   39 ++++++++++++++++++++++----
+ 2 files changed, 34 insertions(+), 7 deletions(-)
 
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
-
+diff --git a/Documentation/perf_counter/builtin-record.c b/Documentation/perf_counter/builtin-record.c
+index d4ad305..43ddab3 100644
+--- a/Documentation/perf_counter/builtin-record.c
++++ b/Documentation/perf_counter/builtin-record.c
+@@ -347,7 +347,7 @@ static void create_counter(int counter, int cpu, pid_t pid)
+ 	memset(&attr, 0, sizeof(attr));
+ 	attr.config		= event_id[counter];
+ 	attr.sample_period	= event_count[counter];
+-	attr.sample_type	= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
++	attr.sample_type	= PERF_SAMPLE_IP | PERF_SAMPLE_TID | PERF_SAMPLE_PERIOD;
+ 	attr.freq		= freq;
+ 	attr.mmap		= track;
+ 	attr.comm		= track;
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index 5af105c..242e09f 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -69,12 +69,20 @@ struct fork_event {
+ 	__u32 pid, ppid;
+ };
+ 
+-typedef union event_union {
++struct period_event {
+ 	struct perf_event_header header;
+-	struct ip_event ip;
+-	struct mmap_event mmap;
+-	struct comm_event comm;
+-	struct fork_event fork;
++	__u64 time;
++	__u64 id;
++	__u64 sample_period;
++};
++
++typedef union event_union {
++	struct perf_event_header	header;
++	struct ip_event			ip;
++	struct mmap_event		mmap;
++	struct comm_event		comm;
++	struct fork_event		fork;
++	struct period_event		period;
+ } event_t;
+ 
+ static LIST_HEAD(dsos);
+@@ -1053,6 +1061,19 @@ process_fork_event(event_t *event, unsigned long offset, unsigned long head)
+ }
+ 
+ static int
++process_period_event(event_t *event, unsigned long offset, unsigned long head)
++{
++	dprintf("%p [%p]: PERF_EVENT_PERIOD: time:%Ld, id:%Ld: period:%Ld\n",
++		(void *)(offset + head),
++		(void *)(long)(event->header.size),
++		event->period.time,
++		event->period.id,
++		event->period.sample_period);
++
++	return 0;
++}
++
++static int
+ process_event(event_t *event, unsigned long offset, unsigned long head)
+ {
+ 	if (event->header.misc & PERF_EVENT_MISC_OVERFLOW)
+@@ -1068,11 +1089,12 @@ process_event(event_t *event, unsigned long offset, unsigned long head)
+ 	case PERF_EVENT_FORK:
+ 		return process_fork_event(event, offset, head);
+ 
++	case PERF_EVENT_PERIOD:
++		return process_period_event(event, offset, head);
+ 	/*
+ 	 * We dont process them right now but they are fine:
+ 	 */
+ 
+-	case PERF_EVENT_PERIOD:
+ 	case PERF_EVENT_THROTTLE:
+ 	case PERF_EVENT_UNTHROTTLE:
+ 		return 0;
+@@ -1157,6 +1179,11 @@ more:
+ 
+ 	size = event->header.size;
+ 
++	dprintf("%p [%p]: event: %d\n",
++			(void *)(offset + head),
++			(void *)(long)event->header.size,
++			event->header.type);
++
+ 	if (!size || process_event(event, offset, head) < 0) {
+ 
+ 		dprintf("%p [%p]: skipping unknown header type: %d\n",
