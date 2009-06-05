@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZFEW63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755532AbZFEW7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755650AbZFEW63 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 18:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbZFEW6U
+	id S1755532AbZFEW7R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 18:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbZFEW7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 18:58:20 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:37805 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754946AbZFEW6T (ORCPT
+	Fri, 5 Jun 2009 18:59:03 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:51685 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752454AbZFEW7B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 18:58:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=ABsheGuHRC1H8+WrQqz+MkPl5RUvAiP59OEJeY7qJvO5gPsXP8+UzYYF6AdXQLDNW/
-         c6jGREYmlFVMBlQuQ69M7nklYOc30JdTJ7SMXs1Iflo7+2EHQHksxop7TkDjBv9KIXwk
-         8ZPAnUmoYsMY3QVwbmNoUnU3QkLJIdOcGgScQ=
-MIME-Version: 1.0
-In-Reply-To: <6f5aac130906041048kc72d864y84ccd9f07737862b@mail.gmail.com>
-References: <6f5aac130906041048kc72d864y84ccd9f07737862b@mail.gmail.com>
-Date: Fri, 5 Jun 2009 15:58:20 -0700
-Message-ID: <6f5aac130906051558i4852c861q96eff9432738df69@mail.gmail.com>
-Subject: Fwd: Segmentation Fault with Linux Kernel 2.6.29
-From: saurabh chokshi <sdchokshi@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Jun 2009 18:59:01 -0400
+Date: Sat, 6 Jun 2009 01:01:18 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Sergei Poselenov <sposelenov@emcraft.com>
+Cc: Wolfgang Denk <wd@denx.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Re: 'make headers_check' failed to install headers to arbitrary location
+Message-ID: <20090605230118.GU29008@uranus.ravnborg.org>
+References: <4A0C3BFB.1010305@emcraft.com> <4A155B53.4040905@emcraft.com> <20090604175536.2a1d0add@emcraft.com> <20090604170715.98806832E416@gemini.denx.de> <20090605161109.50d4f253@emcraft.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090605161109.50d4f253@emcraft.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, Jun 05, 2009 at 04:11:09PM +0400, Sergei Poselenov wrote:
+> On Thu, 04 Jun 2009 19:07:15 +0200
+> Dear Wolfgang,
+> 
+> Wolfgang Denk <wd@denx.de> wrote:
+> 
+> > Why not simply:
+> > 
+> > 	for f in $(all-files); do
+> > 		echo "$(install)/$${f}"
+> > 	done | xargs $(PERL) ...
+> > 
+> > ?
+> > 
+> 
+> Ah,right, I missed this.
+> 
+> Here is the modified version of the patch, tested on 2.6.30-rc8,
+> ARCH=arm
+> 
+> Subject: [PATCH] Fixed the "Argument list too long" error for "make headers_check",
+>  used xargs to minimize the perl calls.
+> 
+> Signed-off-by: Sergei Poselenov <sposelenov@emcraft.com>
 
-Recently I have upgrade my Linux machine from kernel 2.6.26 to
-2.6.29.4. After successful upgrade, I am getting couple issues with
-kernel 2.6.29.
+I extended the chagelog with the original error message
+and applied this.
 
-1. Whenever I use yum application, it gives segmentation fault. For
-Example, "yum --help".
-
-2. I use passwd command, it gives the  segmentation fault after t.
-
-[saurabh@CentOS ~]$ passwd
-Changing password for user saurabh.
-Segmentation fault
-
-3. After booting, whenever I am trying to login through terminal,  the
-system ask for login id. After entering login id, it again prompts to
-login id instead of password.
-
-As of now, I found these many issues. It could be more than that.
-
-All the above issues are not exist with linux kernel 2.6.26.
-
-Could anyone help me out to resolve these issues?
-
-Best Regards,
----------------------------------------
-Saurabh D Chokshi
-Master of Science - Computer Science
-University of Southern California,
-Los Angeles, CA
+	Sam
