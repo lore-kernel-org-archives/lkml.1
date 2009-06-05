@@ -1,71 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZFEDIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbZFEDLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754978AbZFEDIT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 23:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbZFEDHz
+	id S1753199AbZFEDLw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 23:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZFEDLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 23:07:55 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:35129 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754712AbZFEDHy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 23:07:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=IC1WEKPP3ZoNPvE/tPDeeWmAHu8pnZjlfiIa32R+xeGwlmmXhlz1XYkN4HQ8It4rq4
-         /yb8KqyU82SyghvyQdM8s0/Swimp9DJ5CXenyopIdDIW2iwYeii1nN6cQl8dHRhFS1ch
-         p6v7+UHJhgHbUUAsAF8JygYCdi7jWolzpF+qM=
-MIME-Version: 1.0
-In-Reply-To: <200906031101.56577.rjw@sisk.pl>
-References: <20090601101614.10720.93804.sendpatchset@rx1.opensource.se>
-	 <200906012133.32074.rjw@sisk.pl>
-	 <aec7e5c30906012133w74d7d843jccad99c564a308ec@mail.gmail.com>
-	 <200906031101.56577.rjw@sisk.pl>
-Date: Fri, 5 Jun 2009 12:07:56 +0900
-Message-ID: <aec7e5c30906042007t26915c05rd8ef375b8d4a353c@mail.gmail.com>
-Subject: Re: [PATCH] Driver Core: Add platform device arch data V2
-From: Magnus Damm <magnus.damm@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, paul@pwsan.com, khilman@deeprootsystems.com,
-       gregkh@suse.de, stern@rowland.harvard.edu,
-       linux-pm@lists.linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 4 Jun 2009 23:11:44 -0400
+Received: from mga14.intel.com ([143.182.124.37]:6816 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751721AbZFEDLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 23:11:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,308,1241420400"; 
+   d="scan'208";a="150923503"
+Subject: [PATCH] x86: MCE: Fake panic support for MCE testing
+From: Huang Ying <ying.huang@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 05 Jun 2009 11:11:43 +0800
+Message-Id: <1244171503.8361.493.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 3, 2009 at 6:01 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> On Tuesday 02 June 2009, Magnus Damm wrote:
->> If you guys dislike adding arch specific data to struct platform
->> device then for SuperH we can just (mis)use the arch specific data in
->> struct device instead. I'm afraid that solution wastes memory since
->> the data will only be used for platform devices anyway. So I prefer
->> adding arch specific data to struct platform_device instead of struct
->> device if possible.
->
-> BTW, what is the difference really?  You can always put
-> dev.platform_data = NULL for devices that don't have any platform data,
-> can't you?
+Fake panic support for MCE testing
 
-So the convention is that dev.platform_data points to driver-specific
-data. It may or may not be required by the driver. The format of this
-data is driver specific and should be the same across architectures.
+If "fake panic" mode is turned on, just log panic message instead of
+go real panic. This is used for testing only, so that the test suite
+can check for the correct panic message.
 
-What I'm trying to add with struct pdev_archdata is a place for
-architecture specific data. This data is needed by architecture
-specific code (for example runtime PM), and since it's architecture
-specific it should _never_ be touched by device driver code. Exactly
-like struct dev_archdata but for platform devices.
+This patch is based on x86-tip.git/mce3.
 
-Like I said, we _could_ use struct device for this purpose, but it
-sounds like suboptimal software design to me. Using struct device
-means that we put data where it doesn't belong. I'd like to add
-_platform_ _device_ _specific_ data, not data that should be present
-in all struct devices in the system but only used in some cases.
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-Cheers,
+---
+ arch/x86/kernel/cpu/mcheck/mce.c |   65 +++++++++++++++++++++++++++++++--------
+ 1 file changed, 53 insertions(+), 12 deletions(-)
 
-/ magnus
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -218,6 +218,9 @@ static void print_mce_tail(void)
+ 
+ static atomic_t mce_paniced;
+ 
++static int fake_panic;
++static atomic_t mce_fake_paniced;
++
+ /* Panic in progress. Enable interrupts and wait for final IPI */
+ static void wait_for_panic(void)
+ {
+@@ -236,15 +239,21 @@ static void mce_panic(char *msg, struct 
+ 	int i;
+ 	int first = 1;
+ 
+-	/*
+-	 * Make sure only one CPU runs in machine check panic
+-	 */
+-	if (atomic_add_return(1, &mce_paniced) > 1)
+-		wait_for_panic();
+-	barrier();
++	if (!fake_panic) {
++		/*
++		 * Make sure only one CPU runs in machine check panic
++		 */
++		if (atomic_add_return(1, &mce_paniced) > 1)
++			wait_for_panic();
++		barrier();
+ 
+-	bust_spinlocks(1);
+-	console_verbose();
++		bust_spinlocks(1);
++		console_verbose();
++	} else {
++		/* Don't log too much for fake panic */
++		if (atomic_add_return(1, &mce_fake_paniced) > 1)
++			return;
++	}
+ 	/* First print corrected ones that are still unlogged */
+ 	for (i = 0; i < MCE_LOG_LEN; i++) {
+ 		struct mce *m = &mcelog.entry[i];
+@@ -267,9 +276,12 @@ static void mce_panic(char *msg, struct 
+ 	print_mce_tail();
+ 	if (exp)
+ 		printk(KERN_EMERG "Machine check: %s\n", exp);
+-	if (panic_timeout == 0)
+-		panic_timeout = mce_panic_timeout;
+-	panic(msg);
++	if (!fake_panic) {
++		if (panic_timeout == 0)
++			panic_timeout = mce_panic_timeout;
++		panic(msg);
++	} else
++		printk(KERN_EMERG "Fake kernel panic: %s\n", msg);
+ }
+ 
+ /* Support code for software error injection */
+@@ -1671,9 +1683,38 @@ static ssize_t store_int_with_restart(st
+ 	return ret;
+ }
+ 
++static void mce_reset(void)
++{
++	cpu_missing = 0;
++	atomic_set(&mce_fake_paniced, 0);
++	atomic_set(&mce_executing, 0);
++	atomic_set(&mce_callin, 0);
++	atomic_set(&global_nwo, 0);
++}
++
++static ssize_t show_fake_panic(struct sys_device *s,
++			       struct sysdev_attribute *attr,
++			       char *buf)
++{
++	return sprintf(buf, "%d\n", fake_panic);
++}
++
++static ssize_t set_fake_panic(struct sys_device *s,
++			      struct sysdev_attribute *attr,
++			      const char *buf, size_t siz)
++{
++	u64 new;
++	if (strict_strtoull(buf, 0, &new) < 0)
++		return -EINVAL;
++	mce_reset();
++	fake_panic = new;
++	return siz;
++}
++
+ static SYSDEV_ATTR(trigger, 0644, show_trigger, set_trigger);
+ static SYSDEV_INT_ATTR(tolerant, 0644, tolerant);
+ static SYSDEV_INT_ATTR(monarch_timeout, 0644, monarch_timeout);
++static SYSDEV_ATTR(fake_panic, 0644, show_fake_panic, set_fake_panic);
+ 
+ static struct sysdev_ext_attribute attr_check_interval = {
+ 	_SYSDEV_ATTR(check_interval, 0644, sysdev_show_int,
+@@ -1683,7 +1724,7 @@ static struct sysdev_ext_attribute attr_
+ 
+ static struct sysdev_attribute *mce_attrs[] = {
+ 	&attr_tolerant.attr, &attr_check_interval.attr, &attr_trigger,
+-	&attr_monarch_timeout.attr,
++	&attr_monarch_timeout.attr, &attr_fake_panic,
+ 	NULL
+ };
+ 
+
+
