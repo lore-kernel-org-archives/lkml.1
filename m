@@ -1,195 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbZFEQce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbZFEQlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756684AbZFEQce (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 12:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755531AbZFEQbA
+	id S1755186AbZFEQlz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 12:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbZFEQlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 12:31:00 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:21695 "EHLO
+	Fri, 5 Jun 2009 12:41:46 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:44385 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756052AbZFEQa6 (ORCPT
+	with ESMTP id S1751162AbZFEQlp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 12:30:58 -0400
+	Fri, 5 Jun 2009 12:41:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=RzBtfdn3/Kl83wfaQP6NzNfJHz2D2TIu9orwos4tMqRUemXg4OXWJ68D4/tvzbc5WY
-         EI/6HZei7Nwb/R1+xq1E50pgQYtPRTAGSeS1tCkynTMKHpcGtxITqfsnpCg2CkpmpmX2
-         h5aniPsj8Brk0ODcP89EGtr1Ycs6h1u1VGbSo=
-From: Philipp Zabel <philipp.zabel@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Samuel Ortiz <sameo@linux.intel.com>,
-       Philipp Zabel <philipp.zabel@gmail.com>
-Subject: [PATCH 7/7] MFD: ASIC3: enable SD/SDIO cell
-Date: Fri,  5 Jun 2009 18:31:07 +0200
-Message-Id: <1244219467-32136-8-git-send-email-philipp.zabel@gmail.com>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1244219467-32136-1-git-send-email-philipp.zabel@gmail.com>
-References: <1244219467-32136-1-git-send-email-philipp.zabel@gmail.com>
+        d=googlemail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=uQNgXaBji9WFxWcBqXwWz5kwnQs2z7Msd0qmdLxvlq9wsQfvIFQXDgvgNZbadM5TsG
+         LTm2/rG+ws91xDCslOqD1W94fr2vdozezE0sHpI4Ofc4qw1KMCJ703W6eNZ93mdHkkfS
+         tv/CTrkOW8QCL7ukjru78k+KvR6HHsGYdSF08=
+Message-ID: <4A294B15.9070209@tuffmail.co.uk>
+Date: Fri, 05 Jun 2009 17:43:01 +0100
+From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Eric Sandeen <sandeen@redhat.com>
+CC: Aioanei Rares <krnl.list@gmail.com>, linux-ext4@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Mild filesystem corruption on ext4 (no journal)
+References: <4A28F83F.4030704@tuffmail.co.uk> <4A292E61.3050204@gmail.com> <4A293084.5010400@tuffmail.co.uk> <4A2937CC.7070503@redhat.com>
+In-Reply-To: <4A2937CC.7070503@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This enables the ASIC3's SD/SDIO MFD cell, supported by the tmio_mmc driver.
+Eric Sandeen wrote:
+> Alan Jenkins wrote:
+>   
+>> Aioanei Rares wrote:
+>>     
+>
+>   
+>>> I suspect, although I might be wrong, that this is not a kernel-related
+>>> problem.
+>>>       
+>> "To try and rule out a faulty userspace program, I marked the file as 
+>> read-only (chmod a-w) and immutable (chattr +i).  After a reboot, the 
+>> file was still read-only and immutable, yet it still became corrupted."
+>>
+>> Since the immutable bit is not respected, I tend to think it is a kernel 
+>> problem.  Unless the filesystem isn't getting unmounted/flushed properly 
+>> for some reason... but I thought the modern kernel had that covered.
+>>
+>> I agree it is very suspicious this happens only after upgrading libc.  
+>> I'll see if I can find an individual change in libc locale-handling that 
+>> might trigger this.
+>>     
+>
+> Maybe you could try some things in your shutdown script, such as
+> explicitly fsyncing the file, or bmapping it with filefrag, or dropping
+> caches and rereading it... see what the state is just before the
+> shutdown compared to after the reboot.
+>
+> -Eric
+>   
 
-Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
----
- drivers/mfd/asic3.c |  116 +++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 113 insertions(+), 3 deletions(-)
+Dropping caches (and running sync first) had no effect on the result of 
+md5sum.  Hopefully that narrows it down a bit.
 
-diff --git a/drivers/mfd/asic3.c b/drivers/mfd/asic3.c
-index 3fadd02..895d365 100644
---- a/drivers/mfd/asic3.c
-+++ b/drivers/mfd/asic3.c
-@@ -27,6 +27,7 @@
- #include <linux/mfd/asic3.h>
- #include <linux/mfd/core.h>
- #include <linux/mfd/ds1wm.h>
-+#include <linux/mfd/tmio.h>
- 
- enum {
- 	ASIC3_CLOCK_SPI,
-@@ -682,11 +683,106 @@ static struct mfd_cell asic3_cell_ds1wm = {
- 	.resources     = ds1wm_resources,
- };
- 
-+static struct tmio_mmc_data asic3_mmc_data = {
-+	.hclk = 24576000,
-+};
-+
-+static struct resource asic3_mmc_resources[] = {
-+	{
-+		.start = ASIC3_SD_CTRL_BASE,
-+		.end   = ASIC3_SD_CTRL_BASE + 0x3ff,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = ASIC3_SD_CONFIG_BASE,
-+		.end   = ASIC3_SD_CONFIG_BASE + 0x1ff,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = 0,
-+		.end   = 0,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+};
-+
-+static int asic3_mmc_enable(struct platform_device *pdev)
-+{
-+	struct asic3 *asic = dev_get_drvdata(pdev->dev.parent);
-+
-+	/* Not sure if it must be done bit by bit, but leaving as-is */
-+	asic3_set_register(asic, ASIC3_OFFSET(SDHWCTRL, SDCONF),
-+			   ASIC3_SDHWCTRL_LEVCD, 1);
-+	asic3_set_register(asic, ASIC3_OFFSET(SDHWCTRL, SDCONF),
-+			   ASIC3_SDHWCTRL_LEVWP, 1);
-+	asic3_set_register(asic, ASIC3_OFFSET(SDHWCTRL, SDCONF),
-+			   ASIC3_SDHWCTRL_SUSPEND, 0);
-+	asic3_set_register(asic, ASIC3_OFFSET(SDHWCTRL, SDCONF),
-+			   ASIC3_SDHWCTRL_PCLR, 0);
-+
-+	asic3_clk_enable(asic, &asic->clocks[ASIC3_CLOCK_EX0]);
-+	/* CLK32 used for card detection and for interruption detection
-+	 * when HCLK is stopped.
-+	 */
-+	asic3_clk_enable(asic, &asic->clocks[ASIC3_CLOCK_EX1]);
-+	msleep(1);
-+
-+	/* HCLK 24.576 MHz, BCLK 12.288 MHz: */
-+	asic3_write_register(asic, ASIC3_OFFSET(CLOCK, SEL),
-+		CLOCK_SEL_CX | CLOCK_SEL_SD_HCLK_SEL);
-+
-+	asic3_clk_enable(asic, &asic->clocks[ASIC3_CLOCK_SD_HOST]);
-+	asic3_clk_enable(asic, &asic->clocks[ASIC3_CLOCK_SD_BUS]);
-+	msleep(1);
-+
-+	asic3_set_register(asic, ASIC3_OFFSET(EXTCF, SELECT),
-+			   ASIC3_EXTCF_SD_MEM_ENABLE, 1);
-+
-+	/* Enable SD card slot 3.3V power supply */
-+	asic3_set_register(asic, ASIC3_OFFSET(SDHWCTRL, SDCONF),
-+			   ASIC3_SDHWCTRL_SDPWR, 1);
-+
-+	return 0;
-+}
-+
-+static int asic3_mmc_disable(struct platform_device *pdev)
-+{
-+	struct asic3 *asic = dev_get_drvdata(pdev->dev.parent);
-+
-+	/* Put in suspend mode */
-+	asic3_set_register(asic, ASIC3_OFFSET(SDHWCTRL, SDCONF),
-+			   ASIC3_SDHWCTRL_SUSPEND, 1);
-+
-+	/* Disable clocks */
-+	asic3_clk_disable(asic, &asic->clocks[ASIC3_CLOCK_SD_HOST]);
-+	asic3_clk_disable(asic, &asic->clocks[ASIC3_CLOCK_SD_BUS]);
-+	asic3_clk_disable(asic, &asic->clocks[ASIC3_CLOCK_EX0]);
-+	asic3_clk_disable(asic, &asic->clocks[ASIC3_CLOCK_EX1]);
-+	return 0;
-+}
-+
-+static struct mfd_cell asic3_cell_mmc = {
-+	.name = "tmio-mmc",
-+	.enable = asic3_mmc_enable,
-+	.disable = asic3_mmc_disable,
-+	.driver_data = &asic3_mmc_data,
-+	.num_resources = ARRAY_SIZE(asic3_mmc_resources),
-+	.resources = asic3_mmc_resources,
-+};
-+
- static int __init asic3_mfd_probe(struct platform_device *pdev,
- 				  struct resource *mem)
- {
- 	struct asic3 *asic = platform_get_drvdata(pdev);
--	int ret;
-+	struct resource *mem_sdio;
-+	int irq, ret;
-+
-+	mem_sdio = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+	if (!mem_sdio)
-+		dev_dbg(asic->dev, "no SDIO MEM resource\n");
-+
-+	irq = platform_get_irq(pdev, 1);
-+	if (irq < 0)
-+		dev_dbg(asic->dev, "no SDIO IRQ resource\n");
- 
- 	/* DS1WM */
- 	asic3_set_register(asic, ASIC3_OFFSET(EXTCF, SELECT),
-@@ -699,16 +795,30 @@ static int __init asic3_mfd_probe(struct platform_device *pdev,
- 	asic3_cell_ds1wm.platform_data = &asic3_cell_ds1wm;
- 	asic3_cell_ds1wm.data_size = sizeof(asic3_cell_ds1wm);
- 
-+	/* MMC */
-+	asic3_mmc_resources[0].start >>= (2 - asic->bus_shift);
-+	asic3_mmc_resources[0].end   >>= (2 - asic->bus_shift);
-+	asic3_mmc_resources[1].start >>= (2 - asic->bus_shift);
-+	asic3_mmc_resources[1].end   >>= (2 - asic->bus_shift);
-+
-+	asic3_cell_mmc.platform_data = &asic3_cell_mmc;
-+	asic3_cell_mmc.data_size = sizeof(asic3_cell_mmc);
-+
- 	ret = mfd_add_devices(&pdev->dev, pdev->id,
- 			&asic3_cell_ds1wm, 1, mem, asic->irq_base);
-+	if (ret < 0)
-+		goto out;
- 
-+	if (mem_sdio && (irq >= 0))
-+		ret = mfd_add_devices(&pdev->dev, pdev->id,
-+			&asic3_cell_mmc, 1, mem_sdio, irq);
-+
-+ out:
- 	return ret;
- }
- 
- static void asic3_mfd_remove(struct platform_device *pdev)
- {
--	struct asic3 *asic = platform_get_drvdata(pdev);
--
- 	mfd_remove_devices(&pdev->dev);
- }
- 
--- 
-1.6.3.1
+Thanks to your prodding though, I have another interesting finding:
 
+If I remove the corrupted file and copy a "known good" copy into it's 
+place, then the corruption doesn't happen.  I've verified this a couple 
+of times.  The corruption only occurs if the file was created by 
+"locale-gen".
+
+I'll continue to try work out why :-).
+
+Thanks
+Alan
