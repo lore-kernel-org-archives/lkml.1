@@ -1,277 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755688AbZFEV7l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752275AbZFEWBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755688AbZFEV7l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 17:59:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbZFEV7R
+	id S1752275AbZFEWBO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 18:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbZFEWA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 17:59:17 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:47544 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754946AbZFEV7P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 17:59:15 -0400
-X-Amavis-Alert: BAD HEADER, Duplicate header field: "Cc"
-Message-Id: <20090605191850.441840884@gentwo.org>
-References: <20090605191819.376530498@gentwo.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 05 Jun 2009 15:18:20 -0400
-From: cl@linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>, David Howells <dhowells@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Cc: davem@davemloft.net
-Subject: [this_cpu_xx 01/11] Introduce this_cpu_ptr() and generic this_cpu_* operations
-Content-Disposition: inline; filename=this_cpu_ptr_intro
+	Fri, 5 Jun 2009 18:00:59 -0400
+Received: from ishtar.tlinx.org ([64.81.245.74]:43416 "EHLO Ishtar.tlinx.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751468AbZFEWA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 18:00:59 -0400
+Message-ID: <4A29959A.1050109@tlinx.org>
+Date: Fri, 05 Jun 2009 15:00:58 -0700
+From: Linda Walsh <lkml@tlinx.org>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [Fwd: Re: ionice priority "none: prio 0" v. "none: prio 1" v. best-effort
+ 	v. idle?]
+X-Stationery: 0.4.8.14
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this_cpu_ptr(xx) = per_cpu_ptr(xx, smp_processor_id).
+<-- vim: se sts=4 sw=4 ts=8 nosi sc ai: /-->
+Thanks for the pointer to the exact C-file for the cfg scheduler, but
+if you intended the 'line' tag to mean anything, line#1579
+would be 38 lines beyond the end of the 1541 line file.
 
-The problem with per_cpu_ptr(x, smp_processor_id) is that it requires
-an array lookup to find the offset for the cpu. Processors typically
-have the offset for the current cpu area in some kind of (arch dependent)
-efficiently accessible register or memory location.
+If you meant line 579, that points to a strict sorting based
+on 'sector'  -- is that the line you meant to refer to?
+I.e. if prio-class=none, then it gets "sorted into the cracks"
+by sector and is serviced whenever the disk gets taken close
+to that sector as governed by the 'named' (rt,be,idle) CFQ
+queues?
 
-We can use that instead of doing the array lookup to speed up the
-determination of the addressof the percpu variable. This is particularly
-significant because these lookups occur in performance critical paths
-of the core kernel.
+I see no reference to the cpu priority or the nice value of
+the process that has sent the request.
 
-This optimization is a prerequiste to the introduction of per processor
-atomic operations for the core code. Atomic per processor operations
-implicitly do the offset calculation to the current per cpu area in a
-single instruction. All the locations touched by this patchset are potential
-candidates for atomic per cpu operations.
+But if that isn't the line, I'm much more lost, since I see
+no mention of a "prio=none"  I see "be","idle","rt".
+But nothing for the 'none' (or unset/uninitialized case) explicitly
+mentioned.  Neither do I see any reference to what might be the
+cpu-priority or nice value.
 
-this_cpu_ptr comes in two flavors. The preemption context matters since we
-are referring the the currently executing processor. In many cases we must
-insure that the processor does not change while a code segment is executed.
+In 'cfq_service_tree_add' (ln 488), I see references to:
+    cfq_class_rt(cfqq), cfq_class_rt(__cfqq)
+    cfq_class_idle(cfqq), cfq_class_idle(__cfqq)
 
-__this_cpu_ptr 	-> Do not check for preemption context
-this_cpu_ptr	-> Check preemption context
+Those apepar to be used to sort by rt and idle class priority,
+but as already mentioned, I don't grok "idle" priority (at least
+not as derived from the 'idle' classes data (of which, there is
+none).
+
+However, the 'if cases' (starting ln535) show:
+1) 2 checks for relative "rt" priority & insertion
+2) 2 checks for "idle" priority & insertion.
+THEN
+    anything that's not "rt" or "idle" gets sorted by 'key'.
+
+Meaning if NOT "rt" or "idle", then "everything else" will be
+sorted in the last if(ln543) and else(ln545) branches.
+
+That could easily imply that 'none' OR 'be' are "equated" for
+this "if-case-sort", which would mean depending on the random
+value of "none"'s class data (0/4), it will get highest or
+medium priority compared within the 'be' class.
+
+Sorry, ask pointed questions, but the given source file doesn't
+appear to support special treatment for the 'none' case,
+OTHER than by having it be equated with the 'be' class (by default
+as the schedule-class comparisons are structured as:
+
+if (class_rt) {...}
+else if (class_idle) {...}
+else {
+    sched with or as class_be(best_effort)
+}
 
 
-Provide generic functions that are used if an arch does not define optimized
-this_cpu operations. The functions come also come in the two favors. The first
-parameter is a scalar that is pointed to by a pointer acquired through
-allocpercpu or by taking the address of a per cpu variable.
+This would seem to indicate a fundamental error in cfq's io
+scheduling.
 
-The operations are guaranteed to be atomic vs preemption if they modify
-the scalar (unless they are prefixed by __ in which case they do not need
-to be). The calculation of the per cpu offset is also guaranteed to be atomic.
+If the above is not the case -- this is the BEST example of why
+I would like "ionice" to return the actual dynamic "io-priority"
+of a process -- IF, it is set by CPU priority, AND would like it
+to be clear where the "cpu-governed priority" class
+(currently labeled 'none', but ideally would be renamed something
+like 'follow-cpu'?) maybe should be renamed 'follow-cpu'?) is
+in relation to the the other named classes (idle,be,rt).
 
-this_cpu_read(scalar)
-this_cpu_write(scalar, value)
-this_cpu_add(scale, value)
-this_cpu_sub(scalar, value)
-this_cpu_inc(scalar)
-this_cpu_dec(scalar)
-this_cpu_and(scalar, value)
-this_cpu_or(scalar, value)
-this_cpu_xor(scalar, value)
 
-The arches can override the defaults and provide atomic per cpu operations.
-These atomic operations must provide both the relocation (x86 does it
-through a segment override) and the operation
-on the data in a single instruction. Otherwise preempt needs to be disabled
-and there is no gain from providing arch implementations.
+So just how confused am I, or,
 
-A third variant is provided prefixed by irqsafe_. These variants are safe
-against hardware interrupts on the *same* processor (all per cpu atomic
-primitives are *always* *only* providing safety for code running on the
-*same* processor!). The increment needs to be implemented by the hardware
-in such a way that it is a single RMW instruction that is either processed
-before or after an interrupt.
+Is there a problem with the code (as it appears in this module)?
 
-cc: David Howells <dhowells@redhat.com>
-cc: Tejun Heo <tj@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>
-cc: Rusty Russell <rusty@rustcorp.com.au>
-cc: Eric Dumazet <dada1@cosmosbay.com>
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
+Tnx,
+Linda
 
----
- include/asm-generic/percpu.h |    5 +
- include/linux/percpu.h       |  144 +++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 149 insertions(+)
+Corrado Zoccolo wrote:
+> Hi Linda,
+> the ioprio class 'none' is the default class in which all processes
+> are put when created, if not specified otherwise (this is in contrast
+> with what I read in the man page, where it says Best Effort is the
+> default).
+> For CFQ (other io schedulers just ignore it), the 'none' class has a
+> special meaning, in fact, looking at:
+> http://git.kernel.org/?p=linux/kernel/git/aegl/linux-2.6.git;a=blob;f=block/cfq-iosched.c;h=a55a9bd75bd1baf616a3a1b7118acaeee328759f;hb=HEAD#l1579
+> you will see that for processes with class 'none', the class and
+> priority will be inherited from CPU scheduling (including RT
+> scheduling & nice levels).
+>
+> HTH,
+> Corrado
+>
+> On Fri, Jun 5, 2009 at 5:22 AM, Linda Walsh<lkml@tlinx.org> wrote:
+>   
+>> <-- vim: se sts=4 sw=4 ts=8 nosi sc ai: /--> I was looking at the output of
+>> ionice on the various processes
+>> running.
+>>
+>> Other than one I set for 'best-effort' (-c2), the rest all had
+>> priorities of
+>>   1) "none: prio 0"
+>> OR
+>>   2) "none: prio 4"
+>>
+>> Out of 183 process:
+>>
+>>  79 had "none: prio 0"   and
+>> 103 had "none: prio 4"
+>> (1 had "best effort, prio 4").
+>>
+>> Where does priority class  'none' fit in?  above or below 'idle'?
+>>
+>> Or is 'none' equal to 'best effort' (which is logical in once sense, but
+>> strictly, I could argue 'none' is at least below 'best effort', and possibly
+>> below idle, as 'idle' at least has been assigned a scheduling priority
+>> (vs. processes that have not -- BUT, but definition, idle is clearly meant
+>> to be lower precedence, so that would argue, logically, that 'none' is
+>> above idle and below 'best_effort' (since processes with no assigned
+>> priority would logically be below those assigned as 'best effort'.
+>>
+>> Within 'besteffort', 0=high, and 7=low.
+>>
+>> Is the same true in 'none', or are the values 'meaningless'?
+>> (In which case, why do they all exist at either 4 or 0?)
+>>
+>> Since the iopriority DOES NOT correlate with either
+>> the cpu priority nor 'nice' value, then how are different
+>> processes assigned different priority values?
+>> They *seem* to be mostly fixed, but very rarely I'll see maybe
+>> 1 process toggle from 0 to 4 or back (but its usually fixed).
+>>
+>> So why is everything in the 'none' class at either "highest level" (prio
+>> 0), OR the mid level of prio=4?  Um...found exception on a 32-bit i386
+>> based kernel, all prio's are "none: prio 0". But two different x86_64 bit
+>> kernels have "a split", majority in none:prio 4, and a minority of
+>> 25-44% in 'none:prio 4'.
+>>
+>> I'm using the cfq scheduler on all 3 machines.
+>>
+>> So what is it with 'schedclass'=none?  Is it lower than 'best effort'?  (I'd
+>> hope so, or like to see it that way, but wants are nice...:-))...
+>>
+>> If they *ARE* the same, why are 44% running at highest priority
+>> (regardless of cpu prio, 'nice' value, user-id, and the rest at 'mid')?
+>>
+>> Why so random, but worse, why put any at 'highest' (unless they
+>> ask for it).  Wouldn't 'mid' priority be consistent with 'mid-cpu-nice'
+>> value of 0 (out of +/-19)?
+>>
+>> FWIW -- I thought once the priorities varied dynamically based on
+>> cpu-nice levels (for cfq, anyway)...it would be VERY nice to see that
+>> reflected in the readable ionice data for those processes.
+>>
+>> Thanks for clarification/enlightenment...
+>> Linda
+>>
+>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>>     
+>
+>
+>
+>   
 
-Index: linux-2.6/include/linux/percpu.h
-===================================================================
---- linux-2.6.orig/include/linux/percpu.h	2009-06-04 13:38:28.000000000 -0500
-+++ linux-2.6/include/linux/percpu.h	2009-06-04 14:15:51.000000000 -0500
-@@ -176,4 +176,148 @@ do {									\
- # define percpu_xor(var, val)		__percpu_generic_to_op(var, (val), ^=)
- #endif
- 
-+
-+/*
-+ * Optimized manipulation for memory allocated through the per cpu
-+ * allocator or for addresses taken from per cpu variables.
-+ *
-+ * The first group is used for accesses that must be done in a
-+ * preemption safe way since we know that the context is not preempt
-+ * safe
-+ */
-+#ifndef this_cpu_read
-+# define this_cpu_read(pcp)						\
-+  ({									\
-+	*this_cpu_ptr(&(pcp));						\
-+  })
-+#endif
-+
-+#define _this_cpu_generic_to_op(pcp, val, op)				\
-+do {									\
-+	preempt_disable();						\
-+	*__this_cpu_ptr(&pcp) op val;					\
-+	preempt_enable_no_resched();					\
-+} while (0)
-+
-+#ifndef this_cpu_write
-+# define this_cpu_write(pcp, val)	__this_cpu_write((pcp), (val))
-+#endif
-+
-+#ifndef this_cpu_add
-+# define this_cpu_add(pcp, val)		_this_cpu_generic_to_op((pcp), (val), +=)
-+#endif
-+
-+#ifndef this_cpu_sub
-+# define this_cpu_sub(pcp, val)		this_cpu_add((pcp), -(val))
-+#endif
-+
-+#ifndef this_cpu_inc
-+# define this_cpu_inc(pcp)		this_cpu_add((pcp), 1)
-+#endif
-+
-+#ifndef this_cpu_dec
-+# define this_cpu_dec(pcp)		this_cpu_sub((pcp), 1)
-+#endif
-+
-+#ifndef this_cpu_and
-+# define this_cpu_and(pcp, val)		_this_cpu_generic_to_op((pcp), (val), &=)
-+#endif
-+
-+#ifndef this_cpu_or
-+# define this_cpu_or(pcp, val)		_this_cpu_generic_to_op((pcp), (val), |=)
-+#endif
-+
-+#ifndef this_cpu_xor
-+# define this_cpu_xor(pcp, val)		_this_cpu_generic_to_op((pcp), (val), ^=)
-+#endif
-+
-+
-+/*
-+ * Generic percpu operations that do not require preemption handling.
-+ * Either we do not care about races or the caller has the
-+ * responsibility of handling preemptions issues.
-+ */
-+#ifndef __this_cpu_read
-+# define __this_cpu_read(pcp)						\
-+  ({									\
-+	*__this_cpu_ptr(&(pcp));					\
-+  })
-+#endif
-+
-+#define __this_cpu_generic_to_op(pcp, val, op)				\
-+do {									\
-+	*__this_cpu_ptr(&(pcp)) op val;					\
-+} while (0)
-+
-+#ifndef __this_cpu_write
-+# define __this_cpu_write(pcp, val)	__this_cpu_generic_to_op((pcp), (val), =)
-+#endif
-+
-+#ifndef __this_cpu_add
-+# define __this_cpu_add(pcp, val)	__this_cpu_generic_to_op((pcp), (val), +=)
-+#endif
-+
-+#ifndef __this_cpu_sub
-+# define __this_cpu_sub(pcp, val)	__this_cpu_add((pcp), -(var))
-+#endif
-+
-+#ifndef __this_cpu_inc
-+# define __this_cpu_inc(pcp)		__this_cpu_add((pcp), 1)
-+#endif
-+
-+#ifndef __this_cpu_dec
-+# define __this_cpu_dec(pcp)		__this_cpu_sub((pcp), 1)
-+#endif
-+
-+#ifndef __this_cpu_and
-+# define __this_cpu_and(pcp, val)	__this_cpu_generic_to_op((pcp), (val), &=)
-+#endif
-+
-+#ifndef __this_cpu_or
-+# define __this_cpu_or(pcp, val)	__this_cpu_generic_to_op((pcp), (val), |=)
-+#endif
-+
-+#ifndef __this_cpu_xor
-+# define __this_cpu_xor(pcp, val)	__this_cpu_generic_to_op((pcp), (val), ^=)
-+#endif
-+
-+/*
-+ * IRQ safe versions
-+ */
-+#define irqsafe_cpu_generic_to_op(pcp, val, op)				\
-+do {									\
-+	unsigned long flags;						\
-+	local_irqsave(flags);						\
-+	*__this_cpu_ptr(&(pcp)) op val;					\
-+	local_irqrestore(flags);					\
-+} while (0)
-+
-+#ifndef irqsafe_this_cpu_add
-+# define irqsafe_this_cpu_add(pcp, val)	irqsafe_cpu_generic_to_op((pcp), (val), +=)
-+#endif
-+
-+#ifndef irqsafe_this_cpu_sub
-+# define irqsafe_this_cpu_sub(pcp, val)	irqsafe_cpu_add((pcp), -(var))
-+#endif
-+
-+#ifndef irqsafe_this_cpu_inc
-+# define irqsafe_this_cpu_inc(pcp)	irqsafe_cpu_add((pcp), 1)
-+#endif
-+
-+#ifndef irqsafe_this_cpu_dec
-+# define irqsafe_this_cpu_dec(pcp)	irqsafe_cpu_sub((pcp), 1)
-+#endif
-+
-+#ifndef irqsafe_this_cpu_and
-+# define irqsafe_this_cpu_and(pcp, val)	irqsafe_cpu_generic_to_op((pcp), (val), &=)
-+#endif
-+
-+#ifndef irqsafe_this_cpu_or
-+# define irqsafe_this_cpu_or(pcp, val)	irqsafe_cpu_generic_to_op((pcp), (val), |=)
-+#endif
-+
-+#ifndef irqsafe_this_cpu_xor
-+# define irqsafe_this_cpu_xor(pcp, val)	irqsafe_cpu_generic_to_op((pcp), (val), ^=)
-+#endif
-+
- #endif /* __LINUX_PERCPU_H */
-Index: linux-2.6/include/asm-generic/percpu.h
-===================================================================
---- linux-2.6.orig/include/asm-generic/percpu.h	2009-06-04 13:38:28.000000000 -0500
-+++ linux-2.6/include/asm-generic/percpu.h	2009-06-04 13:47:10.000000000 -0500
-@@ -56,6 +56,9 @@ extern unsigned long __per_cpu_offset[NR
- #define __raw_get_cpu_var(var) \
- 	(*SHIFT_PERCPU_PTR(&per_cpu_var(var), __my_cpu_offset))
- 
-+#define this_cpu_ptr(ptr) SHIFT_PERCPU_PTR(ptr, my_cpu_offset)
-+#define __this_cpu_ptr(ptr) SHIFT_PERCPU_PTR(ptr, __my_cpu_offset)
-+
- 
- #ifdef CONFIG_HAVE_SETUP_PER_CPU_AREA
- extern void setup_per_cpu_areas(void);
-@@ -66,6 +69,8 @@ extern void setup_per_cpu_areas(void);
- #define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu_var(var)))
- #define __get_cpu_var(var)			per_cpu_var(var)
- #define __raw_get_cpu_var(var)			per_cpu_var(var)
-+#define this_cpu_ptr(ptr) per_cpu_ptr(ptr, 0)
-+#define __this_cpu_ptr(ptr) this_cpu_ptr(ptr)
- 
- #endif	/* SMP */
- 
 
--- 
