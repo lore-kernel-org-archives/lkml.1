@@ -1,70 +1,671 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZFERzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbZFER40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbZFERzl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 13:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbZFERz3
+	id S1756488AbZFER40 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 13:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZFER4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 13:55:29 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:6247 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752271AbZFERz1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 13:55:27 -0400
-X-IronPort-AV: E=Sophos;i="4.41,312,1241395200"; 
-   d="scan'208";a="173136894"
-Date: Fri, 5 Jun 2009 10:55:30 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: Ming Lei <tom.leiming@gmail.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
-       netdev@vger.kernel.org, arjan@infradead.org
-Subject: Re: [PATCH 5/5] initdev:kernel: USB and SCSI block init device
-	notification, v3
-Message-ID: <20090605175529.GA18688@cuplxvomd02.corp.sa.net>
-References: <20090502023000.GA16076@cuplxvomd02.corp.sa.net> <20090502115539.396206bc@linux-lm> <20090505001950.GC29124@cuplxvomd02.corp.sa.net> <d82e647a0905042105g7639fc84g736668c371c40053@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <d82e647a0905042105g7639fc84g736668c371c40053@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Fri, 5 Jun 2009 13:56:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49394 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752119AbZFER4S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 13:56:18 -0400
+Subject: Re: [PATCH -tip] x86: cpu_debug.c prepare report if files are
+ inappropriate or CPU is not supported
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090415101700.GE6669@elte.hu>
+References: <1239725240.2966.4.camel@ht.satnam>
+	 <20090414165052.GA2089@elte.hu> <1239728481.2966.21.camel@ht.satnam>
+	 <20090414184222.GC11214@elte.hu>
+	 <20090414200247.1d0a8667@lxorguk.ukuu.org.uk>
+	 <20090414191622.GA797@elte.hu>
+	 <1239773665.15436.9.camel@localhost.localdomain>
+	 <20090415101700.GE6669@elte.hu>
+Content-Type: text/plain
+Date: Fri, 05 Jun 2009 23:27:17 +0530
+Message-Id: <1244224637.8212.6.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 12:05:19AM -0400, Ming Lei wrote:
-> 2009/5/5 David VomLehn <dvomlehn@cisco.com>:
-> > On Fri, May 01, 2009 at 11:55:39PM -0400, Ming Lei wrote:
-> >> On Fri, 1 May 2009 19:30:00 -0700
-> >> David VomLehn <dvomlehn@cisco.com> wrote:
-> >>
-> >> > From: Alan Stern <stern@rowland.harvard.edu
-> >> > diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
-> >> > index 6f51ca4..735b061 100644
-> >> > --- a/drivers/scsi/scsi_scan.c
-> >> > +++ b/drivers/scsi/scsi_scan.c
-> > ...
-> >> > @@ -1834,6 +1834,7 @@ static int do_scan_async(void *_data)
-> >> >     struct async_scan_data *data = _data;
-> >> >     do_scsi_scan_host(data->shost);
-> >> >     scsi_finish_async_scan(data);
-> >> > +   initdev_probe_done(BOOTDEV_BLOCK_MASK);
-> >>
-> >> Which code are waiting for the block device's probe done?
-> >
-> > None yet. That remains to be done.
-> >
+Hello Ingo,
+
+On Wed, 2009-04-15 at 12:17 +0200, Ingo Molnar wrote:
+
+> The main beef i had with your code is that it copies CPU enumeration 
+> over into some local variables (cpu_modelflag, cpu_model) with 
+> redundant encodings and decodings which dont fully work.
 > 
-> Would you mind submitting  the code path of waitting for probe done to allow a
-> intact review?  Without the waitting code, it is a a little difficult
-> to undersand or verify
-> your patch, IMHO.
+> Is there anything that your encoding/decoding does that cannot be 
+> done via the standard methods?
+> 
 
-This will be in the next spin of the patch, coming soon (possibly today).
+I removed cpu model info. May be this will create some issues on ancient
+machine as now it depends on rdmsr_safe_on_cpu() and I hope it will be
+safe ;-)
+Can you please check this patch on ancient and latest machines.
 
-> Thanks
-> Lei Ming
 
-David VomLehn
+[PATCH] x86: cpu_debug remove model information to reduce encoding-decoding
+
+Remove model information, encoding/decoding and reduce bookkeeping.
+
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/cpu_debug.h |  101 +---------
+ arch/x86/kernel/cpu/cpu_debug.c  |  417 +++++++++-----------------------------
+ 2 files changed, 97 insertions(+), 421 deletions(-)
+
+diff --git a/arch/x86/include/asm/cpu_debug.h b/arch/x86/include/asm/cpu_debug.h
+index 2228020..d96c1ee 100644
+--- a/arch/x86/include/asm/cpu_debug.h
++++ b/arch/x86/include/asm/cpu_debug.h
+@@ -86,105 +86,7 @@ enum cpu_file_bit {
+ 	CPU_VALUE_BIT,				/* value		*/
+ };
+ 
+-#define	CPU_FILE_VALUE			(1 << CPU_VALUE_BIT)
+-
+-/*
+- * DisplayFamily_DisplayModel	Processor Families/Processor Number Series
+- * --------------------------	------------------------------------------
+- * 05_01, 05_02, 05_04		Pentium, Pentium with MMX
+- *
+- * 06_01			Pentium Pro
+- * 06_03, 06_05			Pentium II Xeon, Pentium II
+- * 06_07, 06_08, 06_0A, 06_0B	Pentium III Xeon, Pentum III
+- *
+- * 06_09, 060D			Pentium M
+- *
+- * 06_0E			Core Duo, Core Solo
+- *
+- * 06_0F			Xeon 3000, 3200, 5100, 5300, 7300 series,
+- *				Core 2 Quad, Core 2 Extreme, Core 2 Duo,
+- *				Pentium dual-core
+- * 06_17			Xeon 5200, 5400 series, Core 2 Quad Q9650
+- *
+- * 06_1C			Atom
+- *
+- * 0F_00, 0F_01, 0F_02		Xeon, Xeon MP, Pentium 4
+- * 0F_03, 0F_04			Xeon, Xeon MP, Pentium 4, Pentium D
+- *
+- * 0F_06			Xeon 7100, 5000 Series, Xeon MP,
+- *				Pentium 4, Pentium D
+- */
+-
+-/* Register processors bits */
+-enum cpu_processor_bit {
+-	CPU_NONE,
+-/* Intel */
+-	CPU_INTEL_PENTIUM_BIT,
+-	CPU_INTEL_P6_BIT,
+-	CPU_INTEL_PENTIUM_M_BIT,
+-	CPU_INTEL_CORE_BIT,
+-	CPU_INTEL_CORE2_BIT,
+-	CPU_INTEL_ATOM_BIT,
+-	CPU_INTEL_XEON_P4_BIT,
+-	CPU_INTEL_XEON_MP_BIT,
+-/* AMD */
+-	CPU_AMD_K6_BIT,
+-	CPU_AMD_K7_BIT,
+-	CPU_AMD_K8_BIT,
+-	CPU_AMD_0F_BIT,
+-	CPU_AMD_10_BIT,
+-	CPU_AMD_11_BIT,
+-};
+-
+-#define	CPU_INTEL_PENTIUM	(1 << CPU_INTEL_PENTIUM_BIT)
+-#define	CPU_INTEL_P6		(1 << CPU_INTEL_P6_BIT)
+-#define	CPU_INTEL_PENTIUM_M	(1 << CPU_INTEL_PENTIUM_M_BIT)
+-#define	CPU_INTEL_CORE		(1 << CPU_INTEL_CORE_BIT)
+-#define	CPU_INTEL_CORE2		(1 << CPU_INTEL_CORE2_BIT)
+-#define	CPU_INTEL_ATOM		(1 << CPU_INTEL_ATOM_BIT)
+-#define	CPU_INTEL_XEON_P4	(1 << CPU_INTEL_XEON_P4_BIT)
+-#define	CPU_INTEL_XEON_MP	(1 << CPU_INTEL_XEON_MP_BIT)
+-
+-#define	CPU_INTEL_PX		(CPU_INTEL_P6 | CPU_INTEL_PENTIUM_M)
+-#define	CPU_INTEL_COREX		(CPU_INTEL_CORE | CPU_INTEL_CORE2)
+-#define	CPU_INTEL_XEON		(CPU_INTEL_XEON_P4 | CPU_INTEL_XEON_MP)
+-#define	CPU_CO_AT		(CPU_INTEL_CORE | CPU_INTEL_ATOM)
+-#define	CPU_C2_AT		(CPU_INTEL_CORE2 | CPU_INTEL_ATOM)
+-#define	CPU_CX_AT		(CPU_INTEL_COREX | CPU_INTEL_ATOM)
+-#define	CPU_CX_XE		(CPU_INTEL_COREX | CPU_INTEL_XEON)
+-#define	CPU_P6_XE		(CPU_INTEL_P6 | CPU_INTEL_XEON)
+-#define	CPU_PM_CO_AT		(CPU_INTEL_PENTIUM_M | CPU_CO_AT)
+-#define	CPU_C2_AT_XE		(CPU_C2_AT | CPU_INTEL_XEON)
+-#define	CPU_CX_AT_XE		(CPU_CX_AT | CPU_INTEL_XEON)
+-#define	CPU_P6_CX_AT		(CPU_INTEL_P6 | CPU_CX_AT)
+-#define	CPU_P6_CX_XE		(CPU_P6_XE | CPU_INTEL_COREX)
+-#define	CPU_P6_CX_AT_XE		(CPU_INTEL_P6 | CPU_CX_AT_XE)
+-#define	CPU_PM_CX_AT_XE		(CPU_INTEL_PENTIUM_M | CPU_CX_AT_XE)
+-#define	CPU_PM_CX_AT		(CPU_INTEL_PENTIUM_M | CPU_CX_AT)
+-#define	CPU_PM_CX_XE		(CPU_INTEL_PENTIUM_M | CPU_CX_XE)
+-#define	CPU_PX_CX_AT		(CPU_INTEL_PX | CPU_CX_AT)
+-#define	CPU_PX_CX_AT_XE		(CPU_INTEL_PX | CPU_CX_AT_XE)
+-
+-/* Select all supported Intel CPUs */
+-#define	CPU_INTEL_ALL		(CPU_INTEL_PENTIUM | CPU_PX_CX_AT_XE)
+-
+-#define	CPU_AMD_K6		(1 << CPU_AMD_K6_BIT)
+-#define	CPU_AMD_K7		(1 << CPU_AMD_K7_BIT)
+-#define	CPU_AMD_K8		(1 << CPU_AMD_K8_BIT)
+-#define	CPU_AMD_0F		(1 << CPU_AMD_0F_BIT)
+-#define	CPU_AMD_10		(1 << CPU_AMD_10_BIT)
+-#define	CPU_AMD_11		(1 << CPU_AMD_11_BIT)
+-
+-#define	CPU_K10_PLUS		(CPU_AMD_10 | CPU_AMD_11)
+-#define	CPU_K0F_PLUS		(CPU_AMD_0F | CPU_K10_PLUS)
+-#define	CPU_K8_PLUS		(CPU_AMD_K8 | CPU_K0F_PLUS)
+-#define	CPU_K7_PLUS		(CPU_AMD_K7 | CPU_K8_PLUS)
+-
+-/* Select all supported AMD CPUs */
+-#define	CPU_AMD_ALL		(CPU_AMD_K6 | CPU_K7_PLUS)
+-
+-/* Select all supported CPUs */
+-#define	CPU_ALL			(CPU_INTEL_ALL | CPU_AMD_ALL)
++#define	CPU_FILE_VALUE		(1 << CPU_VALUE_BIT)
+ 
+ #define MAX_CPU_FILES		512
+ 
+@@ -220,7 +122,6 @@ struct cpu_debug_range {
+ 	unsigned		min;		/* Register range min	*/
+ 	unsigned		max;		/* Register range max	*/
+ 	unsigned		flag;		/* Supported flags	*/
+-	unsigned		model;		/* Supported models	*/
+ };
+ 
+ #endif /* _ASM_X86_CPU_DEBUG_H */
+diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
+index 2fc4f6b..6b2a52d 100644
+--- a/arch/x86/kernel/cpu/cpu_debug.c
++++ b/arch/x86/kernel/cpu/cpu_debug.c
+@@ -32,9 +32,7 @@
+ 
+ static DEFINE_PER_CPU(struct cpu_cpuX_base, cpu_arr[CPU_REG_ALL_BIT]);
+ static DEFINE_PER_CPU(struct cpu_private *, priv_arr[MAX_CPU_FILES]);
+-static DEFINE_PER_CPU(unsigned, cpu_modelflag);
+ static DEFINE_PER_CPU(int, cpu_priv_count);
+-static DEFINE_PER_CPU(unsigned, cpu_model);
+ 
+ static DEFINE_MUTEX(cpu_debug_lock);
+ 
+@@ -80,302 +78,102 @@ static struct cpu_file_base cpu_file[] = {
+ 	{ "value",	CPU_REG_ALL,	1	},
+ };
+ 
+-/* Intel Registers Range */
+-static struct cpu_debug_range cpu_intel_range[] = {
+-	{ 0x00000000, 0x00000001, CPU_MC,	CPU_INTEL_ALL		},
+-	{ 0x00000006, 0x00000007, CPU_MONITOR,	CPU_CX_AT_XE		},
+-	{ 0x00000010, 0x00000010, CPU_TIME,	CPU_INTEL_ALL		},
+-	{ 0x00000011, 0x00000013, CPU_PMC,	CPU_INTEL_PENTIUM	},
+-	{ 0x00000017, 0x00000017, CPU_PLATFORM,	CPU_PX_CX_AT_XE		},
+-	{ 0x0000001B, 0x0000001B, CPU_APIC,	CPU_P6_CX_AT_XE		},
+-
+-	{ 0x0000002A, 0x0000002A, CPU_POWERON,	CPU_PX_CX_AT_XE		},
+-	{ 0x0000002B, 0x0000002B, CPU_POWERON,	CPU_INTEL_XEON		},
+-	{ 0x0000002C, 0x0000002C, CPU_FREQ,	CPU_INTEL_XEON		},
+-	{ 0x0000003A, 0x0000003A, CPU_CONTROL,	CPU_CX_AT_XE		},
+-
+-	{ 0x00000040, 0x00000043, CPU_LBRANCH,	CPU_PM_CX_AT_XE		},
+-	{ 0x00000044, 0x00000047, CPU_LBRANCH,	CPU_PM_CO_AT		},
+-	{ 0x00000060, 0x00000063, CPU_LBRANCH,	CPU_C2_AT		},
+-	{ 0x00000064, 0x00000067, CPU_LBRANCH,	CPU_INTEL_ATOM		},
+-
+-	{ 0x00000079, 0x00000079, CPU_BIOS,	CPU_P6_CX_AT_XE		},
+-	{ 0x00000088, 0x0000008A, CPU_CACHE,	CPU_INTEL_P6		},
+-	{ 0x0000008B, 0x0000008B, CPU_BIOS,	CPU_P6_CX_AT_XE		},
+-	{ 0x0000009B, 0x0000009B, CPU_MONITOR,	CPU_INTEL_XEON		},
+-
+-	{ 0x000000C1, 0x000000C2, CPU_PMC,	CPU_P6_CX_AT		},
+-	{ 0x000000CD, 0x000000CD, CPU_FREQ,	CPU_CX_AT		},
+-	{ 0x000000E7, 0x000000E8, CPU_PERF,	CPU_CX_AT		},
+-	{ 0x000000FE, 0x000000FE, CPU_MTRR,	CPU_P6_CX_XE		},
+-
+-	{ 0x00000116, 0x00000116, CPU_CACHE,	CPU_INTEL_P6		},
+-	{ 0x00000118, 0x00000118, CPU_CACHE,	CPU_INTEL_P6		},
+-	{ 0x00000119, 0x00000119, CPU_CACHE,	CPU_INTEL_PX		},
+-	{ 0x0000011A, 0x0000011B, CPU_CACHE,	CPU_INTEL_P6		},
+-	{ 0x0000011E, 0x0000011E, CPU_CACHE,	CPU_PX_CX_AT		},
+-
+-	{ 0x00000174, 0x00000176, CPU_SYSENTER,	CPU_P6_CX_AT_XE		},
+-	{ 0x00000179, 0x0000017A, CPU_MC,	CPU_PX_CX_AT_XE		},
+-	{ 0x0000017B, 0x0000017B, CPU_MC,	CPU_P6_XE		},
+-	{ 0x00000186, 0x00000187, CPU_PMC,	CPU_P6_CX_AT		},
+-	{ 0x00000198, 0x00000199, CPU_PERF,	CPU_PM_CX_AT_XE		},
+-	{ 0x0000019A, 0x0000019A, CPU_TIME,	CPU_PM_CX_AT_XE		},
+-	{ 0x0000019B, 0x0000019D, CPU_THERM,	CPU_PM_CX_AT_XE		},
+-	{ 0x000001A0, 0x000001A0, CPU_MISC,	CPU_PM_CX_AT_XE		},
+-
+-	{ 0x000001C9, 0x000001C9, CPU_LBRANCH,	CPU_PM_CX_AT		},
+-	{ 0x000001D7, 0x000001D8, CPU_LBRANCH,	CPU_INTEL_XEON		},
+-	{ 0x000001D9, 0x000001D9, CPU_DEBUG,	CPU_CX_AT_XE		},
+-	{ 0x000001DA, 0x000001DA, CPU_LBRANCH,	CPU_INTEL_XEON		},
+-	{ 0x000001DB, 0x000001DB, CPU_LBRANCH,	CPU_P6_XE		},
+-	{ 0x000001DC, 0x000001DC, CPU_LBRANCH,	CPU_INTEL_P6		},
+-	{ 0x000001DD, 0x000001DE, CPU_LBRANCH,	CPU_PX_CX_AT_XE		},
+-	{ 0x000001E0, 0x000001E0, CPU_LBRANCH,	CPU_INTEL_P6		},
+-
+-	{ 0x00000200, 0x0000020F, CPU_MTRR,	CPU_P6_CX_XE		},
+-	{ 0x00000250, 0x00000250, CPU_MTRR,	CPU_P6_CX_XE		},
+-	{ 0x00000258, 0x00000259, CPU_MTRR,	CPU_P6_CX_XE		},
+-	{ 0x00000268, 0x0000026F, CPU_MTRR,	CPU_P6_CX_XE		},
+-	{ 0x00000277, 0x00000277, CPU_PAT,	CPU_C2_AT_XE		},
+-	{ 0x000002FF, 0x000002FF, CPU_MTRR,	CPU_P6_CX_XE		},
+-
+-	{ 0x00000300, 0x00000308, CPU_PMC,	CPU_INTEL_XEON		},
+-	{ 0x00000309, 0x0000030B, CPU_PMC,	CPU_C2_AT_XE		},
+-	{ 0x0000030C, 0x00000311, CPU_PMC,	CPU_INTEL_XEON		},
+-	{ 0x00000345, 0x00000345, CPU_PMC,	CPU_C2_AT		},
+-	{ 0x00000360, 0x00000371, CPU_PMC,	CPU_INTEL_XEON		},
+-	{ 0x0000038D, 0x00000390, CPU_PMC,	CPU_C2_AT		},
+-	{ 0x000003A0, 0x000003BE, CPU_PMC,	CPU_INTEL_XEON		},
+-	{ 0x000003C0, 0x000003CD, CPU_PMC,	CPU_INTEL_XEON		},
+-	{ 0x000003E0, 0x000003E1, CPU_PMC,	CPU_INTEL_XEON		},
+-	{ 0x000003F0, 0x000003F0, CPU_PMC,	CPU_INTEL_XEON		},
+-	{ 0x000003F1, 0x000003F1, CPU_PMC,	CPU_C2_AT_XE		},
+-	{ 0x000003F2, 0x000003F2, CPU_PMC,	CPU_INTEL_XEON		},
+-
+-	{ 0x00000400, 0x00000402, CPU_MC,	CPU_PM_CX_AT_XE		},
+-	{ 0x00000403, 0x00000403, CPU_MC,	CPU_INTEL_XEON		},
+-	{ 0x00000404, 0x00000406, CPU_MC,	CPU_PM_CX_AT_XE		},
+-	{ 0x00000407, 0x00000407, CPU_MC,	CPU_INTEL_XEON		},
+-	{ 0x00000408, 0x0000040A, CPU_MC,	CPU_PM_CX_AT_XE		},
+-	{ 0x0000040B, 0x0000040B, CPU_MC,	CPU_INTEL_XEON		},
+-	{ 0x0000040C, 0x0000040E, CPU_MC,	CPU_PM_CX_XE		},
+-	{ 0x0000040F, 0x0000040F, CPU_MC,	CPU_INTEL_XEON		},
+-	{ 0x00000410, 0x00000412, CPU_MC,	CPU_PM_CX_AT_XE		},
+-	{ 0x00000413, 0x00000417, CPU_MC,	CPU_CX_AT_XE		},
+-	{ 0x00000480, 0x0000048B, CPU_VMX,	CPU_CX_AT_XE		},
+-
+-	{ 0x00000600, 0x00000600, CPU_DEBUG,	CPU_PM_CX_AT_XE		},
+-	{ 0x00000680, 0x0000068F, CPU_LBRANCH,	CPU_INTEL_XEON		},
+-	{ 0x000006C0, 0x000006CF, CPU_LBRANCH,	CPU_INTEL_XEON		},
+-
+-	{ 0x000107CC, 0x000107D3, CPU_PMC,	CPU_INTEL_XEON_MP	},
+-
+-	{ 0xC0000080, 0xC0000080, CPU_FEATURES,	CPU_INTEL_XEON		},
+-	{ 0xC0000081, 0xC0000082, CPU_CALL,	CPU_INTEL_XEON		},
+-	{ 0xC0000084, 0xC0000084, CPU_CALL,	CPU_INTEL_XEON		},
+-	{ 0xC0000100, 0xC0000102, CPU_BASE,	CPU_INTEL_XEON		},
++/* CPU Registers Range */
++static struct cpu_debug_range cpu_reg_range[] = {
++	{ 0x00000000, 0x00000001, CPU_MC,	},
++	{ 0x00000006, 0x00000007, CPU_MONITOR,	},
++	{ 0x00000010, 0x00000010, CPU_TIME,	},
++	{ 0x00000011, 0x00000013, CPU_PMC,	},
++	{ 0x00000017, 0x00000017, CPU_PLATFORM,	},
++	{ 0x0000001B, 0x0000001B, CPU_APIC,	},
++	{ 0x0000002A, 0x0000002B, CPU_POWERON,	},
++	{ 0x0000002C, 0x0000002C, CPU_FREQ,	},
++	{ 0x0000003A, 0x0000003A, CPU_CONTROL,	},
++	{ 0x00000040, 0x00000047, CPU_LBRANCH,	},
++	{ 0x00000060, 0x00000067, CPU_LBRANCH,	},
++	{ 0x00000079, 0x00000079, CPU_BIOS,	},
++	{ 0x00000088, 0x0000008A, CPU_CACHE,	},
++	{ 0x0000008B, 0x0000008B, CPU_BIOS,	},
++	{ 0x0000009B, 0x0000009B, CPU_MONITOR,	},
++	{ 0x000000C1, 0x000000C4, CPU_PMC,	},
++	{ 0x000000CD, 0x000000CD, CPU_FREQ,	},
++	{ 0x000000E7, 0x000000E8, CPU_PERF,	},
++	{ 0x000000FE, 0x000000FE, CPU_MTRR,	},
++
++	{ 0x00000116, 0x0000011E, CPU_CACHE,	},
++	{ 0x00000174, 0x00000176, CPU_SYSENTER,	},
++	{ 0x00000179, 0x0000017B, CPU_MC,	},
++	{ 0x00000186, 0x00000189, CPU_PMC,	},
++	{ 0x00000198, 0x00000199, CPU_PERF,	},
++	{ 0x0000019A, 0x0000019A, CPU_TIME,	},
++	{ 0x0000019B, 0x0000019D, CPU_THERM,	},
++	{ 0x000001A0, 0x000001A0, CPU_MISC,	},
++	{ 0x000001C9, 0x000001C9, CPU_LBRANCH,	},
++	{ 0x000001D7, 0x000001D8, CPU_LBRANCH,	},
++	{ 0x000001D9, 0x000001D9, CPU_DEBUG,	},
++	{ 0x000001DA, 0x000001E0, CPU_LBRANCH,	},
++
++	{ 0x00000200, 0x0000020F, CPU_MTRR,	},
++	{ 0x00000250, 0x00000250, CPU_MTRR,	},
++	{ 0x00000258, 0x00000259, CPU_MTRR,	},
++	{ 0x00000268, 0x0000026F, CPU_MTRR,	},
++	{ 0x00000277, 0x00000277, CPU_PAT,	},
++	{ 0x000002FF, 0x000002FF, CPU_MTRR,	},
++
++	{ 0x00000300, 0x00000311, CPU_PMC,	},
++	{ 0x00000345, 0x00000345, CPU_PMC,	},
++	{ 0x00000360, 0x00000371, CPU_PMC,	},
++	{ 0x0000038D, 0x00000390, CPU_PMC,	},
++	{ 0x000003A0, 0x000003BE, CPU_PMC,	},
++	{ 0x000003C0, 0x000003CD, CPU_PMC,	},
++	{ 0x000003E0, 0x000003E1, CPU_PMC,	},
++	{ 0x000003F0, 0x000003F2, CPU_PMC,	},
++
++	{ 0x00000400, 0x00000417, CPU_MC,	},
++	{ 0x00000480, 0x0000048B, CPU_VMX,	},
++
++	{ 0x00000600, 0x00000600, CPU_DEBUG,	},
++	{ 0x00000680, 0x0000068F, CPU_LBRANCH,	},
++	{ 0x000006C0, 0x000006CF, CPU_LBRANCH,	},
++
++	{ 0x000107CC, 0x000107D3, CPU_PMC,	},
++
++	{ 0xC0000080, 0xC0000080, CPU_FEATURES,	},
++	{ 0xC0000081, 0xC0000084, CPU_CALL,	},
++	{ 0xC0000100, 0xC0000102, CPU_BASE,	},
++	{ 0xC0000103, 0xC0000103, CPU_TIME,	},
++
++	{ 0xC0010000, 0xC0010007, CPU_PMC,	},
++	{ 0xC0010010, 0xC0010010, CPU_CONF,	},
++	{ 0xC0010015, 0xC0010015, CPU_CONF,	},
++	{ 0xC0010016, 0xC001001A, CPU_MTRR,	},
++	{ 0xC001001D, 0xC001001D, CPU_MTRR,	},
++	{ 0xC001001F, 0xC001001F, CPU_CONF,	},
++	{ 0xC0010030, 0xC0010035, CPU_BIOS,	},
++	{ 0xC0010044, 0xC0010048, CPU_MC,	},
++	{ 0xC0010050, 0xC0010056, CPU_SMM,	},
++	{ 0xC0010058, 0xC0010058, CPU_CONF,	},
++	{ 0xC0010060, 0xC0010060, CPU_CACHE,	},
++	{ 0xC0010061, 0xC0010068, CPU_SMM,	},
++	{ 0xC0010069, 0xC001006B, CPU_SMM,	},
++	{ 0xC0010070, 0xC0010071, CPU_SMM,	},
++	{ 0xC0010111, 0xC0010113, CPU_SMM,	},
++	{ 0xC0010114, 0xC0010118, CPU_SVM,	},
++	{ 0xC0010140, 0xC0010141, CPU_OSVM,	},
++	{ 0xC0011022, 0xC0011023, CPU_CONF,	},
+ };
+ 
+-/* AMD Registers Range */
+-static struct cpu_debug_range cpu_amd_range[] = {
+-	{ 0x00000000, 0x00000001, CPU_MC,	CPU_K10_PLUS,		},
+-	{ 0x00000010, 0x00000010, CPU_TIME,	CPU_K8_PLUS,		},
+-	{ 0x0000001B, 0x0000001B, CPU_APIC,	CPU_K8_PLUS,		},
+-	{ 0x0000002A, 0x0000002A, CPU_POWERON,	CPU_K7_PLUS		},
+-	{ 0x0000008B, 0x0000008B, CPU_VER,	CPU_K8_PLUS		},
+-	{ 0x000000FE, 0x000000FE, CPU_MTRR,	CPU_K8_PLUS,		},
+-
+-	{ 0x00000174, 0x00000176, CPU_SYSENTER,	CPU_K8_PLUS,		},
+-	{ 0x00000179, 0x0000017B, CPU_MC,	CPU_K8_PLUS,		},
+-	{ 0x000001D9, 0x000001D9, CPU_DEBUG,	CPU_K8_PLUS,		},
+-	{ 0x000001DB, 0x000001DE, CPU_LBRANCH,	CPU_K8_PLUS,		},
+-
+-	{ 0x00000200, 0x0000020F, CPU_MTRR,	CPU_K8_PLUS,		},
+-	{ 0x00000250, 0x00000250, CPU_MTRR,	CPU_K8_PLUS,		},
+-	{ 0x00000258, 0x00000259, CPU_MTRR,	CPU_K8_PLUS,		},
+-	{ 0x00000268, 0x0000026F, CPU_MTRR,	CPU_K8_PLUS,		},
+-	{ 0x00000277, 0x00000277, CPU_PAT,	CPU_K8_PLUS,		},
+-	{ 0x000002FF, 0x000002FF, CPU_MTRR,	CPU_K8_PLUS,		},
+-
+-	{ 0x00000400, 0x00000413, CPU_MC,	CPU_K8_PLUS,		},
+-
+-	{ 0xC0000080, 0xC0000080, CPU_FEATURES,	CPU_AMD_ALL,		},
+-	{ 0xC0000081, 0xC0000084, CPU_CALL,	CPU_K8_PLUS,		},
+-	{ 0xC0000100, 0xC0000102, CPU_BASE,	CPU_K8_PLUS,		},
+-	{ 0xC0000103, 0xC0000103, CPU_TIME,	CPU_K10_PLUS,		},
+-
+-	{ 0xC0010000, 0xC0010007, CPU_PMC,	CPU_K8_PLUS,		},
+-	{ 0xC0010010, 0xC0010010, CPU_CONF,	CPU_K7_PLUS,		},
+-	{ 0xC0010015, 0xC0010015, CPU_CONF,	CPU_K7_PLUS,		},
+-	{ 0xC0010016, 0xC001001A, CPU_MTRR,	CPU_K8_PLUS,		},
+-	{ 0xC001001D, 0xC001001D, CPU_MTRR,	CPU_K8_PLUS,		},
+-	{ 0xC001001F, 0xC001001F, CPU_CONF,	CPU_K8_PLUS,		},
+-	{ 0xC0010030, 0xC0010035, CPU_BIOS,	CPU_K8_PLUS,		},
+-	{ 0xC0010044, 0xC0010048, CPU_MC,	CPU_K8_PLUS,		},
+-	{ 0xC0010050, 0xC0010056, CPU_SMM,	CPU_K0F_PLUS,		},
+-	{ 0xC0010058, 0xC0010058, CPU_CONF,	CPU_K10_PLUS,		},
+-	{ 0xC0010060, 0xC0010060, CPU_CACHE,	CPU_AMD_11,		},
+-	{ 0xC0010061, 0xC0010068, CPU_SMM,	CPU_K10_PLUS,		},
+-	{ 0xC0010069, 0xC001006B, CPU_SMM,	CPU_AMD_11,		},
+-	{ 0xC0010070, 0xC0010071, CPU_SMM,	CPU_K10_PLUS,		},
+-	{ 0xC0010111, 0xC0010113, CPU_SMM,	CPU_K8_PLUS,		},
+-	{ 0xC0010114, 0xC0010118, CPU_SVM,	CPU_K10_PLUS,		},
+-	{ 0xC0010140, 0xC0010141, CPU_OSVM,	CPU_K10_PLUS,		},
+-	{ 0xC0011022, 0xC0011023, CPU_CONF,	CPU_K10_PLUS,		},
+-};
+-
+-
+-/* Intel */
+-static int get_intel_modelflag(unsigned model)
+-{
+-	int flag;
+-
+-	switch (model) {
+-	case 0x0501:
+-	case 0x0502:
+-	case 0x0504:
+-		flag = CPU_INTEL_PENTIUM;
+-		break;
+-	case 0x0601:
+-	case 0x0603:
+-	case 0x0605:
+-	case 0x0607:
+-	case 0x0608:
+-	case 0x060A:
+-	case 0x060B:
+-		flag = CPU_INTEL_P6;
+-		break;
+-	case 0x0609:
+-	case 0x060D:
+-		flag = CPU_INTEL_PENTIUM_M;
+-		break;
+-	case 0x060E:
+-		flag = CPU_INTEL_CORE;
+-		break;
+-	case 0x060F:
+-	case 0x0617:
+-		flag = CPU_INTEL_CORE2;
+-		break;
+-	case 0x061C:
+-		flag = CPU_INTEL_ATOM;
+-		break;
+-	case 0x0F00:
+-	case 0x0F01:
+-	case 0x0F02:
+-	case 0x0F03:
+-	case 0x0F04:
+-		flag = CPU_INTEL_XEON_P4;
+-		break;
+-	case 0x0F06:
+-		flag = CPU_INTEL_XEON_MP;
+-		break;
+-	default:
+-		flag = CPU_NONE;
+-		break;
+-	}
+-
+-	return flag;
+-}
+-
+-/* AMD */
+-static int get_amd_modelflag(unsigned model)
+-{
+-	int flag;
+-
+-	switch (model >> 8) {
+-	case 0x6:
+-		flag = CPU_AMD_K6;
+-		break;
+-	case 0x7:
+-		flag = CPU_AMD_K7;
+-		break;
+-	case 0x8:
+-		flag = CPU_AMD_K8;
+-		break;
+-	case 0xf:
+-		flag = CPU_AMD_0F;
+-		break;
+-	case 0x10:
+-		flag = CPU_AMD_10;
+-		break;
+-	case 0x11:
+-		flag = CPU_AMD_11;
+-		break;
+-	default:
+-		flag = CPU_NONE;
+-		break;
+-	}
+-
+-	return flag;
+-}
+-
+-static int get_cpu_modelflag(unsigned cpu)
+-{
+-	int flag;
+-
+-	flag = per_cpu(cpu_model, cpu);
+-
+-	switch (flag >> 16) {
+-	case X86_VENDOR_INTEL:
+-		flag = get_intel_modelflag(flag);
+-		break;
+-	case X86_VENDOR_AMD:
+-		flag = get_amd_modelflag(flag & 0xffff);
+-		break;
+-	default:
+-		flag = CPU_NONE;
+-		break;
+-	}
+-
+-	return flag;
+-}
+-
+-static int get_cpu_range_count(unsigned cpu)
+-{
+-	int index;
+-
+-	switch (per_cpu(cpu_model, cpu) >> 16) {
+-	case X86_VENDOR_INTEL:
+-		index = ARRAY_SIZE(cpu_intel_range);
+-		break;
+-	case X86_VENDOR_AMD:
+-		index = ARRAY_SIZE(cpu_amd_range);
+-		break;
+-	default:
+-		index = 0;
+-		break;
+-	}
+-
+-	return index;
+-}
+-
+ static int is_typeflag_valid(unsigned cpu, unsigned flag)
+ {
+-	unsigned vendor, modelflag;
+-	int i, index;
++	int i;
+ 
+ 	/* Standard Registers should be always valid */
+ 	if (flag >= CPU_TSS)
+ 		return 1;
+ 
+-	modelflag = per_cpu(cpu_modelflag, cpu);
+-	vendor = per_cpu(cpu_model, cpu) >> 16;
+-	index = get_cpu_range_count(cpu);
+-
+-	for (i = 0; i < index; i++) {
+-		switch (vendor) {
+-		case X86_VENDOR_INTEL:
+-			if ((cpu_intel_range[i].model & modelflag) &&
+-			    (cpu_intel_range[i].flag & flag))
+-				return 1;
+-			break;
+-		case X86_VENDOR_AMD:
+-			if ((cpu_amd_range[i].model & modelflag) &&
+-			    (cpu_amd_range[i].flag & flag))
+-				return 1;
+-			break;
+-		}
++	for (i = 0; i < ARRAY_SIZE(cpu_reg_range); i++) {
++		if (cpu_reg_range[i].flag == flag)
++			return 1;
+ 	}
+ 
+ 	/* Invalid */
+@@ -385,26 +183,11 @@ static int is_typeflag_valid(unsigned cpu, unsigned flag)
+ static unsigned get_cpu_range(unsigned cpu, unsigned *min, unsigned *max,
+ 			      int index, unsigned flag)
+ {
+-	unsigned modelflag;
+-
+-	modelflag = per_cpu(cpu_modelflag, cpu);
+-	*max = 0;
+-	switch (per_cpu(cpu_model, cpu) >> 16) {
+-	case X86_VENDOR_INTEL:
+-		if ((cpu_intel_range[index].model & modelflag) &&
+-		    (cpu_intel_range[index].flag & flag)) {
+-			*min = cpu_intel_range[index].min;
+-			*max = cpu_intel_range[index].max;
+-		}
+-		break;
+-	case X86_VENDOR_AMD:
+-		if ((cpu_amd_range[index].model & modelflag) &&
+-		    (cpu_amd_range[index].flag & flag)) {
+-			*min = cpu_amd_range[index].min;
+-			*max = cpu_amd_range[index].max;
+-		}
+-		break;
+-	}
++	if (cpu_reg_range[index].flag == flag) {
++		*min = cpu_reg_range[index].min;
++		*max = cpu_reg_range[index].max;
++	} else
++		*max = 0;
+ 
+ 	return *max;
+ }
+@@ -434,7 +217,7 @@ static void print_msr(struct seq_file *seq, unsigned cpu, unsigned flag)
+ 	unsigned msr, msr_min, msr_max;
+ 	struct cpu_private *priv;
+ 	u32 low, high;
+-	int i, range;
++	int i;
+ 
+ 	if (seq) {
+ 		priv = seq->private;
+@@ -446,9 +229,7 @@ static void print_msr(struct seq_file *seq, unsigned cpu, unsigned flag)
+ 		}
+ 	}
+ 
+-	range = get_cpu_range_count(cpu);
+-
+-	for (i = 0; i < range; i++) {
++	for (i = 0; i < ARRAY_SIZE(cpu_reg_range); i++) {
+ 		if (!get_cpu_range(cpu, &msr_min, &msr_max, i, flag))
+ 			continue;
+ 
+@@ -800,13 +581,11 @@ static int cpu_init_msr(unsigned cpu, unsigned type, struct dentry *dentry)
+ {
+ 	struct dentry *cpu_dentry = NULL;
+ 	unsigned reg, reg_min, reg_max;
+-	int i, range, err = 0;
++	int i, err = 0;
+ 	char reg_dir[12];
+ 	u32 low, high;
+ 
+-	range = get_cpu_range_count(cpu);
+-
+-	for (i = 0; i < range; i++) {
++	for (i = 0; i < ARRAY_SIZE(cpu_reg_range); i++) {
+ 		if (!get_cpu_range(cpu, &reg_min, &reg_max, i,
+ 				   cpu_base[type].flag))
+ 			continue;
+@@ -862,10 +641,6 @@ static int cpu_init_cpu(void)
+ 		cpui = &cpu_data(cpu);
+ 		if (!cpu_has(cpui, X86_FEATURE_MSR))
+ 			continue;
+-		per_cpu(cpu_model, cpu) = ((cpui->x86_vendor << 16) |
+-					   (cpui->x86 << 8) |
+-					   (cpui->x86_model));
+-		per_cpu(cpu_modelflag, cpu) = get_cpu_modelflag(cpu);
+ 
+ 		sprintf(cpu_dir, "cpu%d", cpu);
+ 		cpu_dentry = debugfs_create_dir(cpu_dir, cpu_debugfs_dir);
+-- 
+1.6.0.6
+
+
+
