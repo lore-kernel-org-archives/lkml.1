@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbZFERvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZFERzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755076AbZFERvV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 13:51:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZFERvN
+	id S1755092AbZFERzl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 13:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbZFERz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 13:51:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41133 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751233AbZFERvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 13:51:12 -0400
-Message-ID: <4A295AFB.80909@kernel.org>
-Date: Fri, 05 Jun 2009 10:50:51 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 5 Jun 2009 13:55:29 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:6247 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752271AbZFERz1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 13:55:27 -0400
+X-IronPort-AV: E=Sophos;i="4.41,312,1241395200"; 
+   d="scan'208";a="173136894"
+Date: Fri, 5 Jun 2009 10:55:30 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
+       netdev@vger.kernel.org, arjan@infradead.org
+Subject: Re: [PATCH 5/5] initdev:kernel: USB and SCSI block init device
+	notification, v3
+Message-ID: <20090605175529.GA18688@cuplxvomd02.corp.sa.net>
+References: <20090502023000.GA16076@cuplxvomd02.corp.sa.net> <20090502115539.396206bc@linux-lm> <20090505001950.GC29124@cuplxvomd02.corp.sa.net> <d82e647a0905042105g7639fc84g736668c371c40053@mail.gmail.com>
 MIME-Version: 1.0
-To: Tao Ma <tao.ma@oracle.com>
-CC: Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@linux.intel.com>
-Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64
- 2.6.30-rc8.
-References: <4A289928.7040508@oracle.com> <20090604223805.2962e826.akpm@linux-foundation.org> <4A28C262.5020605@oracle.com> <20090605075614.GC8171@cr0.nay.redhat.com> <4A28DDEB.4000409@oracle.com> <2375c9f90906050209h191df8fav36fc9507654c5ca6@mail.gmail.com> <20090605021424.ba352b0f.akpm@linux-foundation.org> <4A28E5C9.6010408@oracle.com> <20090605095155.GC8354@cr0.nay.redhat.com> <4A292B0D.8030807@oracle.com>
-In-Reply-To: <4A292B0D.8030807@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <d82e647a0905042105g7639fc84g736668c371c40053@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tao Ma wrote:
+On Tue, May 05, 2009 at 12:05:19AM -0400, Ming Lei wrote:
+> 2009/5/5 David VomLehn <dvomlehn@cisco.com>:
+> > On Fri, May 01, 2009 at 11:55:39PM -0400, Ming Lei wrote:
+> >> On Fri, 1 May 2009 19:30:00 -0700
+> >> David VomLehn <dvomlehn@cisco.com> wrote:
+> >>
+> >> > From: Alan Stern <stern@rowland.harvard.edu
+> >> > diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+> >> > index 6f51ca4..735b061 100644
+> >> > --- a/drivers/scsi/scsi_scan.c
+> >> > +++ b/drivers/scsi/scsi_scan.c
+> > ...
+> >> > @@ -1834,6 +1834,7 @@ static int do_scan_async(void *_data)
+> >> >     struct async_scan_data *data = _data;
+> >> >     do_scsi_scan_host(data->shost);
+> >> >     scsi_finish_async_scan(data);
+> >> > +   initdev_probe_done(BOOTDEV_BLOCK_MASK);
+> >>
+> >> Which code are waiting for the block device's probe done?
+> >
+> > None yet. That remains to be done.
+> >
 > 
-> 
-> Amerigo Wang wrote:
->> On Fri, Jun 05, 2009 at 05:30:49PM +0800, Tao Ma wrote:
->>>> Please send the boot logs: dmesg -s 1000000 > foo
->>> attached.
->>
->>> #######high memory 18446612137615818752, size_t 18446612137615818752
->>> #######kcore size 5301604352, PAGE_OFFSET 0, PAGE_SIZE 4096
->>
->>
->> These two lines must be added by yourself...
->>
->> What?!
->> How can PAGE_OFFSET be 0??
->> Can you show us these two printk() you just added?
->>
->> And, the size of kcore is not the crazy number in the subject...
->> This one is much saner..
-> Sorry, I used the wrong printk. the correct one is:
-> #######high memory 18446612137615818752, size_t 18446612137615818752
-> #######kcore size 5301604352, PAGE_OFFSET 18446612132314218496,
-> PAGE_SIZE 4096
-> 
+> Would you mind submitting  the code path of waitting for probe done to allow a
+> intact review?  Without the waitting code, it is a a little difficult
+> to undersand or verify
+> your patch, IMHO.
 
-%lx should be used.
+This will be in the next spin of the patch, coming soon (possibly today).
 
-also you compiler doesn't like
+> Thanks
+> Lei Ming
 
-high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
-
-in setup.c?
-
-YH
-
+David VomLehn
