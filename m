@@ -1,104 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbZFEETl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752230AbZFEEUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754657AbZFEETl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 00:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750701AbZFEETd
+	id S1752230AbZFEEUh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 00:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbZFEEU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 00:19:33 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:15572 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750716AbZFEETc convert rfc822-to-8bit (ORCPT
+	Fri, 5 Jun 2009 00:20:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44174 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750716AbZFEEU2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 00:19:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lc9aV6hNEBhXjxKNH1UJQgsv5UMR7qcak+G8dqgGZqZ7tB2Wwibhne56gKww7Z3da2
-         Ex4YOk+viDauXRYpM/m1BPK0+i6tBRUnkHuSoBXTO7JkiR8pkgPkKu8Rbv/hf3aE8Kf1
-         IEjeVFEZwkBmKTEuwY1s8jamyhhzlZPY7Kakc=
-MIME-Version: 1.0
-In-Reply-To: <20090604211350.9aafa731.akpm@linux-foundation.org>
-References: <1243927050-30685-1-git-send-email-vapier@gentoo.org>
-	 <20090604175030.55cc4a68.akpm@linux-foundation.org>
-	 <8bd0f97a0906041755q7588ba76l1e4e1eb8bdbe336@mail.gmail.com>
-	 <20090604180420.2805fcdd.akpm@linux-foundation.org>
-	 <8bd0f97a0906041850v4a41082fkf9726ae1bdd299cb@mail.gmail.com>
-	 <20090604192723.36874fcb.akpm@linux-foundation.org>
-	 <8bd0f97a0906042100j9a44f95g7d05a515725c9d5@mail.gmail.com>
-	 <20090604211350.9aafa731.akpm@linux-foundation.org>
-Date: Fri, 5 Jun 2009 00:19:34 -0400
-Message-ID: <8bd0f97a0906042119w6f7237d6n4492740c0adb312c@mail.gmail.com>
-Subject: Re: [PATCH] kgdbts: unify/generalize gdb breakpoint adjustment
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       jason.wessel@windriver.com, kgdb-bugreport@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 5 Jun 2009 00:20:28 -0400
+Date: Thu, 4 Jun 2009 21:20:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Cc: linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
+       andreas.herrmann3@amd.com, mingo@elte.hu
+Subject: Re: [2.6.30-rc8] gcc 3.3 : __udivdi3 undefined.
+Message-Id: <20090604212018.b9e9f354.akpm@linux-foundation.org>
+In-Reply-To: <200906050400.n5540Sx0052981@www262.sakura.ne.jp>
+References: <200906050038.n550c4Ja010907@www262.sakura.ne.jp>
+	<20090605023835.GA7933@cr0.nay.redhat.com>
+	<20090604201733.746928c6.akpm@linux-foundation.org>
+	<200906050339.n553d684048041@www262.sakura.ne.jp>
+	<20090604205103.bbfe9af2.akpm@linux-foundation.org>
+	<200906050400.n5540Sx0052981@www262.sakura.ne.jp>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 5, 2009 at 00:13, Andrew Morton wrote:
-> On Fri, 5 Jun 2009 00:00:22 -0400 Mike Frysinger wrote:
->> your version after all requires every arch to copy & paste this crap:
->> static inline unsigned long instruction_pointer(struct pt_regs *regs)
->> {
->>     return regs->ip;
->> }
->> static inline void instruction_pointer_set(struct pt_regs *regs,
->> unsigned long val)
->> {
->>     regs->ip = val;
->> }
->>
->> and then actual usage turns into:
->> instruction_pointer_set(regs, instruction_pointer(regs) + foo);
->>
->> whereas mine is two lines:
->> #define instruction_pointer(regs) ((regs)->ip)
->> instruction_pointer(regs) += val;
->
-> The aim isn't really to reduce the amount of typing one needs to do.
-> Let's get things right, and if getting it right involves more typing
-> then so be it.
+On Fri, 05 Jun 2009 13:00:28 +0900 Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp> wrote:
 
-the aim isnt to reduce typing (although that's a nice result), the aim
-is to reduce the amount of work to (1) keep things in shape and (2)
-force new ports to implement.  the less code there is, the harder it
-is for it to bitrot.
+> > Perhaps it's this:
+> > 
+> > static void __init memtest(u64 pattern, u64 start_phys, u64 size)
+> > {
+> > 	u64 i, count;
+> > 	u64 *start;
+> > 	u64 start_bad, last_bad;
+> > 	u64 start_phys_aligned;
+> > 	size_t incr;
+> > 
+> > 	incr = sizeof(pattern);
+> > 	start_phys_aligned = ALIGN(start_phys, incr);
+> > 	count = (size - (start_phys_aligned - start_phys))/incr;
+> Bingo!
 
-> If it really worries you then you could do
->
-> #define GET_IP(regs)    ((regs)->ip)
-> #include <asm/generic/instruction_pointer.h>
->
-> and
->
-> static inline unsigned long instruction_pointer(struct pt_regs *regs)
-> {
->        return GET_IP(regs);
-> }
->
-> static inline void instruction_pointer_set(struct pt_regs *regs,
->                                        unsigned long val)
-> {
->        GET_IP(regs) = val;
-> }
->
-> Note that GET_IP() is all-caps, which says "this is a macro".
->
-> But I don't think it's worth the ickyness, unless we also incorporate
-> kernel_stack_pointer(), frame_pointer(), user_stack_pointer() and
-> perhaps the _set() versions of those also.
+OK, thanks.  We should fix this for 2.6.30.
 
-yes, having a layer along those lines would satisfy my previous points.
+We could do the obvious:
 
-> Do we know how to implement instruction_pointer_set() on ia64, btw?
+--- a/arch/x86/mm/memtest.c~a
++++ a/arch/x86/mm/memtest.c
+@@ -8,6 +8,7 @@
+ #include <linux/pfn.h>
+ 
+ #include <asm/e820.h>
++#include <asm/div64.h>
+ 
+ static u64 patterns[] __initdata = {
+ 	0,
+@@ -48,7 +49,8 @@ static void __init memtest(u64 pattern, 
+ 
+ 	incr = sizeof(pattern);
+ 	start_phys_aligned = ALIGN(start_phys, incr);
+-	count = (size - (start_phys_aligned - start_phys))/incr;
++	count = size - (start_phys_aligned - start_phys);
++	do_div(count, incr);
+ 	start = __va(start_phys_aligned);
+ 	start_bad = 0;
+ 	last_bad = 0;
+_
 
-i havent a clue, but it doesnt matter in this case as ia64 doesnt
-support KGDB.  they can figure it out when they want to add KGDB
-support :).
--mike
+but I wonder why all those things are u64.  They all hold virtual
+addresses, don't they?  The code doesn't test highmem.  So shouldn't
+these all be unsigned longs?
+
+
