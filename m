@@ -1,89 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbZFEVd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZFEViU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754193AbZFEVd1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 17:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZFEVdT
+	id S1754124AbZFEViU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 17:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbZFEViL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 17:33:19 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:61358 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751742AbZFEVdS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 17:33:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=jMWZVvaXzXP3KaE31P+t1tIMmYNldZn26MD0uUigXXg7LVWQnls2K69Omia/xvkGb5
-         UHuxHhXDyik/YnhopktidxPT+rhCIJ0L50B1jhg/ui/Q97P+SY1vr47iMIcsQdGP2oMj
-         0r9APX7LHt2qpESETrQPmmujZq1Vw8OCCZlMU=
-Message-ID: <4A298F67.8020901@tuffmail.co.uk>
-Date: Fri, 05 Jun 2009 22:34:31 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 5 Jun 2009 17:38:11 -0400
+Received: from mga09.intel.com ([134.134.136.24]:2425 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752015AbZFEViK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 17:38:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,312,1241420400"; 
+   d="scan'208";a="419303255"
+Message-ID: <4A299040.1010209@intel.com>
+Date: Fri, 05 Jun 2009 14:38:08 -0700
+From: Joseph Cihula <joseph.cihula@intel.com>
+Reply-To: joseph.cihula@intel.com
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Aioanei Rares <krnl.list@gmail.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-ext4@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Mild filesystem corruption on ext4 (no journal)
-References: <4A28F83F.4030704@tuffmail.co.uk> <4A292E61.3050204@gmail.com> <20090605180125.GB6442@mit.edu>
-In-Reply-To: <20090605180125.GB6442@mit.edu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
+       hpa@zytor.com, andi@firstfloor.org
+CC: chrisw@sous-sol.org, jmorris@namei.org, jbeulich@novell.com,
+       peterm@redhat.com, joseph.cihula@intel.com, gang.wei@intel.com,
+       shane.wang@intel.com
+Subject: [RFC v4][PATCH 0a/2] intel_txt: Intel(R) Trusted Execution Technology
+ support for Linux - Overview
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Fri, Jun 05, 2009 at 05:40:33PM +0300, Aioanei Rares wrote:
->   
->>> When I upgrade libc from 2.7 (debian stable) to 2.9 (debian unstable),  
->>> the locale breaks every reboot, and I have to repair it by running  
->>> locale-gen.  This happened now when I only upgraded libc, in order to  
->>> play with signalfd().  It also happened before, when I upgraded the  
->>> entire machine to debian unstable (which I later reverted).
->>>
->>> The problem is that /usr/lib/locale/locale-archive gets corrupted when  
->>> I reboot.  The exact corruption differs with each reboot (i.e. the  
->>> md5sum differs).  Last time, the first ~70K was overwritten with data  
->>> from xorg.log and my web browsing history.  I have copies of the  
->>> original and corrupted state which I can send, the full file is 1.3  
->>> megs, but I can limit it to the first 70K, since that's all that was  
->>> corrupted.
->>>       
->
->   
->> I suspect, although I might be wrong, that this is not a kernel-related
->> problem.
->>     
->
-> Actually, I suspect it is indeed a kernel-related problem.  The
-> problem has been reported before, with a repeatable test case:
->
-> 	http://bugzilla.kernel.org/show_bug.cgi?id=13292
->
-> The problem shows up after you unmount and remount the filesystem.
-> Before you the filesystem is unmounted, the locale-archive file has
-> the correct md5sum.  After you unmount and remount the filesystem, the
-> filesystem is corrupted.  I'm guessing that some data blocks aren't
-> getting marked as needing writeback, so the previous contents on disk
-> aren't written back.  I was able to show that even though the mounted
-> filesystem had the correct information, direct access to the disk
-> using debugfs showed the blocks on disk had the contents that would be
-> revealed after the filesystem was unmounted and remounted.  
->
-> The problem only shows up when using ext4 without a journal, and I was
-> never able to create a simpler reproduction case.  The last time I
-> tried to work on this bug was approximately a month ago.  About two
-> weeks ago Frank from Google tried reproducing it, but he wasn't able
-> to do so using his 2.6.26-based kernel plus an updated ext4.
-> Unfortunately, I haven't had time to look at it since then, or to
-> check to see if some of the more recent patches scheduled for the
-> 2.6.31 merge window might have changed the behaviour of this bug.
->
->        	     	    	       	       	   - Ted
->   
+Linux community,
 
-Well, thanks for the link + explanation! I look forward to the eventual 
-solution.
-Alan
+The following patches are to add support for Intel(R) Trusted Execution
+Technology (Intel(R) TXT) and the Trusted Boot open source project (tboot).
+
+We request your feedback and suggestions.
+
+
+
+Intel(R) TXT Overview:
+=====================
+
+Intel's technology for safer computing, Intel(R) Trusted Execution
+Technology (Intel(R) TXT), defines platform-level enhancements that
+provide the building blocks for creating trusted platforms.
+
+Intel TXT was formerly known by the code name LaGrande Technology (LT).
+
+Intel TXT in Brief:
+o  Provides dynamic root of trust for measurement (DRTM)
+o  Data protection in case of improper shutdown
+o  Measurement and verification of launched environment
+
+Intel TXT is part of the vPro(TM) brand and is also available some
+non-vPro systems.  It is currently available on desktop systems based on
+the Q35, X38, Q45, and Q43 Express chipsets (e.g. Dell Optiplex 755, HP
+dc7800, etc.) and mobile systems based on the GM45, PM45, and GS45
+Express chipsets.
+
+For more information, see http://www.intel.com/technology/security/. 
+This site also has a link to the Intel TXT MLE Developers Manual, which
+has been updated for the new released platforms.
+
+Intel TXT has been presented at various events over the past few years,
+some of which are:
+     LinuxTAG 2008: 
+http://www.linuxtag.org/2008/en/conf/events/vp-donnerstag/details.html?talkid=110
+
+     TRUST2008: 
+http://www.trust2008.eu/downloads/Keynote-Speakers/3_David-Grawrock_The-Front-Door-of-Trusted-Computing.pdf
+
+     IDF 2008, Shanghai: 
+http://inteldeveloperforum.com.edgesuite.net/shanghai_2008/aep/PROS003/index.html
+
+     IDFs 2006, 2007 (I'm not sure if/where they are online)
+
+Trusted Boot Project Overview:
+=============================
+
+Trusted Boot (tboot) is an open source, pre- kernel/VMM module that uses
+Intel TXT to perform a measured and verified launch of an OS kernel/VMM.
+
+It is hosted on SourceForge at http://sourceforge.net/projects/tboot. 
+The mercurial source repo is available at
+http://www.bughost.org/repos.hg/tboot.hg.
+
+Tboot currently supports launching Xen (open source VMM/hypervisor w/
+TXT support since v3.2), and now Linux kernels.
+
+
+Value Proposition for Linux or "Why should you care?"
+=====================================================
+
+While there are many products and technologies that attempt to measure
+or protect the integrity of a running kernel, they all assume the kernel
+is "good" to begin with.  The Integrity Measurement Architecture (IMA)
+and Linux Integrity Module interface are examples of such solutions.
+
+To get trust in the initial kernel without using Intel TXT, a static
+root of trust must be used.  This bases trust in BIOS starting at system
+reset and requires measurement of all code executed between system reset
+through the completion of the kernel boot as well as data objects used
+by that code.  In the case of a Linux kernel, this means all of BIOS,
+any option ROMs, the bootloader and the boot config.  In practice, this
+is a lot of code/data, much of which is subject to change from boot to
+boot (e.g. changing NICs may change option ROMs).  Without reference
+hashes, these measurement changes are difficult to assess or confirm as
+benign.  This process also does not provide DMA protection, memory
+configuration/alias checks and locks, crash protection, or policy support.
+
+By using the hardware-based root of trust that Intel TXT provides, many
+of these issues can be mitigated.  Specifically: many pre-launch
+components can be removed from the trust chain, DMA protection is
+provided to all launched components, a large number of platform
+configuration checks are performed and values locked, protection is
+provided for any data in the event of an improper shutdown, and there is
+support for policy-based execution/verification.  This provides a more
+stable measurement and a higher assurance of system configuration and
+initial state than would be otherwise possible.  Since the tboot project
+is open source, source code for almost all parts of the trust chain is
+available (excepting SMM and Intel-provided firmware).
+
+Patchset:
+========
+
+These patches were tested on the 2.6.30-rc4 and apply cleanly.
+
+Patch 0a/2:  Overview and motivation (this email)
+Patch 0b/2:  Details and how it works
+Patch 1/2:   Fix for KVM shutdown (already sent to KVM maintainer)
+Patch 2/2:   Intel TXT and tboot support
+
+
+Joseph Cihula
+Shane Wang
+Intel Corp.
