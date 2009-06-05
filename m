@@ -1,63 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbZFEAYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZFEA13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753603AbZFEAYk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 20:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZFEAYc
+	id S1753173AbZFEA13 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 20:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZFEA1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 20:24:32 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:46830 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbZFEAYc (ORCPT
+	Thu, 4 Jun 2009 20:27:22 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:54481 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbZFEA1V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 20:24:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=SY/gcDDbOHF+AJvWthb40YLDDNSkEon5X7s43HgXPFUldxMMul7P0iC7LEukH7P9r4
-         OUE1zJ9PCOLVbehz4Iy71l6KYSXEWfVPQW/jPvofZ0OXBEPqQmOaFOM7TIjYJiWD4u9N
-         MNpvDEKrqXChNT0pnyRyVP7NYleqQqIQASxbY=
-Message-ID: <4A2865BF.1080301@gmail.com>
-Date: Thu, 04 Jun 2009 18:24:31 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 4 Jun 2009 20:27:21 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Dave Jones <davej@redhat.com>
+Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
+Date: Thu, 4 Jun 2009 19:27:17 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906041826.42856.lkml@morethan.org> <20090605001510.GA2479@redhat.com>
+In-Reply-To: <20090605001510.GA2479@redhat.com>
 MIME-Version: 1.0
-To: Julian Phillips <julian@quantumfyre.co.uk>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: A question about using a private anonymous mmap
-References: <alpine.LNX.2.00.0906041740110.21303@reaper.quantumfyre.co.uk>
-In-Reply-To: <alpine.LNX.2.00.0906041740110.21303@reaper.quantumfyre.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906041927.21340.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julian Phillips wrote:
-> I have a program which creates a reasonably large private anonymous map. 
-> The program then writes into a few places in the map, but ends up 
-> reading from all of them.
+On Thu June 4 2009, Dave Jones wrote:
+> On Thu, Jun 04, 2009 at 06:26:40PM -0500, Michael S. Zick wrote:
+>  > On Thu June 4 2009, Michael S. Zick wrote:
+>  > > On Thu June 4 2009, Dave Jones wrote:
+>  > > > On Thu, Jun 04, 2009 at 04:38:13PM -0500, Michael S. Zick wrote:
+>  > >
+>  > 
+>  > I have it now, you where speaking of the "product vendor Centaur"
+>  > not a specific model name "Centaur".
+>  > 
+>  > Which I translate into: that statement block needs to be converted into
+>  > (possibly nested) switch statement(s).
+>  > Since there is not a "model check" in it only a "Series" and "Vendor" check.
+>  > 
+>  > Yuck.
 > 
-> When I run this program on a system running 2.6.20.7 the process only 
-> ever seems to use enough memory to hold the data that has actually been 
-> written (well - in units of PAGE_SIZE).  When I run the program on a 
-> system running 2.6.24.5 then as it reads the map the amount of memory 
-> used continues to increase until the complete map has actually been 
-> allocated (and since the total size is greater than the physically 
-> available RAM causes swapping).  Basically I seem to be seeing 
-> copy-on-read instead of copy-on-write type behaviour.
+> I meant just doing something like this..
 > 
-> Is this an expected change, and is there any option I can tweak to get 
-> the old behaviour back?
+> (untested)
+> 
+> I'm not sure if the clflush_size==0 case can happen, which is why
+> I left the fallback.  Maybe on ancient cpus?
+> 
+> 	Dave
+> 
+> diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+> index 2202b62..a293c71 100644
+> --- a/arch/x86/pci/common.c
+> +++ b/arch/x86/pci/common.c
+> @@ -426,11 +426,14 @@ int __init pcibios_init(void)
+>  	 * and P4. It's also good for 386/486s (which actually have 16)
+>  	 * as quite a few PCI devices do not support smaller values.
+>  	 */
+> -	pci_cache_line_size = 32 >> 2;
+> -	if (c->x86 >= 6 && c->x86_vendor == X86_VENDOR_AMD)
+> -		pci_cache_line_size = 64 >> 2;	/* K7 & K8 */
+> -	else if (c->x86 > 6 && c->x86_vendor == X86_VENDOR_INTEL)
+> -		pci_cache_line_size = 128 >> 2;	/* P4 */
+> +
+> +	if (c->x86_clflush_size > 0)
+> +		pci_cache_line_size = c->x86_clflush_size >> 2;
+> +	else
+> +		pci_cache_line_size = 32 >> 2;
+> +
+> +	printk(KERN_DEBUG "PCI: pci_cache_line_size set to %d bytes\n",
+> +		pci_cache_line_size >> 2);
+>  
+>  	pcibios_resource_survey();
+>  
 
-Looks like this was as a result of the ZERO_PAGE removal:
+That would clean up the code and deal with the situation.
+Sorry I was so slow about following what you meant.  Age.
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=557ed1fa2620dc119adb86b34c614e152a629a80
+Will put that in tomorrows build instead of my idea.
 
-The commit comment notes: "Inserting a ZERO_PAGE for anonymous read 
-faults appears to be a false optimisation: if an application is 
-performance critical, it would not be doing many read faults of new 
-memory, or at least it could be expected to write to that memory soon 
-afterwards. If cache or memory use is critical, it should not be working 
-with a significant number of ZERO_PAGEs anyway (a more compact 
-representation of zeroes should be used)."
+Mike
+> 
+> 
+
+
