@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbZFEQF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbZFEQHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbZFEQF1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 12:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbZFEQFU
+	id S1755837AbZFEQHi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 12:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbZFEQHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 12:05:20 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:37433 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751889AbZFEQFT (ORCPT
+	Fri, 5 Jun 2009 12:07:31 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4120 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751079AbZFEQHa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 12:05:19 -0400
-Message-ID: <4A2942E6.7050107@oracle.com>
-Date: Fri, 05 Jun 2009 09:08:06 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Eric Piel <eric.piel@tremplin-utc.net>
-Subject: [PATCH -mmotm] lis3: fix polldev build error
-References: <200906050105.n5515BhY028645@imap1.linux-foundation.org>
-In-Reply-To: <200906050105.n5515BhY028645@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 5 Jun 2009 12:07:30 -0400
+Subject: Re: [PATCH] eeepc-laptop.c: use pr_fmt and pr_<level>
+From: Joe Perches <joe@perches.com>
+To: Corentin Chary <corentin.chary@gmail.com>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       acpi4asus-user@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       Matthew Garrett <mjg@redhat.com>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+In-Reply-To: <71cd59b00906050901p71c7483fja5b3c74744f93384@mail.gmail.com>
+References: <1244197103.3631.40.camel@Joe-Laptop.home>
+	 <4A28F94A.6040500@tuffmail.co.uk>
+	 <1244199633.3631.43.camel@Joe-Laptop.home>
+	 <71cd59b00906050457i29638577o9eeb5e8fa8eb087c@mail.gmail.com>
+	 <1244216712.3631.117.camel@Joe-Laptop.home>
+	 <71cd59b00906050901p71c7483fja5b3c74744f93384@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 05 Jun 2009 09:07:22 -0700
+Message-Id: <1244218042.3631.158.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt008.oracle.com [141.146.116.17]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4A294223.0139:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Fri, 2009-06-05 at 18:01 +0200, Corentin Chary wrote:
+> On Fri, Jun 5, 2009 at 5:45 PM, Joe Perches<joe@perches.com> wrote:
+> > On Fri, 2009-06-05 at 13:57 +0200, Corentin Chary wrote:
+> >> On Fri, Jun 5, 2009 at 1:00 PM, Joe Perches<joe@perches.com> wrote:
+> >> > On Fri, 2009-06-05 at 11:54 +0100, Alan Jenkins wrote:
+> >> >> Is EEEPC_HOTK_FILE used anywhere else?  It would be clearer if you were
+> >> >> able to just use "eeepc: " or whatever and remove the definition of
+> >> >> EEEPC_HOTK_FILE.
+> >> > It is used elsewhere and perhaps it'd be better to use KBUILD_MODNAME.
+> >> I think we can't use KBUILD_MODNAME because "eeepc" is used for
+> >> platform_device, backlight and input device. Using "eeepc-laptop"
+> >> would break compatibility.
+> > What compatibility would it break?
+> > Logging messages are not guaranteed to be stable across versions.
+> for platform_device backlight and input device it would change the
+> "/sys" paths (eg: /sys/class/backlight/eeepc)
 
-Fix lis3 (spi version) Kconfig to prevent build error:
+I see what you mean.  We're talking cross purposes though.
+I meant that KBUILD_MODNAME be used for pr_fmt, not anywhere else.
 
-(.text+0x874fb): undefined reference to `input_unregister_polled_device'
-(.text+0x87896): undefined reference to `input_allocate_polled_device'
-(.text+0x879d3): undefined reference to `input_register_polled_device'
-(.text+0x879e9): undefined reference to `input_free_polled_device'
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Eric Piel <eric.piel@tremplin-utc.net>
----
- drivers/hwmon/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+So, no changes to any other EEPC_HOTK_FILE uses.
 
---- mmotm-2009-0604-1745.orig/drivers/hwmon/Kconfig
-+++ mmotm-2009-0604-1745/drivers/hwmon/Kconfig
-@@ -978,6 +978,7 @@ config SENSORS_LIS3LV02D
- config SENSORS_LIS3_SPI
- 	tristate "STMicroeletronics LIS3LV02Dx three-axis digital accelerometer (SPI)"
- 	depends on !ACPI && SPI_MASTER && INPUT
-+	select INPUT_POLLDEV
- 	default n
- 	help
- 	  This driver provides support for the LIS3LV02Dx accelerometer connected
+cheers, Joe
 
-
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
