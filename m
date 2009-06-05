@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbZFEFX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbZFEF0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755358AbZFEFX2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 01:23:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbZFEFXT
+	id S1755298AbZFEF0m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 01:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbZFEF0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 01:23:19 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59566 "EHLO mx2.redhat.com"
+	Fri, 5 Jun 2009 01:26:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59680 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750745AbZFEFXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 01:23:19 -0400
-Message-ID: <4A28AB67.7040800@redhat.com>
-Date: Fri, 05 Jun 2009 08:21:43 +0300
+	id S1750813AbZFEF0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 01:26:34 -0400
+Message-ID: <4A28AAA1.1060203@redhat.com>
+Date: Fri, 05 Jun 2009 08:18:25 +0300
 From: Avi Kivity <avi@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>, kvm@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Subject: Re: [RFC] CPU hard limits
-References: <20090604053649.GA3701@in.ibm.com> <4A27BBCA.5020606@redhat.com> <20090605030309.GA3872@in.ibm.com> <4A28921C.6010802@redhat.com> <661de9470906042137u603e2997n80c270bf7f6191ad@mail.gmail.com> <4A28A2AB.3060108@redhat.com> <20090605044946.GA11755@balbir.in.ibm.com> <20090605051050.GB11755@balbir.in.ibm.com>
-In-Reply-To: <20090605051050.GB11755@balbir.in.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] cpumask: alloc blank cpumask left over
+References: <4A2835D8.6040903@kernel.org> <4A28362B.7040804@kernel.org> <200906051428.08299.rusty@rustcorp.com.au>
+In-Reply-To: <200906051428.08299.rusty@rustcorp.com.au>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
->> But then there is no other way to make a *guarantee*, guarantees come
->> at a cost of idling resources, no? Can you show me any other
->> combination that will provide the guarantee and without idling the
->> system for the specified guarantees?
+Rusty Russell wrote:
+> On Fri, 5 Jun 2009 06:31:31 am Yinghai Lu wrote:
+>   
+>> avoid suprise when MAXSMP is enabled
+>>
+>> Signed-off-by: Yinghai Lu <yinghai.lu@kernel.org>
 >>     
 >
-> OK, I see part of your concern, but I think we could do some
-> optimizations during design. For example if all groups have reached
-> their hard-limit and the system is idle, should we do start a new hard
-> limit interval and restart, so that idleness can be removed. Would
-> that be an acceptable design point?
+> I understand the temptation, but two questions arise:
+> 1) Shouldn't we actually audit to see if any of these are currently problems, 
+> and
+> 2) Should the non-MAXSMP alloc_cpumask_var_node (currently a noop) zero the 
+> mask if __GFP_ZERO is set?
+>   
 
-I think so.  Given guarantees G1..Gn (0 <= Gi <= 1; sum(Gi) <= 1), and a 
-cpu hog running in each group, how would the algorithm divide resources?
+If we go that route we should conditionally clear the bitmaps in 
+alloc_cpumask_var().  I don't think we do, though.
 
 -- 
 I have a truly marvellous patch that fixes the bug which this
