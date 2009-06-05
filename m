@@ -1,163 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbZFEGZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbZFEG0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717AbZFEGZV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 02:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbZFEGZK
+	id S1753062AbZFEG0W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 02:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbZFEG0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 02:25:10 -0400
-Received: from relay1.mentorg.com ([192.94.38.131]:60469 "EHLO
-	relay1.mentorg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880AbZFEGZI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 02:25:08 -0400
-Message-ID: <4A28BA43.5000005@gmail.com>
-Date: Fri, 05 Jun 2009 11:55:07 +0530
-From: Pranith Kumar <pranith.hacks@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.0.12) Gecko/20070530 Red Hat/1.0.9-2.el4 SeaMonkey/1.0.9
+	Fri, 5 Jun 2009 02:26:14 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49797 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751880AbZFEG0N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 02:26:13 -0400
+Date: Fri, 5 Jun 2009 06:24:58 GMT
+From: tip-bot for Yong Wang <yong.y.wang@linux.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, yong.y.wang@linux.intel.com, yong.y.wang@intel.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, yong.y.wang@linux.intel.com,
+       yong.y.wang@intel.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090605033735.GA20451@ywang-moblin2.bj.intel.com>
+References: <20090605033735.GA20451@ywang-moblin2.bj.intel.com>
+Subject: [tip:perfcounters/core] perf_counter tools: Fix incorrect printf formats
+Message-ID: <tip-ee7b31fe5c5da8a038b96e54ae9fbd5dcab3b1da@git.kernel.org>
+Git-Commit-ID: ee7b31fe5c5da8a038b96e54ae9fbd5dcab3b1da
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Testing email client patch submission
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 05 Jun 2009 06:25:08.0802 (UTC) FILETIME=[5F99DA20:01C9E5A6]
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 05 Jun 2009 06:24:59 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please ignore this mail. Im just testing if my email client is working 
-fine. It is supposedly wrapping lines and converting tabs.
+Commit-ID:  ee7b31fe5c5da8a038b96e54ae9fbd5dcab3b1da
+Gitweb:     http://git.kernel.org/tip/ee7b31fe5c5da8a038b96e54ae9fbd5dcab3b1da
+Author:     Yong Wang <yong.y.wang@linux.intel.com>
+AuthorDate: Fri, 5 Jun 2009 11:37:35 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 5 Jun 2009 08:22:27 +0200
 
-Thanks,
-Pranith.
+perf_counter tools: Fix incorrect printf formats
 
-Signed-off-by: D Pranith Kumar <bobby.prani@gmail.com>
+Otherwise the code does not compile on 32-bit boxes.
 
-diff --git a/drivers/staging/otus/ioctl.c b/drivers/staging/otus/ioctl.c
-index ce04218..5e8bd94 100644
---- a/drivers/staging/otus/ioctl.c
-+++ b/drivers/staging/otus/ioctl.c
-@@ -2045,6 +2045,7 @@ int usbdrv_wpa_ioctl(struct net_device *dev, 
-struct athr_wlan_param *zdparm)
-     struct zsKeyInfo keyInfo;
-     struct usbdrv_private *macp = dev->ml_priv;
-     u16_t vapId = 0;
-+    int ii;
+builtin-report.c: In function 'map__fprintf':
+builtin-report.c:240: error: format '%lx' expects type 'long unsigned int', but argument 3 has type 'uint64_t'
+builtin-report.c:240: error: format '%lx' expects type 'long unsigned int', but argument 4 has type 'uint64_t'
+builtin-report.c:240: error: format '%lx' expects type 'long unsigned int', but argument 5 has type 'uint64_t'
+
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <20090605033735.GA20451@ywang-moblin2.bj.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ Documentation/perf_counter/builtin-report.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index 1a1028d..eb5424f 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -236,7 +236,7 @@ static int map__overlap(struct map *l, struct map *r)
  
-     /* zmw_get_wlan_dev(dev); */
- 
-@@ -2168,7 +2169,6 @@ int usbdrv_wpa_ioctl(struct net_device *dev, 
-struct athr_wlan_param *zdparm)
-         /* DUMP key context */
-         /* #ifdef WPA_DEBUG */
-         if (keyInfo.keyLength > 0) {
--            int ii;
-             printk(KERN_WARNING
-                         "Otus: Key Context:\n");
-             for (ii = 0; ii < keyInfo.keyLength; ) {
-@@ -2266,7 +2266,6 @@ int usbdrv_wpa_ioctl(struct net_device *dev, 
-struct athr_wlan_param *zdparm)
-         /* zfiWlanSetWpaIe(dev, zdparm->u.generic_elem.data,
-         * zdparm->u.generic_elem.len);
-         */
--        int ii;
-         u8_t len = zdparm->u.generic_elem.len;
-         u8_t *wpaie = (u8_t *)zdparm->u.generic_elem.data;
- 
-@@ -2401,7 +2400,7 @@ int usbdrv_ioctl(struct net_device *dev, struct 
-ifreq *ifr, int cmd)
-     struct athr_wlan_param zdparm;
-     struct usbdrv_private *macp = dev->ml_priv;
- 
--    int err = 0;
-+    int err = 0, val = 0;
-     int changed = 0;
- 
-     /* regp = macp->regp; */
-@@ -2445,7 +2444,7 @@ int usbdrv_ioctl(struct net_device *dev, struct 
-ifreq *ifr, int cmd)
-             err = -EPERM;
-             break;
-         }
--        int val = *((int *) wrq->u.name);
-+       val = *((int *) wrq->u.name);
-         if ((val < 0) || (val > 2)) {
-             err = -EINVAL;
-             break;
-diff --git a/drivers/staging/rt2860/common/ba_action.c 
-b/drivers/staging/rt2860/common/ba_action.c
-index 591d1e2..befd8bd 100644
---- a/drivers/staging/rt2860/common/ba_action.c
-+++ b/drivers/staging/rt2860/common/ba_action.c
-@@ -1512,7 +1512,7 @@ void 
-convert_reordering_packet_to_preAMSDU_or_802_3_packet(
-     RTPKT_TO_OSPKT(pRxPkt)->dev = get_netdev_from_bssid(pAd, 
-FromWhichBSSID);
-     RTPKT_TO_OSPKT(pRxPkt)->data = pRxBlk->pData;
-     RTPKT_TO_OSPKT(pRxPkt)->len = pRxBlk->DataSize;
--    RTPKT_TO_OSPKT(pRxPkt)->tail = RTPKT_TO_OSPKT(pRxPkt)->data + 
-RTPKT_TO_OSPKT(pRxPkt)->len;
-+    RTPKT_TO_OSPKT(pRxPkt)->tail = (UCHAR *) 
-(RTPKT_TO_OSPKT(pRxPkt)->data + RTPKT_TO_OSPKT(pRxPkt)->len);
- 
-     //
-     // copy 802.3 header, if necessary
-diff --git a/drivers/staging/rt2860/rt_linux.c 
-b/drivers/staging/rt2860/rt_linux.c
-index f3c128c..36ffb97 100644
---- a/drivers/staging/rt2860/rt_linux.c
-+++ b/drivers/staging/rt2860/rt_linux.c
-@@ -607,7 +607,7 @@ PNDIS_PACKET ClonePacket(
-         pClonedPkt->dev = pRxPkt->dev;
-         pClonedPkt->data = pData;
-         pClonedPkt->len = DataSize;
--        pClonedPkt->tail = pClonedPkt->data + pClonedPkt->len;
-+       pClonedPkt->tail = (UCHAR *) (pClonedPkt->data + pClonedPkt->len);
-         ASSERT(DataSize < 1530);
-     }
-     return pClonedPkt;
-@@ -629,7 +629,7 @@ void  update_os_packet_info(
-     pOSPkt->dev = get_netdev_from_bssid(pAd, FromWhichBSSID);
-     pOSPkt->data = pRxBlk->pData;
-     pOSPkt->len = pRxBlk->DataSize;
--    pOSPkt->tail = pOSPkt->data + pOSPkt->len;
-+    pOSPkt->tail = (UCHAR *) (pOSPkt->data + pOSPkt->len);
+ static size_t map__fprintf(struct map *self, FILE *fp)
+ {
+-	return fprintf(fp, " %lx-%lx %lx %s\n",
++	return fprintf(fp, " %"PRIx64"-%"PRIx64" %"PRIx64" %s\n",
+ 		       self->start, self->end, self->pgoff, self->dso->name);
  }
  
- 
-@@ -649,7 +649,7 @@ void wlan_802_11_to_802_3_packet(
-     pOSPkt->dev = get_netdev_from_bssid(pAd, FromWhichBSSID);
-     pOSPkt->data = pRxBlk->pData;
-     pOSPkt->len = pRxBlk->DataSize;
--    pOSPkt->tail = pOSPkt->data + pOSPkt->len;
-+    pOSPkt->tail = (UCHAR *) (pOSPkt->data + pOSPkt->len);
- 
-     //
-     // copy 802.3 header
-diff --git a/drivers/staging/slicoss/slicoss.c 
-b/drivers/staging/slicoss/slicoss.c
-index 6f5d0bf..43bdd9d 100644
---- a/drivers/staging/slicoss/slicoss.c
-+++ b/drivers/staging/slicoss/slicoss.c
-@@ -1872,7 +1872,7 @@ static int slic_card_download(struct adapter *adapter)
-     __iomem struct slic_regs *slic_regs = adapter->slic_regs;
-     u32 instruction;
-     u32 baseaddress;
--    u32 failure;
-+    /* u32 failure; */
-     u32 i;
-     u32 numsects = 0;
-     u32 sectsize[3];
-diff --git a/drivers/staging/sxg/sxg.c b/drivers/staging/sxg/sxg.c
-index 076b3f7..30bbf76 100644
---- a/drivers/staging/sxg/sxg.c
-+++ b/drivers/staging/sxg/sxg.c
-@@ -2150,7 +2150,7 @@ void sxg_set_interrupt_aggregation(struct 
-adapter_t *adapter)
- static int sxg_entry_open(struct net_device *dev)
- {
-     struct adapter_t *adapter = (struct adapter_t *) netdev_priv(dev);
--    int status;
-+    int status = STATUS_FAILURE;
-     static int turn;
-     int sxg_initial_rcv_data_buffers = SXG_INITIAL_RCV_DATA_BUFFERS;
-     int i;
