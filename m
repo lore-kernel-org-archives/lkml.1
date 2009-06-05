@@ -1,97 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753956AbZFEBKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbZFEBOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753956AbZFEBKb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 21:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZFEBKY
+	id S1753807AbZFEBOr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 21:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZFEBOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 21:10:24 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:39050 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbZFEBKY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 21:10:24 -0400
-Date: Fri, 5 Jun 2009 09:10:19 +0800
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH] remove memory.limit v.s. memsw.limit comparison.
-Message-ID: <20090605011019.GG7504@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090604141043.9a1064fd.kamezawa.hiroyu@jp.fujitsu.com> <20090604123625.GE7504@balbir.in.ibm.com> <0921392c77890fc84fa69653ae4f31d9.squirrel@webmail-b.css.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <0921392c77890fc84fa69653ae4f31d9.squirrel@webmail-b.css.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 4 Jun 2009 21:14:38 -0400
+Received: from mga09.intel.com ([134.134.136.24]:24627 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751576AbZFEBOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 21:14:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,307,1241420400"; 
+   d="scan'208";a="419030121"
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, tytso@mit.edu, chris.mason@oracle.com,
+       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
+       jack@suse.cz, richard@rsk.demon.co.uk, damien.wyart@free.fr
+In-Reply-To: <20090604152040.GA6007@nowhere>
+References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com>
+	 <20090604152040.GA6007@nowhere>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 05 Jun 2009 09:14:47 +0800
+Message-Id: <1244164487.2560.146.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-06-05 00:45:03]:
-
-> Balbir Singh wrote:
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-06-04
-> > 14:10:43]:
-> >
-> >> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> >>
-> >> Removes memory.limit < memsw.limit at setting limit check completely.
-> >>
-> >> The limitation "memory.limit <= memsw.limit" was added just because
-> >> it seems sane ...if memory.limit > memsw.limit, only memsw.limit works.
-> >>
-> >> But To implement this limitation, we needed to use private mutex and
-> >> make
-> >> the code a bit complated.
-> >> As Nishimura pointed out, in real world, there are people who only want
-> >> to use memsw.limit.
-> >>
-> >> Then, this patch removes the check. user-land library or middleware can
-> >> check
-> >> this in userland easily if this really concerns.
-> >>
-> >> And this is a good change to charge-and-reclaim.
-> >>
-> >> Now, memory.limit is always checked before memsw.limit
-> >> and it may do swap-out. But, if memory.limit == memsw.limit, swap-out is
-> >> finally no help and hits memsw.limit again. So, let's allow the
-> >> condition
-> >> memory.limit > memsw.limit. Then we can skip unnecesary swap-out.
-> >>
-> >> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> >> ---
-> >
-> > There is one other option, we could set memory.limit_in_bytes ==
-> > memory.memsw.limit_in_bytes provided it is set to LONG_LONG_MAX. I am
-> > not convinced that we should allow memsw.limit_in_bytes to be less
-> > that limit_in_bytes, it will create confusion and the API is already
-> > exposed.
-> >
-> Ahhhh, I get your point.
->  if memory.memsw.limit_in_bytes < memory.limit_in_bytes, no swap will
->  be used bacause currnet try_to_free_pages() for memcg skips swap-out.
->  Then, only global-LRU will use swap.
->  This behavior is not easy to understand.
+On Thu, 2009-06-04 at 17:20 +0200, Frederic Weisbecker wrote:
+> Hi,
 > 
-> Sorry, I don't push this patch as this is. But adding documentation about
-> "What happens when you set memory.limit == memsw.limit" will be necessary.
 > 
-> ...maybe give all jobs to user-land and keep the kernel as it is now
-> is a good choice.
+> On Thu, May 28, 2009 at 01:46:33PM +0200, Jens Axboe wrote:
+> > Hi,
+> > 
+> > Here's the 9th version of the writeback patches. Changes since v8:
 
-Yes, probably and with libcgroup and configuration, defaults should
-not be hard to setup. Worst case we can use a script to setup both the
-values.
+> I've just tested it on UP in a single disk.
+> 
+> I've run two parallels dbench tests on two partitions and
+> tried it with this patch and without.
+I also tested V9 with multiple-dbench workload by starting multiple
+dbench tasks and every task has 4 processes to do I/O on one partition (file
+system). Mostly I use JBODs which have 7/11/13 disks.
+
+I didn't find result regression between ﻿vanilla and V9 kernel on this workload.
 
 > 
-> BTW, I'd like to avoid useless swap-out in memory.limit == memsw.limit case.
-> If someone has good idea, please :(
->
+> I used 30 proc each during 600 secs.
+> 
+> You can see the result in attachment.
+> And also there:
+> 
+> http://kernel.org/pub/linux/kernel/people/frederic/dbench.pdf
+> http://kernel.org/pub/linux/kernel/people/frederic/bdi-writeback-hda1.log
+> http://kernel.org/pub/linux/kernel/people/frederic/bdi-writeback-hda3.log
+> http://kernel.org/pub/linux/kernel/people/frederic/pdflush-hda1.log
+> http://kernel.org/pub/linux/kernel/people/frederic/pdflush-hda3.log
+> 
+> 
+> As you can see, bdi writeback is faster than pdflush on hda1 and slower
+> on hda3. But, well that's not the point.
+> 
+> What I can observe here is the difference on the standard deviation
+> for the rate between two parallel writers on a same device (but
+> two different partitions, then superblocks).
+> 
+> With pdflush, the distributed rate is much better balanced than
+> with bdi writeback in a single device.
+> 
+> I'm not sure why. Is there something in these patches that makes
+> several bdi flusher threads for a same bdi not well balanced
+> between them?
+> 
+> Frederic.
 
-Are you seeing swap even with memory.limit == memory.memsw.limit? Only
-global pressure should cause swapout, no? 
-
--- 
-	Balbir
