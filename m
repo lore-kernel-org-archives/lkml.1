@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755351AbZFEGIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752786AbZFEGQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755351AbZFEGIR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 02:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZFEGIG
+	id S1752786AbZFEGQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 02:16:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZFEGQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 02:08:06 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:46942 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbZFEGIG (ORCPT
+	Fri, 5 Jun 2009 02:16:20 -0400
+Received: from relay1.mentorg.com ([192.94.38.131]:60150 "EHLO
+	relay1.mentorg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751032AbZFEGQU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 02:08:06 -0400
-Message-ID: <4A28B63E.1080004@oracle.com>
-Date: Fri, 05 Jun 2009 14:07:58 +0800
-From: Tao Ma <tao.ma@oracle.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 5 Jun 2009 02:16:20 -0400
+Message-ID: <4A28B81D.2070407@gmail.com>
+Date: Fri, 05 Jun 2009 11:45:57 +0530
+From: Pranith Kumar <pranith.hacks@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.0.12) Gecko/20070530 Red Hat/1.0.9-2.el4 SeaMonkey/1.0.9
 MIME-Version: 1.0
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64
- 2.6.30-rc8.
-References: <4A289928.7040508@oracle.com> <20090605054902.GF7962@cr0.nay.redhat.com>
-In-Reply-To: <20090605054902.GF7962@cr0.nay.redhat.com>
+To: Pranith Kumar <pranith.hacks@gmail.com>
+CC: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [TRIVIAL][PATCH 1/1] Fix warning in staging/otus/ioctl.c
+References: <430c80e90905290054n7416802cq7128394db5de036d@mail.gmail.com> <20090602214745.GB25921@kroah.com> <430c80e90906022349l6fa7a9b4lb73f0ab1980b3e63@mail.gmail.com> <20090603152152.GB25560@kroah.com> <4A27616C.6030802@gmail.com> <20090604175612.GB18605@kroah.com> <4A28A8BC.6090408@gmail.com>
+In-Reply-To: <4A28A8BC.6090408@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt002.oracle.com [141.146.116.11]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010207.4A28B643.0057:SCFSTAT5015188,ss=1,fgs=0
+X-OriginalArrivalTime: 05 Jun 2009 06:15:58.0117 (UTC) FILETIME=[175DFD50:01C9E5A5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Amerigo Wang wrote:
-> On Fri, Jun 05, 2009 at 12:03:52PM +0800, Tao Ma wrote:
->> Hi list,
->>       In 2.6.30-rc8, /proc/kcore in x86_64's size is unreasonable large  
->> to be 281474974617600.
->> While in a x86 box, it is 931131392 which looks sane.
+Pranith Kumar wrote:
+> Greg KH wrote:
+>> On Thu, Jun 04, 2009 at 11:23:48AM +0530, Pranith Kumar wrote:
+>> Nope, the patch is linewrapped and the whitespace is still messed up :(
 >>
->> [root@test8 ~]# ll /proc/kcore
->> -r-------- 1 root root 281474974617600 Jun  5 11:15 /proc/kcore
+>> Care to retry?
 >>
->> [root@ocfs2-test9 ~]$ ll /proc/kcore
->> -r-------- 1 root root 931131392 Jun  5 11:58 /proc/kcore
-> 
-> Hmm, what is your physical RAM size on test8?
-> /proc/kcore looks fine on my x86_64 box.
-Only 4G.
-> 
->> I just noticed this when kexec fails in "Can't find kernel text map area  
->> from kcore".
->>
->> Is there something wrong?
-> 
-> It looks like that error message is from userspace?
-I just started kdump and get the error message.
+>>   
+> +++ b/drivers/staging/otus/ioctl.c
+> @@ -2045,6 +2045,7 @@ int usbdrv_wpa_ioctl(struct net_device *dev, 
+> struct athr_wlan_param *zdparm)
 
-Regards,
-Tao
+just verified on lkml, still line wrapped. Please drop this patch.
+
+Thanks,
+Pranith
