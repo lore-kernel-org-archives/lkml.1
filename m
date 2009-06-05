@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbZFERZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbZFER2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755168AbZFERZI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 13:25:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbZFERY6
+	id S1755109AbZFER2N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 13:28:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbZFER17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 13:24:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39293 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751079AbZFERY5 (ORCPT
+	Fri, 5 Jun 2009 13:27:59 -0400
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:60918 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751960AbZFER16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 13:24:57 -0400
-Date: Fri, 5 Jun 2009 10:24:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com, mingo@elte.hu
-Subject: Re: [2.6.30-rc8] gcc 3.3 : __udivdi3 undefined.
-Message-Id: <20090605102440.58a6e443.akpm@linux-foundation.org>
-In-Reply-To: <20090605093725.GC23657@alberich.amd.com>
-References: <200906050038.n550c4Ja010907@www262.sakura.ne.jp>
-	<20090605023835.GA7933@cr0.nay.redhat.com>
-	<20090604201733.746928c6.akpm@linux-foundation.org>
-	<200906050339.n553d684048041@www262.sakura.ne.jp>
-	<20090604205103.bbfe9af2.akpm@linux-foundation.org>
-	<200906050400.n5540Sx0052981@www262.sakura.ne.jp>
-	<20090604212018.b9e9f354.akpm@linux-foundation.org>
-	<200906050651.n556p7Vo094549@www262.sakura.ne.jp>
-	<20090605000310.a5b8fa56.akpm@linux-foundation.org>
-	<20090605093725.GC23657@alberich.amd.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Jun 2009 13:27:58 -0400
+X-IronPort-AV: E=Sophos;i="4.41,312,1241395200"; 
+   d="scan'208";a="173123527"
+From: Roland Dreier <rdreier@cisco.com>
+To: lkml@MoreThan.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [Compile Warning] 2.6.30-rc8 build
+References: <200906051150.17889.lkml@morethan.org>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 05 Jun 2009 10:28:00 -0700
+In-Reply-To: <200906051150.17889.lkml@morethan.org> (Michael S. Zick's message
+	of "Fri, 5 Jun 2009 11:50:15 -0500")
+Message-ID: <ada1vpywpy7.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 05 Jun 2009 17:28:00.0663 (UTC) FILETIME=[F97A3A70:01C9E602]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Jun 2009 11:37:25 +0200 Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
 
-> On Fri, Jun 05, 2009 at 12:03:10AM -0700, Andrew Morton wrote:
-> > On Fri, 05 Jun 2009 15:51:07 +0900 Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp> wrote:
-> > 
-> > > >but I wonder why all those things are u64.  They all hold virtual
-> > > >addresses, don't they?  The code doesn't test highmem.  So shouldn't
-> > > >these all be unsigned longs?
-> > > memtest() in linux-2.6.29.4/arch/x86/mm/memtest.c is using "unsigned long".
-> > > 2.6.30 changed to use "u64" by some reason.
-> > 
-> > No reason, really.  "consistency". 
-> 
-> Yes, it was done that way for consistency.
-> See this thread
->   http://lkml.org/lkml/2009/2/13/166
-> 
-> > It made the code slower,
-> 
-> not measurable
-> 
-> > larger
-> 
-> slightly on 32-bit
-> 
-> > and, err, not compile.
-> 
-> Mea culpa.
-> 
-> Overlooked the 64-bit division.
-> Did test this with 4.[23].x compilers on 32-bit which didn't complain ...
-> 
-> I assume you are going to send your do_div() fix upstream?
-> 
+ > I can't argue with gcc on this one either:
+ > 
+ > drivers/scsi/sd.c: In function 'sd_read_capacity':
+ > drivers/scsi/sd.c:1451: warning: comparison is always false due to limited range of data type
+ > 
+ > It reads to my eyes as if the function can never
+ > select read_capacity_16 for very large devices.
 
-I deleted it, for it is lame.
+The code is:
 
-A better fix is to use the correct types.
+		if ((sizeof(sdkp->capacity) > 4) &&
+		    (sdkp->capacity > 0xffffffffULL)) {
+
+sdkp->capacity is a sector_t, and <linux/types.h> has:
+
+	#ifdef CONFIG_LBD
+	typedef u64 sector_t;
+	typedef u64 blkcnt_t;
+	#else
+	typedef unsigned long sector_t;
+	typedef unsigned long blkcnt_t;
+	#endif
+
+so if you don't set CONFIG_LBD on a 32-bit architecture, then you are
+correct that sd.c won't ever hit the READ_CAPACITY(16) case, and the
+kernel won't be able to handle large SCSI disks.
