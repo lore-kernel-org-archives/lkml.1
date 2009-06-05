@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbZFEDwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbZFEDyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754552AbZFEDwt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 23:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbZFEDwk
+	id S1754522AbZFEDyV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 23:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbZFEDyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 23:52:40 -0400
-Received: from mail.lang.hm ([64.81.33.126]:54879 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752255AbZFEDwk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 23:52:40 -0400
-Date: Thu, 4 Jun 2009 20:52:12 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: only a single core (out of 8) initialized
-In-Reply-To: <20090604202933.d7c24c3d.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0906042049230.11064@asgard>
-References: <alpine.DEB.1.10.0906041949030.7953@asgard> <20090604202933.d7c24c3d.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 4 Jun 2009 23:54:14 -0400
+Received: from mga07.intel.com ([143.182.124.22]:51241 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751202AbZFEDyO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 23:54:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,308,1241420400"; 
+   d="scan'208";a="150932551"
+Date: Fri, 5 Jun 2009 11:37:35 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH -tip] perf_counter tools: fix incorrect printf formats
+Message-ID: <20090605033735.GA20451@ywang-moblin2.bj.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 4 Jun 2009, Andrew Morton wrote:
+Otherwise the code does not compile on 32-bit boxes.
 
-> Subject: Re: only a single core (out of 8) initialized
-> 
-> On Thu, 4 Jun 2009 19:52:36 -0700 (PDT) david@lang.hm wrote:
->
->> this is 2.6.30-rc7
->
-> Were any earlier kernels OK?
->
->>  with a patch added to debug a nv sata driver
->> incompatibility with the Intel SSDs on a tyan motherboard
->>
->> on one system it sees all 8 cores, on the other system it only initializes
->> one core.
->>
->> can anyone help me spot what's going wrong in the one that's only seeing a
->> single core? If I'm reading things correctly it's seeing both sockets for
->> the NUMA setup, but then only initializing one core on the first socket.
->
-> good:
-> 	SMP: Allowing 8 CPUs, 4 hotplug CPUs
->
-> bad:
-> 	SMP: Allowing 1 CPUs, 0 hotplug CPUs
->
-> perhaps due to
-> 	ACPI: No APIC-table, disabling MPS
->
-> You could have a poke around in arch/x86/kernel/smpboot.c() and find
-> out what happened here.  I'd be suspecting this code triggered:
->
->        /* no processor from mptable or madt */
->        if (!num_processors)
->                num_processors = 1;
->
-> because ACPI doesn't like that board.
->
-> Did you look into updating the BIOS?
+builtin-report.c: In function 'map__fprintf':
+builtin-report.c:240: error: format '%lx' expects type 'long unsigned int', but argument 3 has type 'uint64_t'
+builtin-report.c:240: error: format '%lx' expects type 'long unsigned int', but argument 4 has type 'uint64_t'
+builtin-report.c:240: error: format '%lx' expects type 'long unsigned int', but argument 5 has type 'uint64_t'
 
-this is actually the newer of the two systems. I've already escalated up 
-to Tyan about the fact that this board won't see the Intel SSD drives 
-(unless you hotplug the drive). I've forwarded this to them as well. their 
-website does show a newer bios than what was shipped to me.
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
 
-David Lang
+---
+ builtin-report.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index 1a1028d..eb5424f 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -236,7 +236,7 @@ static int map__overlap(struct map *l, struct map *r)
+ 
+ static size_t map__fprintf(struct map *self, FILE *fp)
+ {
+-	return fprintf(fp, " %lx-%lx %lx %s\n",
++	return fprintf(fp, " %"PRIx64"-%"PRIx64" %"PRIx64" %s\n",
+ 		       self->start, self->end, self->pgoff, self->dso->name);
+ }
+ 
