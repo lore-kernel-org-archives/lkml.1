@@ -1,77 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbZFEIeD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbZFEIg3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755209AbZFEIeD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 04:34:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZFEIdp
+	id S1755667AbZFEIg3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 04:36:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZFEIgR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 04:33:45 -0400
-Received: from sh.osrg.net ([192.16.179.4]:52275 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751379AbZFEIdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 04:33:43 -0400
-Date: Fri, 5 Jun 2009 17:33:14 +0900
-To: mingo@elte.hu, lethal@linux-sh.org
-Cc: joerg.roedel@amd.com, just.for.lkml@googlemail.com, hancockrwd@gmail.com,
-       jens.axboe@oracle.com, bharrosh@panasas.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: [PATCH] dma-debug: disable DMA_API_DEBUG for now
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090605173232N.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 05 Jun 2009 17:33:15 +0900 (JST)
+	Fri, 5 Jun 2009 04:36:17 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:57170 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753393AbZFEIgO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 04:36:14 -0400
+Date: Fri, 5 Jun 2009 14:06:13 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH -tip v9 7/7] tracing: add kprobe-based event tracer
+Message-ID: <20090605083613.GC4164@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20090602003709.29255.48248.stgit@localhost.localdomain> <20090602003754.29255.37212.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090602003754.29255.37212.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dma-debugs wrongly assumes that no multiple DMA transfers are
-performed against the same dma address on one device at the same
-time. However it's true only with hardware IOMMUs. For example, an
-application can easily send the same buffer twice with different
-lengths to one device by using DIO and AIO. If these requests are not
-unmapped in the same order in which they were mapped,
-hash_bucket_find() finds a wrong entry and gives a false warning.
+On Mon, Jun 01, 2009 at 08:37:54PM -0400, Masami Hiramatsu wrote:
+> Add kprobes-based event tracer on ftrace.
+> 
+> This tracer is similar to the events tracer which is based on Tracepoint
+> infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
+> and kretprobe). It probes anywhere where kprobes can probe(this means, all
+> functions body except for __kprobes functions).
+> 
+> Similar to the events tracer, this tracer doesn't need to be activated via
+> current_tracer, instead of that, just set probe points via
+> /sys/kernel/debug/tracing/kprobe_events. And you can set filters on each
+> probe events via /sys/kernel/debug/tracing/events/kprobes/<EVENT>/filter.
+> 
+> This tracer supports following probe arguments for each probe.
+> 
+>   %REG  : Fetch register REG
+>   sN    : Fetch Nth entry of stack (N >= 0)
+>   @ADDR : Fetch memory at ADDR (ADDR should be in kernel)
+>   @SYM[+|-offs] : Fetch memory at SYM +|- offs (SYM should be a data symbol)
+>   aN    : Fetch function argument. (N >= 0)
+>   rv    : Fetch return value.
+>   ra    : Fetch return address.
+>   +|-offs(FETCHARG) : fetch memory at FETCHARG +|- offs address.
+> 
+> See Documentation/trace/kprobes.txt for details.
+> 
+> Changes from v8:
+>  - Fix wrong argument offsets in format.
+>  - Remove EVENT_TRACING selection in Kconfig.
+>  - Fix debugfs file path.
+> 
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Christoph Hellwig <hch@infradead.org>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Tom Zanussi <tzanussi@gmail.com>
 
-We should fix this before 2.6.30 release. Seems that there is no
-easy way to fix it. I think that it's better to just disable
-dma-debug for now.
+The kprobe usage look fine.
 
-Torsten Kaiser found this bug with the RAID1 configuration:
+Tested on x86 and works fine too! Great work, Masami.
 
-http://marc.info/?t=124336541900008&r=1&w=2
-
-Reported-by: Torsten Kaiser <just.for.lkml@googlemail.com>
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/sh/Kconfig  |    1 -
- arch/x86/Kconfig |    1 -
- 2 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
-index e7390dd..4fb19d7 100644
---- a/arch/sh/Kconfig
-+++ b/arch/sh/Kconfig
-@@ -14,7 +14,6 @@ config SUPERH
- 	select HAVE_GENERIC_DMA_COHERENT
- 	select HAVE_IOREMAP_PROT if MMU
- 	select HAVE_ARCH_TRACEHOOK
--	select HAVE_DMA_API_DEBUG
- 	help
- 	  The SuperH is a RISC processor targeted for use in embedded systems
- 	  and consumer electronics; it was also used in the Sega Dreamcast
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index a6efe0a..b3cf490 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -42,7 +42,6 @@ config X86
- 	select HAVE_GENERIC_DMA_COHERENT if X86_32
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS
- 	select USER_STACKTRACE_SUPPORT
--	select HAVE_DMA_API_DEBUG
- 	select HAVE_KERNEL_GZIP
- 	select HAVE_KERNEL_BZIP2
- 	select HAVE_KERNEL_LZMA
--- 
-1.6.0.6
-
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
