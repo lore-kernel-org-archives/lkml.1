@@ -1,118 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755679AbZFEJAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750745AbZFEJBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755679AbZFEJAv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 05:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZFEJAn
+	id S1750745AbZFEJBT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 05:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbZFEJBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 05:00:43 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:49611 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750745AbZFEJAm (ORCPT
+	Fri, 5 Jun 2009 05:01:07 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:19381 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755349AbZFEJBG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 05:00:42 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Harald Welte <HaraldWelte@viatech.com>
-Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
-Date: Fri, 5 Jun 2009 04:00:40 -0500
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906041532.57933.lkml@morethan.org> <200906042337.34073.lkml@morethan.org>
-In-Reply-To: <200906042337.34073.lkml@morethan.org>
+	Fri, 5 Jun 2009 05:01:06 -0400
+Message-ID: <4A28DECC.8040804@oracle.com>
+Date: Fri, 05 Jun 2009 17:01:00 +0800
+From: Tao Ma <tao.ma@oracle.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64
+ 2.6.30-rc8.
+References: <4A289928.7040508@oracle.com> <20090605054902.GF7962@cr0.nay.redhat.com> <4A28B63E.1080004@oracle.com> <20090605064316.GB8171@cr0.nay.redhat.com> <4A28C1A4.9050708@oracle.com> <20090605080019.GD8171@cr0.nay.redhat.com>
+In-Reply-To: <20090605080019.GD8171@cr0.nay.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906050400.42737.lkml@morethan.org>
+X-Source-IP: abhmt002.oracle.com [141.146.116.11]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010209.4A28DECF.0261:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu June 4 2009, Michael S. Zick wrote:
-> On Thu June 4 2009, Michael S. Zick wrote:
-> > On Thu June 4 2009, Michael S. Zick wrote:
-> > > On Thu June 4 2009, Michael S. Zick wrote:
-> > > > On Thu June 4 2009, Harald Welte wrote:
-> > > > > On Thu, Jun 04, 2009 at 11:21:28AM -0500, Michael S. Zick wrote:
-> > > > > 
-> > > > 
-> > > > @Linus - -
-> > > > The Debian/Ubuntu distribution kernels require irqpoll (2.6.28+) -
-> > > > I took that out very early in my testing, when that problem got fixed -
-> > > > I will also try putting that back in, it might be needed for
-> > > > some of its side-effects on the processor/chipset.
-> > > > 
-> > > 
-> > > It looks like I stopped using irqpoll on 4/10 (-rc1)
-> > > http://forum.netbookuser.com/viewtopic.php?pid=6708#p6708
-> > > 
-> > > Am re-testing the "virgin" kernel build with both command options now:
-> > > http://forum.netbookuser.com/viewtopic.php?pid=7037#p7037
-> > > 
-> > > Will post if it has less than 6 months of up-time.  ;)
-> > > 
-> > 
-> > About 6 months less than 6 months up-time ;)
-> > 
-> > 2.6.30-rc8 - no special cmd line options: 1h45m
-> > 2.6.30-rc8 - idle=poll irqpoll options: 1h08m
-> > 
-> 
-> 2.6.30-rc8-ce1200v-09155 - uptime: 5 hours+, still running.
-> Ship it.
-> 
-
-New record: 9h15m
-
-But that is bandaid'd enough I can stop with the Black Magic
-and Computer Voodoo - -
-
-Now just a matter of cutting each problem out of the herd
-and solving each of them. . .  ;)
-
-A likely first candidate is this USB driver with its 28Mbyte
-cry for help in the syslog file.
-
-Mike
-> Details:
-> http://forum.netbookuser.com/viewtopic.php?pid=7039#p7039
-> 
-> Mike
-> 
-> > Summary:
-> > Phooey!
-> > 
-> > Mike
-> > 
-> > > Mike
-> > > 
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > Please read the FAQ at  http://www.tux.org/lkml/
-> > > 
-> > > 
-> > 
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> > 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
 
 
+Amerigo Wang wrote:
+> On Fri, Jun 05, 2009 at 02:56:36PM +0800, Tao Ma wrote:
+>>
+>> Amerigo Wang wrote:
+>>> On Fri, Jun 05, 2009 at 02:07:58PM +0800, Tao Ma wrote:
+>>>> Amerigo Wang wrote:
+>>>>> On Fri, Jun 05, 2009 at 12:03:52PM +0800, Tao Ma wrote:
+>>>>>> Hi list,
+>>>>>>       In 2.6.30-rc8, /proc/kcore in x86_64's size is unreasonable 
+>>>>>> large  to be 281474974617600.
+>>>>>> While in a x86 box, it is 931131392 which looks sane.
+>>>>>>
+>>>>>> [root@test8 ~]# ll /proc/kcore
+>>>>>> -r-------- 1 root root 281474974617600 Jun  5 11:15 /proc/kcore
+>>>>>>
+>>>>>> [root@ocfs2-test9 ~]$ ll /proc/kcore
+>>>>>> -r-------- 1 root root 931131392 Jun  5 11:58 /proc/kcore
+>>>>> Hmm, what is your physical RAM size on test8?
+>>>>> /proc/kcore looks fine on my x86_64 box.
+>>>> Only 4G.
+>>> Hmm, my x86_box has 8G mem, the size of kcore looks much
+>>> saner than the above huge number, but it is still wrong
+>>> according to what the man page describes...
+>>>
+>>> Please do what Andrew said, it will be helpful.
+>>>
+>>>>>> I just noticed this when kexec fails in "Can't find kernel text 
+>>>>>> map area  from kcore".
+>>>>>>
+>>>>>> Is there something wrong?
+>>>>> It looks like that error message is from userspace?
+>>>> I just started kdump and get the error message.
+>>> IIRC, kdump should use /proc/vmcore, instead of /proc/kcore...
+>>> nothing related.
+>> in el5, when start kdump service it will do something like
+>> /sbin/kexec --args-linux -p '--command-line=ro root=LABEL=/ rhgb quiet  
+>> irqpoll maxcpus=1' --initrd=/boot/initrd-2.6.18-53.el5kdump.img  
+>> /boot/vmlinuz-2.6.18-53.el5
+>>
+>> And the error message is from there.
+> 
+>>From /sbin/kexec? I just checked the source code of kexec-tools,
+> I haven't found that message...
+No, it is there.
+See kexec-tools-1.101-reloc-update.patch.
+src rpm is kexec-tools-1.101-194.4.el5.src.rpm. So it is a patch from el5.
+
+Regards,
+Tao
