@@ -1,92 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZFEDcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbZFEDfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754978AbZFEDcQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 23:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbZFEDcA
+	id S1754492AbZFEDfp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 23:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbZFEDfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 23:32:00 -0400
-Received: from ishtar.tlinx.org ([64.81.245.74]:40778 "EHLO Ishtar.tlinx.org"
+	Thu, 4 Jun 2009 23:35:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44515 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753431AbZFEDcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 23:32:00 -0400
-X-Greylist: delayed 554 seconds by postgrey-1.27 at vger.kernel.org; Thu, 04 Jun 2009 23:32:00 EDT
-Message-ID: <4A288F85.6010809@tlinx.org>
-Date: Thu, 04 Jun 2009 20:22:45 -0700
-From: Linda Walsh <lkml@tlinx.org>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	id S1752247AbZFEDff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 23:35:35 -0400
+Message-ID: <4A28921C.6010802@redhat.com>
+Date: Fri, 05 Jun 2009 06:33:48 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: ionice priority "none: prio 0" v. "none: prio 1" v. best-effort v.
- idle?
-X-Stationery: 0.4.8.14
+To: bharata@linux.vnet.ibm.com
+CC: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelyanov <xemul@openvz.org>, kvm@vger.kernel.org,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Herbert Poetzl <herbert@13thfloor.at>
+Subject: Re: [RFC] CPU hard limits
+References: <20090604053649.GA3701@in.ibm.com> <4A27BBCA.5020606@redhat.com> <20090605030309.GA3872@in.ibm.com>
+In-Reply-To: <20090605030309.GA3872@in.ibm.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<-- vim: se sts=4 sw=4 ts=8 nosi sc ai: /--> I was looking at the output 
-of ionice on the various processes
-running.
+Bharata B Rao wrote:
+>> Another way is to place the 8 groups in a container group, and limit  
+>> that to 80%. But that doesn't work if I want to provide guarantees to  
+>> several groups.
+>>     
+>
+> Hmm why not ? Reduce the guarantee of the container group and provide
+> the same to additional groups ?
+>   
 
-Other than one I set for 'best-effort' (-c2), the rest all had
-priorities of
-    1) "none: prio 0"
-OR
-    2) "none: prio 4"
+This method produces suboptimal results:
 
-Out of 183 process:
+$ cgroup-limits 10 10 0
+[50.0, 50.0, 40.0]
 
-  79 had "none: prio 0"   and
-103 had "none: prio 4"
-(1 had "best effort, prio 4").
+I want to provide two 10% guaranteed groups and one best-effort group.  
+Using the limits method, no group can now use more than 50% of the 
+resources.  However, having the first group use 90% of the resources 
+does not violate any guarantees, but it not allowed by the solution.
 
-Where does priority class  'none' fit in?  above or below 'idle'?
+#!/usr/bin/python
 
-Or is 'none' equal to 'best effort' (which is logical in once sense, but
-strictly, I could argue 'none' is at least below 'best effort', and possibly
-below idle, as 'idle' at least has been assigned a scheduling priority
-(vs. processes that have not -- BUT, but definition, idle is clearly meant
-to be lower precedence, so that would argue, logically, that 'none' is
-above idle and below 'best_effort' (since processes with no assigned
-priority would logically be below those assigned as 'best effort'.
+def calculate_limits(g, R):
+    N = len(g)
+    if N == 1:
+        return [R]
 
-Within 'besteffort', 0=high, and 7=low.
+    s = sum([R - gi for gi in g])
+    return [(s - (R - gi) - (N - 2) * (R - gi)) / (N - 1)
+            for gi in g]
 
-Is the same true in 'none', or are the values 'meaningless'?
-(In which case, why do they all exist at either 4 or 0?)
+import sys
+print calculate_limits([float(x) for x in sys.argv[1:]], 100)
 
-Since the iopriority DOES NOT correlate with either
-the cpu priority nor 'nice' value, then how are different
-processes assigned different priority values? 
-
-They *seem* to be mostly fixed, but very rarely I'll see maybe
-1 process toggle from 0 to 4 or back (but its usually fixed).
-
-So why is everything in the 'none' class at either "highest level" (prio
-0), OR the mid level of prio=4?  Um...found exception on a 32-bit i386
-based kernel, all prio's are "none: prio 0". But two different x86_64 bit
-kernels have "a split", majority in none:prio 4, and a minority of
-25-44% in 'none:prio 4'.
-
-I'm using the cfq scheduler on all 3 machines.
-
-So what is it with 'schedclass'=none?  Is it lower than 'best effort'?  
-(I'd hope so, or like to see it that way, but wants are nice...:-))...
-
-If they *ARE* the same, why are 44% running at highest priority
-(regardless of cpu prio, 'nice' value, user-id, and the rest at 'mid')?
-
-Why so random, but worse, why put any at 'highest' (unless they
-ask for it).  Wouldn't 'mid' priority be consistent with 'mid-cpu-nice' 
-value of 0 (out of +/-19)?
-
-FWIW -- I thought once the priorities varied dynamically based on
-cpu-nice levels (for cfq, anyway)...it would be VERY nice to see that
-reflected in the readable ionice data for those processes.
-
-Thanks for clarification/enlightenment...
-Linda
-
-
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
