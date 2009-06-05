@@ -1,113 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbZFET5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754367AbZFET7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753854AbZFET5j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 15:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbZFET5b
+	id S1754367AbZFET7Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 15:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbZFET7C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 15:57:31 -0400
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:43098 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751328AbZFET5a convert rfc822-to-8bit (ORCPT
+	Fri, 5 Jun 2009 15:59:02 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:47915 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751814AbZFET7A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 15:57:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=JbQrD5Kv/K+aSkKGdGX7K7+7OjNG2ubwTDTe/u8VmI0HgDS+2DjEvQy1Fuw3i7xwQr
-         5YS+9EXaCN4jaj8ZAwYJ9uOTCkSPKxqOoFCOugZXdRou5d7Hc9zNbD0YWcJffSQcgYtt
-         iM1FZHZEkDlO9zGASMo+/6nNapIybVDY+W5zM=
-MIME-Version: 1.0
-In-Reply-To: <4A29723C.2030102@suse.com>
-References: <1242496922-6330-1-git-send-email-fweisbec@gmail.com>
-	 <1242496922-6330-2-git-send-email-fweisbec@gmail.com>
-	 <9b1675090905292005p2b53de7dy9e36f84368d76f01@mail.gmail.com>
-	 <4A296343.4050005@suse.com>
-	 <9b1675090906051206we136e88k6a14194963726709@mail.gmail.com>
-	 <4A29723C.2030102@suse.com>
-Date: Fri, 5 Jun 2009 13:57:32 -0600
-Message-ID: <9b1675090906051257t5aad47capccfcf1c94f863a66@mail.gmail.com>
-Subject: Re: [PATCH 1/2] kill-the-bkl/reiserfs: acquire the inode mutex safely
-From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-To: Jeff Mahoney <jeffm@suse.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Reiserfs <reiserfs-devel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Alexander Beregalov <a.beregalov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 5 Jun 2009 15:59:00 -0400
+X-Amavis-Alert: BAD HEADER, Header field occurs more than once: "Cc" occurs 4
+	times
+Message-Id: <20090605191850.822207200@gentwo.org>
+References: <20090605191819.376530498@gentwo.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 05 Jun 2009 15:18:22 -0400
+From: cl@linux-foundation.org
+To: linux-kernel@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>
+Cc: mingo@elte.hu
+Cc: rusty@rustcorp.com.au
+Cc: davem@davemloft.net
+Subject: [this_cpu_xx 03/11] Use this_cpu operations for NFS statistics
+Content-Disposition: inline; filename=this_cpu_nfs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'll see if I can try that this weekend.
+Simplify NFS statistics and allow the use of optimized
+arch instructions.
 
-Thanks.
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-On Fri, Jun 5, 2009 at 1:30 PM, Jeff Mahoney<jeffm@suse.com> wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> Trenton D. Adams wrote:
->> FYI: I never did anything specific that I knew of, so I didn't
->> actually notice a delay.  I was rsyncing to a USB key at the time.
->> And seeing it took over an hour, I walked away, so I wouldn't have
->> noticed it.  But, I could fiddle around a little to see if I could get
->> some sort of delay going on.  Any ideas on what I should try?  Then I
->> can do the sysreq+t for you if I can reproduce.
->
-> Well if the rsync triggered it, that's a good start.
->
-> Try applying the following patch as well. It will cause the hung task detector
-> to do a sysrq+t automatically so it's not as much of a guessing game. You'll need to boot with
-> hung_task_show_state=1.
->
-> - -Jeff
->
-> - ---
->  kernel/hung_task.c |   11 +++++++++++
->  1 file changed, 11 insertions(+)
->
-> - --- a/kernel/hung_task.c
-> +++ b/kernel/hung_task.c
-> @@ -56,6 +56,14 @@ static int __init hung_task_panic_setup(
->  }
->  __setup("hung_task_panic=", hung_task_panic_setup);
->
-> +unsigned int __read_mostly sysctl_hung_task_show_state;
-> +static int __init hung_task_show_state_setup(char *str)
-> +{
-> +       sysctl_hung_task_show_state = simple_strtoul(str, NULL, 0);
-> +       return 1;
-> +}
-> +__setup("hung_task_show_state=", hung_task_show_state_setup);
-> +
->  static int
->  hung_task_panic(struct notifier_block *this, unsigned long event, void *ptr)
->  {
-> @@ -102,6 +110,9 @@ static void check_hung_task(struct task_
->
->        touch_nmi_watchdog();
->
-> +       if (sysctl_hung_task_show_state)
-> +               show_state();
-> +
->        if (sysctl_hung_task_panic)
->                panic("hung_task: blocked tasks");
->  }
->
-> - --
-> Jeff Mahoney
-> SUSE Labs
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v2.0.9 (GNU/Linux)
-> Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
->
-> iEYEARECAAYFAkopcjwACgkQLPWxlyuTD7IEdgCfVVzIL/DA0stfnYEW6aixFwxM
-> qIEAnjJjyn6HQAbVIicRYzvNcGvPwbiq
-> =z8Pn
-> -----END PGP SIGNATURE-----
->
+---
+ fs/nfs/iostat.h |   30 +++++++++---------------------
+ 1 file changed, 9 insertions(+), 21 deletions(-)
+
+Index: linux-2.6/fs/nfs/iostat.h
+===================================================================
+--- linux-2.6.orig/fs/nfs/iostat.h	2009-06-04 17:40:55.000000000 -0500
++++ linux-2.6/fs/nfs/iostat.h	2009-06-05 12:51:54.000000000 -0500
+@@ -25,13 +25,7 @@ struct nfs_iostats {
+ static inline void nfs_inc_server_stats(const struct nfs_server *server,
+ 					enum nfs_stat_eventcounters stat)
+ {
+-	struct nfs_iostats *iostats;
+-	int cpu;
+-
+-	cpu = get_cpu();
+-	iostats = per_cpu_ptr(server->io_stats, cpu);
+-	iostats->events[stat]++;
+-	put_cpu_no_resched();
++	this_cpu_inc(server->io_stats->events[stat]);
+ }
+ 
+ static inline void nfs_inc_stats(const struct inode *inode,
+@@ -44,13 +38,13 @@ static inline void nfs_add_server_stats(
+ 					enum nfs_stat_bytecounters stat,
+ 					unsigned long addend)
+ {
+-	struct nfs_iostats *iostats;
+-	int cpu;
+-
+-	cpu = get_cpu();
+-	iostats = per_cpu_ptr(server->io_stats, cpu);
+-	iostats->bytes[stat] += addend;
+-	put_cpu_no_resched();
++	/*
++	 * bytes is larger than word size on 32 bit platforms.
++	 * Thus we cannot use this_cpu_add() here.
++	 */
++	preempt_disable();
++	*this_cpu_ptr(&server->io_stats->bytes[stat]) +=  addend;
++	preempt_enable_no_resched();
+ }
+ 
+ static inline void nfs_add_stats(const struct inode *inode,
+@@ -65,13 +59,7 @@ static inline void nfs_add_fscache_stats
+ 					 enum nfs_stat_fscachecounters stat,
+ 					 unsigned long addend)
+ {
+-	struct nfs_iostats *iostats;
+-	int cpu;
+-
+-	cpu = get_cpu();
+-	iostats = per_cpu_ptr(NFS_SERVER(inode)->io_stats, cpu);
+-	iostats->fscache[stat] += addend;
+-	put_cpu_no_resched();
++	this_cpu_add(NFS_SERVER(inode)->io_stats->fscache[stat], addend);
+ }
+ #endif
+ 
+
+-- 
