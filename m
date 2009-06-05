@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093AbZFEUQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbZFEUU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752093AbZFEUQq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 16:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbZFEUQi
+	id S1753892AbZFEUU4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 16:20:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbZFEUUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 16:16:38 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53324 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750876AbZFEUQh (ORCPT
+	Fri, 5 Jun 2009 16:20:49 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:40801 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018AbZFEUUs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 16:16:37 -0400
-Date: Fri, 5 Jun 2009 21:16:47 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata fixes
-Message-ID: <20090605211647.2f118a5c@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090605184608.GA29250@havoc.gtf.org>
-References: <20090605184608.GA29250@havoc.gtf.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Jun 2009 16:20:48 -0400
+Date: Fri, 5 Jun 2009 16:17:52 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+cc: Sam Ravnborg <sam@ravnborg.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Catalin Marinas <catalin.marinas@arm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH 1/6] headers_check fix: arm, hwcap.h
+In-Reply-To: <20090605201001.GA17085@flint.arm.linux.org.uk>
+Message-ID: <alpine.LFD.2.00.0906051616001.5200@localhost.localdomain>
+References: <1244118232.5172.26.camel@ht.satnam> <1244118476.5172.29.camel@ht.satnam> <20090604125306.GC24491@flint.arm.linux.org.uk> <20090604201649.GC13892@uranus.ravnborg.org> <20090605201001.GA17085@flint.arm.linux.org.uk>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Jun 2009 14:46:08 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+On Fri, 5 Jun 2009, Russell King wrote:
 
-> 
-> Please pull from 'upstream-linus' branch of
-> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+> On Thu, Jun 04, 2009 at 10:16:49PM +0200, Sam Ravnborg wrote:
+> > On Thu, Jun 04, 2009 at 01:53:07PM +0100, Russell King wrote:
+> > > On Thu, Jun 04, 2009 at 05:57:56PM +0530, Jaswinder Singh Rajput wrote:
+> > > > fix the following 'make headers_check' warning:
+> > >
+> > > I think headers_check needs fixing - there's nothing wrong with the
+> > > code as it presently stands except the tools obviously can't properly
+> > > parse C preprocessor statements.
+> >
+> > You are correct that headers_ceck is limited here and this patch
+> > take some valid code and refactor it to make it headers_check compatible.
+>
+> If it is just a matter of unifdef not doing the right thing, then
+> that's a bug in unifdef - looking at the code, it _should_ handle
+> the case as it's currently in the tree.
 
-Missing
+  the current version of unifdef, as it stands, has some weaknesses.
+there's a newer version -- sunifdef -- that appears to be more robust
+and ruthless when it comes to cleaning.  just an observation.
 
-    libata: Use IGN_SIMPLEX for ALi
+http://www.sunifdef.strudl.org/
 
-which you said you'd kick upstream and without which lots of ALi users
-now get no DMA on half their devices due to PM changes.
+rday
+--
 
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
