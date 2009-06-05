@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752753AbZFEUOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093AbZFEUQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752753AbZFEUOS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 16:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZFEUOL
+	id S1752093AbZFEUQq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 16:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751247AbZFEUQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 16:14:11 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53320 "EHLO
+	Fri, 5 Jun 2009 16:16:38 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53324 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751960AbZFEUOL (ORCPT
+	with ESMTP id S1750876AbZFEUQh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 16:14:11 -0400
-Date: Fri, 5 Jun 2009 21:15:20 +0100
+	Fri, 5 Jun 2009 16:16:37 -0400
+Date: Fri, 5 Jun 2009 21:16:47 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Yunpeng Gao <yunpeng.gao@intel.com>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: Tree for June 3 (staging)
-Message-ID: <20090605211520.5846fbb8@lxorguk.ukuu.org.uk>
-In-Reply-To: <200906052045.49610.bzolnier@gmail.com>
-References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au>
-	<20090603231152.GA18701@suse.de>
-	<20090604232610.GA16053@intel.com>
-	<200906052045.49610.bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata fixes
+Message-ID: <20090605211647.2f118a5c@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090605184608.GA29250@havoc.gtf.org>
+References: <20090605184608.GA29250@havoc.gtf.org>
 X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,12 +28,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +menuconfig MRST_NAND
-> > +	tristate "Moorestown NAND Flash controller"
-> > +	depends on BLOCK
-> > +	default m
-> 
-> New drivers shouldn't be enabled by default.
+On Fri, 5 Jun 2009 14:46:08 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
 
-I think that rather depends on the driver - in this case I'd tend to
-agree as its not a common standard PC driver.
+> 
+> Please pull from 'upstream-linus' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+
+Missing
+
+    libata: Use IGN_SIMPLEX for ALi
+
+which you said you'd kick upstream and without which lots of ALi users
+now get no DMA on half their devices due to PM changes.
+
