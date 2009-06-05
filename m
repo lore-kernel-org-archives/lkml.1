@@ -1,112 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753082AbZFEMoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbZFEMof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753082AbZFEMoW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 08:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbZFEMoF
+	id S1754096AbZFEMof (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 08:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZFEMoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 08:44:05 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51399 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752743AbZFEMoE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 08:44:04 -0400
-Subject: Re: [PATCH] eeepc-laptop: enable camera by default
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Corentin Chary <corentin.chary@gmail.com>
-Cc: acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <71cd59b00906050446g7310d24el94f0d137dc0e0ecf@mail.gmail.com>
-References: <Pine.LNX.4.64.0906051157460.22218@melkki.cs.Helsinki.FI>
-	 <71cd59b00906050446g7310d24el94f0d137dc0e0ecf@mail.gmail.com>
-Date: Fri, 05 Jun 2009 15:44:04 +0300
-Message-Id: <1244205844.23533.21.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Fri, 5 Jun 2009 08:44:25 -0400
+Received: from wa4ehsobe004.messaging.microsoft.com ([216.32.181.14]:10748
+	"EHLO WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751345AbZFEMoY convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 08:44:24 -0400
+X-SpamScore: -27
+X-BigFish: VPS-27(zz1418M1432R98dR1805Mzz1202hzzz32i6bh17ch43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KKRNDN-04-35T-01
+Date: Fri, 5 Jun 2009 14:44:12 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: torvalds@linux-foundation.org, mingo@elte.hu, lethal@linux-sh.org,
+       just.for.lkml@googlemail.com, hancockrwd@gmail.com,
+       jens.axboe@oracle.com, bharrosh@panasas.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
+Message-ID: <20090605124412.GF24836@amd.com>
+References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp> <20090605104132.GE24836@amd.com> <20090605203753K.fujita.tomonori@lab.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <20090605203753K.fujita.tomonori@lab.ntt.co.jp>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 05 Jun 2009 12:44:12.0783 (UTC) FILETIME=[5411EFF0:01C9E5DB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Corentin,
+On Fri, Jun 05, 2009 at 08:38:22PM +0900, FUJITA Tomonori wrote:
+> On Fri, 5 Jun 2009 12:41:33 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-On Fri, 2009-06-05 at 13:46 +0200, Corentin Chary wrote:
-> First, I think a one line
-> set_acpi(CM_ASL_CAMERA, 1);
-> with a small comment is better. (If it fails, it's because there no
-> camera, so we don't mind).
+> I thought about something like this fix however we can do better; with
+> this fix, we could overlook a bad hardware IOMMU bug.
 
-OK, I've included an updated version of the patch.
+I don't buy this yet. Can you explain what kind of hardware IOMMU bug we
+can miss here? For the match in my patch it is still strictly necessary
+that the dma address matches.
 
-On Fri, 2009-06-05 at 13:46 +0200, Corentin Chary wrote:
-> Anyway, I'm not sure it's a good idea to enable the camera by default.
-> It depends how many power the camera is using (when idle). Coud you
-> check that (with power top maybe ?).
+> I think that the better fix can handle both cases per device:
+> 
+> - multiple identical dma addresses should not happen (with devices
+>   behind hardware IOMMU)
+> - multiple identical dma addresses could happen
+> 
+> 
+> It's better to use a strict-fit algorithm (as we do now) with the
+> former. It's pretty difficult to do something better than a best-fit
+> algorithm with the latter though.
 
-People who prefer power savings over functional camera can always
-disable it. If you look at the amount of "my camera doesn't" work bug
-reports, I think it's pretty evident that we should enable it by default
-or provide a config option that does it.
+When we understand the same under 'strict-fit' this will not work I
+think. The idea behind dma-debug is to find the cases where the
+dma_unmap parameters are not equal to the dma_map parameters. If we use
+strict-fit we risk to oversee some sets of these cases because there is
+no dma_debug_entry which strictly matches the reference value.
 
-That said, I am more than happy to measure this but I need a little bit
-more information to get started as I have never used powertop. So what
-is it exactly you want me to do?
+Regards,
 
-			Pekka
+Joerg
 
->From 8a0abd12147c18e8cbc939134af5ae40b44300f0 Mon Sep 17 00:00:00 2001
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-Date: Fri, 5 Jun 2009 11:30:07 +0300
-Subject: [PATCH] eeepc-laptop: enable camera by default
 
-If we leave the camera disabled by default, userspace programs (e.g.
-Skype, Cheese) leave the user out in the cold saying that the machine
-"has no camera." Therefore, it's better to enable camera by default and
-let people who really don't want it just disable the thing.
-
-Cc: <acpi4asus-user@lists.sourceforge.net>
-Cc: Len Brown <len.brown@intel.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- drivers/platform/x86/eeepc-laptop.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
-index 353a898..6a8426f 100644
---- a/drivers/platform/x86/eeepc-laptop.c
-+++ b/drivers/platform/x86/eeepc-laptop.c
-@@ -334,6 +334,19 @@ static int eeepc_bluetooth_rfkill_state(void *data, enum rfkill_state *state)
- }
- 
- /*
-+ * Camera helpers
-+ */
-+
-+static void eeepc_enable_camera(void)
-+{
-+	/*
-+	 * If the following call to set_acpi() fails, it's because there's no
-+	 * camera so we can ignore the error.
-+	 */
-+	set_acpi(CM_ASL_CAMERA, 1);
-+}
-+
-+/*
-  * Sys helpers
-  */
- static int parse_arg(const char *buf, unsigned long count, int *val)
-@@ -996,6 +1009,9 @@ static int __init eeepc_laptop_init(void)
- 	result = eeepc_hwmon_init(dev);
- 	if (result)
- 		goto fail_hwmon;
-+
-+	eeepc_enable_camera();
-+
- 	/* Register platform stuff */
- 	result = platform_driver_register(&platform_driver);
- 	if (result)
 -- 
-1.5.6.3
-
-
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
