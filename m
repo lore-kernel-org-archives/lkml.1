@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZFEXqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbZFEXqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbZFEXqT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 19:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755534AbZFEXlp
+	id S1757311AbZFEXqn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 19:46:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756154AbZFEXlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 19:41:45 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:36412 "EHLO
+	Fri, 5 Jun 2009 19:41:47 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:36428 "EHLO
 	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755633AbZFEXlN (ORCPT
+	with ESMTP id S1755586AbZFEXlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 5 Jun 2009 19:41:13 -0400
 From: Sam Ravnborg <sam@ravnborg.org>
 To: linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
-Cc: Sergei Poselenov <sposelenov@emcraft.com>, Wolfgang Denk <wd@denx.de>,
+Cc: Markus Heidelberg <markus.heidelberg@web.de>,
        Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 39/39] kbuild: fix "Argument list too long" error for "make headers_check",
-Date: Sat,  6 Jun 2009 01:42:57 +0200
-Message-Id: <1244245377-17441-39-git-send-email-sam@ravnborg.org>
+Subject: [PATCH 31/39] kconfig: do not hardcode ".config" filename
+Date: Sat,  6 Jun 2009 01:42:49 +0200
+Message-Id: <1244245377-17441-31-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.6.3.rc3.40.g75b44
 In-Reply-To: <20090605233720.GA13588@uranus.ravnborg.org>
 References: <20090605233720.GA13588@uranus.ravnborg.org>
@@ -25,59 +25,66 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sergei Poselenov <sposelenov@emcraft.com>
+From: Markus Heidelberg <markus.heidelberg@web.de>
 
-I'm trying to install kernel headers to build a cross-toolchain, but got
-the following:
+Rather than hardcoding ".config" use conf_get_configname(), which also
+respects the environment variable KCONFIG_CONFIG.
 
-make ARCH=arm
-INSTALL_HDR_PATH=/work/psl/eldk-builds/arm-2009-04-21/work/var/tmp/crosstool-0.43-3-root/usr/crosstool/gcc-4.2.2-glibc-20070515T2025-eldk/
-+arm-linux-gnueabi/arm-linux-gnueabi/
-headers_check
-...
-  CHECK   include/linux/raid (2 files)
-  CHECK   include/linux/spi (1 files)
-  CHECK   include/linux/sunrpc (1 files)
-  CHECK   include/linux/tc_act (6 files)
-  CHECK   include/linux/tc_ematch (4 files)
-  CHECK   include/linux/usb (8 files)
-make[2]: execvp: /bin/sh: Argument list too long
-make[2]: ***
-[/work/psl/eldk-builds/arm-2009-04-21/work/var/tmp/crosstool-0.43-3-root/usr/crosstool/gcc-4.2.2-glibc-20070515T2025-eldk/arm-linux-gnueab
-+i/arm-linux-gnueabi//include/linux/.check]
-Error 127
-make[1]: *** [linux] Error 2
-make: *** [headers_check] Error 2
-->
+This fixes "make silentoldconfig" when KCONFIG_CONFIG is used and also
+suggests the given filename for "Load" and "Save as" in qconf.
 
-Introduce use of xargs to fix this.
-
-Signed-off-by: Sergei Poselenov <sposelenov@emcraft.com>
-Cc: Wolfgang Denk <wd@denx.de>
+Signed-off-by: Markus Heidelberg <markus.heidelberg@web.de>
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/Makefile.headersinst |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+ scripts/kconfig/conf.c   |    7 ++++---
+ scripts/kconfig/qconf.cc |    4 ++--
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
-index 095cfc8..0fcd838 100644
---- a/scripts/Makefile.headersinst
-+++ b/scripts/Makefile.headersinst
-@@ -54,8 +54,12 @@ quiet_cmd_remove = REMOVE  $(unwanted)
-       cmd_remove = rm -f $(unwanted-file)
+diff --git a/scripts/kconfig/conf.c b/scripts/kconfig/conf.c
+index d190092..3baaaec 100644
+--- a/scripts/kconfig/conf.c
++++ b/scripts/kconfig/conf.c
+@@ -498,14 +498,15 @@ int main(int ac, char **av)
+ 	conf_parse(name);
+ 	//zconfdump(stdout);
+ 	if (sync_kconfig) {
+-		if (stat(".config", &tmpstat)) {
++		name = conf_get_configname();
++		if (stat(name, &tmpstat)) {
+ 			fprintf(stderr, _("***\n"
+ 				"*** You have not yet configured your kernel!\n"
+-				"*** (missing kernel .config file)\n"
++				"*** (missing kernel config file \"%s\")\n"
+ 				"***\n"
+ 				"*** Please run some configurator (e.g. \"make oldconfig\" or\n"
+ 				"*** \"make menuconfig\" or \"make xconfig\").\n"
+-				"***\n"));
++				"***\n"), name);
+ 			exit(1);
+ 		}
+ 	}
+diff --git a/scripts/kconfig/qconf.cc b/scripts/kconfig/qconf.cc
+index 19811fc..ce7d508 100644
+--- a/scripts/kconfig/qconf.cc
++++ b/scripts/kconfig/qconf.cc
+@@ -1448,7 +1448,7 @@ ConfigMainWindow::ConfigMainWindow(void)
  
- quiet_cmd_check = CHECK   $(printdir) ($(words $(all-files)) files)
--      cmd_check = $(PERL) $< $(INSTALL_HDR_PATH)/include $(SRCARCH) \
--                  $(addprefix $(install)/, $(all-files));           \
-+# Headers list can be pretty long, xargs helps to avoid
-+# the "Argument list too long" error.
-+      cmd_check = for f in $(all-files); do                          \
-+                  echo "$(install)/$${f}"; done                      \
-+                  | xargs                                            \
-+                  $(PERL) $< $(INSTALL_HDR_PATH)/include $(SRCARCH); \
- 	          touch $@
+ void ConfigMainWindow::loadConfig(void)
+ {
+-	QString s = QFileDialog::getOpenFileName(".config", NULL, this);
++	QString s = QFileDialog::getOpenFileName(conf_get_configname(), NULL, this);
+ 	if (s.isNull())
+ 		return;
+ 	if (conf_read(QFile::encodeName(s)))
+@@ -1464,7 +1464,7 @@ void ConfigMainWindow::saveConfig(void)
  
- PHONY += __headersinst __headerscheck
+ void ConfigMainWindow::saveConfigAs(void)
+ {
+-	QString s = QFileDialog::getSaveFileName(".config", NULL, this);
++	QString s = QFileDialog::getSaveFileName(conf_get_configname(), NULL, this);
+ 	if (s.isNull())
+ 		return;
+ 	if (conf_write(QFile::encodeName(s)))
 -- 
 1.6.3.rc3.40.g75b44
 
