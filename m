@@ -1,79 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752628AbZFEPl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbZFEPpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752628AbZFEPl7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 11:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbZFEPlt
+	id S1752767AbZFEPpb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 11:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbZFEPpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 11:41:49 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:38295 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbZFEPls (ORCPT
+	Fri, 5 Jun 2009 11:45:23 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:4072 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751165AbZFEPpX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 11:41:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ot8KMbMXsxElAP11CoSvjrsf9u21zZ1XnPLr81BgXRBPcfXiXH+bJ6YnMHnw5SeliT
-         2Mc5BVUGWjOYKH0ICGfGl7HoWhV91XwewAWfKTKBj5zw4+OljM90sgGsFbRPCzkKQEI6
-         FWF/5kZiYlASKprRa1mzI88v5kFbFwmEmzSwo=
-Date: Fri, 5 Jun 2009 19:41:47 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Matt Helsley <matthltc@us.ibm.com>, xemul@parallels.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       dave@linux.vnet.ibm.com, mingo@elte.hu, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 1/9] exec_path 1/9: introduce ->exec_path and switch
-	/proc/*/exe
-Message-ID: <20090605154147.GA16766@x200.localdomain>
-References: <20090526113618.GJ28083@us.ibm.com> <20090526162415.fb9cefef.akpm@linux-foundation.org> <20090531215427.GA29534@x200.localdomain> <20090531151953.8f8b14b5.akpm@linux-foundation.org> <20090603230422.GB853@x200.localdomain> <20090605104517.GA11713@infradead.org> <alpine.LFD.2.01.0906050808551.6847@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906050808551.6847@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 5 Jun 2009 11:45:23 -0400
+Subject: Re: [PATCH] eeepc-laptop.c: use pr_fmt and pr_<level>
+From: Joe Perches <joe@perches.com>
+To: Corentin Chary <corentin.chary@gmail.com>
+Cc: Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
+       acpi4asus-user@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       Matthew Garrett <mjg@redhat.com>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+In-Reply-To: <71cd59b00906050457i29638577o9eeb5e8fa8eb087c@mail.gmail.com>
+References: <1244197103.3631.40.camel@Joe-Laptop.home>
+	 <4A28F94A.6040500@tuffmail.co.uk>
+	 <1244199633.3631.43.camel@Joe-Laptop.home>
+	 <71cd59b00906050457i29638577o9eeb5e8fa8eb087c@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 05 Jun 2009 08:45:12 -0700
+Message-Id: <1244216712.3631.117.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 05, 2009 at 08:10:50AM -0700, Linus Torvalds wrote:
-> On Fri, 5 Jun 2009, Christoph Hellwig wrote:
-> >
-> > On Thu, Jun 04, 2009 at 03:04:22AM +0400, Alexey Dobriyan wrote:
-> > > ->exec_path is copied on clone(2) and put at do_exit() time.
-> > > 
-> > > ->exec_path is going to replace struct mm_struct::exe_file et al
-> > > and allows to remove VM_EXECUTABLE flag while keeping readlink("/proc/*/exe")
-> > > without loop over all VMAs.
-> > 
-> > Why don't you leave it in mm_struct?  That'll avoid having to mess with
-> > it in clone,
+On Fri, 2009-06-05 at 13:57 +0200, Corentin Chary wrote:
+> On Fri, Jun 5, 2009 at 1:00 PM, Joe Perches<joe@perches.com> wrote:
+> > On Fri, 2009-06-05 at 11:54 +0100, Alan Jenkins wrote:
+> >> Is EEEPC_HOTK_FILE used anywhere else?  It would be clearer if you were
+> >> able to just use "eeepc: " or whatever and remove the definition of
+> >> EEEPC_HOTK_FILE.
+> > It is used elsewhere and perhaps it'd be better to use KBUILD_MODNAME.
+> I think we can't use KBUILD_MODNAME because "eeepc" is used for
+> platform_device, backlight and input device. Using "eeepc-laptop"
+> would break compatibility.
 
-There is no mess in clone:
+What compatibility would it break?
+Logging messages are not guaranteed to be stable across versions.
 
-	+       get_task_exec_path(current, &p->exec_path);
+Here's the patch against the latest acpi4asus tree.
+There is a proposed patch from Pekka that may impact this patch.
 
-and there is no mess in exit:
+Signed-off-by: Joe Perches <joe@perches.com>
 
-	+       set_task_exec_path(tsk, &(struct path){ .mnt = NULL, .dentry = NULL });
+diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
+index 4e1cf2d..fef9172 100644
+--- a/drivers/platform/x86/eeepc-laptop.c
++++ b/drivers/platform/x86/eeepc-laptop.c
+@@ -16,6 +16,8 @@
+  *  GNU General Public License for more details.
+  */
+ 
++#define pr_fmt(fmt) EEEPC_HOTK_FILE ": " fmt
++
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+@@ -41,11 +43,6 @@
+ #define EEEPC_HOTK_DEVICE_NAME	"Hotkey"
+ #define EEEPC_HOTK_HID		"ASUS010"
+ 
+-#define EEEPC_LOG	EEEPC_HOTK_FILE ": "
+-#define EEEPC_ERR	KERN_ERR	EEEPC_LOG
+-#define EEEPC_WARNING	KERN_WARNING	EEEPC_LOG
+-#define EEEPC_NOTICE	KERN_NOTICE	EEEPC_LOG
+-#define EEEPC_INFO	KERN_INFO	EEEPC_LOG
+ 
+ /*
+  * Definitions for Asus EeePC
+@@ -269,7 +266,7 @@ static int set_acpi(int cm, int value)
+ 		if (method == NULL)
+ 			return -ENODEV;
+ 		if (write_acpi_int(ehotk->handle, method, value, NULL))
+-			printk(EEEPC_WARNING "Error writing %s\n", method);
++			pr_warning("Error writing %s\n", method);
+ 	}
+ 	return 0;
+ }
+@@ -282,7 +279,7 @@ static int get_acpi(int cm)
+ 		if (method == NULL)
+ 			return -ENODEV;
+ 		if (read_acpi_int(ehotk->handle, method, &value))
+-			printk(EEEPC_WARNING "Error reading %s\n", method);
++			pr_warning("Error reading %s\n", method);
+ 	}
+ 	return value;
+ }
+@@ -536,26 +533,23 @@ static int eeepc_hotk_check(void)
+ 	if (ehotk->device->status.present) {
+ 		if (write_acpi_int(ehotk->handle, "INIT", ehotk->init_flag,
+ 				    &buffer)) {
+-			printk(EEEPC_ERR "Hotkey initialization failed\n");
++			pr_err("Hotkey initialization failed\n");
+ 			return -ENODEV;
+ 		} else {
+-			printk(EEEPC_NOTICE "Hotkey init flags 0x%x\n",
+-			       ehotk->init_flag);
++			pr_notice("Hotkey init flags 0x%x\n", ehotk->init_flag);
+ 		}
+ 		/* get control methods supported */
+ 		if (read_acpi_int(ehotk->handle, "CMSG"
+ 				   , &ehotk->cm_supported)) {
+-			printk(EEEPC_ERR
+-			       "Get control methods supported failed\n");
++			pr_err("Get control methods supported failed\n");
+ 			return -ENODEV;
+ 		} else {
+-			printk(EEEPC_INFO
+-			       "Get control methods supported: 0x%x\n",
+-			       ehotk->cm_supported);
++			pr_info("Get control methods supported: 0x%x\n",
++				ehotk->cm_supported);
+ 		}
+ 		ehotk->inputdev = input_allocate_device();
+ 		if (!ehotk->inputdev) {
+-			printk(EEEPC_INFO "Unable to allocate input device\n");
++			pr_info("Unable to allocate input device\n");
+ 			return 0;
+ 		}
+ 		ehotk->inputdev->name = "Asus EeePC extra buttons";
+@@ -574,12 +568,12 @@ static int eeepc_hotk_check(void)
+ 		}
+ 		result = input_register_device(ehotk->inputdev);
+ 		if (result) {
+-			printk(EEEPC_INFO "Unable to register input device\n");
++			pr_info("Unable to register input device\n");
+ 			input_free_device(ehotk->inputdev);
+ 			return 0;
+ 		}
+ 	} else {
+-		printk(EEEPC_ERR "Hotkey device not present, aborting\n");
++		pr_err("Hotkey device not present, aborting\n");
+ 		return -EINVAL;
+ 	}
+ 	return 0;
+@@ -620,7 +614,7 @@ static void eeepc_rfkill_notify(acpi_handle handle, u32 event, void *data)
+ 		return;
+ 
+ 	if (!bus) {
+-		printk(EEEPC_WARNING "Unable to find PCI bus 1?\n");
++		pr_warning("Unable to find PCI bus 1?\n");
+ 		return;
+ 	}
+ 
+@@ -637,7 +631,7 @@ static void eeepc_rfkill_notify(acpi_handle handle, u32 event, void *data)
+ 		if (dev) {
+ 			pci_bus_assign_resources(bus);
+ 			if (pci_bus_add_device(dev))
+-				printk(EEEPC_ERR "Unable to hotplug wifi\n");
++				pr_err("Unable to hotplug wifi\n");
+ 		}
+ 	} else {
+ 		dev = pci_get_slot(bus, 0);
+@@ -710,8 +704,7 @@ static int eeepc_register_rfkill_notifier(char *node)
+ 						     eeepc_rfkill_notify,
+ 						     NULL);
+ 		if (ACPI_FAILURE(status))
+-			printk(EEEPC_WARNING
+-			       "Failed to register notify on %s\n", node);
++			pr_warning("Failed to register notify on %s\n", node);
+ 	} else
+ 		return -ENODEV;
+ 
+@@ -730,8 +723,7 @@ static void eeepc_unregister_rfkill_notifier(char *node)
+ 						     ACPI_SYSTEM_NOTIFY,
+ 						     eeepc_rfkill_notify);
+ 		if (ACPI_FAILURE(status))
+-			printk(EEEPC_ERR
+-			       "Error removing rfkill notify handler %s\n",
++			pr_err("Error removing rfkill notify handler %s\n",
+ 				node);
+ 	}
+ }
+@@ -748,7 +740,7 @@ static int eeepc_setup_pci_hotplug(void)
+ 	struct pci_bus *bus = pci_find_bus(0, 1);
+ 
+ 	if (!bus) {
+-		printk(EEEPC_ERR "Unable to find wifi PCI bus\n");
++		pr_err("Unable to find wifi PCI bus\n");
+ 		return -ENODEV;
+ 	}
+ 
+@@ -769,7 +761,7 @@ static int eeepc_setup_pci_hotplug(void)
+ 
+ 	ret = pci_hp_register(ehotk->hotplug_slot, bus, 0, "eeepc-wifi");
+ 	if (ret) {
+-		printk(EEEPC_ERR "Unable to register hotplug slot - %d\n", ret);
++		pr_err("Unable to register hotplug slot - %d\n", ret);
+ 		goto error_register;
+ 	}
+ 
+@@ -791,7 +783,7 @@ static int eeepc_hotk_add(struct acpi_device *device)
+ 
+ 	if (!device)
+ 		 return -EINVAL;
+-	printk(EEEPC_NOTICE EEEPC_HOTK_NAME "\n");
++	pr_notice(EEEPC_HOTK_NAME "\n");
+ 	ehotk = kzalloc(sizeof(struct eeepc_hotk), GFP_KERNEL);
+ 	if (!ehotk)
+ 		return -ENOMEM;
+@@ -807,7 +799,7 @@ static int eeepc_hotk_add(struct acpi_device *device)
+ 	status = acpi_install_notify_handler(ehotk->handle, ACPI_SYSTEM_NOTIFY,
+ 					     eeepc_hotk_notify, ehotk);
+ 	if (ACPI_FAILURE(status))
+-		printk(EEEPC_ERR "Error installing notify handler\n");
++		pr_err("Error installing notify handler\n");
+ 
+ 	eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P6");
+ 	eeepc_register_rfkill_notifier("\\_SB.PCI0.P0P7");
+@@ -908,7 +900,7 @@ static int eeepc_hotk_remove(struct acpi_device *device, int type)
+ 	status = acpi_remove_notify_handler(ehotk->handle, ACPI_SYSTEM_NOTIFY,
+ 					    eeepc_hotk_notify);
+ 	if (ACPI_FAILURE(status))
+-		printk(EEEPC_ERR "Error removing notify handler\n");
++		pr_err("Error removing notify handler\n");
+ 
+ 	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
+ 	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
+@@ -1080,8 +1072,7 @@ static int eeepc_backlight_init(struct device *dev)
+ 	bd = backlight_device_register(EEEPC_HOTK_FILE, dev,
+ 				       NULL, &eeepcbl_ops);
+ 	if (IS_ERR(bd)) {
+-		printk(EEEPC_ERR
+-		       "Could not register eeepc backlight device\n");
++		pr_err("Could not register eeepc backlight device\n");
+ 		eeepc_backlight_device = NULL;
+ 		return PTR_ERR(bd);
+ 	}
+@@ -1100,8 +1091,7 @@ static int eeepc_hwmon_init(struct device *dev)
+ 
+ 	hwmon = hwmon_device_register(dev);
+ 	if (IS_ERR(hwmon)) {
+-		printk(EEEPC_ERR
+-		       "Could not register eeepc hwmon device\n");
++		pr_err("Could not register eeepc hwmon device\n");
+ 		eeepc_hwmon_device = NULL;
+ 		return PTR_ERR(hwmon);
+ 	}
+@@ -1134,8 +1124,7 @@ static int __init eeepc_laptop_init(void)
+ 		if (result)
+ 			goto fail_backlight;
+ 	} else
+-		printk(EEEPC_INFO "Backlight controlled by ACPI video "
+-		       "driver\n");
++		pr_info("Backlight controlled by ACPI video driver\n");
+ 
+ 	result = eeepc_hwmon_init(dev);
+ 	if (result)
 
-> > and given that exec always replaces the whole VM it's a more natural fit anyway.
-> 
-> Oh, I didn't even notice that, because I just assumed it was in mm_struct 
-> already due to the earlier discussion.
-> 
-> So I concur with Christoph - that field should be in the mm_struct. The 
-> executable is a "mapping" issue,
 
-This mapping issue is what created VM_EXECUTABLE/MAP_EXECUTABLE in
-the first place, I assume? Never mind it's cheap hack.
-
-> and goes along with task->mm, and should be there, not in task_struct.
-
-Because ->mm can be borrowed to unrelated task and user has to check
-for it.
-
-> So it should be copied at fork() time when you do the dup_mm(), not 
-> anywhere else.
