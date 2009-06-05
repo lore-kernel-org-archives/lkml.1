@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZFEJW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755690AbZFEJXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbZFEJW2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 05:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752180AbZFEJWU
+	id S1755690AbZFEJXq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 05:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbZFEJXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 05:22:20 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:57978 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751146AbZFEJWT (ORCPT
+	Fri, 5 Jun 2009 05:23:38 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:42804 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbZFEJXh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 05:22:19 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Amerigo Wang <amwang@redhat.com>
-Subject: Re: [Patch] kbuild: fix headers_check.pl
-Date: Fri, 5 Jun 2009 10:21:50 +0100
-User-Agent: KMail/1.11.90 (Linux/2.6.30-5-generic; KDE/4.2.85; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, sam@ravnborg.org,
-       linux-kbuild@vger.kernel.org
-References: <20090605021419.7905.89870.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090605021419.7905.89870.sendpatchset@localhost.localdomain>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 5 Jun 2009 05:23:37 -0400
+Message-ID: <4A28E3F8.5050908@linux.vnet.ibm.com>
+Date: Fri, 05 Jun 2009 11:23:04 +0200
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, ying.huang@intel.com, W.Li@Sun.COM,
+       michaele@au1.ibm.com, mingo@elte.hu, heicars2@linux.vnet.ibm.com,
+       mschwid2@linux.vnet.ibm.com
+Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
+References: <20090602114359.129247921@linux.vnet.ibm.com> <20090602114402.951631599@linux.vnet.ibm.com> <20090602150324.c706b1d2.akpm@linux-foundation.org> <4A266546.5080601@linux.vnet.ibm.com> <4A26961E.7040207@linux.vnet.ibm.com> <20090604090839.GB7030@cr0.nay.redhat.com>
+In-Reply-To: <20090604090839.GB7030@cr0.nay.redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906051021.51726.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19PuUoAUsyNN/TnUE0Oxk3iSsVsigjrB+BDpFt
- dStxYaR+CHb1PGCl9N8xz5UN0JfVR6oDqJYhi7hycHBOREWgMJ
- 9ix1kiD3KjFn0TOwESrIA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 June 2009, Amerigo Wang wrote:
-> -sub check_prototypes
-> +sub check_declarations
->  {
-> -       if ($line =~ m/^\s*extern\b/) {
-> -               printf STDERR "$filename:$lineno: extern's make no sense in userspace\n";
-> +       if ($line =~m/^\s*extern\b/) {
-> +               if ($line =~ m/^\s*extern\b.*\(.*\)/) {
-> +                       printf STDERR "$filename:$lineno: extern's make no sense in userspace\n";
-> +               } else {
-> +                       printf STDERR "$filename:$lineno: exporting global variable to userspace is suspicious\n";
-> +               }
->         }
->  }
+Amerigo Wang wrote:
+> On Wed, Jun 03, 2009 at 05:26:22PM +0200, Peter Oberparleiter wrote:
+>> Peter Oberparleiter wrote:
+>>> Andrew Morton wrote:
+>>>> On Tue, 02 Jun 2009 13:44:02 +0200
+>>>> Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
+>>>>> +	/* Duplicate gcov_info. */
+>>>>> +	active = num_counter_active(info);
+>>>>> +	dup = kzalloc(sizeof(struct gcov_info) +
+>>>>> +		      sizeof(struct gcov_ctr_info) * active, GFP_KERNEL);
+>>>> How large can this allocation be?
+>>> Hm, good question. Having a look at my test system, I see coverage data 
+>>> files of up to 60kb size. With counters making up the largest part of 
+>>> those, I'd guess the allocation size can be around ~55kb. I assume that 
+>>> makes it a candidate for vmalloc?
+>> A further run with debug output showed that the maximum size is
+>> actually around 4k, so in my opinion, there is no need to switch
+>> to vmalloc.
+> 
+> Unless you want virtually continious memory, you don't need to
+> bother vmalloc().
+> 
+> kmalloc() and get_free_pages() are all fine for this.
 
-I don't think we really need that distinction here, the old
-text applies to both. But please find a way to get rid of
-the "extern's".
+kmalloc() requires contiguous pages to serve an allocation request 
+larger than a single page. The longer a kernel runs, the more fragmented 
+the pool of free pages gets and the probability to find enough 
+contiguous free pages is significantly reduced.
 
-http://angryflower.com/bobsqu.gif
+In this case (having had a 3rd look), I found allocations of up to 
+~50kb, so to be sure, I'll switch that particular allocation to vmalloc().
 
-	Arnd <><
