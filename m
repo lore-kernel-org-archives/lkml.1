@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753900AbZFEXdf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbZFEXdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753900AbZFEXdf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 19:33:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZFEXd0
+	id S1754946AbZFEXdq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 19:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbZFEXd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 19:33:26 -0400
-Received: from gate.crashing.org ([63.228.1.57]:55244 "EHLO gate.crashing.org"
+	Fri, 5 Jun 2009 19:33:27 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55245 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752399AbZFEXdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752512AbZFEXdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 5 Jun 2009 19:33:25 -0400
 Subject: Re: [BUILD FAILURE 01/04] Next June 04:PPC64 randconfig
  [drivers/staging/comedi/drivers.o]
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Subrata Modak <subrata@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, Greg KH <greg@kroah.com>,
+To: Greg KH <greg@kroah.com>
+Cc: Subrata Modak <subrata@linux.vnet.ibm.com>,
+       Paul Mackerras <paulus@samba.org>,
        Sachin P Sant <sachinp@linux.vnet.ibm.com>,
        Linux-Kernel <linux-kernel@vger.kernel.org>,
        Linux-Next <linux-next@vger.kernel.org>,
@@ -22,86 +23,55 @@ Cc: Paul Mackerras <paulus@samba.org>, Greg KH <greg@kroah.com>,
        Geert Uytterhoeven <geert@linux-m68k.org>,
        Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
        Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <20090605182625.24093.7808.sendpatchset@elm3a191.beaverton.ibm.com>
+In-Reply-To: <20090605182618.GA11853@kroah.com>
 References: <20090605182625.24093.7808.sendpatchset@elm3a191.beaverton.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 06 Jun 2009 09:32:29 +1000
-Message-Id: <1244244749.31984.16.camel@pasglop>
+	 <20090605182618.GA11853@kroah.com>
+Content-Type: text/plain
+Date: Sat, 06 Jun 2009 09:31:40 +1000
+Message-Id: <1244244700.31984.15.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-06-05 at 11:26 -0700, Greg KH wrote:
+> Should the comedi layer just not be using PAGE_KERNEL_NOCACHE here?  I
+> can't believe that we need to do something like this in a driver.  What
+> should the proper fix for this be?
 
-> I tried this. But, with some catch. ‘PAGE_KERNEL_NOCACHE’ seems to be the
-> choice for majority of architectures like frv, m32r, sh, x86, etc, as Geert
-> mentions below. However, i believe POWERPC defines it as ‘PAGE_KERNEL_NC‘
-> found at arch/powerpc/include/asm/pte-common.h.
-> 
-> Paul/Banjamin,
-> Can you please confirm this ?
+Actualy, I think powerpc -had- PAGE_KERNEL_NOCACHE and I removed it ...
+Oh well... My understanding was that the exposed interface isn't that
+but instead pgprot_noncached().
 
-Read my reply to Greg. Why the heck are you trying to map memory
-non-cacheable in the first place ?
+Nowadays we provide these on ppc:
 
-Cheers
+#define pgprot_noncached(prot)    (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+                                            _PAGE_NO_CACHE | _PAGE_GUARDED))
+
+#define pgprot_noncached_wc(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+                                            _PAGE_NO_CACHE))
+
+#define pgprot_cached(prot)       (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+                                            _PAGE_COHERENT))
+
+#define pgprot_cached_wthru(prot) (__pgprot((pgprot_val(prot) & ~_PAGE_CACHE_CTL) | \
+                                            _PAGE_COHERENT | _PAGE_WRITETHRU))
+
+
+Now, of course, expect interesting problems if you use it in vmap, since
+you are mapping struct pages, you are effectively mapping memory.
+
+On some platforms, it's absolutely illegal to map memory non-cacheable while
+this memory is mapped cacheable elsewhere and can be fatal. But the pages you
+are mapping here, I suppose, are also part of the linear mapping which is ...
+cacheable.
+
+Why would you need that non-cacheable mapping in the first place ? If it's
+for DMA, it's the wrong interface I believe....
+
+Cheers,
 Ben.
 
-> The below patch fixes the build error.
-> 
-> Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-> ---
-> 
-> --- linux-2.6.30-rc8/drivers/staging/comedi/drivers.c.orig	2009-06-05 12:46:35.000000000 -0500
-> +++ linux-2.6.30-rc8/drivers/staging/comedi/drivers.c	2009-06-05 13:03:31.000000000 -0500
-> @@ -43,9 +43,13 @@
->  #include <linux/vmalloc.h>
->  #include <linux/cdev.h>
->  #include <linux/dma-mapping.h>
-> -
->  #include <asm/io.h>
->  #include <asm/system.h>
-> +#ifdef __powerpc64__
-> +#include <asm/pte-common.h>
-> +#else
-> +#include <asm/pgtable.h>
-> +#endif
->  
->  static int postconfig(struct comedi_device *dev);
->  static int insn_rw_emulate_bits(struct comedi_device *dev, struct comedi_subdevice *s,
-> @@ -492,8 +496,13 @@ int comedi_buf_alloc(struct comedi_devic
->  		}
->  		if (i == n_pages) {
->  			async->prealloc_buf =
-> +#ifdef __powerpc64__
-> +				vmap(pages, n_pages, VM_MAP,
-> +				PAGE_KERNEL_NC);
-> +#else
->  				vmap(pages, n_pages, VM_MAP,
->  				PAGE_KERNEL_NOCACHE);
-> +#endif
->  		}
->  		if (pages) {
->  			vfree(pages);
-> 
-> ---
-> Regards--
-> Subrata
-> 
-> > PAGE_KERNEL_NOCACHE is defined on a few architectures only, namely
-> > frv, m32r, mn10300, sh, and x86[*]. On all others, it will fail.
-> > 
-> > [*] Interestingly, sparc refers to it in one of its include files,
-> > without providing a
-> >     definition, Probably that code is unused.
-> > 
-> > Gr{oetje,eeting}s,
-> > 
-> > 						Geert
-> > 
-> > --
-> > Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> > 
 
