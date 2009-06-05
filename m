@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbZFEHxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZFEHy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbZFEHxy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 03:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbZFEHxr
+	id S1755650AbZFEHy3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 03:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbZFEHyS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 03:53:47 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:58650 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752512AbZFEHxq (ORCPT
+	Fri, 5 Jun 2009 03:54:18 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36936
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754630AbZFEHyR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 03:53:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=QQI26yoit8UGV29k/KqHWv6aGcKkgBtCL6Ohqmo/2+KkGe2ft+ezqbzY1++pneGBDK
-         fFwzkPNsj2Etubaud1tbu2motlpjwDjAuxBpJTqDxYMHV68niwEYr2nGM4xIJgRhstk5
-         +fCIT69Tv0J1jCijiyicUEHureCzdlWIoSGeM=
-MIME-Version: 1.0
-In-Reply-To: <21d7e9970906042259l56ba3382wa3413132fc2d8b10@mail.gmail.com>
-References: <alpine.DEB.2.00.0906040438210.7074@skynet.skynet.ie>
-	 <20090605054231.GA2212@gentoox2.trippelsdorf.de>
-	 <21d7e9970906042259l56ba3382wa3413132fc2d8b10@mail.gmail.com>
-Date: Fri, 5 Jun 2009 10:53:47 +0300
-X-Google-Sender-Auth: b0f3e3841a5009e8
-Message-ID: <68da43e00906050053m3d38dc57l1c5e9d2c32eb498f@mail.gmail.com>
-Subject: Re: [git pull] drm fixes
-From: Timo Jyrinki <timojyrinki@gmail.com>
-To: Dave Airlie <airlied@gmail.com>
-Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Fri, 5 Jun 2009 03:54:17 -0400
+Date: Fri, 05 Jun 2009 00:54:18 -0700 (PDT)
+Message-Id: <20090605.005418.07362083.davem@davemloft.net>
+To: dbaryshkov@gmail.com
+Cc: johannes@sipsolutions.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+       slapin@ossfans.org, sfr@canb.auug.org.au
+Subject: Re: [PATCH 3/5] net: add NL802154 interface for configuration of
+ 802.15.4 devices
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090605071529.GA7064@doriath.ww600.siemens.net>
+References: <1244168990-28355-4-git-send-email-dbaryshkov@gmail.com>
+	<1244184737.22576.94.camel@johannes.local>
+	<20090605071529.GA7064@doriath.ww600.siemens.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/5 Dave Airlie <airlied@gmail.com>:
->>> Please pull the 'drm-fixes' branch from
->>> ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-fixes
->
-> Okay Linus if you do pull this can you revert
-> 6c51d1cfa0a370b48a157163340190cf5fd2346b
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Date: Fri, 5 Jun 2009 11:15:29 +0400
 
-It already went in, before your message.
+> On Fri, Jun 05, 2009 at 08:52:17AM +0200, Johannes Berg wrote:
+>> On Fri, 2009-06-05 at 06:29 +0400, Dmitry Eremin-Solenikov wrote:
+>> 
+>> > +/* This source file is shared between kernel and userspace sources, thus
+>> > + * a bit of __KERNEL__ checks
+>> > + */
+>> > +#ifdef __KERNEL__
+>> 
+>> It's a C file. It can't be shared expect by copying, hence IMO these
+>> things are pointless.
+> 
+> It is shared by copying. And I'd strongly prefer to have it shared
+> directly by 'cp', not by 'cp' and 'patch'. E.g. currently I can ensure
+> that policy definitions and commands are current just by comparing
+> files. I'd like to still have that ability. Thus, I'd ask to permit this
+> stuff in.
 
--Timo
+You can maintain your own code in your own directories in your
+own source tree however you like.
+
+But if you want you code in the upstream kernel, you have to clean it
+of things like this.
+
+I agree with Johannes, you have to get rid of this.
