@@ -1,20 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZFEJsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbZFEJss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbZFEJsc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 05:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbZFEJsY
+	id S1755572AbZFEJss (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 05:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbZFEJsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 05:48:24 -0400
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:47045 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750951AbZFEJsX (ORCPT
+	Fri, 5 Jun 2009 05:48:40 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:3850 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753477AbZFEJsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 05:48:23 -0400
-Date: Fri, 5 Jun 2009 15:18:11 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>
+	Fri, 5 Jun 2009 05:48:38 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=HQmi0wgMGm1G4dykdH8kilr0I8NEwmfVLr29myB5+beWFiVhz1YO7x1KiGl0XUqDe
+	gfoWh1FpHYz4BkfcdKzAQ==
+MIME-Version: 1.0
+In-Reply-To: <20090605093625.GI11755@balbir.in.ibm.com>
+References: <20090604053649.GA3701@in.ibm.com>
+	 <6599ad830906050153i1afd104fqe70f681317349142@mail.gmail.com>
+	 <20090605093625.GI11755@balbir.in.ibm.com>
+Date: Fri, 5 Jun 2009 02:48:36 -0700
+Message-ID: <6599ad830906050248m2c569e5bx44fb3bbddf46f8b1@mail.gmail.com>
+Subject: Re: [RFC] CPU hard limits
+From: Paul Menage <menage@google.com>
+To: balbir@linux.vnet.ibm.com
 Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
        Gautham R Shenoy <ego@in.ibm.com>,
        Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
@@ -23,48 +35,35 @@ Cc: bharata@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
        kvm@vger.kernel.org,
        Linux Containers <containers@lists.linux-foundation.org>,
        Herbert Poetzl <herbert@13thfloor.at>
-Subject: Re: [RFC] CPU hard limits
-Message-ID: <20090605094811.GD4601@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20090604053649.GA3701@in.ibm.com> <6599ad830906050153i1afd104fqe70f681317349142@mail.gmail.com> <20090605092733.GA27486@in.ibm.com> <6599ad830906050232n11aa30d8xfcda0a279a482f32@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6599ad830906050232n11aa30d8xfcda0a279a482f32@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 05, 2009 at 02:32:51AM -0700, Paul Menage wrote:
-> On Fri, Jun 5, 2009 at 2:27 AM, Bharata B Rao<bharata@linux.vnet.ibm.com> wrote:
-> >>
-> >> Suppose 10 cgroups each want 10% of the machine's CPU. We can just
-> >> give each cgroup an equal share, and they're guaranteed 10% if they
-> >> try to use it; if they don't use it, other cgroups can get access to
-> >> the idle cycles.
-> >
-> > Now if 11th group with same shares comes in, then each group will now
-> > get 9% of CPU and that 10% guarantee breaks.
-> 
-> So you're trying to guarantee 11 cgroups that they can each get 10% of
-> the CPU? That's called over-committing, and while there's nothing
-> wrong with doing that if you're confident that they'll not al need
-> their 10% at the same time, there's no way to *guarantee* them all
-> 10%. You can guarantee them all 9% and hope the extra 1% is spare for
-> those that need it (over-committing), or you can guarantee 10 of them
-> 10% and give the last one 0 shares.
-> 
-> How would you propose to guarantee 11 cgroups each 10% of the CPU
-> using hard limits?
-> 
+On Fri, Jun 5, 2009 at 2:36 AM, Balbir Singh<balbir@linux.vnet.ibm.com> wrote:
+>
+> The important scenario I have is adding and removing groups.
+>
+> Consider 10 cgroups with shares of 10 each, what if 5 new are created
+> with the same shares? We now start getting 100/15, even though we did
+> not change our shares.
 
-You cannot guarantee 10% to 11 groups on any system (unless I am missing
-something). The sum of guarantees cannot exceed 100%.
+Are you assuming that arbitrary users can create new cgroups whenever
+they like, with whatever shares they like? In that situation, how
+would you use hard limits to provide guarantees? Presumably if the
+user could create a cgroup with an arbitrary share, they could create
+one with an arbitrary hard limit too.
 
-How would you be able to do that with any other mechanism?
+Can you explain a bit more about how you're envisaging cgroups being
+created, and how their shares and hard limits would get set? I was
+working on the assumption that (for any sub-tree of the CFS hierarchy)
+there's a single managing entity that gets to decide the shares given
+to the cgroups within that tree. That managing entity would be
+responsible for ensuring that the shares given out allowed guarantees
+to be met (or alternatively, that the probability of violating those
+guarantees based on the shares given out was within some tolerance
+threshold).
 
-Thanks,
--- 
-regards,
-Dhaval
+Paul
