@@ -1,110 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751391AbZFEEH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753876AbZFEEKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751391AbZFEEH6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 00:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739AbZFEEHu
+	id S1753876AbZFEEKj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 00:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbZFEEK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 00:07:50 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:49672 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750706AbZFEEHu (ORCPT
+	Fri, 5 Jun 2009 00:10:28 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:26444 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750739AbZFEEK1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 00:07:50 -0400
-Date: Fri, 5 Jun 2009 13:04:45 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: balbir@linux.vnet.ibm.com
-Cc: nishimura@mxp.nes.nec.co.jp,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] remove memory.limit v.s. memsw.limit comparison.
-Message-Id: <20090605130445.447ca03a.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090605011019.GG7504@balbir.in.ibm.com>
-References: <20090604141043.9a1064fd.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090604123625.GE7504@balbir.in.ibm.com>
-	<0921392c77890fc84fa69653ae4f31d9.squirrel@webmail-b.css.fujitsu.com>
-	<20090605011019.GG7504@balbir.in.ibm.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 5 Jun 2009 00:10:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZSV9saY2t6GgjE5zyNk7w1gPxDbA+qMeiNZLZ/OMMsTKjEyGhUO2KuWrCn1ycSBPvl
+         +0NwNXTUyupTRNBSmolaq69Kbl7DWabvmf5+QPTawJL24AhfebxbXynCuohCteEca9YQ
+         ATETgyPVM2EsAt/IDhK0oj2jKt6ZqMJGU/Up0=
+MIME-Version: 1.0
+In-Reply-To: <1243868091-5315-1-git-send-email-dbaryshkov@gmail.com>
+References: <1243868091-5315-1-git-send-email-dbaryshkov@gmail.com>
+Date: Fri, 5 Jun 2009 00:03:30 -0400
+Message-ID: <9e4733910906042103q6c21886cia02d33cb278cef1e@mail.gmail.com>
+Subject: Re: [RFC][WIP] IEEE 802.15.4 implementation for Linux v1
+From: Jon Smirl <jonsmirl@gmail.com>
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, slapin@ossfans.org,
+       maxim.osipov@siemens.com, dmitry.baryshkov@siemens.com,
+       oliver.fendt@siemens.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Jun 2009 09:10:19 +0800, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-06-05 00:45:03]:
-> 
-> > Balbir Singh wrote:
-> > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-06-04
-> > > 14:10:43]:
-> > >
-> > >> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > >>
-> > >> Removes memory.limit < memsw.limit at setting limit check completely.
-> > >>
-> > >> The limitation "memory.limit <= memsw.limit" was added just because
-> > >> it seems sane ...if memory.limit > memsw.limit, only memsw.limit works.
-> > >>
-> > >> But To implement this limitation, we needed to use private mutex and
-> > >> make
-> > >> the code a bit complated.
-> > >> As Nishimura pointed out, in real world, there are people who only want
-> > >> to use memsw.limit.
-> > >>
-> > >> Then, this patch removes the check. user-land library or middleware can
-> > >> check
-> > >> this in userland easily if this really concerns.
-> > >>
-> > >> And this is a good change to charge-and-reclaim.
-> > >>
-> > >> Now, memory.limit is always checked before memsw.limit
-> > >> and it may do swap-out. But, if memory.limit == memsw.limit, swap-out is
-> > >> finally no help and hits memsw.limit again. So, let's allow the
-> > >> condition
-> > >> memory.limit > memsw.limit. Then we can skip unnecesary swap-out.
-> > >>
-> > >> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > >> ---
-> > >
-> > > There is one other option, we could set memory.limit_in_bytes ==
-> > > memory.memsw.limit_in_bytes provided it is set to LONG_LONG_MAX. I am
-> > > not convinced that we should allow memsw.limit_in_bytes to be less
-> > > that limit_in_bytes, it will create confusion and the API is already
-> > > exposed.
-> > >
-> > Ahhhh, I get your point.
-> >  if memory.memsw.limit_in_bytes < memory.limit_in_bytes, no swap will
-> >  be used bacause currnet try_to_free_pages() for memcg skips swap-out.
-> >  Then, only global-LRU will use swap.
-> >  This behavior is not easy to understand.
-> > 
-> > Sorry, I don't push this patch as this is. But adding documentation about
-> > "What happens when you set memory.limit == memsw.limit" will be necessary.
-> > 
-> > ...maybe give all jobs to user-land and keep the kernel as it is now
-> > is a good choice.
-> 
-> Yes, probably and with libcgroup and configuration, defaults should
-> not be hard to setup. Worst case we can use a script to setup both the
-> values.
-> 
-> > 
-> > BTW, I'd like to avoid useless swap-out in memory.limit == memsw.limit case.
-> > If someone has good idea, please :(
-> >
-> 
-> Are you seeing swap even with memory.limit == memory.memsw.limit? Only
-> global pressure should cause swapout, no? 
-> 
-I don't remember in detail, but I could see swap usage by "free" command
-even when I set "memory.limit == memory.memsw.limit" long ago, the usage
-was small though.
-It cannot be helped in current implementation, because mem.limit is checked
-before memsw.limit, and it is a waste of cpu time to scan anon-lru when
-"memory.limit == memory.memsw.limit".
+On Mon, Jun 1, 2009 at 10:54 AM, Dmitry
+Eremin-Solenikov<dbaryshkov@gmail.com> wrote:
+> Hi,
+>
+> As a part of research activities the Embedded Systems - Open Platform Group
+> from Siemens Corporate Technology we are working on adding support for
+> the IEEE 802.15.4 Wireless Personal Area Networks to the Linux. Our current
+> implementation is neither certified nor even feature complete. However
+> we'd like to present current state of our patchset to the Linux developers
+> community to gain comments, fixes, ideas, etc. This is not yet a pull request,
+> but more like an RFC.
+
+Does this stack work with the Atmel USB version of at86rf230?
+ATAVRRZUSBSTICK, http://www.atmel.com/dyn/products/tools_card.asp?tool_id=4396
+
+It's not so simple to plug in the at86rf230 using SPI. Supporting USB
+sticks lets you develop on a desktop PC.
+
+freaklabs.org is using ATAVRRZUSBSTICK
 
 
-Thanks,
-Daisuke Nishimura.
+>
+> The project page is available at http://apps.sourceforge.net/trac/linux-zigbee
+> with source code of kernel part available from git at
+> http://zigbee-linux.git.sourceforge.net, mirrored for convenience at
+> git://git.kernel.org/pub/scm/linux/kernel/git/lumag/lowpan.git
+>
+> The source code for userspace utils is available from git at
+> http://linux-zigbee.git.sourceforge.net/
+>
+> Changes since previous RFC:
+>  * Split the code into socket family, netlink interface and separate
+>    MAC 802.15.4 implementation.
+>  * Add a sample driver for devices implementing mac level of IEEE 802.15.4
+>    on their own.
+>  * Major cleanup of public interfaces.
+>  * Drop our CRC implementation and use a variant of CRC-ITU-T one
+>  * Add preliminary version of AT86RF231 Atmel chip driver
+>
+> The following changes since commit 59a3759d0fe8d969888c741bb33f4946e4d3750d:
+>  Linus Torvalds (1):
+>        Linux 2.6.30-rc7
+>
+> are available in the git repository at:
+>
+>  git://git.kernel.org/pub/scm/linux/kernel/git/lumag/lowpan.git for-review-v1
+>
+> Darren Salt (1):
+>      crc-itu-t: add bit-reversed calculation
+>
+> Dmitry Eremin-Solenikov (9):
+>      Add constants for the ieee 802.15.4/ZigBee stack
+>      net: add IEEE 802.15.4 socket family implementation
+>      net: add NL802154 interface for configuration of 802.15.4 devices
+>      ieee802154: add simple HardMAC driver sample
+>      mac802154: add a software MAC 802.15.4 implementation
+>      ieee802154: add virtual loopback driver
+>      tty_io: export tty_class
+>      ieee802154: add serial dongle driver
+>      ieee802154: add at86rf230/rf231 spi driver
+>
+>  drivers/Makefile                       |    1 +
+>  drivers/char/tty_io.c                  |    1 +
+>  drivers/ieee802154/Kconfig             |   42 ++
+>  drivers/ieee802154/Makefile            |    6 +
+>  drivers/ieee802154/at86rf230.c         |  971 +++++++++++++++++++++++++++++++
+>  drivers/ieee802154/fakehard.c          |  253 ++++++++
+>  drivers/ieee802154/fakelb.c            |  335 +++++++++++
+>  drivers/ieee802154/serial.c            |  999 ++++++++++++++++++++++++++++++++
+>  drivers/net/Kconfig                    |    2 +
+>  include/linux/crc-itu-t.h              |   10 +
+>  include/linux/if.h                     |    2 +
+>  include/linux/if_arp.h                 |    2 +
+>  include/linux/if_ether.h               |    2 +
+>  include/linux/socket.h                 |    6 +-
+>  include/linux/spi/at86rf230.h          |   32 +
+>  include/linux/tty.h                    |    3 +-
+>  include/net/ieee802154/af_ieee802154.h |   60 ++
+>  include/net/ieee802154/mac802154.h     |   79 +++
+>  include/net/ieee802154/mac_def.h       |  158 +++++
+>  include/net/ieee802154/netdevice.h     |   84 +++
+>  include/net/ieee802154/nl802154.h      |  165 ++++++
+>  lib/crc-itu-t.c                        |   18 +
+>  net/Kconfig                            |    2 +
+>  net/Makefile                           |    2 +
+>  net/core/dev.c                         |    6 +-
+>  net/core/sock.c                        |    3 +
+>  net/ieee802154/Kconfig                 |   12 +
+>  net/ieee802154/Makefile                |    5 +
+>  net/ieee802154/af802154.h              |   35 ++
+>  net/ieee802154/af_ieee802154.c         |  356 ++++++++++++
+>  net/ieee802154/dgram.c                 |  373 ++++++++++++
+>  net/ieee802154/netlink.c               |  485 ++++++++++++++++
+>  net/ieee802154/raw.c                   |  250 ++++++++
+>  net/mac802154/Kconfig                  |   13 +
+>  net/mac802154/Makefile                 |    5 +
+>  net/mac802154/beacon.c                 |  242 ++++++++
+>  net/mac802154/beacon.h                 |   48 ++
+>  net/mac802154/beacon_hash.c            |  103 ++++
+>  net/mac802154/beacon_hash.h            |   40 ++
+>  net/mac802154/dev.c                    |  843 +++++++++++++++++++++++++++
+>  net/mac802154/mac802154.h              |   64 ++
+>  net/mac802154/mac_cmd.c                |  325 +++++++++++
+>  net/mac802154/main.c                   |   96 +++
+>  net/mac802154/mdev.c                   |  283 +++++++++
+>  net/mac802154/mib.h                    |   32 +
+>  net/mac802154/pib.c                    |   87 +++
+>  net/mac802154/pib.h                    |   35 ++
+>  net/mac802154/scan.c                   |  215 +++++++
+>  48 files changed, 7187 insertions(+), 4 deletions(-)
+>  create mode 100644 drivers/ieee802154/Kconfig
+>  create mode 100644 drivers/ieee802154/Makefile
+>  create mode 100644 drivers/ieee802154/at86rf230.c
+>  create mode 100644 drivers/ieee802154/fakehard.c
+>  create mode 100644 drivers/ieee802154/fakelb.c
+>  create mode 100644 drivers/ieee802154/serial.c
+>  create mode 100644 include/linux/spi/at86rf230.h
+>  create mode 100644 include/net/ieee802154/af_ieee802154.h
+>  create mode 100644 include/net/ieee802154/mac802154.h
+>  create mode 100644 include/net/ieee802154/mac_def.h
+>  create mode 100644 include/net/ieee802154/netdevice.h
+>  create mode 100644 include/net/ieee802154/nl802154.h
+>  create mode 100644 net/ieee802154/Kconfig
+>  create mode 100644 net/ieee802154/Makefile
+>  create mode 100644 net/ieee802154/af802154.h
+>  create mode 100644 net/ieee802154/af_ieee802154.c
+>  create mode 100644 net/ieee802154/dgram.c
+>  create mode 100644 net/ieee802154/netlink.c
+>  create mode 100644 net/ieee802154/raw.c
+>  create mode 100644 net/mac802154/Kconfig
+>  create mode 100644 net/mac802154/Makefile
+>  create mode 100644 net/mac802154/beacon.c
+>  create mode 100644 net/mac802154/beacon.h
+>  create mode 100644 net/mac802154/beacon_hash.c
+>  create mode 100644 net/mac802154/beacon_hash.h
+>  create mode 100644 net/mac802154/dev.c
+>  create mode 100644 net/mac802154/mac802154.h
+>  create mode 100644 net/mac802154/mac_cmd.c
+>  create mode 100644 net/mac802154/main.c
+>  create mode 100644 net/mac802154/mdev.c
+>  create mode 100644 net/mac802154/mib.h
+>  create mode 100644 net/mac802154/pib.c
+>  create mode 100644 net/mac802154/pib.h
+>  create mode 100644 net/mac802154/scan.c
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
