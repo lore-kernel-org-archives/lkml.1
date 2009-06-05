@@ -1,97 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZFERSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753831AbZFERWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630AbZFERSw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 13:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZFERSn
+	id S1753831AbZFERWS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 13:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753323AbZFERWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 13:18:43 -0400
-Received: from smtp103.sbc.mail.gq1.yahoo.com ([67.195.15.62]:28156 "HELO
-	smtp103.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751302AbZFERSm (ORCPT
+	Fri, 5 Jun 2009 13:22:09 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:3057 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752768AbZFERWI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 13:18:42 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Jun 2009 13:18:42 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Yx0OR9BslE7lh7hcgi/CF8vdJo5ja9z6Q1gFDyw+Bwxd7jwRv24QfQ6moTyXWTPISDWcdDSm353q3pv3fEFl636id3UuYwZozpfgxwyoxt+84lckDfOPF50y4U/WUCX44AqIePUG/nZVUmh63qWhY0YBYWD/U77oTVqapICbDAM=  ;
-X-Yahoo-SMTP: HIlLYKCswBDnjrunw3O.NnLyvismjGf1HBYfVTvuneM-
-X-YMail-OSG: Mya3sZkVM1m165cKOSbXNHq5dMizpefboCExigYWPLmpw8tjkXcsA2B9PQqaOA5zijQkPOqnSwQky_144Cuznx5fbPDrrcwV0ZD4vcPDBb8mw2uN3Z0KuF6w6Yi0CkQPypm1M8jqhD5fjjOx87i.7WPDoka386SwSRmxSyE6xNAGEY33VCgguXwAX4hoplK_MHhXyGacBivt.1tBbI_4jwj.EEoTTHP4qI6e3zSLHBiVO0osvuszIVbNwZO9XY04scM-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: Re: [PATCH] atmel_usba_udc: change way of specifying bias function
-Date: Fri, 5 Jun 2009 10:12:03 -0700
-User-Agent: KMail/1.9.10
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       haavard.skinnemoen@atmel.com, patrice.vilchez@atmel.com
-References: <1244216776-22760-1-git-send-email-nicolas.ferre@atmel.com>
-In-Reply-To: <1244216776-22760-1-git-send-email-nicolas.ferre@atmel.com>
+	Fri, 5 Jun 2009 13:22:08 -0400
+X-IronPort-AV: E=Sophos;i="4.41,312,1241395200"; 
+   d="scan'208";a="317705220"
+From: Roland Dreier <rdreier@cisco.com>
+To: lkml@MoreThan.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [Compile Warning] 2.6.30-rc8 build
+References: <200906051143.06119.lkml@morethan.org>
+X-Message-Flag: Warning: May contain useful information
+Date: Fri, 05 Jun 2009 10:22:09 -0700
+In-Reply-To: <200906051143.06119.lkml@morethan.org> (Michael S. Zick's message
+	of "Fri, 5 Jun 2009 11:43:03 -0500")
+Message-ID: <ada63fawq7y.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906051012.04124.david-b@pacbell.net>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 05 Jun 2009 17:22:09.0758 (UTC) FILETIME=[28525FE0:01C9E602]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 05 June 2009, Nicolas Ferre wrote:
-> The toggle_bias() function was specified differently for avr32 and at91
-> architectures. Now, new at91 have the same behavior as avr32.
-> Consequently, we change to a particular chip function definition: only for
-> at91sam9rl.
-> 
-> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
-> Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+ > To my reading of the function, I think gcc has a point:
+ > 
+ > drivers/serial/8250.c: In function 'serial8250_shutdown':
+ > drivers/serial/8250.c:1685: warning: 'i' may be used uninitialized in this function
+ > 
+ > It does read as if the code might try to initialize
+ > the 'lock' field of a null pointer.
 
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+The code in question is:
 
+	static void serial_unlink_irq_chain(struct uart_8250_port *up)
+	{
+		struct irq_info *i;
+		struct hlist_node *n;
+		struct hlist_head *h;
+	
+		mutex_lock(&hash_mutex);
+	
+		h = &irq_lists[up->port.irq % NR_IRQ_HASH];
+	
+		hlist_for_each(n, h) {
+			i = hlist_entry(n, struct irq_info, node);
+			if (i->irq == up->port.irq)
+				break;
+		}
+	
+		BUG_ON(n == NULL);
+		BUG_ON(i->head == NULL);
+	
+		if (list_empty(i->head))
+			free_irq(up->port.irq, i);
 
+and if the hlist_for_each() doesn't find a matching irq_info to put in
+i, then the BUG_ON(n == NULL) will kill the system.  So there's no bug
+although it is understandable that gcc can't see that.
 
-> ---
-> 
->  drivers/usb/gadget/atmel_usba_udc.c |   16 ++++++++--------
->  1 files changed, 8 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/usb/gadget/atmel_usba_udc.c b/drivers/usb/gadget/atmel_usba_udc.c
-> index 563d572..a31df12 100644
-> --- a/drivers/usb/gadget/atmel_usba_udc.c
-> +++ b/drivers/usb/gadget/atmel_usba_udc.c
-> @@ -326,13 +326,7 @@ static int vbus_is_present(struct usba_udc *udc)
->  	return 1;
->  }
->  
-> -#if defined(CONFIG_AVR32)
-> -
-> -static void toggle_bias(int is_on)
-> -{
-> -}
-> -
-> -#elif defined(CONFIG_ARCH_AT91)
-> +#if defined(CONFIG_ARCH_AT91SAM9RL)
->  
->  #include <mach/at91_pmc.h>
->  
-> @@ -346,7 +340,13 @@ static void toggle_bias(int is_on)
->  		at91_sys_write(AT91_CKGR_UCKR, uckr & ~(AT91_PMC_BIASEN));
->  }
->  
-> -#endif /* CONFIG_ARCH_AT91 */
-> +#else
-> +
-> +static void toggle_bias(int is_on)
-> +{
-> +}
-> +
-> +#endif /* CONFIG_ARCH_AT91SAM9RL */
->  
->  static void next_fifo_transaction(struct usba_ep *ep, struct usba_request *req)
->  {
-> -- 
-> 1.5.3.7
-> 
-> 
+(Not sure why you talk about "the 'lock' field of a null pointer" -- I
+assume your gcc warns about the function serial8250_shutdown() because
+it is inlining a function only called from a single location)
 
-
+ - R.
