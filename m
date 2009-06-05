@@ -1,103 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752738AbZFEAki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753588AbZFEAlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752738AbZFEAki (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 20:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbZFEAkb
+	id S1753588AbZFEAlc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 20:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbZFEAlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 20:40:31 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:62191 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbZFEAka (ORCPT
+	Thu, 4 Jun 2009 20:41:23 -0400
+Received: from mail-px0-f182.google.com ([209.85.216.182]:37872 "EHLO
+	mail-px0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751228AbZFEAlW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 20:40:30 -0400
-Date: Fri, 5 Jun 2009 09:34:20 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, balbir@linux.vnet.ibm.com,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] remove memory.limit v.s. memsw.limit comparison.
-Message-Id: <20090605093420.0b208c33.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <0921392c77890fc84fa69653ae4f31d9.squirrel@webmail-b.css.fujitsu.com>
-References: <20090604141043.9a1064fd.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090604123625.GE7504@balbir.in.ibm.com>
-	<0921392c77890fc84fa69653ae4f31d9.squirrel@webmail-b.css.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 4 Jun 2009 20:41:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tlf6Oq0CdRXdSexNSNOK3NTDFEPX/bmfhIFHlyXV4wbp74qKI9c5q47GDS+E7K4XTg
+         87c2n7lFisAz0eKXm3NbHbTXyCGU9Hv+plYxlvACn9Mu3ddqm3sXCT125jBgnl4r3eOM
+         eYx6zUyuMykzeTXD9K7AKwEvawvT4wqeKZaL4=
+Date: Fri, 5 Jun 2009 08:43:29 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Mike Frysinger <vapier@gentoo.org>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Bryan Wu <cooloney@kernel.org>, Mikael Starvik <starvik@axis.com>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Luck Tony <tony.luck@intel.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Ralf Baechle <ralf@linux-mips.org>, David Howells <dhowells@redhat.com>,
+       Kyle McMartin <kyle@mcmartin.ca>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       "David S. Miller" <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v2] kmap_types: convert most arches to a single header
+	file
+Message-ID: <20090605004329.GA7653@cr0.nay.redhat.com>
+References: <4A280BB0.4030805@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A280BB0.4030805@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 5 Jun 2009 00:45:03 +0900 (JST), "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> Balbir Singh wrote:
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-06-04
-> > 14:10:43]:
-> >
-> >> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> >>
-> >> Removes memory.limit < memsw.limit at setting limit check completely.
-> >>
-> >> The limitation "memory.limit <= memsw.limit" was added just because
-> >> it seems sane ...if memory.limit > memsw.limit, only memsw.limit works.
-> >>
-> >> But To implement this limitation, we needed to use private mutex and
-> >> make
-> >> the code a bit complated.
-> >> As Nishimura pointed out, in real world, there are people who only want
-> >> to use memsw.limit.
-> >>
-> >> Then, this patch removes the check. user-land library or middleware can
-> >> check
-> >> this in userland easily if this really concerns.
-> >>
-> >> And this is a good change to charge-and-reclaim.
-> >>
-> >> Now, memory.limit is always checked before memsw.limit
-> >> and it may do swap-out. But, if memory.limit == memsw.limit, swap-out is
-> >> finally no help and hits memsw.limit again. So, let's allow the
-> >> condition
-> >> memory.limit > memsw.limit. Then we can skip unnecesary swap-out.
-> >>
-> >> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> >> ---
-> >
-> > There is one other option, we could set memory.limit_in_bytes ==
-> > memory.memsw.limit_in_bytes provided it is set to LONG_LONG_MAX. I am
-> > not convinced that we should allow memsw.limit_in_bytes to be less
-> > that limit_in_bytes, it will create confusion and the API is already
-> > exposed.
-> >
-> Ahhhh, I get your point.
->  if memory.memsw.limit_in_bytes < memory.limit_in_bytes, no swap will
->  be used bacause currnet try_to_free_pages() for memcg skips swap-out.
->  Then, only global-LRU will use swap.
->  This behavior is not easy to understand.
-> 
-> Sorry, I don't push this patch as this is. But adding documentation about
-> "What happens when you set memory.limit == memsw.limit" will be necessary.
-> 
-I agree.
+On Thu, Jun 04, 2009 at 11:00:16AM -0700, Randy Dunlap wrote:
+>From: Randy Dunlap <randy.dunlap@oracle.com>
+>Subject: kmap_types: make most arches use generic header file
+>
+>Convert most arches (*except frv*) to use asm-generic/kmap_types.h.
+>Each arch still has its own kmap_types.h for customization if
+>needed (like frv).
+>
+>KM_FENCE is now controlled by CONFIG_HIGHMEM.
+>
+>Built on x86_64, i386, mips, sparc32, sparc64,
+>alpha, powerpc64, ia64, and m68k.
+>
+>Note: Removed KM_PTE2 from generic kmap_types.h file; it was defined
+>but not used by avr32.
+>
+>Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+>Cc: <linux-arch@vger.kernel.org>
+>Acked-by: Mike Frysinger <vapier@gentoo.org>
+>Cc: Richard Henderson <rth@twiddle.net>
+>Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+>Cc: Bryan Wu <cooloney@kernel.org>
+>Cc: Mikael Starvik <starvik@axis.com>
+>Cc: Hirokazu Takata <takata@linux-m32r.org>
+>Cc: "Luck Tony" <tony.luck@intel.com>
+>Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+>Cc: Ralf Baechle <ralf@linux-mips.org>
+>Cc: David Howells <dhowells@redhat.com>
+>Cc: Kyle McMartin <kyle@mcmartin.ca>
+>Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+>Cc: Paul Mundt <lethal@linux-sh.org>
+>Cc: "David S. Miller" <davem@davemloft.net>
+>Cc: Ingo Molnar <mingo@elte.hu>
+>Cc: Thomas Gleixner <tglx@linutronix.de>
+>Cc: "H. Peter Anvin" <hpa@zytor.com>
+>Cc: Arnd Bergmann <arnd@arndb.de>
 
-> ...maybe give all jobs to user-land and keep the kernel as it is now
-> is a good choice.
-> 
-> BTW, I'd like to avoid useless swap-out in memory.limit == memsw.limit case.
-> If someone has good idea, please :(
-> 
-I think so too.
+UML only uses KM_TYPE_NR and KM_UML_USERCOPY, so
+this patch should be fine for UML.
 
->From my simple thoughts, how about changing __mem_cgroup_try_charge() like:
-
-1. initialize "noswap" as "bool noswap = !!(mem->res.limit == mem->memsw.limit)".
-2. add check "if (mem->res.limit == mem->memsw.limit)" on charge failure to mem->res
-   and set "noswap" to true if needed. 
-3. charge mem->memsw before mem->res.
-
-There would be other ideas, but I prefer 1 among these choices.
-
-
-Thanks,
-Daisuke Nishimura.
+Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
