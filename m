@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbZFENWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZFENWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754784AbZFENWj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 09:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbZFENWT
+	id S1755092AbZFENWt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 09:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbZFENWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 09:22:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33801 "EHLO hera.kernel.org"
+	Fri, 5 Jun 2009 09:22:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59066 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752475AbZFENWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 09:22:16 -0400
-Date: Fri, 5 Jun 2009 13:21:43 GMT
+	id S1754395AbZFENWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 09:22:31 -0400
+Date: Fri, 5 Jun 2009 13:21:54 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
@@ -20,29 +20,29 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
        tglx@linutronix.de, mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter: Generate mmap events for install_special_mapping()
-Message-ID: <tip-089dd79db9264dc0da602bad45d42f1b3e7d1e07@git.kernel.org>
-Git-Commit-ID: 089dd79db9264dc0da602bad45d42f1b3e7d1e07
+Subject: [tip:perfcounters/core] perf report: Deal with maps
+Message-ID: <tip-fc54db5105d01ad691a7d747064c7890e17f936c@git.kernel.org>
+Git-Commit-ID: fc54db5105d01ad691a7d747064c7890e17f936c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 05 Jun 2009 13:21:44 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 05 Jun 2009 13:21:56 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  089dd79db9264dc0da602bad45d42f1b3e7d1e07
-Gitweb:     http://git.kernel.org/tip/089dd79db9264dc0da602bad45d42f1b3e7d1e07
+Commit-ID:  fc54db5105d01ad691a7d747064c7890e17f936c
+Gitweb:     http://git.kernel.org/tip/fc54db5105d01ad691a7d747064c7890e17f936c
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Fri, 5 Jun 2009 14:04:55 +0200
+AuthorDate: Fri, 5 Jun 2009 14:04:59 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Fri, 5 Jun 2009 14:46:41 +0200
 
-perf_counter: Generate mmap events for install_special_mapping()
+perf report: Deal with maps
 
-In order to track the vdso also generate mmap events for
-install_special_mapping().
+In order to deal with [vdso] maps generalize the ip->symbol path
+a bit and allow to override some bits with custom functions.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
@@ -53,148 +53,126 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/perf_counter.h |   14 ++++++++------
- kernel/perf_counter.c        |   34 ++++++++++++++++++++++------------
- mm/mmap.c                    |    5 +++--
- 3 files changed, 33 insertions(+), 20 deletions(-)
+ Documentation/perf_counter/builtin-report.c |   37 +++++++++++++++++++++++++-
+ Documentation/perf_counter/util/symbol.c    |    1 +
+ Documentation/perf_counter/util/symbol.h    |    1 +
+ 3 files changed, 37 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index 6ca403a..40dc0e2 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -617,8 +617,13 @@ static inline int is_software_counter(struct perf_counter *counter)
+diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
+index eb5424f..9783d1e 100644
+--- a/Documentation/perf_counter/builtin-report.c
++++ b/Documentation/perf_counter/builtin-report.c
+@@ -79,6 +79,7 @@ typedef union event_union {
  
- extern void perf_swcounter_event(u32, u64, int, struct pt_regs *, u64);
+ static LIST_HEAD(dsos);
+ static struct dso *kernel_dso;
++static struct dso *vdso;
  
--extern void perf_counter_mmap(unsigned long addr, unsigned long len,
--			      unsigned long pgoff, struct file *file);
-+extern void __perf_counter_mmap(struct vm_area_struct *vma);
-+
-+static inline void perf_counter_mmap(struct vm_area_struct *vma)
+ static void dsos__add(struct dso *dso)
+ {
+@@ -136,6 +137,11 @@ static void dsos__fprintf(FILE *fp)
+ 		dso__fprintf(pos, fp);
+ }
+ 
++static struct symbol *vdso__find_symbol(struct dso *dso, uint64_t ip)
 +{
-+	if (vma->vm_flags & VM_EXEC)
-+		__perf_counter_mmap(vma);
++	return dso__find_symbol(kernel_dso, ip);
 +}
++
+ static int load_kernel(void)
+ {
+ 	int err;
+@@ -151,6 +157,14 @@ static int load_kernel(void)
+ 	} else
+ 		dsos__add(kernel_dso);
  
- extern void perf_counter_comm(struct task_struct *tsk);
- extern void perf_counter_fork(struct task_struct *tsk);
-@@ -668,10 +673,7 @@ static inline void
- perf_swcounter_event(u32 event, u64 nr, int nmi,
- 		     struct pt_regs *regs, u64 addr)			{ }
- 
--static inline void
--perf_counter_mmap(unsigned long addr, unsigned long len,
--		  unsigned long pgoff, struct file *file)		{ }
--
-+static inline void perf_counter_mmap(struct vm_area_struct *vma)	{ }
- static inline void perf_counter_comm(struct task_struct *tsk)		{ }
- static inline void perf_counter_fork(struct task_struct *tsk)		{ }
- static inline void perf_counter_init(void)				{ }
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index a5d3e2a..37a5a24 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -2255,7 +2255,7 @@ out:
++	vdso = dso__new("[vdso]", 0);
++	if (!vdso)
++		return -1;
++
++	vdso->find_symbol = vdso__find_symbol;
++
++	dsos__add(vdso);
++
+ 	return err;
  }
  
- static void perf_output_copy(struct perf_output_handle *handle,
--			     void *buf, unsigned int len)
-+			     const void *buf, unsigned int len)
+@@ -173,9 +187,20 @@ struct map {
+ 	uint64_t	 start;
+ 	uint64_t	 end;
+ 	uint64_t	 pgoff;
++	uint64_t	 (*map_ip)(struct map *, uint64_t);
+ 	struct dso	 *dso;
+ };
+ 
++static uint64_t map__map_ip(struct map *map, uint64_t ip)
++{
++	return ip - map->start + map->pgoff;
++}
++
++static uint64_t vdso__map_ip(struct map *map, uint64_t ip)
++{
++	return ip;
++}
++
+ static struct map *map__new(struct mmap_event *event)
  {
- 	unsigned int pages_mask;
- 	unsigned int offset;
-@@ -2681,9 +2681,10 @@ void perf_counter_comm(struct task_struct *task)
-  */
- 
- struct perf_mmap_event {
--	struct file	*file;
--	char		*file_name;
--	int		file_size;
-+	struct vm_area_struct	*vma;
+ 	struct map *self = malloc(sizeof(*self));
+@@ -201,6 +226,11 @@ static struct map *map__new(struct mmap_event *event)
+ 		self->dso = dsos__findnew(filename);
+ 		if (self->dso == NULL)
+ 			goto out_delete;
 +
-+	const char		*file_name;
-+	int			file_size;
- 
- 	struct {
- 		struct perf_event_header	header;
-@@ -2744,11 +2745,12 @@ static void perf_counter_mmap_event(struct perf_mmap_event *mmap_event)
- {
- 	struct perf_cpu_context *cpuctx;
- 	struct perf_counter_context *ctx;
--	struct file *file = mmap_event->file;
-+	struct vm_area_struct *vma = mmap_event->vma;
-+	struct file *file = vma->vm_file;
- 	unsigned int size;
- 	char tmp[16];
- 	char *buf = NULL;
--	char *name;
-+	const char *name;
- 
- 	if (file) {
- 		buf = kzalloc(PATH_MAX, GFP_KERNEL);
-@@ -2762,6 +2764,15 @@ static void perf_counter_mmap_event(struct perf_mmap_event *mmap_event)
- 			goto got_name;
- 		}
- 	} else {
-+		name = arch_vma_name(mmap_event->vma);
-+		if (name)
-+			goto got_name;
-+
-+		if (!vma->vm_mm) {
-+			name = strncpy(tmp, "[vdso]", sizeof(tmp));
-+			goto got_name;
-+		}
-+
- 		name = strncpy(tmp, "//anon", sizeof(tmp));
- 		goto got_name;
++		if (self->dso == vdso)
++			self->map_ip = vdso__map_ip;
++		else
++			self->map_ip = map__map_ip;
  	}
-@@ -2791,8 +2802,7 @@ got_name:
- 	kfree(buf);
- }
+ 	return self;
+ out_delete:
+@@ -917,8 +947,8 @@ process_overflow_event(event_t *event, unsigned long offset, unsigned long head)
  
--void perf_counter_mmap(unsigned long addr, unsigned long len,
--		       unsigned long pgoff, struct file *file)
-+void __perf_counter_mmap(struct vm_area_struct *vma)
- {
- 	struct perf_mmap_event mmap_event;
+ 		map = thread__find_map(thread, ip);
+ 		if (map != NULL) {
++			ip = map->map_ip(map, ip);
+ 			dso = map->dso;
+-			ip -= map->start + map->pgoff;
+ 		} else {
+ 			/*
+ 			 * If this is outside of all known maps,
+@@ -938,7 +968,10 @@ process_overflow_event(event_t *event, unsigned long offset, unsigned long head)
+ 	}
  
-@@ -2800,12 +2810,12 @@ void perf_counter_mmap(unsigned long addr, unsigned long len,
- 		return;
- 
- 	mmap_event = (struct perf_mmap_event){
--		.file   = file,
-+		.vma	= vma,
- 		.event  = {
- 			.header = { .type = PERF_EVENT_MMAP, },
--			.start  = addr,
--			.len    = len,
--			.pgoff  = pgoff,
-+			.start  = vma->vm_start,
-+			.len    = vma->vm_end - vma->vm_start,
-+			.pgoff  = vma->vm_pgoff,
- 		},
- 	};
- 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 6451ce2..8101de4 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1220,8 +1220,7 @@ munmap_back:
- 	if (correct_wcount)
- 		atomic_inc(&inode->i_writecount);
- out:
--	if (vm_flags & VM_EXEC)
--		perf_counter_mmap(addr, len, pgoff, file);
-+	perf_counter_mmap(vma);
- 
- 	mm->total_vm += len >> PAGE_SHIFT;
- 	vm_stat_account(mm, vm_flags, file, len >> PAGE_SHIFT);
-@@ -2309,6 +2308,8 @@ int install_special_mapping(struct mm_struct *mm,
- 
- 	mm->total_vm += len >> PAGE_SHIFT;
- 
-+	perf_counter_mmap(vma);
+ 	if (show & show_mask) {
+-		struct symbol *sym = dso__find_symbol(dso, ip);
++		struct symbol *sym = NULL;
 +
- 	return 0;
- }
++		if (dso)
++			sym = dso->find_symbol(dso, ip);
+ 
+ 		if (hist_entry__add(thread, map, dso, sym, ip, level)) {
+ 			fprintf(stderr,
+diff --git a/Documentation/perf_counter/util/symbol.c b/Documentation/perf_counter/util/symbol.c
+index 15d5cf9..a06bbfb 100644
+--- a/Documentation/perf_counter/util/symbol.c
++++ b/Documentation/perf_counter/util/symbol.c
+@@ -45,6 +45,7 @@ struct dso *dso__new(const char *name, unsigned int sym_priv_size)
+ 		strcpy(self->name, name);
+ 		self->syms = RB_ROOT;
+ 		self->sym_priv_size = sym_priv_size;
++		self->find_symbol = dso__find_symbol;
+ 	}
+ 
+ 	return self;
+diff --git a/Documentation/perf_counter/util/symbol.h b/Documentation/perf_counter/util/symbol.h
+index 8dd8522..e23cc31 100644
+--- a/Documentation/perf_counter/util/symbol.h
++++ b/Documentation/perf_counter/util/symbol.h
+@@ -16,6 +16,7 @@ struct dso {
+ 	struct list_head node;
+ 	struct rb_root	 syms;
+ 	unsigned int	 sym_priv_size;
++	struct symbol    *(*find_symbol)(struct dso *, uint64_t ip);
+ 	char		 name[0];
+ };
  
