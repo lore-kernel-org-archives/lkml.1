@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbZFEDLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbZFEDME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753199AbZFEDLw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 23:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZFEDLo
+	id S1755000AbZFEDME (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 23:12:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbZFEDLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 23:11:44 -0400
-Received: from mga14.intel.com ([143.182.124.37]:6816 "EHLO mga14.intel.com"
+	Thu, 4 Jun 2009 23:11:48 -0400
+Received: from mga09.intel.com ([134.134.136.24]:4678 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751721AbZFEDLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 23:11:43 -0400
+	id S1753575AbZFEDLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 23:11:47 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,308,1241420400"; 
-   d="scan'208";a="150923503"
-Subject: [PATCH] x86: MCE: Fake panic support for MCE testing
+   d="scan'208";a="419050739"
+Subject: [PATCH 1/2 -v2] x86: MCE: Support specifying context for software
+ mce injection
 From: Huang Ying <ying.huang@intel.com>
 To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Fri, 05 Jun 2009 11:11:43 +0800
-Message-Id: <1244171503.8361.493.camel@yhuang-dev.sh.intel.com>
+Date: Fri, 05 Jun 2009 11:11:46 +0800
+Message-Id: <1244171506.8361.494.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
@@ -27,125 +28,259 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fake panic support for MCE testing
+The cpu context is specified via the new mce.inject_flags fields.
+This allows more realistic machine check testing in different
+situations. "RANDOM" context is implemented via NMI broadcasting to
+add randomization to testing.
 
-If "fake panic" mode is turned on, just log panic message instead of
-go real panic. This is used for testing only, so that the test suite
-can check for the correct panic message.
+AK: Fix NMI broadcasting check. Some race fixes. Move to
+module. Various changes
 
-This patch is based on x86-tip.git/mce3.
+
+ChangeLog:
+
+v2:
+
+- Re-base on latest x86-tip.git/mce3
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- arch/x86/kernel/cpu/mcheck/mce.c |   65 +++++++++++++++++++++++++++++++--------
- 1 file changed, 53 insertions(+), 12 deletions(-)
+ arch/x86/include/asm/mce.h              |   11 +-
+ arch/x86/kernel/cpu/mcheck/mce-inject.c |  153 +++++++++++++++++++++++++-------
+ 2 files changed, 132 insertions(+), 32 deletions(-)
 
---- a/arch/x86/kernel/cpu/mcheck/mce.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce.c
-@@ -218,6 +218,9 @@ static void print_mce_tail(void)
+--- a/arch/x86/kernel/cpu/mcheck/mce-inject.c
++++ b/arch/x86/kernel/cpu/mcheck/mce-inject.c
+@@ -18,6 +18,10 @@
+ #include <linux/string.h>
+ #include <linux/fs.h>
+ #include <linux/smp.h>
++#include <linux/notifier.h>
++#include <linux/kdebug.h>
++#include <linux/cpu.h>
++#include <linux/sched.h>
+ #include <asm/mce.h>
  
- static atomic_t mce_paniced;
+ /* Update fake mce registers on current CPU. */
+@@ -39,44 +43,139 @@ static void inject_mce(struct mce *m)
+ 	i->finished = 1;
+ }
  
-+static int fake_panic;
-+static atomic_t mce_fake_paniced;
+-struct delayed_mce {
+-	struct timer_list timer;
+-	struct mce m;
++static void raise_corrected(struct mce *m)
++{
++	unsigned long flags;
++	mce_banks_t b;
 +
- /* Panic in progress. Enable interrupts and wait for final IPI */
- static void wait_for_panic(void)
- {
-@@ -236,15 +239,21 @@ static void mce_panic(char *msg, struct 
- 	int i;
- 	int first = 1;
- 
--	/*
--	 * Make sure only one CPU runs in machine check panic
--	 */
--	if (atomic_add_return(1, &mce_paniced) > 1)
--		wait_for_panic();
--	barrier();
-+	if (!fake_panic) {
-+		/*
-+		 * Make sure only one CPU runs in machine check panic
-+		 */
-+		if (atomic_add_return(1, &mce_paniced) > 1)
-+			wait_for_panic();
-+		barrier();
- 
--	bust_spinlocks(1);
--	console_verbose();
-+		bust_spinlocks(1);
-+		console_verbose();
-+	} else {
-+		/* Don't log too much for fake panic */
-+		if (atomic_add_return(1, &mce_fake_paniced) > 1)
-+			return;
++	memset(&b, 0xff, sizeof(mce_banks_t));
++	local_irq_save(flags);
++	machine_check_poll(0, &b);
++	local_irq_restore(flags);
++	m->finished = 0;
++}
++
++static void raise_uncorrected(struct mce *m, struct pt_regs *pregs)
++{
++	struct pt_regs regs;
++	unsigned long flags;
++
++	if (!pregs) {
++		memset(&regs, 0, sizeof(struct pt_regs));
++		regs.ip = m->ip;
++		regs.cs = m->cs;
++		pregs = &regs;
 +	}
- 	/* First print corrected ones that are still unlogged */
- 	for (i = 0; i < MCE_LOG_LEN; i++) {
- 		struct mce *m = &mcelog.entry[i];
-@@ -267,9 +276,12 @@ static void mce_panic(char *msg, struct 
- 	print_mce_tail();
- 	if (exp)
- 		printk(KERN_EMERG "Machine check: %s\n", exp);
--	if (panic_timeout == 0)
--		panic_timeout = mce_panic_timeout;
--	panic(msg);
-+	if (!fake_panic) {
-+		if (panic_timeout == 0)
-+			panic_timeout = mce_panic_timeout;
-+		panic(msg);
-+	} else
-+		printk(KERN_EMERG "Fake kernel panic: %s\n", msg);
- }
- 
- /* Support code for software error injection */
-@@ -1671,9 +1683,38 @@ static ssize_t store_int_with_restart(st
- 	return ret;
- }
- 
-+static void mce_reset(void)
-+{
-+	cpu_missing = 0;
-+	atomic_set(&mce_fake_paniced, 0);
-+	atomic_set(&mce_executing, 0);
-+	atomic_set(&mce_callin, 0);
-+	atomic_set(&global_nwo, 0);
++	/* in mcheck exeception handler, irq will be disabled */
++	local_irq_save(flags);
++	do_machine_check(pregs, 0);
++	local_irq_restore(flags);
++	m->finished = 0;
 +}
 +
-+static ssize_t show_fake_panic(struct sys_device *s,
-+			       struct sysdev_attribute *attr,
-+			       char *buf)
++static cpumask_t mce_inject_cpumask;
++
++static int mce_raise_notify(struct notifier_block *self,
++			    unsigned long val, void *data)
 +{
-+	return sprintf(buf, "%d\n", fake_panic);
++	struct die_args *args = (struct die_args *)data;
++	int cpu = smp_processor_id();
++	struct mce *m = &__get_cpu_var(injectm);
++	if (val != DIE_NMI_IPI || !cpu_isset(cpu, mce_inject_cpumask))
++		return NOTIFY_DONE;
++	cpu_clear(cpu, mce_inject_cpumask);
++	if (m->status & MCI_STATUS_UC)
++		raise_uncorrected(m, args->regs);
++	else if (m->status)
++		raise_corrected(m);
++	return NOTIFY_STOP;
 +}
 +
-+static ssize_t set_fake_panic(struct sys_device *s,
-+			      struct sysdev_attribute *attr,
-+			      const char *buf, size_t siz)
-+{
-+	u64 new;
-+	if (strict_strtoull(buf, 0, &new) < 0)
-+		return -EINVAL;
-+	mce_reset();
-+	fake_panic = new;
-+	return siz;
-+}
-+
- static SYSDEV_ATTR(trigger, 0644, show_trigger, set_trigger);
- static SYSDEV_INT_ATTR(tolerant, 0644, tolerant);
- static SYSDEV_INT_ATTR(monarch_timeout, 0644, monarch_timeout);
-+static SYSDEV_ATTR(fake_panic, 0644, show_fake_panic, set_fake_panic);
- 
- static struct sysdev_ext_attribute attr_check_interval = {
- 	_SYSDEV_ATTR(check_interval, 0644, sysdev_show_int,
-@@ -1683,7 +1724,7 @@ static struct sysdev_ext_attribute attr_
- 
- static struct sysdev_attribute *mce_attrs[] = {
- 	&attr_tolerant.attr, &attr_check_interval.attr, &attr_trigger,
--	&attr_monarch_timeout.attr,
-+	&attr_monarch_timeout.attr, &attr_fake_panic,
- 	NULL
++static struct notifier_block mce_raise_nb = {
++	.notifier_call = mce_raise_notify,
++	.priority = 1000,
  };
  
+ /* Inject mce on current CPU */
+-static void raise_mce(unsigned long data)
++static int raise_local(struct mce *m)
+ {
+-	struct delayed_mce *dm = (struct delayed_mce *)data;
+-	struct mce *m = &dm->m;
++	int context = MCJ_CTX(m->inject_flags);
++	int ret = 0;
+ 	int cpu = m->extcpu;
+ 
+-	inject_mce(m);
+ 	if (m->status & MCI_STATUS_UC) {
+-		struct pt_regs regs;
+-		memset(&regs, 0, sizeof(struct pt_regs));
+-		regs.ip = m->ip;
+-		regs.cs = m->cs;
+ 		printk(KERN_INFO "Triggering MCE exception on CPU %d\n", cpu);
+-		do_machine_check(&regs, 0);
++		switch (context) {
++		case MCJ_CTX_IRQ:
++			/*
++			 * Could do more to fake interrupts like
++			 * calling irq_enter, but the necessary
++			 * machinery isn't exported currently.
++			 */
++			/*FALL THROUGH*/
++		case MCJ_CTX_PROCESS:
++			raise_uncorrected(m, NULL);
++			break;
++		default:
++			printk(KERN_INFO "Invalid MCE context\n");
++			ret = -EINVAL;
++		}
+ 		printk(KERN_INFO "MCE exception done on CPU %d\n", cpu);
+-	} else {
+-		mce_banks_t b;
+-		memset(&b, 0xff, sizeof(mce_banks_t));
++	} else if (m->status) {
+ 		printk(KERN_INFO "Starting machine check poll CPU %d\n", cpu);
+-		machine_check_poll(0, &b);
++		raise_corrected(m);
+ 		mce_notify_irq();
+-		printk(KERN_INFO "Finished machine check poll on CPU %d\n",
+-		       cpu);
+-	}
+-	kfree(dm);
++		printk(KERN_INFO "Machine check poll done on CPU %d\n", cpu);
++	} else
++		m->finished = 0;
++
++	return ret;
++}
++
++static void raise_mce(struct mce *m)
++{
++	int context = MCJ_CTX(m->inject_flags);
++
++	inject_mce(m);
++
++	if (context == MCJ_CTX_RANDOM)
++		return;
++
++	if (m->inject_flags & MCJ_NMI_BROADCAST) {
++		unsigned long start;
++		int cpu;
++		get_online_cpus();
++		mce_inject_cpumask = cpu_online_map;
++		cpu_clear(get_cpu(), mce_inject_cpumask);
++		for_each_online_cpu(cpu) {
++			struct mce *mcpu = &per_cpu(injectm, cpu);
++			if (!mcpu->finished ||
++			    MCJ_CTX(mcpu->inject_flags) != MCJ_CTX_RANDOM)
++				cpu_clear(cpu, mce_inject_cpumask);
++		}
++		if (!cpus_empty(mce_inject_cpumask))
++			apic->send_IPI_mask(&mce_inject_cpumask, NMI_VECTOR);
++		start = jiffies;
++		while (!cpus_empty(mce_inject_cpumask)) {
++			if (!time_before(jiffies, start + 2*HZ)) {
++				printk(KERN_ERR
++				"Timeout waiting for mce inject NMI %lx\n",
++					*cpus_addr(mce_inject_cpumask));
++				break;
++			}
++			cpu_relax();
++		}
++		raise_local(m);
++		put_cpu();
++		put_online_cpus();
++	} else
++		raise_local(m);
+ }
+ 
+ /* Error injection interface */
+ static ssize_t mce_write(struct file *filp, const char __user *ubuf,
+ 			 size_t usize, loff_t *off)
+ {
+-	struct delayed_mce *dm;
+ 	struct mce m;
+ 
+ 	if (!capable(CAP_SYS_ADMIN))
+@@ -96,19 +195,12 @@ static ssize_t mce_write(struct file *fi
+ 	if (m.extcpu >= num_possible_cpus() || !cpu_online(m.extcpu))
+ 		return -EINVAL;
+ 
+-	dm = kmalloc(sizeof(struct delayed_mce), GFP_KERNEL);
+-	if (!dm)
+-		return -ENOMEM;
+-
+ 	/*
+ 	 * Need to give user space some time to set everything up,
+ 	 * so do it a jiffie or two later everywhere.
+-	 * Should we use a hrtimer here for better synchronization?
+ 	 */
+-	memcpy(&dm->m, &m, sizeof(struct mce));
+-	setup_timer(&dm->timer, raise_mce, (unsigned long)dm);
+-	dm->timer.expires = jiffies + 2;
+-	add_timer_on(&dm->timer, m.extcpu);
++	schedule_timeout(2);
++	raise_mce(&m);
+ 	return usize;
+ }
+ 
+@@ -116,6 +208,7 @@ static int inject_init(void)
+ {
+ 	printk(KERN_INFO "Machine check injector initialized\n");
+ 	mce_chrdev_ops.write = mce_write;
++	register_die_notifier(&mce_raise_nb);
+ 	return 0;
+ }
+ 
+--- a/arch/x86/include/asm/mce.h
++++ b/arch/x86/include/asm/mce.h
+@@ -38,6 +38,13 @@
+ #define MCM_ADDR_MEM	 3	/* memory address */
+ #define MCM_ADDR_GENERIC 7	/* generic */
+ 
++#define MCJ_CTX_MASK		3
++#define MCJ_CTX(flags)		((flags) & MCJ_CTX_MASK)
++#define MCJ_CTX_RANDOM		0    /* inject context: random */
++#define MCJ_CTX_PROCESS		1    /* inject context: process */
++#define MCJ_CTX_IRQ		2    /* inject context: IRQ */
++#define MCJ_NMI_BROADCAST	4    /* do NMI broadcasting */
++
+ /* Fields are zero when not available */
+ struct mce {
+ 	__u64 status;
+@@ -48,8 +55,8 @@ struct mce {
+ 	__u64 tsc;	/* cpu time stamp counter */
+ 	__u64 time;	/* wall time_t when error was detected */
+ 	__u8  cpuvendor;	/* cpu vendor as encoded in system.h */
+-	__u8  pad1;
+-	__u16 pad2;
++	__u8  inject_flags;	/* software inject flags */
++	__u16  pad;
+ 	__u32 cpuid;	/* CPUID 1 EAX */
+ 	__u8  cs;		/* code segment */
+ 	__u8  bank;	/* machine check bank */
 
 
