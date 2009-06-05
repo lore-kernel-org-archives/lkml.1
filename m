@@ -1,100 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753701AbZFEBrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbZFEBsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753701AbZFEBrj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 21:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbZFEBrb
+	id S1753036AbZFEBsm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 21:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbZFEBse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 21:47:31 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:39767 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbZFEBrb (ORCPT
+	Thu, 4 Jun 2009 21:48:34 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:48855 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752138AbZFEBsd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 21:47:31 -0400
-To: suresh.b.siddha@intel.com
-Cc: "mingo\@elte.hu" <mingo@elte.hu>, "hpa\@zytor.com" <hpa@zytor.com>,
-       "tglx\@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "ak\@linux.intel.com" <ak@linux.intel.com>,
-       "travis\@sgi.com" <travis@sgi.com>,
-       "steiner\@sgi.com" <steiner@sgi.com>, Gary Hade <garyhade@us.ibm.com>
-Subject: Re: [patch] x64: Avoid irq_chip mask/unmask in fixup_irqs for interrupt-remapping
-References: <1244141989.27006.10369.camel@localhost.localdomain>
-	<m1iqjbd243.fsf@fess.ebiederm.org>
-	<1244164694.27006.10374.camel@localhost.localdomain>
-	<1244164783.27006.10375.camel@localhost.localdomain>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 04 Jun 2009 18:47:25 -0700
-In-Reply-To: <1244164783.27006.10375.camel@localhost.localdomain> (Suresh Siddha's message of "Thu\, 04 Jun 2009 18\:19\:43 -0700")
-Message-ID: <m1vdnb4fki.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 4 Jun 2009 21:48:33 -0400
+Date: Thu, 4 Jun 2009 21:48:16 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Matt Mackall <mpm@selenic.com>, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: [PATCH] crypto: add optional continuous repetition test to
+	entropy store based rngs
+Message-ID: <20090605014816.GA15462@localhost.localdomain>
+References: <20090604195030.GA11300@hmsreliant.think-freely.org> <1244146450.22069.216.camel@calx> <20090605000456.GA10883@localhost.localdomain> <20090605003006.GA5236@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: suresh.b.siddha@intel.com, garyhade@us.ibm.com, steiner@sgi.com, travis@sgi.com, ak@linux.intel.com, linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com, mingo@elte.hu
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <20090605003006.GA5236@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha <suresh.b.siddha@intel.com> writes:
+On Fri, Jun 05, 2009 at 10:30:06AM +1000, Herbert Xu wrote:
+> On Thu, Jun 04, 2009 at 08:04:56PM -0400, Neil Horman wrote:
+> >
+> > Not sure what to do about this.  The intent is to provide the external reference
+> > to the fips_enabled flag (which is either defined as an extern in or #defined to
+> > 0 dependent on CONFIG_CRYPTO_FIPS).  I can cut'n'paste the code block from the
+> > include file and put it in here, but that seems like a worse solution to me.
+> > Let me know your thoughts, and I can change this accordingly.
+> 
+> You can put the fips flag into its own header file, e.g., linux/fips.h.
+> 
 
-> On Thu, 2009-06-04 at 18:18 -0700, Suresh Siddha wrote:
->> On Thu, 2009-06-04 at 16:13 -0700, Eric W. Biederman wrote:
->> > Suresh Siddha <suresh.b.siddha@intel.com> writes:
->> > 
->> > > From: Suresh Siddha <suresh.b.siddha@intel.com>
->> > > Subject: x64: Avoid irq_chip mask/unmask in fixup_irqs for interrupt-remapping
->> > >
->> > > In the presence of interrupt-remapping, irqs will be migrated in the
->> > > process context and we don't do (and there is no need to) irq_chip mask/unmask
->> > > while migrating the interrupt.
->> > >
->> > > Similarly fix the fixup_irqs() that get called during cpu offline and avoid
->> > > calling irq_chip mask/unmask for irqs that are ok to be migrated in the
->> > > process context.
->> > >
->> > > While we didn't observe any race condition with the existing code,
->> > > this change takes complete advantage of interrupt-remapping in
->> > > the newer generation platforms and avoids any potential HW lockup's
->> > > (that often worry Eric :)
->> > 
->> > You now apparently fail to migrate the irq threads in tandem with
->> > the rest of the irqs.
->> 
->> Eric, Are you referring to Gary's issues? As far as I understand, they
->> don't happen in the presence of interrupt-remapping.
->> 
->> Can you ack this patch, as this avoid touching IO-APIC and MSI entries
->> and does fixup_irqs() in a much more reliable fashion.
->
-> in the presence of interrupt-remapping ofcourse :)
+Ok, that seems like a reasonable idea.  new patch below
+Change Notes:
 
-As far as this patch goes it looks like an improvement.
+1) Moved fips_enabled flag into its own header, included in all the appropriate
+places
 
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+2) removed flags field from entropy store, keying continuous test on the
+non-null status of the last_data pointer
 
-However after looking at Gary's issues I see some things that are still wrong
-on this path.
 
-1) We don't do the part of irq migration that moves irq threads.
-   We aren't using irq threads yet but still
+FIPS-140 requires that all random number generators implement continuous self
+tests in which each extracted block of data is compared against the last block
+for repetition.  The ansi_cprng implements such a test, but it would be nice if
+the hw rng's did the same thing.  Obviously its not something thats always
+needed, but it seems like it would be a nice feature to have on occasion. I've
+written the below patch which allows individual entropy stores to be flagged as
+desiring a continuous test to be run on them as is extracted.  By default this
+option is off, but is enabled in the event that fips mode is selected during
+bootup.
 
-   If we could figure out how to call irq_set_affinity for the IRQ_MOVE_PCNTXT
-   code path that would make the maintenance a lot simpler.
+Neil
 
-2) We still diverge on 32bit vs 64bit for no reason.
-   I expect the fixed 64bit version should be moved into apic/io_apic.c
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
-3) We still enable irqs for a short while after this to let things drain.
-   I am wondering if that is really necessary.    It does very simply
-   allow the irq cleanup ipi to happen, and it unjams any irqs that happened
-   before we migrated them.
 
-   If we wanted to very strictly follow the rules I guess we could do something
-   like the cleanup_ipi by hand on the cpu that is going down and rebroadcast
-   all of the pending irqs to another cpu to process.
+crypto/internal.h     |    7 +------
+drivers/char/random.c |   14 ++++++++++++++
+include/linux/fips.h  |   10 ++++++++++
+3 files changed, 25 insertions(+), 6 deletions(-)
 
-Eric
+diff --git a/crypto/internal.h b/crypto/internal.h
+index fc76e1f..769b713 100644
+--- a/crypto/internal.h
++++ b/crypto/internal.h
+@@ -25,12 +25,7 @@
+ #include <linux/notifier.h>
+ #include <linux/rwsem.h>
+ #include <linux/slab.h>
+-
+-#ifdef CONFIG_CRYPTO_FIPS
+-extern int fips_enabled;
+-#else
+-#define fips_enabled 0
+-#endif
++#include <linux/fips.h>
+ 
+ /* Crypto notification events. */
+ enum {
+diff --git a/drivers/char/random.c b/drivers/char/random.c
+index 8c74448..d8a9255 100644
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -240,6 +240,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/percpu.h>
+ #include <linux/cryptohash.h>
++#include <linux/fips.h>
+ 
+ #ifdef CONFIG_GENERIC_HARDIRQS
+ # include <linux/irq.h>
+@@ -413,6 +414,7 @@ struct entropy_store {
+ 	unsigned add_ptr;
+ 	int entropy_count;
+ 	int input_rotate;
++	__u8 *last_data;
+ };
+ 
+ static __u32 input_pool_data[INPUT_POOL_WORDS];
+@@ -852,12 +854,21 @@ static ssize_t extract_entropy(struct entropy_store *r, void *buf,
+ {
+ 	ssize_t ret = 0, i;
+ 	__u8 tmp[EXTRACT_SIZE];
++	unsigned long flags;
+ 
+ 	xfer_secondary_pool(r, nbytes);
+ 	nbytes = account(r, nbytes, min, reserved);
+ 
+ 	while (nbytes) {
+ 		extract_buf(r, tmp);
++
++		if (r->last_data) {
++			spin_lock_irqsave(&r->lock, flags);
++			if (!memcmp(tmp, r->last_data, EXTRACT_SIZE))
++				panic("Hardware RNG duplicated output!\n");
++			memcpy(r->last_data, tmp, EXTRACT_SIZE);
++			spin_unlock_irqrestore(&r->lock, flags);
++		}
+ 		i = min_t(int, nbytes, EXTRACT_SIZE);
+ 		memcpy(buf, tmp, i);
+ 		nbytes -= i;
+@@ -940,6 +951,9 @@ static void init_std_data(struct entropy_store *r)
+ 	now = ktime_get_real();
+ 	mix_pool_bytes(r, &now, sizeof(now));
+ 	mix_pool_bytes(r, utsname(), sizeof(*(utsname())));
++	/* Enable continuous test in fips mode */
++	if (fips_enabled)
++		r->last_data = kmalloc(EXTRACT_SIZE, GFP_KERNEL);
+ }
+ 
+ static int rand_initialize(void)
+diff --git a/include/linux/fips.h b/include/linux/fips.h
+new file mode 100644
+index 0000000..f8fb07b
+--- /dev/null
++++ b/include/linux/fips.h
+@@ -0,0 +1,10 @@
++#ifndef _FIPS_H
++#define _FIPS_H
++
++#ifdef CONFIG_CRYPTO_FIPS
++extern int fips_enabled;
++#else
++#define fips_enabled 0
++#endif
++
++#endif
+> Cheers,
+> -- 
+> Visit Openswan at http://www.openswan.org/
+> Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+> Home Page: http://gondor.apana.org.au/~herbert/
+> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> 
