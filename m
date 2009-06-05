@@ -1,38 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbZFEK7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbZFELAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753024AbZFEK7i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 06:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZFEK7a
+	id S1753440AbZFELAu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 07:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbZFELAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 06:59:30 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:59233 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbZFEK7a (ORCPT
+	Fri, 5 Jun 2009 07:00:42 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3718 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbZFELAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 06:59:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=nWL2YLPKfqCcbnkOIwsCb+Thnn5Ia8l7WqxG1IQCBAaP9ontDbXprr2HScT3infC0U
-         BkAnqbTfZ+8jNfDzVuewOaaPzvNXHIme6u30OCSFyNo6B5uUcC8cAnpNzlkceX2HsjxS
-         n8v4Ih2bxzL8haZH5ugT24jTdn8mkYuZ+NoHA=
-MIME-Version: 1.0
-Date: Fri, 5 Jun 2009 14:59:31 +0400
-Message-ID: <f44001920906050359h5edc6782n69aa91472aae418f@mail.gmail.com>
-Subject: Can kmalloc( ) with __GFP_WAIT flag fail?
-From: Igor Zhbanov <izh1979@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 5 Jun 2009 07:00:42 -0400
+Subject: Re: [PATCH] eeepc-laptop.c: use pr_fmt and pr_<level>
+From: Joe Perches <joe@perches.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: acpi4asus-user@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>,
+       Len Brown <len.brown@intel.com>, Corentin Chary <corentincj@iksaif.net>,
+       Matthew Garrett <mjg@redhat.com>,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+In-Reply-To: <4A28F94A.6040500@tuffmail.co.uk>
+References: <1244197103.3631.40.camel@Joe-Laptop.home>
+	 <4A28F94A.6040500@tuffmail.co.uk>
+Content-Type: text/plain
+Date: Fri, 05 Jun 2009 04:00:33 -0700
+Message-Id: <1244199633.3631.43.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Fri, 2009-06-05 at 11:54 +0100, Alan Jenkins wrote:
+> Is EEEPC_HOTK_FILE used anywhere else?  It would be clearer if you were 
+> able to just use "eeepc: " or whatever and remove the definition of 
+> EEEPC_HOTK_FILE.
 
-Can kmalloc( ) fail when invoked with __GFP_WAIT flag (which is
-implied by GFP_KERNEL)?
-And for what reason it may fail?
+It is used elsewhere and perhaps it'd be better to use KBUILD_MODNAME.
 
-Thanks.
+cheers, Joe
+
