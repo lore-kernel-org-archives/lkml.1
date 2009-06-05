@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbZFEIXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756870AbZFEIXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758161AbZFEIXX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 04:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbZFEIHA
+	id S1756870AbZFEIXl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 04:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbZFEIHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 04:07:00 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:37487 "EHLO smtp.gentoo.org"
+	Fri, 5 Jun 2009 04:07:03 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:37490 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755757AbZFEIGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 04:06:09 -0400
+	id S1754767AbZFEIGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 04:06:10 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
-Cc: uclinux-dist-devel@blackfin.uclinux.org,
-       Sonic Zhang <sonic.zhang@analog.com>
-Subject: [PATCH 50/62] Blackfin: add SSYNC to set_dma_sg() for descriptor fetching
-Date: Fri,  5 Jun 2009 04:04:59 -0400
-Message-Id: <1244189111-19639-51-git-send-email-vapier@gentoo.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org
+Subject: [PATCH 52/62] Blackfin: rename Blackfin relocs according to the toolchain
+Date: Fri,  5 Jun 2009 04:05:01 -0400
+Message-Id: <1244189111-19639-53-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.3.1
 In-Reply-To: <1244189111-19639-1-git-send-email-vapier@gentoo.org>
 References: <1244189111-19639-1-git-send-email-vapier@gentoo.org>
@@ -23,39 +22,184 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sonic Zhang <sonic.zhang@analog.com>
+The latest Blackfin toolchain has fixed its relocation scheme to match
+other ports: always use R_BFIN_ prefix and capitalize everything.  This
+brings the kernel in line with those fixes.
 
-Make sure the internal core buffers are flushed before telling the DMA
-engine to fetch the descriptor structure so that it gets the right values.
-
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/include/asm/dma.h |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+ arch/blackfin/include/asm/elf.h |   84 +++++++++++++++++++-------------------
+ arch/blackfin/kernel/module.c   |   22 +++++-----
+ 2 files changed, 53 insertions(+), 53 deletions(-)
 
-diff --git a/arch/blackfin/include/asm/dma.h b/arch/blackfin/include/asm/dma.h
-index 46c5618..c9a5962 100644
---- a/arch/blackfin/include/asm/dma.h
-+++ b/arch/blackfin/include/asm/dma.h
-@@ -206,10 +206,16 @@ static inline unsigned long get_dma_curr_addr(unsigned int channel)
+diff --git a/arch/blackfin/include/asm/elf.h b/arch/blackfin/include/asm/elf.h
+index cdbfcfc..230e160 100644
+--- a/arch/blackfin/include/asm/elf.h
++++ b/arch/blackfin/include/asm/elf.h
+@@ -55,50 +55,50 @@ do {											\
+ #define ELF_FDPIC_CORE_EFLAGS	EF_BFIN_FDPIC
+ #define ELF_EXEC_PAGESIZE	4096
  
- static inline void set_dma_sg(unsigned int channel, struct dmasg *sg, int ndsize)
- {
-+	/* Make sure the internal data buffers in the core are drained
-+	 * so that the DMA descriptors are completely written when the
-+	 * DMA engine goes to fetch them below.
-+	 */
-+	SSYNC();
-+
-+	dma_ch[channel].regs->next_desc_ptr = sg;
- 	dma_ch[channel].regs->cfg =
- 		(dma_ch[channel].regs->cfg & ~(0xf << 8)) |
- 		((ndsize & 0xf) << 8);
--	dma_ch[channel].regs->next_desc_ptr = sg;
- }
+-#define	R_unused0	0	/* relocation type 0 is not defined */
+-#define R_pcrel5m2	1	/*LSETUP part a */
+-#define R_unused1	2	/* relocation type 2 is not defined */
+-#define R_pcrel10	3	/* type 3, if cc jump <target>  */
+-#define R_pcrel12_jump	4	/* type 4, jump <target> */
+-#define R_rimm16	5	/* type 0x5, rN = <target> */
+-#define R_luimm16	6	/* # 0x6, preg.l=<target> Load imm 16 to lower half */
+-#define R_huimm16  	7	/* # 0x7, preg.h=<target> Load imm 16 to upper half */
+-#define R_pcrel12_jump_s 8	/* # 0x8 jump.s <target> */
+-#define R_pcrel24_jump_x 9	/* # 0x9 jump.x <target> */
+-#define R_pcrel24       10	/* # 0xa call <target> , not expandable */
+-#define R_unusedb       11	/* # 0xb not generated */
+-#define R_unusedc       12	/* # 0xc  not used */
+-#define R_pcrel24_jump_l 13	/*0xd jump.l <target> */
+-#define R_pcrel24_call_x 14	/* 0xE, call.x <target> if <target> is above 24 bit limit call through P1 */
+-#define R_var_eq_symb    15	/* 0xf, linker should treat it same as 0x12 */
+-#define R_byte_data      16	/* 0x10, .byte var = symbol */
+-#define R_byte2_data     17	/* 0x11, .byte2 var = symbol */
+-#define R_byte4_data     18	/* 0x12, .byte4 var = symbol and .var var=symbol */
+-#define R_pcrel11        19	/* 0x13, lsetup part b */
+-#define R_unused14      20	/* 0x14, undefined */
+-#define R_unused15       21	/* not generated by VDSP 3.5 */
++#define R_BFIN_UNUSED0         0   /* relocation type 0 is not defined */
++#define R_BFIN_PCREL5M2        1   /* LSETUP part a */
++#define R_BFIN_UNUSED1         2   /* relocation type 2 is not defined */
++#define R_BFIN_PCREL10         3   /* type 3, if cc jump <target> */
++#define R_BFIN_PCREL12_JUMP    4   /* type 4, jump <target> */
++#define R_BFIN_RIMM16          5   /* type 0x5, rN = <target> */
++#define R_BFIN_LUIMM16         6   /* # 0x6, preg.l=<target> Load imm 16 to lower half */
++#define R_BFIN_HUIMM16         7   /* # 0x7, preg.h=<target> Load imm 16 to upper half */
++#define R_BFIN_PCREL12_JUMP_S  8   /* # 0x8 jump.s <target> */
++#define R_BFIN_PCREL24_JUMP_X  9   /* # 0x9 jump.x <target> */
++#define R_BFIN_PCREL24         10  /* # 0xa call <target> , not expandable */
++#define R_BFIN_UNUSEDB         11  /* # 0xb not generated */
++#define R_BFIN_UNUSEDC         12  /* # 0xc  not used */
++#define R_BFIN_PCREL24_JUMP_L  13  /* 0xd jump.l <target> */
++#define R_BFIN_PCREL24_CALL_X  14  /* 0xE, call.x <target> if <target> is above 24 bit limit call through P1 */
++#define R_BFIN_VAR_EQ_SYMB     15  /* 0xf, linker should treat it same as 0x12 */
++#define R_BFIN_BYTE_DATA       16  /* 0x10, .byte var = symbol */
++#define R_BFIN_BYTE2_DATA      17  /* 0x11, .byte2 var = symbol */
++#define R_BFIN_BYTE4_DATA      18  /* 0x12, .byte4 var = symbol and .var var=symbol */
++#define R_BFIN_PCREL11         19  /* 0x13, lsetup part b */
++#define R_BFIN_UNUSED14        20  /* 0x14, undefined */
++#define R_BFIN_UNUSED15        21  /* not generated by VDSP 3.5 */
  
- static inline int dma_channel_active(unsigned int channel)
+ /* arithmetic relocations */
+-#define R_push		 0xE0
+-#define R_const		 0xE1
+-#define R_add		 0xE2
+-#define R_sub		 0xE3
+-#define R_mult		 0xE4
+-#define R_div		 0xE5
+-#define R_mod		 0xE6
+-#define R_lshift	 0xE7
+-#define R_rshift	 0xE8
+-#define R_and		 0xE9
+-#define R_or		 0xEA
+-#define R_xor		 0xEB
+-#define R_land		 0xEC
+-#define R_lor		 0xED
+-#define R_len		 0xEE
+-#define R_neg		 0xEF
+-#define R_comp		 0xF0
+-#define R_page		 0xF1
+-#define R_hwpage	 0xF2
+-#define R_addr		 0xF3
++#define R_BFIN_PUSH            0xE0
++#define R_BFIN_CONST           0xE1
++#define R_BFIN_ADD             0xE2
++#define R_BFIN_SUB             0xE3
++#define R_BFIN_MULT            0xE4
++#define R_BFIN_DIV             0xE5
++#define R_BFIN_MOD             0xE6
++#define R_BFIN_LSHIFT          0xE7
++#define R_BFIN_RSHIFT          0xE8
++#define R_BFIN_AND             0xE9
++#define R_BFIN_OR              0xEA
++#define R_BFIN_XOR             0xEB
++#define R_BFIN_LAND            0xEC
++#define R_BFIN_LOR             0xED
++#define R_BFIN_LEN             0xEE
++#define R_BFIN_NEG             0xEF
++#define R_BFIN_COMP            0xF0
++#define R_BFIN_PAGE            0xF1
++#define R_BFIN_HWPAGE          0xF2
++#define R_BFIN_ADDR            0xF3
+ 
+ /* This is the location that an ET_DYN program is loaded if exec'ed.  Typical
+    use of this is to invoke "./ld.so someprog" to test out a new version of
+diff --git a/arch/blackfin/kernel/module.c b/arch/blackfin/kernel/module.c
+index 1bd7f2d..d5aee36 100644
+--- a/arch/blackfin/kernel/module.c
++++ b/arch/blackfin/kernel/module.c
+@@ -201,8 +201,8 @@ apply_relocate(Elf_Shdr * sechdrs, const char *strtab,
+ /*            Arithmetic relocations are handled.                        */
+ /*            We do not expect LSETUP to be split and hence is not       */
+ /*            handled.                                                   */
+-/*            R_byte and R_byte2 are also not handled as the gas         */
+-/*            does not generate it.                                      */
++/*            R_BFIN_BYTE and R_BFIN_BYTE2 are also not handled as the   */
++/*            gas does not generate it.                                  */
+ /*************************************************************************/
+ int
+ apply_relocate_add(Elf_Shdr * sechdrs, const char *strtab,
+@@ -243,8 +243,8 @@ apply_relocate_add(Elf_Shdr * sechdrs, const char *strtab,
+ #endif
+ 		switch (ELF32_R_TYPE(rel[i].r_info)) {
+ 
+-		case R_pcrel24:
+-		case R_pcrel24_jump_l:
++		case R_BFIN_PCREL24:
++		case R_BFIN_PCREL24_JUMP_L:
+ 			/* Add the value, subtract its postition */
+ 			location16 =
+ 			    (uint16_t *) (sechdrs[sechdrs[relsec].sh_info].
+@@ -266,18 +266,18 @@ apply_relocate_add(Elf_Shdr * sechdrs, const char *strtab,
+ 			    (*location16 & 0xff00) | (value >> 16 & 0x00ff);
+ 			*(location16 + 1) = value & 0xffff;
+ 			break;
+-		case R_pcrel12_jump:
+-		case R_pcrel12_jump_s:
++		case R_BFIN_PCREL12_JUMP:
++		case R_BFIN_PCREL12_JUMP_S:
+ 			value -= (uint32_t) location32;
+ 			value >>= 1;
+ 			*location16 = (value & 0xfff);
+ 			break;
+-		case R_pcrel10:
++		case R_BFIN_PCREL10:
+ 			value -= (uint32_t) location32;
+ 			value >>= 1;
+ 			*location16 = (value & 0x3ff);
+ 			break;
+-		case R_luimm16:
++		case R_BFIN_LUIMM16:
+ 			pr_debug("before %x after %x\n", *location16,
+ 				       (value & 0xffff));
+ 			tmp = (value & 0xffff);
+@@ -286,7 +286,7 @@ apply_relocate_add(Elf_Shdr * sechdrs, const char *strtab,
+ 			} else
+ 				*location16 = tmp;
+ 			break;
+-		case R_huimm16:
++		case R_BFIN_HUIMM16:
+ 			pr_debug("before %x after %x\n", *location16,
+ 				       ((value >> 16) & 0xffff));
+ 			tmp = ((value >> 16) & 0xffff);
+@@ -295,10 +295,10 @@ apply_relocate_add(Elf_Shdr * sechdrs, const char *strtab,
+ 			} else
+ 				*location16 = tmp;
+ 			break;
+-		case R_rimm16:
++		case R_BFIN_RIMM16:
+ 			*location16 = (value & 0xffff);
+ 			break;
+-		case R_byte4_data:
++		case R_BFIN_BYTE4_DATA:
+ 			pr_debug("before %x after %x\n", *location32, value);
+ 			*location32 = value;
+ 			break;
 -- 
 1.6.3.1
 
