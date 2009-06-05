@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbZFEBOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753701AbZFEBUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807AbZFEBOr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 4 Jun 2009 21:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZFEBOi
+	id S1753701AbZFEBUp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 4 Jun 2009 21:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZFEBUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 4 Jun 2009 21:14:38 -0400
-Received: from mga09.intel.com ([134.134.136.24]:24627 "EHLO mga09.intel.com"
+	Thu, 4 Jun 2009 21:20:38 -0400
+Received: from mga02.intel.com ([134.134.136.20]:55933 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751576AbZFEBOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 4 Jun 2009 21:14:37 -0400
+	id S1752138AbZFEBUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 4 Jun 2009 21:20:37 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,307,1241420400"; 
-   d="scan'208";a="419030121"
-Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, tytso@mit.edu, chris.mason@oracle.com,
-       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
-       jack@suse.cz, richard@rsk.demon.co.uk, damien.wyart@free.fr
-In-Reply-To: <20090604152040.GA6007@nowhere>
-References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com>
-	 <20090604152040.GA6007@nowhere>
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 05 Jun 2009 09:14:47 +0800
-Message-Id: <1244164487.2560.146.camel@ymzhang>
+   d="scan'208";a="521924071"
+Subject: Re: [patch] x64: Avoid irq_chip mask/unmask in fixup_irqs for
+ interrupt-remapping
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "travis@sgi.com" <travis@sgi.com>, "steiner@sgi.com" <steiner@sgi.com>,
+       Gary Hade <garyhade@us.ibm.com>
+In-Reply-To: <m1iqjbd243.fsf@fess.ebiederm.org>
+References: <1244141989.27006.10369.camel@localhost.localdomain>
+	 <m1iqjbd243.fsf@fess.ebiederm.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Thu, 04 Jun 2009 18:18:14 -0700
+Message-Id: <1244164694.27006.10374.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-04 at 17:20 +0200, Frederic Weisbecker wrote:
-> Hi,
+On Thu, 2009-06-04 at 16:13 -0700, Eric W. Biederman wrote:
+> Suresh Siddha <suresh.b.siddha@intel.com> writes:
 > 
+> > From: Suresh Siddha <suresh.b.siddha@intel.com>
+> > Subject: x64: Avoid irq_chip mask/unmask in fixup_irqs for interrupt-remapping
+> >
+> > In the presence of interrupt-remapping, irqs will be migrated in the
+> > process context and we don't do (and there is no need to) irq_chip mask/unmask
+> > while migrating the interrupt.
+> >
+> > Similarly fix the fixup_irqs() that get called during cpu offline and avoid
+> > calling irq_chip mask/unmask for irqs that are ok to be migrated in the
+> > process context.
+> >
+> > While we didn't observe any race condition with the existing code,
+> > this change takes complete advantage of interrupt-remapping in
+> > the newer generation platforms and avoids any potential HW lockup's
+> > (that often worry Eric :)
 > 
-> On Thu, May 28, 2009 at 01:46:33PM +0200, Jens Axboe wrote:
-> > Hi,
-> > 
-> > Here's the 9th version of the writeback patches. Changes since v8:
+> You now apparently fail to migrate the irq threads in tandem with
+> the rest of the irqs.
 
-> I've just tested it on UP in a single disk.
-> 
-> I've run two parallels dbench tests on two partitions and
-> tried it with this patch and without.
-I also tested V9 with multiple-dbench workload by starting multiple
-dbench tasks and every task has 4 processes to do I/O on one partition (file
-system). Mostly I use JBODs which have 7/11/13 disks.
+Eric, Are you referring to Gary's issues? As far as I understand, they
+don't happen in the presence of interrupt-remapping.
 
-I didn't find result regression between ﻿vanilla and V9 kernel on this workload.
+Can you ack this patch, as this avoid touching IO-APIC and MSI entries
+and does fixup_irqs() in a much more reliable fashion.
 
-> 
-> I used 30 proc each during 600 secs.
-> 
-> You can see the result in attachment.
-> And also there:
-> 
-> http://kernel.org/pub/linux/kernel/people/frederic/dbench.pdf
-> http://kernel.org/pub/linux/kernel/people/frederic/bdi-writeback-hda1.log
-> http://kernel.org/pub/linux/kernel/people/frederic/bdi-writeback-hda3.log
-> http://kernel.org/pub/linux/kernel/people/frederic/pdflush-hda1.log
-> http://kernel.org/pub/linux/kernel/people/frederic/pdflush-hda3.log
-> 
-> 
-> As you can see, bdi writeback is faster than pdflush on hda1 and slower
-> on hda3. But, well that's not the point.
-> 
-> What I can observe here is the difference on the standard deviation
-> for the rate between two parallel writers on a same device (but
-> two different partitions, then superblocks).
-> 
-> With pdflush, the distributed rate is much better balanced than
-> with bdi writeback in a single device.
-> 
-> I'm not sure why. Is there something in these patches that makes
-> several bdi flusher threads for a same bdi not well balanced
-> between them?
-> 
-> Frederic.
+I haven't followed Gary's couple of patches related to non
+interrupt-remapping case. I will go through them and see how I can help
+there.
+
+thanks,
+suresh
 
