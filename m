@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752230AbZFEEUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZFEEUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752230AbZFEEUh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 00:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbZFEEU3
+	id S1754825AbZFEEUr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 00:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZFEEUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 00:20:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44174 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750716AbZFEEU2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 00:20:28 -0400
-Date: Thu, 4 Jun 2009 21:20:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Cc: linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
-       andreas.herrmann3@amd.com, mingo@elte.hu
-Subject: Re: [2.6.30-rc8] gcc 3.3 : __udivdi3 undefined.
-Message-Id: <20090604212018.b9e9f354.akpm@linux-foundation.org>
-In-Reply-To: <200906050400.n5540Sx0052981@www262.sakura.ne.jp>
-References: <200906050038.n550c4Ja010907@www262.sakura.ne.jp>
-	<20090605023835.GA7933@cr0.nay.redhat.com>
-	<20090604201733.746928c6.akpm@linux-foundation.org>
-	<200906050339.n553d684048041@www262.sakura.ne.jp>
-	<20090604205103.bbfe9af2.akpm@linux-foundation.org>
-	<200906050400.n5540Sx0052981@www262.sakura.ne.jp>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 5 Jun 2009 00:20:31 -0400
+Received: from mail.tmr.com ([64.65.253.246]:41489 "EHLO partygirl.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750739AbZFEEUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 00:20:30 -0400
+Message-ID: <4A289B96.7030808@tmr.com>
+Date: Fri, 05 Jun 2009 00:14:14 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 pango-text SeaMonkey/1.1.16
+MIME-Version: 1.0
+To: Frans Pop <elendil@planet.nl>
+CC: tglx@linutronix.de, george.dunlap@eu.citrix.com, davem@davemloft.net,
+       jeremy@goop.org, mingo@elte.hu, dan.magenheimer@oracle.com,
+       avi@redhat.com, xen-devel@lists.xensource.com, x86@kernel.org,
+       linux-kernel@vger.kernel.org, Keir.Fraser@eu.citrix.com,
+       torvalds@linux-foundation.org, gregkh@suse.de, kurt.hackel@oracle.com,
+       Ian.Pratt@eu.citrix.com, xen-users@lists.xensource.com,
+       ksrinivasan@novell.com, EAnderson@novell.com, wimcoekaerts@wimmekes.net,
+       stephen.spector@citrix.com, jens.axboe@oracle.com
+Subject: Re: Xen is a feature
+References: <162f4c90-6431-4a2a-b337-6d7451d7b11e@default> <20090528001350.GD26820@elte.hu> <4A1F302E.8030501@goop.org> <20090528.210559.137121893.davem@davemloft.net> <4A1FCE8E.2060604@eu.citrix.com> <alpine.LFD.2.00.0905311607560.3379@localhost.localdomain> <4A26D3D8.6080002@tmr.com> <alpine.LFD.2.00.0906032204220.3419@localhost.localdomain> <alpine.LFD.2.00.0906032204220.3419@localhost.localdomain> <4A26FB3B.6010205@tmr.com> <200906040129.07852.elendil@planet.nl>
+In-Reply-To: <200906040129.07852.elendil@planet.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 05 Jun 2009 13:00:28 +0900 Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp> wrote:
+Frans Pop wrote:
+> Bill Davidsen wrote:
+>   
+>> I was referring to your "no benefit" comment, I don't dispute the
+>> technical issues. I think the idea of moving the hypervisor into the
+>> kernel and letting xen folks do the external parts as they please.
+>>     
+>
+> Where does that come from? AFAICT Thomas never made a "no benefit" comment 
+> other than limited to the context of the technical implementation.
+>
+>   
+Where it comes from is his very recent statement, which contains those 
+very words. You may interpret what he said in any way you choose, but 
+denying that he said it shows that you didn't follow the link back. I 
+never denied the ugliness of the code, nor does the author, but it adds 
+a great deal of value for many people, and that's the point I was making.
 
-> > Perhaps it's this:
-> > 
-> > static void __init memtest(u64 pattern, u64 start_phys, u64 size)
-> > {
-> > 	u64 i, count;
-> > 	u64 *start;
-> > 	u64 start_bad, last_bad;
-> > 	u64 start_phys_aligned;
-> > 	size_t incr;
-> > 
-> > 	incr = sizeof(pattern);
-> > 	start_phys_aligned = ALIGN(start_phys, incr);
-> > 	count = (size - (start_phys_aligned - start_phys))/incr;
-> Bingo!
-
-OK, thanks.  We should fix this for 2.6.30.
-
-We could do the obvious:
-
---- a/arch/x86/mm/memtest.c~a
-+++ a/arch/x86/mm/memtest.c
-@@ -8,6 +8,7 @@
- #include <linux/pfn.h>
- 
- #include <asm/e820.h>
-+#include <asm/div64.h>
- 
- static u64 patterns[] __initdata = {
- 	0,
-@@ -48,7 +49,8 @@ static void __init memtest(u64 pattern, 
- 
- 	incr = sizeof(pattern);
- 	start_phys_aligned = ALIGN(start_phys, incr);
--	count = (size - (start_phys_aligned - start_phys))/incr;
-+	count = size - (start_phys_aligned - start_phys);
-+	do_div(count, incr);
- 	start = __va(start_phys_aligned);
- 	start_bad = 0;
- 	last_bad = 0;
-_
-
-but I wonder why all those things are u64.  They all hold virtual
-addresses, don't they?  The code doesn't test highmem.  So shouldn't
-these all be unsigned longs?
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  Even purely technical things can appear to be magic, if the documentation is
+obscure enough. For example, PulseAudio is configured by dancing naked around a
+fire at midnight, shaking a rattle with one hand and a LISP manual with the
+other, while reciting the GNU manifesto in hexadecimal. The documentation fails
+to note that you must circle the fire counter-clockwise in the southern
+hemisphere.
 
 
