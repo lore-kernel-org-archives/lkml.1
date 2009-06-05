@@ -1,148 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbZFERNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZFERSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895AbZFERNV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 13:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZFERNN
+	id S1754630AbZFERSw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 13:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZFERSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 13:13:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51952 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752743AbZFERNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 13:13:11 -0400
-Date: Fri, 5 Jun 2009 17:12:33 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter tools: Sample and display frequency adjustment changes
-Message-ID: <tip-b2fef0762fdb65cf8702eea93f4e58abeb0ecefc@git.kernel.org>
-Git-Commit-ID: b2fef0762fdb65cf8702eea93f4e58abeb0ecefc
-X-Mailer: tip-git-log-daemon
+	Fri, 5 Jun 2009 13:18:43 -0400
+Received: from smtp103.sbc.mail.gq1.yahoo.com ([67.195.15.62]:28156 "HELO
+	smtp103.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751302AbZFERSm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 13:18:42 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 05 Jun 2009 13:18:42 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Yx0OR9BslE7lh7hcgi/CF8vdJo5ja9z6Q1gFDyw+Bwxd7jwRv24QfQ6moTyXWTPISDWcdDSm353q3pv3fEFl636id3UuYwZozpfgxwyoxt+84lckDfOPF50y4U/WUCX44AqIePUG/nZVUmh63qWhY0YBYWD/U77oTVqapICbDAM=  ;
+X-Yahoo-SMTP: HIlLYKCswBDnjrunw3O.NnLyvismjGf1HBYfVTvuneM-
+X-YMail-OSG: Mya3sZkVM1m165cKOSbXNHq5dMizpefboCExigYWPLmpw8tjkXcsA2B9PQqaOA5zijQkPOqnSwQky_144Cuznx5fbPDrrcwV0ZD4vcPDBb8mw2uN3Z0KuF6w6Yi0CkQPypm1M8jqhD5fjjOx87i.7WPDoka386SwSRmxSyE6xNAGEY33VCgguXwAX4hoplK_MHhXyGacBivt.1tBbI_4jwj.EEoTTHP4qI6e3zSLHBiVO0osvuszIVbNwZO9XY04scM-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: Re: [PATCH] atmel_usba_udc: change way of specifying bias function
+Date: Fri, 5 Jun 2009 10:12:03 -0700
+User-Agent: KMail/1.9.10
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       haavard.skinnemoen@atmel.com, patrice.vilchez@atmel.com
+References: <1244216776-22760-1-git-send-email-nicolas.ferre@atmel.com>
+In-Reply-To: <1244216776-22760-1-git-send-email-nicolas.ferre@atmel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 05 Jun 2009 17:12:34 +0000 (UTC)
+Message-Id: <200906051012.04124.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b2fef0762fdb65cf8702eea93f4e58abeb0ecefc
-Gitweb:     http://git.kernel.org/tip/b2fef0762fdb65cf8702eea93f4e58abeb0ecefc
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Fri, 5 Jun 2009 18:07:51 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 5 Jun 2009 18:07:51 +0200
+On Friday 05 June 2009, Nicolas Ferre wrote:
+> The toggle_bias() function was specified differently for avr32 and at91
+> architectures. Now, new at91 have the same behavior as avr32.
+> Consequently, we change to a particular chip function definition: only for
+> at91sam9rl.
+> 
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+> Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 
-perf_counter tools: Sample and display frequency adjustment changes
-
-To allow the debugging of frequency-adjusting counters, sample
-those adjustments and display them in perf report -D.
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
 
----
- Documentation/perf_counter/builtin-record.c |    2 +-
- Documentation/perf_counter/builtin-report.c |   39 ++++++++++++++++++++++----
- 2 files changed, 34 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/perf_counter/builtin-record.c b/Documentation/perf_counter/builtin-record.c
-index d4ad305..43ddab3 100644
---- a/Documentation/perf_counter/builtin-record.c
-+++ b/Documentation/perf_counter/builtin-record.c
-@@ -347,7 +347,7 @@ static void create_counter(int counter, int cpu, pid_t pid)
- 	memset(&attr, 0, sizeof(attr));
- 	attr.config		= event_id[counter];
- 	attr.sample_period	= event_count[counter];
--	attr.sample_type	= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
-+	attr.sample_type	= PERF_SAMPLE_IP | PERF_SAMPLE_TID | PERF_SAMPLE_PERIOD;
- 	attr.freq		= freq;
- 	attr.mmap		= track;
- 	attr.comm		= track;
-diff --git a/Documentation/perf_counter/builtin-report.c b/Documentation/perf_counter/builtin-report.c
-index 5af105c..242e09f 100644
---- a/Documentation/perf_counter/builtin-report.c
-+++ b/Documentation/perf_counter/builtin-report.c
-@@ -69,12 +69,20 @@ struct fork_event {
- 	__u32 pid, ppid;
- };
- 
--typedef union event_union {
-+struct period_event {
- 	struct perf_event_header header;
--	struct ip_event ip;
--	struct mmap_event mmap;
--	struct comm_event comm;
--	struct fork_event fork;
-+	__u64 time;
-+	__u64 id;
-+	__u64 sample_period;
-+};
-+
-+typedef union event_union {
-+	struct perf_event_header	header;
-+	struct ip_event			ip;
-+	struct mmap_event		mmap;
-+	struct comm_event		comm;
-+	struct fork_event		fork;
-+	struct period_event		period;
- } event_t;
- 
- static LIST_HEAD(dsos);
-@@ -1053,6 +1061,19 @@ process_fork_event(event_t *event, unsigned long offset, unsigned long head)
- }
- 
- static int
-+process_period_event(event_t *event, unsigned long offset, unsigned long head)
-+{
-+	dprintf("%p [%p]: PERF_EVENT_PERIOD: time:%Ld, id:%Ld: period:%Ld\n",
-+		(void *)(offset + head),
-+		(void *)(long)(event->header.size),
-+		event->period.time,
-+		event->period.id,
-+		event->period.sample_period);
-+
-+	return 0;
-+}
-+
-+static int
- process_event(event_t *event, unsigned long offset, unsigned long head)
- {
- 	if (event->header.misc & PERF_EVENT_MISC_OVERFLOW)
-@@ -1068,11 +1089,12 @@ process_event(event_t *event, unsigned long offset, unsigned long head)
- 	case PERF_EVENT_FORK:
- 		return process_fork_event(event, offset, head);
- 
-+	case PERF_EVENT_PERIOD:
-+		return process_period_event(event, offset, head);
- 	/*
- 	 * We dont process them right now but they are fine:
- 	 */
- 
--	case PERF_EVENT_PERIOD:
- 	case PERF_EVENT_THROTTLE:
- 	case PERF_EVENT_UNTHROTTLE:
- 		return 0;
-@@ -1157,6 +1179,11 @@ more:
- 
- 	size = event->header.size;
- 
-+	dprintf("%p [%p]: event: %d\n",
-+			(void *)(offset + head),
-+			(void *)(long)event->header.size,
-+			event->header.type);
-+
- 	if (!size || process_event(event, offset, head) < 0) {
- 
- 		dprintf("%p [%p]: skipping unknown header type: %d\n",
+> ---
+> 
+>  drivers/usb/gadget/atmel_usba_udc.c |   16 ++++++++--------
+>  1 files changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/usb/gadget/atmel_usba_udc.c b/drivers/usb/gadget/atmel_usba_udc.c
+> index 563d572..a31df12 100644
+> --- a/drivers/usb/gadget/atmel_usba_udc.c
+> +++ b/drivers/usb/gadget/atmel_usba_udc.c
+> @@ -326,13 +326,7 @@ static int vbus_is_present(struct usba_udc *udc)
+>  	return 1;
+>  }
+>  
+> -#if defined(CONFIG_AVR32)
+> -
+> -static void toggle_bias(int is_on)
+> -{
+> -}
+> -
+> -#elif defined(CONFIG_ARCH_AT91)
+> +#if defined(CONFIG_ARCH_AT91SAM9RL)
+>  
+>  #include <mach/at91_pmc.h>
+>  
+> @@ -346,7 +340,13 @@ static void toggle_bias(int is_on)
+>  		at91_sys_write(AT91_CKGR_UCKR, uckr & ~(AT91_PMC_BIASEN));
+>  }
+>  
+> -#endif /* CONFIG_ARCH_AT91 */
+> +#else
+> +
+> +static void toggle_bias(int is_on)
+> +{
+> +}
+> +
+> +#endif /* CONFIG_ARCH_AT91SAM9RL */
+>  
+>  static void next_fifo_transaction(struct usba_ep *ep, struct usba_request *req)
+>  {
+> -- 
+> 1.5.3.7
+> 
+> 
+
+
