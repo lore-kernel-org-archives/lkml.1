@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbZFEE2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbZFEE2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755075AbZFEE2A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 00:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbZFEE1x
+	id S1755187AbZFEE2d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 00:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZFEE2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 00:27:53 -0400
-Received: from build.ossfans.org ([67.223.233.67]:34915 "EHLO
-	build.ossfans.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751398AbZFEE1w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 00:27:52 -0400
-Date: Fri, 5 Jun 2009 08:27:54 +0400
-From: Sergey Lapin <slapin@ossfans.org>
-To: linux-nfs@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: nfsd loads 90% CPU, client hangs
-Message-ID: <20090605042754.GB576@build.ossfans.org>
+	Fri, 5 Jun 2009 00:28:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52407 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752368AbZFEE2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 00:28:24 -0400
+Message-ID: <4A289E3A.30000@kernel.org>
+Date: Fri, 05 Jun 2009 13:25:30 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: David Miller <davem@davemloft.net>, JBeulich@novell.com,
+       andi@firstfloor.org, mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, x86@kernel.org, ink@jurassic.park.msu.ru,
+       rth@twiddle.net, linux@arm.linux.org.uk, hskinnemoen@atmel.com,
+       cooloney@kernel.org, starvik@axis.com, jesper.nilsson@axis.com,
+       dhowells@redhat.com, ysato@users.sourceforge.jp, tony.luck@intel.com,
+       takata@linux-m32r.org, geert@linux-m68k.org, monstr@monstr.eu,
+       ralf@linux-mips.org, kyle@mcmartin.ca, paulus@samba.org,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, lethal@linux-sh.org,
+       jdike@addtoit.com, chris@zankel.net, rusty@rustcorp.com.au,
+       jens.axboe@oracle.com, davej@redhat.com, jeremy@xensource.com,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 3/7] percpu: clean up percpu variable definitions
+References: <1243846708-805-1-git-send-email-tj@kernel.org>	 <1243846708-805-4-git-send-email-tj@kernel.org>	 <20090601.024006.98975069.davem@davemloft.net>	 <4A23BD20.5030500@kernel.org> <1243919336.5308.32.camel@pasglop>
+In-Reply-To: <1243919336.5308.32.camel@pasglop>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 05 Jun 2009 04:25:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, all!
+Benjamin Herrenschmidt wrote:
+> On Mon, 2009-06-01 at 20:36 +0900, Tejun Heo wrote:
+>>> Whether the volatile is actually needed or not, it's bad to have this
+>>> kind of potential behavior changing nugget hidden in this seemingly
+>>> inocuous change.  Especially if you're the poor soul who ends up
+>>> having to debug it :-/
+>> You're right.  Aieee... how do I feed volatile to the DEFINE macro.
+>> I'll think of something.
+> 
+> Or better, work with the cris maintainer to figure out whether it's
+> needed (it probably isn't) and have a pre-requisite patch that removes
+> it before your series :-)
 
-With recent kernels I see a problem with using NFS. It was broken
-somewhere after 2.6.27.
+Yeap, that's worth giving a shot.
 
-I have ARM board with several hard drives connected over USB 1.1
-dongles (USB->IDE, USB->SATA). And I have lvm2 over them.
-They produce 2 logical volumes with data, which are exported
-over NFS to PC host. ARM box runs vanilla kernel 2.6.30-rc8,
-and PC host runs Debian kernel 2.6.24. After some bigger file writes
-(when large amounts of data are written to disks) I experience the
-following error in logs on ARM nfsd server host. I use kernel nfsd here,
-to be clear. I use NFSv3.
+Mikael Starvik, can you please enlighten us why volatile is necessary
+there?
 
-INFO: task nfsd:1933 blocked for more than 120 seconds.
-"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this
-message.
-nfsd          D c02e29e8     0  1933      2
-[<c02e29e8>] (__schedule+0x2d8/0x348) from [<c02e374c>]
-(__mutex_lock_slowpath+0x8c/0xfc)
-[<c02e374c>] (__mutex_lock_slowpath+0x8c/0xfc) from [<c006d670>]
-(generic_file_aio_write+0x58/0xe8)
-[<c006d670>] (generic_file_aio_write+0x58/0xe8) from [<c00dc1ec>]
-(ext3_file_write+0x20/0xa0)
-[<c00dc1ec>] (ext3_file_write+0x20/0xa0) from [<c0093cc8>]
-(do_sync_readv_writev+0xac/0x100)
-[<c0093cc8>] (do_sync_readv_writev+0xac/0x100) from [<c00943e4>]
-(do_readv_writev+0xac/0x1b0)
-[<c00943e4>] (do_readv_writev+0xac/0x1b0) from [<c009454c>]
-(vfs_writev+0x64/0x74)
-[<c009454c>] (vfs_writev+0x64/0x74) from [<c0124c88>]
-(nfsd_vfs_write+0x10c/0x350)
-[<c0124c88>] (nfsd_vfs_write+0x10c/0x350) from [<c01257b4>]
-(nfsd_write+0xc0/0xd8)
-[<c01257b4>] (nfsd_write+0xc0/0xd8) from [<c012c354>]
-(nfsd3_proc_write+0xe8/0x114)
-[<c012c354>] (nfsd3_proc_write+0xe8/0x114) from [<c0120f90>]
-(nfsd_dispatch+0xcc/0x1e4)
-[<c0120f90>] (nfsd_dispatch+0xcc/0x1e4) from [<c02d3f34>]
-(svc_process+0x42c/0x7a8)
-[<c02d3f34>] (svc_process+0x42c/0x7a8) from [<c0121640>]
-(nfsd+0xe4/0x148)
-[<c0121640>] (nfsd+0xe4/0x148) from [<c0056720>] (kthread+0x58/0x90)
-[<c0056720>] (kthread+0x58/0x90) from [<c0044e90>] (do_exit+0x0/0x620)
-[<c0044e90>] (do_exit+0x0/0x620) from [<ffffffff>] (0xffffffff)
+Thanks.
 
-And then NFS doesn't work at all with nfsd consuming all of CPU it can.
-I see no hardware problems here, because files are perfectly accessible
-locally or over HTTP, and no USB or disk error messages.
-
-If I reboot ARM box without unmounting NFS shares on PC, the same
-situation occurs as soon as ARM box boots (excessively loaded CPU with
-nfsd at top, and NFS doesn't work and doesn't recover). If I unmount
-them, box boots fine, but fails again as soon as I repeat file
-operation.
-So, the question is - what causes it and if it is possible to fix this
-problem or work it around?
-
-Thanks a lot,
-S.
-
+-- 
+tejun
