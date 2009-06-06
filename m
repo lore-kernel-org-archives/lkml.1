@@ -1,102 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752271AbZFFGgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753399AbZFFGlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752271AbZFFGgb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 02:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbZFFGgY
+	id S1753399AbZFFGlh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 02:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZFFGla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 02:36:24 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43510 "EHLO
+	Sat, 6 Jun 2009 02:41:30 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:59145 "EHLO
 	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750720AbZFFGgX (ORCPT
+	with ESMTP id S1750879AbZFFGl3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 02:36:23 -0400
-Date: Sat, 6 Jun 2009 09:36:24 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: akpm@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, apw@canonical.com, colin.king@canonical.com,
-       tim.gardner@canonicalc.com, bjorn.helgaas@hp.com
-Subject: [PATCH 2/2] pnp: add PNP resource range checking function
-Message-ID: <Pine.LNX.4.64.0906060934500.11247@melkki.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 6 Jun 2009 02:41:29 -0400
+Message-ID: <4A2A0E8C.1010109@cs.helsinki.fi>
+Date: Sat, 06 Jun 2009 09:37:00 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Woody Suwalski <woodys@xandros.com>, jbarnes@virtuousgeek.org,
+       eric@anholt.net, intel-gfx@lists.freedesktop.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       stable@kernel.org, tim.gardner@canonical.com, apw@canonical.com,
+       stefan.bader@canonical.com
+Subject: Re: Intel 915GM MCHBAR bug
+References: <4A242C81.6020906@cs.helsinki.fi>	<4A298971.5080006@xandros.com>	<4A2A0951.1020608@cs.helsinki.fi> <20090605232711.d8503262.akpm@linux-foundation.org>
+In-Reply-To: <20090605232711.d8503262.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Hi Andrew,
 
-Add a PNP resource range check function, indicating whether a resource
-has been assigned to any device.
+On Sat, 06 Jun 2009 09:14:41 +0300 Pekka Enberg <penberg@cs.helsinki.fi> 
+wrote:
+>>>> Wanna show us the patch?
+>>>>
+>>>> Because the world could certainly do with more i915 bugfixes :(
+>>>   
+>>> Here is Jesse's patch from 
+>>> http://lists.freedesktop.org/archives/intel-gfx/2009-January/001186.html 
+>>> adopted for 2.6.30-rc8... (needed to redo hunk #3 for i915_gem_tile.c)
+>> Yup. I took the two patches from here:
+>>
+>> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/349314
+>>
+>> and did the same rediffing on top of 2.6.30-rc8 for the first one.
+>>
+>> Andrew, do you want me to forward you the (tested) patches or should we 
+>> wait for Jesse et al to take care of it?
+> 
+> Yes, please send them out.
 
-This patch fixes a serious performance regression on Asus Eee PC 701 (and
-probably other) systems. See the following URL for details:
+OK, I did that. I am bit unhappy that I had to do it, though. The patch 
+dates back to January (!) and Ubuntu folks have been carrying it for a 
+while now.
 
-  http://bugs.launchpad.net/bugs/349314
+Looking at the amount of reports out in the wild (on Ubuntu forums, 
+etc.), I really don't understand why this wasn't submitted earlier. 
+Instead, the bug was flagged with low priority because it's "just a 
+performance problem." Considering the system is more or less unusable 
+for me, I obviously think it's a critical bug fix.
 
-[ apw@canonical.com: fixed up exports et al ]
-Signed-off-by: Andy Whitcroft <apw@canonical.com>
-Acked-by: Colin King <colin.king@canonical.com>
-Acked-by: Tim Gardner <tim.gardner@canonicalc.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
-Andrew, I am not completely sure if this is needed or not. But apparently 
-the Ubuntu folks think it is and I did test the combination of these two 
-patches.
+Andrew Morton wrote:
+> These might end up being 2.6.30.1 material.
 
- drivers/pnp/resource.c |   18 ++++++++++++++++++
- include/linux/pnp.h    |    2 ++
- 2 files changed, 20 insertions(+), 0 deletions(-)
+Yes, agreed completely. We probably want ACK from Jesse and Bjorn, though.
 
-diff --git a/drivers/pnp/resource.c b/drivers/pnp/resource.c
-index f604061..ba97654 100644
---- a/drivers/pnp/resource.c
-+++ b/drivers/pnp/resource.c
-@@ -638,6 +638,24 @@ int pnp_possible_config(struct pnp_dev *dev, int type, resource_size_t start,
- }
- EXPORT_SYMBOL(pnp_possible_config);
- 
-+int pnp_range_reserved(resource_size_t start, resource_size_t end)
-+{
-+	struct pnp_dev *dev;
-+	struct pnp_resource *pnp_res;
-+	resource_size_t *dev_start, *dev_end;
-+
-+	pnp_for_each_dev(dev) {
-+		list_for_each_entry(pnp_res, &dev->resources, list) {
-+			dev_start = &pnp_res->res.start;
-+			dev_end   = &pnp_res->res.end;
-+			if (ranged_conflict(&start, &end, dev_start, dev_end))
-+				return 1;
-+		}
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL(pnp_range_reserved);
-+
- /* format is: pnp_reserve_irq=irq1[,irq2] .... */
- static int __init pnp_setup_reserve_irq(char *str)
- {
-diff --git a/include/linux/pnp.h b/include/linux/pnp.h
-index ca3c887..b063c73 100644
---- a/include/linux/pnp.h
-+++ b/include/linux/pnp.h
-@@ -446,6 +446,7 @@ int pnp_start_dev(struct pnp_dev *dev);
- int pnp_stop_dev(struct pnp_dev *dev);
- int pnp_activate_dev(struct pnp_dev *dev);
- int pnp_disable_dev(struct pnp_dev *dev);
-+int pnp_range_reserved(resource_size_t start, resource_size_t end);
- 
- /* protocol helpers */
- int pnp_is_active(struct pnp_dev *dev);
-@@ -476,6 +477,7 @@ static inline int pnp_start_dev(struct pnp_dev *dev) { return -ENODEV; }
- static inline int pnp_stop_dev(struct pnp_dev *dev) { return -ENODEV; }
- static inline int pnp_activate_dev(struct pnp_dev *dev) { return -ENODEV; }
- static inline int pnp_disable_dev(struct pnp_dev *dev) { return -ENODEV; }
-+static inline int pnp_range_reserved(resource_size_t start, resource_size_t end) { return 0;}
- 
- /* protocol helpers */
- static inline int pnp_is_active(struct pnp_dev *dev) { return 0; }
--- 
-1.5.6.3
-
+			Pekka
