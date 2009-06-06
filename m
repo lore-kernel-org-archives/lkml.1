@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754753AbZFFWIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbZFFWKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754753AbZFFWIm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 18:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZFFWId
+	id S1754625AbZFFWKU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 18:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbZFFWKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 18:08:33 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54633 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752712AbZFFWIc (ORCPT
+	Sat, 6 Jun 2009 18:10:09 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:37755 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753016AbZFFWKI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 18:08:32 -0400
-Date: Sat, 6 Jun 2009 23:08:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Grozdan <neutrino8@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Tejun Heo <tj@kernel.org>
-Subject: Re: Kernel 2.6.30rc7 limits IDE to UDMA33
-Message-ID: <20090606230852.200d1432@lxorguk.ukuu.org.uk>
-In-Reply-To: <4A2AB298.7020603@gmail.com>
-References: <c5bd819b0906021525l13ee9282j1fb270e141985f66@mail.gmail.com>
-	<4A25F688.9000407@gmail.com>
-	<c5bd819b0906030435w466368cbsd48be91a97597437@mail.gmail.com>
-	<20090603131407.57c490ed@lxorguk.ukuu.org.uk>
-	<c5bd819b0906030552w6f23185etb394f83c8b630e6@mail.gmail.com>
-	<20090603140140.491a8ea8@lxorguk.ukuu.org.uk>
-	<c5bd819b0906030639o5f9c34ffg500e132d3a0b5117@mail.gmail.com>
-	<c5bd819b0906040750w75e0389cod2a03b89ce838d1b@mail.gmail.com>
-	<20090605100505.41b3b818@lxorguk.ukuu.org.uk>
-	<c5bd819b0906050335i4e813887sc8f4d901da86a1aa@mail.gmail.com>
-	<20090605114245.175499e1@lxorguk.ukuu.org.uk>
-	<4A29C163.3080706@gmail.com>
-	<20090606155636.18bc4f2e@lxorguk.ukuu.org.uk>
-	<4A2AB298.7020603@gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Sat, 6 Jun 2009 18:10:08 -0400
+Date: Sun, 7 Jun 2009 00:12:23 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Catalin Marinas <catalin.marinas@arm.com>,
+       Tony Luck <tony.luck@intel.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Greg Ungerer <gerg@snapgear.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Michael Abbott <michael@araneidae.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [GIT PULL] headers_check fixes
+Message-ID: <20090606221223.GA20945@uranus.ravnborg.org>
+References: <1244118232.5172.26.camel@ht.satnam> <1244292857.2473.4.camel@ht.satnam> <20090606130210.GA9343@flint.arm.linux.org.uk> <1244299177.2473.21.camel@ht.satnam> <20090606214711.GA4813@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090606214711.GA4813@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Drive side detection doesn't work for many VIA boards, the neccessary
-> > components are not included.
+Hi Russell.
+
+On Sat, Jun 06, 2009 at 10:47:11PM +0100, Russell King wrote:
+> Right, below is a patch to unifdef.c which allows it to work out if
+> an #if expression always evaluates true or false for symbols which
+> are being undefined/always defined.
 > 
-> Ugh, seems they messed this stuff up as bad as NVIDIA did..
-
-Nvidia seem to have gotten it close to right. The Nvidia chipsets use
-ACPI for reporting and only ACPI. The ACPI parts are pretty reliable, its
-just if your ACPI is busted....
-
-> Well, that's pretty much the same thing that GTM does (it generally just 
-> reads the configured mode out of the controller registers). So it really 
-> wouldn't be much worse than what we're doing now.
+> The patch is slightly more complicated than I'd hoped because unifdef
+> needs to see lines fully evaluated - doing otherwise causes it to
+> mark the line as "dirty" and copy it over no matter what.
 > 
-> Thing is somehow the GTM detection isn't working now and it apparently 
-> was in 2.6.27.1. I'm not seeing any patches to pata_via or libata-acpi 
-> that seem like they would affect this offhand. Grozdan, would you be 
-> able to try git bisect to try to figure out what changed the behavior?
+> What follows this email is the diff of what effect it has on the
+> headers copied over - as can be seen, all resulting changes are of
+> net benefit.
 
-Could be power management. Something is putting devices into D3 that
-didn't use to happen. That was what broke the ALi ATA driver and I could
-believe a D3 transition of the IDE controller broke the BIOS
-configuration.
+You beat me on this one.
+I was looking into supportting short_circuit_and/short_circuit_or too.
+Your patch looks better - thanks!
+
+>From my very limited testing this patch suffers from a problem I faced too.
+When you run it on for example hwcap.h or my sample file:
+#if defined(__KERNEL__) && !defined(__ASSEMBLY__)
+  int a;
+#endif
+
+then the return code of the program is 1 so we do not copy the file.
+
+I'm heading for bed - will take a closer look tomorrow.
+
+	Sam
