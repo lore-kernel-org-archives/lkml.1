@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbZFFWWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754863AbZFFW17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbZFFWWi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 18:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751671AbZFFWW3
+	id S1754863AbZFFW17 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 18:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbZFFW1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 18:22:29 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:50039 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752423AbZFFWW2 (ORCPT
+	Sat, 6 Jun 2009 18:27:51 -0400
+Received: from smtp2.netcologne.de ([194.8.194.112]:33738 "EHLO
+	smtp2.netcologne.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751803AbZFFW1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 18:22:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Ca9qX5XPKVCW7P5BzZ3l6kA0tTmr3VLR6SN0omMn63UkxDX4OS9Mqo43vFLKGlVer0
-         M7dHDMN4JGnN7YT4k4+NO528jvm3Aw3V5U2PQlfs8giQD20QgQ5ZYl3LqS3sUwTMVBG1
-         7F7EbWeRAhPR8x5qFaBIaGIFBEXMM36ibz5SA=
-Subject: Re: [ANN] Atheros 802.11n USB firmware source code released
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, otus-devel@venema.h4ckr.net,
-       David Woodhouse <dwmw2@infradead.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <43e72e890906051204q22278e4cw6beeae27da50e988@mail.gmail.com>
-References: <43e72e890906051204q22278e4cw6beeae27da50e988@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 07 Jun 2009 01:22:23 +0300
-Message-Id: <1244326943.12159.5.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3
+	Sat, 6 Jun 2009 18:27:49 -0400
+X-Greylist: delayed 1663 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Jun 2009 18:27:49 EDT
+From: Mathias Kretschmer <mathias@blx4.net>
+Organization: BLX4
+To: Mike Dresser <mdresser_l@windsormachine.com>
+Subject: Re: [Bug #13375] Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
+Date: Sun, 7 Jun 2009 00:00:48 +0200
+User-Agent: KMail/1.9.9
+Cc: Mathias Kretschmer <posting@blx4.net>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Alex Samad <alex@samad.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Chinner <david@fromorbit.com>
+References: <THxQaUP0K2D.A.QkF.UVbIKB@chimera> <200906061011.34124.posting@blx4.net> <alpine.DEB.1.10.0906061138150.9860@router.windsormachine.com>
+In-Reply-To: <alpine.DEB.1.10.0906061138150.9860@router.windsormachine.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906070000.48960.mathias@blx4.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-05 at 12:04 -0700, Luis R. Rodriguez wrote:
-> I'm pleased to announce we have released the source code to our
-> Atheros 802.11n USB Otus/ar9170 device under the GPL. You can grab the
-> source, compile and use it with the upstream ar9170 device driver.
-> Patches are welcomed. The git tree available for this is at:
-> 
-> http://git.sipsolutions.net/ar9170-fw.git
-> 
-> For more information please visit the home page for this project is on
-> our Linux wireless wiki:
-> 
-> http://wireless.kernel.org/en/users/Drivers/ar9170.fw
-> 
-> The ar9170 device driver home page is at:
-> 
-> http://wireless.kernel.org/en/users/Drivers/ar9170
-> 
-> I'd like to thank Johannes Berg and Christian Lamparter for their
-> incredible contributions to the project both firmware and ar9170
-> driver so far without which this would not have been possible.
+On Saturday 06 June 2009 17:38:44 Mike Dresser wrote:
+> On Sat, 6 Jun 2009, Mathias Kretschmer wrote:
+> > Is your machine still happy ?
+> >
+> > If so, I'll give 2.6.30-rc8 a shot, as well.
+>
+> Still running, no crashes or errors so far
 
-I just want to say thanks!
+OK. running 2.6.30-rc8-git2.  no crashes, so far.
 
-I will buy this device very soon.
-Is this source for same firmware that was closed?
-Will AP mode work in future?
+but, same problem as with 2.6.29: tons of 'reconnect_path: npd != pd" messages 
+and stale NFS handles on the client boxes (i.e. my desktop).
 
-If you were to release the documentation, then it would be really
-possible to fix AP mode for this firmware.
+I upgraded from 2.6.25, which worked fine.
+
+The box is an AMD K8 (x86_64) with sata,raid6,lvm,xfs,nfsd.
+
+Mathias
 
 
-If you could just release ath5k documentation.... I would fix its
-numerous problems I have with my aspire one (AR2425)...
-
-
-Best regards,
-	Maxim Levitsky
-
+> Mike
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
