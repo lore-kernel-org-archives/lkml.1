@@ -1,61 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbZFFBH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753758AbZFFBWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755034AbZFFBH7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 21:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbZFFBHu
+	id S1753758AbZFFBWH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 21:22:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbZFFBV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 21:07:50 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:8465 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752979AbZFFBHt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 21:07:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Q3lBjKyxU34zmLJcln6yOFWDEbn21HOBj90hV53jXXvxMbBjbU4dP/+OYbSVfa6Yg+
-         4WTT2y/bDOYcVXGFzyMFv0fveL+IMikaRm73v6NLE53LuETVEPcXqvbcXdhwNen110sC
-         5Dp7Po2L1w0zBlSIdW7VJnG604A7cORH49FQ4=
-Message-ID: <4A29C163.3080706@gmail.com>
-Date: Fri, 05 Jun 2009 19:07:47 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Grozdan <neutrino8@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: Kernel 2.6.30rc7 limits IDE to UDMA33
-References: <c5bd819b0906021525l13ee9282j1fb270e141985f66@mail.gmail.com>	<4A25F688.9000407@gmail.com>	<c5bd819b0906030435w466368cbsd48be91a97597437@mail.gmail.com>	<20090603131407.57c490ed@lxorguk.ukuu.org.uk>	<c5bd819b0906030552w6f23185etb394f83c8b630e6@mail.gmail.com>	<20090603140140.491a8ea8@lxorguk.ukuu.org.uk>	<c5bd819b0906030639o5f9c34ffg500e132d3a0b5117@mail.gmail.com>	<c5bd819b0906040750w75e0389cod2a03b89ce838d1b@mail.gmail.com>	<20090605100505.41b3b818@lxorguk.ukuu.org.uk>	<c5bd819b0906050335i4e813887sc8f4d901da86a1aa@mail.gmail.com> <20090605114245.175499e1@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090605114245.175499e1@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 5 Jun 2009 21:21:56 -0400
+Received: from mga01.intel.com ([192.55.52.88]:20638 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752632AbZFFBVz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 21:21:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,313,1241420400"; 
+   d="scan'208";a="464007833"
+Subject: Re: [patch] x64: Avoid irq_chip mask/unmask in fixup_irqs for
+ interrupt-remapping
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "mingo@elte.hu" <mingo@elte.hu>, "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ak@linux.intel.com" <ak@linux.intel.com>,
+       "travis@sgi.com" <travis@sgi.com>, "steiner@sgi.com" <steiner@sgi.com>,
+       Gary Hade <garyhade@us.ibm.com>
+In-Reply-To: <m1vdnb4fki.fsf@fess.ebiederm.org>
+References: <1244141989.27006.10369.camel@localhost.localdomain>
+	 <m1iqjbd243.fsf@fess.ebiederm.org>
+	 <1244164694.27006.10374.camel@localhost.localdomain>
+	 <1244164783.27006.10375.camel@localhost.localdomain>
+	 <m1vdnb4fki.fsf@fess.ebiederm.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Fri, 05 Jun 2009 18:19:30 -0700
+Message-Id: <1244251170.27006.10537.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> I've relayed your reply to the pata_amd user on the forum. As for my
->> case with pata_via, until this is fixed, is there any way to force it
->> to use a higher UDMA? Is there a flag that can be passed in, for
+On Thu, 2009-06-04 at 18:47 -0700, Eric W. Biederman wrote:
+> As far as this patch goes it looks like an improvement.
 > 
-> In your case given the BIOS appears to be informing us you have a 40wire
-> cable there isn't much that can be fixed
-> 
->> example, in /sys somewhere? hdparm fails to set a higher UDMA and I
->> looked at sdparm but don't see anything in it to increase UDMA...
-> 
-> Tejun some time ago added stuff to override all of these things:
-> 
-> See Documentation/kernel-parameters.txt
-> 
-> 	libata.force=
-> 
-> which will let you override all sorts of autodetection for quirky boards
+> Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
 
-I wouldn't rule out the possibility of a bug. The code in pata_via looks 
-a bit fishy, it reports a 40-wire cable if either the GTM data wasn't 
-present or valid, or if it reports a mode of UDMA2 or less. In the 
-former case it seems like ATA_CABLE_PATA_UNK would be the safer choice 
-since we really don't know, and we should then use drive-side detection, 
-rather than assuming a 40-wire cable by default..
+Thanks. Ingo, Peter: Can you please queue this patch? Eric, more
+comments below.
+
+> However after looking at Gary's issues I see some things that are still wrong
+> on this path.
+> 
+> 1) We don't do the part of irq migration that moves irq threads.
+>    We aren't using irq threads yet but still
+> 
+
+Ok. Will look at the irq threads code (-rt tree?).
+
+>    If we could figure out how to call irq_set_affinity for the IRQ_MOVE_PCNTXT
+>    code path that would make the maintenance a lot simpler.
+
+Ok. Will post this cleanup sometime.
+
+> 
+> 2) We still diverge on 32bit vs 64bit for no reason.
+>    I expect the fixed 64bit version should be moved into apic/io_apic.c
+
+Agree.
+
+> 
+> 3) We still enable irqs for a short while after this to let things drain.
+>    I am wondering if that is really necessary.    It does very simply
+>    allow the irq cleanup ipi to happen, and it unjams any irqs that happened
+>    before we migrated them.
+
+Yes.
+
+>    If we wanted to very strictly follow the rules I guess we could do something
+>    like the cleanup_ipi by hand on the cpu that is going down and rebroadcast
+>    all of the pending irqs to another cpu to process.
+> 
+
+This will be ok for all the cases except the most difficult case (non
+interrupt-remapping and IO-APIC level triggered). We should service the
+pending interrupt from the same cpu 'X' (that is going down) because of
+the vector information (that is cpu 'X' specific) in the IO-APIC RTE.
+Otherwise we have to do directed EOI ( and I am not sure if all the
+IO-APIC's support that) to the io-apic.
+
+Is there a problem with enabling irqs in the fixup_irqs()?
+
+My old proposal (which will fix the stuck IRR issue seen by Gary) for
+fixing the level irq migration in fixup_irqs() is to do something like:
+
+Disable interrupts
+..
+Mask io-apic RTE
+check if the IRR is set
+if so,
+   unmask the io-apic RTE
+   enable interrupts
+   and go back to top
+else
+   ok to migrate the io-apic rte.
+
+So if there is any other reason for keeping the interrupts disabled
+during fixup_irqs(), then we need to think of another strategy to
+address this.
+
+Otherwise, If everyone agrees with this direction then we can try to
+comeup with a clean patch for this.
+
+thanks,
+suresh
+
