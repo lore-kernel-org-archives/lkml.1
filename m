@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbZFFPJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753563AbZFFPZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755145AbZFFPJd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 11:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZFFPJZ
+	id S1753563AbZFFPZa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 11:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZFFPZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 11:09:25 -0400
-Received: from cantor.suse.de ([195.135.220.2]:35154 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752149AbZFFPJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 11:09:24 -0400
-Date: Sat, 6 Jun 2009 07:57:56 -0700
-From: Greg KH <gregkh@suse.de>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Yunpeng Gao <yunpeng.gao@intel.com>, linux-kernel@vger.kernel.org,
-       "devel@linuxdriverproject.org" <devel@driverdev.osuosl.org>
-Subject: Re: [PATCH 1/2]Intel Moorestown NAND driver patch for mainline
-Message-ID: <20090606145756.GA29732@suse.de>
-References: <20090606164455.GB27257@intel.com> <4A2A4EF7.7070509@gmail.com>
+	Sat, 6 Jun 2009 11:25:22 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:50006 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751396AbZFFPZV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 11:25:21 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 18/39] kbuild/headers_check: refine extern check
+Date: Sat, 6 Jun 2009 15:25:12 +0000
+User-Agent: KMail/1.11.2 (Linux/2.6.29; KDE/4.2.2; x86_64; ; )
+Cc: "linux-kbuild" <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Amerigo Wang <amwang@redhat.com>
+References: <20090605233720.GA13588@uranus.ravnborg.org> <200906060046.07421.arnd@arndb.de> <20090606083844.GA14555@uranus.ravnborg.org>
+In-Reply-To: <20090606083844.GA14555@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A2A4EF7.7070509@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200906061525.12876.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+sxvLj5ifoCfo6Qg0hiC/A75cpSIBG3phQPCU
+ STChXr4+eJh8XUs6oi//tkdTBSMtoOIgiQ05jXwhXaE3CraHHF
+ DPdZmjknAQ7ml1l4F/KVw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 06, 2009 at 01:11:51PM +0200, Jiri Slaby wrote:
-> On 06/06/2009 06:44 PM, Yunpeng Gao wrote:
-> > diff --git a/drivers/staging/mrst_nand/ffsport.c b/drivers/staging/mrst_nand/ffsport.c
-> > new file mode 100644
-> > index 0000000..5a919f4
-> > --- /dev/null
-> > +++ b/drivers/staging/mrst_nand/ffsport.c
-> > @@ -0,0 +1,953 @@
-> > +void glob_udelay(unsigned long usecs)
-> > +{
-> > +	udelay(usecs);
-> > +}
-> > +
-> > +void glob_mdelay(unsigned long msecs)
-> > +{
-> > +	mdelay(msecs);
-> > +}
+On Saturday 06 June 2009 08:38:44 am Sam Ravnborg wrote:
+
+> Subject: kbuild/headers_check: refine extern check
 > 
-> Unneeded wrappers.
+> 'extern' checking information is not clear, refine it.
+> Plus, fix a comment.
 
-<snip>
+Thanks!
+ 
+> Signed-off-by: WANG Cong <amwang@redhat.com>
+> [sam: redid the extern error message]
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 
-Thanks for the review, this is one reason why it's in the staging
-directory :)
-
-Hopefully someone can send follow-on patches implementing these fixups
-(hint...)
-
-greg k-h
+Acked-by: Arnd Bergmann <arnd@arndb.de>
