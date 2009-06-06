@@ -1,77 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbZFFOjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbZFFOjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbZFFOjU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 10:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZFFOjN
+	id S1755214AbZFFOjb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 10:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754442AbZFFOjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 10:39:13 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:36480 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753455AbZFFOjM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 10:39:12 -0400
-Message-ID: <4A2A7F33.4030807@oracle.com>
-Date: Sat, 06 Jun 2009 22:37:39 +0800
-From: Tao Ma <tao.ma@oracle.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-CC: Amerigo Wang <xiyou.wangcong@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@linux.intel.com>
-Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64
- 2.6.30-rc8.
-References: <4A289928.7040508@oracle.com> <20090604223805.2962e826.akpm@linux-foundation.org> <4A28C262.5020605@oracle.com> <20090605075614.GC8171@cr0.nay.redhat.com> <4A28DDEB.4000409@oracle.com> <2375c9f90906050209h191df8fav36fc9507654c5ca6@mail.gmail.com> <20090605021424.ba352b0f.akpm@linux-foundation.org> <4A28E5C9.6010408@oracle.com> <20090605095155.GC8354@cr0.nay.redhat.com> <4A292B0D.8030807@oracle.com> <4A295AFB.80909@kernel.org>
-In-Reply-To: <4A295AFB.80909@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 6 Jun 2009 10:39:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58060 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754892AbZFFOjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 10:39:20 -0400
+Subject: Re: [GIT PULL] headers_check fixes
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Sam Ravnborg <sam@ravnborg.org>,
+       Ingo Molnar <mingo@elte.hu>, Catalin Marinas <catalin.marinas@arm.com>,
+       Tony Luck <tony.luck@intel.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Greg Ungerer <gerg@snapgear.com>, Ralf Baechle <ralf@linux-mips.org>,
+       Michael Abbott <michael@araneidae.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       David Howells <dhowells@redhat.com>
+In-Reply-To: <20090606130210.GA9343@flint.arm.linux.org.uk>
+References: <1244118232.5172.26.camel@ht.satnam>
+	 <1244292857.2473.4.camel@ht.satnam>
+	 <20090606130210.GA9343@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Sat, 06 Jun 2009 20:09:37 +0530
+Message-Id: <1244299177.2473.21.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt009.oracle.com [141.146.116.18]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4A2A7F39.0287:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Yinghai Lu wrote:
-> Tao Ma wrote:
->>
->> Amerigo Wang wrote:
->>> On Fri, Jun 05, 2009 at 05:30:49PM +0800, Tao Ma wrote:
->>>>> Please send the boot logs: dmesg -s 1000000 > foo
->>>> attached.
->>>> #######high memory 18446612137615818752, size_t 18446612137615818752
->>>> #######kcore size 5301604352, PAGE_OFFSET 0, PAGE_SIZE 4096
->>>
->>> These two lines must be added by yourself...
->>>
->>> What?!
->>> How can PAGE_OFFSET be 0??
->>> Can you show us these two printk() you just added?
->>>
->>> And, the size of kcore is not the crazy number in the subject...
->>> This one is much saner..
->> Sorry, I used the wrong printk. the correct one is:
->> #######high memory 18446612137615818752, size_t 18446612137615818752
->> #######kcore size 5301604352, PAGE_OFFSET 18446612132314218496,
->> PAGE_SIZE 4096
->>
+On Sat, 2009-06-06 at 14:02 +0100, Russell King wrote:
+> On Sat, Jun 06, 2009 at 06:24:17PM +0530, Jaswinder Singh Rajput wrote:
+> > Linus,
+> > 
+> > Please pull headers_check fixes:
+> > 
+> > The following changes since commit 064e38aaded5269e573ac1c765284fd65c8ebd13:
+> >   Linus Torvalds (1):
+> >         Merge git://git.kernel.org/.../mason/btrfs-unstable
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/headers-check-2.6.git master
+> > 
+> > Jaswinder Singh Rajput (6):
+> >       headers_check fix: arm, hwcap.h
 > 
-> %lx should be used.
+> So inspite of NAKing this patch you send it anyway.
 > 
-> also you compiler doesn't like
-> 
-> high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
-> 
-> in setup.c?
-Sorry fo my poor English, bug what do you mean?
 
-I just printk in the setup.c and the result is
+Ok dropping this patch as this issue is still open.
 
-@@@@high_momory ffff88013c000000
+Here is new pull request:
 
-and my gcc version is:
-gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-14)
+The following changes since commit 064e38aaded5269e573ac1c765284fd65c8ebd13:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../mason/btrfs-unstable
 
-Thanks.
-Tao
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/headers-check-2.6.git master
+
+Jaswinder Singh Rajput (5):
+      headers_check fix: ia64, fpswa.h
+      headers_check fix: m68k, swab.h
+      headers_check fix: mips, ioctl.h
+      headers_check fix: mn10300, ptrace.h
+      headers_check fix: mn10300, setup.h
+
+ arch/ia64/include/asm/fpswa.h     |    3 ++-
+ arch/m68k/include/asm/swab.h      |    2 +-
+ arch/mips/include/asm/ioctl.h     |    4 ++++
+ arch/mn10300/include/asm/ptrace.h |    5 ++---
+ arch/mn10300/include/asm/setup.h  |    3 ++-
+ 5 files changed, 11 insertions(+), 6 deletions(-)
+
+Complete diff :
+
+diff --git a/arch/ia64/include/asm/fpswa.h b/arch/ia64/include/asm/fpswa.h
+index 62edfce..797b064 100644
+--- a/arch/ia64/include/asm/fpswa.h
++++ b/arch/ia64/include/asm/fpswa.h
+@@ -68,6 +68,7 @@ typedef struct {
+ 	efi_fpswa_t	 fpswa;
+ } fpswa_interface_t;
+ 
++#ifdef __KERNEL__
+ extern fpswa_interface_t *fpswa_interface;
+-
++#endif
+ #endif /* _ASM_IA64_FPSWA_H */
+diff --git a/arch/m68k/include/asm/swab.h b/arch/m68k/include/asm/swab.h
+index 9e3054e..5b754aa 100644
+--- a/arch/m68k/include/asm/swab.h
++++ b/arch/m68k/include/asm/swab.h
+@@ -1,7 +1,7 @@
+ #ifndef _M68K_SWAB_H
+ #define _M68K_SWAB_H
+ 
+-#include <asm/types.h>
++#include <linux/types.h>
+ #include <linux/compiler.h>
+ 
+ #define __SWAB_64_THRU_32__
+diff --git a/arch/mips/include/asm/ioctl.h b/arch/mips/include/asm/ioctl.h
+index 85067e2..9161634 100644
+--- a/arch/mips/include/asm/ioctl.h
++++ b/arch/mips/include/asm/ioctl.h
+@@ -60,12 +60,16 @@
+ 	 ((nr)   << _IOC_NRSHIFT) | \
+ 	 ((size) << _IOC_SIZESHIFT))
+ 
++#ifdef __KERNEL__
+ /* provoke compile error for invalid uses of size argument */
+ extern unsigned int __invalid_size_argument_for_IOC;
+ #define _IOC_TYPECHECK(t) \
+ 	((sizeof(t) == sizeof(t[1]) && \
+ 	  sizeof(t) < (1 << _IOC_SIZEBITS)) ? \
+ 	  sizeof(t) : __invalid_size_argument_for_IOC)
++#else
++#define _IOC_TYPECHECK(t)	(sizeof(t))
++#endif
+ 
+ /* used to create numbers */
+ #define _IO(type, nr)		_IOC(_IOC_NONE, (type), (nr), 0)
+diff --git a/arch/mn10300/include/asm/ptrace.h b/arch/mn10300/include/asm/ptrace.h
+index 7b06cc6..00aa680 100644
+--- a/arch/mn10300/include/asm/ptrace.h
++++ b/arch/mn10300/include/asm/ptrace.h
+@@ -77,8 +77,6 @@ struct pt_regs {
+ };
+ #endif
+ 
+-extern struct pt_regs *__frame; /* current frame pointer */
+-
+ /* Arbitrarily choose the same ptrace numbers as used by the Sparc code. */
+ #define PTRACE_GETREGS            12
+ #define PTRACE_SETREGS            13
+@@ -90,6 +88,8 @@ extern struct pt_regs *__frame; /* current frame pointer */
+ 
+ #if defined(__KERNEL__)
+ 
++extern struct pt_regs *__frame;		/* current frame pointer */
++
+ #if !defined(__ASSEMBLY__)
+ #define user_mode(regs)			(((regs)->epsw & EPSW_nSL) == EPSW_nSL)
+ #define instruction_pointer(regs)	((regs)->pc)
+@@ -99,5 +99,4 @@ extern void show_regs(struct pt_regs *);
+ #define profile_pc(regs) ((regs)->pc)
+ 
+ #endif  /*  __KERNEL__  */
+-
+ #endif /* _ASM_PTRACE_H */
+diff --git a/arch/mn10300/include/asm/setup.h b/arch/mn10300/include/asm/setup.h
+index 08356c8..c229d1e 100644
+--- a/arch/mn10300/include/asm/setup.h
++++ b/arch/mn10300/include/asm/setup.h
+@@ -11,7 +11,8 @@
+ #ifndef _ASM_SETUP_H
+ #define _ASM_SETUP_H
+ 
++#ifdef __KERNEL__
+ extern void __init unit_setup(void);
+ extern void __init unit_init_IRQ(void);
+-
++#endif
+ #endif /* _ASM_SETUP_H */
+
+
