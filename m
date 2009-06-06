@@ -1,61 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbZFFDX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbZFFDrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754329AbZFFDX3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 23:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZFFDXU
+	id S1754078AbZFFDrj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 23:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbZFFDra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 23:23:20 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:50291 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752327AbZFFDXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 23:23:20 -0400
-Date: Sat, 6 Jun 2009 10:44:10 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: leon.woestenberg@gmail.com
-Cc: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, Leon Woestenberg <leon@sidebranch.com>
-Subject: Re: [PATCH] Add MSI interrupts to DTS of MPC8315E-RDB
-Message-ID: <20090606004410.GA10940@yookeroo.seuss>
-Mail-Followup-To: leon.woestenberg@gmail.com, linuxppc-dev@ozlabs.org,
-	galak@kernel.crashing.org, linux-kernel@vger.kernel.org,
-	Leon Woestenberg <leon@sidebranch.com>
-References: <4a292f95.05a4100a.1a14.0a04@mx.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4a292f95.05a4100a.1a14.0a04@mx.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 5 Jun 2009 23:47:30 -0400
+Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:20900
+	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751794AbZFFDr2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 23:47:28 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArYBANmDKUp8qN0Z/2dsb2JhbAAI0G+ECgU
+X-IronPort-AV: E=Sophos;i="4.41,314,1241366400"; 
+   d="scan'208";a="507362363"
+Subject: Re: [PATCH] gpiolib: allow poll on gpio value
+From: Ben Nizette <bn@niasdigital.com>
+To: Daniel =?ISO-8859-1?Q?Gl=F6ckner?= <dg@emlix.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1244212590-15620-1-git-send-email-dg@emlix.com>
+References: <1244212590-15620-1-git-send-email-dg@emlix.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 06 Jun 2009 13:46:42 +1000
+Message-Id: <1244260002.22690.21.camel@linux-51e8.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 05, 2009 at 07:45:41AM -0700, leon.woestenberg@gmail.com wrote:
-> The PCIe MSI interrupts are missing from the device tree source, and
-> thus were not enabled. This patch adds them.
-> 
-> Tested to work on MPC8315E-RDB with custom FPGA PCIe device.
-> 
-> Signed-off-by: Leon Woestenberg <leon@sidebranch.com>
-> Tested-by: Leon Woestenberg <leon@sidebranch.com>
-> 
-> diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
-> index 3f4c5fb..4f04667 100644
-> --- a/arch/powerpc/boot/dts/mpc8315erdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
-> @@ -322,6 +322,21 @@
->  			reg = <0x700 0x100>;
->  			device_type = "ipic";
->  		};
+
+Hey, good stuff Daniel.  There's a fair few common features missing but
+they can be added at a later date.
+
+- Ability to honour rising and falling filters even if the hardware only
+supports both-edge (as lots of gpio interrupts do)
+- Support for polling the gpio at some interval for gpios which don't
+support irqs at all
+- Debounce support
+- Reporting of number of changes since last read
+
+These are all things which exist in many out-of-tree or
+platform-specific implementations of this kind of thing and until
+they're there I reckon people will largely stick with what they've got.
+But that's really their problem of course, this is still valuable.
+
+Regarding the code itself, not much but:
+
+On Fri, 2009-06-05 at 16:36 +0200, Daniel Glöckner wrote:
+>  
+> +	"poll_edge" ... reads as either "none", "rising", "falling", or
+
+IMO this is misleading, sounds like you're polling the gpio. 
+
 > +
-> +		ipic-msi@7c0 {
-> +			compatible = "fsl,ipic-msi";
-> +                        reg = <0x7c0 0x40>;
-> +                        msi-available-ranges = <0 0x100>;
+> +	struct sysfs_dirent	*value_sd;
+>  };
 
-This patch appears not to use consistent whitespace formatting.
+No CONFIG_ option to turn all this off?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+What's the .text and .data impact of this?  Sure it's going to be small,
+but to some people (especially those likely to care about gpio) 1k
+of .data is something worth being able to turn off.
+
+Using an IDR keyed to the gpio value and just allocating your useful
+data structures when poll_edge != "none" would help too.  It makes the
+whole thing more future-proof as well as the addition of features from
+the above list would probably bloat each struct gpio_desc further.
+
+>  static struct gpio_desc gpio_desc[ARCH_NR_GPIOS];
+>  
+> @@ -188,10 +193,10 @@ static DEFINE_MUTEX(sysfs_lock);
+>   *   /value
+>   *      * always readable, subject to hardware behavior
+>   *      * may be writable, as zero/nonzero
+> - *
+> - * REVISIT there will likely be an attribute for configuring async
+> - * notifications, e.g. to specify polling interval or IRQ trigger type
+> - * that would for example trigger a poll() on the "value".
+> + *   /poll_edge
+> + *      * configures behavior of poll on /value
+
+Personally I like seeing poll(2) rather than poll, that word is so
+overloaded clarification is be useful.
+
+
+Technically the rest looks fine :-)
+
+	--Ben.
+
+
+
