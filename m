@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbZFFKRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbZFFKUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754139AbZFFKRd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 06:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbZFFKRZ
+	id S1753050AbZFFKUn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 06:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZFFKUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 06:17:25 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:63403 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752572AbZFFKRY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 06:17:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ION/yKoWq+ZoURFXyPK/09/qTf2BrMnoY2uj010p2vGj7fN9teuRgR8YlFOOzziG8M
-         huuHDaII+cgcvwJtA/7beNH1pcWhvGddKrRzbe7/4CHhyffn1IBCjuPrLRkmtrzzsoei
-         SzOnzlTyUMLD8Zh6o28ZSCj+9Acx6LKSJqtLY=
-MIME-Version: 1.0
-In-Reply-To: <84144f020906060217r2ac950dcp74f4c66d64a292a3@mail.gmail.com>
-References: <Pine.LNX.4.64.0906051157460.22218@melkki.cs.Helsinki.FI>
-	 <20090605130835.e21eaf37.akpm@linux-foundation.org>
-	 <71cd59b00906060025w66d770f7he34f9172cd720c8c@mail.gmail.com>
-	 <20090606003159.114c2fab.akpm@linux-foundation.org>
-	 <71cd59b00906060052n153835e8p37e0ccb7c73ba5c5@mail.gmail.com>
-	 <84144f020906060217r2ac950dcp74f4c66d64a292a3@mail.gmail.com>
-Date: Sat, 6 Jun 2009 12:17:25 +0200
-Message-ID: <71cd59b00906060317q568bdd9auffd895656fd8dc3d@mail.gmail.com>
-Subject: Re: [PATCH] eeepc-laptop: enable camera by default
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sat, 6 Jun 2009 06:20:36 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36939 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752095AbZFFKUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 06:20:35 -0400
+Subject: Re: [PATCH -tip] x86: cpu_debug.c prepare report if files are
+ inappropriate or CPU is not supported
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1244224637.8212.6.camel@ht.satnam>
+References: <1239725240.2966.4.camel@ht.satnam>
+	 <20090414165052.GA2089@elte.hu> <1239728481.2966.21.camel@ht.satnam>
+	 <20090414184222.GC11214@elte.hu>
+	 <20090414200247.1d0a8667@lxorguk.ukuu.org.uk>
+	 <20090414191622.GA797@elte.hu>
+	 <1239773665.15436.9.camel@localhost.localdomain>
+	 <20090415101700.GE6669@elte.hu>  <1244224637.8212.6.camel@ht.satnam>
+Content-Type: text/plain
+Date: Sat, 06 Jun 2009 15:51:32 +0530
+Message-Id: <1244283692.2475.50.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 6, 2009 at 11:17 AM, Pekka Enberg<penberg@cs.helsinki.fi> wrote:
-> Hi Corentin,
->
-> On Sat, 6 Jun 2009 09:25:34 +0200 Corentin Chary
-> <corentin.chary@gmail.com> wrote:
->>>> fixed patch pushed into acpi4asus.
->
-> On Sat, Jun 6, 2009 at 9:31 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
->>> What's that?
->>>
->>> Should it be added to linux-next?
->
-> On Sat, Jun 6, 2009 at 10:52 AM, Corentin Chary
-> <corentin.chary@gmail.com> wrote:
->> http://acpi4asus.sourceforge.net/ -
->> http://git.iksaif.net/?p=acpi4asus.git;a=summary
->> The tree is based on
->> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6
->>
->> It's where I regroup eeepc/asus patchs before sending them to Len.
->>
->> I don't think it should be added to linux-next, because the patchs
->> will first go into the acpi tree, wich is in linux-next.
->
-> I guess the main question is how often does Len pull from your tree?
-> If the delay is longer than few days, it might make sense to put your
-> tree directly into linux-next for early integration. And as long as
-> you don't rebase the "for-next" branch and keep it append-only, there
-> isn't going to be any conflicts either when Len pulls your tree and
-> publishes the result in linux-next.
->
->                                Pekka
->
+On Fri, 2009-06-05 at 23:27 +0530, Jaswinder Singh Rajput wrote:
+> Hello Ingo,
+> 
+> On Wed, 2009-04-15 at 12:17 +0200, Ingo Molnar wrote:
+> 
+> > The main beef i had with your code is that it copies CPU enumeration 
+> > over into some local variables (cpu_modelflag, cpu_model) with 
+> > redundant encodings and decodings which dont fully work.
+> > 
+> > Is there anything that your encoding/decoding does that cannot be 
+> > done via the standard methods?
+> > 
+> 
+> I removed cpu model info. May be this will create some issues on ancient
+> machine as now it depends on rdmsr_safe_on_cpu() and I hope it will be
+> safe ;-)
+> Can you please check this patch on ancient and latest machines.
+> 
+> 
+> [PATCH] x86: cpu_debug remove model information to reduce encoding-decoding
+> 
+> Remove model information, encoding/decoding and reduce bookkeeping.
+> 
+> Reported-by: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
 
-Len does not pull my tree, I send series to him and cc linux-acpi.
-But if it could help early integration, maybe linux-next is the right way to go.
-I'm not very familiar with it, the only thing I have to do is create a
-"for-next" branch (no rebase, only finalized patchs) and them ask
-Andrew (or someone else ?) to add it to linux-next ?
+If you have any objections please let me know otherwise I will start
+sending patches on top of this patch.
 
--- 
-Corentin Chary
-http://xf.iksaif.net - http://uffs.org
+Thanks,
+--
+JSR
+
+
