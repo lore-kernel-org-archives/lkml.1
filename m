@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbZFFLaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbZFFMRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754034AbZFFLaJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 07:30:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbZFFL36
+	id S1754788AbZFFMRz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 08:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbZFFMRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 07:29:58 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:40611 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753050AbZFFL35 convert rfc822-to-8bit (ORCPT
+	Sat, 6 Jun 2009 08:17:48 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:59978 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753239AbZFFMRr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 07:29:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=f+9gBYPdWh1Lq0hf1Tfgxp2QZDc8rKifAXh72kGJWdVTwiTGyWn9n39EkYtO9bXkhn
-         EWm3TkmOTFhu+jOlH5/GgwLkNny5SKXzi2juy76FbpdPKO/ExggZqY99bTq7c4J/N0AP
-         Do8/Ma5CCnjgdD0SiyZDe09ebMnujRayoP13o=
+	Sat, 6 Jun 2009 08:17:47 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
+Date: Sat, 6 Jun 2009 07:17:44 -0500
+User-Agent: KMail/1.9.9
+Cc: Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Harald Welte <HaraldWelte@viatech.com>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906041227.10529.lkml@morethan.org> <alpine.LFD.2.01.0906041038130.4880@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0906041038130.4880@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <1244286691.3185.42.camel@myhost>
-References: <1244285472.3185.36.camel@myhost> <1244286691.3185.42.camel@myhost>
-Date: Sat, 6 Jun 2009 14:29:58 +0300
-X-Google-Sender-Auth: b49dfd370ae675db
-Message-ID: <84144f020906060429p2f865d85pb41357833a917826@mail.gmail.com>
-Subject: Re: [PATCH V2] no need for checking it
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: "Figo.zhang" <figo1802@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Ian Abbott <abbotti@mev.co.uk>,
-       Frank Mori Hess <fmhess@users.sourceforge.net>,
-       David Schleef <ds@schleef.org>, lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906060717.46964.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 6, 2009 at 2:11 PM, Figo.zhang <figo1802@gmail.com> wrote:
-> vfree() does it's own NULL checking,so no need for check before
-> calling it.
->
-> 'pages' is local variable argment,so in v2, it is no need assignment
->  to NULL.
->
-> Signed-off-by: Figo.zhang <figo1802@gmail.com>
+On Thu June 4 2009, Linus Torvalds wrote:
+> 
+> On Thu, 4 Jun 2009, Michael S. Zick wrote:
+> >
+> > Yes, I build test cases with and without - -
+> > It was a fixed-speed kernel build that first hit the 4 hour up-time mark.
+> > I just reposted that build today (the -09143lk).
+> > 
+> > > Features like that easily put a huge stress on power regulators etc, if 
+> > > they result in sudden changes in current draw.  Underspecced capacitors 
+> > > etc can cause CPU "brown-outs", which in turn can easily cause total 
+> > > failure. 
+> > 
+> > There is also a possible thermal issue with these machines - -
+> > I doubt that VIA runs their qualification testing in bake ovens;
+> > which is what NetBook cases amount too.  ;)
+> 
+> If the fixed-speed case runs for longer, it's not likely to be a thermal 
+> issue. The fixed speed case should be the higher-power one.
+> 
 
-Looks good to me.
+I can respond to that point now; VIA Tech has answered some of my questions -
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+The mainstream kernel, e_powersaver, is *under-clocking* my machine -
+
+The cpuid instruction provides the minimum and maximum GSF values 
+(Guaranteed Stable Frequency) for that processor mask run -
+Passing that on as the lower and upper limits to e_powersaver should
+stop that problem.  Will be testing this RSN.
+
+Once you start operating the processor outside of the reported-by-silicon mask
+limits - quote: "there is no quarantee of stable operation" - -
+
+To that I add my opinion:
+For a severely under-clocked machine (already possibly un-stable) - -
+Thermal effects are almost certain to be present.
+ 
+To paraphrase VIA Tech once again: "Don't do that."  ;)
+
+Mike
