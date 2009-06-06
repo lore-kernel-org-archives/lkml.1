@@ -1,68 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbZFFBzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbZFFCMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765AbZFFBzI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 21:55:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbZFFByz
+	id S1754196AbZFFCMY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 22:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbZFFCMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 21:54:55 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:3825 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752953AbZFFByy convert rfc822-to-8bit (ORCPT
+	Fri, 5 Jun 2009 22:12:15 -0400
+Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:57770 "EHLO
+	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752641AbZFFCMO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 21:54:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=aFZj3ytgEgOsFjqWJwj4Pzauyar9Sa6jgNcp4DNuXnhUYPTXnJUHhDTfv9B0ta33vx
-         Qy+J1j1LKq9RaMHyhXCOk9Pc8VocF+QuYa6dS0zKozQOAv7eYGOlkW0YgmfncYdevacs
-         PNiI/uVZkqXJKEyQPkLheYU0CCUiu1n7PPX4M=
+	Fri, 5 Jun 2009 22:12:14 -0400
+Date: Sat, 6 Jun 2009 02:12:17 +0000 (UTC)
+From: firstlink@comcast.net
+To: gregkh@suse.de, judd@jpilot.org, jeff frontz <jeff.frontz@gmail.com>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Message-ID: <2114917931.1182241244254337380.JavaMail.root@sz0061a.emeryville.ca.mail.comcast.net>
+Subject: rspiusb driver cleanup - fix compiler warning related to casting of
+ page pointers
 MIME-Version: 1.0
-In-Reply-To: <43e72e890906051204q22278e4cw6beeae27da50e988@mail.gmail.com>
-References: <43e72e890906051204q22278e4cw6beeae27da50e988@mail.gmail.com>
-Date: Sat, 6 Jun 2009 04:54:53 +0300
-Message-ID: <40f31dec0906051854y4935f6d5ved369e6e0155367d@mail.gmail.com>
-Subject: Re: [ANN] Atheros 802.11n USB firmware source code released
-From: Nick Kossifidis <mickflemm@gmail.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, otus-devel@venema.h4ckr.net,
-       David Woodhouse <dwmw2@infradead.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [24.6.70.242]
+X-Mailer: Zimbra 5.0.12_GA_2816.RHEL5_64 (ZimbraWebClient - FF3.0 (Linux)/5.0.12_GA_2816.RHEL5_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/5 Luis R. Rodriguez <mcgrof@gmail.com>:
-> I'm pleased to announce we have released the source code to our
-> Atheros 802.11n USB Otus/ar9170 device under the GPL. You can grab the
-> source, compile and use it with the upstream ar9170 device driver.
-> Patches are welcomed. The git tree available for this is at:
->
-> http://git.sipsolutions.net/ar9170-fw.git
->
-> For more information please visit the home page for this project is on
-> our Linux wireless wiki:
->
-> http://wireless.kernel.org/en/users/Drivers/ar9170.fw
->
-> The ar9170 device driver home page is at:
->
-> http://wireless.kernel.org/en/users/Drivers/ar9170
->
-> I'd like to thank Johannes Berg and Christian Lamparter for their
-> incredible contributions to the project both firmware and ar9170
-> driver so far without which this would not have been possible.
->
->  Luis
+Greg, 
+Here below is an additional patch for silencing compiler warnings for casting page pointers. 
+checkpatch.pl constrained me to split operations in two lines to stay below 80 char. Tell me if this 
+is ok to proceed this way. 
 
-Congratulations !
+Regards 
+
+Jean-Pierre Sainfeld 
 
 
+>From d2eb0098f12fa5e8fee9807fb1bb1713b52f0dd7 Mon Sep 17 00:00:00 2001
+From: Jean-Pierre Sainfeld <firstlink@comcast.net>
+Date: Fri, 5 Jun 2009 19:01:02 -0700
+Subject: [PATCH] fix compiler warnings related to casting page pointers
+
+
+Signed-off-by: Jean-Pierre Sainfeld <firstlink@comcast.net>
+---
+ drivers/staging/rspiusb/rspiusb.c |   19 +++++++++++++------
+ 1 files changed, 13 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/staging/rspiusb/rspiusb.c b/drivers/staging/rspiusb/rspiusb.c
+index 25d0737..f209b82 100644
+--- a/drivers/staging/rspiusb/rspiusb.c
++++ b/drivers/staging/rspiusb/rspiusb.c
+@@ -257,6 +257,7 @@ static int pixis_io(struct ioctl_struct *ctrl, struct device_extension *pdx,
+ static int pixel_data(struct ioctl_struct *ctrl, struct device_extension *pdx)
+ {
+ 	int i;
++	struct page *page;
+ 
+ 	if (!pdx->gotPixelData)
+ 		return 0;
+@@ -265,8 +266,10 @@ static int pixel_data(struct ioctl_struct *ctrl, struct device_extension *pdx)
+ 	ctrl->numbytes = pdx->bulk_in_size_returned;
+ 	pdx->bulk_in_size_returned -= pdx->frameSize;
+ 
+-	for (i = 0; i < pdx->maplist_numPagesMapped[pdx->active_frame]; i++)
+-		SetPageDirty(pdx->sgl[pdx->active_frame][i].page_link);
++	for (i = 0; i < pdx->maplist_numPagesMapped[pdx->active_frame]; i++) {
++		page = (struct page *)pdx->sgl[pdx->active_frame][i].page_link;
++		SetPageDirty(page);
++	}
+ 
+ 	pdx->active_frame = ((pdx->active_frame + 1) % pdx->num_frames);
+ 
+@@ -487,6 +490,7 @@ static int UnMapUserBuffer(struct device_extension *pdx)
+ 	int i = 0;
+ 	int k = 0;
+ 	unsigned int epAddr;
++	struct page *page;
+ 
+ 	for (k = 0; k < pdx->num_frames; k++) {
+ 		dev_dbg(&pdx->udev->dev,
+@@ -518,8 +522,10 @@ static int UnMapUserBuffer(struct device_extension *pdx)
+ 
+ 		usb_buffer_unmap_sg(pdx->udev, epAddr, pdx->sgl[k],
+ 				    pdx->maplist_numPagesMapped[k]);
+-		for (i = 0; i < pdx->maplist_numPagesMapped[k]; i++)
+-			page_cache_release(pdx->sgl[k][i].page_link);
++		for (i = 0; i < pdx->maplist_numPagesMapped[k]; i++) {
++			page = (struct page *)pdx->sgl[k][i].page_link;
++			page_cache_release(page);
++		}
+ 		kfree(pdx->sgl[k]);
+ 		kfree(pdx->PixelUrb[k]);
+ 		kfree(pdx->pendedPixelUrbs[k]);
+@@ -690,7 +696,7 @@ static int MapUserBuffer(struct ioctl_struct *io, struct device_extension *pdx)
+ 		dev_dbg(&pdx->udev->dev, "can't allocate mem for sgl");
+ 		return -ENOMEM;
+ 	}
+-	pdx->sgl[frameInfo][0].page_link = maplist_p[0];
++	pdx->sgl[frameInfo][0].page_link = (unsigned long)maplist_p[0];
+ 	pdx->sgl[frameInfo][0].offset = uaddr & ~PAGE_MASK;
+ 	if (pdx->maplist_numPagesMapped[frameInfo] > 1) {
+ 		pdx->sgl[frameInfo][0].length =
+@@ -698,7 +704,8 @@ static int MapUserBuffer(struct ioctl_struct *io, struct device_extension *pdx)
+ 		count -= pdx->sgl[frameInfo][0].length;
+ 		for (k = 1; k < pdx->maplist_numPagesMapped[frameInfo]; k++) {
+ 			pdx->sgl[frameInfo][k].offset = 0;
+-			pdx->sgl[frameInfo][k].page_link = maplist_p[k];
++			pdx->sgl[frameInfo][k].page_link =
++			  (unsigned long)maplist_p[k];
+ 			pdx->sgl[frameInfo][k].length =
+ 			    (count < PAGE_SIZE) ? count : PAGE_SIZE;
+ 			count -= PAGE_SIZE; /* example had PAGE_SIZE here */
 -- 
-GPG ID: 0xD21DB2DB
-As you read this post global entropy rises. Have Fun ;-)
-Nick
+1.6.0.4
+
