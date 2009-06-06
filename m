@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbZFFImy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZFFIo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754502AbZFFImy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 04:42:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbZFFImq
+	id S1753787AbZFFIo0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 04:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751848AbZFFIoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 04:42:46 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:58740 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752644AbZFFImq (ORCPT
+	Sat, 6 Jun 2009 04:44:13 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:60678 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751445AbZFFIoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 04:42:46 -0400
-Date: Sat, 6 Jun 2009 09:42:47 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>,
-       linux-kernel@vger.kernel.org, Robert Hancock <hancockrwd@gmail.com>,
-       Frans Pop <elendil@planet.nl>
-Subject: Re: [PATCH 2/4] partitions: add ->set_capacity block device method
-Message-ID: <20090606084247.GA19924@ZenIV.linux.org.uk>
-References: <20090531143911.7164.26834.sendpatchset@localhost.localdomain> <20090531143924.7164.25770.sendpatchset@localhost.localdomain>
+	Sat, 6 Jun 2009 04:44:12 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4A2A2C26.1070106@s5r6.in-berlin.de>
+Date: Sat, 06 Jun 2009 10:43:18 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090531143924.7164.25770.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: David VomLehn <dvomlehn@cisco.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
+       netdev@vger.kernel.org, arjan@infradead.org
+Subject: Re: [PATCH 1/7] initdev:kernel:Asynchronously-discovered device	synchronization,
+ v6
+References: <20090606023403.GA5645@cuplxvomd02.corp.sa.net>
+In-Reply-To: <20090606023403.GA5645@cuplxvomd02.corp.sa.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 31, 2009 at 04:39:24PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] partitions: add ->set_capacity block device method
-> 
-> * Add ->set_capacity block device method and use it in rescan_partitions()
->   to attempt enabling native capacity of the device upon detecting the
->   partition which exceeds device capacity.
-> 
-> * Add GENHD_FL_NATIVE_CAPACITY flag to try limit attempts of enabling
->   native capacity during partition scan.
-> 
-> Together with the consecutive patch implementing ->set_capacity method in
-> ide-gd device driver this allows automatic disabling of Host Protected Area
-> (HPA) if any partitions overlapping HPA are detected.
-> 
-> Cc: Robert Hancock <hancockrwd@gmail.com>
-> Cc: Frans Pop <elendil@planet.nl>
-> Cc: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
-> Cc: Al Viro <viro@zeniv.linux.org.uk>
+David VomLehn wrote:
+> +Some rules about correct usage:
+> +o	Each call to initdev_found *must* be matched by a call to
+> +	initdev_probe_done.
 
-Acked-by: Al Viro <viro@zeniv.linux.org.uk>
+This would be useful as inline kerneldoc documentation at initdev_found().
+
+> +o	The value of initdev_mask passed to initdev_found and
+> +	initdev_probe_done for a given device must be identical.
+
+And this as kerneldoc at initdev_probe_done().
+
+What happens if the calls or the call arguments aren't balanced, e.g. 
+due to a mistake in an error path?  The kernel will hang?
+
+(BTW, much, though possibly not all, of the "History" section of your 
+changelog should be below the --- delimiter, and the "v6" in the subject 
+should be within the [PATCH ...] prefix.)
+-- 
+Stefan Richter
+-=====-==--= -==- --==-
+http://arcgraph.de/sr/
