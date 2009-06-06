@@ -1,121 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754967AbZFFOnO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZFFOz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754967AbZFFOnO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 10:43:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZFFOnB
+	id S1755218AbZFFOz2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 10:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbZFFOzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 10:43:01 -0400
-Received: from verein.lst.de ([213.95.11.210]:47790 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753240AbZFFOnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 10:43:00 -0400
-Date: Sat, 6 Jun 2009 16:42:43 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Roland McGrath <roland@redhat.com>
-Cc: Russell King <rmk@arm.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/17] tracehook & user_regset for ARM
-Message-ID: <20090606144243.GA8582@lst.de>
-References: <20090425000634.313E4FC3C8@magilla.sf.frob.com>
+	Sat, 6 Jun 2009 10:55:23 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39482 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753240AbZFFOzW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 10:55:22 -0400
+Date: Sat, 6 Jun 2009 15:56:36 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Grozdan <neutrino8@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Kernel 2.6.30rc7 limits IDE to UDMA33
+Message-ID: <20090606155636.18bc4f2e@lxorguk.ukuu.org.uk>
+In-Reply-To: <4A29C163.3080706@gmail.com>
+References: <c5bd819b0906021525l13ee9282j1fb270e141985f66@mail.gmail.com>
+	<4A25F688.9000407@gmail.com>
+	<c5bd819b0906030435w466368cbsd48be91a97597437@mail.gmail.com>
+	<20090603131407.57c490ed@lxorguk.ukuu.org.uk>
+	<c5bd819b0906030552w6f23185etb394f83c8b630e6@mail.gmail.com>
+	<20090603140140.491a8ea8@lxorguk.ukuu.org.uk>
+	<c5bd819b0906030639o5f9c34ffg500e132d3a0b5117@mail.gmail.com>
+	<c5bd819b0906040750w75e0389cod2a03b89ce838d1b@mail.gmail.com>
+	<20090605100505.41b3b818@lxorguk.ukuu.org.uk>
+	<c5bd819b0906050335i4e813887sc8f4d901da86a1aa@mail.gmail.com>
+	<20090605114245.175499e1@lxorguk.ukuu.org.uk>
+	<4A29C163.3080706@gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090425000634.313E4FC3C8@magilla.sf.frob.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell, did you manage to take a look at this?
+> I wouldn't rule out the possibility of a bug. The code in pata_via looks 
+> a bit fishy, it reports a 40-wire cable if either the GTM data wasn't 
+> present or valid, or if it reports a mode of UDMA2 or less. In the 
+> former case it seems like ATA_CABLE_PATA_UNK would be the safer choice 
+> since we really don't know, and we should then use drive-side detection, 
+> rather than assuming a 40-wire cable by default..
 
-On Fri, Apr 24, 2009 at 05:06:34PM -0700, Roland McGrath wrote:
-> The various things listed under CONFIG_HAVE_ARCH_TRACEHOOK (arch/Kconfig)
-> are what each arch wants to do nowadays to fit with the generic code for
-> user debugging, core dumping, etc.  The "big machine" arch's have done this
-> since 2.6.28 or earlier.  
-> 
-> Christoph suggested helping ARM with the work would be a good way to
-> encourage all the "little machine" arch maintainers to catch up soon.  
-> (Of the "little machine" and oddball arch's, so far only sh has it.)
-> 
-> The following patches bring ARM up to speed with HAVE_ARCH_TRACEHOOK (just
-> about).  There are so many patches because I sliced them into many small
-> changes.  Each patch is pretty short (some of them very tiny).  The overall
-> diffstat from the whole series is attached in the "pull request" below.
-> 
-> This series is relative to ~2.6.30-rc3 (0c8454f).  I expect it rebases
-> easily to whatever tree you might want to queue it on.
-> 
-> The immediate user-visible effects of the series are to enable the
-> /proc/pid/syscall feature, and to add VFP, WMMX, Crunch, and $tp register
-> data to core dumps.
-> 
-> AFAIK only the asm/syscall.h patch still needs work.  The preliminary
-> version is only buggy in the way that /proc/pid/syscall will give bogus
-> answers for a task not really in a syscall, or for the non-EABI entry
-> styles.  It's not unsafe or anything.  It needs some attention from folks
-> who really know ARM to fill in the truly proper version of syscall_get_nr().
-> 
-> I only know how to run and test one ABI flavor, and only in qemu.  I used
-> versatile_defconfig and ran it in qemu-system-arm -M versatilepb using NFS
-> root with the userland binaries from Fedora ARM.  
-> 
-> I don't know how to simulate hardware that has iWMMXt or Crunch, nor if my
-> ARM userland handles those kernel configurations.  So I've only
-> (cross-)compile-tested the iWMMXt and Crunch code.  (It is however the
-> simplest of the user_regset code and pretty easy to eyeball-review.)
-> 
-> My testing is quite minimal.  Booted, nothing went wrong, simple strace
-> uses still look sane, "cat /proc/self/syscall" looks right, core dump
-> contents look right.  (Not knowing the arch at all, I don't actually know
-> how to put anything in the FPA or VFP registers so as to notice they are
-> right rather than just the right number of zeros.)  The userland I have
-> does not have gdb (and qemu would take a week to build and run the gdb
-> testsuite if it did), so I didn't try to test any ptrace use beyond what
-> strace does.
-> 
-> 
-> Thanks,
-> Roland
-> 
-> ---
-> 
-> The following changes since commit 0c8454f56623505a99463405fd7d5664adfbb094:
->   Rafael J. Wysocki (1):
->         PM/Hibernate: Fix waiting for image device to appear on resume
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-roland.git arm/tracehook
-> 
-> Roland McGrath (17):
->       arm: arch_ptrace clean-up
->       arm: arch_ptrace indentation
->       arm: tracehook_report_syscall
->       arm: tracehook_signal_handler
->       arm: TIF_NOTIFY_RESUME
->       arm: user_regset: general regs
->       arm: user_regset: FPU regs
->       arm: CORE_DUMP_USE_REGSET
->       arm: user_regset: VFP regs
->       arm: user_regset: VFP in core dumps
->       arm: user_regset: iWMMXt regs
->       arm: user_regset: iWMMXt in core dumps
->       arm: user_regset: Crunch regs
->       arm: user_regset: Crunch in core dumps
->       arm: user_regset: thread pointer in core dumps
->       arm: asm/syscall.h (unfinished)
->       arm: HAVE_ARCH_TRACEHOOK
-> 
->  arch/arm/Kconfig                   |    1 +
->  arch/arm/include/asm/elf.h         |    1 +
->  arch/arm/include/asm/ptrace.h      |    4 +-
->  arch/arm/include/asm/syscall.h     |   65 +++++
->  arch/arm/include/asm/thread_info.h |    4 +
->  arch/arm/kernel/entry-common.S     |    2 +-
->  arch/arm/kernel/ptrace.c           |  526 ++++++++++++++++++++++++------------
->  arch/arm/kernel/signal.c           |    7 +
->  include/linux/elf.h                |    3 +
->  9 files changed, 433 insertions(+), 180 deletions(-)
->  create mode 100644 arch/arm/include/asm/syscall.h
----end quoted text---
+Drive side detection doesn't work for many VIA boards, the neccessary
+components are not included.
+
+About the only other check I can think to try is to see if the BIOS
+programmed modes > UDMA2 for either device. That has its own problems
+(suspend-resume/hotplug/non-bios devices) which is why we currently don't
+do it.
+
+Alan
