@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbZFFHwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752949AbZFFID7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753062AbZFFHwO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 03:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZFFHwB
+	id S1752949AbZFFID7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 04:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbZFFIDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 03:52:01 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:55523 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbZFFHwA (ORCPT
+	Sat, 6 Jun 2009 04:03:38 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:34080 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752071AbZFFIDg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 03:52:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fH1t1RPh/Y7fsZCSNUfSSqqYvQsutZFAZeTB9PRQ4fp2PgyJArWb+yzFMJ6UhOPhkl
-         kExrywbQbyCabFcG55jkwBsWFqLEKi6Iu3GF/FVjQnTOMgPuUWqWkcHtT2bB3Es1tL31
-         zpJ06XSOVt0JIrjKpone5M2FxaqsECdKzRL3g=
+	Sat, 6 Jun 2009 04:03:36 -0400
+Date: Sat, 6 Jun 2009 09:03:34 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
+       Hugh Dickins <hugh@veritas.com>, Tejun Heo <tj@kernel.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 0/23] File descriptor hot-unplug support v2
+Message-ID: <20090606080334.GA15204@ZenIV.linux.org.uk>
+References: <m1skkf761y.fsf@fess.ebiederm.org> <m1oct739xu.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-In-Reply-To: <20090606003159.114c2fab.akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0906051157460.22218@melkki.cs.Helsinki.FI>
-	 <20090605130835.e21eaf37.akpm@linux-foundation.org>
-	 <71cd59b00906060025w66d770f7he34f9172cd720c8c@mail.gmail.com>
-	 <20090606003159.114c2fab.akpm@linux-foundation.org>
-Date: Sat, 6 Jun 2009 09:52:00 +0200
-Message-ID: <71cd59b00906060052n153835e8p37e0ccb7c73ba5c5@mail.gmail.com>
-Subject: Re: [PATCH] eeepc-laptop: enable camera by default
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
-       acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1oct739xu.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 6, 2009 at 9:31 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
-> On Sat, 6 Jun 2009 09:25:34 +0200 Corentin Chary <corentin.chary@gmail.com> wrote:
->
->> fixed patch pushed into acpi4asus.
->
-> What's that?
->
-> Should it be added to linux-next?
->
+On Mon, Jun 01, 2009 at 02:45:17PM -0700, Eric W. Biederman wrote:
+> 
+> I found myself looking at the uio, seeing that it does not support pci
+> hot-unplug, and thinking "Great yet another implementation of
+> hotunplug logic that needs to be added".
+> 
+> I decided to see what it would take to add a generic implementation of
+> the code we have for supporting hot unplugging devices in sysfs, proc,
+> sysctl, tty_io, and now almost in the tun driver.
+> 
+> Not long after I touched the tun driver and made it safe to delete the
+> network device while still holding it's file descriptor open I someone
+> else touch the code adding a different feature and my careful work
+> went up in flames.  Which brought home another point at the best of it
+> this is ultimately complex tricky code that subsystems should not need
+> to worry about.
+> 
+> What makes this even more interesting is that in the presence of pci
+> hot-unplug it looks like most subsystems and most devices will have to
+> deal with the issue one way or another.
+> 
+> This infrastructure could also be used to implement both force
+> unmounts and sys_revoke.  When I could not think of a better name for
+> I have drawn on that and used revoke.
 
-http://acpi4asus.sourceforge.net/ -
-http://git.iksaif.net/?p=acpi4asus.git;a=summary
-The tree is based on
-git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6
+To be honest, the longer I'm looking at it, the less I like the approach...
+It really looks as if we'd be much better off with functionality sitting
+in a set of library helpers to be used by instances that need this stuff.
+Do we really want it for generic case?
 
-It's where I regroup eeepc/asus patchs before sending them to Len.
+Note that "we might someday implement real force-umount" doesn't count;
+the same kind of arguments had been given nine years ago in case of AIO
+("oh, sure, we'll eventually cover foo_get_block() too - it will all be
+a state machine, fully asynchronous; whaddya mean 'it's not feasible'?").
+Of course, it was _not_ feasible and had never been implemented.
 
-I don't think it should be added to linux-next, because the patchs
-will first go into the acpi tree, wich is in linux-next.
+Frankly, I very much suspect that force-umount is another case like that;
+we'll need a *lot* of interesting cooperation from fs for that to work and
+to be useful.  I'd be delighted to be proven incorrect on that one, so
+if you have anything serious in that direction, please share the details.
 
--- 
-Corentin Chary
-http://xf.iksaif.net - http://uffs.org
+As for the patchset in the current form...  Could you explain what's to prevent
+POSIX locks and dnotify entries from outliving a struct file you'd revoked,
+seeing that filp_close() will skip killing them in that case.
