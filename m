@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753393AbZFFAU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbZFFAXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753393AbZFFAU1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 20:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbZFFAUT
+	id S1753907AbZFFAXt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 20:23:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbZFFAXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 20:20:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51833 "EHLO mx1.redhat.com"
+	Fri, 5 Jun 2009 20:23:40 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33888 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752650AbZFFAUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 20:20:18 -0400
+	id S1751794AbZFFAXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 5 Jun 2009 20:23:40 -0400
+Date: Sat, 6 Jun 2009 02:23:40 +0200
+From: Jan Kara <jack@suse.cz>
+To: Chris Mason <chris.mason@oracle.com>, Jan Kara <jack@suse.cz>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, tytso@mit.edu, david@fromorbit.com,
+       hch@infradead.org, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, damien.wyart@free.fr
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
+Message-ID: <20090606002339.GH11650@duck.suse.cz>
+References: <1243511204-2328-1-git-send-email-jens.axboe@oracle.com> <20090604152040.GA6007@nowhere> <20090604120726.708a2211.akpm@linux-foundation.org> <20090604191309.GA4862@nowhere> <20090604195013.GB11363@kernel.dk> <20090604201012.GD11363@kernel.dk> <20090604223449.GA13780@nowhere> <20090605191528.GV11363@kernel.dk> <20090605211438.GA11650@duck.suse.cz> <20090606001814.GD3824@think>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: naresh kamboju <naresh.kernel@gmail.com>
-X-Fcc: ~/Mail/linus
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] ptrace: do_notify_parent_cldstop: fix the wrong 
-	->nsproxy usage
-In-Reply-To: naresh kamboju's message of  Friday, 5 June 2009 21:13:13 +0530 <f5a7b3810906050843g6cbf5067o5ba1b9e07e5e2f5b@mail.gmail.com>
-References: <20090525185502.GA20781@redhat.com>
-	<20090526210514.C1C91FC2BD@magilla.sf.frob.com>
-	<20090526213346.GA7073@redhat.com>
-	<20090527005527.B50B7FC36B@magilla.sf.frob.com>
-	<20090602045418.GB8219@us.ibm.com>
-	<f5a7b3810906050843g6cbf5067o5ba1b9e07e5e2f5b@mail.gmail.com>
-X-Shopping-List: (1) Gubernatorial holidays
-   (2) Didactic consoles
-   (3) Puerile curious gravy
-   (4) Scary redeemer benedictions
-Message-Id: <20090606001949.B1E54FC3CB@magilla.sf.frob.com>
-Date: Fri,  5 Jun 2009 17:19:49 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20090606001814.GD3824@think>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This has absolutely nothing to do with the patch/thread you replied to.
-Post about your signals issues separately.
+On Fri 05-06-09 20:18:15, Chris Mason wrote:
+> On Fri, Jun 05, 2009 at 11:14:38PM +0200, Jan Kara wrote:
+> > On Fri 05-06-09 21:15:28, Jens Axboe wrote:
+> > > On Fri, Jun 05 2009, Frederic Weisbecker wrote:
+> > > > The result with noop is even more impressive.
+> > > > 
+> > > > See: http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop.pdf
+> > > > 
+> > > > Also a comparison, noop with pdflush against noop with bdi writeback:
+> > > > 
+> > > > http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop-cmp.pdf
+> > > 
+> > > OK, so things aren't exactly peachy here to begin with. It may not
+> > > actually BE an issue, or at least now a new one, but that doesn't mean
+> > > that we should not attempt to quantify the impact.
+> >   What looks interesting is also the overall throughput. With pdflush we
+> > get to 2.5 MB/s + 26 MB/s while with per-bdi we get to 2.7 MB/s + 13 MB/s.
+> > So per-bdi seems to be *more* fair but throughput suffers a lot (which
+> > might be inevitable due to incurred seeks).
+> >   Frederic, how much does dbench achieve for you just on one partition
+> > (test both consecutively if possible) with as many threads as have those
+> > two dbench instances together? Thanks.
+> 
+> Is the graph showing us dbench tput or disk tput?  I'm assuming it is
+> disk tput, so bdi may just be writing less?
+  Good, question. I was assuming dbench throughput :).
+
+									Honza
+
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
