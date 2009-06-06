@@ -1,80 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752949AbZFFID7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbZFFIEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752949AbZFFID7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 04:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbZFFIDi
+	id S1753826AbZFFIEk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 04:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753326AbZFFIEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 04:03:38 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34080 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752071AbZFFIDg (ORCPT
+	Sat, 6 Jun 2009 04:04:23 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:62731 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752224AbZFFIET (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 04:03:36 -0400
-Date: Sat, 6 Jun 2009 09:03:34 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>, Tejun Heo <tj@kernel.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 0/23] File descriptor hot-unplug support v2
-Message-ID: <20090606080334.GA15204@ZenIV.linux.org.uk>
-References: <m1skkf761y.fsf@fess.ebiederm.org> <m1oct739xu.fsf@fess.ebiederm.org>
+	Sat, 6 Jun 2009 04:04:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=P8M8D0+uAejcKUzSQ+/8rHwp05ZWi/wU9DApM6utdseI+xBiVU87IoKIPdHSY/5bJb
+         SVJ9Q16X3B6CmSJq66ztzulKK8g7MYyzdnN0X8tajLbzx1KQIzDFgI/RvMNO7DwBOqJb
+         XbN34G0Hy6Dcaux66SdUtMcLRjdFZLVUjvspg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1oct739xu.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Reply-To: alan-jenkins@tuffmail.co.uk
+In-Reply-To: <71cd59b00906060012w6bc6f302o76fea3c8a570840e@mail.gmail.com>
+References: <Pine.LNX.4.64.0906051157460.22218@melkki.cs.Helsinki.FI>
+	 <71cd59b00906050446g7310d24el94f0d137dc0e0ecf@mail.gmail.com>
+	 <4A2987A9.2010202@xandros.com>
+	 <71cd59b00906060012w6bc6f302o76fea3c8a570840e@mail.gmail.com>
+Date: Sat, 6 Jun 2009 09:04:20 +0100
+Message-ID: <9b2b86520906060104q62ebdfcdv7af63cf1dee416db@mail.gmail.com>
+Subject: Re: [PATCH] eeepc-laptop: enable camera by default
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Corentin Chary <corentin.chary@gmail.com>
+Cc: Woody Suwalski <woodys@xandros.com>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 01, 2009 at 02:45:17PM -0700, Eric W. Biederman wrote:
-> 
-> I found myself looking at the uio, seeing that it does not support pci
-> hot-unplug, and thinking "Great yet another implementation of
-> hotunplug logic that needs to be added".
-> 
-> I decided to see what it would take to add a generic implementation of
-> the code we have for supporting hot unplugging devices in sysfs, proc,
-> sysctl, tty_io, and now almost in the tun driver.
-> 
-> Not long after I touched the tun driver and made it safe to delete the
-> network device while still holding it's file descriptor open I someone
-> else touch the code adding a different feature and my careful work
-> went up in flames.  Which brought home another point at the best of it
-> this is ultimately complex tricky code that subsystems should not need
-> to worry about.
-> 
-> What makes this even more interesting is that in the presence of pci
-> hot-unplug it looks like most subsystems and most devices will have to
-> deal with the issue one way or another.
-> 
-> This infrastructure could also be used to implement both force
-> unmounts and sys_revoke.  When I could not think of a better name for
-> I have drawn on that and used revoke.
+On 6/6/09, Corentin Chary <corentin.chary@gmail.com> wrote:
+> On Fri, Jun 5, 2009 at 11:01 PM, Woody Suwalski<woodys@xandros.com> wrote:
+>> Corentin Chary wrote:
+>>>
+>>> On Fri, Jun 5, 2009 at 10:59 AM, Pekka J Enberg<penberg@cs.helsinki.fi>
+>>> wrote:
+>>>
+>>>>
+>>>> From: Pekka Enberg <penberg@cs.helsinki.fi>
+>>>>
+>>>> If we leave the camera disabled by default, userspace programs (e.g.
+>>>> Skype, Cheese) leave the user out in the cold saying that the machine
+>>>> "has
+>>>> no camera." Therefore, it's better to enable camera by default and let
+>>>> people who really don't want it just disable the thing.
+>>>>
+>>>> Cc: <acpi4asus-user@lists.sourceforge.net>
+>>>> Cc: Len Brown <len.brown@intel.com>
+>>>> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+>>>> ---
+>>>>  drivers/platform/x86/eeepc-laptop.c |   16 ++++++++++++++++
+>>>>  1 files changed, 16 insertions(+), 0 deletions(-)
+>>>>
+>>>> diff --git a/drivers/platform/x86/eeepc-laptop.c
+>>>> b/drivers/platform/x86/eeepc-laptop.c
+>>>> index 353a898..c0f8eb1 100644
+>>>> --- a/drivers/platform/x86/eeepc-laptop.c
+>>>> +++ b/drivers/platform/x86/eeepc-laptop.c
+>>>> @@ -334,6 +334,19 @@ static int eeepc_bluetooth_rfkill_state(void *data,
+>>>> enum rfkill_state *state)
+>>>>  }
+>>>>
+>>>>  /*
+>>>> + * Camera helpers
+>>>> + */
+>>>> +
+>>>> +static void eeepc_enable_camera(void)
+>>>> +{
+>>>> +       int err;
+>>>> +
+>>>> +       err = set_acpi(CM_ASL_CAMERA, 1);
+>>>> +       if (err)
+>>>> +               printk(EEEPC_WARNING "Unable to enable camera %d\n",
+>>>> err);
+>>>> +}
+>>>> +
+>>>> +/*
+>>>>  * Sys helpers
+>>>>  */
+>>>>  static int parse_arg(const char *buf, unsigned long count, int *val)
+>>>> @@ -996,6 +1009,9 @@ static int __init eeepc_laptop_init(void)
+>>>>       result = eeepc_hwmon_init(dev);
+>>>>       if (result)
+>>>>               goto fail_hwmon;
+>>>> +
+>>>> +       eeepc_enable_camera();
+>>>> +
+>>>>       /* Register platform stuff */
+>>>>       result = platform_driver_register(&platform_driver);
+>>>>       if (result)
+>>>> --
+>>>> 1.5.6.3
+>>>>
+>>>>
+>>>>
+>>>
+>>> Hi,
+>>> First, I think a one line
+>>> set_acpi(CM_ASL_CAMERA, 1);
+>>> with a small comment is better. (If it fails, it's because there no
+>>> camera, so we don't mind).
+>>>
+>>> Anyway, I'm not sure it's a good idea to enable the camera by default.
+>>> It depends how many
+>>> power the camera is using (when idle). Coud you check that (with power
+>>> top maybe ?).
+>>>
+>>> Thanks
+>>>
+>>
+>> From our old measurements:
+>>
+>> idle camera is ~20mA out of ~650mA total power... (measured on 901 model).
+>>
+>> Woody
+>>
+>> --
+>> Woody Suwalski, Xandros, Ottawa, Canada, 1-613-842-3498 x414
+>>
+>>
+>
+> Do also have some results with
+> echo -n auto > /sys/bus/usb/drivers/uvcvideo/*:*/../power/level
+>
+> ?
 
-To be honest, the longer I'm looking at it, the less I like the approach...
-It really looks as if we'd be much better off with functionality sitting
-in a set of library helpers to be used by instances that need this stuff.
-Do we really want it for generic case?
+Can I also ask if you tested with
 
-Note that "we might someday implement real force-umount" doesn't count;
-the same kind of arguments had been given nine years ago in case of AIO
-("oh, sure, we'll eventually cover foo_get_block() too - it will all be
-a state machine, fully asynchronous; whaddya mean 'it's not feasible'?").
-Of course, it was _not_ feasible and had never been implemented.
+CONFIG_NO_HZ=y
 
-Frankly, I very much suspect that force-umount is another case like that;
-we'll need a *lot* of interesting cooperation from fs for that to work and
-to be useful.  I'd be delighted to be proven incorrect on that one, so
-if you have anything serious in that direction, please share the details.
+?  IIRC, the kernel shipped on my old Eee didn't have NOHZ.  Without
+NOHZ, it won't save much _cpu_ power; cutting 10 wakeups/s off >100
+won't make much difference.
 
-As for the patchset in the current form...  Could you explain what's to prevent
-POSIX locks and dnotify entries from outliving a struct file you'd revoked,
-seeing that filp_close() will skip killing them in that case.
+Ta
+Alan
