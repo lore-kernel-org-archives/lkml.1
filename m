@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753003AbZFFTW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752058AbZFFTZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753003AbZFFTW2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 15:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZFFTWT
+	id S1752058AbZFFTZR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 15:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbZFFTZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 15:22:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43052 "EHLO hera.kernel.org"
+	Sat, 6 Jun 2009 15:25:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49950 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751404AbZFFTWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 15:22:18 -0400
-Date: Sat, 6 Jun 2009 19:21:32 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
+	id S1751502AbZFFTZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 15:25:05 -0400
+Date: Sat, 6 Jun 2009 19:24:31 GMT
+From: tip-bot for Arjan van de Ven <arjan@linux.intel.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
+       arjan@linux.intel.com, efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
-Subject: [tip:perfcounters/core] perf annotate: Automatically pick up vmlinux in the local directory
-Message-ID: <tip-39273ee9756917129de3190d469b0b120f87e763@git.kernel.org>
-Git-Commit-ID: 39273ee9756917129de3190d469b0b120f87e763
+Subject: [tip:perfcounters/core] perf_counter tools: Initialize a stack variable before use
+Message-ID: <tip-e9fbc9dc9214d6a9de7d62627be5414804fd7b9f@git.kernel.org>
+Git-Commit-ID: e9fbc9dc9214d6a9de7d62627be5414804fd7b9f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 06 Jun 2009 19:21:46 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 06 Jun 2009 19:24:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  39273ee9756917129de3190d469b0b120f87e763
-Gitweb:     http://git.kernel.org/tip/39273ee9756917129de3190d469b0b120f87e763
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Sat, 6 Jun 2009 21:17:03 +0200
+Commit-ID:  e9fbc9dc9214d6a9de7d62627be5414804fd7b9f
+Gitweb:     http://git.kernel.org/tip/e9fbc9dc9214d6a9de7d62627be5414804fd7b9f
+Author:     Arjan van de Ven <arjan@linux.intel.com>
+AuthorDate: Sat, 6 Jun 2009 21:22:33 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 6 Jun 2009 21:17:03 +0200
+CommitDate: Sat, 6 Jun 2009 21:22:33 +0200
 
-perf annotate: Automatically pick up vmlinux in the local directory
+perf_counter tools: Initialize a stack variable before use
 
-Right now kernel debug info does not get resolved by default, because
-we dont know where to look for the vmlinux.
+the "perf report" utility crashed in some circumstances
+because the "sym" stack variable was not initialized before used
+(as also proven by valgrind).
 
-The -k option can be used for that - but if no option is given, pick
-up vmlinux files in the current directory - in case a kernel hacker
-runs profiling from the source directory that the kernel was built in.
+With this fix both the crash goes away and valgrind no longer complains.
 
-The real solution would be to embedd the location (and perhaps the
-date/timestamp) of the vmlinux file in /proc/kallsyms, so that
-tools can pick it up automatically.
-
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
 Cc: Paul Mackerras <paulus@samba.org>
@@ -61,19 +58,19 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-annotate.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ tools/perf/util/symbol.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 4a3c279..80c5aa0 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -26,7 +26,7 @@
- #define SHOW_HV		4
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index 253821d..158588c 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -457,6 +457,8 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
  
- static char		const *input_name = "perf.data";
--static char		*vmlinux = NULL;
-+static char		*vmlinux = "vmlinux";
+ 	nr_syms = shdr.sh_size / shdr.sh_entsize;
  
- static char		default_sort_order[] = "comm,symbol";
- static char		*sort_order = default_sort_order;
++	memset(&sym, 0, sizeof(sym));
++
+ 	elf_symtab__for_each_symbol(syms, nr_syms, index, sym) {
+ 		struct symbol *f;
+ 		uint64_t obj_start;
