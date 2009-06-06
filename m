@@ -1,157 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753910AbZFFIgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240AbZFFIgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753910AbZFFIgY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 04:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbZFFIgS
+	id S1754240AbZFFIgi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 04:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752935AbZFFIg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 04:36:18 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:47818 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbZFFIgQ (ORCPT
+	Sat, 6 Jun 2009 04:36:29 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:45614 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752555AbZFFIg2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 04:36:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=bHLb8MKf52jj9DAWj/bUmZ9HQGCu8iy53L9IAa4qgf7nk+kxuJ3SLcF8vpY8WSmjlZ
-         /QqzQMERrYSQU/LNJLjEWLWCYRh24ERuPEMTEHXgUL/rwfGVQcqBERb6rUXqd3dLozsJ
-         PH4H7pgeqL0i+/z4brugPpmI2+JT5Wj1VB9QU=
-MIME-Version: 1.0
-Date: Sat, 6 Jun 2009 14:06:17 +0530
-Message-ID: <be4915c60906060136w6d052a9bq334faa585e097fa@mail.gmail.com>
-Subject: Doubt regarding Wifi Driver iwlagn
-From: Sivabalan Thirunavukkarasu <siva886@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary=0016362839601a12bb046ba9e732
+	Sat, 6 Jun 2009 04:36:28 -0400
+Date: Sat, 6 Jun 2009 10:38:44 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Amerigo Wang <amwang@redhat.com>
+Subject: Re: [PATCH 18/39] kbuild/headers_check: refine extern check
+Message-ID: <20090606083844.GA14555@uranus.ravnborg.org>
+References: <20090605233720.GA13588@uranus.ravnborg.org> <1244245377-17441-18-git-send-email-sam@ravnborg.org> <200906060046.07421.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906060046.07421.arnd@arndb.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016362839601a12bb046ba9e732
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Sat, Jun 06, 2009 at 12:46:07AM +0000, Arnd Bergmann wrote:
+> On Friday 05 June 2009 11:42:36 pm Sam Ravnborg wrote:
+> > From: Amerigo Wang <amwang@redhat.com>
+> > 
+> > 'extern' checking information is not clear, refine it.
+> > Plus, fix a comment.
+> > 
+> > Signed-off-by: WANG Cong <amwang@redhat.com>
+> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> 
+> I still think this is pointless and should just be removed
+> (or replaced with a patch to kill the apostrophe in there).
 
-Hi all,
+So you wanted me to visit that link...
+I redid it like this:
 
-       I am using Ubuntu 9.04 64bit running its default kernel
-2.6.28-11-generic. My doubt is regarding the wireless driver. The card
-my HP HDX16 laptop has is, ( from lspci )
+Subject: kbuild/headers_check: refine extern check
 
-       02:00.0 Network controller: Intel Corporation PRO/Wireless 5100
-AGN [Shiloh] Network Connection
+'extern' checking information is not clear, refine it.
+Plus, fix a comment.
 
-       Whenever my card tries to associate with any of my AP's, i get
-the following messages on dmesg.
-
-      .
-      ..
-      [   73.333572] wlan0: disassociating by local choice (reason=3)
-      [   73.344039] iwlagn: index 0 not used in uCode key table.
-      [   81.500026] Clocksource tsc unstable (delta = -273035428 ns)
-      [   86.239909] wlan0: authenticate with AP 00:1e:40:af:cc:7e
-      ..
-      .
-
-      I am not clear whether its a bug or what exactly is the problem
-here. Have attached the full dmesg log from start of inclusion of Wifi
-driver with this for reference.
-
-      Please clarify.
-
-Thanks
-Siva
-
---0016362839601a12bb046ba9e732
-Content-Type: text/x-log; charset=US-ASCII; name="dmesg.log"
-Content-Disposition: attachment; filename="dmesg.log"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fvm2l3ai0
-
-WyAgIDEyLjQ5OTUyMF0gaXdsYWduOiBJbnRlbChSKSBXaXJlbGVzcyBXaUZpIExpbmsgQUdOIGRy
-aXZlciBmb3IgTGludXgsIDEuMy4yN2tzClsgICAxMi40OTk1MjNdIGl3bGFnbjogQ29weXJpZ2h0
-KGMpIDIwMDMtMjAwOCBJbnRlbCBDb3Jwb3JhdGlvbgpbICAgMTIuNDk5NjI4XSBpd2xhZ24gMDAw
-MDowMjowMC4wOiBQQ0kgSU5UIEEgLT4gR1NJIDE2IChsZXZlbCwgbG93KSAtPiBJUlEgMTYKWyAg
-IDEyLjQ5OTYzNV0gaXdsYWduIDAwMDA6MDI6MDAuMDogc2V0dGluZyBsYXRlbmN5IHRpbWVyIHRv
-IDY0ClsgICAxMi40OTk2OTFdIGl3bGFnbjogRGV0ZWN0ZWQgSW50ZWwgV2lyZWxlc3MgV2lGaSBM
-aW5rIDUxMDBBR04gUkVWPTB4NTQKWyAgIDEyLjUyMTU4MV0gaXdsYWduOiBUdW5hYmxlIGNoYW5u
-ZWxzOiAxMyA4MDIuMTFiZywgMjQgODAyLjExYSBjaGFubmVscwpbICAgMTIuNTIxNjQ2XSBpd2xh
-Z24gMDAwMDowMjowMC4wOiBpcnEgMjI5NSBmb3IgTVNJL01TSS1YClsgICAxMi41MjI1MDVdIHBo
-eTA6IFNlbGVjdGVkIHJhdGUgY29udHJvbCBhbGdvcml0aG0gJ2l3bC1hZ24tcnMnClsgICAxMi41
-NjU5NTVdIHN5bmFwdGljcyB3YXMgcmVzZXQgb24gcmVzdW1lLCBzZWUgc3luYXB0aWNzX3Jlc3Vt
-ZV9yZXNldCBpZiB5b3UgaGF2ZSB0cm91YmxlIG9uIHJlc3VtZQpbICAgMTIuNjU0OTg3XSBIREEg
-SW50ZWwgMDAwMDowMDoxYi4wOiBQQ0kgSU5UIEEgLT4gR1NJIDIyIChsZXZlbCwgbG93KSAtPiBJ
-UlEgMjIKWyAgIDEyLjY1NTA3OF0gSERBIEludGVsIDAwMDA6MDA6MWIuMDogc2V0dGluZyBsYXRl
-bmN5IHRpbWVyIHRvIDY0ClsgICAxMi42ODYzMzVdIGlucHV0OiBIREEgRGlnaXRhbCBQQ0JlZXAg
-YXMgL2RldmljZXMvcGNpMDAwMDowMC8wMDAwOjAwOjFiLjAvaW5wdXQvaW5wdXQxMQpbICAgMTIu
-ODk0NTAyXSBscDogZHJpdmVyIGxvYWRlZCBidXQgbm8gZGV2aWNlcyBmb3VuZApbICAgMTIuOTg0
-MjYzXSBBZGRpbmcgMTEzMjU0MGsgc3dhcCBvbiAvZGV2L3NkYTYuICBQcmlvcml0eTotMSBleHRl
-bnRzOjEgYWNyb3NzOjExMzI1NDBrClsgICAxMi45OTg3NjZdIEVYVDMgRlMgb24gc2RhNSwgaW50
-ZXJuYWwgam91cm5hbApbICAgMTMuMzEyNzIwXSB0eXBlPTE1MDUgYXVkaXQoMTI0NDI3NTk2MS45
-MTc6Mik6IG9wZXJhdGlvbj0icHJvZmlsZV9sb2FkIiBuYW1lPSIvdXNyL3NoYXJlL2dkbS9ndWVz
-dC1zZXNzaW9uL1hzZXNzaW9uIiBuYW1lMj0iZGVmYXVsdCIgcGlkPTIyNTMKWyAgIDEzLjM0NTQy
-MV0gdHlwZT0xNTA1IGF1ZGl0KDEyNDQyNzU5NjEuOTUzOjMpOiBvcGVyYXRpb249InByb2ZpbGVf
-bG9hZCIgbmFtZT0iL3NiaW4vZGhjbGllbnQtc2NyaXB0IiBuYW1lMj0iZGVmYXVsdCIgcGlkPTIy
-NTcKWyAgIDEzLjM0NTUyOF0gdHlwZT0xNTA1IGF1ZGl0KDEyNDQyNzU5NjEuOTUzOjQpOiBvcGVy
-YXRpb249InByb2ZpbGVfbG9hZCIgbmFtZT0iL3NiaW4vZGhjbGllbnQzIiBuYW1lMj0iZGVmYXVs
-dCIgcGlkPTIyNTcKWyAgIDEzLjM0NTU2M10gdHlwZT0xNTA1IGF1ZGl0KDEyNDQyNzU5NjEuOTUz
-OjUpOiBvcGVyYXRpb249InByb2ZpbGVfbG9hZCIgbmFtZT0iL3Vzci9saWIvTmV0d29ya01hbmFn
-ZXIvbm0tZGhjcC1jbGllbnQuYWN0aW9uIiBuYW1lMj0iZGVmYXVsdCIgcGlkPTIyNTcKWyAgIDEz
-LjM0NTU5M10gdHlwZT0xNTA1IGF1ZGl0KDEyNDQyNzU5NjEuOTUzOjYpOiBvcGVyYXRpb249InBy
-b2ZpbGVfbG9hZCIgbmFtZT0iL3Vzci9saWIvY29ubm1hbi9zY3JpcHRzL2RoY2xpZW50LXNjcmlw
-dCIgbmFtZTI9ImRlZmF1bHQiIHBpZD0yMjU3ClsgICAxMy40Mzk0NzRdIHR5cGU9MTUwNSBhdWRp
-dCgxMjQ0Mjc1OTYyLjA0NTo3KTogb3BlcmF0aW9uPSJwcm9maWxlX2xvYWQiIG5hbWU9Ii91c3Iv
-bGliL2N1cHMvYmFja2VuZC9jdXBzLXBkZiIgbmFtZTI9ImRlZmF1bHQiIHBpZD0yMjYyClsgICAx
-My40Mzk2MThdIHR5cGU9MTUwNSBhdWRpdCgxMjQ0Mjc1OTYyLjA0NTo4KTogb3BlcmF0aW9uPSJw
-cm9maWxlX2xvYWQiIG5hbWU9Ii91c3Ivc2Jpbi9jdXBzZCIgbmFtZTI9ImRlZmF1bHQiIHBpZD0y
-MjYyClsgICAxMy40NjE0MjldIHR5cGU9MTUwNSBhdWRpdCgxMjQ0Mjc1OTYyLjA2OTo5KTogb3Bl
-cmF0aW9uPSJwcm9maWxlX2xvYWQiIG5hbWU9Ii91c3Ivc2Jpbi9teXNxbGQtYWtvbmFkaSIgbmFt
-ZTI9ImRlZmF1bHQiIHBpZD0yMjY2ClsgICAxMy40ODEyMjNdIHR5cGU9MTUwNSBhdWRpdCgxMjQ0
-Mjc1OTYyLjA4OToxMCk6IG9wZXJhdGlvbj0icHJvZmlsZV9sb2FkIiBuYW1lPSIvdXNyL3NiaW4v
-dGNwZHVtcCIgbmFtZTI9ImRlZmF1bHQiIHBpZD0yMjcwClsgICAxMy42NDg2MzVdIFN5bmFwdGlj
-cyBUb3VjaHBhZCwgbW9kZWw6IDEsIGZ3OiA2LjMsIGlkOiAweDFhMGIxLCBjYXBzOiAweGEwNDcx
-MS8weGEwMDAwMApbICAgMTMuNzMzMjk1XSBpbnB1dDogU3luUFMvMiBTeW5hcHRpY3MgVG91Y2hQ
-YWQgYXMgL2RldmljZXMvcGxhdGZvcm0vaTgwNDIvc2VyaW8xL2lucHV0L2lucHV0MTIKWyAgIDE1
-Ljg4OTUyM10gQmx1ZXRvb3RoOiBCTkVQIChFdGhlcm5ldCBFbXVsYXRpb24pIHZlciAxLjMKWyAg
-IDE1Ljg4OTUyNl0gQmx1ZXRvb3RoOiBCTkVQIGZpbHRlcnM6IHByb3RvY29sIG11bHRpY2FzdApb
-ICAgMTUuOTAzMDc5XSBCcmlkZ2UgZmlyZXdhbGxpbmcgcmVnaXN0ZXJlZApbICAgMTcuMzU4MzIy
-XSBwcGRldjogdXNlci1zcGFjZSBwYXJhbGxlbCBwb3J0IGRyaXZlcgpbICAgMjEuMzkzMTgyXSBy
-ODE2OTogZXRoMDogbGluayBkb3duClsgICAyMS4zOTM3ODZdIEFERFJDT05GKE5FVERFVl9VUCk6
-IGV0aDA6IGxpbmsgaXMgbm90IHJlYWR5ClsgICAyMS4zOTQzNjddIGl3bGFnbiAwMDAwOjAyOjAw
-LjA6IGZpcm13YXJlOiByZXF1ZXN0aW5nIGl3bHdpZmktNTAwMC0xLnVjb2RlClsgICAyMi4zOTg1
-NzhdIFJlZ2lzdGVyZWQgbGVkIGRldmljZTogaXdsLXBoeTA6cmFkaW8KWyAgIDIyLjM5ODU5NF0g
-UmVnaXN0ZXJlZCBsZWQgZGV2aWNlOiBpd2wtcGh5MDphc3NvYwpbICAgMjIuMzk4NjA2XSBSZWdp
-c3RlcmVkIGxlZCBkZXZpY2U6IGl3bC1waHkwOlJYClsgICAyMi4zOTg2MThdIFJlZ2lzdGVyZWQg
-bGVkIGRldmljZTogaXdsLXBoeTA6VFgKWyAgIDIzLjI2MjE0OV0gQUREUkNPTkYoTkVUREVWX1VQ
-KTogd2xhbjA6IGxpbmsgaXMgbm90IHJlYWR5ClsgICA1OC42OTQzMDVdIENQVTAgYXR0YWNoaW5n
-IE5VTEwgc2NoZWQtZG9tYWluLgpbICAgNTguNjk0MzEwXSBDUFUxIGF0dGFjaGluZyBOVUxMIHNj
-aGVkLWRvbWFpbi4KWyAgIDU4LjcxMjA4MV0gQ1BVMCBhdHRhY2hpbmcgc2NoZWQtZG9tYWluOgpb
-ICAgNTguNzEyMDg0XSAgZG9tYWluIDA6IHNwYW4gMC0xIGxldmVsIE1DClsgICA1OC43MTIwODdd
-ICAgZ3JvdXBzOiAwIDEKWyAgIDU4LjcxMjA5MF0gICBkb21haW4gMTogc3BhbiAwLTEgbGV2ZWwg
-Q1BVClsgICA1OC43MTIwOTFdICAgIGdyb3VwczogMC0xClsgICA1OC43MTIwOTVdIENQVTEgYXR0
-YWNoaW5nIHNjaGVkLWRvbWFpbjoKWyAgIDU4LjcxMjA5Nl0gIGRvbWFpbiAwOiBzcGFuIDAtMSBs
-ZXZlbCBNQwpbICAgNTguNzEyMDk3XSAgIGdyb3VwczogMSAwClsgICA1OC43MTIxMDBdICAgZG9t
-YWluIDE6IHNwYW4gMC0xIGxldmVsIENQVQpbICAgNTguNzEyMTAxXSAgICBncm91cHM6IDAtMQpb
-ICAgNjAuMjI1MzczXSB3bGFuMDogYXV0aGVudGljYXRlIHdpdGggQVAgMDA6MWU6NDA6YWY6YzM6
-N2MKWyAgIDYwLjIyNzUxNl0gd2xhbjA6IGF1dGhlbnRpY2F0ZWQKWyAgIDYwLjIyNzUxOV0gd2xh
-bjA6IGFzc29jaWF0ZSB3aXRoIEFQIDAwOjFlOjQwOmFmOmMzOjdjClsgICA2MC4yMzAwMTVdIHds
-YW4wOiBSWCBBc3NvY1Jlc3AgZnJvbSAwMDoxZTo0MDphZjpjMzo3YyAoY2FwYWI9MHg0MTEgc3Rh
-dHVzPTAgYWlkPTIpClsgICA2MC4yMzAwMThdIHdsYW4wOiBhc3NvY2lhdGVkClsgICA2MC4yMzQw
-MDJdIEFERFJDT05GKE5FVERFVl9DSEFOR0UpOiB3bGFuMDogbGluayBiZWNvbWVzIHJlYWR5Clsg
-ICA3MS4xOTYwMzJdIHdsYW4wOiBubyBJUHY2IHJvdXRlcnMgcHJlc2VudApbICAgNzMuMzE2NTgz
-XSB3bGFuMDogZGlzYXNzb2NpYXRpbmcgYnkgbG9jYWwgY2hvaWNlIChyZWFzb249MykKWyAgIDcz
-LjMxNjg4MF0gd2xhbjA6IGRpcmVjdCBwcm9iZSB0byBBUCAwMDoxZTo0MDphZjpjMzo3YyB0cnkg
-MQpbICAgNzMuMzE4OTQwXSB3bGFuMCBkaXJlY3QgcHJvYmUgcmVzcG9uZGVkClsgICA3My4zMTg5
-NDVdIHdsYW4wOiBhdXRoZW50aWNhdGUgd2l0aCBBUCAwMDoxZTo0MDphZjpjMzo3YwpbICAgNzMu
-MzIwOTE2XSB3bGFuMDogYXV0aGVudGljYXRlZApbICAgNzMuMzIwOTIwXSB3bGFuMDogYXNzb2Np
-YXRlIHdpdGggQVAgMDA6MWU6NDA6YWY6YzM6N2MKWyAgIDczLjMyNjgzNl0gd2xhbjA6IFJYIEFz
-c29jUmVzcCBmcm9tIDAwOjFlOjQwOmFmOmMzOjdjIChjYXBhYj0weDQxMSBzdGF0dXM9MCBhaWQ9
-MikKWyAgIDczLjMyNjg0MF0gd2xhbjA6IGFzc29jaWF0ZWQKWyAgIDczLjMzMzU3Ml0gd2xhbjA6
-IGRpc2Fzc29jaWF0aW5nIGJ5IGxvY2FsIGNob2ljZSAocmVhc29uPTMpClsgICA3My4zNDQwMzld
-IGl3bGFnbjogaW5kZXggMCBub3QgdXNlZCBpbiB1Q29kZSBrZXkgdGFibGUuClsgICA4MS41MDAw
-MjZdIENsb2Nrc291cmNlIHRzYyB1bnN0YWJsZSAoZGVsdGEgPSAtMjczMDM1NDI4IG5zKQpbICAg
-ODYuMjM5OTA5XSB3bGFuMDogYXV0aGVudGljYXRlIHdpdGggQVAgMDA6MWU6NDA6YWY6Y2M6N2UK
-WyAgIDg2LjI0ODEyNF0gd2xhbjA6IGF1dGhlbnRpY2F0ZWQKWyAgIDg2LjI0ODEzMV0gd2xhbjA6
-IGFzc29jaWF0ZSB3aXRoIEFQIDAwOjFlOjQwOmFmOmNjOjdlClsgICA4Ni4yNTA3MzRdIHdsYW4w
-OiBSWCBBc3NvY1Jlc3AgZnJvbSAwMDoxZTo0MDphZjpjYzo3ZSAoY2FwYWI9MHg0MTEgc3RhdHVz
-PTAgYWlkPTMpClsgICA4Ni4yNTA3NDBdIHdsYW4wOiBhc3NvY2lhdGVkCg==
---0016362839601a12bb046ba9e732--
+Signed-off-by: WANG Cong <amwang@redhat.com>
+[sam: redid the extern error message]
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+diff --git a/scripts/headers_check.pl b/scripts/headers_check.pl
+index 4414c43..db1dd7a 100644
+--- a/scripts/headers_check.pl
++++ b/scripts/headers_check.pl
+@@ -2,7 +2,7 @@
+ #
+ # headers_check.pl execute a number of trivial consistency checks
+ #
+-# Usage: headers_check.pl dir [files...]
++# Usage: headers_check.pl dir arch [files...]
+ # dir:   dir to look for included files
+ # arch:  architecture
+ # files: list of files to check
+@@ -37,7 +37,7 @@ foreach my $file (@files) {
+ 		&check_include();
+ 		&check_asm_types();
+ 		&check_sizetypes();
+-		&check_prototypes();
++		&check_declarations();
+ 		# Dropped for now. Too much noise &check_config();
+ 	}
+ 	close FH;
+@@ -61,10 +61,12 @@ sub check_include
+ 	}
+ }
+ 
+-sub check_prototypes
++sub check_declarations
+ {
+-	if ($line =~ m/^\s*extern\b/) {
+-		printf STDERR "$filename:$lineno: extern's make no sense in userspace\n";
++	if ($line =~m/^\s*extern\b/) {
++		printf STDERR "$filename:$lineno: " .
++		              "userspace cannot call function or variable " .
++		              "defined in the kernel\n";
+ 	}
+ }
+ 
