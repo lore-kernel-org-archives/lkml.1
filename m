@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753267AbZFFTAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbZFFTA7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753267AbZFFTAf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 15:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751183AbZFFTA0
+	id S1752936AbZFFTA7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 15:00:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbZFFTAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 15:00:26 -0400
-Received: from penguin.cohaesio.net ([212.97.129.34]:35913 "EHLO
-	mail.cohaesio.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751159AbZFFTA0 (ORCPT
+	Sat, 6 Jun 2009 15:00:52 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:61067 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751183AbZFFTAv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 15:00:26 -0400
-X-Greylist: delayed 360 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Jun 2009 15:00:26 EDT
-Message-ID: <4A2ABB62.6080705@cohaesio.com>
-Date: Sat, 06 Jun 2009 20:54:26 +0200
-From: "Anders K. Pedersen" <akp@cohaesio.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.21) Gecko/20090321 SeaMonkey/1.1.15
+	Sat, 6 Jun 2009 15:00:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=H117dtVMCcgrXTm1LESrrJEfGx3HRw8kQzMFWjtVsgn2SdNCWvdZ9zRmtHBdXU9jxZ
+         rgMuESMz5E4HNCp9Zhu+q278XWOTtKU7rS0DiDCaXmkoNE2NuyEtMKLM/on+mnIXEOHz
+         JLuh/1zlOdf3uUfndn6tKx69UMoR7hNYywtH0=
+From: Chris Clayton <chris2553@googlemail.com>
+Reply-To: chris2553@googlemail.com
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.30-rc8 Oops whilst booting
+Date: Sat, 6 Jun 2009 19:59:55 +0100
+User-Agent: KMail/1.9.10
 MIME-Version: 1.0
-To: Dave McCracken <dcm@mccr.org>, linux-kernel@vger.kernel.org
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
- kernels
-References: <4A0B62F7.5030802@goop.org> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain> <200906041652.55298.dcm@mccr.org>
-In-Reply-To: <200906041652.55298.dcm@mccr.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906061959.55592.chris2553@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave McCracken wrote:
-> What I see as the message of his benchmark is if you care about performance 
-> you should be customizing your kernel anyway.  Distro kernels are slow.  An 
-> option that makes the distro kernel a bit slower is no big deal since anyone 
-> who wants speed should already be rebuilding their kernel.
+Hi,
 
-And Oracle of course supports customers doing that?
+After a git pull earlier today, I've had oopsen whilst booting the system twice today:
+A photo of the oops message can be viewed at:
 
-Not in my experience, and the same goes for most other commercial
-enterprise software on Linux as well, so customers have to stick to
-distro kernels, if they want support.
+http://img231.imageshack.us/img231/8931/dscn0610.jpg
 
-Regards,
-Anders K. Pedersen
+I haven't used the 2.6.30-rc kernels very much, so I don't have a clue when the problem was 
+introduced. I have no problems at all with 2.6.29.4.
+
+Happy to help solve this - just let me know what else I can do.
+
+Thanks
+-- 
+No, Sir; there is nothing which has yet been contrived by man, by which so much happiness is 
+produced as by a good tavern or inn - Doctor Samuel Johnson
