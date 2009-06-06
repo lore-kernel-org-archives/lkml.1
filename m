@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbZFFWAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbZFFWAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754622AbZFFWAf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 18:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbZFFWAM
+	id S1754986AbZFFWAp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 18:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbZFFWAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 18:00:12 -0400
-Received: from wsip-70-184-212-11.om.om.cox.net ([70.184.212.11]:33845 "EHLO
-	hachi.dashjr.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753195AbZFFWAK (ORCPT
+	Sat, 6 Jun 2009 18:00:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58876 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754722AbZFFWAf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 18:00:10 -0400
-From: "Luke-Jr" <luke@dashjr.org>
-To: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Solution: N810 keyboard regression
-Date: Sat, 6 Jun 2009 16:51:34 -0500
-User-Agent: KMail/1.11.3 (Linux/2.6.27-gentoo-r7; KDE/4.2.3; x86_64; ; )
+	Sat, 6 Jun 2009 18:00:35 -0400
+Date: Sat, 6 Jun 2009 14:58:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Avi Kivity <avi@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/6] cpumask: introduce zalloc_cpumask_var
+In-Reply-To: <4A2AE4AC.60805@kernel.org>
+Message-ID: <alpine.LFD.2.01.0906061457070.6847@localhost.localdomain>
+References: <4A2835D8.6040903@kernel.org> <200906051428.08299.rusty@rustcorp.com.au> <4A28B3A9.3010505@kernel.org> <200906052311.57762.rusty@rustcorp.com.au> <4A2A356B.6090102@redhat.com> <4A2A38B9.7030809@kernel.org> <4A2A3969.5030101@redhat.com>
+ <4A2A4B80.1010605@kernel.org> <4A2AE4AC.60805@kernel.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906061651.43882.luke@dashjr.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Found the problem with the 2.6.29 N810 keyboard regression in this commit:
-	commit c83702a764c3099df50f215b8e79e07344e34a1a
-	Author: Felipe Balbi <felipe.balbi@nokia.com>
-	Date:   Thu Feb 19 12:29:40 2009 +0000
-	    input: lm8323: get rid of useless debug macro
-	    we can use dev_vdbg() which is only true when VERBOSE is enabled.
 
-Part of this commit removed the "default" values for platform parameters, but 
-set the N810's size_y to 8 instead of the earlier default of 12. Changing this 
-to 12 (patch to follow) fixes the keyboard regression. Note, the total keys on 
-the N810 is in fact under 64, so 8x8 seems correct. Not sure why it doesn't 
-work like that in practise. I did notice a curious line in the driver that 
-might (or might not) be related/wrong...
 
-drivers/input/keyboard/lm8323.c line 353:
-	int keysize = (lm->size_x << 4) | lm->size_y;
+On Sat, 6 Jun 2009, Yinghai Lu wrote:
+> 
+> so could get cpumask_var with cpumask_clear
 
-Shouldn't this be lm->size_x * lm->size_y?
+Ok, this whole series looks much nicer than the hacky "add __GFP_ZERO in 
+random places".
 
-Luke
+ACK, as far as I'm concerned.
+
+		Linus
