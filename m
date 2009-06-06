@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbZFFV6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbZFFWAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754617AbZFFV6S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 17:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbZFFV6A
+	id S1754344AbZFFWAV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 18:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZFFWAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 17:58:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36868 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751721AbZFFV57 (ORCPT
+	Sat, 6 Jun 2009 18:00:11 -0400
+Received: from wsip-70-184-212-11.om.om.cox.net ([70.184.212.11]:37788 "EHLO
+	hachi.dashjr.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753059AbZFFWAK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 17:57:59 -0400
-Date: Sat, 6 Jun 2009 14:56:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Avi Kivity <avi@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/6] cpumask: introduce zalloc_cpumask_var
-Message-Id: <20090606145618.e6ce8563.akpm@linux-foundation.org>
-In-Reply-To: <4A2AE4AC.60805@kernel.org>
-References: <4A2835D8.6040903@kernel.org>
-	<200906051428.08299.rusty@rustcorp.com.au>
-	<4A28B3A9.3010505@kernel.org>
-	<200906052311.57762.rusty@rustcorp.com.au>
-	<4A2A356B.6090102@redhat.com>
-	<4A2A38B9.7030809@kernel.org>
-	<4A2A3969.5030101@redhat.com>
-	<4A2A4B80.1010605@kernel.org>
-	<4A2AE4AC.60805@kernel.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 6 Jun 2009 18:00:10 -0400
+X-Greylist: delayed 507 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Jun 2009 18:00:10 EDT
+From: "Luke-Jr" <luke@dashjr.org>
+To: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
+Subject: [PATCH] arm: omap: n810: set lm8323 size_y to 12
+Date: Sat, 6 Jun 2009 16:51:47 -0500
+User-Agent: KMail/1.11.3 (Linux/2.6.27-gentoo-r7; KDE/4.2.3; x86_64; ; )
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200906061651.54915.luke@dashjr.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 06 Jun 2009 14:50:36 -0700 Yinghai Lu <yinghai@kernel.org> wrote:
+>From de992fa168685ddd608fca0f54fcfbce2afc2963 Mon Sep 17 00:00:00 2001
+From: Luke Dashjr <luke@dashjr.org>
+Date: Sat, 6 Jun 2009 16:35:03 -0500
+Subject: [PATCH] arm: omap: n810: set lm8323 size_y to 12
 
->  bool alloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags, int node);
->  bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags);
-> +bool zalloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags, int node);
-> +bool zalloc_cpumask_var(cpumask_var_t *mask, gfp_t flags);
->  void alloc_bootmem_cpumask_var(cpumask_var_t *mask);
+For some reason, this is needed for the shift keys and "fghjvbnm"
 
-ick.  cpumask_var_node_zalloc() would be better.
+Signed-off-by: Luke Dashjr <luke@dashjr.org>
+---
+ arch/arm/mach-omap2/board-n800.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Yes, the other functions were incorrectly named, but that's no reason
-to incorrectly name these also.
+diff --git a/arch/arm/mach-omap2/board-n800.c b/arch/arm/mach-omap2/board-
+n800.c
+index cb32b61..0a50fd3 100644
+--- a/arch/arm/mach-omap2/board-n800.c
++++ b/arch/arm/mach-omap2/board-n800.c
+@@ -115,7 +115,7 @@ static struct lm8323_platform_data lm8323_pdata = {
+ 	.repeat		= 0, /* Repeat is handled in userspace for now. */
+ 	.keymap		= rx44_keymap,
+ 	.size_x		= 8,
+-	.size_y		= 8,
++	.size_y		= 12,
+ 	.debounce_time	= 12,
+ 	.active_time	= 500,
+ 
+-- 
+1.6.0.6
+
 
