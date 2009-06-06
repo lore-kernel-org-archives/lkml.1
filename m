@@ -1,168 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbZFFVv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZFFVvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753538AbZFFVv2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 17:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZFFVvU
+	id S1753906AbZFFVvi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 17:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZFFVvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 17:51:20 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47256 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751535AbZFFVvU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 17:51:20 -0400
-Date: Sat, 6 Jun 2009 22:51:07 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Tony Luck <tony.luck@intel.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Ungerer <gerg@snapgear.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Michael Abbott <michael@araneidae.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [GIT PULL] headers_check fixes
-Message-ID: <20090606215107.GA23695@flint.arm.linux.org.uk>
-References: <1244118232.5172.26.camel@ht.satnam> <1244292857.2473.4.camel@ht.satnam> <20090606130210.GA9343@flint.arm.linux.org.uk> <1244299177.2473.21.camel@ht.satnam> <20090606214711.GA4813@flint.arm.linux.org.uk>
+	Sat, 6 Jun 2009 17:51:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41969 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753173AbZFFVva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 17:51:30 -0400
+Message-ID: <4A2AE4AC.60805@kernel.org>
+Date: Sat, 06 Jun 2009 14:50:36 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090606214711.GA4813@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Avi Kivity <avi@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/6] cpumask: introduce zalloc_cpumask_var
+References: <4A2835D8.6040903@kernel.org> <200906051428.08299.rusty@rustcorp.com.au> <4A28B3A9.3010505@kernel.org> <200906052311.57762.rusty@rustcorp.com.au> <4A2A356B.6090102@redhat.com> <4A2A38B9.7030809@kernel.org> <4A2A3969.5030101@redhat.com> <4A2A4B80.1010605@kernel.org>
+In-Reply-To: <4A2A4B80.1010605@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 06, 2009 at 10:47:11PM +0100, Russell King wrote:
-> What follows this email is the diff of what effect it has on the
-> headers copied over - as can be seen, all resulting changes are of
-> net benefit.
 
-And here is the patch illustrating the overall change on the installed
-header files.  As can be seen, all instances of:
+so could get cpumask_var with cpumask_clear
 
-#if defined(__KERNEL__) && ...
-...
-#endif
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-are removed, and:
+---
+ include/linux/cpumask.h |   15 +++++++++++++++
+ lib/cpumask.c           |   12 ++++++++++++
+ 2 files changed, 27 insertions(+)
 
-#if !defined(__KERNEL__) || ...
-...
-#endif
-
-have the conditionals also correctly removed, leaving the code between
-properly exposed.
-
-Clearly from the number of differences below, I'm not the only one who
-is "ignorant" of this magic new rule about __KERNEL__, and I suggest
-that no such rule actually ever existed.
-
-diff -ur include.old/asm/hwcap.h include/asm/hwcap.h
---- include.old/asm/hwcap.h	2009-06-06 19:29:31.000000000 +0100
-+++ include/asm/hwcap.h	2009-06-06 22:40:58.000000000 +0100
-@@ -20,13 +20,5 @@
- #define HWCAP_VFPv3	8192
- #define HWCAP_VFPv3D16	16384
+Index: linux-2.6/include/linux/cpumask.h
+===================================================================
+--- linux-2.6.orig/include/linux/cpumask.h
++++ linux-2.6/include/linux/cpumask.h
+@@ -1022,6 +1022,8 @@ typedef struct cpumask *cpumask_var_t;
  
--#if defined(__KERNEL__) && !defined(__ASSEMBLY__)
--/*
-- * This yields a mask that user programs can use to figure out what
-- * instruction set this cpu supports.
-- */
--#define ELF_HWCAP	(elf_hwcap)
--extern unsigned int elf_hwcap;
--#endif
+ bool alloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags, int node);
+ bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags);
++bool zalloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags, int node);
++bool zalloc_cpumask_var(cpumask_var_t *mask, gfp_t flags);
+ void alloc_bootmem_cpumask_var(cpumask_var_t *mask);
+ void free_cpumask_var(cpumask_var_t mask);
+ void free_bootmem_cpumask_var(cpumask_var_t mask);
+@@ -1040,6 +1042,19 @@ static inline bool alloc_cpumask_var_nod
+ 	return true;
+ }
  
- #endif
-diff -ur include.old/linux/acct.h include/linux/acct.h
---- include.old/linux/acct.h	2009-06-06 19:29:27.000000000 +0100
-+++ include/linux/acct.h	2009-06-06 22:40:55.000000000 +0100
-@@ -59,9 +59,7 @@
- 	comp_t		ac_majflt;		/* Major Pagefaults */
- 	comp_t		ac_swaps;		/* Number of Swaps */
- /* m68k had no padding here. */
--#if !defined(CONFIG_M68K) || !defined(__KERNEL__)
- 	__u16		ac_ahz;			/* AHZ */
--#endif
- 	__u32		ac_exitcode;		/* Exitcode */
- 	char		ac_comm[ACCT_COMM + 1];	/* Command Name */
- 	__u8		ac_etime_hi;		/* Elapsed Time MSB */
-diff -ur include.old/linux/soundcard.h include/linux/soundcard.h
---- include.old/linux/soundcard.h	2009-06-06 19:29:30.000000000 +0100
-+++ include/linux/soundcard.h	2009-06-06 22:40:57.000000000 +0100
-@@ -1033,7 +1033,6 @@
-  */
- #define LOCL_STARTAUDIO		1
++static inline bool zalloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
++{
++	cpumask_clear(*mask);
++	return true;
++}
++
++static inline bool zalloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags,
++					  int node)
++{
++	cpumask_clear(*mask);
++	return true;
++}
++
+ static inline void alloc_bootmem_cpumask_var(cpumask_var_t *mask)
+ {
+ }
+Index: linux-2.6/lib/cpumask.c
+===================================================================
+--- linux-2.6.orig/lib/cpumask.c
++++ linux-2.6/lib/cpumask.c
+@@ -119,6 +119,12 @@ bool alloc_cpumask_var_node(cpumask_var_
+ }
+ EXPORT_SYMBOL(alloc_cpumask_var_node);
  
--#if !defined(__KERNEL__) || defined(USE_SEQ_MACROS)
- /*
-  *	Some convenience macros to simplify programming of the
-  *	/dev/sequencer interface
-@@ -1275,4 +1274,3 @@
- 		(SEQ_DUMPBUF(), write(seqfd, (char*)(patchx), len))
++bool zalloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags, int node)
++{
++	return alloc_cpumask_var_node(mask, flags | __GFP_ZERO, node);
++}
++EXPORT_SYMBOL(zalloc_cpumask_var_node);
++
+ /**
+  * alloc_cpumask_var - allocate a struct cpumask
+  * @mask: pointer to cpumask_var_t where the cpumask is returned
+@@ -135,6 +141,12 @@ bool alloc_cpumask_var(cpumask_var_t *ma
+ }
+ EXPORT_SYMBOL(alloc_cpumask_var);
  
- #endif
--#endif
-diff -ur include.old/linux/videodev.h include/linux/videodev.h
---- include.old/linux/videodev.h	2009-06-06 19:29:30.000000000 +0100
-+++ include/linux/videodev.h	2009-06-06 22:40:58.000000000 +0100
-@@ -16,24 +16,6 @@
- #include <linux/ioctl.h>
- #include <linux/videodev2.h>
- 
--#if defined(__MIN_V4L1) && defined (__KERNEL__)
--
--/*
-- * Used by those V4L2 core functions that need a minimum V4L1 support,
-- * in order to allow V4L1 Compatibilty code compilation.
-- */
--
--struct video_mbuf
--{
--	int	size;		/* Total memory to map */
--	int	frames;		/* Frames */
--	int	offsets[VIDEO_MAX_FRAME];
--};
--
--#define VIDIOCGMBUF		_IOR('v',20, struct video_mbuf)		/* Memory map buffer info */
--
--#else
--#if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
- 
- #define VID_TYPE_CAPTURE	1	/* Can capture */
- #define VID_TYPE_TUNER		2	/* Can tune */
-@@ -328,8 +310,6 @@
- #define VID_PLAY_RESET			13
- #define VID_PLAY_END_MARK		14
- 
--#endif /* CONFIG_VIDEO_V4L1_COMPAT */
--#endif /* __MIN_V4L1 */
- 
- #endif /* __LINUX_VIDEODEV_H */
- 
-diff -ur include.old/video/edid.h include/video/edid.h
---- include.old/video/edid.h	2009-06-06 19:29:31.000000000 +0100
-+++ include/video/edid.h	2009-06-06 22:40:58.000000000 +0100
-@@ -1,13 +1,11 @@
- #ifndef __linux_video_edid_h__
- #define __linux_video_edid_h__
- 
--#if !defined(__KERNEL__) || defined(CONFIG_X86)
- 
- struct edid_info {
- 	unsigned char dummy[128];
- };
- 
- 
--#endif
- 
- #endif /* __linux_video_edid_h__ */
-
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
++bool zalloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
++{
++	return alloc_cpumask_var(mask, flags | __GFP_ZERO);
++}
++EXPORT_SYMBOL(zalloc_cpumask_var);
++
+ /**
+  * alloc_bootmem_cpumask_var - allocate a struct cpumask from the bootmem arena.
+  * @mask: pointer to cpumask_var_t where the cpumask is returned
