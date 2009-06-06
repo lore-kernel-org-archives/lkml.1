@@ -1,60 +1,1465 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753519AbZFFR6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbZFFSEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753519AbZFFR6w (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 13:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbZFFR6l
+	id S1753908AbZFFSEh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 14:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZFFSE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 13:58:41 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:23012 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752218AbZFFR6k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 13:58:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=nnhnkvURA6fudPi2Q8+cR3uxTh4MhqNsll/49hYdBmrByyVj7YVU7O36ZcWsLoJdWx
-         QeGdZS1gvaEUD+xKoYKg4vuhf9DXy3CokCPOHYfbSu7YKfIH1NUjaV8L+snuyToyBD7W
-         9/5MvjZ3WFzA/ErWxISQStVjUd8WlilN8iMQk=
-Date: Sat, 6 Jun 2009 19:58:36 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] ide-tape: fix flags
-Message-ID: <20090606175836.GA12865@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1243926308-32385-1-git-send-email-petkovbb@gmail.com> <200906052034.06668.bzolnier@gmail.com>
+	Sat, 6 Jun 2009 14:04:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50183 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751058AbZFFSEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 14:04:25 -0400
+Date: Sat, 6 Jun 2009 18:03:42 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter tools: Prepare for 'perf annotate'
+Message-ID: <tip-8035e4288078cb806e7dd6bafe4d3e54d44cab3f@git.kernel.org>
+Git-Commit-ID: 8035e4288078cb806e7dd6bafe4d3e54d44cab3f
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <200906052034.06668.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 06 Jun 2009 18:03:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 05, 2009 at 08:34:06PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Tuesday 02 June 2009 09:05:06 Borislav Petkov wrote:
-> > Hi Bart,
-> > 
-> > those fix a stupid flags misuse that got spotted by Jiri Slaby. Please
-> > pay special attention to the first patch. FWIW, those can go as hot
-> > fixes right away and we might catch 30-rc8 since it's not out yet.
-> 
-> The problem is that patches seem to be against ide-2.6.git/for-next...
+Commit-ID:  8035e4288078cb806e7dd6bafe4d3e54d44cab3f
+Gitweb:     http://git.kernel.org/tip/8035e4288078cb806e7dd6bafe4d3e54d44cab3f
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Sat, 6 Jun 2009 15:19:13 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 6 Jun 2009 18:58:30 +0200
 
-Sh*t, this is hitting the broken buffer allocation that Tejun removed
-(I'm getting the same OOM-kill as the one Tejun's mentioning here
-http://marc.info/?l=linux-ide&m=124191711928890) so even with those
-patches, ide-tape is still broken.
+perf_counter tools: Prepare for 'perf annotate'
 
-I'm guessing backport all of Tejun's ide-tape cleanup stuff after Linus
-pulls them into 31-rc1?
+Prepare for the 'perf annotate' implementation by splitting off
+builtin-annotate.c from builtin-report.c.
 
--- 
-Regards/Gruss,
-    Boris.
+( We keep this commit separate to ease the later librarization
+  of the facilities that perf-report and perf-annotate shares. )
+
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ .../perf_counter/Documentation/perf-annotate.txt   |   26 +
+ Documentation/perf_counter/Makefile                |    3 +-
+ Documentation/perf_counter/builtin-annotate.c      | 1291 ++++++++++++++++++++
+ Documentation/perf_counter/builtin.h               |    1 +
+ Documentation/perf_counter/command-list.txt        |    3 +-
+ Documentation/perf_counter/perf.c                  |    3 +
+ 6 files changed, 1325 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/perf_counter/Documentation/perf-annotate.txt b/Documentation/perf_counter/Documentation/perf-annotate.txt
+new file mode 100644
+index 0000000..a9d6d5e
+--- /dev/null
++++ b/Documentation/perf_counter/Documentation/perf-annotate.txt
+@@ -0,0 +1,26 @@
++perf-annotate(1)
++==============
++
++NAME
++----
++perf-annotate - Read perf.data (created by perf record) and annotate functions
++
++SYNOPSIS
++--------
++[verse]
++'perf annotate' [-i <file> | --input=file] symbol_name
++
++DESCRIPTION
++-----------
++This command displays the performance counter profile information recorded
++via perf record.
++
++OPTIONS
++-------
++-i::
++--input=::
++        Input file name. (default: perf.data)
++
++SEE ALSO
++--------
++linkperf:perf-record[1]
+diff --git a/Documentation/perf_counter/Makefile b/Documentation/perf_counter/Makefile
+index 32c0bb2..0cbd5d6 100644
+--- a/Documentation/perf_counter/Makefile
++++ b/Documentation/perf_counter/Makefile
+@@ -323,12 +323,13 @@ LIB_OBJS += util/symbol.o
+ LIB_OBJS += util/color.o
+ LIB_OBJS += util/pager.o
+ 
++BUILTIN_OBJS += builtin-annotate.o
+ BUILTIN_OBJS += builtin-help.o
++BUILTIN_OBJS += builtin-list.o
+ BUILTIN_OBJS += builtin-record.o
+ BUILTIN_OBJS += builtin-report.o
+ BUILTIN_OBJS += builtin-stat.o
+ BUILTIN_OBJS += builtin-top.o
+-BUILTIN_OBJS += builtin-list.o
+ 
+ PERFLIBS = $(LIB_FILE)
+ EXTLIBS =
+diff --git a/Documentation/perf_counter/builtin-annotate.c b/Documentation/perf_counter/builtin-annotate.c
+new file mode 100644
+index 0000000..d656484
+--- /dev/null
++++ b/Documentation/perf_counter/builtin-annotate.c
+@@ -0,0 +1,1291 @@
++/*
++ * builtin-annotate.c
++ *
++ * Builtin annotate command: Analyze the perf.data input file,
++ * look up and read DSOs and symbol information and display
++ * a histogram of results, along various sorting keys.
++ */
++#include "builtin.h"
++
++#include "util/util.h"
++
++#include "util/color.h"
++#include "util/list.h"
++#include "util/cache.h"
++#include "util/rbtree.h"
++#include "util/symbol.h"
++#include "util/string.h"
++
++#include "perf.h"
++
++#include "util/parse-options.h"
++#include "util/parse-events.h"
++
++#define SHOW_KERNEL	1
++#define SHOW_USER	2
++#define SHOW_HV		4
++
++static char		const *input_name = "perf.data";
++static char		*vmlinux = NULL;
++
++static char		default_sort_order[] = "comm,dso";
++static char		*sort_order = default_sort_order;
++
++static int		input;
++static int		show_mask = SHOW_KERNEL | SHOW_USER | SHOW_HV;
++
++static int		dump_trace = 0;
++#define dprintf(x...)	do { if (dump_trace) printf(x); } while (0)
++
++static int		verbose;
++static int		full_paths;
++
++static unsigned long	page_size;
++static unsigned long	mmap_window = 32;
++
++struct ip_event {
++	struct perf_event_header header;
++	__u64 ip;
++	__u32 pid, tid;
++};
++
++struct mmap_event {
++	struct perf_event_header header;
++	__u32 pid, tid;
++	__u64 start;
++	__u64 len;
++	__u64 pgoff;
++	char filename[PATH_MAX];
++};
++
++struct comm_event {
++	struct perf_event_header header;
++	__u32 pid, tid;
++	char comm[16];
++};
++
++struct fork_event {
++	struct perf_event_header header;
++	__u32 pid, ppid;
++};
++
++struct period_event {
++	struct perf_event_header header;
++	__u64 time;
++	__u64 id;
++	__u64 sample_period;
++};
++
++typedef union event_union {
++	struct perf_event_header	header;
++	struct ip_event			ip;
++	struct mmap_event		mmap;
++	struct comm_event		comm;
++	struct fork_event		fork;
++	struct period_event		period;
++} event_t;
++
++static LIST_HEAD(dsos);
++static struct dso *kernel_dso;
++static struct dso *vdso;
++
++static void dsos__add(struct dso *dso)
++{
++	list_add_tail(&dso->node, &dsos);
++}
++
++static struct dso *dsos__find(const char *name)
++{
++	struct dso *pos;
++
++	list_for_each_entry(pos, &dsos, node)
++		if (strcmp(pos->name, name) == 0)
++			return pos;
++	return NULL;
++}
++
++static struct dso *dsos__findnew(const char *name)
++{
++	struct dso *dso = dsos__find(name);
++	int nr;
++
++	if (dso)
++		return dso;
++
++	dso = dso__new(name, 0);
++	if (!dso)
++		goto out_delete_dso;
++
++	nr = dso__load(dso, NULL, verbose);
++	if (nr < 0) {
++		if (verbose)
++			fprintf(stderr, "Failed to open: %s\n", name);
++		goto out_delete_dso;
++	}
++	if (!nr && verbose) {
++		fprintf(stderr,
++		"No symbols found in: %s, maybe install a debug package?\n",
++				name);
++	}
++
++	dsos__add(dso);
++
++	return dso;
++
++out_delete_dso:
++	dso__delete(dso);
++	return NULL;
++}
++
++static void dsos__fprintf(FILE *fp)
++{
++	struct dso *pos;
++
++	list_for_each_entry(pos, &dsos, node)
++		dso__fprintf(pos, fp);
++}
++
++static struct symbol *vdso__find_symbol(struct dso *dso, uint64_t ip)
++{
++	return dso__find_symbol(kernel_dso, ip);
++}
++
++static int load_kernel(void)
++{
++	int err;
++
++	kernel_dso = dso__new("[kernel]", 0);
++	if (!kernel_dso)
++		return -1;
++
++	err = dso__load_kernel(kernel_dso, vmlinux, NULL, verbose);
++	if (err) {
++		dso__delete(kernel_dso);
++		kernel_dso = NULL;
++	} else
++		dsos__add(kernel_dso);
++
++	vdso = dso__new("[vdso]", 0);
++	if (!vdso)
++		return -1;
++
++	vdso->find_symbol = vdso__find_symbol;
++
++	dsos__add(vdso);
++
++	return err;
++}
++
++static char __cwd[PATH_MAX];
++static char *cwd = __cwd;
++static int cwdlen;
++
++static int strcommon(const char *pathname)
++{
++	int n = 0;
++
++	while (pathname[n] == cwd[n] && n < cwdlen)
++		++n;
++
++	return n;
++}
++
++struct map {
++	struct list_head node;
++	uint64_t	 start;
++	uint64_t	 end;
++	uint64_t	 pgoff;
++	uint64_t	 (*map_ip)(struct map *, uint64_t);
++	struct dso	 *dso;
++};
++
++static uint64_t map__map_ip(struct map *map, uint64_t ip)
++{
++	return ip - map->start + map->pgoff;
++}
++
++static uint64_t vdso__map_ip(struct map *map, uint64_t ip)
++{
++	return ip;
++}
++
++static struct map *map__new(struct mmap_event *event)
++{
++	struct map *self = malloc(sizeof(*self));
++
++	if (self != NULL) {
++		const char *filename = event->filename;
++		char newfilename[PATH_MAX];
++
++		if (cwd) {
++			int n = strcommon(filename);
++
++			if (n == cwdlen) {
++				snprintf(newfilename, sizeof(newfilename),
++					 ".%s", filename + n);
++				filename = newfilename;
++			}
++		}
++
++		self->start = event->start;
++		self->end   = event->start + event->len;
++		self->pgoff = event->pgoff;
++
++		self->dso = dsos__findnew(filename);
++		if (self->dso == NULL)
++			goto out_delete;
++
++		if (self->dso == vdso)
++			self->map_ip = vdso__map_ip;
++		else
++			self->map_ip = map__map_ip;
++	}
++	return self;
++out_delete:
++	free(self);
++	return NULL;
++}
++
++static struct map *map__clone(struct map *self)
++{
++	struct map *map = malloc(sizeof(*self));
++
++	if (!map)
++		return NULL;
++
++	memcpy(map, self, sizeof(*self));
++
++	return map;
++}
++
++static int map__overlap(struct map *l, struct map *r)
++{
++	if (l->start > r->start) {
++		struct map *t = l;
++		l = r;
++		r = t;
++	}
++
++	if (l->end > r->start)
++		return 1;
++
++	return 0;
++}
++
++static size_t map__fprintf(struct map *self, FILE *fp)
++{
++	return fprintf(fp, " %"PRIx64"-%"PRIx64" %"PRIx64" %s\n",
++		       self->start, self->end, self->pgoff, self->dso->name);
++}
++
++
++struct thread {
++	struct rb_node	 rb_node;
++	struct list_head maps;
++	pid_t		 pid;
++	char		 *comm;
++};
++
++static struct thread *thread__new(pid_t pid)
++{
++	struct thread *self = malloc(sizeof(*self));
++
++	if (self != NULL) {
++		self->pid = pid;
++		self->comm = malloc(32);
++		if (self->comm)
++			snprintf(self->comm, 32, ":%d", self->pid);
++		INIT_LIST_HEAD(&self->maps);
++	}
++
++	return self;
++}
++
++static int thread__set_comm(struct thread *self, const char *comm)
++{
++	if (self->comm)
++		free(self->comm);
++	self->comm = strdup(comm);
++	return self->comm ? 0 : -ENOMEM;
++}
++
++static size_t thread__fprintf(struct thread *self, FILE *fp)
++{
++	struct map *pos;
++	size_t ret = fprintf(fp, "Thread %d %s\n", self->pid, self->comm);
++
++	list_for_each_entry(pos, &self->maps, node)
++		ret += map__fprintf(pos, fp);
++
++	return ret;
++}
++
++
++static struct rb_root threads;
++static struct thread *last_match;
++
++static struct thread *threads__findnew(pid_t pid)
++{
++	struct rb_node **p = &threads.rb_node;
++	struct rb_node *parent = NULL;
++	struct thread *th;
++
++	/*
++	 * Font-end cache - PID lookups come in blocks,
++	 * so most of the time we dont have to look up
++	 * the full rbtree:
++	 */
++	if (last_match && last_match->pid == pid)
++		return last_match;
++
++	while (*p != NULL) {
++		parent = *p;
++		th = rb_entry(parent, struct thread, rb_node);
++
++		if (th->pid == pid) {
++			last_match = th;
++			return th;
++		}
++
++		if (pid < th->pid)
++			p = &(*p)->rb_left;
++		else
++			p = &(*p)->rb_right;
++	}
++
++	th = thread__new(pid);
++	if (th != NULL) {
++		rb_link_node(&th->rb_node, parent, p);
++		rb_insert_color(&th->rb_node, &threads);
++		last_match = th;
++	}
++
++	return th;
++}
++
++static void thread__insert_map(struct thread *self, struct map *map)
++{
++	struct map *pos, *tmp;
++
++	list_for_each_entry_safe(pos, tmp, &self->maps, node) {
++		if (map__overlap(pos, map)) {
++			list_del_init(&pos->node);
++			/* XXX leaks dsos */
++			free(pos);
++		}
++	}
++
++	list_add_tail(&map->node, &self->maps);
++}
++
++static int thread__fork(struct thread *self, struct thread *parent)
++{
++	struct map *map;
++
++	if (self->comm)
++		free(self->comm);
++	self->comm = strdup(parent->comm);
++	if (!self->comm)
++		return -ENOMEM;
++
++	list_for_each_entry(map, &parent->maps, node) {
++		struct map *new = map__clone(map);
++		if (!new)
++			return -ENOMEM;
++		thread__insert_map(self, new);
++	}
++
++	return 0;
++}
++
++static struct map *thread__find_map(struct thread *self, uint64_t ip)
++{
++	struct map *pos;
++
++	if (self == NULL)
++		return NULL;
++
++	list_for_each_entry(pos, &self->maps, node)
++		if (ip >= pos->start && ip <= pos->end)
++			return pos;
++
++	return NULL;
++}
++
++static size_t threads__fprintf(FILE *fp)
++{
++	size_t ret = 0;
++	struct rb_node *nd;
++
++	for (nd = rb_first(&threads); nd; nd = rb_next(nd)) {
++		struct thread *pos = rb_entry(nd, struct thread, rb_node);
++
++		ret += thread__fprintf(pos, fp);
++	}
++
++	return ret;
++}
++
++/*
++ * histogram, sorted on item, collects counts
++ */
++
++static struct rb_root hist;
++
++struct hist_entry {
++	struct rb_node	 rb_node;
++
++	struct thread	 *thread;
++	struct map	 *map;
++	struct dso	 *dso;
++	struct symbol	 *sym;
++	uint64_t	 ip;
++	char		 level;
++
++	uint32_t	 count;
++};
++
++/*
++ * configurable sorting bits
++ */
++
++struct sort_entry {
++	struct list_head list;
++
++	char *header;
++
++	int64_t (*cmp)(struct hist_entry *, struct hist_entry *);
++	int64_t (*collapse)(struct hist_entry *, struct hist_entry *);
++	size_t	(*print)(FILE *fp, struct hist_entry *);
++};
++
++/* --sort pid */
++
++static int64_t
++sort__thread_cmp(struct hist_entry *left, struct hist_entry *right)
++{
++	return right->thread->pid - left->thread->pid;
++}
++
++static size_t
++sort__thread_print(FILE *fp, struct hist_entry *self)
++{
++	return fprintf(fp, "%16s:%5d", self->thread->comm ?: "", self->thread->pid);
++}
++
++static struct sort_entry sort_thread = {
++	.header = "         Command:  Pid",
++	.cmp	= sort__thread_cmp,
++	.print	= sort__thread_print,
++};
++
++/* --sort comm */
++
++static int64_t
++sort__comm_cmp(struct hist_entry *left, struct hist_entry *right)
++{
++	return right->thread->pid - left->thread->pid;
++}
++
++static int64_t
++sort__comm_collapse(struct hist_entry *left, struct hist_entry *right)
++{
++	char *comm_l = left->thread->comm;
++	char *comm_r = right->thread->comm;
++
++	if (!comm_l || !comm_r) {
++		if (!comm_l && !comm_r)
++			return 0;
++		else if (!comm_l)
++			return -1;
++		else
++			return 1;
++	}
++
++	return strcmp(comm_l, comm_r);
++}
++
++static size_t
++sort__comm_print(FILE *fp, struct hist_entry *self)
++{
++	return fprintf(fp, "%16s", self->thread->comm);
++}
++
++static struct sort_entry sort_comm = {
++	.header		= "         Command",
++	.cmp		= sort__comm_cmp,
++	.collapse	= sort__comm_collapse,
++	.print		= sort__comm_print,
++};
++
++/* --sort dso */
++
++static int64_t
++sort__dso_cmp(struct hist_entry *left, struct hist_entry *right)
++{
++	struct dso *dso_l = left->dso;
++	struct dso *dso_r = right->dso;
++
++	if (!dso_l || !dso_r) {
++		if (!dso_l && !dso_r)
++			return 0;
++		else if (!dso_l)
++			return -1;
++		else
++			return 1;
++	}
++
++	return strcmp(dso_l->name, dso_r->name);
++}
++
++static size_t
++sort__dso_print(FILE *fp, struct hist_entry *self)
++{
++	if (self->dso)
++		return fprintf(fp, "%-25s", self->dso->name);
++
++	return fprintf(fp, "%016llx         ", (__u64)self->ip);
++}
++
++static struct sort_entry sort_dso = {
++	.header = "Shared Object            ",
++	.cmp	= sort__dso_cmp,
++	.print	= sort__dso_print,
++};
++
++/* --sort symbol */
++
++static int64_t
++sort__sym_cmp(struct hist_entry *left, struct hist_entry *right)
++{
++	uint64_t ip_l, ip_r;
++
++	if (left->sym == right->sym)
++		return 0;
++
++	ip_l = left->sym ? left->sym->start : left->ip;
++	ip_r = right->sym ? right->sym->start : right->ip;
++
++	return (int64_t)(ip_r - ip_l);
++}
++
++static size_t
++sort__sym_print(FILE *fp, struct hist_entry *self)
++{
++	size_t ret = 0;
++
++	if (verbose)
++		ret += fprintf(fp, "%#018llx  ", (__u64)self->ip);
++
++	if (self->sym) {
++		ret += fprintf(fp, "[%c] %s",
++			self->dso == kernel_dso ? 'k' : '.', self->sym->name);
++	} else {
++		ret += fprintf(fp, "%#016llx", (__u64)self->ip);
++	}
++
++	return ret;
++}
++
++static struct sort_entry sort_sym = {
++	.header = "Symbol",
++	.cmp	= sort__sym_cmp,
++	.print	= sort__sym_print,
++};
++
++static int sort__need_collapse = 0;
++
++struct sort_dimension {
++	char			*name;
++	struct sort_entry	*entry;
++	int			taken;
++};
++
++static struct sort_dimension sort_dimensions[] = {
++	{ .name = "pid",	.entry = &sort_thread,	},
++	{ .name = "comm",	.entry = &sort_comm,	},
++	{ .name = "dso",	.entry = &sort_dso,	},
++	{ .name = "symbol",	.entry = &sort_sym,	},
++};
++
++static LIST_HEAD(hist_entry__sort_list);
++
++static int sort_dimension__add(char *tok)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(sort_dimensions); i++) {
++		struct sort_dimension *sd = &sort_dimensions[i];
++
++		if (sd->taken)
++			continue;
++
++		if (strncasecmp(tok, sd->name, strlen(tok)))
++			continue;
++
++		if (sd->entry->collapse)
++			sort__need_collapse = 1;
++
++		list_add_tail(&sd->entry->list, &hist_entry__sort_list);
++		sd->taken = 1;
++
++		return 0;
++	}
++
++	return -ESRCH;
++}
++
++static int64_t
++hist_entry__cmp(struct hist_entry *left, struct hist_entry *right)
++{
++	struct sort_entry *se;
++	int64_t cmp = 0;
++
++	list_for_each_entry(se, &hist_entry__sort_list, list) {
++		cmp = se->cmp(left, right);
++		if (cmp)
++			break;
++	}
++
++	return cmp;
++}
++
++static int64_t
++hist_entry__collapse(struct hist_entry *left, struct hist_entry *right)
++{
++	struct sort_entry *se;
++	int64_t cmp = 0;
++
++	list_for_each_entry(se, &hist_entry__sort_list, list) {
++		int64_t (*f)(struct hist_entry *, struct hist_entry *);
++
++		f = se->collapse ?: se->cmp;
++
++		cmp = f(left, right);
++		if (cmp)
++			break;
++	}
++
++	return cmp;
++}
++
++static size_t
++hist_entry__fprintf(FILE *fp, struct hist_entry *self, uint64_t total_samples)
++{
++	struct sort_entry *se;
++	size_t ret;
++
++	if (total_samples) {
++		double percent = self->count * 100.0 / total_samples;
++		char *color = PERF_COLOR_NORMAL;
++
++		/*
++		 * We color high-overhead entries in red, low-overhead
++		 * entries in green - and keep the middle ground normal:
++		 */
++		if (percent >= 5.0)
++			color = PERF_COLOR_RED;
++		if (percent < 0.5)
++			color = PERF_COLOR_GREEN;
++
++		ret = color_fprintf(fp, color, "   %6.2f%%",
++				(self->count * 100.0) / total_samples);
++	} else
++		ret = fprintf(fp, "%12d ", self->count);
++
++	list_for_each_entry(se, &hist_entry__sort_list, list) {
++		fprintf(fp, "  ");
++		ret += se->print(fp, self);
++	}
++
++	ret += fprintf(fp, "\n");
++
++	return ret;
++}
++
++/*
++ * collect histogram counts
++ */
++
++static int
++hist_entry__add(struct thread *thread, struct map *map, struct dso *dso,
++		struct symbol *sym, uint64_t ip, char level)
++{
++	struct rb_node **p = &hist.rb_node;
++	struct rb_node *parent = NULL;
++	struct hist_entry *he;
++	struct hist_entry entry = {
++		.thread	= thread,
++		.map	= map,
++		.dso	= dso,
++		.sym	= sym,
++		.ip	= ip,
++		.level	= level,
++		.count	= 1,
++	};
++	int cmp;
++
++	while (*p != NULL) {
++		parent = *p;
++		he = rb_entry(parent, struct hist_entry, rb_node);
++
++		cmp = hist_entry__cmp(&entry, he);
++
++		if (!cmp) {
++			he->count++;
++			return 0;
++		}
++
++		if (cmp < 0)
++			p = &(*p)->rb_left;
++		else
++			p = &(*p)->rb_right;
++	}
++
++	he = malloc(sizeof(*he));
++	if (!he)
++		return -ENOMEM;
++	*he = entry;
++	rb_link_node(&he->rb_node, parent, p);
++	rb_insert_color(&he->rb_node, &hist);
++
++	return 0;
++}
++
++static void hist_entry__free(struct hist_entry *he)
++{
++	free(he);
++}
++
++/*
++ * collapse the histogram
++ */
++
++static struct rb_root collapse_hists;
++
++static void collapse__insert_entry(struct hist_entry *he)
++{
++	struct rb_node **p = &collapse_hists.rb_node;
++	struct rb_node *parent = NULL;
++	struct hist_entry *iter;
++	int64_t cmp;
++
++	while (*p != NULL) {
++		parent = *p;
++		iter = rb_entry(parent, struct hist_entry, rb_node);
++
++		cmp = hist_entry__collapse(iter, he);
++
++		if (!cmp) {
++			iter->count += he->count;
++			hist_entry__free(he);
++			return;
++		}
++
++		if (cmp < 0)
++			p = &(*p)->rb_left;
++		else
++			p = &(*p)->rb_right;
++	}
++
++	rb_link_node(&he->rb_node, parent, p);
++	rb_insert_color(&he->rb_node, &collapse_hists);
++}
++
++static void collapse__resort(void)
++{
++	struct rb_node *next;
++	struct hist_entry *n;
++
++	if (!sort__need_collapse)
++		return;
++
++	next = rb_first(&hist);
++	while (next) {
++		n = rb_entry(next, struct hist_entry, rb_node);
++		next = rb_next(&n->rb_node);
++
++		rb_erase(&n->rb_node, &hist);
++		collapse__insert_entry(n);
++	}
++}
++
++/*
++ * reverse the map, sort on count.
++ */
++
++static struct rb_root output_hists;
++
++static void output__insert_entry(struct hist_entry *he)
++{
++	struct rb_node **p = &output_hists.rb_node;
++	struct rb_node *parent = NULL;
++	struct hist_entry *iter;
++
++	while (*p != NULL) {
++		parent = *p;
++		iter = rb_entry(parent, struct hist_entry, rb_node);
++
++		if (he->count > iter->count)
++			p = &(*p)->rb_left;
++		else
++			p = &(*p)->rb_right;
++	}
++
++	rb_link_node(&he->rb_node, parent, p);
++	rb_insert_color(&he->rb_node, &output_hists);
++}
++
++static void output__resort(void)
++{
++	struct rb_node *next;
++	struct hist_entry *n;
++	struct rb_root *tree = &hist;
++
++	if (sort__need_collapse)
++		tree = &collapse_hists;
++
++	next = rb_first(tree);
++
++	while (next) {
++		n = rb_entry(next, struct hist_entry, rb_node);
++		next = rb_next(&n->rb_node);
++
++		rb_erase(&n->rb_node, tree);
++		output__insert_entry(n);
++	}
++}
++
++static size_t output__fprintf(FILE *fp, uint64_t total_samples)
++{
++	struct hist_entry *pos;
++	struct sort_entry *se;
++	struct rb_node *nd;
++	size_t ret = 0;
++
++	fprintf(fp, "\n");
++	fprintf(fp, "#\n");
++	fprintf(fp, "# (%Ld samples)\n", (__u64)total_samples);
++	fprintf(fp, "#\n");
++
++	fprintf(fp, "# Overhead");
++	list_for_each_entry(se, &hist_entry__sort_list, list)
++		fprintf(fp, "  %s", se->header);
++	fprintf(fp, "\n");
++
++	fprintf(fp, "# ........");
++	list_for_each_entry(se, &hist_entry__sort_list, list) {
++		int i;
++
++		fprintf(fp, "  ");
++		for (i = 0; i < strlen(se->header); i++)
++			fprintf(fp, ".");
++	}
++	fprintf(fp, "\n");
++
++	fprintf(fp, "#\n");
++
++	for (nd = rb_first(&output_hists); nd; nd = rb_next(nd)) {
++		pos = rb_entry(nd, struct hist_entry, rb_node);
++		ret += hist_entry__fprintf(fp, pos, total_samples);
++	}
++
++	if (!strcmp(sort_order, default_sort_order)) {
++		fprintf(fp, "#\n");
++		fprintf(fp, "# (For more details, try: perf annotate --sort comm,dso,symbol)\n");
++		fprintf(fp, "#\n");
++	}
++	fprintf(fp, "\n");
++
++	return ret;
++}
++
++static void register_idle_thread(void)
++{
++	struct thread *thread = threads__findnew(0);
++
++	if (thread == NULL ||
++			thread__set_comm(thread, "[idle]")) {
++		fprintf(stderr, "problem inserting idle task.\n");
++		exit(-1);
++	}
++}
++
++static unsigned long total = 0,
++		     total_mmap = 0,
++		     total_comm = 0,
++		     total_fork = 0,
++		     total_unknown = 0;
++
++static int
++process_overflow_event(event_t *event, unsigned long offset, unsigned long head)
++{
++	char level;
++	int show = 0;
++	struct dso *dso = NULL;
++	struct thread *thread = threads__findnew(event->ip.pid);
++	uint64_t ip = event->ip.ip;
++	struct map *map = NULL;
++
++	dprintf("%p [%p]: PERF_EVENT (IP, %d): %d: %p\n",
++		(void *)(offset + head),
++		(void *)(long)(event->header.size),
++		event->header.misc,
++		event->ip.pid,
++		(void *)(long)ip);
++
++	dprintf(" ... thread: %s:%d\n", thread->comm, thread->pid);
++
++	if (thread == NULL) {
++		fprintf(stderr, "problem processing %d event, skipping it.\n",
++			event->header.type);
++		return -1;
++	}
++
++	if (event->header.misc & PERF_EVENT_MISC_KERNEL) {
++		show = SHOW_KERNEL;
++		level = 'k';
++
++		dso = kernel_dso;
++
++		dprintf(" ...... dso: %s\n", dso->name);
++
++	} else if (event->header.misc & PERF_EVENT_MISC_USER) {
++
++		show = SHOW_USER;
++		level = '.';
++
++		map = thread__find_map(thread, ip);
++		if (map != NULL) {
++			ip = map->map_ip(map, ip);
++			dso = map->dso;
++		} else {
++			/*
++			 * If this is outside of all known maps,
++			 * and is a negative address, try to look it
++			 * up in the kernel dso, as it might be a
++			 * vsyscall (which executes in user-mode):
++			 */
++			if ((long long)ip < 0)
++				dso = kernel_dso;
++		}
++		dprintf(" ...... dso: %s\n", dso ? dso->name : "<not found>");
++
++	} else {
++		show = SHOW_HV;
++		level = 'H';
++		dprintf(" ...... dso: [hypervisor]\n");
++	}
++
++	if (show & show_mask) {
++		struct symbol *sym = NULL;
++
++		if (dso)
++			sym = dso->find_symbol(dso, ip);
++
++		if (hist_entry__add(thread, map, dso, sym, ip, level)) {
++			fprintf(stderr,
++		"problem incrementing symbol count, skipping event\n");
++			return -1;
++		}
++	}
++	total++;
++
++	return 0;
++}
++
++static int
++process_mmap_event(event_t *event, unsigned long offset, unsigned long head)
++{
++	struct thread *thread = threads__findnew(event->mmap.pid);
++	struct map *map = map__new(&event->mmap);
++
++	dprintf("%p [%p]: PERF_EVENT_MMAP %d: [%p(%p) @ %p]: %s\n",
++		(void *)(offset + head),
++		(void *)(long)(event->header.size),
++		event->mmap.pid,
++		(void *)(long)event->mmap.start,
++		(void *)(long)event->mmap.len,
++		(void *)(long)event->mmap.pgoff,
++		event->mmap.filename);
++
++	if (thread == NULL || map == NULL) {
++		dprintf("problem processing PERF_EVENT_MMAP, skipping event.\n");
++		return 0;
++	}
++
++	thread__insert_map(thread, map);
++	total_mmap++;
++
++	return 0;
++}
++
++static int
++process_comm_event(event_t *event, unsigned long offset, unsigned long head)
++{
++	struct thread *thread = threads__findnew(event->comm.pid);
++
++	dprintf("%p [%p]: PERF_EVENT_COMM: %s:%d\n",
++		(void *)(offset + head),
++		(void *)(long)(event->header.size),
++		event->comm.comm, event->comm.pid);
++
++	if (thread == NULL ||
++	    thread__set_comm(thread, event->comm.comm)) {
++		dprintf("problem processing PERF_EVENT_COMM, skipping event.\n");
++		return -1;
++	}
++	total_comm++;
++
++	return 0;
++}
++
++static int
++process_fork_event(event_t *event, unsigned long offset, unsigned long head)
++{
++	struct thread *thread = threads__findnew(event->fork.pid);
++	struct thread *parent = threads__findnew(event->fork.ppid);
++
++	dprintf("%p [%p]: PERF_EVENT_FORK: %d:%d\n",
++		(void *)(offset + head),
++		(void *)(long)(event->header.size),
++		event->fork.pid, event->fork.ppid);
++
++	if (!thread || !parent || thread__fork(thread, parent)) {
++		dprintf("problem processing PERF_EVENT_FORK, skipping event.\n");
++		return -1;
++	}
++	total_fork++;
++
++	return 0;
++}
++
++static int
++process_period_event(event_t *event, unsigned long offset, unsigned long head)
++{
++	dprintf("%p [%p]: PERF_EVENT_PERIOD: time:%Ld, id:%Ld: period:%Ld\n",
++		(void *)(offset + head),
++		(void *)(long)(event->header.size),
++		event->period.time,
++		event->period.id,
++		event->period.sample_period);
++
++	return 0;
++}
++
++static int
++process_event(event_t *event, unsigned long offset, unsigned long head)
++{
++	if (event->header.misc & PERF_EVENT_MISC_OVERFLOW)
++		return process_overflow_event(event, offset, head);
++
++	switch (event->header.type) {
++	case PERF_EVENT_MMAP:
++		return process_mmap_event(event, offset, head);
++
++	case PERF_EVENT_COMM:
++		return process_comm_event(event, offset, head);
++
++	case PERF_EVENT_FORK:
++		return process_fork_event(event, offset, head);
++
++	case PERF_EVENT_PERIOD:
++		return process_period_event(event, offset, head);
++	/*
++	 * We dont process them right now but they are fine:
++	 */
++
++	case PERF_EVENT_THROTTLE:
++	case PERF_EVENT_UNTHROTTLE:
++		return 0;
++
++	default:
++		return -1;
++	}
++
++	return 0;
++}
++
++static int __cmd_annotate(void)
++{
++	int ret, rc = EXIT_FAILURE;
++	unsigned long offset = 0;
++	unsigned long head = 0;
++	struct stat stat;
++	event_t *event;
++	uint32_t size;
++	char *buf;
++
++	register_idle_thread();
++
++	input = open(input_name, O_RDONLY);
++	if (input < 0) {
++		perror("failed to open file");
++		exit(-1);
++	}
++
++	ret = fstat(input, &stat);
++	if (ret < 0) {
++		perror("failed to stat file");
++		exit(-1);
++	}
++
++	if (!stat.st_size) {
++		fprintf(stderr, "zero-sized file, nothing to do!\n");
++		exit(0);
++	}
++
++	if (load_kernel() < 0) {
++		perror("failed to load kernel symbols");
++		return EXIT_FAILURE;
++	}
++
++	if (!full_paths) {
++		if (getcwd(__cwd, sizeof(__cwd)) == NULL) {
++			perror("failed to get the current directory");
++			return EXIT_FAILURE;
++		}
++		cwdlen = strlen(cwd);
++	} else {
++		cwd = NULL;
++		cwdlen = 0;
++	}
++remap:
++	buf = (char *)mmap(NULL, page_size * mmap_window, PROT_READ,
++			   MAP_SHARED, input, offset);
++	if (buf == MAP_FAILED) {
++		perror("failed to mmap file");
++		exit(-1);
++	}
++
++more:
++	event = (event_t *)(buf + head);
++
++	size = event->header.size;
++	if (!size)
++		size = 8;
++
++	if (head + event->header.size >= page_size * mmap_window) {
++		unsigned long shift = page_size * (head / page_size);
++		int ret;
++
++		ret = munmap(buf, page_size * mmap_window);
++		assert(ret == 0);
++
++		offset += shift;
++		head -= shift;
++		goto remap;
++	}
++
++	size = event->header.size;
++
++	dprintf("%p [%p]: event: %d\n",
++			(void *)(offset + head),
++			(void *)(long)event->header.size,
++			event->header.type);
++
++	if (!size || process_event(event, offset, head) < 0) {
++
++		dprintf("%p [%p]: skipping unknown header type: %d\n",
++			(void *)(offset + head),
++			(void *)(long)(event->header.size),
++			event->header.type);
++
++		total_unknown++;
++
++		/*
++		 * assume we lost track of the stream, check alignment, and
++		 * increment a single u64 in the hope to catch on again 'soon'.
++		 */
++
++		if (unlikely(head & 7))
++			head &= ~7ULL;
++
++		size = 8;
++	}
++
++	head += size;
++
++	if (offset + head < stat.st_size)
++		goto more;
++
++	rc = EXIT_SUCCESS;
++	close(input);
++
++	dprintf("      IP events: %10ld\n", total);
++	dprintf("    mmap events: %10ld\n", total_mmap);
++	dprintf("    comm events: %10ld\n", total_comm);
++	dprintf("    fork events: %10ld\n", total_fork);
++	dprintf(" unknown events: %10ld\n", total_unknown);
++
++	if (dump_trace)
++		return 0;
++
++	if (verbose >= 3)
++		threads__fprintf(stdout);
++
++	if (verbose >= 2)
++		dsos__fprintf(stdout);
++
++	collapse__resort();
++	output__resort();
++	output__fprintf(stdout, total);
++
++	return rc;
++}
++
++static const char * const annotate_usage[] = {
++	"perf annotate [<options>] <command>",
++	NULL
++};
++
++static const struct option options[] = {
++	OPT_STRING('i', "input", &input_name, "file",
++		    "input file name"),
++	OPT_BOOLEAN('v', "verbose", &verbose,
++		    "be more verbose (show symbol address, etc)"),
++	OPT_BOOLEAN('D', "dump-raw-trace", &dump_trace,
++		    "dump raw trace in ASCII"),
++	OPT_STRING('k', "vmlinux", &vmlinux, "file", "vmlinux pathname"),
++	OPT_STRING('s', "sort", &sort_order, "key[,key2...]",
++		   "sort by key(s): pid, comm, dso, symbol. Default: pid,symbol"),
++	OPT_BOOLEAN('P', "full-paths", &full_paths,
++		    "Don't shorten the pathnames taking into account the cwd"),
++	OPT_END()
++};
++
++static void setup_sorting(void)
++{
++	char *tmp, *tok, *str = strdup(sort_order);
++
++	for (tok = strtok_r(str, ", ", &tmp);
++			tok; tok = strtok_r(NULL, ", ", &tmp)) {
++		if (sort_dimension__add(tok) < 0) {
++			error("Unknown --sort key: `%s'", tok);
++			usage_with_options(annotate_usage, options);
++		}
++	}
++
++	free(str);
++}
++
++int cmd_annotate(int argc, const char **argv, const char *prefix)
++{
++	symbol__init();
++
++	page_size = getpagesize();
++
++	argc = parse_options(argc, argv, options, annotate_usage, 0);
++
++	setup_sorting();
++
++	/*
++	 * Any (unrecognized) arguments left?
++	 */
++	if (argc)
++		usage_with_options(annotate_usage, options);
++
++	setup_pager();
++
++	return __cmd_annotate();
++}
+diff --git a/Documentation/perf_counter/builtin.h b/Documentation/perf_counter/builtin.h
+index e7de47d..51d1682 100644
+--- a/Documentation/perf_counter/builtin.h
++++ b/Documentation/perf_counter/builtin.h
+@@ -14,6 +14,7 @@ extern void prune_packed_objects(int);
+ extern int read_line_with_nul(char *buf, int size, FILE *file);
+ extern int check_pager_config(const char *cmd);
+ 
++extern int cmd_annotate(int argc, const char **argv, const char *prefix);
+ extern int cmd_help(int argc, const char **argv, const char *prefix);
+ extern int cmd_record(int argc, const char **argv, const char *prefix);
+ extern int cmd_report(int argc, const char **argv, const char *prefix);
+diff --git a/Documentation/perf_counter/command-list.txt b/Documentation/perf_counter/command-list.txt
+index f0b922c..eebce30 100644
+--- a/Documentation/perf_counter/command-list.txt
++++ b/Documentation/perf_counter/command-list.txt
+@@ -2,8 +2,9 @@
+ # List of known perf commands.
+ # command name			category [deprecated] [common]
+ #
++perf-annotate			mainporcelain common
++perf-list			mainporcelain common
+ perf-record			mainporcelain common
+ perf-report			mainporcelain common
+ perf-stat			mainporcelain common
+ perf-top			mainporcelain common
+-perf-list			mainporcelain common
+diff --git a/Documentation/perf_counter/perf.c b/Documentation/perf_counter/perf.c
+index 161824f..4eb7259 100644
+--- a/Documentation/perf_counter/perf.c
++++ b/Documentation/perf_counter/perf.c
+@@ -263,6 +263,7 @@ static void handle_internal_command(int argc, const char **argv)
+ 		{ "report", cmd_report, 0 },
+ 		{ "stat", cmd_stat, 0 },
+ 		{ "top", cmd_top, 0 },
++		{ "annotate", cmd_annotate, 0 },
+ 		{ "version", cmd_version, 0 },
+ 	};
+ 	int i;
+@@ -402,9 +403,11 @@ int main(int argc, const char **argv)
+ 	while (1) {
+ 		static int done_help = 0;
+ 		static int was_alias = 0;
++
+ 		was_alias = run_argv(&argc, &argv);
+ 		if (errno != ENOENT)
+ 			break;
++
+ 		if (was_alias) {
+ 			fprintf(stderr, "Expansion of alias '%s' failed; "
+ 				"'%s' is not a perf-command\n",
