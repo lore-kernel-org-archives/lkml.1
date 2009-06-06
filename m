@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbZFFVsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbZFFVv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbZFFVsJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 17:48:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbZFFVsD
+	id S1753538AbZFFVv2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 17:51:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZFFVvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 17:48:03 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:59766 "EHLO
+	Sat, 6 Jun 2009 17:51:20 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47256 "EHLO
 	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751535AbZFFVsB (ORCPT
+	with ESMTP id S1751535AbZFFVvU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 17:48:01 -0400
-Date: Sat, 6 Jun 2009 22:47:11 +0100
+	Sat, 6 Jun 2009 17:51:20 -0400
+Date: Sat, 6 Jun 2009 22:51:07 +0100
 From: Russell King <rmk+lkml@arm.linux.org.uk>
 To: Jaswinder Singh Rajput <jaswinder@kernel.org>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -24,135 +24,143 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
        David Howells <dhowells@redhat.com>
 Subject: Re: [GIT PULL] headers_check fixes
-Message-ID: <20090606214711.GA4813@flint.arm.linux.org.uk>
-References: <1244118232.5172.26.camel@ht.satnam> <1244292857.2473.4.camel@ht.satnam> <20090606130210.GA9343@flint.arm.linux.org.uk> <1244299177.2473.21.camel@ht.satnam>
+Message-ID: <20090606215107.GA23695@flint.arm.linux.org.uk>
+References: <1244118232.5172.26.camel@ht.satnam> <1244292857.2473.4.camel@ht.satnam> <20090606130210.GA9343@flint.arm.linux.org.uk> <1244299177.2473.21.camel@ht.satnam> <20090606214711.GA4813@flint.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1244299177.2473.21.camel@ht.satnam>
+In-Reply-To: <20090606214711.GA4813@flint.arm.linux.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Right, below is a patch to unifdef.c which allows it to work out if
-an #if expression always evaluates true or false for symbols which
-are being undefined/always defined.
+On Sat, Jun 06, 2009 at 10:47:11PM +0100, Russell King wrote:
+> What follows this email is the diff of what effect it has on the
+> headers copied over - as can be seen, all resulting changes are of
+> net benefit.
 
-The patch is slightly more complicated than I'd hoped because unifdef
-needs to see lines fully evaluated - doing otherwise causes it to
-mark the line as "dirty" and copy it over no matter what.
+And here is the patch illustrating the overall change on the installed
+header files.  As can be seen, all instances of:
 
-What follows this email is the diff of what effect it has on the
-headers copied over - as can be seen, all resulting changes are of
-net benefit.
+#if defined(__KERNEL__) && ...
+...
+#endif
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+are removed, and:
 
-diff --git a/scripts/unifdef.c b/scripts/unifdef.c
-index 05a31a6..30d459f 100644
---- a/scripts/unifdef.c
-+++ b/scripts/unifdef.c
-@@ -678,8 +678,10 @@ eval_unary(const struct ops *ops, int *valp, const char **cpp)
- 	if (*cp == '!') {
- 		debug("eval%d !", ops - eval_ops);
- 		cp++;
--		if (eval_unary(ops, valp, &cp) == LT_IF)
-+		if (eval_unary(ops, valp, &cp) == LT_IF) {
-+			*cpp = cp;
- 			return (LT_IF);
-+		}
- 		*valp = !*valp;
- 	} else if (*cp == '(') {
- 		cp++;
-@@ -700,13 +702,16 @@ eval_unary(const struct ops *ops, int *valp, const char **cpp)
- 			return (LT_IF);
- 		cp = skipcomment(cp);
- 		sym = findsym(cp);
--		if (sym < 0)
--			return (LT_IF);
--		*valp = (value[sym] != NULL);
- 		cp = skipsym(cp);
- 		cp = skipcomment(cp);
- 		if (*cp++ != ')')
- 			return (LT_IF);
-+		if (sym >= 0)
-+			*valp = (value[sym] != NULL);
-+		else {
-+			*cpp = cp;
-+			return (LT_IF);
-+		}
- 		keepthis = false;
- 	} else if (!endsym(*cp)) {
- 		debug("eval%d symbol", ops - eval_ops);
-@@ -741,11 +746,11 @@ eval_table(const struct ops *ops, int *valp, const char **cpp)
- 	const struct op *op;
- 	const char *cp;
- 	int val;
-+	Linetype lhs, rhs;
+#if !defined(__KERNEL__) || ...
+...
+#endif
+
+have the conditionals also correctly removed, leaving the code between
+properly exposed.
+
+Clearly from the number of differences below, I'm not the only one who
+is "ignorant" of this magic new rule about __KERNEL__, and I suggest
+that no such rule actually ever existed.
+
+diff -ur include.old/asm/hwcap.h include/asm/hwcap.h
+--- include.old/asm/hwcap.h	2009-06-06 19:29:31.000000000 +0100
++++ include/asm/hwcap.h	2009-06-06 22:40:58.000000000 +0100
+@@ -20,13 +20,5 @@
+ #define HWCAP_VFPv3	8192
+ #define HWCAP_VFPv3D16	16384
  
- 	debug("eval%d", ops - eval_ops);
- 	cp = *cpp;
--	if (ops->inner(ops+1, valp, &cp) == LT_IF)
--		return (LT_IF);
-+	lhs = ops->inner(ops+1, valp, &cp);
- 	for (;;) {
- 		cp = skipcomment(cp);
- 		for (op = ops->op; op->str != NULL; op++)
-@@ -755,14 +760,32 @@ eval_table(const struct ops *ops, int *valp, const char **cpp)
- 			break;
- 		cp += strlen(op->str);
- 		debug("eval%d %s", ops - eval_ops, op->str);
--		if (ops->inner(ops+1, &val, &cp) == LT_IF)
--			return (LT_IF);
--		*valp = op->fn(*valp, val);
-+		rhs = ops->inner(ops+1, &val, &cp);
-+		if (op->fn == op_and && (lhs == LT_FALSE || rhs == LT_FALSE)) {
-+			debug("eval%d: and always false", ops - eval_ops);
-+			if (lhs == LT_IF)
-+				*valp = val;
-+			lhs = LT_FALSE;
-+			continue;
-+		}
-+		if (op->fn == op_or && (lhs == LT_TRUE || rhs == LT_TRUE)) {
-+			debug("eval%d: or always true", ops - eval_ops);
-+			if (lhs == LT_IF)
-+				*valp = val;
-+			lhs = LT_TRUE;
-+			continue;
-+		}
-+		if (rhs == LT_IF)
-+			lhs = LT_IF;
-+		if (lhs != LT_IF)
-+			*valp = op->fn(*valp, val);
- 	}
+-#if defined(__KERNEL__) && !defined(__ASSEMBLY__)
+-/*
+- * This yields a mask that user programs can use to figure out what
+- * instruction set this cpu supports.
+- */
+-#define ELF_HWCAP	(elf_hwcap)
+-extern unsigned int elf_hwcap;
+-#endif
  
- 	*cpp = cp;
- 	debug("eval%d = %d", ops - eval_ops, *valp);
--	return (*valp ? LT_TRUE : LT_FALSE);
-+	if (lhs != LT_IF)
-+		lhs = (*valp ? LT_TRUE : LT_FALSE);
-+	return lhs;
- }
+ #endif
+diff -ur include.old/linux/acct.h include/linux/acct.h
+--- include.old/linux/acct.h	2009-06-06 19:29:27.000000000 +0100
++++ include/linux/acct.h	2009-06-06 22:40:55.000000000 +0100
+@@ -59,9 +59,7 @@
+ 	comp_t		ac_majflt;		/* Major Pagefaults */
+ 	comp_t		ac_swaps;		/* Number of Swaps */
+ /* m68k had no padding here. */
+-#if !defined(CONFIG_M68K) || !defined(__KERNEL__)
+ 	__u16		ac_ahz;			/* AHZ */
+-#endif
+ 	__u32		ac_exitcode;		/* Exitcode */
+ 	char		ac_comm[ACCT_COMM + 1];	/* Command Name */
+ 	__u8		ac_etime_hi;		/* Elapsed Time MSB */
+diff -ur include.old/linux/soundcard.h include/linux/soundcard.h
+--- include.old/linux/soundcard.h	2009-06-06 19:29:30.000000000 +0100
++++ include/linux/soundcard.h	2009-06-06 22:40:57.000000000 +0100
+@@ -1033,7 +1033,6 @@
+  */
+ #define LOCL_STARTAUDIO		1
  
+-#if !defined(__KERNEL__) || defined(USE_SEQ_MACROS)
  /*
-@@ -773,12 +796,15 @@ eval_table(const struct ops *ops, int *valp, const char **cpp)
- static Linetype
- ifeval(const char **cpp)
- {
-+	const char *cp = *cpp;
- 	int ret;
- 	int val;
+  *	Some convenience macros to simplify programming of the
+  *	/dev/sequencer interface
+@@ -1275,4 +1274,3 @@
+ 		(SEQ_DUMPBUF(), write(seqfd, (char*)(patchx), len))
  
- 	debug("eval %s", *cpp);
- 	keepthis = killconsts ? false : true;
--	ret = eval_table(eval_ops, &val, cpp);
-+	ret = eval_table(eval_ops, &val, &cp);
-+	if (ret != LT_IF)
-+		*cpp = cp;
- 	debug("eval = %d", val);
- 	return (keepthis ? LT_IF : ret);
- }
+ #endif
+-#endif
+diff -ur include.old/linux/videodev.h include/linux/videodev.h
+--- include.old/linux/videodev.h	2009-06-06 19:29:30.000000000 +0100
++++ include/linux/videodev.h	2009-06-06 22:40:58.000000000 +0100
+@@ -16,24 +16,6 @@
+ #include <linux/ioctl.h>
+ #include <linux/videodev2.h>
+ 
+-#if defined(__MIN_V4L1) && defined (__KERNEL__)
+-
+-/*
+- * Used by those V4L2 core functions that need a minimum V4L1 support,
+- * in order to allow V4L1 Compatibilty code compilation.
+- */
+-
+-struct video_mbuf
+-{
+-	int	size;		/* Total memory to map */
+-	int	frames;		/* Frames */
+-	int	offsets[VIDEO_MAX_FRAME];
+-};
+-
+-#define VIDIOCGMBUF		_IOR('v',20, struct video_mbuf)		/* Memory map buffer info */
+-
+-#else
+-#if defined(CONFIG_VIDEO_V4L1_COMPAT) || !defined (__KERNEL__)
+ 
+ #define VID_TYPE_CAPTURE	1	/* Can capture */
+ #define VID_TYPE_TUNER		2	/* Can tune */
+@@ -328,8 +310,6 @@
+ #define VID_PLAY_RESET			13
+ #define VID_PLAY_END_MARK		14
+ 
+-#endif /* CONFIG_VIDEO_V4L1_COMPAT */
+-#endif /* __MIN_V4L1 */
+ 
+ #endif /* __LINUX_VIDEODEV_H */
+ 
+diff -ur include.old/video/edid.h include/video/edid.h
+--- include.old/video/edid.h	2009-06-06 19:29:31.000000000 +0100
++++ include/video/edid.h	2009-06-06 22:40:58.000000000 +0100
+@@ -1,13 +1,11 @@
+ #ifndef __linux_video_edid_h__
+ #define __linux_video_edid_h__
+ 
+-#if !defined(__KERNEL__) || defined(CONFIG_X86)
+ 
+ struct edid_info {
+ 	unsigned char dummy[128];
+ };
+ 
+ 
+-#endif
+ 
+ #endif /* __linux_video_edid_h__ */
+
 
 -- 
 Russell King
