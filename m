@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbZFFIKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753708AbZFFIP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754016AbZFFIKU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 04:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbZFFIKI
+	id S1753708AbZFFIP0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 04:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbZFFIPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 04:10:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57704 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752180AbZFFIKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 04:10:06 -0400
-Subject: Re: [PATCH 0/6] headers_check fix patches 20090604
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+	Sat, 6 Jun 2009 04:15:11 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56827 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752180AbZFFIPK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 04:15:10 -0400
+Date: Sat, 6 Jun 2009 09:14:53 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
 To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Russell King <rmk+lkml@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Tony Luck <tony.luck@intel.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Ungerer <gerg@snapgear.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Michael Abbott <michael@araneidae.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kbuild <linux-kbuild@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1244118232.5172.26.camel@ht.satnam>
-References: <1244118232.5172.26.camel@ht.satnam>
-Content-Type: text/plain
-Date: Sat, 06 Jun 2009 13:40:12 +0530
-Message-Id: <1244275812.2475.2.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+       Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: Re: [PATCH 17/39] kbuild: fix header export when __ASSEMBLY__ is
+	used
+Message-ID: <20090606081453.GA30463@flint.arm.linux.org.uk>
+References: <20090605233720.GA13588@uranus.ravnborg.org> <1244245377-17441-17-git-send-email-sam@ravnborg.org> <200906060041.07600.arnd@arndb.de> <20090606060552.GA22347@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090606060552.GA22347@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-04 at 17:53 +0530, Jaswinder Singh Rajput wrote:
-> Please Review :
+On Sat, Jun 06, 2009 at 08:05:52AM +0200, Sam Ravnborg wrote:
+> On Sat, Jun 06, 2009 at 12:41:07AM +0000, Arnd Bergmann wrote:
+> > On Friday 05 June 2009 11:42:35 pm Sam Ravnborg wrote:
+> > > Because it does not know __ASSEMBLY__ it does not
+> > > detect that htis is not for userspace.
+> > > This caused too much code to be exported, and headers_check barfed
+> > > over this code.
+> > > 
+> > > For arm this fixes following "make headers_check" warning:
+> > > /usr/include/asm/hwcap.h:29: extern's make no sense in userspace
+> > 
+> > Are you sure that this is safe for all user space? If a user application
+> > for instance includes asm/signal.h or asm/types.h from assembly (for
+> > whatever reason), it now breaks.
 > 
-> Jaswinder Singh Rajput (6):
->       headers_check fix: arm, hwcap.h
->       headers_check fix: ia64, fpswa.h
->       headers_check fix: m68k, swab.h
->       headers_check fix: mips, ioctl.h
->       headers_check fix: mn10300, ptrace.h
->       headers_check fix: mn10300, setup.h
+> I had not thought about this implication.
+> I will drop the patch as this most likely
+> will break some userspace.
 
-Thanks for you review, I applied all these patches to headers-check tree
-for linus :
+So now go back and re-read my original email.  I was not suggesting to
+undefine __ASSEMBLY__ - I was more detailed in my _question_ which I
+was making, and there were _two_ possibilities.
 
-http://git.kernel.org/?p=linux/kernel/git/jaswinder/headers-check-2.6.git;a=summary
-
-Thanks,
---
-JSR
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
