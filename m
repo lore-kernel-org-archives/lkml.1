@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbZFFQMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbZFFQPY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753686AbZFFQMy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 12:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbZFFQMp
+	id S1753188AbZFFQPY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 12:15:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZFFQPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 12:12:45 -0400
-Received: from mail1.perex.cz ([212.20.107.53]:41747 "EHLO mail1.perex.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752138AbZFFQMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 12:12:45 -0400
-X-Greylist: delayed 1199 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Jun 2009 12:12:45 EDT
-Date: Sat, 6 Jun 2009 17:52:44 +0200 (CEST)
-From: Jaroslav Kysela <perex@perex.cz>
-To: Jiri Slaby <jirislaby@gmail.com>
-cc: Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [sound] mpd loops on current -next
-In-Reply-To: <4A2A8F6A.80705@gmail.com>
-Message-ID: <alpine.LNX.2.00.0906061752040.4067@eeebox2.perex-int.cz>
-References: <4A2A8F6A.80705@gmail.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat, 6 Jun 2009 12:15:14 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:55252 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752492AbZFFQPM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 12:15:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:to:from:subject;
+        b=wjZSZNnnoi4568p8Jd39TbGFZR6z5gSZSnxugFlKmoAyxvFlQDXUp3nwmchWZzOGe7
+         AVih+xN5wWs79gqJlNsjCbAvu/SSnxW15m1oOwtQc5PydKUgNnRbf9Q+mX7fw/29U5dQ
+         oK2NLIthcOShBFKPmxkruk+V0J0lmhvRhxkKs=
+Message-ID: <4a2a9611.06c8100a.49ae.ffff88e4@mx.google.com>
+Date: Sat, 06 Jun 2009 09:15:13 -0700 (PDT)
+To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
+       linux-kernel@vger.kernel.org
+To: Leon Woestenberg <leon@sidebranch.com>
+From: leon.woestenberg@gmail.com
+Subject: [PATCH v2] Add MSI interrupts to DTS of MPC8315E-RDB
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 6 Jun 2009, Jiri Slaby wrote:
+The PCIe MSI interrupts are missing from the device tree source, and
+thus were not enabled. This patch adds them.
 
-> Hi,
->
-> I found a regression in current -next caused by
-> c44941e05900fe85f6091456f9e313b446a97ae9
-> (PCM midlevel: Do not update hw_ptr_jiffies when hw_ptr is not changed)
+v2 of the patch fixes inconsistent white space, reported by David Gibson.
 
-Oops. It seems like typo. Could you try this patch, please?
+Tested to work on MPC8315E-RDB with custom FPGA PCIe device.
 
-diff --git a/sound/core/pcm_lib.c b/sound/core/pcm_lib.c
-index dd9126b..bf34603 100644
---- a/sound/core/pcm_lib.c
-+++ b/sound/core/pcm_lib.c
-@@ -371,7 +371,7 @@ int snd_pcm_update_hw_ptr(struct snd_pcm_substream *substream)
-  	    runtime->silence_size > 0)
-  		snd_pcm_playback_silence(substream, new_hw_ptr);
+Signed-off-by: Leon Woestenberg <leon@sidebranch.com>
+Tested-by: Leon Woestenberg <leon@sidebranch.com>
 
--	if (runtime->status->hw_ptr != new_hw_ptr)
-+	if (runtime->status->hw_ptr == new_hw_ptr)
-  		return 0;
-
-  	runtime->hw_ptr_base = hw_base;
-
- 					Thanks,
- 						Jaroslav
-
------
-Jaroslav Kysela <perex@perex.cz>
-Linux Kernel Sound Maintainer
-ALSA Project, Red Hat, Inc.
-
+Index: git/arch/powerpc/boot/dts/mpc8315erdb.dts
+===================================================================
+--- git.orig/arch/powerpc/boot/dts/mpc8315erdb.dts	2009-05-23 20:49:40.000000000 +0200
++++ git/arch/powerpc/boot/dts/mpc8315erdb.dts	2009-06-06 10:35:14.000000000 +0200
+@@ -322,6 +322,21 @@
+ 			reg = <0x700 0x100>;
+ 			device_type = "ipic";
+ 		};
++
++		ipic-msi@7c0 {
++			compatible = "fsl,ipic-msi";
++			reg = <0x7c0 0x40>;
++			msi-available-ranges = <0 0x100>;
++			interrupts = <0x43 0x8
++				      0x4  0x8
++				      0x51 0x8
++				      0x52 0x8
++				      0x56 0x8
++				      0x57 0x8
++				      0x58 0x8
++				      0x59 0x8>;
++			interrupt-parent = < &ipic >;
++		};
+ 	};
+ 
+ 	pci0: pci@e0008500 {
