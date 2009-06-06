@@ -1,65 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbZFFHGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751382AbZFFHMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753252AbZFFHGt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 03:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbZFFHGh
+	id S1751382AbZFFHMS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 03:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750792AbZFFHMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 03:06:37 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:53743 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751291AbZFFHGg (ORCPT
+	Sat, 6 Jun 2009 03:12:09 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:54214 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750750AbZFFHMI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 03:06:36 -0400
+	Sat, 6 Jun 2009 03:12:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=SQdDpFpFOtJFYPw0SiE7OujcstX1mkNH8jn5ForWKiwdUFRDwFK5eiflvk6b6Zu5FV
-         gdMz3wk67IFmFWvcuvrdB58lCAKwQJXut7cmsaOc/OxaJTXpw75Ey78LwTR6nx0icce/
-         keMkPewf+1p9EsRS0aNjDcssCD0uQuYeM42xY=
+        b=Ai7xWorprXExJvWvhiLVsde+Xq/XNMYYC/FYn9bwYMsPsCy6k/gtHySTgkIq7HVvTx
+         29jgdhKLGwc8l/6F/lbV9fNgCc0ZAsiaG7sxeWq+Y6/i3Lbl/I6tJj0ZiARIBX2ao3Hb
+         HYSC8CsknghXT16kZuabWoFmBLrMzDbm6JQNI=
 MIME-Version: 1.0
-In-Reply-To: <20090605.175825.168276404.davem@davemloft.net>
-References: <20090605091229.GA25280@doriath.ww600.siemens.net>
-	 <20090605094619.GB23085@build.ossfans.org>
-	 <bc64b4640906050345t5ed23d7bxc8a777a4a0ada147@mail.gmail.com>
-	 <20090605.175825.168276404.davem@davemloft.net>
-Date: Sat, 6 Jun 2009 11:06:33 +0400
-Message-ID: <bc64b4640906060006w1d623172p2595158cc5204f3b@mail.gmail.com>
-Subject: Re: [PATCH 3/5] net: add NL802154 interface for configuration of 
-	802.15.4 devices
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: slapin@ossfans.org, johannes@sipsolutions.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, sfr@canb.auug.org.au
+In-Reply-To: <4A2987A9.2010202@xandros.com>
+References: <Pine.LNX.4.64.0906051157460.22218@melkki.cs.Helsinki.FI>
+	 <71cd59b00906050446g7310d24el94f0d137dc0e0ecf@mail.gmail.com>
+	 <4A2987A9.2010202@xandros.com>
+Date: Sat, 6 Jun 2009 09:12:08 +0200
+Message-ID: <71cd59b00906060012w6bc6f302o76fea3c8a570840e@mail.gmail.com>
+Subject: Re: [PATCH] eeepc-laptop: enable camera by default
+From: Corentin Chary <corentin.chary@gmail.com>
+To: Woody Suwalski <woodys@xandros.com>
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
+       acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/6, David Miller <davem@davemloft.net>:
-> From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+On Fri, Jun 5, 2009 at 11:01 PM, Woody Suwalski<woodys@xandros.com> wrote:
+> Corentin Chary wrote:
+>>
+>> On Fri, Jun 5, 2009 at 10:59 AM, Pekka J Enberg<penberg@cs.helsinki.fi>
+>> wrote:
+>>
+>>>
+>>> From: Pekka Enberg <penberg@cs.helsinki.fi>
+>>>
+>>> If we leave the camera disabled by default, userspace programs (e.g.
+>>> Skype, Cheese) leave the user out in the cold saying that the machine
+>>> "has
+>>> no camera." Therefore, it's better to enable camera by default and let
+>>> people who really don't want it just disable the thing.
+>>>
+>>> Cc: <acpi4asus-user@lists.sourceforge.net>
+>>> Cc: Len Brown <len.brown@intel.com>
+>>> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+>>> ---
+>>>  drivers/platform/x86/eeepc-laptop.c |   16 ++++++++++++++++
+>>>  1 files changed, 16 insertions(+), 0 deletions(-)
+>>>
+>>> diff --git a/drivers/platform/x86/eeepc-laptop.c
+>>> b/drivers/platform/x86/eeepc-laptop.c
+>>> index 353a898..c0f8eb1 100644
+>>> --- a/drivers/platform/x86/eeepc-laptop.c
+>>> +++ b/drivers/platform/x86/eeepc-laptop.c
+>>> @@ -334,6 +334,19 @@ static int eeepc_bluetooth_rfkill_state(void *data,
+>>> enum rfkill_state *state)
+>>>  }
+>>>
+>>>  /*
+>>> + * Camera helpers
+>>> + */
+>>> +
+>>> +static void eeepc_enable_camera(void)
+>>> +{
+>>> +       int err;
+>>> +
+>>> +       err = set_acpi(CM_ASL_CAMERA, 1);
+>>> +       if (err)
+>>> +               printk(EEEPC_WARNING "Unable to enable camera %d\n",
+>>> err);
+>>> +}
+>>> +
+>>> +/*
+>>>  * Sys helpers
+>>>  */
+>>>  static int parse_arg(const char *buf, unsigned long count, int *val)
+>>> @@ -996,6 +1009,9 @@ static int __init eeepc_laptop_init(void)
+>>>       result = eeepc_hwmon_init(dev);
+>>>       if (result)
+>>>               goto fail_hwmon;
+>>> +
+>>> +       eeepc_enable_camera();
+>>> +
+>>>       /* Register platform stuff */
+>>>       result = platform_driver_register(&platform_driver);
+>>>       if (result)
+>>> --
+>>> 1.5.6.3
+>>>
+>>>
+>>>
+>>
+>> Hi,
+>> First, I think a one line
+>> set_acpi(CM_ASL_CAMERA, 1);
+>> with a small comment is better. (If it fails, it's because there no
+>> camera, so we don't mind).
+>>
+>> Anyway, I'm not sure it's a good idea to enable the camera by default.
+>> It depends how many
+>> power the camera is using (when idle). Coud you check that (with power
+>> top maybe ?).
+>>
+>> Thanks
+>>
 >
-> Date: Fri, 5 Jun 2009 14:45:06 +0400
+> From our old measurements:
+>
+> idle camera is ~20mA out of ~650mA total power... (measured on 901 model).
+>
+> Woody
+>
+> --
+> Woody Suwalski, Xandros, Ottawa, Canada, 1-613-842-3498 x414
 >
 >
->  > Could you please send an incremental patch on top of this serie? I
->  > hope that my last
->  > push can be pulled/merged and I don't want to redo all commits.
->
->
-> Dmitry, no shortcuts ok?
->
->  Just respin the series and resend it just like anyone else has to.
->
->  The changes just aren't ready, and until they are you'll need to
->  respin them like this a few more times.
 
-I'm on vacation for the next following days. In the mean time Sergey
-Lapin will continue working on this patchset, updating it to pass
-through review.
+Do also have some results with
+echo -n auto > /sys/bus/usb/drivers/uvcvideo/*:*/../power/level
+
+?
+Thanks
 
 -- 
-With best wishes
-Dmitry
+Corentin Chary
+http://xf.iksaif.net - http://uffs.org
