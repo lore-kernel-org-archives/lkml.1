@@ -1,89 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbZFFBZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbZFFBzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbZFFBZM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 5 Jun 2009 21:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbZFFBZA
+	id S1753765AbZFFBzI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 5 Jun 2009 21:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbZFFByz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 5 Jun 2009 21:25:00 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:13504 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752882AbZFFBY7 (ORCPT
+	Fri, 5 Jun 2009 21:54:55 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:3825 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752953AbZFFByy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 5 Jun 2009 21:24:59 -0400
+	Fri, 5 Jun 2009 21:54:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=GE0Hws72rDlKC08MjdoeGKAaAZuNc5ctuAdcVNclPppfZyqlk+ks78ydXbaO8hqSuT
-         PfsEWUidlhyfwR91JD9FMM1CkPdPv2qEj/RUfl/noW0eDhe/zjcgRLHNtswV/uj7Da4t
-         vjV85Gk1BXhqO/55nD/iPayCf8VPSynrg265s=
-Message-ID: <4A29C56A.8020306@gmail.com>
-Date: Fri, 05 Jun 2009 19:24:58 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=aFZj3ytgEgOsFjqWJwj4Pzauyar9Sa6jgNcp4DNuXnhUYPTXnJUHhDTfv9B0ta33vx
+         Qy+J1j1LKq9RaMHyhXCOk9Pc8VocF+QuYa6dS0zKozQOAv7eYGOlkW0YgmfncYdevacs
+         PNiI/uVZkqXJKEyQPkLheYU0CCUiu1n7PPX4M=
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: only a single core (out of 8) initialized
-References: <alpine.DEB.1.10.0906041949030.7953@asgard> <20090604202933.d7c24c3d.akpm@linux-foundation.org> <alpine.DEB.1.10.0906042049230.11064@asgard>
-In-Reply-To: <alpine.DEB.1.10.0906042049230.11064@asgard>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <43e72e890906051204q22278e4cw6beeae27da50e988@mail.gmail.com>
+References: <43e72e890906051204q22278e4cw6beeae27da50e988@mail.gmail.com>
+Date: Sat, 6 Jun 2009 04:54:53 +0300
+Message-ID: <40f31dec0906051854y4935f6d5ved369e6e0155367d@mail.gmail.com>
+Subject: Re: [ANN] Atheros 802.11n USB firmware source code released
+From: Nick Kossifidis <mickflemm@gmail.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, otus-devel@venema.h4ckr.net,
+       David Woodhouse <dwmw2@infradead.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Thu, 4 Jun 2009, Andrew Morton wrote:
-> 
->> Subject: Re: only a single core (out of 8) initialized
->>
->> On Thu, 4 Jun 2009 19:52:36 -0700 (PDT) david@lang.hm wrote:
->>
->>> this is 2.6.30-rc7
->>
->> Were any earlier kernels OK?
->>
->>>  with a patch added to debug a nv sata driver
->>> incompatibility with the Intel SSDs on a tyan motherboard
->>>
->>> on one system it sees all 8 cores, on the other system it only 
->>> initializes
->>> one core.
->>>
->>> can anyone help me spot what's going wrong in the one that's only 
->>> seeing a
->>> single core? If I'm reading things correctly it's seeing both sockets 
->>> for
->>> the NUMA setup, but then only initializing one core on the first socket.
->>
->> good:
->>     SMP: Allowing 8 CPUs, 4 hotplug CPUs
->>
->> bad:
->>     SMP: Allowing 1 CPUs, 0 hotplug CPUs
->>
->> perhaps due to
->>     ACPI: No APIC-table, disabling MPS
->>
->> You could have a poke around in arch/x86/kernel/smpboot.c() and find
->> out what happened here.  I'd be suspecting this code triggered:
->>
->>        /* no processor from mptable or madt */
->>        if (!num_processors)
->>                num_processors = 1;
->>
->> because ACPI doesn't like that board.
->>
->> Did you look into updating the BIOS?
-> 
-> this is actually the newer of the two systems. I've already escalated up 
-> to Tyan about the fact that this board won't see the Intel SSD drives 
-> (unless you hotplug the drive). I've forwarded this to them as well. 
-> their website does show a newer bios than what was shipped to me.
+2009/6/5 Luis R. Rodriguez <mcgrof@gmail.com>:
+> I'm pleased to announce we have released the source code to our
+> Atheros 802.11n USB Otus/ar9170 device under the GPL. You can grab the
+> source, compile and use it with the upstream ar9170 device driver.
+> Patches are welcomed. The git tree available for this is at:
+>
+> http://git.sipsolutions.net/ar9170-fw.git
+>
+> For more information please visit the home page for this project is on
+> our Linux wireless wiki:
+>
+> http://wireless.kernel.org/en/users/Drivers/ar9170.fw
+>
+> The ar9170 device driver home page is at:
+>
+> http://wireless.kernel.org/en/users/Drivers/ar9170
+>
+> I'd like to thank Johannes Berg and Christian Lamparter for their
+> incredible contributions to the project both firmware and ar9170
+> driver so far without which this would not have been possible.
+>
+>  Luis
 
-Yeah, it seems like a BIOS problem on that system. It's missing a bunch 
-of the ACPI tables that the other system has.
+Congratulations !
+
+
+-- 
+GPG ID: 0xD21DB2DB
+As you read this post global entropy rises. Have Fun ;-)
+Nick
