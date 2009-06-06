@@ -1,108 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbZFFN5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbZFFOW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607AbZFFN5s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 09:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbZFFN5j
+	id S1754540AbZFFOW3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 10:22:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZFFOWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 09:57:39 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:48956 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752210AbZFFN5j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 09:57:39 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Harald Welte <HaraldWelte@viatech.com>
-Subject: Re: e_powersaver / underclocking (was Re: Linux 2.6.30-rc8 [also: VIA Support])
-Date: Sat, 6 Jun 2009 08:56:12 -0500
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <20090606132847.GB14088@prithivi.gnumonks.org> <200906060846.36303.lkml@morethan.org>
-In-Reply-To: <200906060846.36303.lkml@morethan.org>
+	Sat, 6 Jun 2009 10:22:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55093 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752992AbZFFOWU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 10:22:20 -0400
+Date: Sat, 6 Jun 2009 14:21:39 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf_counter tools: Tidy up manpage details
+Message-ID: <tip-6e6b754ffdb6415723686c733f13275397e44422@git.kernel.org>
+Git-Commit-ID: 6e6b754ffdb6415723686c733f13275397e44422
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200906060856.15016.lkml@morethan.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 06 Jun 2009 14:21:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat June 6 2009, Michael S. Zick wrote:
-> On Sat June 6 2009, Harald Welte wrote:
-> > On Sat, Jun 06, 2009 at 07:17:44AM -0500, Michael S. Zick wrote:
-> > 
-> > > I can respond to that point now; VIA Tech has answered some of my questions -
-> > > 
-> > > The mainstream kernel, e_powersaver, is *under-clocking* my machine -
-> > > 
-> > > The cpuid instruction provides the minimum and maximum GSF values 
-> > > (Guaranteed Stable Frequency) for that processor mask run -
-> > > Passing that on as the lower and upper limits to e_powersaver should
-> > > stop that problem.  Will be testing this RSN.
-> > 
-> > It's really surprising to me that none of this seems to be handled correct so
-> > far, I'll talk to Centaur and try to find out how we could have ended up in
-> > this situation.
-> >
-> 
-> Ah, but we are talking here of the *second* NetBook ever produced.
-> If one is to believe the dmidecode output - it is using the VIA demo board
-> BIOS. 
-> 
-> I bet the demo board BIOS is intended to demo the features of the product -
-> not the correctness or completeness of the ACPI support.  ;)
-> 
-> If I where shipping demo boards - they would be demonstrating **my** product's
-> features.  Maybe I am just projecting what I would do. 
-> 
-> 
-> > My assumption is that e_powersavre is no longer supposd to do any of those
-> > low-level bits - rather the ACPI code is expected to get it right, hiding the
-> > details from the OS.  But in this case, there needs to be some run-time detection
-> > whether the ACPI cpufreq should be used, or e_powersaver.  And I don't see any
-> > of that right now.
-> > 
-> 
-> I can keep my eyes open for a way to do that -
-> First, I want to get the machine running **with-in** the specs it can provide.
-> The one I have is running at 2/3rds of the reported *minimum* clockspeed.
-> I must have gotten a high quality "mask/process run" for it to be running at all.
->
+Commit-ID:  6e6b754ffdb6415723686c733f13275397e44422
+Gitweb:     http://git.kernel.org/tip/6e6b754ffdb6415723686c733f13275397e44422
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 15 Apr 2008 22:39:31 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 6 Jun 2009 15:15:48 +0200
 
-If any readers have noticed, the links I post go to what was originally named
-"Cloudbookuser" - the first forum for the second machine - -
+perf_counter tools: Tidy up manpage details
 
-Ever since day 3 or 4 - people have been writing scripts to change the on-demand
-governor's minimum from 400Mhz to 600Mhz - without knowing "why" other than
-it was required to keep the machine running (even on distribution kernels).
+Also fix a misalignment in usage string printing.
 
-_Now_ I know why.  Tell the VIA Tech folks "thanks" for the information.
-
-Mike 
-> > Also note that now with OLPC XO1.5 going for the C7-M (on a VX855 chipset,
-> > though), many of those issues should soon receive much more attention -
-> > especially on the power management front.  And as you know, they don't use any
-> > legacy BIOS...
-> > 
-> 
-> I'll keep my eyes open on that subject also when looking at the e_powersaver code -
-> The OLPC project will probably be requesting chip runs that **do** run at
-> the minimums the design is capable of and it will **have to** be stable for OLPC.
-> 
-> Mike
-> > Regards,
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+---
+ .../perf_counter/Documentation/perf-help.txt       |    2 +-
+ .../perf_counter/Documentation/perf-list.txt       |    4 ++--
+ .../perf_counter/Documentation/perf-stat.txt       |    2 +-
+ .../perf_counter/Documentation/perf-top.txt        |    2 +-
+ Documentation/perf_counter/util/parse-options.c    |    2 +-
+ 5 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/Documentation/perf_counter/Documentation/perf-help.txt b/Documentation/perf_counter/Documentation/perf-help.txt
+index f85fed5..5143918 100644
+--- a/Documentation/perf_counter/Documentation/perf-help.txt
++++ b/Documentation/perf_counter/Documentation/perf-help.txt
+@@ -1,5 +1,5 @@
+ perf-help(1)
+-===========
++============
+ 
+ NAME
+ ----
+diff --git a/Documentation/perf_counter/Documentation/perf-list.txt b/Documentation/perf_counter/Documentation/perf-list.txt
+index aa55a71..8290b94 100644
+--- a/Documentation/perf_counter/Documentation/perf-list.txt
++++ b/Documentation/perf_counter/Documentation/perf-list.txt
+@@ -1,5 +1,5 @@
+ perf-list(1)
+-==============
++============
+ 
+ NAME
+ ----
+@@ -8,7 +8,7 @@ perf-list - List all symbolic event types
+ SYNOPSIS
+ --------
+ [verse]
+-'perf list
++'perf list'
+ 
+ DESCRIPTION
+ -----------
+diff --git a/Documentation/perf_counter/Documentation/perf-stat.txt b/Documentation/perf_counter/Documentation/perf-stat.txt
+index 5d95784..c368a72 100644
+--- a/Documentation/perf_counter/Documentation/perf-stat.txt
++++ b/Documentation/perf_counter/Documentation/perf-stat.txt
+@@ -1,5 +1,5 @@
+ perf-stat(1)
+-==========
++============
+ 
+ NAME
+ ----
+diff --git a/Documentation/perf_counter/Documentation/perf-top.txt b/Documentation/perf_counter/Documentation/perf-top.txt
+index c8eb7cf..539d012 100644
+--- a/Documentation/perf_counter/Documentation/perf-top.txt
++++ b/Documentation/perf_counter/Documentation/perf-top.txt
+@@ -1,5 +1,5 @@
+ perf-top(1)
+-==========
++===========
+ 
+ NAME
+ ----
+diff --git a/Documentation/perf_counter/util/parse-options.c b/Documentation/perf_counter/util/parse-options.c
+index e4d3533..b3affb1 100644
+--- a/Documentation/perf_counter/util/parse-options.c
++++ b/Documentation/perf_counter/util/parse-options.c
+@@ -387,7 +387,7 @@ int usage_with_options_internal(const char * const *usagestr,
+ 
+ 	fprintf(stderr, "\n usage: %s\n", *usagestr++);
+ 	while (*usagestr && **usagestr)
+-		fprintf(stderr, "   or: %s\n", *usagestr++);
++		fprintf(stderr, "    or: %s\n", *usagestr++);
+ 	while (*usagestr) {
+ 		fprintf(stderr, "%s%s\n",
+ 				**usagestr ? "    " : "",
