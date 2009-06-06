@@ -1,79 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbZFFJd3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753462AbZFFJho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753972AbZFFJd3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 05:33:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbZFFJdW
+	id S1753462AbZFFJho (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 05:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbZFFJhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 05:33:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43457 "EHLO hera.kernel.org"
+	Sat, 6 Jun 2009 05:37:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34591 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751740AbZFFJdW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 05:33:22 -0400
-Subject: Re: [PATCH 1/6] headers_check fix: arm, hwcap.h
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       Catalin Marinas <catalin.marinas@arm.com>,
+	id S1750792AbZFFJhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 05:37:36 -0400
+Message-ID: <4A2A38B9.7030809@kernel.org>
+Date: Sat, 06 Jun 2009 02:36:57 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <20090606091215.GB30463@flint.arm.linux.org.uk>
-References: <1244118232.5172.26.camel@ht.satnam>
-	 <1244118476.5172.29.camel@ht.satnam>
-	 <20090604125306.GC24491@flint.arm.linux.org.uk>
-	 <20090604201649.GC13892@uranus.ravnborg.org>
-	 <20090605204805.GA22367@flint.arm.linux.org.uk>
-	 <1244278211.2475.13.camel@ht.satnam>
-	 <20090606091215.GB30463@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Sat, 06 Jun 2009 15:04:12 +0530
-Message-Id: <1244280852.2475.46.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] cpumask: alloc blank cpumask left over
+References: <4A2835D8.6040903@kernel.org> <200906051428.08299.rusty@rustcorp.com.au> <4A28B3A9.3010505@kernel.org> <200906052311.57762.rusty@rustcorp.com.au> <4A2A356B.6090102@redhat.com>
+In-Reply-To: <4A2A356B.6090102@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-06-06 at 10:12 +0100, Russell King wrote:
-> On Sat, Jun 06, 2009 at 02:20:11PM +0530, Jaswinder Singh Rajput wrote:
-> > 
-> > The problem is why you are trying to complex things which are simple and
-> > straight.
+Avi Kivity wrote:
+> Rusty Russell wrote:
+>> On Fri, 5 Jun 2009 03:26:57 pm Yinghai Lu wrote:
+>>  
+>>> Rusty Russell wrote:
+>>>    
+>>>> On Fri, 5 Jun 2009 06:31:31 am Yinghai Lu wrote:
+>>>>      
+>>>>> avoid suprise when MAXSMP is enabled
+>>>>>
+>>>>> Signed-off-by: Yinghai Lu <yinghai.lu@kernel.org>
+>>>>>         
+>>>> I understand the temptation, but two questions arise:
+>>>> 1) Shouldn't we actually audit to see if any of these are currently
+>>>> problems,
+>>>>       
+>>> those are defined as static cpumask_var_t, and if MAXSMP is not used,
+>>> they
+>>> are cleared already
+>>>     
+>>
+>> OK, here's what I've got in my tree.  Ingo, I think this should go in the
+>> current -rc to avoid nasty bugs.
+>>
+>> BTW, the original alloc_cpumask_var did zero; that was dropped after
+>> arguments
+>> over efficiency and fitting with other interfaces, but I clearly had
+>> the old
+>> semantics in my head for a while.
+>>
+>>   
 > 
-> What you're saying is "you may not follow valid C ways of expressing
-> conditional compilation" to which I say "go and piss in someone elses
-> pool".
+> Using __GFP_ZERO is equivalent to using memset() instead of
+> cpumask_clear().  It's better to call cpumask_clear() or provide an API
+> to alloc+clear.
 > 
-
-Hmm, again you are trying to complex things.
-
-Issue is not of valid C or not.
-
-Issue is #if defined(__KERNEL__) && (<unknown>) is WRONG.
-
-It should be :
-
-#ifdef __KERNEL__
-#ifdef <unknown>
-
-otherwise how you will pass it to userspace.
-
-Why you are looking on kernel side only why do not you think about user
-space ?
-please check how it will look at usr/include/asm-arm/hwcap.h
-
-> Since the fix for this in unifdef is soo trivial, and it doesn't require
-> people to write stuff in ways that stupid idiotic tools can understand,
-> I'm NEVER going to apply the fix to hwdef.h.
+> Further, what about the non-MAXSMP case:
 > 
-> So you now have two options: either supply the (correct) additional
-> parameter to unifdef, or ignore the stupid idiotic warning message.
 > 
+>    static inline bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
+>    {
+>            return true;
+>    }
+> 
+> 
+> We explicity clear on MAXSMP and rely on static initialization for the
+> non-MAXSMP, laying a neat trap for anyone who makes the variable
+> non-static.  Let's be less subtle that that.
 
-I will go with 3rd option.
+or have zalloc_cpumask_var() ?
 
-Thanks,
---
-JSR
-
+YH
