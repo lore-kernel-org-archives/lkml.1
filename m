@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbZFFER3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751295AbZFFERn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753170AbZFFER3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 00:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750750AbZFFERU
+	id S1751295AbZFFERn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 00:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbZFFERd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 00:17:20 -0400
-Received: from gate.crashing.org ([63.228.1.57]:43883 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750721AbZFFERT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 00:17:19 -0400
-Subject: Re: [BUILD FAILURE 01/04] Next June 04:PPC64 randconfig
- [drivers/staging/comedi/drivers.o]
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-Cc: subrata@linux.vnet.ibm.com, sachinp@linux.vnet.ibm.com,
-       sfr@canb.auug.org.au, greg@kroah.com, linux-kernel@vger.kernel.org,
-       Linuxppc-dev@ozlabs.org, linux-next@vger.kernel.org, paulus@samba.org,
-       Geert.Uytterhoeven@sonycom.com, geert@linux-m68k.org
-In-Reply-To: <20090605.175656.95336229.davem@davemloft.net>
-References: <20090605182625.24093.7808.sendpatchset@elm3a191.beaverton.ibm.com>
-	 <1244244749.31984.16.camel@pasglop>
-	 <20090605.175656.95336229.davem@davemloft.net>
-Content-Type: text/plain
-Date: Sat, 06 Jun 2009 14:16:46 +1000
-Message-Id: <1244261806.31984.36.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 6 Jun 2009 00:17:33 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:35625 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753144AbZFFER3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 00:17:29 -0400
+X-Sasl-enc: By6/xM8tP7X1zqsm4Gr9VYaaSfsBokqnUGOc4n44+PjY 1244261850
+Date: Sat, 6 Jun 2009 01:17:26 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Eric Sandeen <sandeen@redhat.com>,
+       Aioanei Rares <krnl.list@gmail.com>, linux-ext4@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Mild filesystem corruption on ext4 (no journal)
+Message-ID: <20090606041726.GA18112@khazad-dum.debian.net>
+References: <4A28F83F.4030704@tuffmail.co.uk> <4A292E61.3050204@gmail.com> <4A293084.5010400@tuffmail.co.uk> <4A2937CC.7070503@redhat.com> <4A294B15.9070209@tuffmail.co.uk> <ac3eb2510906050951o200c3aeex56dcb32bf29d0607@mail.gmail.com> <4A299151.3040109@tuffmail.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A299151.3040109@tuffmail.co.uk>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-05 at 17:56 -0700, David Miller wrote:
-> > 
-> > Read my reply to Greg. Why the heck are you trying to map memory
-> > non-cacheable in the first place ?
-> 
-> I agree, this is extremely fishy.
-> 
-> I guess the issue is that the driver wants consistent DMA memory
-> but wants to allocate a huge area vmap() style.
+On Fri, 05 Jun 2009, Alan Jenkins wrote:
+> Not quite. Ted says it's already reported as
+>
+>    http://bugzilla.kernel.org/show_bug.cgi?id=13292
+>
+> It includes an strace log which implicates the use of both mmap() and  
+> write() on the same file.  Sounds scary :-).
 
-That's my guess too, and I suppose we should be able to provide an
-appropriate interface for that... There are two aspects that
-are completely separate here:
+Run Cyrus-IMAPd on that.  It will cause the entire house to come down if
+you have any sort of misbehaviour when userspace is doing extremely
+annoying things.  Cyrus-imapd is the mmap() test from hell.
 
- - One is the allocation of the pages themselves which much match
-the various criteria for DMA'bility to the target device (fit the
-DMA mask, etc...)
-
- - One is the creation of the virtual mapping in kernel space for which
-appropriate pgprot for DMA must be provided.
-
-For the first one, I don't know how legit it would be to allocate the
-pages using dma_alloc_coherent one page at a time and try to figure out
-the struct page * out of it. Sounds fishy and possibly non-portable. So
-appart from using normal GFP and crossing fingers I'm not sure what
-would be the right way to obtain the pages in the first place. Maybe we
-should provide something.
-
-The second could be as simple as having a pgprot_dma_coherent() like we
-have a pgprot_uncached() for example, which would be either uncached or
-cached depending on the consistency of DMA on the platform. But we need
-to run that through things like MIPS which may have additional virtual
-address space requirements.
-
-Cheers,
-Ben.
-
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
