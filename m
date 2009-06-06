@@ -1,121 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbZFFVKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbZFFVQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753391AbZFFVKy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 17:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZFFVKq
+	id S1753623AbZFFVQf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 17:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZFFVQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 17:10:46 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:5106 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752705AbZFFVKp (ORCPT
+	Sat, 6 Jun 2009 17:16:27 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:39494 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752606AbZFFVQ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 17:10:45 -0400
+	Sat, 6 Jun 2009 17:16:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=lZbxGkLLBy47Rvu/auJOc8gZhn7CvCZKNOYXQjI0JccN0s0AaFsGwtinaWNehGULgo
-         PxzGq7qolgmdfmzafeogGnt2oDPFZCiFLHeYaBovBNPLALkJCeq43VXZzJunhJCyW3op
-         pqtEW1r3Ieihm+oUTSrZeSGbe4OZmxDsHin10=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Frederic Weisbecker <fweisbeec@gmail.com>
-Subject: [PATCH] perf-top: Wait for a minimal set of events before reading first snapshot
-Date: Sat,  6 Jun 2009 23:10:43 +0200
-Message-Id: <1244322643-6447-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
+        d=googlemail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:references:in-reply-to
+         :mime-version:content-disposition:content-type
+         :content-transfer-encoding:message-id;
+        b=CmPI+hsoWJ2dr6dpFbMPx8GbHT9d52vXt/szBaLrizdHS0G6yGtsl39jFWP2gQhgUA
+         Q3X8wfeWzNtv5ygE0wU4jnS/Qxn/zscEZ4UHz6T8lAoixIQwEpyUCw0/Fmljhnmk8bWm
+         HciRsjNnxF+RvzjUEUdNsHf3RIIZt0jBODu8E=
+From: Chris Clayton <chris2553@googlemail.com>
+Reply-To: chris2553@googlemail.com
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.30-rc8 Oops whilst booting
+Date: Sat, 6 Jun 2009 22:15:30 +0100
+User-Agent: KMail/1.9.10
+References: <200906061959.55592.chris2553@googlemail.com>
+In-Reply-To: <200906061959.55592.chris2553@googlemail.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906062215.30571.chris2553@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The first snapshot reading often occur before any events have been
-read in the mapped perfcounter files.
+Sorry, I've just realised what a poor report my earlier email was. I should also have said that the 
+kernel has booted succesfully. At the time of reporting I had had two panics. I've just done 
+another git pull, so the kernel is bang up to date with kernel.org, but after building and 
+installing, a reboot resulted in another panic. The system then booted OK after switch off and on 
+again.
 
-Just wait until we have at least one event before starting the
-snapshot, or the delay before the first set of entries to be
-displayed may be long in case of low refresh rate.
+Please cc me to any reply, I'm not subscribed.
 
-Note: we could also use a semaphore to wait before "print_entries"
-number of eveents is reached, but again this value is tunable
-and we can't ensure we will even reach it. Also we could base
-on a default mimimum set of entries for the first refresh, say 15,
-but again, the minimal sample is tunable, and we could end up
-displaying nothing until we have a minimal default set of events,
-which can take some time in case of high samples filters.
 
-Hence this simple solution which partially covers the default case.
+On Saturday 06 June 2009, Chris Clayton wrote:
+> Hi,
+>
+> After a git pull earlier today, I've had oopsen whilst booting the system
+> twice today: A photo of the oops message can be viewed at:
+>
+> http://img231.imageshack.us/img231/8931/dscn0610.jpg
+>
+> I haven't used the 2.6.30-rc kernels very much, so I don't have a clue when
+> the problem was introduced. I have no problems at all with 2.6.29.4.
+>
+> Happy to help solve this - just let me know what else I can do.
+>
+> Thanks
 
-[ Impact: display first events once they are available on perf top ]
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Signed-off-by: Frederic Weisbecker <fweisbeec@gmail.com>
----
- tools/perf/builtin-top.c |   22 +++++++++++++++++-----
- 1 files changed, 17 insertions(+), 5 deletions(-)
 
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index f2e7312..fdc1d58 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -420,7 +420,7 @@ static unsigned int mmap_read_head(struct mmap_data *md)
- 
- struct timeval last_read, this_read;
- 
--static void mmap_read(struct mmap_data *md)
-+static void mmap_read_counter(struct mmap_data *md)
- {
- 	unsigned int head = mmap_read_head(md);
- 	unsigned int old = md->prev;
-@@ -517,6 +517,16 @@ static void mmap_read(struct mmap_data *md)
- static struct pollfd event_array[MAX_NR_CPUS * MAX_COUNTERS];
- static struct mmap_data mmap_array[MAX_NR_CPUS][MAX_COUNTERS];
- 
-+static void mmap_read(void)
-+{
-+	int i, counter;
-+
-+	for (i = 0; i < nr_cpus; i++) {
-+		for (counter = 0; counter < nr_counters; counter++)
-+			mmap_read_counter(&mmap_array[i][counter]);
-+	}
-+}
-+
- static int __cmd_top(void)
- {
- 	struct perf_counter_attr *attr;
-@@ -571,6 +581,11 @@ static int __cmd_top(void)
- 		}
- 	}
- 
-+	/* Wait for a minimal set of events before starting the snapshot */
-+	poll(event_array, nr_poll, 100);
-+
-+	mmap_read();
-+
- 	if (pthread_create(&thread, NULL, display_thread, NULL)) {
- 		printf("Could not create display thread.\n");
- 		exit(-1);
-@@ -589,10 +604,7 @@ static int __cmd_top(void)
- 	while (1) {
- 		int hits = samples;
- 
--		for (i = 0; i < nr_cpus; i++) {
--			for (counter = 0; counter < nr_counters; counter++)
--				mmap_read(&mmap_array[i][counter]);
--		}
-+		mmap_read();
- 
- 		if (hits == samples)
- 			ret = poll(event_array, nr_poll, 100);
 -- 
-1.6.2.3
-
+No, Sir; there is nothing which has yet been contrived by man, by which
+so much happiness is produced as by a good tavern or inn - Doctor Samuel
+Johnson
