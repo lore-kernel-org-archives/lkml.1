@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbZFFIle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbZFFImy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753879AbZFFIle (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 04:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZFFIl0
+	id S1754502AbZFFImy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 04:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752933AbZFFImq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 04:41:26 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:53107 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbZFFIl0 (ORCPT
+	Sat, 6 Jun 2009 04:42:46 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:58740 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752644AbZFFImq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 04:41:26 -0400
-Date: Sat, 6 Jun 2009 10:43:41 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Russell King <rmk+lkml@arm.linux.org.uk>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Tony Luck <tony.luck@intel.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Ungerer <gerg@snapgear.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Michael Abbott <michael@araneidae.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/6] headers_check fix patches 20090604
-Message-ID: <20090606084341.GB14555@uranus.ravnborg.org>
-References: <1244118232.5172.26.camel@ht.satnam> <1244275812.2475.2.camel@ht.satnam>
-Mime-Version: 1.0
+	Sat, 6 Jun 2009 04:42:46 -0400
+Date: Sat, 6 Jun 2009 09:42:47 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>,
+       linux-kernel@vger.kernel.org, Robert Hancock <hancockrwd@gmail.com>,
+       Frans Pop <elendil@planet.nl>
+Subject: Re: [PATCH 2/4] partitions: add ->set_capacity block device method
+Message-ID: <20090606084247.GA19924@ZenIV.linux.org.uk>
+References: <20090531143911.7164.26834.sendpatchset@localhost.localdomain> <20090531143924.7164.25770.sendpatchset@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1244275812.2475.2.camel@ht.satnam>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090531143924.7164.25770.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 06, 2009 at 01:40:12PM +0530, Jaswinder Singh Rajput wrote:
-> On Thu, 2009-06-04 at 17:53 +0530, Jaswinder Singh Rajput wrote:
-> > Please Review :
-> > 
-> > Jaswinder Singh Rajput (6):
-> >       headers_check fix: arm, hwcap.h
-> >       headers_check fix: ia64, fpswa.h
-> >       headers_check fix: m68k, swab.h
-> >       headers_check fix: mips, ioctl.h
-> >       headers_check fix: mn10300, ptrace.h
-> >       headers_check fix: mn10300, setup.h
+On Sun, May 31, 2009 at 04:39:24PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] partitions: add ->set_capacity block device method
 > 
-> Thanks for you review, I applied all these patches to headers-check tree
-> for linus :
+> * Add ->set_capacity block device method and use it in rescan_partitions()
+>   to attempt enabling native capacity of the device upon detecting the
+>   partition which exceeds device capacity.
 > 
-> http://git.kernel.org/?p=linux/kernel/git/jaswinder/headers-check-2.6.git;a=summary
+> * Add GENHD_FL_NATIVE_CAPACITY flag to try limit attempts of enabling
+>   native capacity during partition scan.
+> 
+> Together with the consecutive patch implementing ->set_capacity method in
+> ide-gd device driver this allows automatic disabling of Host Protected Area
+> (HPA) if any partitions overlapping HPA are detected.
+> 
+> Cc: Robert Hancock <hancockrwd@gmail.com>
+> Cc: Frans Pop <elendil@planet.nl>
+> Cc: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
+> Cc: Al Viro <viro@zeniv.linux.org.uk>
 
-We agreed to do mips different - right?
-
-	Sam
+Acked-by: Al Viro <viro@zeniv.linux.org.uk>
