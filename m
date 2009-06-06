@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbZFFJYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbZFFJZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753245AbZFFJYS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 05:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbZFFJYG
+	id S1753608AbZFFJZK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 05:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbZFFJZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 05:24:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47999 "EHLO mx2.redhat.com"
+	Sat, 6 Jun 2009 05:25:00 -0400
+Received: from www.tglx.de ([62.245.132.106]:54243 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751858AbZFFJYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 05:24:05 -0400
-Message-ID: <4A2A356B.6090102@redhat.com>
-Date: Sat, 06 Jun 2009 12:22:51 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751462AbZFFJY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 05:24:59 -0400
+Date: Sat, 6 Jun 2009 11:24:50 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Feng Tang <feng.tang@intel.com>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tick: add check for the existence of broadcast clock
+ event device
+In-Reply-To: <20090605112711.67e7d5cb@feng-desktop>
+Message-ID: <alpine.LFD.2.00.0906061121330.3419@localhost.localdomain>
+References: <20090605112711.67e7d5cb@feng-desktop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] cpumask: alloc blank cpumask left over
-References: <4A2835D8.6040903@kernel.org> <200906051428.08299.rusty@rustcorp.com.au> <4A28B3A9.3010505@kernel.org> <200906052311.57762.rusty@rustcorp.com.au>
-In-Reply-To: <200906052311.57762.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Fri, 5 Jun 2009 03:26:57 pm Yinghai Lu wrote:
->   
->> Rusty Russell wrote:
->>     
->>> On Fri, 5 Jun 2009 06:31:31 am Yinghai Lu wrote:
->>>       
->>>> avoid suprise when MAXSMP is enabled
->>>>
->>>> Signed-off-by: Yinghai Lu <yinghai.lu@kernel.org>
->>>>         
->>> I understand the temptation, but two questions arise:
->>> 1) Shouldn't we actually audit to see if any of these are currently
->>> problems,
->>>       
->> those are defined as static cpumask_var_t, and if MAXSMP is not used, they
->> are cleared already
->>     
+On Fri, 5 Jun 2009, Feng Tang wrote:
+
+> >From 2f076e1867c8bbb145b74d289358174644d9fed8 Mon Sep 17 00:00:00 2001
+> From: Feng Tang <feng.tang@intel.com>
+> Date: Fri, 5 Jun 2009 10:36:15 +0800
+> Subject: [PATCH] tick: add check for the existence of broadcast clock event device
+> 
+> Some platform may have no broadcast clock event device, as it use always-on
+> external timers for per-cpu timer and has no extra one for broadcast device.
+> This check will secure the access to bc device when system get some boradcast
+> on/off and enter/exit message
 >
-> OK, here's what I've got in my tree.  Ingo, I think this should go in the
-> current -rc to avoid nasty bugs.
->
-> BTW, the original alloc_cpumask_var did zero; that was dropped after arguments
-> over efficiency and fitting with other interfaces, but I clearly had the old
-> semantics in my head for a while.
->
->   
+> Signed-off-by: Feng Tang <feng.tang@intel.com>
+> ---
+>  kernel/time/tick-broadcast.c |    8 +++++++-
+>  1 files changed, 7 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+> index 118a3b3..110e0bc 100644
+> --- a/kernel/time/tick-broadcast.c
+> +++ b/kernel/time/tick-broadcast.c
+> @@ -214,10 +214,13 @@ static void tick_do_broadcast_on_off(void *why)
+>  
+>  	spin_lock_irqsave(&tick_broadcast_lock, flags);
+>  
+> +	bc = tick_broadcast_device.evtdev;
+> +	if (!bc)
+> +		goto out;
+> +
 
-Using __GFP_ZERO is equivalent to using memset() instead of 
-cpumask_clear().  It's better to call cpumask_clear() or provide an API 
-to alloc+clear.
+This check is not necessary because we check whether the percpu device
+is affected by the stops in C3 madness _before_ we touch the broadcast
+device.
 
-Further, what about the non-MAXSMP case:
+	 if (!dev || !(dev->features & CLOCK_EVT_FEAT_C3STOP))
+	    	  got out;
 
+If your percpu devices are always on (not affected by C3 stop) then
+you never dereference bc. So why do we need an extra check for !bc ?
 
-    static inline bool alloc_cpumask_var(cpumask_var_t *mask, gfp_t flags)
-    {
-            return true;
-    }
+Thanks,
 
-
-We explicity clear on MAXSMP and rely on static initialization for the 
-non-MAXSMP, laying a neat trap for anyone who makes the variable 
-non-static.  Let's be less subtle that that.
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+	tglx
