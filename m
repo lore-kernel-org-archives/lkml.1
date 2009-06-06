@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbZFFWKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbZFFWNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754625AbZFFWKU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 18:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbZFFWKJ
+	id S1754986AbZFFWNS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 18:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbZFFWNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 18:10:09 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:37755 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753016AbZFFWKI (ORCPT
+	Sat, 6 Jun 2009 18:13:08 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:46526 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751535AbZFFWNH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 18:10:08 -0400
-Date: Sun, 7 Jun 2009 00:12:23 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Catalin Marinas <catalin.marinas@arm.com>,
-       Tony Luck <tony.luck@intel.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Ungerer <gerg@snapgear.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Michael Abbott <michael@araneidae.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [GIT PULL] headers_check fixes
-Message-ID: <20090606221223.GA20945@uranus.ravnborg.org>
-References: <1244118232.5172.26.camel@ht.satnam> <1244292857.2473.4.camel@ht.satnam> <20090606130210.GA9343@flint.arm.linux.org.uk> <1244299177.2473.21.camel@ht.satnam> <20090606214711.GA4813@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090606214711.GA4813@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 6 Jun 2009 18:13:07 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
+	mime-version:content-type:x-system-of-record;
+	b=TNJtbysYF+hsNw3BhgOqPLUHweX2nu9hia/+Aa1PdUa0JS7ztQKzdulZFLLPPsziG
+	5mREzADralGHalOHnf8ww==
+Date: Sat, 6 Jun 2009 15:12:58 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [patch -mmotm] oom: only oom kill exiting tasks with attached
+ memory
+Message-ID: <alpine.DEB.2.00.0906061512100.16635@chino.kir.corp.google.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russell.
+When a task is chosen for oom kill and is found to be PF_EXITING,
+__oom_kill_task() is called to elevate the task's timeslice and give it
+access to memory reserves so that it may quickly exit.
 
-On Sat, Jun 06, 2009 at 10:47:11PM +0100, Russell King wrote:
-> Right, below is a patch to unifdef.c which allows it to work out if
-> an #if expression always evaluates true or false for symbols which
-> are being undefined/always defined.
-> 
-> The patch is slightly more complicated than I'd hoped because unifdef
-> needs to see lines fully evaluated - doing otherwise causes it to
-> mark the line as "dirty" and copy it over no matter what.
-> 
-> What follows this email is the diff of what effect it has on the
-> headers copied over - as can be seen, all resulting changes are of
-> net benefit.
+This privilege is unnecessary, however, if the task has already detached
+its mm.  Although its possible for the mm to become detached later since
+task_lock() is not held, __oom_kill_task() will simply be a no-op in such
+circumstances.
 
-You beat me on this one.
-I was looking into supportting short_circuit_and/short_circuit_or too.
-Your patch looks better - thanks!
+Subsequently, it is no longer necessary to warn about killing mm-less
+tasks since it is a no-op.
 
->From my very limited testing this patch suffers from a problem I faced too.
-When you run it on for example hwcap.h or my sample file:
-#if defined(__KERNEL__) && !defined(__ASSEMBLY__)
-  int a;
-#endif
+Cc: Rik van Riel <riel@redhat.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ mm/oom_kill.c |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-then the return code of the program is 1 so we do not copy the file.
-
-I'm heading for bed - will take a closer look tomorrow.
-
-	Sam
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -325,11 +325,8 @@ static void __oom_kill_task(struct task_struct *p, int verbose)
+ 		return;
+ 	}
+ 
+-	if (!p->mm) {
+-		WARN_ON(1);
+-		printk(KERN_WARNING "tried to kill an mm-less task!\n");
++	if (!p->mm)
+ 		return;
+-	}
+ 
+ 	if (verbose)
+ 		printk(KERN_ERR "Killed process %d (%s)\n",
+@@ -397,8 +394,9 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+ 	/*
+ 	 * If the task is already exiting, don't alarm the sysadmin or kill
+ 	 * its children or threads, just set TIF_MEMDIE so it can die quickly
++	 * if its mm is still attached.
+ 	 */
+-	if (p->flags & PF_EXITING) {
++	if (p->mm && (p->flags & PF_EXITING)) {
+ 		__oom_kill_task(p, 0);
+ 		return 0;
+ 	}
