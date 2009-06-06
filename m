@@ -1,31 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751918AbZFFEX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbZFFE1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751918AbZFFEX6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 00:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbZFFEXv
+	id S1752992AbZFFE1h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 00:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbZFFE1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 00:23:51 -0400
-Received: from simmts5.bellnexxia.net ([206.47.199.163]:43208 "EHLO
-	simmts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750750AbZFFEXu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 00:23:50 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aso2AJZ/KUrOL8eh/2dsb2JhbACBT4l5gnSIcoF6hWSiFgmBcI1sgkGBNQU
-X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
-X-Originating-IP: [65.120.57.68]
-From: <korzite@bellnet.ca>
-Reply-To: cgnlcenter@9.cn
-To: <info@win.net>
-Subject: Contact Mr. Larry Whyte
-Date: Sat, 6 Jun 2009 0:23:51 -0400
+	Sat, 6 Jun 2009 00:27:30 -0400
+Received: from [78.184.117.118] ([78.184.117.118]:2101 "HELO
+	tanidik_birisi.local" rhost-flags-FAIL-FAIL-FAIL-FAIL)
+	by vger.kernel.org with SMTP id S1750778AbZFFE13 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 00:27:29 -0400
+X-Greylist: delayed 1868 seconds by postgrey-1.27 at vger.kernel.org; Sat, 06 Jun 2009 00:27:28 EDT
+Reply-To: faydalitaslar@gmail.com
+Message-ID: <e27c195570d6c06d44f3f7e82d7e5e45@gmail.com>
+From: "=?iso-8859-9?B?QkFCQUxBUiBH3E7cIEhFRN1ZRVPd?=" 
+	<faydalitaslar@gmail.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: =?iso-8859-9?B?QkFCQUxBUiDdx91OIDsg3t1GQUxJIFRB3kxBUkRBTiwgVEU=?=
+	=?iso-8859-9?B?U1DdSCAuLi4h?=
+Date: Sat, 6 Jun 2009 07:26:47 +0300
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090606042351.LYXP1658.simmts5-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
+Content-Type: text/plain;
+	charset="iso-8859-9"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You have won.Send your information to Mr. Larry Whyte +44 703 597 0367 cgnlcenter@9.cn Name,Address,Age,Phone,Number,Occupation
+BU YIL FARKLI BÝR ÞEY YAPIN... 
+www.faydalitaslar.com 
+ADRESÝNE GÝREREK, BABANIZA, BABALAR GÜNÜ'NDE,  " Þ Ý F A L I     B Ý R     T E S P Ý H "   SÝPARÝÞ EDÝN.
+DÝLEDÝÐÝNÝZ TAÞTAN ( YA DA TAÞLARDAN...)  ÖZEL OLARAK YAPTIRACAÐINIZ TESPÝHLERLE, BELKÝ DE BABANIZA EN BÜYÜK ÝYÝLÝÐÝ YAPACAKSINIZ...
+faydali@faydalitaslar.com 
+MAIL ADRESÝMÝZE BABANIZIN BURCUNU, ASLEN NERELÝ OLDUÐUNU VE VARSA RAHATSIZLIKLARINI YAZARAK, HANGÝ TAÞLARIN BABANIZ ÝÇÝN UYGUN OLDUÐUNU DA AYRICA ÖÐRENEBÝLÝR VEYA DAHA  DETAYLI BÝLGÝ  ALABÝLÝRSÝNÝZ.
+
+SAYGILARIMIZLA
+FAYDALI TAÞLAR EKÝBÝ
+www.faydalitaslar.com
+faydali@faydalitaslar.com
+
+
 
