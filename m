@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbZFFXDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZFFXQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754312AbZFFXDl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 19:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbZFFXDe
+	id S1754180AbZFFXQB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 19:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbZFFXPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 19:03:34 -0400
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:38663 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752004AbZFFXDd (ORCPT
+	Sat, 6 Jun 2009 19:15:51 -0400
+Received: from wsip-70-184-212-11.om.om.cox.net ([70.184.212.11]:49620 "EHLO
+	hachi.dashjr.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751803AbZFFXPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 19:03:33 -0400
-X-Trace: 210661819/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.119.212/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.119.212
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgQGAEaSKkpPRXfU/2dsb2JhbACBT8skgjGBWQU
-X-IronPort-AV: E=Sophos;i="4.41,316,1241391600"; 
-   d="scan'208";a="210661819"
-Date: Sat, 6 Jun 2009 23:29:45 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Mimi Zohar <zohar@us.ibm.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-       James Morris <jmorris@namei.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] integrity: fix IMA inode leak
-In-Reply-To: <alpine.LFD.2.01.0906061433490.6847@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0906062312310.12529@sister.anvils>
-References: <Pine.LNX.4.64.0906062109580.8365@sister.anvils>
- <alpine.LFD.2.01.0906061416170.6847@localhost.localdomain>
- <alpine.LFD.2.01.0906061433490.6847@localhost.localdomain>
+	Sat, 6 Jun 2009 19:15:50 -0400
+From: "Luke-Jr" <luke@dashjr.org>
+To: felipe.balbi@nokia.com
+Subject: Re: Solution: N810 keyboard regression
+Date: Sat, 6 Jun 2009 18:15:35 -0500
+User-Agent: KMail/1.11.3 (Linux/2.6.27-gentoo-r7; KDE/4.2.3; x86_64; ; )
+Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <200906061651.43882.luke@dashjr.org> <20090606224204.GA16764@nokia.com>
+In-Reply-To: <20090606224204.GA16764@nokia.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906061815.48026.luke@dashjr.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 6 Jun 2009, Linus Torvalds wrote:
-> On Sat, 6 Jun 2009, Linus Torvalds wrote:
-> > On Sat, 6 Jun 2009, Hugh Dickins wrote:
-> > >
-> > > CONFIG_IMA=y inode activity leaks iint_cache and radix_tree_node objects
-> > > until the system runs out of memory.  Nowhere is calling ima_inode_free()
-> > > a.k.a. ima_iint_delete().  Fix that by calling it from destroy_inode().
-> > 
-> > Shouldn't we call it from "security_inode_free()" instead? And shouldn't 
-> > it be allocated in "security_inode_alloc()"? That sounds like the correct 
-> > nesting here, since the whole integrity thing is under the security 
-> > module.
-> > 
-> > Hmm?
+On Saturday 06 June 2009 05:42:04 pm Felipe Balbi wrote:
+> Are you sure that was the commit that changed it ?
+> that commit is only getting rid of the debug() macro and making use of
+> dev_vdbg().
 
-I wondered the same: quite possibly, but I tend to assume there was reason
-to do it like that; and thought it best to mirror the security_inode_alloc,
-ima_inode_alloc with ima_inode_free, security_inode_free for now.
+Oops, looks like I put the wrong commit at fault. The correct one is:
 
-(I also disliked the obfuscescent #define ima_iint_delete ima_inode_free
-in ima_iint.c!)
+http://git.kernel.org/?p=linux/kernel/git/tmlind/linux-
+omap-2.6.git;a=commit;h=bb739803dce613ed58e8b35ae52af439ab7496bf
 
-> 
-> Oh well. I applied the patch as-is, since it seems to fix a real issue. 
+> If you had just followed git blame you'd see that was already the
+> default value on n810's lm8323 platform_data since the initial import of
+> that code into linux-omap.
 
-Thanks, yes.  There is a possibility that it will reveal some warnings
-from iint_free which were hidden before; but I've not seen them in normal
-working, and I'd anyway prefer a few warnings to my boxes OOMing.  Though
-it was only by mistake that I had CONFIG_IMA=y in the first place.
+According to the removed code in the above commit, the default value (outside 
+of and not specified in n810's lm8323 platform_data) was 12.
 
-> 
-> But I do think fs/inode.c shouldn't care about things like that, and have 
-> it internal to security_inode_alloc/free(). But I guess that's a separate 
-> cleanup.
+> I do recall testing my patches on n810 before sending them upstream and
+> they were working. How are you testing this ? which tree are you using ?
 
-The IMA stuff all looks rather bolted in on top; I did fail to persuade
-Mimi to move the shmem and shm hooks down a level, so for now at least
-they'll stay as they are.
+I am testing the latest Linux-OMAP kernel on my N810 with Nokia's flasher and 
+--load --boot options. (Userspace is Gentoo)
 
-Hugh
+> did you try changing that keysize calculation ?
+
+No, I wanted to get the opinion of someone who knows how that code actually is 
+supposed to work before I try randomly changing things I don't understand.
+
+> Do you see irqs comming? Any debugging messages ?
+
+There were no debugging messages when the broken keys were pressed, nor did a 
+dbg I added to the driver get triggered for them.
+
+Luke
