@@ -1,56 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZFFOz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbZFFO4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbZFFOz2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 10:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbZFFOzX
+	id S1754854AbZFFO4g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 10:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbZFFO43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 10:55:23 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39482 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753240AbZFFOzW (ORCPT
+	Sat, 6 Jun 2009 10:56:29 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:38819 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753462AbZFFO42 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 10:55:22 -0400
-Date: Sat, 6 Jun 2009 15:56:36 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Grozdan <neutrino8@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: Kernel 2.6.30rc7 limits IDE to UDMA33
-Message-ID: <20090606155636.18bc4f2e@lxorguk.ukuu.org.uk>
-In-Reply-To: <4A29C163.3080706@gmail.com>
-References: <c5bd819b0906021525l13ee9282j1fb270e141985f66@mail.gmail.com>
-	<4A25F688.9000407@gmail.com>
-	<c5bd819b0906030435w466368cbsd48be91a97597437@mail.gmail.com>
-	<20090603131407.57c490ed@lxorguk.ukuu.org.uk>
-	<c5bd819b0906030552w6f23185etb394f83c8b630e6@mail.gmail.com>
-	<20090603140140.491a8ea8@lxorguk.ukuu.org.uk>
-	<c5bd819b0906030639o5f9c34ffg500e132d3a0b5117@mail.gmail.com>
-	<c5bd819b0906040750w75e0389cod2a03b89ce838d1b@mail.gmail.com>
-	<20090605100505.41b3b818@lxorguk.ukuu.org.uk>
-	<c5bd819b0906050335i4e813887sc8f4d901da86a1aa@mail.gmail.com>
-	<20090605114245.175499e1@lxorguk.ukuu.org.uk>
-	<4A29C163.3080706@gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 6 Jun 2009 10:56:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iyvyIWqMnIccxPzRtvGjvkhU9OnB8zAibi8ayah05S329G6Yfm2dGq6eZzoRjdhcCl
+         b0+dVwEi2Cyt7xhVAeN6WgjFU8ppJWpTUGsozmw35zIOP9Bn4ZYVMIK3X42Xc+CFakfA
+         /9fGI7oSTGkIUl33Ty0KBiZ9SUemLeXQMmauc=
+Date: Sat, 6 Jun 2009 16:56:28 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] tracing/branch-tracer: PROFILE_BRANCHES_PER_CPU must
+	depend on SMP
+Message-ID: <20090606145626.GB6008@nowhere>
+References: <20090606073128.GA7321@elte.hu> <1244299043-7613-1-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0906061041150.9522@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0906061041150.9522@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I wouldn't rule out the possibility of a bug. The code in pata_via looks 
-> a bit fishy, it reports a 40-wire cable if either the GTM data wasn't 
-> present or valid, or if it reports a mode of UDMA2 or less. In the 
-> former case it seems like ATA_CABLE_PATA_UNK would be the safer choice 
-> since we really don't know, and we should then use drive-side detection, 
-> rather than assuming a 40-wire cable by default..
+On Sat, Jun 06, 2009 at 10:42:29AM -0400, Steven Rostedt wrote:
+> 
+> On Sat, 6 Jun 2009, Frederic Weisbecker wrote:
+> > 
+> > [ Impact: fix a build failure with the branch tracer ]
+> > 
+> > Reported-by: Ingo Molnar <mingo@elte.hu>
+> > Cc: Steven Rostedt <rostedt@goodmis.org>
+> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> > ---
+> >  kernel/trace/Kconfig |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+> > index 309a264..0efbcc5 100644
+> > --- a/kernel/trace/Kconfig
+> > +++ b/kernel/trace/Kconfig
+> > @@ -285,7 +285,7 @@ endchoice
+> >  
+> >  config PROFILE_BRANCHES_PER_CPU
+> >  	bool "Profile branches on a per cpu basis"
+> > -	depends on PROFILE_ALL_BRANCHES
+> > +	depends on PROFILE_ALL_BRANCHES && SMP
+> 
+> You just wasted two minutes of my time!
+> 
+> I was just about to send out the same patch, but you beat me to it. ;-)
+> 
+> Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-Drive side detection doesn't work for many VIA boards, the neccessary
-components are not included.
 
-About the only other check I can think to try is to see if the BIOS
-programmed modes > UDMA2 for either device. That has its own problems
-(suspend-resume/hotplug/non-bios devices) which is why we currently don't
-do it.
 
-Alan
+We really need a mutex... ;-)
+
+Frederic.
+
+
+> 
+> -- Steve
+> 
+> 
+> >  	help
+> >  	  When profiling all branches, the system can take a big cache line
+> >  	  bouncing hit. On boxes with lots of CPUs, this can slow the system
+> > -- 
+> > 1.6.2.3
+> > 
+> > 
+
