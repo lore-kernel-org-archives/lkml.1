@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbZFFHdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbZFFHfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754032AbZFFHdc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 03:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbZFFHdY
+	id S1754060AbZFFHfw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 03:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbZFFHfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 03:33:24 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:42437 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbZFFHdY (ORCPT
+	Sat, 6 Jun 2009 03:35:46 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:40130 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbZFFHfp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 03:33:24 -0400
-Message-ID: <4A2A1AB6.9020808@cs.helsinki.fi>
-Date: Sat, 06 Jun 2009 10:28:54 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, apw@canonical.com,
-       colin.king@canonical.com, tim.gardner@canonicalc.com,
-       bjorn.helgaas@hp.com
-Subject: Re: [PATCH 2/2] pnp: add PNP resource range checking function
-References: <Pine.LNX.4.64.0906060934500.11247@melkki.cs.Helsinki.FI> <200906060931.36168.elendil@planet.nl>
-In-Reply-To: <200906060931.36168.elendil@planet.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 6 Jun 2009 03:35:45 -0400
+X-Originating-Ip: 216.16.235.2
+Date: Sat, 6 Jun 2009 03:35:13 -0400
+From: Chris Frey <cdfrey@foursquare.net>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.29.4: /proc/bus/usb is empty
+Message-ID: <20090606073513.GA3991@foursquare.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam (whitelisted),
+	SpamAssassin (not cached, score=-4.399, required 5,
+	autolearn=not spam, ALL_TRUSTED -1.80, BAYES_00 -2.60)
+X-Net-Direct-Inc-MailScanner-From: cdfrey@foursquare.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Frans,
+Hi,
 
-Frans Pop wrote:
->> Add a PNP resource range check function, indicating whether a resource
->> has been assigned to any device.
-> 
-> Shouldn't this patch come *before* your patch 1/2?
-> You now seem to use this function in a commit where it has not yet been 
-> defined, which could result in build errors during bisections.
+I recently upgraded from 2.6.28.9 to 2.6.29.4, and oddly /proc/bus/usb
+is now empty.
 
-Yes, correct. Sorry about that!
+The devices show up nicely under /dev/bus/usb, but I hadn't noticed
+anything indicating that this would be moved.
 
-			Pekka
+/proc in general appears to be well populated.
+
+What could cause this?  I can post configs and config diffs if needed,
+just let me know.
+
+Thanks,
+- Chris
+
