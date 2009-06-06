@@ -1,67 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbZFFWoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbZFFWpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754118AbZFFWoe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 18:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbZFFWoZ
+	id S1754157AbZFFWpz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 18:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbZFFWpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 18:44:25 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:40099 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751534AbZFFWoZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 18:44:25 -0400
-Date: Sun, 7 Jun 2009 01:42:04 +0300
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Luke-Jr <luke@dashjr.org>
-Cc: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Solution: N810 keyboard regression
-Message-ID: <20090606224204.GA16764@nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <200906061651.43882.luke@dashjr.org>
+	Sat, 6 Jun 2009 18:45:46 -0400
+Received: from mga03.intel.com ([143.182.124.21]:18191 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751684AbZFFWpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 18:45:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,316,1241420400"; 
+   d="scan'208";a="151433543"
+Date: Sun, 7 Jun 2009 06:45:38 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
+Message-ID: <20090606224538.GA6173@localhost>
+References: <6.0.0.20.2.20090601095926.06ee98d8@172.19.0.2> <4A2936A7.9070309@gmail.com> <20090606233056.7B9F.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906061651.43882.luke@dashjr.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-OriginalArrivalTime: 06 Jun 2009 22:44:10.0263 (UTC) FILETIME=[4EA73A70:01C9E6F8]
-X-Nokia-AV: Clean
+In-Reply-To: <20090606233056.7B9F.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 06, 2009 at 11:51:34PM +0200, ext Luke-Jr wrote:
-> Found the problem with the 2.6.29 N810 keyboard regression in this commit:
-> 	commit c83702a764c3099df50f215b8e79e07344e34a1a
-> 	Author: Felipe Balbi <felipe.balbi@nokia.com>
-> 	Date:   Thu Feb 19 12:29:40 2009 +0000
-> 	    input: lm8323: get rid of useless debug macro
-> 	    we can use dev_vdbg() which is only true when VERBOSE is enabled.
-> 
-> Part of this commit removed the "default" values for platform parameters, but 
-> set the N810's size_y to 8 instead of the earlier default of 12. Changing this 
-> to 12 (patch to follow) fixes the keyboard regression. Note, the total keys on 
-> the N810 is in fact under 64, so 8x8 seems correct. Not sure why it doesn't 
-> work like that in practise. I did notice a curious line in the driver that 
-> might (or might not) be related/wrong...
-> 
-> drivers/input/keyboard/lm8323.c line 353:
-> 	int keysize = (lm->size_x << 4) | lm->size_y;
-> 
-> Shouldn't this be lm->size_x * lm->size_y?
+On Sat, Jun 06, 2009 at 10:36:41PM +0800, KOSAKI Motohiro wrote:
+>
+> sorry for late responce.
+> I wonder why I and Wu don't contain Cc list in this thread.
 
-Are you sure that was the commit that changed it ?
-that commit is only getting rid of the debug() macro and making use of
-dev_vdbg().
+[restore more CC]
 
-If you had just followed git blame you'd see that was already the
-default value on n810's lm8323 platform_data since the initial import of
-that code into linux-omap.
+> > Hisashi Hifumi wrote:
+> > > At 09:36 09/06/01, Andrew Morton wrote:
+> > >> On Fri, 29 May 2009 14:35:55 +0900 Hisashi Hifumi
+> > >> <hifumi.hisashi@oss.ntt.co.jp> wrote:
+> > >>
+> > >>> I added blk_run_backing_dev on page_cache_async_readahead
+> > >>> so readahead I/O is unpluged to improve throughput on
+> > >>> especially RAID environment.
+> > >> I skipped the last version of this because KOSAKI Motohiro
+> > >> <kosaki.motohiro@jp.fujitsu.com> said "Please attach blktrace analysis ;)".
+> > >>
+> > >> I'm not sure why he asked for that, but he's a smart chap and
+> > >> presumably had his reasons.
+> > >>
+> > >> If you think that such an analysis is unneeded, or isn't worth the time
+> > >> to generate then please tell us that.  But please don't just ignore the
+> > >> request!
+> > >
+> > > Hi Andrew.
+> > >
+> > > Sorry for this.
+> > >
+> > > I did not ignore KOSAKI Motohiro's request.
+> > > I've got blktrace output for both with and without the patch,
+> > > but I just did not clarify the reason for throuput improvement
+> > > from this result.
+> > >
+> > > I do not notice any difference except around unplug behavior by dd.
+> > > Comments?
+> >
+> > Pardon my ignorance on the global issues concerning the patch, but
+> > specifically looking at the traces generated by blktrace leads one to
+> > also note that the patched version may generate inefficiencies in other
+> > places in the kernel by reducing the merging going on. In the unpatched
+> > version it looks like (generally) that two incoming bio's are able to be
+> > merged to generate a single I/O request. In the patched version -
+> > because of the quicker unplug(?) - no such merging is going on. This
+> > leads to more work lower in the stack (twice as many I/O operations
+> > being managed), perhaps increased interrupts & handling &c. [This may be
+> > acceptable if the goal is to decrease latencies on a per-bio basis...]
+> >
+> > Do you have a place where the raw blktrace data can be retrieved for
+> > more in-depth analysis?
+>
+> I think your comment is really adequate. In another thread, Wu Fengguang pointed
+> out the same issue.
+> I and Wu also wait his analysis.
 
-I do recall testing my patches on n810 before sending them upstream and
-they were working. How are you testing this ? which tree are you using ?
-did you try changing that keysize calculation ? Do you see irqs comming?
-Any debugging messages ?
+And do it with a large readahead size :)
 
--- 
-balbi
+Alan, this was my analysis:
+
+: Hifumi, can you help retest with some large readahead size?
+:
+: Your readahead size (128K) is smaller than your max_sectors_kb (256K),
+: so two readahead IO requests get merged into one real IO, that means
+: half of the readahead requests are delayed.
+
+ie. two readahead requests get merged and complete together, thus the effective
+IO size is doubled but at the same time it becomes completely synchronous IO.
+
+:
+: The IO completion size goes down from 512 to 256 sectors:
+:
+: before patch:
+:   8,0    3   177955    50.050313976     0  C   R 8724991 + 512 [0]
+:   8,0    3   177966    50.053380250     0  C   R 8725503 + 512 [0]
+:   8,0    3   177977    50.056970395     0  C   R 8726015 + 512 [0]
+:   8,0    3   177988    50.060326743     0  C   R 8726527 + 512 [0]
+:   8,0    3   177999    50.063922341     0  C   R 8727039 + 512 [0]
+:
+: after patch:
+:   8,0    3   257297    50.000760847     0  C   R 9480703 + 256 [0]
+:   8,0    3   257306    50.003034240     0  C   R 9480959 + 256 [0]
+:   8,0    3   257307    50.003076338     0  C   R 9481215 + 256 [0]
+:   8,0    3   257323    50.004774693     0  C   R 9481471 + 256 [0]
+:   8,0    3   257332    50.006865854     0  C   R 9481727 + 256 [0]
+
+Thanks,
+Fengguang
