@@ -1,99 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbZFFItr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbZFFIzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754524AbZFFItr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 04:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754436AbZFFItg
+	id S1754640AbZFFIzn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 04:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753366AbZFFIzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 04:49:36 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56567 "EHLO hera.kernel.org"
+	Sat, 6 Jun 2009 04:55:36 -0400
+Received: from mga02.intel.com ([134.134.136.20]:3332 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754398AbZFFIte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 04:49:34 -0400
-Subject: Re: [PATCH 1/6] headers_check fix: arm, hwcap.h
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <20090605204805.GA22367@flint.arm.linux.org.uk>
-References: <1244118232.5172.26.camel@ht.satnam>
-	 <1244118476.5172.29.camel@ht.satnam>
-	 <20090604125306.GC24491@flint.arm.linux.org.uk>
-	 <20090604201649.GC13892@uranus.ravnborg.org>
-	 <20090605204805.GA22367@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Sat, 06 Jun 2009 14:20:11 +0530
-Message-Id: <1244278211.2475.13.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1753120AbZFFIzf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 04:55:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,315,1241420400"; 
+   d="scan'208";a="522263808"
+Date: Sun, 7 Jun 2009 00:30:20 +0800
+From: Yunpeng Gao <yunpeng.gao@intel.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, Greg KH <greg@kroah.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for June 3 (staging)
+Message-ID: <20090606163020.GA27257@intel.com>
+References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au> <20090604175219.GA18605@kroah.com> <38D9F46DFF92C54980D2F2C1E8EE313001A45F49F3@pdsmsx503.ccr.corp.intel.com> <200906052058.19875.bzolnier@gmail.com> <20090605192242.GA4910@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090605192242.GA4910@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-05 at 21:48 +0100, Russell King wrote:
-> On Thu, Jun 04, 2009 at 10:16:49PM +0200, Sam Ravnborg wrote:
-> > On Thu, Jun 04, 2009 at 01:53:07PM +0100, Russell King wrote:
-> > > On Thu, Jun 04, 2009 at 05:57:56PM +0530, Jaswinder Singh Rajput wrote:
-> > > > fix the following 'make headers_check' warning:
+On Sat, Jun 06, 2009 at 03:22:42AM +0800, Greg KH wrote:
+> On Fri, Jun 05, 2009 at 08:58:19PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > On Friday 05 June 2009 05:31:21 Gao, Yunpeng wrote:
+> > > Hi Greg,
 > > > 
-> > > I think headers_check needs fixing - there's nothing wrong with the
-> > > code as it presently stands except the tools obviously can't properly
-> > > parse C preprocessor statements.
+> > > Thanks for your quick response.
+> > > 
+> > > The root cause of the build-errors in ffsport.c is that the kernel block layer APIs are different in linux-next tree (.../linux/kernel/git/sfr/linux-next.git) than in Linus' kernel tree (.../linux/kernel/git/torvalds/linux-2.6.git).
+> > > 
+> > > Yesterday, after modify code in ffsport.c to sync up with the block layer APIs changes, I have make the kernel against linux-next tree and found no build error / warnings.
+> > > 
+> > > Then I generated the patch again Linus' kernel tree, tag 'v2.6.30-rc8' and sent the patch to you. This patch uses the new block layer APIs and is target for the linux-next tree.
+> > > 
+> > > I guess the below build errors are caused by compiling the patch code in Linus' kernel tree. As the block layer API's in Linus' kernel tree is still the old one, it'll report this kind of 'implicit declaration of function ...' error. I'm sorry for the mis-communication.
+> > > 
+> > > Now, I'm a bit confused with the process :-) Which git tree should I select to generate patch against and submit to? The linux-next tree or Linus' kerner tree?
 > > 
-> > You are correct that headers_ceck is limited here and this patch
-> > take some valid code and refactor it to make it headers_check compatible.
+> > One solution would be to generate the _main_ patch against Linus' tree
+> > (for Greg to include in staging tree) and then generate _incremental_
+> > patch with changes to account for block layer API update (for Stephen
+> > to include in linux-next)..
 > 
-> Okay, here's the question:
+> Yeah, that would be the best thing.
 > 
-> Does userspace require anything in the ifdef __ASSEMBLY__ bits?
-
-__ASSEMBLY__ is not specific to kernel. Any one can take benefit of it.
-
-
-> In any case, passing -D__KERNEL__ or -U__KERNEL__ allows unifdef to
-> do the right thing.
+> Sorry about this, but could you send me both patches?  That way I can
+> merge them both properly when needed.
 > 
-> The problem which unifdef has is that if it finds a symbol in an
-> evaluation that it doesn't know about, it fails the expansion
-> entirely, rather than checking whether the expansion always results
-> in something which should be omitted.  In other words:
+> thanks,
 > 
-> #if defined(__KERNEL__) && (<unknown>)
-> 
+> greg k-h
 
-The problem is why you are trying to complex things which are simple and
-straight.
+Hi Greg,
 
-#ifdef __KERNEL__ is for kernel
-#ifndef __KERNEL__ is for userspace
+   I have generated the two patches following what Bartlomiej suggested.
+   The first one is the _main_ patch against Linus' kernel tree
+   (tag v2.6.30-rc8) and the second one is an _incremental patch
+   accounting for the block layer API update in linux-next tree.
+   I'll send both of them to you later.
 
-Do not mix it with others defines, Whole kernel is following this
-protocol why you need a exception ?
+   Thanks.
 
-> results in basically an "unknown" answer from the evaluator, where
-> we can see perfectly well that the expansion can never be true if
-> __KERNEL__ is never set.
-> 
-> So, the trivial answer to the problem if:
-> 
-> #if defined(__KERNEL__) && something-depending-on-__ASSEMBLY__
-> 
-> is to tell unifdef whether we want __ASSEMBLY__ defined or not defined.
-> This does shut up the headers_install warning from ARMs hwdef.h.
-> 
-
-#ifdef __KERNEL__
-something-depending-on-__ASSEMBLY__
-
-will not only shut up these warnings but also avoid confusion, keep
-things simple and avoid unknown future problems.
-
-My request to you please think bigger and look at bigger picture.
-
-Thanks,
---
-JSR
+   Rgd,
+   Yunpeng
 
