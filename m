@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752207AbZFFT2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbZFFUNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752207AbZFFT2S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 15:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbZFFT2G
+	id S1753263AbZFFUNX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 16:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZFFUNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 15:28:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55906 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751486AbZFFT2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 15:28:05 -0400
-Date: Sat, 6 Jun 2009 19:27:32 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl,
-       arjan@linux.intel.com, efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf annotate: Fix command line help text
-Message-ID: <tip-23b87116c7c4f73597965218b66041acbdb4e79f@git.kernel.org>
-Git-Commit-ID: 23b87116c7c4f73597965218b66041acbdb4e79f
-X-Mailer: tip-git-log-daemon
+	Sat, 6 Jun 2009 16:13:14 -0400
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:33686 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751131AbZFFUNN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 6 Jun 2009 16:13:13 -0400
+Message-ID: <4A2ACDD8.7010203@in.ibm.com>
+Date: Sun, 07 Jun 2009 01:43:12 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 06 Jun 2009 19:27:34 +0000 (UTC)
+To: Mimi Zohar <zohar@us.ibm.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [IMA] 2.6.30-rc8 : Bug while trying to launch a KVM guest
+References: <4A2950F0.5050309@in.ibm.com> <OF64D7363D.C87FDEC1-ON852575CC.006F30A6-852575CC.0070CAE8@us.ibm.com>
+In-Reply-To: <OF64D7363D.C87FDEC1-ON852575CC.006F30A6-852575CC.0070CAE8@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  23b87116c7c4f73597965218b66041acbdb4e79f
-Gitweb:     http://git.kernel.org/tip/23b87116c7c4f73597965218b66041acbdb4e79f
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Sat, 6 Jun 2009 21:25:29 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 6 Jun 2009 21:25:29 +0200
+Mimi Zohar wrote:
+> This bug has been addressed in linux-next. Please refer to:
+>
+> f06dd16a03f6f7f72fab4db03be36e28c28c6fd6 : IMA: Handle dentry_open 
+> failures
+> 1a62e958fa4aaeeb752311b4f5e16b2a86737b23 : IMA: open all files O_LARGEFILE
+> 04288f42033607099cebf5ca15ce8dcec3a9688b : integrity: ima audit 
+> dentry_open failure
+>
+> The default policy in 2.6.30 measures all files open for read by root.
+> (So starting the VM as root will cause it to be read.)  This linux-next
+> patch changes the default behavior so that nothing is measured. 
+>
+> 5789ba3bd0a3cd20df5980ebf03358f2eb44fd67 :  IMA: Minimal IMA policy and 
+> boot param for TCB IMA policy
+>   
+I am able to boot the kvm guest after applying the following two patches.
 
-perf annotate: Fix command line help text
+commit f06dd16a03f6f7f72fab4db03be36e28c28c6fd6
+commit 1a62e958fa4aaeeb752311b4f5e16b2a86737b23
 
-Arjan noticed this bug in the perf annotate help output:
+Thanks Mimi for the help.
 
-    -s, --symbol <file>   symbol to annotate
+Regards
+-Sachin
 
-that should be <symbol> instead.
+-- 
 
-Reported-by: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
-
----
- tools/perf/builtin-annotate.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 80c5aa0..0e23fe9 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -1300,7 +1300,7 @@ static const char * const annotate_usage[] = {
- static const struct option options[] = {
- 	OPT_STRING('i', "input", &input_name, "file",
- 		    "input file name"),
--	OPT_STRING('s', "symbol", &sym_hist_filter, "file",
-+	OPT_STRING('s', "symbol", &sym_hist_filter, "symbol",
- 		    "symbol to annotate"),
- 	OPT_BOOLEAN('v', "verbose", &verbose,
- 		    "be more verbose (show symbol address, etc)"),
