@@ -1,106 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbZFGQ1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbZFGQ2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbZFGQ1L (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 12:27:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbZFGQ06
+	id S1755876AbZFGQ2l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 12:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbZFGQ2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 12:26:58 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:64372 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752695AbZFGQ05 (ORCPT
+	Sun, 7 Jun 2009 12:28:34 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:47421 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752873AbZFGQ2d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 12:26:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=dGM8eZCJhYombX1rfAwQEU2dxBU9CZPJj/fHF9sURkfhBXkgbILIBMcJLhtsmdqxgt
-         6ALDTlPA2iuKqTddWkN1foG8VNh2M2PkMCDbPrOMJx5AHU1/bpq+KTSAv6ld7X3mrrzu
-         +0/slqwFT9zyPVK6QSrn6weqmFnE3U/PmEIiI=
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [PATCH] kmemcheck: move hook before preempt_conditional_sti()
-Date: Sun,  7 Jun 2009 18:26:52 +0200
-Message-Id: <1244392012-638-1-git-send-email-vegard.nossum@gmail.com>
-X-Mailer: git-send-email 1.6.2.rc0.61.g5cd12
-To: unlisted-recipients:; (no To-header on input)
+	Sun, 7 Jun 2009 12:28:33 -0400
+X-Trace: 207515632/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.3.219/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.3.219
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuEHAAmGK0pPRQPb/2dsb2JhbACBToEwxnGECgU
+X-IronPort-AV: E=Sophos;i="4.41,320,1241391600"; 
+   d="scan'208";a="207515632"
+Date: Sun, 7 Jun 2009 17:28:39 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Minchan Kim <minchan.kim@gmail.com>
+cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [RFC] remove page_table_lock in anon_vma_prepare
+In-Reply-To: <28c262360906070816h765bf4fag9b426199ac0627d@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0906071651410.17597@sister.anvils>
+References: <1244212553-21629-1-git-send-email-minchan.kim@gmail.com> 
+ <Pine.LNX.4.64.0906051906000.14826@sister.anvils>
+ <28c262360906070816h765bf4fag9b426199ac0627d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1606777726-1244392119=:17597"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There are actually two problems here:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-1. We absolutely cannot enable IRQs in case the fault was caused by
-   kmemcheck.
+--8323584-1606777726-1244392119=:17597
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-2. We cannot enable preemption and then return from the debug handler
-   without disabling preemption afterwards.
+On Mon, 8 Jun 2009, Minchan Kim wrote:
+> On Sat, Jun 6, 2009 at 3:26 AM, Hugh Dickins<hugh.dickins@tiscali.co.uk> =
+wrote:
+> > On Fri, 5 Jun 2009, Minchan Kim wrote:
+>=20
+> > (As I expect you've noticed, we used not to bother with the spin_lock
+> > on anon_vma->lock when we'd freshly allocated the anon_vma, it looks
+> > as if it's unnecessary. =C2=A0But in fact Nick and Linus found there's =
+a
+> > subtle reason why it is necessary even then - hopefully the git log
 
-The problem seems to be a merge fallout between three commits:
+Actually, Linus put a lot of his git comment into the comment above
+anon_vma_prepare(); but it doesn't pin down the case Nick identified
+as well as Nick's original mail.
 
-commit 3d2a71a596bd9c761c8487a2178e95f8a61da083
-Author: Alexander van Heukelum <heukelum@fastmail.fm>
-Date:   Tue Sep 30 18:41:37 2008 +0200
+> > explains it, or I could look up the mails if you want, but at this
+> > moment the details escape me.
+>=20
+> Hmm. I didn't follow up that at that time.
+>=20
+> After you noticed me, I found that.
+> commit d9d332e0874f46b91d8ac4604b68ee42b8a7a2c6
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Sun Oct 19 10:32:20 2008 -0700
+>=20
+>     anon_vma_prepare: properly lock even newly allocated entries
+>=20
+> It's subtle race so I can't digest it fully but I can understand that
+> following as.
+>=20
+> If we don't hold lock at fresh anon_vma, it can be removed and
+> reallocated by other threads since other cpu's can find it, free,
+> reallocate before first thread which call anon_vma_prepare adds
+> anon_vma to list after vma->anon_vma =3D anon_vma
+>=20
+> I hope my above explanation is right :)
 
-    x86, traps: converge do_debug handlers
+Not really: I don't think there was a risk of it getting freed at
+that point, but there was a risk of its list head getting dereferenced
+before we'd initialized it.
 
-commit 08d68323d1f0c34452e614263b212ca556dae47f
-Author: K.Prasad <prasad@linux.vnet.ibm.com>
-Date:   Mon Jun 1 23:44:08 2009 +0530
+Here's a link to Nick's 16oct08 linux-mm mail on the subject, then you
+can follow the thread from there.  In brief, IIRC, Nick found a race
+which he proposed to fix with barriers, but in the end we were all
+much happier just taking the anon_vma lock in all cases.
 
-    hw-breakpoints: modifying generic debug exception to use thread-specific deb
+http://marc.info/?l=3Dlinux-mm&m=3D122413030612659&w=3D2
 
-commit 787ecfaa503dc63ff1831ddc74b15dad49bace1d
-Author: Vegard Nossum <vegard.nossum@gmail.com>
-Date:   Fri Apr 4 00:53:23 2008 +0200
+>=20
+> > And do we need the page_table_lock even when find_mergeable_anon_vma
+> > succeeds? =C2=A0That also looks as if it's unnecessary, but I've the gh=
+ost
+> > of a memory that it's needed even for that case: I seem to remember
+> > that there can be a benign race where find_mergeable_anon_vma called
+> > by concurrent threads could actually return different anon_vmas.
+> > That also is something I don't want to think too deeply into at
+> > this instant, but beg me if you wish!)
+>=20
+> Unfortunately I can't found this issue mail or changelog.
+> Hugh. Could you explain this issue more detail in your convenient time ?
 
-    x86: add hooks for kmemcheck
+Sure, I remembered it once I went to bed that night, it's an easy one;
+wasn't ever discussed on list, just something I'd been aware of.
 
-I encourage the kprobe developers to check whether their code is correct
-as it stands in current tip/master. Also, comments on this particular
-change is welcome.
+Remember that anon_vma_prepare() gets called at fault time, when we
+have only down_read of mmap_sem, so there may well be concurrent faults.
 
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Cc: Alexander van Heukelum <heukelum@fastmail.fm>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- arch/x86/kernel/traps.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+find_mergeable_anon_vma looks at the vma on either side of our faulting
+vma, to see if the neighbouring vma already has an anon_vma, which we'd
+be wise to use if that vma could plausibly be merged with our vma later
+e.g. mprotect may have temporarily split ours from the next, but another
+mprotect may make them mergeable - it would be a pity to be prevented
+from merging them just because we'd already attached distinct anon_vmas.
 
-diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
-index c8a7f87..a898c6b 100644
---- a/arch/x86/kernel/traps.c
-+++ b/arch/x86/kernel/traps.c
-@@ -550,6 +550,10 @@ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
- 							SIGTRAP) == NOTIFY_STOP)
- 		return;
- 
-+	/* Catch kmemcheck conditions first of all! */
-+	if ((dr6 & DR_STEP) && kmemcheck_trap(regs))
-+		return;
-+
- 	/* It's safe to allow irq's after DR6 has been saved */
- 	preempt_conditional_sti(regs);
- 
-@@ -559,10 +563,6 @@ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
- 		return;
- 	}
- 
--	/* Catch kmemcheck conditions first of all! */
--	if ((dr6 & DR_STEP) && kmemcheck_trap(regs))
--		return;
--
- 	/*
- 	 * Single-stepping through system calls: ignore any exceptions in
- 	 * kernel space, but re-enable TF when returning to user mode.
--- 
-1.6.0.6
+But, as I said, there may well be concurrent faults, on ours and on
+neighbouring vmas: so one call to find_mergeable_anon_vma on our vma
+may find that the next vma has no anon_vma yet, but the prev has one,
+so it returns the prev's anon_vma; but a racing fault on the next
+vma immediately gives it an anon_vma, and a racing fault on our vma
+finds that, so its find_mergeable_anon_vma returns the next's anon_vma.
 
+So the two faults on our vma could both be in anon_vma_prepare(),
+doing the spin_lock(&anon_vma->lock) on find_mergeable_anon_vma's
+anon_vma, but those could still be different anon_vmas: but if
+both lock the page_table_lock, we can be sure to catch that case.
+
+When I said the race was benign, I meant that it doesn't matter in
+such a case which one we choose; but we don't want to choose both!
+
+Hugh
+--8323584-1606777726-1244392119=:17597--
