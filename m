@@ -1,19 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbZFGNLF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757662AbZFGNLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758601AbZFGNLF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 09:11:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757988AbZFGNHj
+	id S1757662AbZFGNLW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 09:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757998AbZFGNHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 09:07:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58593 "EHLO ogre.sisk.pl"
+	Sun, 7 Jun 2009 09:07:41 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58595 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757979AbZFGNHh convert rfc822-to-8bit (ORCPT
+	id S1757985AbZFGNHi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 09:07:37 -0400
+	Sun, 7 Jun 2009 09:07:38 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Author: Theodore Ts'o" <tytso@mit.edu>,
-       "David Watson" <kernel-nospam@dbwatson.ukfsn.org>,
-       "Jan Kara" <jack@suse.cz>
+       "cedric" <cedric@belbone.be>, "Peter Zijlstra" <peterz@infradead.org>
 References: <sIiXQlfwS3D.A.81.dj7KKB@chimera>
 In-Reply-To: <sIiXQlfwS3D.A.81.dj7KKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -21,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <AN6kEAA5GQ.A.NkB.9j7KKB@chimera>
-Subject: [Bug #13232] ext3/4 with synchronous writes gets wedged by Postfix
+Message-ID: <AN6kEAA5GQ.A.neB.7j7KKB@chimera>
+Subject: [Bug #13269] WARNING: at kernel/hrtimer.c:625 hres_timers_resume+0x3c/0x48() when resuming
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun,  7 Jun 2009 12:06:22 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,9 +35,9 @@ introduced between 2.6.28 and 2.6.29.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13232
-Subject		: ext3/4 with synchronous writes gets wedged by Postfix
-Submitter	: David Watson <kernel-nospam@dbwatson.ukfsn.org>
-Date		: 2009-05-03 19:46 (36 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13269
+Subject		: WARNING: at kernel/hrtimer.c:625 hres_timers_resume+0x3c/0x48() when resuming
+Submitter	: cedric <cedric@belbone.be>
+Date		: 2009-05-08 08:48 (31 days old)
 
 
