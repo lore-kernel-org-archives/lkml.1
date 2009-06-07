@@ -1,132 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbZFGQCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755832AbZFGQCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755247AbZFGQCn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 12:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZFGQCg
+	id S1755832AbZFGQCz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 12:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755592AbZFGQCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 12:02:36 -0400
-Received: from mga14.intel.com ([143.182.124.37]:1514 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752695AbZFGQCf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 12:02:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,320,1241420400"; 
-   d="scan'208";a="151560318"
-Date: Mon, 8 Jun 2009 00:02:25 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Nai Xia <nai.xia@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
-	in  the VM v3
-Message-ID: <20090607160225.GA24315@localhost>
-References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090528145021.GA5503@localhost> <ab418ea90906032325m302afbb6w6fa68f6b57f53e49@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ab418ea90906032325m302afbb6w6fa68f6b57f53e49@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 7 Jun 2009 12:02:45 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55832 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755587AbZFGQCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 12:02:44 -0400
+X-Authenticated: #33280810
+X-Provags-ID: V01U2FsdGVkX18JvCxz0z8J+L/1ye42Pnm4sRXHYXOGJo+kmB4Xdu
+	A0uKd2oXU5BiNz
+Subject: Re: [Bug #13366] About 80% of shutdowns fail (blocking)
+From: Martin Bammer <mrb74@gmx.at>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <D9VoutSOyXP.A.NPH.lZ7KKB@chimera>
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
+	 <D9VoutSOyXP.A.NPH.lZ7KKB@chimera>
+Content-Type: text/plain
+Date: Sun, 07 Jun 2009 18:02:39 +0200
+Message-Id: <1244390559.4219.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5600000000000001
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 04, 2009 at 02:25:24PM +0800, Nai Xia wrote:
-> On Thu, May 28, 2009 at 10:50 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > On Thu, May 28, 2009 at 09:45:20PM +0800, Andi Kleen wrote:
-> >> On Thu, May 28, 2009 at 02:08:54PM +0200, Nick Piggin wrote:
-> >
-> > [snip]
-> >
-> >> >
-> >> > BTW. I don't know if you are checking for PG_writeback often enough?
-> >> > You can't remove a PG_writeback page from pagecache. The normal
-> >> > pattern is lock_page(page); wait_on_page_writeback(page); which I
-> >>
-> >> So pages can be in writeback without being locked? I still
-> >> wasn't able to find such a case (in fact unless I'm misreading
-> >> the code badly the writeback bit is only used by NFS and a few
-> >> obscure cases)
-> >
-> > Yes the writeback page is typically not locked. Only read IO requires
-> > to be exclusive. Read IO is in fact page *writer*, while writeback IO
-> > is page *reader* :-)
+Since i disabled most of the debug options this problem has gone. IMHO
+this issue has been caused by kdbg.
+
+Am Sonntag, den 07.06.2009, 11:52 +0200 schrieb Rafael J. Wysocki:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Sorry for maybe somewhat a little bit off topic,
-> I am trying to get a good understanding of PG_writeback & PG_locked ;)
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> So you are saying PG_writeback & PG_locked are acting like a read/write lock?
-> I notice wait_on_page_writeback(page) seems always called with page locked --
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13366
+> Subject		: About 80% of shutdowns fail (blocking)
+> Submitter	: Martin Bammer <mrb74@gmx.at>
+> Date		: 2009-05-23 00:58 (16 days old)
+> 
+> 
 
-No. Note that pages are not locked in wait_on_page_writeback_range().
-
-> that is the semantics of a writer waiting to get the lock while it's
-> acquired by
-> some reader:The caller(e.g. truncate_inode_pages_range()  and
-> invalidate_inode_pages2_range()) are the writers waiting for
-> writeback readers (as you clarified ) to finish their job, right ?
-
-Sorry if my metaphor confused you. But they are not typical
-reader/writer problems, but more about data integrities.
-
-Pages have to be "not under writeback" when truncated. 
-Otherwise data lost is possible:
-
-1) create a file with one page (page A)
-2) truncate page A that is under writeback
-3) write to file, which creates page B
-4) sync file, which sends page B to disk quickly
-
-Now if page B reaches disk before A, the new data will be overwritten
-by truncated old data, which corrupts the file.
-
-> So do you think the idea is sane to group the two bits together
-> to form a real read/write lock, which does not care about the _number_
-> of readers ?
-
-We don't care number of readers here. So please forget about it.
-
-Thanks,
-Fengguang
-
-> > The writeback bit is _widely_ used.  test_set_page_writeback() is
-> > directly used by NFS/AFS etc. But its main user is in fact
-> > set_page_writeback(), which is called in 26 places.
-> >
-> >> > think would be safest
-> >>
-> >> Okay. I'll just add it after the page lock.
-> >>
-> >> > (then you never have to bother with the writeback bit again)
-> >>
-> >> Until Fengguang does something fancy with it.
-> >
-> > Yes I'm going to do it without wait_on_page_writeback().
-> >
-> > The reason truncate_inode_pages_range() has to wait on writeback page
-> > is to ensure data integrity. Otherwise if there comes two events:
-> >        truncate page A at offset X
-> >        populate page B at offset X
-> > If A and B are all writeback pages, then B can hit disk first and then
-> > be overwritten by A. Which corrupts the data at offset X from user's POV.
-> >
-> > But for hwpoison, there are no such worries. If A is poisoned, we do
-> > our best to isolate it as well as intercepting its IO. If the interception
-> > fails, it will trigger another machine check before hitting the disk.
-> >
-> > After all, poisoned A means the data at offset X is already corrupted.
-> > It doesn't matter if there comes another B page.
-> >
-> > Thanks,
-> > Fengguang
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
