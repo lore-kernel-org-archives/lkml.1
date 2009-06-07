@@ -1,153 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbZFGTKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbZFGTK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754852AbZFGTKp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 15:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbZFGTJv
+	id S1756068AbZFGTK2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 15:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbZFGTJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 15:09:51 -0400
-Received: from mail.pxnet.com ([195.227.45.7]:43725 "EHLO mail.pxnet.com"
+	Sun, 7 Jun 2009 15:09:41 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:43714 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755244AbZFGTJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 15:09:40 -0400
+	id S1753397AbZFGTJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 15:09:35 -0400
 From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH 2/4] isdn: kerneldoc for capiutil.c
+Subject: [PATCH 3/4] isdn: prevent NULL ptr Oops in capi_cmsg2str()
 To: davem@davemloft.net, Karsten Keil <karsten-keil@t-online.de>,
        isdn4linux@listserv.isdn4linux.de, i4ldeveloper@listserv.isdn4linux.de,
        Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Message-ID: <20090607-patch-02.tilman@imap.cc>
+Message-ID: <20090607-patch-03.tilman@imap.cc>
 In-Reply-To: <20090607-patch-00.tilman@imap.cc>
 References: <20090607-patch-00.tilman@imap.cc>
-Date: Sun,  7 Jun 2009 21:09:23 +0200 (CEST)
+Date: Sun,  7 Jun 2009 21:09:24 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add kerneldoc comments for the exported funtions in capiutil.c.
+The dereferencing of the private pointer cmsg->m in capi_cmsg2str() may
+cause an Oops in case of an error, which is particularly inconvenient
+as that function is typically used to format an error message. Add a
+NULL pointer check to avoid this.
 
-Impact: documentation
+Impact: error handling improvement
 Signed-off-by: Tilman Schmidt <tilman@imap.cc>
 ---
- drivers/isdn/capi/capiutil.c |   65 ++++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 62 insertions(+), 3 deletions(-)
+ drivers/isdn/capi/capiutil.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/isdn/capi/capiutil.c b/drivers/isdn/capi/capiutil.c
-index 29419a8..c7c2902 100644
+index c7c2902..16f2e46 100644
 --- a/drivers/isdn/capi/capiutil.c
 +++ b/drivers/isdn/capi/capiutil.c
-@@ -490,7 +490,14 @@ static void pars_2_message(_cmsg * cmsg)
- 	}
- }
- 
--/*-------------------------------------------------------*/
-+/**
-+ * capi_cmsg2message() - assemble CAPI 2.0 message from _cmsg structure
-+ * @cmsg:	_cmsg structure
-+ * @msg:	buffer for assembled message
-+ *
-+ * Return value: 0 for success
-+ */
-+
- unsigned capi_cmsg2message(_cmsg * cmsg, u8 * msg)
- {
- 	cmsg->m = msg;
-@@ -553,7 +560,14 @@ static void message_2_pars(_cmsg * cmsg)
- 	}
- }
- 
--/*-------------------------------------------------------*/
-+/**
-+ * capi_message2cmsg() - disassemble CAPI 2.0 message into _cmsg structure
-+ * @cmsg:	_cmsg structure
-+ * @msg:	buffer for assembled message
-+ *
-+ * Return value: 0 for success
-+ */
-+
- unsigned capi_message2cmsg(_cmsg * cmsg, u8 * msg)
- {
- 	memset(cmsg, 0, sizeof(_cmsg));
-@@ -573,7 +587,18 @@ unsigned capi_message2cmsg(_cmsg * cmsg, u8 * msg)
- 	return 0;
- }
- 
--/*-------------------------------------------------------*/
-+/**
-+ * capi_cmsg_header() - initialize header part of _cmsg structure
-+ * @cmsg:	_cmsg structure
-+ * @_ApplId:	ApplID field value
-+ * @_Command:	Command field value
-+ * @_Subcommand:	Subcommand field value
-+ * @_Messagenumber:	Message Number field value
-+ * @_Controller:	Controller/PLCI/NCCI field value
-+ *
-+ * Return value: 0 for success
-+ */
-+
- unsigned capi_cmsg_header(_cmsg * cmsg, u16 _ApplId,
- 			  u8 _Command, u8 _Subcommand,
- 			  u16 _Messagenumber, u32 _Controller)
-@@ -641,6 +666,14 @@ static char *mnames[] =
- 	[0x4e] = "MANUFACTURER_RESP"
- };
- 
-+/**
-+ * capi_cmd2str() - convert CAPI 2.0 command/subcommand number to name
-+ * @cmd:	command number
-+ * @subcmd:	subcommand number
-+ *
-+ * Return value: static string, NULL if command/subcommand unknown
-+ */
-+
- char *capi_cmd2str(u8 cmd, u8 subcmd)
- {
- 	return mnames[command_2_index(cmd, subcmd)];
-@@ -879,6 +912,11 @@ init:
- 	return cdb;
- }
- 
-+/**
-+ * cdebbuf_free() - free CAPI debug buffer
-+ * @cdb:	buffer to free
-+ */
-+
- void cdebbuf_free(_cdebbuf *cdb)
- {
- 	if (likely(cdb == g_debbuf)) {
-@@ -891,6 +929,16 @@ void cdebbuf_free(_cdebbuf *cdb)
- }
- 
- 
-+/**
-+ * capi_message2str() - format CAPI 2.0 message for printing
-+ * @msg:	CAPI 2.0 message
-+ *
-+ * Allocates a CAPI debug buffer and fills it with a printable representation
-+ * of the CAPI 2.0 message in @msg.
-+ * Return value: allocated debug buffer, NULL on error
-+ * The returned buffer should be freed by a call to cdebbuf_free() after use.
-+ */
-+
- _cdebbuf *capi_message2str(u8 * msg)
+@@ -989,6 +989,8 @@ _cdebbuf *capi_cmsg2str(_cmsg * cmsg)
  {
  	_cdebbuf *cdb;
-@@ -926,6 +974,17 @@ _cdebbuf *capi_message2str(u8 * msg)
- 	return cdb;
- }
  
-+/**
-+ * capi_cmsg2str() - format _cmsg structure for printing
-+ * @cmsg:	_cmsg structure
-+ *
-+ * Allocates a CAPI debug buffer and fills it with a printable representation
-+ * of the CAPI 2.0 message stored in @cmsg by a previous call to
-+ * capi_cmsg2message() or capi_message2cmsg().
-+ * Return value: allocated debug buffer, NULL on error
-+ * The returned buffer should be freed by a call to cdebbuf_free() after use.
-+ */
-+
- _cdebbuf *capi_cmsg2str(_cmsg * cmsg)
- {
- 	_cdebbuf *cdb;
++	if (!cmsg->m)
++		return NULL;	/* no message */
+ 	cdb = cdebbuf_alloc();
+ 	if (!cdb)
+ 		return NULL;
 -- 
 1.6.2.1.214.ge986c
 
