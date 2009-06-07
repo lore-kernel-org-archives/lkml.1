@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZFGMyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823AbZFGMxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755962AbZFGMyL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 08:54:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbZFGMxB
+	id S1755823AbZFGMxg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 08:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbZFGMw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 08:53:01 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58258 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755062AbZFGMw6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 7 Jun 2009 08:52:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58249 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754121AbZFGMw4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 08:52:56 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Gregory Haskins" <ghaskins@novell.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Sam Ravnborg" <sam@ravnborg.org>
+       "David Hill" <hilld@binarystorm.net>
 References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
 In-Reply-To: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <D9VoutSOyXP.A.wg.Rb7KKB@chimera>
-Subject: [Bug #13119] Trouble with make-install from a NFS mount
+Message-ID: <D9VoutSOyXP.A.IL.ma7KKB@chimera>
+Subject: [Bug #13219] Since kernel 2.6.30-rc1, computers hangs randomly ..
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun,  7 Jun 2009 11:52:49 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,11 +35,9 @@ from 2.6.29.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13119
-Subject		: Trouble with make-install from a NFS mount
-Submitter	: Gregory Haskins <ghaskins@novell.com>
-Date		: 2009-04-14 21:32 (55 days old)
-References	: http://marc.info/?l=linux-kernel&m=123974482327044&w=4
-Handled-By	: H. Peter Anvin <hpa@zytor.com>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13219
+Subject		: Since kernel 2.6.30-rc1, computers hangs randomly ..
+Submitter	: David Hill <hilld@binarystorm.net>
+Date		: 2009-05-01 16:57 (38 days old)
 
 
