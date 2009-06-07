@@ -1,234 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbZFGPhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbZFGPjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbZFGPhU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 11:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbZFGPhJ
+	id S1755558AbZFGPjp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 11:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbZFGPjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 11:37:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55938 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752947AbZFGPhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 11:37:07 -0400
-Date: Sun, 7 Jun 2009 15:36:33 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf top: Fall back to cpu-clock-tick hrtimer sampling if no cycle counter available
-Message-ID: <tip-716c69fecacd42f2a304a97158e04af2786a3f65@git.kernel.org>
-Git-Commit-ID: 716c69fecacd42f2a304a97158e04af2786a3f65
-X-Mailer: tip-git-log-daemon
+	Sun, 7 Jun 2009 11:39:37 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:33704 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752681AbZFGPjg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 11:39:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=YjxTZ4QNliNpE800dLbiZX9CtwLO5JAOhjmdWVXgshlgeDkOcYeGTPDHyULXB6syBk
+         EZnIeLCi9g3lKyhH0EftGVZ28Yhv+i8vZURkrF40aGbauv6DTp5+n2tLrd3oulfNve+c
+         NSGr5VYD4bVlnsOl1C3joQD98Ltkr0Jug3koI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: [git pull] IDE fixes
+Date: Sun, 7 Jun 2009 17:44:23 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-rc8-next-20090605-07377-g5acd34e; KDE/4.2.3; i686; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200906071444.33047.bzolnier@gmail.com> <200906071657.49513.bzolnier@gmail.com> <1244387931.8262.24.camel@mulgrave.site>
+In-Reply-To: <1244387931.8262.24.camel@mulgrave.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Jun 2009 15:36:34 +0000 (UTC)
+Message-Id: <200906071744.23629.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  716c69fecacd42f2a304a97158e04af2786a3f65
-Gitweb:     http://git.kernel.org/tip/716c69fecacd42f2a304a97158e04af2786a3f65
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Sun, 7 Jun 2009 17:31:52 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 7 Jun 2009 17:31:52 +0200
+On Sunday 07 June 2009 17:18:51 you wrote:
+> On Sun, 2009-06-07 at 16:57 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > On Sunday 07 June 2009 16:38:56 James Bottomley wrote:
+> > > On Sun, 2009-06-07 at 15:21 +0100, Alan Cox wrote:
+> > > > > diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+> > > > > index 99e33ef..4bc2c43 100644
+> > > > > --- a/fs/partitions/check.c
+> > > > > +++ b/fs/partitions/check.c
+> > > > 
+> > > > 
+> > > > You seriously want to add code to the core partition handling logic
+> > > > moments before release when we know we have all sorts of devices with
+> > > > weird behaviours ?
+> > > > 
+> > > > This should be .31 stuff where we can take the time to see how it works
+> > > > on all sorts of weird real world devices (eg those with 2K sector size)
+> > > > and the like.
+> > > 
+> > > Absolutely seconded.
+> > > 
+> > > Plus this is only one of the proposals for dealing with IDE native sizes
+> > > moving through the process.  The other one is in libata with the gendisk
+> > > proposal for alt size instead of your set_capacity callback.   The last
+> > 
+> > ->set_capacity callback is needed for drivers/ide regardless of alt_size
+> > sysfs interface and it don't conflict with it in any way.
+> 
+> It's used as a heuristic for selecting native vs protected disk size
+> depending on what the partition table says ... I grant that's one way to
+> handle the problem.
+> 
+> > Those patches are a complimentary work to Tejun's alt_size patches. 
+> > 
+> > They don't export anything to user-space.
+> 
+> So you're trying to solve the problem heuristically, and Tejun is trying
+> to provide the user with full information.   At the end of the day it
+> would be nice to get agreement on how we do this *before* exposing it to
+> users.  It's certainly possible we could do both, but for that to happen
 
-perf top: Fall back to cpu-clock-tick hrtimer sampling if no cycle counter available
+Sure.  My patches don't export anything to user-space.
 
-On architectures/CPUs without PMU support but with perfcounters
-enabled 'perf top' currently fails because it cannot create a
-cycle based hw-perfcounter.
+If you find any code parts controversial please post them and I'll be
+more than happy to discuss them in details.
 
-Fall back to the cpu-clock-tick sw-perfcounter in this case, which
-is hrtimer based and will always work (as long as perfcounters
-is enabled).
+> libata would have to implement .get_capacity() is that going to be the
+> case?
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Now we get the real source of Alan's and your complains...
 
+Those patches (among other things) make IDE superior overt libata w.r.t.
+HPA handling so libata now has to catch up.
 
----
- tools/perf/builtin-top.c |  113 +++++++++++++++++++++++++++------------------
- tools/perf/util/usage.c  |   10 ++--
- 2 files changed, 73 insertions(+), 50 deletions(-)
+Honestly, this should be solved on technical basis by somebody posting
+needed libata patches instead of attempts to slow down IDE fixes.
 
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index fdc1d58..6da30a1 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -527,58 +527,81 @@ static void mmap_read(void)
- 	}
- }
- 
--static int __cmd_top(void)
-+int nr_poll;
-+int group_fd;
-+
-+static void start_counter(int i, int counter)
- {
- 	struct perf_counter_attr *attr;
--	pthread_t thread;
--	int i, counter, group_fd, nr_poll = 0;
- 	unsigned int cpu;
-+
-+	cpu = profile_cpu;
-+	if (target_pid == -1 && profile_cpu == -1)
-+		cpu = i;
-+
-+	attr = attrs + counter;
-+
-+	attr->sample_type	= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
-+	attr->freq		= freq;
-+
-+try_again:
-+	fd[i][counter] = sys_perf_counter_open(attr, target_pid, cpu, group_fd, 0);
-+
-+	if (fd[i][counter] < 0) {
-+		int err = errno;
-+
-+		error("sys_perf_counter_open() syscall returned with %d (%s)\n",
-+			fd[i][counter], strerror(err));
-+
-+		if (err == EPERM)
-+			die(" No permission - are you root?\n");
-+		/*
-+		 * If it's cycles then fall back to hrtimer
-+		 * based cpu-clock-tick sw counter, which
-+		 * is always available even if no PMU support:
-+		 */
-+		if (attr->type == PERF_TYPE_HARDWARE
-+			&& attr->config == PERF_COUNT_CPU_CYCLES) {
-+
-+			warning(" ... trying to fall back to cpu-clock-ticks\n");
-+			attr->type = PERF_TYPE_SOFTWARE;
-+			attr->config = PERF_COUNT_CPU_CLOCK;
-+			goto try_again;
-+		}
-+		exit(-1);
-+	}
-+	assert(fd[i][counter] >= 0);
-+	fcntl(fd[i][counter], F_SETFL, O_NONBLOCK);
-+
-+	/*
-+	 * First counter acts as the group leader:
-+	 */
-+	if (group && group_fd == -1)
-+		group_fd = fd[i][counter];
-+
-+	event_array[nr_poll].fd = fd[i][counter];
-+	event_array[nr_poll].events = POLLIN;
-+	nr_poll++;
-+
-+	mmap_array[i][counter].counter = counter;
-+	mmap_array[i][counter].prev = 0;
-+	mmap_array[i][counter].mask = mmap_pages*page_size - 1;
-+	mmap_array[i][counter].base = mmap(NULL, (mmap_pages+1)*page_size,
-+			PROT_READ, MAP_SHARED, fd[i][counter], 0);
-+	if (mmap_array[i][counter].base == MAP_FAILED)
-+		die("failed to mmap with %d (%s)\n", errno, strerror(errno));
-+}
-+
-+static int __cmd_top(void)
-+{
-+	pthread_t thread;
-+	int i, counter;
- 	int ret;
- 
- 	for (i = 0; i < nr_cpus; i++) {
- 		group_fd = -1;
--		for (counter = 0; counter < nr_counters; counter++) {
--
--			cpu	= profile_cpu;
--			if (target_pid == -1 && profile_cpu == -1)
--				cpu = i;
--
--			attr = attrs + counter;
--
--			attr->sample_type	= PERF_SAMPLE_IP | PERF_SAMPLE_TID;
--			attr->freq		= freq;
--
--			fd[i][counter] = sys_perf_counter_open(attr, target_pid, cpu, group_fd, 0);
--			if (fd[i][counter] < 0) {
--				int err = errno;
--
--				error("syscall returned with %d (%s)\n",
--					fd[i][counter], strerror(err));
--				if (err == EPERM)
--					printf("Are you root?\n");
--				exit(-1);
--			}
--			assert(fd[i][counter] >= 0);
--			fcntl(fd[i][counter], F_SETFL, O_NONBLOCK);
--
--			/*
--			 * First counter acts as the group leader:
--			 */
--			if (group && group_fd == -1)
--				group_fd = fd[i][counter];
--
--			event_array[nr_poll].fd = fd[i][counter];
--			event_array[nr_poll].events = POLLIN;
--			nr_poll++;
--
--			mmap_array[i][counter].counter = counter;
--			mmap_array[i][counter].prev = 0;
--			mmap_array[i][counter].mask = mmap_pages*page_size - 1;
--			mmap_array[i][counter].base = mmap(NULL, (mmap_pages+1)*page_size,
--					PROT_READ, MAP_SHARED, fd[i][counter], 0);
--			if (mmap_array[i][counter].base == MAP_FAILED)
--				die("failed to mmap with %d (%s)\n", errno, strerror(errno));
--		}
-+		for (counter = 0; counter < nr_counters; counter++)
-+			start_counter(i, counter);
- 	}
- 
- 	/* Wait for a minimal set of events before starting the snapshot */
-diff --git a/tools/perf/util/usage.c b/tools/perf/util/usage.c
-index 2cad286..e16bf9a 100644
---- a/tools/perf/util/usage.c
-+++ b/tools/perf/util/usage.c
-@@ -9,29 +9,29 @@ static void report(const char *prefix, const char *err, va_list params)
- {
- 	char msg[1024];
- 	vsnprintf(msg, sizeof(msg), err, params);
--	fprintf(stderr, "%s%s\n", prefix, msg);
-+	fprintf(stderr, " %s%s\n", prefix, msg);
- }
- 
- static NORETURN void usage_builtin(const char *err)
- {
--	fprintf(stderr, "\n usage: %s\n", err);
-+	fprintf(stderr, "\n Usage: %s\n", err);
- 	exit(129);
- }
- 
- static NORETURN void die_builtin(const char *err, va_list params)
- {
--	report("fatal: ", err, params);
-+	report(" Fatal: ", err, params);
- 	exit(128);
- }
- 
- static void error_builtin(const char *err, va_list params)
- {
--	report("error: ", err, params);
-+	report(" Error: ", err, params);
- }
- 
- static void warn_builtin(const char *warn, va_list params)
- {
--	report("warning: ", warn, params);
-+	report(" Warning: ", warn, params);
- }
- 
- /* If we are in a dlopen()ed .so write to a global variable would segfault
+> > > thing we want is two separate mechanisms for this, so trying to push
+> > > anything upstream before we have agreement on direction is premature ...
+> > > trying to send a feature as a bug fix is doubly so.
+> > 
+> > James, please (re-)read commits, then bug #13365 at kernel.org and if you
+> > still find some code parts controversial I'll be happy to discuss them.
+> 
+> Um, that's a red herring, isn't it?  That bug complains that a migration
+> from IDE to libata failed because IDE was ignoring HPA and libata was
+> respecting it resulting in a disk under libata whose partition table was
+> too big for its HPA reduced capacity; the fix was to turn off libata HPA
+> in that configuration.  As far as I can tell nothing in the code you've
+> added actually fixes that bug.  To fix it, we'd have to add a
+> get_capacity() method to libata as well so that it could use your
+> partition heuristics to turn off the HPA.
+
+Indeed.
+
+Though first you have to get somebody from libata agree that this is a bug
+and that it should get fixed.  Then somebody would need to do the work.
+
+However my patches make it *easier* for libata developers to fix the
+aforementioned compatibility issue.
+
+> What your code does instead is to add HPA handling to IDE so that you no
+> longer always ignore it ... that's fine, but it's still a feature
+> enhancement not a bug fix.
+
+If you look at the whole HPA handling from the Big Picture perspective
+(taking new system installs into account when the old behavior could
+result in all sorts of problems including firmware corruption) than it
+*really* is a bug fix.
