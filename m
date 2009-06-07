@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbZFGL1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbZFGMDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbZFGL1h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 07:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbZFGL1Y
+	id S1754548AbZFGMDu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 08:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbZFGMDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 07:27:24 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39277
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753143AbZFGL1X (ORCPT
+	Sun, 7 Jun 2009 08:03:41 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:50071 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753012AbZFGMDl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 07:27:23 -0400
-Date: Sun, 07 Jun 2009 04:27:24 -0700 (PDT)
-Message-Id: <20090607.042724.238501430.davem@davemloft.net>
-To: tilman@imap.cc
-Cc: karsten-keil@t-online.de, isdn4linux@listserv.isdn4linux.de,
-       i4ldeveloper@listserv.isdn4linux.de, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] isdn: patches for 2.6.31
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4A2AEFE2.2090300@imap.cc>
-References: <20090531-patch-00.tilman@imap.cc>
-	<20090601.030434.141357758.davem@davemloft.net>
-	<4A2AEFE2.2090300@imap.cc>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Jun 2009 08:03:41 -0400
+Date: Sun, 7 Jun 2009 14:03:42 +0200
+From: Andreas Mohr <andi@lisas.de>
+To: Peter Feuerer <peter@piie.net>
+Cc: Borislav Petkov <petkovbb@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <len.brown@intel.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Request driver inclusion - acer aspire one fan control
+Message-ID: <20090607120342.GA14120@rhlx01.hs-esslingen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090604211103.4214303f.peter@piie.net>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tilman Schmidt <tilman@imap.cc>
-Date: Sun, 07 Jun 2009 00:38:26 +0200
+Hi,
 
-> On 01.06.2009 12:04, David Miller wrote:
->> First problem in the second patch.  You're doing two things
->> at once.  You're adding function documentation and also adding
->> a NULL pointer check.
-> 
-> No problem. I can split the patch in two if you prefer it that way.
+tested and working on Aspire One 110L, BIOS v0.3109 (oldest), 2.6.30-rc8,
+including resume (short testing only, though).
 
-Thanks.
+It's a nice thing to be able to replace the less efficient
+monitoring shell script stop-gap (many thanks to the people that provided this
+very useful interim infrastructure, though!)
 
->> Second problem, the NULL pointer check is gratuitous.  Document
->> that the 'm' member has to be non-NULL and leave the check out.
-> 
-> That would be a bad solution for two reasons:
-> First, the 'm' member is private to capiutil.{c,h}. Callers are
-> not supposed to access it. Therefore it shouldn't be referred to
-> in the interface documentation. At best, such a mention would
-> leave users of the function confused how to assure that condition.
-> At worst, it might mislead them into meddling directly with the
-> member, thereby producing incorrect code.
-> And second, the main use of capi_cmsg2str() is for error reporting
-> and debugging output. Oopsing in an error handler is particularly
-> troublesome. At the same time, the risk of the 'm' member being
-> unexpectedly NULL is particularly high when something has gone
-> wrong already. So a safety check is advisable in this case.
+The current patch seems fine to me for inclusion,
+and given Peter's prior performance I'm highly confident that a couple
+rather minor review comments will get addressed, too.
 
-Fair enough.
-
-> PS: Any objections against the other two patches?
-
-I don't remember it's been so many days since I looked at
-this series :-(
+Reviewed-by: Andreas Mohr <andi@lisas.de>
+Tested-by: Andreas Mohr <andi@lisas.de>
