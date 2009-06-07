@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753525AbZFGXJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbZFGXLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753525AbZFGXJt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 19:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbZFGXJl
+	id S1752641AbZFGXLX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 19:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbZFGXLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 19:09:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53641 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750955AbZFGXJk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 19:09:40 -0400
-Date: Sun, 7 Jun 2009 16:09:27 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Mimi Zohar <zohar@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Serge Hallyn <serue@us.ibm.com>, James Morris <jmorris@namei.org>,
-       Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] integrity: fix IMA inode leak
-In-Reply-To: <1244354901.3963.23.camel@dyn9002018117.watson.ibm.com>
-Message-ID: <alpine.LFD.2.01.0906071608040.6847@localhost.localdomain>
-References: <Pine.LNX.4.64.0906062109580.8365@sister.anvils>  <alpine.LFD.2.01.0906061416170.6847@localhost.localdomain> <1244354901.3963.23.camel@dyn9002018117.watson.ibm.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 7 Jun 2009 19:11:11 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:56239 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750753AbZFGXLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 19:11:09 -0400
+Date: Sun, 7 Jun 2009 16:11:05 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Linux Netdev List <netdev@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: net: uninitialized loopback addr leaks to userspace
+Message-ID: <20090607161105.385d6e92@nehalam>
+In-Reply-To: <19f34abd0905301323k1498ca3fv31b271de65d60afc@mail.gmail.com>
+References: <19f34abd0905301323k1498ca3fv31b271de65d60afc@mail.gmail.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 30 May 2009 22:23:24 +0200
+Vegard Nossum <vegard.nossum@gmail.com> wrote:
 
-
-On Sun, 7 Jun 2009, Mimi Zohar wrote:
+> Hi,
 > 
-> Mandatory Access Control(MAC) modules (i.e. SELinux, smack, etc) and
-> integrity (i.e IMA) are two different aspects of security.  The LSM
-> hooks, which includes security_inode_free(), are used to implement MAC,
-> not integrity.
+> It seems that loopback's hardware address is never initialized by the
+> kernel. So if userspace attempts to read this address before it has
+> been set, the kernel will return some uninitialized data (only 6
+> bytes, though). This can be demonstrated by creating a new network
+> namespace (CLONE_NEWNET), which creates a new loopback device, then
+> call ioctl() with SIOCGIFHWADDR on "lo". If this is done in a loop,
+> with some background load, or by running multiple instances, random
+> data will start to show up in the returned address.
+> 
+> [  406.750329] WARNING: kmemcheck: Caught 16-bit read from
+> uninitialized memory (ffff880007220974)
+> [  406.753555] 18a2d7060088ffff18a2d7060088ffff00000000010000000100000003000000
+> [  406.758862]  i i i i i i i i i i i i i i i i i u u u u u u u u u u u u u u u
+> [  406.766224]                                          ^
+> [  406.768792] Modules linked in:
+> [  406.770416] Pid: 757, comm: ifconfig Not tainted
+> 2.6.30-rc7-next-20090529 #404
+> [  406.772876] RIP: 0010:[<ffffffff80664789>]  [<ffffffff80664789>]
+> dev_ioctl+0x5d9/0x600
+> [  406.804677]  [<ffffffff8064ff75>] sock_ioctl+0x95/0x2a0
+> [  406.807242]  [<ffffffff802c35eb>] vfs_ioctl+0x1b/0x70
+> [  406.809348]  [<ffffffff802c36fa>] do_vfs_ioctl+0x8a/0x570
+> [  406.811419]  [<ffffffff802c3c79>] sys_ioctl+0x99/0xa0
+> [  406.813400]  [<ffffffff802f3941>] dev_ifsioc+0x81/0x2f0
+> [  406.815424]  [<ffffffff802f454d>] compat_sys_ioctl+0xed/0x3c0
+> [  406.817596]  [<ffffffff8022d476>] cstar_dispatch+0x7/0x26
+> [  406.819978]  [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> This is the code that triggers the warning, in net/core/dev.c, around line 4150:
+> 
+>     memcpy(ifr->ifr_hwaddr.sa_data, dev->dev_addr,
+>         min(sizeof ifr->ifr_hwaddr.sa_data, (size_t) dev->addr_len));
+> 
+> So it's dev->dev_addr that is the pointer to the uninitialized data.
+> 
+> I didn't know how to fix it.
+> 
 
-So?
 
-It's under security/integrity. And it's a level of detail that fs/inode.c 
-really doesn't care about.
-
-The VFS layer cares NOT AT ALL about your "different aspects of security", 
-nor should it. The fact that security people think SELinux and IMA are 
-different is irrelavant - fs/inode.c just doesn't care. Why should it?
-
-		Linus
+The whole dev structure is zeroed in alloc_netdev(), kmemcheck
+is giving bogus warning.
+-- 
