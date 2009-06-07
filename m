@@ -1,72 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbZFGQP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbZFGQ1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755753AbZFGQP7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 12:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbZFGQPs
+	id S1754719AbZFGQ1L (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 12:27:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbZFGQ06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 12:15:48 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:55319 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751964AbZFGQPs (ORCPT
+	Sun, 7 Jun 2009 12:26:58 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:64372 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752695AbZFGQ05 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 12:15:48 -0400
-Date: Sun, 7 Jun 2009 21:44:40 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>, kvm@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Subject: Re: [RFC] CPU hard limits
-Message-ID: <20090607161440.GA3609@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <661de9470906042137u603e2997n80c270bf7f6191ad@mail.gmail.com> <4A28A2AB.3060108@redhat.com> <20090605044946.GA11755@balbir.in.ibm.com> <20090605051050.GB11755@balbir.in.ibm.com> <4A28AB67.7040800@redhat.com> <20090605052755.GE11755@balbir.in.ibm.com> <20090605053159.GB3872@in.ibm.com> <4A28B4CE.4010004@redhat.com> <20090605081651.GD3872@in.ibm.com> <4A2B5881.9060204@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A2B5881.9060204@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 7 Jun 2009 12:26:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=dGM8eZCJhYombX1rfAwQEU2dxBU9CZPJj/fHF9sURkfhBXkgbILIBMcJLhtsmdqxgt
+         6ALDTlPA2iuKqTddWkN1foG8VNh2M2PkMCDbPrOMJx5AHU1/bpq+KTSAv6ld7X3mrrzu
+         +0/slqwFT9zyPVK6QSrn6weqmFnE3U/PmEIiI=
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Vegard Nossum <vegard.nossum@gmail.com>,
+       Alexander van Heukelum <heukelum@fastmail.fm>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: [PATCH] kmemcheck: move hook before preempt_conditional_sti()
+Date: Sun,  7 Jun 2009 18:26:52 +0200
+Message-Id: <1244392012-638-1-git-send-email-vegard.nossum@gmail.com>
+X-Mailer: git-send-email 1.6.2.rc0.61.g5cd12
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 07, 2009 at 09:04:49AM +0300, Avi Kivity wrote:
-> Bharata B Rao wrote:
->> On Fri, Jun 05, 2009 at 09:01:50AM +0300, Avi Kivity wrote:
->>   
->>> Bharata B Rao wrote:
->>>     
->>>> But could there be client models where you are required to strictly
->>>> adhere to the limit within the bandwidth and not provide more (by advancing
->>>> the bandwidth period) in the presence of idle cycles ?
->>>>         
->>> That's the limit part.  I'd like to be able to specify limits and   
->>> guarantees on the same host and for the same groups; I don't think 
->>> that  works when you advance the bandwidth period.
->>>
->>> I think we need to treat guarantees as first-class goals, not 
->>> something  derived from limits (in fact I think guarantees are more 
->>> useful as they  can be used to provide SLAs).
->>>     
->>
->> I agree that guarantees are important, but I am not sure about
->>
->> 1. specifying both limits and guarantees for groups and
->>   
->
-> Why would you allow specifying a lower bound for cpu usage (a  
-> guarantee), and upper bound (a limit), but not both?
+There are actually two problems here:
 
-I was saying that we specify only limits and not guarantees since it
-can be worked out from limits. Initial thinking was that the kernel will
-be made aware of only limits and users could set the limits appropriately
-to obtain the desired guarantees. I understand your concerns/objections
-on this and we will address this in our next version of RFC as Balbir said.
+1. We absolutely cannot enable IRQs in case the fault was caused by
+   kmemcheck.
 
-Regards,
-Bharata.
+2. We cannot enable preemption and then return from the debug handler
+   without disabling preemption afterwards.
+
+The problem seems to be a merge fallout between three commits:
+
+commit 3d2a71a596bd9c761c8487a2178e95f8a61da083
+Author: Alexander van Heukelum <heukelum@fastmail.fm>
+Date:   Tue Sep 30 18:41:37 2008 +0200
+
+    x86, traps: converge do_debug handlers
+
+commit 08d68323d1f0c34452e614263b212ca556dae47f
+Author: K.Prasad <prasad@linux.vnet.ibm.com>
+Date:   Mon Jun 1 23:44:08 2009 +0530
+
+    hw-breakpoints: modifying generic debug exception to use thread-specific deb
+
+commit 787ecfaa503dc63ff1831ddc74b15dad49bace1d
+Author: Vegard Nossum <vegard.nossum@gmail.com>
+Date:   Fri Apr 4 00:53:23 2008 +0200
+
+    x86: add hooks for kmemcheck
+
+I encourage the kprobe developers to check whether their code is correct
+as it stands in current tip/master. Also, comments on this particular
+change is welcome.
+
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ arch/x86/kernel/traps.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+index c8a7f87..a898c6b 100644
+--- a/arch/x86/kernel/traps.c
++++ b/arch/x86/kernel/traps.c
+@@ -550,6 +550,10 @@ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
+ 							SIGTRAP) == NOTIFY_STOP)
+ 		return;
+ 
++	/* Catch kmemcheck conditions first of all! */
++	if ((dr6 & DR_STEP) && kmemcheck_trap(regs))
++		return;
++
+ 	/* It's safe to allow irq's after DR6 has been saved */
+ 	preempt_conditional_sti(regs);
+ 
+@@ -559,10 +563,6 @@ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
+ 		return;
+ 	}
+ 
+-	/* Catch kmemcheck conditions first of all! */
+-	if ((dr6 & DR_STEP) && kmemcheck_trap(regs))
+-		return;
+-
+ 	/*
+ 	 * Single-stepping through system calls: ignore any exceptions in
+ 	 * kernel space, but re-enable TF when returning to user mode.
+-- 
+1.6.0.6
+
