@@ -1,18 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758318AbZFGNKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758236AbZFGNJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758318AbZFGNKB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 09:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757933AbZFGNHU
+	id S1758236AbZFGNJh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 09:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757904AbZFGNHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 09:07:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58561 "EHLO ogre.sisk.pl"
+	Sun, 7 Jun 2009 09:07:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58573 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757901AbZFGNHC convert rfc822-to-8bit (ORCPT
+	id S1757920AbZFGNHF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 09:07:02 -0400
+	Sun, 7 Jun 2009 09:07:05 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Takashi Iwai" <tiwai@suse.de>,
-       "Yaroslav Isakov" <yaroslav.isakov@gmail.com>
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Maxim Levitsky" <maximlevitsky@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
 References: <sIiXQlfwS3D.A.81.dj7KKB@chimera>
 In-Reply-To: <sIiXQlfwS3D.A.81.dj7KKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,10 +22,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <AN6kEAA5GQ.A.ROC.kk7KKB@chimera>
-Subject: [Bug #13025] After upgrading to kernel 2.6.29, pulseaudio stopped with some strange error
+Message-ID: <AN6kEAA5GQ.A.kHC.Xk7KKB@chimera>
+Subject: [Bug #13100] can't anymore even do a s2ram-s2disk-s2ram cycle on acer aspire 5720G
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  7 Jun 2009 12:06:20 +0200 (CEST)
+Date: Sun,  7 Jun 2009 12:06:21 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,9 +38,12 @@ introduced between 2.6.28 and 2.6.29.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13025
-Subject		: After upgrading to kernel 2.6.29, pulseaudio stopped with some strange error
-Submitter	: Yaroslav Isakov <yaroslav.isakov@gmail.com>
-Date		: 2009-04-06 19:47 (63 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13100
+Subject		: can't anymore even do a s2ram-s2disk-s2ram cycle on acer aspire 5720G
+Submitter	: Maxim Levitsky <maximlevitsky@gmail.com>
+Date		: 2009-04-06 23:52 (63 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a0d4922da2e4ccb0973095d8d29f36f6b1b5f703
+References	: http://marc.info/?l=linux-kernel&m=123906202829074&w=4
+Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
 
 
