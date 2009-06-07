@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbZFGK3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755788AbZFGKcK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755584AbZFGK3y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 06:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbZFGK3r
+	id S1755788AbZFGKcK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 06:32:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbZFGKb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 06:29:47 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38583 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755337AbZFGK3q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 06:29:46 -0400
-Date: Sun, 7 Jun 2009 12:29:11 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: "Larry H." <research@subreption.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, pageexec@freemail.hu
-Subject: Re: Security fix for remapping of page 0 (was [PATCH] Change
-	ZERO_SIZE_PTR to point at unmapped space)
-Message-ID: <20090607102910.GA1592@ucw.cz>
-References: <20090530192829.GK6535@oblivion.subreption.com> <alpine.LFD.2.01.0905301528540.3435@localhost.localdomain> <20090530230022.GO6535@oblivion.subreption.com> <alpine.LFD.2.01.0905301902010.3435@localhost.localdomain> <20090531022158.GA9033@oblivion.subreption.com> <alpine.DEB.1.10.0906021130410.23962@gentwo.org> <20090602203405.GC6701@oblivion.subreption.com> <alpine.DEB.1.10.0906031047390.15621@gentwo.org>
+	Sun, 7 Jun 2009 06:31:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39127 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755035AbZFGKb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 06:31:56 -0400
+Message-ID: <4A2B9713.3050407@redhat.com>
+Date: Sun, 07 Jun 2009 13:31:47 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0906031047390.15621@gentwo.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, ying.huang@intel.com
+Subject: Re: [PATCH] KVM: Add VT-x machine check support v2
+References: <20090605232356.GA7091@basil.nowhere.org> <4A2B57B9.7070207@redhat.com> <20090607103514.GA22266@one.firstfloor.org>
+In-Reply-To: <20090607103514.GA22266@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Andi Kleen wrote:
+> On Sun, Jun 07, 2009 at 09:01:29AM +0300, Avi Kivity wrote:
+>   
+>>> v2: Handle machine checks still in interrupt off context
+>>> to avoid problems on preemptible kernels.
+>>>
+>>> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+>>>
+>>>  
+>>>       
+>> Only applies with -C0.  What tree was this generated against?
+>>     
+>
+> 2.6.30-rc7
+>
+>   
 
-> Ok. So what we need to do is stop this toying around with remapping of
-> page 0. The following patch contains a fix and a test program that
-> demonstrates the issue.
-> 
-> 
-> Subject: [Security] Do not allow remapping of page 0 via MAP_FIXED
-> 
-> If one remaps page 0 then the kernel checks for NULL pointers of various
-> flavors are bypassed and this may be exploited in various creative ways
-> to transfer data from kernel space to user space.
+Please use kvm.git, which is maybe 150 patches ahead.
 
-Yes, mmap() at page zero 0 makes exploits harder; and yes disabling it
-may be useful (but we tried that before, see Alan's comment). But that
-does not it mean it deserves _security_ label. Call it robustness or
-something....
-									Pavel
+>> Please diff and test against latest kvm.git.
+>>     
+>
+> Sorry can't do neither for the next two weeks.
+>   
+
+Ying?
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
