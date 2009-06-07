@@ -1,463 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755086AbZFGSkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbZFGSqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755086AbZFGSkV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 14:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZFGSkK
+	id S1755303AbZFGSqh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 14:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbZFGSq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 14:40:10 -0400
-Received: from tango.tkos.co.il ([62.219.50.35]:37662 "EHLO tango.tkos.co.il"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753794AbZFGSkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 14:40:08 -0400
-From: Baruch Siach <baruch@tkos.co.il>
-To: linux-kernel@vger.kernel.org
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Baruch Siach <baruch@tkos.co.il>
-Subject: [PATCH v4] gpio: driver for PrimeCell PL061 GPIO controller
-Date: Sun,  7 Jun 2009 21:38:55 +0300
-Message-Id: <1244399935-23128-1-git-send-email-baruch@tkos.co.il>
-X-Mailer: git-send-email 1.6.3.1
+	Sun, 7 Jun 2009 14:46:29 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:60736 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754123AbZFGSq2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 14:46:28 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Grozdan <neutrino8@gmail.com>
+Subject: Re: Kernel 2.6.30rc7 limits IDE to UDMA33
+Date: Sun, 7 Jun 2009 13:46:19 -0500
+User-Agent: KMail/1.9.9
+Cc: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, tj@kernel.org, alan@lxorguk.ukuu.org.uk
+References: <c5bd819b0906021525l13ee9282j1fb270e141985f66@mail.gmail.com> <4A2BF785.3020402@gmail.com> <c5bd819b0906071124j21270574h44db963bdc0b552d@mail.gmail.com>
+In-Reply-To: <c5bd819b0906071124j21270574h44db963bdc0b552d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906071346.28021.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a driver for the ARM PrimeCell PL061 GPIO AMBA peripheral. The driver
-is implemented using the gpiolib framework.
+On Sun June 7 2009, Grozdan wrote:
+> 2009/6/7 Robert Hancock <hancockrwd@gmail.com>:
+> > Grozdan wrote:
+> >>
+> >> 2009/6/6 Robert Hancock <hancockrwd@gmail.com>:
+> >>>
+> >>> Thing is somehow the GTM detection isn't working now and it apparently
+> >>> was
+> >>> in 2.6.27.1. I'm not seeing any patches to pata_via or libata-acpi that
+> >>> seem
+> >>> like they would affect this offhand. Grozdan, would you be able to try
+> >>> git
+> >>> bisect to try to figure out what changed the behavior?
+> >>>
+> >>> CCing Tejun in case he has any ideas..
+> >>>
+> >>
+> >> I've no idea how and where to do a git bisect so if someone is willing
+> >> to explain in simple steps, I can try...
+> >
+> > Linus's post on here is a pretty simple explanation:
+> >
+> > http://kerneltrap.org/node/11753
+> >
+> 
+> Yes, it's clear to someone who's familiar with git but not to a noob
+> like me. Where do I run this git? After it's finished what to do next?
+> How many times do I have to compile kernels? Which kernels exactly?
+> After booting a "bad" kernel, what then? etc... From reading the
+> article, the guy has to compile 14!! times just to catch a problem
+> between kernel 2.6.21 and 2.6.22. 
+>
 
-This driver also includes support for the use of the PL061 as an interrupt
-controller (secondary).
+The article presumes the simple case of a single commit being the
+problem.  If the problem involves more than one. . .
 
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
----
-Changes in v4:
-	- Depend on CONFIG_ARM_AMBA
-	- Do not request the gpio for IRQ automatically, just warn if it's not 
-	  requested
-	- Remove SZ_4K
-	- Iterate through a linked list find the source of interrupt when 
-	  multiple PL061s are connected to the same IRQ trigger
-	- Move hardware register defines into the .c file
+Think of doing a binary search in a list of values with duplicate
+entries.  ;)
 
-Changes in v3:
-	- amba driver instead of a platform driver
-	- Move include/linux/gpio/pl061.h => include/linux/amba/pl061.h
+> I guess in my case I'll have to 
+> compile a lot more than 14 times to catch something between kernel
+> 2.6.27 and 2.6.30 and honestly I don't have time for this right now.
+>
 
-Changes in v2:
-	- Address Andrew Morton's comments
-	- Pass checkpatch.pl
-	- Add changelog comment
+Yes, it can get to be time-consuming unless your lucky.
 
- drivers/gpio/Kconfig       |    6 +
- drivers/gpio/Makefile      |    1 +
- drivers/gpio/pl061.c       |  342 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/amba/pl061.h |   17 +++
- 4 files changed, 366 insertions(+), 0 deletions(-)
- create mode 100644 drivers/gpio/pl061.c
- create mode 100644 include/linux/amba/pl061.h
+> However, I did a diff between the pata_via driver of kernel 2.6.27 and
+> 2.6.30 and there have been changes to it but I'm not sure if they
+> affect the cable detection...
+>
 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index edb0253..585376f 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -67,6 +67,12 @@ config GPIO_SYSFS
- 
- comment "Memory mapped GPIO expanders:"
- 
-+config GPIO_PL061
-+	bool "PrimeCell PL061 GPIO support"
-+	depends on ARM_AMBA
-+	help
-+	  Say yes here to support the PrimeCell PL061 GPIO device
-+
- config GPIO_XILINX
- 	bool "Xilinx GPIO support"
- 	depends on PPC_OF
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index 49ac64e..ef90203 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -9,6 +9,7 @@ obj-$(CONFIG_GPIO_MAX732X)	+= max732x.o
- obj-$(CONFIG_GPIO_MCP23S08)	+= mcp23s08.o
- obj-$(CONFIG_GPIO_PCA953X)	+= pca953x.o
- obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
-+obj-$(CONFIG_GPIO_PL061)	+= pl061.o
- obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
- obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
- obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
-diff --git a/drivers/gpio/pl061.c b/drivers/gpio/pl061.c
-new file mode 100644
-index 0000000..c48e82e
---- /dev/null
-+++ b/drivers/gpio/pl061.c
-@@ -0,0 +1,342 @@
-+/*
-+ *  linux/drivers/gpio/pl061.c
-+ *
-+ *  Copyright (C) 2008, 2009 Provigent Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * Driver for the ARM PrimeCell(tm) General Purpose Input/Output (PL061)
-+ *
-+ * Data sheet: ARM DDI 0190B, September 2000
-+ */
-+#include <linux/spinlock.h>
-+#include <linux/errno.h>
-+#include <linux/module.h>
-+#include <linux/list.h>
-+#include <linux/io.h>
-+#include <linux/ioport.h>
-+#include <linux/irq.h>
-+#include <linux/bitops.h>
-+#include <linux/workqueue.h>
-+#include <linux/gpio.h>
-+#include <linux/device.h>
-+#include <linux/amba/bus.h>
-+#include <linux/amba/pl061.h>
-+
-+#define GPIODIR 0x400
-+#define GPIOIS  0x404
-+#define GPIOIBE 0x408
-+#define GPIOIEV 0x40C
-+#define GPIOIE  0x410
-+#define GPIORIS 0x414
-+#define GPIOMIS 0x418
-+#define GPIOIC  0x41C
-+
-+#define PL061_GPIO_NR	8
-+
-+#define PL061_REG_SIZE	(4*1024)
-+
-+struct pl061_gpio {
-+	struct list_head	list;
-+
-+	/* Each of the two spinlocks protects a different set of hardware
-+	 * regiters and data structurs. This decouples the code of the IRQ from
-+	 * the GPIO code. This also makes the case of a GPIO routine call from
-+	 * the IRQ code simpler.
-+	 */
-+	spinlock_t		lock;		/* GPIO registers */
-+	spinlock_t		irq_lock;	/* IRQ registers */
-+
-+	void __iomem		*base;
-+	struct gpio_chip	gc;
-+};
-+
-+static int pl061_direction_input(struct gpio_chip *gc, unsigned offset)
-+{
-+	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
-+	unsigned long flags;
-+	unsigned char gpiodir;
-+
-+	if (offset >= gc->ngpio)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+	gpiodir = readb(chip->base + GPIODIR);
-+	gpiodir &= ~(1 << offset);
-+	writeb(gpiodir, chip->base + GPIODIR);
-+	spin_unlock_irqrestore(&chip->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int pl061_direction_output(struct gpio_chip *gc, unsigned offset,
-+		int value)
-+{
-+	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
-+	unsigned long flags;
-+	unsigned char gpiodir;
-+
-+	if (offset >= gc->ngpio)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+	writeb(!!value << offset, chip->base + (1 << (offset + 2)));
-+	gpiodir = readb(chip->base + GPIODIR);
-+	gpiodir |= 1 << offset;
-+	writeb(gpiodir, chip->base + GPIODIR);
-+	spin_unlock_irqrestore(&chip->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int pl061_get_value(struct gpio_chip *gc, unsigned offset)
-+{
-+	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
-+
-+	return !!readb(chip->base + (1 << (offset + 2)));
-+}
-+
-+static void pl061_set_value(struct gpio_chip *gc, unsigned offset, int value)
-+{
-+	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
-+
-+	writeb(!!value << offset, chip->base + (1 << (offset + 2)));
-+}
-+
-+/*
-+ * PL061 GPIO IRQ
-+ */
-+static void pl061_irq_disable(unsigned irq)
-+{
-+	struct pl061_gpio *chip = get_irq_chip_data(irq);
-+	int offset = irq_to_gpio(irq) - chip->gc.base;
-+	unsigned long flags;
-+	u8 gpioie;
-+
-+	spin_lock_irqsave(&chip->irq_lock, flags);
-+	gpioie = readb(chip->base + GPIOIE);
-+	gpioie &= ~(1 << offset);
-+	writeb(gpioie, chip->base + GPIOIE);
-+	spin_unlock_irqrestore(&chip->irq_lock, flags);
-+}
-+
-+static void pl061_irq_enable(unsigned irq)
-+{
-+	struct pl061_gpio *chip = get_irq_chip_data(irq);
-+	int offset = irq_to_gpio(irq) - chip->gc.base;
-+	unsigned long flags;
-+	u8 gpioie;
-+
-+	spin_lock_irqsave(&chip->irq_lock, flags);
-+	gpioie = readb(chip->base + GPIOIE);
-+	gpioie |= 1 << offset;
-+	writeb(gpioie, chip->base + GPIOIE);
-+	spin_unlock_irqrestore(&chip->irq_lock, flags);
-+}
-+
-+static unsigned int pl061_irq_startup(unsigned irq)
-+{
-+	if (gpio_request(irq_to_gpio(irq), "IRQ") == 0)
-+		pr_warning("%s: warning: GPIO%d has not been requested\n",
-+				__func__, irq_to_gpio(irq));
-+
-+	pl061_irq_enable(irq);
-+
-+	return 0;
-+}
-+
-+static int pl061_irq_type(unsigned irq, unsigned trigger)
-+{
-+	struct pl061_gpio *chip = get_irq_chip_data(irq);
-+	int offset = irq_to_gpio(irq) - chip->gc.base;
-+	unsigned long flags;
-+	u8 gpiois, gpioibe, gpioiev;
-+
-+	if (irq_to_gpio(irq) < 0)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&chip->irq_lock, flags);
-+
-+	gpioiev = readb(chip->base + GPIOIEV);
-+
-+	gpiois = readb(chip->base + GPIOIS);
-+	if (trigger & (IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW)) {
-+		gpiois |= 1 << offset;
-+		if (trigger & IRQ_TYPE_LEVEL_HIGH)
-+			gpioiev |= 1 << offset;
-+		else
-+			gpioiev &= ~(1 << offset);
-+	} else
-+		gpiois &= ~(1 << offset);
-+	writeb(gpiois, chip->base + GPIOIS);
-+
-+	gpioibe = readb(chip->base + GPIOIBE);
-+	if ((trigger & IRQ_TYPE_EDGE_BOTH) == IRQ_TYPE_EDGE_BOTH)
-+		gpioibe |= 1 << offset;
-+	else {
-+		gpioibe &= ~(1 << offset);
-+		if (trigger & IRQ_TYPE_EDGE_RISING)
-+			gpioiev |= 1 << offset;
-+		else
-+			gpioiev &= ~(1 << offset);
-+	}
-+	writeb(gpioibe, chip->base + GPIOIBE);
-+
-+	writeb(gpioiev, chip->base + GPIOIEV);
-+
-+	spin_unlock_irqrestore(&chip->irq_lock, flags);
-+
-+	return 0;
-+}
-+
-+static struct irq_chip pl061_irqchip = {
-+	.name		= "GPIO",
-+	.startup	= pl061_irq_startup,
-+	.enable		= pl061_irq_enable,
-+	.disable	= pl061_irq_disable,
-+	.set_type	= pl061_irq_type,
-+};
-+
-+static void pl061_irq_handler(unsigned irq, struct irq_desc *desc)
-+{
-+	struct list_head *chip_list = get_irq_chip_data(irq);
-+	struct list_head *ptr;
-+	struct pl061_gpio *chip;
-+
-+	desc->chip->ack(irq);
-+	list_for_each(ptr, chip_list) {
-+		unsigned long pending;
-+		int gpio;
-+
-+		chip = list_entry(ptr, struct pl061_gpio, list);
-+		pending = readb(chip->base + GPIOMIS);
-+		writeb(pending, chip->base + GPIOIC);
-+
-+		if (pending == 0)
-+			continue;
-+
-+		for_each_bit(gpio, &pending, PL061_GPIO_NR)
-+			generic_handle_irq(gpio_to_irq(gpio));
-+	}
-+	desc->chip->unmask(irq);
-+}
-+
-+static int __init pl061_probe(struct amba_device *dev, struct amba_id *id)
-+{
-+	struct pl061_platform_data *pdata;
-+	struct pl061_gpio *chip;
-+	struct list_head *chip_list;
-+	int ret, irq, i;
-+
-+	pdata = dev->dev.platform_data;
-+	if (pdata == NULL)
-+		return -ENODEV;
-+
-+	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
-+	if (chip == NULL)
-+		return -ENOMEM;
-+
-+	if (!request_mem_region(dev->res.start, PL061_REG_SIZE, "pl061")) {
-+		ret = -EBUSY;
-+		goto free_mem;
-+	}
-+
-+	chip->base = ioremap(dev->res.start, PL061_REG_SIZE);
-+	if (chip->base == NULL) {
-+		ret = -ENOMEM;
-+		goto release_region;
-+	}
-+
-+	spin_lock_init(&chip->lock);
-+	spin_lock_init(&chip->irq_lock);
-+	INIT_LIST_HEAD(&chip->list);
-+
-+	chip->gc.direction_input = pl061_direction_input;
-+	chip->gc.direction_output = pl061_direction_output;
-+	chip->gc.get = pl061_get_value;
-+	chip->gc.set = pl061_set_value;
-+	chip->gc.base = pdata->gpio_base;
-+	chip->gc.ngpio = PL061_GPIO_NR;
-+	chip->gc.label = dev_name(&dev->dev);
-+	chip->gc.dev = &dev->dev;
-+	chip->gc.owner = THIS_MODULE;
-+
-+	ret = gpiochip_add(&chip->gc);
-+	if (ret)
-+		goto iounmap;
-+
-+	/*
-+	 * irq_chip support
-+	 */
-+	writeb(0, chip->base + GPIOIE); /* disable irqs */
-+	irq = dev->irq[0];
-+	if (irq < 0) {
-+		ret = -ENODEV;
-+		goto iounmap;
-+	}
-+	set_irq_chained_handler(irq, pl061_irq_handler);
-+	if (!pdata->is_irq_initialized || !pdata->is_irq_initialized(irq)) {
-+		chip_list = kmalloc(sizeof(*chip_list), GFP_KERNEL);
-+		if (chip_list == NULL) {
-+			ret = -ENOMEM;
-+			goto iounmap;
-+		}
-+		INIT_LIST_HEAD(chip_list);
-+		set_irq_chip_data(irq, chip_list);
-+	} else
-+		chip_list = get_irq_chip_data(irq);
-+	list_add(&chip->list, chip_list);
-+
-+	for (i = 0; i < PL061_GPIO_NR; i++) {
-+		if (pdata->directions & (1 << i))
-+			pl061_direction_output(&chip->gc, i,
-+					pdata->values & (1 << i));
-+		else
-+			pl061_direction_input(&chip->gc, i);
-+
-+		set_irq_chip(gpio_to_irq(i+pdata->gpio_base), &pl061_irqchip);
-+		set_irq_handler(gpio_to_irq(i+pdata->gpio_base),
-+				handle_simple_irq);
-+		set_irq_flags(gpio_to_irq(i+pdata->gpio_base), IRQF_VALID);
-+		set_irq_chip_data(gpio_to_irq(i+pdata->gpio_base), chip);
-+	}
-+
-+	return 0;
-+
-+iounmap:
-+	iounmap(chip->base);
-+release_region:
-+	release_mem_region(dev->res.start, PL061_REG_SIZE);
-+free_mem:
-+	kfree(chip);
-+
-+	return ret;
-+}
-+
-+static struct amba_id pl061_ids[] __initdata = {
-+	{
-+		.id	= 0x00041061,
-+		.mask	= 0x000fffff,
-+	},
-+	{ 0, 0 },
-+};
-+
-+static struct amba_driver pl061_gpio_driver = {
-+	.drv = {
-+		.name	= "pl061_gpio",
-+	},
-+	.id_table	= pl061_ids,
-+	.probe		= pl061_probe,
-+};
-+
-+static int __init pl061_gpio_init(void)
-+{
-+	return amba_driver_register(&pl061_gpio_driver);
-+}
-+subsys_initcall(pl061_gpio_init);
-+
-+MODULE_AUTHOR("Baruch Siach <baruch@tkos.co.il>");
-+MODULE_DESCRIPTION("PL061 GPIO driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/amba/pl061.h b/include/linux/amba/pl061.h
-new file mode 100644
-index 0000000..90de39e
---- /dev/null
-+++ b/include/linux/amba/pl061.h
-@@ -0,0 +1,17 @@
-+/* platform data for the PL061 GPIO driver */
-+
-+struct pl061_platform_data {
-+	/* number of the first GPIO */
-+	unsigned	gpio_base;
-+
-+	u8		directions;	/* startup directions, 1: out, 0: in */
-+	u8		values;		/* startup values */
-+
-+	/* This callback may be used when you have more than one PL061
-+	 * connected to the same IRQ trigger. This callback must return 0 on
-+	 * the first time it is called for each irq, and 1 on any other call.
-+	 * In case you are not unfortunate enough to have this setup, this
-+	 * pointer must be set to NULL.
-+	 */
-+	int		(*is_irq_initialized)(int irq);
-+};
--- 
-1.6.3.1
+That's a start.  Now if you knew what you where looking for...
+(No offense intended - "diff" doesn't place "here I am" markers.)
+
+The machine I am doing my own tests on uses the pata_via driver and
+it detects the udma66 disk drive as a udma33 - - -
+
+But finding this is way down on my list of things to look for -
+Someone else is welcome to beat me to it.
+
+Mike
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+
 
