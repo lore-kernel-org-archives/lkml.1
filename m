@@ -1,185 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZFGHN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755113AbZFGHht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbZFGHN5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 03:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZFGHNu
+	id S1755113AbZFGHht (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 03:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZFGHhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 03:13:50 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:39230 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753935AbZFGHNt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 03:13:49 -0400
-Date: Sun, 7 Jun 2009 09:16:06 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Catalin Marinas <catalin.marinas@arm.com>,
-       Tony Luck <tony.luck@intel.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Ungerer <gerg@snapgear.com>, Ralf Baechle <ralf@linux-mips.org>,
-       Michael Abbott <michael@araneidae.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [GIT PULL] headers_check fixes
-Message-ID: <20090607071606.GA11256@uranus.ravnborg.org>
-References: <1244118232.5172.26.camel@ht.satnam> <1244292857.2473.4.camel@ht.satnam> <20090606130210.GA9343@flint.arm.linux.org.uk> <1244299177.2473.21.camel@ht.satnam> <20090606214711.GA4813@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 7 Jun 2009 03:37:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52470 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753082AbZFGHhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 03:37:39 -0400
+Date: Sun, 7 Jun 2009 07:36:57 GMT
+From: tip-bot for Frederic Weisbecker <fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbeec@gmail.com, fweisbec@gmail.com, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbeec@gmail.com, fweisbec@gmail.com, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <1244322643-6447-1-git-send-email-fweisbec@gmail.com>
+References: <1244322643-6447-1-git-send-email-fweisbec@gmail.com>
+Subject: [tip:perfcounters/core] perf top: Wait for a minimal set of events before reading first snapshot
+Message-ID: <tip-2f01190aa62fe9dd0a98205927b9f09fd191c017@git.kernel.org>
+Git-Commit-ID: 2f01190aa62fe9dd0a98205927b9f09fd191c017
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090606214711.GA4813@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Jun 2009 07:37:00 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 06, 2009 at 10:47:11PM +0100, Russell King wrote:
-> Right, below is a patch to unifdef.c which allows it to work out if
-> an #if expression always evaluates true or false for symbols which
-> are being undefined/always defined.
-> 
-> The patch is slightly more complicated than I'd hoped because unifdef
-> needs to see lines fully evaluated - doing otherwise causes it to
-> mark the line as "dirty" and copy it over no matter what.
-> 
-> What follows this email is the diff of what effect it has on the
-> headers copied over - as can be seen, all resulting changes are of
-> net benefit.
+Commit-ID:  2f01190aa62fe9dd0a98205927b9f09fd191c017
+Gitweb:     http://git.kernel.org/tip/2f01190aa62fe9dd0a98205927b9f09fd191c017
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Sat, 6 Jun 2009 23:10:43 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 7 Jun 2009 09:32:44 +0200
 
-Result is great - thanks for implmenting this!
-I have applied the following (no code changes, only a few more
-details in the changelog).
+perf top: Wait for a minimal set of events before reading first snapshot
 
-	Sam
+The first snapshot reading often occur before any events have
+been read in the mapped perfcounter files.
 
-commit 3a8a10760f9626856848ae815e9436a2e04a4082
-Author: Russell King <rmk+lkml@arm.linux.org.uk>
-Date:   Sat Jun 6 22:47:11 2009 +0100
+Just wait until we have at least one event before starting the
+snapshot, or the delay before the first set of entries to be
+displayed may be long in case of low refresh rate.
 
-    kbuild: fix headers_exports with boolean expression
-    
-    When we had code like this in a header unifdef failed to
-    deduct that the expression was always false - and we had code exported
-    that was not intended for userspace.
-    
-    #if defined(__KERNEL__) && !defined(__ASSEMBLY__)
-      int a;
-    #endif
-    
-    This commit implment support in unidef which allows it to work out if
-    an #if expression always evaluates true or false for symbols which
-    are being undefined/always defined.
-    
-    The patch is slightly more complicated than I'd hoped because unifdef
-    needs to see lines fully evaluated - doing otherwise causes it to
-    mark the line as "dirty" and copy it over no matter what.
-    
-    Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Note: we could also use a semaphore to wait before
+"print_entries" number of eveents is reached, but again this
+value is tunable and we can't ensure we will even reach it.
+Also we could base on a default mimimum set of entries for the
+first refresh, say 15, but again, the minimal sample is
+tunable, and we could end up displaying nothing until we have a
+minimal default set of events, which can take some time in case
+of high samples filters.
 
-diff --git a/scripts/unifdef.c b/scripts/unifdef.c
-index 05a31a6..30d459f 100644
---- a/scripts/unifdef.c
-+++ b/scripts/unifdef.c
-@@ -678,8 +678,10 @@ eval_unary(const struct ops *ops, int *valp, const char **cpp)
- 	if (*cp == '!') {
- 		debug("eval%d !", ops - eval_ops);
- 		cp++;
--		if (eval_unary(ops, valp, &cp) == LT_IF)
-+		if (eval_unary(ops, valp, &cp) == LT_IF) {
-+			*cpp = cp;
- 			return (LT_IF);
-+		}
- 		*valp = !*valp;
- 	} else if (*cp == '(') {
- 		cp++;
-@@ -700,13 +702,16 @@ eval_unary(const struct ops *ops, int *valp, const char **cpp)
- 			return (LT_IF);
- 		cp = skipcomment(cp);
- 		sym = findsym(cp);
--		if (sym < 0)
--			return (LT_IF);
--		*valp = (value[sym] != NULL);
- 		cp = skipsym(cp);
- 		cp = skipcomment(cp);
- 		if (*cp++ != ')')
- 			return (LT_IF);
-+		if (sym >= 0)
-+			*valp = (value[sym] != NULL);
-+		else {
-+			*cpp = cp;
-+			return (LT_IF);
-+		}
- 		keepthis = false;
- 	} else if (!endsym(*cp)) {
- 		debug("eval%d symbol", ops - eval_ops);
-@@ -741,11 +746,11 @@ eval_table(const struct ops *ops, int *valp, const char **cpp)
- 	const struct op *op;
- 	const char *cp;
- 	int val;
-+	Linetype lhs, rhs;
+Hence this simple solution which partially covers the default
+case.
+
+[ Impact: fix display artifacts in perf top ]
+
+Signed-off-by: Frederic Weisbecker <fweisbeec@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <1244322643-6447-1-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ tools/perf/builtin-top.c |   22 +++++++++++++++++-----
+ 1 files changed, 17 insertions(+), 5 deletions(-)
+
+diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
+index f2e7312..fdc1d58 100644
+--- a/tools/perf/builtin-top.c
++++ b/tools/perf/builtin-top.c
+@@ -420,7 +420,7 @@ static unsigned int mmap_read_head(struct mmap_data *md)
  
- 	debug("eval%d", ops - eval_ops);
- 	cp = *cpp;
--	if (ops->inner(ops+1, valp, &cp) == LT_IF)
--		return (LT_IF);
-+	lhs = ops->inner(ops+1, valp, &cp);
- 	for (;;) {
- 		cp = skipcomment(cp);
- 		for (op = ops->op; op->str != NULL; op++)
-@@ -755,14 +760,32 @@ eval_table(const struct ops *ops, int *valp, const char **cpp)
- 			break;
- 		cp += strlen(op->str);
- 		debug("eval%d %s", ops - eval_ops, op->str);
--		if (ops->inner(ops+1, &val, &cp) == LT_IF)
--			return (LT_IF);
--		*valp = op->fn(*valp, val);
-+		rhs = ops->inner(ops+1, &val, &cp);
-+		if (op->fn == op_and && (lhs == LT_FALSE || rhs == LT_FALSE)) {
-+			debug("eval%d: and always false", ops - eval_ops);
-+			if (lhs == LT_IF)
-+				*valp = val;
-+			lhs = LT_FALSE;
-+			continue;
-+		}
-+		if (op->fn == op_or && (lhs == LT_TRUE || rhs == LT_TRUE)) {
-+			debug("eval%d: or always true", ops - eval_ops);
-+			if (lhs == LT_IF)
-+				*valp = val;
-+			lhs = LT_TRUE;
-+			continue;
-+		}
-+		if (rhs == LT_IF)
-+			lhs = LT_IF;
-+		if (lhs != LT_IF)
-+			*valp = op->fn(*valp, val);
+ struct timeval last_read, this_read;
+ 
+-static void mmap_read(struct mmap_data *md)
++static void mmap_read_counter(struct mmap_data *md)
+ {
+ 	unsigned int head = mmap_read_head(md);
+ 	unsigned int old = md->prev;
+@@ -517,6 +517,16 @@ static void mmap_read(struct mmap_data *md)
+ static struct pollfd event_array[MAX_NR_CPUS * MAX_COUNTERS];
+ static struct mmap_data mmap_array[MAX_NR_CPUS][MAX_COUNTERS];
+ 
++static void mmap_read(void)
++{
++	int i, counter;
++
++	for (i = 0; i < nr_cpus; i++) {
++		for (counter = 0; counter < nr_counters; counter++)
++			mmap_read_counter(&mmap_array[i][counter]);
++	}
++}
++
+ static int __cmd_top(void)
+ {
+ 	struct perf_counter_attr *attr;
+@@ -571,6 +581,11 @@ static int __cmd_top(void)
+ 		}
  	}
  
- 	*cpp = cp;
- 	debug("eval%d = %d", ops - eval_ops, *valp);
--	return (*valp ? LT_TRUE : LT_FALSE);
-+	if (lhs != LT_IF)
-+		lhs = (*valp ? LT_TRUE : LT_FALSE);
-+	return lhs;
- }
++	/* Wait for a minimal set of events before starting the snapshot */
++	poll(event_array, nr_poll, 100);
++
++	mmap_read();
++
+ 	if (pthread_create(&thread, NULL, display_thread, NULL)) {
+ 		printf("Could not create display thread.\n");
+ 		exit(-1);
+@@ -589,10 +604,7 @@ static int __cmd_top(void)
+ 	while (1) {
+ 		int hits = samples;
  
- /*
-@@ -773,12 +796,15 @@ eval_table(const struct ops *ops, int *valp, const char **cpp)
- static Linetype
- ifeval(const char **cpp)
- {
-+	const char *cp = *cpp;
- 	int ret;
- 	int val;
+-		for (i = 0; i < nr_cpus; i++) {
+-			for (counter = 0; counter < nr_counters; counter++)
+-				mmap_read(&mmap_array[i][counter]);
+-		}
++		mmap_read();
  
- 	debug("eval %s", *cpp);
- 	keepthis = killconsts ? false : true;
--	ret = eval_table(eval_ops, &val, cpp);
-+	ret = eval_table(eval_ops, &val, &cp);
-+	if (ret != LT_IF)
-+		*cpp = cp;
- 	debug("eval = %d", val);
- 	return (keepthis ? LT_IF : ret);
- }
+ 		if (hits == samples)
+ 			ret = poll(event_array, nr_poll, 100);
