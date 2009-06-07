@@ -1,104 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbZFGKWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbZFGKWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbZFGKWo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 06:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755846AbZFGKWe
+	id S1755938AbZFGKWz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 06:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbZFGKWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 06:22:34 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56780 "EHLO hera.kernel.org"
+	Sun, 7 Jun 2009 06:22:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56788 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755855AbZFGKWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 06:22:32 -0400
-Date: Sun, 7 Jun 2009 10:22:10 GMT
-From: tip-bot for walimis <walimisdev@gmail.com>
+	id S1755922AbZFGKWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 06:22:42 -0400
+Date: Sun, 7 Jun 2009 10:22:20 GMT
+From: tip-bot for Steven Whitehouse <swhiteho@redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, walimisdev@gmail.com, hpa@zytor.com,
+Cc: linux-kernel@vger.kernel.org, swhiteho@redhat.com, hpa@zytor.com,
        mingo@redhat.com, rostedt@goodmis.org, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, walimisdev@gmail.com,
+Reply-To: mingo@redhat.com, hpa@zytor.com, swhiteho@redhat.com,
        linux-kernel@vger.kernel.org, rostedt@goodmis.org, tglx@linutronix.de
-In-Reply-To: <1244016090-7814-3-git-send-email-walimisdev@gmail.com>
-References: <1244016090-7814-3-git-send-email-walimisdev@gmail.com>
-Subject: [tip:tracing/core] tracing/events: fix output format of user stack
-Message-ID: <tip-048dc50c5e7eada19ebabbad70b7966d14283d41@git.kernel.org>
-Git-Commit-ID: 048dc50c5e7eada19ebabbad70b7966d14283d41
+In-Reply-To: <1244037123.29604.603.camel@localhost.localdomain>
+References: <1244037123.29604.603.camel@localhost.localdomain>
+Subject: [tip:tracing/core] tracing: fix multiple use of __print_flags and __print_symbolic
+Message-ID: <tip-56d8bd3f0b98972312cad683947ec90b21011199@git.kernel.org>
+Git-Commit-ID: 56d8bd3f0b98972312cad683947ec90b21011199
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Jun 2009 10:22:10 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Jun 2009 10:22:21 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  048dc50c5e7eada19ebabbad70b7966d14283d41
-Gitweb:     http://git.kernel.org/tip/048dc50c5e7eada19ebabbad70b7966d14283d41
-Author:     walimis <walimisdev@gmail.com>
-AuthorDate: Wed, 3 Jun 2009 16:01:30 +0800
+Commit-ID:  56d8bd3f0b98972312cad683947ec90b21011199
+Gitweb:     http://git.kernel.org/tip/56d8bd3f0b98972312cad683947ec90b21011199
+Author:     Steven Whitehouse <swhiteho@redhat.com>
+AuthorDate: Wed, 3 Jun 2009 14:52:03 +0100
 Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Wed, 3 Jun 2009 10:25:30 -0400
+CommitDate: Wed, 3 Jun 2009 10:29:48 -0400
 
-tracing/events: fix output format of user stack
+tracing: fix multiple use of __print_flags and __print_symbolic
 
-According to "events/ftrace/user_stack/format", fix the output of
-user stack.
+Here is an updated patch to include the extra call to
+trace_seq_init() as requested. This is vs. the latest
+-tip tree and fixes the use of multiple __print_flags
+and __print_symbolic in a single tracer. Also tested
+to ensure its working now:
 
-before fix:
+mount.gfs2-2534  [000]   235.850587: gfs2_glock_queue: 8.7 glock 1:2 dequeue PR
+mount.gfs2-2534  [000]   235.850591: gfs2_demote_rq: 8.7 glock 1:0 demote EX to NL flags:DI
+mount.gfs2-2534  [000]   235.850591: gfs2_glock_queue: 8.7 glock 1:0 dequeue EX
+glock_workqueue-2529  [000]   235.850666: gfs2_glock_state_change: 8.7 glock 1:0 state EX => NL tgt:NL dmt:NL flags:lDpI
+glock_workqueue-2529  [000]   235.850672: gfs2_glock_put: 8.7 glock 1:0 state NL => IV flags:I
 
-  sh-1073  [000]    31.137561:  <b7f274fe> <-  <0804e33c> <-  <080835c1>
-
-after fix:
-
-  sh-1072  [000]    37.039329:
- =>  <b7f8a4fe>
- =>  <0804e33c>
- =>  <080835c1>
-
-Signed-off-by: walimis <walimisdev@gmail.com>
-LKML-Reference: <1244016090-7814-3-git-send-email-walimisdev@gmail.com>
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+LKML-Reference: <1244037123.29604.603.camel@localhost.localdomain>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
 
 ---
- kernel/trace/trace_output.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+ include/trace/ftrace.h      |    2 ++
+ kernel/trace/trace_output.c |   10 ++++------
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index b5478da..40ede4d 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -104,6 +104,7 @@
+  *	field = (typeof(field))entry;
+  *
+  *	p = get_cpu_var(ftrace_event_seq);
++ *	trace_seq_init(p);
+  *	ret = trace_seq_printf(s, <TP_printk> "\n");
+  *	put_cpu();
+  *	if (!ret)
+@@ -167,6 +168,7 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+ 	field = (typeof(field))entry;					\
+ 									\
+ 	p = &get_cpu_var(ftrace_event_seq);				\
++	trace_seq_init(p);						\
+ 	ret = trace_seq_printf(s, #call ": " print);			\
+ 	put_cpu();							\
+ 	if (!ret)							\
 diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 64596a5..8dadbbb 100644
+index 8dadbbb..8afeea4 100644
 --- a/kernel/trace/trace_output.c
 +++ b/kernel/trace/trace_output.c
-@@ -389,17 +389,20 @@ seq_print_userip_objs(const struct userstack_entry *entry, struct trace_seq *s,
+@@ -223,10 +223,9 @@ ftrace_print_flags_seq(struct trace_seq *p, const char *delim,
+ {
+ 	unsigned long mask;
+ 	const char *str;
++	const char *ret = p->buffer + p->len;
+ 	int i;
  
- 		if (ip == ULONG_MAX || !ret)
- 			break;
--		if (i && ret)
--			ret = trace_seq_puts(s, " <- ");
-+		if (ret)
-+			ret = trace_seq_puts(s, " => ");
- 		if (!ip) {
- 			if (ret)
- 				ret = trace_seq_puts(s, "??");
-+			if (ret)
-+				ret = trace_seq_puts(s, "\n");
- 			continue;
- 		}
- 		if (!ret)
- 			break;
- 		if (ret)
- 			ret = seq_print_user_ip(s, mm, ip, sym_flags);
-+		ret = trace_seq_puts(s, "\n");
- 	}
+-	trace_seq_init(p);
+-
+ 	for (i = 0;  flag_array[i].name && flags; i++) {
  
- 	if (mm)
-@@ -1012,10 +1015,10 @@ static enum print_line_t trace_user_stack_print(struct trace_iterator *iter,
+ 		mask = flag_array[i].mask;
+@@ -249,7 +248,7 @@ ftrace_print_flags_seq(struct trace_seq *p, const char *delim,
  
- 	trace_assign_type(field, iter->ent);
+ 	trace_seq_putc(p, 0);
  
--	if (!seq_print_userip_objs(field, s, flags))
-+	if (!trace_seq_putc(s, '\n'))
- 		goto partial;
+-	return p->buffer;
++	return ret;
+ }
+ EXPORT_SYMBOL(ftrace_print_flags_seq);
  
--	if (!trace_seq_putc(s, '\n'))
-+	if (!seq_print_userip_objs(field, s, flags))
- 		goto partial;
+@@ -258,8 +257,7 @@ ftrace_print_symbols_seq(struct trace_seq *p, unsigned long val,
+ 			 const struct trace_print_flags *symbol_array)
+ {
+ 	int i;
+-
+-	trace_seq_init(p);
++	const char *ret = p->buffer + p->len;
  
- 	return TRACE_TYPE_HANDLED;
+ 	for (i = 0;  symbol_array[i].name; i++) {
+ 
+@@ -275,7 +273,7 @@ ftrace_print_symbols_seq(struct trace_seq *p, unsigned long val,
+ 		
+ 	trace_seq_putc(p, 0);
+ 
+-	return p->buffer;
++	return ret;
+ }
+ EXPORT_SYMBOL(ftrace_print_symbols_seq);
+ 
