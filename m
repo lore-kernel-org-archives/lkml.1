@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbZFGSVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZFGSYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755645AbZFGSVV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 14:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbZFGSVL
+	id S1754656AbZFGSYT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 14:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbZFGSYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 14:21:11 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:64628 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752520AbZFGSVK convert rfc822-to-8bit (ORCPT
+	Sun, 7 Jun 2009 14:24:11 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:35950 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753290AbZFGSYK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 14:21:10 -0400
+	Sun, 7 Jun 2009 14:24:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=VFdwa3FkeqxDQTxErqcevvzHxRdePnWjdxyGB1sr1aB9WQRpQ+bkWDKSX743MkdOpP
-         7R7ClFMGPJ6Gn+7zc05R2pMJKbWRQeGp26hVaAzQFRjixBYo1b0aWpCHHSaSk7XoBJv/
-         x6NA2nijwa6KIwHN2kB01vr0OJv2q7+TXsDd4=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=bKIfZ011OgmJ+h2hc3ZVwjhgd+lA1FSqHAczdR9df1l1LismTIM1Le6c2so9ubB7l0
+         AYcU4XXpMFQXTP0GK7SUtAVs7gn2GBKV8jLpqW6K3EHvp4wDw470ux1ZpWST3guJOjGW
+         ddqILmRy5jspJXf9thR3nhk38VNOix1PEP91k=
 MIME-Version: 1.0
-In-Reply-To: <200906071955.42378.bzolnier@gmail.com>
-References: <200906071444.33047.bzolnier@gmail.com>
-	 <200906071744.23629.bzolnier@gmail.com>
-	 <84144f020906070954p54cdfee4y62a51795be10b0d0@mail.gmail.com>
-	 <200906071955.42378.bzolnier@gmail.com>
-Date: Sun, 7 Jun 2009 21:21:11 +0300
-X-Google-Sender-Auth: d9ab14bf1b9e7103
-Message-ID: <84144f020906071121k34d6d555i6332d49b0db0fac6@mail.gmail.com>
-Subject: Re: [git pull] IDE fixes
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+In-Reply-To: <4A2BF785.3020402@gmail.com>
+References: <c5bd819b0906021525l13ee9282j1fb270e141985f66@mail.gmail.com>
+	 <c5bd819b0906040750w75e0389cod2a03b89ce838d1b@mail.gmail.com>
+	 <20090605100505.41b3b818@lxorguk.ukuu.org.uk>
+	 <c5bd819b0906050335i4e813887sc8f4d901da86a1aa@mail.gmail.com>
+	 <20090605114245.175499e1@lxorguk.ukuu.org.uk>
+	 <4A29C163.3080706@gmail.com>
+	 <20090606155636.18bc4f2e@lxorguk.ukuu.org.uk>
+	 <4A2AB298.7020603@gmail.com>
+	 <c5bd819b0906062139s4d8eea3eq2fc21f37deb6172b@mail.gmail.com>
+	 <4A2BF785.3020402@gmail.com>
+Date: Sun, 7 Jun 2009 20:24:11 +0200
+Message-ID: <c5bd819b0906071124j21270574h44db963bdc0b552d@mail.gmail.com>
+Subject: Re: Kernel 2.6.30rc7 limits IDE to UDMA33
+From: Grozdan <neutrino8@gmail.com>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, tj@kernel.org,
+       alan@lxorguk.ukuu.org.uk
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bartlomiej,
-
-On Sun, Jun 7, 2009 at 8:55 PM, Bartlomiej Zolnierkiewicz
-<bzolnier@gmail.com> wrote:
-> On Sunday 07 June 2009 18:54:08 Pekka Enberg wrote:
->> Hi Bartlomiej,
+2009/6/7 Robert Hancock <hancockrwd@gmail.com>:
+> Grozdan wrote:
 >>
->> On Sun, Jun 7, 2009 at 6:44 PM, Bartlomiej Zolnierkiewicz
->> <bzolnier@gmail.com> wrote:
->> > Honestly, this should be solved on technical basis by somebody posting
->> > needed libata patches instead of attempts to slow down IDE fixes.
+>> 2009/6/6 Robert Hancock <hancockrwd@gmail.com>:
+>>>
+>>> Thing is somehow the GTM detection isn't working now and it apparently
+>>> was
+>>> in 2.6.27.1. I'm not seeing any patches to pata_via or libata-acpi that
+>>> seem
+>>> like they would affect this offhand. Grozdan, would you be able to try
+>>> git
+>>> bisect to try to figure out what changed the behavior?
+>>>
+>>> CCing Tejun in case he has any ideas..
+>>>
 >>
->> Nobody is "slowing down" IDE fixes here. Linus explicitly said that
->> -rc8 is the last release candidate and the next one is going to be
->> -final. There's absolutely _no way_ this series is appropriate at the
->> very end of a release cycle.
+>> I've no idea how and where to do a git bisect so if someone is willing
+>> to explain in simple steps, I can try...
 >
-> My honest opinion is that it is as appropriate now as it will be 2.6.31.
+> Linus's post on here is a pretty simple explanation:
 >
-> [ I'm still amazed by the amount of *completely* bogus reasons given for
->  not merging it. ]
+> http://kerneltrap.org/node/11753
+>
 
-I don't consider this a bogus reason at all:
-
- 10 files changed, 134 insertions(+), 43 deletions(-)
-
-Just search the LKML archives for the amount of crap other subsystem
-maintainers have gotten from Linus when they've tried to sneak
-something like that after -rc4 or so.
-
-                        Pekka
+Yes, it's clear to someone who's familiar with git but not to a noob
+like me. Where do I run this git? After it's finished what to do next?
+How many times do I have to compile kernels? Which kernels exactly?
+After booting a "bad" kernel, what then? etc... From reading the
+article, the guy has to compile 14!! times just to catch a problem
+between kernel 2.6.21 and 2.6.22. I guess in my case I'll have to
+compile a lot more than 14 times to catch something between kernel
+2.6.27 and 2.6.30 and honestly I don't have time for this right now.
+However, I did a diff between the pata_via driver of kernel 2.6.27 and
+2.6.30 and there have been changes to it but I'm not sure if they
+affect the cable detection...
