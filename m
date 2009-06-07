@@ -1,101 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbZFGRWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbZFGRZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755084AbZFGRWX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 13:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZFGRWQ
+	id S1755741AbZFGRZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 13:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbZFGRZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 13:22:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34208 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753046AbZFGRWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 13:22:16 -0400
-Date: Sun, 7 Jun 2009 17:21:32 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf stat: Print out instructins/cycle metric
-Message-ID: <tip-e779898aa74cd2e97216368b3f3689ceffe8aeed@git.kernel.org>
-Git-Commit-ID: e779898aa74cd2e97216368b3f3689ceffe8aeed
-X-Mailer: tip-git-log-daemon
+	Sun, 7 Jun 2009 13:25:18 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:41302 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753459AbZFGRZQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 13:25:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kinT1Xy5+HPMO/ZXspIzpUkfTOAUH7fcZcLWI8z8aQm7cES0Qcpu9MJkjGhcMMLo3n
+         jHnKArGlvT3IsGHkn7sG7KyaOWQzIjWWaBQ9rvRAdscyudpneJioktixU5ScHs6hJCt+
+         ME88UfuoPr7No5LV5Y91xNHpUOn9WYoNQpIFE=
 MIME-Version: 1.0
+In-Reply-To: <20090607164520.GA20672@elte.hu>
+References: <1244392012-638-1-git-send-email-vegard.nossum@gmail.com>
+	 <20090607164520.GA20672@elte.hu>
+Date: Sun, 7 Jun 2009 19:25:13 +0200
+Message-ID: <19f34abd0906071025g46529b30v41c70b0afc0be030@mail.gmail.com>
+Subject: Re: [PATCH] kmemcheck: move hook before preempt_conditional_sti()
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Alexander van Heukelum <heukelum@fastmail.fm>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Jun 2009 17:21:45 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e779898aa74cd2e97216368b3f3689ceffe8aeed
-Gitweb:     http://git.kernel.org/tip/e779898aa74cd2e97216368b3f3689ceffe8aeed
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Sun, 7 Jun 2009 18:14:46 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 7 Jun 2009 18:14:46 +0200
+2009/6/7 Ingo Molnar <mingo@elte.hu>:
+>
+> * Vegard Nossum <vegard.nossum@gmail.com> wrote:
+>
+>> There are actually two problems here:
+>>
+>> 1. We absolutely cannot enable IRQs in case the fault was caused by
+>>    kmemcheck.
+>>
+>> 2. We cannot enable preemption and then return from the debug handler
+>>    without disabling preemption afterwards.
+>>
+>> The problem seems to be a merge fallout between three commits:
+>>
+>> commit 3d2a71a596bd9c761c8487a2178e95f8a61da083
+>> Author: Alexander van Heukelum <heukelum@fastmail.fm>
+>> Date:   Tue Sep 30 18:41:37 2008 +0200
+>>
+>>     x86, traps: converge do_debug handlers
+>>
+>> commit 08d68323d1f0c34452e614263b212ca556dae47f
+>> Author: K.Prasad <prasad@linux.vnet.ibm.com>
+>> Date:   Mon Jun 1 23:44:08 2009 +0530
+>>
+>>     hw-breakpoints: modifying generic debug exception to use thread-specific deb
+>>
+>> commit 787ecfaa503dc63ff1831ddc74b15dad49bace1d
+>> Author: Vegard Nossum <vegard.nossum@gmail.com>
+>> Date:   Fri Apr 4 00:53:23 2008 +0200
+>>
+>>     x86: add hooks for kmemcheck
+>>
+>> I encourage the kprobe developers to check whether their code is correct
+>> as it stands in current tip/master. Also, comments on this particular
+>> change is welcome.
+>>
+>> Reported-by: Ingo Molnar <mingo@elte.hu>
+>> Cc: Alexander van Heukelum <heukelum@fastmail.fm>
+>> Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+>> Cc: Alan Stern <stern@rowland.harvard.edu>
+>> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+>> Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+>> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+>> ---
+>>  arch/x86/kernel/traps.c |    8 ++++----
+>>  1 files changed, 4 insertions(+), 4 deletions(-)
+>
+>>
+>> diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+>> index c8a7f87..a898c6b 100644
+>> --- a/arch/x86/kernel/traps.c
+>> +++ b/arch/x86/kernel/traps.c
+>> @@ -550,6 +550,10 @@ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
+>>                                                       SIGTRAP) == NOTIFY_STOP)
+>>               return;
+>>
+>> +     /* Catch kmemcheck conditions first of all! */
+>> +     if ((dr6 & DR_STEP) && kmemcheck_trap(regs))
+>> +             return;
+>> +
+>>       /* It's safe to allow irq's after DR6 has been saved */
+>>       preempt_conditional_sti(regs);
+>>
+>> @@ -559,10 +563,6 @@ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
+>>               return;
+>>       }
+>>
+>> -     /* Catch kmemcheck conditions first of all! */
+>> -     if ((dr6 & DR_STEP) && kmemcheck_trap(regs))
+>> -             return;
+>> -
+>>       /*
+>>        * Single-stepping through system calls: ignore any exceptions in
+>>        * kernel space, but re-enable TF when returning to user mode.
+>
+> Yeah - this could solve the crash i saw. Mind sending a pull request
+> too?
 
-perf stat: Print out instructins/cycle metric
+It did solve it, I tested it :-D
 
-Before:
+This patch was against tip/master; tip/kmemcheck does not have the
+problem. I think it might have been introduced in this merge:
 
-     7549326754  cycles               #    3201.811 M/sec
-    10007594937  instructions         #    4244.408 M/sec
+commit 85b9b2801e46a147330b8a0f321bc40342ff5b4c
+Merge: bf8d9b3... 7387400...
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Thu Jun 4 13:56:43 2009 +0200
 
-After:
+    Merge branch 'tracing/hw-breakpoints'
 
-     7542051194  cycles               #    3201.996 M/sec
-    10007743852  instructions         #    4248.811 M/sec # 1.327 per cycle
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Conflicts:
+        arch/x86/Kconfig
+        arch/x86/kernel/traps.c
+        kernel/Makefile
 
 
----
- tools/perf/builtin-stat.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
+Vegard
 
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index 184ff95..8085509 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -83,6 +83,7 @@ static __u64			event_scaled[MAX_COUNTERS];
- 
- static __u64			runtime_nsecs;
- static __u64			walltime_nsecs;
-+static __u64			runtime_cycles;
- 
- static void create_perf_stat_counter(int counter)
- {
-@@ -177,6 +178,9 @@ static void read_counter(int counter)
- 	if (attrs[counter].type == PERF_TYPE_SOFTWARE &&
- 		attrs[counter].config == PERF_COUNT_TASK_CLOCK)
- 		runtime_nsecs = count[0];
-+	if (attrs[counter].type == PERF_TYPE_HARDWARE &&
-+		attrs[counter].config == PERF_COUNT_CPU_CYCLES)
-+		runtime_cycles = count[0];
- }
- 
- /*
-@@ -214,6 +218,13 @@ static void print_counter(int counter)
- 		if (runtime_nsecs)
- 			fprintf(stderr, " # %11.3f M/sec",
- 				(double)count[0]/runtime_nsecs*1000.0);
-+		if (runtime_cycles &&
-+			attrs[counter].type == PERF_TYPE_HARDWARE &&
-+				attrs[counter].config == PERF_COUNT_INSTRUCTIONS) {
-+
-+			fprintf(stderr, " # %1.3f per cycle",
-+				(double)count[0] / (double)runtime_cycles);
-+		}
- 	}
- 	if (scaled)
- 		fprintf(stderr, "  (scaled from %.2f%%)",
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
