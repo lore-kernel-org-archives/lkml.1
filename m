@@ -1,101 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754900AbZFGJ4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755275AbZFGKAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754900AbZFGJ4n (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 05:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbZFGJ4f
+	id S1755275AbZFGKAe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 06:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbZFGKA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 05:56:35 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:63160 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753690AbZFGJ4e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 05:56:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=nCjTGJ14/0XX50Y9UY935fTddXwthf6CIjoIbJbYvSNp57ssEopX2RPezaSBikP6LW
-         OMNlDSynqmHrXL2iBKCxwg+y0FN6utdpL2HKd2twIzfIB2vHFesSYT3Ga2gfqOHl/zoH
-         iaKJ46YX8H52uDe86SJbzBku98ibJLKRUEY/w=
-Subject: Re: [ANN] Atheros 802.11n USB firmware source code released
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, otus-devel@venema.h4ckr.net,
-       David Woodhouse <dwmw2@infradead.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <1244367815.26071.4.camel@johannes.local>
-References: <43e72e890906051204q22278e4cw6beeae27da50e988@mail.gmail.com>
-	 <1244326943.12159.5.camel@localhost>  <1244334102.16810.3.camel@localhost>
-	 <1244367815.26071.4.camel@johannes.local>
-Content-Type: text/plain
-Date: Sun, 07 Jun 2009 12:54:15 +0300
-Message-Id: <1244368455.22643.4.camel@localhost>
+	Sun, 7 Jun 2009 06:00:27 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:62725 "EHLO smtp.wine.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752724AbZFGKA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 06:00:26 -0400
+To: avi@redhat.com
+Cc: guillaume.thouvenin@ext.bull.net, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.30-rc8 KVM] gcc 3.3 dies at emulate_2op_cl().
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <4A2B7A79.4060600@redhat.com>
+	<200906071747.FFJ57396.MSOOQFVHtFOJLF@I-love.SAKURA.ne.jp>
+	<4A2B8201.8050904@redhat.com>
+	<200906071839.DFB51529.JFHLOFtMFOSVQO@I-love.SAKURA.ne.jp>
+	<4A2B8B22.3020602@redhat.com>
+In-Reply-To: <4A2B8B22.3020602@redhat.com>
+Message-Id: <200906071900.GED43277.OtJOQFOFSMHVFL@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Sun, 7 Jun 2009 19:00:28 +0900
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-06-07 at 11:43 +0200, Johannes Berg wrote:
-> On Sun, 2009-06-07 at 03:21 +0300, Maxim Levitsky wrote:
-> 
-> > > Is this source for same firmware that was closed?
-> 
-> Yes, but it was compiled differently afaik so you won't arrive at the
-> same binary.
-> 
-> > > Will AP mode work in future?
-> 
-> Well, not TYPE=AP, but we'll integrate whatever is necessary into one
-> firmware, I expect. It shouldn't be very hard given that AP mode really
-> works with the TYPE=STA firmware already, almost.
-> 
-> > What does this mean:
-> > 
-> > eeprom   : ORIGIN = 0x000000, LENGTH = 1024k
-> > 
-> > 
-> > Does the device have whole 1M of eeprom?
-> > What is there?
-> 
-> The eeprom is mapped there, but I don't think it's 1M, it's just the max
-> size of the mapping to the CPUs address space.
-Fine, like I expected, but still, I guess there is some 'loader' in
-eeprom?
+Avi Kivity wrote:
+> I can eliminate _tmp by using lahf/sahf, but it's not going to be a 
+> trivial patch.
 
+I don't know what's happening here.
 
+If I comment out (_dst).bytes == 2 , it compiles.
+The problem happens only "w" + "unsigned short" case.
 
-> 
-> > Also what is this:
-> > 
-> > sram     : ORIGIN = 0x100000, LENGTH = 64k
-> 
-> This is just memory. It's used for buffering frames and dma descriptors
-> etc. internally. I want to change the code to do this with the linker
-> script rather than manually assigning addresses in the source. But if
-> you grep for this address you'll find how it's used.
-Great.
-
-
-> 
-> > Description says that pram is 32K, but:
-> >  
-> > pram     : ORIGIN = 0x200000, LENGTH = 16k
-> 
-> Yeah, we're not exactly sure about this yet, but using 32k definitely
-> crashes the device.
-Thats fine too.
-
-
-If there were a documentation too.
-Isn't it possible to publish it?
-
-This firmware contains so many 'magic' registers.
-
-Best regards,
-	Maxim Levitsky
-
+# diff -urp arch/x86/kvm/x86_emulate.c~ arch/x86/kvm/x86_emulate.c
+--- arch/x86/kvm/x86_emulate.c~ 2009-06-03 12:07:25.000000000 +0900
++++ arch/x86/kvm/x86_emulate.c  2009-06-07 17:52:05.591542272 +0900
+@@ -461,8 +461,8 @@ static u32 group2_table[] = {
+        do {                                                                    \
+                switch ((_dst).bytes) {                                         \
+                case 2:                                                         \
+-                       __emulate_2op_cl(_op, _cl, _src, _dst, _eflags,         \
+-                                               "w", unsigned short);           \
++                       /* __emulate_2op_cl(_op, _cl, _src, _dst, _eflags,      \
++                          "w", unsigned short); */             \
+                        break;                                                  \
+                case 4:                                                         \
+                        __emulate_2op_cl(_op, _cl, _src, _dst, _eflags,         \
