@@ -1,188 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbZFGPNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbZFGPQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755830AbZFGPNX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 11:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754719AbZFGPNT
+	id S1755029AbZFGPQY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 11:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbZFGPQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 11:13:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50139 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754673AbZFGPNS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 11:13:18 -0400
-Date: Sun, 7 Jun 2009 15:12:31 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf stat: Continue even on counter creation error
-Message-ID: <tip-743ee1f80434138495bbb95ffb897acf46b51d54@git.kernel.org>
-Git-Commit-ID: 743ee1f80434138495bbb95ffb897acf46b51d54
-X-Mailer: tip-git-log-daemon
+	Sun, 7 Jun 2009 11:16:16 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:50237 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753073AbZFGPQQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 11:16:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=A0xCw5NKjrc9vUpln4bDT1K+FzltuP8XMTApip6Sz2MZJsAlfs9bBPgZpkEp57CtJi
+         4Xy+KDPqYwDjeLPoFOYGZZG4EOx33DU1DRXhxauSbd6TjwdQoofKsaAA/E3dxrVTPIZ5
+         Mb7SjVOtdWSbyY5IdExW0HeNUfb5I/qLoWR+A=
 MIME-Version: 1.0
+In-Reply-To: <Pine.LNX.4.64.0906051906000.14826@sister.anvils>
+References: <1244212553-21629-1-git-send-email-minchan.kim@gmail.com>
+	 <Pine.LNX.4.64.0906051906000.14826@sister.anvils>
+Date: Mon, 8 Jun 2009 00:16:17 +0900
+Message-ID: <28c262360906070816h765bf4fag9b426199ac0627d@mail.gmail.com>
+Subject: Re: [RFC] remove page_table_lock in anon_vma_prepare
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Rik van Riel <riel@redhat.com>,
+       Nick Piggin <npiggin@suse.de>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Jun 2009 15:12:45 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  743ee1f80434138495bbb95ffb897acf46b51d54
-Gitweb:     http://git.kernel.org/tip/743ee1f80434138495bbb95ffb897acf46b51d54
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Sun, 7 Jun 2009 17:06:46 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 7 Jun 2009 17:08:59 +0200
+Hi, Hugh.
 
-perf stat: Continue even on counter creation error
+On Sat, Jun 6, 2009 at 3:26 AM, Hugh Dickins<hugh.dickins@tiscali.co.uk> wrote:
+> On Fri, 5 Jun 2009, Minchan Kim wrote:
+>
+>> As I looked over the page_table_lock, it related to page table not anon_vma
+>>
+>> I think anon_vma->lock can protect race against threads.
+>> Do I miss something ?
+>>
+>> If I am right, we can remove unnecessary page_table_lock holding
+>> in anon_vma_prepare. We can get performance benefit.
+>>
+>> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+>> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+>> Cc: Rik van Riel <riel@redhat.com>
+>> Cc: Nick Piggin <npiggin@suse.de>
+>
+> No, NAK to this one.  Look above the context shown in the patch:
+>
+>                anon_vma = find_mergeable_anon_vma(vma);
+>                allocated = NULL;
+>                if (!anon_vma) {
+>                        anon_vma = anon_vma_alloc();
+>                        if (unlikely(!anon_vma))
+>                                return -ENOMEM;
+>                        allocated = anon_vma;
+>                }
+>                spin_lock(&anon_vma->lock);
+>
+> So if find_mergeable_anon_vma failed to find a suitable neighbouring
+> vma to share with, we'll have got the anon_vma from anon_vma_alloc().
+>
+> Two threads could perfectly well do that concurrently (mmap_sem is
+> held only for reading), each allocating a separate fresh anon_vma,
+> then they'd each do spin_lock(&anon_vma->lock), but on _different_
+> anon_vmas, so wouldn't exclude each other at all: we need a common
+> lock to exclude that race, and abuse page_table_lock for the purpose.
 
-Before:
-
- $ perf stat ~/hackbench 5
-
- error: syscall returned with -1 (No such device)
-
-After:
-
- $ perf stat ~/hackbench 5
- Time: 1.640
-
- Performance counter stats for '/home/mingo/hackbench 5':
-
-    6524.570382  task-clock-ticks     #       3.838 CPU utilization factor
-          35704  context-switches     #       0.005 M/sec
-            191  CPU-migrations       #       0.000 M/sec
-           8958  page-faults          #       0.001 M/sec
-  <not counted>  cycles
-  <not counted>  instructions
-  <not counted>  cache-references
-  <not counted>  cache-misses
-
- Wall-clock time elapsed:  1699.999995 msecs
-
-Also add -v (--verbose) option to allow the printing of failed
-counter opens.
-
-Plus dont print 'inf' if wall-time is zero (due to jiffies granularity),
-instead skip the printing of the CPU utilization factor.
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Indeed!
+I have missed it until now.
+In fact, I expected whoever expert like you point me out.
 
 
----
- tools/perf/builtin-stat.c |   31 +++++++++++++++++--------------
- 1 files changed, 17 insertions(+), 14 deletions(-)
+> (As I expect you've noticed, we used not to bother with the spin_lock
+> on anon_vma->lock when we'd freshly allocated the anon_vma, it looks
+> as if it's unnecessary.  But in fact Nick and Linus found there's a
+> subtle reason why it is necessary even then - hopefully the git log
+> explains it, or I could look up the mails if you want, but at this
+> moment the details escape me.
 
-diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
-index 2cbf5a1..184ff95 100644
---- a/tools/perf/builtin-stat.c
-+++ b/tools/perf/builtin-stat.c
-@@ -59,6 +59,7 @@ static struct perf_counter_attr default_attrs[MAX_COUNTERS] = {
- 
- static int			system_wide			=  0;
- static int			inherit				=  1;
-+static int			verbose				=  0;
- 
- static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
- 
-@@ -83,7 +84,7 @@ static __u64			event_scaled[MAX_COUNTERS];
- static __u64			runtime_nsecs;
- static __u64			walltime_nsecs;
- 
--static void create_perfstat_counter(int counter)
-+static void create_perf_stat_counter(int counter)
- {
- 	struct perf_counter_attr *attr = attrs + counter;
- 
-@@ -95,10 +96,8 @@ static void create_perfstat_counter(int counter)
- 		int cpu;
- 		for (cpu = 0; cpu < nr_cpus; cpu ++) {
- 			fd[cpu][counter] = sys_perf_counter_open(attr, -1, cpu, -1, 0);
--			if (fd[cpu][counter] < 0) {
--				printf("perfstat error: syscall returned with %d (%s)\n",
--						fd[cpu][counter], strerror(errno));
--				exit(-1);
-+			if (fd[cpu][counter] < 0 && verbose) {
-+				printf("Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n", counter, fd[cpu][counter], strerror(errno));
- 			}
- 		}
- 	} else {
-@@ -106,10 +105,8 @@ static void create_perfstat_counter(int counter)
- 		attr->disabled	= 1;
- 
- 		fd[0][counter] = sys_perf_counter_open(attr, 0, -1, -1, 0);
--		if (fd[0][counter] < 0) {
--			printf("perfstat error: syscall returned with %d (%s)\n",
--					fd[0][counter], strerror(errno));
--			exit(-1);
-+		if (fd[0][counter] < 0 && verbose) {
-+			printf("Error: counter %d, sys_perf_counter_open() syscall returned with %d (%s)\n", counter, fd[0][counter], strerror(errno));
- 		}
- 	}
- }
-@@ -147,6 +144,9 @@ static void read_counter(int counter)
- 
- 	nv = scale ? 3 : 1;
- 	for (cpu = 0; cpu < nr_cpus; cpu ++) {
-+		if (fd[cpu][counter] < 0)
-+			continue;
-+
- 		res = read(fd[cpu][counter], single_count, nv * sizeof(__u64));
- 		assert(res == nv * sizeof(__u64));
- 
-@@ -204,8 +204,9 @@ static void print_counter(int counter)
- 		if (attrs[counter].type == PERF_TYPE_SOFTWARE &&
- 			attrs[counter].config == PERF_COUNT_TASK_CLOCK) {
- 
--			fprintf(stderr, " # %11.3f CPU utilization factor",
--				(double)count[0] / (double)walltime_nsecs);
-+			if (walltime_nsecs)
-+				fprintf(stderr, " # %11.3f CPU utilization factor",
-+					(double)count[0] / (double)walltime_nsecs);
- 		}
- 	} else {
- 		fprintf(stderr, " %14Ld  %-20s",
-@@ -220,7 +221,7 @@ static void print_counter(int counter)
- 	fprintf(stderr, "\n");
- }
- 
--static int do_perfstat(int argc, const char **argv)
-+static int do_perf_stat(int argc, const char **argv)
- {
- 	unsigned long long t0, t1;
- 	int counter;
-@@ -232,7 +233,7 @@ static int do_perfstat(int argc, const char **argv)
- 		nr_cpus = 1;
- 
- 	for (counter = 0; counter < nr_counters; counter++)
--		create_perfstat_counter(counter);
-+		create_perf_stat_counter(counter);
- 
- 	/*
- 	 * Enable counters and exec the command:
-@@ -305,6 +306,8 @@ static const struct option options[] = {
- 			    "system-wide collection from all CPUs"),
- 	OPT_BOOLEAN('S', "scale", &scale,
- 			    "scale/normalize counters"),
-+	OPT_BOOLEAN('v', "verbose", &verbose,
-+		    "be more verbose (show counter open errors, etc)"),
- 	OPT_END()
- };
- 
-@@ -335,5 +338,5 @@ int cmd_stat(int argc, const char **argv, const char *prefix)
- 	signal(SIGALRM, skip_signal);
- 	signal(SIGABRT, skip_signal);
- 
--	return do_perfstat(argc, argv);
-+	return do_perf_stat(argc, argv);
- }
+Hmm. I didn't follow up that at that time.
+
+After you noticed me, I found that.
+commit d9d332e0874f46b91d8ac4604b68ee42b8a7a2c6
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Sun Oct 19 10:32:20 2008 -0700
+
+    anon_vma_prepare: properly lock even newly allocated entries
+
+It's subtle race so I can't digest it fully but I can understand that
+following as.
+
+If we don't hold lock at fresh anon_vma, it can be removed and
+reallocated by other threads since other cpu's can find it, free,
+reallocate before first thread which call anon_vma_prepare adds
+anon_vma to list after vma->anon_vma = anon_vma
+
+I hope my above explanation is right :)
+
+> And do we need the page_table_lock even when find_mergeable_anon_vma
+> succeeds?  That also looks as if it's unnecessary, but I've the ghost
+> of a memory that it's needed even for that case: I seem to remember
+> that there can be a benign race where find_mergeable_anon_vma called
+> by concurrent threads could actually return different anon_vmas.
+> That also is something I don't want to think too deeply into at
+> this instant, but beg me if you wish!)
+
+Unfortunately I can't found this issue mail or changelog.
+Hugh. Could you explain this issue more detail in your convenient time ?
+I don't mind you ignore me. I don't want you to be busy from me. :)
+
+I always thanks for your kind explanation and learns lots of thing from you. :)
+Thanks again.
+
+-- 
+Kinds regards,
+Minchan Kim
