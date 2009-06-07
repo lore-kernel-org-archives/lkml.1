@@ -1,84 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756050AbZFGTVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbZFGTXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756050AbZFGTVR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 15:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbZFGTUv
+	id S1754132AbZFGTXx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 15:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbZFGTXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 15:20:51 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:58411 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753543AbZFGTUt (ORCPT
+	Sun, 7 Jun 2009 15:23:46 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:30581 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751476AbZFGTXp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 15:20:49 -0400
+	Sun, 7 Jun 2009 15:23:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=BM7yfIQ27azHoM6h0x8lXCY7VIXDCQPBI954kftLJ9Xy77YyU4z0mXNKIihsUHbu6B
-         Ne5RnlxhPPDHVUheL9cwVd/YflPMSFO3iS5ApPXfwzYSrz38X/Q1AmviWGPcbmMyK0Om
-         /eBejk458tYSFzM4/nwx7fxKtvUrarYCLvJ/U=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [git pull] IDE fixes
-Date: Sun, 7 Jun 2009 21:25:40 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-rc8-next-20090605-07377-g5acd34e; KDE/4.2.3; i686; ; )
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200906071444.33047.bzolnier@gmail.com> <200906072100.10649.bzolnier@gmail.com> <84144f020906071209m51e5fd15jaa67f9143ab1d126@mail.gmail.com>
-In-Reply-To: <84144f020906071209m51e5fd15jaa67f9143ab1d126@mail.gmail.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=DkopL+m/tElrWBzKhHe5LrBH2lJ4NkwlBZdZjsOqpj4mymGQTGU1HcB1KBbeqT+VKe
+         UhOtu6nmsqtuGQ8ceJmvz7PuM0tNhYq/3Q9aRqukMXr1ryWeSRZ4z1imMzQ+yvRJUCGp
+         8ehdvRKU6XZOEwDDI8t31djtjaiPYuoHmpGHw=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906072125.40784.bzolnier@gmail.com>
+In-Reply-To: <tip-103428e57be323c3c5545db8ad12667099bc6005@git.kernel.org>
+References: <20090607124840.GD4547@lenovo>
+	 <tip-103428e57be323c3c5545db8ad12667099bc6005@git.kernel.org>
+Date: Sun, 7 Jun 2009 12:23:47 -0700
+Message-ID: <86802c440906071223w3116f452n7ccd028d52f11c77@mail.gmail.com>
+Subject: Re: [tip:irq/numa] x86, apic: Fix dummy apic read operation together 
+	with broken MP handling
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       gorcunov@openvz.org, yinghai@kernel.org, tglx@linutronix.de,
+       mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 07 June 2009 21:09:47 Pekka Enberg wrote:
-> Hi Bartlomiej,
-> 
-> On Sun, Jun 7, 2009 at 10:00 PM, Bartlomiej Zolnierkiewicz
-> <bzolnier@gmail.com> wrote:
-> >> > My honest opinion is that it is as appropriate now as it will be 2.6.31.
-> >> >
-> >> > [ I'm still amazed by the amount of *completely* bogus reasons given for
-> >> >  not merging it. ]
-> >>
-> >> I don't consider this a bogus reason at all:
-> >>
-> >>  10 files changed, 134 insertions(+), 43 deletions(-)
-> >
-> > Since when do we validate code quality based solely on LOC changed? :)
-> 
-> Since when we entered -rc8 (or even earlier).
+On Sun, Jun 7, 2009 at 7:24 AM, tip-bot for Cyrill
+Gorcunov<gorcunov@openvz.org> wrote:
+> Commit-ID:  103428e57be323c3c5545db8ad12667099bc6005
+> Gitweb:     http://git.kernel.org/tip/103428e57be323c3c5545db8ad12667099bc6005
+> Author:     Cyrill Gorcunov <gorcunov@openvz.org>
+> AuthorDate: Sun, 7 Jun 2009 16:48:40 +0400
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Sun, 7 Jun 2009 16:08:05 +0200
+>
+> x86, apic: Fix dummy apic read operation together with broken MP handling
+>
+> Ingo Molnar reported that read_apic is buggy novadays:
+>
+> [    0.000000] Using APIC driver default
+> [    0.000000] SMP: Allowing 1 CPUs, 0 hotplug CPUs
+> [    0.000000] Local APIC disabled by BIOS -- you can enable it with "lapic"
+> [    0.000000] APIC: disable apic facility
+> [    0.000000] ------------[ cut here ]------------
+> [    0.000000] WARNING: at arch/x86/kernel/apic/apic.c:254 native_apic_read_dummy+0x2d/0x3b()
+> [    0.000000] Hardware name: HP OmniBook PC
+>
+> Indeed we still rely on apic->read operation for SMP compiled
+> kernel. And instead of disfigure the SMP code with #ifdef we
+> allow to call apic->read. To capture any unexpected results
+> we check for apic->read being called for sane reason via
+> WARN_ON_ONCE but(!) instead of OR we should use AND logical
+> operation (thanks Yinghai for spotting the root of the problem).
+>
+> Along with that we could be have bad MP table and we are
+> to fix it that way no SMP started and no complains about
+> BIOS bug if apic was just disabled via command line.
+>
+> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+> Cc: Yinghai Lu <yinghai@kernel.org>
+> LKML-Reference: <20090607124840.GD4547@lenovo>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>
+>
+> ---
+>  arch/x86/kernel/apic/apic.c |    9 ++++++++-
+>  arch/x86/kernel/smpboot.c   |    8 +++++---
+>  2 files changed, 13 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+> index e82488d..a4c9cf0 100644
+> --- a/arch/x86/kernel/apic/apic.c
+> +++ b/arch/x86/kernel/apic/apic.c
+> @@ -249,7 +249,7 @@ static void native_apic_write_dummy(u32 reg, u32 v)
+>
+>  static u32 native_apic_read_dummy(u32 reg)
+>  {
+> -       WARN_ON_ONCE((cpu_has_apic || !disable_apic));
+> +       WARN_ON_ONCE((cpu_has_apic && !disable_apic));
+>        return 0;
+>  }
+>
+> @@ -1609,6 +1609,13 @@ void __init init_apic_mappings(void)
+>        new_apicid = read_apic_id();
+>        if (boot_cpu_physical_apicid != new_apicid) {
+>                boot_cpu_physical_apicid = new_apicid;
+> +               /*
+> +                * yeah -- we lie about apic_version
+> +                * in case if apic was disabled via boot option
+> +                * but it's not a problem for SMP compiled kernel
+> +                * since smp_sanity_check is prepared for such a case
+> +                * and disable smp mode
+> +                */
+>                apic_version[new_apicid] =
+>                         GET_APIC_VERSION(apic_read(APIC_LVR));
+>        }
+> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> index d2e8de9..7c80007 100644
+> --- a/arch/x86/kernel/smpboot.c
+> +++ b/arch/x86/kernel/smpboot.c
+> @@ -992,10 +992,12 @@ static int __init smp_sanity_check(unsigned max_cpus)
+>         */
+>        if (APIC_INTEGRATED(apic_version[boot_cpu_physical_apicid]) &&
+>            !cpu_has_apic) {
+> -               printk(KERN_ERR "BIOS bug, local APIC #%d not detected!...\n",
+> -                       boot_cpu_physical_apicid);
+> -               printk(KERN_ERR "... forcing use of dummy APIC emulation."
+> +               if (!disable_apic) {
+> +                       pr_err("BIOS bug, local APIC #%d not detected!...\n",
+> +                               boot_cpu_physical_apicid);
+> +                       pr_err("... forcing use of dummy APIC emulation."
+>                                "(tell your hw vendor)\n");
+> +               }
 
-To be perfectly clear on this:
+It seems we don't need this check here.
+when we have disable_apic, cpu_has_apic is cleared forcely.
 
-* all patches were posted a week ago to the list (they replaced patches
-  from two weeks ago -- which were intended for -rc8 but thanks to feedback
-  I found a better way to do it).
-
-> On Sun, Jun 7, 2009 at 10:00 PM, Bartlomiej Zolnierkiewicz
-> <bzolnier@gmail.com> wrote:
-> > I'm yet to see anybody posting a single code chunk in this whole discussion.
-> 
-> That's because I am not objecting to the code. I am objecting to the
-> fact that you're submitting something as big as this so late in the
-> release cycle and the fact that it's not a clear-cut bug fix.
-
-That is a valid objection in contrast to some other ones.
-
-Still, changes are really *safe*:
-
-* fs/partitions/check.c change is straight-forward
-  (doesn't affect anything besides ide-gd)
-
-* ide-gd changes are making it similar in HPA behavior to libata
-  (which is what most distributions are shipping)
+YH
