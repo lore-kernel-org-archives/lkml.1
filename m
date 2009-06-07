@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbZFGGMP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbZFGGXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754227AbZFGGMP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 02:12:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752593AbZFGGL7
+	id S1755284AbZFGGXk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 02:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbZFGGX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 02:11:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57344 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752322AbZFGGL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 02:11:59 -0400
-Message-ID: <4A2B59C5.7060902@redhat.com>
-Date: Sun, 07 Jun 2009 09:10:13 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: balbir@linux.vnet.ibm.com, bharata@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>, kvm@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Subject: Re: [RFC] CPU hard limits
-References: <20090605030309.GA3872@in.ibm.com> <4A28921C.6010802@redhat.com> <661de9470906042137u603e2997n80c270bf7f6191ad@mail.gmail.com> <4A28A2AB.3060108@redhat.com> <20090605044946.GA11755@balbir.in.ibm.com> <20090605051050.GB11755@balbir.in.ibm.com> <4A28AB67.7040800@redhat.com> <20090605052755.GE11755@balbir.in.ibm.com> <20090605053159.GB3872@in.ibm.com> <4A28B4CE.4010004@redhat.com> <20090605093947.GJ11755@balbir.in.ibm.com> <4A291A2F.3090201@redhat.com> <4A293196.2060006@nortel.com>
-In-Reply-To: <4A293196.2060006@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Jun 2009 02:23:28 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:33063 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752905AbZFGGX1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 02:23:27 -0400
+Date: Sun, 7 Jun 2009 08:25:43 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Sergey Lapin <slapin@ossfans.org>
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+       David Miller <davem@davemloft.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 2/5] net: add IEEE 802.15.4 socket family implementation
+Message-ID: <20090607062543.GA10730@uranus.ravnborg.org>
+References: <cover.1244337432.git.slapin@ossfans.org> <47c250c4bb2069d4faa2d6c5217d1aae15a5bc34.1244337432.git.slapin@ossfans.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47c250c4bb2069d4faa2d6c5217d1aae15a5bc34.1244337432.git.slapin@ossfans.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-> Avi Kivity wrote:
->
->   
->> I am selling virtual private servers.  A 10% cpu share costs $x/month, 
->> and I guarantee you'll get that 10%, or your money back.  On the other 
->> hand, I want to limit cpu usage to that 10% (maybe a little more) so 
->> people don't buy 10% shares and use 100% on my underutilized servers.  
->> If they want 100%, let them pay for 100%.
->>     
->
-> What about taking a page from the networking folks and specifying cpu
-> like a networking SLA?
->
-> Something like "group A is guaranteed X percent (or share) of the cpu,
-> but it is allowed to burst up to Y percent for Z milliseconds"
->
-> If a rule of this form was the first-class citizen, it would provide
-> both guarantees, limits, and flexible behaviour.
->   
+> --- /dev/null
+> +++ b/net/ieee802154/Makefile
+> @@ -0,0 +1,4 @@
+> +obj-$(CONFIG_IEEE802154) +=	af_802154.o
+> +af_802154-objs		:= af_ieee802154.o raw.o dgram.o
+> +
+> +EXTRA_CFLAGS += -Wall -DDEBUG
 
-I think you're introducing a new control (guarantees, limits, burst 
-limit), but I like it.
+Please change this to following style:
+> +obj-$(CONFIG_IEEE802154) +=  af_802154.o
+> +af_802154-y               := af_ieee802154.o raw.o dgram.o
+> +
+> +ccflags-y += -Wall -DDEBUG
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
+	Sam
