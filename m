@@ -1,130 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbZFGTXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbZFGT2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbZFGTXx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 15:23:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbZFGTXq
+	id S1754700AbZFGT2R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 15:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZFGT2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 15:23:46 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:30581 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbZFGTXp convert rfc822-to-8bit (ORCPT
+	Sun, 7 Jun 2009 15:28:07 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:39234 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752897AbZFGT2G convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 15:23:45 -0400
+	Sun, 7 Jun 2009 15:28:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=DkopL+m/tElrWBzKhHe5LrBH2lJ4NkwlBZdZjsOqpj4mymGQTGU1HcB1KBbeqT+VKe
-         UhOtu6nmsqtuGQ8ceJmvz7PuM0tNhYq/3Q9aRqukMXr1ryWeSRZ4z1imMzQ+yvRJUCGp
-         8ehdvRKU6XZOEwDDI8t31djtjaiPYuoHmpGHw=
+        b=Gf/+zveZk5b4nTbCg5k+F3TEGRw38KDOX5WJOEh9mW3YKh+MREjlyRnRXrUUxAE3rE
+         FWbJkvtH9hF8V4B28UsQ96fGE1MvUARMGcc1lmDv7PIagWYusT2+uan+m6EZenZTetyj
+         FQ/w/FHTEkJw352d7BZ39zogM1nByO0WIxjBs=
 MIME-Version: 1.0
-In-Reply-To: <tip-103428e57be323c3c5545db8ad12667099bc6005@git.kernel.org>
-References: <20090607124840.GD4547@lenovo>
-	 <tip-103428e57be323c3c5545db8ad12667099bc6005@git.kernel.org>
-Date: Sun, 7 Jun 2009 12:23:47 -0700
-Message-ID: <86802c440906071223w3116f452n7ccd028d52f11c77@mail.gmail.com>
-Subject: Re: [tip:irq/numa] x86, apic: Fix dummy apic read operation together 
-	with broken MP handling
+In-Reply-To: <20090607070136.GA4547@lenovo>
+References: <20090606073737.GA3163@elte.hu> <4A2AEAC6.8060404@kernel.org>
+	 <20090607070136.GA4547@lenovo>
+Date: Sun, 7 Jun 2009 12:28:07 -0700
+Message-ID: <86802c440906071228x489c3f79q2e1a49dc997e874@mail.gmail.com>
+Subject: Re: [PATCH] x86: fix dummy apic read/write warning
 From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gorcunov@openvz.org, yinghai@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 7, 2009 at 7:24 AM, tip-bot for Cyrill
-Gorcunov<gorcunov@openvz.org> wrote:
-> Commit-ID:  103428e57be323c3c5545db8ad12667099bc6005
-> Gitweb:     http://git.kernel.org/tip/103428e57be323c3c5545db8ad12667099bc6005
-> Author:     Cyrill Gorcunov <gorcunov@openvz.org>
-> AuthorDate: Sun, 7 Jun 2009 16:48:40 +0400
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Sun, 7 Jun 2009 16:08:05 +0200
+On Sun, Jun 7, 2009 at 12:01 AM, Cyrill Gorcunov<gorcunov@gmail.com> wrote:
+> [Yinghai Lu - Sat, Jun 06, 2009 at 03:16:38PM -0700]
+> | ingo got
+> | [    0.000000] Using APIC driver default
+> | [    0.000000] SMP: Allowing 1 CPUs, 0 hotplug CPUs
+> | [    0.000000] Local APIC disabled by BIOS -- you can enable it with "lapic"
+> | [    0.000000] APIC: disable apic facility
+> | [    0.000000] ------------[ cut here ]------------
+> | [    0.000000] WARNING: at arch/x86/kernel/apic/apic.c:254 native_apic_read_dummy+0x2d/0x3b()
+> | [    0.000000] Hardware name: HP OmniBook PC
+> |
+> | we have wrong check in dummy read and write.
+> | [we only test on system that have APIC with "disableapic"...]
+> |
+> | Signed-off-by: yinghai Lu <yinghai@kernel.org>
+> |
+> | ---
+> |  arch/x86/kernel/apic/apic.c |    4 ++--
+> |  1 file changed, 2 insertions(+), 2 deletions(-)
+> |
+> | Index: linux-2.6/arch/x86/kernel/apic/apic.c
+> | ===================================================================
+> | --- linux-2.6.orig/arch/x86/kernel/apic/apic.c
+> | +++ linux-2.6/arch/x86/kernel/apic/apic.c
+> | @@ -246,12 +246,12 @@ static int modern_apic(void)
+> |   */
+> |  static void native_apic_write_dummy(u32 reg, u32 v)
+> |  {
+> | -     WARN_ON_ONCE((cpu_has_apic || !disable_apic));
+> | +     WARN_ON_ONCE((cpu_has_apic && !disable_apic));
+> |  }
+> |
+> |  static u32 native_apic_read_dummy(u32 reg)
+> |  {
+> | -     WARN_ON_ONCE((cpu_has_apic || !disable_apic));
+> | +     WARN_ON_ONCE((cpu_has_apic && !disable_apic));
+> |       return 0;
+> |  }
+> |
+> |
 >
-> x86, apic: Fix dummy apic read operation together with broken MP handling
+> No Yinghai, this is wrong. native_apic_write_dummy is not
+> admissible to be called after apic->write has been NOP'ified.
 >
-> Ingo Molnar reported that read_apic is buggy novadays:
->
-> [    0.000000] Using APIC driver default
-> [    0.000000] SMP: Allowing 1 CPUs, 0 hotplug CPUs
-> [    0.000000] Local APIC disabled by BIOS -- you can enable it with "lapic"
-> [    0.000000] APIC: disable apic facility
-> [    0.000000] ------------[ cut here ]------------
-> [    0.000000] WARNING: at arch/x86/kernel/apic/apic.c:254 native_apic_read_dummy+0x2d/0x3b()
-> [    0.000000] Hardware name: HP OmniBook PC
->
-> Indeed we still rely on apic->read operation for SMP compiled
-> kernel. And instead of disfigure the SMP code with #ifdef we
-> allow to call apic->read. To capture any unexpected results
-> we check for apic->read being called for sane reason via
-> WARN_ON_ONCE but(!) instead of OR we should use AND logical
-> operation (thanks Yinghai for spotting the root of the problem).
->
-> Along with that we could be have bad MP table and we are
-> to fix it that way no SMP started and no complains about
-> BIOS bug if apic was just disabled via command line.
->
-> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-> Cc: Yinghai Lu <yinghai@kernel.org>
-> LKML-Reference: <20090607124840.GD4547@lenovo>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
->
->
-> ---
->  arch/x86/kernel/apic/apic.c |    9 ++++++++-
->  arch/x86/kernel/smpboot.c   |    8 +++++---
->  2 files changed, 13 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-> index e82488d..a4c9cf0 100644
-> --- a/arch/x86/kernel/apic/apic.c
-> +++ b/arch/x86/kernel/apic/apic.c
-> @@ -249,7 +249,7 @@ static void native_apic_write_dummy(u32 reg, u32 v)
->
->  static u32 native_apic_read_dummy(u32 reg)
->  {
-> -       WARN_ON_ONCE((cpu_has_apic || !disable_apic));
-> +       WARN_ON_ONCE((cpu_has_apic && !disable_apic));
->        return 0;
->  }
->
-> @@ -1609,6 +1609,13 @@ void __init init_apic_mappings(void)
->        new_apicid = read_apic_id();
->        if (boot_cpu_physical_apicid != new_apicid) {
->                boot_cpu_physical_apicid = new_apicid;
-> +               /*
-> +                * yeah -- we lie about apic_version
-> +                * in case if apic was disabled via boot option
-> +                * but it's not a problem for SMP compiled kernel
-> +                * since smp_sanity_check is prepared for such a case
-> +                * and disable smp mode
-> +                */
->                apic_version[new_apicid] =
->                         GET_APIC_VERSION(apic_read(APIC_LVR));
->        }
-> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> index d2e8de9..7c80007 100644
-> --- a/arch/x86/kernel/smpboot.c
-> +++ b/arch/x86/kernel/smpboot.c
-> @@ -992,10 +992,12 @@ static int __init smp_sanity_check(unsigned max_cpus)
->         */
->        if (APIC_INTEGRATED(apic_version[boot_cpu_physical_apicid]) &&
->            !cpu_has_apic) {
-> -               printk(KERN_ERR "BIOS bug, local APIC #%d not detected!...\n",
-> -                       boot_cpu_physical_apicid);
-> -               printk(KERN_ERR "... forcing use of dummy APIC emulation."
-> +               if (!disable_apic) {
-> +                       pr_err("BIOS bug, local APIC #%d not detected!...\n",
-> +                               boot_cpu_physical_apicid);
-> +                       pr_err("... forcing use of dummy APIC emulation."
->                                "(tell your hw vendor)\n");
-> +               }
+> If a site calls for apic->write after apic_disable() it's
+> a plain *bug* in caller. So we should continute warning if
+> cpu_has_apic _or_ !disable_apic.
 
-It seems we don't need this check here.
-when we have disable_apic, cpu_has_apic is cleared forcely.
+ok, just change it to
+
+     WARN_ON_ONCE(1);
+
+there.
+
+>
+> Though since for SMP compiled kernel we still rely on
+> apic->read the snippet is to be changed to (cpu_has_apic && !disable_apic)
+> indeed.
 
 YH
