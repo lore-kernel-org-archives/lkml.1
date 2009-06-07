@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbZFGOhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbZFGOjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799AbZFGOhB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 10:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbZFGOgx
+	id S1755952AbZFGOjP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 10:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbZFGOjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 10:36:53 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:60406 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750944AbZFGOgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 10:36:52 -0400
-Subject: Re: [BUILD FAILURE 01/04] Next June 04:PPC64 randconfig
-	[drivers/staging/comedi/drivers.o]
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
-To: fmhess@users.sourceforge.net
-Cc: Greg KH <greg@kroah.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ian Abbott <abbotti@mev.co.uk>, David Miller <davem@davemloft.net>,
-       sachinp@linux.vnet.ibm.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, Linuxppc-dev@ozlabs.org,
-       linux-next@vger.kernel.org, paulus@samba.org,
-       Geert.Uytterhoeven@sonycom.com, geert@linux-m68k.org
-In-Reply-To: <200906060936.22322.fmhess@speakeasy.net>
-References: <20090605182625.24093.7808.sendpatchset@elm3a191.beaverton.ibm.com>
-	 <1244261806.31984.36.camel@pasglop> <20090606055103.GA9446@kroah.com>
-	 <200906060936.22322.fmhess@speakeasy.net>
+	Sun, 7 Jun 2009 10:39:00 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:56566 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751993AbZFGOi7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 10:38:59 -0400
+Subject: Re: [git pull] IDE fixes
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090607152151.3cb01901@lxorguk.ukuu.org.uk>
+References: <200906071444.33047.bzolnier@gmail.com>
+	 <20090607152151.3cb01901@lxorguk.ukuu.org.uk>
 Content-Type: text/plain
-Organization: IBM
-Date: Sun, 07 Jun 2009 20:06:45 +0530
-Message-Id: <1244385405.5265.7.camel@subratamodak.linux.ibm.com>
+Date: Sun, 07 Jun 2009 09:38:56 -0500
+Message-Id: <1244385536.8262.5.camel@mulgrave.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-06-06 at 09:36 -0400, Frank Mori Hess wrote:
-> On Saturday 06 June 2009, Greg KH wrote:
-> > Frank and Ian, any thoughts about the vmap call in the
-> > comedi_buf_alloc() call?  Why is it using PAGE_KERNEL_NOCACHE, and what
-> > is the prealloc_buf buffer used for?
+On Sun, 2009-06-07 at 15:21 +0100, Alan Cox wrote:
+> > diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+> > index 99e33ef..4bc2c43 100644
+> > --- a/fs/partitions/check.c
+> > +++ b/fs/partitions/check.c
 > 
-> It is a circular buffer used to hold data streaming either to or from a 
-> board (for example when producing an analog output waveform).  Reads and 
-> writes to the device files read/write to the circular buffer, plus a few 
-> drivers do dma directly to/from it.  I personally don't have a problem 
-> with requiring drivers to have their own dma buffers and making them copy 
-> data between their private dma buffers and the main circular buffer.  I 
-> guess the original design wanted to support zero-copy dma.
-
-Great to hear that. How about a patch that solves my build problem on
-PPC64(the problem seems to be existing for long) ? 
-
-Regards--
-Subrata
-
 > 
+> You seriously want to add code to the core partition handling logic
+> moments before release when we know we have all sorts of devices with
+> weird behaviours ?
+> 
+> This should be .31 stuff where we can take the time to see how it works
+> on all sorts of weird real world devices (eg those with 2K sector size)
+> and the like.
+
+Absolutely seconded.
+
+Plus this is only one of the proposals for dealing with IDE native sizes
+moving through the process.  The other one is in libata with the gendisk
+proposal for alt size instead of your set_capacity callback.   The last
+thing we want is two separate mechanisms for this, so trying to push
+anything upstream before we have agreement on direction is premature ...
+trying to send a feature as a bug fix is doubly so.
+
+James
+
 
