@@ -1,41 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754933AbZFGJCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754020AbZFGJHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754933AbZFGJCP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 05:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbZFGJCD
+	id S1754020AbZFGJHR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 05:07:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZFGJHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 05:02:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34059 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753458AbZFGJCC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 05:02:02 -0400
-Message-ID: <4A2B8201.8050904@redhat.com>
-Date: Sun, 07 Jun 2009 12:01:53 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 7 Jun 2009 05:07:06 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:36608 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753524AbZFGJHF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 05:07:05 -0400
+X-Greylist: delayed 1525 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Jun 2009 05:07:05 EDT
+Date: Sun, 7 Jun 2009 18:41:38 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Florian Fainelli <florian@openwrt.org>
+Cc: Linux-MIPS <linux-mips@linux-mips.org>, Ralf Baechle <ralf@linux-mips.org>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/8] net/netfilter/ipvs/ip_vs_wrr.c: use lib/gcd.c
+Message-ID: <20090607084137.GB8007@verge.net.au>
+References: <200906041616.22786.florian@openwrt.org>
 MIME-Version: 1.0
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-CC: guillaume.thouvenin@ext.bull.net, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.30-rc8 KVM] gcc 3.3 dies at emulate_2op_cl().
-References: <200906050539.n555dwAQ077095@www262.sakura.ne.jp>	<4A2B5D0E.20002@redhat.com>	<200906071638.CIC52145.OFOQHLFSMOJVFt@I-love.SAKURA.ne.jp>	<4A2B7A79.4060600@redhat.com> <200906071747.FFJ57396.MSOOQFVHtFOJLF@I-love.SAKURA.ne.jp>
-In-Reply-To: <200906071747.FFJ57396.MSOOQFVHtFOJLF@I-love.SAKURA.ne.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906041616.22786.florian@openwrt.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tetsuo Handa wrote:
-> Avi Kivity wrote:
->   
->> Does the attached patch help?
->>     
-> Unfortunately, no.
->
->   
+On Thu, Jun 04, 2009 at 04:16:21PM +0200, Florian Fainelli wrote:
+> This patch removes the open-coded version of the
+> greatest common divider to use lib/gcd.c, the latter
+> also implementing the a < b case.
+> 
+> Signed-off-by: Florian Fainelli <florian@openwrt.org>
 
-What if you change "rm" in the patch to "m"?
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+Acked-by: Simon Horman <horms@verge.net.au>
