@@ -1,92 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755601AbZFGMsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbZFGMxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755601AbZFGMsh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 08:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbZFGMsV
+	id S1755373AbZFGMxM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 08:53:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZFGMw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 08:48:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46038 "EHLO mx2.redhat.com"
+	Sun, 7 Jun 2009 08:52:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58242 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755216AbZFGMsT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 08:48:19 -0400
-Message-ID: <4A2BB6B1.4040805@redhat.com>
-Date: Sun, 07 Jun 2009 15:46:41 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1753741AbZFGMwz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 08:52:55 -0400
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Dan Williams" <dan.j.williams@intel.com>,
+       "Stephen Hemminger" <shemminger@vyatta.com>
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
+In-Reply-To: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       George Dunlap <george.dunlap@eu.citrix.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Miller <davem@davemloft.net>, "jeremy@goop.org" <jeremy@goop.org>,
-       Dan Magenheimer <dan.magenheimer@oracle.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "x86@kernel.org" <x86@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Keir Fraser <Keir.Fraser@eu.citrix.com>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "kurt.hackel@oracle.com" <kurt.hackel@oracle.com>,
-       Ian Pratt <Ian.Pratt@eu.citrix.com>,
-       "xen-users@lists.xensource.com" <xen-users@lists.xensource.com>,
-       ksrinivasan <ksrinivasan@novell.com>,
-       "EAnderson@novell.com" <EAnderson@novell.com>,
-       "wimcoekaerts@wimmekes.net" <wimcoekaerts@wimmekes.net>,
-       Stephen Spector <stephen.spector@citrix.com>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "npiggin@suse.de" <npiggin@suse.de>
-Subject: Re: Xen is a feature
-References: <4A1F302E.8030501@goop.org> <20090528.210559.137121893.davem@davemloft.net> <4A1FCE8E.2060604@eu.citrix.com> <alpine.LFD.2.00.0905311607560.3379@localhost.localdomain> <4A25564A.70608@eu.citrix.com> <alpine.LFD.2.01.0906021033230.3351@localhost.localdomain> <alpine.LFD.2.01.0906021053050.3351@localhost.localdomain> <4A257687.2030801@redhat.com> <20090607091349.GA26897@elte.hu> <4A2B9001.7090706@redhat.com> <20090607103547.GR31286@elte.hu>
-In-Reply-To: <20090607103547.GR31286@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <D9VoutSOyXP.A.xm.Vb7KKB@chimera>
+Subject: [Bug #13116] Can't boot with nosmp
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sun,  7 Jun 2009 11:52:49 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Avi Kivity <avi@redhat.com> wrote:
->
->   
->> Ingo Molnar wrote:
->>     
->>>> There is in fact a way to get dom0 support with nearly no changes to 
->>>> Linux, but it involves massive changes to Xen itself and requires 
->>>> hardware support: run dom0 as a fully virtualized guest, and assign 
->>>> it all the resources dom0 can access.  It's probably a massive effort 
->>>> though.
->>>>
->>>> I've considered it for kvm when faced with the "I want a thin  
->>>> hypervisor" question: compile the hypervisor kernel with PCI support 
->>>> but nothing else (no CONFIG_BLOCK or CONFIG_NET, no device drivers), 
->>>> load userspace from initramfs, and assign host devices to one or more 
->>>> privileged guests.  You could probably run the host with a heavily 
->>>> stripped configuration, and enjoy the slimness while every interrupt 
->>>> invokes the scheduler, a context switch, and maybe an IPI for good 
->>>> measure.
->>>>     
->>>>         
->>> This would be an acceptable model i suspect, if someone wants a 'slim 
->>> hypervisor'.
->>>
->>> We can context switch way faster than we handle IRQs. Plus in a  
->>> slimmed-down config we could intentionally slim down aspects of the  
->>> scheduler as well, if it ever became a measurable performance issue.  
->>> The hypervisor would run a minimal user-space and most of the  
->>> context-switching overhead relates to having a full-fledged user-space 
->>> with rich requirements. So there's no real conceptual friction between 
->>> a 'lean and mean' hypervisor and a full-featured native kernel.
->>>   
->>>       
->> The context switch would be taken by the Xen scheduler, not the Linux  
->> scheduler. [...]
->>     
->
-> The 'slim hypervisor' model i was suggesting was a slimmed down 
-> _Linux_ kernel.
->   
+This message has been generated automatically as a part of a report
+of recent regressions.
 
-Yeah, I lost the context.  I should reduce my own context switching.
+The following bug entry is on the current list of known regressions
+from 2.6.29.  Please verify if it still should be listed and let me know
+(either way).
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13116
+Subject		: Can't boot with nosmp
+Submitter	: Stephen Hemminger <shemminger@vyatta.com>
+Date		: 2009-04-15 4:18 (54 days old)
+References	: http://marc.info/?l=linux-kernel&m=123976917817920&w=4
+Handled-By	: Dan Williams <dan.j.williams@intel.com>
+
 
