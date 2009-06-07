@@ -1,77 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755458AbZFGKUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbZFGKVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755458AbZFGKUy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 06:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbZFGKUq
+	id S1755671AbZFGKVr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 06:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbZFGKVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 06:20:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50176 "EHLO mx2.mail.elte.hu"
+	Sun, 7 Jun 2009 06:21:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41842 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754477AbZFGKUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 06:20:46 -0400
-Date: Sun, 7 Jun 2009 12:20:36 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86: cpu_debug.c prepare report if files are
-	inappropriate or CPU is not supported
-Message-ID: <20090607102036.GO31286@elte.hu>
-References: <1239725240.2966.4.camel@ht.satnam> <20090414165052.GA2089@elte.hu> <1239728481.2966.21.camel@ht.satnam> <20090414184222.GC11214@elte.hu> <20090414200247.1d0a8667@lxorguk.ukuu.org.uk> <20090414191622.GA797@elte.hu> <1239773665.15436.9.camel@localhost.localdomain> <20090415101700.GE6669@elte.hu> <1244224637.8212.6.camel@ht.satnam>
+	id S1755282AbZFGKVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 06:21:38 -0400
+Date: Sun, 7 Jun 2009 10:21:15 GMT
+From: tip-bot for Tim Bird <tim.bird@am.sony.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, tim.bird@am.sony.com, hpa@zytor.com,
+       mingo@redhat.com, rostedt@goodmis.org, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, tim.bird@am.sony.com,
+       linux-kernel@vger.kernel.org, rostedt@goodmis.org, tglx@linutronix.de
+In-Reply-To: <4A25BE9E.5090909@am.sony.com>
+References: <4A25BE9E.5090909@am.sony.com>
+Subject: [tip:tracing/core] ring-buffer: fix bug in ring_buffer_discard_commit
+Message-ID: <tip-a2023556409cf7fec5d67a26f7fcfa57c5a4086d@git.kernel.org>
+Git-Commit-ID: a2023556409cf7fec5d67a26f7fcfa57c5a4086d
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1244224637.8212.6.camel@ht.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Jun 2009 10:21:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  a2023556409cf7fec5d67a26f7fcfa57c5a4086d
+Gitweb:     http://git.kernel.org/tip/a2023556409cf7fec5d67a26f7fcfa57c5a4086d
+Author:     Tim Bird <tim.bird@am.sony.com>
+AuthorDate: Tue, 2 Jun 2009 17:06:54 -0700
+Committer:  Steven Rostedt <rostedt@goodmis.org>
+CommitDate: Wed, 3 Jun 2009 10:15:06 -0400
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+ring-buffer: fix bug in ring_buffer_discard_commit
 
-> Hello Ingo,
-> 
-> On Wed, 2009-04-15 at 12:17 +0200, Ingo Molnar wrote:
-> 
-> > The main beef i had with your code is that it copies CPU enumeration 
-> > over into some local variables (cpu_modelflag, cpu_model) with 
-> > redundant encodings and decodings which dont fully work.
-> > 
-> > Is there anything that your encoding/decoding does that cannot be 
-> > done via the standard methods?
-> > 
-> 
-> I removed cpu model info. May be this will create some issues on 
-> ancient machine as now it depends on rdmsr_safe_on_cpu() and I 
-> hope it will be safe ;-)
+There's a bug in ring_buffer_discard_commit.  The wrong
+pointer is being compared in order to check if the event
+can be freed from the buffer rather than discarded
+(i.e. marked as PAD).
 
-rdmsr_safe() should really be safe. (If it isnt then that primitive 
-needs fixing, not the code that uses it.)
+I noticed this when I was working on duration filtering.
+The bug is not deadly - it just results in lots of wasted
+space in the buffer.  All filtered events are left in
+the buffer and marked as discarded, rather than being
+removed from the buffer to make space for other events.
 
-> Can you please check this patch on ancient and latest machines.
-> 
-> 
-> [PATCH] x86: cpu_debug remove model information to reduce encoding-decoding
-> 
-> Remove model information, encoding/decoding and reduce bookkeeping.
-> 
-> Reported-by: Ingo Molnar <mingo@elte.hu>
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  arch/x86/include/asm/cpu_debug.h |  101 +---------
->  arch/x86/kernel/cpu/cpu_debug.c  |  417 +++++++++-----------------------------
->  2 files changed, 97 insertions(+), 421 deletions(-)
+Unfortunately, when I fixed this bug, I got errors doing a
+filtered function trace.  Multiple TIME_EXTEND
+events pile up in the buffer, and trigger the
+following loop overage warning in rb_iter_peek():
 
-This actually looks like to be a very nice cleanup as well, as can 
-be seen from the massive line count reduction. I'll give it some 
-testing.
+again:
+	...
+	if (RB_WARN_ON(cpu_buffer, ++nr_loops > 10))
+		return NULL;
 
-	Ingo
+I'm not sure what the best way is to fix this. I don't
+know if I should extend the loop threshhold, or if I should
+make the test more complex (ignore TIME_EXTEND
+events), or just get rid of this loop check completely.
+
+Note that if I implement a workaround for this, then I
+see another problem from rb_advance_iter().  I haven't
+tracked that one down yet.
+
+In general, it seems like the case of removing filtered
+events has not been working properly, and so some assumptions
+about buffer invariant conditions need to be revisited.
+
+Here's the patch for the simple fix:
+
+Compare correct pointer for checking if an event can be
+freed rather than left as discarded in the buffer.
+
+Signed-off-by: Tim Bird <tim.bird@am.sony.com>
+LKML-Reference: <4A25BE9E.5090909@am.sony.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+
+---
+ kernel/trace/ring_buffer.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 16b24d4..9453023 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1708,7 +1708,7 @@ void ring_buffer_discard_commit(struct ring_buffer *buffer,
+ 
+ 	bpage = cpu_buffer->tail_page;
+ 
+-	if (bpage == (void *)addr && rb_page_write(bpage) == old_index) {
++	if (bpage->page == (void *)addr && rb_page_write(bpage) == old_index) {
+ 		/*
+ 		 * This is on the tail page. It is possible that
+ 		 * a write could come in and move the tail page
