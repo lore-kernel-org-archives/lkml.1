@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbZFGUut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234AbZFGUvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756144AbZFGUut (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 16:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754955AbZFGUul
+	id S1756234AbZFGUvs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 16:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbZFGUvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 16:50:41 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59732 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754551AbZFGUuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 16:50:40 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Robert Hancock <hancockrwd@gmail.com>
-Subject: Re: [Bug #13072] forcedeth seems to switch off eth on shutdown
-Date: Sun, 7 Jun 2009 22:50:39 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Daniel Bierstedt <daniel.bierstedt-Mmb7MZpHnFY@public.gmane.org>
-References: <sIiXQlfwS3D.A.81.dj7KKB@chimera> <AN6kEAA5GQ.A.ELC.ck7KKB@chimera> <4A2BF577.1050003@gmail.com>
-In-Reply-To: <4A2BF577.1050003@gmail.com>
+	Sun, 7 Jun 2009 16:51:40 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:33905 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754955AbZFGUvk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 16:51:40 -0400
+Date: Sun, 7 Jun 2009 16:51:41 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] [RFC][PATCH 0/2] PM: Rearrange core suspend code
+In-Reply-To: <200906070054.19207.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906072250.39558.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 07 June 2009, Robert Hancock wrote:
-> 
-> Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.28 and 2.6.29.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> > be listed and let me know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13072
-> > Subject		: forcedeth seems to switch off eth on shutdown
-> > Submitter	: Daniel Bierstedt <daniel.bierstedt-Mmb7MZpHnFY@public.gmane.org>
-> > Date		: 2009-04-12 07:00 (57 days old)
-> 
-> Seems like it should be fixed by:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5a9a8e32ebe269c71d8d3e78f9435fe7729f38e9
+On Sun, 7 Jun 2009, Rafael J. Wysocki wrote:
 
-Thanks, I've closed the bug.
+> Hi,
+> 
+> Here's something I wanted to do quite some time ago.
+> 
+> kernel/power/main.c becomes more and more difficult to maintain over time,
+> since it contains both the suspend to RAM core code and some common PM code
+> that is also used for hibernation.  For this reason [1/2] separates the suspend
+> to RAM code from main.c and puts it into two new files (the test facility is,
+> again, separated from the core code for clarity).
+> 
+> [2/2] renames kernel/power/disk.c to kernel/power/hibernate.c, because the role
+> of this file is analogous to kernel/power/suspend.c (introduced by [1/2]).
+> 
+> Comments welcome.
 
-Rafael
+Looks like a good idea to me.
+
+Alan Stern
+
