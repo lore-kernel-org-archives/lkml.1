@@ -1,79 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbZFGOZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbZFGOZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbZFGOZu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 10:25:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbZFGOZV
+	id S1755746AbZFGOZj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 10:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbZFGOZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 10:25:21 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:63538 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754522AbZFGOZS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 10:25:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42135 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755398AbZFGOZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 7 Jun 2009 10:25:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=HyQBdbwAnPkKLvbReYNYazTRv31BzojDvIf/WaWnHRoMJCneTS/d4BEJ/tv05QGVUy
-         q443oT83BitFX0Kjq1HMyK/ElRzl1OcmZjtGaCBI3aJXX9+ikYhOl+qBhBHXQMAhJe7S
-         m4M/pxT9s8/XMiGdHm/rTGX0h8fVLBW6ae8nQ=
-Subject: Re: [PATCH RESEND]X86:microcode: fix vfree()
-From: "Figo.zhang" <figo1802@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090607142118.GB21340@elte.hu>
-References: <1244351929.3355.13.camel@myhost>
-	 <20090607140113.GI12088@elte.hu> <1244384315.3402.5.camel@myhost>
-	 <20090607142118.GB21340@elte.hu>
-Content-Type: text/plain
-Date: Sun, 07 Jun 2009 22:25:15 +0800
-Message-Id: <1244384715.3402.8.camel@myhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 7bit
+Date: Sun, 7 Jun 2009 14:24:42 GMT
+From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090607081937.GC4547@lenovo>
+References: <20090607081937.GC4547@lenovo>
+Subject: [tip:x86/cleanups] x86, nmi: Use predefined numbers instead of hardcoded one
+Message-ID: <tip-a4046f8d299e00e9855ae292527c2d66a42670eb@git.kernel.org>
+Git-Commit-ID: a4046f8d299e00e9855ae292527c2d66a42670eb
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Jun 2009 14:24:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-06-07 at 16:21 +0200, Ingo Molnar wrote:
-> (Note: it's not a 'resend', it's v2 of the patch)
-> 
-> * Figo.zhang <figo1802@gmail.com> wrote:
-> 
-> > vfree() does its own 'NULL' check, so no need for check before
-> > calling it.
-> > 
-> > Signed-off-by: Figo.zhang <figo1802@gmail.com>
-> > ---   
-> > arch/x86/kernel/microcode_amd.c |   13 +++++--------
-> >  1 files changed, 5 insertions(+), 8 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
-> > index 453b579..8f52cf4 100644
-> > --- a/arch/x86/kernel/microcode_amd.c
-> > +++ b/arch/x86/kernel/microcode_amd.c
-> > @@ -257,10 +257,9 @@ static int install_equiv_cpu_table(const u8 *buf)
-> >  
-> >  static void free_equiv_cpu_table(void)
-> >  {
-> > -	if (equiv_cpu_table) {
-> > -		vfree(equiv_cpu_table);
-> > -		equiv_cpu_table = NULL;
-> > -	}
-> > +	vfree(equiv_cpu_table);
-> > +	equiv_cpu_table = NULL;
-> > +
+Commit-ID:  a4046f8d299e00e9855ae292527c2d66a42670eb
+Gitweb:     http://git.kernel.org/tip/a4046f8d299e00e9855ae292527c2d66a42670eb
+Author:     Cyrill Gorcunov <gorcunov@openvz.org>
+AuthorDate: Sun, 7 Jun 2009 12:19:37 +0400
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 7 Jun 2009 16:22:02 +0200
 
-i motify by vim, you said this line?
+x86, nmi: Use predefined numbers instead of hardcoded one
 
-Best Regards,
+[ Impact: cleanup ]
 
-Figo.zhang
-
-> 
-> you fixed the tab but you didnt remove the stray newline :)
-> 
-> 	Ingo
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+LKML-Reference: <20090607081937.GC4547@lenovo>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+---
+ arch/x86/include/asm/nmi.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/arch/x86/include/asm/nmi.h b/arch/x86/include/asm/nmi.h
+index c45a0a5..c972644 100644
+--- a/arch/x86/include/asm/nmi.h
++++ b/arch/x86/include/asm/nmi.h
+@@ -64,7 +64,7 @@ static inline int nmi_watchdog_active(void)
+ 	 * but since they are power of two we could use a
+ 	 * cheaper way --cvg
+ 	 */
+-	return nmi_watchdog & 0x3;
++	return nmi_watchdog & (NMI_LOCAL_APIC | NMI_IO_APIC);
+ }
+ #endif
+ 
