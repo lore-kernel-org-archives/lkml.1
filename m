@@ -1,97 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbZFGOnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbZFGOnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252AbZFGOnU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 10:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbZFGOnM
+	id S1755986AbZFGOnd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 10:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755702AbZFGOnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 10:43:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52872 "EHLO hera.kernel.org"
+	Sun, 7 Jun 2009 10:43:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52876 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752767AbZFGOnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 10:43:11 -0400
-Date: Sun, 7 Jun 2009 14:42:44 GMT
-From: "tip-bot for Figo.zhang" <figo1802@gmail.com>
+	id S1755633AbZFGOnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 10:43:17 -0400
+Date: Sun, 7 Jun 2009 14:42:33 GMT
+From: tip-bot for Lubomir Rintel <lkundrak@v3.sk>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       figo1802@gmail.com, dmitry.adamushko@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu
+       tglx@linutronix.de, mingo@elte.hu, lkundrak@v3.sk
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       figo1802@gmail.com, dmitry.adamushko@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1244385036.3402.11.camel@myhost>
-References: <1244385036.3402.11.camel@myhost>
-Subject: [tip:x86/microcode] x86, microcode: Simplify vfree() use
-Message-ID: <tip-aeef50bc0483fa70ce0bddb686ec84a274b7f3d4@git.kernel.org>
-Git-Commit-ID: aeef50bc0483fa70ce0bddb686ec84a274b7f3d4
+       tglx@linutronix.de, lkundrak@v3.sk, mingo@elte.hu
+In-Reply-To: <1244384628.2323.4.camel@bimbo>
+References: <1244384628.2323.4.camel@bimbo>
+Subject: [tip:x86/urgent] x86: Fix non-lazy GS handling in sys_vm86()
+Message-ID: <tip-3aa6b186f86c5d06d6d92d14311ffed51f091f40@git.kernel.org>
+Git-Commit-ID: 3aa6b186f86c5d06d6d92d14311ffed51f091f40
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Jun 2009 14:42:45 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Jun 2009 14:42:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  aeef50bc0483fa70ce0bddb686ec84a274b7f3d4
-Gitweb:     http://git.kernel.org/tip/aeef50bc0483fa70ce0bddb686ec84a274b7f3d4
-Author:     Figo.zhang <figo1802@gmail.com>
-AuthorDate: Sun, 7 Jun 2009 22:30:36 +0800
+Commit-ID:  3aa6b186f86c5d06d6d92d14311ffed51f091f40
+Gitweb:     http://git.kernel.org/tip/3aa6b186f86c5d06d6d92d14311ffed51f091f40
+Author:     Lubomir Rintel <lkundrak@v3.sk>
+AuthorDate: Sun, 7 Jun 2009 16:23:48 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 7 Jun 2009 16:35:11 +0200
+CommitDate: Sun, 7 Jun 2009 16:31:23 +0200
 
-x86, microcode: Simplify vfree() use
+x86: Fix non-lazy GS handling in sys_vm86()
 
-vfree() does its own 'NULL' check, so no need for check before
-calling it.
+This fixes a stack corruption panic or null dereference oops
+due to a bad GS in resume_userspace() when returning from
+sys_vm86() and calling lockdep_sys_exit().
 
-In v2, remove the stray newline.
+Only a problem when CONFIG_LOCKDEP and CONFIG_CC_STACKPROTECTOR
+enabled.
 
-[ Impact: cleanup ]
-
-Signed-off-by: Figo.zhang <figo1802@gmail.com>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-LKML-Reference: <1244385036.3402.11.camel@myhost>
+Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+Cc: H. Peter Anvin <hpa@zytor.com>
+LKML-Reference: <1244384628.2323.4.camel@bimbo>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/microcode_amd.c |   12 ++++--------
- 1 files changed, 4 insertions(+), 8 deletions(-)
+ arch/x86/kernel/vm86_32.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
-index c8be20f..366baa1 100644
---- a/arch/x86/kernel/microcode_amd.c
-+++ b/arch/x86/kernel/microcode_amd.c
-@@ -241,10 +241,8 @@ static int install_equiv_cpu_table(const u8 *buf)
+diff --git a/arch/x86/kernel/vm86_32.c b/arch/x86/kernel/vm86_32.c
+index d7ac84e..6a17769 100644
+--- a/arch/x86/kernel/vm86_32.c
++++ b/arch/x86/kernel/vm86_32.c
+@@ -287,10 +287,9 @@ static void do_sys_vm86(struct kernel_vm86_struct *info, struct task_struct *tsk
+ 	info->regs.pt.ds = 0;
+ 	info->regs.pt.es = 0;
+ 	info->regs.pt.fs = 0;
+-
+-/* we are clearing gs later just before "jmp resume_userspace",
+- * because it is not saved/restored.
+- */
++#ifndef CONFIG_X86_32_LAZY_GS
++	info->regs.pt.gs = 0;
++#endif
  
- static void free_equiv_cpu_table(void)
- {
--	if (equiv_cpu_table) {
--		vfree(equiv_cpu_table);
--		equiv_cpu_table = NULL;
--	}
-+	vfree(equiv_cpu_table);
-+	equiv_cpu_table = NULL;
- }
- 
- static enum ucode_state
-@@ -279,8 +277,7 @@ generic_load_microcode(int cpu, const u8 *data, size_t size)
- 
- 		mc_header = (struct microcode_header_amd *)mc;
- 		if (get_matching_microcode(cpu, mc, new_rev)) {
--			if (new_mc)
--				vfree(new_mc);
-+			vfree(new_mc);
- 			new_rev = mc_header->patch_id;
- 			new_mc  = mc;
- 		} else
-@@ -292,8 +289,7 @@ generic_load_microcode(int cpu, const u8 *data, size_t size)
- 
- 	if (new_mc) {
- 		if (!leftover) {
--			if (uci->mc)
--				vfree(uci->mc);
-+			vfree(uci->mc);
- 			uci->mc = new_mc;
- 			pr_debug("microcode: CPU%d found a matching microcode "
- 				 "update with version 0x%x (current=0x%x)\n",
+ /*
+  * The flags register is also special: we cannot trust that the user
+@@ -343,7 +342,9 @@ static void do_sys_vm86(struct kernel_vm86_struct *info, struct task_struct *tsk
+ 	__asm__ __volatile__(
+ 		"movl %0,%%esp\n\t"
+ 		"movl %1,%%ebp\n\t"
++#ifdef CONFIG_X86_32_LAZY_GS
+ 		"mov  %2, %%gs\n\t"
++#endif
+ 		"jmp resume_userspace"
+ 		: /* no outputs */
+ 		:"r" (&info->regs), "r" (task_thread_info(tsk)), "r" (0));
