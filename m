@@ -1,81 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbZFGQBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbZFGQCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755256AbZFGQBT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 12:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZFGQBH
+	id S1755247AbZFGQCn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 12:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753012AbZFGQCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 12:01:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56357 "EHLO hera.kernel.org"
+	Sun, 7 Jun 2009 12:02:36 -0400
+Received: from mga14.intel.com ([143.182.124.37]:1514 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752695AbZFGQBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 12:01:05 -0400
-Date: Sun, 7 Jun 2009 16:00:33 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf report: Print more expressive message in case of file open error
-Message-ID: <tip-a14832ff977e78d1982cdf78cdabb1f2320d9ac8@git.kernel.org>
-Git-Commit-ID: a14832ff977e78d1982cdf78cdabb1f2320d9ac8
-X-Mailer: tip-git-log-daemon
+	id S1752695AbZFGQCf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 12:02:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,320,1241420400"; 
+   d="scan'208";a="151560318"
+Date: Mon, 8 Jun 2009 00:02:25 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Nai Xia <nai.xia@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
+	in  the VM v3
+Message-ID: <20090607160225.GA24315@localhost>
+References: <200905271012.668777061@firstfloor.org> <20090527201239.C2C9C1D0294@basil.firstfloor.org> <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090528145021.GA5503@localhost> <ab418ea90906032325m302afbb6w6fa68f6b57f53e49@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Jun 2009 16:00:34 +0000 (UTC)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ab418ea90906032325m302afbb6w6fa68f6b57f53e49@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a14832ff977e78d1982cdf78cdabb1f2320d9ac8
-Gitweb:     http://git.kernel.org/tip/a14832ff977e78d1982cdf78cdabb1f2320d9ac8
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Sun, 7 Jun 2009 17:58:23 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 7 Jun 2009 17:58:23 +0200
+On Thu, Jun 04, 2009 at 02:25:24PM +0800, Nai Xia wrote:
+> On Thu, May 28, 2009 at 10:50 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > On Thu, May 28, 2009 at 09:45:20PM +0800, Andi Kleen wrote:
+> >> On Thu, May 28, 2009 at 02:08:54PM +0200, Nick Piggin wrote:
+> >
+> > [snip]
+> >
+> >> >
+> >> > BTW. I don't know if you are checking for PG_writeback often enough?
+> >> > You can't remove a PG_writeback page from pagecache. The normal
+> >> > pattern is lock_page(page); wait_on_page_writeback(page); which I
+> >>
+> >> So pages can be in writeback without being locked? I still
+> >> wasn't able to find such a case (in fact unless I'm misreading
+> >> the code badly the writeback bit is only used by NFS and a few
+> >> obscure cases)
+> >
+> > Yes the writeback page is typically not locked. Only read IO requires
+> > to be exclusive. Read IO is in fact page *writer*, while writeback IO
+> > is page *reader* :-)
+> 
+> Sorry for maybe somewhat a little bit off topic,
+> I am trying to get a good understanding of PG_writeback & PG_locked ;)
+> 
+> So you are saying PG_writeback & PG_locked are acting like a read/write lock?
+> I notice wait_on_page_writeback(page) seems always called with page locked --
 
-perf report: Print more expressive message in case of file open error
+No. Note that pages are not locked in wait_on_page_writeback_range().
 
-Before:
+> that is the semantics of a writer waiting to get the lock while it's
+> acquired by
+> some reader:The caller(e.g. truncate_inode_pages_range()  and
+> invalidate_inode_pages2_range()) are the writers waiting for
+> writeback readers (as you clarified ) to finish their job, right ?
 
- $ perf report
- failed to open file: No such file or directory
+Sorry if my metaphor confused you. But they are not typical
+reader/writer problems, but more about data integrities.
 
-After:
+Pages have to be "not under writeback" when truncated. 
+Otherwise data lost is possible:
 
- $ perf report
-  failed to open file: perf.data  (try 'perf record' first)
+1) create a file with one page (page A)
+2) truncate page A that is under writeback
+3) write to file, which creates page B
+4) sync file, which sends page B to disk quickly
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Now if page B reaches disk before A, the new data will be overwritten
+by truncated old data, which corrupts the file.
 
+> So do you think the idea is sane to group the two bits together
+> to form a real read/write lock, which does not care about the _number_
+> of readers ?
 
----
- tools/perf/builtin-report.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+We don't care number of readers here. So please forget about it.
 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 242e09f..f053a74 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -1120,7 +1120,10 @@ static int __cmd_report(void)
- 
- 	input = open(input_name, O_RDONLY);
- 	if (input < 0) {
--		perror("failed to open file");
-+		fprintf(stderr, " failed to open file: %s", input_name);
-+		if (!strcmp(input_name, "perf.data"))
-+			fprintf(stderr, "  (try 'perf record' first)");
-+		fprintf(stderr, "\n");
- 		exit(-1);
- 	}
- 
+Thanks,
+Fengguang
+
+> > The writeback bit is _widely_ used.  test_set_page_writeback() is
+> > directly used by NFS/AFS etc. But its main user is in fact
+> > set_page_writeback(), which is called in 26 places.
+> >
+> >> > think would be safest
+> >>
+> >> Okay. I'll just add it after the page lock.
+> >>
+> >> > (then you never have to bother with the writeback bit again)
+> >>
+> >> Until Fengguang does something fancy with it.
+> >
+> > Yes I'm going to do it without wait_on_page_writeback().
+> >
+> > The reason truncate_inode_pages_range() has to wait on writeback page
+> > is to ensure data integrity. Otherwise if there comes two events:
+> >        truncate page A at offset X
+> >        populate page B at offset X
+> > If A and B are all writeback pages, then B can hit disk first and then
+> > be overwritten by A. Which corrupts the data at offset X from user's POV.
+> >
+> > But for hwpoison, there are no such worries. If A is poisoned, we do
+> > our best to isolate it as well as intercepting its IO. If the interception
+> > fails, it will trigger another machine check before hitting the disk.
+> >
+> > After all, poisoned A means the data at offset X is already corrupted.
+> > It doesn't matter if there comes another B page.
+> >
+> > Thanks,
+> > Fengguang
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> >
