@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbZFGMzQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbZFGMym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756129AbZFGMzQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 08:55:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbZFGMxp
+	id S1756077AbZFGMym (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 08:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884AbZFGMxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 08:53:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58279 "EHLO ogre.sisk.pl"
+	Sun, 7 Jun 2009 08:53:42 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58274 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754768AbZFGMxl convert rfc822-to-8bit (ORCPT
+	id S1755893AbZFGMxk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 08:53:41 -0400
+	Sun, 7 Jun 2009 08:53:40 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Daniel Vetter" <daniel@ffwll.ch>, "Len Brown" <len.brown@intel.com>
+       "Ingo Molnar" <mingo@elte.hu>, "" <unggnu@googlemail.com>,
+       "Yinghai Lu" <yinghai@kernel.org>
 References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
 In-Reply-To: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <D9VoutSOyXP.A.AJ.ca7KKB@chimera>
-Subject: [Bug #13277] 2.6.30 regression - unreliable resume - bisected - Thinkpad X40
+Message-ID: <D9VoutSOyXP.A.ubH.vZ7KKB@chimera>
+Subject: [Bug #13351] 2.6.30 corrupts my system after suspend resume with readonly mounted hard disk
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  7 Jun 2009 11:52:49 +0200 (CEST)
+Date: Sun,  7 Jun 2009 11:52:52 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,10 +36,11 @@ from 2.6.29.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13277
-Subject		: 2.6.30 regression - unreliable resume - bisected - Thinkpad X40
-Submitter	: Daniel Vetter <daniel@ffwll.ch>
-Date		: 2009-05-11 10:08 (28 days old)
-Handled-By	: Len Brown <len.brown@intel.com>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13351
+Subject		: 2.6.30 corrupts my system after suspend resume with readonly mounted hard disk
+Submitter	:  <unggnu@googlemail.com>
+Date		: 2009-05-20 14:09 (19 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=78a8b35bc7abf8b8333d6f625e08c0f7cc1c3742
+Handled-By	: Yinghai Lu <yinghai@kernel.org>
 
 
