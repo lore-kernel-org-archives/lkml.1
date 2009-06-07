@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbZFGNaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbZFGNk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755498AbZFGNaL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 09:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbZFGNaA
+	id S1754001AbZFGNk1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 09:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbZFGNkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 09:30:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56539 "EHLO mx3.mail.elte.hu"
+	Sun, 7 Jun 2009 09:40:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33804 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753353AbZFGN37 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 09:29:59 -0400
-Date: Sun, 7 Jun 2009 15:29:36 +0200
+	id S1750944AbZFGNkO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 09:40:14 -0400
+Date: Sun, 7 Jun 2009 15:40:09 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-       jiayingz@google.com, mbligh@google.com, roland@redhat.com,
-       fche@redhat.com
-Subject: Re: [PATCH 2/2] convert to syscall tracepoints
-Message-ID: <20090607132936.GC12088@elte.hu>
-References: <cover.1244222378.git.jbaron@redhat.com> <af4031af81ce372eac2be125dabc2ea746b4308b.1244222378.git.jbaron@redhat.com>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, Bert Wesarg <bert.wesarg@googlemail.com>
+Subject: Re: [PATCH 0/5 v3] x86: adapt CPU topology detection for AMD
+	Magny-Cours
+Message-ID: <20090607134009.GE12088@elte.hu>
+References: <20090603142727.GI5736@alberich.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <af4031af81ce372eac2be125dabc2ea746b4308b.1244222378.git.jbaron@redhat.com>
+In-Reply-To: <20090603142727.GI5736@alberich.amd.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,47 +35,26 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jason Baron <jbaron@redhat.com> wrote:
+* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
 
+> Changes to previous patch set:
+> - remove MULTI_NODE_CPU config option
+> - provide defaults for cpu_node topology information
+> - add patch to fix AMD mcheck code
 > 
-> Implements syscall tracer via tracepoints and TRACE_EVENT(). Introduces
-> a new tracing flag 'trace_syscalls', which must be toggled to enable this
-> feature.
-> 
-> 
-> Signed-off-by: Jason Baron <jbaron@redhat.com>
-> 
-> ---
->  arch/x86/kernel/ptrace.c        |    8 +-
->  include/asm-generic/syscall.h   |    3 +
->  include/trace/events/syscalls.h | 4202 +++++++++++++++++++++++++++++++++++++++
->  include/trace/syscall.h         |    6 +
->  kernel/trace/Makefile           |    1 -
->  kernel/trace/trace.c            |  101 +
->  kernel/trace/trace_syscalls.c   |  250 ---
->  7 files changed, 4317 insertions(+), 254 deletions(-)
->  create mode 100644 include/trace/events/syscalls.h
->  delete mode 100644 kernel/trace/trace_syscalls.c
+> Current patch set contains 5 patches:
+> - patch 1 adapts common code to show cpu_node_id,
+>   cpu_node_siblings and cpu_node_siblings_list in
+>   /sys/devices/system/cpu/cpu*/topology
+> - patch 2 prepares arch/x86 to provide cpu_node information
+> - patch 3 sets up cpu_node information for AMD Magny-Cours CPU
+> - patch 4 fixes L3 cache information for Magny-Cours
+> - patch 5 fixes mcheck code for Magny-Cours
 
-the functionality is fine and very desired IMO, but the 
-implementation is pretty large and ugly, isnt it?
-
-Wouldnt it be possible to compress this:
-
-> +#ifdef __NR_setgroups
-> +trace_event_syscall_enter(2, setgroups, int, gidsetsize, gid_t __user *, grouplist);
-> +trace_event_syscall_exit(setgroups);
-> +#define ENTERCASEsetgroups create_syscall_enter(2, setgroups, int, gid_t __user *);
-> +#define EXITCASEsetgroups create_syscall_exit(setgroups);
-> +#else
-> +#define ENTERCASEsetgroups
-> +#define EXITCASEsetgroups
-> +#endif
-
-down to some sane syntax? Do we really want to replicate all the 
-DEFINE_SYSCALL() information again in a separate header? Is there no 
-way to somehow define the tracepoint in-situ, where the 
-DEFINE_SYSCALL macro is present? That would eliminate 
-include/trace/events/syscalls.h altogether.
+it would be really nice to propagate this info to where it _really_ 
+matters: the sched-domains topology info - unless i'm missing 
+something this patch-set does not do that yet, right? That way we'll 
+get actual feedback if it's broken, and will help people if it works 
+right. Device allocation matters too, but to a much lesser degree.
 
 	Ingo
