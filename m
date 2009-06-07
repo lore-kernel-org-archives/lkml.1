@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbZFGXLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753703AbZFGXMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752641AbZFGXLX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 19:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbZFGXLL
+	id S1753703AbZFGXMi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 19:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbZFGXMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 19:11:11 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:56239 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750753AbZFGXLJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 19:11:09 -0400
-Date: Sun, 7 Jun 2009 16:11:05 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Linux Netdev List <netdev@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: net: uninitialized loopback addr leaks to userspace
-Message-ID: <20090607161105.385d6e92@nehalam>
-In-Reply-To: <19f34abd0905301323k1498ca3fv31b271de65d60afc@mail.gmail.com>
-References: <19f34abd0905301323k1498ca3fv31b271de65d60afc@mail.gmail.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Jun 2009 19:12:30 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46835 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750955AbZFGXM3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 19:12:29 -0400
+Date: Sun, 7 Jun 2009 16:12:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] IDE fixes
+In-Reply-To: <200906071657.49513.bzolnier@gmail.com>
+Message-ID: <alpine.LFD.2.01.0906071611290.6847@localhost.localdomain>
+References: <200906071444.33047.bzolnier@gmail.com> <20090607152151.3cb01901@lxorguk.ukuu.org.uk> <1244385536.8262.5.camel@mulgrave.site> <200906071657.49513.bzolnier@gmail.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 30 May 2009 22:23:24 +0200
-Vegard Nossum <vegard.nossum@gmail.com> wrote:
-
-> Hi,
-> 
-> It seems that loopback's hardware address is never initialized by the
-> kernel. So if userspace attempts to read this address before it has
-> been set, the kernel will return some uninitialized data (only 6
-> bytes, though). This can be demonstrated by creating a new network
-> namespace (CLONE_NEWNET), which creates a new loopback device, then
-> call ioctl() with SIOCGIFHWADDR on "lo". If this is done in a loop,
-> with some background load, or by running multiple instances, random
-> data will start to show up in the returned address.
-> 
-> [  406.750329] WARNING: kmemcheck: Caught 16-bit read from
-> uninitialized memory (ffff880007220974)
-> [  406.753555] 18a2d7060088ffff18a2d7060088ffff00000000010000000100000003000000
-> [  406.758862]  i i i i i i i i i i i i i i i i i u u u u u u u u u u u u u u u
-> [  406.766224]                                          ^
-> [  406.768792] Modules linked in:
-> [  406.770416] Pid: 757, comm: ifconfig Not tainted
-> 2.6.30-rc7-next-20090529 #404
-> [  406.772876] RIP: 0010:[<ffffffff80664789>]  [<ffffffff80664789>]
-> dev_ioctl+0x5d9/0x600
-> [  406.804677]  [<ffffffff8064ff75>] sock_ioctl+0x95/0x2a0
-> [  406.807242]  [<ffffffff802c35eb>] vfs_ioctl+0x1b/0x70
-> [  406.809348]  [<ffffffff802c36fa>] do_vfs_ioctl+0x8a/0x570
-> [  406.811419]  [<ffffffff802c3c79>] sys_ioctl+0x99/0xa0
-> [  406.813400]  [<ffffffff802f3941>] dev_ifsioc+0x81/0x2f0
-> [  406.815424]  [<ffffffff802f454d>] compat_sys_ioctl+0xed/0x3c0
-> [  406.817596]  [<ffffffff8022d476>] cstar_dispatch+0x7/0x26
-> [  406.819978]  [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> This is the code that triggers the warning, in net/core/dev.c, around line 4150:
-> 
->     memcpy(ifr->ifr_hwaddr.sa_data, dev->dev_addr,
->         min(sizeof ifr->ifr_hwaddr.sa_data, (size_t) dev->addr_len));
-> 
-> So it's dev->dev_addr that is the pointer to the uninitialized data.
-> 
-> I didn't know how to fix it.
-> 
 
 
-The whole dev structure is zeroed in alloc_netdev(), kmemcheck
-is giving bogus warning.
--- 
+On Sun, 7 Jun 2009, Bartlomiej Zolnierkiewicz wrote:
+
+> They don't export anything to user-space.
+
+Bartlomiej, that's irrelevant. I want to release 2.6.30. We're not adding 
+some totally new interfaces after -rc8.
+
+This has nothing to do with user space or anything else. It's a new 
+feature.
+
+		Linus
