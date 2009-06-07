@@ -1,52 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbZFGOZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbZFGOZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480AbZFGOZX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 10:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZFGOZM
+	id S1755935AbZFGOZu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 10:25:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbZFGOZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 10:25:12 -0400
-Received: from 74.86.130.70-static.reverse.softlayer.com ([74.86.130.70]:60720
-	"EHLO 5-russell.dc5.m6.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752466AbZFGOZM convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 10:25:12 -0400
-X-Greylist: delayed 9540 seconds by postgrey-1.27 at vger.kernel.org; Sun, 07 Jun 2009 10:25:11 EDT
-Message-ID: <20090607063103.658ppl408wckosow@webmail.sukpanich.com>
-Date: Sun, 07 Jun 2009 06:31:03 -0500
-From: MITSUBISHI COMPANY UK <info@mitsubishi.com>
-Reply-to: mscpverificationdept@gmail.com
-To: undisclosed-recipients:;
-Subject: Your E-mail Attach To Anniversary Bonanza
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
+	Sun, 7 Jun 2009 10:25:21 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:63538 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754522AbZFGOZS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 10:25:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=HyQBdbwAnPkKLvbReYNYazTRv31BzojDvIf/WaWnHRoMJCneTS/d4BEJ/tv05QGVUy
+         q443oT83BitFX0Kjq1HMyK/ElRzl1OcmZjtGaCBI3aJXX9+ikYhOl+qBhBHXQMAhJe7S
+         m4M/pxT9s8/XMiGdHm/rTGX0h8fVLBW6ae8nQ=
+Subject: Re: [PATCH RESEND]X86:microcode: fix vfree()
+From: "Figo.zhang" <figo1802@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090607142118.GB21340@elte.hu>
+References: <1244351929.3355.13.camel@myhost>
+	 <20090607140113.GI12088@elte.hu> <1244384315.3402.5.camel@myhost>
+	 <20090607142118.GB21340@elte.hu>
+Content-Type: text/plain
+Date: Sun, 07 Jun 2009 22:25:15 +0800
+Message-Id: <1244384715.3402.8.camel@myhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MITSUBISHI COMPANY UK.
-28 TANFIELD ROAD,LONDON, UK.
+On Sun, 2009-06-07 at 16:21 +0200, Ingo Molnar wrote:
+> (Note: it's not a 'resend', it's v2 of the patch)
+> 
+> * Figo.zhang <figo1802@gmail.com> wrote:
+> 
+> > vfree() does its own 'NULL' check, so no need for check before
+> > calling it.
+> > 
+> > Signed-off-by: Figo.zhang <figo1802@gmail.com>
+> > ---   
+> > arch/x86/kernel/microcode_amd.c |   13 +++++--------
+> >  1 files changed, 5 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
+> > index 453b579..8f52cf4 100644
+> > --- a/arch/x86/kernel/microcode_amd.c
+> > +++ b/arch/x86/kernel/microcode_amd.c
+> > @@ -257,10 +257,9 @@ static int install_equiv_cpu_table(const u8 *buf)
+> >  
+> >  static void free_equiv_cpu_table(void)
+> >  {
+> > -	if (equiv_cpu_table) {
+> > -		vfree(equiv_cpu_table);
+> > -		equiv_cpu_table = NULL;
+> > -	}
+> > +	vfree(equiv_cpu_table);
+> > +	equiv_cpu_table = NULL;
+> > +
 
-You have just been awarded,the sum of  £870.000.00 in the  MITSUBISHI COMPANY
-Award 2009, Anniversary Bonanza. held in June.
+i motify by vim, you said this line?
 
-Names:............. Address:..............
-Country:................ Age:..........
-Phone Number............ Occupation.......Sex
+Best Regards,
 
-Regards.Felke Courtney.
-Online Co-ordinator.
+Figo.zhang
 
-
-
-
-----------------------------------------------------------------
-This message was sent using IMP, the Internet Messaging Program.
+> 
+> you fixed the tab but you didnt remove the stray newline :)
+> 
+> 	Ingo
 
 
 
