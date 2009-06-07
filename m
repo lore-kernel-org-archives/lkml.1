@@ -1,215 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbZFGRpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbZFGRwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755947AbZFGRpn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 13:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbZFGRpg
+	id S1755471AbZFGRwH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 13:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbZFGRv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 13:45:36 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:51961 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753313AbZFGRpf (ORCPT
+	Sun, 7 Jun 2009 13:51:56 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:41191 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413AbZFGRvz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 13:45:35 -0400
+	Sun, 7 Jun 2009 13:51:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=LsKlSWjx4pNj0YxYuaYAP2i3yZIHuTD1MofYvNlnHbBfeFnNP6ADhSqP4cGUpfy5e9
-         rDWBVKOEYcpOU3ScQVshWxNHz6ui72cB4Ucrjbd6KK5p991gOCjMGWWz6LYdQupR1rEG
-         VHz69bQbXiLgwXVbJ+91c+hM/FI1Lc+jD2S/c=
-Date: Sun, 7 Jun 2009 19:45:33 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Borislav Petkov <petkovbb@googlemail.com>, linux-ide@vger.kernel.org,
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=aH/Ly1mOZAyZqHO9Zw/L7sbNptQzEYViq0/bXGfyjmQYGxHcJTUegNfypUZcwb24gi
+         7ayespw4Dke6Zn60kiNwWccLfcwTQL0fdcRmQ7Cr2LzRMXqsDchX9FIiPgItbgStbksj
+         MNg0wci6QP9Go8tTb92XfDb57KfhzvgoRYRPU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: [git pull] IDE fixes
+Date: Sun, 7 Jun 2009 19:47:19 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-rc8-next-20090605-07377-g5acd34e; KDE/4.2.3; i686; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ide-tape: fix proc warning
-Message-ID: <20090607174533.GA15551@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Borislav Petkov <petkovbb@googlemail.com>,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090607092054.GA26408@liondog.tnic> <200906071528.05185.bzolnier@gmail.com>
+References: <200906071444.33047.bzolnier@gmail.com> <200906071744.23629.bzolnier@gmail.com> <1244390889.8262.47.camel@mulgrave.site>
+In-Reply-To: <1244390889.8262.47.camel@mulgrave.site>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200906071528.05185.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200906071947.19723.bzolnier@gmail.com>
+Content-Type: Text/Plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Sun, Jun 07, 2009 at 03:28:04PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > because it tries to free its proc entry in drive_release_dev()
-> > in the call chain resulting from ide_tape_put() but it chokes on
-> > /proc/ide/ide[01]/hd?/name which is added during driver registration and
-> > should go only at driver removal time.
+On Sunday 07 June 2009 18:08:09 James Bottomley wrote:
+> On Sun, 2009-06-07 at 17:44 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > On Sunday 07 June 2009 17:18:51 you wrote:
+> > > On Sun, 2009-06-07 at 16:57 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > > > On Sunday 07 June 2009 16:38:56 James Bottomley wrote:
+> > > > > On Sun, 2009-06-07 at 15:21 +0100, Alan Cox wrote:
+> > > > > > > diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+> > > > > > > index 99e33ef..4bc2c43 100644
+> > > > > > > --- a/fs/partitions/check.c
+> > > > > > > +++ b/fs/partitions/check.c
+> > > > > > 
+> > > > > > 
+> > > > > > You seriously want to add code to the core partition handling logic
+> > > > > > moments before release when we know we have all sorts of devices with
+> > > > > > weird behaviours ?
+> > > > > > 
+> > > > > > This should be .31 stuff where we can take the time to see how it works
+> > > > > > on all sorts of weird real world devices (eg those with 2K sector size)
+> > > > > > and the like.
+> > > > > 
+> > > > > Absolutely seconded.
+> > > > > 
+> > > > > Plus this is only one of the proposals for dealing with IDE native sizes
+> > > > > moving through the process.  The other one is in libata with the gendisk
+> > > > > proposal for alt size instead of your set_capacity callback.   The last
+> > > > 
+> > > > ->set_capacity callback is needed for drivers/ide regardless of alt_size
+> > > > sysfs interface and it don't conflict with it in any way.
+> > > 
+> > > It's used as a heuristic for selecting native vs protected disk size
+> > > depending on what the partition table says ... I grant that's one way to
+> > > handle the problem.
+> > > 
+> > > > Those patches are a complimentary work to Tejun's alt_size patches. 
+> > > > 
+> > > > They don't export anything to user-space.
+> > > 
+> > > So you're trying to solve the problem heuristically, and Tejun is trying
+> > > to provide the user with full information.   At the end of the day it
+> > > would be nice to get agreement on how we do this *before* exposing it to
+> > > users.  It's certainly possible we could do both, but for that to happen
 > > 
-> > Add/remove those proc entries everytime the device is accessed.
+> > Sure.  My patches don't export anything to user-space.
+> > 
+> > If you find any code parts controversial please post them and I'll be
+> > more than happy to discuss them in details.
+> > 
+> > > libata would have to implement .get_capacity() is that going to be the
+> > > case?
+> > 
+> > Now we get the real source of Alan's and your complains...
+> > 
+> > Those patches (among other things) make IDE superior overt libata w.r.t.
+> > HPA handling so libata now has to catch up.
+> > 
+> > Honestly, this should be solved on technical basis by somebody posting
+> > needed libata patches instead of attempts to slow down IDE fixes.
 > 
-> This looks more like broken ide-tape refcounting for chrdev interface
-> than mismatch of /proc entries registration time (especially since other
-> device drivers are not having the above problem)..
+> You've got the wrong motive.  I have notice that you and Alan seem to
+> have a somewhat antagonistic relationship resulting in a proxy battle
+> over IDE/libata, so you would necessarily see this as at play in his
+> first post.  I hoped, by emphasizing the point, that you'd see this
 
-This sounds more like it, I was wondering why that
-/proc/ide/ide[01]/hd?/name attribute was disappearing.
+Please don't project your own way of thinking on me or (maybe?) try to
+play on imaginary conflict between me and Alan for your own gains.
 
-> Please see ide_tape_chrdev_get() -- it misses ide_device_get() call
-> [present in ide_tape_get()] which can result in premature release of
-> IDE device during ide_tape_put() call.
+By emphasizing untrue point -- I have a much respect for Alan for all
+his kernel work and also for being a long-term promoter of Linux -- you
+are trying to move the discussion from technical means to political ones.
 
-By the way, why are we using two devs for the reference counting:
-drive->gendev over ide_device_get() and fall back to {tape,cd,idkp}->dev
-in get_device(). Isn't one enough?
+It is true that we get into heated arguments with Alan from time to time
+but this is unavoidable given large differences in our views on kernel
+development process (I was late to the game so I have very different
+experiences that people who were doing it since the beginning) and also
+on future directions of progress (i.e. I don't support segregation of
+hardware support on "relevant" and "irrelevant" or dropping ISA support).
 
-Anyways, here's the fixed version, tested with my Seagate STT8000A,
-works fine.
+However as long as we stick to the *code* and discuss things based on the
+*code* we have no problems with working together (which happens more often
+then not).
 
---
-From: Borislav Petkov <petkovbb@gmail.com>
-Date: Sun, 7 Jun 2009 19:35:56 +0200
-Subject: [PATCH] ide-tape: fix proc warning
+[ Who I really have antagonistic relationship with are some smart-asses
+  trying to play politics by using other people to do your dirty work
+  (and no, I didn't went on hiatus in 2005 because of Alan if some people
+  still wonder). ]
 
-ide_tape_chrdev_get() was missing an ide_device_get() refcount increment
-which lead to the following warning:
+When it comes to libata: are you serious?
 
-[  278.147906] ------------[ cut here ]------------
-[  278.152685] WARNING: at fs/proc/generic.c:847 remove_proc_entry+0x199/0x1b8()
-[  278.160070] Hardware name: P4I45PE    1.00
-[  278.160076] remove_proc_entry: removing non-empty directory 'ide0/hdb', leaking at least 'name'
-[  278.160080] Modules linked in: rtc intel_agp pcspkr thermal processor thermal_sys parport_pc parport agpgart button
-[  278.160100] Pid: 2312, comm: mt Not tainted 2.6.30-rc2 #3
-[  278.160105] Call Trace:
-[  278.160117]  [<c012141d>] warn_slowpath+0x71/0xa0
-[  278.160126]  [<c035f219>] ? _spin_unlock_irqrestore+0x29/0x2c
-[  278.160132]  [<c011c686>] ? try_to_wake_up+0x1b6/0x1c0
-[  278.160141]  [<c011c69b>] ? default_wake_function+0xb/0xd
-[  278.160149]  [<c0177ead>] ? pollwake+0x4a/0x55
-[  278.160156]  [<c035f240>] ? _spin_unlock+0x24/0x26
-[  278.160163]  [<c0165d38>] ? add_partial+0x44/0x49
-[  278.160169]  [<c01669e8>] ? __slab_free+0xba/0x29c
-[  278.160177]  [<c01a13d8>] ? sysfs_delete_inode+0x0/0x3c
-[  278.160184]  [<c019ca92>] remove_proc_entry+0x199/0x1b8
-[  278.160191]  [<c01a297e>] ? remove_dir+0x27/0x2e
-[  278.160199]  [<c025f3ab>] ide_proc_unregister_device+0x40/0x4c
-[  278.160207]  [<c02599cd>] drive_release_dev+0x14/0x47
-[  278.160214]  [<c0250538>] device_release+0x35/0x5a
-[  278.160221]  [<c01f8bed>] kobject_release+0x40/0x50
-[  278.160226]  [<c01f8bad>] ? kobject_release+0x0/0x50
-[  278.160232]  [<c01f96ac>] kref_put+0x3c/0x4a
-[  278.160238]  [<c01f8b29>] kobject_put+0x37/0x3c
-[  278.160243]  [<c025020c>] put_device+0xf/0x11
-[  278.160249]  [<c025789f>] ide_device_put+0x2d/0x30
-[  278.160255]  [<c02658da>] ide_tape_put+0x24/0x32
-[  278.160261]  [<c0266e0c>] idetape_chrdev_release+0x17f/0x18e
-[  278.160269]  [<c016c4f5>] __fput+0xca/0x175
-[  278.160275]  [<c016c5b9>] fput+0x19/0x1b
-[  278.160280]  [<c0169d19>] filp_close+0x51/0x5b
-[  278.160286]  [<c0169d96>] sys_close+0x73/0xad
-[  278.160293]  [<c0102a61>] syscall_call+0x7/0xb
-[  278.160298] ---[ end trace f16d907ea1f89336 ]---
+I gave libata a full green light back when it was introduced in 2003.
 
-Instead of trivially fixing it by adding the missing call,
-ide_tape_chrdev_get() and ide_tape_get() were merged into one function
-since both were almost identical. The only difference was that
-ide_tape_chrdev_get() was accessing the ide-tape reference through the
-idetape_devs[] array of minors instead of through the gendisk.
+What I have been always complaining about w.r.t. libata is too slow
+progress and a bit too little long-term planning.
 
-Accomodate that by adding two additional parameters to ide_tape_get() to
-annotate the call site and invoke the proper behavior.
+[ Cause I know that we can do better! ]
 
-As a result, remove ide_tape_chrdev_get().
+When it comes libata PATA: "the battle" has been lost back in 2005
+(nobody with semi-sane thinking would believe that it could be won),
+or more like that there was never any battle since I was always fine
+with PATA support in libata (though I was *extremely* unhappy with
+the way it was introduced and resulting long-term consequences).
 
-There should be no functional change resulting from this patch.
+> adding features as bug fixes is a problem even from a more neutral
+> perspective.
+> 
+> So I have two specific problems with the way you're trying to one up
+> libata:
+> 
+>      1. You're trying to get a jump on them by adding features as bug
+>         fixes ... this is incredibly bad release practice.
 
-Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
----
- drivers/ide/ide-tape.c |   35 +++++++++++++----------------------
- 1 files changed, 13 insertions(+), 22 deletions(-)
+It is a bugfix.  Long overdue one.
 
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index 055f52e..51ea59e 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -240,18 +240,27 @@ static struct class *idetape_sysfs_class;
- 
- static void ide_tape_release(struct device *);
- 
--static struct ide_tape_obj *ide_tape_get(struct gendisk *disk)
-+static struct ide_tape_obj *idetape_devs[MAX_HWIFS * MAX_DRIVES];
-+
-+static struct ide_tape_obj *ide_tape_get(struct gendisk *disk, bool cdev,
-+					 unsigned int i)
- {
- 	struct ide_tape_obj *tape = NULL;
- 
- 	mutex_lock(&idetape_ref_mutex);
--	tape = ide_drv_g(disk, ide_tape_obj);
-+
-+	if (cdev)
-+		tape = idetape_devs[i];
-+	else
-+		tape = ide_drv_g(disk, ide_tape_obj);
-+
- 	if (tape) {
- 		if (ide_device_get(tape->drive))
- 			tape = NULL;
- 		else
- 			get_device(&tape->dev);
- 	}
-+
- 	mutex_unlock(&idetape_ref_mutex);
- 	return tape;
- }
-@@ -267,24 +276,6 @@ static void ide_tape_put(struct ide_tape_obj *tape)
- }
- 
- /*
-- * The variables below are used for the character device interface. Additional
-- * state variables are defined in our ide_drive_t structure.
-- */
--static struct ide_tape_obj *idetape_devs[MAX_HWIFS * MAX_DRIVES];
--
--static struct ide_tape_obj *ide_tape_chrdev_get(unsigned int i)
--{
--	struct ide_tape_obj *tape = NULL;
--
--	mutex_lock(&idetape_ref_mutex);
--	tape = idetape_devs[i];
--	if (tape)
--		get_device(&tape->dev);
--	mutex_unlock(&idetape_ref_mutex);
--	return tape;
--}
--
--/*
-  * called on each failed packet command retry to analyze the request sense. We
-  * currently do not utilize this information.
-  */
-@@ -1495,7 +1486,7 @@ static int idetape_chrdev_open(struct inode *inode, struct file *filp)
- 		return -ENXIO;
- 
- 	lock_kernel();
--	tape = ide_tape_chrdev_get(i);
-+	tape = ide_tape_get(NULL, true, i);
- 	if (!tape) {
- 		unlock_kernel();
- 		return -ENXIO;
-@@ -1916,7 +1907,7 @@ static const struct file_operations idetape_fops = {
- 
- static int idetape_open(struct block_device *bdev, fmode_t mode)
- {
--	struct ide_tape_obj *tape = ide_tape_get(bdev->bd_disk);
-+	struct ide_tape_obj *tape = ide_tape_get(bdev->bd_disk, false, 0);
- 
- 	if (!tape)
- 		return -ENXIO;
--- 
-1.6.3.1
+However you have to look beyond kernel to see it.  From the commit log:
 
+"
+>From the perspective of most users of recent systems, disabling Host
+Protected Area (HPA) can break vendor RAID formats, GPT partitions and
+risks corrupting firmware or overwriting vendor system recovery tools.
 
--- 
-Regards/Gruss,
-    Boris.
+Unfortunately the original (kernels < 2.6.30) behavior (unconditionally
+disabling HPA and using full disk capacity) was introduced at the time
+when the main use of HPA was to make the drive look small enough for the
+BIOS to allow the system to boot with large capacity drives.
+
+Thus to allow the maximum compatibility with the existing setups (using
+HPA and partitioned with HPA disabled) we automically disable HPA if
+any partitions overlapping HPA are detected.  Additionally HPA can also
+be disabled using the "nohpa" module parameter (i.e. "ide_core.nohpa=0.0"
+to disable HPA on /dev/hda).
+"
+
+Yes, it is true that there is no rush.
+
+OTOH there are absolutely no valid technical reasons to slow it down!
+
+>      2. this antagonism in feature evolution is likely to lead to
+>         interface incompatibility between libata and IDE ... and users
+>         will be the ultimate losers because of this.
+
+Hmmm, did you *really* read the patches?
+
+They make libata and IDE more similar by making IDE also default to
+preserving HPA (which is what libata does).  So users get more coherent
+overall kernel behavior.
+
+The only difference is that IDE for compatibility reasons must handle old
+installs (with HPA wrongly disabled and protected area used for filesystem
+data).
+
+However it does it in a clean way (not a subsystem specific hack) which
+can be later used for implementing the same functionality in libata!
+
+[ I also tried to encourage libata developers to look into making the needed
+  libata changes (see my initial posting of HPA patches) and I will still be
+  glad to help with libata patches if somebody would like to work on them
+  (Robert? Tejun?). ]
