@@ -1,102 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbZFGSqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZFGSrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755303AbZFGSqh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 14:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbZFGSq3
+	id S1756081AbZFGSrv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 14:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbZFGSrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 14:46:29 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:60736 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754123AbZFGSq2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 14:46:28 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Grozdan <neutrino8@gmail.com>
-Subject: Re: Kernel 2.6.30rc7 limits IDE to UDMA33
-Date: Sun, 7 Jun 2009 13:46:19 -0500
-User-Agent: KMail/1.9.9
-Cc: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, tj@kernel.org, alan@lxorguk.ukuu.org.uk
-References: <c5bd819b0906021525l13ee9282j1fb270e141985f66@mail.gmail.com> <4A2BF785.3020402@gmail.com> <c5bd819b0906071124j21270574h44db963bdc0b552d@mail.gmail.com>
-In-Reply-To: <c5bd819b0906071124j21270574h44db963bdc0b552d@mail.gmail.com>
+	Sun, 7 Jun 2009 14:47:43 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36860 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753138AbZFGSrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 14:47:43 -0400
+Message-ID: <4A2C0B1B.3080502@kernel.org>
+Date: Sun, 07 Jun 2009 11:46:51 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andreas.herrmann3@amd.com, stable@kernel.org, tglx@linutronix.de,
+       mingo@elte.hu
+CC: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/urgent] x86: Detect use of extended APIC ID for AMD
+ CPUs
+References: <20090604104016.GT5736@alberich.amd.com> <tip-37f36c1017f0032fa7a1fb85a0cddfc0d526d17f@git.kernel.org>
+In-Reply-To: <tip-37f36c1017f0032fa7a1fb85a0cddfc0d526d17f@git.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906071346.28021.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun June 7 2009, Grozdan wrote:
-> 2009/6/7 Robert Hancock <hancockrwd@gmail.com>:
-> > Grozdan wrote:
-> >>
-> >> 2009/6/6 Robert Hancock <hancockrwd@gmail.com>:
-> >>>
-> >>> Thing is somehow the GTM detection isn't working now and it apparently
-> >>> was
-> >>> in 2.6.27.1. I'm not seeing any patches to pata_via or libata-acpi that
-> >>> seem
-> >>> like they would affect this offhand. Grozdan, would you be able to try
-> >>> git
-> >>> bisect to try to figure out what changed the behavior?
-> >>>
-> >>> CCing Tejun in case he has any ideas..
-> >>>
-> >>
-> >> I've no idea how and where to do a git bisect so if someone is willing
-> >> to explain in simple steps, I can try...
-> >
-> > Linus's post on here is a pretty simple explanation:
-> >
-> > http://kerneltrap.org/node/11753
-> >
+tip-bot for Andreas Herrmann wrote:
+> Commit-ID:  37f36c1017f0032fa7a1fb85a0cddfc0d526d17f
+> Gitweb:     http://git.kernel.org/tip/37f36c1017f0032fa7a1fb85a0cddfc0d526d17f
+> Author:     Andreas Herrmann <andreas.herrmann3@amd.com>
+> AuthorDate: Thu, 4 Jun 2009 12:40:16 +0200
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Sun, 7 Jun 2009 16:39:38 +0200
 > 
-> Yes, it's clear to someone who's familiar with git but not to a noob
-> like me. Where do I run this git? After it's finished what to do next?
-> How many times do I have to compile kernels? Which kernels exactly?
-> After booting a "bad" kernel, what then? etc... From reading the
-> article, the guy has to compile 14!! times just to catch a problem
-> between kernel 2.6.21 and 2.6.22. 
->
-
-The article presumes the simple case of a single commit being the
-problem.  If the problem involves more than one. . .
-
-Think of doing a binary search in a list of values with duplicate
-entries.  ;)
-
-> I guess in my case I'll have to 
-> compile a lot more than 14 times to catch something between kernel
-> 2.6.27 and 2.6.30 and honestly I don't have time for this right now.
->
-
-Yes, it can get to be time-consuming unless your lucky.
-
-> However, I did a diff between the pata_via driver of kernel 2.6.27 and
-> 2.6.30 and there have been changes to it but I'm not sure if they
-> affect the cable detection...
->
-
-That's a start.  Now if you knew what you where looking for...
-(No offense intended - "diff" doesn't place "here I am" markers.)
-
-The machine I am doing my own tests on uses the pata_via driver and
-it detects the udma66 disk drive as a udma33 - - -
-
-But finding this is way down on my list of things to look for -
-Someone else is welcome to beat me to it.
-
-Mike
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> x86: Detect use of extended APIC ID for AMD CPUs
+> 
+> Booting a 32-bit kernel on Magny-Cours results in the following panic
+> 
+>   ...
+>   Using APIC driver default
+>   ...
+>   Overriding APIC driver with bigsmp
+>   ...
+>   Getting VERSION: 80050010
+>   Getting VERSION: 80050010
+>   Getting ID: 10000000
+>   Getting ID: ef000000
+>   Getting LVT0: 700
+>   Getting LVT1: 10000
+>   Kernel panic - not syncing: Boot APIC ID in local APIC unexpected (16 vs 0)
+>   Pid: 1, comm: swapper Not tainted 2.6.30-rcX #2
+>   Call Trace:
+>    [<c05194da>] ? panic+0x38/0xd3
+>    [<c0743102>] ? native_smp_prepare_cpus+0x259/0x31f
+>    [<c073b19d>] ? kernel_init+0x3e/0x141
+>    [<c073b15f>] ? kernel_init+0x0/0x141
+>    [<c020325f>] ? kernel_thread_helper+0x7/0x10
+> 
+> The reason is that default_get_apic_id handled extension of local APIC
+> ID field just in case of XAPIC.
+> 
+> Thus for this AMD CPU, default_get_apic_id() returns 0 and
+> bigsmp_get_apic_id() returns 16 which leads to the respective kernel
+> panic.
+> 
+> This patch introduces a Linux specific feature flag to indicate
+> support for extended APIC id (8 bits instead of 4 bits width) and sets
+> the flag on AMD CPUs if applicable.
+> 
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> Cc: <stable@kernel.org>
+> LKML-Reference: <20090604104016.GT5736@alberich.amd.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 > 
 > 
+> ---
+>  arch/x86/include/asm/apic.h       |    2 +-
+>  arch/x86/include/asm/cpufeature.h |    1 +
+>  arch/x86/kernel/cpu/amd.c         |   10 ++++++++++
+>  3 files changed, 12 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+> index 42f2f83..9b2c049 100644
+> --- a/arch/x86/include/asm/apic.h
+> +++ b/arch/x86/include/asm/apic.h
+> @@ -410,7 +410,7 @@ static inline unsigned default_get_apic_id(unsigned long x)
+>  {
+>  	unsigned int ver = GET_APIC_VERSION(apic_read(APIC_LVR));
+>  
+> -	if (APIC_XAPIC(ver))
+> +	if (APIC_XAPIC(ver) || boot_cpu_has(X86_FEATURE_EXTD_APICID))
+>  		return (x >> 24) & 0xFF;
+>  	else
+>  		return (x >> 24) & 0x0F;
 
+looks like we should fix APIC_XAPIC() or have one global apic_ver.
 
+YH
