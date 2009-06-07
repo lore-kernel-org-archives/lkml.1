@@ -1,50 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755740AbZFGRRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbZFGRWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755740AbZFGRRr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 13:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbZFGRRk
+	id S1755084AbZFGRWX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 13:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZFGRWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 13:17:40 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:54432 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751680AbZFGRRj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 13:17:39 -0400
-Date: Sun, 7 Jun 2009 18:17:39 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Theodore Tso <tytso@mit.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       David Watson <kernel-nospam@dbwatson.ukfsn.org>,
-       Jan Kara <jack@suse.cz>, bugzilla-daemon@bugzilla.kernel.org
-Subject: Re: [Bug #13232] ext3/4 with synchronous writes gets wedged by
-	Postfix
-Message-ID: <20090607171739.GI8633@ZenIV.linux.org.uk>
-References: <sIiXQlfwS3D.A.81.dj7KKB@chimera> <AN6kEAA5GQ.A.NkB.9j7KKB@chimera> <20090607171418.GA22756@mit.edu>
+	Sun, 7 Jun 2009 13:22:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34208 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753046AbZFGRWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 13:22:16 -0400
+Date: Sun, 7 Jun 2009 17:21:32 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/core] perf stat: Print out instructins/cycle metric
+Message-ID: <tip-e779898aa74cd2e97216368b3f3689ceffe8aeed@git.kernel.org>
+Git-Commit-ID: e779898aa74cd2e97216368b3f3689ceffe8aeed
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090607171418.GA22756@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 07 Jun 2009 17:21:45 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 07, 2009 at 01:14:18PM -0400, Theodore Tso wrote:
-> On Sun, Jun 07, 2009 at 12:06:22PM +0200, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.28 and 2.6.29.
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13232
-> > Subject		: ext3/4 with synchronous writes gets wedged by Postfix
-> > Submitter	: David Watson <kernel-nospam@dbwatson.ukfsn.org>
-> > Date		: 2009-05-03 19:46 (36 days old)
-> 
-> Al Viro has the fix for this in the for-next branch of his vfs-2.6 git
-> tree, as commit ID 72a43d63: "ext3/4 with synchronous writes gets
-> wedged by Postfix".  I pinged Al previously about pushing this as a
-> regression fix for 2.6.30, but never got a response.  At this point we
-> might as well wait for it to go into the 2.6.31 merge window, and then
-> we can ask for it to go into the 2.6.30.y and 2.6.29.y stable trees.
+Commit-ID:  e779898aa74cd2e97216368b3f3689ceffe8aeed
+Gitweb:     http://git.kernel.org/tip/e779898aa74cd2e97216368b3f3689ceffe8aeed
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Sun, 7 Jun 2009 18:14:46 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 7 Jun 2009 18:14:46 +0200
 
-It's in mainline now, actually.  But yes, we need it in -stable as well.
+perf stat: Print out instructins/cycle metric
+
+Before:
+
+     7549326754  cycles               #    3201.811 M/sec
+    10007594937  instructions         #    4244.408 M/sec
+
+After:
+
+     7542051194  cycles               #    3201.996 M/sec
+    10007743852  instructions         #    4248.811 M/sec # 1.327 per cycle
+
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ tools/perf/builtin-stat.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index 184ff95..8085509 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -83,6 +83,7 @@ static __u64			event_scaled[MAX_COUNTERS];
+ 
+ static __u64			runtime_nsecs;
+ static __u64			walltime_nsecs;
++static __u64			runtime_cycles;
+ 
+ static void create_perf_stat_counter(int counter)
+ {
+@@ -177,6 +178,9 @@ static void read_counter(int counter)
+ 	if (attrs[counter].type == PERF_TYPE_SOFTWARE &&
+ 		attrs[counter].config == PERF_COUNT_TASK_CLOCK)
+ 		runtime_nsecs = count[0];
++	if (attrs[counter].type == PERF_TYPE_HARDWARE &&
++		attrs[counter].config == PERF_COUNT_CPU_CYCLES)
++		runtime_cycles = count[0];
+ }
+ 
+ /*
+@@ -214,6 +218,13 @@ static void print_counter(int counter)
+ 		if (runtime_nsecs)
+ 			fprintf(stderr, " # %11.3f M/sec",
+ 				(double)count[0]/runtime_nsecs*1000.0);
++		if (runtime_cycles &&
++			attrs[counter].type == PERF_TYPE_HARDWARE &&
++				attrs[counter].config == PERF_COUNT_INSTRUCTIONS) {
++
++			fprintf(stderr, " # %1.3f per cycle",
++				(double)count[0] / (double)runtime_cycles);
++		}
+ 	}
+ 	if (scaled)
+ 		fprintf(stderr, "  (scaled from %.2f%%)",
