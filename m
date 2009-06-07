@@ -1,1331 +1,569 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbZFGDG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbZFGDOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755070AbZFGDG0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 6 Jun 2009 23:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbZFGDGS
+	id S1755074AbZFGDOw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 6 Jun 2009 23:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbZFGDOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 6 Jun 2009 23:06:18 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:37365 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753416AbZFGDGO convert rfc822-to-8bit (ORCPT
+	Sat, 6 Jun 2009 23:14:43 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:65177 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753522AbZFGDOm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 6 Jun 2009 23:06:14 -0400
+	Sat, 6 Jun 2009 23:14:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XNOmjuYFkIPt5VWG5jDM/bTyAY2VrWMR6vW2i4ZSZEpV41khRY5rZW46e3+1K5uO9i
-         0N5Bm0nasKK4WND+xcwC36XAC8JPXGVHEs0fZqqC0qVj9dfIR2vlySp95UmxFzpkxVCW
-         8+tBPIsxqpiIOKlAlpc63sRickGGVxn6tUFKQ=
+         :content-type;
+        b=qJ9+16fdoojlcwNG91XUTh1Kypx767dCmMHG1cFjK2LVFMmS1IA5IQfZqs3vJO9X7Q
+         1NVe9cO35NGQnm+ZDWoQkPgSUNuOqSapqgbI7YwNs0jhdriW6oDAwVwRCUWpk+89+ARN
+         F2Zzp0PjJTlr9L9z0p7tore2/Te4PZqmPfReM=
 MIME-Version: 1.0
-In-Reply-To: <a8e1da0906020300j6b001ff5qe888b184c963094e@mail.gmail.com>
-References: <a8e1da0906020300j6b001ff5qe888b184c963094e@mail.gmail.com>
-Date: Sun, 7 Jun 2009 11:06:12 +0800
-Message-ID: <a8e1da0906062006l111e5e87u13a9174e23104293@mail.gmail.com>
-Subject: Re: suspend/hibernate lockdep warning
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       cpufreq@vger.kernel.org
-Cc: davej@redhat.com, Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <9b1675090904051542o42a0ca11y1ce3b691ed6d8ebb@mail.gmail.com>
+References: <9b1675090904041103v477913a5of06fa5c10ebee05f@mail.gmail.com>
+	 <9b1675090904041131u28635d8dnc3d13e88000394b4@mail.gmail.com>
+	 <20090405011355.GE7553@mit.edu>
+	 <9b1675090904042117k77463227y66a872d52d027e7e@mail.gmail.com>
+	 <9b1675090904042125g708076e6v665f5ecc7fa020a4@mail.gmail.com>
+	 <9b1675090904042313rb8178b6v1da3aeddfa57a869@mail.gmail.com>
+	 <20090405062626.GA7760@mit.edu>
+	 <9b1675090904051542o42a0ca11y1ce3b691ed6d8ebb@mail.gmail.com>
+Date: Sat, 6 Jun 2009 21:14:43 -0600
+Message-ID: <9b1675090906062014h2ce44d8apc50f73aa036d9139@mail.gmail.com>
+Subject: Re: IO latency - a special case
+From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+To: Theodore Tso <tytso@mit.edu>,
+       "Trenton D. Adams" <trenton.d.adams@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary=001636e0a777ed0c94046bb98690
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cc cpufreq people, same bug exist with 2.6.30-rc8
+--001636e0a777ed0c94046bb98690
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Jun 2, 2009 at 6:00 PM, Dave Young<hidave.darkstar@gmail.com> wrote:
-> git kernel with several bluetooth patch applied, suspend/hibernate
-> will trigger lockdep warning, please see the full dmesg dump, if
-> there's anything need to provide or test please just tell.
+On Sun, Apr 5, 2009 at 4:42 PM, Trenton D.
+Adams<trenton.d.adams@gmail.com> wrote:
+> Hi Ted,
 >
-> [    0.000000] Initializing cgroup subsys cpuset
-> [    0.000000] Initializing cgroup subsys cpu
-> [    0.000000] Linux version 2.6.30-rc7-00227-gd9244b5-dirty
-> (dave@darkstar) (gcc version 4.2.4) #51 SMP Tue Jun 2 13:07:55 CST
-> 2009
-> [    0.000000] KERNEL supported cpus:
-> [    0.000000]   Intel GenuineIntel
-> [    0.000000]   AMD AuthenticAMD
-> [    0.000000]   NSC Geode by NSC
-> [    0.000000]   Cyrix CyrixInstead
-> [    0.000000]   Centaur CentaurHauls
-> [    0.000000]   Transmeta GenuineTMx86
-> [    0.000000]   Transmeta TransmetaCPU
-> [    0.000000]   UMC UMC UMC UMC
-> [    0.000000] BIOS-provided physical RAM map:
-> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f000 (usable)
-> [    0.000000]  BIOS-e820: 000000000009f000 - 00000000000a0000 (reserved)
-> [    0.000000]  BIOS-e820: 0000000000100000 - 000000003d38d400 (usable)
-> [    0.000000]  BIOS-e820: 000000003d38d400 - 000000003d38f400 (ACPI NVS)
-> [    0.000000]  BIOS-e820: 000000003d38f400 - 0000000040000000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000f8000000 - 00000000fc000000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec10000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fed18000 - 00000000fed1c000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fed20000 - 00000000fed90000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000feda0000 - 00000000feda6000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee10000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000ffe80000 - 0000000100000000 (reserved)
-> [    0.000000] DMI 2.4 present.
-> [    0.000000] last_pfn = 0x3d38d max_arch_pfn = 0x100000
-> [    0.000000] MTRR default type: uncachable
-> [    0.000000] MTRR fixed ranges enabled:
-> [    0.000000]   00000-9FFFF write-back
-> [    0.000000]   A0000-BFFFF uncachable
-> [    0.000000]   C0000-CFFFF write-protect
-> [    0.000000]   D0000-EFFFF uncachable
-> [    0.000000]   F0000-FFFFF write-protect
-> [    0.000000] MTRR variable ranges enabled:
-> [    0.000000]   0 base 000000000 mask C00000000 write-back
-> [    0.000000]   1 base 0E0000000 mask FE0000000 uncachable
-> [    0.000000]   2 base 03DC00000 mask FFFC00000 uncachable
-> [    0.000000]   3 base 03E000000 mask FFE000000 uncachable
-> [    0.000000]   4 base 03DB00000 mask FFFF00000 uncachable
-> [    0.000000]   5 disabled
-> [    0.000000]   6 disabled
-> [    0.000000]   7 disabled
-> [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-> [    0.000000] e820 update range: 000000003db00000 - 0000000040000000
-> (usable) ==> (reserved)
-> [    0.000000] e820 update range: 00000000e0000000 - 0000000100000000
-> (usable) ==> (reserved)
-> [    0.000000] init_memory_mapping: 0000000000000000-00000000377fe000
-> [    0.000000]  0000000000 - 0000400000 page 4k
-> [    0.000000]  0000400000 - 0037400000 page 2M
-> [    0.000000]  0037400000 - 00377fe000 page 4k
-> [    0.000000] kernel direct mapping tables up to 377fe000 @ 7000-c000
-> [    0.000000] ACPI: RSDP 000fbd10 00024 (v02 DELL  )
-> [    0.000000] ACPI: XSDT 3d391e00 0006C (v01 DELL    M09     27D90219
-> ASL  00000061)
-> [    0.000000] ACPI: FACP 3d391c9c 000F4 (v04 DELL    M09     27D90219
-> ASL  00000061)
-> [    0.000000] ACPI: DSDT 3d392400 06357 (v02 INT430 SYSFexxx 00001001
-> INTL 20050624)
-> [    0.000000] ACPI: FACS 3d3a0c00 00040
-> [    0.000000] ACPI: HPET 3d391f00 00038 (v01 DELL    M09     00000001
-> ASL  00000061)
-> [    0.000000] ACPI: DMAR 3d3a0400 000F8 (v01 DELL    M09     27D90219
-> ASL  00000061)
-> [    0.000000] ACPI: APIC 3d392000 00068 (v01 DELL    M09     27D90219
-> ASL  00000047)
-> [    0.000000] ACPI: ASF! 3d391c00 00076 (v32 DELL    M09     27D90219
-> ASL  00000061)
-> [    0.000000] ACPI: MCFG 3d391fc0 0003E (v16 DELL    M09     27D90219
-> ASL  00000061)
-> [    0.000000] ACPI: TCPA 3d392300 00032 (v01                 00000000
-> ASL  00000000)
-> [    0.000000] ACPI: BOOT 3d391bc0 00028 (v01 DELL    M09     27D90219
-> ASL  00000061)
-> [    0.000000] ACPI: SSDT 3d3902eb 0066C (v01  PmRef    CpuPm 00003000
-> INTL 20050624)
-> [    0.000000] ACPI: Local APIC address 0xfee00000
-> [    0.000000] 91MB HIGHMEM available.
-> [    0.000000] 887MB LOWMEM available.
-> [    0.000000]   mapped low ram: 0 - 377fe000
-> [    0.000000]   low ram: 0 - 377fe000
-> [    0.000000]   node 0 low ram: 00000000 - 377fe000
-> [    0.000000]   node 0 bootmap 00008000 - 0000ef00
-> [    0.000000] (8 early reservations) ==> bootmem [0000000000 - 00377fe000]
-> [    0.000000]   #0 [0000000000 - 0000001000]   BIOS data page ==>
-> [0000000000 - 0000001000]
-> [    0.000000]   #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==>
-> [0000001000 - 0000002000]
-> [    0.000000]   #2 [0000006000 - 0000007000]       TRAMPOLINE ==>
-> [0000006000 - 0000007000]
-> [    0.000000]   #3 [0001000000 - 0001b03e54]    TEXT DATA BSS ==>
-> [0001000000 - 0001b03e54]
-> [    0.000000]   #4 [000009f000 - 0000100000]    BIOS reserved ==>
-> [000009f000 - 0000100000]
-> [    0.000000]   #5 [0001b04000 - 0001b0c17c]              BRK ==>
-> [0001b04000 - 0001b0c17c]
-> [    0.000000]   #6 [0000007000 - 0000008000]          PGTABLE ==>
-> [0000007000 - 0000008000]
-> [    0.000000]   #7 [0000008000 - 000000f000]          BOOTMAP ==>
-> [0000008000 - 000000f000]
-> [    0.000000] Zone PFN ranges:
-> [    0.000000]   DMA      0x00000000 -> 0x00001000
-> [    0.000000]   Normal   0x00001000 -> 0x000377fe
-> [    0.000000]   HighMem  0x000377fe -> 0x0003d38d
-> [    0.000000] Movable zone start PFN for each node
-> [    0.000000] early_node_map[2] active PFN ranges
-> [    0.000000]     0: 0x00000000 -> 0x0000009f
-> [    0.000000]     0: 0x00000100 -> 0x0003d38d
-> [    0.000000] On node 0 totalpages: 250668
-> [    0.000000] free_area_init_node: node 0, pgdat c1545c80,
-> node_mem_map c1b0d000
-> [    0.000000]   DMA zone: 32 pages used for memmap
-> [    0.000000]   DMA zone: 0 pages reserved
-> [    0.000000]   DMA zone: 3967 pages, LIFO batch:0
-> [    0.000000]   Normal zone: 1744 pages used for memmap
-> [    0.000000]   Normal zone: 221486 pages, LIFO batch:31
-> [    0.000000]   HighMem zone: 184 pages used for memmap
-> [    0.000000]   HighMem zone: 23255 pages, LIFO batch:3
-> [    0.000000] Using APIC driver default
-> [    0.000000] ACPI: PM-Timer IO Port: 0x1008
-> [    0.000000] ACPI: Local APIC address 0xfee00000
-> [    0.000000] ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
-> [    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
-> [    0.000000] ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
-> [    0.000000] ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
-> [    0.000000] ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
-> [    0.000000] IOAPIC[0]: apic_id 2, version 32, address 0xfec00000, GSI 0-23
-> [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-> [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-> [    0.000000] ACPI: IRQ0 used by override.
-> [    0.000000] ACPI: IRQ2 used by override.
-> [    0.000000] ACPI: IRQ9 used by override.
-> [    0.000000] Enabling APIC mode:  Flat.  Using 1 I/O APICs
-> [    0.000000] Using ACPI (MADT) for SMP configuration information
-> [    0.000000] ACPI: HPET id: 0x8086a201 base: 0xfed00000
-> [    0.000000] SMP: Allowing 2 CPUs, 0 hotplug CPUs
-> [    0.000000] nr_irqs_gsi: 24
-> [    0.000000] PM: Registered nosave memory: 000000000009f000 - 00000000000a0000
-> [    0.000000] PM: Registered nosave memory: 00000000000a0000 - 0000000000100000
-> [    0.000000] Allocating PCI resources starting at 50000000 (gap:
-> 40000000:b8000000)
-> [    0.000000] NR_CPUS:2 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:1
-> [    0.000000] PERCPU: Embedded 12 pages at c22c0000, static data 25052 bytes
-> [    0.000000] Built 1 zonelists in Zone order, mobility grouping on.
-> Total pages: 248708
-> [    0.000000] Kernel command line: BOOT_IMAGE=dirty ro root=802
-> vt.default_utf8=0 resume=/dev/sda1
-> [    0.000000] Enabling fast FPU save and restore... done.
-> [    0.000000] Enabling unmasked SIMD FPU exception support... done.
-> [    0.000000] Initializing CPU#0
-> [    0.000000] NR_IRQS:320
-> [    0.000000] PID hash table entries: 4096 (order: 12, 16384 bytes)
-> [    0.000000] Extended CMOS year: 2000
-> [    0.000000] Fast TSC calibration using PIT
-> [    0.000000] Detected 1994.880 MHz processor.
-> [    0.003333] Console: colour dummy device 80x25
-> [    0.003333] console [tty0] enabled
-> [    0.003333] Lock dependency validator: Copyright (c) 2006 Red Hat,
-> Inc., Ingo Molnar
-> [    0.003333] ... MAX_LOCKDEP_SUBCLASSES:  8
-> [    0.003333] ... MAX_LOCK_DEPTH:          48
-> [    0.003333] ... MAX_LOCKDEP_KEYS:        8191
-> [    0.003333] ... CLASSHASH_SIZE:          4096
-> [    0.003333] ... MAX_LOCKDEP_ENTRIES:     16384
-> [    0.003333] ... MAX_LOCKDEP_CHAINS:      32768
-> [    0.003333] ... CHAINHASH_SIZE:          16384
-> [    0.003333]  memory used by lock dependency info: 3487 kB
-> [    0.003333]  per task-struct memory footprint: 1152 bytes
-> [    0.003333] Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-> [    0.003333] Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-> [    0.003333] Initializing HighMem for node 0 (000377fe:0003d38d)
-> [    0.003333] Memory: 982232k/1003060k available (3363k kernel code,
-> 20124k reserved, 2146k data, 352k init, 93756k highmem)
-> [    0.003333] virtual kernel memory layout:
-> [    0.003333]     fixmap  : 0xfff9c000 - 0xfffff000   ( 396 kB)
-> [    0.003333]     pkmap   : 0xff800000 - 0xffc00000   (4096 kB)
-> [    0.003333]     vmalloc : 0xf7ffe000 - 0xff7fe000   ( 120 MB)
-> [    0.003333]     lowmem  : 0xc0000000 - 0xf77fe000   ( 887 MB)
-> [    0.003333]       .init : 0xc1567000 - 0xc15bf000   ( 352 kB)
-> [    0.003333]       .data : 0xc1348f7d - 0xc1561974   (2146 kB)
-> [    0.003333]       .text : 0xc1000000 - 0xc1348f7d   (3363 kB)
-> [    0.003333] Checking if this processor honours the WP bit even in
-> supervisor mode...Ok.
-> [    0.003333] SLUB: Genslabs=13, HWalign=64, Order=0-3, MinObjects=0,
-> CPUs=2, Nodes=1
-> [    0.003333] hpet clockevent registered
-> [    0.003333] HPET: 4 timers in total, 0 timers will be used for per-cpu timer
-> [    0.003333] Calibrating delay loop (skipped), value calculated
-> using timer frequency.. 3991.00 BogoMIPS (lpj=6649600)
-> [    0.003333] Security Framework initialized
-> [    0.003333] Mount-cache hash table entries: 512
-> [    0.003333] Initializing cgroup subsys ns
-> [    0.003333] Initializing cgroup subsys cpuacct
-> [    0.003333] CPU: L1 I cache: 32K, L1 D cache: 32K
-> [    0.003333] CPU: L2 cache: 2048K
-> [    0.003333] CPU: Physical Processor ID: 0
-> [    0.003333] CPU: Processor Core ID: 0
-> [    0.003333] using mwait in idle threads.
-> [    0.003333] Checking 'hlt' instruction... OK.
-> [    0.014575] ACPI: Core revision 20090320
-> [    0.030584] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-> [    0.064114] CPU0: Intel(R) Core(TM)2 Duo CPU     T7250  @ 2.00GHz stepping 0d
-> [    0.066666] lockdep: fixing up alternatives.
-> [    0.066666] Booting processor 1 APIC 0x1 ip 0x6000
-> [    0.003333] Initializing CPU#1
-> [    0.003333] Calibrating delay using timer specific routine..
-> 3991.26 BogoMIPS (lpj=6650020)
-> [    0.003333] CPU: L1 I cache: 32K, L1 D cache: 32K
-> [    0.003333] CPU: L2 cache: 2048K
-> [    0.003333] CPU: Physical Processor ID: 0
-> [    0.003333] CPU: Processor Core ID: 1
-> [    0.003333] x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
-> [    0.158259] CPU1: Intel(R) Core(TM)2 Duo CPU     T7250  @ 2.00GHz stepping 0d
-> [    0.158303] checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-> [    0.160064] Brought up 2 CPUs
-> [    0.160070] Total of 2 processors activated (7982.26 BogoMIPS).
-> [    0.160412] khelper used greatest stack depth: 6832 bytes left
-> [    0.160485] net_namespace: 636 bytes
-> [    0.160485] Booting paravirtualized kernel on bare hardware
-> [    0.163464] regulator: core version 0.5
-> [    0.163464] Time: 15:43:36  Date: 06/02/09
-> [    0.163546] NET: Registered protocol family 16
-> [    0.163628] ACPI: bus type pci registered
-> [    0.163628] PCI: MCFG configuration 0: base f8000000 segment 0 buses 0 - 63
-> [    0.163628] PCI: MCFG area at f8000000 reserved in E820
-> [    0.163628] PCI: Using MMCONFIG for extended config space
-> [    0.163628] PCI: Using configuration type 1 for base access
-> [    0.176798] bio: create slab <bio-0> at 0
-> [    0.184105] ACPI: EC: Look up EC in DSDT
-> [    0.184454] ACPI: BIOS _OSI(Linux) query ignored
-> [    0.224020] ACPI: SSDT 3d3a0c80 00043 (v01  LMPWR  DELLLOM 00001001
-> INTL 20050624)
-> [    0.253409] ACPI: EC: non-query interrupt received, switching to
-> interrupt mode
-> [    0.270332] ACPI: Interpreter enabled
-> [    0.270341] ACPI: (supports S0 S3 S4 S5)
-> [    0.270406] ACPI: Using IOAPIC for interrupt routing
-> [    0.383666] ACPI: EC: GPE = 0x11, I/O: command/status = 0x934, data = 0x930
-> [    0.383675] ACPI: EC: driver started in interrupt mode
-> [    0.385274] ACPI: No dock devices found.
-> [    0.385305] ACPI: PCI Root Bridge [PCI0] (0000:00)
-> [    0.385409] pci 0000:00:02.0: reg 10 64bit mmio: [0xf6c00000-0xf6ffffff]
-> [    0.385409] pci 0000:00:02.0: reg 18 64bit mmio: [0xe0000000-0xefffffff]
-> [    0.385409] pci 0000:00:02.0: reg 20 io port: [0xefe8-0xefef]
-> [    0.385409] pci 0000:00:02.1: reg 10 64bit mmio: [0xf6b00000-0xf6bfffff]
-> [    0.386837] pci 0000:00:1a.0: reg 20 io port: [0x6f60-0x6f7f]
-> [    0.386982] pci 0000:00:1a.1: reg 20 io port: [0x6f80-0x6f9f]
-> [    0.387126] pci 0000:00:1a.2: reg 20 io port: [0x6fa0-0x6fbf]
-> [    0.387272] pci 0000:00:1a.7: reg 10 32bit mmio: [0xfed1c400-0xfed1c7ff]
-> [    0.387378] pci 0000:00:1a.7: PME# supported from D0 D3hot D3cold
-> [    0.387390] pci 0000:00:1a.7: PME# disabled
-> [    0.387481] pci 0000:00:1b.0: reg 10 64bit mmio: [0xf6afc000-0xf6afffff]
-> [    0.387575] pci 0000:00:1b.0: PME# supported from D0 D3hot D3cold
-> [    0.387586] pci 0000:00:1b.0: PME# disabled
-> [    0.387717] pci 0000:00:1c.0: PME# supported from D0 D3hot D3cold
-> [    0.387728] pci 0000:00:1c.0: PME# disabled
-> [    0.387864] pci 0000:00:1c.1: PME# supported from D0 D3hot D3cold
-> [    0.387875] pci 0000:00:1c.1: PME# disabled
-> [    0.388016] pci 0000:00:1c.4: PME# supported from D0 D3hot D3cold
-> [    0.388026] pci 0000:00:1c.4: PME# disabled
-> [    0.388145] pci 0000:00:1d.0: reg 20 io port: [0x6f00-0x6f1f]
-> [    0.388289] pci 0000:00:1d.1: reg 20 io port: [0x6f20-0x6f3f]
-> [    0.388433] pci 0000:00:1d.2: reg 20 io port: [0x6f40-0x6f5f]
-> [    0.388578] pci 0000:00:1d.7: reg 10 32bit mmio: [0xfed1c000-0xfed1c3ff]
-> [    0.388683] pci 0000:00:1d.7: PME# supported from D0 D3hot D3cold
-> [    0.388694] pci 0000:00:1d.7: PME# disabled
-> [    0.389072] pci 0000:00:1f.2: reg 10 io port: [0x6e70-0x6e77]
-> [    0.389084] pci 0000:00:1f.2: reg 14 io port: [0x6e78-0x6e7b]
-> [    0.389095] pci 0000:00:1f.2: reg 18 io port: [0x6e80-0x6e87]
-> [    0.389107] pci 0000:00:1f.2: reg 1c io port: [0x6e88-0x6e8b]
-> [    0.389119] pci 0000:00:1f.2: reg 20 io port: [0x6ea0-0x6ebf]
-> [    0.389130] pci 0000:00:1f.2: reg 24 32bit mmio: [0xfed1c800-0xfed1cfff]
-> [    0.389204] pci 0000:00:1f.2: PME# supported from D3hot
-> [    0.389214] pci 0000:00:1f.2: PME# disabled
-> [    0.389279] pci 0000:00:1f.3: reg 10 64bit mmio: [0xf6afbf00-0xf6afbfff]
-> [    0.389308] pci 0000:00:1f.3: reg 20 io port: [0x1100-0x111f]
-> [    0.389849] pci 0000:0c:00.0: reg 10 64bit mmio: [0xf69fc000-0xf69fffff]
-> [    0.390108] pci 0000:0c:00.0: supports D1 D2
-> [    0.390111] pci 0000:0c:00.0: PME# supported from D0 D3hot D3cold
-> [    0.390129] pci 0000:0c:00.0: PME# disabled
-> [    0.390298] pci 0000:00:1c.1: bridge 32bit mmio: [0xf6900000-0xf69fffff]
-> [    0.390468] pci 0000:09:00.0: reg 10 64bit mmio: [0xf68f0000-0xf68fffff]
-> [    0.390612] pci 0000:09:00.0: PME# supported from D3hot D3cold
-> [    0.390624] pci 0000:09:00.0: PME# disabled
-> [    0.390743] pci 0000:00:1c.4: bridge 32bit mmio: [0xf6800000-0xf68fffff]
-> [    0.390819] pci 0000:02:01.0: reg 10 32bit mmio: [0x000000-0x000fff]
-> [    0.390855] pci 0000:02:01.0: supports D1 D2
-> [    0.390858] pci 0000:02:01.0: PME# supported from D0 D1 D2 D3hot D3cold
-> [    0.390869] pci 0000:02:01.0: PME# disabled
-> [    0.390934] pci 0000:02:01.1: reg 10 32bit mmio: [0xf67ff800-0xf67fffff]
-> [    0.391025] pci 0000:02:01.1: supports D1 D2
-> [    0.391027] pci 0000:02:01.1: PME# supported from D0 D1 D2 D3hot D3cold
-> [    0.391039] pci 0000:02:01.1: PME# disabled
-> [    0.391106] pci 0000:02:01.2: reg 10 32bit mmio: [0xf67ff600-0xf67ff6ff]
-> [    0.391196] pci 0000:02:01.2: supports D1 D2
-> [    0.391199] pci 0000:02:01.2: PME# supported from D0 D1 D2 D3hot D3cold
-> [    0.391211] pci 0000:02:01.2: PME# disabled
-> [    0.391276] pci 0000:02:01.3: reg 10 32bit mmio: [0xf67ff700-0xf67ff7ff]
-> [    0.391365] pci 0000:02:01.3: supports D1 D2
-> [    0.391367] pci 0000:02:01.3: PME# supported from D0 D1 D2 D3hot D3cold
-> [    0.391378] pci 0000:02:01.3: PME# disabled
-> [    0.391488] pci 0000:00:1e.0: transparent bridge
-> [    0.391503] pci 0000:00:1e.0: bridge 32bit mmio: [0xf6700000-0xf67fffff]
-> [    0.391582] pci_bus 0000:00: on NUMA node 0
-> [    0.391591] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-> [    0.392296] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCIE._PRT]
-> [    0.392550] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.RP01._PRT]
-> [    0.392688] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.RP02._PRT]
-> [    0.392833] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.RP05._PRT]
-> [    0.421131] ACPI: PCI Interrupt Link [LNKA] (IRQs 10 *11)
-> [    0.423425] ACPI: PCI Interrupt Link [LNKB] (IRQs 5 7) *4
-> [    0.423656] ACPI: PCI Interrupt Link [LNKC] (IRQs 10 11) *3
-> [    0.423886] ACPI: PCI Interrupt Link [LNKD] (IRQs 5 7 *10 11)
-> [    0.424114] ACPI: PCI Interrupt Link [LNKE] (IRQs 3 4 5 6 7 *10 11 12 14 15)
-> [    0.424349] ACPI: PCI Interrupt Link [LNKF] (IRQs 3 4 5 6 *7 10 11 12 14 15)
-> [    0.424584] ACPI: PCI Interrupt Link [LNKG] (IRQs 3 4 *5 6 7 10 11 12 14 15)
-> [    0.424789] ACPI: PCI Interrupt Link [LNKH] (IRQs 3 4 5 6 7 10 11
-> 12 14 15) *0, disabled.
-> [    0.424910] SCSI subsystem initialized
-> [    0.424910] libata version 3.00 loaded.
-> [    0.424910] usbcore: registered new interface driver usbfs
-> [    0.424910] usbcore: registered new interface driver hub
-> [    0.426672] usbcore: registered new device driver usb
-> [    0.426763] PCI: Using ACPI for IRQ routing
-> [    0.486720] cfg80211: Using static regulatory domain info
-> [    0.486720] cfg80211: Regulatory domain: US
-> [    0.486721]  (start_freq - end_freq @ bandwidth),
-> (max_antenna_gain, max_eirp)
-> [    0.486729]  (2402000 KHz - 2472000 KHz @ 40000 KHz), (600 mBi, 2700 mBm)
-> [    0.486737]  (5170000 KHz - 5190000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-> [    0.486744]  (5190000 KHz - 5210000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-> [    0.486751]  (5210000 KHz - 5230000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-> [    0.486758]  (5230000 KHz - 5330000 KHz @ 40000 KHz), (600 mBi, 2300 mBm)
-> [    0.486766]  (5735000 KHz - 5835000 KHz @ 40000 KHz), (600 mBi, 3000 mBm)
-> [    0.486865] cfg80211: Calling CRDA for country: US
-> [    0.486976] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0, 0
-> [    0.486976] hpet0: 4 comparators, 64-bit 14.318180 MHz counter
-> [    0.501730] Switched to high resolution mode on CPU 1
-> [    0.503338] Switched to high resolution mode on CPU 0
-> [    0.503355] pnp: PnP ACPI init
-> [    0.503390] ACPI: bus type pnp registered
-> [    0.583396] pnp: PnP ACPI: found 13 devices
-> [    0.583404] ACPI: ACPI bus type pnp unregistered
-> [    0.583430] system 00:05: ioport range 0xc80-0xcaf has been reserved
-> [    0.583439] system 00:05: ioport range 0xcc0-0xcff could not be reserved
-> [    0.583459] system 00:08: iomem range 0xfed00000-0xfed003ff has been reserved
-> [    0.583477] system 00:09: ioport range 0xcb0-0xcbb has been reserved
-> [    0.583486] system 00:09: iomem range 0xfed40000-0xfed44fff has been reserved
-> [    0.583504] system 00:0a: ioport range 0x900-0x92f has been reserved
-> [    0.583512] system 00:0a: ioport range 0x931-0x933 has been reserved
-> [    0.583520] system 00:0a: ioport range 0x935-0x97f has been reserved
-> [    0.583528] system 00:0a: ioport range 0x4d0-0x4d1 has been reserved
-> [    0.583536] system 00:0a: ioport range 0x1000-0x1005 has been reserved
-> [    0.583544] system 00:0a: ioport range 0x1008-0x100f has been reserved
-> [    0.583562] system 00:0b: ioport range 0xf400-0xf4fe has been reserved
-> [    0.583571] system 00:0b: ioport range 0x1006-0x1007 has been reserved
-> [    0.583579] system 00:0b: ioport range 0x100a-0x1059 could not be reserved
-> [    0.583588] system 00:0b: ioport range 0x1060-0x107f has been reserved
-> [    0.583596] system 00:0b: ioport range 0x1080-0x10bf has been reserved
-> [    0.583604] system 00:0b: ioport range 0x1100-0x111f has been reserved
-> [    0.583612] system 00:0b: ioport range 0x1010-0x102f has been reserved
-> [    0.583620] system 00:0b: ioport range 0x809-0x809 has been reserved
-> [    0.583639] system 00:0c: iomem range 0x0-0x9efff could not be reserved
-> [    0.583647] system 00:0c: iomem range 0x9f000-0x9ffff could not be reserved
-> [    0.583656] system 00:0c: iomem range 0xc0000-0xcffff could not be reserved
-> [    0.583665] system 00:0c: iomem range 0xe0000-0xfffff could not be reserved
-> [    0.583674] system 00:0c: iomem range 0x100000-0x3d38d3ff could not
-> be reserved
-> [    0.583684] system 00:0c: iomem range 0x3d38d400-0x3dafffff could
-> not be reserved
-> [    0.583694] system 00:0c: iomem range 0x3db00000-0x3dbfffff has been reserved
-> [    0.583702] system 00:0c: iomem range 0xffe80000-0xffffffff has been reserved
-> [    0.583711] system 00:0c: iomem range 0xffa00000-0xffb7ffff has been reserved
-> [    0.583719] system 00:0c: iomem range 0xfec00000-0xfec0ffff has been reserved
-> [    0.583728] system 00:0c: iomem range 0xfee00000-0xfee0ffff has been reserved
-> [    0.583736] system 00:0c: iomem range 0xfed20000-0xfed3ffff has been reserved
-> [    0.583745] system 00:0c: iomem range 0xfed45000-0xfed8ffff has been reserved
-> [    0.583754] system 00:0c: iomem range 0xfeda0000-0xfeda3fff has been reserved
-> [    0.583762] system 00:0c: iomem range 0xfeda4000-0xfeda4fff has been reserved
-> [    0.583771] system 00:0c: iomem range 0xfeda5000-0xfeda5fff has been reserved
-> [    0.583780] system 00:0c: iomem range 0xfeda6000-0xfeda6fff has been reserved
-> [    0.583788] system 00:0c: iomem range 0xfed1c800-0xfed1cfff has been reserved
-> [    0.583797] system 00:0c: iomem range 0xfed18000-0xfed1bfff has been reserved
-> [    0.583805] system 00:0c: iomem range 0xf8000000-0xfbffffff has been reserved
-> [    0.620066] pci 0000:00:1c.0: PCI bridge, secondary bus 0000:0b
-> [    0.620074] pci 0000:00:1c.0:   IO window: disabled
-> [    0.620086] pci 0000:00:1c.0:   MEM window: disabled
-> [    0.620096] pci 0000:00:1c.0:   PREFETCH window: disabled
-> [    0.620111] pci 0000:00:1c.1: PCI bridge, secondary bus 0000:0c
-> [    0.620117] pci 0000:00:1c.1:   IO window: disabled
-> [    0.620130] pci 0000:00:1c.1:   MEM window: 0xf6900000-0xf69fffff
-> [    0.620141] pci 0000:00:1c.1:   PREFETCH window: disabled
-> [    0.620156] pci 0000:00:1c.4: PCI bridge, secondary bus 0000:09
-> [    0.620162] pci 0000:00:1c.4:   IO window: disabled
-> [    0.620174] pci 0000:00:1c.4:   MEM window: 0xf6800000-0xf68fffff
-> [    0.620185] pci 0000:00:1c.4:   PREFETCH window: disabled
-> [    0.620211] pci 0000:02:01.0: CardBus bridge, secondary bus 0000:03
-> [    0.620218] pci 0000:02:01.0:   IO window: 0x002000-0x0020ff
-> [    0.620228] pci 0000:02:01.0:   IO window: 0x002400-0x0024ff
-> [    0.620239] pci 0000:02:01.0:   PREFETCH window: 0x50000000-0x53ffffff
-> [    0.620251] pci 0000:02:01.0:   MEM window: 0x54000000-0x57ffffff
-> [    0.620262] pci 0000:00:1e.0: PCI bridge, secondary bus 0000:02
-> [    0.620271] pci 0000:00:1e.0:   IO window: 0x2000-0x2fff
-> [    0.620284] pci 0000:00:1e.0:   MEM window: 0xf6700000-0xf67fffff
-> [    0.620295] pci 0000:00:1e.0:   PREFETCH window:
-> 0x00000050000000-0x00000053ffffff
-> [    0.620327] pci 0000:00:1c.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> [    0.620339] pci 0000:00:1c.0: setting latency timer to 64
-> [    0.620356] pci 0000:00:1c.1: PCI INT B -> GSI 17 (level, low) -> IRQ 17
-> [    0.620367] pci 0000:00:1c.1: setting latency timer to 64
-> [    0.620381] pci 0000:00:1c.4: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> [    0.620392] pci 0000:00:1c.4: setting latency timer to 64
-> [    0.620405] pci 0000:00:1e.0: setting latency timer to 64
-> [    0.620422] pci 0000:02:01.0: PCI INT A -> GSI 19 (level, low) -> IRQ 19
-> [    0.620435] pci_bus 0000:00: resource 0 io:  [0x00-0xffff]
-> [    0.620438] pci_bus 0000:00: resource 1 mem: [0x000000-0xffffffff]
-> [    0.620442] pci_bus 0000:0c: resource 1 mem: [0xf6900000-0xf69fffff]
-> [    0.620445] pci_bus 0000:09: resource 1 mem: [0xf6800000-0xf68fffff]
-> [    0.620448] pci_bus 0000:02: resource 0 io:  [0x2000-0x2fff]
-> [    0.620452] pci_bus 0000:02: resource 1 mem: [0xf6700000-0xf67fffff]
-> [    0.620455] pci_bus 0000:02: resource 2 pref mem [0x50000000-0x53ffffff]
-> [    0.620458] pci_bus 0000:02: resource 3 io:  [0x00-0xffff]
-> [    0.620461] pci_bus 0000:02: resource 4 mem: [0x000000-0xffffffff]
-> [    0.620464] pci_bus 0000:03: resource 0 io:  [0x2000-0x20ff]
-> [    0.620467] pci_bus 0000:03: resource 1 io:  [0x2400-0x24ff]
-> [    0.620470] pci_bus 0000:03: resource 2 pref mem [0x50000000-0x53ffffff]
-> [    0.620473] pci_bus 0000:03: resource 3 mem: [0x54000000-0x57ffffff]
-> [    0.620567] NET: Registered protocol family 2
-> [    0.663526] IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
-> [    0.664383] TCP established hash table entries: 131072 (order: 8,
-> 1048576 bytes)
-> [    0.664832] TCP bind hash table entries: 65536 (order: 9, 2097152 bytes)
-> [    0.673164] TCP: Hash tables configured (established 131072 bind 65536)
-> [    0.673196] TCP reno registered
-> [    0.680235] NET: Registered protocol family 1
-> [    0.680753] Simple Boot Flag at 0x79 set to 0x1
-> [    0.683310] Microcode Update Driver: v2.00
-> <tigran@aivazian.fsnet.co.uk>, Peter Oruba
-> [    0.683887] audit: initializing netlink socket (disabled)
-> [    0.683926] type=2000 audit(1243957415.683:1): initialized
-> [    0.692070] highmem bounce pool size: 64 pages
-> [    0.692083] HugeTLB registered 4 MB page size, pre-allocated 0 pages
-> [    0.699509] VFS: Disk quotas dquot_6.5.2
-> [    0.699742] Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
-> [    0.701725] msgmni has been set to 1735
-> [    0.702737] alg: No test for stdrng (krng)
-> [    0.703009] Block layer SCSI generic (bsg) driver version 0.4
-> loaded (major 252)
-> [    0.703034] io scheduler noop registered
-> [    0.703040] io scheduler anticipatory registered
-> [    0.703046] io scheduler deadline registered
-> [    0.703205] io scheduler cfq registered (default)
-> [    0.703229] pci 0000:00:02.0: Boot video device
-> [    0.703968] pcieport-driver 0000:00:1c.0: irq 24 for MSI/MSI-X
-> [    0.703996] pcieport-driver 0000:00:1c.0: setting latency timer to 64
-> [    0.704556] pcieport-driver 0000:00:1c.1: irq 25 for MSI/MSI-X
-> [    0.704583] pcieport-driver 0000:00:1c.1: setting latency timer to 64
-> [    0.705083] pcieport-driver 0000:00:1c.4: irq 26 for MSI/MSI-X
-> [    0.705111] pcieport-driver 0000:00:1c.4: setting latency timer to 64
-> [    0.705664] pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-> [    0.706445] ALI M7101 PMU not found.
-> [    0.706752] vesafb: framebuffer at 0xe0000000, mapped to
-> 0xf8080000, using 3072k, total 32704k
-> [    0.706762] vesafb: mode is 1024x768x16, linelength=2048, pages=20
-> [    0.706768] vesafb: scrolling: redraw
-> [    0.706774] vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
-> [    0.720528] Console: switching to colour frame buffer device 128x48
-> [    0.733477] fb0: VESA VGA frame buffer device
-> [    0.734168] ACPI: AC Adapter [AC] (on-line)
-> [    0.734728] input: Lid Switch as
-> /devices/LNXSYSTM:00/device:00/PNP0C0D:00/input/input0
-> [    0.737222] ACPI: Lid Switch [LID]
-> [    0.737494] input: Power Button as
-> /devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input1
-> [    0.737781] ACPI: Power Button [PBTN]
-> [    0.738116] input: Sleep Button as
-> /devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input2
-> [    0.738367] ACPI: Sleep Button [SBTN]
-> [    0.740405] ACPI: SSDT 3d390957 002C3 (v01  PmRef   BspIst 00003000
-> INTL 20050624)
-> [    0.741775] ACPI: SSDT 3d390df1 005C6 (v01  PmRef   BspCst 00003001
-> INTL 20050624)
-> [    0.744092] Monitor-Mwait will be used to enter C-1 state
-> [    0.744151] Monitor-Mwait will be used to enter C-2 state
-> [    0.744208] Monitor-Mwait will be used to enter C-3 state
-> [    0.744229] Marking TSC unstable due to TSC halts in idle
-> [    0.744621] ACPI: CPU0 (power states: C1[C1] C2[C2] C3[C3])
-> [    0.745019] processor ACPI_CPU:00: registered as cooling_device0
-> [    0.745170] ACPI: Processor [CPU0] (supports 8 throttling states)
-> [    0.746054] ACPI: SSDT 3d390c1a 001D7 (v01  PmRef    ApIst 00003000
-> INTL 20050624)
-> [    0.747384] ACPI: SSDT 3d3913b7 0008D (v01  PmRef    ApCst 00003000
-> INTL 20050624)
-> [    0.749022] ACPI: CPU1 (power states: C1[C1] C2[C2] C3[C3])
-> [    0.749296] processor ACPI_CPU:01: registered as cooling_device1
-> [    0.749447] ACPI: Processor [CPU1] (supports 8 throttling states)
-> [    0.780253] thermal LNXTHERM:01: registered as thermal_zone0
-> [    0.780412] ACPI: Thermal Zone [THM] (47 C)
-> [    0.789841] Non-volatile memory driver v1.3
-> [    0.790513] i8k: unable to get SMM BIOS version
-> [    0.796130] Dell laptop SMM driver v1.14 21/02/2005 Massimo Dal
-> Zotto (dz@debian.org)
-> [    0.802371] Linux agpgart interface v0.103
-> [    0.808181] agpgart-intel 0000:00:00.0: Intel Mobile Intel® GM45
-> Express Chipset
-> [    0.814706] agpgart-intel 0000:00:00.0: detected 32764K stolen memory
-> [    0.824316] agpgart-intel 0000:00:00.0: AGP aperture is 256M @ 0xe0000000
-> [    0.830090] Hangcheck: starting hangcheck timer 0.9.0 (tick is 180
-> seconds, margin is 60 seconds).
-> [    0.835884] Hangcheck: Using get_cycles().
-> [    0.841698] [drm] Initialized drm 1.1.0 20060810
-> [    0.847652] pci 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> [    0.853365] pci 0000:00:02.0: setting latency timer to 64
-> [    0.855247] mtrr: type mismatch for e0000000,10000000 old:
-> write-back new: write-combining
-> [    0.861103] [drm] MTRR allocation failed.  Graphics performance may suffer.
-> [    0.867002] pci 0000:00:02.0: irq 27 for MSI/MSI-X
-> [    0.902173] acpi device:36: registered as cooling_device2
-> [    0.912783] input: Video Bus as
-> /devices/LNXSYSTM:00/device:00/PNP0A03:00/device:33/input/input3
-> [    0.918787] ACPI: Video Device [VID] (multi-head: yes  rom: no  post: no)
-> [    0.926148] ACPI Warning (nspredef-0437): \_SB_.PCI0.VID2._DOD:
-> Return Package has no elements (empty) [20090320]
-> [    0.932708] input: Video Bus as
-> /devices/LNXSYSTM:00/device:00/PNP0A03:00/device:3b/input/input4
-> [    0.939115] ACPI: Video Device [VID2] (multi-head: yes  rom: no  post: no)
-> [    0.945671] [drm] Initialized i915 1.6.0 20080730 for 0000:00:02.0 on minor 0
-> [    0.952268] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
-> [    0.966797] brd: module loaded
-> [    0.973812] ACPI: Battery Slot [BAT0] (battery present)
-> [    0.975447] loop: module loaded
-> [    0.975787] Loading iSCSI transport class v2.0-870.
-> [    0.976404] Driver 'sd' needs updating - please use bus_type methods
-> [    0.976504] Driver 'sr' needs updating - please use bus_type methods
-> [    0.976805] ahci 0000:00:1f.2: version 3.0
-> [    0.976826] ahci 0000:00:1f.2: PCI INT D -> GSI 19 (level, low) -> IRQ 19
-> [    0.976910] ahci 0000:00:1f.2: irq 28 for MSI/MSI-X
-> [    0.977024] ahci: SSS flag set, parallel bus scan disabled
-> [    0.977076] ahci 0000:00:1f.2: AHCI 0001.0200 32 slots 4 ports 3
-> Gbps 0x33 impl SATA mode
-> [    0.977080] ahci 0000:00:1f.2: flags: 64bit ncq sntf stag pm led
-> clo pio slum part ems
-> [    0.977089] ahci 0000:00:1f.2: setting latency timer to 64
-> [    0.980468] scsi0 : ahci
-> [    0.981015] scsi1 : ahci
-> [    0.981309] scsi2 : ahci
-> [    0.981602] scsi3 : ahci
-> [    0.981898] scsi4 : ahci
-> [    0.982194] scsi5 : ahci
-> [    0.983232] ata1: SATA max UDMA/133 abar m2048@0xfed1c800 port
-> 0xfed1c900 irq 28
-> [    0.983236] ata2: SATA max UDMA/133 abar m2048@0xfed1c800 port
-> 0xfed1c980 irq 28
-> [    0.983239] ata3: DUMMY
-> [    0.983240] ata4: DUMMY
-> [    0.983243] ata5: SATA max UDMA/133 abar m2048@0xfed1c800 port
-> 0xfed1cb00 irq 28
-> [    0.983247] ata6: SATA max UDMA/133 abar m2048@0xfed1c800 port
-> 0xfed1cb80 irq 28
-> [    0.984282] tg3.c:v3.98 (February 25, 2009)
-> [    0.984339] tg3 0000:09:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> [    0.984351] tg3 0000:09:00.0: setting latency timer to 64
-> [    1.111081] tg3 0000:09:00.0: PME# disabled
-> [    1.129835] eth0: Tigon3 [partno(BCM95756m) rev a200] (PCI Express)
-> MAC address 00:21:9b:f5:60:0f
-> [    1.135400] eth0: attached PHY is 5722/5756 (10/100/1000Base-T
-> Ethernet) (WireSpeed[1])
-> [    1.140999] eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] TSOcap[1]
-> [    1.146598] eth0: dma_rwctrl[76180000] dma_mask[64-bit]
-> [    1.152353] sky2 driver version 1.22
-> [    1.158563] PPP generic driver version 2.4.2
-> [    1.164285] PPP Deflate Compression module registered
-> [    1.169723] PPP BSD Compression module registered
-> [    1.175542] PPP MPPE Compression module registered
-> [    1.180869] NET: Registered protocol family 24
-> [    1.186155] PPPoL2TP kernel driver, V1.0
-> [    1.191384] SLIP: version 0.8.4-NET3.019-NEWTTY (dynamic channels,
-> max=256) (6 bit encapsulation enabled).
-> [    1.196829] CSLIP: code copyright 1989 Regents of the University of
-> California.
-> [    1.202221] SLIP linefill/keepalive option.
-> [    1.207878] console [netcon0] enabled
-> [    1.213123] netconsole: network logging started
-> [    1.218428] yenta_cardbus 0000:02:01.0: CardBus bridge found [1028:0262]
-> [    1.423373] ata5: SATA link down (SStatus 0 SControl 300)
-> [    1.428456] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> [    1.430039] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> [    1.438483] ata1.00: ATA-8: ST9160310AS, DE04, max UDMA/133
-> [    1.443217] ata1.00: 312581808 sectors, multi 8: LBA48 NCQ (depth 31/32)
-> [    1.449479] ata1.00: configured for UDMA/133
-> [    1.454183] ata2.00: ATAPI: TSSTcorp DVD+/-RW TS-L633A, D500, max UDMA/100
-> [    1.458969] ata2.00: applying bridge limits
-> [    1.468078] scsi 0:0:0:0: Direct-Access     ATA      ST9160310AS
->  DE04 PQ: 0 ANSI: 5
-> [    1.474356] sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors:
-> (160 GB/149 GiB)
-> [    1.474372] sd 0:0:0:0: Attached scsi generic sg0 type 0
-> [    1.484181] sd 0:0:0:0: [sda] Write Protect is off
-> [    1.484198] ata2.00: configured for UDMA/100
-> [    1.493852] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> [    1.493914] sd 0:0:0:0: [sda] Write cache: enabled, read cache:
-> enabled, doesn't support DPO or FUA
-> [    1.499277]  sda:<5>scsi 1:0:0:0: CD-ROM            TSSTcorp
-> DVD+-RW TS-L633A D500 PQ: 0 ANSI: 5
-> [    1.522308] sr0: scsi3-mmc drive: 24x/24x writer dvd-ram cd/rw
-> xa/form2 cdda tray
-> [    1.527326] Uniform CD-ROM driver Revision: 3.20
-> [    1.532874] sr 1:0:0:0: Attached scsi CD-ROM sr0
-> [    1.533144] sr 1:0:0:0: Attached scsi generic sg1 type 5
-> [    1.759234]  sda1 sda2 sda3 sda4 < sda5 >
-> [    1.805832] sd 0:0:0:0: [sda] Attached SCSI disk
-> [    1.853368] ata6: SATA link down (SStatus 4 SControl 300)
-> [    1.997743] yenta_cardbus 0000:02:01.0: ISA IRQ mask 0x0cb8, PCI irq 19
-> [    2.003170] yenta_cardbus 0000:02:01.0: Socket status: 30000006
-> [    2.008653] pci_bus 0000:02: Raising subordinate bus# of parent bus
-> (#02) from #03 to #06
-> [    2.014243] yenta_cardbus 0000:02:01.0: pcmcia: parent PCI bridge
-> I/O window: 0x2000 - 0x2fff
-> [    2.020016] yenta_cardbus 0000:02:01.0: pcmcia: parent PCI bridge
-> Memory window: 0xf6700000 - 0xf67fffff
-> [    2.025749] yenta_cardbus 0000:02:01.0: pcmcia: parent PCI bridge
-> Memory window: 0x50000000 - 0x53ffffff
-> [    2.283705] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
-> [    2.289463] ehci_hcd 0000:00:1a.7: PCI INT C -> GSI 22 (level, low) -> IRQ 22
-> [    2.295222] ehci_hcd 0000:00:1a.7: setting latency timer to 64
-> [    2.295228] ehci_hcd 0000:00:1a.7: EHCI Host Controller
-> [    2.301519] ehci_hcd 0000:00:1a.7: new USB bus registered, assigned
-> bus number 1
-> [    2.311123] ehci_hcd 0000:00:1a.7: debug port 1
-> [    2.316664] ehci_hcd 0000:00:1a.7: cache line size of 32 is not supported
-> [    2.316694] ehci_hcd 0000:00:1a.7: irq 22, io mem 0xfed1c400
-> [    2.334201] ehci_hcd 0000:00:1a.7: USB 2.0 started, EHCI 1.00
-> [    2.339836] usb usb1: New USB device found, idVendor=1d6b, idProduct=0002
-> [    2.345324] usb usb1: New USB device strings: Mfr=3, Product=2,
-> SerialNumber=1
-> [    2.350844] usb usb1: Product: EHCI Host Controller
-> [    2.356339] usb usb1: Manufacturer: Linux
-> 2.6.30-rc7-00227-gd9244b5-dirty ehci_hcd
-> [    2.361929] usb usb1: SerialNumber: 0000:00:1a.7
-> [    2.367828] usb usb1: configuration #1 chosen from 1 choice
-> [    2.373762] hub 1-0:1.0: USB hub found
-> [    2.379410] hub 1-0:1.0: 6 ports detected
-> [    2.385773] ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-> [    2.391237] ehci_hcd 0000:00:1d.7: setting latency timer to 64
-> [    2.391242] ehci_hcd 0000:00:1d.7: EHCI Host Controller
-> [    2.396704] ehci_hcd 0000:00:1d.7: new USB bus registered, assigned
-> bus number 2
-> [    2.406032] ehci_hcd 0000:00:1d.7: debug port 1
-> [    2.411412] ehci_hcd 0000:00:1d.7: cache line size of 32 is not supported
-> [    2.411439] ehci_hcd 0000:00:1d.7: irq 20, io mem 0xfed1c000
-> [    2.430851] ehci_hcd 0000:00:1d.7: USB 2.0 started, EHCI 1.00
-> [    2.436150] usb usb2: New USB device found, idVendor=1d6b, idProduct=0002
-> [    2.441475] usb usb2: New USB device strings: Mfr=3, Product=2,
-> SerialNumber=1
-> [    2.446883] usb usb2: Product: EHCI Host Controller
-> [    2.452237] usb usb2: Manufacturer: Linux
-> 2.6.30-rc7-00227-gd9244b5-dirty ehci_hcd
-> [    2.457677] usb usb2: SerialNumber: 0000:00:1d.7
-> [    2.463242] usb usb2: configuration #1 chosen from 1 choice
-> [    2.468769] hub 2-0:1.0: USB hub found
-> [    2.474113] hub 2-0:1.0: 6 ports detected
-> [    2.479491] async/1 used greatest stack depth: 6680 bytes left
-> [    2.479811] uhci_hcd: USB Universal Host Controller Interface driver
-> [    2.479855] uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-> [    2.479866] uhci_hcd 0000:00:1a.0: setting latency timer to 64
-> [    2.479870] uhci_hcd 0000:00:1a.0: UHCI Host Controller
-> [    2.479993] uhci_hcd 0000:00:1a.0: new USB bus registered, assigned
-> bus number 3
-> [    2.480043] uhci_hcd 0000:00:1a.0: irq 20, io base 0x00006f60
-> [    2.480122] usb usb3: New USB device found, idVendor=1d6b, idProduct=0001
-> [    2.480124] usb usb3: New USB device strings: Mfr=3, Product=2,
-> SerialNumber=1
-> [    2.480127] usb usb3: Product: UHCI Host Controller
-> [    2.480129] usb usb3: Manufacturer: Linux
-> 2.6.30-rc7-00227-gd9244b5-dirty uhci_hcd
-> [    2.480132] usb usb3: SerialNumber: 0000:00:1a.0
-> [    2.480331] usb usb3: configuration #1 chosen from 1 choice
-> [    2.480474] hub 3-0:1.0: USB hub found
-> [    2.480542] hub 3-0:1.0: 2 ports detected
-> [    2.480926] uhci_hcd 0000:00:1a.1: PCI INT B -> GSI 21 (level, low) -> IRQ 21
-> [    2.480935] uhci_hcd 0000:00:1a.1: setting latency timer to 64
-> [    2.480940] uhci_hcd 0000:00:1a.1: UHCI Host Controller
-> [    2.481069] uhci_hcd 0000:00:1a.1: new USB bus registered, assigned
-> bus number 4
-> [    2.481119] uhci_hcd 0000:00:1a.1: irq 21, io base 0x00006f80
-> [    2.481194] usb usb4: New USB device found, idVendor=1d6b, idProduct=0001
-> [    2.481197] usb usb4: New USB device strings: Mfr=3, Product=2,
-> SerialNumber=1
-> [    2.481200] usb usb4: Product: UHCI Host Controller
-> [    2.481202] usb usb4: Manufacturer: Linux
-> 2.6.30-rc7-00227-gd9244b5-dirty uhci_hcd
-> [    2.481204] usb usb4: SerialNumber: 0000:00:1a.1
-> [    2.481401] usb usb4: configuration #1 chosen from 1 choice
-> [    2.481545] hub 4-0:1.0: USB hub found
-> [    2.481560] hub 4-0:1.0: 2 ports detected
-> [    2.481912] uhci_hcd 0000:00:1a.2: PCI INT C -> GSI 22 (level, low) -> IRQ 22
-> [    2.481921] uhci_hcd 0000:00:1a.2: setting latency timer to 64
-> [    2.481925] uhci_hcd 0000:00:1a.2: UHCI Host Controller
-> [    2.482049] uhci_hcd 0000:00:1a.2: new USB bus registered, assigned
-> bus number 5
-> [    2.482084] uhci_hcd 0000:00:1a.2: irq 22, io base 0x00006fa0
-> [    2.482186] usb usb5: New USB device found, idVendor=1d6b, idProduct=0001
-> [    2.482189] usb usb5: New USB device strings: Mfr=3, Product=2,
-> SerialNumber=1
-> [    2.482192] usb usb5: Product: UHCI Host Controller
-> [    2.482194] usb usb5: Manufacturer: Linux
-> 2.6.30-rc7-00227-gd9244b5-dirty uhci_hcd
-> [    2.482196] usb usb5: SerialNumber: 0000:00:1a.2
-> [    2.482393] usb usb5: configuration #1 chosen from 1 choice
-> [    2.482536] hub 5-0:1.0: USB hub found
-> [    2.482549] hub 5-0:1.0: 2 ports detected
-> [    2.482908] uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-> [    2.482917] uhci_hcd 0000:00:1d.0: setting latency timer to 64
-> [    2.482922] uhci_hcd 0000:00:1d.0: UHCI Host Controller
-> [    2.483045] uhci_hcd 0000:00:1d.0: new USB bus registered, assigned
-> bus number 6
-> [    2.483080] uhci_hcd 0000:00:1d.0: irq 20, io base 0x00006f00
-> [    2.483155] usb usb6: New USB device found, idVendor=1d6b, idProduct=0001
-> [    2.483158] usb usb6: New USB device strings: Mfr=3, Product=2,
-> SerialNumber=1
-> [    2.483160] usb usb6: Product: UHCI Host Controller
-> [    2.483162] usb usb6: Manufacturer: Linux
-> 2.6.30-rc7-00227-gd9244b5-dirty uhci_hcd
-> [    2.483164] usb usb6: SerialNumber: 0000:00:1d.0
-> [    2.483381] usb usb6: configuration #1 chosen from 1 choice
-> [    2.483532] hub 6-0:1.0: USB hub found
-> [    2.483546] hub 6-0:1.0: 2 ports detected
-> [    2.483899] uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 21 (level, low) -> IRQ 21
-> [    2.483909] uhci_hcd 0000:00:1d.1: setting latency timer to 64
-> [    2.483913] uhci_hcd 0000:00:1d.1: UHCI Host Controller
-> [    2.484040] uhci_hcd 0000:00:1d.1: new USB bus registered, assigned
-> bus number 7
-> [    2.484075] uhci_hcd 0000:00:1d.1: irq 21, io base 0x00006f20
-> [    2.484149] usb usb7: New USB device found, idVendor=1d6b, idProduct=0001
-> [    2.484152] usb usb7: New USB device strings: Mfr=3, Product=2,
-> SerialNumber=1
-> [    2.484154] usb usb7: Product: UHCI Host Controller
-> [    2.484156] usb usb7: Manufacturer: Linux
-> 2.6.30-rc7-00227-gd9244b5-dirty uhci_hcd
-> [    2.484159] usb usb7: SerialNumber: 0000:00:1d.1
-> [    2.484357] usb usb7: configuration #1 chosen from 1 choice
-> [    2.484502] hub 7-0:1.0: USB hub found
-> [    2.484515] hub 7-0:1.0: 2 ports detected
-> [    2.484871] uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 22 (level, low) -> IRQ 22
-> [    2.484880] uhci_hcd 0000:00:1d.2: setting latency timer to 64
-> [    2.484884] uhci_hcd 0000:00:1d.2: UHCI Host Controller
-> [    2.485038] uhci_hcd 0000:00:1d.2: new USB bus registered, assigned
-> bus number 8
-> [    2.485073] uhci_hcd 0000:00:1d.2: irq 22, io base 0x00006f40
-> [    2.485149] usb usb8: New USB device found, idVendor=1d6b, idProduct=0001
-> [    2.485152] usb usb8: New USB device strings: Mfr=3, Product=2,
-> SerialNumber=1
-> [    2.485154] usb usb8: Product: UHCI Host Controller
-> [    2.485156] usb usb8: Manufacturer: Linux
-> 2.6.30-rc7-00227-gd9244b5-dirty uhci_hcd
-> [    2.485159] usb usb8: SerialNumber: 0000:00:1d.2
-> [    2.485360] usb usb8: configuration #1 chosen from 1 choice
-> [    2.485503] hub 8-0:1.0: USB hub found
-> [    2.485517] hub 8-0:1.0: 2 ports detected
-> [    2.485970] Initializing USB Mass Storage driver...
-> [    2.486108] usbcore: registered new interface driver usb-storage
-> [    2.486113] USB Mass Storage support registered.
-> [    2.486509] usbcore: registered new interface driver libusual
-> [    2.486771] PNP: PS/2 Controller [PNP0303:KBC,PNP0f13:PS2M] at
-> 0x60,0x64 irq 1,12
-> [    2.487298] i8042.c: Warning: Keylock active.
-> [    2.877411] async/2 used greatest stack depth: 6456 bytes left
-> [    2.884291] serio: i8042 KBD port at 0x60,0x64 irq 1
-> [    2.889351] serio: i8042 AUX port at 0x60,0x64 irq 12
-> [    2.894483] async/0 used greatest stack depth: 6432 bytes left
-> [    2.894643] mice: PS/2 mouse device common for all mice
-> [    2.895990] rtc_cmos 00:03: RTC can wake from S4
-> [    2.896243] rtc_cmos 00:03: rtc core: registered rtc_cmos as rtc0
-> [    2.896286] rtc0: alarms up to one month, y3k, 114 bytes nvram, hpet irqs
-> [    2.896382] i2c /dev entries driver
-> [    2.896613] i801_smbus 0000:00:1f.3: PCI INT B -> GSI 19 (level,
-> low) -> IRQ 19
-> [    2.929803] i6300ESB timer: Intel 6300ESB WatchDog Timer Driver v0.04
-> [    2.935150] iTCO_wdt: Intel TCO WatchDog Timer Driver v1.05
-> [    2.940480] iTCO_wdt: Found a ICH9M TCO device (Version=2, TCOBASE=0x1060)
-> [    2.945854] iTCO_wdt: initialized. heartbeat=30 sec (nowayout=0)
-> [    2.950921] iTCO_vendor_support: vendor-support=0
-> [    2.956194] input: AT Translated Set 2 keyboard as
-> /devices/platform/i8042/serio0/input/input5
-> [    2.956551] device-mapper: ioctl: 4.14.0-ioctl (2008-04-23)
-> initialised: dm-devel@redhat.com
-> [    2.957625] cpuidle: using governor ladder
-> [    2.973578] cpuidle: using governor menu
-> [    2.979017] sdhci: Secure Digital Host Controller Interface driver
-> [    2.984394] sdhci: Copyright(c) Pierre Ossman
-> [    2.989745] sdhci-pci 0000:02:01.2: SDHCI controller found
-> [1180:0822] (rev 21)
-> [    2.995111] sdhci-pci 0000:02:01.2: PCI INT C -> GSI 18 (level,
-> low) -> IRQ 18
-> [    3.002810] Registered led device: mmc0::
-> [    3.009323] mmc0: SDHCI controller on PCI [0000:02:01.2] using DMA
-> [    3.014980] wbsd: Winbond W83L51xD SD/MMC card interface driver
-> [    3.020310] wbsd: Copyright(c) Pierre Ossman
-> [    3.026336] dcdbas dcdbas: Dell Systems Management Base Driver
-> (version 5.6.0-3.2)
-> [    3.034284] usbcore: registered new interface driver hiddev
-> [    3.039902] usbcore: registered new interface driver usbhid
-> [    3.045313] usbhid: v2.6:USB HID core driver
-> [    3.077224] Advanced Linux Sound Architecture Driver Version 1.0.20.
-> [    3.082690] ALSA device list:
-> [    3.088067]   No soundcards found.
-> [    3.093396] Netfilter messages via NETLINK v0.30.
-> [    3.098826] nf_conntrack version 0.5.0 (15672 buckets, 62688 max)
-> [    3.105240] ctnetlink v0.93: registering with nfnetlink.
-> [    3.112508] ip_tables: (C) 2000-2006 Netfilter Core Team
-> [    3.117959] TCP cubic registered
-> [    3.123254] NET: Registered protocol family 17
-> [    3.128589] lib80211: common routines for IEEE802.11 drivers
-> [    3.133992] lib80211_crypt: registered algorithm 'NULL'
-> [    3.136209] Using IPI No-Shortcut mode
-> [    3.142008] PM: Checking image partition /dev/sda1
-> [    3.142052] PM: Resume from partition 8:1
-> [    3.142054] PM: Checking hibernation image.
-> [    3.142597] PM: Resume from disk failed.
-> [    3.142650] registered taskstats version 1
-> [    3.148330]   Magic number: 13:423:739
-> [    3.153687] BIOS EDD facility v0.16 2004-Jun-25, 1 devices found
-> [    3.282944] input: PS/2 Mouse as /devices/platform/i8042/serio1/input/input6
-> [    3.305659] input: AlpsPS/2 ALPS GlidePoint as
-> /devices/platform/i8042/serio1/input/input7
-> [    3.321298] md: Waiting for all devices to be available before autodetect
-> [    3.332390] md: If you don't use raid, use raid=noautodetect
-> [    3.346389] md: Autodetecting RAID arrays.
-> [    3.357595] md: Scanned 0 and added 0 devices.
-> [    3.368730] md: autorun ...
-> [    3.379668] md: ... autorun DONE.
-> [    3.500188] Clocksource tsc unstable (delta = -226952928 ns)
-> [    3.678889] kjournald starting.  Commit interval 5 seconds
-> [    3.690742] EXT3-fs: mounted filesystem with writeback data mode.
-> [    3.702033] VFS: Mounted root (ext3 filesystem) readonly on device 8:2.
-> [    3.713227] Freeing unused kernel memory: 352k freed
-> [    3.725244] Write protecting the kernel text: 3364k
-> [    3.736633] Write protecting the kernel read-only data: 1808k
-> [    4.876981] mount used greatest stack depth: 5944 bytes left
-> [    6.200137] modprobe used greatest stack depth: 5888 bytes left
-> [    6.343973] ACPI: WMI: Mapper loaded
-> [    6.589519] ohci1394 0000:02:01.1: PCI INT B -> GSI 17 (level, low) -> IRQ 17
-> [    6.656531] ohci1394: fw-host0: OHCI-1394 1.1 (PCI): IRQ=[17]
-> MMIO=[f67ff800-f67fffff]  Max Packet=[2048]  IR/IT contexts=[4/4]
-> [    6.874071] HDA Intel 0000:00:1b.0: PCI INT A -> GSI 21 (level,
-> low) -> IRQ 21
-> [    6.885322] HDA Intel 0000:00:1b.0: setting latency timer to 64
-> [    7.294132] input: HDA Intel Mic at Ext Right Jack as
-> /devices/pci0000:00/0000:00:1b.0/input/input8
-> [    7.306218] input: HDA Intel Line Out at Sep Left Jack as
-> /devices/pci0000:00/0000:00:1b.0/input/input9
-> [    7.318869] input: HDA Intel HP Out at Ext Right Jack as
-> /devices/pci0000:00/0000:00:1b.0/input/input10
-> [    7.692016] Adding 1004020k swap on /dev/sda1.  Priority:-1
-> extents:1 across:1004020k
-> [    7.947364] ieee1394: Host added: ID:BUS[0-00:1023]  GUID[464fc0001679c05c]
-> [    9.385716] EXT3 FS on sda2, internal journal
-> [   13.884721] kjournald starting.  Commit interval 5 seconds
-> [   13.897477] EXT3 FS on sda3, internal journal
-> [   13.909591] EXT3-fs: mounted filesystem with writeback data mode.
-> [   14.092947] kjournald starting.  Commit interval 5 seconds
-> [   14.098695] EXT3-fs warning: maximal mount count reached, running
-> e2fsck is recommended
-> [   14.108890] EXT3 FS on sda5, internal journal
-> [   14.120900] EXT3-fs: mounted filesystem with writeback data mode.
-> [   23.427293] Bluetooth: Core ver 2.15
-> [   23.428189] NET: Registered protocol family 31
-> [   23.428195] Bluetooth: HCI device and connection manager initialized
-> [   23.428393] Bluetooth: HCI socket layer initialized
-> [   23.567284] Bluetooth: L2CAP ver 2.13
-> [   23.567292] Bluetooth: L2CAP socket layer initialized
-> [   24.143802] Bluetooth: SCO (Voice Link) ver 0.6
-> [   24.143810] Bluetooth: SCO socket layer initialized
-> [   24.217583] Bluetooth: BNEP (Ethernet Emulation) ver 1.3
-> [   24.217593] Bluetooth: BNEP filters: protocol multicast
-> [   24.836796] update-mime-dat used greatest stack depth: 5864 bytes left
-> [   26.006159] smbd used greatest stack depth: 5636 bytes left
-> [   42.831168] mtrr: type mismatch for e0000000,10000000 old:
-> write-back new: write-combining
-> [  820.650435] tg3 0000:09:00.0: PME# disabled
-> [  820.651546] tg3 0000:09:00.0: irq 29 for MSI/MSI-X
-> [  822.270345] tg3: eth0: Link is up at 100 Mbps, full duplex.
-> [  822.270355] tg3: eth0: Flow control is on for TX and on for RX.
-> [ 1768.287580] kio_http used greatest stack depth: 5208 bytes left
-> [ 1818.286019] kio_http used greatest stack depth: 5124 bytes left
-> [ 3508.573910]
-> [ 3508.573911] =======================================================
-> [ 3508.574131] [ INFO: possible circular locking dependency detected ]
-> [ 3508.574298] 2.6.30-rc7-00227-gd9244b5-dirty #51
-> [ 3508.574416] -------------------------------------------------------
-> [ 3508.574571] 94cpufreq/5275 is trying to acquire lock:
-> [ 3508.574694]  (&(&dbs_info->work)->work){+.+...}, at: [<c10365ee>]
-> __cancel_work_timer+0x8c/0x18c
-> [ 3508.574936]
-> [ 3508.574937] but task is already holding lock:
-> [ 3508.575084]  (dbs_mutex){+.+.+.}, at: [<c127297b>]
-> cpufreq_governor_dbs+0x1ee/0x267
-> [ 3508.575299]
-> [ 3508.575299] which lock already depends on the new lock.
-> [ 3508.575301]
-> [ 3508.575509]
-> [ 3508.575510] the existing dependency chain (in reverse order) is:
-> [ 3508.575712]
-> [ 3508.575713] -> #2 (dbs_mutex){+.+.+.}:
-> [ 3508.575868]        [<c1047d33>] __lock_acquire+0x91e/0xaa9
-> [ 3508.576024]        [<c1047f59>] lock_acquire+0x9b/0xbe
-> [ 3508.576165]        [<c1344414>] __mutex_lock_common+0x35/0x2d2
-> [ 3508.576327]        [<c1344749>] mutex_lock_nested+0x2e/0x36
-> [ 3508.576486]        [<c12727fd>] cpufreq_governor_dbs+0x70/0x267
-> [ 3508.576650]        [<c1270007>] __cpufreq_governor+0x66/0x9d
-> [ 3508.576809]        [<c1270193>] __cpufreq_set_policy+0x155/0x1c3
-> [ 3508.576973]        [<c127109b>] cpufreq_add_dev+0x4d4/0x5f6
-> [ 3508.577120]        [<c11c2bc9>] sysdev_driver_register+0x96/0xe5
-> [ 3508.577175]        [<c12713df>] cpufreq_register_driver+0xa1/0x168
-> [ 3508.577175]        [<c156f8cf>] acpi_cpufreq_init+0x99/0xab
-> [ 3508.577175]        [<c1001137>] do_one_initcall+0x4a/0x11a
-> [ 3508.577175]        [<c156750a>] kernel_init+0xfe/0x14f
-> [ 3508.577175]        [<c1003d1f>] kernel_thread_helper+0x7/0x10
-> [ 3508.577175]        [<ffffffff>] 0xffffffff
-> [ 3508.577175]
-> [ 3508.577175] -> #1 (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}:
-> [ 3508.577175]        [<c1047d33>] __lock_acquire+0x91e/0xaa9
-> [ 3508.577175]        [<c1047f59>] lock_acquire+0x9b/0xbe
-> [ 3508.577175]        [<c1344923>] down_write+0x2f/0x4b
-> [ 3508.577175]        [<c1270a1c>] lock_policy_rwsem_write+0x33/0x5b
-> [ 3508.578971]        [<c1272597>] do_dbs_timer+0x45/0x23b
-> [ 3508.578971]        [<c1036bc6>] worker_thread+0x170/0x23c
-> [ 3508.578971]        [<c1039409>] kthread+0x45/0x6c
-> [ 3508.578971]        [<c1003d1f>] kernel_thread_helper+0x7/0x10
-> [ 3508.578971]        [<ffffffff>] 0xffffffff
-> [ 3508.578971]
-> [ 3508.578971] -> #0 (&(&dbs_info->work)->work){+.+...}:
-> [ 3508.578971]        [<c1047c43>] __lock_acquire+0x82e/0xaa9
-> [ 3508.578971]        [<c1047f59>] lock_acquire+0x9b/0xbe
-> [ 3508.578971]        [<c1036619>] __cancel_work_timer+0xb7/0x18c
-> [ 3508.578971]        [<c10366f9>] cancel_delayed_work_sync+0xb/0xd
-> [ 3508.578971]        [<c127298a>] cpufreq_governor_dbs+0x1fd/0x267
-> [ 3508.578971]        [<c1270007>] __cpufreq_governor+0x66/0x9d
-> [ 3508.578971]        [<c127017d>] __cpufreq_set_policy+0x13f/0x1c3
-> [ 3508.578971]        [<c1270645>] store_scaling_governor+0x159/0x188
-> [ 3508.578971]        [<c12711ff>] store+0x42/0x5b
-> [ 3508.578971]        [<c10cc0ed>] sysfs_write_file+0xb8/0xe3
-> [ 3508.578971]        [<c10900a0>] vfs_write+0x82/0xdc
-> [ 3508.578971]        [<c109018f>] sys_write+0x3b/0x5d
-> [ 3508.578971]        [<c10032dd>] syscall_call+0x7/0xb
-> [ 3508.578971]        [<ffffffff>] 0xffffffff
-> [ 3508.578971]
-> [ 3508.578971] other info that might help us debug this:
-> [ 3508.578971]
-> [ 3508.578971] 3 locks held by 94cpufreq/5275:
-> [ 3508.578971]  #0:  (&buffer->mutex){+.+.+.}, at: [<c10cc05a>]
-> sysfs_write_file+0x25/0xe3
-> [ 3508.578971]  #1:  (&per_cpu(cpu_policy_rwsem, cpu)){+++++.}, at:
-> [<c1270a1c>] lock_policy_rwsem_write+0x33/0x5b
-> [ 3508.578971]  #2:  (dbs_mutex){+.+.+.}, at: [<c127297b>]
-> cpufreq_governor_dbs+0x1ee/0x267
-> [ 3508.578971]
-> [ 3508.578971] stack backtrace:
-> [ 3508.578971] Pid: 5275, comm: 94cpufreq Not tainted
-> 2.6.30-rc7-00227-gd9244b5-dirty #51
-> [ 3508.578971] Call Trace:
-> [ 3508.578971]  [<c10468b9>] print_circular_bug_tail+0x5d/0x68
-> [ 3508.578971]  [<c1047c43>] __lock_acquire+0x82e/0xaa9
-> [ 3508.578971]  [<c1046439>] ? mark_lock+0x1e/0x1c7
-> [ 3508.578971]  [<c1047f59>] lock_acquire+0x9b/0xbe
-> [ 3508.578971]  [<c10365ee>] ? __cancel_work_timer+0x8c/0x18c
-> [ 3508.578971]  [<c1036619>] __cancel_work_timer+0xb7/0x18c
-> [ 3508.578971]  [<c10365ee>] ? __cancel_work_timer+0x8c/0x18c
-> [ 3508.578971]  [<c1046747>] ? trace_hardirqs_on_caller+0x10a/0x146
-> [ 3508.578971]  [<c13446a7>] ? __mutex_lock_common+0x2c8/0x2d2
-> [ 3508.578971]  [<c10366f9>] cancel_delayed_work_sync+0xb/0xd
-> [ 3508.578971]  [<c127298a>] cpufreq_governor_dbs+0x1fd/0x267
-> [ 3508.578971]  [<c103c5ab>] ? up_read+0x16/0x29
-> [ 3508.578971]  [<c1270007>] __cpufreq_governor+0x66/0x9d
-> [ 3508.578971]  [<c127017d>] __cpufreq_set_policy+0x13f/0x1c3
-> [ 3508.578971]  [<c12704ec>] ? store_scaling_governor+0x0/0x188
-> [ 3508.578971]  [<c1270645>] store_scaling_governor+0x159/0x188
-> [ 3508.578971]  [<c1270b4d>] ? handle_update+0x0/0x28
-> [ 3508.578971]  [<c1270a1c>] ? lock_policy_rwsem_write+0x33/0x5b
-> [ 3508.578971]  [<c12704ec>] ? store_scaling_governor+0x0/0x188
-> [ 3508.578971]  [<c12711ff>] store+0x42/0x5b
-> [ 3508.578971]  [<c10cc0ed>] sysfs_write_file+0xb8/0xe3
-> [ 3508.578971]  [<c10900a0>] vfs_write+0x82/0xdc
-> [ 3508.578971]  [<c10cc035>] ? sysfs_write_file+0x0/0xe3
-> [ 3508.578971]  [<c109018f>] sys_write+0x3b/0x5d
-> [ 3508.578971]  [<c10032dd>] syscall_call+0x7/0xb
-> [ 3509.211597] PM: Syncing filesystems ... done.
-> [ 3509.215505] PM: Preparing system for mem sleep
-> [ 3509.215518] Freezing user space processes ... (elapsed 0.00 seconds) done.
-> [ 3509.215902] Freezing remaining freezable tasks ... (elapsed 0.00
-> seconds) done.
-> [ 3509.215963] PM: Entering mem sleep
-> [ 3509.215976] Suspending console(s) (use no_console_suspend to debug)
-> [ 3509.723360] sd 0:0:0:0: [sda] Synchronizing SCSI cache
-> [ 3509.723603] sd 0:0:0:0: [sda] Stopping disk
-> [ 3510.107827] ACPI handle has no context!
-> [ 3510.107834] sdhci-pci 0000:02:01.2: PME# disabled
-> [ 3510.107842] sdhci-pci 0000:02:01.2: PCI INT C disabled
-> [ 3510.107849] ACPI handle has no context!
-> [ 3510.124990] ACPI handle has no context!
-> [ 3510.183595] tg3 0000:09:00.0: PME# enabled
-> [ 3510.263231] ehci_hcd 0000:00:1d.7: PCI INT A disabled
-> [ 3510.263311] ehci_hcd 0000:00:1d.7: PME# disabled
-> [ 3510.276561] uhci_hcd 0000:00:1d.2: PCI INT C disabled
-> [ 3510.276637] uhci_hcd 0000:00:1d.1: PCI INT B disabled
-> [ 3510.276708] uhci_hcd 0000:00:1d.0: PCI INT A disabled
-> [ 3510.303232] HDA Intel 0000:00:1b.0: PCI INT A disabled
-> [ 3510.316561] ehci_hcd 0000:00:1a.7: PCI INT C disabled
-> [ 3510.316641] ehci_hcd 0000:00:1a.7: PME# disabled
-> [ 3510.329889] uhci_hcd 0000:00:1a.2: PCI INT C disabled
-> [ 3510.329964] uhci_hcd 0000:00:1a.1: PCI INT B disabled
-> [ 3510.330036] uhci_hcd 0000:00:1a.0: PCI INT A disabled
-> [ 3510.338676] ACPI: Preparing to enter system sleep state S3
-> [ 3510.370343] Disabling non-boot CPUs ...
-> [ 3510.473013] CPU 1 is now offline
-> [ 3510.473016] lockdep: fixing up alternatives.
-> [ 3510.473019] SMP alternatives: switching to UP code
-> [ 3510.476717] CPU1 is down
-> [ 3510.476773] Extended CMOS year: 2000
-> [ 3510.476773] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-> [ 3510.476773] Back to C!
-> [ 3510.476773] Extended CMOS year: 2000
-> [ 3510.476773] Enabling non-boot CPUs ...
-> [ 3510.476773] lockdep: fixing up alternatives.
-> [ 3510.476773] SMP alternatives: switching to SMP code
-> [ 3510.479959] Booting processor 1 APIC 0x1 ip 0x6000
-> [ 3510.476374] Initializing CPU#1
-> [ 3510.476374] Calibrating delay using timer specific routine..
-> 3991.33 BogoMIPS (lpj=6650129)
-> [ 3510.476374] CPU: L1 I cache: 32K, L1 D cache: 32K
-> [ 3510.476374] CPU: L2 cache: 2048K
-> [ 3510.476374] CPU: Physical Processor ID: 0
-> [ 3510.476374] CPU: Processor Core ID: 1
-> [ 3510.476374] x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
-> [ 3510.574730] CPU1: Intel(R) Core(TM)2 Duo CPU     T7250  @ 2.00GHz stepping 0d
-> [ 3510.576337] Switched to high resolution mode on CPU 1
-> [ 3510.586480] microcode: failed to init CPU1
-> [ 3510.587167] CPU1 is up
-> [ 3510.587170] ACPI: Waking up from system sleep state S3
-> [ 3510.773459] pci 0000:00:02.0: restoring config space at offset 0xf
-> (was 0x100, writing 0x10b)
-> [ 3510.773469] pci 0000:00:02.0: restoring config space at offset 0x8
-> (was 0x1, writing 0xefe9)
-> [ 3510.773476] pci 0000:00:02.0: restoring config space at offset 0x6
-> (was 0xc, writing 0xe000000c)
-> [ 3510.773484] pci 0000:00:02.0: restoring config space at offset 0x1
-> (was 0x900007, writing 0x900403)
-> [ 3510.773520] pci 0000:00:02.1: restoring config space at offset 0x4
-> (was 0x4, writing 0xf6b00004)
-> [ 3510.773527] pci 0000:00:02.1: restoring config space at offset 0x1
-> (was 0x900000, writing 0x900007)
-> [ 3510.773545] uhci_hcd 0000:00:1a.0: restoring config space at offset
-> 0xf (was 0x100, writing 0x10a)
-> [ 3510.773562] uhci_hcd 0000:00:1a.0: restoring config space at offset
-> 0x8 (was 0x1, writing 0x6f61)
-> [ 3510.773579] uhci_hcd 0000:00:1a.0: restoring config space at offset
-> 0x1 (was 0x2900000, writing 0x2900001)
-> [ 3510.773603] uhci_hcd 0000:00:1a.1: restoring config space at offset
-> 0xf (was 0x200, writing 0x207)
-> [ 3510.773620] uhci_hcd 0000:00:1a.1: restoring config space at offset
-> 0x8 (was 0x1, writing 0x6f81)
-> [ 3510.773637] uhci_hcd 0000:00:1a.1: restoring config space at offset
-> 0x1 (was 0x2900000, writing 0x2900001)
-> [ 3510.773660] uhci_hcd 0000:00:1a.2: restoring config space at offset
-> 0xf (was 0x300, writing 0x305)
-> [ 3510.773677] uhci_hcd 0000:00:1a.2: restoring config space at offset
-> 0x8 (was 0x1, writing 0x6fa1)
-> [ 3510.773694] uhci_hcd 0000:00:1a.2: restoring config space at offset
-> 0x1 (was 0x2900000, writing 0x2900001)
-> [ 3510.773750] ehci_hcd 0000:00:1a.7: restoring config space at offset
-> 0x1 (was 0x2900106, writing 0x2900102)
-> [ 3510.773791] HDA Intel 0000:00:1b.0: restoring config space at
-> offset 0xf (was 0x100, writing 0x107)
-> [ 3510.773815] HDA Intel 0000:00:1b.0: restoring config space at
-> offset 0x4 (was 0xfebfc004, writing 0xf6afc004)
-> [ 3510.773822] HDA Intel 0000:00:1b.0: restoring config space at
-> offset 0x3 (was 0x0, writing 0x10)
-> [ 3510.773830] HDA Intel 0000:00:1b.0: restoring config space at
-> offset 0x1 (was 0x100000, writing 0x100102)
-> [ 3510.773869] pcieport-driver 0000:00:1c.0: restoring config space at
-> offset 0xf (was 0x100, writing 0x20100)
-> [ 3510.773884] pcieport-driver 0000:00:1c.0: restoring config space at
-> offset 0x9 (was 0x10001, writing 0x1fff1)
-> [ 3510.773890] pcieport-driver 0000:00:1c.0: restoring config space at
-> offset 0x8 (was 0x0, writing 0xfff0)
-> [ 3510.773897] pcieport-driver 0000:00:1c.0: restoring config space at
-> offset 0x7 (was 0x20000000, writing 0x200000f0)
-> [ 3510.773904] pcieport-driver 0000:00:1c.0: restoring config space at
-> offset 0x6 (was 0x0, writing 0xb0b00)
-> [ 3510.773914] pcieport-driver 0000:00:1c.0: restoring config space at
-> offset 0x3 (was 0x810000, writing 0x810010)
-> [ 3510.773923] pcieport-driver 0000:00:1c.0: restoring config space at
-> offset 0x1 (was 0x100000, writing 0x100507)
-> [ 3510.773989] pcieport-driver 0000:00:1c.1: restoring config space at
-> offset 0xf (was 0x200, writing 0x20200)
-> [ 3510.774005] pcieport-driver 0000:00:1c.1: restoring config space at
-> offset 0x9 (was 0x10001, writing 0x1fff1)
-> [ 3510.774011] pcieport-driver 0000:00:1c.1: restoring config space at
-> offset 0x8 (was 0x0, writing 0xf690f690)
-> [ 3510.774018] pcieport-driver 0000:00:1c.1: restoring config space at
-> offset 0x7 (was 0x20000000, writing 0x200000f0)
-> [ 3510.774025] pcieport-driver 0000:00:1c.1: restoring config space at
-> offset 0x6 (was 0x0, writing 0xc0c00)
-> [ 3510.774035] pcieport-driver 0000:00:1c.1: restoring config space at
-> offset 0x3 (was 0x810000, writing 0x810010)
-> [ 3510.774044] pcieport-driver 0000:00:1c.1: restoring config space at
-> offset 0x1 (was 0x100000, writing 0x100507)
-> [ 3510.774110] pcieport-driver 0000:00:1c.4: restoring config space at
-> offset 0xf (was 0x100, writing 0x20100)
-> [ 3510.774125] pcieport-driver 0000:00:1c.4: restoring config space at
-> offset 0x9 (was 0x10001, writing 0x1fff1)
-> [ 3510.774132] pcieport-driver 0000:00:1c.4: restoring config space at
-> offset 0x8 (was 0x0, writing 0xf680f680)
-> [ 3510.774139] pcieport-driver 0000:00:1c.4: restoring config space at
-> offset 0x7 (was 0x20000000, writing 0x200000f0)
-> [ 3510.774146] pcieport-driver 0000:00:1c.4: restoring config space at
-> offset 0x6 (was 0x0, writing 0x90900)
-> [ 3510.774156] pcieport-driver 0000:00:1c.4: restoring config space at
-> offset 0x3 (was 0x810000, writing 0x810010)
-> [ 3510.774165] pcieport-driver 0000:00:1c.4: restoring config space at
-> offset 0x1 (was 0x100000, writing 0x100407)
-> [ 3510.774247] uhci_hcd 0000:00:1d.0: restoring config space at offset
-> 0x1 (was 0x2900005, writing 0x2900001)
-> [ 3510.774270] uhci_hcd 0000:00:1d.1: restoring config space at offset
-> 0xf (was 0x200, writing 0x207)
-> [ 3510.774287] uhci_hcd 0000:00:1d.1: restoring config space at offset
-> 0x8 (was 0x1, writing 0x6f21)
-> [ 3510.774304] uhci_hcd 0000:00:1d.1: restoring config space at offset
-> 0x1 (was 0x2900000, writing 0x2900001)
-> [ 3510.774327] uhci_hcd 0000:00:1d.2: restoring config space at offset
-> 0xf (was 0x300, writing 0x305)
-> [ 3510.774344] uhci_hcd 0000:00:1d.2: restoring config space at offset
-> 0x8 (was 0x1, writing 0x6f41)
-> [ 3510.774361] uhci_hcd 0000:00:1d.2: restoring config space at offset
-> 0x1 (was 0x2900000, writing 0x2900001)
-> [ 3510.774417] ehci_hcd 0000:00:1d.7: restoring config space at offset
-> 0x1 (was 0x2900106, writing 0x2900102)
-> [ 3510.774458] pci 0000:00:1e.0: restoring config space at offset 0x9
-> (was 0x1fff1, writing 0x53f15001)
-> [ 3510.774466] pci 0000:00:1e.0: restoring config space at offset 0x7
-> (was 0x2280e0f0, writing 0x22802020)
-> [ 3510.774473] pci 0000:00:1e.0: restoring config space at offset 0x6
-> (was 0x20020200, writing 0x20060200)
-> [ 3510.774538] pci 0000:00:1f.0: restoring config space at offset 0x1
-> (was 0x2100007, writing 0x2100107)
-> [ 3510.774576] ahci 0000:00:1f.2: restoring config space at offset 0xf
-> (was 0x400, writing 0x40a)
-> [ 3510.774605] ahci 0000:00:1f.2: restoring config space at offset 0x1
-> (was 0x2b00007, writing 0x2b00407)
-> [ 3510.774654] i801_smbus 0000:00:1f.3: restoring config space at
-> offset 0xf (was 0x200, writing 0x204)
-> [ 3510.774678] i801_smbus 0000:00:1f.3: restoring config space at
-> offset 0x4 (was 0x4, writing 0xf6afbf04)
-> [ 3510.774688] i801_smbus 0000:00:1f.3: restoring config space at
-> offset 0x1 (was 0x2800001, writing 0x2800103)
-> [ 3510.774957] pci 0000:0c:00.0: restoring config space at offset 0xf
-> (was 0x100, writing 0x104)
-> [ 3510.775022] pci 0000:0c:00.0: restoring config space at offset 0x4
-> (was 0x4, writing 0xf69fc004)
-> [ 3510.775036] pci 0000:0c:00.0: restoring config space at offset 0x3
-> (was 0x0, writing 0x10)
-> [ 3510.775054] pci 0000:0c:00.0: restoring config space at offset 0x1
-> (was 0x100000, writing 0x100106)
-> [ 3510.775203] tg3 0000:09:00.0: restoring config space at offset 0xc
-> (was 0x0, writing 0x33040000)
-> [ 3510.775230] tg3 0000:09:00.0: restoring config space at offset 0x3
-> (was 0x0, writing 0x10)
-> [ 3510.775240] tg3 0000:09:00.0: restoring config space at offset 0x1
-> (was 0x100000, writing 0x100506)
-> [ 3510.775335] yenta_cardbus 0000:02:01.0: restoring config space at
-> offset 0xf (was 0x7000100, writing 0x580010a)
-> [ 3510.775342] yenta_cardbus 0000:02:01.0: restoring config space at
-> offset 0xe (was 0x0, writing 0x24fc)
-> [ 3510.775349] yenta_cardbus 0000:02:01.0: restoring config space at
-> offset 0xd (was 0x0, writing 0x2400)
-> [ 3510.775355] yenta_cardbus 0000:02:01.0: restoring config space at
-> offset 0xc (was 0x0, writing 0x20fc)
-> [ 3510.775362] yenta_cardbus 0000:02:01.0: restoring config space at
-> offset 0xb (was 0x0, writing 0x2000)
-> [ 3510.775369] yenta_cardbus 0000:02:01.0: restoring config space at
-> offset 0xa (was 0x0, writing 0x57fff000)
-> [ 3510.775376] yenta_cardbus 0000:02:01.0: restoring config space at
-> offset 0x9 (was 0x0, writing 0x54000000)
-> [ 3510.775382] yenta_cardbus 0000:02:01.0: restoring config space at
-> offset 0x8 (was 0x0, writing 0x53fff000)
-> [ 3510.775389] yenta_cardbus 0000:02:01.0: restoring config space at
-> offset 0x7 (was 0x0, writing 0x50000000)
-> [ 3510.775396] yenta_cardbus 0000:02:01.0: restoring config space at
-> offset 0x6 (was 0x0, writing 0xb0060302)
-> [ 3510.775404] yenta_cardbus 0000:02:01.0: restoring config space at
-> offset 0x4 (was 0x0, writing 0xf6700000)
-> [ 3510.775411] yenta_cardbus 0000:02:01.0: restoring config space at
-> offset 0x3 (was 0x820000, writing 0x82a800)
-> [ 3510.775419] yenta_cardbus 0000:02:01.0: restoring config space at
-> offset 0x1 (was 0x2100000, writing 0x2100007)
-> [ 3510.775447] ohci1394 0000:02:01.1: restoring config space at offset
-> 0xf (was 0x4020200, writing 0x4020204)
-> [ 3510.775475] ohci1394 0000:02:01.1: restoring config space at offset
-> 0x3 (was 0x800000, writing 0x804010)
-> [ 3510.775484] ohci1394 0000:02:01.1: restoring config space at offset
-> 0x1 (was 0x2100000, writing 0x2100106)
-> [ 3510.775510] sdhci-pci 0000:02:01.2: restoring config space at
-> offset 0xf (was 0x300, writing 0x303)
-> [ 3510.775536] sdhci-pci 0000:02:01.2: restoring config space at
-> offset 0x4 (was 0x0, writing 0xf67ff600)
-> [ 3510.775542] sdhci-pci 0000:02:01.2: restoring config space at
-> offset 0x3 (was 0x800000, writing 0x804010)
-> [ 3510.775552] sdhci-pci 0000:02:01.2: restoring config space at
-> offset 0x1 (was 0x2100000, writing 0x2100106)
-> [ 3510.775577] pci 0000:02:01.3: restoring config space at offset 0xf
-> (was 0x300, writing 0x303)
-> [ 3510.775604] pci 0000:02:01.3: restoring config space at offset 0x4
-> (was 0x0, writing 0xf67ff700)
-> [ 3510.775610] pci 0000:02:01.3: restoring config space at offset 0x3
-> (was 0x800000, writing 0x804010)
-> [ 3510.775619] pci 0000:02:01.3: restoring config space at offset 0x1
-> (was 0x2100000, writing 0x2100106)
-> [ 3510.905711] pci 0000:00:02.0: PME# disabled
-> [ 3510.905718] pci 0000:00:02.1: PME# disabled
-> [ 3510.905771] uhci_hcd 0000:00:1a.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-> [ 3510.905779] uhci_hcd 0000:00:1a.0: setting latency timer to 64
-> [ 3510.905806] usb usb3: root hub lost power or was reset
-> [ 3510.905868] uhci_hcd 0000:00:1a.1: PCI INT B -> GSI 21 (level, low) -> IRQ 21
-> [ 3510.905876] uhci_hcd 0000:00:1a.1: setting latency timer to 64
-> [ 3510.905903] usb usb4: root hub lost power or was reset
-> [ 3510.905964] uhci_hcd 0000:00:1a.2: PCI INT C -> GSI 22 (level, low) -> IRQ 22
-> [ 3510.905971] uhci_hcd 0000:00:1a.2: setting latency timer to 64
-> [ 3510.905998] usb usb5: root hub lost power or was reset
-> [ 3510.906074] ehci_hcd 0000:00:1a.7: PME# disabled
-> [ 3510.906079] ehci_hcd 0000:00:1a.7: PCI INT C -> GSI 22 (level, low) -> IRQ 22
-> [ 3510.906087] ehci_hcd 0000:00:1a.7: setting latency timer to 64
-> [ 3510.906095] ehci_hcd 0000:00:1a.7: PME# disabled
-> [ 3510.906160] HDA Intel 0000:00:1b.0: PCI INT A -> GSI 21 (level,
-> low) -> IRQ 21
-> [ 3510.906167] HDA Intel 0000:00:1b.0: setting latency timer to 64
-> [ 3510.906241] uhci_hcd 0000:00:1d.0: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-> [ 3510.906248] uhci_hcd 0000:00:1d.0: setting latency timer to 64
-> [ 3510.906275] usb usb6: root hub lost power or was reset
-> [ 3510.906335] uhci_hcd 0000:00:1d.1: PCI INT B -> GSI 21 (level, low) -> IRQ 21
-> [ 3510.906362] uhci_hcd 0000:00:1d.1: setting latency timer to 64
-> [ 3510.906389] usb usb7: root hub lost power or was reset
-> [ 3510.906450] uhci_hcd 0000:00:1d.2: PCI INT C -> GSI 22 (level, low) -> IRQ 22
-> [ 3510.906457] uhci_hcd 0000:00:1d.2: setting latency timer to 64
-> [ 3510.906484] usb usb8: root hub lost power or was reset
-> [ 3510.906560] ehci_hcd 0000:00:1d.7: PME# disabled
-> [ 3510.906565] ehci_hcd 0000:00:1d.7: PCI INT A -> GSI 20 (level, low) -> IRQ 20
-> [ 3510.906573] ehci_hcd 0000:00:1d.7: setting latency timer to 64
-> [ 3510.906581] ehci_hcd 0000:00:1d.7: PME# disabled
-> [ 3510.906593] pci 0000:00:1e.0: setting latency timer to 64
-> [ 3510.906688] ahci 0000:00:1f.2: setting latency timer to 64
-> [ 3510.910217] pci 0000:0c:00.0: PME# disabled
-> [ 3510.910301] tg3 0000:09:00.0: restoring config space at offset 0xc
-> (was 0x0, writing 0x33040000)
-> [ 3510.910415] tg3 0000:09:00.0: PME# disabled
-> [ 3510.912779] tg3: eth0: Link is down.
-> [ 3511.181915] ohci1394: fw-host0: OHCI-1394 1.1 (PCI): IRQ=[17]
-> MMIO=[f67ff800-f67fffff]  Max Packet=[2048]  IR/IT contexts=[4/4]
-> [ 3511.188023] sdhci-pci 0000:02:01.2: PCI INT C -> GSI 18 (level,
-> low) -> IRQ 18
-> [ 3511.189049] pci 0000:02:01.3: PME# disabled
-> [ 3511.189208] pci 0000:00:02.0: setting latency timer to 64
-> [ 3511.190275] sd 0:0:0:0: [sda] Starting disk
-> [ 3511.303224] ata6: SATA link down (SStatus 4 SControl 300)
-> [ 3511.303252] ata5: SATA link down (SStatus 0 SControl 300)
-> [ 3511.303288] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> [ 3511.371362] ata2.00: configured for UDMA/100
-> [ 3511.433220] ata2: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x9 t4
-> [ 3511.433225] ata2: irq_stat 0x40000001
-> [ 3511.499083] ata2.00: configured for UDMA/100
-> [ 3511.499089] ata2: EH complete
-> [ 3512.529890] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> [ 3512.533700] ata1.00: configured for UDMA/133
-> [ 3512.546550] ata1: exception Emask 0x10 SAct 0x0 SErr 0x0 action 0x9 t4
-> [ 3512.546554] ata1: irq_stat 0x00400040, connection status changed
-> [ 3512.550306] ata1.00: configured for UDMA/133
-> [ 3512.550311] ata1: EH complete
-> [ 3512.586293] tg3: eth0: Link is up at 100 Mbps, full duplex.
-> [ 3512.586295] tg3: eth0: Flow control is on for TX and on for RX.
-> [ 3512.667745] PM: Finishing wakeup.
-> [ 3512.667750] Restarting tasks ... done.
+> I haven't seen the problem arise for awhile now. =A0I think it may be
+> related to editing a file in one of my editors, and not saving it.
+> The editor might be putting some sort of lock on the file. =A0I'm
+> waiting for it to occur again so that I can pin point it.
 >
+> For now, what about that patch thread sent to LKML called "[tip PATCH
+> v7 0/9] RFC: futex: requeue pi implementation"??? =A0Do you think that
+> could have fixed my issue? =A0I don't have time to try it right now.
+> And besides, I should try and make it so I can reproduce the problem,
+> otherwise I might not know for awhile that it's been fixed, after
+> applying the patch.
+>
+> I'll let you know more, when I have more data.
 
+I'm back into doing some Java development, and it's happening again.
+I'm running 2.6.30-rc7, and I did a SysReq+T, I hope this is helpful.
+I've attached a txt.gz file, because it's 367K to my
+/var/log/messages.
 
--- 
-Regards
-dave
+The important stuff, I believe, is the Java related stuff.  As a quick
+refresher to this problem, it appears to be related to how my Java IDE
+saves the file, and perhaps something doesn't release the futex right
+away?
+
+I've also seen these symptoms previously...
+
+1. Problem arises, I Ctrl-C the process when I notice the system
+getting really sluggish.
+2. Start process again, and it locks up the machine for about an hour
+
+Now, when i try the things below, it seems to be resolvable.
+
+1. Problem arises, I Ctrl-C the process when I notice the system
+getting really sluggish.
+2. I go to my IDE, press Ctrl-S (save), or exit the IDE
+3. Start process again, and it does not lock up
+
+I have a feeling it may be a bug in the Java VM that is causing some
+sort of problem with the kernel, but I have no idea how to diagnose
+such a thing, given the very much a lack of how the kernel works. :P
+
+--001636e0a777ed0c94046bb98690
+Content-Type: application/x-gzip; name="trace.txt.gz"
+Content-Disposition: attachment; filename="trace.txt.gz"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fvn60l6t0
+
+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
+--001636e0a777ed0c94046bb98690--
