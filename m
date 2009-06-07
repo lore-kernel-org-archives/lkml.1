@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678AbZFGNVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755779AbZFGNYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755678AbZFGNVm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 09:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZFGNVd
+	id S1755779AbZFGNYZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 09:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbZFGNYS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 09:21:33 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:52943 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752915AbZFGNVc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 09:21:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=weRBk4SGcVdI45EgQs4SPyJls7kHtS0Uocle+tviGGQXSnYEXZGfjDutOY/OUdsVGS
-         yo+4gvUZYYZeitCmGzohsO9084oa7TZ2YHoqu6iEMkjkWbG71A4yxMPntoWutmErLdpw
-         d1DhIH40YCbfGh38rrZtHFyCUZYTb3SpqCDtY=
-MIME-Version: 1.0
-In-Reply-To: <D9VoutSOyXP.A.7vF.2Y7KKB@chimera>
-References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
-	 <D9VoutSOyXP.A.7vF.2Y7KKB@chimera>
-Date: Sun, 7 Jun 2009 16:21:32 +0300
-X-Google-Sender-Auth: 62a9a65e3fd30ab6
-Message-ID: <84144f020906070621r1f480eaeief026d23662df380@mail.gmail.com>
-Subject: Re: [Bug #13475] suspend/hibernate lockdep warning
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Young <hidave.darkstar@gmail.com>, cpufreq@vger.kernel.org,
-       Dave Jones <davej@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       trenn@suse.de, sven.wegener@stealer.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 7 Jun 2009 09:24:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50512 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753549AbZFGNYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 09:24:18 -0400
+Subject: Re: 2.6.30-rc8 Oops whilst booting
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: chris2553@googlemail.com
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200906062215.30571.chris2553@googlemail.com>
+References: <200906061959.55592.chris2553@googlemail.com>
+	 <200906062215.30571.chris2553@googlemail.com>
+Content-Type: text/plain
+Date: Sun, 07 Jun 2009 18:55:40 +0530
+Message-Id: <1244381140.30664.12.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 7, 2009 at 12:52 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.29.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13475
-> Subject         : suspend/hibernate lockdep warning
-> Submitter       : Dave Young <hidave.darkstar@gmail.com>
-> Date            : 2009-06-02 10:00 (6 days old)
-> References      : http://marc.info/?l=linux-kernel&m=124393723321241&w=4
+Hello Chris,
 
-Looks like a cpufreq locking problem to me. Lets add some
-get_maintainer.pl loving to the cc list. Can you post your .config
-too, btw?
+On Sat, 2009-06-06 at 22:15 +0100, Chris Clayton wrote:
+> Sorry, I've just realised what a poor report my earlier email was. I should also have said that the 
+> kernel has booted succesfully. At the time of reporting I had had two panics. I've just done 
+> another git pull, so the kernel is bang up to date with kernel.org, but after building and 
+> installing, a reboot resulted in another panic. The system then booted OK after switch off and on 
+> again.
+> 
+> Please cc me to any reply, I'm not subscribed.
+> 
+> 
+> On Saturday 06 June 2009, Chris Clayton wrote:
+> > Hi,
+> >
+> > After a git pull earlier today, I've had oopsen whilst booting the system
+> > twice today: A photo of the oops message can be viewed at:
+> >
+> > http://img231.imageshack.us/img231/8931/dscn0610.jpg
+> >
+> > I haven't used the 2.6.30-rc kernels very much, so I don't have a clue when
+> > the problem was introduced. I have no problems at all with 2.6.29.4.
+> >
 
-                                 Pekka
+Can you provide your .config and dmesg of working and non-working
+kernel.
+
+Thanks,
+--
+JSR
+
