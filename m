@@ -1,52 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755882AbZFGPRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbZFGPTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755882AbZFGPRr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 11:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbZFGPRj
+	id S1756078AbZFGPTA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 11:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbZFGPS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 11:17:39 -0400
-Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:48046 "EHLO
-	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752872AbZFGPRi (ORCPT
+	Sun, 7 Jun 2009 11:18:56 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:51394 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754541AbZFGPSz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 11:17:38 -0400
-Date: Sun, 07 Jun 2009 15:54:58 +0100
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
-To: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Corentin Chary <corentin.chary@gmail.com>,
-       acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [PATCH] eeepc-laptop: enable camera by default
-Message-ID: <506D26C038%linux@youmustbejoking.demon.co.uk>
-In-Reply-To: <4A2934F5.4050601@tuffmail.co.uk>
-Mail-Followup-To: Pekka Enberg <penberg@cs.helsinki.fi>, Corentin Chary 
- <corentin.chary@gmail.com>, acpi4asus-user@lists.sourceforge.net, 
- len.brown@intel.com, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, 
- Darren Salt <linux@youmustbejoking.demon.co.uk>
-User-Agent: Messenger-Pro/2.58.3.3080 (Qt/4.5.1) (Linux-x86_64)
-X-NuLabour-Date: Sun, 8955 Dec 1984 15:54:58 +0100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
-X-SA-Exim-Scanned: No (on pentagram.youmustbejoking.demon.co.uk); SAEximRunCond expanded to false
+	Sun, 7 Jun 2009 11:18:55 -0400
+Subject: Re: [git pull] IDE fixes
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200906071657.49513.bzolnier@gmail.com>
+References: <200906071444.33047.bzolnier@gmail.com>
+	 <20090607152151.3cb01901@lxorguk.ukuu.org.uk>
+	 <1244385536.8262.5.camel@mulgrave.site>
+	 <200906071657.49513.bzolnier@gmail.com>
+Content-Type: text/plain
+Date: Sun, 07 Jun 2009 10:18:51 -0500
+Message-Id: <1244387931.8262.24.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I demand that Alan Jenkins may or may not have written...
+On Sun, 2009-06-07 at 16:57 +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Sunday 07 June 2009 16:38:56 James Bottomley wrote:
+> > On Sun, 2009-06-07 at 15:21 +0100, Alan Cox wrote:
+> > > > diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+> > > > index 99e33ef..4bc2c43 100644
+> > > > --- a/fs/partitions/check.c
+> > > > +++ b/fs/partitions/check.c
+> > > 
+> > > 
+> > > You seriously want to add code to the core partition handling logic
+> > > moments before release when we know we have all sorts of devices with
+> > > weird behaviours ?
+> > > 
+> > > This should be .31 stuff where we can take the time to see how it works
+> > > on all sorts of weird real world devices (eg those with 2K sector size)
+> > > and the like.
+> > 
+> > Absolutely seconded.
+> > 
+> > Plus this is only one of the proposals for dealing with IDE native sizes
+> > moving through the process.  The other one is in libata with the gendisk
+> > proposal for alt size instead of your set_capacity callback.   The last
+> 
+> ->set_capacity callback is needed for drivers/ide regardless of alt_size
+> sysfs interface and it don't conflict with it in any way.
 
-> Btw I've now tested the udev rule, you can just dump this in a new .rules
-> file under /etc/udev/rules.d:
+It's used as a heuristic for selecting native vs protected disk size
+depending on what the partition table says ... I grant that's one way to
+handle the problem.
 
-> SUBSYSTEM=="usb", ATTR{idVendor}=="eb1a", ATTR{idProduct}=="2761", ATTR{power/level}="auto"
+> Those patches are a complimentary work to Tejun's alt_size patches. 
+> 
+> They don't export anything to user-space.
 
-And a similar line for 05e3:0505, which seems to be working fine here.
+So you're trying to solve the problem heuristically, and Tejun is trying
+to provide the user with full information.   At the end of the day it
+would be nice to get agreement on how we do this *before* exposing it to
+users.  It's certainly possible we could do both, but for that to happen
+libata would have to implement .get_capacity() is that going to be the
+case?
 
-[snip]
--- 
-| Darren Salt      | linux at youmustbejoking | nr. Ashington, | Doon
-| Debian GNU/Linux | or ds    ,demon,co,uk    | Northumberland | Army
-| + Buy less and make it last longer.         INDUSTRY CAUSES GLOBAL WARMING.
+> > thing we want is two separate mechanisms for this, so trying to push
+> > anything upstream before we have agreement on direction is premature ...
+> > trying to send a feature as a bug fix is doubly so.
+> 
+> James, please (re-)read commits, then bug #13365 at kernel.org and if you
+> still find some code parts controversial I'll be happy to discuss them.
 
-Nobody expects the Spanish Inquisition!
+Um, that's a red herring, isn't it?  That bug complains that a migration
+from IDE to libata failed because IDE was ignoring HPA and libata was
+respecting it resulting in a disk under libata whose partition table was
+too big for its HPA reduced capacity; the fix was to turn off libata HPA
+in that configuration.  As far as I can tell nothing in the code you've
+added actually fixes that bug.  To fix it, we'd have to add a
+get_capacity() method to libata as well so that it could use your
+partition heuristics to turn off the HPA.
+
+What your code does instead is to add HPA handling to IDE so that you no
+longer always ignore it ... that's fine, but it's still a feature
+enhancement not a bug fix.
+
+James
+
+
