@@ -1,111 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbZFGQIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbZFGQP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895AbZFGQIW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 12:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZFGQIO
+	id S1755753AbZFGQP7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 12:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752444AbZFGQPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 12:08:14 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:45611 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753267AbZFGQIO (ORCPT
+	Sun, 7 Jun 2009 12:15:48 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:55319 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751964AbZFGQPs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 12:08:14 -0400
-Subject: Re: [git pull] IDE fixes
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <200906071744.23629.bzolnier@gmail.com>
-References: <200906071444.33047.bzolnier@gmail.com>
-	 <200906071657.49513.bzolnier@gmail.com>
-	 <1244387931.8262.24.camel@mulgrave.site>
-	 <200906071744.23629.bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Sun, 07 Jun 2009 16:08:09 +0000
-Message-Id: <1244390889.8262.47.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 7 Jun 2009 12:15:48 -0400
+Date: Sun, 7 Jun 2009 21:44:40 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelyanov <xemul@openvz.org>, kvm@vger.kernel.org,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Herbert Poetzl <herbert@13thfloor.at>
+Subject: Re: [RFC] CPU hard limits
+Message-ID: <20090607161440.GA3609@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <661de9470906042137u603e2997n80c270bf7f6191ad@mail.gmail.com> <4A28A2AB.3060108@redhat.com> <20090605044946.GA11755@balbir.in.ibm.com> <20090605051050.GB11755@balbir.in.ibm.com> <4A28AB67.7040800@redhat.com> <20090605052755.GE11755@balbir.in.ibm.com> <20090605053159.GB3872@in.ibm.com> <4A28B4CE.4010004@redhat.com> <20090605081651.GD3872@in.ibm.com> <4A2B5881.9060204@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A2B5881.9060204@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-06-07 at 17:44 +0200, Bartlomiej Zolnierkiewicz wrote:
-> On Sunday 07 June 2009 17:18:51 you wrote:
-> > On Sun, 2009-06-07 at 16:57 +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > On Sunday 07 June 2009 16:38:56 James Bottomley wrote:
-> > > > On Sun, 2009-06-07 at 15:21 +0100, Alan Cox wrote:
-> > > > > > diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-> > > > > > index 99e33ef..4bc2c43 100644
-> > > > > > --- a/fs/partitions/check.c
-> > > > > > +++ b/fs/partitions/check.c
-> > > > > 
-> > > > > 
-> > > > > You seriously want to add code to the core partition handling logic
-> > > > > moments before release when we know we have all sorts of devices with
-> > > > > weird behaviours ?
-> > > > > 
-> > > > > This should be .31 stuff where we can take the time to see how it works
-> > > > > on all sorts of weird real world devices (eg those with 2K sector size)
-> > > > > and the like.
-> > > > 
-> > > > Absolutely seconded.
-> > > > 
-> > > > Plus this is only one of the proposals for dealing with IDE native sizes
-> > > > moving through the process.  The other one is in libata with the gendisk
-> > > > proposal for alt size instead of your set_capacity callback.   The last
-> > > 
-> > > ->set_capacity callback is needed for drivers/ide regardless of alt_size
-> > > sysfs interface and it don't conflict with it in any way.
-> > 
-> > It's used as a heuristic for selecting native vs protected disk size
-> > depending on what the partition table says ... I grant that's one way to
-> > handle the problem.
-> > 
-> > > Those patches are a complimentary work to Tejun's alt_size patches. 
-> > > 
-> > > They don't export anything to user-space.
-> > 
-> > So you're trying to solve the problem heuristically, and Tejun is trying
-> > to provide the user with full information.   At the end of the day it
-> > would be nice to get agreement on how we do this *before* exposing it to
-> > users.  It's certainly possible we could do both, but for that to happen
-> 
-> Sure.  My patches don't export anything to user-space.
-> 
-> If you find any code parts controversial please post them and I'll be
-> more than happy to discuss them in details.
-> 
-> > libata would have to implement .get_capacity() is that going to be the
-> > case?
-> 
-> Now we get the real source of Alan's and your complains...
-> 
-> Those patches (among other things) make IDE superior overt libata w.r.t.
-> HPA handling so libata now has to catch up.
-> 
-> Honestly, this should be solved on technical basis by somebody posting
-> needed libata patches instead of attempts to slow down IDE fixes.
+On Sun, Jun 07, 2009 at 09:04:49AM +0300, Avi Kivity wrote:
+> Bharata B Rao wrote:
+>> On Fri, Jun 05, 2009 at 09:01:50AM +0300, Avi Kivity wrote:
+>>   
+>>> Bharata B Rao wrote:
+>>>     
+>>>> But could there be client models where you are required to strictly
+>>>> adhere to the limit within the bandwidth and not provide more (by advancing
+>>>> the bandwidth period) in the presence of idle cycles ?
+>>>>         
+>>> That's the limit part.  I'd like to be able to specify limits and   
+>>> guarantees on the same host and for the same groups; I don't think 
+>>> that  works when you advance the bandwidth period.
+>>>
+>>> I think we need to treat guarantees as first-class goals, not 
+>>> something  derived from limits (in fact I think guarantees are more 
+>>> useful as they  can be used to provide SLAs).
+>>>     
+>>
+>> I agree that guarantees are important, but I am not sure about
+>>
+>> 1. specifying both limits and guarantees for groups and
+>>   
+>
+> Why would you allow specifying a lower bound for cpu usage (a  
+> guarantee), and upper bound (a limit), but not both?
 
-You've got the wrong motive.  I have notice that you and Alan seem to
-have a somewhat antagonistic relationship resulting in a proxy battle
-over IDE/libata, so you would necessarily see this as at play in his
-first post.  I hoped, by emphasizing the point, that you'd see this
-adding features as bug fixes is a problem even from a more neutral
-perspective.
+I was saying that we specify only limits and not guarantees since it
+can be worked out from limits. Initial thinking was that the kernel will
+be made aware of only limits and users could set the limits appropriately
+to obtain the desired guarantees. I understand your concerns/objections
+on this and we will address this in our next version of RFC as Balbir said.
 
-So I have two specific problems with the way you're trying to one up
-libata:
-
-     1. You're trying to get a jump on them by adding features as bug
-        fixes ... this is incredibly bad release practice.
-     2. this antagonism in feature evolution is likely to lead to
-        interface incompatibility between libata and IDE ... and users
-        will be the ultimate losers because of this.
-
-James
-
-
+Regards,
+Bharata.
