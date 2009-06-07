@@ -1,100 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbZFGKpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbZFGL1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755588AbZFGKpz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 06:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZFGKpo
+	id S1755514AbZFGL1h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 07:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbZFGL1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 06:45:44 -0400
-Received: from sh.osrg.net ([192.16.179.4]:46532 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752645AbZFGKpn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 06:45:43 -0400
-Date: Sun, 7 Jun 2009 19:45:12 +0900
-To: mingo@elte.hu
-Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp,
-       torvalds@linux-foundation.org, lethal@linux-sh.org,
-       just.for.lkml@googlemail.com, hancockrwd@gmail.com,
-       jens.axboe@oracle.com, bharrosh@panasas.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090607081305.GA12497@elte.hu>
-References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp>
-	<20090605104132.GE24836@amd.com>
-	<20090607081305.GA12497@elte.hu>
+	Sun, 7 Jun 2009 07:27:24 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39277
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753143AbZFGL1X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 07:27:23 -0400
+Date: Sun, 07 Jun 2009 04:27:24 -0700 (PDT)
+Message-Id: <20090607.042724.238501430.davem@davemloft.net>
+To: tilman@imap.cc
+Cc: karsten-keil@t-online.de, isdn4linux@listserv.isdn4linux.de,
+       i4ldeveloper@listserv.isdn4linux.de, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] isdn: patches for 2.6.31
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4A2AEFE2.2090300@imap.cc>
+References: <20090531-patch-00.tilman@imap.cc>
+	<20090601.030434.141357758.davem@davemloft.net>
+	<4A2AEFE2.2090300@imap.cc>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090607194506J.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Sun, 07 Jun 2009 19:45:15 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 7 Jun 2009 10:13:05 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+From: Tilman Schmidt <tilman@imap.cc>
+Date: Sun, 07 Jun 2009 00:38:26 +0200
 
+> On 01.06.2009 12:04, David Miller wrote:
+>> First problem in the second patch.  You're doing two things
+>> at once.  You're adding function documentation and also adding
+>> a NULL pointer check.
 > 
-> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> No problem. I can split the patch in two if you prefer it that way.
+
+Thanks.
+
+>> Second problem, the NULL pointer check is gratuitous.  Document
+>> that the 'm' member has to be non-NULL and leave the check out.
 > 
-> > 
-> > On Fri, Jun 05, 2009 at 05:33:14PM +0900, FUJITA Tomonori wrote:
-> > > dma-debugs wrongly assumes that no multiple DMA transfers are
-> > > performed against the same dma address on one device at the same
-> > > time. However it's true only with hardware IOMMUs. For example, an
-> > > application can easily send the same buffer twice with different
-> > > lengths to one device by using DIO and AIO. If these requests are not
-> > > unmapped in the same order in which they were mapped,
-> > > hash_bucket_find() finds a wrong entry and gives a false warning.
-> > > 
-> > > We should fix this before 2.6.30 release. Seems that there is no
-> > > easy way to fix it. I think that it's better to just disable
-> > > dma-debug for now.
-> > > 
-> > > Torsten Kaiser found this bug with the RAID1 configuration:
-> > > 
-> > > http://marc.info/?t=124336541900008&r=1&w=2
-> > > 
-> > 
-> > Argh, I never thought that this can happen. But its not explicitly 
-> > forbidden so we have to handle this situation. Thanks for tracking 
-> > down the bug to this issue.
-> >
-> > However, I think there is a somehow simple fix for the issue. 
-> > Patch is attached. Its the least intrusive way I can think of to 
-> > fix this problem.
-> >
-> > But its up to Linus/Ingo to decide if it can be accepted at this 
-> > very late point in the cycle. Since dma-debug is new with 2.6.30 
-> > it will at least not introduce any regression. [...]
-> 
-> I think it's too late for v2.6.30 to do any of the changes - and the 
-> DMA debug facility is off by default.
+> That would be a bad solution for two reasons:
+> First, the 'm' member is private to capiutil.{c,h}. Callers are
+> not supposed to access it. Therefore it shouldn't be referred to
+> in the interface documentation. At best, such a mention would
+> leave users of the function confused how to assure that condition.
+> At worst, it might mislead them into meddling directly with the
+> member, thereby producing incorrect code.
+> And second, the main use of capi_cmsg2str() is for error reporting
+> and debugging output. Oopsing in an error handler is particularly
+> troublesome. At the same time, the risk of the 'm' member being
+> unexpectedly NULL is particularly high when something has gone
+> wrong already. So a safety check is advisable in this case.
 
-Fedora enables it by default and seems that we got some bogus bug
-reports. I like not to see any bogus bug reports about v2.6.30. So I
-prefer to disable dma-debug feature.
+Fair enough.
 
+> PS: Any objections against the other two patches?
 
-> Also, i think such DMA patterns, while 'allowed' can be quite 
-> dangerous as its such a rare usage combination really. AIO and DIO 
-> are crazy to begin with, mixing AIO and DIO for the same buffer is 
-> madness square two. (It can result in 3 agents for the same memory 
-> address: CPU, dma1 and dma2. How many interesting chipset erratums 
-> could there be related to such scenarios?)
-
-As Torsten pointed out, this bug happens on common and sane
-configurations. And if you want to write the same contents to two
-places on disk, AIO and DIO is a reasonable solution, I think.
-
-
-> But it is certainly not the task of a debug facility to restrict 
-> existing user-visible ABIs, so fixing the false positive is correct.
-> 
-> So i've applied your fix to the iommu branch for v2.6.31 and marked 
-> it for -stable backporting, that way 2.6.30.1 will be able to pick 
-> the patch up (if it remains problem-free in testing).
-> 
-
-Joerg patch weakens the checking capability. IMHO, it's the wrong
-direction.
+I don't remember it's been so many days since I looked at
+this series :-(
