@@ -1,97 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbZFGT2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbZFGT27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754700AbZFGT2R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 15:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZFGT2H
+	id S1756053AbZFGT27 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 15:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753322AbZFGT2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 15:28:07 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:39234 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752897AbZFGT2G convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 15:28:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Gf/+zveZk5b4nTbCg5k+F3TEGRw38KDOX5WJOEh9mW3YKh+MREjlyRnRXrUUxAE3rE
-         FWbJkvtH9hF8V4B28UsQ96fGE1MvUARMGcc1lmDv7PIagWYusT2+uan+m6EZenZTetyj
-         FQ/w/FHTEkJw352d7BZ39zogM1nByO0WIxjBs=
-MIME-Version: 1.0
-In-Reply-To: <20090607070136.GA4547@lenovo>
-References: <20090606073737.GA3163@elte.hu> <4A2AEAC6.8060404@kernel.org>
-	 <20090607070136.GA4547@lenovo>
-Date: Sun, 7 Jun 2009 12:28:07 -0700
-Message-ID: <86802c440906071228x489c3f79q2e1a49dc997e874@mail.gmail.com>
-Subject: Re: [PATCH] x86: fix dummy apic read/write warning
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 7 Jun 2009 15:28:51 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:58077 "EHLO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752811AbZFGT2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 15:28:50 -0400
+Subject: Re: [Bug #13330] nfs4 NULL pointer dereference in _nfs4_do_setlk
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Rich Ercolani <rercola@acm.jhu.edu>
+In-Reply-To: <D9VoutSOyXP.A.YjH.5Z7KKB@chimera>
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
+	 <D9VoutSOyXP.A.YjH.5Z7KKB@chimera>
+Content-Type: text/plain
+Date: Sun, 07 Jun 2009 15:28:48 -0400
+Message-Id: <1244402928.5278.7.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 5 msgs/h 2 sum rcpts/h 14 sum msgs/h 2 total rcpts 620 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=_URIID_)
+X-UiO-Scanned: C01DAAF8D11B23F885567457FF8CF8DE6628D7A4
+X-UiO-SPAM-Test: remote_host: 68.42.125.96 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 2 total 26 max/h 3 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 7, 2009 at 12:01 AM, Cyrill Gorcunov<gorcunov@gmail.com> wrote:
-> [Yinghai Lu - Sat, Jun 06, 2009 at 03:16:38PM -0700]
-> | ingo got
-> | [    0.000000] Using APIC driver default
-> | [    0.000000] SMP: Allowing 1 CPUs, 0 hotplug CPUs
-> | [    0.000000] Local APIC disabled by BIOS -- you can enable it with "lapic"
-> | [    0.000000] APIC: disable apic facility
-> | [    0.000000] ------------[ cut here ]------------
-> | [    0.000000] WARNING: at arch/x86/kernel/apic/apic.c:254 native_apic_read_dummy+0x2d/0x3b()
-> | [    0.000000] Hardware name: HP OmniBook PC
-> |
-> | we have wrong check in dummy read and write.
-> | [we only test on system that have APIC with "disableapic"...]
-> |
-> | Signed-off-by: yinghai Lu <yinghai@kernel.org>
-> |
-> | ---
-> |  arch/x86/kernel/apic/apic.c |    4 ++--
-> |  1 file changed, 2 insertions(+), 2 deletions(-)
-> |
-> | Index: linux-2.6/arch/x86/kernel/apic/apic.c
-> | ===================================================================
-> | --- linux-2.6.orig/arch/x86/kernel/apic/apic.c
-> | +++ linux-2.6/arch/x86/kernel/apic/apic.c
-> | @@ -246,12 +246,12 @@ static int modern_apic(void)
-> |   */
-> |  static void native_apic_write_dummy(u32 reg, u32 v)
-> |  {
-> | -     WARN_ON_ONCE((cpu_has_apic || !disable_apic));
-> | +     WARN_ON_ONCE((cpu_has_apic && !disable_apic));
-> |  }
-> |
-> |  static u32 native_apic_read_dummy(u32 reg)
-> |  {
-> | -     WARN_ON_ONCE((cpu_has_apic || !disable_apic));
-> | +     WARN_ON_ONCE((cpu_has_apic && !disable_apic));
-> |       return 0;
-> |  }
-> |
-> |
->
-> No Yinghai, this is wrong. native_apic_write_dummy is not
-> admissible to be called after apic->write has been NOP'ified.
->
-> If a site calls for apic->write after apic_disable() it's
-> a plain *bug* in caller. So we should continute warning if
-> cpu_has_apic _or_ !disable_apic.
+On Sun, 2009-06-07 at 11:52 +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13330
+> Subject		: nfs4 NULL pointer dereference in _nfs4_do_setlk
+> Submitter	: Rich Ercolani <rercola@acm.jhu.edu>
+> Date		: 2009-05-17 04:44 (22 days old)
+> Handled-By	: Trond Myklebust <trond.myklebust@fys.uio.no>
 
-ok, just change it to
+It should still be listed. I do believe I've finally identified the
+cause, and have provided a patch, however that fix has not yet been
+verified by Rich...
 
-     WARN_ON_ONCE(1);
+Cheers
+  Trond
 
-there.
-
->
-> Though since for SMP compiled kernel we still rely on
-> apic->read the snippet is to be changed to (cpu_has_apic && !disable_apic)
-> indeed.
-
-YH
