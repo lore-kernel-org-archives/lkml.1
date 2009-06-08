@@ -1,137 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755122AbZFHN36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbZFHNcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755122AbZFHN36 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 09:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbZFHN3v
+	id S1755662AbZFHNcR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 09:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbZFHNcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 09:29:51 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:56815 "EHLO gir.skynet.ie"
+	Mon, 8 Jun 2009 09:32:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51785 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752754AbZFHN3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 09:29:50 -0400
-Date: Mon, 8 Jun 2009 14:29:50 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: [PATCH] Add a gfp-translate script to help understand page
-	allocation failure reports
-Message-ID: <20090608132950.GB15070@csn.ul.ie>
+	id S1752588AbZFHNcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 09:32:08 -0400
+Message-ID: <4A2D129D.3020309@redhat.com>
+Date: Mon, 08 Jun 2009 09:31:09 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Mel Gorman <mel@csn.ul.ie>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
+       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when zone_reclaim()
+ scans and fails to avoid CPU spinning at 100% on NUMA
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-2-git-send-email-mel@csn.ul.ie>
+In-Reply-To: <1244466090-10711-2-git-send-email-mel@csn.ul.ie>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The page allocation failure messages include a line that looks like
+Mel Gorman wrote:
 
-page allocation failure. order:1, mode:0x4020
+> The scanning occurs because zone_reclaim() cannot tell
+> in advance the scan is pointless because the counters do not distinguish
+> between pagecache pages backed by disk and by RAM. 
 
-The mode is easy to translate but irritating for the lazy and a bit error
-prone. This patch adds a very simple helper script gfp-translate for the mode:
-portion of the page allocation failure messages. An example usage looks like
+Yes it can.  Since 2.6.27, filesystem backed and swap/ram backed
+pages have been living on separate LRU lists.  This allows you to
+fix the underlying problem, instead of having to add a retry
+interval.
 
-  mel@machina:~/linux-2.6 $ scripts/gfp-translate 0x4020
-  Source: /home/mel/linux-2.6
-  Parsing: 0x4020
-  #define __GFP_HIGH	(0x20)	/* Should access emergency pools? */
-  #define __GFP_COMP	(0x4000) /* Add compound page metadata */
-
-The script is not a work of art but it has come in handy for me a few times
-so I thought I would share.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- scripts/gfp-translate |   81 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 81 insertions(+)
-
-diff --git a/scripts/gfp-translate b/scripts/gfp-translate
-new file mode 100755
-index 0000000..724db2d
---- /dev/null
-+++ b/scripts/gfp-translate
-@@ -0,0 +1,81 @@
-+#!/bin/bash
-+# Translate the bits making up a GFP mask
-+# (c) 2009, Mel Gorman <mel@csn.ul.ie>
-+# Licensed under the terms of the GNU GPL License version 2
-+SOURCE=
-+GFPMASK=none
-+
-+# Helper function to report failures and exit
-+die() {
-+	echo ERROR: $@
-+	if [ "$TMPFILE" != "" ]; then
-+		rm -f $TMPFILE
-+	fi
-+	exit -1
-+}
-+
-+usage() {
-+	echo "usage: gfp-translate [-h] [ --source DIRECTORY ] gfpmask"
-+	exit 0
-+}
-+
-+# Parse command-line arguements
-+while [ $# -gt 0 ]; do
-+	case $1 in
-+		--source)
-+			SOURCE=$2
-+			shift 2
-+			;;
-+		-h)
-+			usage
-+			;;
-+		--help)
-+			usage
-+			;;
-+		*)
-+			GFPMASK=$1
-+			shift
-+			;;
-+	esac
-+done
-+
-+# Guess the kernel source directory if it's not set. Preference is in order of
-+# o current directory
-+# o /usr/src/linux
-+if [ "$SOURCE" = "" ]; then
-+	if [ -r "/usr/src/linux/Makefile" ]; then
-+		SOURCE=/usr/src/linux
-+	fi
-+	if [ -r "`pwd`/Makefile" ]; then
-+		SOURCE=`pwd`
-+	fi
-+fi
-+
-+# Confirm that a source directory exists
-+if [ ! -r "$SOURCE/Makefile" ]; then
-+	die "Could not locate source directory or it is invalid"
-+fi
-+
-+# Confirm that a GFP mask has been specified
-+if [ "$GFPMASK" = "none" ]; then
-+	usage
-+fi
-+
-+# Extract GFP flags from the kernel source
-+TMPFILE=`mktemp -t gfptranslate-XXXXXX` || exit 1
-+grep "^#define __GFP" $SOURCE/include/linux/gfp.h | sed -e 's/(__force gfp_t)//' | sed -e 's/u)/)/' | grep -v GFP_BITS | sed -e 's/)\//) \//' > $TMPFILE
-+
-+# Parse the flags
-+IFS="
-+"
-+echo Source: $SOURCE
-+echo Parsing: $GFPMASK
-+for LINE in `cat $TMPFILE`; do
-+	MASK=`echo $LINE | awk '{print $3}'`
-+	if [ $(($GFPMASK&$MASK)) -ne 0 ]; then
-+		echo $LINE
-+	fi
-+done
-+
-+rm -f $TMPFILE
-+exit 0
+-- 
+All rights reversed.
