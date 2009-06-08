@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZFHQPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZFHQP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbZFHQPq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 12:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbZFHQPj
+	id S1757020AbZFHQP6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 12:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbZFHQPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 12:15:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43125 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754961AbZFHQPi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 12:15:38 -0400
-Date: Mon, 8 Jun 2009 09:15:00 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Mimi Zohar <zohar@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Serge Hallyn <serue@us.ibm.com>, James Morris <jmorris@namei.org>,
-       Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       David Safford <safford@watson.ibm.com>
-Subject: Re: [PATCH] integrity: fix IMA inode leak
-In-Reply-To: <1244464135.3277.13.camel@dyn9002018117.watson.ibm.com>
-Message-ID: <alpine.LFD.2.01.0906080913020.6847@localhost.localdomain>
-References: <Pine.LNX.4.64.0906062109580.8365@sister.anvils>  <alpine.LFD.2.01.0906061416170.6847@localhost.localdomain>  <1244354901.3963.23.camel@dyn9002018117.watson.ibm.com>  <alpine.LFD.2.01.0906071608040.6847@localhost.localdomain>
- <1244464135.3277.13.camel@dyn9002018117.watson.ibm.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 8 Jun 2009 12:15:49 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:39802 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756820AbZFHQPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 12:15:47 -0400
+Date: Mon, 8 Jun 2009 09:15:44 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Dan Williams" <dan.j.williams@intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #13116] Can't boot with nosmp
+Message-ID: <20090608091544.53a94235@nehalam>
+In-Reply-To: <D9VoutSOyXP.A.xm.Vb7KKB@chimera>
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
+	<D9VoutSOyXP.A.xm.Vb7KKB@chimera>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun,  7 Jun 2009 11:52:49 +0200 (CEST)
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-
-On Mon, 8 Jun 2009, Mimi Zohar wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Today the security calls are synomymous with MAC.  If I understand
-> correctly, you're suggesting we need to have a single security layer,
-> which, depending on the hook, calls either MAC or integrity, or both.
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13116
+> Subject		: Can't boot with nosmp
+> Submitter	: Stephen Hemminger <shemminger@vyatta.com>
+> Date		: 2009-04-15 4:18 (54 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123976917817920&w=4
+> Handled-By	: Dan Williams <dan.j.williams@intel.com>
+> 
+> 
 
-I don't think we need a single security layer per se.
+I suspect this bit of code in dmaengine is the culprit:
 
-But I do think that we _already_ hide IMA conceptually under the 
-"security/" subdirectory, and that the VFS layer shouldn't need to care 
-about whatever internal details.
+	/* redistribute available channels */
+	n = 0;
+	for_each_dma_cap_mask(cap, dma_cap_mask_all)
+		for_each_online_cpu(cpu) {
+			if (num_possible_cpus() > 1)
+				chan = nth_chan(cap, n++);
+			else
+				chan = nth_chan(cap, -1);
 
-We should not have generic code end up having to know about all the 
-details, when we already have a conceptual nesting. It would be much 
-better for generic code to just have to worry about one security hook that 
-then encompasses all the models, than having several different hooks for 
-each detail.
-
-		Linus
+Why does num_possible_cpus() == 1 have to be a special case?
+-- 
