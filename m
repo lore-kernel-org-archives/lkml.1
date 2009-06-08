@@ -1,145 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbZFHNvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZFHNvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545AbZFHNvU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 09:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbZFHNvD
+	id S1755997AbZFHNvc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 09:51:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbZFHNvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 09:51:03 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:52327 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753987AbZFHNvB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 09:51:01 -0400
-Message-ID: <4A2D16E4.3030702@gmail.com>
-Date: Mon, 08 Jun 2009 15:49:24 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>
-CC: Vegard Nossum <vegard.nossum@gmail.com>,
-       John Dykstra <john.dykstra1@gmail.com>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>, Jiri Pirko <jpirko@redhat.com>
-Subject: Re: [PATCH net-next-2.6] net: dev_addr_init() fix
-References: <19f34abd0905301323k1498ca3fv31b271de65d60afc@mail.gmail.com> <1244408607.9064.8.camel@Maple> <19f34abd0906080300w796c6b65o6b537064cac917b0@mail.gmail.com> <4A2CEB9E.7080109@gmail.com> <4A2D006C.70302@cosmosbay.com> <20090608130653.GB3272@elte.hu>
-In-Reply-To: <20090608130653.GB3272@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 08 Jun 2009 15:49:25 +0200 (CEST)
+	Mon, 8 Jun 2009 09:51:14 -0400
+Received: from verein.lst.de ([213.95.11.210]:38192 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755341AbZFHNvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 09:51:12 -0400
+Date: Mon, 8 Jun 2009 15:51:06 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Hellwig <hch@lst.de>, Frederic Weisbecker <fweisbec@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: types for storing instruction pointers
+Message-ID: <20090608135106.GA2276@lst.de>
+References: <20090604131400.GA31596@lst.de> <20090607132516.GB12088@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090607132516.GB12088@elte.hu>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar a écrit :
-> * Eric Dumazet <dada1@cosmosbay.com> wrote:
+On Sun, Jun 07, 2009 at 03:25:16PM +0200, Ingo Molnar wrote:
 > 
->> Eric Dumazet a écrit :
->>> Vegard Nossum a écrit :
->>>> 2009/6/7 John Dykstra <john.dykstra1@gmail.com>:
->>>>> On Sat, 2009-05-30 at 22:23 +0200, Vegard Nossum wrote:
->>>>>> It seems that loopback's hardware address is never initialized by the
->>>>>> kernel. So if userspace attempts to read this address before it has
->>>>>> been set, the kernel will return some uninitialized data (only 6
->>>>>> bytes, though).
->>>>> Thank you for the report, Vegard.
->>>>>
->>>>> I've been unable to reproduce the problem you describe, using
->>>>> 2.6-30-rc8, this test program and a couple of kernel builds for system
->>>>> load:
->>>> [...]
->>>>> ------------------------------------------------------------------
->>>>>
->>>>> Looking at the kernel code, it appears that all bytes of struct
->>>>> net_device, including the L2 address, are initialized to zeros at
->>>>> interface creation time.
->>>>>
->>>>> Can you spot a difference between your test procedures and mine that
->>>>> would enable me to reproduce the problem?
->>>> Hi,
->>>>
->>>> I just tried your test program on a linux-next kernel, it works beautifully :-)
->>>>
->>>> (I made one change: The stack grows downwards on x86, so I think you
->>>> should put child_stack + 16386 as the stack to clone()?)
->>>>
->>>> As I wrote in reply to Stephen Hemminger, this problem seems to be
->>>> caused by a particular patch in linux-next:
->>>>
->>>> commit f001fde5eadd915f4858d22ed70d7040f48767cf
->>>> Author: Jiri Pirko <jpirko@redhat.com>
->>>> Date:   Tue May 5 02:48:28 2009 +0000
->>>>
->>>>    net: introduce a list of device addresses dev_addr_list (v6)
->>>>
->>> I believe following patch should fix this problem.
->>>
->>> Thank you
->>>
->>> [PATCH net-next-2.6] net: loopback device dev->addr_len fix
->>>
->>> commit f001fde5eadd915f4858d22ed70d7040f48767cf 
->>> (net: introduce a list of device addresses dev_addr_list (v6))
->>> added one regression Vegard Nossum found in its testings.
->>>
->>> loopback device doesnt have a hw address, we should set its
->>> dev->addr_len to 0, not ETH_ALEN.
->>>
->>> Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
->>> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
->> Oh well, following is probably even more appropriate
->>
->> [PATCH net-next-2.6] net: dev_addr_init() fix
->>
->> commit f001fde5eadd915f4858d22ed70d7040f48767cf 
->> (net: introduce a list of device addresses dev_addr_list (v6))
->> added one regression Vegard Nossum found in its testings.
->>
->> dev_addr_init() incorrectly uses sizeof() operator
->>
->> Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
->> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+> * Christoph Hellwig <hch@lst.de> wrote:
 > 
-> Could you please put the word 'kmemcheck' somewhere into the 
-> changelog, to make git-grepping and historic comparisons easier?
+> > Currently the _THIS_IP_ and _RET_IP_ macros aded for lockdep but 
+> > now available from kernel.org case the instruction pointer to an 
+> > unsigned long.  But the %pf/%pF format for printing them want a 
+> > pointer of some sort.  That's a pretty nasty situation for tracers 
+> > - can we standardize on one type for it?
 > 
+> Yes but what's the practical problem exactly? Could you cite an 
+> example?
 
-Sure I can do that, giving me opportunity to use my current email address,
-since dada1@cosmosbay.com will disappear shortly.
+The simplest tracer in xfs showing this is the following:
 
-Thank you
+/*
+ * ilock/iolock tracer
+ *
+ * Reports the inode, operation, flags and caller for each operation
+ * on the inode locks.
+ */
+TRACE_EVENT(xfs_ilock,
+	TP_PROTO(struct xfs_inode *ip, const char *op, unsigned lockflags,
+		 unsigned long caller_ip),
+	TP_ARGS(ip, op, lockflags, caller_ip),
 
-[PATCH net-next-2.6] net: dev_addr_init() fix
+	TP_STRUCT__entry(
+		__field(dev_t, dev)
+		__field(xfs_ino_t, ino)
+		__field(const char *, op)
+		__field(int, lockflags)
+		__field(unsigned long, caller_ip)
+	),
 
-commit f001fde5eadd915f4858d22ed70d7040f48767cf 
-(net: introduce a list of device addresses dev_addr_list (v6))
-added one regression Vegard Nossum found in its testings.
+	TP_fast_assign(
+		__entry->dev = VFS_I(ip)->i_sb->s_dev;
+		__entry->ino = ip->i_ino;
+		__entry->op = op;
+		__entry->lockflags = lockflags;
+		__entry->caller_ip = caller_ip;
+	),
 
-With kmemcheck help, Vegard found some uninitialized memory
-was read and reported to user, potentialy leaking kernel data.
-( thread can be found on http://lkml.org/lkml/2009/5/30/177 )
+	TP_printk("dev %d:%d ino 0x%lld %s %s by %pF",
+		  MAJOR(__entry->dev), MINOR(__entry->dev),
+		  __entry->ino,
+		  __entry->op,
+		  __print_flags(__entry->lockflags, "|", XFS_LOCK_FLAGS),
+		  (void *)__entry->caller_ip)
+);
 
-dev_addr_init() incorrectly uses sizeof() operator. We were
-initializing one byte instead of MAX_ADDR_LEN bytes.
+It has the following callers:
 
-Reported-by: Vegard Nossum <vegard.nossum@gmail.com>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Acked-by: Jiri Pirko <jpirko@redhat.com>
----
+	trace_xfs_ilock(ip, "lock", lock_flags, _RET_IP_);
+	trace_xfs_ilock(ip, "lock_nowait", lock_flags, _RET_IP_);
+	trace_xfs_ilock(ip, "unlock", lock_flags, _RET_IP_);
+	trace_xfs_ilock(ip, "demote", lock_flags, _RET_IP_);
 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 1f38401..65387d9 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -3655,8 +3655,8 @@ static int dev_addr_init(struct net_device *dev)
- 	/* rtnl_mutex must be held here */
- 
- 	INIT_LIST_HEAD(&dev->dev_addr_list);
--	memset(addr, 0, sizeof(*addr));
--	err = __hw_addr_add(&dev->dev_addr_list, NULL, addr, sizeof(*addr),
-+	memset(addr, 0, sizeof(addr));
-+	err = __hw_addr_add(&dev->dev_addr_list, NULL, addr, sizeof(addr),
- 			    NETDEV_HW_ADDR_T_LAN);
- 	if (!err) {
- 		/*
-
+Basically everything obtained via _RET_IP_/_THIS_IP_ needs to be
+casted.  Given that both need to case the their return value to a
+pointer that's rather unfortunately.  Life would be much easier
+if _RET_IP_/_THIS_IP_ just returned a pointer (probably just a void
+pointer, maybe with a fancy typedef to make it clear we're dealing
+with an instruction pointer here).
