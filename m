@@ -1,105 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601AbZFHF5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbZFHGAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753601AbZFHF5R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 01:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbZFHF5A
+	id S1753243AbZFHGAM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 02:00:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbZFHF77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 01:57:00 -0400
-Received: from mga14.intel.com ([143.182.124.37]:3672 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751553AbZFHF47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 01:56:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,322,1241420400"; 
-   d="scan'208";a="151709221"
-Date: Mon, 8 Jun 2009 13:56:59 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-Subject: Re: sk_lock: inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W}
-	usage
-Message-ID: <20090608055659.GA11538@localhost>
-References: <20090608134428.4373.A69D9226@jp.fujitsu.com> <20090608050049.GA10652@localhost> <20090608140529.4376.A69D9226@jp.fujitsu.com> <20090608055326.GA10843@localhost>
+	Mon, 8 Jun 2009 01:59:59 -0400
+Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:58958
+	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750988AbZFHF77 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 01:59:59 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAEdFLEp8qWf0/2dsb2JhbADKOYQKBQ
+X-IronPort-AV: E=Sophos;i="4.41,322,1241366400"; 
+   d="scan'208";a="456642632"
+Message-ID: <4A2CA8DD.2080809@themaw.net>
+Date: Mon, 08 Jun 2009 13:59:57 +0800
+From: Ian Kent <raven@themaw.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090608055326.GA10843@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] autofs4 - remove hashed check in validate_wait()
+References: <20090608032537.7088.1870.stgit@zeus.themaw.net>	<20090607220814.cc7519f6.akpm@linux-foundation.org>	<4A2CA05C.3060808@themaw.net> <20090607224137.e13be7f3.akpm@linux-foundation.org> <4A2CA75E.7040501@themaw.net>
+In-Reply-To: <4A2CA75E.7040501@themaw.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 01:53:26PM +0800, Wu Fengguang wrote:
-> On Mon, Jun 08, 2009 at 01:07:26PM +0800, KOSAKI Motohiro wrote:
-> > > On Mon, Jun 08, 2009 at 12:55:18PM +0800, KOSAKI Motohiro wrote:
-> > > > Hi
-> > > > 
-> > > > > Hi,
-> > > > > 
-> > > > > This lockdep warning appears when doing stress memory tests over NFS.
-> > > > > 
-> > > > > page reclaim => nfs_writepage => tcp_sendmsg => lock sk_lock
-> > > > > 
-> > > > > tcp_close => lock sk_lock => tcp_send_fin => alloc_skb_fclone => page reclaim
-> > > > > 
-> > > > > Any ideas?
-> > > > 
-> > > > AFAIK, btrfs has re-dirty hack. 
-> > > > 
-> > > > ------------------------------------------------------------------
-> > > > static int btrfs_writepage(struct page *page, struct writeback_control *wbc)
-> > > > {
-> > > >         struct extent_io_tree *tree;
-> > > > 
-> > > > 
-> > > >         if (current->flags & PF_MEMALLOC) {
-> > > >                 redirty_page_for_writepage(wbc, page);
-> > > >                 unlock_page(page);
-> > > >                 return 0;
-> > > >         }
-> > > >         tree = &BTRFS_I(page->mapping->host)->io_tree;
-> > > >         return extent_write_full_page(tree, page, btrfs_get_extent, wbc);
-> > > > }
-> > > > ---------------------------------------------------------------
-> > > > 
-> > > > PF_MEMALLOC mean caller is try_to_free_pages(). (not normal write nor kswapd)
-> > > > Can't nfs does similar hack? 
-> > > 
-> > > But the trace shows that current is kswapd:
-> > > 
-> > > [ 1638.403414]  [<ffffffff811c9b69>] nfs_flush_one+0xb9/0x100
-> > > [ 1638.419417]  [<ffffffff811c3f82>] nfs_pageio_doio+0x32/0x70
-> > > [ 1638.419417]  [<ffffffff811c3fc9>] nfs_pageio_complete+0x9/0x10
-> > > [ 1638.427413]  [<ffffffff811c7ee5>] nfs_writepage_locked+0x85/0xc0
-> > > [ 1638.435414]  [<ffffffff811c8509>] nfs_writepage+0x19/0x40
-> > > [ 1638.435414]  [<ffffffff810ce005>] shrink_page_list+0x675/0x810
-> > > [ 1638.435414]  [<ffffffff810ce761>] shrink_list+0x301/0x650
-> > > [ 1638.435414]  [<ffffffff810ced23>] shrink_zone+0x273/0x370
-> > > [ 1638.435414]  [<ffffffff810cf9f9>] kswapd+0x729/0x7a0
-> > > [ 1638.435414]  [<ffffffff810666de>] kthread+0x9e/0xb0
-> > > [ 1638.435414]  [<ffffffff8100d0ca>] child_rip+0xa/0x20
-> > 
-> > kswapd can't hold sk-lock before calling reclaim. Thus, we don't need
-> > care its bogus warning, I think.
+Ian Kent wrote:
+> Andrew Morton wrote:
+>> On Mon, 08 Jun 2009 13:23:40 +0800 Ian Kent <raven@themaw.net> wrote:
+>>
+>>> Andrew Morton wrote:
+>>>> On Mon, 08 Jun 2009 11:25:37 +0800 Ian Kent <raven@themaw.net> wrote:
+>>>>
+>>>>> The recent ->lookup() deadlock correction required the directory
+>>>>> inode mutex to be dropped while waiting for expire completion. We
+>>>>> were concerned about side effects from this change and one has
+>>>>> been identified.
+>>>>>
+>>>>> When checking if a mount has already completed prior to adding a
+>>>>> new mount request to the wait queue we check if the dentry is hashed
+>>>>> and, if so, if it is a mount point. But, if a mount successfully
+>>>>> completed while we slept on the wait queue mutex the dentry must
+>>>>> exist for the mount to have completed so the test is not really
+>>>>> needed.
+>>>>>
+>>>>> Mounts can also be done on top of a global root dentry, so for the
+>>>>> above case, where a mount request completes and the wait queue entry
+>>>>> has already been removed, the hashed test returning false can cause
+>>>>> an incorrect callback to the daemon. Also, d_mountpoint() is not
+>>>>> sufficient to check if a mount has completed for the multi-mount
+>>>>> case when we don't have a real mount at the base of the tree.
+>>>>>
+>>>> I've been scratching my head trying to work out if this is a
+>>>> needed-in-2.6.30 fix, but all I got was a bald spot.  Help?
+>>> Yeah, and why would you want to know that much about autofs, it's a
+>>> wonder I have any hair at all, ;)
+>>>
+>>> I think so if possible, as it resolves an issue that is a side effect of
+>>> the last patch I sent, which resolved a deadlook in ->lookup(). The
+>>> problem occurs due to dropping the directory inode mutex before waiting
+>>> for an expire. What isn't obvious is that holding the mutex (as we did
+>>> previously) causes processes wanting to request mounts for other
+>>> directories to wait, so we don't see the contention for the mount
+>>> request wait queue that this patch addresses.
+>>>
+>>> However, the issue only surfaces when there are a number of processes
+>>> all trying to perform mounts at the same time. The test I ran used 10
+>>> processes all using the same map.
+>> <scratch scratch> 
+>> What are the user-visible effects of the thing-which-this-fixed?
 > 
-> Right. Although this path is possible:
->         tcp_sendmsg() => page reclaim => tcp_send_fin()
-> But it won't happen for the same socket, so one sk_lock won't be
-> grabbed twice and go deadlock.
+> I saw several error messages.
 > 
-> So it's a harmful warning for both direct/background page reclaims?
+> They cause autofs to become quite confused and don't really point to the
+> actual problem.
+> 
+> Things like:
+> 
+> handle_packet_missing_direct:1376: can't find map entry for (43,1827932)
+> 
+> which is usually totally fatal (although in this case it wouldn't be
+> except that I treat is as such because it normally is).
 
-btw, can anyone explain these NFS warnings? It happens in a very
-memory tight and busy nfsroot system.
+Oh .. and the requesting user always receives a fail in this case in
+spite of the mount actually having previously succeeded.
 
-[  113.267340] NFS: Server wrote zero bytes, expected 3671.
-[  423.202607] NFS: Server wrote zero bytes, expected 108.
-[  723.588411] NFS: Server wrote zero bytes, expected 560.
-[ 1060.246747] NFS: Server wrote zero bytes, expected 54.
-[ 1397.841183] NFS: Server wrote zero bytes, expected 402.
-[ 1779.545035] NFS: Server wrote zero bytes, expected 319.
+> 
+> do_mount_direct: direct trigger not valid or already mounted
+> /test/nested/g3c/s1/ss1
+> 
+> which is recoverable, however if this problem is at play it can cause
+> autofs to become quite confused as to the dependencies in the mount tree
+> because mount triggers end up mounted multiple times. It's hard to
+> accurately check for this over mounting case and automount shouldn't
+> need to if the kernel module is doing its job.
+> 
+> There was one other message, similar in consequence of this last one but
+> I can't locate a log example just now.
 
-Thanks,
-Fengguang
+And these two cause fails to be returned return to the requesting
+process either immediately or shortly after as autofs becomes confused.
+
+Sorry I can't give a clearer description.
+
+Ian
+
