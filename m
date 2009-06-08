@@ -1,164 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755403AbZFHNCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbZFHNCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755403AbZFHNCX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 09:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbZFHNBd
+	id S1755511AbZFHNCe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 09:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZFHNBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 09:01:33 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:53648 "EHLO gir.skynet.ie"
+	Mon, 8 Jun 2009 09:01:35 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35209 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752693AbZFHNBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 09:01:31 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Mel Gorman <mel@csn.ul.ie>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
-       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com
-Cc: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] Do not unconditionally treat zones that fail zone_reclaim() as full
-Date: Mon,  8 Jun 2009 14:01:30 +0100
-Message-Id: <1244466090-10711-4-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1244466090-10711-1-git-send-email-mel@csn.ul.ie>
-References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie>
+	id S1754692AbZFHNBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 09:01:34 -0400
+Date: Mon, 8 Jun 2009 15:01:31 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, tytso@mit.edu, david@fromorbit.com,
+       hch@infradead.org, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, damien.wyart@free.fr
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
+Message-ID: <20090608130131.GB8524@duck.suse.cz>
+References: <20090604201012.GD11363@kernel.dk> <20090604223449.GA13780@nowhere> <20090605191528.GV11363@kernel.dk> <20090605211438.GA11650@duck.suse.cz> <20090606001814.GD3824@think> <20090606002339.GH11650@duck.suse.cz> <20090606010629.GC7809@nowhere> <20090608092338.GD11363@kernel.dk> <20090608122302.GA8524@duck.suse.cz> <20090608122834.GH11363@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090608122834.GH11363@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On NUMA machines, the administrator can configure zone_reclaim_mode that
-is a more targetted form of direct reclaim. On machines with large NUMA
-distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
-unmapped pages will be reclaimed if the zone watermarks are not being
-met. The problem is that zone_reclaim() failing at all means the zone
-gets marked full.
+On Mon 08-06-09 14:28:34, Jens Axboe wrote:
+> On Mon, Jun 08 2009, Jan Kara wrote:
+> > On Mon 08-06-09 11:23:38, Jens Axboe wrote:
+> > > On Sat, Jun 06 2009, Frederic Weisbecker wrote:
+> > > > On Sat, Jun 06, 2009 at 02:23:40AM +0200, Jan Kara wrote:
+> > > > > On Fri 05-06-09 20:18:15, Chris Mason wrote:
+> > > > > > On Fri, Jun 05, 2009 at 11:14:38PM +0200, Jan Kara wrote:
+> > > > > > > On Fri 05-06-09 21:15:28, Jens Axboe wrote:
+> > > > > > > > On Fri, Jun 05 2009, Frederic Weisbecker wrote:
+> > > > > > > > > The result with noop is even more impressive.
+> > > > > > > > > 
+> > > > > > > > > See: http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop.pdf
+> > > > > > > > > 
+> > > > > > > > > Also a comparison, noop with pdflush against noop with bdi writeback:
+> > > > > > > > > 
+> > > > > > > > > http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop-cmp.pdf
+> > > > > > > > 
+> > > > > > > > OK, so things aren't exactly peachy here to begin with. It may not
+> > > > > > > > actually BE an issue, or at least now a new one, but that doesn't mean
+> > > > > > > > that we should not attempt to quantify the impact.
+> > > > > > >   What looks interesting is also the overall throughput. With pdflush we
+> > > > > > > get to 2.5 MB/s + 26 MB/s while with per-bdi we get to 2.7 MB/s + 13 MB/s.
+> > > > > > > So per-bdi seems to be *more* fair but throughput suffers a lot (which
+> > > > > > > might be inevitable due to incurred seeks).
+> > > > > > >   Frederic, how much does dbench achieve for you just on one partition
+> > > > > > > (test both consecutively if possible) with as many threads as have those
+> > > > > > > two dbench instances together? Thanks.
+> > > > > > 
+> > > > > > Is the graph showing us dbench tput or disk tput?  I'm assuming it is
+> > > > > > disk tput, so bdi may just be writing less?
+> > > > >   Good, question. I was assuming dbench throughput :).
+> > > > > 
+> > > > > 									Honza
+> > > > 
+> > > > 
+> > > > Yeah it's dbench. May be that's not the right tool to measure the writeback
+> > > > layer, even though dbench results are necessarily influenced by the writeback
+> > > > behaviour.
+> > > > 
+> > > > May be I should use something else?
+> > > > 
+> > > > Note that if you want I can put some surgicals trace_printk()
+> > > > in fs/fs-writeback.c
+> > > 
+> > > FWIW, I ran a similar test here just now. CFQ was used, two partitions
+> > > on an (otherwise) idle drive. I used 30 clients per dbench and 600s
+> > > runtime. Results are nearly identical, both throughout the run and
+> > > total:
+> > > 
+> > > /dev/sdb1
+> > > Throughput 165.738 MB/sec  30 clients  30 procs  max_latency=459.002 ms
+> > > 
+> > > /dev/sdb2
+> > > Throughput 165.773 MB/sec  30 clients  30 procs  max_latency=607.198 ms
+> >   Hmm, interesting. 165 MB/sec (in fact 330 MB/sec for that drive) sounds
+> > like quite a lot ;). This usually happens with dbench when the processes
+> > manage to delete / redirty data before writeback thread gets to them (so
+> > some IO happens in memory only and throughput is bound by the CPU / memory
+> > speed). So I think you are on a different part of the performance curve
+> > than Frederic. Probably you have to run with more threads so that dbench
+> > threads get throttled because of total amount of dirty data generated...
+> 
+> Certainly, the actual disk data rate was consistenctly in the
+> 60-70MB/sec region. The issue is likely that the box has 6GB of RAM, if
+> I boot with less than 30 clients will do.
+  Yes, that would do as well.
 
-This can cause situations where a zone is usable, but is being skipped
-because it has been considered full. Take a situation where a large tmpfs
-mount is occuping a large percentage of memory overall. The pages do not
-get cleaned or reclaimed by zone_reclaim(), but the zone gets marked full
-and the zonelist cache considers them not worth trying in the future.
+> But unless the situation changes radically with memory pressure, it
+> still shows a fair distribution of IO between the two. Since they have
+> identical results throughout, it should be safe to assume that the have
+> equal bandwidth distribution at the disk end. A fast dbench run is one
+  Yes, I agree. Your previous test indirectly shows fair distribution
+on the disk end (with blktrace you could actually confirm it directly).
 
-This patch makes zone_reclaim() return more fine-grained information about
-what occured when zone_reclaim() failued. The zone only gets marked full if
-it really is unreclaimable. If it's a case that the scan did not occur or
-if enough pages were not reclaimed with the limited reclaim_mode, then the
-zone is simply skipped.
+> that doesn't touch the disk at all, once you start touching disk you
+> lose :-)
 
-There is a side-effect to this patch. Currently, if zone_reclaim()
-successfully reclaimed SWAP_CLUSTER_MAX, an allocation attempt would
-go ahead. With this patch applied, zone watermarks are rechecked after
-zone_reclaim() does some work.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- mm/internal.h   |    4 ++++
- mm/page_alloc.c |   26 ++++++++++++++++++++++----
- mm/vmscan.c     |   10 +++++-----
- 3 files changed, 31 insertions(+), 9 deletions(-)
-
-diff --git a/mm/internal.h b/mm/internal.h
-index 987bb03..090c267 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -284,4 +284,8 @@ int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
- 		     unsigned long start, int len, int flags,
- 		     struct page **pages, struct vm_area_struct **vmas);
- 
-+#define ZONE_RECLAIM_NOSCAN	-2
-+#define ZONE_RECLAIM_FULL	-1
-+#define ZONE_RECLAIM_SOME	0
-+#define ZONE_RECLAIM_SUCCESS	1
- #endif
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index fe753ec..ce2f684 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1420,20 +1420,38 @@ zonelist_scan:
- 
- 		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
- 			unsigned long mark;
-+			int ret;
- 			if (alloc_flags & ALLOC_WMARK_MIN)
- 				mark = zone->pages_min;
- 			else if (alloc_flags & ALLOC_WMARK_LOW)
- 				mark = zone->pages_low;
- 			else
- 				mark = zone->pages_high;
--			if (!zone_watermark_ok(zone, order, mark,
--				    classzone_idx, alloc_flags)) {
--				if (!zone_reclaim_mode ||
--				    !zone_reclaim(zone, gfp_mask, order))
-+			if (zone_watermark_ok(zone, order, mark,
-+				    classzone_idx, alloc_flags))
-+				goto try_this_zone;
-+
-+			if (zone_reclaim_mode == 0)
-+				goto this_zone_full;
-+
-+			ret = zone_reclaim(zone, gfp_mask, order);
-+			switch (ret) {
-+				case ZONE_RECLAIM_NOSCAN:
-+					/* did not scan */
-+					goto try_next_zone;
-+				case ZONE_RECLAIM_FULL:
-+					/* scanned but unreclaimable */
- 					goto this_zone_full;
-+				default:
-+					/* did we reclaim enough */
-+					if (!zone_watermark_ok(zone, order,
-+							mark, classzone_idx,
-+							alloc_flags))
-+						goto try_next_zone;
- 			}
- 		}
- 
-+try_this_zone:
- 		page = buffered_rmqueue(preferred_zone, zone, order, gfp_mask);
- 		if (page)
- 			break;
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index ffe2f32..84cdae2 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -2409,7 +2409,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
- 	if (pagecache_reclaimable <= zone->min_unmapped_pages
- 	    && zone_page_state(zone, NR_SLAB_RECLAIMABLE)
- 			<= zone->min_slab_pages)
--		return 0;
-+		return ZONE_RECLAIM_NOSCAN;
- 
- 	/* Do not attempt a scan if scanning failed recently */
- 	if (time_before(jiffies,
-@@ -2417,13 +2417,13 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
- 		return 0;
- 
- 	if (zone_is_all_unreclaimable(zone))
--		return 0;
-+		return ZONE_RECLAIM_FULL;
- 
- 	/*
- 	 * Do not scan if the allocation should not be delayed.
- 	 */
- 	if (!(gfp_mask & __GFP_WAIT) || (current->flags & PF_MEMALLOC))
--			return 0;
-+			return ZONE_RECLAIM_NOSCAN;
- 
- 	/*
- 	 * Only run zone reclaim on the local zone or on zones that do not
-@@ -2433,10 +2433,10 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
- 	 */
- 	node_id = zone_to_nid(zone);
- 	if (node_state(node_id, N_CPU) && node_id != numa_node_id())
--		return 0;
-+		return ZONE_RECLAIM_NOSCAN;
- 
- 	if (zone_test_and_set_flag(zone, ZONE_RECLAIM_LOCKED))
--		return 0;
-+		return ZONE_RECLAIM_NOSCAN;
- 	ret = __zone_reclaim(zone, gfp_mask, order);
- 	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
- 
+									Honza  
 -- 
-1.5.6.5
-
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
