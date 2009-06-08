@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbZFHKsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbZFHKwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755102AbZFHKsF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 06:48:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbZFHKrz
+	id S1754340AbZFHKwU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 06:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZFHKwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 06:47:55 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:59750 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754476AbZFHKry (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 06:47:54 -0400
-Message-ID: <4A2CEC5B.3000001@msgid.tls.msk.ru>
-Date: Mon, 08 Jun 2009 14:47:55 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 8 Jun 2009 06:52:06 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:49085 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752825AbZFHKwE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 06:52:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=nCQLtJKBLyw993C0hNlxWdqDyvxl1EBgdalXsawHdHlfUkqPtIw9jdjYz5SPzNRUdS
+         0yBeXivxsWXlHvGwlNQvVTKEYOfoBQ14BEzT8BZQK7ibvH/lZR9/bjtDDoej8BV37coe
+         NvWWo1LOLMhJ2DyJF/onhei7B+QC43Dq3udts=
 MIME-Version: 1.0
-To: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.30-rc8 does not boot
-References: <4A2CE6AC.4030403@msgid.tls.msk.ru>
-In-Reply-To: <4A2CE6AC.4030403@msgid.tls.msk.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090608101739.GA15377@csn.ul.ie>
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
+	 <D9VoutSOyXP.A.hvH.Ha7KKB@chimera> <4A2BBC30.2030300@lwfinger.net>
+	 <84144f020906070640rf5ab14nbf66d3ca7c97675f@mail.gmail.com>
+	 <4A2BCC6F.8090004@redhat.com>
+	 <84144f020906070732l31786156r5d9753a0cabfde79@mail.gmail.com>
+	 <20090608101739.GA15377@csn.ul.ie>
+Date: Mon, 8 Jun 2009 13:52:05 +0300
+X-Google-Sender-Auth: fab19ad64e688f19
+Message-ID: <84144f020906080352k57f12ff9pbd696da5f332ac1a@mail.gmail.com>
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Rik van Riel <riel@redhat.com>, Larry Finger <Larry.Finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev wrote:
-> Hello.
-> 
-> I just gave 2.6.30-rc a try, taken from Linus git, tag v2.6.29-rc8.
-> And this one does not want to boot on my test machine which is an
-> AMD X2-64 with AMD780G chipset.  Neither 64 nor 32bit kernel boots.
-> I even tried in kvm virtual machine, -- same effect.  It freezes right
-> after displaying "Verifying BIOS data successful" message -- nothing
-> more is on the screen.
-> 
-> I did `make silentoldconfig' based on my current 2.6.29 configs.  In
-> the configs there are the following changes:
->  - quite some changes in various new/changed drivers (which should
->    not affect what I'm seeing)
-> 
->  - decompression: I've no idea what compression it used before, but
->    `make oldconfig' offered gzip by default which I accepted. Should
->    I try bzip2 instead?
-> 
->  - changed HZ from 100 to 300
-> 
->  - also the following which I don't think I touched:
-> 
->   -X86_INTERNODE_CACHE_BYTES=128
->   +X86_INTERNODE_CACHE_BYTES=64
-> 
->   -X86_L1_CACHE_BYTES=128
->   +X86_L1_CACHE_BYTES=64
-> 
->   -X86_L1_CACHE_SHIFT=7
->   +X86_L1_CACHE_SHIFT=6
-> 
-> I'm trying different compression method for now.  If it will solve
-> this issue, my conclusion will be that the default value is  wrong
-> and - oh well - expect more reports/questions like this one :)
+On Mon, Jun 8, 2009 at 1:17 PM, Mel Gorman<mel@csn.ul.ie> wrote:
+> Pekka, assuming the request size is 800 bytes, and SLUB is using order-1
+> pages for allocations of that size, what happened order-1 allocations
+> falling back to order-0 allocations as necessary. That logic exists,
+> right? If so, could it be broken?
 
-Ok, compression did not change anything.  But now I've a bit more
-info available.  Here's how the boot screen looks like when the
-boot stops:
+That logic is in allocate_slab() and if the higher order allocation
+fails, we fall-back to struct kmem_cache ->min order. That in turn is
+set up in calculate_sizes() to get_order(size) so it seems pretty
+unlikely to me the allocation is 800 bytes. Of course, I could be
+missing something here and there's a bug in oo_make() or oo_order().
+Hmm.
 
-Loading kernel ....
-Loading initrd ....
-BIOS data check successful
-
-
-PANIC: early exception 0e rip: 10:ffffffff802c9abd error 0 cr2 0
-
-> The rest of the system is not very interesting I think: the kernel
-> config is pretty generic (most stuff is in modules), compiler is
-> default on Debian Lenny (4.3.2-1.1).
-
-Tried two boot loaders: lilo (22.8) and extlinux.  With similar
-effect.
-
-Thanks!
-
-/mjt
-
+                        Pekka
