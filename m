@@ -1,102 +1,369 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753266AbZFHHso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbZFHHtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753266AbZFHHso (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 03:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbZFHHsg
+	id S1753823AbZFHHtO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 03:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbZFHHtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 03:48:36 -0400
-Received: from mga02.intel.com ([134.134.136.20]:30420 "EHLO mga02.intel.com"
+	Mon, 8 Jun 2009 03:49:04 -0400
+Received: from mga09.intel.com ([134.134.136.24]:53404 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751067AbZFHHsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 03:48:36 -0400
+	id S1750998AbZFHHtC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 03:49:02 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,323,1241420400"; 
-   d="scan'208";a="522560607"
-From: "Tang, Feng" <feng.tang@intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-Date: Mon, 8 Jun 2009 15:47:33 +0800
-Subject: RE: [PATCH] tick: add check for the existence of broadcast clock
- event device
-Thread-Topic: [PATCH] tick: add check for the existence of broadcast clock
- event device
-Thread-Index: AcnoBtE8p9Xi10FaQwa3RreYZ1uYXgABS6JQ
-Message-ID: <EADF0A36011179459010BDF5142A457501C9CD39CC@pdsmsx502.ccr.corp.intel.com>
-References: <20090605112711.67e7d5cb@feng-desktop>
- <alpine.LFD.2.00.0906061121330.3419@localhost.localdomain>
- <20090606204736.00700bd0@feng-desktop>
- <alpine.LFD.2.00.0906061450220.3419@localhost.localdomain>
- <alpine.LFD.2.00.0906061815460.3419@localhost.localdomain>
- <20090608095730.0c945e78@feng-desktop>
- <alpine.LFD.2.00.0906080739020.3419@localhost.localdomain>
- <20090608141250.6a5735fa@feng-desktop>
- <alpine.LFD.2.00.0906080828021.3419@localhost.localdomain>
- <20090608144740.62f2ed95@feng-desktop>
- <alpine.LFD.2.00.0906080857260.3419@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0906080857260.3419@localhost.localdomain>
-Accept-Language: zh-CN, en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: zh-CN, en-US
-Content-Type: text/plain; charset="gb2312"
-MIME-Version: 1.0
+   d="scan'208";a="419730315"
+Subject: [PATCH V2: 1/3] pci: Provide Multiple Error Received and no error
+	source id support on AER
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 08 Jun 2009 15:49:10 +0800
+Message-Id: <1244447350.2560.190.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n587nI54003936
+
+Changelog since V1:
+	Version 2 adds nosourceid, a boot parameter. When
+	aerdriver.nosourceid=y, aerdriver doesn't use the source
+	id saved by root port. Instead, it searches the device
+	tree under the root port to find the reporter. So if hardware
+	has errata and root port saves a bad source id, aerdriver
+	still could find the reporter.
+	There are 2 scenarios under which ï»¿aerdriver searches the
+	device tree under root port:
+	1) nosourceid=n and error source id is equal to 0;
+	2) nosourceid=y.
+
+ï»¿Based on PCI Express AER specs, a root port might receive multiple
+TLP errors while it could only save a correctable error source id
+and an uncorrectable error source id at the same time. In addition,
+some root port hardware might be unable to provide a correct source
+id, i.e., the source id provided by root port might be equal to 0.
+
+The patchset implements the support in kernel by searching the device
+tree under the root port.
+
+Patch 1 changes parameter cb of function pci_walk_bus to return a value.
+When cb return non-zero, pci_walk_bus stops more searching on the
+device tree.
+
+ï»¿ï»¿ï»¿Signed-off-by: ï»¿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+
+---
+
+--- linux-2.6.30-rc3/arch/powerpc/platforms/pseries/eeh_driver.c	2009-04-27 15:48:28.000000000 +0800
++++ linux-2.6.30-rc3_pciwalk/arch/powerpc/platforms/pseries/eeh_driver.c	2009-04-29 10:39:41.000000000 +0800
+@@ -122,7 +122,7 @@ static void eeh_enable_irq(struct pci_de
+  * passed back in "userdata".
+  */
+ 
+-static void eeh_report_error(struct pci_dev *dev, void *userdata)
++static int eeh_report_error(struct pci_dev *dev, void *userdata)
+ {
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver = dev->driver;
+@@ -130,19 +130,21 @@ static void eeh_report_error(struct pci_
+ 	dev->error_state = pci_channel_io_frozen;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	eeh_disable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->error_detected)
+-		return;
++		return 0;
+ 
+ 	rc = driver->err_handler->error_detected (dev, pci_channel_io_frozen);
+ 
+ 	/* A driver that needs a reset trumps all others */
+ 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
++
++	return 0;
+ }
+ 
+ /**
+@@ -153,7 +155,7 @@ static void eeh_report_error(struct pci_
+  * Cumulative response passed back in "userdata".
+  */
+ 
+-static void eeh_report_mmio_enabled(struct pci_dev *dev, void *userdata)
++static int eeh_report_mmio_enabled(struct pci_dev *dev, void *userdata)
+ {
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver = dev->driver;
+@@ -161,26 +163,28 @@ static void eeh_report_mmio_enabled(stru
+ 	if (!driver ||
+ 	    !driver->err_handler ||
+ 	    !driver->err_handler->mmio_enabled)
+-		return;
++		return 0;
+ 
+ 	rc = driver->err_handler->mmio_enabled (dev);
+ 
+ 	/* A driver that needs a reset trumps all others */
+ 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
++
++	return 0;
+ }
+ 
+ /**
+  * eeh_report_reset - tell device that slot has been reset
+  */
+ 
+-static void eeh_report_reset(struct pci_dev *dev, void *userdata)
++static int eeh_report_reset(struct pci_dev *dev, void *userdata)
+ {
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver = dev->driver;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	dev->error_state = pci_channel_io_normal;
+ 
+@@ -188,35 +192,39 @@ static void eeh_report_reset(struct pci_
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->slot_reset)
+-		return;
++		return 0;
+ 
+ 	rc = driver->err_handler->slot_reset(dev);
+ 	if ((*res == PCI_ERS_RESULT_NONE) ||
+ 	    (*res == PCI_ERS_RESULT_RECOVERED)) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_DISCONNECT &&
+ 	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
++
++	return 0;
+ }
+ 
+ /**
+  * eeh_report_resume - tell device to resume normal operations
+  */
+ 
+-static void eeh_report_resume(struct pci_dev *dev, void *userdata)
++static int eeh_report_resume(struct pci_dev *dev, void *userdata)
+ {
+ 	struct pci_driver *driver = dev->driver;
+ 
+ 	dev->error_state = pci_channel_io_normal;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	eeh_enable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->resume)
+-		return;
++		return 0;
+ 
+ 	driver->err_handler->resume(dev);
++
++	return 0;
+ }
+ 
+ /**
+@@ -226,22 +234,24 @@ static void eeh_report_resume(struct pci
+  * dead, and that no further recovery attempts will be made on it.
+  */
+ 
+-static void eeh_report_failure(struct pci_dev *dev, void *userdata)
++static int eeh_report_failure(struct pci_dev *dev, void *userdata)
+ {
+ 	struct pci_driver *driver = dev->driver;
+ 
+ 	dev->error_state = pci_channel_io_perm_failure;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	eeh_disable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->error_detected)
+-		return;
++		return 0;
+ 
+ 	driver->err_handler->error_detected(dev, pci_channel_io_perm_failure);
++
++	return 0;
+ }
+ 
+ /* ------------------------------------------------------- */
+--- linux-2.6.30-rc3/drivers/pci/bus.c	2009-04-27 15:48:31.000000000 +0800
++++ linux-2.6.30-rc3_pciwalk/drivers/pci/bus.c	2009-05-05 14:10:36.000000000 +0800
+@@ -201,13 +201,18 @@ void pci_enable_bridges(struct pci_bus *
+  *  Walk the given bus, including any bridged devices
+  *  on buses under this bus.  Call the provided callback
+  *  on each device found.
++ *
++ *  We check the return of @cb each time. If it returns anything
++ *  other than 0, we break out.
++ *
+  */
+-void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
++void pci_walk_bus(struct pci_bus *top, int (*cb)(struct pci_dev *, void *),
+ 		  void *userdata)
+ {
+ 	struct pci_dev *dev;
+ 	struct pci_bus *bus;
+ 	struct list_head *next;
++	int retval;
+ 
+ 	bus = top;
+ 	down_read(&pci_bus_sem);
+@@ -231,8 +236,10 @@ void pci_walk_bus(struct pci_bus *top, v
+ 
+ 		/* Run device routines with the device locked */
+ 		down(&dev->dev.sem);
+-		cb(dev, userdata);
++		retval = cb(dev, userdata);
+ 		up(&dev->dev.sem);
++		if (retval)
++			break;
+ 	}
+ 	up_read(&pci_bus_sem);
+ }
+--- linux-2.6.30-rc3/drivers/pci/pcie/aer/aerdrv_core.c	2009-04-27 15:48:31.000000000 +0800
++++ linux-2.6.30-rc3_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c	2009-04-29 10:37:16.000000000 +0800
+@@ -109,19 +109,21 @@ int pci_cleanup_aer_correct_error_status
+ #endif  /*  0  */
+ 
+ 
+-static void set_device_error_reporting(struct pci_dev *dev, void *data)
++static int set_device_error_reporting(struct pci_dev *dev, void *data)
+ {
+ 	bool enable = *((bool *)data);
+ 
+ 	if (dev->pcie_type != PCIE_RC_PORT &&
+ 	    dev->pcie_type != PCIE_SW_UPSTREAM_PORT &&
+ 	    dev->pcie_type != PCIE_SW_DOWNSTREAM_PORT)
+-		return;
++		return 0;
+ 
+ 	if (enable)
+ 		pci_enable_pcie_error_reporting(dev);
+ 	else
+ 		pci_disable_pcie_error_reporting(dev);
++
++	return 0;
+ }
+ 
+ /**
+@@ -205,7 +207,7 @@ static struct device* find_source_device
+ 	return NULL;
+ }
+ 
+-static void report_error_detected(struct pci_dev *dev, void *data)
++static int report_error_detected(struct pci_dev *dev, void *data)
+ {
+ 	pci_ers_result_t vote;
+ 	struct pci_error_handlers *err_handler;
+@@ -230,16 +232,16 @@ static void report_error_detected(struct
+ 				   dev->driver ?
+ 				   "no AER-aware driver" : "no driver");
+ 		}
+-		return;
++		return 0;
+ 	}
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	vote = err_handler->error_detected(dev, result_data->state);
+ 	result_data->result = merge_result(result_data->result, vote);
+-	return;
++	return 0;
+ }
+ 
+-static void report_mmio_enabled(struct pci_dev *dev, void *data)
++static int report_mmio_enabled(struct pci_dev *dev, void *data)
+ {
+ 	pci_ers_result_t vote;
+ 	struct pci_error_handlers *err_handler;
+@@ -249,15 +251,15 @@ static void report_mmio_enabled(struct p
+ 	if (!dev->driver ||
+ 		!dev->driver->err_handler ||
+ 		!dev->driver->err_handler->mmio_enabled)
+-		return;
++		return 0;
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	vote = err_handler->mmio_enabled(dev);
+ 	result_data->result = merge_result(result_data->result, vote);
+-	return;
++	return 0;
+ }
+ 
+-static void report_slot_reset(struct pci_dev *dev, void *data)
++static int report_slot_reset(struct pci_dev *dev, void *data)
+ {
+ 	pci_ers_result_t vote;
+ 	struct pci_error_handlers *err_handler;
+@@ -267,15 +269,15 @@ static void report_slot_reset(struct pci
+ 	if (!dev->driver ||
+ 		!dev->driver->err_handler ||
+ 		!dev->driver->err_handler->slot_reset)
+-		return;
++		return 0;
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	vote = err_handler->slot_reset(dev);
+ 	result_data->result = merge_result(result_data->result, vote);
+-	return;
++	return 0;
+ }
+ 
+-static void report_resume(struct pci_dev *dev, void *data)
++static int report_resume(struct pci_dev *dev, void *data)
+ {
+ 	struct pci_error_handlers *err_handler;
+ 
+@@ -284,11 +286,11 @@ static void report_resume(struct pci_dev
+ 	if (!dev->driver ||
+ 		!dev->driver->err_handler ||
+ 		!dev->driver->err_handler->resume)
+-		return;
++		return 0;
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	err_handler->resume(dev);
+-	return;
++	return 0;
+ }
+ 
+ /**
+@@ -305,7 +307,7 @@ static void report_resume(struct pci_dev
+ static pci_ers_result_t broadcast_error_message(struct pci_dev *dev,
+ 	enum pci_channel_state state,
+ 	char *error_mesg,
+-	void (*cb)(struct pci_dev *, void *))
++	int (*cb)(struct pci_dev *, void *))
+ {
+ 	struct aer_broadcast_data result_data;
+ 
+--- linux-2.6.30-rc3/include/linux/pci.h	2009-04-27 15:48:33.000000000 +0800
++++ linux-2.6.30-rc3_pciwalk/include/linux/pci.h	2009-04-29 10:31:58.000000000 +0800
+@@ -790,7 +790,7 @@ const struct pci_device_id *pci_match_id
+ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
+ 		    int pass);
+ 
+-void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
++void pci_walk_bus(struct pci_bus *top, int (*cb)(struct pci_dev *, void *),
+ 		  void *userdata);
+ int pci_cfg_space_size_ext(struct pci_dev *dev);
+ int pci_cfg_space_size(struct pci_dev *dev);
 
 
-
->-----Original Message-----
->From: Thomas Gleixner [mailto:tglx@linutronix.de]
->Sent: 2009Äê6ÔÂ8ÈÕ 15:00
->To: Tang, Feng
->Cc: mingo@elte.hu; linux-kernel@vger.kernel.org; Li, Shaohua; Pan, Jacob jun
->Subject: Re: [PATCH] tick: add check for the existence of broadcast clock event
->device
->
->On Mon, 8 Jun 2009, Feng Tang wrote:
->> On Mon, 8 Jun 2009 14:33:14 +0800 Thomas Gleixner <tglx@linutronix.de> wrote:
->> > On Mon, 8 Jun 2009, Feng Tang wrote:
->> > > Our apbt driver is pretty similar with HPET's, including its cpu
->> > > hotplug notifier. But our platform only has 2 available apbt to
->> > > use, otherwise we will configure it just like HPET, using one timer
->> > > as bc and others for per-cpu ones, then it won't hit this case
->> > >
->> > > There are 2 situations, one is for the normal boot, apbt0 will be
->> > > inited first and registered to OS as cpu0's timer, then tsc/lapic
->> > > is calculated based on it, and apbt1 is registered later in a
->> > > fs_initcall() (just like hpet.c does) after basic kernel core is
->> > > up. so the sequence is: apbt0 --> lapic0 --> lapic1 --> apbt1
->> >
->> > Hmm, I do not like that at all. That explicitely relies on CPU0 doing
->> > some work which will kick CPU1. That's fragile as hell.
->>
->> I understand the concern. apbt0 is inited in a very early boot phase when
->> the cpu1 is not up yet, and os don't even know wether there is a cpu1, that's
->> why we registered apbt1 in fs_initcall(). If we explicitly setup apbt1 when
->> OS brings up cpu1, it is a little brutal and not generic as only our platform
->> has apbt, and I guess cpu hotplug maintainer won't like it :p
->
->Why is that a problem ? You already have a special case for apbt0 in
->the early setup code. So where is the problem when you have an apbt1
->init call on CPU1 _before_ the local APIC is initialized on CPU1.
-
-Yes, your proposal makes good sense. But our apbt0 initialization is an x86 legacy one like HPET and is put into the same position where hpet_enable() exists, it keeps the impact to x86 arch dependent code be minimal, if we put the apbt1 init code into x86's cpu initialization code, I think it will cause much more complains, that's why we chose to follow hpet's method to use delayed init.
-
-The reason we proposed to add pointer check is there are already such checks in the broadcast code, adding these won't do harm to existing code. 
-
-Thanks,
-Feng
->
->That's definitely saner than relying on magic IPI wakeups.
->
->Thanks,
->
->	tglx
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
