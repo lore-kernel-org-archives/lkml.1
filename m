@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZFHHAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbZFHHET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbZFHHAg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 03:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbZFHHA2
+	id S1752675AbZFHHET (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 03:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZFHHEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 03:00:28 -0400
-Received: from www.tglx.de ([62.245.132.106]:49958 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751799AbZFHHA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 03:00:28 -0400
-Date: Mon, 8 Jun 2009 09:00:14 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Feng Tang <feng.tang@intel.com>
-cc: "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-Subject: Re: [PATCH] tick: add check for the existence of broadcast clock
- event device
-In-Reply-To: <20090608144740.62f2ed95@feng-desktop>
-Message-ID: <alpine.LFD.2.00.0906080857260.3419@localhost.localdomain>
-References: <20090605112711.67e7d5cb@feng-desktop> <alpine.LFD.2.00.0906061121330.3419@localhost.localdomain> <20090606204736.00700bd0@feng-desktop> <alpine.LFD.2.00.0906061450220.3419@localhost.localdomain> <alpine.LFD.2.00.0906061815460.3419@localhost.localdomain>
- <20090608095730.0c945e78@feng-desktop> <alpine.LFD.2.00.0906080739020.3419@localhost.localdomain> <20090608141250.6a5735fa@feng-desktop> <alpine.LFD.2.00.0906080828021.3419@localhost.localdomain> <20090608144740.62f2ed95@feng-desktop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 8 Jun 2009 03:04:04 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:34938 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751203AbZFHHED (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 03:04:03 -0400
+Message-ID: <4A2CB7AE.6080909@gmail.com>
+Date: Mon, 08 Jun 2009 10:03:10 +0300
+From: Artem Bityutskiy <dedekind1@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Jan Kara <jack@suse.cz>, Eric Sandeen <sandeen@sandeen.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+       Nick Piggin <npiggin@suse.de>, Jeff Layton <jlayton@redhat.com>
+Subject: Re: [PATCH] writeback: skip new or to-be-freed inodes
+References: <20090324155655.2684.61FB500B@jp.fujitsu.com> <20090324074457.GA7745@localhost> <20090324120502.GC23439@duck.suse.cz> <20090324124001.GA25326@localhost> <4A244A5B.7070605@sandeen.net> <20090602085523.GC7161@localhost> <20090602113736.GB15010@duck.suse.cz> <20090603141021.GB5738@localhost> <20090603141636.GC5650@duck.suse.cz> <20090603144711.GC5738@localhost> <20090606030725.GA12852@localhost>
+In-Reply-To: <20090606030725.GA12852@localhost>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 08 Jun 2009 07:03:18.0391 (UTC) FILETIME=[338AA870:01C9E807]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Jun 2009, Feng Tang wrote:
-> On Mon, 8 Jun 2009 14:33:14 +0800 Thomas Gleixner <tglx@linutronix.de> wrote:
-> > On Mon, 8 Jun 2009, Feng Tang wrote:
-> > > Our apbt driver is pretty similar with HPET's, including its cpu
-> > > hotplug notifier. But our platform only has 2 available apbt to
-> > > use, otherwise we will configure it just like HPET, using one timer
-> > > as bc and others for per-cpu ones, then it won't hit this case
-> > > 
-> > > There are 2 situations, one is for the normal boot, apbt0 will be
-> > > inited first and registered to OS as cpu0's timer, then tsc/lapic
-> > > is calculated based on it, and apbt1 is registered later in a
-> > > fs_initcall() (just like hpet.c does) after basic kernel core is
-> > > up. so the sequence is: apbt0 --> lapic0 --> lapic1 --> apbt1
-> > 
-> > Hmm, I do not like that at all. That explicitely relies on CPU0 doing
-> > some work which will kick CPU1. That's fragile as hell. 
->
-> I understand the concern. apbt0 is inited in a very early boot phase when
-> the cpu1 is not up yet, and os don't even know wether there is a cpu1, that's
-> why we registered apbt1 in fs_initcall(). If we explicitly setup apbt1 when
-> OS brings up cpu1, it is a little brutal and not generic as only our platform
-> has apbt, and I guess cpu hotplug maintainer won't like it :p
+Wu Fengguang wrote:
+> The above race and warning didn't turn up because writeback_inodes() holds
+> the s_umount lock, so generic_forget_inode() finds MS_ACTIVE and returns
+> early. But we are not sure the UBIFS calls and future callers will guarantee
+> that. So skip I_WILL_FREE inodes for the sake of safety.
 
-Why is that a problem ? You already have a special case for apbt0 in
-the early setup code. So where is the problem when you have an apbt1
-init call on CPU1 _before_ the local APIC is initialized on CPU1.
+The inode states are a bit vague for me, but vs. UBIFS - feel
+free to ask questions.
 
-That's definitely saner than relying on magic IPI wakeups.
-
-Thanks,
-
-	tglx
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
