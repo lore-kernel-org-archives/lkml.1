@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbZFHHaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753623AbZFHHaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753819AbZFHHaM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 03:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbZFHH35
+	id S1753623AbZFHHaf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 03:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbZFHHaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 03:29:57 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:45286 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753035AbZFHH34 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 03:29:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=D0frGv0Zd/psyefLSzesQV4FvxrkERIa2HEMqceejZZJw2VMSmn+ReCHAjnjWMgT5F
-         cgik2g13zTRmD1PDkwQ1b5zeBBhkGcUeBh4t7a6xLoLIM6NdQRXSlgjhIOEgGkmag58J
-         C5oGW2doHHwnamjPxUqTeaRwqpUhRHU9bmzMY=
-MIME-Version: 1.0
-In-Reply-To: <D9VoutSOyXP.A.LpH.8Z7KKB@chimera>
-References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
-	 <D9VoutSOyXP.A.LpH.8Z7KKB@chimera>
-Date: Mon, 8 Jun 2009 09:29:57 +0200
-Message-ID: <38b2ab8a0906080029n5d0e167oc2fc217f19882816@mail.gmail.com>
-Subject: Re: [Bug #13328] b44: eth0: BUG! Timeout waiting for bit 00000002 of 
-	register 42c to clear.
-From: Francis Moreau <francis.moro@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 8 Jun 2009 03:30:22 -0400
+Received: from mga01.intel.com ([192.55.52.88]:54921 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752394AbZFHHaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 03:30:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,323,1241420400"; 
+   d="scan'208";a="464356772"
+Subject: Re: [PATCH -v5] x86: MCE: Re-implement MCE log ring buffer as
+ per-CPU ring buffer
+From: Huang Ying <ying.huang@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <ak@linux.intel.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090608072030.GA6732@elte.hu>
+References: <1244445115.8361.576.camel@yhuang-dev.sh.intel.com>
+	 <20090608072030.GA6732@elte.hu>
+Content-Type: text/plain
+Date: Mon, 08 Jun 2009 15:30:22 +0800
+Message-Id: <1244446222.8361.584.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+On Mon, 2009-06-08 at 15:20 +0800, Ingo Molnar wrote:
+> * Huang Ying <ying.huang@intel.com> wrote:
+> 
+> > Re-implement MCE log ring buffer as per-CPU ring buffer for better 
+> > scalability.
+> 
+> this should be done using the generic ring-buffer code - see 
+> include/linux/ring_buffer.h. Having a private implementation in 
+> architecture code is not really acceptable.
 
-On Sun, Jun 7, 2009 at 11:52 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.29.  Please verify if it still should be listed and let me know
-> (either way).
+MCE log ring buffer need to be NMI-safe, while current generic
+ring-buffer code is not NMI safe. Maybe we can use the generic
+ring-buffer code after it goes NMI-safe. But for now, I think this patch
+is better.
 
-I just pulled the 2.6.30-rc8 kernel.
+Best Regards,
+Huang Ying
 
-I'm giving it a test during this week and let you know if the bug
-comes up again.
 
--- 
-Francis
