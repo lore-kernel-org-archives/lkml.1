@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758066AbZFHTde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758191AbZFHTec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758066AbZFHTde (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 15:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbZFHTX5
+	id S1758191AbZFHTec (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 15:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZFHTYC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 15:23:57 -0400
-Received: from thunk.org ([69.25.196.29]:39619 "EHLO thunker.thunk.org"
+	Mon, 8 Jun 2009 15:24:02 -0400
+Received: from thunk.org ([69.25.196.29]:39626 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754629AbZFHTXY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 15:23:24 -0400
+	id S1755234AbZFHTXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 15:23:25 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Linux Kernel Developers List <linux-kernel@vger.kernel.org>
 Cc: "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 18/49] ext4: Move the ext4_sb.h header file into ext4.h
-Date: Mon,  8 Jun 2009 15:22:36 -0400
-Message-Id: <1244488987-32564-19-git-send-email-tytso@mit.edu>
+Subject: [PATCH 10/49] ext4: Use separate super_operations structure for no_journal filesystems
+Date: Mon,  8 Jun 2009 15:22:28 -0400
+Message-Id: <1244488987-32564-11-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.6.3.2.1.gb9f7d.dirty
-In-Reply-To: <1244488987-32564-18-git-send-email-tytso@mit.edu>
+In-Reply-To: <1244488987-32564-10-git-send-email-tytso@mit.edu>
 References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-2-git-send-email-tytso@mit.edu>
  <1244488987-32564-3-git-send-email-tytso@mit.edu>
@@ -27,14 +27,6 @@ References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-8-git-send-email-tytso@mit.edu>
  <1244488987-32564-9-git-send-email-tytso@mit.edu>
  <1244488987-32564-10-git-send-email-tytso@mit.edu>
- <1244488987-32564-11-git-send-email-tytso@mit.edu>
- <1244488987-32564-12-git-send-email-tytso@mit.edu>
- <1244488987-32564-13-git-send-email-tytso@mit.edu>
- <1244488987-32564-14-git-send-email-tytso@mit.edu>
- <1244488987-32564-15-git-send-email-tytso@mit.edu>
- <1244488987-32564-16-git-send-email-tytso@mit.edu>
- <1244488987-32564-17-git-send-email-tytso@mit.edu>
- <1244488987-32564-18-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -42,370 +34,185 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no longer a reason for a separate ext4_sb.h header file, so
-move it into ext4.h just to make life easier for developers to find
-the relevant data structures and typedefs.  Should also speed up
-compiles slightly, too.
+By using a separate super_operations structure for filesystems that
+have and don't have journals, we can simply ext4_write_super() ---
+which is only needed when no journal is present --- and ext4_freeze(),
+ext4_unfreeze(), and ext4_sync_fs(), which are only needed when the
+journal is present.
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/ext4.h    |  144 +++++++++++++++++++++++++++++++++++++++++++++-
- fs/ext4/ext4_sb.h |  163 -----------------------------------------------------
- 2 files changed, 140 insertions(+), 167 deletions(-)
- delete mode 100644 fs/ext4/ext4_sb.h
+ fs/ext4/super.c |  108 +++++++++++++++++++++++++++++--------------------------
+ 1 files changed, 57 insertions(+), 51 deletions(-)
 
-diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index ba57d66..af3c906 100644
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -25,6 +25,10 @@
- #include <linux/rbtree.h>
- #include <linux/seqlock.h>
- #include <linux/mutex.h>
-+#include <linux/timer.h>
-+#include <linux/wait.h>
-+#include <linux/blockgroup_lock.h>
-+#include <linux/percpu_counter.h>
- 
- /*
-  * The fourth extended filesystem constants/structures
-@@ -195,9 +199,6 @@ struct flex_groups {
- #define EXT4_BG_BLOCK_UNINIT	0x0002 /* Block bitmap not in use */
- #define EXT4_BG_INODE_ZEROED	0x0004 /* On-disk itable initialized to zero */
- 
--#ifdef __KERNEL__
--#include "ext4_sb.h"
--#endif
- /*
-  * Macro-instructions used to manage group descriptors
-  */
-@@ -809,6 +810,136 @@ struct ext4_super_block {
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 7c7a08a..68c3a44 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -995,7 +995,6 @@ static const struct super_operations ext4_sops = {
+ 	.dirty_inode	= ext4_dirty_inode,
+ 	.delete_inode	= ext4_delete_inode,
+ 	.put_super	= ext4_put_super,
+-	.write_super	= ext4_write_super,
+ 	.sync_fs	= ext4_sync_fs,
+ 	.freeze_fs	= ext4_freeze,
+ 	.unfreeze_fs	= ext4_unfreeze,
+@@ -1010,6 +1009,25 @@ static const struct super_operations ext4_sops = {
+ 	.bdev_try_to_free_page = bdev_try_to_free_page,
  };
  
- #ifdef __KERNEL__
-+/*
-+ * fourth extended-fs super-block data in memory
-+ */
-+struct ext4_sb_info {
-+	unsigned long s_desc_size;	/* Size of a group descriptor in bytes */
-+	unsigned long s_inodes_per_block;/* Number of inodes per block */
-+	unsigned long s_blocks_per_group;/* Number of blocks in a group */
-+	unsigned long s_inodes_per_group;/* Number of inodes in a group */
-+	unsigned long s_itb_per_group;	/* Number of inode table blocks per group */
-+	unsigned long s_gdb_count;	/* Number of group descriptor blocks */
-+	unsigned long s_desc_per_block;	/* Number of group descriptors per block */
-+	ext4_group_t s_groups_count;	/* Number of groups in the fs */
-+	unsigned long s_overhead_last;  /* Last calculated overhead */
-+	unsigned long s_blocks_last;    /* Last seen block count */
-+	loff_t s_bitmap_maxbytes;	/* max bytes for bitmap files */
-+	struct buffer_head * s_sbh;	/* Buffer containing the super block */
-+	struct ext4_super_block *s_es;	/* Pointer to the super block in the buffer */
-+	struct buffer_head **s_group_desc;
-+	unsigned long  s_mount_opt;
-+	ext4_fsblk_t s_sb_block;
-+	uid_t s_resuid;
-+	gid_t s_resgid;
-+	unsigned short s_mount_state;
-+	unsigned short s_pad;
-+	int s_addr_per_block_bits;
-+	int s_desc_per_block_bits;
-+	int s_inode_size;
-+	int s_first_ino;
-+	unsigned int s_inode_readahead_blks;
-+	spinlock_t s_next_gen_lock;
-+	u32 s_next_generation;
-+	u32 s_hash_seed[4];
-+	int s_def_hash_version;
-+	int s_hash_unsigned;	/* 3 if hash should be signed, 0 if not */
-+	struct percpu_counter s_freeblocks_counter;
-+	struct percpu_counter s_freeinodes_counter;
-+	struct percpu_counter s_dirs_counter;
-+	struct percpu_counter s_dirtyblocks_counter;
-+	struct blockgroup_lock *s_blockgroup_lock;
-+	struct proc_dir_entry *s_proc;
-+	struct kobject s_kobj;
-+	struct completion s_kobj_unregister;
-+
-+	/* Journaling */
-+	struct inode *s_journal_inode;
-+	struct journal_s *s_journal;
-+	struct list_head s_orphan;
-+	struct mutex s_orphan_lock;
-+	struct mutex s_resize_lock;
-+	unsigned long s_commit_interval;
-+	u32 s_max_batch_time;
-+	u32 s_min_batch_time;
-+	struct block_device *journal_bdev;
-+#ifdef CONFIG_JBD2_DEBUG
-+	struct timer_list turn_ro_timer;	/* For turning read-only (crash simulation) */
-+	wait_queue_head_t ro_wait_queue;	/* For people waiting for the fs to go read-only */
-+#endif
++static const struct super_operations ext4_nojournal_sops = {
++	.alloc_inode	= ext4_alloc_inode,
++	.destroy_inode	= ext4_destroy_inode,
++	.write_inode	= ext4_write_inode,
++	.dirty_inode	= ext4_dirty_inode,
++	.delete_inode	= ext4_delete_inode,
++	.write_super	= ext4_write_super,
++	.put_super	= ext4_put_super,
++	.statfs		= ext4_statfs,
++	.remount_fs	= ext4_remount,
++	.clear_inode	= ext4_clear_inode,
++	.show_options	= ext4_show_options,
 +#ifdef CONFIG_QUOTA
-+	char *s_qf_names[MAXQUOTAS];		/* Names of quota files with journalled quota */
-+	int s_jquota_fmt;			/* Format of quota to use */
++	.quota_read	= ext4_quota_read,
++	.quota_write	= ext4_quota_write,
 +#endif
-+	unsigned int s_want_extra_isize; /* New inodes should reserve # bytes */
-+
-+#ifdef EXTENTS_STATS
-+	/* ext4 extents stats */
-+	unsigned long s_ext_min;
-+	unsigned long s_ext_max;
-+	unsigned long s_depth_max;
-+	spinlock_t s_ext_stats_lock;
-+	unsigned long s_ext_blocks;
-+	unsigned long s_ext_extents;
-+#endif
-+
-+	/* for buddy allocator */
-+	struct ext4_group_info ***s_group_info;
-+	struct inode *s_buddy_cache;
-+	long s_blocks_reserved;
-+	spinlock_t s_reserve_lock;
-+	spinlock_t s_md_lock;
-+	tid_t s_last_transaction;
-+	unsigned short *s_mb_offsets;
-+	unsigned int *s_mb_maxs;
-+
-+	/* tunables */
-+	unsigned long s_stripe;
-+	unsigned int s_mb_stream_request;
-+	unsigned int s_mb_max_to_scan;
-+	unsigned int s_mb_min_to_scan;
-+	unsigned int s_mb_stats;
-+	unsigned int s_mb_order2_reqs;
-+	unsigned int s_mb_group_prealloc;
-+	/* where last allocation was done - for stream allocation */
-+	unsigned long s_mb_last_group;
-+	unsigned long s_mb_last_start;
-+
-+	/* history to debug policy */
-+	struct ext4_mb_history *s_mb_history;
-+	int s_mb_history_cur;
-+	int s_mb_history_max;
-+	int s_mb_history_num;
-+	spinlock_t s_mb_history_lock;
-+	int s_mb_history_filter;
-+
-+	/* stats for buddy allocator */
-+	spinlock_t s_mb_pa_lock;
-+	atomic_t s_bal_reqs;	/* number of reqs with len > 1 */
-+	atomic_t s_bal_success;	/* we found long enough chunks */
-+	atomic_t s_bal_allocated;	/* in blocks */
-+	atomic_t s_bal_ex_scanned;	/* total extents scanned */
-+	atomic_t s_bal_goals;	/* goal hits */
-+	atomic_t s_bal_breaks;	/* too long searches */
-+	atomic_t s_bal_2orders;	/* 2^order hits */
-+	spinlock_t s_bal_lock;
-+	unsigned long s_mb_buddies_generated;
-+	unsigned long long s_mb_generation_time;
-+	atomic_t s_mb_lost_chunks;
-+	atomic_t s_mb_preallocated;
-+	atomic_t s_mb_discarded;
-+
-+	/* locality groups */
-+	struct ext4_locality_group *s_locality_groups;
-+
-+	/* for write statistics */
-+	unsigned long s_sectors_written_start;
-+	u64 s_kbytes_written;
-+
-+	unsigned int s_log_groups_per_flex;
-+	struct flex_groups *s_flex_groups;
++	.bdev_try_to_free_page = bdev_try_to_free_page,
 +};
 +
- static inline struct ext4_sb_info *EXT4_SB(struct super_block *sb)
- {
- 	return sb->s_fs_info;
-@@ -824,7 +955,6 @@ static inline struct timespec ext4_current_time(struct inode *inode)
- 		current_fs_time(inode->i_sb) : CURRENT_TIME_SEC;
+ static const struct export_operations ext4_export_ops = {
+ 	.fh_to_dentry = ext4_fh_to_dentry,
+ 	.fh_to_parent = ext4_fh_to_parent,
+@@ -2615,7 +2633,11 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
+ 	/*
+ 	 * set up enough so that it can read an inode
+ 	 */
+-	sb->s_op = &ext4_sops;
++	if (!test_opt(sb, NOLOAD) &&
++	    EXT4_HAS_COMPAT_FEATURE(sb, EXT4_FEATURE_COMPAT_HAS_JOURNAL))
++		sb->s_op = &ext4_sops;
++	else
++		sb->s_op = &ext4_nojournal_sops;
+ 	sb->s_export_op = &ext4_export_ops;
+ 	sb->s_xattr = ext4_xattr_handlers;
+ #ifdef CONFIG_QUOTA
+@@ -3275,19 +3297,9 @@ int ext4_force_commit(struct super_block *sb)
+ 	return ret;
  }
  
--
- static inline int ext4_valid_inum(struct super_block *sb, unsigned long ino)
+-/*
+- * Ext4 always journals updates to the superblock itself, so we don't
+- * have to propagate any other updates to the superblock on disk at this
+- * point if the journalling is enabled.
+- */
+ static void ext4_write_super(struct super_block *sb)
  {
- 	return ino == EXT4_ROOT_INO ||
-@@ -833,6 +963,12 @@ static inline int ext4_valid_inum(struct super_block *sb, unsigned long ino)
- 		(ino >= EXT4_FIRST_INO(sb) &&
- 		 ino <= le32_to_cpu(EXT4_SB(sb)->s_es->s_inodes_count));
+-	if (EXT4_SB(sb)->s_journal) {
+-		if (mutex_trylock(&sb->s_lock) != 0)
+-			BUG();
+-	} else {
+-		ext4_commit_super(sb, 1);
+-	}
++	ext4_commit_super(sb, 1);
  }
+ 
+ static int ext4_sync_fs(struct super_block *sb, int wait)
+@@ -3296,15 +3308,9 @@ static int ext4_sync_fs(struct super_block *sb, int wait)
+ 	tid_t target;
+ 
+ 	trace_mark(ext4_sync_fs, "dev %s wait %d", sb->s_id, wait);
+-	if (EXT4_SB(sb)->s_journal) {
+-		if (jbd2_journal_start_commit(EXT4_SB(sb)->s_journal,
+-					      &target)) {
+-			if (wait)
+-				jbd2_log_wait_commit(EXT4_SB(sb)->s_journal,
+-						     target);
+-		}
+-	} else {
+-		ext4_commit_super(sb, wait);
++	if (jbd2_journal_start_commit(EXT4_SB(sb)->s_journal, &target)) {
++		if (wait)
++			jbd2_log_wait_commit(EXT4_SB(sb)->s_journal, target);
+ 	}
+ 	return ret;
+ }
+@@ -3318,32 +3324,31 @@ static int ext4_freeze(struct super_block *sb)
+ 	int error = 0;
+ 	journal_t *journal;
+ 
+-	if (!(sb->s_flags & MS_RDONLY)) {
+-		journal = EXT4_SB(sb)->s_journal;
++	if (sb->s_flags & MS_RDONLY)
++		return 0;
+ 
+-		if (journal) {
+-			/* Now we set up the journal barrier. */
+-			jbd2_journal_lock_updates(journal);
++	journal = EXT4_SB(sb)->s_journal;
+ 
+-			/*
+-			 * We don't want to clear needs_recovery flag when we
+-			 * failed to flush the journal.
+-			 */
+-			error = jbd2_journal_flush(journal);
+-			if (error < 0)
+-				goto out;
+-		}
++	/* Now we set up the journal barrier. */
++	jbd2_journal_lock_updates(journal);
+ 
+-		/* Journal blocked and flushed, clear needs_recovery flag. */
+-		EXT4_CLEAR_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
+-		error = ext4_commit_super(sb, 1);
+-		if (error)
+-			goto out;
++	/*
++	 * Don't clear the needs_recovery flag if we failed to flush
++	 * the journal.
++	 */
++	error = jbd2_journal_flush(journal);
++	if (error < 0) {
++	out:
++		jbd2_journal_unlock_updates(journal);
++		return error;
+ 	}
 +
-+static inline spinlock_t *
-+sb_bgl_lock(struct ext4_sb_info *sbi, unsigned int block_group)
-+{
-+	return bgl_lock_ptr(sbi->s_blockgroup_lock, block_group);
-+}
- #else
- /* Assume that user mode programs are passing in an ext4fs superblock, not
-  * a kernel struct super_block.  This will allow us to call the feature-test
-diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
-deleted file mode 100644
-index 2d36223..0000000
---- a/fs/ext4/ext4_sb.h
-+++ /dev/null
-@@ -1,163 +0,0 @@
--/*
-- *  ext4_sb.h
-- *
-- * Copyright (C) 1992, 1993, 1994, 1995
-- * Remy Card (card@masi.ibp.fr)
-- * Laboratoire MASI - Institut Blaise Pascal
-- * Universite Pierre et Marie Curie (Paris VI)
-- *
-- *  from
-- *
-- *  linux/include/linux/minix_fs_sb.h
-- *
-- *  Copyright (C) 1991, 1992  Linus Torvalds
-- */
--
--#ifndef _EXT4_SB
--#define _EXT4_SB
--
--#ifdef __KERNEL__
--#include <linux/timer.h>
--#include <linux/wait.h>
--#include <linux/blockgroup_lock.h>
--#include <linux/percpu_counter.h>
--#endif
--#include <linux/rbtree.h>
--
--/*
-- * fourth extended-fs super-block data in memory
-- */
--struct ext4_sb_info {
--	unsigned long s_desc_size;	/* Size of a group descriptor in bytes */
--	unsigned long s_inodes_per_block;/* Number of inodes per block */
--	unsigned long s_blocks_per_group;/* Number of blocks in a group */
--	unsigned long s_inodes_per_group;/* Number of inodes in a group */
--	unsigned long s_itb_per_group;	/* Number of inode table blocks per group */
--	unsigned long s_gdb_count;	/* Number of group descriptor blocks */
--	unsigned long s_desc_per_block;	/* Number of group descriptors per block */
--	ext4_group_t s_groups_count;	/* Number of groups in the fs */
--	unsigned long s_overhead_last;  /* Last calculated overhead */
--	unsigned long s_blocks_last;    /* Last seen block count */
--	loff_t s_bitmap_maxbytes;	/* max bytes for bitmap files */
--	struct buffer_head * s_sbh;	/* Buffer containing the super block */
--	struct ext4_super_block *s_es;	/* Pointer to the super block in the buffer */
--	struct buffer_head **s_group_desc;
--	unsigned long  s_mount_opt;
--	ext4_fsblk_t s_sb_block;
--	uid_t s_resuid;
--	gid_t s_resgid;
--	unsigned short s_mount_state;
--	unsigned short s_pad;
--	int s_addr_per_block_bits;
--	int s_desc_per_block_bits;
--	int s_inode_size;
--	int s_first_ino;
--	unsigned int s_inode_readahead_blks;
--	spinlock_t s_next_gen_lock;
--	u32 s_next_generation;
--	u32 s_hash_seed[4];
--	int s_def_hash_version;
--	int s_hash_unsigned;	/* 3 if hash should be signed, 0 if not */
--	struct percpu_counter s_freeblocks_counter;
--	struct percpu_counter s_freeinodes_counter;
--	struct percpu_counter s_dirs_counter;
--	struct percpu_counter s_dirtyblocks_counter;
--	struct blockgroup_lock *s_blockgroup_lock;
--	struct proc_dir_entry *s_proc;
--	struct kobject s_kobj;
--	struct completion s_kobj_unregister;
--
--	/* Journaling */
--	struct inode *s_journal_inode;
--	struct journal_s *s_journal;
--	struct list_head s_orphan;
--	struct mutex s_orphan_lock;
--	struct mutex s_resize_lock;
--	unsigned long s_commit_interval;
--	u32 s_max_batch_time;
--	u32 s_min_batch_time;
--	struct block_device *journal_bdev;
--#ifdef CONFIG_JBD2_DEBUG
--	struct timer_list turn_ro_timer;	/* For turning read-only (crash simulation) */
--	wait_queue_head_t ro_wait_queue;	/* For people waiting for the fs to go read-only */
--#endif
--#ifdef CONFIG_QUOTA
--	char *s_qf_names[MAXQUOTAS];		/* Names of quota files with journalled quota */
--	int s_jquota_fmt;			/* Format of quota to use */
--#endif
--	unsigned int s_want_extra_isize; /* New inodes should reserve # bytes */
--
--#ifdef EXTENTS_STATS
--	/* ext4 extents stats */
--	unsigned long s_ext_min;
--	unsigned long s_ext_max;
--	unsigned long s_depth_max;
--	spinlock_t s_ext_stats_lock;
--	unsigned long s_ext_blocks;
--	unsigned long s_ext_extents;
--#endif
--
--	/* for buddy allocator */
--	struct ext4_group_info ***s_group_info;
--	struct inode *s_buddy_cache;
--	long s_blocks_reserved;
--	spinlock_t s_reserve_lock;
--	spinlock_t s_md_lock;
--	tid_t s_last_transaction;
--	unsigned short *s_mb_offsets;
--	unsigned int *s_mb_maxs;
--
--	/* tunables */
--	unsigned long s_stripe;
--	unsigned int s_mb_stream_request;
--	unsigned int s_mb_max_to_scan;
--	unsigned int s_mb_min_to_scan;
--	unsigned int s_mb_stats;
--	unsigned int s_mb_order2_reqs;
--	unsigned int s_mb_group_prealloc;
--	/* where last allocation was done - for stream allocation */
--	unsigned long s_mb_last_group;
--	unsigned long s_mb_last_start;
--
--	/* history to debug policy */
--	struct ext4_mb_history *s_mb_history;
--	int s_mb_history_cur;
--	int s_mb_history_max;
--	int s_mb_history_num;
--	spinlock_t s_mb_history_lock;
--	int s_mb_history_filter;
--
--	/* stats for buddy allocator */
--	spinlock_t s_mb_pa_lock;
--	atomic_t s_bal_reqs;	/* number of reqs with len > 1 */
--	atomic_t s_bal_success;	/* we found long enough chunks */
--	atomic_t s_bal_allocated;	/* in blocks */
--	atomic_t s_bal_ex_scanned;	/* total extents scanned */
--	atomic_t s_bal_goals;	/* goal hits */
--	atomic_t s_bal_breaks;	/* too long searches */
--	atomic_t s_bal_2orders;	/* 2^order hits */
--	spinlock_t s_bal_lock;
--	unsigned long s_mb_buddies_generated;
--	unsigned long long s_mb_generation_time;
--	atomic_t s_mb_lost_chunks;
--	atomic_t s_mb_preallocated;
--	atomic_t s_mb_discarded;
--
--	/* locality groups */
--	struct ext4_locality_group *s_locality_groups;
--
--	/* for write statistics */
--	unsigned long s_sectors_written_start;
--	u64 s_kbytes_written;
--
--	unsigned int s_log_groups_per_flex;
--	struct flex_groups *s_flex_groups;
--};
--
--static inline spinlock_t *
--sb_bgl_lock(struct ext4_sb_info *sbi, unsigned int block_group)
--{
--	return bgl_lock_ptr(sbi->s_blockgroup_lock, block_group);
--}
--
--#endif	/* _EXT4_SB */
++	/* Journal blocked and flushed, clear needs_recovery flag. */
++	EXT4_CLEAR_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
++	error = ext4_commit_super(sb, 1);
++	if (error)
++		goto out;
+ 	return 0;
+-out:
+-	jbd2_journal_unlock_updates(journal);
+-	return error;
+ }
+ 
+ /*
+@@ -3352,14 +3357,15 @@ out:
+  */
+ static int ext4_unfreeze(struct super_block *sb)
+ {
+-	if (EXT4_SB(sb)->s_journal && !(sb->s_flags & MS_RDONLY)) {
+-		lock_super(sb);
+-		/* Reser the needs_recovery flag before the fs is unlocked. */
+-		EXT4_SET_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
+-		ext4_commit_super(sb, 1);
+-		unlock_super(sb);
+-		jbd2_journal_unlock_updates(EXT4_SB(sb)->s_journal);
+-	}
++	if (sb->s_flags & MS_RDONLY)
++		return 0;
++
++	lock_super(sb);
++	/* Reset the needs_recovery flag before the fs is unlocked. */
++	EXT4_SET_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
++	ext4_commit_super(sb, 1);
++	unlock_super(sb);
++	jbd2_journal_unlock_updates(EXT4_SB(sb)->s_journal);
+ 	return 0;
+ }
+ 
 -- 
 1.6.3.2.1.gb9f7d.dirty
 
