@@ -1,296 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbZFHW3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbZFHWad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756460AbZFHW3V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 18:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZFHW3H
+	id S1756962AbZFHWad (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 18:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbZFHWaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 18:29:07 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43934 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750725AbZFHW3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 18:29:06 -0400
-Date: Mon, 8 Jun 2009 23:29:04 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] Add a gfp-translate script to help understand page
-	allocation failure reports
-Message-ID: <20090608222904.GA18437@csn.ul.ie>
-References: <20090608132950.GB15070@csn.ul.ie> <20090608135906.GA6027@infradead.org>
+	Mon, 8 Jun 2009 18:30:19 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:5246 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751748AbZFHWaR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 18:30:17 -0400
+X-IronPort-AV: E=Sophos;i="4.41,326,1241395200"; 
+   d="scan'208";a="319317253"
+Date: Mon, 8 Jun 2009 15:30:19 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
+       netdev@vger.kernel.org, arjan@infradead.org
+Subject: Re: [PATCH 7/7] initdev:kernel:Await block device discovery
+Message-ID: <20090608223019.GC22222@cuplxvomd02.corp.sa.net>
+References: <20090606023416.GA5798@cuplxvomd02.corp.sa.net> <4A2A3F36.4070408@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090608135906.GA6027@infradead.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <4A2A3F36.4070408@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 09:59:06AM -0400, Christoph Hellwig wrote:
-> On Mon, Jun 08, 2009 at 02:29:50PM +0100, Mel Gorman wrote:
-> > The page allocation failure messages include a line that looks like
-> > 
-> > page allocation failure. order:1, mode:0x4020
-> > 
-> > The mode is easy to translate but irritating for the lazy and a bit error
-> > prone. This patch adds a very simple helper script gfp-translate for the mode:
-> > portion of the page allocation failure messages. An example usage looks like
+On Sat, Jun 06, 2009 at 06:04:38AM -0400, Stefan Richter wrote:
+> David VomLehn wrote:
+> > --- a/init/do_mounts.c
+> > +++ b/init/do_mounts.c
+> > @@ -358,6 +358,18 @@ void __init mount_root(void)
+> >  #endif
+> >  }
+> >  
+> > +/**
+> > + * root_present - determine whether the root device is available yet
+> > + *
+> > + * Returns true if the root device is available, false if not. The check to
+> > + * see if the root device is available is done by check to see whether it
+> > + * has been assigned a major/minor device number.
+> > + */
+> > +static bool root_present(void)
+> > +{
+> > +	return name_to_dev_t(saved_root_name) != 0;
+> > +}
+> > +
+> >  /*
+> >   * Prepare the namespace - decide what/where to mount, load ramdisks, etc.
+> >   */
+> > @@ -398,12 +410,21 @@ void __init prepare_namespace(void)
+> >  		goto out;
+> >  
+> >  	/* wait for any asynchronous scanning to complete */
+> > -	if ((ROOT_DEV == 0) && root_wait) {
+> > +	if (ROOT_DEV == 0) {
+> >  		printk(KERN_INFO "Waiting for root device %s...\n",
+> >  			saved_root_name);
+> > -		while (driver_probe_done() != 0 ||
+> > -			(ROOT_DEV = name_to_dev_t(saved_root_name)) == 0)
+> > -			msleep(100);
+> > +		if (root_wait) {
+> > +			while (driver_probe_done() != 0 ||
+> > +				(ROOT_DEV = name_to_dev_t(saved_root_name)) ==
+> > +					0)
+> > +				msleep(100);
+> > +		}
+> > +
+> > +		else {
+> > +			initdev_wait(INITDEV_BLOCK_TYPE, root_present);
+> > +			ROOT_DEV = name_to_dev_t(saved_root_name);
+> > +		}
+> > +
+> >  		async_synchronize_full();
+> >  	}
+> >  
 > 
-> Maybe we just just print the symbolic flags directly? 
-
-It'd be nice if it was possible, not ugly and didn't involve declaring
-maps twice.
-
-Even with such hypothetical support, I believe there is scope for having
-the script readily available for use with reports from older kernels,
-particularly distro kernels.
-
-> The even tracer
-> in the for-2.6.23 queue now has a __print_flags helper to translate the
-> bitmask back into symbolic flags, and we even have a kmalloc tracer
-> using it for the GFP flags.  Maybe we should add a printk_flags variant
-> for regular printks and just do the right thing?
+> This together with 1/7, 5/7, 6/7 looks seriously flawed, if not broken.
 > 
+> 1.)  It depends on the rootdelay so big that it is guaranteed that one 
+> or more initdev_found() have been called before prepare_namespace()'s 
+> ssleep(root_delay) is over.  This is because initdev_wait() does not 
+> wait at all if called when the number of pending initdevs is 0.
+> 
+> Hence the whole thing, as currently implemented, is quite useless:  The 
+> user/admin has to guess what a safe rootdelay value is, and then the 
+> kernel will always be delayed for >= rootdelay.
 
-The problem I found with a printk_flags variant was that there was no
-buffer for it to easily print to for use with printk("%s"). We can't "see"
-the printk buffer, we can't kmalloc() one and I suspect it's too large to
-place on the stack. What had you in mind?
+I think you misunderstood.  Buses are enumerated before this code is
+reached and thus initdev_found() has already been called for all attached
+block devices. If there are devices found, but not probed, the number
+of pending BLOCK device initdevs will be greater than zero.
 
-I haven't looked at the trace implementation before so I have very little
-idea as to how best approach this problem. That didn't stop me attempting a
-hatchet-job on the implementation of printk support for the bitflags->string
-maps declared within ftrace - particularly the GFP flags.
+Also, this code doesn't depend on rootdelay at all. In fact, avoiding
+unnecessary delays both in finding devices and in finding out that you don't
+have a device is the whole reason for this patch. I really can't stand
+things like rootdelay so long as the hardware supports proper device
+discovery.
 
-The following patch is what it ended up looking like. I recommend goggles
-because even if we go with printk support, this could be implemented better.
+> 2.)  The fact that initdev_wait() does not wait at all when there are no 
+> pending initdevs causes another failure.  If there are sequences of the 
+> following type:
+> 
+> 	initdev_found(INITDEV_BLOCK_TYPE);
+> 	initdev_probe_done(INITDEV_BLOCK_TYPE); /* found other dev */
+> 	initdev_found(INITDEV_BLOCK_TYPE);
+> 	initdev_probe_done(INITDEV_BLOCK_TYPE); /* found root dev */
+> 
+> then prepare_namespace() will fall through without ROOT_DEV found and 
+> booting will fail, won't it?
 
-=== CUT HERE ===
+If this were to happen, then you would be correct, but since initdev_found()
+is called for all block devices before reaching this code, you will only
+continue once initdev_probe_done() has been called for all of those devices.
 
-Add support for %f for the printing of string representation of bit flags
+> I suspect that there are similar problems with the console and 
+> networking parts of the patch series.
 
-This patch is a prototype to see if the tracing infrastructure used for
-the outputting of symbolic representation of bits set in a flag can be
-reused for printk. With it applied, a page allocation failure report
-looks like
+I'm less confident in the block code than the console and networking parts, but
+don't think there is a problem with any of these.  It's also worth mentioning
+that this is not a theoretical exercise--without this patch, I have no USB
+console, network device, or root filesystem. With the patch, I have all three.
+That is no guarantee of correctness, but it implies that it's on the right
+path.
 
-[  171.284889] cat: page allocation failure. order:9, mode:0xd1
-[  171.284948] mode:|GFP_KERNEL|0x1
-[  171.295114] Pid: 2383, comm: cat Not tainted 2.6.30-rc8-tip-02066-g800cfbb-dirty #38
+I would appreciate it if you could take a closer look at the locations where
+initdev_found() and initdev_probe_done() are called and see if you still
+think there is a problem.
 
-Not-signed-off-yet-by: Mel Gorman <mel@csn.ul.ie>
+> Stefan Richter
 
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index 5c093ff..8f8e86c 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -16,6 +16,11 @@ struct trace_print_flags {
- 	const char		*name;
- };
- 
-+struct trace_printf_spec {
-+	unsigned long			flags;
-+	struct trace_print_flags	*flag_array;
-+};
-+
- const char *ftrace_print_flags_seq(struct trace_seq *p, const char *delim,
- 				   unsigned long flags,
- 				   const struct trace_print_flags *flag_array);
-diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
-index 9baba50..e2404ad 100644
---- a/include/trace/events/kmem.h
-+++ b/include/trace/events/kmem.h
-@@ -17,8 +17,7 @@
-  *
-  * Thus most bits set go first.
-  */
--#define show_gfp_flags(flags)						\
--	(flags) ? __print_flags(flags, "|",				\
-+#define gfp_flags_printf_map						\
- 	{(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE"}, \
- 	{(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER"},	\
- 	{(unsigned long)GFP_USER,		"GFP_USER"},		\
-@@ -42,6 +41,11 @@
- 	{(unsigned long)__GFP_THISNODE,		"GFP_THISNODE"},	\
- 	{(unsigned long)__GFP_RECLAIMABLE,	"GFP_RECLAIMABLE"},	\
- 	{(unsigned long)__GFP_MOVABLE,		"GFP_MOVABLE"}		\
-+
-+
-+#define show_gfp_flags(flags, map)					\
-+	(flags) ? __print_flags(flags, "|",				\
-+	map								\
- 	) : "GFP_NOWAIT"
- 
- TRACE_EVENT(kmalloc,
-@@ -75,7 +79,7 @@ TRACE_EVENT(kmalloc,
- 		__entry->ptr,
- 		__entry->bytes_req,
- 		__entry->bytes_alloc,
--		show_gfp_flags(__entry->gfp_flags))
-+		show_gfp_flags(__entry->gfp_flags, gfp_flags_printf_map))
- );
- 
- TRACE_EVENT(kmem_cache_alloc,
-@@ -109,7 +113,7 @@ TRACE_EVENT(kmem_cache_alloc,
- 		__entry->ptr,
- 		__entry->bytes_req,
- 		__entry->bytes_alloc,
--		show_gfp_flags(__entry->gfp_flags))
-+		show_gfp_flags(__entry->gfp_flags, gfp_flags_printf_map))
- );
- 
- TRACE_EVENT(kmalloc_node,
-@@ -146,7 +150,7 @@ TRACE_EVENT(kmalloc_node,
- 		__entry->ptr,
- 		__entry->bytes_req,
- 		__entry->bytes_alloc,
--		show_gfp_flags(__entry->gfp_flags),
-+		show_gfp_flags(__entry->gfp_flags, gfp_flags_printf_map),
- 		__entry->node)
- );
- 
-@@ -184,7 +188,7 @@ TRACE_EVENT(kmem_cache_alloc_node,
- 		__entry->ptr,
- 		__entry->bytes_req,
- 		__entry->bytes_alloc,
--		show_gfp_flags(__entry->gfp_flags),
-+		show_gfp_flags(__entry->gfp_flags, gfp_flags_printf_map),
- 		__entry->node)
- );
- 
-diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-index 756ccaf..acb20e0 100644
---- a/lib/vsprintf.c
-+++ b/lib/vsprintf.c
-@@ -25,6 +25,7 @@
- #include <linux/kallsyms.h>
- #include <linux/uaccess.h>
- #include <linux/ioport.h>
-+#include <linux/ftrace_event.h>
- 
- #include <asm/page.h>		/* for PAGE_SIZE */
- #include <asm/div64.h>
-@@ -403,6 +404,7 @@ enum format_type {
- 	FORMAT_TYPE_CHAR,
- 	FORMAT_TYPE_STR,
- 	FORMAT_TYPE_PTR,
-+	FORMAT_TYPE_TRACE_FLAGS,
- 	FORMAT_TYPE_PERCENT_CHAR,
- 	FORMAT_TYPE_INVALID,
- 	FORMAT_TYPE_LONG_LONG,
-@@ -574,6 +576,44 @@ static char *string(char *buf, char *end, char *s, struct printf_spec spec)
- 	return buf;
- }
- 
-+/*
-+ * Support a %f thing storing a struct trace_print_flags
-+ */
-+static char *trace_flags(char *buf, char *end,
-+				struct trace_printf_spec *trace_flags_spec,
-+				struct printf_spec spec)
-+{
-+	unsigned long mask;
-+	unsigned long flags = trace_flags_spec->flags;
-+	struct trace_print_flags *flag_array = trace_flags_spec->flag_array;
-+	char *str;
-+	char *delim = "|";
-+	char *ret = buf;
-+	int i;
-+
-+	for (i = 0;  flag_array[i].name && flags; i++) {
-+
-+		mask = flag_array[i].mask;
-+		if ((flags & mask) != mask)
-+			continue;
-+
-+		str = (char *)flag_array[i].name;
-+		flags &= ~mask;
-+		if (ret < end && delim)
-+			ret = string(ret, end, delim, spec);
-+		ret = string(ret, end, str, spec);
-+	}
-+
-+	if (flags) {
-+		ret = string(ret, end, delim, spec);
-+		spec.flags |= SPECIAL|SMALL;
-+		spec.base = 16;
-+		ret = number(ret, end, flags, spec);
-+	}
-+
-+	return ret;
-+}
-+
- static char *symbol_string(char *buf, char *end, void *ptr,
- 				struct printf_spec spec, char ext)
- {
-@@ -888,6 +928,11 @@ qualifier:
- 		return fmt - start;
- 		/* skip alnum */
- 
-+	case 'f':
-+		spec->qualifier = 'l';
-+		spec->type = FORMAT_TYPE_TRACE_FLAGS;
-+		return ++fmt - start;
-+
- 	case 'n':
- 		spec->type = FORMAT_TYPE_NRCHARS;
- 		return ++fmt - start;
-@@ -1058,6 +1103,12 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
- 				fmt++;
- 			break;
- 
-+		case FORMAT_TYPE_TRACE_FLAGS:
-+			str = trace_flags(str, end,
-+				va_arg(args, struct trace_printf_spec *),
-+				spec);
-+			break;
-+
- 		case FORMAT_TYPE_PERCENT_CHAR:
- 			if (str < end)
- 				*str = '%';
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index ed766b5..714b5c2 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -47,6 +47,7 @@
- #include <linux/page-isolation.h>
- #include <linux/page_cgroup.h>
- #include <linux/debugobjects.h>
-+#include <linux/ftrace_event.h>
- 
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -172,6 +173,11 @@ static void set_pageblock_migratetype(struct page *page, int migratetype)
- 					PB_migrate, PB_migrate_end);
- }
- 
-+struct trace_print_flags trace_print_flags_gfp[] = {
-+	gfp_flags_printf_map,
-+	{ -1, NULL }
-+};
-+
- #ifdef CONFIG_DEBUG_VM
- static int page_outside_zone_boundaries(struct zone *zone, struct page *page)
- {
-@@ -1675,9 +1681,15 @@ nofail_alloc:
- 
- nopage:
- 	if (!(gfp_mask & __GFP_NOWARN) && printk_ratelimit()) {
-+		static struct trace_printf_spec gfpmask_printspec;
-+		gfpmask_printspec.flags = gfp_mask;
-+		gfpmask_printspec.flag_array = trace_print_flags_gfp;
-+			
- 		printk(KERN_WARNING "%s: page allocation failure."
--			" order:%d, mode:0x%x\n",
--			p->comm, order, gfp_mask);
-+			" order:%d, mode:0x%x\nmode:%f\n",
-+			p->comm, order, gfp_mask,
-+			&gfpmask_printspec);
-+
- 		dump_stack();
- 		show_mem();
- 	}
-
+David VomLehn
