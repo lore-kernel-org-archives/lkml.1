@@ -1,86 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbZFHVfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbZFHVjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbZFHVfJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 17:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbZFHVey
+	id S1756822AbZFHVjw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 17:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZFHVjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 17:34:54 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53564
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756610AbZFHVex (ORCPT
+	Mon, 8 Jun 2009 17:39:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44607 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751013AbZFHVjn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 17:34:53 -0400
-Date: Mon, 08 Jun 2009 14:34:54 -0700 (PDT)
-Message-Id: <20090608.143454.161329513.davem@davemloft.net>
-To: gil.beniamini@gmail.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: SOCK_RAW does not receive broadcast (with VLAN unless PROMISC)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <91ac27070906081105x30171bedra10d244d382a6934@mail.gmail.com>
-References: <91ac27070906081105x30171bedra10d244d382a6934@mail.gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 8 Jun 2009 17:39:43 -0400
+Date: Mon, 8 Jun 2009 14:39:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH v3] printk: add halt_delay parameter for printk delay in
+ halt phase
+Message-Id: <20090608143913.749e19c5.akpm@linux-foundation.org>
+In-Reply-To: <20090608171501.GA15399@elte.hu>
+References: <a8e1da0906080040k7852f770v1e2aa2ebb0f52369@mail.gmail.com>
+	<20090608081439.GB6372@elte.hu>
+	<20090608012845.9c428525.akpm@linux-foundation.org>
+	<a8e1da0906080142u62a45c47g2181a79addfb6168@mail.gmail.com>
+	<20090608084807.GE6372@elte.hu>
+	<20090608092607.8b331bf0.akpm@linux-foundation.org>
+	<20090608171501.GA15399@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n58LZk54012529
 
-From: Gil Beniamini <gil.beniamini@gmail.com>
-Date: Mon, 8 Jun 2009 21:05:25 +0300
+On Mon, 8 Jun 2009 19:15:01 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> Dear Linux Experts,
+> > questions: is it possible for interrupts to be disabled at this 
+> > time? If so, can we get an NMI watchdog hit?
 > 
-> My application is using PF_PACKET and SOCK_RAW in order to receive all
-> Ethernet packets for the machine-unicast MAC plus all broadcast
-> packets (like ARP broadcast).
+> no, we generally turn off the nmi watchdog during shutdown, disable 
+> the lapic and io-apic, etc.
 
-Please post networking questions and reports to netdev@vger.kernel.org
-which is where the networking experts are subscribed.
+Is x86 the only architecture which implements an NMI watchdog?
 
-I am also fully aware of your problem as Linus Torvalds forwarded
-your report to me last week, you just need to be patient as I simply
-haven't had a chance to look into it yet.
+> > Is the softlockup detector still running and if so, can it 
+> > trigger?
+> 
+> in (non-emergency) reboot, last i checked, we stopped all other CPUs 
+> first, and then killed the current one. There's no chance for the 
+> watchdog thread to run.
 
-> That worked OK with kernel 2.6.20 (Ubuntu 7.04 with or without VLAN).
-> 
-> Now with kernel 2.6.28 (Ubuntu 9.04) it works OK only without-VLAN,
-> but with VLAN the application receive only packets for the
-> machine-unicast MAC, but no broadcast (like ARP broadcast) packets,
-> only if I set the socket to PROMISC mode, I start receive also
-> broadcast packets.
-> 
-> To me it seems a bug, as SOCK_RAW should pass all â€˜receivedâ€™ packet
-> (including broadcast) to the application, without the need for PROMISC
-> (which cause my machine to receive other machine unicast  packets, and
-> filter those by software)!
-> 
-> The original application:
-> 
-> sock=socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-> memset((char *) &sockad, 0, sizeof(sockad));
-> sockad.sll_family = PF_PACKET;
-> sockad.sll_protocol = htons(ETH_P_ALL);
-> sockad.sll_ifindex = ethreq.ifr_ifindex;//the relevant unit number
-> 
-> 
-> 
-> Now the workaround is to set (unwanted) PROMISC mode:
-> 
-> ioctl(sock,SIOCGIFFLAGS,&ethreq);
-> ethreq.ifr_flags|=IFF_PROMISC; // why does 9.04 need this (+0x100) at
-> least once?!
-> ioctl(sock,SIOCSIFFLAGS,&ethreq);
-> 
-> 
-> Many thanks in advance,
-> Gil Beniamini
-> gil.beniamini@gmail.com
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+OK, but...  See below.
 
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+> Anyway ... you seem to be uncomfortable about this patch - should i 
+> delay it for now to let it all play out? We are close to the merge 
+> window.
+
+I'm OK - I'm just bouncing ideas and questions off you guys, to make sure
+that we've thought this through all the way.
+
+Here's another: why is it a boot option rather than a runtime-tunable? 
+A /proc tweakable is generally preferable because it avoids the
+oh-crap-i-forgot-to-edit-grub.conf thing.  And we could perhaps then
+remove all those system_state tests: userspace sets printk_delay
+immediately prior to running halt/reboot/etc?
+
+Plus the feature becomes more general - perhaps there are use cases
+where people want to slow down printks, such as: kernel goes oops, data
+scrolls off, serial console/netconsole unavailable.  pause_on_oops is
+supposed to help here but last time I tried it, it kinda didn't work,
+plus pause_on_oops doesn't solve the data-scrolled-off problem.
+
+Thirdly, if we do this as a general /proc/printk_delay thing, perhaps
+it can be consolidated with the existing boot_delay= implementation.
