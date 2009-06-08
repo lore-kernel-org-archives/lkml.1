@@ -1,99 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbZFHIhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753161AbZFHIj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753726AbZFHIhn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 04:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbZFHIhf
+	id S1753161AbZFHIj4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 04:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751799AbZFHIjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 04:37:35 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:63206 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752504AbZFHIhf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 04:37:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=hiyNQCfADa4539MRjLlEG+A0S71bEUfyH08EKoDnh8/Gx/VuER2F2u5L0BRtzWdT53
-         ns5P6y5ok8BkpnLWfCiXaCai0S3GGXBeHLW6pxX9WJwAL3Ac9dNiRPZG//lcRkE47aA3
-         l3r7bL9t0cAM+SlE38tX1vwjwpnWftsZKFXuo=
+	Mon, 8 Jun 2009 04:39:49 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46369 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751506AbZFHIjs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 04:39:48 -0400
+Date: Mon, 8 Jun 2009 10:39:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT-PULL -tip] x86: xpu_debug patches
+Message-ID: <20090608083947.GC6372@elte.hu>
+References: <1244447882.6943.2.camel@ht.satnam>
 MIME-Version: 1.0
-In-Reply-To: <20090608081439.GB6372@elte.hu>
-References: <a8e1da0906080040k7852f770v1e2aa2ebb0f52369@mail.gmail.com>
-	 <20090608081439.GB6372@elte.hu>
-Date: Mon, 8 Jun 2009 16:37:35 +0800
-Message-ID: <a8e1da0906080137r179b0a5l81bb604fd64800d3@mail.gmail.com>
-Subject: Re: [PATCH v3] printk: add halt_delay parameter for printk delay in 
-	halt phase
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244447882.6943.2.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 8, 2009 at 4:14 PM, Ingo Molnar<mingo@elte.hu> wrote:
->
-> * Dave Young <hidave.darkstar@gmail.com> wrote:
->
->> Add a halt_delay module parameter in printk.c used to read the
->> printk messages in halt/poweroff/restart phase, delay each printk
->> messages by halt_delay milliseconds. It is useful for debugging if
->> there's no other way to dump kernel messages that time.
->>
->> The halt_delay max value is 65535, default value is 0, change it
->> by:
->>
->> echo xxx > /sys/module/printk/parameters/halt_delay
->>
->> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
->> ---
->> Documentation/kernel-parameters.txt |    5 +++++
->> kernel/printk.c                     |   17 +++++++++++++++++
->> 2 files changed, 22 insertions(+)
->>
->> --- linux-2.6.orig/kernel/printk.c    2009-06-08 13:55:35.000000000 +0800
->> +++ linux-2.6/kernel/printk.c 2009-06-08 13:56:23.000000000 +0800
->> @@ -250,6 +250,22 @@ static inline void boot_delay_msec(void)
->>  }
->>  #endif
->>
->> +/* msecs delay after each halt/poweroff/restart phase printk,
->> + unsigned short is enough for delay in milliseconds */
->> +static unsigned short halt_delay;
->> +
->> +static inline void halt_delay_msec(void)
->> +{
->> +     if (unlikely(halt_delay == 0 || !(system_state == SYSTEM_HALT
->> +                             || system_state == SYSTEM_POWER_OFF
->> +                             || system_state == SYSTEM_RESTART)))
->> +             return;
->
-> This is a tiny bit ugly (and goes into the vprintf path) but i can
-> see no other way either - a system_state > SYSTEM_RUNNING check
-> would needlessly include the suspend-to-disk state (which we dont
-> want to include here).
 
-Can we move suspend-to-disk before halt state?
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
->
-> In theory we could turn system_state into a bitmask and have a
-> print_delay_mask check instead of these flags ... but that is a far
-> wider change and i'm not sure it's a net step forwards.
->
-> I've applied your patch to tip:core/printk with small edits to the
-> changelog - Linus & Andrew is Cc:ed, should they have any
-> objections.
->
->        Ingo
->
+> Ingo,
+> 
+> Please pull cpu_debug patches :
+> 
+> The following changes since commit 5095f59bda6793a7b8f0856096d6893fe98e0e51:
+>   Jaswinder Singh Rajput (1):
+>         x86: cpu_debug: Remove model information to reduce encoding-decoding
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-cpu.git x86/cpu
+> 
+> Jaswinder Singh Rajput (5):
+>       x86: cpu_debug update Kconfig entry
+>       x86: cpu_debug.c remove some not required header files
+>       x86: cpu_debug.c use a WARN_ONCE() instead of a pr_err()
+>       x86: cpu_debug make room to support more categories
+>       x86: cpu_debug update MSR list to support new architectures
+> 
+>  arch/x86/Kconfig                 |   12 ++++-
+>  arch/x86/include/asm/cpu_debug.h |  102 +++++++++++++-------------------------
+>  arch/x86/kernel/cpu/cpu_debug.c  |   45 +++++++++-------
+>  3 files changed, 70 insertions(+), 89 deletions(-)
+> 
+> Complete diff:
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index a6efe0a..cd2debd 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -955,9 +955,19 @@ config X86_CPUID
+>  
+>  config X86_CPU_DEBUG
+>  	tristate "/sys/kernel/debug/x86/cpu/* - CPU Debug support"
+> +	select DEBUG_FS
+>  	---help---
+>  	  If you select this option, this will provide various x86 CPUs
+> -	  information through debugfs.
+> +	  information through debugfs. Any user can read these file but writing
+> +	  needs root privilege.
+> +
+> +	  Note: 1. If you compile cpu_debug as a module, it will _not_ be loaded
+> +	  automatically (like usual drivers). You will need to load it manually
+> +	  (or add it to list of modules loaded during boot).
+> +
+> +	  2. You need debugfs, if you want to mount debugfs automatically
+> +	  append this line in /etc/fstab:
+> +	  debugfs	/sys/kernel/debug	debugfs	defaults	0 0
 
+Those look like good fixes - but before we start extending on all 
+this - a more general question has to be raised: do people find this 
+useful?
 
+I had a look at the current /debug/x86/cpu*/ layout, and a fair 
+portion of it looks completely meaningless at the moment: there's a 
+lot of hexa fields with absolutely zero symbolic information about 
+what the fields actually mean.
 
--- 
-Regards
-dave
+There's a few good exceptions like /debug/x86/cpu/cpu0/apic/apic or 
+/debug/x86/cpu/cpu0/cr/cr, although even those should probably be 
+renamed to:
+
+  /debug/x86/cpu/cpu0/apic/state
+  /debug/x86/cpu/cpu0/cr/state
+
+as 'apic/apic' and 'cr/cr' is meaningless.
+
+Or better yet, why isnt there a directory structure to known values:
+
+  /debug/x86/cpu/cpu0/apic/LVTERR/value
+
+?
+
+This would allow the changing/reading of all known values.
+
+The 'total state' could still be accessed easily as well, via:
+
+  cat /debug/x86/cpu/cpu0/apic/*/value
+
+Paradoxically, all the _unknown_ values have a split out per 
+register layout. I.e. the namespace is bloated with a lot of 
+'unknown' state - while the 'known' (and printed/interpreted) 
+registers are hidden and collected into meaninglessly named files. 
+It should be exactly the other way around.
+
+All in one, this code either needs to become useful in practice, 
+needs to provide a nice, structured, intuitive 'view' of the CPU's 
+current state (as known to the kernel) - or it should not be done at 
+all.
+
+If we want a quirky interface we can use msr-tools and /sbin/rdmsr 
+just fine. So /debug/x86/cpu/ really has to become a strikingly 
+intuitive big step forward in terms of CPU state enumeration and 
+visualization, for it to make sense to be carried in the kernel.
+
+	Ingo
