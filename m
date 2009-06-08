@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbZFHTok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbZFHTtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbZFHTok (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 15:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbZFHTob
+	id S1755543AbZFHTtz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 15:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbZFHTtm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 15:44:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50284 "EHLO mx2.redhat.com"
+	Mon, 8 Jun 2009 15:49:42 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:48891 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753726AbZFHToa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 15:44:30 -0400
-Date: Mon, 8 Jun 2009 12:44:04 -0700
-From: Valerie Aurora <vaurora@redhat.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: jblunck@suse.de, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       bharata@in.ibm.com, dwmw2@infradead.org, mszeredi@suse.cz
-Subject: Re: [PATCH 00/32] VFS based Union Mount (V3)
-Message-ID: <20090608194404.GC4363@fsbox>
-References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <E1M6LvU-0000mN-HN@pomaz-ex.szeredi.hu> <20090519172327.GB722@shell> <E1M6hjr-00032A-EX@pomaz-ex.szeredi.hu>
+	id S1750758AbZFHTtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 15:49:41 -0400
+Date: Mon, 8 Jun 2009 21:48:54 +0200 (CEST)
+From: Jesper Dangaard Brouer <hawk@diku.dk>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: paulmck@linux.vnet.ibm.com, Jesper Dangaard Brouer <hawk@comx.dk>,
+       netdev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 5/5] sunrpc/auth_gss: Call rcu_barrier() on module unload.
+In-Reply-To: <1244480449.5040.4.camel@heimdal.trondhjem.org>
+Message-ID: <Pine.LNX.4.64.0906082128240.1180@ask.diku.dk>
+References: <20090608130959.10052.54590.stgit@localhost> 
+ <20090608131148.10052.39869.stgit@localhost>  <20090608162656.GF6961@linux.vnet.ibm.com>
+ <1244480449.5040.4.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1M6hjr-00032A-EX@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 11:05:27AM +0200, Miklos Szeredi wrote:
-> On Tue, 19 May 2009, Valerie Aurora wrote:
-> > As Jan said, readdir() of read-only unioned file systems works with a
-> > tmpfs top layer.  If you think about it, this is the exact equivalent
-> > of the version of union mounts which used the in-kernel caching
-> > approach - except that it's better, because it reuses existing code
-> > and caches between readdir() calls.  Cool, huh?
-> 
-> Yeah... OTOH tmpfs is probably a way too heavyweight solution for
-> cases where memory is short, and union mounts would typically be used
-> on such systems.
 
-(Sorry for the delay - I've been on vacation.)
+(trimmed Cc)
 
-Hm, my intuition is that a tmpfs mount would be fairly lightweight in
-terms of memory - the main overhead over the barebones solution would
-be one superblock and vfsmount struct per mount.  What am I missing?
+On Mon, 8 Jun 2009, Trond Myklebust wrote:
 
-> The big reason why kernel impementation of readdir is hard is that
-> unswappable kernel memory needs to be used for caching directory
-> contents while the directory is open.  Well, tmpfs does the same,
-> dentries and inodes are _not_ swappable, and they gobble up memory.
+> Hmm... If this is about ensuring that all the call_rcu() callbacks
+> complete before we remove the module, then don't we also need similar
+> barriers in
 
-That's a good point.  It seemed to me that it wouldn't be too
-difficult to make those entries evictable - drop a reference count and
-set the ->d_release to mark the directory as needing rebuilding.  What
-do you think?
+Well, Trond that was a hard question, as I don't know this code... but if 
+it uses call_rcu() callbacks its most likely.
 
-> So where's the advantage over implementing a thin deduplicating and
-> caching layer for union mounts?
-> 
-> Thanks,
-> Miklos
+I have not done a complete sweep of the tree, I have only looked at the 
+netdev parts, as this is where I usually snoop around.  So there is 
+probably plenty of work for some kernel-janitors (Cc'ing the list ;-))
 
--VAL
+> net/sunrpc/sunrpc_syms.c:cleanup_sunrpc()
+
+Looking at the code that end up in sunrpc.ko, I see that both 
+net/sunrpc/auth_unix.c and net/sunrpc/auth_generic.c uses call_rcu() 
+callbacks.
+
+> and in fs/nfs/inode.c:exit_nfs_fs()?
+
+Looking at the code which end up into nfs.ko (which includes 
+fs/nfs/inode.c) I see that the fs/nfs/delegation.c uses call_rcu() 
+callbacks.
+
+But its hard for me to figure out how this code interacts.  Don't know if 
+we need to document a code path that can occur fast enough, before we add 
+this safe guard?  It should be Paul's saying...
+
+Cheers,
+   Jesper Brouer
+
+--
+-------------------------------------------------------------------
+MSc. Master of Computer Science
+Dept. of Computer Science, University of Copenhagen
+Author of http://www.adsl-optimizer.dk
+-------------------------------------------------------------------
