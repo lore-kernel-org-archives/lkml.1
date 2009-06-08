@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753611AbZFHKqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZFHKrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753611AbZFHKqA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 06:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbZFHKpu
+	id S1754773AbZFHKrV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 06:47:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZFHKrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 06:45:50 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40011 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753353AbZFHKpu (ORCPT
+	Mon, 8 Jun 2009 06:47:15 -0400
+Received: from casper.infradead.org ([85.118.1.10]:58540 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753670AbZFHKrO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 06:45:50 -0400
-Date: Mon, 8 Jun 2009 06:45:44 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Artem Bityutskiy <dedekind1@gmail.com>, Jan Kara <jack@suse.cz>,
-       Eric Sandeen <sandeen@sandeen.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       Nick Piggin <npiggin@suse.de>, Jeff Layton <jlayton@redhat.com>
-Subject: Re: [PATCH] writeback: skip new or to-be-freed inodes
-Message-ID: <20090608104544.GA2428@infradead.org>
-References: <20090324124001.GA25326@localhost> <4A244A5B.7070605@sandeen.net> <20090602085523.GC7161@localhost> <20090602113736.GB15010@duck.suse.cz> <20090603141021.GB5738@localhost> <20090603141636.GC5650@duck.suse.cz> <20090603144711.GC5738@localhost> <20090606030725.GA12852@localhost> <4A2CB7AE.6080909@gmail.com> <20090608092930.GA13846@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090608092930.GA13846@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	Mon, 8 Jun 2009 06:47:14 -0400
+Subject: RE: [PATCH 1/2]Intel Moorestown NAND driver patch for mainline
+From: David Woodhouse <dwmw2@infradead.org>
+To: "Gao, Yunpeng" <yunpeng.gao@intel.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "gregkh@suse.de" <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <38D9F46DFF92C54980D2F2C1E8EE313001A45F4F3C@pdsmsx503.ccr.corp.intel.com>
+References: <20090606164455.GB27257@intel.com>
+	 <20090606160413.08c254cf@lxorguk.ukuu.org.uk>
+	 <38D9F46DFF92C54980D2F2C1E8EE313001A45F4F3C@pdsmsx503.ccr.corp.intel.com>
+Content-Type: text/plain
+Date: Mon, 08 Jun 2009 11:47:10 +0100
+Message-Id: <1244458030.30939.216.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 05:29:30PM +0800, Wu Fengguang wrote:
-> Thank you. Basically I'm not sure if UBIFS guarantees it won't be
-> unmounted (hence the MS_ACTIVE bit is on) when calling
-> generic_sync_sb_inodes() in shrink_liability() and ubifs_sync_fs().
+On Mon, 2009-06-08 at 12:23 +0800, Gao, Yunpeng wrote:
+> The Moorestown NAND flash driver is licensed from the Moorestown NAND
+> controller vendor. It's a standalone NAND driver. According to the
+> vendor, this driver has some advanced features specific to the
+> controller hardware and is difficult to port to MTD subsystem. 
 
-Btw, the call in ubifs_sync_fs should be superflous in the
-vfs-2.6#for-next tree.  We now do make sure that all inodes are flushed
-before calling ->sync_fs with the wait parameter.
+I don't believe it. If the MTD subsystem doesn't support certain
+features, the MTD subsystem needs to be updated to cope.
 
-shrink_liability is a more interesting case, I don't understand enough
-of ubifs to comment on it.
+When can I have test hardware?
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
