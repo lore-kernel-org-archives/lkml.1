@@ -1,103 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZFHMD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZFHMDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755414AbZFHMD1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 08:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbZFHMDT
+	id S1755494AbZFHMDm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 08:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755287AbZFHMDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 08:03:19 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:43068 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754862AbZFHMDT (ORCPT
+	Mon, 8 Jun 2009 08:03:33 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:44182 "EHLO
+	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754876AbZFHMDc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 08:03:19 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Mon, 8 Jun 2009 14:04:03 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: linux-pm@lists.linux-foundation.org,
-       Alan Stern <stern@rowland.harvard.edu>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org> <200906080005.23304.oliver@neukum.org> <200906081329.27047.rjw@sisk.pl>
-In-Reply-To: <200906081329.27047.rjw@sisk.pl>
+	Mon, 8 Jun 2009 08:03:32 -0400
+X-SpamScore: -24
+X-BigFish: VPS-24(zz1432R98dR1805Mzz1202hzzz32i17ch6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KKX5HL-01-LNU-01
+Date: Mon, 8 Jun 2009 14:01:31 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       stable@kernel.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/urgent] x86: Detect use of extended APIC ID for AMD
+	CPUs
+Message-ID: <20090608120131.GA8699@alberich.amd.com>
+References: <20090604104016.GT5736@alberich.amd.com> <tip-37f36c1017f0032fa7a1fb85a0cddfc0d526d17f@git.kernel.org> <20090607153327.GA8973@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-Message-Id: <200906081404.04118.oliver@neukum.org>
+In-Reply-To: <20090607153327.GA8973@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 08 Jun 2009 12:02:20.0326 (UTC) FILETIME=[F9C4AC60:01C9E830]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 8. Juni 2009 13:29:26 schrieb Rafael J. Wysocki:
+On Sun, Jun 07, 2009 at 05:33:27PM +0200, Ingo Molnar wrote:
+> 
+> * tip-bot for Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+> 
+> > +#ifdef CONFIG_X86_LOCAL_APIC
+> > +	/* check CPU config space for extended APIC ID */
+> > +	if (c->x86 >= 0xf) {
+> > +		unsigned int val;
+> > +
+> > +		val = read_pci_config(0, 24, 0, 0x68);
+> > +		if ((val & ((1 << 17) | (1 << 18))) == ((1 << 17) | (1 << 18)))
+> > +			set_cpu_cap(c, X86_FEATURE_EXTD_APICID);
+> > +	}
+> > +#endif
+> 
+> It's possible to enable local APIC but not CONFIG_PCI - in that case 
+> this sequence will fail to build.
 
-> But I need to be able to call __pm_schedule_resume() (at least) from
-> interrupt context and I can't use a mutex from there.  Otherwise I'd have
-> used a mutex. :-)
+Arrgh, thought that the stuff in early.c is always compiled in. Just
+checked arch/x86/pci/Makefile showing
+  obj-y                           += common.o early.o
+and I didn't check arch/x86/Makefile which contains
+  drivers-$(CONFIG_PCI)            += arch/x86/pci/
 
-I see.
-
-> Anyway, below is a version with synchronous resume.
-
-You are assuming autosuspend should always be with a delay. Why?
-
-Secondly, you are not using a counter. Therefore only one driver can
-control the PM state of a device at a given time. Is that wise?
-
-> + * __pm_schedule_suspend - Schedule run-time suspend of given device.
-> + * @dev: Device to suspend.
-> + * @delay: Time to wait before attempting to suspend the device.
-
-In which unit of time? If this is to go into kerneldoc that must be specified.
-
-> + * @autocancel: If set, the request will be cancelled during a resume from
-> a + *	system-wide sleep state if it happens before @delay elapses.
-
-Why is this needed?
-
-> + */
-> +void __pm_schedule_suspend(struct device *dev, unsigned long delay,
-> +			   bool autocancel)
-
-[..]
+Sorry.
+I'll send an updated patch.
 
 
-> +
-> +/**
-> + * __pm_schedule_resume - Schedule run-time resume of given device.
-> + * @dev: Device to resume.
-> + * @autocancel: If set, the request will be cancelled during a resume from
-> a + *	system-wide sleep state if it happens before pm_autoresume() can be
-> run. + */
+Andreas
 
-Eeek! This is a bad idea. You never want to a resume to be cancelled.
-
-> +void __pm_schedule_resume(struct device *dev, bool autocancel)
-
-[..]
-> +int pm_resume_sync(struct device *dev)
-> +{
-> +	int error = 0;
-> +
-> +	pm_lock_device(dev);
-> +	if (dev->power.runtime_status == RPM_IDLE) {
-> +		/* ->autosuspend() hasn't started yet, no need to resume. */
-> +		pm_cancel_suspend(dev);
-> +		goto out;
-> +	}
-> +
-> +	if (dev->power.runtime_status == RPM_SUSPENDING) {
-> +		/*
-> +		 * The ->autosuspend() callback is being executed right now,
-> +		 * wait for it to complete.
-> +		 */
-> +		pm_unlock_device(dev);
-> +		cancel_delayed_work_sync(&dev->power.suspend_work);
-
-That is the most glorious abuse of an API I've seen this year :-)
-
-	Regards
-		Oliver
 
