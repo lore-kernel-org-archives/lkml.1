@@ -1,139 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZFHPRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZFHPUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbZFHPRs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 11:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbZFHPRj
+	id S1756728AbZFHPUo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 11:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbZFHPUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 11:17:39 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:55986 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755174AbZFHPRi convert rfc822-to-8bit (ORCPT
+	Mon, 8 Jun 2009 11:20:34 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35373 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755350AbZFHPUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 11:17:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZDLDoVldR9mf9eFDMPt14rszrNV/xDhFbxwiWkWvpuA1vEsnE2irdkkkvaiUuPSGDT
-         W67uTY+LIJA8MKihLPhDPwDmWCVHaQGaJ6I9APlsNgY6Jg6ckCAlm/WOk5fAKLtp7+Nw
-         VtVDlId74qd2qyhYPa76kdPPDX88fMuJe76gc=
+	Mon, 8 Jun 2009 11:20:33 -0400
+Date: Mon, 8 Jun 2009 08:35:01 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: Re: [patch 01/38] pm: Move nvs routines into a seperate file.
+Message-ID: <20090608063501.GC1444@ucw.cz>
+References: <20090604161847.513682672@de.ibm.com> <20090604161859.713228968@de.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1244471000.4079.36.camel@mulgrave.site>
-References: <200906061959.55592.chris2553@googlemail.com>
-	 <200906062215.30571.chris2553@googlemail.com>
-	 <1244381140.30664.12.camel@ht.satnam>
-	 <c6b1100b0906071138g2c46fb34vc1a2beb9438f1f1e@mail.gmail.com>
-	 <1244413881.18742.31.camel@ht.satnam>
-	 <2f9e3044bafcae848f74a1492b0ea471.squirrel@neil.brown.name>
-	 <c6b1100b0906080108y191bb157n67ec681ade2a0d13@mail.gmail.com>
-	 <1244471000.4079.36.camel@mulgrave.site>
-Date: Mon, 8 Jun 2009 16:17:37 +0100
-Message-ID: <c6b1100b0906080817q5378f512s8ce03727a362e8c5@mail.gmail.com>
-Subject: Re: 2.6.30-rc8 Oops whilst booting
-From: Chris Clayton <chris2553@googlemail.com>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: NeilBrown <neilb@suse.de>, Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       linux-kernel@vger.kernel.org, scsi <linux-scsi@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Arjan van de Ven <arjan@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090604161859.713228968@de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry James, I forgot to ask...
+On Thu 2009-06-04 18:18:48, Martin Schwidefsky wrote:
+> From: Cornelia Huck <cornelia.huck@de.ibm.com>
+> 
+> The *_nvs_* routines in swsusp.c make use of the io*map()
+> functions, which are only provided for HAS_IOMEM, thus
+> breaking compilation if HAS_IOMEM is not set. Fix this
+> by moving the *_nvs_* routines into nvs.c, which is only
+> compiled if HAS_IOMEM is set.
+> 
+> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
+>  include/linux/suspend.h |   18 ++++--
+>  kernel/power/Kconfig    |    4 +
+>  kernel/power/Makefile   |    1 
+>  kernel/power/nvs.c      |  131 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  kernel/power/swsusp.c   |  122 --------------------------------------------
+>  5 files changed, 147 insertions(+), 129 deletions(-)
+> 
+> Index: linux-2.6/kernel/power/nvs.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-2.6/kernel/power/nvs.c
 
-2009/6/8 James Bottomley <James.Bottomley@hansenpartnership.com>:
-> On Mon, 2009-06-08 at 09:08 +0100, Chris Clayton wrote:
->> Hi Neil,
->>
->> Thanks for the reply.
->>
->> 2009/6/7 NeilBrown <neilb@suse.de>:
->> > On Mon, June 8, 2009 8:31 am, Jaswinder Singh Rajput wrote:
->> >> On Sun, 2009-06-07 at 19:38 +0100, Chris Clayton wrote:
->> >>> 2009/6/7 Jaswinder Singh Ra
->> >>> >> > http://img231.imageshack.us/img231/8931/dscn0610.jpg
->> >
->> > This message says that it found a vfat filesystem on 8:3x (I cannot see
->> > what digit should be 'x').  That is probably sdc1 or sdc2. Maybe even
->> > sdc6 or sdc7.
->> > However the vfat filesystem didn't have /sbin/init.
->> >
->>
->> >>> http://img99.imageshack.us/my.php?image=dscn0617b.jpg
->> >
->> > This one says it couldn't find anything at 8,22, which I think
->> > should be sdb6.
->> > It also shows that you have and sdc6, but sdb only goes up to sdb3.
->> >
->> > So it seems that your disk drives have changed name - not a wholely
->> > unexpected event these days.
->> >
->> > We now need answers to questions like:
->> >  - what device do you expect the root filesystem to be on
->> >  - how is the kernel being told this?  Maybe it is hard coded
->> >    into your initrd.  Knowing which distro and what /etc/fstab
->> >    says might help (though it wouldn't help me, I'm just about out
->> >    of my depth at this point)
->> > Maybe if you changed /etc/fstab to mount by uuid instead of hardcoding
->> > e.g. /etc/sdb3, and then run "mkinitramfs" or whatever, it might work.
->> >
->>
->> Yes, I've just been looking at the photographs of the panics again and
->> I've noticed that two of my discs are being detected in the "wrong
->> order". There are three HDDS. The first, /dev/sda, is the master on
->> the first IDE port and contains sda1..sda7. The second, normally
->> /dev/sdb, is the slave on that port and contains sdb1..sdb6. The
->> third, normally /dev/sdc, is attached to the first SATA port and
->> contains sdc1..sdc3. The second photograph I posted shows that sdb and
->> sdc have been reversed. The first partition on the disc that is
->> normally /dev/sdb does indeed have a FAT32 filesystem in the first
->> partition.
->>
->> By the way, I should have said that in between the panics that the two
->> photographs show, I copied contents of /dev/sdc1, which I normally
->> boot from, to /dev/sdb6, so that I minimised the risk to sdc1 in the
->> reboot festival that bisecting would involve. I also, of course,
->> changed the name of the root partition that is passed to the kernel by
->> GRUB and amended /etc/fstab on /dev/sdb6. That's why the partitions
->> shown in the photographs seem inconsistent. Sorry I forgot to mention
->> that - I really shouldn't do these things late at night :-).
->
-> Actually, you can save yourself a lot of pain by mounting by label
-> instead ... that way both grub and fstab will find your root disc even
-> if it has swapped order.
->
+Ideally, filename would be a bit more descriptive. 
 
-Would I be right in assuming from this that "out-of-order" detection
-is expected behaviour? If so, I'll fix up my system and shut up :-) I
-suspect I may not be the only person on the planet who specifies the
-root filesystem in this way, though.
+> @@ -0,0 +1,131 @@
+> +/*
+> + * Routines for NVS memory handling
+> + */
 
-Thanks
+If you copy&pasted code, you need to copy&paste copyright notices, too.
 
->> As I indicate above, when booting the partition I have set up to do
->> this bisecting,  I expect the root filesystem to be on /dev/hdb6. As I
->> also indicate, this information is passed to the kernel through GRUB's
->> /boot/grub/menu.lst. The kernel is configured specifically for my
->> system and the drivers needed to boot the system are built in to the
->> kernel, so I don't use an initrd. IIRC, that's the way Slackware is
->> installed today, except, of course, it's a big fat kernel with all
->> drivers needed to boot any system built in. I could be wrong on that
->> though, it's a while since I installed
->
-> The fact that a slave on the first channel is detected after the SATA
-> indicates a problem with async probing.  What are the two drivers for
-> these?
->
-> James
->
->
->
+> --- linux-2.6.orig/kernel/power/Makefile
+> +++ linux-2.6/kernel/power/Makefile
+> @@ -7,5 +7,6 @@ obj-$(CONFIG_PM)		+= main.o
+>  obj-$(CONFIG_PM_SLEEP)		+= console.o
+>  obj-$(CONFIG_FREEZER)		+= process.o
+>  obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
+> +obj-$(CONFIG_NVS)		+= nvs.o
+>  
+>  obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
 
-
+CONFIG_NVS is definitely not descriptive enough. C_HIBERNATION_NVS?
 
 -- 
-No, Sir; there is nothing which has yet been contrived by man, by which
-so much happiness is produced as by a good tavern or inn - Doctor Samuel
-Johnson
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
