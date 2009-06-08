@@ -1,96 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbZFHRWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbZFHRXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755905AbZFHRWy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbZFHRUb
+	id S1756049AbZFHRXM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:23:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbZFHRVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:20:31 -0400
-Received: from relay3.sgi.com ([192.48.156.57]:39354 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753789AbZFHRUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:20:30 -0400
-Message-Id: <20090608172029.055889000@sgi.com>
-User-Agent: quilt/0.47-1
-Date: Mon, 08 Jun 2009 12:17:00 -0500
-From: steiner@sgi.com
-To: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [Patch 12/12] GRU - copyright fixes
-References: <20090608171648.988318000@sgi.com>
-Content-Disposition: inline; filename=uv_gru_copyright_fixes
+	Mon, 8 Jun 2009 13:21:16 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:54507 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753307AbZFHRVP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 13:21:15 -0400
+Date: Mon, 8 Jun 2009 10:21:08 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Matt Carlson <mcarlson@broadcom.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: Re: tg3 stops working when NFS is involved
+In-Reply-To: <20090608164038.GA8825@xw6200.broadcom.net>
+Message-ID: <alpine.DEB.2.01.0906081013530.6439@bogon>
+References: <alpine.DEB.2.01.0906072115420.6439@bogon> <alpine.DEB.2.01.0906072215000.6439@bogon> <20090608164038.GA8825@xw6200.broadcom.net>
+User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX196clK2Z7nUl/5DymRZbUuFIab/orir3twXP33
+ FpAXN1Zt2xeT/VeV4LNIZa0C9IGGmZ+VytBmk+bTAh07+ycrIB
+ gtmyeKkMFSNduZUWKukVA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jack Steiner <steiner@sgi.com>
+On Mon, 8 Jun 2009, Matt Carlson wrote:
+> This seems to be a common problem with the 5906 on some
+> notebooks.  The word on the street is that turning sg off through
+> ethtool seems to avoid the problem.
 
-Fix the copyright statements in a couple of GRU files. No
-functional changes are being made.
+Well, I must've been on the wrong streets then, this was news to me...
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+> While I dig deeper into this
+> problem, you could try that and see if it helps you.
 
----
- drivers/misc/sgi-gru/grukdump.c |   18 ++++++++++++++----
- drivers/misc/sgi-gru/grumain.c  |   18 ++++++++++++++----
- 2 files changed, 28 insertions(+), 8 deletions(-)
+Yes, "ethtool -K eth0 sg off" does indeed help here too: I've already 
+transmitted a few gigabytes of traffic (the problem occured after a few 
+megabytes lastly) and all is still well.
 
-Index: linux/drivers/misc/sgi-gru/grukdump.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grukdump.c	2009-06-08 10:28:25.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grukdump.c	2009-06-08 10:28:59.000000000 -0500
-@@ -3,11 +3,21 @@
-  *
-  *            Dump GRU State
-  *
-- * This file is subject to the terms and conditions of the GNU General Public
-- * License.  See the file "COPYING" in the main directory of this archive
-- * for more details.
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-  *
-- * Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-  */
- 
- #include <linux/kernel.h>
-Index: linux/drivers/misc/sgi-gru/grumain.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grumain.c	2009-06-08 10:28:25.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grumain.c	2009-06-08 10:29:11.000000000 -0500
-@@ -3,11 +3,21 @@
-  *
-  *            DRIVER TABLE MANAGER + GRU CONTEXT LOAD/UNLOAD
-  *
-- * This file is subject to the terms and conditions of the GNU General Public
-- * License.  See the file "COPYING" in the main directory of this archive
-- * for more details.
-+ *  Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-  *
-- * Copyright (c) 2008 Silicon Graphics, Inc.  All Rights Reserved.
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-  */
- 
- #include <linux/kernel.h>
+Thanks for your quick response!
+Christian.
+-- 
+BOFH excuse #273:
 
+The cord jumped over and hit the power switch.
