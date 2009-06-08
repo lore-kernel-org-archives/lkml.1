@@ -1,79 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZFHPUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbZFHPVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbZFHPUo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 11:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755527AbZFHPUe
+	id S1756795AbZFHPVm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 11:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756002AbZFHPVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 11:20:34 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35373 "EHLO
+	Mon, 8 Jun 2009 11:21:34 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35426 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755350AbZFHPUd (ORCPT
+	with ESMTP id S1754244AbZFHPVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 11:20:33 -0400
-Date: Mon, 8 Jun 2009 08:35:01 +0200
+	Mon, 8 Jun 2009 11:21:33 -0400
+Date: Mon, 8 Jun 2009 08:36:03 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: Re: [patch 01/38] pm: Move nvs routines into a seperate file.
-Message-ID: <20090608063501.GC1444@ucw.cz>
-References: <20090604161847.513682672@de.ibm.com> <20090604161859.713228968@de.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [RFC][PATCH 1/2] PM: Separate suspend to RAM functionality
+	from core
+Message-ID: <20090608063603.GA1833@ucw.cz>
+References: <200906070054.19207.rjw@sisk.pl> <200906070055.55156.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090604161859.713228968@de.ibm.com>
+In-Reply-To: <200906070055.55156.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-06-04 18:18:48, Martin Schwidefsky wrote:
-> From: Cornelia Huck <cornelia.huck@de.ibm.com>
+On Sun 2009-06-07 00:55:54, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> The *_nvs_* routines in swsusp.c make use of the io*map()
-> functions, which are only provided for HAS_IOMEM, thus
-> breaking compilation if HAS_IOMEM is not set. Fix this
-> by moving the *_nvs_* routines into nvs.c, which is only
-> compiled if HAS_IOMEM is set.
+> Move the suspend to RAM and standby code from kernel/power/main.c
+> to two separate files, kernel/power/suspend.c containing the basic
+> functions and kernel/power/suspend-test.c containing the automatic
+> suspend test facility based on the RTC clock alarm.
 > 
-> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> ---
->  include/linux/suspend.h |   18 ++++--
->  kernel/power/Kconfig    |    4 +
->  kernel/power/Makefile   |    1 
->  kernel/power/nvs.c      |  131 ++++++++++++++++++++++++++++++++++++++++++++++++
->  kernel/power/swsusp.c   |  122 --------------------------------------------
->  5 files changed, 147 insertions(+), 129 deletions(-)
+> There are no changes in functionality related to these modifications.
 > 
-> Index: linux-2.6/kernel/power/nvs.c
-> ===================================================================
-> --- /dev/null
-> +++ linux-2.6/kernel/power/nvs.c
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Ideally, filename would be a bit more descriptive. 
-
-> @@ -0,0 +1,131 @@
-> +/*
-> + * Routines for NVS memory handling
-> + */
-
-If you copy&pasted code, you need to copy&paste copyright notices, too.
-
-> --- linux-2.6.orig/kernel/power/Makefile
-> +++ linux-2.6/kernel/power/Makefile
-> @@ -7,5 +7,6 @@ obj-$(CONFIG_PM)		+= main.o
->  obj-$(CONFIG_PM_SLEEP)		+= console.o
->  obj-$(CONFIG_FREEZER)		+= process.o
->  obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
-> +obj-$(CONFIG_NVS)		+= nvs.o
->  
->  obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
-
-CONFIG_NVS is definitely not descriptive enough. C_HIBERNATION_NVS?
+ACK.
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
