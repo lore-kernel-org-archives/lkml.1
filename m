@@ -1,102 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbZFHMPA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbZFHMPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbZFHMPA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 08:15:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbZFHMOw
+	id S1755616AbZFHMPa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 08:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbZFHMPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 08:14:52 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:59827 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753444AbZFHMOw convert rfc822-to-8bit (ORCPT
+	Mon, 8 Jun 2009 08:15:22 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:59292 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754620AbZFHMPV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 08:14:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=O5X0sOre1lzFZMDAlu5oJP0m0nuC3E5RRbLusOgKLSXknQZJN+ZS8Vxfs8Yp4KI2S7
-         ZIH0ut/YlFARONHoR4xNUAbUbaNfA4owLQ+iRIhFLm8NjBfBfLtE/AVMmlD/uKokQEc9
-         RAHV8jliWKUW8gs6AqqnWxqZoEp4Tnd7+OLrw=
-MIME-Version: 1.0
-In-Reply-To: <20090520153851.GA6572@localhost>
-References: <alpine.DEB.1.10.0905181045340.20244@qirst.com>
-	 <20090519032759.GA7608@localhost>
-	 <20090519133422.4ECC.A69D9226@jp.fujitsu.com>
-	 <20090519062503.GA9580@localhost> <87pre4nhqf.fsf@basil.nowhere.org>
-	 <20090520143258.GA5706@localhost>
-	 <20090520144731.GB4753@basil.nowhere.org>
-	 <20090520145607.GA6281@localhost> <20090520153851.GA6572@localhost>
-Date: Mon, 8 Jun 2009 20:14:53 +0800
-Message-ID: <ab418ea90906080514k6f46d3fay6a5fe0b848c8ca50@mail.gmail.com>
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first class 
-	citizen
-From: Nai Xia <nai.xia@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: gnome-list@gnome.org, Andi Kleen <andi@firstfloor.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       "xorg@lists.freedesktop.org" <xorg@lists.freedesktop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 8 Jun 2009 08:15:21 -0400
+Date: Mon, 8 Jun 2009 14:15:06 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Cc: Mustafa Mesanovic <mustafa.mesanovic@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Hannes Reinecke <hare@suse.de>, Olaf Kirch <okir@suse.de>,
+       <linux-kernel@vger.kernel.org>
+Subject: [PATCH] timer stats: add quick check to avoid function calls
+Message-ID: <20090608141506.23296954@osiris.boeblingen.de.ibm.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 20, 2009 at 11:38 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> Hi list,
->
-> On Wed, May 20, 2009 at 10:56:07PM +0800, Wu Fengguang wrote:
->> On Wed, May 20, 2009 at 10:47:31PM +0800, Andi Kleen wrote:
->> > > > One scenario that might be useful to test is what happens when some
->> > > > very large processes, all mapped and executable exceed memory and
->> > >
->> > > Good idea. Too bad I may have to install some bloated desktop in order
->> > > to test this out ;) I guess the pgmajfault+pswpin numbers can serve as
->> > > negative scores in that case?
->> >
->> > I would just generate a large C program with a script and compile
->> > and run that. The program can be very dumb (e.g. only run
->> > a gigantic loop), it just needs to be large.
->> >
->> > Just don't compile it with optimization, that can be quite slow.
->> >
->> > And use multiple functions, otherwise gcc might exceed your memory.
->>
->>
->> Hehe, an arbitrary C program may not be persuasive..but I do have some
->> bloated binaries at hand :-)
->>
->> -rwsr-sr-x 1 root wfg   36M 2009-04-22 17:21 Xorg
->> lrwxrwxrwx 1 wfg  wfg     4 2009-04-22 17:21 X -> Xorg
->> -rwxr-xr-x 1 wfg  wfg   39M 2009-04-22 17:21 Xvfb
->> -rwxr-xr-x 1 wfg  wfg   35M 2009-04-22 17:21 Xnest
->
-> I would like to create a lot of windows in gnome, and to switch
-> between them. Any ideas on scripting/automating the "switch window"
-> actions?
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-You can easily do this in KDE 3.5 with dcop(Desktop Communications Protocol)\
+When the kernel is configured with CONFIG_TIMER_STATS but timer stats
+are runtime disabled we still get calls to __timer_stats_timer_set_start_info
+which initializes some fields in the corresponding struct timer_list.
 
-e.g.
+So add some quick checks in the the timer stats setup functions to avoid
+function calls to __timer_stats_timer_set_start_info when timer stats are
+disabled.
 
-$dcop kchmviewer-17502 KCHMMainWindow raise
+In an artificial workload that does nothing but playing ping pong with a
+single tcp packet via loopback this decreases cpu consumption by 1 - 1.5%.
 
-will raise the window of my kchmviewer.
+This is part of a modified function trace output on SLES11:
 
->
-> Thanks,
-> Fengguang
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
+perl-2497  [00] 28630647177732388 [+  125]: sk_reset_timer <-tcp_v4_rcv
+perl-2497  [00] 28630647177732513 [+  125]: mod_timer <-sk_reset_timer
+perl-2497  [00] 28630647177732638 [+  125]: __timer_stats_timer_set_start_info <-mod_timer
+perl-2497  [00] 28630647177732763 [+  125]: __mod_timer <-mod_timer
+perl-2497  [00] 28630647177732888 [+  125]: __timer_stats_timer_set_start_info <-__mod_timer
+perl-2497  [00] 28630647177733013 [+   93]: lock_timer_base <-__mod_timer
+
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+
+ include/linux/hrtimer.h   |    6 ++++++
+ include/linux/timer.h     |    4 ++++
+ kernel/time/timer_stats.c |   16 ++++++++--------
+ kernel/timer.c            |    2 ++
+ 4 files changed, 20 insertions(+), 8 deletions(-)
+
+Index: linux-2.6/include/linux/hrtimer.h
+===================================================================
+--- linux-2.6.orig/include/linux/hrtimer.h
++++ linux-2.6/include/linux/hrtimer.h
+@@ -438,12 +438,16 @@ extern void sysrq_timer_list_show(void);
+  */
+ #ifdef CONFIG_TIMER_STATS
+ 
++extern int timer_stats_active;
++
+ extern void timer_stats_update_stats(void *timer, pid_t pid, void *startf,
+ 				     void *timerf, char *comm,
+ 				     unsigned int timer_flag);
+ 
+ static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
+ {
++	if (likely(!timer->start_pid))
++		return;
+ 	timer_stats_update_stats(timer, timer->start_pid, timer->start_site,
+ 				 timer->function, timer->start_comm, 0);
+ }
+@@ -453,6 +457,8 @@ extern void __timer_stats_hrtimer_set_st
+ 
+ static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
+ {
++	if (likely(!timer_stats_active))
++		return;
+ 	__timer_stats_hrtimer_set_start_info(timer, __builtin_return_address(0));
+ }
+ 
+Index: linux-2.6/include/linux/timer.h
+===================================================================
+--- linux-2.6.orig/include/linux/timer.h
++++ linux-2.6/include/linux/timer.h
+@@ -187,6 +187,8 @@ extern unsigned long get_next_timer_inte
+  */
+ #ifdef CONFIG_TIMER_STATS
+ 
++extern int timer_stats_active;
++
+ #define TIMER_STATS_FLAG_DEFERRABLE	0x1
+ 
+ extern void init_timer_stats(void);
+@@ -200,6 +202,8 @@ extern void __timer_stats_timer_set_star
+ 
+ static inline void timer_stats_timer_set_start_info(struct timer_list *timer)
+ {
++	if (likely(!timer_stats_active))
++		return;
+ 	__timer_stats_timer_set_start_info(timer, __builtin_return_address(0));
+ }
+ 
+Index: linux-2.6/kernel/timer.c
+===================================================================
+--- linux-2.6.orig/kernel/timer.c
++++ linux-2.6/kernel/timer.c
+@@ -378,6 +378,8 @@ static void timer_stats_account_timer(st
+ {
+ 	unsigned int flag = 0;
+ 
++	if (likely(!timer->start_site))
++		return;
+ 	if (unlikely(tbase_get_deferrable(timer->base)))
+ 		flag |= TIMER_STATS_FLAG_DEFERRABLE;
+ 
+Index: linux-2.6/kernel/time/timer_stats.c
+===================================================================
+--- linux-2.6.orig/kernel/time/timer_stats.c
++++ linux-2.6/kernel/time/timer_stats.c
+@@ -96,7 +96,7 @@ static DEFINE_MUTEX(show_mutex);
+ /*
+  * Collection status, active/inactive:
+  */
+-static int __read_mostly active;
++int __read_mostly timer_stats_active;
+ 
+ /*
+  * Beginning/end timestamps of measurement:
+@@ -242,7 +242,7 @@ void timer_stats_update_stats(void *time
+ 	struct entry *entry, input;
+ 	unsigned long flags;
+ 
+-	if (likely(!active))
++	if (likely(!timer_stats_active))
+ 		return;
+ 
+ 	lock = &per_cpu(lookup_lock, raw_smp_processor_id());
+@@ -254,7 +254,7 @@ void timer_stats_update_stats(void *time
+ 	input.timer_flag = timer_flag;
+ 
+ 	spin_lock_irqsave(lock, flags);
+-	if (!active)
++	if (!timer_stats_active)
+ 		goto out_unlock;
+ 
+ 	entry = tstat_lookup(&input, comm);
+@@ -290,7 +290,7 @@ static int tstats_show(struct seq_file *
+ 	/*
+ 	 * If still active then calculate up to now:
+ 	 */
+-	if (active)
++	if (timer_stats_active)
+ 		time_stop = ktime_get();
+ 
+ 	time = ktime_sub(time_stop, time_start);
+@@ -368,18 +368,18 @@ static ssize_t tstats_write(struct file 
+ 	mutex_lock(&show_mutex);
+ 	switch (ctl[0]) {
+ 	case '0':
+-		if (active) {
+-			active = 0;
++		if (timer_stats_active) {
++			timer_stats_active = 0;
+ 			time_stop = ktime_get();
+ 			sync_access();
+ 		}
+ 		break;
+ 	case '1':
+-		if (!active) {
++		if (!timer_stats_active) {
+ 			reset_entries();
+ 			time_start = ktime_get();
+ 			smp_mb();
+-			active = 1;
++			timer_stats_active = 1;
+ 		}
+ 		break;
+ 	default:
