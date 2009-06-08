@@ -1,70 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbZFHTtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbZFHTvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755543AbZFHTtz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 15:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbZFHTtm
+	id S1754364AbZFHTvn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 15:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbZFHTvg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 15:49:42 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:48891 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750758AbZFHTtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 15:49:41 -0400
-Date: Mon, 8 Jun 2009 21:48:54 +0200 (CEST)
-From: Jesper Dangaard Brouer <hawk@diku.dk>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: paulmck@linux.vnet.ibm.com, Jesper Dangaard Brouer <hawk@comx.dk>,
-       netdev <netdev@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 5/5] sunrpc/auth_gss: Call rcu_barrier() on module unload.
-In-Reply-To: <1244480449.5040.4.camel@heimdal.trondhjem.org>
-Message-ID: <Pine.LNX.4.64.0906082128240.1180@ask.diku.dk>
-References: <20090608130959.10052.54590.stgit@localhost> 
- <20090608131148.10052.39869.stgit@localhost>  <20090608162656.GF6961@linux.vnet.ibm.com>
- <1244480449.5040.4.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 8 Jun 2009 15:51:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49440 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752372AbZFHTvg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 15:51:36 -0400
+Subject: Re: [PATCH] perf_counter: extensible perf_counter_attr
+From: Peter Zijlstra <peterz@infradead.org>
+To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A2D6041.4050309@linux.vnet.ibm.com>
+References: <1244481941.13761.9119.camel@twins>
+	 <4A2D6041.4050309@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Mon, 08 Jun 2009 21:51:20 +0200
+Message-Id: <1244490680.6691.1.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-06-08 at 12:02 -0700, Corey Ashford wrote:
+> Hi Peter,
+> 
+> Peter Zijlstra wrote:
+> > Allow extending the perf_counter_attr structure by linking extended
+> > structures to it.
+> > 
+> > Also, should we grow the directly reserved space in the structure a
+> > little more?
+> > 
+> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > ---
+> >  include/linux/perf_counter.h |    7 +++++++
+> >  kernel/perf_counter.c        |    1 +
+> >  2 files changed, 8 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+> > index 3586df8..781d8ce 100644
+> > --- a/include/linux/perf_counter.h
+> > +++ b/include/linux/perf_counter.h
+> > @@ -175,6 +175,13 @@ struct perf_counter_attr {
+> >  	__u32			__reserved_3;
+> > 
+> >  	__u64			__reserved_4;
+> > +
+> > +	struct perf_counter_attr_ext *ext_attrs;
+> > +};
+> > +
+> > +struct perf_counter_attr_ext {
+> > +	struct perf_counter_attr_ext 	*next;
+> > +	__u64				perf_attr_ext_type;
+> >  };
+> 
+> Let's say I want to extend the attributes by four 64-bit quantities... from the 
+> above definition, I'd need four additional records chained together, right?  How 
+> about something like this instead:
 
-(trimmed Cc)
+Ah, the idea was to do something like:
 
-On Mon, 8 Jun 2009, Trond Myklebust wrote:
+struct perf_counter_attr_feature {
+	struct perf_counter_attr_ext	head;
+	... more stuff ...
+};
 
-> Hmm... If this is about ensuring that all the call_rcu() callbacks
-> complete before we remove the module, then don't we also need similar
-> barriers in
+and set head.perf_attr_ext_type = PERF_ATTR_EXT_FEATURE
 
-Well, Trond that was a hard question, as I don't know this code... but if 
-it uses call_rcu() callbacks its most likely.
 
-I have not done a complete sweep of the tree, I have only looked at the 
-netdev parts, as this is where I usually snoop around.  So there is 
-probably plenty of work for some kernel-janitors (Cc'ing the list ;-))
 
-> net/sunrpc/sunrpc_syms.c:cleanup_sunrpc()
-
-Looking at the code that end up in sunrpc.ko, I see that both 
-net/sunrpc/auth_unix.c and net/sunrpc/auth_generic.c uses call_rcu() 
-callbacks.
-
-> and in fs/nfs/inode.c:exit_nfs_fs()?
-
-Looking at the code which end up into nfs.ko (which includes 
-fs/nfs/inode.c) I see that the fs/nfs/delegation.c uses call_rcu() 
-callbacks.
-
-But its hard for me to figure out how this code interacts.  Don't know if 
-we need to document a code path that can occur fast enough, before we add 
-this safe guard?  It should be Paul's saying...
-
-Cheers,
-   Jesper Brouer
-
---
--------------------------------------------------------------------
-MSc. Master of Computer Science
-Dept. of Computer Science, University of Copenhagen
-Author of http://www.adsl-optimizer.dk
--------------------------------------------------------------------
