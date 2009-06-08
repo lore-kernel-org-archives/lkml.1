@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbZFHTYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbZFHTYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755606AbZFHTYf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 15:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbZFHTXR
+	id S1755795AbZFHTYp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 15:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbZFHTXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 15:23:17 -0400
-Received: from thunk.org ([69.25.196.29]:39527 "EHLO thunker.thunk.org"
+	Mon, 8 Jun 2009 15:23:18 -0400
+Received: from thunk.org ([69.25.196.29]:39528 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753009AbZFHTXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753044AbZFHTXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Jun 2009 15:23:13 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Linux Kernel Developers List <linux-kernel@vger.kernel.org>
 Cc: "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 09/49] ext4: Fix and simplify s_dirt handling
-Date: Mon,  8 Jun 2009 15:22:27 -0400
-Message-Id: <1244488987-32564-10-git-send-email-tytso@mit.edu>
+Subject: [PATCH 08/49] ext4: Simplify ext4_commit_super()'s function signature
+Date: Mon,  8 Jun 2009 15:22:26 -0400
+Message-Id: <1244488987-32564-9-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.6.3.2.1.gb9f7d.dirty
-In-Reply-To: <1244488987-32564-9-git-send-email-tytso@mit.edu>
+In-Reply-To: <1244488987-32564-8-git-send-email-tytso@mit.edu>
 References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-2-git-send-email-tytso@mit.edu>
  <1244488987-32564-3-git-send-email-tytso@mit.edu>
@@ -25,7 +25,6 @@ References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-6-git-send-email-tytso@mit.edu>
  <1244488987-32564-7-git-send-email-tytso@mit.edu>
  <1244488987-32564-8-git-send-email-tytso@mit.edu>
- <1244488987-32564-9-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -33,96 +32,156 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The s_dirt flag wasn't completely handled correctly, but it didn't
-really matter when journalling was enabled.  It turns out that when
-ext4 runs without a journal, we don't clear s_dirt in places where we
-should have, with the result that the high-level write_super()
-function was writing the superblock when it wasn't necessary.
-
-So we fix this by making ext4_commit_super() clear the s_dirt flag,
-and removing many of the other places where s_dirt is manipulated.
-When journalling is enabled, the s_dirt flag might be left set more
-often, but s_dirt really doesn't matter when journalling is enabled.
+The ext4_commit_super() function took both a struct super_block * and
+a struct ext4_super_block *, but the struct ext4_super_block can be
+derived from the struct super_block.
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/super.c |   14 +++-----------
- 1 files changed, 3 insertions(+), 11 deletions(-)
+ fs/ext4/super.c |   33 ++++++++++++++++-----------------
+ 1 files changed, 16 insertions(+), 17 deletions(-)
 
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index ad4c9be..7c7a08a 100644
+index 3e509bc..ad4c9be 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -3128,7 +3128,6 @@ static int ext4_load_journal(struct super_block *sb,
- 	if (journal_devnum &&
- 	    journal_devnum != le32_to_cpu(es->s_journal_dev)) {
- 		es->s_journal_dev = cpu_to_le32(journal_devnum);
--		sb->s_dirt = 1;
+@@ -54,8 +54,7 @@ static struct kset *ext4_kset;
+ 
+ static int ext4_load_journal(struct super_block *, struct ext4_super_block *,
+ 			     unsigned long journal_devnum);
+-static int ext4_commit_super(struct super_block *sb,
+-			      struct ext4_super_block *es, int sync);
++static int ext4_commit_super(struct super_block *sb, int sync);
+ static void ext4_mark_recovery_complete(struct super_block *sb,
+ 					struct ext4_super_block *es);
+ static void ext4_clear_journal_err(struct super_block *sb,
+@@ -306,7 +305,7 @@ static void ext4_handle_error(struct super_block *sb)
+ 		printk(KERN_CRIT "Remounting filesystem read-only\n");
+ 		sb->s_flags |= MS_RDONLY;
+ 	}
+-	ext4_commit_super(sb, es, 1);
++	ext4_commit_super(sb, 1);
+ 	if (test_opt(sb, ERRORS_PANIC))
+ 		panic("EXT4-fs (device %s): panic forced after error\n",
+ 			sb->s_id);
+@@ -448,7 +447,7 @@ __acquires(bitlock)
+ 	if (test_opt(sb, ERRORS_CONT)) {
+ 		EXT4_SB(sb)->s_mount_state |= EXT4_ERROR_FS;
+ 		es->s_state |= cpu_to_le16(EXT4_ERROR_FS);
+-		ext4_commit_super(sb, es, 0);
++		ext4_commit_super(sb, 0);
+ 		return;
+ 	}
+ 	ext4_unlock_group(sb, grp);
+@@ -577,7 +576,7 @@ static void ext4_put_super(struct super_block *sb)
+ 	if (!(sb->s_flags & MS_RDONLY)) {
+ 		EXT4_CLEAR_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
+ 		es->s_state = cpu_to_le16(sbi->s_mount_state);
+-		ext4_commit_super(sb, es, 1);
++		ext4_commit_super(sb, 1);
+ 	}
+ 	if (sbi->s_proc) {
+ 		remove_proc_entry(sb->s_id, ext4_proc_root);
+@@ -1596,7 +1595,7 @@ static int ext4_setup_super(struct super_block *sb, struct ext4_super_block *es,
+ 	if (sbi->s_journal)
+ 		EXT4_SET_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
+ 
+-	ext4_commit_super(sb, es, 1);
++	ext4_commit_super(sb, 1);
+ 	if (test_opt(sb, DEBUG))
+ 		printk(KERN_INFO "[EXT4 FS bs=%lu, gc=%u, "
+ 				"bpg=%lu, ipg=%lu, mo=%04lx]\n",
+@@ -2655,7 +2654,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
+ 			if (test_opt(sb, ERRORS_PANIC)) {
+ 				EXT4_SB(sb)->s_mount_state |= EXT4_ERROR_FS;
+ 				es->s_state |= cpu_to_le16(EXT4_ERROR_FS);
+-				ext4_commit_super(sb, es, 1);
++				ext4_commit_super(sb, 1);
+ 				goto failed_mount4;
+ 			}
+ 		}
+@@ -3132,15 +3131,15 @@ static int ext4_load_journal(struct super_block *sb,
+ 		sb->s_dirt = 1;
  
  		/* Make sure we flush the recovery flag to disk. */
- 		ext4_commit_super(sb, 1);
-@@ -3168,7 +3167,7 @@ static int ext4_commit_super(struct super_block *sb, int sync)
- 					&EXT4_SB(sb)->s_freeblocks_counter));
- 	es->s_free_inodes_count = cpu_to_le32(percpu_counter_sum_positive(
- 					&EXT4_SB(sb)->s_freeinodes_counter));
--
-+	sb->s_dirt = 0;
- 	BUFFER_TRACE(sbh, "marking dirty");
- 	mark_buffer_dirty(sbh);
- 	if (sync) {
-@@ -3210,7 +3209,6 @@ static void ext4_mark_recovery_complete(struct super_block *sb,
- 	if (EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER) &&
+-		ext4_commit_super(sb, es, 1);
++		ext4_commit_super(sb, 1);
+ 	}
+ 
+ 	return 0;
+ }
+ 
+-static int ext4_commit_super(struct super_block *sb,
+-			      struct ext4_super_block *es, int sync)
++static int ext4_commit_super(struct super_block *sb, int sync)
+ {
++	struct ext4_super_block *es = EXT4_SB(sb)->s_es;
+ 	struct buffer_head *sbh = EXT4_SB(sb)->s_sbh;
+ 	int error = 0;
+ 
+@@ -3212,7 +3211,7 @@ static void ext4_mark_recovery_complete(struct super_block *sb,
  	    sb->s_flags & MS_RDONLY) {
  		EXT4_CLEAR_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
--		sb->s_dirt = 0;
- 		ext4_commit_super(sb, 1);
+ 		sb->s_dirt = 0;
+-		ext4_commit_super(sb, es, 1);
++		ext4_commit_super(sb, 1);
  	}
  	unlock_super(sb);
-@@ -3271,10 +3269,8 @@ int ext4_force_commit(struct super_block *sb)
- 		return 0;
  
- 	journal = EXT4_SB(sb)->s_journal;
--	if (journal) {
--		sb->s_dirt = 0;
-+	if (journal)
- 		ret = ext4_journal_force_commit(journal);
--	}
+@@ -3253,7 +3252,7 @@ static void ext4_clear_journal_err(struct super_block *sb,
  
+ 		EXT4_SB(sb)->s_mount_state |= EXT4_ERROR_FS;
+ 		es->s_state |= cpu_to_le16(EXT4_ERROR_FS);
+-		ext4_commit_super(sb, es, 1);
++		ext4_commit_super(sb, 1);
+ 
+ 		jbd2_journal_clear_err(journal);
+ 	}
+@@ -3293,7 +3292,7 @@ static void ext4_write_super(struct super_block *sb)
+ 			BUG();
+ 		sb->s_dirt = 0;
+ 	} else {
+-		ext4_commit_super(sb, EXT4_SB(sb)->s_es, 1);
++		ext4_commit_super(sb, 1);
+ 	}
+ }
+ 
+@@ -3312,7 +3311,7 @@ static int ext4_sync_fs(struct super_block *sb, int wait)
+ 						     target);
+ 		}
+ 	} else {
+-		ext4_commit_super(sb, EXT4_SB(sb)->s_es, wait);
++		ext4_commit_super(sb, wait);
+ 	}
  	return ret;
  }
-@@ -3282,15 +3278,13 @@ int ext4_force_commit(struct super_block *sb)
- /*
-  * Ext4 always journals updates to the superblock itself, so we don't
-  * have to propagate any other updates to the superblock on disk at this
-- * point.  (We can probably nuke this function altogether, and remove
-- * any mention to sb->s_dirt in all of fs/ext4; eventual cleanup...)
-+ * point if the journalling is enabled.
-  */
- static void ext4_write_super(struct super_block *sb)
- {
- 	if (EXT4_SB(sb)->s_journal) {
- 		if (mutex_trylock(&sb->s_lock) != 0)
- 			BUG();
--		sb->s_dirt = 0;
- 	} else {
- 		ext4_commit_super(sb, 1);
+@@ -3345,7 +3344,7 @@ static int ext4_freeze(struct super_block *sb)
+ 
+ 		/* Journal blocked and flushed, clear needs_recovery flag. */
+ 		EXT4_CLEAR_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
+-		error = ext4_commit_super(sb, EXT4_SB(sb)->s_es, 1);
++		error = ext4_commit_super(sb, 1);
+ 		if (error)
+ 			goto out;
  	}
-@@ -3302,7 +3296,6 @@ static int ext4_sync_fs(struct super_block *sb, int wait)
- 	tid_t target;
+@@ -3365,7 +3364,7 @@ static int ext4_unfreeze(struct super_block *sb)
+ 		lock_super(sb);
+ 		/* Reser the needs_recovery flag before the fs is unlocked. */
+ 		EXT4_SET_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
+-		ext4_commit_super(sb, EXT4_SB(sb)->s_es, 1);
++		ext4_commit_super(sb, 1);
+ 		unlock_super(sb);
+ 		jbd2_journal_unlock_updates(EXT4_SB(sb)->s_journal);
+ 	}
+@@ -3520,7 +3519,7 @@ static int ext4_remount(struct super_block *sb, int *flags, char *data)
+ 		}
+ 	}
+ 	if (sbi->s_journal == NULL)
+-		ext4_commit_super(sb, es, 1);
++		ext4_commit_super(sb, 1);
  
- 	trace_mark(ext4_sync_fs, "dev %s wait %d", sb->s_id, wait);
--	sb->s_dirt = 0;
- 	if (EXT4_SB(sb)->s_journal) {
- 		if (jbd2_journal_start_commit(EXT4_SB(sb)->s_journal,
- 					      &target)) {
-@@ -3324,7 +3317,6 @@ static int ext4_freeze(struct super_block *sb)
- {
- 	int error = 0;
- 	journal_t *journal;
--	sb->s_dirt = 0;
- 
- 	if (!(sb->s_flags & MS_RDONLY)) {
- 		journal = EXT4_SB(sb)->s_journal;
+ #ifdef CONFIG_QUOTA
+ 	/* Release old quota file names */
 -- 
 1.6.3.2.1.gb9f7d.dirty
 
