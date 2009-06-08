@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755692AbZFHNcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbZFHNdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755692AbZFHNcb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 09:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbZFHNcV
+	id S1755223AbZFHNdW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 09:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755128AbZFHNdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 09:32:21 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:33658 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752754AbZFHNcU (ORCPT
+	Mon, 8 Jun 2009 09:33:07 -0400
+Received: from lanfw001a.cxnet.dk ([87.72.215.196]:55547 "EHLO
+	lanfw001a.cxnet.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753949AbZFHNdG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 09:32:20 -0400
-Date: Mon, 8 Jun 2009 14:32:15 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: Run-time PM idea (was: Re: [linux-pm] [RFC][PATCH 0/2] PM:
-	Rearrange core suspend code)
-Message-ID: <20090608133215.GA15482@srcf.ucam.org>
-References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org> <200906072347.00580.rjw@sisk.pl> <20090608065419.GA13568@elte.hu> <200906081330.50045.rjw@sisk.pl> <20090608130509.GA3272@elte.hu> <20090608131159.GA15100@srcf.ucam.org> <20090608132235.GC13214@elte.hu>
+	Mon, 8 Jun 2009 09:33:06 -0400
+X-Greylist: delayed 1303 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Jun 2009 09:33:05 EDT
+From: Jesper Dangaard Brouer <hawk@comx.dk>
+Subject: [PATCH 3/5] can: af_can.c use rcu_barrier() on module unload.
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Jesper Dangaard Brouer <hawk@comx.dk>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, wg@grandegger.com,
+       vladislav.yasevich@hp.com, sri@us.ibm.com, linux-sctp@vger.kernel.org,
+       Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
+Date: Mon, 08 Jun 2009 15:11:38 +0200
+Message-ID: <20090608131138.10052.5408.stgit@localhost>
+In-Reply-To: <20090608130959.10052.54590.stgit@localhost>
+References: <20090608130959.10052.54590.stgit@localhost>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090608132235.GC13214@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 03:22:35PM +0200, Ingo Molnar wrote:
-> 
-> * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > The difficulty is in determining when it's viable to autosuspend a 
-> > given device. There's a limit to how much we can determine purely 
-> > from kernel state (for instance, we could suspend ahci when 
-> > there's no pending disk access, but we'd lose hotplug 
-> > notifications) so there's going to have to be some level of 
-> > userspace policy determination. Having the infrastructure in the 
-> > kernel is an important part of this, but there'll be some distance 
-> > to go after that.
-> 
-> What will the 'user space policy' bit do what the kernel cannot?
+This module uses rcu_call() thus it should use rcu_barrier()
+on module unload.
 
-How does the kernel know whether the user cares about SATA hotplug or 
-not?
+Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+---
 
-> If you mean the user has to configure something manually - that wont 
-> really happen in practice. We are happy if they know where to put 
-> those USB sticks in ;-)
+ net/can/af_can.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-It'll be up to the distributions to provide sane defaults and let them 
-be reconfigured as necessary, depending on the information we have from 
-the user and maybe platform-specific knowledge. But this is a difficult 
-problem - we need to be smart about all the potential sources of 
-information in order to pick an appropriate policy, and the kernel's not 
-the right layer to do some of this information collection.
+diff --git a/net/can/af_can.c b/net/can/af_can.c
+index 10f0528..e733725 100644
+--- a/net/can/af_can.c
++++ b/net/can/af_can.c
+@@ -903,6 +903,8 @@ static __exit void can_exit(void)
+ 	}
+ 	spin_unlock(&can_rcvlists_lock);
+ 
++	rcu_barrier(); /* Wait for completion of call_rcu()'s */
++
+ 	kmem_cache_destroy(rcv_cache);
+ }
+ 
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
