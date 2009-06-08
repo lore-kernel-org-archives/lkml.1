@@ -1,823 +1,296 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbZFHWU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbZFHW3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757265AbZFHWU0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 18:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756289AbZFHWTU
+	id S1756460AbZFHW3V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 18:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZFHW3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 18:19:20 -0400
-Received: from build.ossfans.org ([67.223.233.67]:43064 "EHLO
-	build.ossfans.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754628AbZFHWS7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 18:18:59 -0400
-From: Sergey Lapin <slapin@ossfans.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       David Miller <davem@davemloft.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Sergey Lapin <slapin@ossfans.org>
-Subject: [PATCH 3/5] net: add NL802154 interface for configuration of 802.15.4 devices
-Date: Tue,  9 Jun 2009 02:18:49 +0400
-Message-Id: <8fbaa9563787380929a369db47592935df13f90e.1244498868.git.slapin@ossfans.org>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <192f492e65e4023d0cf75ff40052c41e8a3e79d5.1244498868.git.slapin@ossfans.org>
-References: <cover.1244498867.git.slapin@ossfans.org>
- <a6f8fdbe615e37cf74816a1b92490c778bcc9035.1244498868.git.slapin@ossfans.org>
- <192f492e65e4023d0cf75ff40052c41e8a3e79d5.1244498868.git.slapin@ossfans.org>
-In-Reply-To: <cover.1244498867.git.slapin@ossfans.org>
-References: <cover.1244498867.git.slapin@ossfans.org>
+	Mon, 8 Jun 2009 18:29:07 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43934 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750725AbZFHW3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 18:29:06 -0400
+Date: Mon, 8 Jun 2009 23:29:04 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH] Add a gfp-translate script to help understand page
+	allocation failure reports
+Message-ID: <20090608222904.GA18437@csn.ul.ie>
+References: <20090608132950.GB15070@csn.ul.ie> <20090608135906.GA6027@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090608135906.GA6027@infradead.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a netlink interface for configuration of IEEE 802.15.4 device. Also this
-interface specifies events notification sent by devices towards higher layers.
+On Mon, Jun 08, 2009 at 09:59:06AM -0400, Christoph Hellwig wrote:
+> On Mon, Jun 08, 2009 at 02:29:50PM +0100, Mel Gorman wrote:
+> > The page allocation failure messages include a line that looks like
+> > 
+> > page allocation failure. order:1, mode:0x4020
+> > 
+> > The mode is easy to translate but irritating for the lazy and a bit error
+> > prone. This patch adds a very simple helper script gfp-translate for the mode:
+> > portion of the page allocation failure messages. An example usage looks like
+> 
+> Maybe we just just print the symbolic flags directly? 
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Signed-off-by: Sergey Lapin <slapin@ossfans.org>
----
- include/linux/nl802154.h          |  119 +++++++++
- include/net/ieee802154/nl802154.h |   41 +++
- net/ieee802154/Makefile           |    3 +-
- net/ieee802154/netlink.c          |  523 +++++++++++++++++++++++++++++++++++++
- net/ieee802154/nl_policy.c        |   52 ++++
- 5 files changed, 737 insertions(+), 1 deletions(-)
- create mode 100644 include/linux/nl802154.h
- create mode 100644 include/net/ieee802154/nl802154.h
- create mode 100644 net/ieee802154/netlink.c
- create mode 100644 net/ieee802154/nl_policy.c
+It'd be nice if it was possible, not ugly and didn't involve declaring
+maps twice.
 
-diff --git a/include/linux/nl802154.h b/include/linux/nl802154.h
-new file mode 100644
-index 0000000..2cda00c
---- /dev/null
-+++ b/include/linux/nl802154.h
-@@ -0,0 +1,119 @@
-+/*
-+ * nl802154.h
-+ *
-+ * Copyright (C) 2007, 2008, 2009 Siemens AG
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ *
-+ */
-+
-+#ifndef NL802154_H
-+#define NL802154_H
-+
-+#define IEEE802154_NL_NAME "802.15.4 MAC"
-+#define IEEE802154_MCAST_COORD_NAME "coordinator"
-+#define IEEE802154_MCAST_BEACON_NAME "beacon"
-+
-+enum {
-+	__IEEE802154_ATTR_INVALID,
-+
-+	IEEE802154_ATTR_DEV_NAME,
-+	IEEE802154_ATTR_DEV_INDEX,
-+
-+	IEEE802154_ATTR_STATUS,
-+
-+	IEEE802154_ATTR_SHORT_ADDR,
-+	IEEE802154_ATTR_HW_ADDR,
-+	IEEE802154_ATTR_PAN_ID,
-+
-+	IEEE802154_ATTR_CHANNEL,
-+
-+	IEEE802154_ATTR_COORD_SHORT_ADDR,
-+	IEEE802154_ATTR_COORD_HW_ADDR,
-+	IEEE802154_ATTR_COORD_PAN_ID,
-+
-+	IEEE802154_ATTR_SRC_SHORT_ADDR,
-+	IEEE802154_ATTR_SRC_HW_ADDR,
-+	IEEE802154_ATTR_SRC_PAN_ID,
-+
-+	IEEE802154_ATTR_DEST_SHORT_ADDR,
-+	IEEE802154_ATTR_DEST_HW_ADDR,
-+	IEEE802154_ATTR_DEST_PAN_ID,
-+
-+	IEEE802154_ATTR_CAPABILITY,
-+	IEEE802154_ATTR_REASON,
-+	IEEE802154_ATTR_SCAN_TYPE,
-+	IEEE802154_ATTR_CHANNELS,
-+	IEEE802154_ATTR_DURATION,
-+	IEEE802154_ATTR_ED_LIST,
-+	IEEE802154_ATTR_BCN_ORD,
-+	IEEE802154_ATTR_SF_ORD,
-+	IEEE802154_ATTR_PAN_COORD,
-+	IEEE802154_ATTR_BAT_EXT,
-+	IEEE802154_ATTR_COORD_REALIGN,
-+	IEEE802154_ATTR_SEC,
-+
-+	__IEEE802154_ATTR_MAX,
-+};
-+
-+#define IEEE802154_ATTR_MAX (__IEEE802154_ATTR_MAX - 1)
-+
-+extern struct nla_policy ieee802154_policy[];
-+
-+/* commands */
-+/* REQ should be responded with CONF
-+ * and INDIC with RESP
-+ */
-+enum {
-+	__IEEE802154_COMMAND_INVALID,
-+
-+	IEEE802154_ASSOCIATE_REQ,
-+	IEEE802154_ASSOCIATE_CONF,
-+	IEEE802154_DISASSOCIATE_REQ,
-+	IEEE802154_DISASSOCIATE_CONF,
-+	IEEE802154_GET_REQ,
-+	IEEE802154_GET_CONF,
-+	IEEE802154_RESET_REQ,
-+	IEEE802154_RESET_CONF,
-+	IEEE802154_SCAN_REQ,
-+	IEEE802154_SCAN_CONF,
-+	IEEE802154_SET_REQ,
-+	IEEE802154_SET_CONF,
-+	IEEE802154_START_REQ,
-+	IEEE802154_START_CONF,
-+	IEEE802154_SYNC_REQ,
-+	IEEE802154_POLL_REQ,
-+	IEEE802154_POLL_CONF,
-+
-+	IEEE802154_ASSOCIATE_INDIC,
-+	IEEE802154_ASSOCIATE_RESP,
-+	IEEE802154_DISASSOCIATE_INDIC,
-+	IEEE802154_BEACON_NOTIFY_INDIC,
-+	IEEE802154_ORPHAN_INDIC,
-+	IEEE802154_ORPHAN_RESP,
-+	IEEE802154_COMM_STATUS_INDIC,
-+	IEEE802154_SYNC_LOSS_INDIC,
-+
-+	IEEE802154_GTS_REQ, /* Not supported yet */
-+	IEEE802154_GTS_INDIC, /* Not supported yet */
-+	IEEE802154_GTS_CONF, /* Not supported yet */
-+	IEEE802154_RX_ENABLE_REQ, /* Not supported yet */
-+	IEEE802154_RX_ENABLE_CONF, /* Not supported yet */
-+
-+	__IEEE802154_CMD_MAX,
-+};
-+
-+#define IEEE802154_CMD_MAX (__IEEE802154_CMD_MAX - 1)
-+
-+#endif
-diff --git a/include/net/ieee802154/nl802154.h b/include/net/ieee802154/nl802154.h
-new file mode 100644
-index 0000000..78efcdf
---- /dev/null
-+++ b/include/net/ieee802154/nl802154.h
-@@ -0,0 +1,41 @@
-+/*
-+ * nl802154.h
-+ *
-+ * Copyright (C) 2007, 2008, 2009 Siemens AG
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ *
-+ */
-+
-+#ifndef IEEE802154_NL_H
-+#define IEEE802154_NL_H
-+
-+struct net_device;
-+struct ieee802154_addr;
-+
-+int ieee802154_nl_assoc_indic(struct net_device *dev,
-+		struct ieee802154_addr *addr, u8 cap);
-+int ieee802154_nl_assoc_confirm(struct net_device *dev,
-+		u16 short_addr, u8 status);
-+int ieee802154_nl_disassoc_indic(struct net_device *dev,
-+		struct ieee802154_addr *addr, u8 reason);
-+int ieee802154_nl_disassoc_confirm(struct net_device *dev,
-+		u8 status);
-+int ieee802154_nl_scan_confirm(struct net_device *dev,
-+		u8 status, u8 scan_type, u32 unscanned,
-+		u8 *edl/*, struct list_head *pan_desc_list */);
-+int ieee802154_nl_beacon_indic(struct net_device *dev, u16 panid,
-+		u16 coord_addr);
-+
-+#endif
-diff --git a/net/ieee802154/Makefile b/net/ieee802154/Makefile
-index 7451c7c..f99338a 100644
---- a/net/ieee802154/Makefile
-+++ b/net/ieee802154/Makefile
-@@ -1,4 +1,5 @@
--obj-$(CONFIG_IEEE802154) +=	af_802154.o
-+obj-$(CONFIG_IEEE802154) +=	nl802154.o af_802154.o
-+nl802154-y		:= netlink.o nl_policy.o
- af_802154-y		:= af_ieee802154.o raw.o dgram.o
+Even with such hypothetical support, I believe there is scope for having
+the script readily available for use with reports from older kernels,
+particularly distro kernels.
+
+> The even tracer
+> in the for-2.6.23 queue now has a __print_flags helper to translate the
+> bitmask back into symbolic flags, and we even have a kmalloc tracer
+> using it for the GFP flags.  Maybe we should add a printk_flags variant
+> for regular printks and just do the right thing?
+> 
+
+The problem I found with a printk_flags variant was that there was no
+buffer for it to easily print to for use with printk("%s"). We can't "see"
+the printk buffer, we can't kmalloc() one and I suspect it's too large to
+place on the stack. What had you in mind?
+
+I haven't looked at the trace implementation before so I have very little
+idea as to how best approach this problem. That didn't stop me attempting a
+hatchet-job on the implementation of printk support for the bitflags->string
+maps declared within ftrace - particularly the GFP flags.
+
+The following patch is what it ended up looking like. I recommend goggles
+because even if we go with printk support, this could be implemented better.
+
+=== CUT HERE ===
+
+Add support for %f for the printing of string representation of bit flags
+
+This patch is a prototype to see if the tracing infrastructure used for
+the outputting of symbolic representation of bits set in a flag can be
+reused for printk. With it applied, a page allocation failure report
+looks like
+
+[  171.284889] cat: page allocation failure. order:9, mode:0xd1
+[  171.284948] mode:|GFP_KERNEL|0x1
+[  171.295114] Pid: 2383, comm: cat Not tainted 2.6.30-rc8-tip-02066-g800cfbb-dirty #38
+
+Not-signed-off-yet-by: Mel Gorman <mel@csn.ul.ie>
+
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index 5c093ff..8f8e86c 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -16,6 +16,11 @@ struct trace_print_flags {
+ 	const char		*name;
+ };
  
- ccflags-y += -Wall -DDEBUG
-diff --git a/net/ieee802154/netlink.c b/net/ieee802154/netlink.c
-new file mode 100644
-index 0000000..105ad10
---- /dev/null
-+++ b/net/ieee802154/netlink.c
-@@ -0,0 +1,523 @@
++struct trace_printf_spec {
++	unsigned long			flags;
++	struct trace_print_flags	*flag_array;
++};
++
+ const char *ftrace_print_flags_seq(struct trace_seq *p, const char *delim,
+ 				   unsigned long flags,
+ 				   const struct trace_print_flags *flag_array);
+diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
+index 9baba50..e2404ad 100644
+--- a/include/trace/events/kmem.h
++++ b/include/trace/events/kmem.h
+@@ -17,8 +17,7 @@
+  *
+  * Thus most bits set go first.
+  */
+-#define show_gfp_flags(flags)						\
+-	(flags) ? __print_flags(flags, "|",				\
++#define gfp_flags_printf_map						\
+ 	{(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE"}, \
+ 	{(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER"},	\
+ 	{(unsigned long)GFP_USER,		"GFP_USER"},		\
+@@ -42,6 +41,11 @@
+ 	{(unsigned long)__GFP_THISNODE,		"GFP_THISNODE"},	\
+ 	{(unsigned long)__GFP_RECLAIMABLE,	"GFP_RECLAIMABLE"},	\
+ 	{(unsigned long)__GFP_MOVABLE,		"GFP_MOVABLE"}		\
++
++
++#define show_gfp_flags(flags, map)					\
++	(flags) ? __print_flags(flags, "|",				\
++	map								\
+ 	) : "GFP_NOWAIT"
+ 
+ TRACE_EVENT(kmalloc,
+@@ -75,7 +79,7 @@ TRACE_EVENT(kmalloc,
+ 		__entry->ptr,
+ 		__entry->bytes_req,
+ 		__entry->bytes_alloc,
+-		show_gfp_flags(__entry->gfp_flags))
++		show_gfp_flags(__entry->gfp_flags, gfp_flags_printf_map))
+ );
+ 
+ TRACE_EVENT(kmem_cache_alloc,
+@@ -109,7 +113,7 @@ TRACE_EVENT(kmem_cache_alloc,
+ 		__entry->ptr,
+ 		__entry->bytes_req,
+ 		__entry->bytes_alloc,
+-		show_gfp_flags(__entry->gfp_flags))
++		show_gfp_flags(__entry->gfp_flags, gfp_flags_printf_map))
+ );
+ 
+ TRACE_EVENT(kmalloc_node,
+@@ -146,7 +150,7 @@ TRACE_EVENT(kmalloc_node,
+ 		__entry->ptr,
+ 		__entry->bytes_req,
+ 		__entry->bytes_alloc,
+-		show_gfp_flags(__entry->gfp_flags),
++		show_gfp_flags(__entry->gfp_flags, gfp_flags_printf_map),
+ 		__entry->node)
+ );
+ 
+@@ -184,7 +188,7 @@ TRACE_EVENT(kmem_cache_alloc_node,
+ 		__entry->ptr,
+ 		__entry->bytes_req,
+ 		__entry->bytes_alloc,
+-		show_gfp_flags(__entry->gfp_flags),
++		show_gfp_flags(__entry->gfp_flags, gfp_flags_printf_map),
+ 		__entry->node)
+ );
+ 
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 756ccaf..acb20e0 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -25,6 +25,7 @@
+ #include <linux/kallsyms.h>
+ #include <linux/uaccess.h>
+ #include <linux/ioport.h>
++#include <linux/ftrace_event.h>
+ 
+ #include <asm/page.h>		/* for PAGE_SIZE */
+ #include <asm/div64.h>
+@@ -403,6 +404,7 @@ enum format_type {
+ 	FORMAT_TYPE_CHAR,
+ 	FORMAT_TYPE_STR,
+ 	FORMAT_TYPE_PTR,
++	FORMAT_TYPE_TRACE_FLAGS,
+ 	FORMAT_TYPE_PERCENT_CHAR,
+ 	FORMAT_TYPE_INVALID,
+ 	FORMAT_TYPE_LONG_LONG,
+@@ -574,6 +576,44 @@ static char *string(char *buf, char *end, char *s, struct printf_spec spec)
+ 	return buf;
+ }
+ 
 +/*
-+ * Netlink inteface for IEEE 802.15.4 stack
-+ *
-+ * Copyright 2007, 2008 Siemens AG
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ *
-+ * Written by:
-+ * Sergey Lapin <slapin@ossfans.org>
-+ * Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
++ * Support a %f thing storing a struct trace_print_flags
 + */
-+
-+#include <linux/kernel.h>
-+#include <linux/if_arp.h>
-+#include <linux/netdevice.h>
-+#include <net/netlink.h>
-+#include <net/genetlink.h>
-+#include <linux/nl802154.h>
-+#include <net/ieee802154/af_ieee802154.h>
-+#include <net/ieee802154/nl802154.h>
-+#include <net/ieee802154/netdevice.h>
-+
-+static unsigned int ieee802154_seq_num;
-+
-+static struct genl_family ieee802154_coordinator_family = {
-+	.id		= GENL_ID_GENERATE,
-+	.hdrsize	= 0,
-+	.name		= IEEE802154_NL_NAME,
-+	.version	= 1,
-+	.maxattr	= IEEE802154_ATTR_MAX,
-+};
-+
-+static struct genl_multicast_group ieee802154_coord_mcgrp = {
-+	.name		= IEEE802154_MCAST_COORD_NAME,
-+};
-+
-+static struct genl_multicast_group ieee802154_beacon_mcgrp = {
-+	.name		= IEEE802154_MCAST_BEACON_NAME,
-+};
-+
-+/* Requests to userspace */
-+static struct sk_buff *ieee802154_nl_create(int flags, u8 req)
++static char *trace_flags(char *buf, char *end,
++				struct trace_printf_spec *trace_flags_spec,
++				struct printf_spec spec)
 +{
-+	void *hdr;
-+	struct sk_buff *msg = nlmsg_new(NLMSG_GOODSIZE, GFP_ATOMIC);
-+
-+	if (!msg)
-+		return NULL;
-+
-+	hdr = genlmsg_put(msg, 0, ieee802154_seq_num++,
-+			&ieee802154_coordinator_family, flags, req);
-+	if (!hdr) {
-+		nlmsg_free(msg);
-+		return NULL;
-+	}
-+
-+	return msg;
-+}
-+
-+static int ieee802154_nl_finish(struct sk_buff *msg)
-+{
-+	/* XXX: nlh is right at the start of msg */
-+	void *hdr = genlmsg_data(NLMSG_DATA(msg->data));
-+
-+	if (!genlmsg_end(msg, hdr))
-+		goto out;
-+
-+	return genlmsg_multicast(msg, 0, ieee802154_coord_mcgrp.id,
-+			GFP_ATOMIC);
-+out:
-+	nlmsg_free(msg);
-+	return -ENOBUFS;
-+}
-+
-+int ieee802154_nl_assoc_indic(struct net_device *dev,
-+		struct ieee802154_addr *addr, u8 cap)
-+{
-+	struct sk_buff *msg;
-+
-+	pr_debug("%s\n", __func__);
-+
-+	if (addr->addr_type != IEEE802154_ADDR_LONG) {
-+		pr_err("%s: received non-long source address!\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	msg = ieee802154_nl_create(0, IEEE802154_ASSOCIATE_INDIC);
-+	if (!msg)
-+		return -ENOBUFS;
-+
-+	NLA_PUT_STRING(msg, IEEE802154_ATTR_DEV_NAME, dev->name);
-+	NLA_PUT_U32(msg, IEEE802154_ATTR_DEV_INDEX, dev->ifindex);
-+	NLA_PUT(msg, IEEE802154_ATTR_HW_ADDR, IEEE802154_ADDR_LEN,
-+			dev->dev_addr);
-+
-+	NLA_PUT(msg, IEEE802154_ATTR_SRC_HW_ADDR, IEEE802154_ADDR_LEN,
-+			addr->hwaddr);
-+
-+	NLA_PUT_U8(msg, IEEE802154_ATTR_CAPABILITY, cap);
-+
-+	return ieee802154_nl_finish(msg);
-+
-+nla_put_failure:
-+	nlmsg_free(msg);
-+	return -ENOBUFS;
-+}
-+EXPORT_SYMBOL(ieee802154_nl_assoc_indic);
-+
-+int ieee802154_nl_assoc_confirm(struct net_device *dev, u16 short_addr,
-+		u8 status)
-+{
-+	struct sk_buff *msg;
-+
-+	pr_debug("%s\n", __func__);
-+
-+	msg = ieee802154_nl_create(0, IEEE802154_ASSOCIATE_CONF);
-+	if (!msg)
-+		return -ENOBUFS;
-+
-+	NLA_PUT_STRING(msg, IEEE802154_ATTR_DEV_NAME, dev->name);
-+	NLA_PUT_U32(msg, IEEE802154_ATTR_DEV_INDEX, dev->ifindex);
-+	NLA_PUT(msg, IEEE802154_ATTR_HW_ADDR, IEEE802154_ADDR_LEN,
-+			dev->dev_addr);
-+
-+	NLA_PUT_U16(msg, IEEE802154_ATTR_SHORT_ADDR, short_addr);
-+	NLA_PUT_U8(msg, IEEE802154_ATTR_STATUS, status);
-+
-+	return ieee802154_nl_finish(msg);
-+
-+nla_put_failure:
-+	nlmsg_free(msg);
-+	return -ENOBUFS;
-+}
-+EXPORT_SYMBOL(ieee802154_nl_assoc_confirm);
-+
-+int ieee802154_nl_disassoc_indic(struct net_device *dev,
-+		struct ieee802154_addr *addr, u8 reason)
-+{
-+	struct sk_buff *msg;
-+
-+	pr_debug("%s\n", __func__);
-+
-+	msg = ieee802154_nl_create(0, IEEE802154_DISASSOCIATE_INDIC);
-+	if (!msg)
-+		return -ENOBUFS;
-+
-+	NLA_PUT_STRING(msg, IEEE802154_ATTR_DEV_NAME, dev->name);
-+	NLA_PUT_U32(msg, IEEE802154_ATTR_DEV_INDEX, dev->ifindex);
-+	NLA_PUT(msg, IEEE802154_ATTR_HW_ADDR, IEEE802154_ADDR_LEN,
-+			dev->dev_addr);
-+
-+	if (addr->addr_type == IEEE802154_ADDR_LONG)
-+		NLA_PUT(msg, IEEE802154_ATTR_SRC_HW_ADDR, IEEE802154_ADDR_LEN,
-+				addr->hwaddr);
-+	else
-+		NLA_PUT_U16(msg, IEEE802154_ATTR_SRC_SHORT_ADDR,
-+				addr->short_addr);
-+
-+	NLA_PUT_U8(msg, IEEE802154_ATTR_REASON, reason);
-+
-+	return ieee802154_nl_finish(msg);
-+
-+nla_put_failure:
-+	nlmsg_free(msg);
-+	return -ENOBUFS;
-+}
-+EXPORT_SYMBOL(ieee802154_nl_disassoc_indic);
-+
-+int ieee802154_nl_disassoc_confirm(struct net_device *dev, u8 status)
-+{
-+	struct sk_buff *msg;
-+
-+	pr_debug("%s\n", __func__);
-+
-+	msg = ieee802154_nl_create(0, IEEE802154_DISASSOCIATE_CONF);
-+	if (!msg)
-+		return -ENOBUFS;
-+
-+	NLA_PUT_STRING(msg, IEEE802154_ATTR_DEV_NAME, dev->name);
-+	NLA_PUT_U32(msg, IEEE802154_ATTR_DEV_INDEX, dev->ifindex);
-+	NLA_PUT(msg, IEEE802154_ATTR_HW_ADDR, IEEE802154_ADDR_LEN,
-+			dev->dev_addr);
-+
-+	NLA_PUT_U8(msg, IEEE802154_ATTR_STATUS, status);
-+
-+	return ieee802154_nl_finish(msg);
-+
-+nla_put_failure:
-+	nlmsg_free(msg);
-+	return -ENOBUFS;
-+}
-+EXPORT_SYMBOL(ieee802154_nl_disassoc_confirm);
-+
-+int ieee802154_nl_beacon_indic(struct net_device *dev,
-+		u16 panid, u16 coord_addr)
-+{
-+	struct sk_buff *msg;
-+
-+	pr_debug("%s\n", __func__);
-+
-+	msg = ieee802154_nl_create(0, IEEE802154_BEACON_NOTIFY_INDIC);
-+	if (!msg)
-+		return -ENOBUFS;
-+
-+	NLA_PUT_STRING(msg, IEEE802154_ATTR_DEV_NAME, dev->name);
-+	NLA_PUT_U32(msg, IEEE802154_ATTR_DEV_INDEX, dev->ifindex);
-+	NLA_PUT(msg, IEEE802154_ATTR_HW_ADDR, IEEE802154_ADDR_LEN,
-+			dev->dev_addr);
-+	NLA_PUT_U16(msg, IEEE802154_ATTR_COORD_SHORT_ADDR, coord_addr);
-+	NLA_PUT_U16(msg, IEEE802154_ATTR_COORD_PAN_ID, panid);
-+
-+	return ieee802154_nl_finish(msg);
-+
-+nla_put_failure:
-+	nlmsg_free(msg);
-+	return -ENOBUFS;
-+}
-+EXPORT_SYMBOL(ieee802154_nl_beacon_indic);
-+
-+int ieee802154_nl_scan_confirm(struct net_device *dev,
-+		u8 status, u8 scan_type, u32 unscanned,
-+		u8 *edl/* , struct list_head *pan_desc_list */)
-+{
-+	struct sk_buff *msg;
-+
-+	pr_debug("%s\n", __func__);
-+
-+	msg = ieee802154_nl_create(0, IEEE802154_SCAN_CONF);
-+	if (!msg)
-+		return -ENOBUFS;
-+
-+	NLA_PUT_STRING(msg, IEEE802154_ATTR_DEV_NAME, dev->name);
-+	NLA_PUT_U32(msg, IEEE802154_ATTR_DEV_INDEX, dev->ifindex);
-+	NLA_PUT(msg, IEEE802154_ATTR_HW_ADDR, IEEE802154_ADDR_LEN,
-+			dev->dev_addr);
-+
-+	NLA_PUT_U8(msg, IEEE802154_ATTR_STATUS, status);
-+	NLA_PUT_U8(msg, IEEE802154_ATTR_SCAN_TYPE, scan_type);
-+	NLA_PUT_U32(msg, IEEE802154_ATTR_CHANNELS, unscanned);
-+
-+	if (edl)
-+		NLA_PUT(msg, IEEE802154_ATTR_ED_LIST, 27, edl);
-+
-+	return ieee802154_nl_finish(msg);
-+
-+nla_put_failure:
-+	nlmsg_free(msg);
-+	return -ENOBUFS;
-+}
-+EXPORT_SYMBOL(ieee802154_nl_scan_confirm);
-+
-+/* Requests from userspace */
-+static struct net_device *ieee802154_nl_get_dev(struct genl_info *info)
-+{
-+	struct net_device *dev;
-+
-+	if (info->attrs[IEEE802154_ATTR_DEV_NAME]) {
-+		char name[IFNAMSIZ + 1];
-+		nla_strlcpy(name, info->attrs[IEEE802154_ATTR_DEV_NAME],
-+				sizeof(name));
-+		dev = dev_get_by_name(&init_net, name);
-+	} else if (info->attrs[IEEE802154_ATTR_DEV_INDEX])
-+		dev = dev_get_by_index(&init_net,
-+				nla_get_u32(info->attrs[IEEE802154_ATTR_DEV_INDEX]));
-+	else
-+		return NULL;
-+
-+	if (dev->type != ARPHRD_IEEE802154) {
-+		dev_put(dev);
-+		return NULL;
-+	}
-+
-+	return dev;
-+}
-+
-+static int ieee802154_associate_req(struct sk_buff *skb,
-+		struct genl_info *info)
-+{
-+	struct net_device *dev;
-+	struct ieee802154_addr addr;
-+	int ret = -EINVAL;
-+
-+	if (!info->attrs[IEEE802154_ATTR_CHANNEL] ||
-+	    !info->attrs[IEEE802154_ATTR_COORD_PAN_ID] ||
-+	    (!info->attrs[IEEE802154_ATTR_COORD_HW_ADDR] &&
-+		!info->attrs[IEEE802154_ATTR_COORD_SHORT_ADDR]) ||
-+	    !info->attrs[IEEE802154_ATTR_CAPABILITY])
-+		return -EINVAL;
-+
-+	dev = ieee802154_nl_get_dev(info);
-+	if (!dev)
-+		return -ENODEV;
-+
-+	if (info->attrs[IEEE802154_ATTR_COORD_HW_ADDR]) {
-+		addr.addr_type = IEEE802154_ADDR_LONG;
-+		nla_memcpy(addr.hwaddr,
-+				info->attrs[IEEE802154_ATTR_COORD_HW_ADDR],
-+				IEEE802154_ADDR_LEN);
-+	} else {
-+		addr.addr_type = IEEE802154_ADDR_SHORT;
-+		addr.short_addr = nla_get_u16(
-+				info->attrs[IEEE802154_ATTR_COORD_SHORT_ADDR]);
-+	}
-+	addr.pan_id = nla_get_u16(info->attrs[IEEE802154_ATTR_COORD_PAN_ID]);
-+
-+	ret = ieee802154_mlme_ops(dev)->assoc_req(dev, &addr,
-+			nla_get_u8(info->attrs[IEEE802154_ATTR_CHANNEL]),
-+			nla_get_u8(info->attrs[IEEE802154_ATTR_CAPABILITY]));
-+
-+	dev_put(dev);
-+	return ret;
-+}
-+
-+static int ieee802154_associate_resp(struct sk_buff *skb,
-+		struct genl_info *info)
-+{
-+	struct net_device *dev;
-+	struct ieee802154_addr addr;
-+	int ret = -EINVAL;
-+
-+	if (!info->attrs[IEEE802154_ATTR_STATUS] ||
-+	    !info->attrs[IEEE802154_ATTR_DEST_HW_ADDR] ||
-+	    !info->attrs[IEEE802154_ATTR_DEST_SHORT_ADDR])
-+		return -EINVAL;
-+
-+	dev = ieee802154_nl_get_dev(info);
-+	if (!dev)
-+		return -ENODEV;
-+
-+	addr.addr_type = IEEE802154_ADDR_LONG;
-+	nla_memcpy(addr.hwaddr, info->attrs[IEEE802154_ATTR_DEST_HW_ADDR],
-+			IEEE802154_ADDR_LEN);
-+	addr.pan_id = ieee802154_mlme_ops(dev)->get_pan_id(dev);
-+
-+
-+	ret = ieee802154_mlme_ops(dev)->assoc_resp(dev, &addr,
-+		nla_get_u16(info->attrs[IEEE802154_ATTR_DEST_SHORT_ADDR]),
-+		nla_get_u8(info->attrs[IEEE802154_ATTR_STATUS]));
-+
-+	dev_put(dev);
-+	return ret;
-+}
-+
-+static int ieee802154_disassociate_req(struct sk_buff *skb,
-+		struct genl_info *info)
-+{
-+	struct net_device *dev;
-+	struct ieee802154_addr addr;
-+	int ret = -EINVAL;
-+
-+	if ((!info->attrs[IEEE802154_ATTR_DEST_HW_ADDR] &&
-+		!info->attrs[IEEE802154_ATTR_DEST_SHORT_ADDR]) ||
-+	    !info->attrs[IEEE802154_ATTR_REASON])
-+		return -EINVAL;
-+
-+	dev = ieee802154_nl_get_dev(info);
-+	if (!dev)
-+		return -ENODEV;
-+
-+	if (info->attrs[IEEE802154_ATTR_DEST_HW_ADDR]) {
-+		addr.addr_type = IEEE802154_ADDR_LONG;
-+		nla_memcpy(addr.hwaddr,
-+				info->attrs[IEEE802154_ATTR_DEST_HW_ADDR],
-+				IEEE802154_ADDR_LEN);
-+	} else {
-+		addr.addr_type = IEEE802154_ADDR_SHORT;
-+		addr.short_addr = nla_get_u16(
-+				info->attrs[IEEE802154_ATTR_DEST_SHORT_ADDR]);
-+	}
-+	addr.pan_id = ieee802154_mlme_ops(dev)->get_pan_id(dev);
-+
-+	ret = ieee802154_mlme_ops(dev)->disassoc_req(dev, &addr,
-+			nla_get_u8(info->attrs[IEEE802154_ATTR_REASON]));
-+
-+	dev_put(dev);
-+	return ret;
-+}
-+
-+/*
-+ * PANid, channel, beacon_order = 15, superframe_order = 15,
-+ * PAN_coordinator, battery_life_extension = 0,
-+ * coord_realignment = 0, security_enable = 0
-+*/
-+static int ieee802154_start_req(struct sk_buff *skb, struct genl_info *info)
-+{
-+	struct net_device *dev;
-+	struct ieee802154_addr addr;
-+
-+	u8 channel, bcn_ord, sf_ord;
-+	int pan_coord, blx, coord_realign;
-+	int ret;
-+
-+	if (!info->attrs[IEEE802154_ATTR_COORD_PAN_ID] ||
-+	    !info->attrs[IEEE802154_ATTR_COORD_SHORT_ADDR] ||
-+	    !info->attrs[IEEE802154_ATTR_CHANNEL] ||
-+	    !info->attrs[IEEE802154_ATTR_BCN_ORD] ||
-+	    !info->attrs[IEEE802154_ATTR_SF_ORD] ||
-+	    !info->attrs[IEEE802154_ATTR_PAN_COORD] ||
-+	    !info->attrs[IEEE802154_ATTR_BAT_EXT] ||
-+	    !info->attrs[IEEE802154_ATTR_COORD_REALIGN]
-+	 )
-+		return -EINVAL;
-+
-+	dev = ieee802154_nl_get_dev(info);
-+	if (!dev)
-+		return -ENODEV;
-+
-+	addr.addr_type = IEEE802154_ADDR_SHORT;
-+	addr.short_addr = nla_get_u16(
-+			info->attrs[IEEE802154_ATTR_COORD_SHORT_ADDR]);
-+	addr.pan_id = nla_get_u16(info->attrs[IEEE802154_ATTR_COORD_PAN_ID]);
-+
-+	channel = nla_get_u8(info->attrs[IEEE802154_ATTR_CHANNEL]);
-+	bcn_ord = nla_get_u8(info->attrs[IEEE802154_ATTR_BCN_ORD]);
-+	sf_ord = nla_get_u8(info->attrs[IEEE802154_ATTR_SF_ORD]);
-+	pan_coord = nla_get_u8(info->attrs[IEEE802154_ATTR_PAN_COORD]);
-+	blx = nla_get_u8(info->attrs[IEEE802154_ATTR_BAT_EXT]);
-+	coord_realign = nla_get_u8(info->attrs[IEEE802154_ATTR_COORD_REALIGN]);
-+
-+	ret = ieee802154_mlme_ops(dev)->start_req(dev, &addr, channel,
-+		bcn_ord, sf_ord, pan_coord, blx, coord_realign);
-+
-+	dev_put(dev);
-+	return ret;
-+}
-+
-+static int ieee802154_scan_req(struct sk_buff *skb, struct genl_info *info)
-+{
-+	struct net_device *dev;
-+	int ret;
-+	u8 type;
-+	u32 channels;
-+	u8 duration;
-+
-+	if (!info->attrs[IEEE802154_ATTR_SCAN_TYPE] ||
-+	    !info->attrs[IEEE802154_ATTR_CHANNELS] ||
-+	    !info->attrs[IEEE802154_ATTR_DURATION])
-+		return -EINVAL;
-+
-+	dev = ieee802154_nl_get_dev(info);
-+	if (!dev)
-+		return -ENODEV;
-+
-+	type = nla_get_u8(info->attrs[IEEE802154_ATTR_SCAN_TYPE]);
-+	channels = nla_get_u32(info->attrs[IEEE802154_ATTR_CHANNELS]);
-+	duration = nla_get_u8(info->attrs[IEEE802154_ATTR_DURATION]);
-+
-+	ret = ieee802154_mlme_ops(dev)->scan_req(dev, type, channels,
-+			duration);
-+
-+	dev_put(dev);
-+	return ret;
-+}
-+
-+#define IEEE802154_OP(_cmd, _func)			\
-+	{						\
-+		.cmd	= _cmd,				\
-+		.policy	= ieee802154_policy,		\
-+		.doit	= _func,			\
-+		.dumpit	= NULL,				\
-+		.flags	= GENL_ADMIN_PERM,		\
-+	}
-+
-+static struct genl_ops ieee802154_coordinator_ops[] = {
-+	IEEE802154_OP(IEEE802154_ASSOCIATE_REQ, ieee802154_associate_req),
-+	IEEE802154_OP(IEEE802154_ASSOCIATE_RESP, ieee802154_associate_resp),
-+	IEEE802154_OP(IEEE802154_DISASSOCIATE_REQ, ieee802154_disassociate_req),
-+	IEEE802154_OP(IEEE802154_SCAN_REQ, ieee802154_scan_req),
-+	IEEE802154_OP(IEEE802154_START_REQ, ieee802154_start_req),
-+};
-+
-+static int __init ieee802154_nl_init(void)
-+{
-+	int rc;
++	unsigned long mask;
++	unsigned long flags = trace_flags_spec->flags;
++	struct trace_print_flags *flag_array = trace_flags_spec->flag_array;
++	char *str;
++	char *delim = "|";
++	char *ret = buf;
 +	int i;
 +
-+	rc = genl_register_family(&ieee802154_coordinator_family);
-+	if (rc)
-+		goto fail;
++	for (i = 0;  flag_array[i].name && flags; i++) {
 +
-+	rc = genl_register_mc_group(&ieee802154_coordinator_family,
-+			&ieee802154_coord_mcgrp);
-+	if (rc)
-+		goto fail;
++		mask = flag_array[i].mask;
++		if ((flags & mask) != mask)
++			continue;
 +
-+	rc = genl_register_mc_group(&ieee802154_coordinator_family,
-+			&ieee802154_beacon_mcgrp);
-+	if (rc)
-+		goto fail;
-+
-+
-+	for (i = 0; i < ARRAY_SIZE(ieee802154_coordinator_ops); i++) {
-+		rc = genl_register_ops(&ieee802154_coordinator_family,
-+				&ieee802154_coordinator_ops[i]);
-+		if (rc)
-+			goto fail;
++		str = (char *)flag_array[i].name;
++		flags &= ~mask;
++		if (ret < end && delim)
++			ret = string(ret, end, delim, spec);
++		ret = string(ret, end, str, spec);
 +	}
 +
-+	return 0;
++	if (flags) {
++		ret = string(ret, end, delim, spec);
++		spec.flags |= SPECIAL|SMALL;
++		spec.base = 16;
++		ret = number(ret, end, flags, spec);
++	}
 +
-+fail:
-+	genl_unregister_family(&ieee802154_coordinator_family);
-+	return rc;
++	return ret;
 +}
-+module_init(ieee802154_nl_init);
 +
-+static void __exit ieee802154_nl_exit(void)
-+{
-+	genl_unregister_family(&ieee802154_coordinator_family);
-+}
-+module_exit(ieee802154_nl_exit);
+ static char *symbol_string(char *buf, char *end, void *ptr,
+ 				struct printf_spec spec, char ext)
+ {
+@@ -888,6 +928,11 @@ qualifier:
+ 		return fmt - start;
+ 		/* skip alnum */
+ 
++	case 'f':
++		spec->qualifier = 'l';
++		spec->type = FORMAT_TYPE_TRACE_FLAGS;
++		return ++fmt - start;
 +
-diff --git a/net/ieee802154/nl_policy.c b/net/ieee802154/nl_policy.c
-new file mode 100644
-index 0000000..c7d71d1
---- /dev/null
-+++ b/net/ieee802154/nl_policy.c
-@@ -0,0 +1,52 @@
-+/*
-+ * nl802154.h
-+ *
-+ * Copyright (C) 2007, 2008 Siemens AG
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ *
-+ */
+ 	case 'n':
+ 		spec->type = FORMAT_TYPE_NRCHARS;
+ 		return ++fmt - start;
+@@ -1058,6 +1103,12 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+ 				fmt++;
+ 			break;
+ 
++		case FORMAT_TYPE_TRACE_FLAGS:
++			str = trace_flags(str, end,
++				va_arg(args, struct trace_printf_spec *),
++				spec);
++			break;
 +
-+#include <linux/kernel.h>
-+#include <net/netlink.h>
-+#include <linux/nl802154.h>
-+
-+#define NLA_HW_ADDR NLA_U64
-+
-+struct nla_policy ieee802154_policy[IEEE802154_ATTR_MAX + 1] = {
-+	[IEEE802154_ATTR_DEV_NAME] = { .type = NLA_STRING, },
-+	[IEEE802154_ATTR_DEV_INDEX] = { .type = NLA_U32, },
-+
-+	[IEEE802154_ATTR_STATUS] = { .type = NLA_U8, },
-+	[IEEE802154_ATTR_SHORT_ADDR] = { .type = NLA_U16, },
-+	[IEEE802154_ATTR_HW_ADDR] = { .type = NLA_HW_ADDR, },
-+	[IEEE802154_ATTR_PAN_ID] = { .type = NLA_U16, },
-+	[IEEE802154_ATTR_CHANNEL] = { .type = NLA_U8, },
-+	[IEEE802154_ATTR_COORD_SHORT_ADDR] = { .type = NLA_U16, },
-+	[IEEE802154_ATTR_COORD_HW_ADDR] = { .type = NLA_HW_ADDR, },
-+	[IEEE802154_ATTR_COORD_PAN_ID] = { .type = NLA_U16, },
-+	[IEEE802154_ATTR_SRC_SHORT_ADDR] = { .type = NLA_U16, },
-+	[IEEE802154_ATTR_SRC_HW_ADDR] = { .type = NLA_HW_ADDR, },
-+	[IEEE802154_ATTR_SRC_PAN_ID] = { .type = NLA_U16, },
-+	[IEEE802154_ATTR_DEST_SHORT_ADDR] = { .type = NLA_U16, },
-+	[IEEE802154_ATTR_DEST_HW_ADDR] = { .type = NLA_HW_ADDR, },
-+	[IEEE802154_ATTR_DEST_PAN_ID] = { .type = NLA_U16, },
-+
-+	[IEEE802154_ATTR_CAPABILITY] = { .type = NLA_U8, },
-+	[IEEE802154_ATTR_REASON] = { .type = NLA_U8, },
-+	[IEEE802154_ATTR_SCAN_TYPE] = { .type = NLA_U8, },
-+	[IEEE802154_ATTR_CHANNELS] = { .type = NLA_U32, },
-+	[IEEE802154_ATTR_DURATION] = { .type = NLA_U8, },
-+	[IEEE802154_ATTR_ED_LIST] = { .len = 27 },
+ 		case FORMAT_TYPE_PERCENT_CHAR:
+ 			if (str < end)
+ 				*str = '%';
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index ed766b5..714b5c2 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -47,6 +47,7 @@
+ #include <linux/page-isolation.h>
+ #include <linux/page_cgroup.h>
+ #include <linux/debugobjects.h>
++#include <linux/ftrace_event.h>
+ 
+ #include <asm/tlbflush.h>
+ #include <asm/div64.h>
+@@ -172,6 +173,11 @@ static void set_pageblock_migratetype(struct page *page, int migratetype)
+ 					PB_migrate, PB_migrate_end);
+ }
+ 
++struct trace_print_flags trace_print_flags_gfp[] = {
++	gfp_flags_printf_map,
++	{ -1, NULL }
 +};
--- 
-1.6.3.1
++
+ #ifdef CONFIG_DEBUG_VM
+ static int page_outside_zone_boundaries(struct zone *zone, struct page *page)
+ {
+@@ -1675,9 +1681,15 @@ nofail_alloc:
+ 
+ nopage:
+ 	if (!(gfp_mask & __GFP_NOWARN) && printk_ratelimit()) {
++		static struct trace_printf_spec gfpmask_printspec;
++		gfpmask_printspec.flags = gfp_mask;
++		gfpmask_printspec.flag_array = trace_print_flags_gfp;
++			
+ 		printk(KERN_WARNING "%s: page allocation failure."
+-			" order:%d, mode:0x%x\n",
+-			p->comm, order, gfp_mask);
++			" order:%d, mode:0x%x\nmode:%f\n",
++			p->comm, order, gfp_mask,
++			&gfpmask_printspec);
++
+ 		dump_stack();
+ 		show_mem();
+ 	}
 
