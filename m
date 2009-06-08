@@ -1,38 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757440AbZFHXGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbZFHXIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757440AbZFHXGl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 19:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757329AbZFHXGW
+	id S1756706AbZFHXIK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 19:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbZFHXH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 19:06:22 -0400
-Received: from xes-mad.com ([216.165.139.214]:50157 "EHLO xes-mad.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756457AbZFHXGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 19:06:21 -0400
-From: Nate Case <ncase@xes-inc.com>
-To: David Brownell <dbrownell@users.sourceforge.net>
+	Mon, 8 Jun 2009 19:07:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35429 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754692AbZFHXH5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 19:07:57 -0400
+Date: Mon, 8 Jun 2009 16:07:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: steiner@sgi.com
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH next 0/2] gpio: pca953x updates
-Date: Mon,  8 Jun 2009 17:51:51 -0500
-Message-Id: <1244501513-19836-1-git-send-email-ncase@xes-inc.com>
-X-Mailer: git-send-email 1.6.0.2
+Subject: Re: [Patch 04/12] GRU - collect per-context user statistics
+Message-Id: <20090608160740.4d57ba5d.akpm@linux-foundation.org>
+In-Reply-To: <20090608171953.673876000@sgi.com>
+References: <20090608171648.988318000@sgi.com>
+	<20090608171953.673876000@sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes were needed to support PCA95xx GPIO on our PowerPC
-boards.  We use both the PCA9557 and the PCA9556 (on older boards).
+On Mon, 08 Jun 2009 12:16:52 -0500
+steiner@sgi.com wrote:
 
-This should probably be for -next.
+>  /*
+> + * Fetch GSEG statisticss
+> + */
+> +long gru_get_gseg_statistics(unsigned long arg)
+> +{
+> +	struct gru_thread_state *gts;
+> +	struct gru_get_gseg_statistics_req req;
+> +
+> +	if (copy_from_user(&req, (void __user *)arg, sizeof(req)))
+> +		return -EFAULT;
+> +
+> +	gts = gru_find_lock_gts(req.gseg);
+> +	if (gts) {
+> +		memcpy(&req.stats, &gts->ustats, sizeof(gts->ustats));
+> +		gru_unlock_gts(gts);
+> +	} else {
+> +		memset(&req.stats, 0, sizeof(gts->ustats));
+> +	}
+> +
+> +	if (copy_to_user((void __user *)arg, &req, sizeof(req)))
+> +		return -EFAULT;
+> +
+> +	return 0;
+> +}
 
----
+So..  what's happening in the super-secret undocumented gts==NULL path?
 
-Nate Case (2):
-    gpio: pca953x: Add support for PCA9556
-    gpio: pca953x: Get platform_data from OpenFirmware
+It _looks_ like userspace passed into this ioctl a handle for something
+which the kernel doesn't know about.  If so, shouldn't we return
+-EINVAL or something?  
 
- drivers/gpio/pca953x.c |   80 +++++++++++++++++++++++++++++++++++++--
- 1 files changed, 75 insertions(+), 5 deletions(-)
-
---
-Nate Case <ncase@xes-inc.com>
