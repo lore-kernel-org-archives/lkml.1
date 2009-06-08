@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbZFHRru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbZFHRtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753823AbZFHRru (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZFHRrn
+	id S1754247AbZFHRtc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZFHRtY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:47:43 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:50020 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbZFHRrm (ORCPT
+	Mon, 8 Jun 2009 13:49:24 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:49761 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750758AbZFHRtX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:47:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=YRlGYry6FIpVweoh3pla1hlNmR/A0EKJFAPTjyD8U+ysQyL6+sOudyCz2OlzCLYm4H
-         3LGEr6UWRsrCg9nUeBznPhqNNkrSWnRNYTy5aaumbETeh9E3BPItc7qGwVqAnN///n+8
-         S2V4RFTKA+aNgx9QGK4kxa40+8ZZfl7lxlm6Y=
-Date: Mon, 8 Jun 2009 21:47:34 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:irq/numa] x86, apic: Fix dummy apic read operation
-	together with broken MP handling
-Message-ID: <20090608174734.GF5015@lenovo>
-References: <20090607124840.GD4547@lenovo> <tip-103428e57be323c3c5545db8ad12667099bc6005@git.kernel.org> <86802c440906071223w3116f452n7ccd028d52f11c77@mail.gmail.com> <20090607203951.GF4547@lenovo> <86802c440906071559t7f2139c0s55fd15e8cd669cff@mail.gmail.com> <20090608151646.GB5015@lenovo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090608151646.GB5015@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 8 Jun 2009 13:49:23 -0400
+Subject: Re: 2.6.30-rc8 Oops whilst booting
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chris Clayton <chris2553@googlemail.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       scsi <linux-scsi@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+In-Reply-To: <alpine.LFD.2.01.0906081039520.6847@localhost.localdomain>
+References: <200906061959.55592.chris2553@googlemail.com>
+	 <200906062215.30571.chris2553@googlemail.com>
+	 <1244381140.30664.12.camel@ht.satnam>
+	 <c6b1100b0906071138g2c46fb34vc1a2beb9438f1f1e@mail.gmail.com>
+	 <1244413881.18742.31.camel@ht.satnam>
+	 <2f9e3044bafcae848f74a1492b0ea471.squirrel@neil.brown.name>
+	 <c6b1100b0906080108y191bb157n67ec681ade2a0d13@mail.gmail.com>
+	 <c6b1100b0906080358y4033c402ra236eff3f972d169@mail.gmail.com>
+	 <1244460875.12644.2.camel@ht.satnam>
+	 <c6b1100b0906080553o2aa77a40pe0077b1b10a7d88a@mail.gmail.com>
+	 <alpine.LFD.2.01.0906080916130.6847@localhost.localdomain>
+	 <1244480796.4079.301.camel@mulgrave.site>
+	 <alpine.LFD.2.01.0906081039520.6847@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 08 Jun 2009 12:49:22 -0500
+Message-Id: <1244483362.4079.358.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Mon, Jun 08, 2009 at 07:16:46PM +0400]
-...
-| | should be other case:
-| | when MADT is right, but disablelapic is used.
-| | will get cpu_has_apic == 0, and we are not using dummy apic read/write.
-| | 
-| | so don't need to check
-| |         /*
-| |          * If we couldn't find a local APIC, then get out of here now!
-| |          */
-| |         if (APIC_INTEGRATED(apic_version[boot_cpu_physical_apicid]) &&
-| |             !cpu_has_apic) {
-| |                 if (!disable_apic) {
-| |                         pr_err("BIOS bug, local APIC #%d not detected!...\n",
-| |                                 boot_cpu_physical_apicid);
-| |                         pr_err("... forcing use of dummy APIC emulation."
-| |                                 "(tell your hw vendor)\n");
-| |                 }
-| |                 smpboot_clear_io_apic();
-| |                 arch_disable_smp_support();
-| |                 return -1;
-| |         }
-|
-...
+On Mon, 2009-06-08 at 10:42 -0700, Linus Torvalds wrote:
+> 
+> On Mon, 8 Jun 2009, James Bottomley wrote:
+> > 
+> > I think it's a bug in the async code.  It's providing cookies too high
+> > because it doesn't stop after it finds a running entry.
+> > 
+> > Can we try this as the fix?
+> 
+> Ok, this looks likely.
+> 
+> That said, why doesn't that function look like this?
 
-I've just emulated the situation where this if() triggered via
-disable_apic boot option and without if (!disable_apic) we
-have just a wrong message about BIOS bug (which is not since
-we've disabled apic by hands). So no need to remove this
-"if (!disable_apic)" snippet. In most cases it will be
-always-true condition but for rare cases it'll be usefull
-as well.
+That's probably a better style ... or simply put an if ... else if to
+make it exclusive.
 
-Now I'm trying to fake apic integrated case so we could
-need additional check here...
- 
-	-- Cyrill
+James
+
+
