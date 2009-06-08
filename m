@@ -1,73 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753306AbZFHGl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753242AbZFHGqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753306AbZFHGl4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 02:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbZFHGlt
+	id S1753242AbZFHGqR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 02:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZFHGqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 02:41:49 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:57017 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752450AbZFHGls (ORCPT
+	Mon, 8 Jun 2009 02:46:07 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:45054 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751493AbZFHGqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 02:41:48 -0400
-Date: Mon, 8 Jun 2009 12:11:49 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH] kmemcheck: move hook before preempt_conditional_sti()
-Message-ID: <20090608064148.GA516@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <1244392012-638-1-git-send-email-vegard.nossum@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244392012-638-1-git-send-email-vegard.nossum@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 8 Jun 2009 02:46:06 -0400
+Date: Mon, 8 Jun 2009 15:39:16 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH mmotm] vmscan: fix may_swap handling for memcg
+Message-Id: <20090608153916.3ccaeb9a.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090608121848.4370.A69D9226@jp.fujitsu.com>
+References: <20090608120228.cb70e569.nishimura@mxp.nes.nec.co.jp>
+	<20090608121848.4370.A69D9226@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 07, 2009 at 06:26:52PM +0200, Vegard Nossum wrote:
-> There are actually two problems here:
+On Mon,  8 Jun 2009 12:20:54 +0900 (JST), KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> Hi
 > 
-> 1. We absolutely cannot enable IRQs in case the fault was caused by
->    kmemcheck.
-> 
-> 2. We cannot enable preemption and then return from the debug handler
->    without disabling preemption afterwards.
-> 
-> The problem seems to be a merge fallout between three commits:
-> 
-> commit 3d2a71a596bd9c761c8487a2178e95f8a61da083
-> Author: Alexander van Heukelum <heukelum@fastmail.fm>
-> Date:   Tue Sep 30 18:41:37 2008 +0200
-> 
->     x86, traps: converge do_debug handlers
-> 
-> commit 08d68323d1f0c34452e614263b212ca556dae47f
-> Author: K.Prasad <prasad@linux.vnet.ibm.com>
-> Date:   Mon Jun 1 23:44:08 2009 +0530
-> 
->     hw-breakpoints: modifying generic debug exception to use thread-specific deb
-> 
-> commit 787ecfaa503dc63ff1831ddc74b15dad49bace1d
-> Author: Vegard Nossum <vegard.nossum@gmail.com>
-> Date:   Fri Apr 4 00:53:23 2008 +0200
-> 
->     x86: add hooks for kmemcheck
-> 
-> I encourage the kprobe developers to check whether their code is correct
-> as it stands in current tip/master. Also, comments on this particular
-> change is welcome.
+Hi, thank you for your comment.
 
-I see no problem with this change wrt kprobes, since the changes happen
-after the notify_die, by which time, kprobes would've returned
-NOTIFY_DONE since the per-cpu current_kprobe == NULL.
+> > From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > 
+> > Commit 2e2e425989080cc534fc0fca154cae515f971cf5 ("vmscan,memcg: reintroduce
+> > sc->may_swap) add may_swap flag and handle it at get_scan_ratio().
+> > 
+> > But the result of get_scan_ratio() is ignored when priority == 0, and this
+> > means, when memcg hits the mem+swap limit, anon pages can be swapped
+> > just in vain. Especially when memcg causes oom by mem+swap limit,
+> > we can see many and many pages are swapped out.
+> > 
+> > Instead of not scanning anon lru completely when priority == 0, this patch adds
+> > a hook to handle may_swap flag in shrink_page_list() to avoid using useless swaps,
+> > and calls try_to_free_swap() if needed because it can reduce
+> > both mem.usage and memsw.usage if the page(SwapCache) is unused anymore.
+> > 
+> > Such unused-but-managed-under-memcg SwapCache can be made in some paths,
+> > for example trylock_page() failure in free_swap_cache().
+> > 
+> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> 
+> I think root cause is following branch, right?
+yes.
 
-Ananth
+> if so, Why can't we handle this issue on shrink_zone()?
+> 
+Just because priority==0 means oom is about to happen and I don't
+want to see oom if possible.
+So I thought it would be better to reclaim as much pages(memsw.usage) as possible
+in this case.
+
+> 
+> ---------------------------------------------------------------
+> static void shrink_zone(int priority, struct zone *zone,
+>                                 struct scan_control *sc)
+> {
+>         get_scan_ratio(zone, sc, percent);
+> 
+>         for_each_evictable_lru(l) {
+>                 int file = is_file_lru(l);
+>                 unsigned long scan;
+> 
+>                 scan = zone_nr_pages(zone, sc, l);
+>                 if (priority) {				// !!here!!
+>                         scan >>= priority;
+>                         scan = (scan * percent[file]) / 100;
+>                 }
+> 
+> 
+> 
+> 
