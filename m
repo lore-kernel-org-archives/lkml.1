@@ -1,93 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbZFHVS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbZFHVXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756805AbZFHVS1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 17:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbZFHVSJ
+	id S1755846AbZFHVXU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 17:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbZFHVXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 17:18:09 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:38918 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755970AbZFHVSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 17:18:08 -0400
-Message-ID: <4A2D8011.9050502@linux.vnet.ibm.com>
-Date: Mon, 08 Jun 2009 14:18:09 -0700
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 8 Jun 2009 17:23:12 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:44316 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753936AbZFHVXL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 17:23:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=aTNptjpHjeYi0OfC7NFngDKRLeqZAdoOeGvQdeadhSl2CuySvuJSoQ/KoS36hFBv/A
+         styUv8Ixf9ATBpHtuoKkUM2F8imNUsfFtAeYpWAEtKgtzeevWnis2VXbRaRftq3+YQNA
+         Jyrbdyt5ChRmcNbhjItLZ2dlE4MPdLvc+iYL8=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: Re: [PATCH next] ide: fix PowerMac bootup oops
+Date: Mon, 8 Jun 2009 23:28:02 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-rc8-next-20090605-07377-g5acd34e; KDE/4.2.3; i686; ; )
+Cc: Joao Ramos <joao.ramos@inov.pt>,
+       Sergei Shtylyov <sshtylyov@ru.montavista.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+References: <Pine.LNX.4.64.0906082137120.22183@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0906082137120.22183@sister.anvils>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf_counter: extensible perf_counter_attr
-References: <1244481941.13761.9119.camel@twins> <4A2D6041.4050309@linux.vnet.ibm.com> <1244490680.6691.1.camel@laptop>
-In-Reply-To: <1244490680.6691.1.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Message-Id: <200906082328.02729.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Mon, 2009-06-08 at 12:02 -0700, Corey Ashford wrote:
->> Hi Peter,
->>
->> Peter Zijlstra wrote:
->>> Allow extending the perf_counter_attr structure by linking extended
->>> structures to it.
->>>
->>> Also, should we grow the directly reserved space in the structure a
->>> little more?
->>>
->>> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->>> ---
->>>  include/linux/perf_counter.h |    7 +++++++
->>>  kernel/perf_counter.c        |    1 +
->>>  2 files changed, 8 insertions(+), 0 deletions(-)
->>>
->>> diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
->>> index 3586df8..781d8ce 100644
->>> --- a/include/linux/perf_counter.h
->>> +++ b/include/linux/perf_counter.h
->>> @@ -175,6 +175,13 @@ struct perf_counter_attr {
->>>  	__u32			__reserved_3;
->>>
->>>  	__u64			__reserved_4;
->>> +
->>> +	struct perf_counter_attr_ext *ext_attrs;
->>> +};
->>> +
->>> +struct perf_counter_attr_ext {
->>> +	struct perf_counter_attr_ext 	*next;
->>> +	__u64				perf_attr_ext_type;
->>>  };
->> Let's say I want to extend the attributes by four 64-bit quantities... from the 
->> above definition, I'd need four additional records chained together, right?  How 
->> about something like this instead:
+
+Hi Hugh,
+
+On Monday 08 June 2009 22:45:28 Hugh Dickins wrote:
+> PowerMac bootup with CONFIG_IDE=y oopses in ide_pio_cycle_time():
+> because "ide: try to use PIO Mode 0 during probe if possible" causes
+> pmac_ide_set_pio_mode() now to be called before drive->id has been set.
+
+Good spotting, I overlooked this aspect of the change while testing it
+with piix host driver..
+
+> It does the right thing if id is not set, so long as we check for that.
+
+After auditing some other host drivers I see that drive->id can be used
+also directly in ->set_pio_mode methods..
+
+Could you please instead try moving ->id allocation from probe_for_drive()
+to ide_port_alloc_devices() (this would fix all such issues for good) and
+verify that it also fixes the oops?
+
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> ---
 > 
-> Ah, the idea was to do something like:
+>  drivers/ide/ide-timings.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> struct perf_counter_attr_feature {
-> 	struct perf_counter_attr_ext	head;
-> 	... more stuff ...
-> };
-> 
-> and set head.perf_attr_ext_type = PERF_ATTR_EXT_FEATURE
-
-
-So you'd do something like this then when assigning to the perf_counter_attr struct:
-
-struct perf_counter_attr pca;
-...
-struct perf_counter_attr_feature feature;
-
-...
-pca.ext_attrs = (struct perf_counter_attr_ext *)&feature;
--or-
-pca.ext_attrs = &feature.head; /* secretly know that there's data that lies past 
-the attr struct header */
-
-Am I understanding this correctly?
-
-- Corey
-
+> --- lnext/drivers/ide/ide-timings.c	2009-04-08 18:25:55.000000000 +0100
+> +++ linux/drivers/ide/ide-timings.c	2009-06-03 19:45:58.000000000 +0100
+> @@ -84,7 +84,7 @@ u16 ide_pio_cycle_time(ide_drive_t *driv
+>  	struct ide_timing *t = ide_timing_find_mode(XFER_PIO_0 + pio);
+>  	u16 cycle = 0;
+>  
+> -	if (id[ATA_ID_FIELD_VALID] & 2) {
+> +	if (id && (id[ATA_ID_FIELD_VALID] & 2)) {
+>  		if (ata_id_has_iordy(drive->id))
+>  			cycle = id[ATA_ID_EIDE_PIO_IORDY];
+>  		else
