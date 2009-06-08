@@ -1,85 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752275AbZFHRnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbZFHRqC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752275AbZFHRnl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbZFHRnZ
+	id S1753237AbZFHRqC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:46:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbZFHRpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:43:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51211 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752904AbZFHRnY (ORCPT
+	Mon, 8 Jun 2009 13:45:52 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:45965 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750806AbZFHRpv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:43:24 -0400
-Date: Mon, 8 Jun 2009 10:42:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Chris Clayton <chris2553@googlemail.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+	Mon, 8 Jun 2009 13:45:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KmiaCplrWdNLIpaOWwxYALkPaBUThxOUiYM5iaEE9/74HOGnpdLRLdkztAkkZoNyKx
+         /9qWsOGaHAdP3MP7FlULMjWfw1BxvBlND3Yb3wj4TV6VhQx9Ptb+2T7G92RKXqlOKDQi
+         OoKozaOkUbL7WTtzYPGitAn6r340ZrtYlDXkA=
+MIME-Version: 1.0
+In-Reply-To: <1244480790.2716.7.camel@ht.satnam>
+References: <200906061959.55592.chris2553@googlemail.com>
+	 <1244413881.18742.31.camel@ht.satnam>
+	 <2f9e3044bafcae848f74a1492b0ea471.squirrel@neil.brown.name>
+	 <c6b1100b0906080108y191bb157n67ec681ade2a0d13@mail.gmail.com>
+	 <c6b1100b0906080358y4033c402ra236eff3f972d169@mail.gmail.com>
+	 <1244460875.12644.2.camel@ht.satnam>
+	 <c6b1100b0906080553o2aa77a40pe0077b1b10a7d88a@mail.gmail.com>
+	 <alpine.LFD.2.01.0906080916130.6847@localhost.localdomain>
+	 <1244479879.4079.284.camel@mulgrave.site>
+	 <1244480790.2716.7.camel@ht.satnam>
+Date: Mon, 8 Jun 2009 18:45:51 +0100
+Message-ID: <c6b1100b0906081045t47c77b94ubc89d450c3a75147@mail.gmail.com>
+Subject: Re: 2.6.30-rc8 Oops whilst booting
+From: Chris Clayton <chris2553@googlemail.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
        scsi <linux-scsi@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
        Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: 2.6.30-rc8 Oops whilst booting
-In-Reply-To: <1244480796.4079.301.camel@mulgrave.site>
-Message-ID: <alpine.LFD.2.01.0906081039520.6847@localhost.localdomain>
-References: <200906061959.55592.chris2553@googlemail.com>  <200906062215.30571.chris2553@googlemail.com>  <1244381140.30664.12.camel@ht.satnam>  <c6b1100b0906071138g2c46fb34vc1a2beb9438f1f1e@mail.gmail.com>  <1244413881.18742.31.camel@ht.satnam> 
- <2f9e3044bafcae848f74a1492b0ea471.squirrel@neil.brown.name>  <c6b1100b0906080108y191bb157n67ec681ade2a0d13@mail.gmail.com>  <c6b1100b0906080358y4033c402ra236eff3f972d169@mail.gmail.com>  <1244460875.12644.2.camel@ht.satnam> 
- <c6b1100b0906080553o2aa77a40pe0077b1b10a7d88a@mail.gmail.com>  <alpine.LFD.2.01.0906080916130.6847@localhost.localdomain> <1244480796.4079.301.camel@mulgrave.site>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/6/8 Jaswinder Singh Rajput <jaswinder@kernel.org>:
 
+> But reverting your patch Or if we return like this also fix chris
+> problem :
+>
+> diff --git a/kernel/async.c b/kernel/async.c
+> index 94dd36f..3b492cb 100644
+> --- a/kernel/async.c
+> +++ b/kernel/async.c
+> @@ -96,15 +96,13 @@ static async_cookie_t  __lowest_in_progress(struct list_head *running)
+>        if (!list_empty(running)) {
+>                entry = list_first_entry(running,
+>                        struct async_entry, list);
+> -               ret = entry->cookie;
+> +               return entry->cookie;
+>        }
+>
+>        if (!list_empty(&async_pending)) {
+>                list_for_each_entry(entry, &async_pending, list)
+> -                       if (entry->running == running) {
+> -                               ret = entry->cookie;
+> -                               break;
+> -                       }
+> +                       if (entry->running == running)
+> +                               return entry->cookie;
+>        }
+>
+>        return ret;
+>
+>
+>
 
-On Mon, 8 Jun 2009, James Bottomley wrote:
-> 
-> I think it's a bug in the async code.  It's providing cookies too high
-> because it doesn't stop after it finds a running entry.
-> 
-> Can we try this as the fix?
+I can confirm that a kernel built with Jaswinder's patch applied
+survived 200 boots without a panic.
 
-Ok, this looks likely.
+Chris
 
-That said, why doesn't that function look like this?
-
-		Linus
----
- kernel/async.c |   15 +++++----------
- 1 files changed, 5 insertions(+), 10 deletions(-)
-
-diff --git a/kernel/async.c b/kernel/async.c
-index 5054030..27235f5 100644
---- a/kernel/async.c
-+++ b/kernel/async.c
-@@ -92,23 +92,18 @@ extern int initcall_debug;
- static async_cookie_t  __lowest_in_progress(struct list_head *running)
- {
- 	struct async_entry *entry;
--	async_cookie_t ret = next_cookie; /* begin with "infinity" value */
- 
- 	if (!list_empty(running)) {
- 		entry = list_first_entry(running,
- 			struct async_entry, list);
--		ret = entry->cookie;
-+		return entry->cookie;
- 	}
- 
--	if (!list_empty(&async_pending)) {
--		list_for_each_entry(entry, &async_pending, list)
--			if (entry->running == running) {
--				ret = entry->cookie;
--				break;
--			}
--	}
-+	list_for_each_entry(entry, &async_pending, list)
-+		if (entry->running == running)
-+			return entry->cookie;
- 
--	return ret;
-+	return next_cookie;	/* "infinity" value */
- }
- 
- static async_cookie_t  lowest_in_progress(struct list_head *running)
+-- 
+No, Sir; there is nothing which has yet been contrived by man, by which
+so much happiness is produced as by a good tavern or inn - Doctor Samuel
+Johnson
