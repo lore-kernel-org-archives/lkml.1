@@ -1,93 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbZFHWhC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbZFHWoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756262AbZFHWhC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 18:37:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbZFHWgy
+	id S1756262AbZFHWoN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 18:44:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbZFHWoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 18:36:54 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:34571 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755783AbZFHWgx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 18:36:53 -0400
-Message-ID: <4A2D9282.6080609@simtec.co.uk>
-Date: Mon, 08 Jun 2009 23:36:50 +0100
-From: Ben Dooks <ben@simtec.co.uk>
-Organization: Simtec Electronics, UK
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 8 Jun 2009 18:44:00 -0400
+Received: from sith.mimuw.edu.pl ([193.0.96.4]:38503 "EHLO sith.mimuw.edu.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752484AbZFHWn7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 18:43:59 -0400
+Date: Tue, 9 Jun 2009 00:44:06 +0200
+From: Jan Rekorajski <baggins@sith.mimuw.edu.pl>
+To: Valerie Aurora <vaurora@redhat.com>
+Cc: Jan Blunck <jblunck@suse.de>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       bharata@in.ibm.com, dwmw2@infradead.org, mszeredi@suse.cz
+Subject: Re: [PATCH 00/32] VFS based Union Mount (V3)
+Message-ID: <20090608224406.GA6801@sith.mimuw.edu.pl>
+Mail-Followup-To: Jan Rekorajski <baggins@sith.mimuw.edu.pl>,
+	Valerie Aurora <vaurora@redhat.com>, Jan Blunck <jblunck@suse.de>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
+	mszeredi@suse.cz
+References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <20090521125419.GM30663@sith.mimuw.edu.pl> <20090608195752.GD4363@fsbox>
 MIME-Version: 1.0
-To: InKi Dae <daeinki@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
-       Kyungmin Park <kmpark@infradead.org>
-Subject: Re: Samsung SoC Framebuffer Driver issue.
-References: <90b950fc0906072153j6308059eq4d6f864c97a2003d@mail.gmail.com>
-In-Reply-To: <90b950fc0906072153j6308059eq4d6f864c97a2003d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090608195752.GD4363@fsbox>
+X-Operating-System: Linux 2.6.29.4 x86_64
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-InKi Dae wrote:
-> Hello,  Ben  Dooks.
-> 
-> I am trying to develop Samsung SoC Framebuffer Driver for S5PC100 but
-> I faced some problems about design. so I have some questions about those.
-> 
-> there are some differences between LCD Controller registers of S3C64XX
-> and S5PC100 like the following.
-> 
-> . regiters not used by S3C64XX were added to S5PC100 also BPP MODE.
-> . WindowX Palette Data Index registers were removed from lcd
-> controller of S3C64XX and Palette Memory Registers were added to one
-> of S5PC100
-> 
-> 
-> 1.
-> Your framebuffer driver, drivers/video/s3c-fb.c, is related to only S3C64XX.
-> and I'd like to divide framebuffer driver into common logical driver
-> for supporting S3C64XX and S5PC100 and S5PC100 specific driver.
-> but your driver needs to modifying because calling register control
-> commands in s3c-fb.c directly.
+On Mon, 08 Jun 2009, Valerie Aurora wrote:
 
-Actually, it should also support the s3c2443 driver. You might find some
-interesting answers to the further questions by looking at how that works
-via the architecture specific includes.
-
-> How do you think about that ?
+> On Thu, May 21, 2009 at 02:54:19PM +0200, Jan Rekorajski wrote:
+> > On Mon, 18 May 2009, Jan Blunck wrote:
+> > 
+> > > Here is another post of the VFS based union mount implementation.
+> > 
+> > Is there any chance this will support NFS? I can union-mount tmpfs over
 > 
-> 2.
-> S3C64XX LCD Controller's registers are similar with S5PC100's, so I
-> wouldn't modify register prefix.
-> but some registers should added to definition file
-> (arch/arm/mach-s3c6400/include/mach/regs-fb.h).
+> NFS as the read-only layer ought to work.  NFS as the read-write layer
+> is still up in the air.
 
-I don't have documentation for any of these newer chips, so cannot make
-much of a comment without any more detailed data.
+As I don't need rw NFS, i didn't even try that :)
 
-> which way do you prefer adding some registers to
-> arch/arm/mach-s3c6400/include/mach/regs-fb.h or creating new
-> definition file for S5PC100 ?
+> > nfs mounted fs, but if I try to mount --union two NFS filesystems I
+> > always get -EBUSY on second mount on the same mountpoint.
+> > 
+> > Something along these lines:
+> > 
+> > doesn't matter if I use --union on first mount, the result is always the
+> > same.
+> > 
+> > mount <--union> -t nfs server:/export/system /mnt
+> > OK
+> > mount --union -t nfs server:/export/profile /mnt
+> > mount.nfs: /mnt is busy or already mounted
+> > 
+> > I patched mount.nfs so it knows about MS_UNION, and strace shows me that
+> > it passes that flag to kernel.
 > 
-> If you give me your comments for the issues above, I will modify
-> Samsung SoC Framebuffer Driver to be supported for S3C64XX and
-> S5PC100.
-> In the result, I expect that your driver will be divided into logical
-> driver and specific driver supporting S3C64XX and S5PC100 or either
-> S3C64XX or S5PC100.
-> If the driver would be completed, logical driver, s3c-fb.c, would
-> support S3C64XX, S5PC100 and also S5PC110.
+> FYI, using --union on the first mount will make it union with the
+> local directory below it.  The --union option is not needed when you
+> mount the lower read-only layer.
 
-I'll let you have a think about this wrt to the answer supplied for #1,
-and see if you need any further information about it after that.
+Thanks for clarification.
 
-> Please give me your comments and advices.
-> 
-> Best Regards,
-> InKi Dae.
+> You'll get -EBUSY on the second mount of any NFS file system over
+> another - try it again with the --union flag.  Support for NFS on NFS
+> union mount would have to change this.
 
+I did just that, --union didn't change standard NFS behaviour.
+
+mount -t nfs server:/export/system /mnt
+mount --union -t nfs server:/export/profile /mnt
+mount.nfs: /mnt is busy or already mounted
+
+I did an experiment by using different IP of the server (same machine)
+when mounting the second fs, mount worked then, but 'ls -1 /mnt' oopsed.
+I can reproduce this and send you the oops next week.
 
 -- 
-Ben Dooks, Software Engineer, Simtec Electronics
-
-http://www.simtec.co.uk/
+Jan Rekorajski            |  ALL SUSPECTS ARE GUILTY. PERIOD!
+baggins<at>mimuw.edu.pl   |  OTHERWISE THEY WOULDN'T BE SUSPECTS, WOULD THEY?
+BOFH, MANIAC              |                   -- TROOPS by Kevin Rubio
