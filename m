@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753275AbZFHG7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZFHHAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753275AbZFHG7B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 02:59:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbZFHG6x
+	id S1753289AbZFHHAg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 03:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbZFHHA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 02:58:53 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:3147 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750758AbZFHG6x convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 02:58:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=hdEvBp1M0OqnKU1bXZF2WG0isINbESrnIlRWJMcgoMyqSCK116ERX6AFt5pCkkX0wh
-         zV12TDAu1fLF0Xoyg3m3FH8TR/vMwmki83ubTD0XsStmj8tfcWuYiSOyHOd70Pd9EMZs
-         odi+Zcnljdlz2nJklOSG/a9E1atuawvz/nQMU=
+	Mon, 8 Jun 2009 03:00:28 -0400
+Received: from www.tglx.de ([62.245.132.106]:49958 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751799AbZFHHA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 03:00:28 -0400
+Date: Mon, 8 Jun 2009 09:00:14 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Feng Tang <feng.tang@intel.com>
+cc: "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Li, Shaohua" <shaohua.li@intel.com>,
+       "Pan, Jacob jun" <jacob.jun.pan@intel.com>
+Subject: Re: [PATCH] tick: add check for the existence of broadcast clock
+ event device
+In-Reply-To: <20090608144740.62f2ed95@feng-desktop>
+Message-ID: <alpine.LFD.2.00.0906080857260.3419@localhost.localdomain>
+References: <20090605112711.67e7d5cb@feng-desktop> <alpine.LFD.2.00.0906061121330.3419@localhost.localdomain> <20090606204736.00700bd0@feng-desktop> <alpine.LFD.2.00.0906061450220.3419@localhost.localdomain> <alpine.LFD.2.00.0906061815460.3419@localhost.localdomain>
+ <20090608095730.0c945e78@feng-desktop> <alpine.LFD.2.00.0906080739020.3419@localhost.localdomain> <20090608141250.6a5735fa@feng-desktop> <alpine.LFD.2.00.0906080828021.3419@localhost.localdomain> <20090608144740.62f2ed95@feng-desktop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090607152152.GA7785@n2100.arm.linux.org.uk>
-References: <20090605131625.GC1376@ucw.cz>
-	 <20090607152152.GA7785@n2100.arm.linux.org.uk>
-Date: Mon, 8 Jun 2009 14:58:54 +0800
-Message-ID: <f17812d70906072358i69b4ce09oeb6cd455277b050f@mail.gmail.com>
-Subject: Re: zaurus needs generic pxa suspend/resume routines
-From: Eric Miao <eric.y.miao@gmail.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 7, 2009 at 11:21 PM, Russell King - ARM
-Linux<linux@arm.linux.org.uk> wrote:
-> On Fri, Jun 05, 2009 at 03:16:25PM +0200, Pavel Machek wrote:
->> For suspend/resume to work, spitz needs pxa_pm_suspend/resume to be
->> called. Otherwise PSPR is not set properly, and system will die during
->> resume.
+On Mon, 8 Jun 2009, Feng Tang wrote:
+> On Mon, 8 Jun 2009 14:33:14 +0800 Thomas Gleixner <tglx@linutronix.de> wrote:
+> > On Mon, 8 Jun 2009, Feng Tang wrote:
+> > > Our apbt driver is pretty similar with HPET's, including its cpu
+> > > hotplug notifier. But our platform only has 2 available apbt to
+> > > use, otherwise we will configure it just like HPET, using one timer
+> > > as bc and others for per-cpu ones, then it won't hit this case
+> > > 
+> > > There are 2 situations, one is for the normal boot, apbt0 will be
+> > > inited first and registered to OS as cpu0's timer, then tsc/lapic
+> > > is calculated based on it, and apbt1 is registered later in a
+> > > fs_initcall() (just like hpet.c does) after basic kernel core is
+> > > up. so the sequence is: apbt0 --> lapic0 --> lapic1 --> apbt1
+> > 
+> > Hmm, I do not like that at all. That explicitely relies on CPU0 doing
+> > some work which will kick CPU1. That's fragile as hell. 
 >
-> 100 points for copying lots of people.  0 points for omitting the right
-> person.  Add Eric.
->
-> Eric, ack?
->
+> I understand the concern. apbt0 is inited in a very early boot phase when
+> the cpu1 is not up yet, and os don't even know wether there is a cpu1, that's
+> why we registered apbt1 in fs_initcall(). If we explicitly setup apbt1 when
+> OS brings up cpu1, it is a little brutal and not generic as only our platform
+> has apbt, and I guess cpu hotplug maintainer won't like it :p
 
-Yes, I think this is the best trade-off for the moment.
+Why is that a problem ? You already have a special case for apbt0 in
+the early setup code. So where is the problem when you have an apbt1
+init call on CPU1 _before_ the local APIC is initialized on CPU1.
 
-Acked-by: Eric Miao <eric.miao@marvell.com>
+That's definitely saner than relying on magic IPI wakeups.
 
-And Russell you may want to queue this for this -rc phase, looks
-it's still -rc8-git5.
+Thanks,
+
+	tglx
