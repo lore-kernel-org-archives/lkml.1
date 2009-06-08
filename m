@@ -1,83 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751801AbZFHEh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146AbZFHElv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751801AbZFHEh3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 00:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbZFHEhQ
+	id S1752146AbZFHElv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 00:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750953AbZFHEll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 00:37:16 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:39093 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750911AbZFHEhP (ORCPT
+	Mon, 8 Jun 2009 00:41:41 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:58722 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750757AbZFHElk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 00:37:15 -0400
-Date: Mon, 8 Jun 2009 10:07:06 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Paul Menage <menage@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, kvm@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>,
-       bharata@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC] CPU hard limits
-Message-ID: <20090608043705.GC16211@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20090604053649.GA3701@in.ibm.com> <6599ad830906050153i1afd104fqe70f681317349142@mail.gmail.com> <20090605113217.GA20786@in.ibm.com> <6599ad830906050518t6cd7d477h36a187f2eaf55578@mail.gmail.com> <20090607101120.GB16211@in.ibm.com> <661de9470906070835l383cd388h67e40a31be07aef6@mail.gmail.com>
+	Mon, 8 Jun 2009 00:41:40 -0400
+Date: Sun, 7 Jun 2009 21:41:34 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: netdev@vger.kernel.org, mcarlson@broadcom.com
+Subject: tg3 stops working when NFS is involved
+Message-ID: <alpine.DEB.2.01.0906072115420.6439@bogon>
+User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <661de9470906070835l383cd388h67e40a31be07aef6@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX18fnQe3iCCeCpl+pQmaVifzginV2YBweAoAJ5o
+ 6EXhG9vrRLFsNOzuzH9vzCC0i5h+J6zdbWglZBO7BwOdwGPf80
+ ojIyTnmLO9vjdC1hKSQtw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 07, 2009 at 09:05:23PM +0530, Balbir Singh wrote:
-> > On further thinking, this is not as simple as that. In above example of
-> > 5 tasks on 4 CPUs, we could cap each task at a hard limit of 80%
-> > (4 CPUs/5 tasks), which is still not sufficient to ensure that each
-> > task gets the perfect fairness of 80%! Not just that, hard-limit
-> > for a group (on each CPU) will have to be adjusted based on its task
-> > distribution. For ex: a group that has a hard-limit of 25% on a 4-cpu
-> > system and that has a single task, is entitled to claim a whole CPU. So
-> > the per-cpu hard-limit for the group should be 100% on whatever CPU the
-> > task is running. This adjustment of per-cpu hard-limit should happen
-> > whenever the task distribution of the group across CPUs change - which
-> > in theory would require you to monitor every task exit/migration
-> > event and readjust limits, making it very complex and high-overhead.
-> >
-> 
-> We already do that for shares right? I mean instead of 25% hard limit,
-> if the group had 25% of the shares the same thing would apply - no?
+Hi there,
 
-yes and no. we do rebalance shares based on task distribution, but not
-upon every task fork/exit/wakeup/migration event. Its done once in a while,
-frequent enough to give "decent" fairness!
+first off: I know there are quite a few reports on the net on a similar 
+topic, but they just don't match this particular scenario, so here it 
+goes:
 
-> > Balbir,
-> >        I dont think guarantee can be met easily thr' hard-limits in
-> > case of CPU resource. Atleast its not as straightforward as in case of
-> > memory!
-> 
-> OK, based on the discussion - leaving implementation issues out,
-> speaking of whether it is possible to implement guarantees using
-> shares? My answer would be
-> 
-> 1. Yes - but then the hard limits will prevent you and can cause idle
-> times, some of those can be handled in the implementation. There might
-> be other fairness and SMP concerns about the accuracy of the fairness,
-> thank you for that data.
-> 2. We'll update the RFC (second version) with the findings and send it
-> out, so that the expectations are clearer
-> 3. From what I've read and seen there seems to be no strong objection
-> to hard limits, but some reservations (based on 1) about using them
-> for guarantees and our RFC will reflect that.
-> 
-> Do you agree?
+I have this Lenovo Ideapad S10 "netbook" with a buitin BCM5906M 10/100Mbps 
+NIC. On this box nfs-kernel-server is exporting (ro) a directory to 
+another linux client (really, only one). After a while (measured in bytes: after a 
+few megabytes..up to a few gigabytes of traffic) the server goes away: not 
+just the NFS server but the network card just stops working: I cannot ping 
+the server any more and I have to go over to the netbook and reload the 
+tg3 module. Before doing this I can verify that the netbook is unable to ping 
+anything else - so, I figure it's not a client problem. And I'm not sure 
+if it's NFS problem either, because restarting the NFS server doesn't do 
+anything, I really have to rmmod/modprobe the tg3 module. OTOH, I cannot 
+reproduce this without NFS: running e.g. iperf (TCP, UDP) did not trigger 
+it.
 
-Well yes, guarantee is not a good argument for providing hard limits.
-Pay-per-use kind of usage would be a better argument IMHO.
+As to the network load involved: the client is able to receive a bit over 
+2MB/s at best (client---wlan---wrt54---netbook), so the server is not busy 
+at all.
 
-- vatsa
+I've noticed this behaviour with 2.6.27-14-generic (ubuntu/9.04 kernel) 
+but running the latest -git (vanilla from kernel.org) does not change 
+anything.
+
+I've started to modprobe the tg3 module with tg3_debug=0x7fffffff so that 
+it might print out more debug messages but there are no messages printed 
+when tg3 stops working. A few maybe interesting boot messages, below, 
+please find more details at: http://nerdbynature.de/bits/2.6.30-rc8/
+
+[    0.000000] ACPI: BIOS bug: multiple APIC/MADT found, using 0
+[    0.184315] ACPI: EC: non-query interrupt received, switching to interrupt mode
+[    1.756338] tg3.c:v3.98 (February 25, 2009)
+[    1.756507] tg3 0000:02:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[    1.756657] tg3 0000:02:00.0: setting latency timer to 64
+[    1.790008] tg3 0000:02:00.0: PME# disabled
+[    8.839227] tg3 0000:02:00.0: PME# disabled
+[    8.839664] tg3 0000:02:00.0: irq 24 for MSI/MSI-X
+[   10.572500] tg3: eth0: Link is up at 100 Mbps, full duplex.
+[   10.572589] tg3: eth0: Flow control is on for TX and on for RX.
+[   51.892143] CE: hpet increasing min_delta_ns to 15000 nsec
+[  738.011394] ACPI: EC: GPE storm detected, transactions will use polling mode
+[  768.656172] ACPI: EC: missing confirmations, switch off interrupt mode.
+[ 4757.984170] tg3 0000:02:00.0: PCI INT A disabled
+
+
+If anyone has an idea how to debug this, I'm all ears.
+
+Thank you,
+Christian.
+-- 
+BOFH excuse #384:
+
+it's an ID-10-T error
