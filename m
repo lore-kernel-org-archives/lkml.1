@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZFHQW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757085AbZFHQWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757020AbZFHQW1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 12:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbZFHQWU
+	id S1757085AbZFHQWr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 12:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756441AbZFHQWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 12:22:20 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:37955 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755796AbZFHQWU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 12:22:20 -0400
-Date: Mon, 8 Jun 2009 12:22:21 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/5] [GIP PULL] tracing/events/trace_stack: various
- fixes
-In-Reply-To: <1244477919.13761.9042.camel@twins>
-Message-ID: <alpine.DEB.2.00.0906081220040.9522@gandalf.stny.rr.com>
-References: <20090603151724.144915858@goodmis.org>  <20090605145219.GA14830@elte.hu> <20090607082257.GA16761@elte.hu>  <alpine.DEB.2.00.0906081135320.9522@gandalf.stny.rr.com> <1244477919.13761.9042.camel@twins>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 8 Jun 2009 12:22:35 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:39454 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756379AbZFHQWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 12:22:33 -0400
+Date: Mon, 8 Jun 2009 09:22:27 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jesper Dangaard Brouer <hawk@comx.dk>
+Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, wg@grandegger.com,
+       vladislav.yasevich@hp.com, sri@us.ibm.com, linux-sctp@vger.kernel.org,
+       Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH 4/5] sctp: protocol.c call rcu_barrier() on unload.
+Message-ID: <20090608162227.GE6961@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090608130959.10052.54590.stgit@localhost> <20090608131143.10052.96470.stgit@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090608131143.10052.96470.stgit@localhost>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 08, 2009 at 03:11:43PM +0200, Jesper Dangaard Brouer wrote:
+> On module unload call rcu_barrier(), this is needed as synchronize_rcu()
+> is not strong enough.  The kmem_cache_destroy() does invoke
+> synchronize_rcu() but it does not provide same protection.
 
-On Mon, 8 Jun 2009, Peter Zijlstra wrote:
+Good, looks like sctp_v4_del_protocol() invokes call_rcu(), which the
+rcu_barrier() would then wait for.  And it looks like sctp_v6_del_protocol()
+does the same for IPv6.
 
-> On Mon, 2009-06-08 at 11:37 -0400, Steven Rostedt wrote:
-> > [ Added Peter ]
-> > 
-> > On Sun, 7 Jun 2009, Ingo Molnar wrote:
-> > > Testing tracer sched_switch: <6>Starting ring buffer hammer
-> > > PASSED
-> > > Testing tracer sysprof: PASSED
-> > > Testing tracer function: PASSED
-> > > Testing tracer irqsoff: 
-> > > =============================================
-> > > PASSED
-> > > Testing tracer preemptoff: PASSED
-> > > Testing tracer preemptirqsoff: [ INFO: possible recursive locking detected ]
-> > > PASSED
-> > > Testing tracer branch: 2.6.30-rc8-tip-01972-ge5b9078-dirty #5760
-> > > ---------------------------------------------
-> > > rb_consumer/431 is trying to acquire lock:
-> > >  (&cpu_buffer->reader_lock){......}, at: [<c109eef7>] ring_buffer_reset_cpu+0x37/0x70
-> > > 
-> > > but task is already holding lock:
-> > >  (&cpu_buffer->reader_lock){......}, at: [<c10a019e>] ring_buffer_consume+0x7e/0xc0
-> > > 
-> > > other info that might help us debug this:
-> > > 1 lock held by rb_consumer/431:
-> > >  #0:  (&cpu_buffer->reader_lock){......}, at: [<c10a019e>] ring_buffer_consume+0x7e/0xc0
-> > 
-> > Yes this definitely looks like ftrace is tracing the ring buffer benchmark 
-> > test.
-> > 
-> > OK, how do I go about teaching lockdep that this reader lock is not the 
-> > same reader lock as the one being taken?
+Reviewed_by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+> ---
 > 
-> Something like this will put each ring-buffer user in its own lock
-> class.
-
-Thanks a lot Peter. I'll see if I can get this to work and then push it 
-off to Ingo to see if it fixes his lockdep bugs.
-
+>  net/sctp/protocol.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
-> Patch utterly uncompiled and broken since hotplug would need some care
-> (you could probably store the key pointer in the rb object and reuse it
-> on hotplug).
-
-I could also save the key in the ring buffer itself. Each of the per cpu 
-reader locks will share the same key, and then when it is created by the 
-hotplug, it will use the key of the ring buffer.
-
--- Steve
+> diff --git a/net/sctp/protocol.c b/net/sctp/protocol.c
+> index cb2c50d..79cbd47 100644
+> --- a/net/sctp/protocol.c
+> +++ b/net/sctp/protocol.c
+> @@ -1370,6 +1370,8 @@ SCTP_STATIC __exit void sctp_exit(void)
+>  	sctp_proc_exit();
+>  	cleanup_sctp_mibs();
+> 
+> +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
+> +
+>  	kmem_cache_destroy(sctp_chunk_cachep);
+>  	kmem_cache_destroy(sctp_bucket_cachep);
+>  }
+> 
