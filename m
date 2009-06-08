@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758349AbZFHTfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758453AbZFHTfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758349AbZFHTfh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 15:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755526AbZFHTYJ
+	id S1758453AbZFHTfv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 15:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbZFHTYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 15:24:09 -0400
-Received: from thunk.org ([69.25.196.29]:39636 "EHLO thunker.thunk.org"
+	Mon, 8 Jun 2009 15:24:11 -0400
+Received: from thunk.org ([69.25.196.29]:39629 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755252AbZFHTXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755243AbZFHTXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Jun 2009 15:23:25 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Linux Kernel Developers List <linux-kernel@vger.kernel.org>
 Cc: "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 11/49] ext4: Avoid races caused by on-line resizing and SMP memory reordering
-Date: Mon,  8 Jun 2009 15:22:29 -0400
-Message-Id: <1244488987-32564-12-git-send-email-tytso@mit.edu>
+Subject: [PATCH 17/49] ext4: Move the ext4_i.h header file into ext4.h
+Date: Mon,  8 Jun 2009 15:22:35 -0400
+Message-Id: <1244488987-32564-18-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.6.3.2.1.gb9f7d.dirty
-In-Reply-To: <1244488987-32564-11-git-send-email-tytso@mit.edu>
+In-Reply-To: <1244488987-32564-17-git-send-email-tytso@mit.edu>
 References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-2-git-send-email-tytso@mit.edu>
  <1244488987-32564-3-git-send-email-tytso@mit.edu>
@@ -28,6 +28,12 @@ References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-9-git-send-email-tytso@mit.edu>
  <1244488987-32564-10-git-send-email-tytso@mit.edu>
  <1244488987-32564-11-git-send-email-tytso@mit.edu>
+ <1244488987-32564-12-git-send-email-tytso@mit.edu>
+ <1244488987-32564-13-git-send-email-tytso@mit.edu>
+ <1244488987-32564-14-git-send-email-tytso@mit.edu>
+ <1244488987-32564-15-git-send-email-tytso@mit.edu>
+ <1244488987-32564-16-git-send-email-tytso@mit.edu>
+ <1244488987-32564-17-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -35,554 +41,311 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ext4's on-line resizing adds a new block group and then, only at the
-last step adjusts s_groups_count.  However, it's possible on SMP
-systems that another CPU could see the updated the s_group_count and
-not see the newly initialized data structures for the just-added block
-group.  For this reason, it's important to insert a SMP read barrier
-after reading s_groups_count and before reading any (for example) the
-new block group descriptors allowed by the increased value of
-s_groups_count.
-
-Unfortunately, we rather blatently violate this locking protocol
-documented in fs/ext4/resize.c.  Fortunately, (1) on-line resizes
-happen relatively rarely, and (2) it seems rare that the filesystem
-code will immediately try to use just-added block group before any
-memory ordering issues resolve themselves.  So apparently problems
-here are relatively hard to hit, since ext3 has been vulnerable to the
-same issue for years with no one apparently complaining.
+There is no longer a reason for a separate ext4_i.h header file, so
+move it into ext4.h just to make life easier for developers to find
+the relevant data structures and typedefs.  Should also speed up
+compiles slightly, too.
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/balloc.c  |   15 +++++++--------
- fs/ext4/ext4.h    |   12 ++++++++++++
- fs/ext4/ialloc.c  |   40 +++++++++++++++++++---------------------
- fs/ext4/inode.c   |    7 ++++---
- fs/ext4/mballoc.c |   45 ++++++++++++++++++++++++---------------------
- fs/ext4/super.c   |    3 +--
- 6 files changed, 67 insertions(+), 55 deletions(-)
+ fs/ext4/ext4.h   |  122 ++++++++++++++++++++++++++++++++++++++++++++++-
+ fs/ext4/ext4_i.h |  140 ------------------------------------------------------
+ 2 files changed, 121 insertions(+), 141 deletions(-)
+ delete mode 100644 fs/ext4/ext4_i.h
 
-diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
-index 53c72ad..a5ba039 100644
---- a/fs/ext4/balloc.c
-+++ b/fs/ext4/balloc.c
-@@ -88,6 +88,7 @@ unsigned ext4_init_block_bitmap(struct super_block *sb, struct buffer_head *bh,
- 		 ext4_group_t block_group, struct ext4_group_desc *gdp)
- {
- 	int bit, bit_max;
-+	ext4_group_t ngroups = ext4_get_groups_count(sb);
- 	unsigned free_blocks, group_blocks;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 
-@@ -123,7 +124,7 @@ unsigned ext4_init_block_bitmap(struct super_block *sb, struct buffer_head *bh,
- 		bit_max += ext4_bg_num_gdb(sb, block_group);
- 	}
- 
--	if (block_group == sbi->s_groups_count - 1) {
-+	if (block_group == ngroups - 1) {
- 		/*
- 		 * Even though mke2fs always initialize first and last group
- 		 * if some other tool enabled the EXT4_BG_BLOCK_UNINIT we need
-@@ -131,7 +132,7 @@ unsigned ext4_init_block_bitmap(struct super_block *sb, struct buffer_head *bh,
- 		 */
- 		group_blocks = ext4_blocks_count(sbi->s_es) -
- 			le32_to_cpu(sbi->s_es->s_first_data_block) -
--			(EXT4_BLOCKS_PER_GROUP(sb) * (sbi->s_groups_count - 1));
-+			(EXT4_BLOCKS_PER_GROUP(sb) * (ngroups - 1));
- 	} else {
- 		group_blocks = EXT4_BLOCKS_PER_GROUP(sb);
- 	}
-@@ -205,18 +206,18 @@ struct ext4_group_desc * ext4_get_group_desc(struct super_block *sb,
- {
- 	unsigned int group_desc;
- 	unsigned int offset;
-+	ext4_group_t ngroups = ext4_get_groups_count(sb);
- 	struct ext4_group_desc *desc;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 
--	if (block_group >= sbi->s_groups_count) {
-+	if (block_group >= ngroups) {
- 		ext4_error(sb, "ext4_get_group_desc",
- 			   "block_group >= groups_count - "
- 			   "block_group = %u, groups_count = %u",
--			   block_group, sbi->s_groups_count);
-+			   block_group, ngroups);
- 
- 		return NULL;
- 	}
--	smp_rmb();
- 
- 	group_desc = block_group >> EXT4_DESC_PER_BLOCK_BITS(sb);
- 	offset = block_group & (EXT4_DESC_PER_BLOCK(sb) - 1);
-@@ -665,7 +666,7 @@ ext4_fsblk_t ext4_count_free_blocks(struct super_block *sb)
- 	ext4_fsblk_t desc_count;
- 	struct ext4_group_desc *gdp;
- 	ext4_group_t i;
--	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
-+	ext4_group_t ngroups = ext4_get_groups_count(sb);
- #ifdef EXT4FS_DEBUG
- 	struct ext4_super_block *es;
- 	ext4_fsblk_t bitmap_count;
-@@ -677,7 +678,6 @@ ext4_fsblk_t ext4_count_free_blocks(struct super_block *sb)
- 	bitmap_count = 0;
- 	gdp = NULL;
- 
--	smp_rmb();
- 	for (i = 0; i < ngroups; i++) {
- 		gdp = ext4_get_group_desc(sb, i, NULL);
- 		if (!gdp)
-@@ -700,7 +700,6 @@ ext4_fsblk_t ext4_count_free_blocks(struct super_block *sb)
- 	return bitmap_count;
- #else
- 	desc_count = 0;
--	smp_rmb();
- 	for (i = 0; i < ngroups; i++) {
- 		gdp = ext4_get_group_desc(sb, i, NULL);
- 		if (!gdp)
 diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index d0f15ef..02ec44b 100644
+index 02ec44b..ba57d66 100644
 --- a/fs/ext4/ext4.h
 +++ b/fs/ext4/ext4.h
-@@ -1228,6 +1228,18 @@ struct ext4_group_info *ext4_get_group_info(struct super_block *sb,
- 	 return grp_info[indexv][indexh];
- }
+@@ -21,7 +21,10 @@
+ #include <linux/magic.h>
+ #include <linux/jbd2.h>
+ #include <linux/quota.h>
+-#include "ext4_i.h"
++#include <linux/rwsem.h>
++#include <linux/rbtree.h>
++#include <linux/seqlock.h>
++#include <linux/mutex.h>
  
-+/*
-+ * Reading s_groups_count requires using smp_rmb() afterwards.  See
-+ * the locking protocol documented in the comments of ext4_group_add()
-+ * in resize.c
-+ */
-+static inline ext4_group_t ext4_get_groups_count(struct super_block *sb)
-+{
-+	ext4_group_t	ngroups = EXT4_SB(sb)->s_groups_count;
+ /*
+  * The fourth extended filesystem constants/structures
+@@ -46,6 +49,19 @@
+ #define ext4_debug(f, a...)	do {} while (0)
+ #endif
+ 
++/* data type for block offset of block group */
++typedef int ext4_grpblk_t;
 +
-+	smp_rmb();
-+	return ngroups;
-+}
++/* data type for filesystem-wide blocks number */
++typedef unsigned long long ext4_fsblk_t;
++
++/* data type for file logical block number */
++typedef __u32 ext4_lblk_t;
++
++/* data type for block group number */
++typedef unsigned int ext4_group_t;
++
++
+ /* prefer goal again. length */
+ #define EXT4_MB_HINT_MERGE		1
+ /* blocks already reserved */
+@@ -516,6 +532,110 @@ do {									       \
+ #endif /* defined(__KERNEL__) || defined(__linux__) */
  
- static inline ext4_group_t ext4_flex_group(struct ext4_sb_info *sbi,
- 					     ext4_group_t block_group)
-diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index f18e0a0..55ba419 100644
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -316,7 +316,7 @@ error_return:
- static int find_group_dir(struct super_block *sb, struct inode *parent,
- 				ext4_group_t *best_group)
- {
--	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
-+	ext4_group_t ngroups = ext4_get_groups_count(sb);
- 	unsigned int freei, avefreei;
- 	struct ext4_group_desc *desc, *best_desc = NULL;
- 	ext4_group_t group;
-@@ -353,7 +353,7 @@ static int find_group_flex(struct super_block *sb, struct inode *parent,
- 	struct flex_groups *flex_group = sbi->s_flex_groups;
- 	ext4_group_t parent_group = EXT4_I(parent)->i_block_group;
- 	ext4_group_t parent_fbg_group = ext4_flex_group(sbi, parent_group);
--	ext4_group_t ngroups = sbi->s_groups_count;
-+	ext4_group_t ngroups = ext4_get_groups_count(sb);
- 	int flex_size = ext4_flex_bg_size(sbi);
- 	ext4_group_t best_flex = parent_fbg_group;
- 	int blocks_per_flex = sbi->s_blocks_per_group * flex_size;
-@@ -362,7 +362,7 @@ static int find_group_flex(struct super_block *sb, struct inode *parent,
- 	ext4_group_t n_fbg_groups;
- 	ext4_group_t i;
- 
--	n_fbg_groups = (sbi->s_groups_count + flex_size - 1) >>
-+	n_fbg_groups = (ngroups + flex_size - 1) >>
- 		sbi->s_log_groups_per_flex;
- 
- find_close_to_parent:
-@@ -478,20 +478,21 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
- {
- 	ext4_group_t parent_group = EXT4_I(parent)->i_block_group;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
--	ext4_group_t ngroups = sbi->s_groups_count;
-+	ext4_group_t real_ngroups = ext4_get_groups_count(sb);
- 	int inodes_per_group = EXT4_INODES_PER_GROUP(sb);
- 	unsigned int freei, avefreei;
- 	ext4_fsblk_t freeb, avefreeb;
- 	unsigned int ndirs;
- 	int max_dirs, min_inodes;
- 	ext4_grpblk_t min_blocks;
--	ext4_group_t i, grp, g;
-+	ext4_group_t i, grp, g, ngroups;
- 	struct ext4_group_desc *desc;
- 	struct orlov_stats stats;
- 	int flex_size = ext4_flex_bg_size(sbi);
- 
-+	ngroups = real_ngroups;
- 	if (flex_size > 1) {
--		ngroups = (ngroups + flex_size - 1) >>
-+		ngroups = (real_ngroups + flex_size - 1) >>
- 			sbi->s_log_groups_per_flex;
- 		parent_group >>= sbi->s_log_groups_per_flex;
- 	}
-@@ -543,7 +544,7 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
- 		 */
- 		grp *= flex_size;
- 		for (i = 0; i < flex_size; i++) {
--			if (grp+i >= sbi->s_groups_count)
-+			if (grp+i >= real_ngroups)
- 				break;
- 			desc = ext4_get_group_desc(sb, grp+i, NULL);
- 			if (desc && ext4_free_inodes_count(sb, desc)) {
-@@ -583,7 +584,7 @@ static int find_group_orlov(struct super_block *sb, struct inode *parent,
- 	}
- 
- fallback:
--	ngroups = sbi->s_groups_count;
-+	ngroups = real_ngroups;
- 	avefreei = freei / ngroups;
- fallback_retry:
- 	parent_group = EXT4_I(parent)->i_block_group;
-@@ -613,9 +614,8 @@ static int find_group_other(struct super_block *sb, struct inode *parent,
- 			    ext4_group_t *group, int mode)
- {
- 	ext4_group_t parent_group = EXT4_I(parent)->i_block_group;
--	ext4_group_t ngroups = EXT4_SB(sb)->s_groups_count;
-+	ext4_group_t i, last, ngroups = ext4_get_groups_count(sb);
- 	struct ext4_group_desc *desc;
--	ext4_group_t i, last;
- 	int flex_size = ext4_flex_bg_size(EXT4_SB(sb));
- 
- 	/*
-@@ -799,11 +799,10 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode *dir, int mode)
- 	struct super_block *sb;
- 	struct buffer_head *inode_bitmap_bh = NULL;
- 	struct buffer_head *group_desc_bh;
--	ext4_group_t group = 0;
-+	ext4_group_t ngroups, group = 0;
- 	unsigned long ino = 0;
- 	struct inode *inode;
- 	struct ext4_group_desc *gdp = NULL;
--	struct ext4_super_block *es;
- 	struct ext4_inode_info *ei;
- 	struct ext4_sb_info *sbi;
- 	int ret2, err = 0;
-@@ -818,15 +817,14 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode *dir, int mode)
- 		return ERR_PTR(-EPERM);
- 
- 	sb = dir->i_sb;
-+	ngroups = ext4_get_groups_count(sb);
- 	trace_mark(ext4_request_inode, "dev %s dir %lu mode %d", sb->s_id,
- 		   dir->i_ino, mode);
- 	inode = new_inode(sb);
- 	if (!inode)
- 		return ERR_PTR(-ENOMEM);
- 	ei = EXT4_I(inode);
--
- 	sbi = EXT4_SB(sb);
--	es = sbi->s_es;
- 
- 	if (sbi->s_log_groups_per_flex && test_opt(sb, OLDALLOC)) {
- 		ret2 = find_group_flex(sb, dir, &group);
-@@ -856,7 +854,7 @@ got_group:
- 	if (ret2 == -1)
- 		goto out;
- 
--	for (i = 0; i < sbi->s_groups_count; i++) {
-+	for (i = 0; i < ngroups; i++) {
- 		err = -EIO;
- 
- 		gdp = ext4_get_group_desc(sb, group, &group_desc_bh);
-@@ -917,7 +915,7 @@ repeat_in_this_group:
- 		 * group descriptor metadata has not yet been updated.
- 		 * So we just go onto the next blockgroup.
- 		 */
--		if (++group == sbi->s_groups_count)
-+		if (++group == ngroups)
- 			group = 0;
- 	}
- 	err = -ENOSPC;
-@@ -1158,7 +1156,7 @@ unsigned long ext4_count_free_inodes(struct super_block *sb)
- {
- 	unsigned long desc_count;
- 	struct ext4_group_desc *gdp;
--	ext4_group_t i;
-+	ext4_group_t i, ngroups = ext4_get_groups_count(sb);
- #ifdef EXT4FS_DEBUG
- 	struct ext4_super_block *es;
- 	unsigned long bitmap_count, x;
-@@ -1168,7 +1166,7 @@ unsigned long ext4_count_free_inodes(struct super_block *sb)
- 	desc_count = 0;
- 	bitmap_count = 0;
- 	gdp = NULL;
--	for (i = 0; i < EXT4_SB(sb)->s_groups_count; i++) {
-+	for (i = 0; i < ngroups; i++) {
- 		gdp = ext4_get_group_desc(sb, i, NULL);
- 		if (!gdp)
- 			continue;
-@@ -1190,7 +1188,7 @@ unsigned long ext4_count_free_inodes(struct super_block *sb)
- 	return desc_count;
- #else
- 	desc_count = 0;
--	for (i = 0; i < EXT4_SB(sb)->s_groups_count; i++) {
-+	for (i = 0; i < ngroups; i++) {
- 		gdp = ext4_get_group_desc(sb, i, NULL);
- 		if (!gdp)
- 			continue;
-@@ -1205,9 +1203,9 @@ unsigned long ext4_count_free_inodes(struct super_block *sb)
- unsigned long ext4_count_dirs(struct super_block * sb)
- {
- 	unsigned long count = 0;
--	ext4_group_t i;
-+	ext4_group_t i, ngroups = ext4_get_groups_count(sb);
- 
--	for (i = 0; i < EXT4_SB(sb)->s_groups_count; i++) {
-+	for (i = 0; i < ngroups; i++) {
- 		struct ext4_group_desc *gdp = ext4_get_group_desc(sb, i, NULL);
- 		if (!gdp)
- 			continue;
-diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 96f3366..4e7f363 100644
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -4965,7 +4965,8 @@ static int ext4_index_trans_blocks(struct inode *inode, int nrblocks, int chunk)
+ /*
++ * storage for cached extent
++ */
++struct ext4_ext_cache {
++	ext4_fsblk_t	ec_start;
++	ext4_lblk_t	ec_block;
++	__u32		ec_len; /* must be 32bit to return holes */
++	__u32		ec_type;
++};
++
++/*
++ * fourth extended file system inode data in memory
++ */
++struct ext4_inode_info {
++	__le32	i_data[15];	/* unconverted */
++	__u32	i_flags;
++	ext4_fsblk_t	i_file_acl;
++	__u32	i_dtime;
++
++	/*
++	 * i_block_group is the number of the block group which contains
++	 * this file's inode.  Constant across the lifetime of the inode,
++	 * it is ued for making block allocation decisions - we try to
++	 * place a file's data blocks near its inode block, and new inodes
++	 * near to their parent directory's inode.
++	 */
++	ext4_group_t	i_block_group;
++	__u32	i_state;		/* Dynamic state flags for ext4 */
++
++	ext4_lblk_t		i_dir_start_lookup;
++#ifdef CONFIG_EXT4_FS_XATTR
++	/*
++	 * Extended attributes can be read independently of the main file
++	 * data. Taking i_mutex even when reading would cause contention
++	 * between readers of EAs and writers of regular file data, so
++	 * instead we synchronize on xattr_sem when reading or changing
++	 * EAs.
++	 */
++	struct rw_semaphore xattr_sem;
++#endif
++#ifdef CONFIG_EXT4_FS_POSIX_ACL
++	struct posix_acl	*i_acl;
++	struct posix_acl	*i_default_acl;
++#endif
++
++	struct list_head i_orphan;	/* unlinked but open inodes */
++
++	/*
++	 * i_disksize keeps track of what the inode size is ON DISK, not
++	 * in memory.  During truncate, i_size is set to the new size by
++	 * the VFS prior to calling ext4_truncate(), but the filesystem won't
++	 * set i_disksize to 0 until the truncate is actually under way.
++	 *
++	 * The intent is that i_disksize always represents the blocks which
++	 * are used by this file.  This allows recovery to restart truncate
++	 * on orphans if we crash during truncate.  We actually write i_disksize
++	 * into the on-disk inode when writing inodes out, instead of i_size.
++	 *
++	 * The only time when i_disksize and i_size may be different is when
++	 * a truncate is in progress.  The only things which change i_disksize
++	 * are ext4_get_block (growth) and ext4_truncate (shrinkth).
++	 */
++	loff_t	i_disksize;
++
++	/*
++	 * i_data_sem is for serialising ext4_truncate() against
++	 * ext4_getblock().  In the 2.4 ext2 design, great chunks of inode's
++	 * data tree are chopped off during truncate. We can't do that in
++	 * ext4 because whenever we perform intermediate commits during
++	 * truncate, the inode and all the metadata blocks *must* be in a
++	 * consistent state which allows truncation of the orphans to restart
++	 * during recovery.  Hence we must fix the get_block-vs-truncate race
++	 * by other means, so we have i_data_sem.
++	 */
++	struct rw_semaphore i_data_sem;
++	struct inode vfs_inode;
++	struct jbd2_inode jinode;
++
++	struct ext4_ext_cache i_cached_extent;
++	/*
++	 * File creation time. Its function is same as that of
++	 * struct timespec i_{a,c,m}time in the generic inode.
++	 */
++	struct timespec i_crtime;
++
++	/* mballoc */
++	struct list_head i_prealloc_list;
++	spinlock_t i_prealloc_lock;
++
++	/* ialloc */
++	ext4_group_t	i_last_alloc_group;
++
++	/* allocation reservation info for delalloc */
++	unsigned int i_reserved_data_blocks;
++	unsigned int i_reserved_meta_blocks;
++	unsigned int i_allocated_meta_blocks;
++	unsigned short i_delalloc_reserved_flag;
++
++	/* on-disk additional length */
++	__u16 i_extra_isize;
++
++	spinlock_t i_block_reservation_lock;
++};
++
++/*
+  * File system states
   */
- int ext4_meta_trans_blocks(struct inode *inode, int nrblocks, int chunk)
- {
--	int groups, gdpblocks;
-+	ext4_group_t groups, ngroups = ext4_get_groups_count(inode->i_sb);
-+	int gdpblocks;
- 	int idxblocks;
- 	int ret = 0;
- 
-@@ -4992,8 +4993,8 @@ int ext4_meta_trans_blocks(struct inode *inode, int nrblocks, int chunk)
- 		groups += nrblocks;
- 
- 	gdpblocks = groups;
--	if (groups > EXT4_SB(inode->i_sb)->s_groups_count)
--		groups = EXT4_SB(inode->i_sb)->s_groups_count;
-+	if (groups > ngroups)
-+		groups = ngroups;
- 	if (groups > EXT4_SB(inode->i_sb)->s_gdb_count)
- 		gdpblocks = EXT4_SB(inode->i_sb)->s_gdb_count;
- 
-diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-index f871677..c3af9e6 100644
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -739,6 +739,7 @@ static void ext4_mb_generate_buddy(struct super_block *sb,
- 
- static int ext4_mb_init_cache(struct page *page, char *incore)
- {
-+	ext4_group_t ngroups;
- 	int blocksize;
- 	int blocks_per_page;
- 	int groups_per_page;
-@@ -757,6 +758,7 @@ static int ext4_mb_init_cache(struct page *page, char *incore)
- 
- 	inode = page->mapping->host;
- 	sb = inode->i_sb;
-+	ngroups = ext4_get_groups_count(sb);
- 	blocksize = 1 << inode->i_blkbits;
- 	blocks_per_page = PAGE_CACHE_SIZE / blocksize;
- 
-@@ -780,7 +782,7 @@ static int ext4_mb_init_cache(struct page *page, char *incore)
- 	for (i = 0; i < groups_per_page; i++) {
- 		struct ext4_group_desc *desc;
- 
--		if (first_group + i >= EXT4_SB(sb)->s_groups_count)
-+		if (first_group + i >= ngroups)
- 			break;
- 
- 		err = -EIO;
-@@ -852,7 +854,7 @@ static int ext4_mb_init_cache(struct page *page, char *incore)
- 		struct ext4_group_info *grinfo;
- 
- 		group = (first_block + i) >> 1;
--		if (group >= EXT4_SB(sb)->s_groups_count)
-+		if (group >= ngroups)
- 			break;
- 
- 		/*
-@@ -1788,6 +1790,7 @@ int ext4_mb_get_buddy_cache_lock(struct super_block *sb, ext4_group_t group)
- 	int block, pnum;
- 	int blocks_per_page;
- 	int groups_per_page;
-+	ext4_group_t ngroups = ext4_get_groups_count(sb);
- 	ext4_group_t first_group;
- 	struct ext4_group_info *grp;
- 
-@@ -1807,7 +1810,7 @@ int ext4_mb_get_buddy_cache_lock(struct super_block *sb, ext4_group_t group)
- 	/* read all groups the page covers into the cache */
- 	for (i = 0; i < groups_per_page; i++) {
- 
--		if ((first_group + i) >= EXT4_SB(sb)->s_groups_count)
-+		if ((first_group + i) >= ngroups)
- 			break;
- 		grp = ext4_get_group_info(sb, first_group + i);
- 		/* take all groups write allocation
-@@ -1945,8 +1948,7 @@ err:
- static noinline_for_stack int
- ext4_mb_regular_allocator(struct ext4_allocation_context *ac)
- {
--	ext4_group_t group;
--	ext4_group_t i;
-+	ext4_group_t ngroups, group, i;
- 	int cr;
- 	int err = 0;
- 	int bsbits;
-@@ -1957,6 +1959,7 @@ ext4_mb_regular_allocator(struct ext4_allocation_context *ac)
- 
- 	sb = ac->ac_sb;
- 	sbi = EXT4_SB(sb);
-+	ngroups = ext4_get_groups_count(sb);
- 	BUG_ON(ac->ac_status == AC_STATUS_FOUND);
- 
- 	/* first, try the goal */
-@@ -2017,11 +2020,11 @@ repeat:
- 		 */
- 		group = ac->ac_g_ex.fe_group;
- 
--		for (i = 0; i < EXT4_SB(sb)->s_groups_count; group++, i++) {
-+		for (i = 0; i < ngroups; group++, i++) {
- 			struct ext4_group_info *grp;
- 			struct ext4_group_desc *desc;
- 
--			if (group == EXT4_SB(sb)->s_groups_count)
-+			if (group == ngroups)
- 				group = 0;
- 
- 			/* quick check to skip empty groups */
-@@ -2315,12 +2318,10 @@ static struct file_operations ext4_mb_seq_history_fops = {
- static void *ext4_mb_seq_groups_start(struct seq_file *seq, loff_t *pos)
- {
- 	struct super_block *sb = seq->private;
--	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 	ext4_group_t group;
- 
--	if (*pos < 0 || *pos >= sbi->s_groups_count)
-+	if (*pos < 0 || *pos >= ext4_get_groups_count(sb))
- 		return NULL;
+ #define	EXT4_VALID_FS			0x0001	/* Unmounted cleanly */
+diff --git a/fs/ext4/ext4_i.h b/fs/ext4/ext4_i.h
+deleted file mode 100644
+index 4ce2187..0000000
+--- a/fs/ext4/ext4_i.h
++++ /dev/null
+@@ -1,140 +0,0 @@
+-/*
+- *  ext4_i.h
+- *
+- * Copyright (C) 1992, 1993, 1994, 1995
+- * Remy Card (card@masi.ibp.fr)
+- * Laboratoire MASI - Institut Blaise Pascal
+- * Universite Pierre et Marie Curie (Paris VI)
+- *
+- *  from
+- *
+- *  linux/include/linux/minix_fs_i.h
+- *
+- *  Copyright (C) 1991, 1992  Linus Torvalds
+- */
 -
- 	group = *pos + 1;
- 	return (void *) ((unsigned long) group);
- }
-@@ -2328,11 +2329,10 @@ static void *ext4_mb_seq_groups_start(struct seq_file *seq, loff_t *pos)
- static void *ext4_mb_seq_groups_next(struct seq_file *seq, void *v, loff_t *pos)
- {
- 	struct super_block *sb = seq->private;
--	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 	ext4_group_t group;
- 
- 	++*pos;
--	if (*pos < 0 || *pos >= sbi->s_groups_count)
-+	if (*pos < 0 || *pos >= ext4_get_groups_count(sb))
- 		return NULL;
- 	group = *pos + 1;
- 	return (void *) ((unsigned long) group);
-@@ -2587,6 +2587,7 @@ void ext4_mb_update_group_info(struct ext4_group_info *grp, ext4_grpblk_t add)
- 
- static int ext4_mb_init_backend(struct super_block *sb)
- {
-+	ext4_group_t ngroups = ext4_get_groups_count(sb);
- 	ext4_group_t i;
- 	int metalen;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
-@@ -2598,7 +2599,7 @@ static int ext4_mb_init_backend(struct super_block *sb)
- 	struct ext4_group_desc *desc;
- 
- 	/* This is the number of blocks used by GDT */
--	num_meta_group_infos = (sbi->s_groups_count + EXT4_DESC_PER_BLOCK(sb) -
-+	num_meta_group_infos = (ngroups + EXT4_DESC_PER_BLOCK(sb) -
- 				1) >> EXT4_DESC_PER_BLOCK_BITS(sb);
- 
- 	/*
-@@ -2644,7 +2645,7 @@ static int ext4_mb_init_backend(struct super_block *sb)
- 	for (i = 0; i < num_meta_group_infos; i++) {
- 		if ((i + 1) == num_meta_group_infos)
- 			metalen = sizeof(*meta_group_info) *
--				(sbi->s_groups_count -
-+				(ngroups -
- 					(i << EXT4_DESC_PER_BLOCK_BITS(sb)));
- 		meta_group_info = kmalloc(metalen, GFP_KERNEL);
- 		if (meta_group_info == NULL) {
-@@ -2655,7 +2656,7 @@ static int ext4_mb_init_backend(struct super_block *sb)
- 		sbi->s_group_info[i] = meta_group_info;
- 	}
- 
--	for (i = 0; i < sbi->s_groups_count; i++) {
-+	for (i = 0; i < ngroups; i++) {
- 		desc = ext4_get_group_desc(sb, i, NULL);
- 		if (desc == NULL) {
- 			printk(KERN_ERR
-@@ -2781,13 +2782,14 @@ static void ext4_mb_cleanup_pa(struct ext4_group_info *grp)
- 
- int ext4_mb_release(struct super_block *sb)
- {
-+	ext4_group_t ngroups = ext4_get_groups_count(sb);
- 	ext4_group_t i;
- 	int num_meta_group_infos;
- 	struct ext4_group_info *grinfo;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
- 
- 	if (sbi->s_group_info) {
--		for (i = 0; i < sbi->s_groups_count; i++) {
-+		for (i = 0; i < ngroups; i++) {
- 			grinfo = ext4_get_group_info(sb, i);
- #ifdef DOUBLE_CHECK
- 			kfree(grinfo->bb_bitmap);
-@@ -2797,7 +2799,7 @@ int ext4_mb_release(struct super_block *sb)
- 			ext4_unlock_group(sb, i);
- 			kfree(grinfo);
- 		}
--		num_meta_group_infos = (sbi->s_groups_count +
-+		num_meta_group_infos = (ngroups +
- 				EXT4_DESC_PER_BLOCK(sb) - 1) >>
- 			EXT4_DESC_PER_BLOCK_BITS(sb);
- 		for (i = 0; i < num_meta_group_infos; i++)
-@@ -4121,7 +4123,7 @@ static void ext4_mb_return_to_preallocation(struct inode *inode,
- static void ext4_mb_show_ac(struct ext4_allocation_context *ac)
- {
- 	struct super_block *sb = ac->ac_sb;
--	ext4_group_t i;
-+	ext4_group_t ngroups, i;
- 
- 	printk(KERN_ERR "EXT4-fs: Can't allocate:"
- 			" Allocation context details:\n");
-@@ -4145,7 +4147,8 @@ static void ext4_mb_show_ac(struct ext4_allocation_context *ac)
- 	printk(KERN_ERR "EXT4-fs: %lu scanned, %d found\n", ac->ac_ex_scanned,
- 		ac->ac_found);
- 	printk(KERN_ERR "EXT4-fs: groups: \n");
--	for (i = 0; i < EXT4_SB(sb)->s_groups_count; i++) {
-+	ngroups = ext4_get_groups_count(sb);
-+	for (i = 0; i < ngroups; i++) {
- 		struct ext4_group_info *grp = ext4_get_group_info(sb, i);
- 		struct ext4_prealloc_space *pa;
- 		ext4_grpblk_t start;
-@@ -4469,13 +4472,13 @@ static int ext4_mb_release_context(struct ext4_allocation_context *ac)
- 
- static int ext4_mb_discard_preallocations(struct super_block *sb, int needed)
- {
--	ext4_group_t i;
-+	ext4_group_t i, ngroups = ext4_get_groups_count(sb);
- 	int ret;
- 	int freed = 0;
- 
- 	trace_mark(ext4_mb_discard_preallocations, "dev %s needed %d",
- 		   sb->s_id, needed);
--	for (i = 0; i < EXT4_SB(sb)->s_groups_count && needed > 0; i++) {
-+	for (i = 0; i < ngroups && needed > 0; i++) {
- 		ret = ext4_mb_discard_group_preallocations(sb, i, needed);
- 		freed += ret;
- 		needed -= ret;
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 68c3a44..fcd7b24 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -3557,9 +3557,8 @@ static int ext4_statfs(struct dentry *dentry, struct kstatfs *buf)
- 	if (test_opt(sb, MINIX_DF)) {
- 		sbi->s_overhead_last = 0;
- 	} else if (sbi->s_blocks_last != ext4_blocks_count(es)) {
--		ext4_group_t ngroups = sbi->s_groups_count, i;
-+		ext4_group_t i, ngroups = ext4_get_groups_count(sb);
- 		ext4_fsblk_t overhead = 0;
--		smp_rmb();
- 
- 		/*
- 		 * Compute the overhead (FS structures).  This is constant
+-#ifndef _EXT4_I
+-#define _EXT4_I
+-
+-#include <linux/rwsem.h>
+-#include <linux/rbtree.h>
+-#include <linux/seqlock.h>
+-#include <linux/mutex.h>
+-
+-/* data type for block offset of block group */
+-typedef int ext4_grpblk_t;
+-
+-/* data type for filesystem-wide blocks number */
+-typedef unsigned long long ext4_fsblk_t;
+-
+-/* data type for file logical block number */
+-typedef __u32 ext4_lblk_t;
+-
+-/* data type for block group number */
+-typedef unsigned int ext4_group_t;
+-
+-/*
+- * storage for cached extent
+- */
+-struct ext4_ext_cache {
+-	ext4_fsblk_t	ec_start;
+-	ext4_lblk_t	ec_block;
+-	__u32		ec_len; /* must be 32bit to return holes */
+-	__u32		ec_type;
+-};
+-
+-/*
+- * fourth extended file system inode data in memory
+- */
+-struct ext4_inode_info {
+-	__le32	i_data[15];	/* unconverted */
+-	__u32	i_flags;
+-	ext4_fsblk_t	i_file_acl;
+-	__u32	i_dtime;
+-
+-	/*
+-	 * i_block_group is the number of the block group which contains
+-	 * this file's inode.  Constant across the lifetime of the inode,
+-	 * it is ued for making block allocation decisions - we try to
+-	 * place a file's data blocks near its inode block, and new inodes
+-	 * near to their parent directory's inode.
+-	 */
+-	ext4_group_t	i_block_group;
+-	__u32	i_state;		/* Dynamic state flags for ext4 */
+-
+-	ext4_lblk_t		i_dir_start_lookup;
+-#ifdef CONFIG_EXT4_FS_XATTR
+-	/*
+-	 * Extended attributes can be read independently of the main file
+-	 * data. Taking i_mutex even when reading would cause contention
+-	 * between readers of EAs and writers of regular file data, so
+-	 * instead we synchronize on xattr_sem when reading or changing
+-	 * EAs.
+-	 */
+-	struct rw_semaphore xattr_sem;
+-#endif
+-#ifdef CONFIG_EXT4_FS_POSIX_ACL
+-	struct posix_acl	*i_acl;
+-	struct posix_acl	*i_default_acl;
+-#endif
+-
+-	struct list_head i_orphan;	/* unlinked but open inodes */
+-
+-	/*
+-	 * i_disksize keeps track of what the inode size is ON DISK, not
+-	 * in memory.  During truncate, i_size is set to the new size by
+-	 * the VFS prior to calling ext4_truncate(), but the filesystem won't
+-	 * set i_disksize to 0 until the truncate is actually under way.
+-	 *
+-	 * The intent is that i_disksize always represents the blocks which
+-	 * are used by this file.  This allows recovery to restart truncate
+-	 * on orphans if we crash during truncate.  We actually write i_disksize
+-	 * into the on-disk inode when writing inodes out, instead of i_size.
+-	 *
+-	 * The only time when i_disksize and i_size may be different is when
+-	 * a truncate is in progress.  The only things which change i_disksize
+-	 * are ext4_get_block (growth) and ext4_truncate (shrinkth).
+-	 */
+-	loff_t	i_disksize;
+-
+-	/*
+-	 * i_data_sem is for serialising ext4_truncate() against
+-	 * ext4_getblock().  In the 2.4 ext2 design, great chunks of inode's
+-	 * data tree are chopped off during truncate. We can't do that in
+-	 * ext4 because whenever we perform intermediate commits during
+-	 * truncate, the inode and all the metadata blocks *must* be in a
+-	 * consistent state which allows truncation of the orphans to restart
+-	 * during recovery.  Hence we must fix the get_block-vs-truncate race
+-	 * by other means, so we have i_data_sem.
+-	 */
+-	struct rw_semaphore i_data_sem;
+-	struct inode vfs_inode;
+-	struct jbd2_inode jinode;
+-
+-	struct ext4_ext_cache i_cached_extent;
+-	/*
+-	 * File creation time. Its function is same as that of
+-	 * struct timespec i_{a,c,m}time in the generic inode.
+-	 */
+-	struct timespec i_crtime;
+-
+-	/* mballoc */
+-	struct list_head i_prealloc_list;
+-	spinlock_t i_prealloc_lock;
+-
+-	/* ialloc */
+-	ext4_group_t	i_last_alloc_group;
+-
+-	/* allocation reservation info for delalloc */
+-	unsigned int i_reserved_data_blocks;
+-	unsigned int i_reserved_meta_blocks;
+-	unsigned int i_allocated_meta_blocks;
+-	unsigned short i_delalloc_reserved_flag;
+-
+-	/* on-disk additional length */
+-	__u16 i_extra_isize;
+-
+-	spinlock_t i_block_reservation_lock;
+-};
+-
+-#endif	/* _EXT4_I */
 -- 
 1.6.3.2.1.gb9f7d.dirty
 
