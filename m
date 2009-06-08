@@ -1,95 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbZFHWDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbZFHWHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755707AbZFHWDI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 18:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbZFHWC5
+	id S1755945AbZFHWHb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 18:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZFHWHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 18:02:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45181 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754053AbZFHWC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 18:02:57 -0400
-Date: Tue, 9 Jun 2009 00:02:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH v3] printk: add halt_delay parameter for printk delay
-	in halt phase
-Message-ID: <20090608220253.GD22049@elte.hu>
-References: <a8e1da0906080040k7852f770v1e2aa2ebb0f52369@mail.gmail.com> <20090608081439.GB6372@elte.hu> <20090608012845.9c428525.akpm@linux-foundation.org> <a8e1da0906080142u62a45c47g2181a79addfb6168@mail.gmail.com> <20090608084807.GE6372@elte.hu> <20090608092607.8b331bf0.akpm@linux-foundation.org> <20090608171501.GA15399@elte.hu> <20090608143913.749e19c5.akpm@linux-foundation.org>
+	Mon, 8 Jun 2009 18:07:18 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:46627 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751838AbZFHWHP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 18:07:15 -0400
+Message-ID: <4A2D8B8B.80905@gmail.com>
+Date: Tue, 09 Jun 2009 00:07:07 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090608143913.749e19c5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "David S. Miller" <davem@davemloft.net>
+CC: Linux Netdev List <netdev@vger.kernel.org>,
+       Michael Tokarev <mjt@tls.msk.ru>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Francois Romieu <romieu@fr.zoreil.com>
+Subject: [patch] r8169: fix crash when large packets are received
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 09 Jun 2009 00:07:08 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Michael Tokarev reported receiving a large packet could crash
+a machine with RTL8169 NIC.
+( original thread at http://lkml.org/lkml/2009/6/8/192 )
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Problem is this driver tells that NIC frames up to 16383 bytes
+can be received but provides skb to rx ring allocated with
+smaller sizes (1536 bytes in case standard 1500 bytes MTU is used)
 
-> On Mon, 8 Jun 2009 19:15:01 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > > questions: is it possible for interrupts to be disabled at this 
-> > > time? If so, can we get an NMI watchdog hit?
-> > 
-> > no, we generally turn off the nmi watchdog during shutdown, 
-> > disable the lapic and io-apic, etc.
-> 
-> Is x86 the only architecture which implements an NMI watchdog?
+When a frame larger than what was allocated by driver is received,
+dma transfert can occurs past the end of buffer and corrupt
+kernel memory.
 
-Sparc64 does too IIRC.
+Fix is to tell to NIC what is the maximum size a frame can be.
 
-> > > Is the softlockup detector still running and if so, can it 
-> > > trigger?
-> > 
-> > in (non-emergency) reboot, last i checked, we stopped all other 
-> > CPUs first, and then killed the current one. There's no chance 
-> > for the watchdog thread to run.
-> 
-> OK, but...  See below.
-> 
-> > Anyway ... you seem to be uncomfortable about this patch - 
-> > should i delay it for now to let it all play out? We are close 
-> > to the merge window.
-> 
-> I'm OK - I'm just bouncing ideas and questions off you guys, to 
-> make sure that we've thought this through all the way.
-> 
-> Here's another: why is it a boot option rather than a 
-> runtime-tunable? A /proc tweakable is generally preferable because 
-> it avoids the oh-crap-i-forgot-to-edit-grub.conf thing.  And we 
-> could perhaps then remove all those system_state tests: userspace 
-> sets printk_delay immediately prior to running halt/reboot/etc?
-> 
-> Plus the feature becomes more general - perhaps there are use 
-> cases where people want to slow down printks, such as: kernel goes 
-> oops, data scrolls off, serial console/netconsole unavailable.  
-> pause_on_oops is supposed to help here but last time I tried it, 
-> it kinda didn't work, plus pause_on_oops doesn't solve the 
-> data-scrolled-off problem.
-> 
-> Thirdly, if we do this as a general /proc/printk_delay thing, 
-> perhaps it can be consolidated with the existing boot_delay= 
-> implementation.
+This bug is very old, (before git introduction, linux-2.6.10), and 
+should be backported to stable versions.
 
-Consolidatig with the existing boot delay implementation was one of 
-my first suggestions.
-
-The /proc thing definitely makes sense - the boot option was just 
-symmetry to the existing boot-delay approach.
-
-I've unapplied this patch - i agree that it needs a bit more work 
-and i dont want to hold up other changes in the core/printk branch.
-
-	Ingo
+Reported-by: Michael Tokarev <mjt@tls.msk.ru>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Tested-by: Michael Tokarev <mjt@tls.msk.ru>
+---
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index 8247a94..3b19e0c 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -66,7 +66,6 @@ static const int multicast_filter_limit = 32;
+ #define RX_DMA_BURST	6	/* Maximum PCI burst, '6' is 1024 */
+ #define TX_DMA_BURST	6	/* Maximum PCI burst, '6' is 1024 */
+ #define EarlyTxThld	0x3F	/* 0x3F means NO early transmit */
+-#define RxPacketMaxSize	0x3FE8	/* 16K - 1 - ETH_HLEN - VLAN - CRC... */
+ #define SafeMtu		0x1c20	/* ... actually life sucks beyond ~7k */
+ #define InterFrameGap	0x03	/* 3 means InterFrameGap = the shortest one */
+ 
+@@ -2357,10 +2356,10 @@ static u16 rtl_rw_cpluscmd(void __iomem *ioaddr)
+ 	return cmd;
+ }
+ 
+-static void rtl_set_rx_max_size(void __iomem *ioaddr)
++static void rtl_set_rx_max_size(void __iomem *ioaddr, unsigned int rx_buf_sz)
+ {
+ 	/* Low hurts. Let's disable the filtering. */
+-	RTL_W16(RxMaxSize, 16383);
++	RTL_W16(RxMaxSize, rx_buf_sz);
+ }
+ 
+ static void rtl8169_set_magic_reg(void __iomem *ioaddr, unsigned mac_version)
+@@ -2407,7 +2406,7 @@ static void rtl_hw_start_8169(struct net_device *dev)
+ 
+ 	RTL_W8(EarlyTxThres, EarlyTxThld);
+ 
+-	rtl_set_rx_max_size(ioaddr);
++	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
+ 
+ 	if ((tp->mac_version == RTL_GIGA_MAC_VER_01) ||
+ 	    (tp->mac_version == RTL_GIGA_MAC_VER_02) ||
+@@ -2668,7 +2667,7 @@ static void rtl_hw_start_8168(struct net_device *dev)
+ 
+ 	RTL_W8(EarlyTxThres, EarlyTxThld);
+ 
+-	rtl_set_rx_max_size(ioaddr);
++	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
+ 
+ 	tp->cp_cmd |= RTL_R16(CPlusCmd) | PktCntrDisable | INTT_1;
+ 
+@@ -2846,7 +2845,7 @@ static void rtl_hw_start_8101(struct net_device *dev)
+ 
+ 	RTL_W8(EarlyTxThres, EarlyTxThld);
+ 
+-	rtl_set_rx_max_size(ioaddr);
++	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
+ 
+ 	tp->cp_cmd |= rtl_rw_cpluscmd(ioaddr) | PCIMulRW;
+ 
