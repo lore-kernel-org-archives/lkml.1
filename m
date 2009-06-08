@@ -1,91 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZFHNAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217AbZFHNAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754180AbZFHNAE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 09:00:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbZFHM7y
+	id S1753217AbZFHNAZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 09:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZFHNAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 08:59:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54644 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751113AbZFHM7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 08:59:54 -0400
-Date: Mon, 8 Jun 2009 08:58:23 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 02/20] io-controller: Common flat fair queuing code in
-	elevaotor layer
-Message-ID: <20090608125823.GC3652@redhat.com>
-References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com> <1243377729-2176-3-git-send-email-vgoyal@redhat.com> <4A2C649C.8070806@cn.fujitsu.com>
+	Mon, 8 Jun 2009 09:00:15 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:46617 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754628AbZFHNAK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 09:00:10 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Matthew Garrett <mjg@redhat.com>
+Subject: Re: [PATCH 2/2] CPUFREQ: Mark e_powersaver driver as EXPERIMENTAL and DANGEROUS
+Date: Mon, 8 Jun 2009 08:00:07 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>
+References: <20090608102936.GQ4106@prithivi.gnumonks.org> <20090608120846.GA13328@srcf.ucam.org>
+In-Reply-To: <20090608120846.GA13328@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A2C649C.8070806@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906080800.10312.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 09:08:44AM +0800, Gui Jianfeng wrote:
-> Vivek Goyal wrote:
-> ...
-> > +
-> > +/* Get next queue for service. */
-> > +struct io_queue *elv_get_next_ioq(struct request_queue *q, int extract)
-> > +{
-> > +	struct elv_fq_data *efqd = &q->elevator->efqd;
-> > +	struct io_entity *entity = NULL;
-> > +	struct io_queue *ioq = NULL;
-> > +	struct io_sched_data *sd;
-> > +
-> > +	/*
-> > +	 * one can check for which queue will be selected next while having
-> > +	 * one queue active. preempt logic uses it.
-> > +	 */
-> > +	BUG_ON(extract && efqd->active_queue != NULL);
-> > +
-> > +	if (!efqd->busy_queues)
-> > +		return NULL;
-> > +
-> > +	sd = &efqd->root_group->sched_data;
-> > +	if (extract)
-> > +		entity = bfq_lookup_next_entity(sd, 1);
-> > +	else
-> > +		entity = bfq_lookup_next_entity(sd, 0);
+On Mon June 8 2009, Matthew Garrett wrote:
+> On Mon, Jun 08, 2009 at 06:29:36PM +0800, Harald Welte wrote:
+> > The e_powersaver driver for VIA's C7 CPU's needs to be marked as
+> > DANGEROUS as it configures the CPU to power states that are out
+> > of specification.
+> > 
+> > According to Centaur, all systems with C7 and Nano CPU's support
+> > the ACPI p-state method.  Thus, the acpi-cpufreq driver should
+> > be used instead.
 > 
-> This if and else branch is not needed.
+> Do we know if vendors are actually shipping with the appropriate BIOS 
+> tables? The number of people using e_powersaver seems to be suspiciously 
+> large, though perhaps that's just because the help text implied it was 
+> the right choice for C7.
 > 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> ---
->  block/elevator-fq.c |    5 +----
->  1 files changed, 1 insertions(+), 4 deletions(-)
-> 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index 3c5f9da..655162b 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -3069,10 +3069,7 @@ struct io_queue *elv_get_next_ioq(struct request_queue *q, int extract)
->  
->  	sd = &efqd->root_group->sched_data;
->  	for (; sd != NULL; sd = entity->my_sched_data) {
-> -		if (extract)
-> -			entity = bfq_lookup_next_entity(sd, 1);
-> -		else
-> -			entity = bfq_lookup_next_entity(sd, 0);
-> +		entity = bfq_lookup_next_entity(sd, extract);
->  
->  		/*
->  		 * entity can be null despite the fact that there are busy
 
-Thanks Gui. Queued for next posting.
+In part, it was because acpi_freq would not load - H.W. in another post
+has proposed a fix for that.
 
-Thanks
-Vivek
+My test machine is a "first production" of the Everex Cloudbook - -
+About as early as you can get of something in the public hands -
+If there is something lacking in a machine's BIOS - it should be
+missing in this one - I can test for that condition.
+(This one is hitting user code with the silicon still setup
+in the state set by "#reset" - untouched by the BIOS.)
+
+Of course, that says nothing about other and/or newer machines -
+At the moment I am toying with the idea of a cpu-quirks routine
+that could check/correct for an incompletely setup chip.
+On the Model-D chips, that could also switch the processor over
+to its on-silicon thermal/power/freq adaptive controller.
+
+All of the Netbooks that I know of have shipped with the Model-D
+processor (ULV) - so the above cpu-quirks routine would "fix" those.
+
+Machines running other C7 models...
+They will just have to trust the BIOS and/or a repaired e_powersaver.
+
+Mike
