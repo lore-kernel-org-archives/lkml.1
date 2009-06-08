@@ -1,114 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbZFHVHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbZFHVIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756217AbZFHVHb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 17:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbZFHVHW
+	id S1756271AbZFHVIx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 17:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZFHVIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 17:07:22 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:48987 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752941AbZFHVHV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 17:07:21 -0400
-Date: Mon, 8 Jun 2009 16:07:45 -0500
-From: scameron@beardog.cca.cpqcorp.net
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org, axboe@kernel.dk,
-       akpm@linux-foundation.org
-Cc: scameron@beardog.cca.cpqcorp.net, mikem@beardog.cca.cpqcorp.net
-Subject: [patch 6/8] cciss: change SCSI error handling routines to work with interrupts enabled.
-Message-ID: <20090608210745.GL23523@beardog.cca.cpqcorp.net>
+	Mon, 8 Jun 2009 17:08:45 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:6098 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752648AbZFHVIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 17:08:44 -0400
+X-IronPort-AV: E=Sophos;i="4.41,326,1241420400"; 
+   d="scan'208";a="187723541"
+Subject: [GIT PULL] Please pull a bugfix for NFSv4...
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Rich Ercolani <rercola@acm.jhu.edu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Mon, 08 Jun 2009 17:08:44 -0400
+Message-Id: <1244495324.5040.8.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 08 Jun 2009 21:08:45.0414 (UTC) FILETIME=[4F341860:01C9E87D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
+Please pull from the "bugfixes" branch of the repository at
 
-Change cciss scsi error handling routines to work with interrupts enabled.
+   git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git bugfixes
 
-Signed-off-by: Stephen M. Cameron <scameron@beardog.cca.cpqcorp.net>
----
+This will update the following files through the appended changesets.
 
----
+  Cheers,
+    Trond
 
+----
+ fs/nfs/super.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff -puN drivers/block/cciss.c~cciss_scsi_err_handler_intr_enabled drivers/block/cciss.c
---- linux-next/drivers/block/cciss.c~cciss_scsi_err_handler_intr_enabled	2009-06-08 12:59:02.000000000 -0500
-+++ linux-next-scameron/drivers/block/cciss.c	2009-06-08 12:59:02.000000000 -0500
-@@ -184,6 +184,9 @@ static int sendcmd(__u8 cmd, int ctlr, v
- static int sendcmd_withirq(__u8 cmd, int ctlr, void *buff, size_t size,
- 			__u8 page_code, unsigned char scsi3addr[],
- 			int cmd_type);
-+static int sendcmd_withirq_core(ctlr_info_t *h, CommandList_struct *c,
-+	int attempt_retry);
-+static int process_sendcmd_error(ctlr_info_t *h, CommandList_struct *c);
+commit fa4156cbc5844f7649ae586207660cb2e98ba970
+Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date:   Mon Jun 8 16:02:58 2009 -0400
+
+    NFSv4: Fix the 'nolock' option regression
+    
+    NFSv4 should just ignore the 'nolock' option. It is an NFSv2/v3 thing...
+    This fixes the Oops in http://bugzilla.kernel.org/show_bug.cgi?id=13330
+    
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index d2d6778..36c94dc 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -2238,6 +2238,11 @@ static void nfs4_fill_super(struct super_block *sb)
+ 	nfs_initialise_sb(sb);
+ }
  
- static void fail_all_cmds(unsigned long ctlr);
- static int scan_thread(void *data);
-diff -puN drivers/block/cciss_scsi.c~cciss_scsi_err_handler_intr_enabled drivers/block/cciss_scsi.c
---- linux-next/drivers/block/cciss_scsi.c~cciss_scsi_err_handler_intr_enabled	2009-06-08 12:59:02.000000000 -0500
-+++ linux-next-scameron/drivers/block/cciss_scsi.c	2009-06-08 12:59:02.000000000 -0500
-@@ -49,8 +49,6 @@ static int fill_cmd(CommandList_struct *
- 	__u8 page_code, unsigned char *scsi3addr,
- 	int cmd_type);
- 
--static int sendcmd_core(ctlr_info_t *h, CommandList_struct *c);
--
- static CommandList_struct *cmd_alloc(ctlr_info_t *h, int get_from_pool);
- static void cmd_free(ctlr_info_t *h, CommandList_struct *c, int got_from_pool);
- 
-@@ -1601,11 +1599,10 @@ static int wait_for_device_to_become_rea
- 		/* Send the Test Unit Ready */
- 		rc = fill_cmd(c, TEST_UNIT_READY, h->ctlr, NULL, 0, 0,
- 			lunaddr, TYPE_CMD);
--		if (rc == 0) {
--			rc = sendcmd_core(h, c);
--			/* sendcmd turned off interrupts, turn 'em back on. */
--			h->access.set_intr_mask(h, CCISS_INTR_ON);
--		}
-+		if (rc == 0)
-+			rc = sendcmd_withirq_core(h, c, 0);
++static void nfs4_validate_mount_flags(struct nfs_parsed_mount_data *args)
++{
++	args->flags &= ~(NFS_MOUNT_NONLM|NFS_MOUNT_NOACL|NFS_MOUNT_VER3);
++}
 +
-+		(void) process_sendcmd_error(h, c);
+ /*
+  * Validate NFSv4 mount options
+  */
+@@ -2334,6 +2339,8 @@ static int nfs4_validate_mount_data(void *options,
  
- 		if (rc == 0 && c->err_info->CommandStatus == CMD_SUCCESS)
- 			break;
-@@ -1663,10 +1660,8 @@ static int cciss_eh_device_reset_handler
- 		return FAILED;
- 	memcpy(lunaddr, &cmd_in_trouble->Header.LUN.LunAddrBytes[0], 8);
- 	/* send a reset to the SCSI LUN which the command was sent to */
--	rc = sendcmd(CCISS_RESET_MSG, ctlr, NULL, 0, 0, lunaddr,
-+	rc = sendcmd_withirq(CCISS_RESET_MSG, ctlr, NULL, 0, 0, lunaddr,
- 		TYPE_MSG);
--	/* sendcmd turned off interrupts on the board, turn 'em back on. */
--	(*c)->access.set_intr_mask(*c, CCISS_INTR_ON);
- 	if (rc == 0 && wait_for_device_to_become_ready(*c, lunaddr) == 0)
- 		return SUCCESS;
- 	printk(KERN_WARNING "cciss%d: resetting device failed.\n", ctlr);
-@@ -1677,6 +1672,7 @@ static int  cciss_eh_abort_handler(struc
- {
- 	int rc;
- 	CommandList_struct *cmd_to_abort;
-+	unsigned char lunaddr[8];
- 	ctlr_info_t **c;
- 	int ctlr;
+ 		nfs_validate_transport_protocol(args);
  
-@@ -1691,11 +1687,9 @@ static int  cciss_eh_abort_handler(struc
- 	cmd_to_abort = (CommandList_struct *) scsicmd->host_scribble;
- 	if (cmd_to_abort == NULL) /* paranoia */
- 		return FAILED;
--	rc = sendcmd(CCISS_ABORT_MSG, ctlr, &cmd_to_abort->Header.Tag, 0, 0,
--		(unsigned char *) &cmd_to_abort->Header.LUN.LunAddrBytes[0], 
--		TYPE_MSG);
--	/* sendcmd turned off interrupts on the board, turn 'em back on. */
--	(*c)->access.set_intr_mask(*c, CCISS_INTR_ON);
-+	memcpy(lunaddr, &cmd_to_abort->Header.LUN.LunAddrBytes[0], 8);
-+	rc = sendcmd_withirq(CCISS_ABORT_MSG, ctlr, &cmd_to_abort->Header.Tag,
-+		0, 0, lunaddr, TYPE_MSG);
- 	if (rc == 0)
- 		return SUCCESS;
- 	return FAILED;
-_
++		nfs4_validate_mount_flags(args);
++
+ 		if (args->auth_flavor_len > 1)
+ 			goto out_inval_auth;
+ 
+
+-- 
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
