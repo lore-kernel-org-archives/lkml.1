@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbZFHJ6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbZFHKA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753912AbZFHJ6J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 05:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZFHJ54
+	id S1754330AbZFHKA6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 06:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbZFHKAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 05:57:56 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47083 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752504AbZFHJ5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 05:57:55 -0400
-Date: Mon, 8 Jun 2009 11:57:57 +0200 (CEST)
-From: Jiri Kosina <trivial@kernel.org>
-X-X-Sender: jkosina@wotan.suse.de
-To: =?ISO-8859-15?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-Cc: linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] usb: fix missing space typo in doc
-In-Reply-To: <4A2AA21C.4020401@freemail.hu>
-Message-ID: <alpine.LNX.2.00.0906081157350.7457@wotan.suse.de>
-References: <4A2AA21C.4020401@freemail.hu>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Mon, 8 Jun 2009 06:00:47 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:47441 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752575AbZFHKAq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 06:00:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Hs9ZRE1rFQhcIsR9aFKox7gq5xsK99kyADA80pTI3tOlv4abI8hvibB1DZygt/aBAv
+         fNDDyQDd8Ul89035swkxFwK8WxyTxpRcl7i3XbbOeZiicCEhqgtqMYf6eCy293EoJn6M
+         nEGIIRpHRrzGHOUGQgG87znQ7W1wvvqs+7NOc=
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-123415590-1244455077=:7457"
+In-Reply-To: <1244408607.9064.8.camel@Maple>
+References: <19f34abd0905301323k1498ca3fv31b271de65d60afc@mail.gmail.com>
+	 <1244408607.9064.8.camel@Maple>
+Date: Mon, 8 Jun 2009 12:00:47 +0200
+Message-ID: <19f34abd0906080300w796c6b65o6b537064cac917b0@mail.gmail.com>
+Subject: Re: net: uninitialized loopback addr leaks to userspace
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: John Dykstra <john.dykstra1@gmail.com>
+Cc: Linux Netdev List <netdev@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+2009/6/7 John Dykstra <john.dykstra1@gmail.com>:
+> On Sat, 2009-05-30 at 22:23 +0200, Vegard Nossum wrote:
+>> It seems that loopback's hardware address is never initialized by the
+>> kernel. So if userspace attempts to read this address before it has
+>> been set, the kernel will return some uninitialized data (only 6
+>> bytes, though).
+>
+> Thank you for the report, Vegard.
+>
+> I've been unable to reproduce the problem you describe, using
+> 2.6-30-rc8, this test program and a couple of kernel builds for system
+> load:
+[...]
+> ------------------------------------------------------------------
+>
+> Looking at the kernel code, it appears that all bytes of struct
+> net_device, including the L2 address, are initialized to zeros at
+> interface creation time.
+>
+> Can you spot a difference between your test procedures and mine that
+> would enable me to reproduce the problem?
 
---168427776-123415590-1244455077=:7457
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Hi,
 
-On Sat, 6 Jun 2009, Németh Márton wrote:
+I just tried your test program on a linux-next kernel, it works beautifully :-)
 
-> Signed-off-by: Márton Németh <nm127@freemail.hu>
-> ---
-> --- linux-2.6.30-rc7/Documentation/usb/callbacks.txt.orig	2009-03-24 00:12:14.000000000 +0100
-> +++ linux-2.6.30-rc7/Documentation/usb/callbacks.txt	2009-06-03 19:51:07.000000000 +0200
-> @@ -65,7 +65,7 @@ Accept or decline an interface. If you a
->  otherwise -ENODEV or -ENXIO. Other error codes should be used only if a
->  genuine error occurred during initialisation which prevented a driver
->  from accepting a device that would else have been accepted.
-> -You are strongly encouraged to use usbcore'sfacility,
-> +You are strongly encouraged to use usbcore's facility,
->  usb_set_intfdata(), to associate a data structure with an interface, so
->  that you know which internal state and identity you associate with a
->  particular interface. The device will not be suspended and you may do IO
+(I made one change: The stack grows downwards on x86, so I think you
+should put child_stack + 16386 as the stack to clone()?)
 
-Applied to trivial tree, thanks.
+As I wrote in reply to Stephen Hemminger, this problem seems to be
+caused by a particular patch in linux-next:
+
+commit f001fde5eadd915f4858d22ed70d7040f48767cf
+Author: Jiri Pirko <jpirko@redhat.com>
+Date:   Tue May 5 02:48:28 2009 +0000
+
+   net: introduce a list of device addresses dev_addr_list (v6)
+
+Thanks for testing.
+
+
+Vegard
 
 -- 
-Jiri Kosina
-SUSE Labs
-
---168427776-123415590-1244455077=:7457--
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
