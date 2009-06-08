@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbZFHOvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbZFHOxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbZFHOvT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 10:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755265AbZFHOvJ
+	id S1755928AbZFHOxx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 10:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbZFHOxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 10:51:09 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:42144 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755226AbZFHOvI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 10:51:08 -0400
-Date: Mon, 8 Jun 2009 15:51:02 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: Run-time PM idea (was: Re: [linux-pm] [RFC][PATCH 0/2] PM:
-	Rearrange core suspend code)
-Message-ID: <20090608145102.GA17427@srcf.ucam.org>
-References: <200906081330.50045.rjw@sisk.pl> <20090608130509.GA3272@elte.hu> <20090608131159.GA15100@srcf.ucam.org> <20090608132235.GC13214@elte.hu> <20090608133215.GA15482@srcf.ucam.org> <20090608134647.GA14234@elte.hu> <20090608135431.GA16052@srcf.ucam.org> <20090608142450.GE14234@elte.hu> <20090608143513.GB16752@srcf.ucam.org> <20090608144455.GA20905@elte.hu>
+	Mon, 8 Jun 2009 10:53:43 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:37150 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751731AbZFHOxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 10:53:42 -0400
+Message-ID: <4A2D25F6.9080300@msgid.tls.msk.ru>
+Date: Mon, 08 Jun 2009 18:53:42 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090608144455.GA20905@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: Linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [Security, resend] Instant crash with rtl8169 and large packets
+References: <4A2D1147.8020101@msgid.tls.msk.ru> <4A2D1FE4.5030100@gmail.com>
+In-Reply-To: <4A2D1FE4.5030100@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 04:44:55PM +0200, Ingo Molnar wrote:
-> 
-> * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > No, we can't just close it - then we won't get notification that a 
-> > key's been hit in order to unlock the screensaver. [...]
-> 
-> Looks like a broken notification model.
+Thank you Eric for the reply.
 
-We've closed the input device. Where are we supposed to get the input 
-event from?
+Eric Dumazet wrote:
+> Michael Tokarev a écrit :
+[]
+>> The situation is very simple: with an RTL8169 (probably
+>> onboard) GigE card which, by default, is configured to
+>> have MTU (maximal transmission unit) to be 1500 bytes,
+>> it's *trivial* to instantly crash the machine by sending
+>> it a *single* packet of size >1500 bytes (provided the
+>> network switch can handle jumbo frames).
+[]
+>>  http://www.corpit.ru/mjt/r8169-mtu-oops.jpg
 
-> > [...] Yes, we can greatly expand the userland-visible interface to 
-> > every piece of hardware in order to make this work, but that's a 
-> > huge amount of effort to avoid a model where userspace sets some 
-> > tunables appropriately.
-> 
-> What huge amount of effort? All you are doing is to track the "is 
-> the device really used" state in user-space - and, if the current 
-> desktop experience is any measure, highly imperfectly so.
-> 
-> What i'm suggesting is to track it properly in the kernel. It's not 
-> like the kernel doesnt need to know whether a piece of hardware is 
-> under use or not ...
+> I suppose you use a recent kernel ?
 
-So, for instance, we need to add interfaces like "I care about hotplug 
-events on this SATA port" and "I'm listening for these keys so please 
-don't suspend the device" and "The service bound to this port needs to 
-maintain network connectivity and the one bound to this port doesn't, so 
-only put the wireless card into deep powersave if the first exits", and 
-then we need to wait for userspace to adopt these interfaces before we 
-can enable any of the functionality because otherwise old userspace will 
-be broken with new kernels.
+http://marc.info/?t=123462473200002 -- here's my first attempt,
+at Feb this year.  It was 2.6.27 or so.  Right now I'm running
+2.6.29[.4].  So I think yes, I use a recent kernel.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> Could you please try following patch ?
+[]
+> diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+> index e94316b..c08b97a 100644
+> --- a/drivers/net/r8169.c
+> +++ b/drivers/net/r8169.c
+> @@ -3468,7 +3468,7 @@ static int rtl8169_rx_interrupt(struct net_device *dev,
+>  
+>  		if (status & DescOwn)
+>  			break;
+> -		if (unlikely(status & RxRES)) {
+> +		if (unlikely(status & (RxRES | RxRWT | RxRUNT | RxCRC | RxFOVF))) {
+>  			if (netif_msg_rx_err(tp)) {
+>  				printk(KERN_INFO
+>  				       "%s: Rx ERROR. status = %08x\n",
+
+Tried that one, got no printk (at least not a visible one) and exactly
+the same OOPS as before.  Trivial test with
+
+   ping -c1 -s3000 $my_ip_addr
+
+(learned to add -c1 because the previous time my machine crashed several times
+in a row till I figured out what's going on and unplugged the ethernet cord --
+even if ping were running from an xterm executed from the machine to which I
+were pinging to! :)
+
+Also got ext4fs corruption when rebooted (it's a staging area so nothing important
+is there but still.. "interesting").
+
+Also tried 32bit kernel (were using 64bits -- exactly the same result).
+
+I wish I had a serial cable or even a serial port on this machine.... But I guess
+it'd not help anyway, because the machine locks hard.
+
+Thanks!
+
+/mjt
