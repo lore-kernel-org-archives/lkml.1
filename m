@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754848AbZFHOiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbZFHOjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754848AbZFHOiy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 10:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZFHOir
+	id S1756631AbZFHOjM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 10:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754278AbZFHOi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 10:38:47 -0400
-Received: from honey.thehive.com ([206.83.74.4]:49601 "EHLO honey.thehive.com"
+	Mon, 8 Jun 2009 10:38:58 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:45862 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753169AbZFHOiq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 10:38:46 -0400
-X-Greylist: delayed 659 seconds by postgrey-1.27 at vger.kernel.org; Mon, 08 Jun 2009 10:38:46 EDT
-Message-Id: <8FDBF172-AAA8-4737-A6C6-50B468CA0CBF@thehive.com>
-From: Matthew Von Maszewski <matthew@thehive.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: huge mem mmap eats all CPU when multiple processes 
-Date: Mon, 8 Jun 2009 10:27:49 -0400
-X-Mailer: Apple Mail (2.935.3)
+	id S1753388AbZFHOi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 10:38:57 -0400
+Date: Mon, 8 Jun 2009 15:38:57 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       yanmin.zhang@intel.com, Wu Fengguang <fengguang.wu@intel.com>,
+       linuxram@us.ibm.com, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when
+	zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
+Message-ID: <20090608143857.GG15070@csn.ul.ie>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-2-git-send-email-mel@csn.ul.ie> <4A2D129D.3020309@redhat.com> <20090608135433.GD15070@csn.ul.ie> <alpine.DEB.1.10.0906081033060.21954@gentwo.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0906081033060.21954@gentwo.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[note: not on kernel mailing list, please cc author]
+On Mon, Jun 08, 2009 at 10:33:41AM -0400, Christoph Lameter wrote:
+> On Mon, 8 Jun 2009, Mel Gorman wrote:
+> 
+> > Yes, they're on separate LRU lists but they are not the only pages on those
+> > lists. The tmpfs pages are mixed in together with anonymous pages so we
+> > cannot use NR_*_ANON.
+> 
+> The tmpfs pages are unreclaimable and therefore should not be on the anon
+> lru.
+> 
 
-Symptom:  9 processes mmap same 2 Gig memory section for a shared C  
-heap (lots of random access).  All process begin extreme CPU load in  
-top.
+tmpfs pages can be swap-backed so can be reclaimable. Regardless of what
+list they are on, we still need to know how many of them there are if
+this patch is to be avoided.
 
-- Same code works well when only single process access huge mem.
-- Code works well with standard vm based mmap file and 9 processes.
-
-Environment:
-
-- Intel x86_64:  Dual core Xeon with hyperthreading (4 logical  
-processors)
-- 6 Gig ram, 2.5G allocated to huge mem
-- tried with kernels 2.6.29.4 and 2.6.30-rc8
-- following mmap() call has base address as NULL on first process,  
-then returned address passed to subsequent processes (not threads,  
-processes)
-
-            m_MemSize=((m_MemSize/(2048*1024))+1)*2048*1024;
-             m_BaseAddr=mmap(m_File->GetFixedBase(), m_MemSize,
-                             (PROT_READ | PROT_WRITE),
-                             MAP_SHARED, m_File->GetFileId(), m_Offset);
-
-
-I am not a kernel hacker so I have not attempted to debug.  Will be  
-able to spend time on a sample program for sharing later today or  
-tomorrow.  Sending this note now in case this is already known.
-
-Don't suppose this is as simple as a Copy-On-Write flag being set wrong?
-
-Please send notes as to things I need to capture to better describe  
-this bug.  Happy to do the work.
-
-Thanks,
-Matthew
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
