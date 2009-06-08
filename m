@@ -1,130 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZFHW6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbZFHXBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbZFHW6S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 18:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbZFHW6K
+	id S1756833AbZFHXBK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 19:01:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbZFHXA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 18:58:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57569 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753696AbZFHW6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 18:58:09 -0400
-Date: Tue, 9 Jun 2009 00:57:57 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
-       nickpiggin@yahoo.com.au, chrisw@redhat.com, riel@redhat.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 0/4] RFC - ksm api change into madvise
-Message-ID: <20090608225756.GB8642@random.random>
-References: <1242261048-4487-1-git-send-email-ieidus@redhat.com> <Pine.LNX.4.64.0906081555360.22943@sister.anvils>
+	Mon, 8 Jun 2009 19:00:57 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:59332 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754967AbZFHXA5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 19:00:57 -0400
+Date: Mon, 8 Jun 2009 19:00:57 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH][GIT PULL] ring-buffer: pass in lockdep class key for
+ reader_lock
+In-Reply-To: <1244477919.13761.9042.camel@twins>
+Message-ID: <alpine.DEB.2.00.0906081858580.9522@gandalf.stny.rr.com>
+References: <20090603151724.144915858@goodmis.org>  <20090605145219.GA14830@elte.hu> <20090607082257.GA16761@elte.hu>  <alpine.DEB.2.00.0906081135320.9522@gandalf.stny.rr.com> <1244477919.13761.9042.camel@twins>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0906081555360.22943@sister.anvils>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh!
 
-On Mon, Jun 08, 2009 at 05:18:57PM +0100, Hugh Dickins wrote:
-> I notice that you chose to integrate fully (though not fully enough)
-> with vmas, adding a VM_MERGEABLE flag.  Fine, that's probably going
-> to be safest in the end, and I'll follow you; but it is further than
+Ingo,
 
-After we decided to switch to madvise, I suggested to take the
-approach in the RFC in this thread so with a rmap_item list ordered by
-address that is scanned nested in the core-vma loop that searches for
-vma with VM_MERGEABLE set, so that madvise has only to set the
-VM_MERGEABLE bit, and it still avoids to alter the VM at
-all. Replacing the ksm slots (kind of out of sync ksm vmas) with the
-nested loop, allows to provide madvise semantics while still being out
-of sync with rmap_item and tree_item.
+Please pull the latest tip/tracing/ftrace tree, which can be found at:
 
-> You've resisted putting in the callbacks you need.  I think they were
-> always (i.e. even when using /dev/ksm) necessary, but should become
-> more obvious now we have this tighter integration with mm's vmas.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/ftrace
 
-There is no need of littering the VM with new callbacks, KSM only has
-to register in the mmu notifier to teardown rmap_items (and tree_item
-when the last rmap_item of the tree_item list is gone) synchronously
-when the mappings are invalidated during munmap/mremap or swapping
-(anon pages can already be swapped while it's tracked by the unstable
-tree, and later we hope stable tree ksm pages can be swapped too, and
-we get rid of those from the rbtree as we walk it with
-is_present_pte and gup).
 
-After that we can also have tree_item store the kernel-vaddr (or
-struct page *) to avoid calling gup() during the walk of the rbtree.
-However such a change involves huge complexities and little gain, and
-the part of getting rid of orphaned rmap_item/tree_item synchronously
-doesn't provide practical advantages. It takes a single pass to get
-rid of all orphaned rmap_items/tree_items, and shutting down ksm gets
-rid of everything releasing any memory allocated by KSM (or at least
-it should, especially if we don't allow it to be a module anymore
-because it might not be worth it, the =N option is still useful for
-the embedded that are sure they won't get great benefit from KSM in
-their apps).
+Peter Zijlstra (1):
+      ring-buffer: pass in lockdep class key for reader_lock
 
-Izik has been brave enough to try having rmap_item/tree_item in sync
-with mmu notifier already, but one of the complexities were in the
-locking, we can't schedule anywhere in the mmu notifier methods (this
-could be relaxed but it makes no sense to depend on this just to get
-rid of orphaned rmap_item/tree_item synchronously). Other complexities
-were in the fact replace_page when it does set_pte_at_notify will
-recurse in KSM itself if KSM registers in MMU notifier.
+----
+ include/linux/ring_buffer.h |   14 +++++++++++++-
+ kernel/trace/ring_buffer.c  |    9 +++++++--
+ 2 files changed, 20 insertions(+), 3 deletions(-)
+---------------------------
+commit 1f8a6a10fb9437eac3f516ea4324a19087872f30
+Author: Peter Zijlstra <peterz@infradead.org>
+Date:   Mon Jun 8 18:18:39 2009 +0200
 
-Admittedly I didn't spend much time thinking about how everything is
-supposed to work with mmu notifer and in-sync rmap_item/tree_item with
-tree_item pointing to a physical page address without any struct page
-pinning whatsoever (the very cool thing that is all about mmu
-notifier, no pinning and full swapping) yet, but because I doubt it
-will provide any significant advantage and I think being simpler has
-some value too at least until there are more users of the
-feature. Hence the current implementation still has an out of sync
-scan and garbage collect rmap_item/tree_item lazily. This is not KVM
-that without mmu notifier can't swap at all. We can do all our work
-here in KSM out of sync by just garbage collecting the orphaned
-entries out of sync, KSM works with virtual addresses it only does
-temporary gup pins so it's not forced to use mmu notifier to give good
-behavior.
+    ring-buffer: pass in lockdep class key for reader_lock
+    
+    On Sun, 7 Jun 2009, Ingo Molnar wrote:
+    > Testing tracer sched_switch: <6>Starting ring buffer hammer
+    > PASSED
+    > Testing tracer sysprof: PASSED
+    > Testing tracer function: PASSED
+    > Testing tracer irqsoff:
+    > =============================================
+    > PASSED
+    > Testing tracer preemptoff: PASSED
+    > Testing tracer preemptirqsoff: [ INFO: possible recursive locking detected ]
+    > PASSED
+    > Testing tracer branch: 2.6.30-rc8-tip-01972-ge5b9078-dirty #5760
+    > ---------------------------------------------
+    > rb_consumer/431 is trying to acquire lock:
+    >  (&cpu_buffer->reader_lock){......}, at: [<c109eef7>] ring_buffer_reset_cpu+0x37/0x70
+    >
+    > but task is already holding lock:
+    >  (&cpu_buffer->reader_lock){......}, at: [<c10a019e>] ring_buffer_consume+0x7e/0xc0
+    >
+    > other info that might help us debug this:
+    > 1 lock held by rb_consumer/431:
+    >  #0:  (&cpu_buffer->reader_lock){......}, at: [<c10a019e>] ring_buffer_consume+0x7e/0xc0
+    
+    The ring buffer is a generic structure, and can be used outside of
+    ftrace. If ftrace traces within the use of the ring buffer, it can produce
+    false positives with lockdep.
+    
+    This patch passes in a static lock key into the allocation of the ring
+    buffer, so that different ring buffers will have their own lock class.
+    
+    Reported-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    LKML-Reference: <1244477919.13761.9042.camel@twins>
+    
+    [ store key in ring buffer descriptor ]
+    
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-So my suggestion is to go with out of sync, and then once this is all
-solid and finished, we can try to use mmu notifier to make it in sync
-and benchmark to see if it is worth it. With the primary benefit of
-being able to remove gup from the tree lookup (collecting orphaned
-rmap_item/tree_item a bit sooner doesn't matter so much IMHO, at least
-for KVM).
+diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
+index f134582..8670f15 100644
+--- a/include/linux/ring_buffer.h
++++ b/include/linux/ring_buffer.h
+@@ -105,7 +105,19 @@ void ring_buffer_discard_commit(struct ring_buffer *buffer,
+  * size is in bytes for each per CPU buffer.
+  */
+ struct ring_buffer *
+-ring_buffer_alloc(unsigned long size, unsigned flags);
++__ring_buffer_alloc(unsigned long size, unsigned flags, struct lock_class_key *key);
++
++/*
++ * Because the ring buffer is generic, if other users of the ring buffer get
++ * traced by ftrace, it can produce lockdep warnings. We need to keep each
++ * ring buffer's lock class separate.
++ */
++#define ring_buffer_alloc(size, flags)			\
++({							\
++	static struct lock_class_key __key;		\
++	__ring_buffer_alloc((size), (flags), &__key);	\
++})
++
+ void ring_buffer_free(struct ring_buffer *buffer);
+ 
+ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size);
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 7102d7a..22878b0 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -426,6 +426,8 @@ struct ring_buffer {
+ 	atomic_t			record_disabled;
+ 	cpumask_var_t			cpumask;
+ 
++	struct lock_class_key		*reader_lock_key;
++
+ 	struct mutex			mutex;
+ 
+ 	struct ring_buffer_per_cpu	**buffers;
+@@ -565,6 +567,7 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
+ 	cpu_buffer->cpu = cpu;
+ 	cpu_buffer->buffer = buffer;
+ 	spin_lock_init(&cpu_buffer->reader_lock);
++	lockdep_set_class(&cpu_buffer->reader_lock, buffer->reader_lock_key);
+ 	cpu_buffer->lock = (raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
+ 	INIT_LIST_HEAD(&cpu_buffer->pages);
+ 
+@@ -635,7 +638,8 @@ static int rb_cpu_notify(struct notifier_block *self,
+  * when the buffer wraps. If this flag is not set, the buffer will
+  * drop data when the tail hits the head.
+  */
+-struct ring_buffer *ring_buffer_alloc(unsigned long size, unsigned flags)
++struct ring_buffer *__ring_buffer_alloc(unsigned long size, unsigned flags,
++					struct lock_class_key *key)
+ {
+ 	struct ring_buffer *buffer;
+ 	int bsize;
+@@ -658,6 +662,7 @@ struct ring_buffer *ring_buffer_alloc(unsigned long size, unsigned flags)
+ 	buffer->pages = DIV_ROUND_UP(size, BUF_PAGE_SIZE);
+ 	buffer->flags = flags;
+ 	buffer->clock = trace_clock_local;
++	buffer->reader_lock_key = key;
+ 
+ 	/* need at least two pages */
+ 	if (buffer->pages == 1)
+@@ -715,7 +720,7 @@ struct ring_buffer *ring_buffer_alloc(unsigned long size, unsigned flags)
+ 	kfree(buffer);
+ 	return NULL;
+ }
+-EXPORT_SYMBOL_GPL(ring_buffer_alloc);
++EXPORT_SYMBOL_GPL(__ring_buffer_alloc);
+ 
+ /**
+  * ring_buffer_free - free a ring buffer.
 
-> And a question on your page_wrprotect() addition to mm/rmap.c: though
-> it may contain some important checks (I'm thinking of the get_user_pages
-> protection), isn't it essentially redundant, and should be removed from
-> the patchset?  If we have a private page which is mapped into more than
-> the one address space by which we arrive at it, then, quite independent
-> of KSM, it needs to be write-protected already to prevent mods in one
-> address space leaking into another - doesn't it?  So I see no need for
-> the rmap'ped write-protection there, just make the checks and write
-> protect the pte you have in ksm.c.  Or am I missing something?
 
-Makes sense, basically if pte is already wrprotected we've to do
-nothing, and if it's writable we only need to care about the current
-pte because mapcount is guaranteed 1. That probably can provide a
-minor optimization to the ksm performance. OTOH if we'll ever decide
-to merge more than anon pages this won't hold. Let's say anon pages
-are by orders of magnitude simpler to merge than anything else because
-they don't belong to all other data structures like pagecache, I guess
-we'll never merge pagecache given the significant additional
-complexities involved, so I'm not against keeping replace_page local
-and without walking the anon_vma list at all.
-
-So let us know what you think about the rmap_item/tree_item out of
-sync, or in sync with mmu notifier. As said Izik already did a
-preliminary patch with mmu notifier registration. I doubt we want to
-invest in that direction unless there's 100% agreement that it is
-definitely the way to go, and the expectation that it will make a
-substantial difference to the KSM users. Minor optimizations that
-increase complexity a lot, can be left for later.
-
-Thanks for looking into KSM!
-Andrea
