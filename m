@@ -1,113 +1,323 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbZFHHwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbZFHHwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753702AbZFHHwE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 03:52:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbZFHHvz
+	id S1754573AbZFHHwv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 03:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbZFHHwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 03:51:55 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44156 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752417AbZFHHvy (ORCPT
+	Mon, 8 Jun 2009 03:52:43 -0400
+Received: from mga06.intel.com ([134.134.136.21]:41691 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752417AbZFHHwm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 03:51:54 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first class citizen
-Cc: kosaki.motohiro@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-In-Reply-To: <20090608073944.GA12431@localhost>
-References: <87pre4nhqf.fsf@basil.nowhere.org> <20090608073944.GA12431@localhost>
-Message-Id: <20090608164611.4385.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon,  8 Jun 2009 16:51:53 +0900 (JST)
+	Mon, 8 Jun 2009 03:52:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,323,1241420400"; 
+   d="scan'208";a="522561361"
+Subject: [PATCH V2: 2/3] pci: Provide no error source id support on AER
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <1244447356.2560.192.camel@ymzhang>
+References: <1244447356.2560.192.camel@ymzhang>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 08 Jun 2009 15:52:51 +0800
+Message-Id: <1244447571.2560.196.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, May 20, 2009 at 07:20:24PM +0800, Andi Kleen wrote:
-> > One scenario that might be useful to test is what happens when some very large
-> > processes, all mapped and executable exceed memory and fight each other
-> > for the working set. Do you have regressions then compared to without
-> > the patches?
-> 
-> I managed to carry out some stress tests for memory tight desktops.
-> The outcome is encouraging: clock time and major faults are reduced
-> by 50%, and pswpin numbers are reduced to ~1/3.
-> 
-> Here is the test scenario.
-> - nfsroot gnome desktop with 512M physical memory
-> - run some programs, and switch between the existing windows after
->   starting each new program.
-> 
-> The progress timing (seconds) is:
-> 
->   before       after    programs
->     0.02        0.02    N xeyes
->     0.75        0.76    N firefox
->     2.02        1.88    N nautilus
->     3.36        3.17    N nautilus --browser
->     5.26        4.89    N gthumb
->     7.12        6.47    N gedit
->     9.22        8.16    N xpdf /usr/share/doc/shared-mime-info/shared-mime-info-spec.pdf
->    13.58       12.55    N xterm
->    15.87       14.57    N mlterm
->    18.63       17.06    N gnome-terminal
->    21.16       18.90    N urxvt
->    26.24       23.48    N gnome-system-monitor
->    28.72       26.52    N gnome-help
->    32.15       29.65    N gnome-dictionary
->    39.66       36.12    N /usr/games/sol
->    43.16       39.27    N /usr/games/gnometris
->    48.65       42.56    N /usr/games/gnect
->    53.31       47.03    N /usr/games/gtali
->    58.60       52.05    N /usr/games/iagno
->    65.77       55.42    N /usr/games/gnotravex
->    70.76       61.47    N /usr/games/mahjongg
->    76.15       67.11    N /usr/games/gnome-sudoku
->    86.32       75.15    N /usr/games/glines
->    92.21       79.70    N /usr/games/glchess
->   103.79       88.48    N /usr/games/gnomine
->   113.84       96.51    N /usr/games/gnotski
->   124.40      102.19    N /usr/games/gnibbles
->   137.41      114.93    N /usr/games/gnobots2
->   155.53      125.02    N /usr/games/blackjack
->   179.85      135.11    N /usr/games/same-gnome
->   224.49      154.50    N /usr/bin/gnome-window-properties
->   248.44      162.09    N /usr/bin/gnome-default-applications-properties
->   282.62      173.29    N /usr/bin/gnome-at-properties
->   323.72      188.21    N /usr/bin/gnome-typing-monitor
->   363.99      199.93    N /usr/bin/gnome-at-visual
->   394.21      206.95    N /usr/bin/gnome-sound-properties
->   435.14      224.49    N /usr/bin/gnome-at-mobility
->   463.05      234.11    N /usr/bin/gnome-keybinding-properties
->   503.75      248.59    N /usr/bin/gnome-about-me
->   554.00      276.27    N /usr/bin/gnome-display-properties
->   615.48      304.39    N /usr/bin/gnome-network-preferences
->   693.03      342.01    N /usr/bin/gnome-mouse-properties
->   759.90      388.58    N /usr/bin/gnome-appearance-properties
->   937.90      508.47    N /usr/bin/gnome-control-center
->  1109.75      587.57    N /usr/bin/gnome-keyboard-properties
->  1399.05      758.16    N : oocalc
->  1524.64      830.03    N : oodraw
->  1684.31      900.03    N : ooimpress
->  1874.04      993.91    N : oomath
->  2115.12     1081.89    N : ooweb
->  2369.02     1161.99    N : oowriter
+On Mon, 2009-06-08 at 15:49 +0800, Zhang, Yanmin wrote:
+> ﻿When error source id is equal to 0 or nosourceid=1, kernel checks
+> the AER status registers of all devices under the root port
+> to find the initial error reporter.
+Sorry. The version number should be V2 instead of V3.
 
-Thanks this great effort!
-I definitely agree this patch sould be merge to -mm asap.
+﻿When error source id is equal to 0 or nosourceid=1, kernel checks
+the AER status registers of all devices under the root port
+to find the initial error reporter.
 
-	Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
 
+---
+
+--- linux-2.6.30-rc3_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c	2009-04-29 10:37:16.000000000 +0800
++++ linux-2.6.30-rc3_aernoeid/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-07 14:09:19.000000000 +0800
+@@ -26,7 +26,9 @@
+ #include "aerdrv.h"
+ 
+ static int forceload;
++static int nosourceid;
+ module_param(forceload, bool, 0);
++module_param(nosourceid, bool, 0);
+ 
+ int pci_enable_pcie_error_reporting(struct pci_dev *dev)
+ {
+@@ -141,34 +143,81 @@ static void set_downstream_devices_error
+ 	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
+ }
+ 
+-static int find_device_iter(struct device *device, void *data)
++static int compare_device_id(struct pci_dev *dev, struct aer_err_info *e_info)
+ {
+-	struct pci_dev *dev;
+-	u16 id = *(unsigned long *)data;
+-	u8 secondary, subordinate, d_bus = id >> 8;
+-
+-	if (device->bus == &pci_bus_type) {
+-		dev = to_pci_dev(device);
+-		if (id == ((dev->bus->number << 8) | dev->devfn)) {
+-			/*
+-			 * Device ID match
+-			 */
+-			*(unsigned long*)data = (unsigned long)device;
+-			return 1;
+-		}
+-
++	if (e_info->id == ((dev->bus->number << 8) | dev->devfn)) {
+ 		/*
+-		 * If device is P2P, check if it is an upstream?
++		 * Device ID match
+ 		 */
+-		if (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE) {
+-			pci_read_config_byte(dev, PCI_SECONDARY_BUS,
+-				&secondary);
+-			pci_read_config_byte(dev, PCI_SUBORDINATE_BUS,
+-				&subordinate);
+-			if (d_bus >= secondary && d_bus <= subordinate) {
+-				*(unsigned long*)data = (unsigned long)device;
+-				return 1;
+-			}
++		e_info->dev = dev;
++		return 1;
++	}
++
++	return 0;
++}
++
++static int find_device_iter(struct pci_dev *dev, void *data)
++{
++	int pos;
++	u32 status;
++	u32 mask;
++	u16 reg16;
++	int result;
++	struct aer_err_info *e_info = (struct aer_err_info *)data;
++
++	if (!nosourceid) {
++		result = compare_device_id(dev, e_info);
++		if (result)
++			return 1;
++		if (e_info->id != 0)
++			return 0;
++	}
++
++	/*
++	 * Next is to check when id is equal to 0 or nosourceid==y.
++	 * Some ports might lose error source id. We check AER
++	 * status registers to find the initial reporter.
++	 */
++	if (atomic_read(&dev->enable_cnt) == 0)
++		return 0;
++	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
++	if (!pos)
++		return 0;
++	/* Check if AER is enabled */
++	pci_read_config_word(dev, pos+PCI_EXP_DEVCTL, &reg16);
++	if (!(reg16 & (
++		PCI_EXP_DEVCTL_CERE |
++		PCI_EXP_DEVCTL_NFERE |
++		PCI_EXP_DEVCTL_FERE |
++		PCI_EXP_DEVCTL_URRE)))
++		return 0;
++	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
++	if (!pos)
++		return 0;
++
++	status = 0;
++	mask = 0;
++	if (e_info->severity == AER_CORRECTABLE) {
++		pci_read_config_dword(dev,
++				pos + PCI_ERR_COR_STATUS,
++				&status);
++		pci_read_config_dword(dev,
++				pos + PCI_ERR_COR_MASK,
++				&mask);
++		if (status & ERR_CORRECTABLE_ERROR_MASK & ~mask) {
++			e_info->dev = dev;
++			return 1;
++		}
++	} else {
++		pci_read_config_dword(dev,
++				pos + PCI_ERR_UNCOR_STATUS,
++				&status);
++		pci_read_config_dword(dev,
++				pos + PCI_ERR_UNCOR_MASK,
++				&mask);
++		if (status & ERR_UNCORRECTABLE_ERROR_MASK & ~mask) {
++			e_info->dev = dev;
++			return 1;
+ 		}
+ 	}
+ 
+@@ -178,33 +227,23 @@ static int find_device_iter(struct devic
+ /**
+  * find_source_device - search through device hierarchy for source device
+  * @parent: pointer to Root Port pci_dev data structure
+- * @id: device ID of agent who sends an error message to this Root Port
++ * @err_info: including detailed error information such like id
+  *
+  * Invoked when error is detected at the Root Port.
+  */
+-static struct device* find_source_device(struct pci_dev *parent, u16 id)
++static void find_source_device(struct pci_dev *parent,
++		struct aer_err_info *e_info)
+ {
+ 	struct pci_dev *dev = parent;
+-	struct device *device;
+-	unsigned long device_addr;
+-	int status;
++	int result;
+ 
+ 	/* Is Root Port an agent that sends error message? */
+-	if (id == ((dev->bus->number << 8) | dev->devfn))
+-		return &dev->dev;
+-
+-	do {
+-		device_addr = id;
+- 		if ((status = device_for_each_child(&dev->dev,
+-			&device_addr, find_device_iter))) {
+-			device = (struct device*)device_addr;
+-			dev = to_pci_dev(device);
+-			if (id == ((dev->bus->number << 8) | dev->devfn))
+-				return device;
+-		}
+- 	}while (status);
++	result = find_device_iter(dev, e_info);
++	if (result)
++		return;
+ 
+-	return NULL;
++	pci_walk_bus(parent->subordinate, find_device_iter, e_info);
++	return;
+ }
+ 
+ static int report_error_detected(struct pci_dev *dev, void *data)
+@@ -499,12 +538,12 @@ static pci_ers_result_t do_recovery(stru
+  */
+ static void handle_error_source(struct pcie_device * aerdev,
+ 	struct pci_dev *dev,
+-	struct aer_err_info info)
++	struct aer_err_info *info)
+ {
+ 	pci_ers_result_t status = 0;
+ 	int pos;
+ 
+-	if (info.severity == AER_CORRECTABLE) {
++	if (info->severity == AER_CORRECTABLE) {
+ 		/*
+ 		 * Correctable error does not need software intevention.
+ 		 * No need to go through error recovery process.
+@@ -512,9 +551,9 @@ static void handle_error_source(struct p
+ 		pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+ 		if (pos)
+ 			pci_write_config_dword(dev, pos + PCI_ERR_COR_STATUS,
+-					info.status);
++					info->status);
+ 	} else {
+-		status = do_recovery(aerdev, dev, info.severity);
++		status = do_recovery(aerdev, dev, info->severity);
+ 		if (status == PCI_ERS_RESULT_RECOVERED) {
+ 			dev_printk(KERN_DEBUG, &dev->dev, "AER driver "
+ 				   "successfully recovered\n");
+@@ -671,10 +710,13 @@ static int get_device_error_info(struct 
+ static void aer_isr_one_error(struct pcie_device *p_device,
+ 		struct aer_err_source *e_src)
+ {
+-	struct device *s_device;
+-	struct aer_err_info e_info = {0, 0, 0,};
++	struct aer_err_info *e_info;
+ 	int i;
+-	u16 id;
++
++	/* struct aer_err_info might be big, so we allocate it with slab */
++	e_info = kmalloc(sizeof(struct aer_err_info), GFP_KERNEL);
++	if (e_info == NULL)
++		return;
+ 
+ 	/*
+ 	 * There is a possibility that both correctable error and
+@@ -686,31 +728,37 @@ static void aer_isr_one_error(struct pci
+ 		if (!(e_src->status & i))
+ 			continue;
+ 
++		memset(e_info, 0, sizeof(struct aer_err_info));
++
+ 		/* Init comprehensive error information */
+ 		if (i & PCI_ERR_ROOT_COR_RCV) {
+-			id = ERR_COR_ID(e_src->id);
+-			e_info.severity = AER_CORRECTABLE;
++			e_info->id = ERR_COR_ID(e_src->id);
++			e_info->severity = AER_CORRECTABLE;
+ 		} else {
+-			id = ERR_UNCOR_ID(e_src->id);
+-			e_info.severity = ((e_src->status >> 6) & 1);
++			e_info->id = ERR_UNCOR_ID(e_src->id);
++			e_info->severity = ((e_src->status >> 6) & 1);
+ 		}
+ 		if (e_src->status &
+ 			(PCI_ERR_ROOT_MULTI_COR_RCV |
+ 			 PCI_ERR_ROOT_MULTI_UNCOR_RCV))
+-			e_info.flags |= AER_MULTI_ERROR_VALID_FLAG;
+-		if (!(s_device = find_source_device(p_device->port, id))) {
++			e_info->flags |= AER_MULTI_ERROR_VALID_FLAG;
++
++		find_source_device(p_device->port, e_info);
++		if (e_info->dev == NULL) {
+ 			printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
+-				__func__, id);
++				__func__, e_info->id);
+ 			continue;
+ 		}
+-		if (get_device_error_info(to_pci_dev(s_device), &e_info) ==
++		if (get_device_error_info(e_info->dev, e_info) ==
+ 				AER_SUCCESS) {
+-			aer_print_error(to_pci_dev(s_device), &e_info);
++			aer_print_error(e_info->dev, e_info);
+ 			handle_error_source(p_device,
+-				to_pci_dev(s_device),
++				e_info->dev,
+ 				e_info);
+ 		}
+ 	}
++
++	kfree(e_info);
+ }
+ 
+ /**
+--- linux-2.6.30-rc3_pciwalk/drivers/pci/pcie/aer/aerdrv.h	2009-04-29 10:29:35.000000000 +0800
++++ linux-2.6.30-rc3_aernoeid/drivers/pci/pcie/aer/aerdrv.h	2009-04-29 12:44:36.000000000 +0800
+@@ -57,6 +57,8 @@ struct header_log_regs {
+ };
+ 
+ struct aer_err_info {
++	struct pci_dev *dev;
++	u16 id;
+ 	int severity;			/* 0:NONFATAL | 1:FATAL | 2:COR */
+ 	int flags;
+ 	unsigned int status;		/* COR/UNCOR Error Status */
+--- linux-2.6.30-rc3_pciwalk/Documentation/PCI/pcieaer-howto.txt	2009-04-29 10:29:34.000000000 +0800
++++ linux-2.6.30-rc3_aernoeid/Documentation/PCI/pcieaer-howto.txt	2009-06-07 14:07:42.000000000 +0800
+@@ -60,6 +60,8 @@ forceload, a parameter of type bool, cou
+ be initiated although firmwares have no _OSC support. To enable the
+ walkaround, pls. add aerdriver.forceload=y to kernel boot parameter line
+ when booting kernel. Note that forceload=n by default.
++nosourceid, another parameter of type bool, is used when hardware (mostly
++chipset) has errata that root ports couldn't get error reporting source id.
+ 
+ 2.3 AER error output
+ When a PCI-E AER error is captured, an error message will be outputed to
 
 
