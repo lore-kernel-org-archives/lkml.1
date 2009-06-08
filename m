@@ -1,58 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbZFHWzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZFHW6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbZFHWzi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 18:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbZFHWz3
+	id S1756533AbZFHW6S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 18:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbZFHW6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 18:55:29 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53403 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751130AbZFHWz2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 18:55:28 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A2D96C5.2080604@s5r6.in-berlin.de>
-Date: Tue, 09 Jun 2009 00:55:01 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
+	Mon, 8 Jun 2009 18:58:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57569 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753696AbZFHW6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 18:58:09 -0400
+Date: Tue, 9 Jun 2009 00:57:57 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
+       nickpiggin@yahoo.com.au, chrisw@redhat.com, riel@redhat.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 0/4] RFC - ksm api change into madvise
+Message-ID: <20090608225756.GB8642@random.random>
+References: <1242261048-4487-1-git-send-email-ieidus@redhat.com> <Pine.LNX.4.64.0906081555360.22943@sister.anvils>
 MIME-Version: 1.0
-To: David VomLehn <dvomlehn@cisco.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
-       netdev@vger.kernel.org, arjan@infradead.org
-Subject: Re: [PATCH 7/7] initdev:kernel:Await block device discovery
-References: <20090606023416.GA5798@cuplxvomd02.corp.sa.net> <4A2A3F36.4070408@s5r6.in-berlin.de> <20090608223019.GC22222@cuplxvomd02.corp.sa.net>
-In-Reply-To: <20090608223019.GC22222@cuplxvomd02.corp.sa.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0906081555360.22943@sister.anvils>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David VomLehn wrote:
-> On Sat, Jun 06, 2009 at 06:04:38AM -0400, Stefan Richter wrote:
->> 1.)  It depends on the rootdelay so big that it is guaranteed that one 
->> or more initdev_found() have been called before prepare_namespace()'s 
->> ssleep(root_delay) is over.
-...
-> I think you misunderstood.  Buses are enumerated before this code is
-> reached and thus initdev_found() has already been called for all attached
-> block devices.
-...
-> I would appreciate it if you could take a closer look at the locations where
-> initdev_found() and initdev_probe_done() are called and see if you still
-> think there is a problem.
+Hi Hugh!
 
-I obviously need to do that.
+On Mon, Jun 08, 2009 at 05:18:57PM +0100, Hugh Dickins wrote:
+> I notice that you chose to integrate fully (though not fully enough)
+> with vmas, adding a VM_MERGEABLE flag.  Fine, that's probably going
+> to be safest in the end, and I'll follow you; but it is further than
 
-However, one issue remains:  If somebody wants to use your API for 
-another bus, he needs to know at which point he can successfully use it, 
-and after what point (or context) it cannot, even must not, be used 
-anymore.  This isn't documented --- or is it?
+After we decided to switch to madvise, I suggested to take the
+approach in the RFC in this thread so with a rmap_item list ordered by
+address that is scanned nested in the core-vma loop that searches for
+vma with VM_MERGEABLE set, so that madvise has only to set the
+VM_MERGEABLE bit, and it still avoids to alter the VM at
+all. Replacing the ksm slots (kind of out of sync ksm vmas) with the
+nested loop, allows to provide madvise semantics while still being out
+of sync with rmap_item and tree_item.
 
-(By 'buses are enumerated before...' you surely mean only the buses for 
-which you implemented this API usage already.)
--- 
-Stefan Richter
--=====-==--= -==- -=--=
-http://arcgraph.de/sr/
+> You've resisted putting in the callbacks you need.  I think they were
+> always (i.e. even when using /dev/ksm) necessary, but should become
+> more obvious now we have this tighter integration with mm's vmas.
+
+There is no need of littering the VM with new callbacks, KSM only has
+to register in the mmu notifier to teardown rmap_items (and tree_item
+when the last rmap_item of the tree_item list is gone) synchronously
+when the mappings are invalidated during munmap/mremap or swapping
+(anon pages can already be swapped while it's tracked by the unstable
+tree, and later we hope stable tree ksm pages can be swapped too, and
+we get rid of those from the rbtree as we walk it with
+is_present_pte and gup).
+
+After that we can also have tree_item store the kernel-vaddr (or
+struct page *) to avoid calling gup() during the walk of the rbtree.
+However such a change involves huge complexities and little gain, and
+the part of getting rid of orphaned rmap_item/tree_item synchronously
+doesn't provide practical advantages. It takes a single pass to get
+rid of all orphaned rmap_items/tree_items, and shutting down ksm gets
+rid of everything releasing any memory allocated by KSM (or at least
+it should, especially if we don't allow it to be a module anymore
+because it might not be worth it, the =N option is still useful for
+the embedded that are sure they won't get great benefit from KSM in
+their apps).
+
+Izik has been brave enough to try having rmap_item/tree_item in sync
+with mmu notifier already, but one of the complexities were in the
+locking, we can't schedule anywhere in the mmu notifier methods (this
+could be relaxed but it makes no sense to depend on this just to get
+rid of orphaned rmap_item/tree_item synchronously). Other complexities
+were in the fact replace_page when it does set_pte_at_notify will
+recurse in KSM itself if KSM registers in MMU notifier.
+
+Admittedly I didn't spend much time thinking about how everything is
+supposed to work with mmu notifer and in-sync rmap_item/tree_item with
+tree_item pointing to a physical page address without any struct page
+pinning whatsoever (the very cool thing that is all about mmu
+notifier, no pinning and full swapping) yet, but because I doubt it
+will provide any significant advantage and I think being simpler has
+some value too at least until there are more users of the
+feature. Hence the current implementation still has an out of sync
+scan and garbage collect rmap_item/tree_item lazily. This is not KVM
+that without mmu notifier can't swap at all. We can do all our work
+here in KSM out of sync by just garbage collecting the orphaned
+entries out of sync, KSM works with virtual addresses it only does
+temporary gup pins so it's not forced to use mmu notifier to give good
+behavior.
+
+So my suggestion is to go with out of sync, and then once this is all
+solid and finished, we can try to use mmu notifier to make it in sync
+and benchmark to see if it is worth it. With the primary benefit of
+being able to remove gup from the tree lookup (collecting orphaned
+rmap_item/tree_item a bit sooner doesn't matter so much IMHO, at least
+for KVM).
+
+> And a question on your page_wrprotect() addition to mm/rmap.c: though
+> it may contain some important checks (I'm thinking of the get_user_pages
+> protection), isn't it essentially redundant, and should be removed from
+> the patchset?  If we have a private page which is mapped into more than
+> the one address space by which we arrive at it, then, quite independent
+> of KSM, it needs to be write-protected already to prevent mods in one
+> address space leaking into another - doesn't it?  So I see no need for
+> the rmap'ped write-protection there, just make the checks and write
+> protect the pte you have in ksm.c.  Or am I missing something?
+
+Makes sense, basically if pte is already wrprotected we've to do
+nothing, and if it's writable we only need to care about the current
+pte because mapcount is guaranteed 1. That probably can provide a
+minor optimization to the ksm performance. OTOH if we'll ever decide
+to merge more than anon pages this won't hold. Let's say anon pages
+are by orders of magnitude simpler to merge than anything else because
+they don't belong to all other data structures like pagecache, I guess
+we'll never merge pagecache given the significant additional
+complexities involved, so I'm not against keeping replace_page local
+and without walking the anon_vma list at all.
+
+So let us know what you think about the rmap_item/tree_item out of
+sync, or in sync with mmu notifier. As said Izik already did a
+preliminary patch with mmu notifier registration. I doubt we want to
+invest in that direction unless there's 100% agreement that it is
+definitely the way to go, and the expectation that it will make a
+substantial difference to the KSM users. Minor optimizations that
+increase complexity a lot, can be left for later.
+
+Thanks for looking into KSM!
+Andrea
