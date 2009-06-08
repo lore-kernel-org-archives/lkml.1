@@ -1,73 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbZFHQXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbZFHQ1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757221AbZFHQXp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 12:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbZFHQXh
+	id S1757243AbZFHQ1A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 12:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbZFHQ0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 12:23:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38565 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755351AbZFHQXg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 12:23:36 -0400
-Date: Mon, 8 Jun 2009 09:21:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Chris Clayton <chris2553@googlemail.com>
-cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, NeilBrown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org,
-       James Bottomley <james.bottomley@hansenpartnership.com>,
-       scsi <linux-scsi@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: 2.6.30-rc8 Oops whilst booting
-In-Reply-To: <c6b1100b0906080553o2aa77a40pe0077b1b10a7d88a@mail.gmail.com>
-Message-ID: <alpine.LFD.2.01.0906080916130.6847@localhost.localdomain>
-References: <200906061959.55592.chris2553@googlemail.com>  <200906062215.30571.chris2553@googlemail.com>  <1244381140.30664.12.camel@ht.satnam>  <c6b1100b0906071138g2c46fb34vc1a2beb9438f1f1e@mail.gmail.com>  <1244413881.18742.31.camel@ht.satnam> 
- <2f9e3044bafcae848f74a1492b0ea471.squirrel@neil.brown.name>  <c6b1100b0906080108y191bb157n67ec681ade2a0d13@mail.gmail.com>  <c6b1100b0906080358y4033c402ra236eff3f972d169@mail.gmail.com>  <1244460875.12644.2.camel@ht.satnam>
- <c6b1100b0906080553o2aa77a40pe0077b1b10a7d88a@mail.gmail.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 8 Jun 2009 12:26:51 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:38957 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756111AbZFHQ0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 12:26:50 -0400
+Message-ID: <4A2D3BC6.3040904@msgid.tls.msk.ru>
+Date: Mon, 08 Jun 2009 20:26:46 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: Linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [Security, resend] Instant crash with rtl8169 and large packets
+References: <4A2D1147.8020101@msgid.tls.msk.ru> <4A2D1FE4.5030100@gmail.com> <4A2D25F6.9080300@msgid.tls.msk.ru> <4A2D2906.6090002@gmail.com> <4A2D301D.9040301@msgid.tls.msk.ru> <4A2D3568.6010901@gmail.com>
+In-Reply-To: <4A2D3568.6010901@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 8 Jun 2009, Chris Clayton wrote:
-> 
-> OK. I reversed that change and built and installed the kernel. It has
-> withstood 100 reboots without a panic. Additionally, I pulled the
-> latest changes (that will be rc8-git5, I think) from kernel.org,
-> reversed the change to that kernel and built and installed it. That
-> too withstood 100 reboots without a panic.
-> 
-> Let me know if there's anything else I can do to help fix this.
-
-That's already pretty convincing.
-
-James, Arjan? The original oops message is here (a jpg screen capture, 
-unable to open initial console):
-
-	http://lkml.org/lkml/2009/6/6/142
-
-and it's this bug entry:
-
-	Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13474
-	Subject         : Oops whilst booting
-	Submitter       : Chris Clayton <chris2553@googlemail.com>
-	Date            : 2009-06-06 18:59 (2 days old)
-	References      : http://marc.info/?l=linux-kernel&m=124431487924254&w=4
-
-and now bisected down to 
-
->> commit d5a877e8dd409d8c702986d06485c374b705d340
->> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
->> Date:   Sun May 24 13:03:43 2009 -0700
+Eric Dumazet wrote:
+> Michael Tokarev a écrit :
+>> Eric Dumazet wrote:
+>>> Michael Tokarev a écrit :
+>> []
+>>>>>> The situation is very simple: with an RTL8169 (probably
+>>>>>> onboard) GigE card which, by default, is configured to
+>>>>>> have MTU (maximal transmission unit) to be 1500 bytes,
+>>>>>> it's *trivial* to instantly crash the machine by sending
+>>>>>> it a *single* packet of size >1500 bytes (provided the
+>>>>>> network switch can handle jumbo frames).
+>> []
+>>> OK, 2nd try then :)
+>>> diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+>>> index e94316b..9080b08 100644
+>>> --- a/drivers/net/r8169.c
+>>> +++ b/drivers/net/r8169.c
+>>> @@ -3495,7 +3495,8 @@ static int rtl8169_rx_interrupt(struct
+>>> net_device *dev,
+>>>               * frames. They are seen as a symptom of over-mtu
+>>>               * sized frames.
+>>>               */
+>>> -            if (unlikely(rtl8169_fragmented_frame(status))) {
+>>> +            if (unlikely(rtl8169_fragmented_frame(status) ||
+>>> +                     (unsigned int)pkt_size > tp->rx_buf_sz)) {
+>>>                  dev->stats.rx_dropped++;
+>>>                  dev->stats.rx_length_errors++;
+>>>                  rtl8169_mark_to_asic(desc, tp->rx_buf_sz);
+>> This one behaves much better.  There's no instant crash anymore, and the
+>> 'dropped' and 'frame' stats in ifconfig gets incremented with each ping.
 >>
->>     async: make sure independent async domains can't accidentally entangle
+>> It fails down the line however.  I wasn't able to reply to this email after
+>> doing the ping test with the above change (no more large packets were
+>> sent).
+>> With OOPSes like this one:
+>>
+>>  general protection fault: 0000 [#1] SMP
+[]
+>>   [<ffffffff803dbc7f>] ? skb_release_data+0xaf/0xe0
+>>   [<ffffffff803db911>] ? __kfree_skb+0x11/0xa0
+>>   [<ffffffff80418a88>] ? tcp_recvmsg+0x6d8/0x950
+[]
+>> Looks like some memory corruption.  And most probably it is in
+>> that error path in r8169 driver - it is the only new codepath
+>> which were executed here.  The problem is quite repeatable -
+>> after sending a single large ping system starts behaving like
+>> the above at random.
+[]
+> Hmm... this code path is not new, I believe your adapter is buggy, because it
+> is overwriting part of memory it should not touch at all.
+> 
+> When this driver queues a skb in rx queue, it tells NIC the max size of the skb,
+> and apparently NIC happily delivers packets with larger sizes, so probably DMA
+> wrote data past end of skb data.
 
-please advice. Otherwise I'll have to revert.
+That's a very likely situation.
 
-		Linus
+> Try to change 
+> 
+> static void rtl_set_rx_max_size(void __iomem *ioaddr)
+>     RTL_W16(RxMaxSize, 16383); 
+> 
+> to ->
+> 
+>     RTL_W16(RxMaxSize, RX_BUF_SIZE);
+> 
+> (But it will probably break jumbo frames rx as well)
+
+(RX_BUF_SIZE is defined as 1536).
+Aha, so it should set some flags instead (as were tested in your
+first try), for packets larger than that.  Makes sense.
+
+But if we told the NIC that we can receive 16K buffers, and it
+delivered 3K packet to us, we've got some memory corruption...
+I.e., the problem is that we told the driver that we can handle
+16k buffers but actually we had only 1500, no?
+
+Lemme check this all...
+
+Setting RxMaxSize to RX_BUF_SIZE indeed solved the problem, --
+I don't see random corruptions like the last one above.
+
+But after setting RxMaxSize to 2500, I can trigger your 2nd
+check/patch condition (for pkt_size > tp->rx_buf_sz) for
+packets <2500 in size, and your *first* check/patch condition
+(RxRES | RxRWT | RxRUNT | RxCRC | RxFOVF) for packets >2500
+in size.
+
+So to me (who has no knowledge about hardware at all), it looks
+like the card behaves quite correctly.
+
+Also note that I've seen this behavior on several different
+machines.  Here @home where I'm doing this all testing I've
+Asus M3A78-EM motherboard (AMD780), and the second one is
+Gigabyte GA-MA74GM-S2H (AMD740) - both behaves very similarly.
+Both are AMD7xx, but I've seen the same problem on Intel-based
+machines too.
+
+I'll try out some more tests later today.  (And there's another
+issue with these NICs -- the famous, quite frequent under load
+"NETDEV WATCHDOG: eth0 (r8169): transmit timed out" errors, which
+are quite annoying... Also shown by both the above-mentioned mobos
+and by other machines).
+
+Thanks!
+
+/mjt
