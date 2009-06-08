@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZFHKrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbZFHKrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754773AbZFHKrV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 06:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZFHKrP
+	id S1755178AbZFHKrv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 06:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZFHKro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 06:47:15 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58540 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753670AbZFHKrO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 06:47:14 -0400
-Subject: RE: [PATCH 1/2]Intel Moorestown NAND driver patch for mainline
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Gao, Yunpeng" <yunpeng.gao@intel.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, "gregkh@suse.de" <gregkh@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <38D9F46DFF92C54980D2F2C1E8EE313001A45F4F3C@pdsmsx503.ccr.corp.intel.com>
-References: <20090606164455.GB27257@intel.com>
-	 <20090606160413.08c254cf@lxorguk.ukuu.org.uk>
-	 <38D9F46DFF92C54980D2F2C1E8EE313001A45F4F3C@pdsmsx503.ccr.corp.intel.com>
-Content-Type: text/plain
-Date: Mon, 08 Jun 2009 11:47:10 +0100
-Message-Id: <1244458030.30939.216.camel@macbook.infradead.org>
+	Mon, 8 Jun 2009 06:47:44 -0400
+Received: from relay.atmel.no ([80.232.32.139]:51490 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754421AbZFHKrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 06:47:43 -0400
+Date: Mon, 8 Jun 2009 12:47:19 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Rob Emanuele <poorarm@shoreis.com>
+Cc: Joey Oravec <joravec@drewtech.com>,
+       Nicolas Ferre <nicolas.ferre@atmel.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [PATCH][Updated] New AT91 MCI Driver that supports both MCI
+ slots used at the same time
+Message-ID: <20090608124719.7c36840b@hskinnemoen-d830>
+In-Reply-To: <c8284b5b0906031202u18433b52s1a0718ef627fddf0@mail.gmail.com>
+References: <c8284b5b0905281440hd2e4993re3d0d8c590713fa0@mail.gmail.com>
+	<4A1FFEFB.6050104@drewtech.com>
+	<c8284b5b0906020953o7c112b4hc264b5520cc3aed1@mail.gmail.com>
+	<4A269251.8090706@atmel.com>
+	<4A269A83.3020008@drewtech.com>
+	<c8284b5b0906031202u18433b52s1a0718ef627fddf0@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-08 at 12:23 +0800, Gao, Yunpeng wrote:
-> The Moorestown NAND flash driver is licensed from the Moorestown NAND
-> controller vendor. It's a standalone NAND driver. According to the
-> vendor, this driver has some advanced features specific to the
-> controller hardware and is difficult to port to MTD subsystem. 
+Rob Emanuele wrote:
+> This driver is a port the Atmel AVR32 MCI driver which uses similar silicon.
 
-I don't believe it. If the MTD subsystem doesn't support certain
-features, the MTD subsystem needs to be updated to cope.
+While I do understand the motivation for this patch, I was kind of
+hoping we could reduce the number of drivers for the Atmel MCI
+hardware, not increase it...
 
-When can I have test hardware?
+So I think it would be much better if your changes were integrated into
+one of the existing drivers.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+> Joey Oravec has mentioned that he has had better reliability with the chip
+> he is using (AT91SAM9261) if the MMC controller is reset before each
+> command.  There is a compile time option to do just that.
 
+This could be a useful option for atmel-mci too.
+
+> Joey Oravec has stated that the Read and Write Proof functionality that
+> prevents buffer overflows is not available on the AT91SAM9261.  This was
+> confirmed by Nicolas Ferre and also affects the AT91RM9200.  This new
+> patch excludes those register config bits.
+
+Preferably use the cpu_is_xxx() functions to achieve that. Perhaps even
+wrap those tests inside a mci_has_xxproof() function to make it
+clearer what you're testing for, and easier to change if we decide to
+do the test based on version registers, etc. later.
+
+Haavard
