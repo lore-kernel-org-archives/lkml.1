@@ -1,189 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbZFHMPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZFHMTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755616AbZFHMPa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 08:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbZFHMPW
+	id S1755377AbZFHMTQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 08:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953AbZFHMTB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 08:15:22 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:59292 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754620AbZFHMPV (ORCPT
+	Mon, 8 Jun 2009 08:19:01 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:3076 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753444AbZFHMTA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 08:15:21 -0400
-Date: Mon, 8 Jun 2009 14:15:06 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Cc: Mustafa Mesanovic <mustafa.mesanovic@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Hannes Reinecke <hare@suse.de>, Olaf Kirch <okir@suse.de>,
-       <linux-kernel@vger.kernel.org>
-Subject: [PATCH] timer stats: add quick check to avoid function calls
-Message-ID: <20090608141506.23296954@osiris.boeblingen.de.ibm.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Jun 2009 08:19:00 -0400
+X-SpamScore: -22
+X-BigFish: VPS-22(zz1432R98dR1805Mzz1202hzzz32i6bh17ch43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KKX67F-01-M8F-01
+Date: Mon, 8 Jun 2009 14:18:05 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Yinghai Lu <yinghai@kernel.org>
+CC: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/urgent] x86: Detect use of extended APIC ID for AMD
+	CPUs
+Message-ID: <20090608121805.GB8699@alberich.amd.com>
+References: <20090604104016.GT5736@alberich.amd.com> <tip-37f36c1017f0032fa7a1fb85a0cddfc0d526d17f@git.kernel.org> <4A2C0B1B.3080502@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <4A2C0B1B.3080502@kernel.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 08 Jun 2009 12:18:53.0829 (UTC) FILETIME=[49F13350:01C9E833]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+On Sun, Jun 07, 2009 at 11:46:51AM -0700, Yinghai Lu wrote:
+> tip-bot for Andreas Herrmann wrote:
+> > diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+> > index 42f2f83..9b2c049 100644
+> > --- a/arch/x86/include/asm/apic.h
+> > +++ b/arch/x86/include/asm/apic.h
+> > @@ -410,7 +410,7 @@ static inline unsigned default_get_apic_id(unsigned long x)
+> >  {
+> >  	unsigned int ver = GET_APIC_VERSION(apic_read(APIC_LVR));
+> >  
+> > -	if (APIC_XAPIC(ver))
+> > +	if (APIC_XAPIC(ver) || boot_cpu_has(X86_FEATURE_EXTD_APICID))
+> >  		return (x >> 24) & 0xFF;
+> >  	else
+> >  		return (x >> 24) & 0x0F;
+> 
+> looks like we should fix APIC_XAPIC() or have one global apic_ver.
 
-When the kernel is configured with CONFIG_TIMER_STATS but timer stats
-are runtime disabled we still get calls to __timer_stats_timer_set_start_info
-which initializes some fields in the corresponding struct timer_list.
+I thought to set the new flag for Intel as well and to replace
+APIC_XAPIC with checks for that flag. But for some reason this was
+ugly as lapic access must be configured before you can check the
+APIC_VERSION and so I decided to keep Intel code as is and not to
+potentially introduce regresions.
 
-So add some quick checks in the the timer stats setup functions to avoid
-function calls to __timer_stats_timer_set_start_info when timer stats are
-disabled.
 
-In an artificial workload that does nothing but playing ping pong with a
-single tcp packet via loopback this decreases cpu consumption by 1 - 1.5%.
+Regards,
+Andreas
 
-This is part of a modified function trace output on SLES11:
 
-perl-2497  [00] 28630647177732388 [+  125]: sk_reset_timer <-tcp_v4_rcv
-perl-2497  [00] 28630647177732513 [+  125]: mod_timer <-sk_reset_timer
-perl-2497  [00] 28630647177732638 [+  125]: __timer_stats_timer_set_start_info <-mod_timer
-perl-2497  [00] 28630647177732763 [+  125]: __mod_timer <-mod_timer
-perl-2497  [00] 28630647177732888 [+  125]: __timer_stats_timer_set_start_info <-__mod_timer
-perl-2497  [00] 28630647177733013 [+   93]: lock_timer_base <-__mod_timer
-
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
-
- include/linux/hrtimer.h   |    6 ++++++
- include/linux/timer.h     |    4 ++++
- kernel/time/timer_stats.c |   16 ++++++++--------
- kernel/timer.c            |    2 ++
- 4 files changed, 20 insertions(+), 8 deletions(-)
-
-Index: linux-2.6/include/linux/hrtimer.h
-===================================================================
---- linux-2.6.orig/include/linux/hrtimer.h
-+++ linux-2.6/include/linux/hrtimer.h
-@@ -438,12 +438,16 @@ extern void sysrq_timer_list_show(void);
-  */
- #ifdef CONFIG_TIMER_STATS
- 
-+extern int timer_stats_active;
-+
- extern void timer_stats_update_stats(void *timer, pid_t pid, void *startf,
- 				     void *timerf, char *comm,
- 				     unsigned int timer_flag);
- 
- static inline void timer_stats_account_hrtimer(struct hrtimer *timer)
- {
-+	if (likely(!timer->start_pid))
-+		return;
- 	timer_stats_update_stats(timer, timer->start_pid, timer->start_site,
- 				 timer->function, timer->start_comm, 0);
- }
-@@ -453,6 +457,8 @@ extern void __timer_stats_hrtimer_set_st
- 
- static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
- {
-+	if (likely(!timer_stats_active))
-+		return;
- 	__timer_stats_hrtimer_set_start_info(timer, __builtin_return_address(0));
- }
- 
-Index: linux-2.6/include/linux/timer.h
-===================================================================
---- linux-2.6.orig/include/linux/timer.h
-+++ linux-2.6/include/linux/timer.h
-@@ -187,6 +187,8 @@ extern unsigned long get_next_timer_inte
-  */
- #ifdef CONFIG_TIMER_STATS
- 
-+extern int timer_stats_active;
-+
- #define TIMER_STATS_FLAG_DEFERRABLE	0x1
- 
- extern void init_timer_stats(void);
-@@ -200,6 +202,8 @@ extern void __timer_stats_timer_set_star
- 
- static inline void timer_stats_timer_set_start_info(struct timer_list *timer)
- {
-+	if (likely(!timer_stats_active))
-+		return;
- 	__timer_stats_timer_set_start_info(timer, __builtin_return_address(0));
- }
- 
-Index: linux-2.6/kernel/timer.c
-===================================================================
---- linux-2.6.orig/kernel/timer.c
-+++ linux-2.6/kernel/timer.c
-@@ -378,6 +378,8 @@ static void timer_stats_account_timer(st
- {
- 	unsigned int flag = 0;
- 
-+	if (likely(!timer->start_site))
-+		return;
- 	if (unlikely(tbase_get_deferrable(timer->base)))
- 		flag |= TIMER_STATS_FLAG_DEFERRABLE;
- 
-Index: linux-2.6/kernel/time/timer_stats.c
-===================================================================
---- linux-2.6.orig/kernel/time/timer_stats.c
-+++ linux-2.6/kernel/time/timer_stats.c
-@@ -96,7 +96,7 @@ static DEFINE_MUTEX(show_mutex);
- /*
-  * Collection status, active/inactive:
-  */
--static int __read_mostly active;
-+int __read_mostly timer_stats_active;
- 
- /*
-  * Beginning/end timestamps of measurement:
-@@ -242,7 +242,7 @@ void timer_stats_update_stats(void *time
- 	struct entry *entry, input;
- 	unsigned long flags;
- 
--	if (likely(!active))
-+	if (likely(!timer_stats_active))
- 		return;
- 
- 	lock = &per_cpu(lookup_lock, raw_smp_processor_id());
-@@ -254,7 +254,7 @@ void timer_stats_update_stats(void *time
- 	input.timer_flag = timer_flag;
- 
- 	spin_lock_irqsave(lock, flags);
--	if (!active)
-+	if (!timer_stats_active)
- 		goto out_unlock;
- 
- 	entry = tstat_lookup(&input, comm);
-@@ -290,7 +290,7 @@ static int tstats_show(struct seq_file *
- 	/*
- 	 * If still active then calculate up to now:
- 	 */
--	if (active)
-+	if (timer_stats_active)
- 		time_stop = ktime_get();
- 
- 	time = ktime_sub(time_stop, time_start);
-@@ -368,18 +368,18 @@ static ssize_t tstats_write(struct file 
- 	mutex_lock(&show_mutex);
- 	switch (ctl[0]) {
- 	case '0':
--		if (active) {
--			active = 0;
-+		if (timer_stats_active) {
-+			timer_stats_active = 0;
- 			time_stop = ktime_get();
- 			sync_access();
- 		}
- 		break;
- 	case '1':
--		if (!active) {
-+		if (!timer_stats_active) {
- 			reset_entries();
- 			time_start = ktime_get();
- 			smp_mb();
--			active = 1;
-+			timer_stats_active = 1;
- 		}
- 		break;
- 	default:
