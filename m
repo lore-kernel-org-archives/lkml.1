@@ -1,103 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbZFHB3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbZFHBeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754561AbZFHB3d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 21:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZFHB30
+	id S1754628AbZFHBeR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 21:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZFHBeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 21:29:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33547 "EHLO mx2.redhat.com"
+	Sun, 7 Jun 2009 21:34:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48617 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753046AbZFHB3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 21:29:25 -0400
-Message-ID: <4A2C69FD.2030800@redhat.com>
-Date: Mon, 08 Jun 2009 09:31:41 +0800
+	id S1752038AbZFHBeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 21:34:03 -0400
+Message-ID: <4A2C6B0E.9090702@redhat.com>
+Date: Mon, 08 Jun 2009 09:36:14 +0800
 From: Amerigo Wang <amwang@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Arnd Bergmann <arnd@arndb.de>, linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 18/39] kbuild/headers_check: refine extern check
-References: <20090605233720.GA13588@uranus.ravnborg.org> <1244245377-17441-18-git-send-email-sam@ravnborg.org> <200906060046.07421.arnd@arndb.de> <20090606083844.GA14555@uranus.ravnborg.org>
-In-Reply-To: <20090606083844.GA14555@uranus.ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       jdike@addtoit.com, hch@infradead.org, akpm@linux-foundation.org
+Subject: Re: [Patch 4/5] module: trim exception table in module_free()
+References: <20090604014813.6332.18486.sendpatchset@localhost.localdomain> <20090604014849.6332.35945.sendpatchset@localhost.localdomain> <200906041800.54696.rusty@rustcorp.com.au> <20090607121549.GA31173@elte.hu>
+In-Reply-To: <20090607121549.GA31173@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Sat, Jun 06, 2009 at 12:46:07AM +0000, Arnd Bergmann wrote:
+Ingo Molnar wrote:
+> * Rusty Russell <rusty@rustcorp.com.au> wrote:
+>
 >   
->> On Friday 05 June 2009 11:42:36 pm Sam Ravnborg wrote:
+>> On Thu, 4 Jun 2009 11:16:37 am Amerigo Wang wrote:
 >>     
->>> From: Amerigo Wang <amwang@redhat.com>
+>>> Just as the comment said, trim the exception table entries when
+>>> module_free() mod->module_init.
 >>>
->>> 'extern' checking information is not clear, refine it.
->>> Plus, fix a comment.
->>>
->>> Signed-off-by: WANG Cong <amwang@redhat.com>
->>> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+>>> Currently, this is only done for x86. Other platforms should 
+>>> also fix it like this (except sparc32).
 >>>       
->> I still think this is pointless and should just be removed
->> (or replaced with a patch to kill the apostrophe in there).
+>> I've taken this one to make it more generic.  I'll leave the x86 
+>> maintainers to apply the rest.
 >>     
 >
-> So you wanted me to visit that link...
-> I redid it like this:
->
-> Subject: kbuild/headers_check: refine extern check
->
-> 'extern' checking information is not clear, refine it.
-> Plus, fix a comment.
->
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> [sam: redid the extern error message]
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> I think it makes most sense to handle them together. We have no 
+> interacting changes pending in the x86 tree, feel free to pick them 
+> up.
 >   
 
-Yeah, after reading Arnd's comments, I agree on this patch.
+Thanks for clarifying.
 
-Thanks, Sam!
+So, Rusty, could you please take all of these except patch 4/5? Since you
+have a much better one to replace that one. :)
 
-> ---
-> diff --git a/scripts/headers_check.pl b/scripts/headers_check.pl
-> index 4414c43..db1dd7a 100644
-> --- a/scripts/headers_check.pl
-> +++ b/scripts/headers_check.pl
-> @@ -2,7 +2,7 @@
->  #
->  # headers_check.pl execute a number of trivial consistency checks
->  #
-> -# Usage: headers_check.pl dir [files...]
-> +# Usage: headers_check.pl dir arch [files...]
->  # dir:   dir to look for included files
->  # arch:  architecture
->  # files: list of files to check
-> @@ -37,7 +37,7 @@ foreach my $file (@files) {
->  		&check_include();
->  		&check_asm_types();
->  		&check_sizetypes();
-> -		&check_prototypes();
-> +		&check_declarations();
->  		# Dropped for now. Too much noise &check_config();
->  	}
->  	close FH;
-> @@ -61,10 +61,12 @@ sub check_include
->  	}
->  }
->  
-> -sub check_prototypes
-> +sub check_declarations
->  {
-> -	if ($line =~ m/^\s*extern\b/) {
-> -		printf STDERR "$filename:$lineno: extern's make no sense in userspace\n";
-> +	if ($line =~m/^\s*extern\b/) {
-> +		printf STDERR "$filename:$lineno: " .
-> +		              "userspace cannot call function or variable " .
-> +		              "defined in the kernel\n";
->  	}
->  }
->  
->   
+Thank you.
+
+
 
