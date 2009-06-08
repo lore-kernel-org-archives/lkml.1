@@ -1,103 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbZFHWHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbZFHWIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbZFHWHb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 18:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZFHWHS
+	id S1755392AbZFHWIF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 18:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753962AbZFHWHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 18:07:18 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:46627 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751838AbZFHWHP (ORCPT
+	Mon, 8 Jun 2009 18:07:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49346 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753594AbZFHWHy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 18:07:15 -0400
-Message-ID: <4A2D8B8B.80905@gmail.com>
-Date: Tue, 09 Jun 2009 00:07:07 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: "David S. Miller" <davem@davemloft.net>
-CC: Linux Netdev List <netdev@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Francois Romieu <romieu@fr.zoreil.com>
-Subject: [patch] r8169: fix crash when large packets are received
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 8 Jun 2009 18:07:54 -0400
+Date: Mon, 8 Jun 2009 15:07:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH v3] printk: add halt_delay parameter for printk delay in
+ halt phase
+Message-Id: <20090608150743.f2a0e09f.akpm@linux-foundation.org>
+In-Reply-To: <20090608220253.GD22049@elte.hu>
+References: <a8e1da0906080040k7852f770v1e2aa2ebb0f52369@mail.gmail.com>
+	<20090608081439.GB6372@elte.hu>
+	<20090608012845.9c428525.akpm@linux-foundation.org>
+	<a8e1da0906080142u62a45c47g2181a79addfb6168@mail.gmail.com>
+	<20090608084807.GE6372@elte.hu>
+	<20090608092607.8b331bf0.akpm@linux-foundation.org>
+	<20090608171501.GA15399@elte.hu>
+	<20090608143913.749e19c5.akpm@linux-foundation.org>
+	<20090608220253.GD22049@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 09 Jun 2009 00:07:08 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev reported receiving a large packet could crash
-a machine with RTL8169 NIC.
-( original thread at http://lkml.org/lkml/2009/6/8/192 )
+On Tue, 9 Jun 2009 00:02:53 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Problem is this driver tells that NIC frames up to 16383 bytes
-can be received but provides skb to rx ring allocated with
-smaller sizes (1536 bytes in case standard 1500 bytes MTU is used)
+> The /proc thing definitely makes sense - the boot option was just 
+> symmetry to the existing boot-delay approach.
 
-When a frame larger than what was allocated by driver is received,
-dma transfert can occurs past the end of buffer and corrupt
-kernel memory.
+ok.  btw, if we do decide to go with a general printk_delay then we'll
+need a touch_nmi_watchdog() in there to keep the NMI watchdog and
+softlockup detector away.
 
-Fix is to tell to NIC what is the maximum size a frame can be.
-
-This bug is very old, (before git introduction, linux-2.6.10), and 
-should be backported to stable versions.
-
-Reported-by: Michael Tokarev <mjt@tls.msk.ru>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Tested-by: Michael Tokarev <mjt@tls.msk.ru>
----
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index 8247a94..3b19e0c 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -66,7 +66,6 @@ static const int multicast_filter_limit = 32;
- #define RX_DMA_BURST	6	/* Maximum PCI burst, '6' is 1024 */
- #define TX_DMA_BURST	6	/* Maximum PCI burst, '6' is 1024 */
- #define EarlyTxThld	0x3F	/* 0x3F means NO early transmit */
--#define RxPacketMaxSize	0x3FE8	/* 16K - 1 - ETH_HLEN - VLAN - CRC... */
- #define SafeMtu		0x1c20	/* ... actually life sucks beyond ~7k */
- #define InterFrameGap	0x03	/* 3 means InterFrameGap = the shortest one */
- 
-@@ -2357,10 +2356,10 @@ static u16 rtl_rw_cpluscmd(void __iomem *ioaddr)
- 	return cmd;
- }
- 
--static void rtl_set_rx_max_size(void __iomem *ioaddr)
-+static void rtl_set_rx_max_size(void __iomem *ioaddr, unsigned int rx_buf_sz)
- {
- 	/* Low hurts. Let's disable the filtering. */
--	RTL_W16(RxMaxSize, 16383);
-+	RTL_W16(RxMaxSize, rx_buf_sz);
- }
- 
- static void rtl8169_set_magic_reg(void __iomem *ioaddr, unsigned mac_version)
-@@ -2407,7 +2406,7 @@ static void rtl_hw_start_8169(struct net_device *dev)
- 
- 	RTL_W8(EarlyTxThres, EarlyTxThld);
- 
--	rtl_set_rx_max_size(ioaddr);
-+	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
- 
- 	if ((tp->mac_version == RTL_GIGA_MAC_VER_01) ||
- 	    (tp->mac_version == RTL_GIGA_MAC_VER_02) ||
-@@ -2668,7 +2667,7 @@ static void rtl_hw_start_8168(struct net_device *dev)
- 
- 	RTL_W8(EarlyTxThres, EarlyTxThld);
- 
--	rtl_set_rx_max_size(ioaddr);
-+	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
- 
- 	tp->cp_cmd |= RTL_R16(CPlusCmd) | PktCntrDisable | INTT_1;
- 
-@@ -2846,7 +2845,7 @@ static void rtl_hw_start_8101(struct net_device *dev)
- 
- 	RTL_W8(EarlyTxThres, EarlyTxThld);
- 
--	rtl_set_rx_max_size(ioaddr);
-+	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
- 
- 	tp->cp_cmd |= rtl_rw_cpluscmd(ioaddr) | PCIMulRW;
- 
