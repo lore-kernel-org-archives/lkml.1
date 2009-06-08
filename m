@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658AbZFHSUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751130AbZFHSXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753658AbZFHSUT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 14:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbZFHSUK
+	id S1751130AbZFHSXT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 14:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZFHSXD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 14:20:10 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:57805 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750698AbZFHSUJ (ORCPT
+	Mon, 8 Jun 2009 14:23:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38836 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751320AbZFHSXB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 14:20:09 -0400
-Date: Tue, 9 Jun 2009 02:13:35 +0800
-From: Harald Welte <HaraldWelte@viatech.com>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: "Michael S. Zick" <lkml@morethan.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 2/2] CPUFREQ: Mark e_powersaver driver as EXPERIMENTAL
-	and DANGEROUS
-Message-ID: <20090608181335.GC4455@prithivi.gnumonks.org>
-References: <20090608102936.GQ4106@prithivi.gnumonks.org> <20090608120846.GA13328@srcf.ucam.org>
+	Mon, 8 Jun 2009 14:23:01 -0400
+Date: Mon, 8 Jun 2009 11:21:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Chris Clayton <chris2553@googlemail.com>
+cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       scsi <linux-scsi@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: 2.6.30-rc8 Oops whilst booting
+In-Reply-To: <c6b1100b0906081045t47c77b94ubc89d450c3a75147@mail.gmail.com>
+Message-ID: <alpine.LFD.2.01.0906081120400.6847@localhost.localdomain>
+References: <200906061959.55592.chris2553@googlemail.com>  <1244413881.18742.31.camel@ht.satnam>  <2f9e3044bafcae848f74a1492b0ea471.squirrel@neil.brown.name>  <c6b1100b0906080108y191bb157n67ec681ade2a0d13@mail.gmail.com>  <c6b1100b0906080358y4033c402ra236eff3f972d169@mail.gmail.com>
+  <1244460875.12644.2.camel@ht.satnam>  <c6b1100b0906080553o2aa77a40pe0077b1b10a7d88a@mail.gmail.com>  <alpine.LFD.2.01.0906080916130.6847@localhost.localdomain>  <1244479879.4079.284.camel@mulgrave.site>  <1244480790.2716.7.camel@ht.satnam>
+ <c6b1100b0906081045t47c77b94ubc89d450c3a75147@mail.gmail.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090608120846.GA13328@srcf.ucam.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 01:08:46PM +0100, Matthew Garrett wrote:
-> On Mon, Jun 08, 2009 at 06:29:36PM +0800, Harald Welte wrote:
-> > The e_powersaver driver for VIA's C7 CPU's needs to be marked as
-> > DANGEROUS as it configures the CPU to power states that are out
-> > of specification.
-> > 
-> > According to Centaur, all systems with C7 and Nano CPU's support
-> > the ACPI p-state method.  Thus, the acpi-cpufreq driver should
-> > be used instead.
+
+
+On Mon, 8 Jun 2009, Chris Clayton wrote:
 > 
-> Do we know if vendors are actually shipping with the appropriate BIOS 
-> tables? 
+> I can confirm that a kernel built with Jaswinder's patch applied
+> survived 200 boots without a panic.
 
-I strongly assume so, since that is also how the Windows XP driver works (as
-I've been told by Centaur).  So if a vendor decides to not ship with the
-respective BIOS tables, the power management would fail on Windows, too.
+Ok, goodie.
 
-> The number of people using e_powersaver seems to be suspiciously 
-> large, though perhaps that's just because the help text implied it was 
-> the right choice for C7.
+Can you confirm that the further cleanup (removing the pointless 'ret' 
+variable and the useless empty checking around 'for_each_entry') also 
+works for you?
 
-yes, I think that is the case.  I just had a brief look at the driver earlier
-today with one of the key Centaur engineers, and he was very clear on it:  Use 
-ACPI.
+		Linus
 
-There are also other reasons to use ACPI.  Let's imagine you are having a
-system that uses a certain cpu that might clock up to 1600 MHz.  But the system
-vendor decides to use the CPU passively cooled and thus wants to restrict the
-frequency to 1300MHz.  The standard practise (as recommended by VIA/Centaur BIOS
-writers guide) is to remove the > 1300MHz p-states from the ACPI tables.
+---
+ kernel/async.c |   15 +++++----------
+ 1 files changed, 5 insertions(+), 10 deletions(-)
 
-So even if e_powersaver was fixed to not drive the CPU out of spec, it might
-still do that on a particular system/board, where the vendor has decided to 
-limit CPU clock for cooling reasons.
-
--- 
-- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
-============================================================================
-VIA Free and Open Source Software Liaison
+diff --git a/kernel/async.c b/kernel/async.c
+index 5054030..27235f5 100644
+--- a/kernel/async.c
++++ b/kernel/async.c
+@@ -92,23 +92,18 @@ extern int initcall_debug;
+ static async_cookie_t  __lowest_in_progress(struct list_head *running)
+ {
+ 	struct async_entry *entry;
+-	async_cookie_t ret = next_cookie; /* begin with "infinity" value */
+ 
+ 	if (!list_empty(running)) {
+ 		entry = list_first_entry(running,
+ 			struct async_entry, list);
+-		ret = entry->cookie;
++		return entry->cookie;
+ 	}
+ 
+-	if (!list_empty(&async_pending)) {
+-		list_for_each_entry(entry, &async_pending, list)
+-			if (entry->running == running) {
+-				ret = entry->cookie;
+-				break;
+-			}
+-	}
++	list_for_each_entry(entry, &async_pending, list)
++		if (entry->running == running)
++			return entry->cookie;
+ 
+-	return ret;
++	return next_cookie;	/* "infinity" value */
+ }
+ 
+ static async_cookie_t  lowest_in_progress(struct list_head *running)
