@@ -1,114 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753243AbZFHGAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbZFHGA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753243AbZFHGAM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 02:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751770AbZFHF77
+	id S1754200AbZFHGA3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 02:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZFHGAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 01:59:59 -0400
-Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:58958
-	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750988AbZFHF77 (ORCPT
+	Mon, 8 Jun 2009 02:00:03 -0400
+Received: from mga14.intel.com ([143.182.124.37]:24826 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752319AbZFHGAA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 01:59:59 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAEdFLEp8qWf0/2dsb2JhbADKOYQKBQ
-X-IronPort-AV: E=Sophos;i="4.41,322,1241366400"; 
-   d="scan'208";a="456642632"
-Message-ID: <4A2CA8DD.2080809@themaw.net>
-Date: Mon, 08 Jun 2009 13:59:57 +0800
-From: Ian Kent <raven@themaw.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 8 Jun 2009 02:00:00 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,322,1241420400"; 
+   d="scan'208,223";a="151709913"
+Date: Mon, 8 Jun 2009 13:54:10 +0800
+From: Alek Du <alek.du@intel.com>
+To: Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] input: Change timer function to workqueue for gpio_keys
+ driver
+Message-ID: <20090608135410.1cdbb581@dxy.sh.intel.com>
+Organization: Intel Corp.
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] autofs4 - remove hashed check in validate_wait()
-References: <20090608032537.7088.1870.stgit@zeus.themaw.net>	<20090607220814.cc7519f6.akpm@linux-foundation.org>	<4A2CA05C.3060808@themaw.net> <20090607224137.e13be7f3.akpm@linux-foundation.org> <4A2CA75E.7040501@themaw.net>
-In-Reply-To: <4A2CA75E.7040501@themaw.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Kent wrote:
-> Andrew Morton wrote:
->> On Mon, 08 Jun 2009 13:23:40 +0800 Ian Kent <raven@themaw.net> wrote:
->>
->>> Andrew Morton wrote:
->>>> On Mon, 08 Jun 2009 11:25:37 +0800 Ian Kent <raven@themaw.net> wrote:
->>>>
->>>>> The recent ->lookup() deadlock correction required the directory
->>>>> inode mutex to be dropped while waiting for expire completion. We
->>>>> were concerned about side effects from this change and one has
->>>>> been identified.
->>>>>
->>>>> When checking if a mount has already completed prior to adding a
->>>>> new mount request to the wait queue we check if the dentry is hashed
->>>>> and, if so, if it is a mount point. But, if a mount successfully
->>>>> completed while we slept on the wait queue mutex the dentry must
->>>>> exist for the mount to have completed so the test is not really
->>>>> needed.
->>>>>
->>>>> Mounts can also be done on top of a global root dentry, so for the
->>>>> above case, where a mount request completes and the wait queue entry
->>>>> has already been removed, the hashed test returning false can cause
->>>>> an incorrect callback to the daemon. Also, d_mountpoint() is not
->>>>> sufficient to check if a mount has completed for the multi-mount
->>>>> case when we don't have a real mount at the base of the tree.
->>>>>
->>>> I've been scratching my head trying to work out if this is a
->>>> needed-in-2.6.30 fix, but all I got was a bald spot.  Help?
->>> Yeah, and why would you want to know that much about autofs, it's a
->>> wonder I have any hair at all, ;)
->>>
->>> I think so if possible, as it resolves an issue that is a side effect of
->>> the last patch I sent, which resolved a deadlook in ->lookup(). The
->>> problem occurs due to dropping the directory inode mutex before waiting
->>> for an expire. What isn't obvious is that holding the mutex (as we did
->>> previously) causes processes wanting to request mounts for other
->>> directories to wait, so we don't see the contention for the mount
->>> request wait queue that this patch addresses.
->>>
->>> However, the issue only surfaces when there are a number of processes
->>> all trying to perform mounts at the same time. The test I ran used 10
->>> processes all using the same map.
->> <scratch scratch> 
->> What are the user-visible effects of the thing-which-this-fixed?
-> 
-> I saw several error messages.
-> 
-> They cause autofs to become quite confused and don't really point to the
-> actual problem.
-> 
-> Things like:
-> 
-> handle_packet_missing_direct:1376: can't find map entry for (43,1827932)
-> 
-> which is usually totally fatal (although in this case it wouldn't be
-> except that I treat is as such because it normally is).
+>From 35101ecc80cfc638ac80a2cea590ab86135be395 Mon Sep 17 00:00:00 2001
+From: Alek Du <alek.du@intel.com>
+Date: Fri, 8 May 2009 12:25:34 +0800
+Subject: [PATCH] input: Change timer function to workqueue for gpio_keys driver
 
-Oh .. and the requesting user always receives a fail in this case in
-spite of the mount actually having previously succeeded.
+The gpio_get_value function of I2C/SPI GPIO expander may sleep thus this
+function call can not be called in a timer function.
 
-> 
-> do_mount_direct: direct trigger not valid or already mounted
-> /test/nested/g3c/s1/ss1
-> 
-> which is recoverable, however if this problem is at play it can cause
-> autofs to become quite confused as to the dependencies in the mount tree
-> because mount triggers end up mounted multiple times. It's hard to
-> accurately check for this over mounting case and automount shouldn't
-> need to if the kernel module is doing its job.
-> 
-> There was one other message, similar in consequence of this last one but
-> I can't locate a log example just now.
+Signed-off-by: Alek Du <alek.du@intel.com>
+---
+ drivers/input/keyboard/gpio_keys.c |   32 ++++++++++++++------------------
+ 1 files changed, 14 insertions(+), 18 deletions(-)
 
-And these two cause fails to be returned return to the requesting
-process either immediately or shortly after as autofs becomes confused.
-
-Sorry I can't give a clearer description.
-
-Ian
-
+diff --git a/drivers/input/keyboard/gpio_keys.c b/drivers/input/keyboard/gpio_keys.c
+index ad67d76..9205ac6 100644
+--- a/drivers/input/keyboard/gpio_keys.c
++++ b/drivers/input/keyboard/gpio_keys.c
+@@ -22,13 +22,17 @@
+ #include <linux/platform_device.h>
+ #include <linux/input.h>
+ #include <linux/gpio_keys.h>
++#include <linux/workqueue.h>
+ 
+ #include <asm/gpio.h>
+ 
+ struct gpio_button_data {
+ 	struct gpio_keys_button *button;
+ 	struct input_dev *input;
+-	struct timer_list timer;
++/* Change timer func to workqueue func due to the fact that gpio_get_value
++ * may sleep for some i2c and spi GPIO expander
++ */
++	struct delayed_work work;
+ };
+ 
+ struct gpio_keys_drvdata {
+@@ -36,8 +40,10 @@ struct gpio_keys_drvdata {
+ 	struct gpio_button_data data[0];
+ };
+ 
+-static void gpio_keys_report_event(struct gpio_button_data *bdata)
++static void gpio_keys_report_event(struct work_struct *work)
+ {
++	struct gpio_button_data *bdata = container_of(work,
++			struct gpio_button_data, work.work);
+ 	struct gpio_keys_button *button = bdata->button;
+ 	struct input_dev *input = bdata->input;
+ 	unsigned int type = button->type ?: EV_KEY;
+@@ -47,13 +53,6 @@ static void gpio_keys_report_event(struct gpio_button_data *bdata)
+ 	input_sync(input);
+ }
+ 
+-static void gpio_check_button(unsigned long _data)
+-{
+-	struct gpio_button_data *data = (struct gpio_button_data *)_data;
+-
+-	gpio_keys_report_event(data);
+-}
+-
+ static irqreturn_t gpio_keys_isr(int irq, void *dev_id)
+ {
+ 	struct gpio_button_data *bdata = dev_id;
+@@ -62,10 +61,10 @@ static irqreturn_t gpio_keys_isr(int irq, void *dev_id)
+ 	BUG_ON(irq != gpio_to_irq(button->gpio));
+ 
+ 	if (button->debounce_interval)
+-		mod_timer(&bdata->timer,
+-			jiffies + msecs_to_jiffies(button->debounce_interval));
++		schedule_delayed_work(&bdata->work,
++			msecs_to_jiffies(button->debounce_interval));
+ 	else
+-		gpio_keys_report_event(bdata);
++		schedule_work(&bdata->work.work);
+ 
+ 	return IRQ_HANDLED;
+ }
+@@ -112,8 +111,7 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
+ 
+ 		bdata->input = input;
+ 		bdata->button = button;
+-		setup_timer(&bdata->timer,
+-			    gpio_check_button, (unsigned long)bdata);
++		INIT_DELAYED_WORK(&bdata->work, gpio_keys_report_event);
+ 
+ 		error = gpio_request(button->gpio, button->desc ?: "gpio_keys");
+ 		if (error < 0) {
+@@ -173,8 +171,7 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
+  fail2:
+ 	while (--i >= 0) {
+ 		free_irq(gpio_to_irq(pdata->buttons[i].gpio), &ddata->data[i]);
+-		if (pdata->buttons[i].debounce_interval)
+-			del_timer_sync(&ddata->data[i].timer);
++		cancel_delayed_work_sync(&ddata->data[i].work);
+ 		gpio_free(pdata->buttons[i].gpio);
+ 	}
+ 
+@@ -198,8 +195,7 @@ static int __devexit gpio_keys_remove(struct platform_device *pdev)
+ 	for (i = 0; i < pdata->nbuttons; i++) {
+ 		int irq = gpio_to_irq(pdata->buttons[i].gpio);
+ 		free_irq(irq, &ddata->data[i]);
+-		if (pdata->buttons[i].debounce_interval)
+-			del_timer_sync(&ddata->data[i].timer);
++		cancel_delayed_work_sync(&ddata->data[i].work);
+ 		gpio_free(pdata->buttons[i].gpio);
+ 	}
+ 
+-- 
+1.6.0.4
