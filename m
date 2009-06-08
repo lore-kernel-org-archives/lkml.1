@@ -1,77 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbZFHVjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757077AbZFHVkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756822AbZFHVjw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 17:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZFHVjo
+	id S1757077AbZFHVkG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 17:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbZFHVjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 17:39:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44607 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751013AbZFHVjn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 17:39:43 -0400
-Date: Mon, 8 Jun 2009 14:39:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
+	Mon, 8 Jun 2009 17:39:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47366 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754593AbZFHVjr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 17:39:47 -0400
+Date: Mon, 8 Jun 2009 17:38:33 -0400
+From: Jason Baron <jbaron@redhat.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH v3] printk: add halt_delay parameter for printk delay in
- halt phase
-Message-Id: <20090608143913.749e19c5.akpm@linux-foundation.org>
-In-Reply-To: <20090608171501.GA15399@elte.hu>
-References: <a8e1da0906080040k7852f770v1e2aa2ebb0f52369@mail.gmail.com>
-	<20090608081439.GB6372@elte.hu>
-	<20090608012845.9c428525.akpm@linux-foundation.org>
-	<a8e1da0906080142u62a45c47g2181a79addfb6168@mail.gmail.com>
-	<20090608084807.GE6372@elte.hu>
-	<20090608092607.8b331bf0.akpm@linux-foundation.org>
-	<20090608171501.GA15399@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
+       mbligh@google.com, roland@redhat.com, fche@redhat.com
+Subject: Re: [PATCH 2/2] convert to syscall tracepoints
+Message-ID: <20090608213833.GD3181@redhat.com>
+References: <cover.1244222378.git.jbaron@redhat.com> <af4031af81ce372eac2be125dabc2ea746b4308b.1244222378.git.jbaron@redhat.com> <20090607132936.GC12088@elte.hu> <20090608202406.GA3181@redhat.com> <20090608204056.GA26832@elte.hu> <20090608211150.GC3181@redhat.com> <20090608212526.GA22049@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090608212526.GA22049@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Jun 2009 19:15:01 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
-
-> > questions: is it possible for interrupts to be disabled at this 
-> > time? If so, can we get an NMI watchdog hit?
+On Mon, Jun 08, 2009 at 11:25:26PM +0200, Ingo Molnar wrote:
+> > On Mon, Jun 08, 2009 at 10:40:56PM +0200, Ingo Molnar wrote:
+> > > * Jason Baron <jbaron@redhat.com> wrote:
+> > > 
+> > > > +#ifdef __NR_time
+> > > > +trace_event_syscall(1, time, time_t __user *, tloc);
+> > > > +#endif
+> > > > +
+> > > > +#ifdef __NR_stime
+> > > > +trace_event_syscall(1, stime, time_t __user *, tptr);
+> > > > +#endif
+> > > > +
+> > > > +#ifdef __NR_gettimeofday
+> > > > +trace_event_syscall(2, gettimeofday, struct timeval __user *, tv, struct timezone __user *, tz);
+> > > > +#endif
+> > > 
+> > > This could be reduced to a single line: just add a Kconfig entry 
+> > > (say TRACE_SYSCALL_TRACEPOINTS) wether an arch supports syscall 
+> > > tracepoints, enable it on a sane arch, make sure it has all the 
+> > > syscalls and list them ...
+> > > 
+> > > As more architectures turn on SYSCALL_TRACEPOINTS, they'll have to 
+> > > resolve any deviations in syscall entry points. Ideally we'd have 
+> > > one generic table that covers 95% of all syscalls, and the remaining 
+> > > 5% in some architecture specific #ifdef section.
+> > > 
+> > 
+> > true, but this implementation works for all arches now, why would 
+> > want to slowly add this over time? [...]
 > 
-> no, we generally turn off the nmi watchdog during shutdown, disable 
-> the lapic and io-apic, etc.
-
-Is x86 the only architecture which implements an NMI watchdog?
-
-> > Is the softlockup detector still running and if so, can it 
-> > trigger?
+> Because the current solution is butt-ugly ...
 > 
-> in (non-emergency) reboot, last i checked, we stopped all other CPUs 
-> first, and then killed the current one. There's no chance for the 
-> watchdog thread to run.
+> > [...] I think its unnecessary work that could be error prone.
+> 
+> This area needs cleanups - making it messier doesnt help. (I've 
+> Cc:-ed hpa - he has expressed interest in auto-generating all the 
+> syscall related details from another angle ...)
+> 
+> > > But, more generally, i'm not at all convinced that we need _any_ 
+> > > of this enumeration. Look how much the above lines duplicate 
+> > > DEFINE_SYSCALL macros. Why arent those macros re-used?
+> > 
+> > The DEFINE_SYSCALL() are located all over the code in various .c files.
+> 
+> yes, and that's good.
+> 
+> > Thus, if we define the tracpoints via the DEFINE_SYSCALL() macros 
+> > we are going to have 'static inline functions' (which is how 
+> > tracepoints are implemented) defined in all these .c files. Now, I 
+> > need to call all these 'static inline functions' from ptrace.c. 
+> > How do I do that? [...]
+> 
+> And that's bad.
+> 
+> We dont want a per syscall tracepoint call site. AT ALL.
+> 
+> We want to collect the record information, we want to construct 
+> /debug/tracing/events/syscalls/ directories with all the proper 
+> tracepoint-lookalike entries, and then we want to use the 
+> _existing_, _zero overhead_ method implemented by Frederic to get 
+> per syscall functionality.
+> 
 
-OK, but...  See below.
+Yes, this can easily be done....but that wasn't the problem I was
+interested in solving. I wanted a per syscall tracepoint site. I thought
+I had been making that clear all along...Please notice that the
+implementation I've proposed obtains the syscall number, and then jumps
+to the appropriate tracepoint and then exits. Its quite efficient. In
+fact, I've enabled all of the syscalls using my proposed method and
+running tbench I'm able to get more throughput then using the current
+syscall method. I've also done 'getpid()' loops and seen no performance
+difference between the approaches. I'm happy to run any other
+benchmarks...
 
-> Anyway ... you seem to be uncomfortable about this patch - should i 
-> delay it for now to let it all play out? We are close to the merge 
-> window.
+> Have you looked at how the syscall attributes information is 
+> constructed by using .section tricks? See: 
+> kernel/trace/trace_syscalls.c.
+> 
 
-I'm OK - I'm just bouncing ideas and questions off you guys, to make sure
-that we've thought this through all the way.
+yes, I believe I understand the problem space. I had been talking about
+a per-syscall tracepoint all along...maybe I wasn't clear...
 
-Here's another: why is it a boot option rather than a runtime-tunable? 
-A /proc tweakable is generally preferable because it avoids the
-oh-crap-i-forgot-to-edit-grub.conf thing.  And we could perhaps then
-remove all those system_state tests: userspace sets printk_delay
-immediately prior to running halt/reboot/etc?
+thanks,
 
-Plus the feature becomes more general - perhaps there are use cases
-where people want to slow down printks, such as: kernel goes oops, data
-scrolls off, serial console/netconsole unavailable.  pause_on_oops is
-supposed to help here but last time I tried it, it kinda didn't work,
-plus pause_on_oops doesn't solve the data-scrolled-off problem.
-
-Thirdly, if we do this as a general /proc/printk_delay thing, perhaps
-it can be consolidated with the existing boot_delay= implementation.
+-Jason
