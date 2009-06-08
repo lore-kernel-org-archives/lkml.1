@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbZFHSKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbZFHSMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753188AbZFHSKY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 14:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750727AbZFHSKO
+	id S1754479AbZFHSMG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 14:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbZFHSL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 14:10:14 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:33996 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752272AbZFHSKN (ORCPT
+	Mon, 8 Jun 2009 14:11:56 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:53468 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbZFHSL4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 14:10:13 -0400
-Date: Tue, 9 Jun 2009 02:01:25 +0800
-From: Harald Welte <HaraldWelte@viatech.com>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: "Michael S. Zick" <lkml@morethan.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 1/2] CPUFREQ: Enable acpi-cpufreq driver for
-	VIA/Centaur CPUs
-Message-ID: <20090608180125.GB4455@prithivi.gnumonks.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <20090606132847.GB14088@prithivi.gnumonks.org> <200906060846.36303.lkml@morethan.org> <200906060856.15016.lkml@morethan.org> <20090608102754.GP4106@prithivi.gnumonks.org> <20090608131620.GB15100@srcf.ucam.org>
-MIME-Version: 1.0
+	Mon, 8 Jun 2009 14:11:56 -0400
+Date: Mon, 8 Jun 2009 21:11:57 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: mingo@elte.hu
+cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, acme@redhat.com
+Subject: [PATCH 1/2] perf_counter: Add mmap event hooks to mprotect()
+Message-ID: <Pine.LNX.4.64.0906082111030.12407@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090608131620.GB15100@srcf.ucam.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 02:16:20PM +0100, Matthew Garrett wrote:
-> On Mon, Jun 08, 2009 at 06:27:54PM +0800, Harald Welte wrote:
-> > The VIA/Centaur C7, C7-M and Nano CPU's all support ACPI based cpu p-states
-> > using a MSR interface.  The Linux driver just never made use of it, since in
-> > addition to the check for the EST flag it also checked if the vendor is Intel.
-> 
-> Hm. Is the MSR interface compatible with the Intel one? 
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Yes, it is intended to be.  If you know of any public intel spec on the actual
-MSR values, I'd be happy to have a look and compare it with Centaur's specs.
+Some JIT compilers allocate memory for generated code with
+posix_memalign() + mprotect() so we need to hook into mprotect() to make
+sure 'perf' is aware that we're executing code in anonymous memory.
 
-VIA/Centaur specs are being prepared for public release, but it will probably
-take longer than we can responsibly delay fixing this bug.
+[ penberg@cs.helsinki.fi: move the hook to sys_mprotect() ]
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ mm/mprotect.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-> I'm guessing so based on the est flag being present. Maybe we should just
-> drop the intel check and only look for CPUs which claim est support.
-
-I think that might be the right decision.
-
+diff --git a/mm/mprotect.c b/mm/mprotect.c
+index 258197b..d80311b 100644
+--- a/mm/mprotect.c
++++ b/mm/mprotect.c
+@@ -23,6 +23,7 @@
+ #include <linux/swapops.h>
+ #include <linux/mmu_notifier.h>
+ #include <linux/migrate.h>
++#include <linux/perf_counter.h>
+ #include <asm/uaccess.h>
+ #include <asm/pgtable.h>
+ #include <asm/cacheflush.h>
+@@ -299,6 +300,7 @@ SYSCALL_DEFINE3(mprotect, unsigned long, start, size_t, len,
+ 		error = mprotect_fixup(vma, &prev, nstart, tmp, newflags);
+ 		if (error)
+ 			goto out;
++		perf_counter_mmap(vma);
+ 		nstart = tmp;
+ 
+ 		if (nstart < prev->vm_end)
 -- 
-- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
-============================================================================
-VIA Free and Open Source Software Liaison
+1.5.6.3
+
