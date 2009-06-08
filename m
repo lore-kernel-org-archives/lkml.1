@@ -1,216 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZFHLGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbZFHLGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbZFHLGU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 07:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbZFHLGM
+	id S1755388AbZFHLGb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 07:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbZFHLGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 07:06:12 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:57043 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754303AbZFHLGL convert rfc822-to-8bit (ORCPT
+	Mon, 8 Jun 2009 07:06:19 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:54339 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755348AbZFHLGS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 07:06:11 -0400
+	Mon, 8 Jun 2009 07:06:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=EF7zlOUCRn9g4TuUWZt1vxqg/uh/eSSz1MayJ6PfrgasUGv9lCW5mylQ/s7231e6rC
-         lULnRAK3dXIdpGGWTDJ89R/6GtlYCqw06+U74bIXBUtlf4JBxMQ+6XFH3jvwDHsh6CCv
-         elTXMu70ZGcrdnSyoxHzjFHqoAaWbBZTAwS/o=
+        b=c6aVt/JGKtDhNYbBTAGWMflNGoZ1yPdNH4U/St0jHxLtZCYwYuSjEgyPIYfE68zICh
+         bPCrXglaoFICtJUum+/f9AF+jxYVWVMkYR6Wj6SzZc0Pfzy/EVxee8KKlfekZ1hd66J4
+         9GB7mZEm2PRx4eB0T1Qp7lft+w224A6N62b5E=
 MIME-Version: 1.0
-In-Reply-To: <20090607160225.GA24315@localhost>
-References: <200905271012.668777061@firstfloor.org>
-	 <20090527201239.C2C9C1D0294@basil.firstfloor.org>
-	 <20090528082616.GG6920@wotan.suse.de>
-	 <20090528093141.GD1065@one.firstfloor.org>
-	 <20090528120854.GJ6920@wotan.suse.de>
-	 <20090528134520.GH1065@one.firstfloor.org>
-	 <20090528145021.GA5503@localhost>
-	 <ab418ea90906032325m302afbb6w6fa68f6b57f53e49@mail.gmail.com>
-	 <20090607160225.GA24315@localhost>
-Date: Mon, 8 Jun 2009 19:06:12 +0800
-Message-ID: <ab418ea90906080406y34981329y27d360624aa22f7c@mail.gmail.com>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in 
-	the VM v3
-From: Nai Xia <nai.xia@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <4A2CEC5B.3000001@msgid.tls.msk.ru>
+References: <4A2CE6AC.4030403@msgid.tls.msk.ru>
+	 <4A2CEC5B.3000001@msgid.tls.msk.ru>
+Date: Mon, 8 Jun 2009 13:06:19 +0200
+Message-ID: <19f34abd0906080406xd5ed8cwbd4193f2bbf97699@mail.gmail.com>
+Subject: Re: 2.6.30-rc8 does not boot
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 8, 2009 at 12:02 AM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> On Thu, Jun 04, 2009 at 02:25:24PM +0800, Nai Xia wrote:
->> On Thu, May 28, 2009 at 10:50 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
->> > On Thu, May 28, 2009 at 09:45:20PM +0800, Andi Kleen wrote:
->> >> On Thu, May 28, 2009 at 02:08:54PM +0200, Nick Piggin wrote:
->> >
->> > [snip]
->> >
->> >> >
->> >> > BTW. I don't know if you are checking for PG_writeback often enough?
->> >> > You can't remove a PG_writeback page from pagecache. The normal
->> >> > pattern is lock_page(page); wait_on_page_writeback(page); which I
->> >>
->> >> So pages can be in writeback without being locked? I still
->> >> wasn't able to find such a case (in fact unless I'm misreading
->> >> the code badly the writeback bit is only used by NFS and a few
->> >> obscure cases)
->> >
->> > Yes the writeback page is typically not locked. Only read IO requires
->> > to be exclusive. Read IO is in fact page *writer*, while writeback IO
->> > is page *reader* :-)
+2009/6/8 Michael Tokarev <mjt@tls.msk.ru>:
+> Michael Tokarev wrote:
 >>
->> Sorry for maybe somewhat a little bit off topic,
->> I am trying to get a good understanding of PG_writeback & PG_locked ;)
+>> Hello.
 >>
->> So you are saying PG_writeback & PG_locked are acting like a read/write lock?
->> I notice wait_on_page_writeback(page) seems always called with page locked --
->
-> No. Note that pages are not locked in wait_on_page_writeback_range().
+>> I just gave 2.6.30-rc a try, taken from Linus git, tag v2.6.29-rc8.
+>> And this one does not want to boot on my test machine which is an
+>> AMD X2-64 with AMD780G chipset. Â Neither 64 nor 32bit kernel boots.
+>> I even tried in kvm virtual machine, -- same effect. Â It freezes right
+>> after displaying "Verifying BIOS data successful" message -- nothing
+>> more is on the screen.
+[...]
+> PANIC: early exception 0e rip: 10:ffffffff802c9abd error 0 cr2 0
 
-I see. This function seems mostly called  on the sync path,
-it just waits for data being synchronized to disk.
-No writers from the pages' POV, so no lock.
-I missed this case, but my argument about the role of read/write lock.
-seems still consistent. :)
+That seems to be a NULL dereference (0e = page fault, cr2 0 =
+dereferenced address).
 
->
->> that is the semantics of a writer waiting to get the lock while it's
->> acquired by
->> some reader:The caller(e.g. truncate_inode_pages_range()  and
->> invalidate_inode_pages2_range()) are the writers waiting for
->> writeback readers (as you clarified ) to finish their job, right ?
->
-> Sorry if my metaphor confused you. But they are not typical
-> reader/writer problems, but more about data integrities.
+Try:
+$ addr2line -e vmlinux -i ffffffff802c9abd
 
-No, you didn't :)
-Actually, you make me clear about the mixed roles for
-those bits.
-
->
-> Pages have to be "not under writeback" when truncated.
-> Otherwise data lost is possible:
->
-> 1) create a file with one page (page A)
-> 2) truncate page A that is under writeback
-> 3) write to file, which creates page B
-> 4) sync file, which sends page B to disk quickly
->
-> Now if page B reaches disk before A, the new data will be overwritten
-> by truncated old data, which corrupts the file.
-
-I fully understand this scenario which you had already clarified in a
-previous message. :)
-
-1. someone make index1-> page A
-2. Path P1 is acting as a *reader* to a cache page at index1 by
-    setting PG_writeback on, while at the same time as a *writer* to
-    the corresponding file blocks.
-3. Another path P2 comes in and  truncate page A, he is the writer
-    to the same cache page.
-4. Yet another path P3 comes  as the writer to the cache page
-     making it points to page B: index1--> page B.
-5. Path P4 comes writing back the cache page(and set PG_writeback).
-   He is the reader of the cache page and the writer to the file blocks.
-
-The corrupts occur because P1 & P4 races when writing file blocks.
-But the _root_ of this racing is because nothing is used to serialize
-them on the side of writing the file blocks and above stream reading was
-inconsistent because of the writers(P2 & P3) to cache page at index1.
-
-Note that the "sync file" is somewhat irrelevant, even without "sync file",
-the racing still may exists. I know you must want to show me that this could
-make the corruption more easy to occur.
-
-So I think the simple logic is:
-1) if you want to truncate/change the mapping from a index to a struct *page,
-test writeback bit because the writebacker to the file blocks is the reader
-of this mapping.
-2) if a writebacker want to start a read of this mapping with
-test_set_page_writeback()
-or set_page_writeback(), he'd be sure this page is locked to keep out the
-writers to this mapping of index-->struct *page.
-
-This is really behavior of a read/write lock, right ?
-
-wait_on_page_writeback_range() looks different only because "sync"
-operates on "struct page", it's not sensitive to index-->struct *page mapping.
-It does care about if pages returned by pagevec_lookup_tag() are
-still maintains the mapping when wait_on_page_writeback(page).
-Here, PG_writeback is only a status flag for "struct page" not a lock bit for
-index->struct *page mapping.
-
->
->> So do you think the idea is sane to group the two bits together
->> to form a real read/write lock, which does not care about the _number_
->> of readers ?
->
-> We don't care number of readers here. So please forget about it.
-Yeah, I meant number of readers is not important.
-
-I still hold that these two bits in some way act like a _sparse_
-read/write lock.
-But I am going to drop the idea of making them a pure lock, since PG_writeback
-does has other meaning -- the page is being writing back: for sync
-path, it's only
-a status flag.
-Making a pure read/write lock definitely will lose that or at least distort it.
+This should print the name of the function that crashed. If you enable
+CONFIG_DEBUG_INFO you can get the exact line number info too (but
+remember to replace the ffffffff802c9abd with the new value if you
+recompile and run it again).
 
 
-Hoping I've made my words understandable, correct me if wrong, and
-many thanks for your time and patience. :-)
+Vegard
 
-
-Nai Xia
-
->
-> Thanks,
-> Fengguang
->
->> > The writeback bit is _widely_ used.  test_set_page_writeback() is
->> > directly used by NFS/AFS etc. But its main user is in fact
->> > set_page_writeback(), which is called in 26 places.
->> >
->> >> > think would be safest
->> >>
->> >> Okay. I'll just add it after the page lock.
->> >>
->> >> > (then you never have to bother with the writeback bit again)
->> >>
->> >> Until Fengguang does something fancy with it.
->> >
->> > Yes I'm going to do it without wait_on_page_writeback().
->> >
->> > The reason truncate_inode_pages_range() has to wait on writeback page
->> > is to ensure data integrity. Otherwise if there comes two events:
->> >        truncate page A at offset X
->> >        populate page B at offset X
->> > If A and B are all writeback pages, then B can hit disk first and then
->> > be overwritten by A. Which corrupts the data at offset X from user's POV.
->> >
->> > But for hwpoison, there are no such worries. If A is poisoned, we do
->> > our best to isolate it as well as intercepting its IO. If the interception
->> > fails, it will trigger another machine check before hitting the disk.
->> >
->> > After all, poisoned A means the data at offset X is already corrupted.
->> > It doesn't matter if there comes another B page.
->> >
->> > Thanks,
->> > Fengguang
->> > --
->> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> > the body of a message to majordomo@vger.kernel.org
->> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> > Please read the FAQ at  http://www.tux.org/lkml/
->> >
->
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
