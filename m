@@ -1,122 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbZFHCFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbZFHCFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754974AbZFHCFG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 22:05:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbZFHCE4
+	id S1755159AbZFHCFe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 22:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbZFHCFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 22:04:56 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63757 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753596AbZFHCEz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 22:04:55 -0400
-Message-ID: <4A2C716C.8070808@cn.fujitsu.com>
-Date: Mon, 08 Jun 2009 10:03:24 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 16/20] io-controller: IO group refcounting support
-References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com> <1243377729-2176-17-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1243377729-2176-17-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 7 Jun 2009 22:05:22 -0400
+Received: from mga02.intel.com ([134.134.136.20]:30760 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753596AbZFHCFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 22:05:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,322,1241420400"; 
+   d="scan'208";a="522509070"
+Subject: Re: [PATCH -v4] x86: MCE: Re-implement MCE log ring buffer as
+ per-CPU ring buffer
+From: Huang Ying <ying.huang@intel.com>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A2C66BF.5000401@jp.fujitsu.com>
+References: <1244085090.8361.360.camel@yhuang-dev.sh.intel.com>
+	 <4A28C2E2.4090309@jp.fujitsu.com>
+	 <1244189284.8361.514.camel@yhuang-dev.sh.intel.com>
+	 <4A28D738.8010202@jp.fujitsu.com>
+	 <1244191174.8361.517.camel@yhuang-dev.sh.intel.com>
+	 <4A2C66BF.5000401@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Mon, 08 Jun 2009 10:05:21 +0800
+Message-Id: <1244426721.8361.569.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
->  
->  /**
-> @@ -436,7 +443,6 @@ static void bfq_idle_insert(struct io_service_tree *st,
->  {
->  	struct io_entity *first_idle = st->first_idle;
->  	struct io_entity *last_idle = st->last_idle;
-> -	struct io_queue *ioq = io_entity_to_ioq(entity);
->  
->  	if (first_idle == NULL || bfq_gt(first_idle->finish, entity->finish))
->  		st->first_idle = entity;
-> @@ -444,10 +450,6 @@ static void bfq_idle_insert(struct io_service_tree *st,
->  		st->last_idle = entity;
->  
->  	bfq_insert(&st->idle, entity);
-> -
-> -	/* Add this queue to idle list */
-> -	if (ioq)
-> -		list_add(&ioq->queue_list, &ioq->efqd->idle_list);
->  }
->  
->  /**
-> @@ -723,8 +725,26 @@ int __bfq_deactivate_entity(struct io_entity *entity, int requeue)
->  void bfq_deactivate_entity(struct io_entity *entity, int requeue)
->  {
->  	struct io_sched_data *sd;
-> +	struct io_group *iog;
->  	struct io_entity *parent;
->  
-> +	iog = container_of(entity->sched_data, struct io_group, sched_data);
-> +
-> +	/*
-> +	 * Hold a reference to entity's iog until we are done. This function
-> +	 * travels the hierarchy and we don't want to free up the group yet
-> +	 * while we are traversing the hiearchy. It is possible that this
-> +	 * group's cgroup has been removed hence cgroup reference is gone.
-> +	 * If this entity was active entity, then its group will not be on
-> +	 * any of the trees and it will be freed up the moment queue is
-> +	 * freed up in __bfq_deactivate_entity().
-> +	 *
-> +	 * Hence, hold a reference, deactivate the hierarhcy of entities and
-> +	 * then drop the reference which should free up the whole chain of
-> +	 * groups.
-> +	 */
-> +	elv_get_iog(iog);
-> +
->  	for_each_entity_safe(entity, parent) {
->  		sd = entity->sched_data;
->  
-> @@ -736,21 +756,28 @@ void bfq_deactivate_entity(struct io_entity *entity, int requeue)
->  			 */
->  			break;
->  
-> -		if (sd->next_active != NULL)
-> +		if (sd->next_active != NULL) {
->  			/*
->  			 * The parent entity is still backlogged and
->  			 * the budgets on the path towards the root
->  			 * need to be updated.
->  			 */
-> +			elv_put_iog(iog);
->  			goto update;
-> +		}
->  
->  		/*
->  		 * If we reach there the parent is no more backlogged and
->  		 * we want to propagate the dequeue upwards.
-> +		 *
-> +		 * If entity's group has been marked for deletion, don't
-> +		 * requeue the group in idle tree so that it can be freed.
->  		 */
-> -		requeue = 1;
-> +		if (!iog_deleting(iog))
-> +			requeue = 1;
+On Mon, 2009-06-08 at 09:17 +0800, Hidetoshi Seto wrote:
+> Huang Ying wrote:
+> > On Fri, 2009-06-05 at 16:28 +0800, Hidetoshi Seto wrote:
+> >> Huang Ying wrote:
+> >>> On Fri, 2009-06-05 at 15:01 +0800, Hidetoshi Seto wrote:
+> >>>> Huang Ying wrote:
+> >>>>>  struct mce_log {
+> >>>>> -	char signature[12]; /* "MACHINECHECK" */
+> >>>>> +	char signature[12]; /* "MACHINECHEC2" */
+> >>>>>  	unsigned len;	    /* = MCE_LOG_LEN */
+> >>>>> -	unsigned next;
+> >>>>>  	unsigned flags;
+> >>>>>  	unsigned pad0;
+> >>>>> -	struct mce entry[MCE_LOG_LEN];
+> >>>>> +	struct mce_log_cpu *mcelog_cpus;
+> >>>>>  };
+> >>>> What is this *mcelog_cpus to be used for?
+> >>>> It seems it will point one of per-CPU buffers (maybe cpu#0's buffer)
+> >>>> if I have read the following mce_log_init() correctly.
+> >>> It is mainly used by something like kdump, which can search
+> >>> "MACHINECHEC2", and analyze mce_log. mcelog_cpus can help kdump find the
+> >>> real mcelog storage.
+> >> Hum, but it help tools only to find one of buffers, not to find all.
+> >>
+> >> I think it would be better help for tools if we have another signature
+> >> on struct mce_log_cpu, e.g.: 
+> >>
+> >>  +struct mce_log_cpu {
+> >> + 	char signature[**];	/* "MCE_LOG_CPU_VER_1" or so */
+> >> +	__u32 cpuid;		/* cpuid or extcpu, same as struct mce */
+> >>  +	int head;
+> >>  +	int tail;
+> >>  +	unsigned long flags;
+> >>  +	struct mce entry[MCE_LOG_LEN];
+> >>  +};
+> >>
+> >> How about this?
+> > 
+> > +	mcelog.mcelog_cpus = &per_cpu_var(mce_log_cpus);
+> > 
+> > So mcelog.mcelog_cpus are pointed to the buffers of all CPUs, not just
+> > that of one CPU. You can find them by analyzing PER cpu data structure.
+> 
+> I thought that the signature is used to find the structure without such
+> analyzing.  If a tool can analyze PER cpu data, then it likely know
+> where the mce_log_cpu is, so mcelog.mcelog_cpus will not be required.
+> 
+> #define per_cpu_var(var) per_cpu__##var
+> 
+> #define per_cpu(var, cpu) \
+>         (*SHIFT_PERCPU_PTR(&per_cpu_var(var), per_cpu_offset(cpu)))
+> 
+> OK, I have mistook per_cpu_var() for per_cpu(). 
+> Then mcelog.mcelog_cpus does not point any of the buffers, but tells where
+> the buffer is locating in each of PER cpu data.
+> Tools have to get per_cpu_offset(cpu) to know where the PER cpu data
+> allocated.  According to pcpu_alloc_bootmem(), it might consider NUMA.
+> Anyway It will take a bit more effort.
+> 
+> So still I think the mcelog.mcelog_cpus is mostly pointless.
 
-  Hi Vivek,
+Emm, it seem hard to analyze mce_log_cpu from per_cpu_var(mce_log_cpus),
+how about following method:
 
-  IIUC, if the iog is marked deleting, all iogs in the hierarchy don't have a chance 
-  to be requeued into idle trees. So, I wonder why do it like this? Why the upper iogs 
-  can't be requeued to the idle tree?
+struct mce_log {
+    char signature[12];
+    ...
+    struct mce_log_cpu *mcelog_cpus[];
+};
 
--- 
-Regards
-Gui Jianfeng
+void mcelog_init(void)
+{
+    int cpu;
+    mcelog.mcelog_cpus = kmalloc(sizeof(void *) * num_possible_cpus();
+    for_each_possible_cpu(cpu)
+	mcelog.mcelog_cpus[cpu] = &per_cpu(mce_log_cpus, cpu);
+}
+
+Best Regards,
+Huang Ying
 
 
