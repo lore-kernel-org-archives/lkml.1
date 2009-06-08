@@ -1,158 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbZFHNyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755806AbZFHNyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214AbZFHNyW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 09:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbZFHNyO
+	id S1755806AbZFHNyn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 09:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbZFHNye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 09:54:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54090 "EHLO mx2.redhat.com"
+	Mon, 8 Jun 2009 09:54:34 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:42187 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753664AbZFHNyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 09:54:13 -0400
-Date: Mon, 8 Jun 2009 09:53:11 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 16/20] io-controller: IO group refcounting support
-Message-ID: <20090608135311.GD3652@redhat.com>
-References: <1243377729-2176-1-git-send-email-vgoyal@redhat.com> <1243377729-2176-17-git-send-email-vgoyal@redhat.com> <4A2C716C.8070808@cn.fujitsu.com>
+	id S1753069AbZFHNyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 09:54:33 -0400
+Date: Mon, 8 Jun 2009 14:54:33 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Rik van Riel <riel@redhat.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
+       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when
+	zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
+Message-ID: <20090608135433.GD15070@csn.ul.ie>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-2-git-send-email-mel@csn.ul.ie> <4A2D129D.3020309@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <4A2C716C.8070808@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A2D129D.3020309@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 10:03:24AM +0800, Gui Jianfeng wrote:
-> Vivek Goyal wrote:
-> ...
-> >  
-> >  /**
-> > @@ -436,7 +443,6 @@ static void bfq_idle_insert(struct io_service_tree *st,
-> >  {
-> >  	struct io_entity *first_idle = st->first_idle;
-> >  	struct io_entity *last_idle = st->last_idle;
-> > -	struct io_queue *ioq = io_entity_to_ioq(entity);
-> >  
-> >  	if (first_idle == NULL || bfq_gt(first_idle->finish, entity->finish))
-> >  		st->first_idle = entity;
-> > @@ -444,10 +450,6 @@ static void bfq_idle_insert(struct io_service_tree *st,
-> >  		st->last_idle = entity;
-> >  
-> >  	bfq_insert(&st->idle, entity);
-> > -
-> > -	/* Add this queue to idle list */
-> > -	if (ioq)
-> > -		list_add(&ioq->queue_list, &ioq->efqd->idle_list);
-> >  }
-> >  
-> >  /**
-> > @@ -723,8 +725,26 @@ int __bfq_deactivate_entity(struct io_entity *entity, int requeue)
-> >  void bfq_deactivate_entity(struct io_entity *entity, int requeue)
-> >  {
-> >  	struct io_sched_data *sd;
-> > +	struct io_group *iog;
-> >  	struct io_entity *parent;
-> >  
-> > +	iog = container_of(entity->sched_data, struct io_group, sched_data);
-> > +
-> > +	/*
-> > +	 * Hold a reference to entity's iog until we are done. This function
-> > +	 * travels the hierarchy and we don't want to free up the group yet
-> > +	 * while we are traversing the hiearchy. It is possible that this
-> > +	 * group's cgroup has been removed hence cgroup reference is gone.
-> > +	 * If this entity was active entity, then its group will not be on
-> > +	 * any of the trees and it will be freed up the moment queue is
-> > +	 * freed up in __bfq_deactivate_entity().
-> > +	 *
-> > +	 * Hence, hold a reference, deactivate the hierarhcy of entities and
-> > +	 * then drop the reference which should free up the whole chain of
-> > +	 * groups.
-> > +	 */
-> > +	elv_get_iog(iog);
-> > +
-> >  	for_each_entity_safe(entity, parent) {
-> >  		sd = entity->sched_data;
-> >  
-> > @@ -736,21 +756,28 @@ void bfq_deactivate_entity(struct io_entity *entity, int requeue)
-> >  			 */
-> >  			break;
-> >  
-> > -		if (sd->next_active != NULL)
-> > +		if (sd->next_active != NULL) {
-> >  			/*
-> >  			 * The parent entity is still backlogged and
-> >  			 * the budgets on the path towards the root
-> >  			 * need to be updated.
-> >  			 */
-> > +			elv_put_iog(iog);
-> >  			goto update;
-> > +		}
-> >  
-> >  		/*
-> >  		 * If we reach there the parent is no more backlogged and
-> >  		 * we want to propagate the dequeue upwards.
-> > +		 *
-> > +		 * If entity's group has been marked for deletion, don't
-> > +		 * requeue the group in idle tree so that it can be freed.
-> >  		 */
-> > -		requeue = 1;
-> > +		if (!iog_deleting(iog))
-> > +			requeue = 1;
-> 
->   Hi Vivek,
-> 
->   IIUC, if the iog is marked deleting, all iogs in the hierarchy don't have a chance 
->   to be requeued into idle trees. So, I wonder why do it like this? Why the upper iogs 
->   can't be requeued to the idle tree?
-> 
+On Mon, Jun 08, 2009 at 09:31:09AM -0400, Rik van Riel wrote:
+> Mel Gorman wrote:
+>
+>> The scanning occurs because zone_reclaim() cannot tell
+>> in advance the scan is pointless because the counters do not distinguish
+>> between pagecache pages backed by disk and by RAM. 
+>
+> Yes it can.  Since 2.6.27, filesystem backed and swap/ram backed
+> pages have been living on separate LRU lists. 
 
-I think this is a bug Gui. Good catch. I think following should fix it.
+Yes, they're on separate LRU lists but they are not the only pages on those
+lists. The tmpfs pages are mixed in together with anonymous pages so we
+cannot use NR_*_ANON.
 
-Thanks
-Vivek
+Look at patch 2 and where I introduced;
 
+       /*
+        * Work out how many page cache pages we can reclaim in this mode.
+        *
+        * NOTE: Ideally, tmpfs pages would be accounted as if they were
+        *       NR_FILE_MAPPED as swap is required to discard those
+        *       pages even when they are clean. However, there is no
+        *       way of quickly identifying the number of tmpfs pages
+        */
+       pagecache_reclaimable = zone_page_state(zone, NR_FILE_PAGES);
+       if (!(zone_reclaim_mode & RECLAIM_WRITE))
+               pagecache_reclaimable -= zone_page_state(zone, NR_FILE_DIRTY);
+       if (!(zone_reclaim_mode & RECLAIM_SWAP))
+               pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
 
+If the tmpfs pages can be accounted for there, then chances are that patch
+1 goes away - at least until some other situation is encountered where
+we scan erroneously.
 
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
----
- block/elevator-fq.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+> This allows you to
+> fix the underlying problem, instead of having to add a retry
+> interval.
+>
 
-Index: linux16/block/elevator-fq.c
-===================================================================
---- linux16.orig/block/elevator-fq.c	2009-06-06 14:21:11.000000000 -0400
-+++ linux16/block/elevator-fq.c	2009-06-08 09:40:59.000000000 -0400
-@@ -863,7 +863,7 @@ int __bfq_deactivate_entity(struct io_en
- void bfq_deactivate_entity(struct io_entity *entity, int requeue)
- {
- 	struct io_sched_data *sd;
--	struct io_group *iog;
-+	struct io_group *iog, *__iog;
- 	struct io_entity *parent;
- 
- 	iog = container_of(entity->sched_data, struct io_group, sched_data);
-@@ -911,8 +911,11 @@ void bfq_deactivate_entity(struct io_ent
- 		 * If entity's group has been marked for deletion, don't
- 		 * requeue the group in idle tree so that it can be freed.
- 		 */
--		if (!iog_deleting(iog))
--			requeue = 1;
-+		if (parent) {
-+			__iog = container_of(parent, struct io_group, entity);
-+			if (!iog_deleting(__iog))
-+				requeue = 1;
-+		}
- 	}
- 
- 	elv_put_iog(iog);
+Which is obviously my preference but after looking around for a bit, I
+didn't spot an obvious answer.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
