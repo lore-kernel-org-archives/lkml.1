@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751799AbZFHFTC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752116AbZFHFXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751799AbZFHFTC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 01:19:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbZFHFSv
+	id S1752116AbZFHFXv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 01:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751459AbZFHFXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 01:18:51 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:61197 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbZFHFSu (ORCPT
+	Mon, 8 Jun 2009 01:23:43 -0400
+Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:42906
+	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751350AbZFHFXm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 01:18:50 -0400
-Date: Sun, 7 Jun 2009 22:18:52 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: netdev@vger.kernel.org, mcarlson@broadcom.com
-Subject: Re: tg3 stops working when NFS is involved
-In-Reply-To: <alpine.DEB.2.01.0906072115420.6439@bogon>
-Message-ID: <alpine.DEB.2.01.0906072215000.6439@bogon>
-References: <alpine.DEB.2.01.0906072115420.6439@bogon>
-User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
+	Mon, 8 Jun 2009 01:23:42 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEABM9LEp8qWf0/2dsb2JhbADKFoQKBQ
+X-IronPort-AV: E=Sophos;i="4.41,322,1241366400"; 
+   d="scan'208";a="456610185"
+Message-ID: <4A2CA05C.3060808@themaw.net>
+Date: Mon, 08 Jun 2009 13:23:40 +0800
+From: Ian Kent <raven@themaw.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1/LOc269cJBvianT4foJVxHVvzSFLGt2b0i5zU
- uuvZXs7lO6YWenwY13Clv/2S7Hgm0Qr52adzZK8LbOnZ7SZRrw
- tNrMyk3E8EJuwbo2FEUUw==
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: autofs mailing list <autofs@linux.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] autofs4 - remove hashed check in validate_wait()
+References: <20090608032537.7088.1870.stgit@zeus.themaw.net> <20090607220814.cc7519f6.akpm@linux-foundation.org>
+In-Reply-To: <20090607220814.cc7519f6.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 7 Jun 2009, Christian Kujau wrote:
-> anything else - so, I figure it's not a client problem. And I'm not sure 
-> if it's NFS problem either, because restarting the NFS server doesn't do 
-> anything, I really have to rmmod/modprobe the tg3 module. OTOH, I cannot 
-> reproduce this without NFS: running e.g. iperf (TCP, UDP) did not trigger 
-> it.
+Andrew Morton wrote:
+> On Mon, 08 Jun 2009 11:25:37 +0800 Ian Kent <raven@themaw.net> wrote:
+> 
+>> The recent ->lookup() deadlock correction required the directory
+>> inode mutex to be dropped while waiting for expire completion. We
+>> were concerned about side effects from this change and one has
+>> been identified.
+>>
+>> When checking if a mount has already completed prior to adding a
+>> new mount request to the wait queue we check if the dentry is hashed
+>> and, if so, if it is a mount point. But, if a mount successfully
+>> completed while we slept on the wait queue mutex the dentry must
+>> exist for the mount to have completed so the test is not really
+>> needed.
+>>
+>> Mounts can also be done on top of a global root dentry, so for the
+>> above case, where a mount request completes and the wait queue entry
+>> has already been removed, the hashed test returning false can cause
+>> an incorrect callback to the daemon. Also, d_mountpoint() is not
+>> sufficient to check if a mount has completed for the multi-mount
+>> case when we don't have a real mount at the base of the tree.
+>>
+> 
+> I've been scratching my head trying to work out if this is a
+> needed-in-2.6.30 fix, but all I got was a bald spot.  Help?
 
-Just tested with Samba - after a few megabytes of transmitted data, tg3 stops 
-working, with no messages printed in the kernel log :-\
+Yeah, and why would you want to know that much about autofs, it's a
+wonder I have any hair at all, ;)
 
-I don't know why iperf does not trigger it though....
+I think so if possible, as it resolves an issue that is a side effect of
+the last patch I sent, which resolved a deadlook in ->lookup(). The
+problem occurs due to dropping the directory inode mutex before waiting
+for an expire. What isn't obvious is that holding the mutex (as we did
+previously) causes processes wanting to request mounts for other
+directories to wait, so we don't see the contention for the mount
+request wait queue that this patch addresses.
 
-Christian.
--- 
-BOFH excuse #271:
+However, the issue only surfaces when there are a number of processes
+all trying to perform mounts at the same time. The test I ran used 10
+processes all using the same map.
 
-The kernel license has expired
+Ian
