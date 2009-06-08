@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZFHQT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZFHQW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757020AbZFHQT7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 12:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755858AbZFHQTw
+	id S1757020AbZFHQW1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 12:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbZFHQWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 12:19:52 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:57913 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754270AbZFHQTv (ORCPT
+	Mon, 8 Jun 2009 12:22:20 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:37955 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755796AbZFHQWU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 12:19:51 -0400
-Date: Mon, 8 Jun 2009 17:19:29 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com
-Subject: Re: zaurus needs generic pxa suspend/resume routines
-Message-ID: <20090608161929.GD32140@n2100.arm.linux.org.uk>
-References: <20090605131625.GC1376@ucw.cz> <20090607152152.GA7785@n2100.arm.linux.org.uk> <f17812d70906072358i69b4ce09oeb6cd455277b050f@mail.gmail.com>
+	Mon, 8 Jun 2009 12:22:20 -0400
+Date: Mon, 8 Jun 2009 12:22:21 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/5] [GIP PULL] tracing/events/trace_stack: various
+ fixes
+In-Reply-To: <1244477919.13761.9042.camel@twins>
+Message-ID: <alpine.DEB.2.00.0906081220040.9522@gandalf.stny.rr.com>
+References: <20090603151724.144915858@goodmis.org>  <20090605145219.GA14830@elte.hu> <20090607082257.GA16761@elte.hu>  <alpine.DEB.2.00.0906081135320.9522@gandalf.stny.rr.com> <1244477919.13761.9042.camel@twins>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <f17812d70906072358i69b4ce09oeb6cd455277b050f@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 02:58:54PM +0800, Eric Miao wrote:
-> On Sun, Jun 7, 2009 at 11:21 PM, Russell King - ARM
-> Linux<linux@arm.linux.org.uk> wrote:
-> > On Fri, Jun 05, 2009 at 03:16:25PM +0200, Pavel Machek wrote:
-> >> For suspend/resume to work, spitz needs pxa_pm_suspend/resume to be
-> >> called. Otherwise PSPR is not set properly, and system will die during
-> >> resume.
-> >
-> > 100 points for copying lots of people.  0 points for omitting the right
-> > person.  Add Eric.
-> >
-> > Eric, ack?
-> >
-> 
-> Yes, I think this is the best trade-off for the moment.
-> 
-> Acked-by: Eric Miao <eric.miao@marvell.com>
-> 
-> And Russell you may want to queue this for this -rc phase, looks
-> it's still -rc8-git5.
 
-I think it's missed .30, unless Linus does a -rc9.  I sent what was
-probably my final pull request last night.
+On Mon, 8 Jun 2009, Peter Zijlstra wrote:
+
+> On Mon, 2009-06-08 at 11:37 -0400, Steven Rostedt wrote:
+> > [ Added Peter ]
+> > 
+> > On Sun, 7 Jun 2009, Ingo Molnar wrote:
+> > > Testing tracer sched_switch: <6>Starting ring buffer hammer
+> > > PASSED
+> > > Testing tracer sysprof: PASSED
+> > > Testing tracer function: PASSED
+> > > Testing tracer irqsoff: 
+> > > =============================================
+> > > PASSED
+> > > Testing tracer preemptoff: PASSED
+> > > Testing tracer preemptirqsoff: [ INFO: possible recursive locking detected ]
+> > > PASSED
+> > > Testing tracer branch: 2.6.30-rc8-tip-01972-ge5b9078-dirty #5760
+> > > ---------------------------------------------
+> > > rb_consumer/431 is trying to acquire lock:
+> > >  (&cpu_buffer->reader_lock){......}, at: [<c109eef7>] ring_buffer_reset_cpu+0x37/0x70
+> > > 
+> > > but task is already holding lock:
+> > >  (&cpu_buffer->reader_lock){......}, at: [<c10a019e>] ring_buffer_consume+0x7e/0xc0
+> > > 
+> > > other info that might help us debug this:
+> > > 1 lock held by rb_consumer/431:
+> > >  #0:  (&cpu_buffer->reader_lock){......}, at: [<c10a019e>] ring_buffer_consume+0x7e/0xc0
+> > 
+> > Yes this definitely looks like ftrace is tracing the ring buffer benchmark 
+> > test.
+> > 
+> > OK, how do I go about teaching lockdep that this reader lock is not the 
+> > same reader lock as the one being taken?
+> 
+> Something like this will put each ring-buffer user in its own lock
+> class.
+
+Thanks a lot Peter. I'll see if I can get this to work and then push it 
+off to Ingo to see if it fixes his lockdep bugs.
+
+> 
+> Patch utterly uncompiled and broken since hotplug would need some care
+> (you could probably store the key pointer in the rb object and reuse it
+> on hotplug).
+
+I could also save the key in the ring buffer itself. Each of the per cpu 
+reader locks will share the same key, and then when it is created by the 
+hotplug, it will use the key of the ring buffer.
+
+-- Steve
