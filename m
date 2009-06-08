@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbZFHIO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbZFHIPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754476AbZFHIO6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 04:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZFHIOo
+	id S1753917AbZFHIPt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 04:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZFHIPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 04:14:44 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52210 "EHLO mx3.mail.elte.hu"
+	Mon, 8 Jun 2009 04:15:37 -0400
+Received: from relay.atmel.no ([80.232.32.139]:53989 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752879AbZFHIOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 04:14:43 -0400
-Date: Mon, 8 Jun 2009 10:14:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v3] printk: add halt_delay parameter for printk delay
-	in halt phase
-Message-ID: <20090608081439.GB6372@elte.hu>
-References: <a8e1da0906080040k7852f770v1e2aa2ebb0f52369@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a8e1da0906080040k7852f770v1e2aa2ebb0f52369@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753514AbZFHIPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 04:15:36 -0400
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Eirik Aanonsen <eaa@wprmedical.com>
+Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org,
+       Nicolas Ferre <Nicolas.FERRE@atmel.com>,
+       Andrew Victor <avictor.za@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: [PATCH] atmel_serial: Fix hang in set_termios when crtscts is enabled
+Date: Mon,  8 Jun 2009 10:15:21 +0200
+Message-Id: <1244448921-22942-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+After enabling hardware flow control, any subsequent termios call may
+hang waiting for the transmitter to drain. This appears to be caused by
+a busy-loop in set_termios() waiting for the transmitter to become
+empty, which may take a very long time (or hang indefinitely) if the
+device at the other end is blocking us.
 
-* Dave Young <hidave.darkstar@gmail.com> wrote:
+A quick look through the tty and serial_core code indicates that any
+necessary flushing (which is optional) has already been done at this
+point, so there's no need for the driver to flush the transmitter on its
+own.
 
-> Add a halt_delay module parameter in printk.c used to read the 
-> printk messages in halt/poweroff/restart phase, delay each printk 
-> messages by halt_delay milliseconds. It is useful for debugging if 
-> there's no other way to dump kernel messages that time.
-> 
-> The halt_delay max value is 65535, default value is 0, change it 
-> by:
-> 
-> echo xxx > /sys/module/printk/parameters/halt_delay
-> 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-> ---
-> Documentation/kernel-parameters.txt |    5 +++++
-> kernel/printk.c                     |   17 +++++++++++++++++
-> 2 files changed, 22 insertions(+)
-> 
-> --- linux-2.6.orig/kernel/printk.c	2009-06-08 13:55:35.000000000 +0800
-> +++ linux-2.6/kernel/printk.c	2009-06-08 13:56:23.000000000 +0800
-> @@ -250,6 +250,22 @@ static inline void boot_delay_msec(void)
->  }
->  #endif
-> 
-> +/* msecs delay after each halt/poweroff/restart phase printk,
-> + unsigned short is enough for delay in milliseconds */
-> +static unsigned short halt_delay;
-> +
-> +static inline void halt_delay_msec(void)
-> +{
-> +	if (unlikely(halt_delay == 0 || !(system_state == SYSTEM_HALT
-> +				|| system_state == SYSTEM_POWER_OFF
-> +				|| system_state == SYSTEM_RESTART)))
-> +		return;
+Fix it by removing the busy-loop altogether.
 
-This is a tiny bit ugly (and goes into the vprintf path) but i can 
-see no other way either - a system_state > SYSTEM_RUNNING check 
-would needlessly include the suspend-to-disk state (which we dont 
-want to include here).
+Reported-by: Eirik Aanonsen <eaa@wprmedical.com>
+Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+---
+I have not tested this patch yet. Eirik, can you give it a try?
 
-In theory we could turn system_state into a bitmask and have a 
-print_delay_mask check instead of these flags ... but that is a far 
-wider change and i'm not sure it's a net step forwards.
+ drivers/serial/atmel_serial.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-I've applied your patch to tip:core/printk with small edits to the 
-changelog - Linus & Andrew is Cc:ed, should they have any 
-objections.
+diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
+index b3497d7..338b15c 100644
+--- a/drivers/serial/atmel_serial.c
++++ b/drivers/serial/atmel_serial.c
+@@ -1104,11 +1104,13 @@ static void atmel_set_termios(struct uart_port *port, struct ktermios *termios,
+ 	/* update the per-port timeout */
+ 	uart_update_timeout(port, termios->c_cflag, baud);
+ 
+-	/* save/disable interrupts and drain transmitter */
++	/*
++	 * save/disable interrupts. The tty layer will ensure that the
++	 * transmitter is empty if requested by the caller, so there's
++	 * no need to wait for it here.
++	 */
+ 	imr = UART_GET_IMR(port);
+ 	UART_PUT_IDR(port, -1);
+-	while (!(UART_GET_CSR(port) & ATMEL_US_TXEMPTY))
+-		cpu_relax();
+ 
+ 	/* disable receiver and transmitter */
+ 	UART_PUT_CR(port, ATMEL_US_TXDIS | ATMEL_US_RXDIS);
+-- 
+1.6.0.4
 
-	Ingo
