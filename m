@@ -1,80 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756374AbZFHQ6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbZFHQ7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756374AbZFHQ6S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 12:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbZFHQ6J
+	id S1756518AbZFHQ7U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 12:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbZFHQ7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 12:58:09 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:47523 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754722AbZFHQ6I convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 12:58:08 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090608124719.7c36840b@hskinnemoen-d830>
-References: <c8284b5b0905281440hd2e4993re3d0d8c590713fa0@mail.gmail.com>
-	 <4A1FFEFB.6050104@drewtech.com>
-	 <c8284b5b0906020953o7c112b4hc264b5520cc3aed1@mail.gmail.com>
-	 <4A269251.8090706@atmel.com> <4A269A83.3020008@drewtech.com>
-	 <c8284b5b0906031202u18433b52s1a0718ef627fddf0@mail.gmail.com>
-	 <20090608124719.7c36840b@hskinnemoen-d830>
-Date: Mon, 8 Jun 2009 09:58:09 -0700
-X-Google-Sender-Auth: 3e03ba3c2832e495
-Message-ID: <c8284b5b0906080958o65a97a8dm914aa8b4c6e7a821@mail.gmail.com>
-Subject: Re: [PATCH][Updated] New AT91 MCI Driver that supports both MCI slots 
-	used at the same time
-From: Rob Emanuele <poorarm@shoreis.com>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Cc: Joey Oravec <joravec@drewtech.com>,
-       Nicolas Ferre <nicolas.ferre@atmel.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 8 Jun 2009 12:59:12 -0400
+Received: from mga09.intel.com ([134.134.136.24]:15141 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755142AbZFHQ7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 12:59:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,325,1241420400"; 
+   d="scan'208";a="522681904"
+Subject: Re: [PATCH] remove rwsem lock from CPUFREQ_GOV_STOP call (second
+ call site)
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Dave Jones <davej@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, "trenn@suse.de" <trenn@suse.de>,
+       "sven.wegener@stealer.net" <sven.wegener@stealer.net>,
+       "mingo@elte.hu" <mingo@elte.hu>, "Li, Shaohua" <shaohua.li@intel.com>
+In-Reply-To: <20090608152316.GA21033@Krystal>
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
+	 <D9VoutSOyXP.A.7vF.2Y7KKB@chimera>
+	 <84144f020906070621r1f480eaeief026d23662df380@mail.gmail.com>
+	 <a8e1da0906080035j9f8b38drb46132de5a515915@mail.gmail.com>
+	 <1244447366.13471.4.camel@penberg-laptop> <20090608124844.GA17588@Krystal>
+	 <20090608143220.GC2516@redhat.com>  <20090608152316.GA21033@Krystal>
+Content-Type: text/plain
+Date: Mon, 08 Jun 2009 09:57:34 -0700
+Message-Id: <1244480254.4534.265.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Haavard,
+On Mon, 2009-06-08 at 08:23 -0700, Mathieu Desnoyers wrote:
+> * Dave Jones (davej@redhat.com) wrote:
+> > On Mon, Jun 08, 2009 at 08:48:45AM -0400, Mathieu Desnoyers wrote:
+> >  
+> >  > > > >> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13475
+> >  > > > >> Subject         : suspend/hibernate lockdep warning
+> >  > > > >> References      : http://marc.info/?l=linux-kernel&m=124393723321241&w=4
+> >  > > > 
+> >  > > > I suspect the following commit, after revert this patch I test 5 times
+> >  > > > without lockdep warnings.
+> >  > > > 
+> >  > > > commit b14893a62c73af0eca414cfed505b8c09efc613c
+> >  > > > Author: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> >  > > > Date:   Sun May 17 10:30:45 2009 -0400
+> >  > > > 
+> >  > > > 	[CPUFREQ] fix timer teardown in ondemand governor
+> >  > > 
+> >  > > The patch is probably not at fault here. I suspect it's some latent bug
+> >  > > that simply got exposed by the change to cancel_delayed_work_sync(). In
+> >  > > any case, Mathieu, can you take a look at this please?
+> >  > 
+> >  > Yes, it's been looked at and discussed on the cpufreq ML. The short
+> >  > answer is that they plan to re-engineer cpufreq and remove the policy
+> >  > rwlock taken around almost every operations at the cpufreq level.
+> >  > 
+> >  > The short-term solution, which is recognised as ugly, would be do to the
+> >  > following before doing the cancel_delayed_work_sync() :
+> >  > 
+> >  > unlock policy rwlock write lock
+> >  > 
+> >  > lock policy rwlock write lock
+> >  > 
+> >  > It basically works because this rwlock is unneeded for teardown, hence
+> >  > the future re-work planned.
+> >  > 
+> >  > I'm sorry I cannot prepare a patch current... I've got quite a few pages
+> >  > of Ph.D. thesis due for the beginning of July.
+> >  
+> > I'm kinda scared to touch this code at all for .30 due to the number of
+> > unexpected gotchas we seem to run into every time we touch something
+> > locking related.  So I'm inclined to just live with the lockdep warning
+> > for .30, and see how the real fixes look for .31, and push them back
+> > as -stable updates if they work out.
+> > 
+> > 
+> > Venki, what are your thoughts?
+> > 
+> 
+> Hi Dave,
+> 
+> I've looked through the cpufreq code, and the following patch should
+> address the call site I've missed in commit 
+> 42a06f2166f2f6f7bf04f32b4e823eacdceafdc9. I've followed all
+> __cpufreq_set_policy call sites within cpufreq.c to make sure they all
+> hold the rwsem write lock. An extra round of review would be good
+> though.
+> 
+> Can someone try the following patch and see if it fixes the regression ?
+> My test machine is currently busy running long formal verifications, and
+> therefore unavailable for kernel patch testing. It compiles fine on a
+> 2.6.30-rc5 kernel with my (now mainlined) cpufreq patches applied.
+> 
+> Mathieu
+> 
+> 
+> remove rwsem lock from CPUFREQ_GOV_STOP call (second call site)
+> 
+> commit	42a06f2166f2f6f7bf04f32b4e823eacdceafdc9
+> 
+> Missed a call site for CPUFREQ_GOV_STOP to remove the rwlock taken around the
+> teardown. To make a long story short, the rwlock write-lock causes a circular
+> dependency with cancel_delayed_work_sync(), because the timer handler takes the
+> read lock.
+> 
+> Note that all callers to __cpufreq_set_policy are taking the rwsem. All sysfs
+> callers (writers) hold the write rwsem at the earliest sysfs calling stage.
+> 
+> However, the rwlock write-lock is not needed upon governor stop.
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-I'd be happy to reintegrate my changes to this back into the Atmel
-driver once I get it working correct on the at91.  Do you have the
-equipment to give my changes a try?
+Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-Converting my #defines for the the features to cpu_is_xxx is easy
-enough.  I'll take care of that.
+This change is same as the patch that I was testing right now.
+Only additional change I had was a comment for cpu_policy_rwsem
+
+  *   are concerned with are online after they get the lock.
+  * - Governor routines that can be called in cpufreq hotplug path
+should not
+  *   take this sem as top level hotplug notifier handler takes this.
++ * - Lock should not be held across
++ *     __cpufreq_governor(data, CPUFREQ_GOV_STOP);
+  */
+
 
 Thanks,
+Venki
 
-Rob
 
-On Mon, Jun 8, 2009 at 3:47 AM, Haavard
-Skinnemoen<haavard.skinnemoen@atmel.com> wrote:
-> Rob Emanuele wrote:
->> This driver is a port the Atmel AVR32 MCI driver which uses similar silicon.
->
-> While I do understand the motivation for this patch, I was kind of
-> hoping we could reduce the number of drivers for the Atmel MCI
-> hardware, not increase it...
->
-> So I think it would be much better if your changes were integrated into
-> one of the existing drivers.
->
->> Joey Oravec has mentioned that he has had better reliability with the chip
->> he is using (AT91SAM9261) if the MMC controller is reset before each
->> command.  There is a compile time option to do just that.
->
-> This could be a useful option for atmel-mci too.
->
->> Joey Oravec has stated that the Read and Write Proof functionality that
->> prevents buffer overflows is not available on the AT91SAM9261.  This was
->> confirmed by Nicolas Ferre and also affects the AT91RM9200.  This new
->> patch excludes those register config bits.
->
-> Preferably use the cpu_is_xxx() functions to achieve that. Perhaps even
-> wrap those tests inside a mci_has_xxproof() function to make it
-> clearer what you're testing for, and easier to change if we decide to
-> do the test based on version registers, etc. later.
->
-> Haavard
->
+> CC: rjw@sisk.pl
+> CC: mingo@elte.hu
+> CC: Shaohua Li <shaohua.li@intel.com>
+> CC: Pekka Enberg <penberg@cs.helsinki.fi>
+> CC: Dave Young <hidave.darkstar@gmail.com>
+> CC: "Rafael J. Wysocki" <rjw@sisk.pl>
+> CC: Rusty Russell <rusty@rustcorp.com.au>
+> CC: trenn@suse.de
+> CC: sven.wegener@stealer.net
+> CC: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> CC: cpufreq@vger.kernel.org
+> ---
+>  drivers/cpufreq/cpufreq.c |   11 ++++++++++-
+>  1 file changed, 10 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6-lttng/drivers/cpufreq/cpufreq.c
+> ===================================================================
+> --- linux-2.6-lttng.orig/drivers/cpufreq/cpufreq.c	2009-06-08 10:20:48.000000000 -0400
+> +++ linux-2.6-lttng/drivers/cpufreq/cpufreq.c	2009-06-08 10:48:52.000000000 -0400
+> @@ -1697,8 +1697,17 @@ static int __cpufreq_set_policy(struct c
+>  			dprintk("governor switch\n");
+>  
+>  			/* end old governor */
+> -			if (data->governor)
+> +			if (data->governor) {
+> +				/*
+> +				 * Need to release the rwsem around governor
+> +				 * stop due to lock dependency between
+> +				 * cancel_delayed_work_sync and the read lock
+> +				 * taken in the delayed work handler.
+> +				 */
+> +				unlock_policy_rwsem_write(data->cpu);
+>  				__cpufreq_governor(data, CPUFREQ_GOV_STOP);
+> +				lock_policy_rwsem_write(data->cpu);
+> +			}
+>  
+>  			/* start new governor */
+>  			data->governor = policy->governor;
+> 
+> 
+
