@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZFHNW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbZFHNYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbZFHNW4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 09:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbZFHNWs
+	id S1755445AbZFHNYR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 09:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbZFHNYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 09:22:48 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44430 "EHLO mx2.mail.elte.hu"
+	Mon, 8 Jun 2009 09:24:08 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:47138 "EHLO isrv.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753267AbZFHNWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 09:22:47 -0400
-Date: Mon, 8 Jun 2009 15:22:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: Run-time PM idea (was: Re: [linux-pm] [RFC][PATCH 0/2] PM:
-	Rearrange core suspend code)
-Message-ID: <20090608132235.GC13214@elte.hu>
-References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org> <200906072347.00580.rjw@sisk.pl> <20090608065419.GA13568@elte.hu> <200906081330.50045.rjw@sisk.pl> <20090608130509.GA3272@elte.hu> <20090608131159.GA15100@srcf.ucam.org>
+	id S1752957AbZFHNYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 09:24:08 -0400
+Message-ID: <4A2D10F6.7040208@msgid.tls.msk.ru>
+Date: Mon, 08 Jun 2009 17:24:06 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090608131159.GA15100@srcf.ucam.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Linux-kernel <linux-kernel@vger.kernel.org>, linux-netdev@vger.kernel.org
+Subject: [Security, resend] Instant crash with rtl8169 and large packets
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-* Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+This is a resend (sort of) of several months old email.
+Previous email about this issue has been mostly ignored.
 
-> On Mon, Jun 08, 2009 at 03:05:09PM +0200, Ingo Molnar wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > Well, we've been discussing it for quite a while and since more 
-> > > and more people are interested, I'm giving it a high priority.
-> > 
-> > Cool. I think that if within a few years we could achieve that every 
-> > default distro (both on desktops and on servers) triggers PM 
-> > functionality runtime on common hardware, we'd both have lower power 
-> > consumption in general, and we'd have more robust suspend-resume 
-> > code as well.
-> 
-> The difficulty is in determining when it's viable to autosuspend a 
-> given device. There's a limit to how much we can determine purely 
-> from kernel state (for instance, we could suspend ahci when 
-> there's no pending disk access, but we'd lose hotplug 
-> notifications) so there's going to have to be some level of 
-> userspace policy determination. Having the infrastructure in the 
-> kernel is an important part of this, but there'll be some distance 
-> to go after that.
+The situation is very simple: with an RTL8169 (probably
+onboard) GigE card which, by default, is configured to
+have MTU (maximal transmission unit) to be 1500 bytes,
+it's *trivial* to instantly crash the machine by sending
+it a *single* packet of size >1500 bytes (provided the
+network switch can handle jumbo frames).
 
-What will the 'user space policy' bit do what the kernel cannot?
+I verified with on several different machines - all I were
+able to find with this card - and all behaves exactly the
+same.
 
-If you mean the user has to configure something manually - that wont 
-really happen in practice. We are happy if they know where to put 
-those USB sticks in ;-)
+When sending a packet of size, say, 3000 bytes (ping -s 3000)
+from another machine to a machine running rtl8169 with no
+MTU configured, kernel OOPSes.
 
-	Ingo
+I captured one such OOPS (unfortunately without the first
+line few lines) here:
+
+  http://www.corpit.ru/mjt/r8169-mtu-oops.jpg
+
+(since the network goes boom at that time, no network console
+is working).
+
+But for anyone familiar with the driver's internals it
+should be easy to figure the issue out.
+
+This is, in my opinion, quite a serious issue.  And I've no
+idea why it is being ignored for several months.
+
+Thanks.
+
+/mjt
