@@ -1,88 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbZFHQvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756374AbZFHQ6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756385AbZFHQvd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 12:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbZFHQvX
+	id S1756374AbZFHQ6S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 12:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbZFHQ6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 12:51:23 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:36165 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754842AbZFHQvW (ORCPT
+	Mon, 8 Jun 2009 12:58:09 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:47523 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754722AbZFHQ6I convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 12:51:22 -0400
-Subject: Re: 2.6.30-rc8 Oops whilst booting
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Clayton <chris2553@googlemail.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       scsi <linux-scsi@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-In-Reply-To: <alpine.LFD.2.01.0906080916130.6847@localhost.localdomain>
-References: <200906061959.55592.chris2553@googlemail.com>
-	 <200906062215.30571.chris2553@googlemail.com>
-	 <1244381140.30664.12.camel@ht.satnam>
-	 <c6b1100b0906071138g2c46fb34vc1a2beb9438f1f1e@mail.gmail.com>
-	 <1244413881.18742.31.camel@ht.satnam>
-	 <2f9e3044bafcae848f74a1492b0ea471.squirrel@neil.brown.name>
-	 <c6b1100b0906080108y191bb157n67ec681ade2a0d13@mail.gmail.com>
-	 <c6b1100b0906080358y4033c402ra236eff3f972d169@mail.gmail.com>
-	 <1244460875.12644.2.camel@ht.satnam>
-	 <c6b1100b0906080553o2aa77a40pe0077b1b10a7d88a@mail.gmail.com>
-	 <alpine.LFD.2.01.0906080916130.6847@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 08 Jun 2009 16:51:19 +0000
-Message-Id: <1244479879.4079.284.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Jun 2009 12:58:08 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090608124719.7c36840b@hskinnemoen-d830>
+References: <c8284b5b0905281440hd2e4993re3d0d8c590713fa0@mail.gmail.com>
+	 <4A1FFEFB.6050104@drewtech.com>
+	 <c8284b5b0906020953o7c112b4hc264b5520cc3aed1@mail.gmail.com>
+	 <4A269251.8090706@atmel.com> <4A269A83.3020008@drewtech.com>
+	 <c8284b5b0906031202u18433b52s1a0718ef627fddf0@mail.gmail.com>
+	 <20090608124719.7c36840b@hskinnemoen-d830>
+Date: Mon, 8 Jun 2009 09:58:09 -0700
+X-Google-Sender-Auth: 3e03ba3c2832e495
+Message-ID: <c8284b5b0906080958o65a97a8dm914aa8b4c6e7a821@mail.gmail.com>
+Subject: Re: [PATCH][Updated] New AT91 MCI Driver that supports both MCI slots 
+	used at the same time
+From: Rob Emanuele <poorarm@shoreis.com>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: Joey Oravec <joravec@drewtech.com>,
+       Nicolas Ferre <nicolas.ferre@atmel.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-08 at 09:21 -0700, Linus Torvalds wrote:
-> 
-> On Mon, 8 Jun 2009, Chris Clayton wrote:
-> > 
-> > OK. I reversed that change and built and installed the kernel. It has
-> > withstood 100 reboots without a panic. Additionally, I pulled the
-> > latest changes (that will be rc8-git5, I think) from kernel.org,
-> > reversed the change to that kernel and built and installed it. That
-> > too withstood 100 reboots without a panic.
-> > 
-> > Let me know if there's anything else I can do to help fix this.
-> 
-> That's already pretty convincing.
-> 
-> James, Arjan? The original oops message is here (a jpg screen capture, 
-> unable to open initial console):
-> 
-> 	http://lkml.org/lkml/2009/6/6/142
-> 
-> and it's this bug entry:
-> 
-> 	Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13474
-> 	Subject         : Oops whilst booting
-> 	Submitter       : Chris Clayton <chris2553@googlemail.com>
-> 	Date            : 2009-06-06 18:59 (2 days old)
-> 	References      : http://marc.info/?l=linux-kernel&m=124431487924254&w=4
-> 
-> and now bisected down to 
-> 
-> >> commit d5a877e8dd409d8c702986d06485c374b705d340
-> >> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> >> Date:   Sun May 24 13:03:43 2009 -0700
-> >>
-> >>     async: make sure independent async domains can't accidentally entangle
-> 
-> please advice. Otherwise I'll have to revert.
+Hi Haavard,
 
-The root cause is a reordering of the devices caused by the async code.
+I'd be happy to reintegrate my changes to this back into the Atmel
+driver once I get it working correct on the at91.  Do you have the
+equipment to give my changes a try?
 
-I suspect it's a bug in async that was obscured by the old behaviour of
-async_synchronize.. (or it's a bug in the new code) ... how long do I
-have to find out which?
+Converting my #defines for the the features to cpu_is_xxx is easy
+enough.  I'll take care of that.
 
-James
+Thanks,
 
+Rob
 
+On Mon, Jun 8, 2009 at 3:47 AM, Haavard
+Skinnemoen<haavard.skinnemoen@atmel.com> wrote:
+> Rob Emanuele wrote:
+>> This driver is a port the Atmel AVR32 MCI driver which uses similar silicon.
+>
+> While I do understand the motivation for this patch, I was kind of
+> hoping we could reduce the number of drivers for the Atmel MCI
+> hardware, not increase it...
+>
+> So I think it would be much better if your changes were integrated into
+> one of the existing drivers.
+>
+>> Joey Oravec has mentioned that he has had better reliability with the chip
+>> he is using (AT91SAM9261) if the MMC controller is reset before each
+>> command.  There is a compile time option to do just that.
+>
+> This could be a useful option for atmel-mci too.
+>
+>> Joey Oravec has stated that the Read and Write Proof functionality that
+>> prevents buffer overflows is not available on the AT91SAM9261.  This was
+>> confirmed by Nicolas Ferre and also affects the AT91RM9200.  This new
+>> patch excludes those register config bits.
+>
+> Preferably use the cpu_is_xxx() functions to achieve that. Perhaps even
+> wrap those tests inside a mci_has_xxproof() function to make it
+> clearer what you're testing for, and easier to change if we decide to
+> do the test based on version registers, etc. later.
+>
+> Haavard
+>
