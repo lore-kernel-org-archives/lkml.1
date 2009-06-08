@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbZFHKxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbZFHKxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754678AbZFHKxW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 06:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753772AbZFHKxN
+	id S1754953AbZFHKxm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 06:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbZFHKxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 06:53:13 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:45389 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753480AbZFHKxN (ORCPT
+	Mon, 8 Jun 2009 06:53:33 -0400
+Received: from mailout02.t-online.de ([194.25.134.17]:38470 "EHLO
+	mailout02.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753912AbZFHKxd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 06:53:13 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Jonathan Cervidae <jonathan.cervidae@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: PROBLEM: Removing Huawei E220 HSDPA Modem causes system to completely hang
-Date: Mon, 8 Jun 2009 12:53:57 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: linux-usb@vger.kernel.org
-References: <200906081019.59958.jonathan.cervidae@gmail.com>
-In-Reply-To: <200906081019.59958.jonathan.cervidae@gmail.com>
+	Mon, 8 Jun 2009 06:53:33 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Date: Mon, 08 Jun 2009 12:52:56 +0200
+Reply-To: "harald.dunkel@t-online.de" <harald.dunkel@t-online.de>
+To: linux-kernel@vger.kernel.org
+X-UMS: email
+X-Mailer: TOI Kommunikationscenter V9-3-0-5
+Subject: how to stop kernel nfsd?
+From: "harald.dunkel@t-online.de" <harald.dunkel@t-online.de>
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906081253.57811.oliver@neukum.org>
+Message-ID: <1MDcTI-1elcES0@fwd00.aul.t-online.de>
+X-ID: ZYRZlTZDZhUKEg3GkCFn+YlF77XrhuSXO2JGSMeZOJ3j-rJucGkorgMGzMvOokDgP-@t-dialin.net
+X-TOI-MSGID: 5a0e6257-8029-4ad0-90b2-926c49f579b1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 8. Juni 2009 11:19:59 schrieb Jonathan Cervidae:
-> While at first the easy fix to this issue would be "Don't remove modem",
-> sometimes it resets itself and therefore appears to disconnect and
-> reconnect which causes the system crash.
+Hi folks,
 
-Please provide the output of "lsusb -v" and "dmesg" from the time you
-plug the modem in onwards. Also could run a kernel compiled with lockdep?
+Which signal would be correct to gracefully kill the kernel nfs daemons?
 
-	Regards
-		Oliver
+
+Debian's runlevel script (just for example) tries SIGINT, but this
+doesn't work, as it seems.
+
+
+Regards
+
+Harri
+
+
 
