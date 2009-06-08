@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZFHRFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbZFHRGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbZFHRFg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078AbZFHRF2
+	id S1756888AbZFHRGp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755243AbZFHRGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:05:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54872 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752871AbZFHRF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:05:27 -0400
+	Mon, 8 Jun 2009 13:06:37 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:52104 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754860AbZFHRGh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 13:06:37 -0400
 Subject: Re: 2.6.30-rc8 Oops whilst booting
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Clayton <chris2553@googlemail.com>, NeilBrown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org, scsi <linux-scsi@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>
-In-Reply-To: <1244479879.4079.284.camel@mulgrave.site>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chris Clayton <chris2553@googlemail.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       scsi <linux-scsi@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+In-Reply-To: <alpine.LFD.2.01.0906080916130.6847@localhost.localdomain>
 References: <200906061959.55592.chris2553@googlemail.com>
 	 <200906062215.30571.chris2553@googlemail.com>
 	 <1244381140.30664.12.camel@ht.satnam>
@@ -28,70 +30,67 @@ References: <200906061959.55592.chris2553@googlemail.com>
 	 <1244460875.12644.2.camel@ht.satnam>
 	 <c6b1100b0906080553o2aa77a40pe0077b1b10a7d88a@mail.gmail.com>
 	 <alpine.LFD.2.01.0906080916130.6847@localhost.localdomain>
-	 <1244479879.4079.284.camel@mulgrave.site>
 Content-Type: text/plain
-Date: Mon, 08 Jun 2009 22:36:30 +0530
-Message-Id: <1244480790.2716.7.camel@ht.satnam>
+Date: Mon, 08 Jun 2009 12:06:36 -0500
+Message-Id: <1244480796.4079.301.camel@mulgrave.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-08 at 16:51 +0000, James Bottomley wrote:
-> On Mon, 2009-06-08 at 09:21 -0700, Linus Torvalds wrote:
-> > 
-> > On Mon, 8 Jun 2009, Chris Clayton wrote:
-> > > 
-> > > OK. I reversed that change and built and installed the kernel. It has
-> > > withstood 100 reboots without a panic. Additionally, I pulled the
-> > > latest changes (that will be rc8-git5, I think) from kernel.org,
-> > > reversed the change to that kernel and built and installed it. That
-> > > too withstood 100 reboots without a panic.
-> > > 
-> > > Let me know if there's anything else I can do to help fix this.
-> > 
-> > That's already pretty convincing.
-> > 
-> > James, Arjan? The original oops message is here (a jpg screen capture, 
-> > unable to open initial console):
-> > 
-> > 	http://lkml.org/lkml/2009/6/6/142
-> > 
-> > and it's this bug entry:
-> > 
-> > 	Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13474
-> > 	Subject         : Oops whilst booting
-> > 	Submitter       : Chris Clayton <chris2553@googlemail.com>
-> > 	Date            : 2009-06-06 18:59 (2 days old)
-> > 	References      : http://marc.info/?l=linux-kernel&m=124431487924254&w=4
-> > 
-> > and now bisected down to 
-> > 
-> > >> commit d5a877e8dd409d8c702986d06485c374b705d340
-> > >> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > >> Date:   Sun May 24 13:03:43 2009 -0700
-> > >>
-> > >>     async: make sure independent async domains can't accidentally entangle
-> > 
-> > please advice. Otherwise I'll have to revert.
+On Mon, 2009-06-08 at 09:21 -0700, Linus Torvalds wrote:
 > 
-> The root cause is a reordering of the devices caused by the async code.
+> On Mon, 8 Jun 2009, Chris Clayton wrote:
+> > 
+> > OK. I reversed that change and built and installed the kernel. It has
+> > withstood 100 reboots without a panic. Additionally, I pulled the
+> > latest changes (that will be rc8-git5, I think) from kernel.org,
+> > reversed the change to that kernel and built and installed it. That
+> > too withstood 100 reboots without a panic.
+> > 
+> > Let me know if there's anything else I can do to help fix this.
 > 
-> I suspect it's a bug in async that was obscured by the old behaviour of
-> async_synchronize.. (or it's a bug in the new code) ... how long do I
-> have to find out which?
+> That's already pretty convincing.
 > 
+> James, Arjan? The original oops message is here (a jpg screen capture, 
+> unable to open initial console):
+> 
+> 	http://lkml.org/lkml/2009/6/6/142
+> 
+> and it's this bug entry:
+> 
+> 	Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13474
+> 	Subject         : Oops whilst booting
+> 	Submitter       : Chris Clayton <chris2553@googlemail.com>
+> 	Date            : 2009-06-06 18:59 (2 days old)
+> 	References      : http://marc.info/?l=linux-kernel&m=124431487924254&w=4
+> 
+> and now bisected down to 
+> 
+> >> commit d5a877e8dd409d8c702986d06485c374b705d340
+> >> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
+> >> Date:   Sun May 24 13:03:43 2009 -0700
+> >>
+> >>     async: make sure independent async domains can't accidentally entangle
+> 
+> please advice. Otherwise I'll have to revert.
 
-But reverting your patch Or if we return like this also fix chris
-problem :
+I think it's a bug in the async code.  It's providing cookies too high
+because it doesn't stop after it finds a running entry.
+
+Can we try this as the fix?
+
+James
+
+---
 
 diff --git a/kernel/async.c b/kernel/async.c
-index 94dd36f..3b492cb 100644
+index 5054030..e4909ee 100644
 --- a/kernel/async.c
 +++ b/kernel/async.c
-@@ -96,15 +96,13 @@ static async_cookie_t  __lowest_in_progress(struct list_head *running)
+@@ -97,7 +97,7 @@ static async_cookie_t  __lowest_in_progress(struct list_head *running)
  	if (!list_empty(running)) {
  		entry = list_first_entry(running,
  			struct async_entry, list);
@@ -100,15 +99,5 @@ index 94dd36f..3b492cb 100644
  	}
  
  	if (!list_empty(&async_pending)) {
- 		list_for_each_entry(entry, &async_pending, list)
--			if (entry->running == running) {
--				ret = entry->cookie;
--				break;
--			}
-+			if (entry->running == running)
-+				return entry->cookie;
- 	}
- 
- 	return ret;
 
 
