@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbZFHRja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZFHRjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754438AbZFHRja (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbZFHRjX
+	id S1754010AbZFHRjx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZFHRjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:39:23 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:50209 "EHLO e5.ny.us.ibm.com"
+	Mon, 8 Jun 2009 13:39:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44426 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750794AbZFHRjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:39:22 -0400
-Date: Mon, 8 Jun 2009 10:39:17 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: mingo@elte.hu, mingo@redhat.com
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
-       x86@kernel.org, ebiederm@xmission.com, yinghai@kernel.org,
-       suresh.b.siddha@intel.com, lcm@us.ibm.com, garyhade@us.ibm.com
-Subject: [PATCH] x86/x86_64: warn of -EBUSY returns from
-	__assign_irq_vector()
-Message-ID: <20090608173917.GA8264@us.ibm.com>
+	id S1753217AbZFHRjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 13:39:45 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Q: PTRACE_ATTACH && -EINTR
+In-Reply-To: Oleg Nesterov's message of  Monday, 8 June 2009 18:12:04 +0200 <20090608161204.GA3986@redhat.com>
+References: <20090608161204.GA3986@redhat.com>
+X-Windows: a mistake carried out to perfection.
+Message-Id: <20090608173944.B57EBFC3C6@magilla.sf.frob.com>
+Date: Mon,  8 Jun 2009 10:39:44 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Or even -ERESTARTNOINTR ? Or just mutex_lock() ?
 
-Impact: helps expose unexpected issues
+-ERESTARTNOINTR is right.  
 
-Since we have seen one case where an unexpected -EBUSY
-return from __assign_irq_vector() was included in the
-series of events that caused a serious problem
-  re: http://lkml.org/lkml/2009/6/2/377
-we should warn to help expose similar unexpected issues
-in the future.
+There is nothing wrong with making it interruptible, and that might help
+something or other overall, or even be important to avoid a deadlock or
+something in some strange situation.  But since the call could never return
+-EINTR before, we can't make it start now.
 
-Signed-off-by: Gary Hade <garyhade@us.ibm.com>
+> Or ignore this problem since nobody complained?
 
----
- arch/x86/kernel/apic/io_apic.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+There has barely been time for anyone to do something strange enough to hit
+it, and they would probably not have realized what was going on even if it
+did hit.  We know we broke the ABI contract, we have to fix it.
 
-Index: linux-2.6.30-rc8/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6.30-rc8.orig/arch/x86/kernel/apic/io_apic.c	2009-06-08 09:56:15.000000000 -0700
-+++ linux-2.6.30-rc8/arch/x86/kernel/apic/io_apic.c	2009-06-08 09:56:27.000000000 -0700
-@@ -1330,8 +1330,10 @@ __assign_irq_vector(int irq, struct irq_
- 	int cpu, err;
- 	cpumask_var_t tmp_mask;
- 
--	if ((cfg->move_in_progress) || cfg->move_cleanup_count)
-+	if ((cfg->move_in_progress) || cfg->move_cleanup_count) {
-+		WARN_ON_ONCE(1);
- 		return -EBUSY;
-+	}
- 
- 	if (!alloc_cpumask_var(&tmp_mask, GFP_ATOMIC))
- 		return -ENOMEM;
+Note that every use of mutex_lock_interruptible and also down_interruptible
+can return -EINTR.  This means these really should never be used in the way
+where their return value is returned directly from some system call.  Every
+user-visible call that gets interrupted needs to return some -ERESTART*
+code and never -EINTR directly.
+
+
+Thanks,
+Roland
