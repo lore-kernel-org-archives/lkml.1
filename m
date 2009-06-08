@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756817AbZFHT0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbZFHT21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756817AbZFHT0k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 15:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbZFHTX2
+	id S1756245AbZFHT21 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 15:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbZFHTXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 15:23:28 -0400
-Received: from thunk.org ([69.25.196.29]:39550 "EHLO thunker.thunk.org"
+	Mon, 8 Jun 2009 15:23:36 -0400
+Received: from thunk.org ([69.25.196.29]:39576 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754402AbZFHTXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 15:23:16 -0400
+	id S1754893AbZFHTXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 15:23:18 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Jan Kara <jack@suse.cz>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 48/49] ext4: truncate the file properly if we fail to copy data from userspace
-Date: Mon,  8 Jun 2009 15:23:06 -0400
-Message-Id: <1244488987-32564-49-git-send-email-tytso@mit.edu>
+Cc: "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 32/49] ext4: Add documentation to the ext4_*get_block* functions
+Date: Mon,  8 Jun 2009 15:22:50 -0400
+Message-Id: <1244488987-32564-33-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.6.3.2.1.gb9f7d.dirty
-In-Reply-To: <1244488987-32564-48-git-send-email-tytso@mit.edu>
+In-Reply-To: <1244488987-32564-32-git-send-email-tytso@mit.edu>
 References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-2-git-send-email-tytso@mit.edu>
  <1244488987-32564-3-git-send-email-tytso@mit.edu>
@@ -50,22 +49,6 @@ References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-30-git-send-email-tytso@mit.edu>
  <1244488987-32564-31-git-send-email-tytso@mit.edu>
  <1244488987-32564-32-git-send-email-tytso@mit.edu>
- <1244488987-32564-33-git-send-email-tytso@mit.edu>
- <1244488987-32564-34-git-send-email-tytso@mit.edu>
- <1244488987-32564-35-git-send-email-tytso@mit.edu>
- <1244488987-32564-36-git-send-email-tytso@mit.edu>
- <1244488987-32564-37-git-send-email-tytso@mit.edu>
- <1244488987-32564-38-git-send-email-tytso@mit.edu>
- <1244488987-32564-39-git-send-email-tytso@mit.edu>
- <1244488987-32564-40-git-send-email-tytso@mit.edu>
- <1244488987-32564-41-git-send-email-tytso@mit.edu>
- <1244488987-32564-42-git-send-email-tytso@mit.edu>
- <1244488987-32564-43-git-send-email-tytso@mit.edu>
- <1244488987-32564-44-git-send-email-tytso@mit.edu>
- <1244488987-32564-45-git-send-email-tytso@mit.edu>
- <1244488987-32564-46-git-send-email-tytso@mit.edu>
- <1244488987-32564-47-git-send-email-tytso@mit.edu>
- <1244488987-32564-48-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -73,208 +56,220 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+This adds more documentation to various internal functions in
+fs/ext4/inode.c, most notably ext4_ind_get_blocks(),
+ext4_da_get_block_write(), ext4_da_get_block_prep(),
+ext4_normal_get_block_write().
 
-In generic_perform_write if we fail to copy the user data we don't
-update the inode->i_size.  We should truncate the file in the above
-case so that we don't have blocks allocated outside inode->i_size.  Add
-the inode to orphan list in the same transaction as block allocation
-This ensures that if we crash in between the recovery would do the
-truncate.
+In addition, the static function ext4_normal_get_block_write() has
+been renamed noalloc_get_block_write(), since it is used in many
+places far beyond ext4_normal_writepage().
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-CC:  Jan Kara <jack@suse.cz>
+Plenty of warnings have been added to the noalloc_get_block_write()
+function, since the way it is used is amazingly fragile.
+
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/inode.c |  128 +++++++++++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 102 insertions(+), 26 deletions(-)
+ fs/ext4/inode.c |   86 +++++++++++++++++++++++++++++++++++--------------------
+ 1 files changed, 55 insertions(+), 31 deletions(-)
 
 diff --git a/fs/ext4/inode.c b/fs/ext4/inode.c
-index 036552a..5dc6c3d 100644
+index 8b7564d..fd5f27a 100644
 --- a/fs/ext4/inode.c
 +++ b/fs/ext4/inode.c
-@@ -1552,6 +1552,52 @@ static int write_end_fn(handle_t *handle, struct buffer_head *bh)
- 	return ext4_handle_dirty_metadata(handle, NULL, bh);
+@@ -892,6 +892,10 @@ err_out:
  }
  
-+static int ext4_generic_write_end(struct file *file,
-+				struct address_space *mapping,
-+				loff_t pos, unsigned len, unsigned copied,
-+				struct page *page, void *fsdata)
-+{
-+	int i_size_changed = 0;
-+	struct inode *inode = mapping->host;
-+	handle_t *handle = ext4_journal_current_handle();
-+
-+	copied = block_write_end(file, mapping, pos, len, copied, page, fsdata);
-+
-+	/*
-+	 * No need to use i_size_read() here, the i_size
-+	 * cannot change under us because we hold i_mutex.
-+	 *
-+	 * But it's important to update i_size while still holding page lock:
-+	 * page writeout could otherwise come in and zero beyond i_size.
-+	 */
-+	if (pos + copied > inode->i_size) {
-+		i_size_write(inode, pos + copied);
-+		i_size_changed = 1;
-+	}
-+
-+	if (pos + copied >  EXT4_I(inode)->i_disksize) {
-+		/* We need to mark inode dirty even if
-+		 * new_i_size is less that inode->i_size
-+		 * bu greater than i_disksize.(hint delalloc)
-+		 */
-+		ext4_update_i_disksize(inode, (pos + copied));
-+		i_size_changed = 1;
-+	}
-+	unlock_page(page);
-+	page_cache_release(page);
-+
-+	/*
-+	 * Don't mark the inode dirty under page lock. First, it unnecessarily
-+	 * makes the holding time of page lock longer. Second, it forces lock
-+	 * ordering of page lock and transaction start for journaling
-+	 * filesystems.
-+	 */
-+	if (i_size_changed)
-+		ext4_mark_inode_dirty(handle, inode);
-+
-+	return copied;
-+}
-+
  /*
-  * We need to pick up the new inode size which generic_commit_write gave us
-  * `file' can be NULL - eg, when called from page_symlink().
-@@ -1575,21 +1621,15 @@ static int ext4_ordered_write_end(struct file *file,
- 	ret = ext4_jbd2_file_inode(handle, inode);
++ * The ext4_ind_get_blocks() function handles non-extents inodes
++ * (i.e., using the traditional indirect/double-indirect i_blocks
++ * scheme) for ext4_get_blocks().
++ *
+  * Allocation strategy is simple: if we have to allocate something, we will
+  * have to go the whole way to leaf. So let's do it before attaching anything
+  * to tree, set linkage between the newborn blocks, write them if sync is
+@@ -909,10 +913,11 @@ err_out:
+  * return = 0, if plain lookup failed.
+  * return < 0, error case.
+  *
+- *
+- * Need to be called with
+- * down_read(&EXT4_I(inode)->i_data_sem) if not allocating file system block
+- * (ie, create is zero). Otherwise down_write(&EXT4_I(inode)->i_data_sem)
++ * The ext4_ind_get_blocks() function should be called with
++ * down_write(&EXT4_I(inode)->i_data_sem) if allocating filesystem
++ * blocks (i.e., flags has EXT4_GET_BLOCKS_CREATE set) or
++ * down_read(&EXT4_I(inode)->i_data_sem) if not allocating file system
++ * blocks.
+  */
+ static int ext4_ind_get_blocks(handle_t *handle, struct inode *inode,
+ 				  ext4_lblk_t iblock, unsigned int maxblocks,
+@@ -1152,8 +1157,8 @@ int ext4_get_blocks(handle_t *handle, struct inode *inode, sector_t block,
+ 	clear_buffer_unwritten(bh);
  
- 	if (ret == 0) {
--		loff_t new_i_size;
--
--		new_i_size = pos + copied;
--		if (new_i_size > EXT4_I(inode)->i_disksize) {
--			ext4_update_i_disksize(inode, new_i_size);
--			/* We need to mark inode dirty even if
--			 * new_i_size is less that inode->i_size
--			 * bu greater than i_disksize.(hint delalloc)
--			 */
--			ext4_mark_inode_dirty(handle, inode);
--		}
--
--		ret2 = generic_write_end(file, mapping, pos, len, copied,
-+		ret2 = ext4_generic_write_end(file, mapping, pos, len, copied,
- 							page, fsdata);
- 		copied = ret2;
-+		if (pos + len > inode->i_size)
-+			/* if we have allocated more blocks and copied
-+			 * less. We will have blocks allocated outside
-+			 * inode->i_size. So truncate them
-+			 */
-+			ext4_orphan_add(handle, inode);
- 		if (ret2 < 0)
- 			ret = ret2;
+ 	/*
+-	 * Try to see if we can get  the block without requesting
+-	 * for new file system block.
++	 * Try to see if we can get the block without requesting a new
++	 * file system block.
+ 	 */
+ 	down_read((&EXT4_I(inode)->i_data_sem));
+ 	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
+@@ -2000,6 +2005,12 @@ static void ext4_print_free_blocks(struct inode *inode)
+ 	return;
+ }
+ 
++/*
++ * This function is used by mpage_da_map_blocks().  We separate it out
++ * as a separate function just to make life easier, and because
++ * mpage_da_map_blocks() used to be a generic function that took a
++ * get_block_t.
++ */
+ static int ext4_da_get_block_write(struct inode *inode, sector_t iblock,
+ 				   struct buffer_head *bh_result)
+ {
+@@ -2031,8 +2042,8 @@ static int ext4_da_get_block_write(struct inode *inode, sector_t iblock,
+ 
+ 	/*
+ 	 * Update on-disk size along with block allocation we don't
+-	 * use 'extend_disksize' as size may change within already
+-	 * allocated block -bzzz
++	 * use EXT4_GET_BLOCKS_EXTEND_DISKSIZE as size may change
++	 * within already allocated block -bzzz
+ 	 */
+ 	disksize = ((loff_t) iblock + ret) << inode->i_blkbits;
+ 	if (disksize > i_size_read(inode))
+@@ -2338,8 +2349,9 @@ static int __mpage_da_writepage(struct page *page,
+ }
+ 
+ /*
+- * this is a special callback for ->write_begin() only
+- * it's intention is to return mapped block or reserve space
++ * This is a special get_blocks_t callback which is used by
++ * ext4_da_write_begin().  It will either return mapped block or
++ * reserve space for a single block.
+  *
+  * For delayed buffer_head we have BH_Mapped, BH_New, BH_Delay set.
+  * We also have b_blocknr = -1 and b_bdev initialized properly
+@@ -2347,7 +2359,6 @@ static int __mpage_da_writepage(struct page *page,
+  * For unwritten buffer_head we have BH_Mapped, BH_New, BH_Unwritten set.
+  * We also have b_blocknr = physicalblock mapping unwritten extent and b_bdev
+  * initialized properly.
+- *
+  */
+ static int ext4_da_get_block_prep(struct inode *inode, sector_t iblock,
+ 				  struct buffer_head *bh_result, int create)
+@@ -2400,7 +2411,23 @@ static int ext4_da_get_block_prep(struct inode *inode, sector_t iblock,
+ 	return ret;
+ }
+ 
+-static int ext4_normal_get_block_write(struct inode *inode, sector_t iblock,
++/*
++ * This function is used as a standard get_block_t calback function
++ * when there is no desire to allocate any blocks.  It is used as a
++ * callback function for block_prepare_write(), nobh_writepage(), and
++ * block_write_full_page().  These functions should only try to map a
++ * single block at a time.
++ *
++ * Since this function doesn't do block allocations even if the caller
++ * requests it by passing in create=1, it is critically important that
++ * any caller checks to make sure that any buffer heads are returned
++ * by this function are either all already mapped or marked for
++ * delayed allocation before calling nobh_writepage() or
++ * block_write_full_page().  Otherwise, b_blocknr could be left
++ * unitialized, and the page write functions will be taken by
++ * surprise.
++ */
++static int noalloc_get_block_write(struct inode *inode, sector_t iblock,
+ 				   struct buffer_head *bh_result, int create)
+ {
+ 	int ret = 0;
+@@ -2419,10 +2446,11 @@ static int ext4_normal_get_block_write(struct inode *inode, sector_t iblock,
+ }
+ 
+ /*
+- * get called vi ext4_da_writepages after taking page lock (have journal handle)
+- * get called via journal_submit_inode_data_buffers (no journal handle)
+- * get called via shrink_page_list via pdflush (no journal handle)
+- * or grab_page_cache when doing write_begin (have journal handle)
++ * This function can get called via...
++ *   - ext4_da_writepages after taking page lock (have journal handle)
++ *   - journal_submit_inode_data_buffers (no journal handle)
++ *   - shrink_page_list via pdflush (no journal handle)
++ *   - grab_page_cache when doing write_begin (have journal handle)
+  */
+ static int ext4_da_writepage(struct page *page,
+ 				struct writeback_control *wbc)
+@@ -2473,7 +2501,7 @@ static int ext4_da_writepage(struct page *page,
+ 		 * do block allocation here.
+ 		 */
+ 		ret = block_prepare_write(page, 0, PAGE_CACHE_SIZE,
+-						ext4_normal_get_block_write);
++					  noalloc_get_block_write);
+ 		if (!ret) {
+ 			page_bufs = page_buffers(page);
+ 			/* check whether all are mapped and non delay */
+@@ -2498,11 +2526,10 @@ static int ext4_da_writepage(struct page *page,
  	}
-@@ -1597,6 +1637,18 @@ static int ext4_ordered_write_end(struct file *file,
- 	if (!ret)
- 		ret = ret2;
  
-+	if (pos + len > inode->i_size) {
-+		vmtruncate(inode, inode->i_size);
-+		/* 
-+		 * If vmtruncate failed early the inode might still be
-+		 * on the orphan list; we need to make sure the inode
-+		 * is removed from the orphan list in that case.
-+		 */
-+		if (inode->i_nlink)
-+			ext4_orphan_del(NULL, inode);
-+	}
-+
-+
- 	return ret ? ret : copied;
+ 	if (test_opt(inode->i_sb, NOBH) && ext4_should_writeback_data(inode))
+-		ret = nobh_writepage(page, ext4_normal_get_block_write, wbc);
++		ret = nobh_writepage(page, noalloc_get_block_write, wbc);
+ 	else
+-		ret = block_write_full_page(page,
+-						ext4_normal_get_block_write,
+-						wbc);
++		ret = block_write_full_page(page, noalloc_get_block_write,
++					    wbc);
+ 
+ 	return ret;
+ }
+@@ -2814,7 +2841,7 @@ retry:
+ 	*pagep = page;
+ 
+ 	ret = block_write_begin(file, mapping, pos, len, flags, pagep, fsdata,
+-							ext4_da_get_block_prep);
++				ext4_da_get_block_prep);
+ 	if (ret < 0) {
+ 		unlock_page(page);
+ 		ext4_journal_stop(handle);
+@@ -3122,12 +3149,10 @@ static int __ext4_normal_writepage(struct page *page,
+ 	struct inode *inode = page->mapping->host;
+ 
+ 	if (test_opt(inode->i_sb, NOBH))
+-		return nobh_writepage(page,
+-					ext4_normal_get_block_write, wbc);
++		return nobh_writepage(page, noalloc_get_block_write, wbc);
+ 	else
+-		return block_write_full_page(page,
+-						ext4_normal_get_block_write,
+-						wbc);
++		return block_write_full_page(page, noalloc_get_block_write,
++					     wbc);
  }
  
-@@ -1608,25 +1660,21 @@ static int ext4_writeback_write_end(struct file *file,
- 	handle_t *handle = ext4_journal_current_handle();
- 	struct inode *inode = mapping->host;
- 	int ret = 0, ret2;
--	loff_t new_i_size;
+ static int ext4_normal_writepage(struct page *page,
+@@ -3179,7 +3204,7 @@ static int __ext4_journalled_writepage(struct page *page,
+ 	int err;
  
- 	trace_mark(ext4_writeback_write_end,
- 		   "dev %s ino %lu pos %llu len %u copied %u",
- 		   inode->i_sb->s_id, inode->i_ino,
- 		   (unsigned long long) pos, len, copied);
--	new_i_size = pos + copied;
--	if (new_i_size > EXT4_I(inode)->i_disksize) {
--		ext4_update_i_disksize(inode, new_i_size);
--		/* We need to mark inode dirty even if
--		 * new_i_size is less that inode->i_size
--		 * bu greater than i_disksize.(hint delalloc)
--		 */
--		ext4_mark_inode_dirty(handle, inode);
--	}
--
--	ret2 = generic_write_end(file, mapping, pos, len, copied,
-+	ret2 = ext4_generic_write_end(file, mapping, pos, len, copied,
- 							page, fsdata);
- 	copied = ret2;
-+	if (pos + len > inode->i_size)
-+		/* if we have allocated more blocks and copied
-+		 * less. We will have blocks allocated outside
-+		 * inode->i_size. So truncate them
-+		 */
-+		ext4_orphan_add(handle, inode);
-+
- 	if (ret2 < 0)
- 		ret = ret2;
+ 	ret = block_prepare_write(page, 0, PAGE_CACHE_SIZE,
+-					ext4_normal_get_block_write);
++				  noalloc_get_block_write);
+ 	if (ret != 0)
+ 		goto out_unlock;
  
-@@ -1634,6 +1682,17 @@ static int ext4_writeback_write_end(struct file *file,
- 	if (!ret)
- 		ret = ret2;
- 
-+	if (pos + len > inode->i_size) {
-+		vmtruncate(inode, inode->i_size);
-+		/* 
-+		 * If vmtruncate failed early the inode might still be
-+		 * on the orphan list; we need to make sure the inode
-+		 * is removed from the orphan list in that case.
-+		 */
-+		if (inode->i_nlink)
-+			ext4_orphan_del(NULL, inode);
-+	}
-+
- 	return ret ? ret : copied;
- }
- 
-@@ -1678,10 +1737,27 @@ static int ext4_journalled_write_end(struct file *file,
+@@ -3264,9 +3289,8 @@ static int ext4_journalled_writepage(struct page *page,
+ 		 * really know unless we go poke around in the buffer_heads.
+ 		 * But block_write_full_page will do the right thing.
+ 		 */
+-		return block_write_full_page(page,
+-						ext4_normal_get_block_write,
+-						wbc);
++		return block_write_full_page(page, noalloc_get_block_write,
++					     wbc);
  	}
- 
- 	unlock_page(page);
-+	page_cache_release(page);
-+	if (pos + len > inode->i_size)
-+		/* if we have allocated more blocks and copied
-+		 * less. We will have blocks allocated outside
-+		 * inode->i_size. So truncate them
-+		 */
-+		ext4_orphan_add(handle, inode);
-+
- 	ret2 = ext4_journal_stop(handle);
- 	if (!ret)
- 		ret = ret2;
--	page_cache_release(page);
-+	if (pos + len > inode->i_size) {
-+		vmtruncate(inode, inode->i_size);
-+		/* 
-+		 * If vmtruncate failed early the inode might still be
-+		 * on the orphan list; we need to make sure the inode
-+		 * is removed from the orphan list in that case.
-+		 */
-+		if (inode->i_nlink)
-+			ext4_orphan_del(NULL, inode);
-+	}
- 
- 	return ret ? ret : copied;
- }
+ no_write:
+ 	redirty_page_for_writepage(wbc, page);
 -- 
 1.6.3.2.1.gb9f7d.dirty
 
