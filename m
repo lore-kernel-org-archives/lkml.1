@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbZFHRid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbZFHRja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753664AbZFHRid (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZFHRiS
+	id S1754438AbZFHRja (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbZFHRjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:38:18 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:52663 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752493AbZFHRiR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:38:17 -0400
-Subject: Re: 2.6.30-rc8 Oops whilst booting
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Clayton <chris2553@googlemail.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       scsi <linux-scsi@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-In-Reply-To: <alpine.LFD.2.01.0906081003370.6847@localhost.localdomain>
-References: <200906061959.55592.chris2553@googlemail.com>
-	 <200906062215.30571.chris2553@googlemail.com>
-	 <1244381140.30664.12.camel@ht.satnam>
-	 <c6b1100b0906071138g2c46fb34vc1a2beb9438f1f1e@mail.gmail.com>
-	 <1244413881.18742.31.camel@ht.satnam>
-	 <2f9e3044bafcae848f74a1492b0ea471.squirrel@neil.brown.name>
-	 <c6b1100b0906080108y191bb157n67ec681ade2a0d13@mail.gmail.com>
-	 <c6b1100b0906080358y4033c402ra236eff3f972d169@mail.gmail.com>
-	 <1244460875.12644.2.camel@ht.satnam>
-	 <c6b1100b0906080553o2aa77a40pe0077b1b10a7d88a@mail.gmail.com>
-	 <alpine.LFD.2.01.0906080916130.6847@localhost.localdomain>
-	 <1244479879.4079.284.camel@mulgrave.site>
-	 <alpine.LFD.2.01.0906081003370.6847@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 08 Jun 2009 17:38:16 +0000
-Message-Id: <1244482696.4079.345.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Jun 2009 13:39:23 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:50209 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750794AbZFHRjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 13:39:22 -0400
+Date: Mon, 8 Jun 2009 10:39:17 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: mingo@elte.hu, mingo@redhat.com
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com,
+       x86@kernel.org, ebiederm@xmission.com, yinghai@kernel.org,
+       suresh.b.siddha@intel.com, lcm@us.ibm.com, garyhade@us.ibm.com
+Subject: [PATCH] x86/x86_64: warn of -EBUSY returns from
+	__assign_irq_vector()
+Message-ID: <20090608173917.GA8264@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-08 at 10:21 -0700, Linus Torvalds wrote:
-> 
-> On Mon, 8 Jun 2009, James Bottomley wrote:
-> > 
-> > The root cause is a reordering of the devices caused by the async code.
-> 
-> That's NULL information.
-> 
-> OF COURSE the root cause is the async code. We know that. We're looking 
-> for the specifics.
-> 
-> In particular, before that commit, at most you will wait for too _much_. 
-> In other words, it's a "good" wait. 
-> 
-> Your commit caused it to wait for less, and that then showed a bug. Not 
-> all that surprising - it's now not waiting enough.
 
-right ... my question was whether this exposed an existing bug that was
-hidden by the waiting too much.  Actually, I audited all the async code
-and that's impossible: we don't actually have any async domains at all
-(except for the spurious superblock s_async_list, which never gets
-anything added to its runqueue), so it must be a bug in the code.
+Impact: helps expose unexpected issues
 
-> You tried to avoid a deadlock situation of waiting for too much, but you 
-> avoided the deadlock by now waiting for too little. 
-> 
-> I also think that your code is simply buggy. As far as I can tell, int he 
-> case of having both running and pending events, you'll always pick the 
-> pending cookie. But it's the _running_ cookie that has the lower event 
-> number, isn't it?
+Since we have seen one case where an unexpected -EBUSY
+return from __assign_irq_vector() was included in the
+series of events that caused a serious problem
+  re: http://lkml.org/lkml/2009/6/2/377
+we should warn to help expose similar unexpected issues
+in the future.
 
-Yes, see later fix.  Assuming we get confirmation from the reporter, we
-should be good to go.
+Signed-off-by: Gary Hade <garyhade@us.ibm.com>
 
-> I dunno. It all looks very fishy to me.
+---
+ arch/x86/kernel/apic/io_apic.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Well, the other option is to revert the fix ... since there is no other
-separated domain, there's nothing really to fix ... the original code
-that showed the problem was a SCSI feature tree conversion of our
-current async scanning code to the async infrastructure which used a
-separate domain.
-
-James
-
-
+Index: linux-2.6.30-rc8/arch/x86/kernel/apic/io_apic.c
+===================================================================
+--- linux-2.6.30-rc8.orig/arch/x86/kernel/apic/io_apic.c	2009-06-08 09:56:15.000000000 -0700
++++ linux-2.6.30-rc8/arch/x86/kernel/apic/io_apic.c	2009-06-08 09:56:27.000000000 -0700
+@@ -1330,8 +1330,10 @@ __assign_irq_vector(int irq, struct irq_
+ 	int cpu, err;
+ 	cpumask_var_t tmp_mask;
+ 
+-	if ((cfg->move_in_progress) || cfg->move_cleanup_count)
++	if ((cfg->move_in_progress) || cfg->move_cleanup_count) {
++		WARN_ON_ONCE(1);
+ 		return -EBUSY;
++	}
+ 
+ 	if (!alloc_cpumask_var(&tmp_mask, GFP_ATOMIC))
+ 		return -ENOMEM;
