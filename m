@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZFHKXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbZFHKYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbZFHKXu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 06:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZFHKXm
+	id S1754244AbZFHKYT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 06:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZFHKYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 06:23:42 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:33789 "EHLO isrv.corpit.ru"
+	Mon, 8 Jun 2009 06:24:11 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:49416 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752825AbZFHKXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 06:23:41 -0400
-Message-ID: <4A2CE6AC.4030403@msgid.tls.msk.ru>
-Date: Mon, 08 Jun 2009 14:23:40 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1752825AbZFHKYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 06:24:10 -0400
+Date: Mon, 8 Jun 2009 11:24:10 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: starlight@binnacle.cx
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       stable@kernel.org, Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Eric B Munson <ebmunson@us.ibm.com>, Adam Litke <agl@us.ibm.com>,
+       Andy Whitcroft <apw@canonical.com>, wli@movementarian.org
+Subject: Re: [PATCH 0/2] Fixes for hugetlbfs-related problems on shared
+	memory
+Message-ID: <20090608102410.GB15377@csn.ul.ie>
+References: <1243422749-6256-1-git-send-email-mel@csn.ul.ie> <6.2.5.6.2.20090606235223.05a10068@binnacle.cx>
 MIME-Version: 1.0
-To: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: 2.6.30-rc8 does not boot
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <6.2.5.6.2.20090606235223.05a10068@binnacle.cx>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Sun, Jun 07, 2009 at 09:25:06PM -0400, starlight@binnacle.cx wrote:
+> Mel,
+> 
+> Tried out the two new patches on 2.6.26.4 and everything is 
+> working now.  The application that uncovered the issue works 
+> perfectly and hugepages function sanely.
+> 
 
-I just gave 2.6.30-rc a try, taken from Linus git, tag v2.6.29-rc8.
-And this one does not want to boot on my test machine which is an
-AMD X2-64 with AMD780G chipset.  Neither 64 nor 32bit kernel boots.
-I even tried in kvm virtual machine, -- same effect.  It freezes right
-after displaying "Verifying BIOS data successful" message -- nothing
-more is on the screen.
+Very cool. Thanks for testing.
 
-I did `make silentoldconfig' based on my current 2.6.29 configs.  In
-the configs there are the following changes:
-  - quite some changes in various new/changed drivers (which should
-    not affect what I'm seeing)
+> Thank you for the fix.
+> 
 
-  - decompression: I've no idea what compression it used before, but
-    `make oldconfig' offered gzip by default which I accepted. Should
-    I try bzip2 instead?
+Thank you for persisting the problem and coming up with the test cases that
+reproduce it. Without both, this fix would not have been forthcoming. It's
+very much appreciated.
 
-  - changed HZ from 100 to 300
-
-  - also the following which I don't think I touched:
-
-   -X86_INTERNODE_CACHE_BYTES=128
-   +X86_INTERNODE_CACHE_BYTES=64
-
-   -X86_L1_CACHE_BYTES=128
-   +X86_L1_CACHE_BYTES=64
-
-   -X86_L1_CACHE_SHIFT=7
-   +X86_L1_CACHE_SHIFT=6
-
-I'm trying different compression method for now.  If it will solve
-this issue, my conclusion will be that the default value is  wrong
-and - oh well - expect more reports/questions like this one :)
-
-The rest of the system is not very interesting I think: the kernel
-config is pretty generic (most stuff is in modules), compiler is
-default on Debian Lenny (4.3.2-1.1).
-
-Thanks!
-
-/mjt
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
