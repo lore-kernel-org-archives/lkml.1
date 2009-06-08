@@ -1,110 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbZFHGlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753306AbZFHGl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753170AbZFHGlR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 02:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbZFHGlG
+	id S1753306AbZFHGl4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 02:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbZFHGlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 02:41:06 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:19846 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751639AbZFHGlE (ORCPT
+	Mon, 8 Jun 2009 02:41:49 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:57017 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752450AbZFHGls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 02:41:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ruBbkQHnXUPh9sstj8prOb8UsOtddJlKrLofWBSZcqGn5dnLY0bsJsW1stMx17wuY0
-         zvIWC4Jvz4ymuzYVU+7HDXR0WgDMH92RR51hJO7gZ5aoB90u5zwQoCVKs0+5fwMEKx6R
-         A+QiGxtu6GSYtmHVhxDhHKKlzVBQAulY3rZdQ=
+	Mon, 8 Jun 2009 02:41:48 -0400
+Date: Mon, 8 Jun 2009 12:11:49 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Alexander van Heukelum <heukelum@fastmail.fm>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH] kmemcheck: move hook before preempt_conditional_sti()
+Message-ID: <20090608064148.GA516@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <1244392012-638-1-git-send-email-vegard.nossum@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <4A2CA96D.3090502@oracle.com>
-References: <20090605075614.GC8171@cr0.nay.redhat.com>
-	 <20090605021424.ba352b0f.akpm@linux-foundation.org>
-	 <4A28E5C9.6010408@oracle.com>
-	 <20090605095155.GC8354@cr0.nay.redhat.com>
-	 <4A292B0D.8030807@oracle.com> <4A295AFB.80909@kernel.org>
-	 <4A2A7F33.4030807@oracle.com> <4A2AEBE3.4000100@kernel.org>
-	 <20090608015242.GB2596@cr0.nay.redhat.com>
-	 <4A2CA96D.3090502@oracle.com>
-Date: Mon, 8 Jun 2009 14:41:06 +0800
-Message-ID: <2375c9f90906072341o2cded749m45bdddfdb499469@mail.gmail.com>
-Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64 
-	2.6.30-rc8.
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Tao Ma <tao.ma@oracle.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244392012-638-1-git-send-email-vegard.nossum@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 8, 2009 at 2:02 PM, Tao Ma<tao.ma@oracle.com> wrote:
->
->
-> Amerigo Wang wrote:
->>
->> On Sat, Jun 06, 2009 at 03:21:23PM -0700, Yinghai Lu wrote:
->>>
->>> Tao Ma wrote:
->>>>
->>>> Yinghai Lu wrote:
->>>>>
->>>>> Tao Ma wrote:
->>>>>>
->>>>>> Amerigo Wang wrote:
->>>>>>>
->>>>>>> On Fri, Jun 05, 2009 at 05:30:49PM +0800, Tao Ma wrote:
->>>>>>>>>
->>>>>>>>> Please send the boot logs: dmesg -s 1000000 > foo
->>>>>>>>
->>>>>>>> attached.
->>>>>>>> #######high memory 18446612137615818752, size_t 18446612137615818752
->>>>>>>> #######kcore size 5301604352, PAGE_OFFSET 0, PAGE_SIZE 4096
->>>>>>>
->>>>>>> These two lines must be added by yourself...
->>>>>>>
->>>>>>> What?!
->>>>>>> How can PAGE_OFFSET be 0??
->>>>>>> Can you show us these two printk() you just added?
->>>>>>>
->>>>>>> And, the size of kcore is not the crazy number in the subject...
->>>>>>> This one is much saner..
->>>>>>
->>>>>> Sorry, I used the wrong printk. the correct one is:
->>>>>> #######high memory 18446612137615818752, size_t 18446612137615818752
->>>>>> #######kcore size 5301604352, PAGE_OFFSET 18446612132314218496,
->>>>>> PAGE_SIZE 4096
->>>>>>
->>>>> %lx should be used.
->>>>>
->>>>> also you compiler doesn't like
->>>>>
->>>>> high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
->>>>>
->>>>> in setup.c?
->>>>
->>>> Sorry fo my poor English, bug what do you mean?
->>>>
->>>> I just printk in the setup.c and the result is
->>>>
->>>> @@@@high_momory ffff88013c000000
->>>
->>> so that value print out is right.
->>
->> Yeah.
->>
->> Tao, can you reproduce the number mentioned in the subject??
->
-> Sorry for the delay.
->
-> But the result is the same
+On Sun, Jun 07, 2009 at 06:26:52PM +0200, Vegard Nossum wrote:
+> There are actually two problems here:
+> 
+> 1. We absolutely cannot enable IRQs in case the fault was caused by
+>    kmemcheck.
+> 
+> 2. We cannot enable preemption and then return from the debug handler
+>    without disabling preemption afterwards.
+> 
+> The problem seems to be a merge fallout between three commits:
+> 
+> commit 3d2a71a596bd9c761c8487a2178e95f8a61da083
+> Author: Alexander van Heukelum <heukelum@fastmail.fm>
+> Date:   Tue Sep 30 18:41:37 2008 +0200
+> 
+>     x86, traps: converge do_debug handlers
+> 
+> commit 08d68323d1f0c34452e614263b212ca556dae47f
+> Author: K.Prasad <prasad@linux.vnet.ibm.com>
+> Date:   Mon Jun 1 23:44:08 2009 +0530
+> 
+>     hw-breakpoints: modifying generic debug exception to use thread-specific deb
+> 
+> commit 787ecfaa503dc63ff1831ddc74b15dad49bace1d
+> Author: Vegard Nossum <vegard.nossum@gmail.com>
+> Date:   Fri Apr 4 00:53:23 2008 +0200
+> 
+>     x86: add hooks for kmemcheck
+> 
+> I encourage the kprobe developers to check whether their code is correct
+> as it stands in current tip/master. Also, comments on this particular
+> change is welcome.
 
-Yes?
-Your printk() shows kcore size is: 5301604352, and in your subject it is
-281474974617600...
+I see no problem with this change wrt kprobes, since the changes happen
+after the notify_die, by which time, kprobes would've returned
+NOTIFY_DONE since the per-cpu current_kprobe == NULL.
 
-Or they happened in the same time?
+Ananth
