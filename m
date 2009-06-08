@@ -1,121 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756063AbZFHPCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZFHPGe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756063AbZFHPCw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 11:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbZFHPCp
+	id S1755872AbZFHPGe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 11:06:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbZFHPG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 11:02:45 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:53897 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753801AbZFHPCo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 11:02:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=o6+zQ1z9cfo/NROvhg6pUPKifkrbz+Oi6IFcVxISXSLu51x/+buVS7flCY2gVnrZo1
-         tQWcA3wuHjTX1sdrS1lmdXVEyd2UWv98OUC8L6XXdWll+peEyv66kEF33IAIOCwLNWkO
-         jvy6mHTRk8XFaULk/54kynMCGH1FSVGMAnyOI=
+	Mon, 8 Jun 2009 11:06:27 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38317 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752063AbZFHPG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 11:06:26 -0400
+Date: Mon, 8 Jun 2009 17:06:03 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Oliver Neukum <oliver@neukum.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: Run-time PM idea (was: Re: [linux-pm] [RFC][PATCH 0/2] PM:
+	Rearrange core suspend code)
+Message-ID: <20090608150603.GB20905@elte.hu>
+References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org> <20090608131159.GA15100@srcf.ucam.org> <20090608132235.GC13214@elte.hu> <200906081539.20459.oliver@neukum.org> <20090608142154.GD14234@elte.hu> <20090608143023.GA16752@srcf.ucam.org>
 MIME-Version: 1.0
-In-Reply-To: <20090608124643.GA8079@localhost>
-References: <alpine.DEB.1.10.0905181045340.20244@qirst.com>
-	 <20090519133422.4ECC.A69D9226@jp.fujitsu.com>
-	 <20090519062503.GA9580@localhost> <87pre4nhqf.fsf@basil.nowhere.org>
-	 <20090520143258.GA5706@localhost>
-	 <20090520144731.GB4753@basil.nowhere.org>
-	 <20090520145607.GA6281@localhost> <20090520153851.GA6572@localhost>
-	 <ab418ea90906080514k6f46d3fay6a5fe0b848c8ca50@mail.gmail.com>
-	 <20090608124643.GA8079@localhost>
-Date: Mon, 8 Jun 2009 23:02:46 +0800
-Message-ID: <ab418ea90906080802s2556f7c6i5418c12e7592139a@mail.gmail.com>
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first class 
-	citizen
-From: Nai Xia <nai.xia@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: "gnome-list@gnome.org" <gnome-list@gnome.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
-       "xorg@lists.freedesktop.org" <xorg@lists.freedesktop.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090608143023.GA16752@srcf.ucam.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 8, 2009 at 8:46 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> On Mon, Jun 08, 2009 at 08:14:53PM +0800, Nai Xia wrote:
->> On Wed, May 20, 2009 at 11:38 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
->> > Hi list,
->> >
->> > On Wed, May 20, 2009 at 10:56:07PM +0800, Wu Fengguang wrote:
->> >> On Wed, May 20, 2009 at 10:47:31PM +0800, Andi Kleen wrote:
->> >> > > > One scenario that might be useful to test is what happens when some
->> >> > > > very large processes, all mapped and executable exceed memory and
->> >> > >
->> >> > > Good idea. Too bad I may have to install some bloated desktop in order
->> >> > > to test this out ;) I guess the pgmajfault+pswpin numbers can serve as
->> >> > > negative scores in that case?
->> >> >
->> >> > I would just generate a large C program with a script and compile
->> >> > and run that. The program can be very dumb (e.g. only run
->> >> > a gigantic loop), it just needs to be large.
->> >> >
->> >> > Just don't compile it with optimization, that can be quite slow.
->> >> >
->> >> > And use multiple functions, otherwise gcc might exceed your memory.
->> >>
->> >>
->> >> Hehe, an arbitrary C program may not be persuasive..but I do have some
->> >> bloated binaries at hand :-)
->> >>
->> >> -rwsr-sr-x 1 root wfg   36M 2009-04-22 17:21 Xorg
->> >> lrwxrwxrwx 1 wfg  wfg     4 2009-04-22 17:21 X -> Xorg
->> >> -rwxr-xr-x 1 wfg  wfg   39M 2009-04-22 17:21 Xvfb
->> >> -rwxr-xr-x 1 wfg  wfg   35M 2009-04-22 17:21 Xnest
->> >
->> > I would like to create a lot of windows in gnome, and to switch
->> > between them. Any ideas on scripting/automating the "switch window"
->> > actions?
->>
->> You can easily do this in KDE 3.5 with dcop(Desktop Communications Protocol)\
->>
->> e.g.
->>
->> $dcop kchmviewer-17502 KCHMMainWindow raise
->>
->> will raise the window of my kchmviewer.
->
-> Thank you, it's a good tip :)
->
-> The alternative I found is wmctrl:
->
-> Description: control an EWMH/NetWM compatible X Window Manager
->  Wmctrl is a command line tool to interact with an
->  EWMH/NetWM compatible X Window Manager (examples include
->  Enlightenment, icewm, kwin, metacity, and sawfish).
->  .
->  Wmctrl provides command line access to almost all the features
->  defined in the EWMH specification. For example it can maximize
->  windows, make them sticky, set them to be always on top. It can
->  switch and resize desktops and perform many other useful
->  operations.
 
-Cool, thanks for the information. :)
+* Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 
-BTW, may be you should make sure that 90% of the  overhead
-when doing crazy window switches is NOT caused by a dumb graphics
-driver (e.g. the widely hated ATI official driver!). hehe
+> On Mon, Jun 08, 2009 at 04:21:54PM +0200, Ingo Molnar wrote:
+> 
+> > The kernel _needs_ to have precise information about whether a piece 
+> > of hardware is in use or not.
+> 
+> The kernel can only have that information if userspace tells it. 
+> What we're quibbling over is whether the kernel should be 
+> explicitly told about the requirement (ie, every time an app makes 
+> a key grab in X the kernel gets told about it) or whether it 
+> should be implicit (userspace knows that a key grab has been made 
+> and so requests that the keyboard not be suspended).
+> 
+> We *can* put all of that complexity in the kernel. The question is 
+> whether it buys us anything. We'd have to modify huge chunks of 
+> userspace and in the process we'd end up limited to whatever 
+> policy happens to exist in the version of the kernel the user is 
+> running.
+> 
+> I'd like the kernel to expose this functionality but leave the 
+> policy decisions to userland.
 
->
-> Thanks,
-> Fengguang
->
+The thing is, suspending something that is being used and relied on 
+by an app is a _bug_. This is rather fundamental: hardware state and 
+usage tracking is _NOT POLICY_.
+
+Having a global override of "dont ever suspend anything here, 
+because i say so" _is_ policy.
+
+Providing _essential_ functionality to not suspend a keyboard while 
+an app relies on it is _NOT_ policy.
+
+I will even buy the argument that most current hardware cannot be 
+auto-suspended safely.
+
+But if you think that tracking the usage state of the hardware is 
+'complexity', then you very much dont know what you are talking 
+about. The main task of the kernel is to track hardware usage and to 
+abstract away the fact that the same hardware is used by multiple 
+tasks, and to do it safely. It's what the kernel does all day.
+
+	Ingo
