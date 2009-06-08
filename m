@@ -1,109 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755003AbZFHIsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbZFHIsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755003AbZFHIsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 04:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZFHIsK
+	id S1754431AbZFHIsc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 04:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZFHIsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 04:48:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43905 "EHLO mx3.mail.elte.hu"
+	Mon, 8 Jun 2009 04:48:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47332 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752455AbZFHIsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 04:48:09 -0400
-Date: Mon, 8 Jun 2009 10:48:07 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v3] printk: add halt_delay parameter for printk delay
-	in halt phase
-Message-ID: <20090608084807.GE6372@elte.hu>
-References: <a8e1da0906080040k7852f770v1e2aa2ebb0f52369@mail.gmail.com> <20090608081439.GB6372@elte.hu> <20090608012845.9c428525.akpm@linux-foundation.org> <a8e1da0906080142u62a45c47g2181a79addfb6168@mail.gmail.com>
+	id S1752599AbZFHIsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 04:48:21 -0400
+Message-ID: <4A2CD04D.7070603@redhat.com>
+Date: Mon, 08 Jun 2009 11:48:13 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a8e1da0906080142u62a45c47g2181a79addfb6168@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Huang Ying <ying.huang@intel.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH -v3] KVM: Add VT-x machine check support
+References: <1244449939.8361.591.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1244449939.8361.591.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Huang Ying wrote:
+> From: Andi Kleen <ak@linux.intel.com>
+>
+> VT-x needs an explicit MC vector intercept to handle machine checks in the 
+> hyper visor.
+>
+> It also has a special option to catch machine checks that happen
+> during VT entry.
+>
+> Do these interceptions and forward them to the Linux machine check
+> handler. Make it always look like user space is interrupted because
+> the machine check handler treats kernel/user space differently.
+>
+> Thanks to Jiang Yunhong for help and testing.
+>
+>   
 
-* Dave Young <hidave.darkstar@gmail.com> wrote:
+Noticed an additional problem.  See below.
 
-> On Mon, Jun 8, 2009 at 4:28 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
-> > On Mon, 8 Jun 2009 10:14:39 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> >>
-> >> * Dave Young <hidave.darkstar@gmail.com> wrote:
-> >>
-> >> > Add a halt_delay module parameter in printk.c used to read the
-> >> > printk messages in halt/poweroff/restart phase, delay each printk
-> >> > messages by halt_delay milliseconds. It is useful for debugging if
-> >> > there's no other way to dump kernel messages that time.
-> >> >
-> >> > The halt_delay max value is 65535, default value is 0, change it
-> >> > by:
-> >> >
-> >> > echo xxx > /sys/module/printk/parameters/halt_delay
-> >> >
-> >> > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-> >> > ---
-> >> > Documentation/kernel-parameters.txt |    5 +++++
-> >> > kernel/printk.c                     |   17 +++++++++++++++++
-> >> > 2 files changed, 22 insertions(+)
-> >> >
-> >> > --- linux-2.6.orig/kernel/printk.c  2009-06-08 13:55:35.000000000 +0800
-> >> > +++ linux-2.6/kernel/printk.c       2009-06-08 13:56:23.000000000 +0800
-> >> > @@ -250,6 +250,22 @@ static inline void boot_delay_msec(void)
-> >> >  }
-> >> >  #endif
-> >> >
-> >> > +/* msecs delay after each halt/poweroff/restart phase printk,
-> >> > + unsigned short is enough for delay in milliseconds */
-> >> > +static unsigned short halt_delay;
-> >> > +
-> >> > +static inline void halt_delay_msec(void)
-> >> > +{
-> >> > +   if (unlikely(halt_delay == 0 || !(system_state == SYSTEM_HALT
-> >> > +                           || system_state == SYSTEM_POWER_OFF
-> >> > +                           || system_state == SYSTEM_RESTART)))
-> >> > +           return;
-> >>
-> >> This is a tiny bit ugly (and goes into the vprintf path) but i can
-> >> see no other way either - a system_state > SYSTEM_RUNNING check
-> >> would needlessly include the suspend-to-disk state (which we dont
-> >> want to include here).
-> >>
-> >> In theory we could turn system_state into a bitmask and have a
-> >> print_delay_mask check instead of these flags ... but that is a far
-> >> wider change and i'm not sure it's a net step forwards.
-> >>
-> >> I've applied your patch to tip:core/printk with small edits to the
-> >> changelog - Linus & Andrew is Cc:ed, should they have any
-> >> objections.
-> >
-> > Could we not put just a single delay in there, immediately prior to halting,
-> > restarting or poweroffing?
-> 
-> But, then prink messages will still flush too fast for us to see 
-> the detail.
+>  static int handle_exception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+>  {
+>  	struct vcpu_vmx *vmx = to_vmx(vcpu);
+> @@ -2616,6 +2640,10 @@ static int handle_exception(struct kvm_v
+>  	vect_info = vmx->idt_vectoring_info;
+>  	intr_info = vmcs_read32(VM_EXIT_INTR_INFO);
+>  
+> +	ex_no = intr_info & INTR_INFO_VECTOR_MASK;
+> +	if (ex_no == MC_VECTOR)
+> +		return handle_machine_check(vcpu, kvm_run);
+> +
+>   
 
-Plus often there's a loop in architecture code that tries various 
-methods of reboot. We dont know which one works - and any of them 
-could produce warning messages. (and this happened a number of times 
-in the past)
+It isn't sufficient to check the vector number; you also need to check 
+the interrupt type.  See for example is_page_fault() and is_no_device().
 
-So this would mean having to find up to a hundred of 'reboot now' 
-places in a two dozen architectures (and keeping them all maintained 
-ongoing as well). Does not seem like a good choice to me.
+I suggest you add an is_machine_check() along similar lines.  Later we 
+can collapse all those functions to use a single helper.
 
-	Ingo
+
+> --- a/arch/x86/include/asm/kvm_host.h
+> +++ b/arch/x86/include/asm/kvm_host.h
+> @@ -382,6 +382,8 @@ struct kvm_vcpu_arch {
+>  	u64 mcg_status;
+>  	u64 mcg_ctl;
+>  	u64 *mce_banks;
+> +
+> +	u32 exit_reason;
+>  };
+>   
+
+Please move this into struct vcpu_vmx.
+
+-- 
+error compiling committee.c: too many arguments to function
+
