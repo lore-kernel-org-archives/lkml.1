@@ -1,169 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbZFHNic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbZFHNiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755729AbZFHNic (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 09:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbZFHNiY
+	id S1755196AbZFHNiq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 09:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZFHNig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 09:38:24 -0400
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:59303 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751731AbZFHNiX (ORCPT
+	Mon, 8 Jun 2009 09:38:36 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:36501 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753545AbZFHNif (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 09:38:23 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19Y+vFDng/xnDF+Y79grklY
-Date: Mon, 8 Jun 2009 04:38:15 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: "Singh, Vimal" 
-	<IMCEAEX-_O=TI_OU=BD_CN=RECIPIENTS_CN=X0094262@dlee86.itg.ti.com>
-Cc: "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "dwmw2@infradead.org" <dwmw2@infradead.org>,
-       "dedekind@infradead.org" <dedekind@infradead.org>,
-       "david-b@pacbell.net" <david-b@pacbell.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Subject: Re: [PATCH] [MTD] [NAND] Add prefetch and dma support for omap2/3
-	NAND      driver
-Message-ID: <20090608113813.GA24067@atomide.com>
-References: <54851.192.168.10.89.1243946277.squirrel@dbdmail.itg.ti.com> <19F8576C6E063C45BE387C64729E739404321C60A1@dbde02.ent.ti.com>
+	Mon, 8 Jun 2009 09:38:35 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: Run-time PM idea (was: Re: [linux-pm] [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+Date: Mon, 8 Jun 2009 15:39:19 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Magnus Damm <magnus.damm@gmail.com>
+References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org> <20090608131159.GA15100@srcf.ucam.org> <20090608132235.GC13214@elte.hu>
+In-Reply-To: <20090608132235.GC13214@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <19F8576C6E063C45BE387C64729E739404321C60A1@dbde02.ent.ti.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906081539.20459.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Singh, Vimal <IMCEAEX-_O=TI_OU=BD_CN=RECIPIENTS_CN=X0094262@dlee86.itg.ti.com> [090605 05:00]:
-> 
-> 
-> On Thu, Jun 4, 2009 at 8:58 PM, Tony Lindgren<tony@atomide.com> wrote:
-> > * vimal singh <vimalsingh@ti.com> [090604 02:34]:
-> >> On Wed, Jun 3, 2009 at 10:03 PM, Tony Lindgren <tony@atomide.com> wrote:
-> >> > * Singh, Vimal
-> >> <IMCEAEX-_O=TI_OU=BD_CN=RECIPIENTS_CN=X0094262@dlee86.itg.ti.com> [090602
-> >> 23:46]:
-> >> >>
-> >> >> On Wed, Jun 3, 2009 at 2:06 AM, Tony Lindgren <tony@atomide.com> wrote:
-> >> >> > * vimal singh <vimalsingh@ti.com> [090602 05:40]:
-> >> >> >> This patch adds prefetch support to access nand flash in both mpu and dma
-> >> mode.
-> >> >> >> This patch also adds 8-bit nand support (omap_read/write_buf8).
-> >> >> >> Prefetch can be used for both 8- and 16-bit devices.
-> >> >> >
-> >> >> > This should be reviewed on the linux-omap@vger.kernel.org list for sure.
-> >> >> > One other comment below.
-> >> >> >
-> >> >> >> Signed-off-by: Vimal Singh <vimalsingh@ti.com>
-> >> >> >> ---
-> >> >> >> I prepared this patch on top of "OMAP2 / OMAP3 NAND driver" patch:
-> >> >> >> http://lists.infradead.org/pipermail/linux-mtd/2009-May/025562.html
-> >> >> >>
-> >> >> >> ---
-> >> >> >>  arch/arm/mach-omap2/gpmc.c             |  102 ++++++++++
-> >> >> >>  arch/arm/plat-omap/include/mach/gpmc.h |    4
-> >> >> >>  drivers/mtd/nand/Kconfig               |   17 +
-> >> >> >>  drivers/mtd/nand/omap2.c               |  308
-> >> ++++++++++++++++++++++++++++++++-
-> >> >> >>  4 files changed, 422 insertions(+), 9 deletions(-)
-> >> >> >>
-> >> >> >> Index: mtd-2.6/arch/arm/mach-omap2/gpmc.c
-> >> >> >> ===================================================================
-> >> >> >> --- mtd-2.6.orig/arch/arm/mach-omap2/gpmc.c
-> >> >> >> +++ mtd-2.6/arch/arm/mach-omap2/gpmc.c
-> >> >> >> @@ -54,6 +54,12 @@
-> >> >> >>  #define GPMC_CHUNK_SHIFT     24              /* 16 MB */
-> >> >> >>  #define GPMC_SECTION_SHIFT   28              /* 128 MB */
-> >> >> >>
-> >> >> >> +#ifdef CONFIG_MTD_NAND_OMAP_PREFETCH
-> >> >> >> +#define CS_NUM_SHIFT         24
-> >> >> >> +#define ENABLE_PREFETCH              7
-> >> >> >> +#define DMA_MPU_MODE         2
-> >> >> >> +#endif
-> >> >> >> +
-> >> >> >>  static struct resource       gpmc_mem_root;
-> >> >> >>  static struct resource       gpmc_cs_mem[GPMC_CS_NUM];
-> >> >> >>  static DEFINE_SPINLOCK(gpmc_mem_lock);
-> >> >> >> @@ -383,6 +389,99 @@ void gpmc_cs_free(int cs)
-> >> >> >>  }
-> >> >> >>  EXPORT_SYMBOL(gpmc_cs_free);
-> >> >> >>
-> >> >> >> +#ifdef CONFIG_MTD_NAND_OMAP_PREFETCH
-> >> >> >> +/**
-> >> >> >> + * gpmc_prefetch_init - configures default configuration for prefetch
-> >> engine
-> >> >> >> + */
-> >> >> >> +static void gpmc_prefetch_init(void)
-> >> >> >> +{
-> >> >> >> +     /* Setting the default threshold to 64 */
-> >> >> >> +     gpmc_write_reg(GPMC_PREFETCH_CONTROL, 0x0);
-> >> >> >> +     gpmc_write_reg(GPMC_PREFETCH_CONFIG1, 0x40  << 8);
-> >> >> >> +     gpmc_write_reg(GPMC_PREFETCH_CONFIG2, 0x0);
-> >> >> >> +}
-> >> >> >
-> >> >> > Why would you want to have NAND specific init code int gpmc.c?
-> >> >> >
-> >> >> > The purpose if gpmc.c is to provide access to configuring the
-> >> >> > General Purpose Memory Controller (GPMC). You should just provide
-> >> >> > functions in gpmc.c for the platform init code to use, and then
-> >> >> > the drivers can stay platform independent.
-> >> >>
-> >> >> In my understanding, this 'prefetch' engine is part of GPMC itself, it is a
-> >> >> kind of feature provided by GPMC which can be utilized by NAND driver.
-> >> >> So, to me, it makes sens to get initialized prefetch by GPMC itself so that
-> >> >> NAND driver can use it.
-> >> >
-> >> > But it should not have a dependency to NAND.
-> >>
-> >> This engine, in GPMC, is dedicated for NAND devices only.
-> >>
-> >> >
-> >> >> Another reason was that all read / write to GPMC register are done by
-> >> >> functions 'gpmc_read_reg' / 'gpmc_write_reg', which have been made
-> >> >> 'static' in nature.
-> >> >
-> >> > That's why you need to provide a generic function in gpmc.c to enable
-> >> > prefetch that the platform code for any driver can use.
-> >>
-> >> Exactly, and whenever a platform code uses gpmc init call, gpmc initializes
-> >> this engine too. Since prefetch engine is the part of GPMC, IMHOP, it should
-> >> get initialized as part of GPMC initialization.
-> >
-> > No, the driver needing it should initialize it. There should not be any
-> > ifdefs needed in the gpmc.c for that.
-> 
-> Are you suggesting to move gpmc prefetch specific code to 'drivers/mtd/nand/omap2.c'?
-> This can be done but then, we will be accessing gpmc registers outside gpmc.c. Is that ok?
+Am Montag, 8. Juni 2009 15:22:35 schrieb Ingo Molnar:
 
-Well I'm thinking that you just basically need something like this in
-gpmc.c:
+> What will the 'user space policy' bit do what the kernel cannot?
+>
+> If you mean the user has to configure something manually - that wont
+> really happen in practice. We are happy if they know where to put
+> those USB sticks in ;-)
 
-int gpmc_prefetch_request(int cs);
-int gpmc_prefetch_enable(int cs);
-int gpmc_prefetch_reset(int cs);
-...
+User space need not be the user. Currently user space doesn't tell
+the kernel how much functionality it needs. open/close give a binary
+opposition which badly maps onto the graduated capabilities devices
+have.
 
-And gpmc_prefetch_request would then return an error if already taken.
-No need then to tinker with the GPMC prefetch registers in the NAND
-driver.
- 
-> >
-> >> And then there are prefetch start, stop and status functions calls have been
-> >> provided to be used by NAND driver.
-> >
-> > These should really be done in the platform init code for the NAND driver.
-> > The NAND driver really should be generic, not omap specific.
-> 
-> Are you talking about different omap versions or omap itself, I am bit confused. This NAND driver is 
-> omap specific only.
+For example do you really need every key pressed while the screen saver
+is running or is it enough for the keyboard to be able to generate a wakeup
+event?
 
-I guess I'm talking in generic terms. What's under drivers/* should in the long
-run be device independent code, and the platform specific code should be under
-arch/arm/*omap*.
+	Regards
+		Oliver
 
-Regards,
-
-Tony
