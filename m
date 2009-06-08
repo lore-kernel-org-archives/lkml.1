@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZFHItj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbZFHIv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbZFHItj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 04:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbZFHItb
+	id S1754926AbZFHIv7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 04:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZFHIvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 04:49:31 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:59395 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753962AbZFHIta (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 04:49:30 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
-Date: Mon, 8 Jun 2009 10:49:22 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-5-generic; KDE/4.2.85; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <200906041747.04310.arnd@arndb.de> <200906081003.59171.arnd@arndb.de> <20090608172200A.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090608172200A.fujita.tomonori@lab.ntt.co.jp>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 8 Jun 2009 04:51:52 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:5415 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753442AbZFHIvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 04:51:51 -0400
+Message-ID: <4A2CD0EB.5080900@openvz.org>
+Date: Mon, 08 Jun 2009 12:50:51 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Paul Menage <menage@google.com>
+CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>, bharata@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
+       kvm@vger.kernel.org,
+       Linux Containers <containers@lists.linux-foundation.org>,
+       Herbert Poetzl <herbert@13thfloor.at>
+Subject: Re: [RFC] CPU hard limits
+References: <20090604053649.GA3701@in.ibm.com>	 <6599ad830906050153i1afd104fqe70f681317349142@mail.gmail.com>	 <20090605092733.GA27486@in.ibm.com>	 <6599ad830906050232n11aa30d8xfcda0a279a482f32@mail.gmail.com>	 <20090605094811.GD4601@linux.vnet.ibm.com>	 <6599ad830906050251h18f4e037h182f61aa80a5b046@mail.gmail.com>	 <20090605095931.GE4601@linux.vnet.ibm.com> <6599ad830906050303r404c325anc60ded4f45a50b95@mail.gmail.com>
+In-Reply-To: <6599ad830906050303r404c325anc60ded4f45a50b95@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906081049.23045.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18keIlpThKVn+Xda4SnJd9Dr6H9o60dzAV24yu
- GwuiDhscHAtbksPlwed2ItG/Fm2ekLayNj5AUf2uDf0XxpUOqD
- Jc1/4ODWRorUGinIAuksQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 08 June 2009, FUJITA Tomonori wrote:
+Paul Menage wrote:
+> On Fri, Jun 5, 2009 at 2:59 AM, Dhaval Giani<dhaval@linux.vnet.ibm.com> wrote:
+>> I think we are focusing on the wrong use case here. Guarantees is just a
+>> useful side-effect we get by using hard limits. I think the more
+>> important use case is where the provider wants to limit the amount of
+>> time a user gets (such as in a cloud).
+>>
+>> Maybe we should direct our attention in solving that problem? :)
+>>
+> 
+> Yes, that case and the "predictable load test behaviour" case are both
+> good reasons for hard limits.
 
-> If you don't clean up them, I think that it's better to leave out
-> asm-generic/dma-generic-linear.h for
-> now. asm-generic/dma-generic-linear.h is supposed to clean up the
-> mess; unify (generalize, or fix) some architecture. It's not supported
-> to add another temporary hack that should be removed.
+ACK.
 
-Ok. I have no more ideas on how to do that in a cleaner way
-than what I suggested, so I'll stop bothering you with it.
+I'd like to add two things.
 
-	Arnd <><
+First, the article @openvz.org about guarantees you were discussing was 
+not supposed to be a "best practices" paper. This was just a theoretical
+thoughts on how to get guarantees out of the limit for those resources 
+you cannot reclaim from the user and thus cannot provide the guarantee 
+any other way. E.g. locked memory - once a user has it you cannot take 
+it back, and if you want to guarantee some mount of it for group X you
+have to keep all the other groups away from this amount.
+
+And the second thing is an addition for Dhaval's case about limiting the 
+amount of time a user gets. This is exactly what hosting providers do -
+they _sell_ the CPU power to their customers and thus need to limit the
+CPU time dedicated for containers.
+
+> Paul
+> 
+
