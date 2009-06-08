@@ -1,94 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757094AbZFHPh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZFHPoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757094AbZFHPh6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 11:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZFHPhv
+	id S1756775AbZFHPoS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 11:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZFHPoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 11:37:51 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:54079 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752229AbZFHPhu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 11:37:50 -0400
-Date: Mon, 8 Jun 2009 11:37:50 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/5] [GIP PULL] tracing/events/trace_stack: various
- fixes
-In-Reply-To: <20090607082257.GA16761@elte.hu>
-Message-ID: <alpine.DEB.2.00.0906081135320.9522@gandalf.stny.rr.com>
-References: <20090603151724.144915858@goodmis.org> <20090605145219.GA14830@elte.hu> <20090607082257.GA16761@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 8 Jun 2009 11:44:09 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:50090 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751257AbZFHPoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 11:44:09 -0400
+Date: Mon, 8 Jun 2009 10:44:05 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: mingo@elte.hu, tglx@linutronix.de
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86, UV: Fix nacros for multiple coherency domains
+Message-ID: <20090608154405.GA16395@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix bug in the SGI UV macros that support systems with multiple coherency
+domains.  The macros used for referencing global MMR (chipset registers)
+are failing to correctly "or" the NASID (node identifier) bits that reside
+above M+N. These high bits are supplied automatically by the chipset for
+memory accesses coming from the processor socket. However, the bits must
+be present for references to the special global MMR space used to map chipset
+registers. (See uv_hub.h for more details ...)
 
-[ Added Peter ]
+The bug results in references to invalid/incorrect nodes.
 
-On Sun, 7 Jun 2009, Ingo Molnar wrote:
-> Testing tracer sched_switch: <6>Starting ring buffer hammer
-> PASSED
-> Testing tracer sysprof: PASSED
-> Testing tracer function: PASSED
-> Testing tracer irqsoff: 
-> =============================================
-> PASSED
-> Testing tracer preemptoff: PASSED
-> Testing tracer preemptirqsoff: [ INFO: possible recursive locking detected ]
-> PASSED
-> Testing tracer branch: 2.6.30-rc8-tip-01972-ge5b9078-dirty #5760
-> ---------------------------------------------
-> rb_consumer/431 is trying to acquire lock:
->  (&cpu_buffer->reader_lock){......}, at: [<c109eef7>] ring_buffer_reset_cpu+0x37/0x70
-> 
-> but task is already holding lock:
->  (&cpu_buffer->reader_lock){......}, at: [<c10a019e>] ring_buffer_consume+0x7e/0xc0
-> 
-> other info that might help us debug this:
-> 1 lock held by rb_consumer/431:
->  #0:  (&cpu_buffer->reader_lock){......}, at: [<c10a019e>] ring_buffer_consume+0x7e/0xc0
+Signed-off-by: Jack Steiner <steiner@sgi.com>
 
-Yes this definitely looks like ftrace is tracing the ring buffer benchmark 
-test.
+---
+ arch/x86/include/asm/uv/uv_hub.h   |    6 ++++--
+ arch/x86/kernel/apic/x2apic_uv_x.c |   15 +++++++++------
+ 2 files changed, 13 insertions(+), 8 deletions(-)
 
-OK, how do I go about teaching lockdep that this reader lock is not the 
-same reader lock as the one being taken?
-
--- Steve
-
-> 
-> stack backtrace:
-> Pid: 431, comm: rb_consumer Not tainted 2.6.30-rc8-tip-01972-ge5b9078-dirty #5760
-> Call Trace:
->  [<c1070940>] validate_chain+0xa20/0x1000
->  [<c1071240>] __lock_acquire+0x320/0x5f0
->  [<c107159f>] lock_acquire+0x8f/0x120
->  [<c109eef7>] ? ring_buffer_reset_cpu+0x37/0x70
->  [<c1739c76>] _spin_lock_irqsave+0x56/0x70
->  [<c109eef7>] ? ring_buffer_reset_cpu+0x37/0x70
->  [<c109eef7>] ring_buffer_reset_cpu+0x37/0x70
->  [<c10a596e>] tracing_reset+0x3e/0x80
->  [<c109f4df>] ? rb_get_reader_page+0x11f/0x180
->  [<c106c90b>] ? trace_hardirqs_off+0xb/0x10
->  [<c10aa97f>] time_hardirqs_off+0xbf/0x110
->  [<c109f4df>] ? rb_get_reader_page+0x11f/0x180
->  [<c106c830>] trace_hardirqs_off_caller+0x20/0xf0
->  [<c106c90b>] trace_hardirqs_off+0xb/0x10
->  [<c109f4df>] rb_get_reader_page+0x11f/0x180
->  [<c109f624>] rb_buffer_peek+0x24/0xe0
->  [<c10a01ad>] ring_buffer_consume+0x8d/0xc0
->  [<c10a1585>] ring_buffer_consumer_thread+0xa5/0x440
->  [<c173a1c2>] ? _spin_unlock_irqrestore+0x62/0x80
->  [<c10306be>] ? complete+0x4e/0x60
->  [<c10a14e0>] ? ring_buffer_consumer_thread+0x0/0x440
->  [<c105c1e2>] kthread+0x52/0x80
->  [<c105c190>] ? kthread+0x0/0x80
->  [<c10047cb>] kernel_thread_helper+0x7/0x10
+Index: linux/arch/x86/include/asm/uv/uv_hub.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/uv/uv_hub.h	2009-06-07 15:20:13.000000000 -0500
++++ linux/arch/x86/include/asm/uv/uv_hub.h	2009-06-08 10:13:45.000000000 -0500
+@@ -133,6 +133,7 @@ struct uv_scir_s {
+ struct uv_hub_info_s {
+ 	unsigned long		global_mmr_base;
+ 	unsigned long		gpa_mask;
++	unsigned int		gnode_extra;
+ 	unsigned long		gnode_upper;
+ 	unsigned long		lowmem_remap_top;
+ 	unsigned long		lowmem_remap_base;
+@@ -159,7 +160,8 @@ DECLARE_PER_CPU(struct uv_hub_info_s, __
+  * 		p -  PNODE (local part of nsids, right shifted 1)
+  */
+ #define UV_NASID_TO_PNODE(n)		(((n) >> 1) & uv_hub_info->pnode_mask)
+-#define UV_PNODE_TO_NASID(p)		(((p) << 1) | uv_hub_info->gnode_upper)
++#define UV_PNODE_TO_GNODE(p)		((p) |uv_hub_info->gnode_extra)
++#define UV_PNODE_TO_NASID(p)		(UV_PNODE_TO_GNODE(p) << 1)
+ 
+ #define UV_LOCAL_MMR_BASE		0xf4000000UL
+ #define UV_GLOBAL_MMR32_BASE		0xf8000000UL
+@@ -173,7 +175,7 @@ DECLARE_PER_CPU(struct uv_hub_info_s, __
+ #define UV_GLOBAL_MMR32_PNODE_BITS(p)	((p) << (UV_GLOBAL_MMR32_PNODE_SHIFT))
+ 
+ #define UV_GLOBAL_MMR64_PNODE_BITS(p)					\
+-	((unsigned long)(p) << UV_GLOBAL_MMR64_PNODE_SHIFT)
++	((unsigned long)(UV_PNODE_TO_GNODE(p)) << UV_GLOBAL_MMR64_PNODE_SHIFT)
+ 
+ #define UV_APIC_PNODE_SHIFT	6
+ 
+Index: linux/arch/x86/kernel/apic/x2apic_uv_x.c
+===================================================================
+--- linux.orig/arch/x86/kernel/apic/x2apic_uv_x.c	2009-06-08 09:45:42.000000000 -0500
++++ linux/arch/x86/kernel/apic/x2apic_uv_x.c	2009-06-08 10:15:31.000000000 -0500
+@@ -537,7 +537,7 @@ void __init uv_system_init(void)
+ 	union uvh_node_id_u node_id;
+ 	unsigned long gnode_upper, lowmem_redir_base, lowmem_redir_size;
+ 	int bytes, nid, cpu, lcpu, pnode, blade, i, j, m_val, n_val;
+-	int max_pnode = 0;
++	int gnode_extra, max_pnode = 0;
+ 	unsigned long mmr_base, present, paddr;
+ 	unsigned short pnode_mask;
+ 
+@@ -547,6 +547,13 @@ void __init uv_system_init(void)
+ 	mmr_base =
+ 	    uv_read_local_mmr(UVH_RH_GAM_MMR_OVERLAY_CONFIG_MMR) &
+ 	    ~UV_MMR_ENABLE;
++	pnode_mask = (1 << n_val) - 1;
++	node_id.v = uv_read_local_mmr(UVH_NODE_ID);
++	gnode_extra = (node_id.s.node_id & ~((1 << n_val) - 1)) >> 1;
++	gnode_upper = ((unsigned long)gnode_extra  << m_val);
++	printk(KERN_DEBUG "UV: N %d, M %d, gnode_upper 0x%lx, gnode_extra 0x%x\n",
++			n_val, m_val, gnode_upper, gnode_extra);
++
+ 	printk(KERN_DEBUG "UV: global MMR base 0x%lx\n", mmr_base);
+ 
+ 	for(i = 0; i < UVH_NODE_PRESENT_TABLE_DEPTH; i++)
+@@ -583,11 +590,6 @@ void __init uv_system_init(void)
+ 		}
+ 	}
+ 
+-	pnode_mask = (1 << n_val) - 1;
+-	node_id.v = uv_read_local_mmr(UVH_NODE_ID);
+-	gnode_upper = (((unsigned long)node_id.s.node_id) &
+-		       ~((1 << n_val) - 1)) << m_val;
+-
+ 	uv_bios_init();
+ 	uv_bios_get_sn_info(0, &uv_type, &sn_partition_id,
+ 			    &sn_coherency_id, &sn_region_size);
+@@ -610,6 +612,7 @@ void __init uv_system_init(void)
+ 		uv_cpu_hub_info(cpu)->pnode_mask = pnode_mask;
+ 		uv_cpu_hub_info(cpu)->gpa_mask = (1 << (m_val + n_val)) - 1;
+ 		uv_cpu_hub_info(cpu)->gnode_upper = gnode_upper;
++		uv_cpu_hub_info(cpu)->gnode_extra = gnode_extra;
+ 		uv_cpu_hub_info(cpu)->global_mmr_base = mmr_base;
+ 		uv_cpu_hub_info(cpu)->coherency_domain_number = sn_coherency_id;
+ 		uv_cpu_hub_info(cpu)->scir.offset = SCIR_LOCAL_MMR_BASE + lcpu;
