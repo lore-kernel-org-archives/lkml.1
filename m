@@ -1,125 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753139AbZFHGva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbZFHGyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753139AbZFHGva (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 02:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZFHGvX
+	id S1753270AbZFHGyQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 02:54:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbZFHGyC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 02:51:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50468 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751493AbZFHGvW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 02:51:22 -0400
-Message-ID: <4A2CB48C.4080707@kernel.org>
-Date: Sun, 07 Jun 2009 23:49:48 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 8 Jun 2009 02:54:02 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56677 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750782AbZFHGyA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 02:54:00 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH mmotm] vmscan: fix may_swap handling for memcg
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090608153916.3ccaeb9a.nishimura@mxp.nes.nec.co.jp>
+References: <20090608121848.4370.A69D9226@jp.fujitsu.com> <20090608153916.3ccaeb9a.nishimura@mxp.nes.nec.co.jp>
+Message-Id: <20090608154634.437F.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: bugzilla-daemon@bugzilla.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Peer Chen <pchen@nvidia.com>, Bernhard Walle <bwalle@suse.de>
-Subject: Re: [Bug 13484] System report Int 6 error if E820 table reserve the
- memory above 4G
-References: <bug-13484-13546@http.bugzilla.kernel.org/> <200906080543.n585hQYj017771@demeter.kernel.org>
-In-Reply-To: <200906080543.n585hQYj017771@demeter.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon,  8 Jun 2009 15:53:50 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bugzilla-daemon@bugzilla.kernel.org wrote:
-> http://bugzilla.kernel.org/show_bug.cgi?id=13484
+> On Mon,  8 Jun 2009 12:20:54 +0900 (JST), KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > Hi
+> > 
+> Hi, thank you for your comment.
 > 
+> > > From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > > 
+> > > Commit 2e2e425989080cc534fc0fca154cae515f971cf5 ("vmscan,memcg: reintroduce
+> > > sc->may_swap) add may_swap flag and handle it at get_scan_ratio().
+> > > 
+> > > But the result of get_scan_ratio() is ignored when priority == 0, and this
+> > > means, when memcg hits the mem+swap limit, anon pages can be swapped
+> > > just in vain. Especially when memcg causes oom by mem+swap limit,
+> > > we can see many and many pages are swapped out.
+> > > 
+> > > Instead of not scanning anon lru completely when priority == 0, this patch adds
+> > > a hook to handle may_swap flag in shrink_page_list() to avoid using useless swaps,
+> > > and calls try_to_free_swap() if needed because it can reduce
+> > > both mem.usage and memsw.usage if the page(SwapCache) is unused anymore.
+> > > 
+> > > Such unused-but-managed-under-memcg SwapCache can be made in some paths,
+> > > for example trylock_page() failure in free_swap_cache().
+> > > 
+> > > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > 
+> > I think root cause is following branch, right?
+> yes.
 > 
-> 
-> 
-> 
-> --- Comment #3 from Peer Chen <pchen@nvidia.com>  2009-06-08 05:43:25 ---
-> I'm using 64bit CPU, Intel P8400.
-> 
-> Yes, if set CONFIG_PHYS_ADDR_T_64BIT, the problem goes away.
-> 
+> > if so, Why can't we handle this issue on shrink_zone()?
+> > 
+> Just because priority==0 means oom is about to happen and I don't
+> want to see oom if possible.
+> So I thought it would be better to reclaim as much pages(memsw.usage) as possible
+> in this case.
 
-please check
+hmmm..
 
----
- drivers/firmware/memmap.c    |   12 +++++-------
- include/linux/firmware-map.h |   12 ++++--------
- 2 files changed, 9 insertions(+), 15 deletions(-)
+In general, adding new branch to shrink_page_list() is not good idea.
+it can cause performance degression.
 
-Index: linux-2.6/drivers/firmware/memmap.c
-===================================================================
---- linux-2.6.orig/drivers/firmware/memmap.c
-+++ linux-2.6/drivers/firmware/memmap.c
-@@ -31,8 +31,8 @@
-  * information is necessary as for the resource tree.
-  */
- struct firmware_map_entry {
--	resource_size_t		start;	/* start of the memory range */
--	resource_size_t		end;	/* end of the memory range (incl.) */
-+	u64			start;	/* start of the memory range */
-+	u64			end;	/* end of the memory range (incl.) */
- 	const char		*type;	/* type of the memory range */
- 	struct list_head	list;	/* entry for the linked list */
- 	struct kobject		kobj;   /* kobject for each entry */
-@@ -101,7 +101,7 @@ static LIST_HEAD(map_entries);
-  * Common implementation of firmware_map_add() and firmware_map_add_early()
-  * which expects a pre-allocated struct firmware_map_entry.
-  **/
--static int firmware_map_add_entry(resource_size_t start, resource_size_t end,
-+static int firmware_map_add_entry(u64 start, u64 end,
- 				  const char *type,
- 				  struct firmware_map_entry *entry)
- {
-@@ -132,8 +132,7 @@ static int firmware_map_add_entry(resour
-  *
-  * Returns 0 on success, or -ENOMEM if no memory could be allocated.
-  **/
--int firmware_map_add(resource_size_t start, resource_size_t end,
--		     const char *type)
-+int firmware_map_add(u64 start, u64 end, const char *type)
- {
- 	struct firmware_map_entry *entry;
- 
-@@ -157,8 +156,7 @@ int firmware_map_add(resource_size_t sta
-  *
-  * Returns 0 on success, or -ENOMEM if no memory could be allocated.
-  **/
--int __init firmware_map_add_early(resource_size_t start, resource_size_t end,
--				  const char *type)
-+int __init firmware_map_add_early(u64 start, u64 end, const char *type)
- {
- 	struct firmware_map_entry *entry;
- 
-Index: linux-2.6/include/linux/firmware-map.h
-===================================================================
---- linux-2.6.orig/include/linux/firmware-map.h
-+++ linux-2.6/include/linux/firmware-map.h
-@@ -24,21 +24,17 @@
-  */
- #ifdef CONFIG_FIRMWARE_MEMMAP
- 
--int firmware_map_add(resource_size_t start, resource_size_t end,
--		     const char *type);
--int firmware_map_add_early(resource_size_t start, resource_size_t end,
--			   const char *type);
-+int firmware_map_add(u64 start, u64 end, const char *type);
-+int firmware_map_add_early(u64 start, u64 end, const char *type);
- 
- #else /* CONFIG_FIRMWARE_MEMMAP */
- 
--static inline int firmware_map_add(resource_size_t start, resource_size_t end,
--				   const char *type)
-+static inline int firmware_map_add(u64 start, u64 end, const char *type)
- {
- 	return 0;
- }
- 
--static inline int firmware_map_add_early(resource_size_t start,
--					 resource_size_t end, const char *type)
-+static inline int firmware_map_add_early(u64 start, u64 end, const char *type)
- {
- 	return 0;
- }
+Plus, it is not big problem at all. it happen only when priority==0.
+Definitely, priority==0 don't occur normally.
+and, too many recliaming pages is not only memcg issue. I don't think this
+patch provide generic solution.
+
+
+Why your test environment makes oom so frequently?
+
+
+
+
