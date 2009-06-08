@@ -1,91 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbZFHRWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755603AbZFHRWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336AbZFHRWA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753661AbZFHRUU
+	id S1755603AbZFHRWc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbZFHRUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:20:20 -0400
-Received: from fmailhost06.isp.att.net ([204.127.217.106]:33955 "EHLO
-	fmailhost06.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752499AbZFHRUT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:20:19 -0400
-X-Originating-IP: [65.28.94.183]
-Message-ID: <4A2D484F.3090209@lwfinger.net>
-Date: Mon, 08 Jun 2009 12:20:15 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>, Rik van Riel <riel@redhat.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>	<D9VoutSOyXP.A.hvH.Ha7KKB@chimera>	<4A2BBC30.2030300@lwfinger.net>	<84144f020906070640rf5ab14nbf66d3ca7c97675f@mail.gmail.com>	<4A2BCC6F.8090004@redhat.com>	<84144f020906070732l31786156r5d9753a0cabfde79@mail.gmail.com>	<4A2BEC4F.6020908@lwfinger.net> <20090608173219.0588af26.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090608173219.0588af26.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Jun 2009 13:20:24 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:57157 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753662AbZFHRUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 13:20:23 -0400
+Message-Id: <20090608172021.096659000@sgi.com>
+User-Agent: quilt/0.47-1
+Date: Mon, 08 Jun 2009 12:16:58 -0500
+From: steiner@sgi.com
+To: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: [Patch 10/12] GRU - fixes to grudump utility
+References: <20090608171648.988318000@sgi.com>
+Content-Disposition: inline; filename=uv_gru_grudump_fixes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Sun, 07 Jun 2009 11:35:27 -0500
-> Larry Finger <Larry.Finger@lwfinger.net> wrote:
-> 
->> Pekka Enberg wrote:
->>> On Sun, Jun 7, 2009 at 5:19 PM, Rik van Riel <riel@redhat.com> wrote:
->>>> That is a very strange trace.  The Mem-Info indicates
->>>> that the system has more than enough memory free, and
->>>> also enough memory in higher-order free blocks.
->>>>
->>>> This would indicate a bug somewhere in the page
->>>> allocator - this memory should have been given to this
->>>> allocation request.
->>> Aha, I always have difficulties deciphering the traces. But lets
->>> invite Mel to the party then!
->> I'm happy to see some action on this problem. As usual, I'm happy to
->> test patches and/or provide diagnostic output.
->>
-> One question. 
-> 
-> Did your system fragmented in same way as to this
-> (see DMA32, 10052 of order-0 pages) in older kernel ? I think you can check
-> fragmentation status via /proc/buddyinfo.
-> =
-> kernel: Node 0 DMA: 3*4kB 3*8kB 5*16kB 2*32kB 4*64kB 1*128kB 2*256kB 0*512kB
-> 1*1024kB 0*2048kB 0*4096kB = 2100kB
-> kernel: Node 0 DMA32: 10062*4kB 1*8kB 1*16kB 0*32kB 1*64kB 1*128kB 0*256kB
-> 1*512kB 0*1024kB 0*2048kB 0*4096kB = 40976kB
-> ==
+From: Jack Steiner <steiner@sgi.com>
 
-The current system has not been up very long and does not show the
-fragmentation:
+Minor fixes to the SGI GRU grudump facility:
+	- fix address where user data is written
+	- add gru number to data passed to user
+	- indicate if context is locked
 
-finger@larrylap:~/wireless-testing> cat /proc/buddyinfo
-Node 0, zone      DMA      4      5      4      2      4      1      2
-     0      1      0      0
-Node 0, zone    DMA32    261     78     46     55     61     54     37
-    17     14     12    262
 
-After I did a git pull and a kernel build with the sources on an
-NFS-mounted volume, the fragmentation increased:
+Signed-off-by: Jack Steiner <steiner@sgi.com>
 
-Node 0, zone      DMA      4      5      4      2      4      1      2
-     0      1      0      0
-Node 0, zone    DMA32   2213   1924   1292    705    285     81     25
-     8      5      4    141
+---
+ drivers/misc/sgi-gru/grukdump.c |    8 ++++++--
+ drivers/misc/sgi-gru/grulib.h   |    4 ++--
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
-After a git pull and a kernel build on a second NFS-mounted tree:
+Index: linux/drivers/misc/sgi-gru/grukdump.c
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/grukdump.c	2009-06-05 15:16:57.000000000 -0500
++++ linux/drivers/misc/sgi-gru/grukdump.c	2009-06-05 15:20:36.000000000 -0500
+@@ -26,7 +26,7 @@
+ 
+ static int gru_user_copy_handle(void __user **dp, void *s)
+ {
+-	if (copy_to_user(dp, s, GRU_HANDLE_BYTES))
++	if (copy_to_user(*dp, s, GRU_HANDLE_BYTES))
+ 		return -1;
+ 	*dp += GRU_HANDLE_BYTES;
+ 	return 0;
+@@ -109,7 +109,7 @@ static int gru_dump_context(struct gru_s
+ {
+ 	struct gru_dump_context_header hdr;
+ 	struct gru_dump_context_header __user *uhdr = ubuf;
+-	struct gru_context_configuration_handle *cch;
++	struct gru_context_configuration_handle *cch, *ubufcch;
+ 	struct gru_thread_state *gts;
+ 	int try, cch_locked, cbrcnt = 0, dsrcnt = 0, bytes = 0, ret = 0;
+ 	void *grubase;
+@@ -125,8 +125,11 @@ static int gru_dump_context(struct gru_s
+ 	}
+ 
+ 	ubuf += sizeof(hdr);
++	ubufcch = ubuf;
+ 	if (gru_user_copy_handle(&ubuf, cch))
+ 		goto fail;
++	if (cch_locked)
++		ubufcch->delresp = 0;
+ 	bytes = sizeof(hdr) + GRU_CACHE_LINE_BYTES;
+ 
+ 	if (cch_locked || !lock_cch) {
+@@ -155,6 +158,7 @@ static int gru_dump_context(struct gru_s
+ 		return ret;
+ 
+ 	hdr.magic = GRU_DUMP_MAGIC;
++	hdr.gid = gru->gs_gid;
+ 	hdr.ctxnum = ctxnum;
+ 	hdr.cbrcnt = cbrcnt;
+ 	hdr.dsrcnt = dsrcnt;
+Index: linux/drivers/misc/sgi-gru/grulib.h
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/grulib.h	2009-06-05 15:16:57.000000000 -0500
++++ linux/drivers/misc/sgi-gru/grulib.h	2009-06-05 15:20:46.000000000 -0500
+@@ -120,7 +120,7 @@ struct gru_flush_tlb_req {
+ enum {dcs_pid, dcs_gid};
+ struct gru_dump_chiplet_state_req {
+ 	unsigned int	op;
+-	int		gid;
++	unsigned int	gid;
+ 	int		ctxnum;
+ 	char		data_opt;
+ 	char		lock_cch;
+@@ -134,7 +134,7 @@ struct gru_dump_chiplet_state_req {
+ #define GRU_DUMP_MAGIC	0x3474ab6c
+ struct gru_dump_context_header {
+ 	unsigned int	magic;
+-	unsigned char	gid;
++	unsigned int	gid;
+ 	unsigned char	ctxnum;
+ 	unsigned char	cbrcnt;
+ 	unsigned char	dsrcnt;
 
-Node 0, zone      DMA      4      5      4      2      4      1      2
-     0      1      0      0
-Node 0, zone    DMA32   3127   3058   1989    756    401    142     56
-    14      5      3     12
-
-Larry
