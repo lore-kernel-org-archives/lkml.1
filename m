@@ -1,111 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbZFHXcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649AbZFHXgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbZFHXcs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 19:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbZFHXci
+	id S1756649AbZFHXgf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 19:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbZFHXg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 19:32:38 -0400
-Received: from cantor.suse.de ([195.135.220.2]:43011 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756002AbZFHXcg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 19:32:36 -0400
-From: Neil Brown <neilb@suse.de>
-To: heinzm@redhat.com, device-mapper development <dm-devel@redhat.com>
-Date: Tue, 9 Jun 2009 09:32:55 +1000
+	Mon, 8 Jun 2009 19:36:28 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:49616 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754179AbZFHXg1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 19:36:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=fC+Woht9UyaRvmiNF1LSQUtaUnuvLMubqJQtra3deSjClkr53V7kY3X+R18oQxES4N
+         hgz7hLdI2PWuQxj06bdpKaj8q/LB7CO2eQD3zJSQt9Hkh8ZBdO0Z/XvfKj1R6i47+Zjg
+         p5jasnoVjbjGQ24HIIUG57rPs0WURbGAh+fC0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18989.40871.865610.422540@notabene.brown>
-Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-raid@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [dm-devel] Re: ANNOUNCE: mdadm 3.0 - A tool for managing Soft
-	RAID under Linux
-In-Reply-To: message from Heinz Mauelshagen on Wednesday June 3
-References: <18980.48553.328662.80987@notabene.brown>
-	<4A25876A.1010901@garzik.org>
-	<18981.62579.171350.910761@notabene.brown>
-	<1244040123.6938.19.camel@o>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+In-Reply-To: <8bd0f97a0906081628o7d30e05ld961c00a690c140d@mail.gmail.com>
+References: <8bd0f97a0906081628o7d30e05ld961c00a690c140d@mail.gmail.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 8 Jun 2009 19:36:09 -0400
+Message-ID: <8bd0f97a0906081636p760f190cue9ef01454658dd46@mail.gmail.com>
+Subject: Re: adding lockdep support to the Blackfin arch
+To: Ingo Molnar <mingo@redhat.com>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday June 3, heinzm@redhat.com wrote:
-> > 
-> > I haven't spoken to them, no (except for a couple of barely-related
-> > chats with Alasdair).
-> > By and large, they live in their little walled garden, and I/we live
-> > in ours.
-> 
-> Maybe we are about to change that? ;-)
+On Mon, Jun 8, 2009 at 19:28, Mike Frysinger wrote:
+> ive been extending the Blackfin arch recently to support lockdep.
+> since i also had to implement irqflags/stacktrace as well, i wouldnt
+> be surprised if this issue is nested in there, plus this is a no-mmu
+> system.
+>
+> at any rate, when i boot up a Blackfin system with PROVE_LOCKING
+> enabled, i end up with this warning:
+> Badness at kernel/fork.c:988
+>
+> which correlates to this in copy_process():
+>    DEBUG_LOCKS_WARN_ON(!p->hardirqs_enabled);
 
-Maybe ... what should we talk about?
+sorry, stupid stuck keys triggered gmail sending before i finished
 
-Two areas where I think we might be able to have productive
-discussion:
+when i trace the code, i can see hardirqs_enabled toggling between 0
+and 1 ... but when it makes it to copy_process(), apparently it's 0
+which annoys the lockdep code.  any tips for me ?
 
- 1/ Making md personalities available as dm targets.
-    In one sense this is trivial as an block device can be a DM
-    target, and any md personality can be a block device.
-    However it might be more attractive if the md personality
-    responded to dm ioctls.
-    Considering specifically raid5, some aspects of plugging
-    md/raid5 underneath dm would be trivial - e.g. assembling the
-    array at the start.
-    However others are not so straight forward.
-    In particular, when a drive fails in a raid5, you need to update
-    the metadata before allowing any writes which depend on that drive
-    to complete.  Given that metadata is managed in user-space, this
-    means signalling user-space and waiting for a response.
-    md does this via a file in sysfs.  I cannot see any similar
-    mechanism in dm, but I haven't looked very hard.
+btw, in order to get this to work in the first place, i had to extend
+kernel/lockdep.c's static_obj() function as the Blackfin has custom
+data regions where some locks live (thus outside of the normal
+start/end map).  should this code use kallsyms' helper functions
+instead ?  otherwise, i needed this:
 
-    Would it be useful to pursue this do you think?
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -634,6 +634,27 @@ static int static_obj(void *obj)
+    if ((addr >= start) && (addr < end))
+        return 1;
 
-
- 2/ It might be useful to have a common view how virtual devices in
-    general should be managed in Linux.  Then we could independently
-    migrated md and dm towards this goal.
-
-    I imagine a block-layer level function which allows a blank
-    virtual device to be created, with an arbitrary major/minor
-    allocated.
-    e.g.
-         echo foo > /sys/block/.new
-    causes
-         /sys/devices/virtual/block/foo/
-    to be created.
-    Then a similar mechanism associates that with a particular driver.
-    That causes more attributes to appear in  ../block/foo/ which
-    can be used to flesh out the details of the device.
-
-    There would be library code that a driver could use to:
-      - accept subordinate devices
-      - manage the state of those devices
-      - maintain a write-intent bitmap
-    etc.
-
-    There would also need to be a block-layer function to 
-    suspend/resume or similar so that a block device can be changed
-    underneath a filesystem.
-
-    We currently have three structures for a block device:
-      struct block_device -> struct gendisk -> struct request_queue
-
-    I imagine allow either the "struct gendisk" or  the "struct
-    request_queue" to be swapped between two "struct block_device".
-    I'm not sure which, and the rest of the details are even more
-    fuzzy.
-
-    That sort of infrastructure would allow interesting migrations
-    without being limited to "just with dm" or "just within md".
-
-    Thoughts?
-
-NeilBrown
++#ifdef CONFIG_BLACKFIN
++   if (L1_DATA_A_LENGTH) {
++       start = (unsigned long) &_sdata_l1;
++       end   = (unsigned long) &_ebss_l1;
++       if ((addr >= start) && (addr < end))
++           return 1;
++   }
++   if (L1_DATA_B_LENGTH) {
++       start = (unsigned long) &_sdata_b_l1;
++       end   = (unsigned long) &_ebss_b_l1;
++       if ((addr >= start) && (addr < end))
++           return 1;
++   }
++   if (L2_LENGTH) {
++       start = (unsigned long) &_sdata_l2;
++       end   = (unsigned long) &_ebss_l2;
++       if ((addr >= start) && (addr < end))
++           return 1;
++   }
++#endif
++
+ #ifdef CONFIG_SMP
+    /*
+     * percpu var?
+-mike
