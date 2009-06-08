@@ -1,139 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbZFHWad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbZFHWau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756962AbZFHWad (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 18:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbZFHWaT
+	id S1756854AbZFHWau (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 18:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756113AbZFHWah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 18:30:19 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:5246 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751748AbZFHWaR (ORCPT
+	Mon, 8 Jun 2009 18:30:37 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53272 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754423AbZFHWag (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 18:30:17 -0400
-X-IronPort-AV: E=Sophos;i="4.41,326,1241395200"; 
-   d="scan'208";a="319317253"
-Date: Mon, 8 Jun 2009 15:30:19 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	Mon, 8 Jun 2009 18:30:36 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4A2D90EB.4070005@s5r6.in-berlin.de>
+Date: Tue, 09 Jun 2009 00:30:03 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
+MIME-Version: 1.0
+To: David VomLehn <dvomlehn@cisco.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
        linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
        netdev@vger.kernel.org, arjan@infradead.org
-Subject: Re: [PATCH 7/7] initdev:kernel:Await block device discovery
-Message-ID: <20090608223019.GC22222@cuplxvomd02.corp.sa.net>
-References: <20090606023416.GA5798@cuplxvomd02.corp.sa.net> <4A2A3F36.4070408@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A2A3F36.4070408@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Subject: Re: [PATCH 3/7] initdev:kernel:Await console discovery, v6
+References: <20090606023407.GA5695@cuplxvomd02.corp.sa.net> <4A2A2EED.3060506@s5r6.in-berlin.de> <20090608221344.GB22222@cuplxvomd02.corp.sa.net>
+In-Reply-To: <20090608221344.GB22222@cuplxvomd02.corp.sa.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 06, 2009 at 06:04:38AM -0400, Stefan Richter wrote:
-> David VomLehn wrote:
-> > --- a/init/do_mounts.c
-> > +++ b/init/do_mounts.c
-> > @@ -358,6 +358,18 @@ void __init mount_root(void)
-> >  #endif
-> >  }
-> >  
-> > +/**
-> > + * root_present - determine whether the root device is available yet
-> > + *
-> > + * Returns true if the root device is available, false if not. The check to
-> > + * see if the root device is available is done by check to see whether it
-> > + * has been assigned a major/minor device number.
-> > + */
-> > +static bool root_present(void)
-> > +{
-> > +	return name_to_dev_t(saved_root_name) != 0;
-> > +}
-> > +
-> >  /*
-> >   * Prepare the namespace - decide what/where to mount, load ramdisks, etc.
-> >   */
-> > @@ -398,12 +410,21 @@ void __init prepare_namespace(void)
-> >  		goto out;
-> >  
-> >  	/* wait for any asynchronous scanning to complete */
-> > -	if ((ROOT_DEV == 0) && root_wait) {
-> > +	if (ROOT_DEV == 0) {
-> >  		printk(KERN_INFO "Waiting for root device %s...\n",
-> >  			saved_root_name);
-> > -		while (driver_probe_done() != 0 ||
-> > -			(ROOT_DEV = name_to_dev_t(saved_root_name)) == 0)
-> > -			msleep(100);
-> > +		if (root_wait) {
-> > +			while (driver_probe_done() != 0 ||
-> > +				(ROOT_DEV = name_to_dev_t(saved_root_name)) ==
-> > +					0)
-> > +				msleep(100);
-> > +		}
-> > +
-> > +		else {
-> > +			initdev_wait(INITDEV_BLOCK_TYPE, root_present);
-> > +			ROOT_DEV = name_to_dev_t(saved_root_name);
-> > +		}
-> > +
-> >  		async_synchronize_full();
-> >  	}
-> >  
+David VomLehn wrote:
+> On Sat, Jun 06, 2009 at 04:55:09AM -0400, Stefan Richter wrote:
+>> David VomLehn wrote:
+...
+>>> v3.2	Use only a single new command line parameter by adding the possible
+>>> 	value "forever".  Add message specifying the parameter to modify to
+>>> 	increase the delay for console initialization
+>>> v3.1	Correct the abbreviation for milliseconds in
+>>> 	Documentation/kernel-parameters.txt to be "ms", not "mS". Thanks to
+...
+>>> ---
+>>>  drivers/accessibility/braille/braille_console.c |    2 +
+>>>  kernel/printk.c                                 |   29 ++++++++++++++++++++++-
+>>>  2 files changed, 30 insertions(+), 1 deletions(-)
+>> Is this diff complete?
 > 
-> This together with 1/7, 5/7, 6/7 looks seriously flawed, if not broken.
-> 
-> 1.)  It depends on the rootdelay so big that it is guaranteed that one 
-> or more initdev_found() have been called before prepare_namespace()'s 
-> ssleep(root_delay) is over.  This is because initdev_wait() does not 
-> wait at all if called when the number of pending initdevs is 0.
-> 
-> Hence the whole thing, as currently implemented, is quite useless:  The 
-> user/admin has to guess what a safe rootdelay value is, and then the 
-> kernel will always be delayed for >= rootdelay.
+> To the best of my knowledge, yes, it is complete. What makes it look as though
+> it might not be?
 
-I think you misunderstood.  Buses are enumerated before this code is
-reached and thus initdev_found() has already been called for all attached
-block devices. If there are devices found, but not probed, the number
-of pending BLOCK device initdevs will be greater than zero.
-
-Also, this code doesn't depend on rootdelay at all. In fact, avoiding
-unnecessary delays both in finding devices and in finding out that you don't
-have a device is the whole reason for this patch. I really can't stand
-things like rootdelay so long as the hardware supports proper device
-discovery.
-
-> 2.)  The fact that initdev_wait() does not wait at all when there are no 
-> pending initdevs causes another failure.  If there are sequences of the 
-> following type:
-> 
-> 	initdev_found(INITDEV_BLOCK_TYPE);
-> 	initdev_probe_done(INITDEV_BLOCK_TYPE); /* found other dev */
-> 	initdev_found(INITDEV_BLOCK_TYPE);
-> 	initdev_probe_done(INITDEV_BLOCK_TYPE); /* found root dev */
-> 
-> then prepare_namespace() will fall through without ROOT_DEV found and 
-> booting will fail, won't it?
-
-If this were to happen, then you would be correct, but since initdev_found()
-is called for all block devices before reaching this code, you will only
-continue once initdev_probe_done() has been called for all of those devices.
-
-> I suspect that there are similar problems with the console and 
-> networking parts of the patch series.
-
-I'm less confident in the block code than the console and networking parts, but
-don't think there is a problem with any of these.  It's also worth mentioning
-that this is not a theoretical exercise--without this patch, I have no USB
-console, network device, or root filesystem. With the patch, I have all three.
-That is no guarantee of correctness, but it implies that it's on the right
-path.
-
-I would appreciate it if you could take a closer look at the locations where
-initdev_found() and initdev_probe_done() are called and see if you still
-think there is a problem.
-
-> Stefan Richter
-
-David VomLehn
+The history notes.
+kernel-parameters.txt, new command line parameter...
+-- 
+Stefan Richter
+-=====-==--= -==- -=--=
+http://arcgraph.de/sr/
