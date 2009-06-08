@@ -1,152 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZFHPY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbZFHPaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbZFHPY3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 11:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbZFHPYP
+	id S1756032AbZFHPaV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 11:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbZFHPaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 11:24:15 -0400
-Received: from cmpxchg.org ([85.214.51.133]:59807 "EHLO cmpxchg.org"
+	Mon, 8 Jun 2009 11:30:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51230 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756824AbZFHPYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 11:24:14 -0400
-Date: Mon, 8 Jun 2009 17:21:50 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch][v2] swap: virtual swap readahead
-Message-ID: <20090608152150.GA7563@cmpxchg.org>
-References: <20090602223738.GA15475@cmpxchg.org> <Pine.LNX.4.64.0906071747440.20105@sister.anvils>
-Mime-Version: 1.0
+	id S1753545AbZFHPaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 11:30:07 -0400
+Date: Mon, 8 Jun 2009 17:29:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [git pull][PATCH 0/5] dma-debug minor fixes and cleanups
+Message-ID: <20090608152958.GC20905@elte.hu>
+References: <1244471650-4632-1-git-send-email-joerg.roedel@amd.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0906071747440.20105@sister.anvils>
+In-Reply-To: <1244471650-4632-1-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 07, 2009 at 06:55:15PM +0100, Hugh Dickins wrote:
-> On Wed, 3 Jun 2009, Johannes Weiner wrote:
-> >
-> > The current swap readahead implementation reads a physically
-> > contiguous group of swap slots around the faulting page to take
-> > advantage of the disk head's position and in the hope that the
-> > surrounding pages will be needed soon as well.
-> > 
-> > This works as long as the physical swap slot order approximates the
-> > LRU order decently, otherwise it wastes memory and IO bandwidth to
-> > read in pages that are unlikely to be needed soon.
-> > 
-> > However, the physical swap slot layout diverges from the LRU order
-> > with increasing swap activity, i.e. high memory pressure situations,
-> > and this is exactly the situation where swapin should not waste any
-> > memory or IO bandwidth as both are the most contended resources at
-> > this point.
-> > 
-> > Another approximation for LRU-relation is the VMA order as groups of
-> > VMA-related pages are usually used together.
-> > 
-> > This patch combines both the physical and the virtual hint to get a
-> > good approximation of pages that are sensible to read ahead.
-> > 
-> > When both diverge, we either read unrelated data, seek heavily for
-> > related data, or, what this patch does, just decrease the readahead
-> > efforts.
-> > 
-> > To achieve this, we have essentially two readahead windows of the same
-> > size: one spans the virtual, the other one the physical neighborhood
-> > of the faulting page.  We only read where both areas overlap.
-> > 
-> > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> > Reviewed-by: Rik van Riel <riel@redhat.com>
-> > Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> > Cc: Andi Kleen <andi@firstfloor.org>
+
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
+
+> Hi Ingo,
 > 
-> I think this a great idea, a very promising approach.  I like it
-> so much better than Andrew's and others' proposals to dedicate
-> areas of swap space to distinct virtual objects: which, as you
-> rightly pointed out, condemn us to unnecessary seeking when
-> writing swap (and is even more of an issue if we're writing
-> to SSD rather than HDD).
+> The following changes since commit 62a6f465f6572e1f28765c583c12753bb3e23715:
+>   Ingo Molnar (1):
+>         Merge branch 'dma-debug/2.6.31' of git://git.kernel.org/.../joro/linux-2.6-iommu into core/iommu
 > 
-> It would be nice to get results from a wider set of benchmarks
-> than just qsbench; but I don't think qsbench is biased in your
-> favour, and I don't think you need go to too much trouble on
-> that - let's just aim to get your work into mmotm, then we can
-> all play around with it for a while.  I suppose what I'd most
-> like is to try it with shmem, which you've understandably left
-> out for now.
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git dma-debug/fixes
+> 
+> Joerg Roedel (5):
+>       dma-debug: comment style fixes
+>       dma-debug: code style fixes
+>       dma-debug: use pr_* instead of printk(KERN_* ...)
+>       dma-debug: disable/enable irqs only once in device_dma_allocations
+>       dma-debug: simplify logic in driver_filter()
+> 
+>  lib/dma-debug.c |  112 +++++++++++++++++++++++++++---------------------------
+>  1 files changed, 56 insertions(+), 56 deletions(-)
+> 
+> These changes fix various style issues and convert API functions 
+> to newer versions. The last two patches optimize irq 
+> enable/disable frequency and simplify driver filter code to make 
+> it more readable. Please pull.
 
-I agree, it would be nice to have this in mm soonish and have it
-exposed a bit more until .31 or .32.  And I'll continue to test other
-loads.
+Pulled, thanks Joerg!
 
-> You'll be hating me for the way I made shmem_truncate_range() etc.
-> nigh incomprehensible when enabling highmem index pages there.
-> Christoph Rohland's original was much nicer.  Again and again and
-> again I've wanted to throw all that out, and keep swap entries in
-> the standard radix tree which keeps the struct page pointers; but
-> again and again and again, I've been unable to justify losing the
-> highmem index ability - for a while it seemed as if x86_64 was
-> going to make highmem a thing of the past, and it's certainly helped
-> us to ignore 32GB 32-bit; but I think 4GB 32-bit is here a long while.
-
-Regarding highmem, I have only one 32 bit box with 1G memory and
-highmem= seems to be broken right now.  The documentation says it will
-fix-set the zone.  It does not on x86, but instead seems to set up
-Normal and then complain about the lack of remaining pages to stuff
-into HighMem.
-
-With 128M HighMem, testing for highpte mapping overhead is a bit bogus
-so I can't do that until I figure something out (either fixing
-highmem= or no-opping GFP_HIGHMEM and use GFP_HIGHPTE for the pte
-pages).
-
-Or redoing the patch as you suggested below, which is probably what I
-will opt for.
-
-> Though I like the way you localized it all into swapin_readahead(),
-> I'd prefer to keep ptes out of swap_state.c, and think several issues
-> will fall away if you turn your patch around.  You'll avoid the pte code
-> in swap_state.c, you'll satisfy Andi's concerns about locking/kmapping
-> overhead, and you'll find shmem much much easier, if instead of peering
-> back at where you've come from in swapin_readahead(), you make the outer
-> levels (do_swap_page and shmem_getpage) pass a vector of swap entries to
-> swapin_readahead()?  That vector on stack, and copied from the one page
-> table or index page (don't bother to cross page table or index page
-> boundaries) while it was mapped.
-
-That is a nice suggestion.
-
-> It's probably irrelevant to you, but I've attached an untested patch
-> of mine which stomps somewhat on this area: I was shocked to notice
-> shmem_getpage() in a list of deep stack offenders a few months back,
-> realized it was those unpleasant NUMA mempolicy pseudo-vmas, and made
-> a patch to get rid of them.  I've rebased it to 2.6.30-rc8 and checked
-> that the resulting kernel runs, but not really tested it; and I think
-> I didn't even try to get the mpol reference counting right (tends to
-> be an issue precisely in swapin_readahead, where one mpol ends up used
-> repeatedly) - mpol refcounting is an arcane art only Lee understands!
-> I've attached the patch because you may want to glance at it and
-> decide, either that it's something which is helpful to the direction
-> you're going in and you'd like to base upon it, or that it's a
-> distraction and you'd prefer me to keep it to myself until your
-> changes are in.
-
-I will try to make swapin_readahead() take an array of ptes, then your
-patch shouldn't get in my way as I don't need the vma anymore.
-
-> But your patch below is incomplete, isn't it?  The old swapin_readahead()
-> is now called swapin_readahead_phys(), and you want shmem_getpage() to be
-> using that for now: but no prototype for it and no change to mm/shmem.c.
-
-You probably missed the no-vma or no-vma->vm_mm branch in
-swapin_readahead().  shmem either sends in a NULL-vma or the dummy-vma
-that has no vm->vm_mm set.  Oops.  That is of course a bug, vma->vm_mm
-is uninitialized, not NULL.  But that will go away as well.
-
-Thanks,
-
-	Hannes
+	Ingo
