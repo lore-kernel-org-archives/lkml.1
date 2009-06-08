@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751801AbZFHET7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751459AbZFHEVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751801AbZFHET7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 00:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbZFHETu
+	id S1751459AbZFHEVV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 00:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbZFHEVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 00:19:50 -0400
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:60611 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbZFHETu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 00:19:50 -0400
-Date: Mon, 8 Jun 2009 09:49:34 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@redhat.com>,
-       dipankar@in.ibm.com
-Subject: Re: [PATCH] cpuhotplug: introduce try_get_online_cpus() take 2
-Message-ID: <20090608041934.GB17979@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <4A1F9CEA.1070705@cn.fujitsu.com> <20090530015342.GA21502@linux.vnet.ibm.com> <20090530043739.GA12157@in.ibm.com> <4A27708C.6030703@cn.fujitsu.com> <20090605153714.GB6778@linux.vnet.ibm.com>
+	Mon, 8 Jun 2009 00:21:13 -0400
+Received: from mga11.intel.com ([192.55.52.93]:32638 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750711AbZFHEVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 00:21:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,322,1241420400"; 
+   d="scan'208";a="697331987"
+From: "Gao, Yunpeng" <yunpeng.gao@intel.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: "gregkh@suse.de" <gregkh@suse.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 8 Jun 2009 12:23:29 +0800
+Subject: RE: [PATCH 1/2]Intel Moorestown NAND driver patch for mainline
+Thread-Topic: [PATCH 1/2]Intel Moorestown NAND driver patch for mainline
+Thread-Index: Acnmt+T9Z6wocCinQV6umhx3C9/gDQBMh+2w
+Message-ID: <38D9F46DFF92C54980D2F2C1E8EE313001A45F4F3C@pdsmsx503.ccr.corp.intel.com>
+References: <20090606164455.GB27257@intel.com>
+ <20090606160413.08c254cf@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090606160413.08c254cf@lxorguk.ukuu.org.uk>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="gb2312"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090605153714.GB6778@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n584Lt54001859
 
-Hi Paul,
 
-On Fri, Jun 05, 2009 at 08:37:14AM -0700, Paul E. McKenney wrote:
-> 
-> One question for Gautham Shenoy -- are non-atomic CPU-hotplug notifiers
-> always invoked from the task that did the cpu_hotplug_begin()?
 
-Except for the notifiers handling two events, rest of the notifiers
-are always invoked from the task that did the cpu_hotplug_begin().
+>-----Original Message-----
+>From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk]
+>Sent: 2009Äê6ÔÂ6ÈÕ 23:04
+>To: Gao, Yunpeng
+>Cc: gregkh@suse.de; linux-kernel@vger.kernel.org
+>Subject: Re: [PATCH 1/2]Intel Moorestown NAND driver patch for mainline
+>
+>On Sun, 7 Jun 2009 00:44:55 +0800
+>Yunpeng Gao <yunpeng.gao@intel.com> wrote:
+>
+>> Hi Greg,
+>>
+>>    This is the first Intel Moorestown NAND driver patch for mainline. I
+>>    generated it and complie it against Linus' kernel tree, tag v2.6.30-rc8.
+>
+>Flash drivers should go to David Woodhouse <dwmw2@infradead.org> as he
+>maintains the mtd  layer flash support code (which you don't seem to be
+>using ?)
 
-The two events are CPU_DYING which is called from the context of the
-stop_machine_thread and CPU_STARTING which is called from the context of
-the idle thread on the CPU that has just come up. The notifiers handling
-these two events are expected to be atomic.
+Hi Alan,
 
-> If so, well and good.  If not, then it would not be possible to
-> expedite RCU grace periods from within CPU-hotplug notifiers.
+The Moorestown NAND flash driver is licensed from the Moorestown NAND controller vendor. It's a standalone NAND driver. According to the vendor, this driver has some advanced features specific to the controller hardware and is difficult to port to MTD subsystem. 
 
-I hope this would be good enough :-)
-> 
-> 							Thanx, Paul
-> 
+As the driver is still under development now and not ready for submitting to either block or MTD subsystem, I think it's better to first submit it to staging for widely review. Then after all features of the driver were enabled, we can discuss and decide which subsystem to submit it to.
 
--- 
-Thanks and Regards
-gautham
+Thanks.
+
+Rgds,
+Yunpeng
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
