@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756552AbZFHWAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbZFHWDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756552AbZFHWAm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 18:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755766AbZFHWA3
+	id S1755707AbZFHWDI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 18:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbZFHWC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 18:00:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53794 "EHLO mx3.mail.elte.hu"
+	Mon, 8 Jun 2009 18:02:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45181 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755975AbZFHWA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 18:00:28 -0400
-Date: Tue, 9 Jun 2009 00:00:13 +0200
+	id S1754053AbZFHWC5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 18:02:57 -0400
+Date: Tue, 9 Jun 2009 00:02:53 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Jason Baron <jbaron@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
-       mbligh@google.com, roland@redhat.com, fche@redhat.com
-Subject: Re: [PATCH 2/2] convert to syscall tracepoints
-Message-ID: <20090608220013.GC22049@elte.hu>
-References: <cover.1244222378.git.jbaron@redhat.com> <af4031af81ce372eac2be125dabc2ea746b4308b.1244222378.git.jbaron@redhat.com> <20090607132936.GC12088@elte.hu> <20090608202406.GA3181@redhat.com> <20090608204056.GA26832@elte.hu> <20090608211150.GC3181@redhat.com> <20090608212526.GA22049@elte.hu> <20090608213833.GD3181@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH v3] printk: add halt_delay parameter for printk delay
+	in halt phase
+Message-ID: <20090608220253.GD22049@elte.hu>
+References: <a8e1da0906080040k7852f770v1e2aa2ebb0f52369@mail.gmail.com> <20090608081439.GB6372@elte.hu> <20090608012845.9c428525.akpm@linux-foundation.org> <a8e1da0906080142u62a45c47g2181a79addfb6168@mail.gmail.com> <20090608084807.GE6372@elte.hu> <20090608092607.8b331bf0.akpm@linux-foundation.org> <20090608171501.GA15399@elte.hu> <20090608143913.749e19c5.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090608213833.GD3181@redhat.com>
+In-Reply-To: <20090608143913.749e19c5.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,36 +35,61 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jason Baron <jbaron@redhat.com> wrote:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> Yes, this can easily be done....but that wasn't the problem I was 
-> interested in solving. I wanted a per syscall tracepoint site. I 
-> thought I had been making that clear all along...
+> On Mon, 8 Jun 2009 19:15:01 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > questions: is it possible for interrupts to be disabled at this 
+> > > time? If so, can we get an NMI watchdog hit?
+> > 
+> > no, we generally turn off the nmi watchdog during shutdown, 
+> > disable the lapic and io-apic, etc.
+> 
+> Is x86 the only architecture which implements an NMI watchdog?
 
-We can do that, but _not in the syscall_.
+Sparc64 does too IIRC.
 
-There's absolutely nothing wrong with having an array of 
-tracepoints/callbacks that is being called by the TIF_FTRACE code. 
-We already have per syscall attributes - that can include a callback 
-too.
+> > > Is the softlockup detector still running and if so, can it 
+> > > trigger?
+> > 
+> > in (non-emergency) reboot, last i checked, we stopped all other 
+> > CPUs first, and then killed the current one. There's no chance 
+> > for the watchdog thread to run.
+> 
+> OK, but...  See below.
+> 
+> > Anyway ... you seem to be uncomfortable about this patch - 
+> > should i delay it for now to let it all play out? We are close 
+> > to the merge window.
+> 
+> I'm OK - I'm just bouncing ideas and questions off you guys, to 
+> make sure that we've thought this through all the way.
+> 
+> Here's another: why is it a boot option rather than a 
+> runtime-tunable? A /proc tweakable is generally preferable because 
+> it avoids the oh-crap-i-forgot-to-edit-grub.conf thing.  And we 
+> could perhaps then remove all those system_state tests: userspace 
+> sets printk_delay immediately prior to running halt/reboot/etc?
+> 
+> Plus the feature becomes more general - perhaps there are use 
+> cases where people want to slow down printks, such as: kernel goes 
+> oops, data scrolls off, serial console/netconsole unavailable.  
+> pause_on_oops is supposed to help here but last time I tried it, 
+> it kinda didn't work, plus pause_on_oops doesn't solve the 
+> data-scrolled-off problem.
+> 
+> Thirdly, if we do this as a general /proc/printk_delay thing, 
+> perhaps it can be consolidated with the existing boot_delay= 
+> implementation.
 
-> [...] Please notice that the implementation I've proposed obtains 
-> the syscall number, and then jumps to the appropriate tracepoint 
-> and then exits. Its quite efficient. In fact, I've enabled all of 
-> the syscalls using my proposed method and running tbench I'm able 
-> to get more throughput then using the current syscall method. I've 
-> also done 'getpid()' loops and seen no performance difference 
-> between the approaches. I'm happy to run any other benchmarks...
+Consolidatig with the existing boot delay implementation was one of 
+my first suggestions.
 
-If you cannot see a performance difference in getpid() loop that's 
-possibly because glibc caches getpid() results ...
+The /proc thing definitely makes sense - the boot option was just 
+symmetry to the existing boot-delay approach.
 
-Try getppid().
-
-Anyway - bloating every syscall with a tracepoint check is out of 
-question and unnecessary. We already have the TIF_ flag based 
-machinery to call back on syscalls - and what we need is the proper 
-type/field info extracted and /debug/tracing/syscalls/* entries 
-created.
+I've unapplied this patch - i agree that it needs a bit more work 
+and i dont want to hold up other changes in the core/printk branch.
 
 	Ingo
