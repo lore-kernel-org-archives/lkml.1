@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbZFHOxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZFHOzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755928AbZFHOxx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 10:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbZFHOxn
+	id S1756232AbZFHOzK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 10:55:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754961AbZFHOzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 10:53:43 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:37150 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751731AbZFHOxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 10:53:42 -0400
-Message-ID: <4A2D25F6.9080300@msgid.tls.msk.ru>
-Date: Mon, 08 Jun 2009 18:53:42 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 8 Jun 2009 10:55:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54443 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754633AbZFHOzA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 10:55:00 -0400
+Date: Mon, 8 Jun 2009 07:53:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>, Gerd Knorr <kraxel@suse.de>
+Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
+ kernels
+In-Reply-To: <200906071023.04789.rusty@rustcorp.com.au>
+Message-ID: <alpine.LFD.2.01.0906080749180.6847@localhost.localdomain>
+References: <4A0B62F7.5030802@goop.org> <200906051416.19311.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906050753550.6847@localhost.localdomain> <200906071023.04789.rusty@rustcorp.com.au>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: Linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [Security, resend] Instant crash with rtl8169 and large packets
-References: <4A2D1147.8020101@msgid.tls.msk.ru> <4A2D1FE4.5030100@gmail.com>
-In-Reply-To: <4A2D1FE4.5030100@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you Eric for the reply.
 
-Eric Dumazet wrote:
-> Michael Tokarev a écrit :
-[]
->> The situation is very simple: with an RTL8169 (probably
->> onboard) GigE card which, by default, is configured to
->> have MTU (maximal transmission unit) to be 1500 bytes,
->> it's *trivial* to instantly crash the machine by sending
->> it a *single* packet of size >1500 bytes (provided the
->> network switch can handle jumbo frames).
-[]
->>  http://www.corpit.ru/mjt/r8169-mtu-oops.jpg
 
-> I suppose you use a recent kernel ?
+On Sun, 7 Jun 2009, Rusty Russell wrote:
+>
+> "possible"?  You mean "acceptable".  Gray, not black and white.
 
-http://marc.info/?t=123462473200002 -- here's my first attempt,
-at Feb this year.  It was 2.6.27 or so.  Right now I'm running
-2.6.29[.4].  So I think yes, I use a recent kernel.
+I don't think we can possibly claim to support UP configurations if we 
+don't patch. 
 
-> Could you please try following patch ?
-[]
-> diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-> index e94316b..c08b97a 100644
-> --- a/drivers/net/r8169.c
-> +++ b/drivers/net/r8169.c
-> @@ -3468,7 +3468,7 @@ static int rtl8169_rx_interrupt(struct net_device *dev,
->  
->  		if (status & DescOwn)
->  			break;
-> -		if (unlikely(status & RxRES)) {
-> +		if (unlikely(status & (RxRES | RxRWT | RxRUNT | RxCRC | RxFOVF))) {
->  			if (netif_msg_rx_err(tp)) {
->  				printk(KERN_INFO
->  				       "%s: Rx ERROR. status = %08x\n",
+> 1) Where's the line?
 
-Tried that one, got no printk (at least not a visible one) and exactly
-the same OOPS as before.  Trivial test with
+"As good as we can make it". There is no line. There's "your code sucks so 
+badly that it needs to get fixed, or we'll rip it out or disable it".
 
-   ping -c1 -s3000 $my_ip_addr
+> 2) Where are we?  Does patching claw back 5% of the loss?  50%?  90%?
 
-(learned to add -c1 because the previous time my machine crashed several times
-in a row till I figured out what's going on and unplugged the ethernet cord --
-even if ping were running from an xterm executed from the machine to which I
-were pinging to! :)
+On some things, especially on P4, the lock overhead was tens of percent. 
+Just a single locked instruction takes closer to two hundred instructions.
 
-Also got ext4fs corruption when rebooted (it's a staging area so nothing important
-is there but still.. "interesting").
+Of course, on those P4's, just kernel entry/exit is pretty high too (even 
+with sysenter/exit), so I doubt you'll ever see something be 90% just 
+because of that, unless it causes extra IO or other non-CPU issues.
 
-Also tried 32bit kernel (were using 64bits -- exactly the same result).
-
-I wish I had a serial cable or even a serial port on this machine.... But I guess
-it'd not help anyway, because the machine locks hard.
-
-Thanks!
-
-/mjt
+		Linus
