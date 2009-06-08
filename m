@@ -1,64 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbZFHQaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbZFHQbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757385AbZFHQaU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 12:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbZFHQ3y
+	id S1757441AbZFHQbw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 12:31:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756111AbZFHQbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 12:29:54 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:47784 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757331AbZFHQ3w (ORCPT
+	Mon, 8 Jun 2009 12:31:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56731 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756033AbZFHQbp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 12:29:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=M8zitzc4WQtCc1LklidU3WMy7eVTrg1h1LAl20kwSSB7XftcbdYWdZvWrTwqNxPXmR
-         v6bLzomsGONV9AzTnEwrs+9fOWHZCCC56xASJO3NggrL87WA5BZtu/qMm/rQstJ85jNk
-         3mWK4kgPBFt0Mx9CO1OU4gSLrkOj7EWUG9aMQ=
-MIME-Version: 1.0
-In-Reply-To: <20090608150603.GB20905@elte.hu>
-References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org> 
-	<20090608131159.GA15100@srcf.ucam.org> <20090608132235.GC13214@elte.hu> 
-	<200906081539.20459.oliver@neukum.org> <20090608142154.GD14234@elte.hu> 
-	<20090608143023.GA16752@srcf.ucam.org> <20090608150603.GB20905@elte.hu>
-From: Ray Lee <ray-lk@madrabbit.org>
-Date: Mon, 8 Jun 2009 09:29:34 -0700
-X-Google-Sender-Auth: 58a8e44af0e18eef
-Message-ID: <2c0942db0906080929r31e39fe5w673ed877bb5f4966@mail.gmail.com>
-Subject: Re: Run-time PM idea (was: Re: [linux-pm] [RFC][PATCH 0/2] PM: 
-	Rearrange core suspend code)
+	Mon, 8 Jun 2009 12:31:45 -0400
+Date: Mon, 8 Jun 2009 09:26:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Oliver Neukum <oliver@neukum.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Magnus Damm <magnus.damm@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+Cc: Dave Young <hidave.darkstar@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH v3] printk: add halt_delay parameter for printk delay in
+ halt phase
+Message-Id: <20090608092607.8b331bf0.akpm@linux-foundation.org>
+In-Reply-To: <20090608084807.GE6372@elte.hu>
+References: <a8e1da0906080040k7852f770v1e2aa2ebb0f52369@mail.gmail.com>
+	<20090608081439.GB6372@elte.hu>
+	<20090608012845.9c428525.akpm@linux-foundation.org>
+	<a8e1da0906080142u62a45c47g2181a79addfb6168@mail.gmail.com>
+	<20090608084807.GE6372@elte.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 8, 2009 at 8:06 AM, Ingo Molnar<mingo@elte.hu> wrote:
->
-> * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+On Mon, 8 Jun 2009 10:48:07 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
->> I'd like the kernel to expose this functionality but leave the
->> policy decisions to userland.
->
-> The thing is, suspending something that is being used and relied on
-> by an app is a _bug_. This is rather fundamental: hardware state and
-> usage tracking is _NOT POLICY_.
+> 
+> * Dave Young <hidave.darkstar@gmail.com> wrote:
+> 
+> > On Mon, Jun 8, 2009 at 4:28 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
+> > > On Mon, 8 Jun 2009 10:14:39 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> > >
+> > >>
+> > >> * Dave Young <hidave.darkstar@gmail.com> wrote:
+> > >>
+> > >> > Add a halt_delay module parameter in printk.c used to read the
+> > >> > printk messages in halt/poweroff/restart phase, delay each printk
+> > >> > messages by halt_delay milliseconds. It is useful for debugging if
+> > >> > there's no other way to dump kernel messages that time.
+> > >> >
+> > >> > The halt_delay max value is 65535, default value is 0, change it
+> > >> > by:
+> > >> >
+> > >> > echo xxx > /sys/module/printk/parameters/halt_delay
+> > >> >
+> > >> > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> > >> > ---
+> > >> > Documentation/kernel-parameters.txt | __ __5 +++++
+> > >> > kernel/printk.c __ __ __ __ __ __ __ __ __ __ | __ 17 +++++++++++++++++
+> > >> > 2 files changed, 22 insertions(+)
+> > >> >
+> > >> > --- linux-2.6.orig/kernel/printk.c __2009-06-08 13:55:35.000000000 +0800
+> > >> > +++ linux-2.6/kernel/printk.c __ __ __ 2009-06-08 13:56:23.000000000 +0800
+> > >> > @@ -250,6 +250,22 @@ static inline void boot_delay_msec(void)
+> > >> > __}
+> > >> > __#endif
+> > >> >
+> > >> > +/* msecs delay after each halt/poweroff/restart phase printk,
+> > >> > + unsigned short is enough for delay in milliseconds */
+> > >> > +static unsigned short halt_delay;
+> > >> > +
+> > >> > +static inline void halt_delay_msec(void)
+> > >> > +{
+> > >> > + __ if (unlikely(halt_delay == 0 || !(system_state == SYSTEM_HALT
+> > >> > + __ __ __ __ __ __ __ __ __ __ __ __ __ || system_state == SYSTEM_POWER_OFF
+> > >> > + __ __ __ __ __ __ __ __ __ __ __ __ __ || system_state == SYSTEM_RESTART)))
+> > >> > + __ __ __ __ __ return;
+> > >>
+> > >> This is a tiny bit ugly (and goes into the vprintf path) but i can
+> > >> see no other way either - a system_state > SYSTEM_RUNNING check
+> > >> would needlessly include the suspend-to-disk state (which we dont
+> > >> want to include here).
+> > >>
+> > >> In theory we could turn system_state into a bitmask and have a
+> > >> print_delay_mask check instead of these flags ... but that is a far
+> > >> wider change and i'm not sure it's a net step forwards.
+> > >>
+> > >> I've applied your patch to tip:core/printk with small edits to the
+> > >> changelog - Linus & Andrew is Cc:ed, should they have any
+> > >> objections.
+> > >
+> > > Could we not put just a single delay in there, immediately prior to halting,
+> > > restarting or poweroffing?
+> > 
+> > But, then prink messages will still flush too fast for us to see 
+> > the detail.
 
-Yes. But, actual example time: what about the case where completely
-turning off a laptop's DVD drive saves extra power, but then also
-turns off kernel and userspace notification of a disc being inserted?
+Only if there are so many unlogged messages that they scroll of the
+screen.  Is that the case?
 
-One of the Other OS's handles this by having a popup when the battery
-gets low, asking if it's okay to turn the drive off. This is part of
-what Matthew is talking about here.
+> Plus often there's a loop in architecture code that tries various 
+> methods of reboot. We dont know which one works - and any of them 
+> could produce warning messages. (and this happened a number of times 
+> in the past)
+> 
+> So this would mean having to find up to a hundred of 'reboot now' 
+> places in a two dozen architectures (and keeping them all maintained 
+> ongoing as well). Does not seem like a good choice to me.
+> 
+
+hm.  If we need to actually capture all of those.
+
+questions: is it possible for interrupts to be disabled at this time? 
+If so, can we get an NMI watchdog hit?
+
+Is the softlockup detector still running and if so, can it trigger?
+
