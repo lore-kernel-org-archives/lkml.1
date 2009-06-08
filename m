@@ -1,88 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbZFHO17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbZFHOah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbZFHO17 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 10:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbZFHO1t
+	id S1756120AbZFHOah (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 10:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbZFHOa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 10:27:49 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:41138 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753483AbZFHO1s convert rfc822-to-8bit (ORCPT
+	Mon, 8 Jun 2009 10:30:29 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:46208 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751130AbZFHOa3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 10:27:48 -0400
-Message-ID: <4A2D1FE4.5030100@gmail.com>
-Date: Mon, 08 Jun 2009 16:27:48 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 8 Jun 2009 10:30:29 -0400
+Date: Mon, 8 Jun 2009 15:30:23 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Oliver Neukum <oliver@neukum.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: Run-time PM idea (was: Re: [linux-pm] [RFC][PATCH 0/2] PM:
+	Rearrange core suspend code)
+Message-ID: <20090608143023.GA16752@srcf.ucam.org>
+References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org> <20090608131159.GA15100@srcf.ucam.org> <20090608132235.GC13214@elte.hu> <200906081539.20459.oliver@neukum.org> <20090608142154.GD14234@elte.hu>
 MIME-Version: 1.0
-To: Michael Tokarev <mjt@tls.msk.ru>
-CC: Linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [Security, resend] Instant crash with rtl8169 and large packets
-References: <4A2D1147.8020101@msgid.tls.msk.ru>
-In-Reply-To: <4A2D1147.8020101@msgid.tls.msk.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 08 Jun 2009 16:27:48 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090608142154.GD14234@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev a écrit :
-> [Please excuse me for the resend, --
->  picked the wrong address for netdev again]
-> 
-> Hello.
-> 
-> This is a resend (sort of) of several months old email.
-> Previous email about this issue has been mostly ignored.
-> 
-> The situation is very simple: with an RTL8169 (probably
-> onboard) GigE card which, by default, is configured to
-> have MTU (maximal transmission unit) to be 1500 bytes,
-> it's *trivial* to instantly crash the machine by sending
-> it a *single* packet of size >1500 bytes (provided the
-> network switch can handle jumbo frames).
-> 
-> I verified with on several different machines - all I were
-> able to find with this card - and all behaves exactly the
-> same.
-> 
-> When sending a packet of size, say, 3000 bytes (ping -s 3000)
-> from another machine to a machine running rtl8169 with no
-> MTU configured, kernel OOPSes.
-> 
-> I captured one such OOPS (unfortunately without the first
-> line few lines) here:
-> 
->  http://www.corpit.ru/mjt/r8169-mtu-oops.jpg
-> 
-> (since the network goes boom at that time, no network console
-> is working).
-> 
-> But for anyone familiar with the driver's internals it
-> should be easy to figure the issue out.
-> 
-> This is, in my opinion, quite a serious issue.  And I've no
-> idea why it is being ignored for several months.
+On Mon, Jun 08, 2009 at 04:21:54PM +0200, Ingo Molnar wrote:
 
-I suppose you use a recent kernel ?
+> The kernel _needs_ to have precise information about whether a piece 
+> of hardware is in use or not.
 
-Could you please try following patch ?
+The kernel can only have that information if userspace tells it. What 
+we're quibbling over is whether the kernel should be explicitly told 
+about the requirement (ie, every time an app makes a key grab in X the 
+kernel gets told about it) or whether it should be implicit (userspace 
+knows that a key grab has been made and so requests that the keyboard 
+not be suspended).
 
-Thank you
+We *can* put all of that complexity in the kernel. The question is 
+whether it buys us anything. We'd have to modify huge chunks of 
+userspace and in the process we'd end up limited to whatever policy 
+happens to exist in the version of the kernel the user is running.
 
-diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-index e94316b..c08b97a 100644
---- a/drivers/net/r8169.c
-+++ b/drivers/net/r8169.c
-@@ -3468,7 +3468,7 @@ static int rtl8169_rx_interrupt(struct net_device *dev,
- 
- 		if (status & DescOwn)
- 			break;
--		if (unlikely(status & RxRES)) {
-+		if (unlikely(status & (RxRES | RxRWT | RxRUNT | RxCRC | RxFOVF))) {
- 			if (netif_msg_rx_err(tp)) {
- 				printk(KERN_INFO
- 				       "%s: Rx ERROR. status = %08x\n",
+I'd like the kernel to expose this functionality but leave the policy 
+decisions to userland.
 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
