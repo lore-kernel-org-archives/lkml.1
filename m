@@ -1,154 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756354AbZFHP7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbZFHQB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756354AbZFHP7v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 11:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755361AbZFHP7l
+	id S1756556AbZFHQB4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 12:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754918AbZFHQBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 11:59:41 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:55684 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753436AbZFHP7j convert rfc822-to-8bit (ORCPT
+	Mon, 8 Jun 2009 12:01:48 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:47245 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754758AbZFHQBr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 11:59:39 -0400
-Message-ID: <4A2D3568.6010901@gmail.com>
-Date: Mon, 08 Jun 2009 17:59:36 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Michael Tokarev <mjt@tls.msk.ru>
-CC: Linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [Security, resend] Instant crash with rtl8169 and large packets
-References: <4A2D1147.8020101@msgid.tls.msk.ru> <4A2D1FE4.5030100@gmail.com> <4A2D25F6.9080300@msgid.tls.msk.ru> <4A2D2906.6090002@gmail.com> <4A2D301D.9040301@msgid.tls.msk.ru>
-In-Reply-To: <4A2D301D.9040301@msgid.tls.msk.ru>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 8 Jun 2009 12:01:47 -0400
+From: "Singh, Vimal" 
+	<IMCEAEX-_O=TI_OU=BD_CN=RECIPIENTS_CN=X0094262@dlee86.itg.ti.com>
+To: Tony Lindgren <tony@atomide.com>
+CC: "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>,
+       "dedekind@infradead.org" <dedekind@infradead.org>,
+       "david-b@pacbell.net" <david-b@pacbell.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Date: Mon, 8 Jun 2009 21:31:23 +0530
+Subject: RE: [PATCH] [MTD] [NAND] Add prefetch and dma support for omap2/3
+	NAND      driver
+Thread-Topic: [PATCH] [MTD] [NAND] Add prefetch and dma support for omap2/3
+	NAND      driver
+Thread-Index: AcnoPoIOOcyG5MQISCi3MgqJlghYwwAEUY/c
+Message-ID: <19F8576C6E063C45BE387C64729E739404321C60A7@dbde02.ent.ti.com>
+References: <54851.192.168.10.89.1243946277.squirrel@dbdmail.itg.ti.com>
+ <19F8576C6E063C45BE387C64729E739404321C60A1@dbde02.ent.ti.com>,<20090608113813.GA24067@atomide.com>
+In-Reply-To: <20090608113813.GA24067@atomide.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 08 Jun 2009 17:59:36 +0200 (CEST)
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev a écrit :
-> Eric Dumazet wrote:
->> Michael Tokarev a écrit :
-> []
->>>>> The situation is very simple: with an RTL8169 (probably
->>>>> onboard) GigE card which, by default, is configured to
->>>>> have MTU (maximal transmission unit) to be 1500 bytes,
->>>>> it's *trivial* to instantly crash the machine by sending
->>>>> it a *single* packet of size >1500 bytes (provided the
->>>>> network switch can handle jumbo frames).
-> []
->> OK, 2nd try then :)
-> 
->> diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
->> index e94316b..9080b08 100644
->> --- a/drivers/net/r8169.c
->> +++ b/drivers/net/r8169.c
->> @@ -3495,7 +3495,8 @@ static int rtl8169_rx_interrupt(struct
->> net_device *dev,
->>               * frames. They are seen as a symptom of over-mtu
->>               * sized frames.
->>               */
->> -            if (unlikely(rtl8169_fragmented_frame(status))) {
->> +            if (unlikely(rtl8169_fragmented_frame(status) ||
->> +                     (unsigned int)pkt_size > tp->rx_buf_sz)) {
->>                  dev->stats.rx_dropped++;
->>                  dev->stats.rx_length_errors++;
->>                  rtl8169_mark_to_asic(desc, tp->rx_buf_sz);
-> 
-> This one behaves much better.  There's no instant crash anymore, and the
-> 'dropped' and 'frame' stats in ifconfig gets incremented with each ping.
-> 
-> It fails down the line however.  I wasn't able to reply to this email after
-> doing the ping test with the above change (no more large packets were
-> sent).
-> With OOPSes like this one:
-> 
->  general protection fault: 0000 [#1] SMP
->  last sysfs file:
-> /sys/devices/pci0000:00/0000:00:01.0/0000:01:05.0/drm/card0/dev
->  CPU 0
->  Modules linked in: radeon drm r8169 powernow_k8 autofs4 nfsd nfs lockd
-> nfs_acl auth_rpcgss sunrpc quota_v2
->  Pid: 10917, comm: icedove-bin Not tainted 2.6.29-x86-64 #2.6.29.4
-> System Product Name
->  RIP: 0010:[<ffffffff8029889b>]  [<ffffffff8029889b>] put_page+0x1b/0x170
->  RSP: 0018:ffff8800cd8fdb88  EFLAGS: 00210296
->  RAX: 0000000000000020 RBX: 6d6c6b6a69686766 RCX: 0000000000000760
->  RDX: ffff88011d9f1680 RSI: ffff88011d9f139b RDI: 6d6c6b6a69686766
->  RBP: ffff88011c936ac0 R08: 0000000000000001 R09: 0000000000000000
->  R10: ffffffff80552840 R11: 0000000000200293 R12: ffff88011d03e080
->  R13: 0000000000000030 R14: ffff88011d03e4bc R15: 0000000000000000
->  FS:  0000000000000000(0000) GS:ffffffff80608000(0063)
-> knlGS:00000000f220bb90
->  CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
->  CR2: 000000000820302c CR3: 0000000116c57000 CR4: 00000000000006e0
->  DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->  DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
->  Process icedove-bin (pid: 10917, threadinfo ffff8800cd8fc000, task
-> ffff8801158d8820)
->  Stack:
->   0000000000000000 0000000000000001 ffff88011c936ac0 ffff88011d03e080
->   0000000000000030 ffffffff803dbc7f 0000000000000319 ffff88011c936ac0
->   0000000000000000 ffffffff803db911 ffff88011c936ac0 ffffffff80418a88
->  Call Trace:
->   [<ffffffff803dbc7f>] ? skb_release_data+0xaf/0xe0
->   [<ffffffff803db911>] ? __kfree_skb+0x11/0xa0
->   [<ffffffff80418a88>] ? tcp_recvmsg+0x6d8/0x950
->   [<ffffffff8046f91e>] ? _spin_lock_irqsave+0x2e/0x40
->   [<ffffffff803d61b0>] ? sock_common_recvmsg+0x30/0x50
->   [<ffffffff803d4365>] ? sock_recvmsg+0xd5/0x110
->   [<ffffffff80244640>] ? default_wake_function+0x0/0x10
->   [<ffffffff802d5019>] ? file_update_time+0x59/0x140
->   [<ffffffff80261e90>] ? autoremove_wake_function+0x0/0x30
->   [<ffffffff8046fa25>] ? _spin_lock+0x5/0x10
->   [<ffffffff8026f109>] ? futex_wake+0x129/0x140
->   [<ffffffff803d3ab2>] ? sockfd_lookup_light+0x22/0x90
->   [<ffffffff803d56e9>] ? sys_recvfrom+0xe9/0x180
->   [<ffffffff80261e90>] ? autoremove_wake_function+0x0/0x30
->   [<ffffffff8046d8c5>] ? thread_return+0x3d/0x6d8
->   [<ffffffff803f6c86>] ? compat_sys_socketcall+0x136/0x1f0
->   [<ffffffff80238c47>] ? cstar_dispatch+0x7/0x4a
->  Code: 2c fd ff ff eb db 66 2e 0f 1f 84 00 00 00 00 00 48 83 ec 28 48 89
-> 5c 24 08 48 89 6c 24 10 48 89 fb 4c
->  RIP  [<ffffffff8029889b>] put_page+0x1b/0x170
->   RSP <ffff8800cd8fdb88>
->  ---[ end trace c2d84c667e0d946d ]---
-> 
-> (it probably has nothing to do with radeon drm sysfs file
-> (it is NOT the binary fglrx module by the way)).
-> 
-> Looks like some memory corruption.  And most probably it is in
-> that error path in r8169 driver - it is the only new codepath
-> which were executed here.  The problem is quite repeatable -
-> after sending a single large ping system starts behaving like
-> the above at random.
-> 
-> So we're on a right way it seems, but there's more than one
-> issue here.
-> 
-> By the way, is there anything else we can do here but drop the
-> packet?  Or is there any REASON to do something else?
-> 
 
-Hmm... this code path is not new, I believe your adapter is buggy, because it
-is overwriting part of memory it should not touch at all.
+On Mon, Jun 8, 2009 at 5:08 PM, Tony Lindgren<tony@atomide.com> wrote:
+> * Singh, Vimal <IMCEAEX-_O=TI_OU=BD_CN=RECIPIENTS_CN=X0094262@dlee86.itg.ti.com> [090605 05:00]:
+>>
+>>
+>> On Thu, Jun 4, 2009 at 8:58 PM, Tony Lindgren<tony@atomide.com> wrote:
+>> > * vimal singh <vimalsingh@ti.com> [090604 02:34]:
+>> >> On Wed, Jun 3, 2009 at 10:03 PM, Tony Lindgren <tony@atomide.com> wrote:
+>> >> > * Singh, Vimal
+>> >> <IMCEAEX-_O=TI_OU=BD_CN=RECIPIENTS_CN=X0094262@dlee86.itg.ti.com> [090602
+>> >> 23:46]:
+>> >> >>
+>> >> >> On Wed, Jun 3, 2009 at 2:06 AM, Tony Lindgren <tony@atomide.com> wrote:
+>> >> >> > * vimal singh <vimalsingh@ti.com> [090602 05:40]:
+>> >> >> >> This patch adds prefetch support to access nand flash in both mpu and dma
+>> >> mode.
+>> >> >> >> This patch also adds 8-bit nand support (omap_read/write_buf8).
+>> >> >> >> Prefetch can be used for both 8- and 16-bit devices.
+>> >> >> >
+>> >> >> > This should be reviewed on the linux-omap@vger.kernel.org list for sure.
+>> >> >> > One other comment below.
+>> >> >> >
+>> >> >> >> Signed-off-by: Vimal Singh <vimalsingh@ti.com>
+>> >> >> >> ---
+>> >> >> >> I prepared this patch on top of "OMAP2 / OMAP3 NAND driver" patch:
+>> >> >> >> http://lists.infradead.org/pipermail/linux-mtd/2009-May/025562.html
+>> >> >> >>
+>> >> >> >> ---
+>> >> >> >>  arch/arm/mach-omap2/gpmc.c             |  102 ++++++++++
+>> >> >> >>  arch/arm/plat-omap/include/mach/gpmc.h |    4
+>> >> >> >>  drivers/mtd/nand/Kconfig               |   17 +
+>> >> >> >>  drivers/mtd/nand/omap2.c               |  308
+>> >> ++++++++++++++++++++++++++++++++-
+>> >> >> >>  4 files changed, 422 insertions(+), 9 deletions(-)
+>> >> >> >>
+>> >> >> >> Index: mtd-2.6/arch/arm/mach-omap2/gpmc.c
+>> >> >> >> ===================================================================
+>> >> >> >> --- mtd-2.6.orig/arch/arm/mach-omap2/gpmc.c
+>> >> >> >> +++ mtd-2.6/arch/arm/mach-omap2/gpmc.c
+>> >> >> >> @@ -54,6 +54,12 @@
+>> >> >> >>  #define GPMC_CHUNK_SHIFT     24              /* 16 MB */
+>> >> >> >>  #define GPMC_SECTION_SHIFT   28              /* 128 MB */
+>> >> >> >>
+>> >> >> >> +#ifdef CONFIG_MTD_NAND_OMAP_PREFETCH
+>> >> >> >> +#define CS_NUM_SHIFT         24
+>> >> >> >> +#define ENABLE_PREFETCH              7
+>> >> >> >> +#define DMA_MPU_MODE         2
+>> >> >> >> +#endif
+>> >> >> >> +
+>> >> >> >>  static struct resource       gpmc_mem_root;
+>> >> >> >>  static struct resource       gpmc_cs_mem[GPMC_CS_NUM];
+>> >> >> >>  static DEFINE_SPINLOCK(gpmc_mem_lock);
+>> >> >> >> @@ -383,6 +389,99 @@ void gpmc_cs_free(int cs)
+>> >> >> >>  }
+>> >> >> >>  EXPORT_SYMBOL(gpmc_cs_free);
+>> >> >> >>
+>> >> >> >> +#ifdef CONFIG_MTD_NAND_OMAP_PREFETCH
+>> >> >> >> +/**
+>> >> >> >> + * gpmc_prefetch_init - configures default configuration for prefetch
+>> >> engine
+>> >> >> >> + */
+>> >> >> >> +static void gpmc_prefetch_init(void)
+>> >> >> >> +{
+>> >> >> >> +     /* Setting the default threshold to 64 */
+>> >> >> >> +     gpmc_write_reg(GPMC_PREFETCH_CONTROL, 0x0);
+>> >> >> >> +     gpmc_write_reg(GPMC_PREFETCH_CONFIG1, 0x40  << 8);
+>> >> >> >> +     gpmc_write_reg(GPMC_PREFETCH_CONFIG2, 0x0);
+>> >> >> >> +}
+>> >> >> >
+>> >> >> > Why would you want to have NAND specific init code int gpmc.c?
+>> >> >> >
+>> >> >> > The purpose if gpmc.c is to provide access to configuring the
+>> >> >> > General Purpose Memory Controller (GPMC). You should just provide
+>> >> >> > functions in gpmc.c for the platform init code to use, and then
+>> >> >> > the drivers can stay platform independent.
+>> >> >>
+>> >> >> In my understanding, this 'prefetch' engine is part of GPMC itself, it is a
+>> >> >> kind of feature provided by GPMC which can be utilized by NAND driver.
+>> >> >> So, to me, it makes sens to get initialized prefetch by GPMC itself so that
+>> >> >> NAND driver can use it.
+>> >> >
+>> >> > But it should not have a dependency to NAND.
+>> >>
+>> >> This engine, in GPMC, is dedicated for NAND devices only.
+>> >>
+>> >> >
+>> >> >> Another reason was that all read / write to GPMC register are done by
+>> >> >> functions 'gpmc_read_reg' / 'gpmc_write_reg', which have been made
+>> >> >> 'static' in nature.
+>> >> >
+>> >> > That's why you need to provide a generic function in gpmc.c to enable
+>> >> > prefetch that the platform code for any driver can use.
+>> >>
+>> >> Exactly, and whenever a platform code uses gpmc init call, gpmc initializes
+>> >> this engine too. Since prefetch engine is the part of GPMC, IMHOP, it should
+>> >> get initialized as part of GPMC initialization.
+>> >
+>> > No, the driver needing it should initialize it. There should not be any
+>> > ifdefs needed in the gpmc.c for that.
+>>
+>> Are you suggesting to move gpmc prefetch specific code to 'drivers/mtd/nand/omap2.c'?
+>> This can be done but then, we will be accessing gpmc registers outside gpmc.c. Is that ok?
+>
+> Well I'm thinking that you just basically need something like this in
+> gpmc.c:
+>
+> int gpmc_prefetch_request(int cs);
+> int gpmc_prefetch_enable(int cs);
+> int gpmc_prefetch_reset(int cs);
+> ...
+>
+> And gpmc_prefetch_request would then return an error if already taken.
+> No need then to tinker with the GPMC prefetch registers in the NAND
+> driver.
 
-When this driver queues a skb in rx queue, it tells NIC the max size of the skb,
-and apparently NIC happily delivers packets with larger sizes, so probably DMA
-wrote data past end of skb data.
+This seems exactly what in this patch has been done, other than renaming the functions and suggestion that gpmc prefetch init call should happen from NAND driver and should return success or failure based on whether it has already been initialized or not. Am I correct?
 
-Try to change 
+But since, the prefetch and write-posting engine is a single-context engine that can be allocated to only one chip-select at a time for a read prefetch or a write-posting process, I feel it is still OK if we initialize gpmc prefetch engine only once in gpmc.c only and then whenever there is a request for gmpc prefetch start/enable we should check if engine is already being used by some other chip-select by verifying GPMC_PREFETCH_CONFIG1.ENABLEENGINE (bit '7').
 
-static void rtl_set_rx_max_size(void __iomem *ioaddr)
-    RTL_W16(RxMaxSize, 16383); 
+This was not done because there is only NAND device, as of now, in all the boards we are using.
 
-to ->
+Let me know what you think about this.
 
-    RTL_W16(RxMaxSize, RX_BUF_SIZE);
+>
+>> >
+>> >> And then there are prefetch start, stop and status functions calls have been
+>> >> provided to be used by NAND driver.
+>> >
+>> > These should really be done in the platform init code for the NAND driver.
+>> > The NAND driver really should be generic, not omap specific.
+>>
+>> Are you talking about different omap versions or omap itself, I am bit confused. This NAND driver is
+>> omap specific only.
+>
+> I guess I'm talking in generic terms. What's under drivers/* should in the long
+> run be device independent code, and the platform specific code should be under
+> arch/arm/*omap*.
 
+Yes, this is exactly what I was trying to do. GPMC prefetch is platform specific feature and hence code related to this was kept in gmpc.c (i.e. arch/arm/*omap*/.).
 
-(But it will probably break jumbo frames rx as well)
+---
+Regards,
+Vimal 
+>
+> Regards,
+>
+> Tony
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+
 
 
