@@ -1,75 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755502AbZFHVQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbZFHVSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755502AbZFHVQq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 17:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZFHVQj
+	id S1755918AbZFHVSP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 17:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZFHVR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 17:16:39 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:56263 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750794AbZFHVQj (ORCPT
+	Mon, 8 Jun 2009 17:17:58 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:43920 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750794AbZFHVR5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 17:16:39 -0400
-X-Trace: 212042182/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.76.204/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.76.204
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtEEADIcLUpPRUzM/2dsb2JhbACBT80WhAoF
-X-IronPort-AV: E=Sophos;i="4.41,326,1241391600"; 
-   d="scan'208";a="212042182"
-Date: Mon, 8 Jun 2009 22:05:51 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Izik Eidus <ieidus@redhat.com>
-cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, aarcange@redhat.com,
-       akpm@linux-foundation.org, nickpiggin@yahoo.com.au, chrisw@redhat.com,
-       riel@redhat.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH mmotm] ksm: stop scan skipping pages
-In-Reply-To: <4A2D70BF.9090605@redhat.com>
-Message-ID: <Pine.LNX.4.64.0906082204170.23054@sister.anvils>
-References: <1242261048-4487-1-git-send-email-ieidus@redhat.com>
- <Pine.LNX.4.64.0906081555360.22943@sister.anvils> <Pine.LNX.4.64.0906081733390.7729@sister.anvils>
- <4A2D4D9F.8080103@redhat.com> <Pine.LNX.4.64.0906081852540.8764@sister.anvils>
- <4A2D70BF.9090605@redhat.com>
+	Mon, 8 Jun 2009 17:17:57 -0400
+Message-ID: <4A2D7FFE.9070701@cosmosbay.com>
+Date: Mon, 08 Jun 2009 23:17:50 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Michael Tokarev <mjt@tls.msk.ru>
+CC: Linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [Security, resend] Instant crash with rtl8169 and large packets
+References: <4A2D1147.8020101@msgid.tls.msk.ru> <4A2D1FE4.5030100@gmail.com> <4A2D25F6.9080300@msgid.tls.msk.ru> <4A2D2906.6090002@gmail.com> <4A2D301D.9040301@msgid.tls.msk.ru> <4A2D3568.6010901@gmail.com> <4A2D3BC6.3040904@msgid.tls.msk.ru> <4A2D4AA7.6020204@gmail.com> <4A2D6D0C.6060206@msgid.tls.msk.ru>
+In-Reply-To: <4A2D6D0C.6060206@msgid.tls.msk.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 08 Jun 2009 23:17:52 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Jun 2009, Izik Eidus wrote:
-> Hugh Dickins wrote:
-> >
-> > By the time Andrew sends KVM to Linus, it shouldn't be the
-> > patches currently in mmotm with more on top: 
+Michael Tokarev a écrit :
+> Eric Dumazet wrote:
+> []
+>> OK I suspect driver is buggy since 2.6.10 days :)
+>>
+>> Could you try this patch ?
 > 
-> So you want a repost of all the patchs?
+> Tried it, and it appears to work.  Tried various MTU combinations
+> and packet sizes.  Checked iperf too, with and without the patch
+> and with different MTU too, to be sure the patch does not introduce
+> any slowdowns - everything looks sane.  In case the incoming packet
+> is larger than the RX buffer size, `errors' and `frames' RX stats
+> gets incremented.
+> 
+> The only somewhat odd thing is that rx path accepts packets larger
+> than MTU by 3 bytes.  For example, if I set mtu to 2000, the
+> largest packet I can send is 2003 bytes; with mtu=2002, largest
+> actual packet size is 2005 bytes.  This is complete frame - in
+> terms of ping size (ping -s) it's 1975 and 1977 bytes.  That to
+> say, maybe we still have some corner case somewhere, for packets
+> larger than mtu by 1, 2 or 3 bytes.
+> 
+> Also I didn't try MTU < 1500.
+> 
+> Other than that,
+> 
+> Tested-By: Michael Tokarev <mjt@tls.msk.ru>
 
-Will do eventually.  In the same way that Andrew merges fixes to
-patches into the patches before sending to Linus.  But in this
-case, rather large pieces would vanish in such a process, plus it
-would be unfair to expect Andrew to do that work; so it would
-be better for you to submit replacements when we're ready.
+Could you confirm this last patch was ok without former two patches ?
 
-> in that case any value to keep this
-> stuff in Andrew tree right now?
+> 
+> And by the way, your email client uses quoted-printable encoding.
+> I had to use trivial perl one-liner to convert your patches to
+> plaintext.  JFYI.
 
-I guess that depends on whether it's actually receiving any
-testing or review while it's in there.  I'm happy for it to remain
-there for now - and the core of it is going to remain unchanged
-or only trivially changed.  Really a matter for you to decide
-with Andrew: I don't want to pull it out of circulation myself.
+Ah yes, this is when I reply to one of your mail, thank you for the hint.
 
-> Wouldnt it speed our development if we will keep it outside,
-> and then repost the whole thing?
+When submitting a new mail, my thunderbird agent uses a regular "Content-Transfer-Encoding: 7bit"
 
-I don't see that having a version there in mmotm will slow us
-down (what could slow me down more than myself ;-?).  But you
-and Andrew are free to decide it's counterproductive to keep the
-current version there, that's okay by me if you prefer to pull it.
 
-Hugh
+BTW, this driver uses NAPI, but still calls dev_kfree_skb_irq() in rtl8169_tx_interrupt()
+
+You probably can get better performance calling dev_kfree_skb(tx_skb->skb); instead
+
+@@ -3372,7 +3372,7 @@ static void rtl8169_tx_interrupt(struct net_device *dev,
+                rtl8169_unmap_tx_skb(tp->pci_dev, tx_skb, tp->TxDescArray + entry);
+
+                if (status & LastFrag) {
+-                       dev_kfree_skb_irq(tx_skb->skb);
++                       dev_kfree_skb(tx_skb->skb);
+                        tx_skb->skb = NULL;
+                }
+                dirty_tx++;
+
+
+
