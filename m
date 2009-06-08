@@ -1,80 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752519AbZFHHWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbZFHH2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752519AbZFHHWg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 03:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbZFHHW1
+	id S1752633AbZFHH2T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 03:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbZFHH2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 03:22:27 -0400
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:45553 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750815AbZFHHW0 (ORCPT
+	Mon, 8 Jun 2009 03:28:07 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:55557 "EHLO
+	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750946AbZFHH2G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 03:22:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=D2Ey4G/MiKA+SgP1fXpCIcXKzGCGEmNRGlpb3VbVeqypYI8SqhF3NNVVsMPjuXbTKw
-         RezJHb1wxWdmbrx5i7/v3yBgbWr8y+eORcU3tFmpb2m7y/i1mywfYRrV9M+Cqic7iqwi
-         osN4NFKeyNsnSDFLPTi/6TWqBPelheUVodxPY=
-Message-ID: <4A2CBA46.2020807@gmail.com>
-Date: Mon, 08 Jun 2009 12:44:14 +0530
-From: Pranith Kumar <pranith.hacks@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 8 Jun 2009 03:28:06 -0400
+In-Reply-To: <200905311400.58509.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Kyle McMartin <kyle@mcmartin.ca>, linux-arch@vger.kernel.org,
+       linux-arch-owner@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>, torvalds@linux-foundation.org
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Final Test of Email Client
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 0/14] score - New architecure port to SunplusCT S+CORE
+X-Mailer: Lotus Notes Release 6.5 September 26, 2003
+Message-ID: <OF47CBE0C5.C2291ED8-ON482575CF.00287989-482575CF.0028F312@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Mon, 8 Jun 2009 15:23:00 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/08 ?? 03:23:01,
+	Serialize complete at 2009/06/08 ?? 03:23:01
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: D Pranith Kumar <bobby.prani@gmail.com>
+Thanks Arnd, our MIS help me solve the download problem.
 
-diff --git a/drivers/staging/otus/ioctl.c b/drivers/staging/otus/ioctl.c
-index ce04218..5e8bd94 100644
---- a/drivers/staging/otus/ioctl.c
-+++ b/drivers/staging/otus/ioctl.c
-@@ -2045,6 +2045,7 @@ int usbdrv_wpa_ioctl(struct net_device *dev, struct athr_wlan_param *zdparm)
- 	struct zsKeyInfo keyInfo;
- 	struct usbdrv_private *macp = dev->ml_priv;
- 	u16_t vapId = 0;
-+   int ii;
- 
- 	/* zmw_get_wlan_dev(dev); */
- 
-@@ -2168,7 +2169,6 @@ int usbdrv_wpa_ioctl(struct net_device *dev, struct athr_wlan_param *zdparm)
- 		/* DUMP key context */
- 		/* #ifdef WPA_DEBUG */
- 		if (keyInfo.keyLength > 0) {
--			int ii;
- 			printk(KERN_WARNING
- 						"Otus: Key Context:\n");
- 			for (ii = 0; ii < keyInfo.keyLength; ) {
-@@ -2266,7 +2266,6 @@ int usbdrv_wpa_ioctl(struct net_device *dev, struct athr_wlan_param *zdparm)
- 		/* zfiWlanSetWpaIe(dev, zdparm->u.generic_elem.data,
- 		* zdparm->u.generic_elem.len);
- 		*/
--		int ii;
- 		u8_t len = zdparm->u.generic_elem.len;
- 		u8_t *wpaie = (u8_t *)zdparm->u.generic_elem.data;
- 
-@@ -2401,7 +2400,7 @@ int usbdrv_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
- 	struct athr_wlan_param zdparm;
- 	struct usbdrv_private *macp = dev->ml_priv;
- 
--	int err = 0;
-+	int err = 0, val = 0;
- 	int changed = 0;
- 
- 	/* regp = macp->regp; */
-@@ -2445,7 +2444,7 @@ int usbdrv_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
- 			err = -EPERM;
- 			break;
- 		}
--		int val = *((int *) wrq->u.name);
-+       val = *((int *) wrq->u.name);
- 		if ((val < 0) || (val > 2)) {
- 			err = -EINVAL;
- 			break;
+> Feel free to base you code on top of asm-generic.git#next, but tell me
+> when you intend to do that so I can warn you of possibly rebases.
+
+Last week, I had updated score code base on asm-generic.git#next.
+
+and I will apply a account on kernel.org, But before I get the account,
+can you let score code merge in asm-generic.git?
+
+liqin
+
+--
+
