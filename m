@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753775AbZFHJXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbZFHJ3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753775AbZFHJXr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 05:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZFHJXi
+	id S1754562AbZFHJ3n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 05:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZFHJ3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 05:23:38 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:59257 "EHLO kernel.dk"
+	Mon, 8 Jun 2009 05:29:33 -0400
+Received: from mga03.intel.com ([143.182.124.21]:51043 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751526AbZFHJXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 05:23:37 -0400
-Date: Mon, 8 Jun 2009 11:23:38 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jan Kara <jack@suse.cz>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, tytso@mit.edu, david@fromorbit.com,
-       hch@infradead.org, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk, damien.wyart@free.fr
-Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
-Message-ID: <20090608092338.GD11363@kernel.dk>
-References: <20090604120726.708a2211.akpm@linux-foundation.org> <20090604191309.GA4862@nowhere> <20090604195013.GB11363@kernel.dk> <20090604201012.GD11363@kernel.dk> <20090604223449.GA13780@nowhere> <20090605191528.GV11363@kernel.dk> <20090605211438.GA11650@duck.suse.cz> <20090606001814.GD3824@think> <20090606002339.GH11650@duck.suse.cz> <20090606010629.GC7809@nowhere>
+	id S1751003AbZFHJ3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 05:29:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,323,1241420400"; 
+   d="scan'208";a="151756317"
+Date: Mon, 8 Jun 2009 17:29:30 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: Jan Kara <jack@suse.cz>, Eric Sandeen <sandeen@sandeen.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+       Nick Piggin <npiggin@suse.de>, Jeff Layton <jlayton@redhat.com>
+Subject: Re: [PATCH] writeback: skip new or to-be-freed inodes
+Message-ID: <20090608092930.GA13846@localhost>
+References: <20090324120502.GC23439@duck.suse.cz> <20090324124001.GA25326@localhost> <4A244A5B.7070605@sandeen.net> <20090602085523.GC7161@localhost> <20090602113736.GB15010@duck.suse.cz> <20090603141021.GB5738@localhost> <20090603141636.GC5650@duck.suse.cz> <20090603144711.GC5738@localhost> <20090606030725.GA12852@localhost> <4A2CB7AE.6080909@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090606010629.GC7809@nowhere>
+In-Reply-To: <4A2CB7AE.6080909@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 06 2009, Frederic Weisbecker wrote:
-> On Sat, Jun 06, 2009 at 02:23:40AM +0200, Jan Kara wrote:
-> > On Fri 05-06-09 20:18:15, Chris Mason wrote:
-> > > On Fri, Jun 05, 2009 at 11:14:38PM +0200, Jan Kara wrote:
-> > > > On Fri 05-06-09 21:15:28, Jens Axboe wrote:
-> > > > > On Fri, Jun 05 2009, Frederic Weisbecker wrote:
-> > > > > > The result with noop is even more impressive.
-> > > > > > 
-> > > > > > See: http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop.pdf
-> > > > > > 
-> > > > > > Also a comparison, noop with pdflush against noop with bdi writeback:
-> > > > > > 
-> > > > > > http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop-cmp.pdf
-> > > > > 
-> > > > > OK, so things aren't exactly peachy here to begin with. It may not
-> > > > > actually BE an issue, or at least now a new one, but that doesn't mean
-> > > > > that we should not attempt to quantify the impact.
-> > > >   What looks interesting is also the overall throughput. With pdflush we
-> > > > get to 2.5 MB/s + 26 MB/s while with per-bdi we get to 2.7 MB/s + 13 MB/s.
-> > > > So per-bdi seems to be *more* fair but throughput suffers a lot (which
-> > > > might be inevitable due to incurred seeks).
-> > > >   Frederic, how much does dbench achieve for you just on one partition
-> > > > (test both consecutively if possible) with as many threads as have those
-> > > > two dbench instances together? Thanks.
-> > > 
-> > > Is the graph showing us dbench tput or disk tput?  I'm assuming it is
-> > > disk tput, so bdi may just be writing less?
-> >   Good, question. I was assuming dbench throughput :).
-> > 
-> > 									Honza
-> 
-> 
-> Yeah it's dbench. May be that's not the right tool to measure the writeback
-> layer, even though dbench results are necessarily influenced by the writeback
-> behaviour.
-> 
-> May be I should use something else?
-> 
-> Note that if you want I can put some surgicals trace_printk()
-> in fs/fs-writeback.c
+Hi Artem,
 
-FWIW, I ran a similar test here just now. CFQ was used, two partitions
-on an (otherwise) idle drive. I used 30 clients per dbench and 600s
-runtime. Results are nearly identical, both throughout the run and
-total:
+On Mon, Jun 08, 2009 at 03:03:10PM +0800, Artem Bityutskiy wrote:
+> Wu Fengguang wrote:
+> > The above race and warning didn't turn up because writeback_inodes() holds
+> > the s_umount lock, so generic_forget_inode() finds MS_ACTIVE and returns
+> > early. But we are not sure the UBIFS calls and future callers will guarantee
+> > that. So skip I_WILL_FREE inodes for the sake of safety.
+>
+> The inode states are a bit vague for me, but vs. UBIFS - feel
+> free to ask questions.
 
-/dev/sdb1
-Throughput 165.738 MB/sec  30 clients  30 procs  max_latency=459.002 ms
+Thank you. Basically I'm not sure if UBIFS guarantees it won't be
+unmounted (hence the MS_ACTIVE bit is on) when calling
+generic_sync_sb_inodes() in shrink_liability() and ubifs_sync_fs().
 
-/dev/sdb2
-Throughput 165.773 MB/sec  30 clients  30 procs  max_latency=607.198 ms
+Thanks,
+Fengguang
 
-The flusher threads see very little exercise here.
+PS: our previous discussions
 
--- 
-Jens Axboe
+        > > Another possibility:
+        > >
+        > > generic_forget_inode
+        > >   inode->i_state |= I_WILL_FREE;
+        > >   spin_unlock(&inode_lock);
+        > >                                                 generic_sync_sb_inodes()
+        > >                                                   spin_lock(&inode_lock);
+        > >                                                   __iget(inode);
+        > >                                                   __writeback_single_inode
+        > >                                                     // see non zero i_count
+        > >                                                     WARN_ON(inode->i_state & I_WILL_FREE);
+        > >
+        > > I'm wondering why didn't we saw reports on the last WARN_ON()?
+        > > Did we missed something?
+        >   I meant the above race in my description ;-). Anyway, the race can happen
+        > only if we are unmounting the filesystem (normally, we bail out on
+        > sb->s_flags & MS_ACTIVE check - yes, it's a bit hidden and it also took me
+        > a while to understand why we weren't seeing tons of warnings...).
+
+        Ah OK. Just checked that all three callers of generic_sync_sb_inodes():
+        - writeback_inodes(): umount prevented
+        - pohmelfs_kill_super(): just before umount
+        - ubifs calls: too complex to be obvious..
+        At least the first two cases are safe, so we didn't see the error report ;)
 
