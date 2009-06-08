@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZFHPL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbZFHPMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756728AbZFHPL7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 11:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbZFHPLw
+	id S1756121AbZFHPMU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 11:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755889AbZFHPMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 11:11:52 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:46482 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753670AbZFHPLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 11:11:52 -0400
-Date: Mon, 8 Jun 2009 16:11:51 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       yanmin.zhang@intel.com, Wu Fengguang <fengguang.wu@intel.com>,
-       linuxram@us.ibm.com, linux-mm <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when
-	zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
-Message-ID: <20090608151151.GI15070@csn.ul.ie>
-References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-2-git-send-email-mel@csn.ul.ie> <4A2D129D.3020309@redhat.com> <20090608135433.GD15070@csn.ul.ie> <alpine.DEB.1.10.0906081033060.21954@gentwo.org> <20090608143857.GG15070@csn.ul.ie> <alpine.DEB.1.10.0906081055170.21954@gentwo.org>
+	Mon, 8 Jun 2009 11:12:03 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:41962 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756748AbZFHPMB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 11:12:01 -0400
+Date: Mon, 8 Jun 2009 16:11:56 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Oliver Neukum <oliver@neukum.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: Run-time PM idea (was: Re: [linux-pm] [RFC][PATCH 0/2] PM:
+	Rearrange core suspend code)
+Message-ID: <20090608151156.GA17805@srcf.ucam.org>
+References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org> <20090608131159.GA15100@srcf.ucam.org> <20090608132235.GC13214@elte.hu> <200906081539.20459.oliver@neukum.org> <20090608142154.GD14234@elte.hu> <20090608143023.GA16752@srcf.ucam.org> <20090608150603.GB20905@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0906081055170.21954@gentwo.org>
+In-Reply-To: <20090608150603.GB20905@elte.hu>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 10:55:55AM -0400, Christoph Lameter wrote:
-> On Mon, 8 Jun 2009, Mel Gorman wrote:
-> 
-> > > The tmpfs pages are unreclaimable and therefore should not be on the anon
-> > > lru.
-> > >
-> >
-> > tmpfs pages can be swap-backed so can be reclaimable. Regardless of what
-> > list they are on, we still need to know how many of them there are if
-> > this patch is to be avoided.
-> 
-> If they are reclaimable then why does it matter? They can be pushed out if
-> you configure zone reclaim to be that aggressive.
-> 
+On Mon, Jun 08, 2009 at 05:06:03PM +0200, Ingo Molnar wrote:
 
-Because they are reclaimable by kswapd or normal direct reclaim but *not*
-reclaimable by zone_reclaim() if the zone_reclaim_mode is not configured
-appropriately. I briefly considered setting zone_reclaim_mode to 7 instead of
-1 by default for large NUMA distances but that has other serious consequences
-such as paging in preference to going off-node as a default out-of-box
-behaviour.
+> But if you think that tracking the usage state of the hardware is 
+> 'complexity', then you very much dont know what you are talking 
+> about. The main task of the kernel is to track hardware usage and to 
+> abstract away the fact that the same hardware is used by multiple 
+> tasks, and to do it safely. It's what the kernel does all day.
 
-The point of the patch is that the heuristics that avoid the scan are not
-perfect. In the event they are wrong and a useless scan occurs, the response
-of the kernel after a useless scan should not be to uselessly scan a load
-more times around the LRU lists making no progress.
+What I'm saying is that you don't *know* what the usage state of the 
+hardware is, and in many cases you can't know. A given user may be happy 
+to sacrifice their SATA hotplug support. Another with identical hardware 
+may not. A given network application may be mission critical and 
+intolerant of the network interface being shut down. The same 
+application in a different context may not. We'd need to provide a 
+bewildering array of interfaces to distinguish between these situations, 
+and we'd be unable to turn on autosuspend until the entirity of 
+userspace had been ported to them.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Matthew Garrett | mjg59@srcf.ucam.org
