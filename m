@@ -1,163 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753735AbZFHSnE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbZFHSo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753735AbZFHSnE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 14:43:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750725AbZFHSmz
+	id S1755047AbZFHSo1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 14:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbZFHSoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 14:42:55 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:10619 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750698AbZFHSmz (ORCPT
+	Mon, 8 Jun 2009 14:44:19 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:50500 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbZFHSoT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 14:42:55 -0400
-X-Trace: 208708070/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.38.33/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.38.33
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtEEABv4LEpQKSYh/2dsb2JhbACBT8wvhAoF
-X-IronPort-AV: E=Sophos;i="4.41,325,1241391600"; 
-   d="scan'208";a="208708070"
-Date: Mon, 8 Jun 2009 19:32:07 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Izik Eidus <ieidus@redhat.com>
-cc: aarcange@redhat.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       chrisw@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 0/4] RFC - ksm api change into madvise
-In-Reply-To: <4A2D47C1.5020302@redhat.com>
-Message-ID: <Pine.LNX.4.64.0906081902520.9518@sister.anvils>
-References: <1242261048-4487-1-git-send-email-ieidus@redhat.com>
- <Pine.LNX.4.64.0906081555360.22943@sister.anvils> <4A2D47C1.5020302@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 8 Jun 2009 14:44:19 -0400
+Subject: Re: [PATCH] integrity: fix IMA inode leak
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Mimi Zohar <zohar@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Serge Hallyn <serue@us.ibm.com>, James Morris <jmorris@namei.org>,
+       Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       David Safford <safford@watson.ibm.com>
+In-Reply-To: <alpine.LFD.2.01.0906080913020.6847@localhost.localdomain>
+References: <Pine.LNX.4.64.0906062109580.8365@sister.anvils>
+	 <alpine.LFD.2.01.0906061416170.6847@localhost.localdomain>
+	 <1244354901.3963.23.camel@dyn9002018117.watson.ibm.com>
+	 <alpine.LFD.2.01.0906071608040.6847@localhost.localdomain>
+	 <1244464135.3277.13.camel@dyn9002018117.watson.ibm.com>
+	 <alpine.LFD.2.01.0906080913020.6847@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 08 Jun 2009 14:44:15 -0400
+Message-Id: <1244486655.3277.65.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Jun 2009, Izik Eidus wrote:
-> Hugh Dickins wrote:
-> >
-> > You seem to have no callback in fork: doesn't that mean that KSM
-> > pages get into mms of which mm/ksm.c has no knowledge?  
-> What you mean by this?, should the vma flags be copyed into the child and
-> therefore ksm will scan the vma?
-
-That part should be happening automatically now
-(you'd have to add code to avoid copying VM_ flags).
-
-> (only thing i have to check is: maybe the process itself wont go into the
-> mmlist, and therefore ksm wont know about it)
-
-But that part needs something to make it happen.  In the case of
-swap, it's done over in copy_one_pte; the important thing is to
-do it where the locking is such that it cannot get missed,
-I can't say where is the right place yet.
-
+On Mon, 2009-06-08 at 09:15 -0700, Linus Torvalds wrote:
 > 
-> > You had
-> > no callback in mremap move: doesn't that mean that KSM pages could
-> > be moved into areas which mm/ksm.c never tracked?  Though that's
-> > probably no issue now we move over to vmas: they should now travel
-> > with their VM flag.  You have no callback in unmap: doesn't that
-> > mean that KSM never knows when its pages have gone away?
-> >   
+> On Mon, 8 Jun 2009, Mimi Zohar wrote:
+> > 
+> > Today the security calls are synomymous with MAC.  If I understand
+> > correctly, you're suggesting we need to have a single security layer,
+> > which, depending on the hook, calls either MAC or integrity, or both.
 > 
-> Yes, Adding all this callbacks would make ksm much more happy, Again, i didnt
-> want to scare anyone...
-
-Izik, you're too kindly ;)
-
+> I don't think we need a single security layer per se.
 > 
-> > (Closing the /dev/ksm fd used to clean up some of this, in the
-> > end; but the lifetime of the fd can be so different from that of
-> > the mapped area, I've felt very unsafe with that technique - a good
-> > technique when you're trying to sneak in special handling for your
-> > special driver, but not a good technique once you go to mainline.)
-> >
-> > I haven't worked out the full consequences of these lost pages:
-> > perhaps it's no worse than that you could never properly enforce
-> > your ksm_thread_max_kernel_pages quota.
-> >   
+> But I do think that we _already_ hide IMA conceptually under the 
+> "security/" subdirectory, and that the VFS layer shouldn't need to care 
+> about whatever internal details.
 > 
-> You mean the shared pages outside the stable tree comment?
-
-I don't understand or even parse that question: which probably
-means, no.  I mean that if the merged pages end up in areas
-outside of where your trees expect them, then you've got pages
-counted which cannot be found to have gone.  Whether you can get
-too many resident pages that way, or just more counted than are
-really there, I don't know: I've not worked through the accounting
-yet, and would really really prefer it to be exact, instead of
-pages getting lost outside the trees and raising these questions.
-
-But you may tell me that I simply haven't understood it yet.
-
-> > And a question on your page_wrprotect() addition to mm/rmap.c: though
-> > it may contain some important checks (I'm thinking of the get_user_pages
-> > protection), isn't it essentially redundant, and should be removed from
-> > the patchset?  If we have a private page which is mapped into more than
-> > the one address space by which we arrive at it, then, quite independent
-> > of KSM, it needs to be write-protected already to prevent mods in one
-> > address space leaking into another - doesn't it?  So I see no need for
-> > the rmap'ped write-protection there, just make the checks and write
-> > protect the pte you have in ksm.c.  Or am I missing something?
-> >   
+> We should not have generic code end up having to know about all the 
+> details, when we already have a conceptual nesting. It would be much 
+> better for generic code to just have to worry about one security hook that 
+> then encompasses all the models, than having several different hooks for 
+> each detail.
 > 
-> Ok, so we have here 2 cases for ksm:
-> 1:
->    When the page is anonymous and is mapped readonly beteween serveal
-> processes:
->         for this you say we shouldnt walk over the rmap and try to
-> writeprotect what is already writeprtected...
+> 		Linus
 
-Yes.
+Ok, so instead of having a full fledge single security layer, only add
+the security layer for those places where both the LSM hooks and IMA
+co-exist: security_file_mmap, security_bprm_check, security_inode_alloc,
+security_inode_free, and security_file_free. As the LSM hooks are called
+'security_XXXX', the call would look something like:
 
-> 
-> 2:
->   When the page is anonymous and is mapped write by just one process:
->       for this you say it is better to handle it directly from inside ksm
-> beacuse we already know
->       the virtual address mapping of this page?
+security_all_inode_free() {
+        ima_inode_free()
+        security_inode_free()
+}
 
-Yes.
+Mimi Zohar
 
-> 
->       so about this: you are right about the fact that we might dont have to
-> walk over the rmap of the page for pages with mapcount 1
->       but isnt it cleaner to deal it inside rmap.c?
 
-If you needed to writeprotect pages with mapcount 2, 3, ... then
-indeed you'd want to do it in rmap.c, and you wouldn't want to
-specialcase mapcount 1.  But I'm saying you don't need to do the
-writeprotection with mapcount 2, 3, ...; therefore better just
-to do it (again, no need to special case mapcount 1) in ksm.c.
-
-Cutting out a body of code: that's as clean as clean can be.
-
->       another thing,  get_user_pages() protection is needed even in 
-> that case, beacuse get_user_pages_fast is lockless, so odirect
->       can run under our legs after we write protecting the page.
-
-That I don't dispute, I made a point of saying that "it may contain
-some important checks (I'm thinking of the get_user_pages protection)",
-meaning that you'd want to transfer any such checks to ksm.c.
-
-(In my own preferred patchset structure, I'd actually like that
-O_DIRECT get_user_pages consideration added as a separate patch
-over the base: one needs to focus in a very different way to get
-those issues, it's better to hold them up for separate inspection.
-The patch before would be buggy, yes, but not in such a way that
-anyone bisecting for an unrelated bug would get inconvenienced.)
-
-> 
->      anyway, nothing critical, i dont mind to move page_write_protect_one()
-> into ksm.c, i still think get_user_pages protection is needed.
-
-Yes, something like that.
-
-Hugh
