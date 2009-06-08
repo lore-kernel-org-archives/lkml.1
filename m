@@ -1,90 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756649AbZFHXgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbZFHXjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756649AbZFHXgf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 19:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbZFHXg2
+	id S1757055AbZFHXjs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 19:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbZFHXjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 19:36:28 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:49616 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754179AbZFHXg1 convert rfc822-to-8bit (ORCPT
+	Mon, 8 Jun 2009 19:39:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52381 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754070AbZFHXjf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 19:36:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=fC+Woht9UyaRvmiNF1LSQUtaUnuvLMubqJQtra3deSjClkr53V7kY3X+R18oQxES4N
-         hgz7hLdI2PWuQxj06bdpKaj8q/LB7CO2eQD3zJSQt9Hkh8ZBdO0Z/XvfKj1R6i47+Zjg
-         p5jasnoVjbjGQ24HIIUG57rPs0WURbGAh+fC0=
-MIME-Version: 1.0
-In-Reply-To: <8bd0f97a0906081628o7d30e05ld961c00a690c140d@mail.gmail.com>
-References: <8bd0f97a0906081628o7d30e05ld961c00a690c140d@mail.gmail.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 8 Jun 2009 19:36:09 -0400
-Message-ID: <8bd0f97a0906081636p760f190cue9ef01454658dd46@mail.gmail.com>
-Subject: Re: adding lockdep support to the Blackfin arch
-To: Ingo Molnar <mingo@redhat.com>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 8 Jun 2009 19:39:35 -0400
+Date: Mon, 8 Jun 2009 16:38:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: riel@redhat.com, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] Add a gfp-translate script to help understand page
+ allocation failure reports
+Message-Id: <20090608163827.47b4738b.akpm@linux-foundation.org>
+In-Reply-To: <20090608132950.GB15070@csn.ul.ie>
+References: <20090608132950.GB15070@csn.ul.ie>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 8, 2009 at 19:28, Mike Frysinger wrote:
-> ive been extending the Blackfin arch recently to support lockdep.
-> since i also had to implement irqflags/stacktrace as well, i wouldnt
-> be surprised if this issue is nested in there, plus this is a no-mmu
-> system.
->
-> at any rate, when i boot up a Blackfin system with PROVE_LOCKING
-> enabled, i end up with this warning:
-> Badness at kernel/fork.c:988
->
-> which correlates to this in copy_process():
->    DEBUG_LOCKS_WARN_ON(!p->hardirqs_enabled);
+On Mon, 8 Jun 2009 14:29:50 +0100
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-sorry, stupid stuck keys triggered gmail sending before i finished
+> The page allocation failure messages include a line that looks like
+> 
+> page allocation failure. order:1, mode:0x4020
+> 
+> The mode is easy to translate but irritating for the lazy and a bit error
+> prone. This patch adds a very simple helper script gfp-translate for the mode:
+> portion of the page allocation failure messages. An example usage looks like
+> 
+>   mel@machina:~/linux-2.6 $ scripts/gfp-translate 0x4020
+>   Source: /home/mel/linux-2.6
+>   Parsing: 0x4020
+>   #define __GFP_HIGH	(0x20)	/* Should access emergency pools? */
+>   #define __GFP_COMP	(0x4000) /* Add compound page metadata */
+> 
+> The script is not a work of art but it has come in handy for me a few times
+> so I thought I would share.
+> 
 
-when i trace the code, i can see hardirqs_enabled toggling between 0
-and 1 ... but when it makes it to copy_process(), apparently it's 0
-which annoys the lockdep code.  any tips for me ?
+hm, OK.  Most of the gfp masks I have to decode are in emails and
+bugzilla reports.  I guess I'm different.  Plus I wouldn't trust a tool
+run on my machine's kernel tree to correctly interpret a gfp mask from
+someone else's kernel of different vintage.
 
-btw, in order to get this to work in the first place, i had to extend
-kernel/lockdep.c's static_obj() function as the Blackfin has custom
-data regions where some locks live (thus outside of the normal
-start/end map).  should this code use kallsyms' helper functions
-instead ?  otherwise, i needed this:
+But I can see that it would be useful for someone who's debugging a
+locally built kernel.
 
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -634,6 +634,27 @@ static int static_obj(void *obj)
-    if ((addr >= start) && (addr < end))
-        return 1;
+> diff --git a/scripts/gfp-translate b/scripts/gfp-translate
+> new file mode 100755
 
-+#ifdef CONFIG_BLACKFIN
-+   if (L1_DATA_A_LENGTH) {
-+       start = (unsigned long) &_sdata_l1;
-+       end   = (unsigned long) &_ebss_l1;
-+       if ((addr >= start) && (addr < end))
-+           return 1;
-+   }
-+   if (L1_DATA_B_LENGTH) {
-+       start = (unsigned long) &_sdata_b_l1;
-+       end   = (unsigned long) &_ebss_b_l1;
-+       if ((addr >= start) && (addr < end))
-+           return 1;
-+   }
-+   if (L2_LENGTH) {
-+       start = (unsigned long) &_sdata_l2;
-+       end   = (unsigned long) &_ebss_l2;
-+       if ((addr >= start) && (addr < end))
-+           return 1;
-+   }
-+#endif
-+
- #ifdef CONFIG_SMP
-    /*
-     * percpu var?
--mike
+I don't know how to get patches into Linus's tree with the X bit still
+set :(  To avoid solving that problem, maybe Pekka can merge this?
+
+> +# Guess the kernel source directory if it's not set. Preference is in order of
+> +# o current directory
+> +# o /usr/src/linux
+> +if [ "$SOURCE" = "" ]; then
+> +	if [ -r "/usr/src/linux/Makefile" ]; then
+> +		SOURCE=/usr/src/linux
+> +	fi
+> +	if [ -r "`pwd`/Makefile" ]; then
+> +		SOURCE=`pwd`
+> +	fi
+> +fi
+
+OK.
+
+> +# Confirm that a source directory exists
+> +if [ ! -r "$SOURCE/Makefile" ]; then
+> +	die "Could not locate source directory or it is invalid"
+> +fi
+
+"kernel source directory".
+
+> +# Confirm that a GFP mask has been specified
+> +if [ "$GFPMASK" = "none" ]; then
+> +	usage
+> +fi
+> +
+> +# Extract GFP flags from the kernel source
+> +TMPFILE=`mktemp -t gfptranslate-XXXXXX` || exit 1
+> +grep "^#define __GFP" $SOURCE/include/linux/gfp.h | sed -e 's/(__force gfp_t)//' | sed -e 's/u)/)/' | grep -v GFP_BITS | sed -e 's/)\//) \//' > $TMPFILE
+> +
+> +# Parse the flags
+> +IFS="
+> +"
+> +echo Source: $SOURCE
+> +echo Parsing: $GFPMASK
+> +for LINE in `cat $TMPFILE`; do
+> +	MASK=`echo $LINE | awk '{print $3}'`
+> +	if [ $(($GFPMASK&$MASK)) -ne 0 ]; then
+> +		echo $LINE
+> +	fi
+> +done
+> +
+> +rm -f $TMPFILE
+> +exit 0
