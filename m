@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753917AbZFHIPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbZFHIXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753917AbZFHIPt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 04:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZFHIPh
+	id S1753321AbZFHIXT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 04:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbZFHIXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 04:15:37 -0400
-Received: from relay.atmel.no ([80.232.32.139]:53989 "EHLO relay.atmel.no"
+	Mon, 8 Jun 2009 04:23:09 -0400
+Received: from sh.osrg.net ([192.16.179.4]:35347 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753514AbZFHIPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 04:15:36 -0400
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Eirik Aanonsen <eaa@wprmedical.com>
-Cc: kernel@avr32linux.org, linux-kernel@vger.kernel.org,
-       Nicolas Ferre <Nicolas.FERRE@atmel.com>,
-       Andrew Victor <avictor.za@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-Subject: [PATCH] atmel_serial: Fix hang in set_termios when crtscts is enabled
-Date: Mon,  8 Jun 2009 10:15:21 +0200
-Message-Id: <1244448921-22942-1-git-send-email-haavard.skinnemoen@atmel.com>
-X-Mailer: git-send-email 1.6.0.4
+	id S1752482AbZFHIXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 04:23:09 -0400
+Date: Mon, 8 Jun 2009 17:23:04 +0900
+To: arnd@arndb.de
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <200906081003.59171.arnd@arndb.de>
+References: <200906041747.04310.arnd@arndb.de>
+	<20090608144921R.fujita.tomonori@lab.ntt.co.jp>
+	<200906081003.59171.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090608172200A.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 08 Jun 2009 17:23:04 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After enabling hardware flow control, any subsequent termios call may
-hang waiting for the transmitter to drain. This appears to be caused by
-a busy-loop in set_termios() waiting for the transmitter to become
-empty, which may take a very long time (or hang indefinitely) if the
-device at the other end is blocking us.
+On Mon, 8 Jun 2009 10:03:58 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-A quick look through the tty and serial_core code indicates that any
-necessary flushing (which is optional) has already been done at this
-point, so there's no need for the driver to flush the transmitter on its
-own.
+> On Monday 08 June 2009, FUJITA Tomonori wrote:
+> > 
+> > > However, I don't think I have the energy to fix this problem, but
+> > > I agree that it should be fixed eventually. I can leave out
+> > > the declarations of dma_{free,alloc}_coherent from dma-mapping-linear.h
+> > > so that the broken code remains in the architecture specific
+> > > files, and change all references to dma_cache_sync to something
+> > > else. The best I can think of is __dma_cache_sync() with the same
+> > > calling conventions as dma_cache_sync(). Does that make sense?
+> > 
+> > Sorry, but it doesn't make sense to me because __dma_cache_sync() hack
+> > is against the goal of dma-mapping-linear.h, having a clean, ideal,
+> > unified header file.
+> 
+> Do you have any other suggestion? The operation that an architecture
+> performs to synchronize the DMA buffer after a DMA is just not generic
+> and needs to have some name that we can call from the generic file.
+> Right now we use one of dma_cache_sync, frv_cache_wback_inv,
+> mn10300_dcache_flush_inv or consistent_sync for this and I was just
+> looking for a new internal name for this operation.
 
-Fix it by removing the busy-loop altogether.
-
-Reported-by: Eirik Aanonsen <eaa@wprmedical.com>
-Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
----
-I have not tested this patch yet. Eirik, can you give it a try?
-
- drivers/serial/atmel_serial.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
-index b3497d7..338b15c 100644
---- a/drivers/serial/atmel_serial.c
-+++ b/drivers/serial/atmel_serial.c
-@@ -1104,11 +1104,13 @@ static void atmel_set_termios(struct uart_port *port, struct ktermios *termios,
- 	/* update the per-port timeout */
- 	uart_update_timeout(port, termios->c_cflag, baud);
- 
--	/* save/disable interrupts and drain transmitter */
-+	/*
-+	 * save/disable interrupts. The tty layer will ensure that the
-+	 * transmitter is empty if requested by the caller, so there's
-+	 * no need to wait for it here.
-+	 */
- 	imr = UART_GET_IMR(port);
- 	UART_PUT_IDR(port, -1);
--	while (!(UART_GET_CSR(port) & ATMEL_US_TXEMPTY))
--		cpu_relax();
- 
- 	/* disable receiver and transmitter */
- 	UART_PUT_CR(port, ATMEL_US_TXDIS | ATMEL_US_RXDIS);
--- 
-1.6.0.4
-
+If you don't clean up them, I think that it's better to leave out
+asm-generic/dma-generic-linear.h for
+now. asm-generic/dma-generic-linear.h is supposed to clean up the
+mess; unify (generalize, or fix) some architecture. It's not supported
+to add another temporary hack that should be removed.
