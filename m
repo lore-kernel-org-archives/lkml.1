@@ -1,190 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754343AbZFHHyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbZFHH4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754343AbZFHHyf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 03:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZFHHy1
+	id S1753951AbZFHH4r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 03:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbZFHH4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 03:54:27 -0400
-Received: from mga05.intel.com ([192.55.52.89]:46398 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751051AbZFHHy0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 03:54:26 -0400
+	Mon, 8 Jun 2009 03:56:40 -0400
+Received: from mga03.intel.com ([143.182.124.21]:3370 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751051AbZFHH4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 03:56:39 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,323,1241420400"; 
-   d="scan'208";a="697369250"
-Subject: [PATCH V2: 3/3] pci: Provide Multiple Error Received support on AER
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <1244447368.2560.193.camel@ymzhang>
-References: <1244447368.2560.193.camel@ymzhang>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 08 Jun 2009 15:54:35 +0800
-Message-Id: <1244447675.2560.199.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+   d="scan'208";a="151734474"
+Date: Mon, 8 Jun 2009 15:56:38 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>
+Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first
+	class citizen
+Message-ID: <20090608075638.GA12874@localhost>
+References: <87pre4nhqf.fsf@basil.nowhere.org> <20090608073944.GA12431@localhost> <20090608164611.4385.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090608164611.4385.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-08 at 15:49 +0800, Zhang, Yanmin wrote:
-> ﻿﻿When root ports receive the same errors more than once before kernel
->  process them, the Multiple Error Messages Received flags are set by
-> hardware. Because root port could only save one kind of correctable
-> error source id and another uncorrectable error source id at the same
-> time, so the second message sender id is lost if the 2 messages are
-> sent from 2 different devices. Below patch searches all devices under
-> the root port when multiple messages are received.
-﻿Sorry. The version number should be V2 instead of V3.
+On Mon, Jun 08, 2009 at 03:51:53PM +0800, KOSAKI Motohiro wrote:
+> > On Wed, May 20, 2009 at 07:20:24PM +0800, Andi Kleen wrote:
+> > > One scenario that might be useful to test is what happens when some very large
+> > > processes, all mapped and executable exceed memory and fight each other
+> > > for the working set. Do you have regressions then compared to without
+> > > the patches?
+> > 
+> > I managed to carry out some stress tests for memory tight desktops.
+> > The outcome is encouraging: clock time and major faults are reduced
+> > by 50%, and pswpin numbers are reduced to ~1/3.
+> > 
+> > Here is the test scenario.
+> > - nfsroot gnome desktop with 512M physical memory
+> > - run some programs, and switch between the existing windows after
+> >   starting each new program.
+> > 
+> > The progress timing (seconds) is:
+> > 
+> >   before       after    programs
+> >     0.02        0.02    N xeyes
+> >     0.75        0.76    N firefox
+> >     2.02        1.88    N nautilus
+> >     3.36        3.17    N nautilus --browser
+> >     5.26        4.89    N gthumb
+> >     7.12        6.47    N gedit
+> >     9.22        8.16    N xpdf /usr/share/doc/shared-mime-info/shared-mime-info-spec.pdf
+> >    13.58       12.55    N xterm
+> >    15.87       14.57    N mlterm
+> >    18.63       17.06    N gnome-terminal
+> >    21.16       18.90    N urxvt
+> >    26.24       23.48    N gnome-system-monitor
+> >    28.72       26.52    N gnome-help
+> >    32.15       29.65    N gnome-dictionary
+> >    39.66       36.12    N /usr/games/sol
+> >    43.16       39.27    N /usr/games/gnometris
+> >    48.65       42.56    N /usr/games/gnect
+> >    53.31       47.03    N /usr/games/gtali
+> >    58.60       52.05    N /usr/games/iagno
+> >    65.77       55.42    N /usr/games/gnotravex
+> >    70.76       61.47    N /usr/games/mahjongg
+> >    76.15       67.11    N /usr/games/gnome-sudoku
+> >    86.32       75.15    N /usr/games/glines
+> >    92.21       79.70    N /usr/games/glchess
+> >   103.79       88.48    N /usr/games/gnomine
+> >   113.84       96.51    N /usr/games/gnotski
+> >   124.40      102.19    N /usr/games/gnibbles
+> >   137.41      114.93    N /usr/games/gnobots2
+> >   155.53      125.02    N /usr/games/blackjack
+> >   179.85      135.11    N /usr/games/same-gnome
+> >   224.49      154.50    N /usr/bin/gnome-window-properties
+> >   248.44      162.09    N /usr/bin/gnome-default-applications-properties
+> >   282.62      173.29    N /usr/bin/gnome-at-properties
+> >   323.72      188.21    N /usr/bin/gnome-typing-monitor
+> >   363.99      199.93    N /usr/bin/gnome-at-visual
+> >   394.21      206.95    N /usr/bin/gnome-sound-properties
+> >   435.14      224.49    N /usr/bin/gnome-at-mobility
+> >   463.05      234.11    N /usr/bin/gnome-keybinding-properties
+> >   503.75      248.59    N /usr/bin/gnome-about-me
+> >   554.00      276.27    N /usr/bin/gnome-display-properties
+> >   615.48      304.39    N /usr/bin/gnome-network-preferences
+> >   693.03      342.01    N /usr/bin/gnome-mouse-properties
+> >   759.90      388.58    N /usr/bin/gnome-appearance-properties
+> >   937.90      508.47    N /usr/bin/gnome-control-center
+> >  1109.75      587.57    N /usr/bin/gnome-keyboard-properties
+> >  1399.05      758.16    N : oocalc
+> >  1524.64      830.03    N : oodraw
+> >  1684.31      900.03    N : ooimpress
+> >  1874.04      993.91    N : oomath
+> >  2115.12     1081.89    N : ooweb
+> >  2369.02     1161.99    N : oowriter
+> 
+> Thanks this great effort!
+> I definitely agree this patch sould be merge to -mm asap.
+> 
+> 	Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-﻿﻿﻿When root ports receive the same errors more than once before kernel
- process them, the Multiple Error Messages Received flags are set by
-hardware. Because root port could only save one kind of correctable
-error source id and another uncorrectable error source id at the same
-time, so the second message sender id is lost if the 2 messages are
-sent from 2 different devices. Below patch searches all devices under
-the root port when multiple messages are received.
+Thank you :)
 
-﻿﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+To be complete, here are the free numbers at the end of the tests:
 
----
+before patch:
+                             total       used       free     shared    buffers     cached
+                Mem:           474        467          7          0          0        236
+                -/+ buffers/cache:        230        243
+                Swap:         1023        418        605
 
---- linux-2.6.30-rc3_aernoeid/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-07 14:09:19.000000000 +0800
-+++ linux-2.6.30-rc3_aermultierror/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-07 14:35:43.000000000 +0800
-@@ -143,13 +143,22 @@ static void set_downstream_devices_error
- 	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
- }
- 
-+static int add_error_device(struct aer_err_info *e_info, struct pci_dev *dev)
-+{
-+	if (e_info->error_dev_num < AER_MAX_MULTI_ERR_DEVICES) {
-+		e_info->dev[e_info->error_dev_num ++] = dev;
-+		return 1;
-+	} else
-+		return 0;
-+}
-+
- static int compare_device_id(struct pci_dev *dev, struct aer_err_info *e_info)
- {
- 	if (e_info->id == ((dev->bus->number << 8) | dev->devfn)) {
- 		/*
- 		 * Device ID match
- 		 */
--		e_info->dev = dev;
-+		add_error_device(e_info, dev);
- 		return 1;
- 	}
- 
-@@ -168,8 +177,9 @@ static int find_device_iter(struct pci_d
- 	if (!nosourceid) {
- 		result = compare_device_id(dev, e_info);
- 		if (result)
--			return 1;
--		if (e_info->id != 0)
-+			goto added;
-+		if ((e_info->id != 0) &&
-+			!(e_info->flags & AER_MULTI_ERROR_VALID_FLAG))
- 			return 0;
- 	}
- 
-@@ -205,8 +215,8 @@ static int find_device_iter(struct pci_d
- 				pos + PCI_ERR_COR_MASK,
- 				&mask);
- 		if (status & ERR_CORRECTABLE_ERROR_MASK & ~mask) {
--			e_info->dev = dev;
--			return 1;
-+			add_error_device(e_info, dev);
-+			goto added;
- 		}
- 	} else {
- 		pci_read_config_dword(dev,
-@@ -216,12 +226,18 @@ static int find_device_iter(struct pci_d
- 				pos + PCI_ERR_UNCOR_MASK,
- 				&mask);
- 		if (status & ERR_UNCORRECTABLE_ERROR_MASK & ~mask) {
--			e_info->dev = dev;
--			return 1;
-+			add_error_device(e_info, dev);
-+			goto added;
- 		}
- 	}
- 
- 	return 0;
-+
-+added:
-+	if (e_info->flags & AER_MULTI_ERROR_VALID_FLAG) {
-+		return 0;
-+	} else
-+		return 1;
- }
- 
- /**
-@@ -702,6 +718,30 @@ static int get_device_error_info(struct 
- 	return AER_SUCCESS;
- }
- 
-+static inline void aer_process_err_devices(struct pcie_device *p_device,
-+			struct aer_err_info *e_info)
-+{
-+	int i;
-+
-+	if (e_info->dev[0] == NULL) {
-+		printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
-+				__func__, e_info->id);
-+	}
-+
-+	for (i = 0; i < e_info->error_dev_num; i ++) {
-+		if (e_info->dev[i] == NULL)
-+			break;
-+
-+		if (get_device_error_info(e_info->dev[i], e_info) ==
-+				AER_SUCCESS) {
-+			aer_print_error(e_info->dev[i], e_info);
-+			handle_error_source(p_device,
-+					e_info->dev[i],
-+					e_info);
-+		}
-+	}
-+}
-+
- /**
-  * aer_isr_one_error - consume an error detected by root port
-  * @p_device: pointer to error root port service device
-@@ -744,18 +784,7 @@ static void aer_isr_one_error(struct pci
- 			e_info->flags |= AER_MULTI_ERROR_VALID_FLAG;
- 
- 		find_source_device(p_device->port, e_info);
--		if (e_info->dev == NULL) {
--			printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
--				__func__, e_info->id);
--			continue;
--		}
--		if (get_device_error_info(e_info->dev, e_info) ==
--				AER_SUCCESS) {
--			aer_print_error(e_info->dev, e_info);
--			handle_error_source(p_device,
--				e_info->dev,
--				e_info);
--		}
-+		aer_process_err_devices(p_device, e_info);
- 	}
- 
- 	kfree(e_info);
---- linux-2.6.30-rc3_aernoeid/drivers/pci/pcie/aer/aerdrv.h	2009-04-29 12:44:36.000000000 +0800
-+++ linux-2.6.30-rc3_aermultierror/drivers/pci/pcie/aer/aerdrv.h	2009-06-07 14:16:55.000000000 +0800
-@@ -56,8 +56,10 @@ struct header_log_regs {
- 	unsigned int dw3;
- };
- 
-+#define AER_MAX_MULTI_ERR_DEVICES	5
- struct aer_err_info {
--	struct pci_dev *dev;
-+	struct pci_dev *dev[AER_MAX_MULTI_ERR_DEVICES];
-+	int error_dev_num;
- 	u16 id;
- 	int severity;			/* 0:NONFATAL | 1:FATAL | 2:COR */
- 	int flags;
+after patch
+                             total       used       free     shared    buffers     cached
+                Mem:           474        457         16          0          0        236
+                -/+ buffers/cache:        221        253
+                Swap:         1023        404        619
 
-
+Thanks,
+Fengguang
