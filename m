@@ -1,95 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbZFHBSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbZFHB1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754312AbZFHBSL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 21:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZFHBR7
+	id S1754276AbZFHB1v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 21:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbZFHB1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 21:17:59 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54975 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751751AbZFHBR6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 21:17:58 -0400
-Message-ID: <4A2C66BF.5000401@jp.fujitsu.com>
-Date: Mon, 08 Jun 2009 10:17:51 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Sun, 7 Jun 2009 21:27:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33495 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751751AbZFHB1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 7 Jun 2009 21:27:40 -0400
+Message-ID: <4A2C695B.2060505@redhat.com>
+Date: Mon, 08 Jun 2009 09:28:59 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -v4] x86: MCE: Re-implement MCE log ring buffer as per-CPU
- ring buffer
-References: <1244085090.8361.360.camel@yhuang-dev.sh.intel.com>	 <4A28C2E2.4090309@jp.fujitsu.com>	 <1244189284.8361.514.camel@yhuang-dev.sh.intel.com>	 <4A28D738.8010202@jp.fujitsu.com> <1244191174.8361.517.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1244191174.8361.517.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: linux-kernel@vger.kernel.org, jdike@addtoit.com, hch@infradead.org,
+       mingo@elte.hu, akpm@linux-foundation.org,
+       David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
+       linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org
+Subject: Re: [Patch 4/5] module: trim exception table in module_free()
+References: <20090604014813.6332.18486.sendpatchset@localhost.localdomain> <200906041800.54696.rusty@rustcorp.com.au> <4A278C62.8000801@redhat.com> <200906060038.03089.rusty@rustcorp.com.au>
+In-Reply-To: <200906060038.03089.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying wrote:
-> On Fri, 2009-06-05 at 16:28 +0800, Hidetoshi Seto wrote:
->> Huang Ying wrote:
->>> On Fri, 2009-06-05 at 15:01 +0800, Hidetoshi Seto wrote:
->>>> Huang Ying wrote:
->>>>>  struct mce_log {
->>>>> -	char signature[12]; /* "MACHINECHECK" */
->>>>> +	char signature[12]; /* "MACHINECHEC2" */
->>>>>  	unsigned len;	    /* = MCE_LOG_LEN */
->>>>> -	unsigned next;
->>>>>  	unsigned flags;
->>>>>  	unsigned pad0;
->>>>> -	struct mce entry[MCE_LOG_LEN];
->>>>> +	struct mce_log_cpu *mcelog_cpus;
->>>>>  };
->>>> What is this *mcelog_cpus to be used for?
->>>> It seems it will point one of per-CPU buffers (maybe cpu#0's buffer)
->>>> if I have read the following mce_log_init() correctly.
->>> It is mainly used by something like kdump, which can search
->>> "MACHINECHEC2", and analyze mce_log. mcelog_cpus can help kdump find the
->>> real mcelog storage.
->> Hum, but it help tools only to find one of buffers, not to find all.
->>
->> I think it would be better help for tools if we have another signature
->> on struct mce_log_cpu, e.g.: 
->>
->>  +struct mce_log_cpu {
->> + 	char signature[**];	/* "MCE_LOG_CPU_VER_1" or so */
->> +	__u32 cpuid;		/* cpuid or extcpu, same as struct mce */
->>  +	int head;
->>  +	int tail;
->>  +	unsigned long flags;
->>  +	struct mce entry[MCE_LOG_LEN];
->>  +};
->>
->> How about this?
-> 
-> +	mcelog.mcelog_cpus = &per_cpu_var(mce_log_cpus);
-> 
-> So mcelog.mcelog_cpus are pointed to the buffers of all CPUs, not just
-> that of one CPU. You can find them by analyzing PER cpu data structure.
+Rusty Russell wrote:
+> On Thu, 4 Jun 2009 06:27:06 pm Amerigo Wang wrote:
+>   
+>> Rusty Russell wrote:
+>>     
+>>> I've taken this one to make it more generic.  I'll leave the x86
+>>> maintainers to apply the rest.
+>>>       
+>> Thank you. But this one depends on the previous, I don't think you can
+>> apply this without the previous ones.
+>>     
+>
+> Here's what I ended up with: I need to rig up a test and make sure it goes to
+> all the maintainers and linux-next.
+>
+> Subject: module: trim exception table on init free.
+>
+> It's theoretically possible that there are exception table entries
+> which point into the (freed) init text of modules.  These could cause
+> future problems if other modules get loaded into that memory and cause
+> an exception as we'd see the wrong fixup.
+>
+> Amerigo fixed this long-standing FIXME in the x86 version, but this
+> patch is more general.
+>
+> This implements trim_init_extable(); most archs are simple since they
+> use the standard lib/extable.c sort code.  Alpha and IA64 use relative
+> addresses in their fixups, so thier trimming is a slight variation.
+>
+> Sparc32 is unique; it doesn't seem to define ARCH_HAS_SORT_EXTABLE,
+> yet it defines its own sort_extable() which overrides the one in lib.
+> It doesn't sort, so we have to mark deleted entries instead of
+> actually trimming them.
+>
+> Inspired-by: Amerigo Wang <amwang@redhat.com>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+>   
 
-I thought that the signature is used to find the structure without such
-analyzing.  If a tool can analyze PER cpu data, then it likely know
-where the mce_log_cpu is, so mcelog.mcelog_cpus will not be required.
+Very nice!
+The generic part of this patch looks good for me, of course. :)
 
-#define per_cpu_var(var) per_cpu__##var
+Thank you, Rusty!
 
-#define per_cpu(var, cpu) \
-        (*SHIFT_PERCPU_PTR(&per_cpu_var(var), per_cpu_offset(cpu)))
-
-OK, I have mistook per_cpu_var() for per_cpu(). 
-Then mcelog.mcelog_cpus does not point any of the buffers, but tells where
-the buffer is locating in each of PER cpu data.
-Tools have to get per_cpu_offset(cpu) to know where the PER cpu data
-allocated.  According to pcpu_alloc_bootmem(), it might consider NUMA.
-Anyway It will take a bit more effort.
-
-So still I think the mcelog.mcelog_cpus is mostly pointless.
-
-
-Thanks,
-H.Seto
 
