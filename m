@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbZFHWIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbZFHWLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755392AbZFHWIF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 18:08:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753962AbZFHWHz
+	id S1753594AbZFHWLV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 18:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573AbZFHWLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 18:07:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49346 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753594AbZFHWHy (ORCPT
+	Mon, 8 Jun 2009 18:11:03 -0400
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:64014 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753487AbZFHWLB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 18:07:54 -0400
-Date: Mon, 8 Jun 2009 15:07:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: hidave.darkstar@gmail.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH v3] printk: add halt_delay parameter for printk delay in
- halt phase
-Message-Id: <20090608150743.f2a0e09f.akpm@linux-foundation.org>
-In-Reply-To: <20090608220253.GD22049@elte.hu>
-References: <a8e1da0906080040k7852f770v1e2aa2ebb0f52369@mail.gmail.com>
-	<20090608081439.GB6372@elte.hu>
-	<20090608012845.9c428525.akpm@linux-foundation.org>
-	<a8e1da0906080142u62a45c47g2181a79addfb6168@mail.gmail.com>
-	<20090608084807.GE6372@elte.hu>
-	<20090608092607.8b331bf0.akpm@linux-foundation.org>
-	<20090608171501.GA15399@elte.hu>
-	<20090608143913.749e19c5.akpm@linux-foundation.org>
-	<20090608220253.GD22049@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Jun 2009 18:11:01 -0400
+X-IronPort-AV: E=Sophos;i="4.41,326,1241395200"; 
+   d="scan'208";a="168099912"
+Date: Mon, 8 Jun 2009 15:11:02 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
+       netdev@vger.kernel.org, arjan@infradead.org
+Subject: Re: [PATCH 1/7] initdev:kernel:Asynchronously-discovered device
+	synchronization, v6
+Message-ID: <20090608221102.GA22222@cuplxvomd02.corp.sa.net>
+References: <20090606023403.GA5645@cuplxvomd02.corp.sa.net> <4A2A2C26.1070106@s5r6.in-berlin.de> <4A2A320F.5020008@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A2A320F.5020008@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-4; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009 00:02:53 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On Sat, Jun 06, 2009 at 05:08:31AM -0400, Stefan Richter wrote:
+> I wrote:
+> > What happens if the calls or the call arguments aren't balanced, e.g. 
+> > due to a mistake in an error path?  The kernel will hang?
+> 
+> Yes, unless the waiting subsystems implement timeouts.
 
-> The /proc thing definitely makes sense - the boot option was just 
-> symmetry to the existing boot-delay approach.
+This is absolutely correct. It would, of course, be possible to add a
+timeout, but it would really be papering over a bug. If this every happened,
+the proper thing would be to fix the problem.
 
-ok.  btw, if we do decide to go with a general printk_delay then we'll
-need a touch_nmi_watchdog() in there to keep the NMI watchdog and
-softlockup detector away.
-
+> Stefan Richter
