@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756705AbZFHOfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbZFHOgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756705AbZFHOfw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 10:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755982AbZFHOfA
+	id S1757079AbZFHOgp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 10:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756836AbZFHOgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 10:35:00 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:19374 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756607AbZFHOe6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 10:34:58 -0400
-X-SpamScore: 1
-X-BigFish: VPS1(zzzz1202hzzz32i17ch65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KKXCHZ-02-CQI-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 1/5] dma-debug: comment style fixes
-Date: Mon, 8 Jun 2009 16:34:06 +0200
-Message-ID: <1244471650-4632-2-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1244471650-4632-1-git-send-email-joerg.roedel@amd.com>
-References: <1244471650-4632-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 08 Jun 2009 14:34:14.0975 (UTC) FILETIME=[3285BCF0:01C9E846]
+	Mon, 8 Jun 2009 10:36:15 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:33606 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756816AbZFHOgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 10:36:14 -0400
+Date: Mon, 8 Jun 2009 15:36:14 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, yanmin.zhang@intel.com,
+       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] Properly account for the number of page cache
+	pages zone_reclaim() can reclaim
+Message-ID: <20090608143613.GF15070@csn.ul.ie>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-3-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0906081024070.21954@gentwo.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0906081024070.21954@gentwo.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Last patch series introduced some new comment which does not fit the
-Kernel comment style guidelines. Fix it with this patch.
+On Mon, Jun 08, 2009 at 10:25:27AM -0400, Christoph Lameter wrote:
+> Note that I am not aware of any current user for the advanced zone reclaim
+> modes that include writeback and swap.
+> 
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- lib/dma-debug.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+Neither am I, but it's the documented behaviour so we might as well act on
+it as advertised.
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index 77053d9..b8a61ff 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -542,7 +542,8 @@ static ssize_t filter_write(struct file *file, const char __user *userbuf,
- 
- 	write_lock_irqsave(&driver_name_lock, flags);
- 
--	/* Now handle the string we got from userspace very carefully.
-+	/*
-+	 * Now handle the string we got from userspace very carefully.
- 	 * The rules are:
- 	 *         - only use the first token we got
- 	 *         - token delimiter is everything looking like a space
-@@ -551,7 +552,7 @@ static ssize_t filter_write(struct file *file, const char __user *userbuf,
- 	 */
- 	if (!isalnum(buf[0])) {
- 		/*
--		   If the first character userspace gave us is not
-+		 * If the first character userspace gave us is not
- 		 * alphanumerical then assume the filter should be
- 		 * switched off.
- 		 */
+> Acked-by: Christoph Lameter <cl@linux-foundation.org>
+> 
+
+Thanks.
+
 -- 
-1.6.3.1
-
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
