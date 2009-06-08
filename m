@@ -1,323 +1,271 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754573AbZFHHwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZFHHxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754573AbZFHHwv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 03:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbZFHHwn
+	id S1754809AbZFHHxE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 03:53:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZFHHws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 03:52:43 -0400
-Received: from mga06.intel.com ([134.134.136.21]:41691 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752417AbZFHHwm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 03:52:42 -0400
+	Mon, 8 Jun 2009 03:52:48 -0400
+Received: from mga03.intel.com ([143.182.124.21]:6657 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754453AbZFHHwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 03:52:47 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,323,1241420400"; 
-   d="scan'208";a="522561361"
-Subject: [PATCH V2: 2/3] pci: Provide no error source id support on AER
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-pci@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <1244447356.2560.192.camel@ymzhang>
-References: <1244447356.2560.192.camel@ymzhang>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 08 Jun 2009 15:52:51 +0800
-Message-Id: <1244447571.2560.196.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+   d="sh'?scan'208";a="151733610"
+Date: Mon, 8 Jun 2009 15:52:46 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [rfc][patch] swap: virtual swap readahead
+Message-ID: <20090608075246.GA12644@localhost>
+References: <1243436746-2698-1-git-send-email-hannes@cmpxchg.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="vtzGhvizbBRQ85DL"
+Content-Disposition: inline
+In-Reply-To: <1243436746-2698-1-git-send-email-hannes@cmpxchg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-08 at 15:49 +0800, Zhang, Yanmin wrote:
-> ﻿When error source id is equal to 0 or nosourceid=1, kernel checks
-> the AER status registers of all devices under the root port
-> to find the initial error reporter.
-Sorry. The version number should be V2 instead of V3.
 
-﻿When error source id is equal to 0 or nosourceid=1, kernel checks
-the AER status registers of all devices under the root port
-to find the initial error reporter.
+--vtzGhvizbBRQ85DL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+On Wed, May 27, 2009 at 05:05:46PM +0200, Johannes Weiner wrote:
+> The current swap readahead implementation reads a physically
+> contiguous group of swap slots around the faulting page to take
+> advantage of the disk head's position and in the hope that the
+> surrounding pages will be needed soon as well.
+> 
+> This works as long as the physical swap slot order approximates the
+> LRU order decently, otherwise it wastes memory and IO bandwidth to
+> read in pages that are unlikely to be needed soon.
+> 
+> However, the physical swap slot layout diverges from the LRU order
+> with increasing swap activity, i.e. high memory pressure situations,
+> and this is exactly the situation where swapin should not waste any
+> memory or IO bandwidth as both are the most contended resources at
+> this point.
+> 
+> This patch makes swap-in base its readaround window on the virtual
+> proximity of pages in the faulting VMA, as an indicator for pages
+> needed in the near future, while still taking physical locality of
+> swap slots into account.
+> 
+> This has the advantage of reading in big batches when the LRU order
+> matches the swap slot order while automatically throttling readahead
+> when the system is thrashing and swap slots are no longer nicely
+> grouped by LRU order.
 
----
+Hi Johannes,
 
---- linux-2.6.30-rc3_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c	2009-04-29 10:37:16.000000000 +0800
-+++ linux-2.6.30-rc3_aernoeid/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-07 14:09:19.000000000 +0800
-@@ -26,7 +26,9 @@
- #include "aerdrv.h"
- 
- static int forceload;
-+static int nosourceid;
- module_param(forceload, bool, 0);
-+module_param(nosourceid, bool, 0);
- 
- int pci_enable_pcie_error_reporting(struct pci_dev *dev)
- {
-@@ -141,34 +143,81 @@ static void set_downstream_devices_error
- 	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
- }
- 
--static int find_device_iter(struct device *device, void *data)
-+static int compare_device_id(struct pci_dev *dev, struct aer_err_info *e_info)
- {
--	struct pci_dev *dev;
--	u16 id = *(unsigned long *)data;
--	u8 secondary, subordinate, d_bus = id >> 8;
--
--	if (device->bus == &pci_bus_type) {
--		dev = to_pci_dev(device);
--		if (id == ((dev->bus->number << 8) | dev->devfn)) {
--			/*
--			 * Device ID match
--			 */
--			*(unsigned long*)data = (unsigned long)device;
--			return 1;
--		}
--
-+	if (e_info->id == ((dev->bus->number << 8) | dev->devfn)) {
- 		/*
--		 * If device is P2P, check if it is an upstream?
-+		 * Device ID match
- 		 */
--		if (dev->hdr_type & PCI_HEADER_TYPE_BRIDGE) {
--			pci_read_config_byte(dev, PCI_SECONDARY_BUS,
--				&secondary);
--			pci_read_config_byte(dev, PCI_SUBORDINATE_BUS,
--				&subordinate);
--			if (d_bus >= secondary && d_bus <= subordinate) {
--				*(unsigned long*)data = (unsigned long)device;
--				return 1;
--			}
-+		e_info->dev = dev;
-+		return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+static int find_device_iter(struct pci_dev *dev, void *data)
-+{
-+	int pos;
-+	u32 status;
-+	u32 mask;
-+	u16 reg16;
-+	int result;
-+	struct aer_err_info *e_info = (struct aer_err_info *)data;
-+
-+	if (!nosourceid) {
-+		result = compare_device_id(dev, e_info);
-+		if (result)
-+			return 1;
-+		if (e_info->id != 0)
-+			return 0;
-+	}
-+
-+	/*
-+	 * Next is to check when id is equal to 0 or nosourceid==y.
-+	 * Some ports might lose error source id. We check AER
-+	 * status registers to find the initial reporter.
-+	 */
-+	if (atomic_read(&dev->enable_cnt) == 0)
-+		return 0;
-+	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
-+	if (!pos)
-+		return 0;
-+	/* Check if AER is enabled */
-+	pci_read_config_word(dev, pos+PCI_EXP_DEVCTL, &reg16);
-+	if (!(reg16 & (
-+		PCI_EXP_DEVCTL_CERE |
-+		PCI_EXP_DEVCTL_NFERE |
-+		PCI_EXP_DEVCTL_FERE |
-+		PCI_EXP_DEVCTL_URRE)))
-+		return 0;
-+	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
-+	if (!pos)
-+		return 0;
-+
-+	status = 0;
-+	mask = 0;
-+	if (e_info->severity == AER_CORRECTABLE) {
-+		pci_read_config_dword(dev,
-+				pos + PCI_ERR_COR_STATUS,
-+				&status);
-+		pci_read_config_dword(dev,
-+				pos + PCI_ERR_COR_MASK,
-+				&mask);
-+		if (status & ERR_CORRECTABLE_ERROR_MASK & ~mask) {
-+			e_info->dev = dev;
-+			return 1;
-+		}
-+	} else {
-+		pci_read_config_dword(dev,
-+				pos + PCI_ERR_UNCOR_STATUS,
-+				&status);
-+		pci_read_config_dword(dev,
-+				pos + PCI_ERR_UNCOR_MASK,
-+				&mask);
-+		if (status & ERR_UNCORRECTABLE_ERROR_MASK & ~mask) {
-+			e_info->dev = dev;
-+			return 1;
- 		}
- 	}
- 
-@@ -178,33 +227,23 @@ static int find_device_iter(struct devic
- /**
-  * find_source_device - search through device hierarchy for source device
-  * @parent: pointer to Root Port pci_dev data structure
-- * @id: device ID of agent who sends an error message to this Root Port
-+ * @err_info: including detailed error information such like id
-  *
-  * Invoked when error is detected at the Root Port.
-  */
--static struct device* find_source_device(struct pci_dev *parent, u16 id)
-+static void find_source_device(struct pci_dev *parent,
-+		struct aer_err_info *e_info)
- {
- 	struct pci_dev *dev = parent;
--	struct device *device;
--	unsigned long device_addr;
--	int status;
-+	int result;
- 
- 	/* Is Root Port an agent that sends error message? */
--	if (id == ((dev->bus->number << 8) | dev->devfn))
--		return &dev->dev;
--
--	do {
--		device_addr = id;
-- 		if ((status = device_for_each_child(&dev->dev,
--			&device_addr, find_device_iter))) {
--			device = (struct device*)device_addr;
--			dev = to_pci_dev(device);
--			if (id == ((dev->bus->number << 8) | dev->devfn))
--				return device;
--		}
-- 	}while (status);
-+	result = find_device_iter(dev, e_info);
-+	if (result)
-+		return;
- 
--	return NULL;
-+	pci_walk_bus(parent->subordinate, find_device_iter, e_info);
-+	return;
- }
- 
- static int report_error_detected(struct pci_dev *dev, void *data)
-@@ -499,12 +538,12 @@ static pci_ers_result_t do_recovery(stru
-  */
- static void handle_error_source(struct pcie_device * aerdev,
- 	struct pci_dev *dev,
--	struct aer_err_info info)
-+	struct aer_err_info *info)
- {
- 	pci_ers_result_t status = 0;
- 	int pos;
- 
--	if (info.severity == AER_CORRECTABLE) {
-+	if (info->severity == AER_CORRECTABLE) {
- 		/*
- 		 * Correctable error does not need software intevention.
- 		 * No need to go through error recovery process.
-@@ -512,9 +551,9 @@ static void handle_error_source(struct p
- 		pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
- 		if (pos)
- 			pci_write_config_dword(dev, pos + PCI_ERR_COR_STATUS,
--					info.status);
-+					info->status);
- 	} else {
--		status = do_recovery(aerdev, dev, info.severity);
-+		status = do_recovery(aerdev, dev, info->severity);
- 		if (status == PCI_ERS_RESULT_RECOVERED) {
- 			dev_printk(KERN_DEBUG, &dev->dev, "AER driver "
- 				   "successfully recovered\n");
-@@ -671,10 +710,13 @@ static int get_device_error_info(struct 
- static void aer_isr_one_error(struct pcie_device *p_device,
- 		struct aer_err_source *e_src)
- {
--	struct device *s_device;
--	struct aer_err_info e_info = {0, 0, 0,};
-+	struct aer_err_info *e_info;
- 	int i;
--	u16 id;
-+
-+	/* struct aer_err_info might be big, so we allocate it with slab */
-+	e_info = kmalloc(sizeof(struct aer_err_info), GFP_KERNEL);
-+	if (e_info == NULL)
-+		return;
- 
- 	/*
- 	 * There is a possibility that both correctable error and
-@@ -686,31 +728,37 @@ static void aer_isr_one_error(struct pci
- 		if (!(e_src->status & i))
- 			continue;
- 
-+		memset(e_info, 0, sizeof(struct aer_err_info));
-+
- 		/* Init comprehensive error information */
- 		if (i & PCI_ERR_ROOT_COR_RCV) {
--			id = ERR_COR_ID(e_src->id);
--			e_info.severity = AER_CORRECTABLE;
-+			e_info->id = ERR_COR_ID(e_src->id);
-+			e_info->severity = AER_CORRECTABLE;
- 		} else {
--			id = ERR_UNCOR_ID(e_src->id);
--			e_info.severity = ((e_src->status >> 6) & 1);
-+			e_info->id = ERR_UNCOR_ID(e_src->id);
-+			e_info->severity = ((e_src->status >> 6) & 1);
- 		}
- 		if (e_src->status &
- 			(PCI_ERR_ROOT_MULTI_COR_RCV |
- 			 PCI_ERR_ROOT_MULTI_UNCOR_RCV))
--			e_info.flags |= AER_MULTI_ERROR_VALID_FLAG;
--		if (!(s_device = find_source_device(p_device->port, id))) {
-+			e_info->flags |= AER_MULTI_ERROR_VALID_FLAG;
-+
-+		find_source_device(p_device->port, e_info);
-+		if (e_info->dev == NULL) {
- 			printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
--				__func__, id);
-+				__func__, e_info->id);
- 			continue;
- 		}
--		if (get_device_error_info(to_pci_dev(s_device), &e_info) ==
-+		if (get_device_error_info(e_info->dev, e_info) ==
- 				AER_SUCCESS) {
--			aer_print_error(to_pci_dev(s_device), &e_info);
-+			aer_print_error(e_info->dev, e_info);
- 			handle_error_source(p_device,
--				to_pci_dev(s_device),
-+				e_info->dev,
- 				e_info);
- 		}
- 	}
-+
-+	kfree(e_info);
- }
- 
- /**
---- linux-2.6.30-rc3_pciwalk/drivers/pci/pcie/aer/aerdrv.h	2009-04-29 10:29:35.000000000 +0800
-+++ linux-2.6.30-rc3_aernoeid/drivers/pci/pcie/aer/aerdrv.h	2009-04-29 12:44:36.000000000 +0800
-@@ -57,6 +57,8 @@ struct header_log_regs {
- };
- 
- struct aer_err_info {
-+	struct pci_dev *dev;
-+	u16 id;
- 	int severity;			/* 0:NONFATAL | 1:FATAL | 2:COR */
- 	int flags;
- 	unsigned int status;		/* COR/UNCOR Error Status */
---- linux-2.6.30-rc3_pciwalk/Documentation/PCI/pcieaer-howto.txt	2009-04-29 10:29:34.000000000 +0800
-+++ linux-2.6.30-rc3_aernoeid/Documentation/PCI/pcieaer-howto.txt	2009-06-07 14:07:42.000000000 +0800
-@@ -60,6 +60,8 @@ forceload, a parameter of type bool, cou
- be initiated although firmwares have no _OSC support. To enable the
- walkaround, pls. add aerdriver.forceload=y to kernel boot parameter line
- when booting kernel. Note that forceload=n by default.
-+nosourceid, another parameter of type bool, is used when hardware (mostly
-+chipset) has errata that root ports couldn't get error reporting source id.
- 
- 2.3 AER error output
- When a PCI-E AER error is captured, an error message will be outputed to
+You may want to test the patch against a real desktop :)
+The attached scripts can do that. I also have the setup to
+test it out conveniently, so if you send me the latest patch..
 
+Thanks,
+Fengguang
 
+> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Cc: Rik van Riel <riel@redhat.com>
+> ---
+>  mm/swap_state.c |   80 +++++++++++++++++++++++++++++++++++++++----------------
+>  1 files changed, 57 insertions(+), 23 deletions(-)
+> 
+> qsbench, 20 runs each, 1.7GB RAM, 2GB swap, 4 cores:
+> 
+>          "mean (standard deviation) median"
+> 
+> All values are given in seconds.  I used a t-test to make sure there
+> is a statistical difference of at least 95% probability in the
+> compared runs for the given number of samples, arithmetic mean and
+> standard deviation.
+> 
+> 1 x 2048M
+> vanilla: 391.25 ( 71.76) 384.56
+> vswapra: 445.55 ( 83.19) 415.41
+> 
+> 	This is an actual regression.  I am not yet quite sure why
+> 	this happens and I am undecided whether one humonguous active
+> 	vma in the system is a common workload.
+> 
+> 	It's also the only regression I found, with qsbench anyway.  I
+> 	started out with powers of two and tweaked the parameters
+> 	until the results between the two kernel versions differed.
+> 
+> 2 x 1024M
+> vanilla: 384.25 ( 75.00) 423.08
+> vswapra: 290.26 ( 31.38) 299.51
+> 
+> 4 x 540M
+> vanilla: 553.91 (100.02) 554.57
+> vswapra: 336.58 ( 52.49) 331.52
+> 
+> 8 x 280M
+> vanilla: 561.08 ( 82.36) 583.12
+> vswapra: 319.13 ( 43.17) 307.69
+> 
+> 16 x 128M
+> vanilla: 285.51 (113.20) 236.62
+> vswapra: 214.24 ( 62.37) 214.15
+> 
+> 	All these show a nice improvement in performance and runtime
+> 	stability.
+> 
+> The missing shmem support is a big TODO, I will try to find time to
+> tackle this when the overall idea is not refused in the first place.
+> 
+> diff --git a/mm/swap_state.c b/mm/swap_state.c
+> index 3ecea98..8f8daaa 100644
+> --- a/mm/swap_state.c
+> +++ b/mm/swap_state.c
+> @@ -336,11 +336,6 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
+>   *
+>   * Returns the struct page for entry and addr, after queueing swapin.
+>   *
+> - * Primitive swap readahead code. We simply read an aligned block of
+> - * (1 << page_cluster) entries in the swap area. This method is chosen
+> - * because it doesn't cost us any seek time.  We also make sure to queue
+> - * the 'original' request together with the readahead ones...
+> - *
+>   * This has been extended to use the NUMA policies from the mm triggering
+>   * the readahead.
+>   *
+> @@ -349,27 +344,66 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
+>  struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
+>  			struct vm_area_struct *vma, unsigned long addr)
+>  {
+> -	int nr_pages;
+> -	struct page *page;
+> -	unsigned long offset;
+> -	unsigned long end_offset;
+> -
+> -	/*
+> -	 * Get starting offset for readaround, and number of pages to read.
+> -	 * Adjust starting address by readbehind (for NUMA interleave case)?
+> -	 * No, it's very unlikely that swap layout would follow vma layout,
+> -	 * more likely that neighbouring swap pages came from the same node:
+> -	 * so use the same "addr" to choose the same node for each swap read.
+> -	 */
+> -	nr_pages = valid_swaphandles(entry, &offset);
+> -	for (end_offset = offset + nr_pages; offset < end_offset; offset++) {
+> -		/* Ok, do the async read-ahead now */
+> -		page = read_swap_cache_async(swp_entry(swp_type(entry), offset),
+> -						gfp_mask, vma, addr);
+> +	int cluster = 1 << page_cluster;
+> +	int window = cluster << PAGE_SHIFT;
+> +	unsigned long start, pos, end;
+> +	unsigned long pmin, pmax;
+> +
+> +	/* XXX: fix this for shmem */
+> +	if (!vma || !vma->vm_mm)
+> +		goto nora;
+> +
+> +	/* Physical range to read from */
+> +	pmin = swp_offset(entry) & ~(cluster - 1);
+> +	pmax = pmin + cluster;
+> +
+> +	/* Virtual range to read from */
+> +	start = addr & ~(window - 1);
+> +	end = start + window;
+> +
+> +	for (pos = start; pos < end; pos += PAGE_SIZE) {
+> +		struct page *page;
+> +		swp_entry_t swp;
+> +		spinlock_t *ptl;
+> +		pgd_t *pgd;
+> +		pud_t *pud;
+> +		pmd_t *pmd;
+> +		pte_t *pte;
+> +
+> +		pgd = pgd_offset(vma->vm_mm, pos);
+> +		if (!pgd_present(*pgd))
+> +			continue;
+> +		pud = pud_offset(pgd, pos);
+> +		if (!pud_present(*pud))
+> +			continue;
+> +		pmd = pmd_offset(pud, pos);
+> +		if (!pmd_present(*pmd))
+> +			continue;
+> +		pte = pte_offset_map_lock(vma->vm_mm, pmd, pos, &ptl);
+> +		if (!is_swap_pte(*pte)) {
+> +			pte_unmap_unlock(pte, ptl);
+> +			continue;
+> +		}
+> +		swp = pte_to_swp_entry(*pte);
+> +		pte_unmap_unlock(pte, ptl);
+> +
+> +		if (swp_type(swp) != swp_type(entry))
+> +			continue;
+> +		/*
+> +		 * Dont move the disk head too far away.  This also
+> +		 * throttles readahead while thrashing, where virtual
+> +		 * order diverges more and more from physical order.
+> +		 */
+> +		if (swp_offset(swp) > pmax)
+> +			continue;
+> +		if (swp_offset(swp) < pmin)
+> +			continue;
+> +		page = read_swap_cache_async(swp, gfp_mask, vma, pos);
+>  		if (!page)
+> -			break;
+> +			continue;
+>  		page_cache_release(page);
+>  	}
+>  	lru_add_drain();	/* Push any new pages onto the LRU now */
+> +nora:
+>  	return read_swap_cache_async(entry, gfp_mask, vma, addr);
+>  }
+> -- 
+> 1.6.3
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
+--vtzGhvizbBRQ85DL
+Content-Type: application/x-sh
+Content-Disposition: attachment; filename="run-many-x-apps.sh"
+Content-Transfer-Encoding: quoted-printable
+
+#!/bin/zsh=0A# why zsh? bash does not support floating numbers=0A=0A# aptit=
+ude install iceweasel gnome-games=0A# aptitude install openoffice.org # and=
+ uncomment the oo* lines=0A=0A=0Aread T0 T1 < /proc/uptime=0A=0Afunction pr=
+ogress()=0A{=0A	read t0 t1 < /proc/uptime=0A	t=3D$((t0 - T0))=0A	printf "%8=
+=2E2f    " $t=0A	echo "$@"=0A}=0A=0Afunction switch_windows()=0A{=0A	wmctrl=
+ -l | while read a b c win=0A	do=0A		progress A "$win"=0A		wmctrl -a "$win"=
+=0A	done=0A	firefox /usr/share/doc/debian/FAQ/index.html=0A}=0A=0Awhile rea=
+d app args=0Ado=0A	progress N $app $args=0A	$app $args &=0A	switch_windows=
+=0Adone << EOF=0Axeyes=0Afirefox=0Anautilus=0Anautilus --browser=0Agthumb=
+=0Agedit=0Axpdf /usr/share/doc/shared-mime-info/shared-mime-info-spec.pdf=
+=0A=0Axterm=0Amlterm=0Agnome-terminal=0Aurxvt=0A=0Agnome-system-monitor=0Ag=
+nome-help=0Agnome-dictionary=0A=0A/usr/games/sol=0A/usr/games/gnometris=0A/=
+usr/games/gnect=0A/usr/games/gtali=0A/usr/games/iagno=0A/usr/games/gnotrave=
+x=0A/usr/games/mahjongg=0A/usr/games/gnome-sudoku=0A/usr/games/glines=0A/us=
+r/games/glchess=0A/usr/games/gnomine=0A/usr/games/gnotski=0A/usr/games/gnib=
+bles=0A/usr/games/gnobots2=0A/usr/games/blackjack=0A/usr/games/same-gnome=
+=0A=0A/usr/bin/gnome-window-properties=0A/usr/bin/gnome-default-application=
+s-properties=0A/usr/bin/gnome-at-properties=0A/usr/bin/gnome-typing-monitor=
+=0A/usr/bin/gnome-at-visual=0A/usr/bin/gnome-sound-properties=0A/usr/bin/gn=
+ome-at-mobility=0A/usr/bin/gnome-keybinding-properties=0A/usr/bin/gnome-abo=
+ut-me=0A/usr/bin/gnome-display-properties=0A/usr/bin/gnome-network-preferen=
+ces=0A/usr/bin/gnome-mouse-properties=0A/usr/bin/gnome-appearance-propertie=
+s=0A/usr/bin/gnome-control-center=0A/usr/bin/gnome-keyboard-properties=0A=
+=0A: oocalc=0A: oodraw=0A: ooimpress=0A: oomath=0A: ooweb=0A: oowriter    =
+=0A=0AEOF=0A
+--vtzGhvizbBRQ85DL
+Content-Type: application/x-sh
+Content-Disposition: attachment; filename="test-mmap-exec-prot.sh"
+Content-Transfer-Encoding: quoted-printable
+
+#!/bin/sh=0A=0Aprot=3D$(</proc/sys/fs/suid_dumpable)=0Aecho $prot=0A=0ADISP=
+LAY=3D:0.0 ./run-many-x-apps.sh | tee progress.$prot=0A=0Acp /proc/vmstat v=
+mstat.$prot=0Acp /proc/meminfo meminfo.$prot=0Afree > free.$prot=0A
+--vtzGhvizbBRQ85DL--
