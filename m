@@ -1,73 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZFHBr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbZFHBuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbZFHBr4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 21:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZFHBrs
+	id S1754618AbZFHBuU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 21:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZFHBuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 21:47:48 -0400
-Received: from mail-pz0-f171.google.com ([209.85.222.171]:63611 "EHLO
-	mail-pz0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752892AbZFHBrs (ORCPT
+	Sun, 7 Jun 2009 21:50:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:45618 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753241AbZFHBuI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 21:47:48 -0400
+	Sun, 7 Jun 2009 21:50:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=idoZcqlIAMR5r7oMBaSI4lSe7O5HdaM0YxRwMPSuB/+TynM9tKeFse37cORwf+uRBQ
-         N7Ob5gJUu00bsZhGxurRFrLcmFemvnt1MwFJrl+F9JQDXeIATpzd6vD/o5TPmm5vFKEP
-         xnQ1i5Ufq1W67O8NjwKWg72RERJsi3KyOZ1UM=
-Date: Mon, 8 Jun 2009 09:50:18 +0800
+        b=QLNv2FZEA1EOFpmil5s9L4ynn4rxscRmviIzhz3GiitQXKLOrIfZeyE7FN30M8UaHh
+         7qkGgUPt+dsC+5z1GNyExlJGiJ99uvKyOWryxTJ5Fj3a1NRe0d+qbhzCiB7cr20zW6SF
+         +j3EnL1vQyaPc/8n4ND95vtXIyLbjFRPiKRlI=
+Date: Mon, 8 Jun 2009 09:52:42 +0800
 From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: [PATCH] proc: vmcore - use kzalloc in get_new_element
-Message-ID: <20090608015018.GA2596@cr0.nay.redhat.com>
-References: <20090606171207.GC20807@lenovo>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Tao Ma <tao.ma@oracle.com>, Amerigo Wang <xiyou.wangcong@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@linux.intel.com>
+Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64
+	2.6.30-rc8.
+Message-ID: <20090608015242.GB2596@cr0.nay.redhat.com>
+References: <20090605075614.GC8171@cr0.nay.redhat.com> <4A28DDEB.4000409@oracle.com> <2375c9f90906050209h191df8fav36fc9507654c5ca6@mail.gmail.com> <20090605021424.ba352b0f.akpm@linux-foundation.org> <4A28E5C9.6010408@oracle.com> <20090605095155.GC8354@cr0.nay.redhat.com> <4A292B0D.8030807@oracle.com> <4A295AFB.80909@kernel.org> <4A2A7F33.4030807@oracle.com> <4A2AEBE3.4000100@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090606171207.GC20807@lenovo>
+In-Reply-To: <4A2AEBE3.4000100@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 06, 2009 at 09:12:07PM +0400, Cyrill Gorcunov wrote:
->Instead of kmalloc+memset better use straight kzalloc
+On Sat, Jun 06, 2009 at 03:21:23PM -0700, Yinghai Lu wrote:
+>Tao Ma wrote:
+>> 
+>> Yinghai Lu wrote:
+>>> Tao Ma wrote:
+>>>>
+>>>> Amerigo Wang wrote:
+>>>>> On Fri, Jun 05, 2009 at 05:30:49PM +0800, Tao Ma wrote:
+>>>>>>> Please send the boot logs: dmesg -s 1000000 > foo
+>>>>>> attached.
+>>>>>> #######high memory 18446612137615818752, size_t 18446612137615818752
+>>>>>> #######kcore size 5301604352, PAGE_OFFSET 0, PAGE_SIZE 4096
+>>>>>
+>>>>> These two lines must be added by yourself...
+>>>>>
+>>>>> What?!
+>>>>> How can PAGE_OFFSET be 0??
+>>>>> Can you show us these two printk() you just added?
+>>>>>
+>>>>> And, the size of kcore is not the crazy number in the subject...
+>>>>> This one is much saner..
+>>>> Sorry, I used the wrong printk. the correct one is:
+>>>> #######high memory 18446612137615818752, size_t 18446612137615818752
+>>>> #######kcore size 5301604352, PAGE_OFFSET 18446612132314218496,
+>>>> PAGE_SIZE 4096
+>>>>
+>>>
+>>> %lx should be used.
+>>>
+>>> also you compiler doesn't like
+>>>
+>>> high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
+>>>
+>>> in setup.c?
+>> Sorry fo my poor English, bug what do you mean?
+>> 
+>> I just printk in the setup.c and the result is
+>> 
+>> @@@@high_momory ffff88013c000000
 >
->Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+>so that value print out is right.
 
-Looks good!
+Yeah.
 
-Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+Tao, can you reproduce the number mentioned in the subject??
 
-
->---
-> fs/proc/vmcore.c |    7 +------
-> 1 file changed, 1 insertion(+), 6 deletions(-)
->
->Index: linux-2.6.git/fs/proc/vmcore.c
->=====================================================================
->--- linux-2.6.git.orig/fs/proc/vmcore.c
->+++ linux-2.6.git/fs/proc/vmcore.c
->@@ -166,12 +166,7 @@ static const struct file_operations proc
-> 
-> static struct vmcore* __init get_new_element(void)
-> {
->-	struct vmcore *p;
->-
->-	p = kmalloc(sizeof(*p), GFP_KERNEL);
->-	if (p)
->-		memset(p, 0, sizeof(*p));
->-	return p;
->+	return kzalloc(sizeof(struct vmcore), GFP_KERNEL);
-> }
-> 
-> static u64 __init get_vmcore_size_elf64(char *elfptr)
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+Thanks.
