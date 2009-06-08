@@ -1,103 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbZFHRGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbZFHRHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756888AbZFHRGp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755243AbZFHRGh
+	id S1757173AbZFHRHf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756025AbZFHRH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:06:37 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:52104 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754860AbZFHRGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:06:37 -0400
-Subject: Re: 2.6.30-rc8 Oops whilst booting
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Chris Clayton <chris2553@googlemail.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       scsi <linux-scsi@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-In-Reply-To: <alpine.LFD.2.01.0906080916130.6847@localhost.localdomain>
-References: <200906061959.55592.chris2553@googlemail.com>
-	 <200906062215.30571.chris2553@googlemail.com>
-	 <1244381140.30664.12.camel@ht.satnam>
-	 <c6b1100b0906071138g2c46fb34vc1a2beb9438f1f1e@mail.gmail.com>
-	 <1244413881.18742.31.camel@ht.satnam>
-	 <2f9e3044bafcae848f74a1492b0ea471.squirrel@neil.brown.name>
-	 <c6b1100b0906080108y191bb157n67ec681ade2a0d13@mail.gmail.com>
-	 <c6b1100b0906080358y4033c402ra236eff3f972d169@mail.gmail.com>
-	 <1244460875.12644.2.camel@ht.satnam>
-	 <c6b1100b0906080553o2aa77a40pe0077b1b10a7d88a@mail.gmail.com>
-	 <alpine.LFD.2.01.0906080916130.6847@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 08 Jun 2009 12:06:36 -0500
-Message-Id: <1244480796.4079.301.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Jun 2009 13:07:27 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34985 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755243AbZFHRH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 13:07:26 -0400
+Date: Mon, 8 Jun 2009 19:07:26 +0200
+From: Jan Kara <jack@suse.cz>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jan Kara <jack@suse.cz>, Eric Sandeen <sandeen@sandeen.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+       Nick Piggin <npiggin@suse.de>, Jeff Layton <jlayton@redhat.com>
+Subject: Re: [PATCH] writeback: skip new or to-be-freed inodes
+Message-ID: <20090608170726.GF8524@duck.suse.cz>
+References: <20090324074457.GA7745@localhost> <20090324120502.GC23439@duck.suse.cz> <20090324124001.GA25326@localhost> <4A244A5B.7070605@sandeen.net> <20090602085523.GC7161@localhost> <20090602113736.GB15010@duck.suse.cz> <20090603141021.GB5738@localhost> <20090603141636.GC5650@duck.suse.cz> <20090603144711.GC5738@localhost> <20090606030725.GA12852@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090606030725.GA12852@localhost>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-08 at 09:21 -0700, Linus Torvalds wrote:
+On Sat 06-06-09 11:07:25, Wu Fengguang wrote:
+> 1) I_FREEING tests should be coupled with I_CLEAR
 > 
-> On Mon, 8 Jun 2009, Chris Clayton wrote:
-> > 
-> > OK. I reversed that change and built and installed the kernel. It has
-> > withstood 100 reboots without a panic. Additionally, I pulled the
-> > latest changes (that will be rc8-git5, I think) from kernel.org,
-> > reversed the change to that kernel and built and installed it. That
-> > too withstood 100 reboots without a panic.
-> > 
-> > Let me know if there's anything else I can do to help fix this.
+> The two I_FREEING tests are racy because clear_inode() can set i_state to
+> I_CLEAR between the clear of I_SYNC and the test of I_FREEING.
 > 
-> That's already pretty convincing.
+> 2) skip I_WILL_FREE inodes in generic_sync_sb_inodes() to avoid possible
+>    races with generic_forget_inode()
 > 
-> James, Arjan? The original oops message is here (a jpg screen capture, 
-> unable to open initial console):
+> generic_forget_inode() sets I_WILL_FREE call writeback on its own, so
+> generic_sync_sb_inodes() shall not try to step in and create possible races:
 > 
-> 	http://lkml.org/lkml/2009/6/6/142
+>   generic_forget_inode
+>     inode->i_state |= I_WILL_FREE;
+>     spin_unlock(&inode_lock);
+>                                        generic_sync_sb_inodes()
+>                                          spin_lock(&inode_lock);
+>                                          __iget(inode);
+>                                          __writeback_single_inode
+>                                            // see non zero i_count
+>  may WARN here ==>                         WARN_ON(inode->i_state & I_WILL_FREE);
+>                                          spin_unlock(&inode_lock);
+>  may call generic_forget_inode again ==> iput(inode);
 > 
-> and it's this bug entry:
-> 
-> 	Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13474
-> 	Subject         : Oops whilst booting
-> 	Submitter       : Chris Clayton <chris2553@googlemail.com>
-> 	Date            : 2009-06-06 18:59 (2 days old)
-> 	References      : http://marc.info/?l=linux-kernel&m=124431487924254&w=4
-> 
-> and now bisected down to 
-> 
-> >> commit d5a877e8dd409d8c702986d06485c374b705d340
-> >> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-> >> Date:   Sun May 24 13:03:43 2009 -0700
-> >>
-> >>     async: make sure independent async domains can't accidentally entangle
-> 
-> please advice. Otherwise I'll have to revert.
+> The above race and warning didn't turn up because writeback_inodes() holds
+> the s_umount lock, so generic_forget_inode() finds MS_ACTIVE and returns
+> early. But we are not sure the UBIFS calls and future callers will guarantee
+> that. So skip I_WILL_FREE inodes for the sake of safety.
+  OK, the patch looks fine. Acked-by: Jan Kara <jack@suse.cz>
 
-I think it's a bug in the async code.  It's providing cookies too high
-because it doesn't stop after it finds a running entry.
-
-Can we try this as the fix?
-
-James
-
----
-
-diff --git a/kernel/async.c b/kernel/async.c
-index 5054030..e4909ee 100644
---- a/kernel/async.c
-+++ b/kernel/async.c
-@@ -97,7 +97,7 @@ static async_cookie_t  __lowest_in_progress(struct list_head *running)
- 	if (!list_empty(running)) {
- 		entry = list_first_entry(running,
- 			struct async_entry, list);
--		ret = entry->cookie;
-+		return entry->cookie;
- 	}
- 
- 	if (!list_empty(&async_pending)) {
-
-
+									Honza 
+> CC: Jan Kara <jack@suse.cz>
+> CC: Eric Sandeen <sandeen@sandeen.net>
+> Acked-by: Jeff Layton <jlayton@redhat.com>
+> CC: Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  fs/fs-writeback.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> --- linux.orig/fs/fs-writeback.c
+> +++ linux/fs/fs-writeback.c
+> @@ -316,7 +316,7 @@ __sync_single_inode(struct inode *inode,
+>  	spin_lock(&inode_lock);
+>  	WARN_ON(inode->i_state & I_NEW);
+>  	inode->i_state &= ~I_SYNC;
+> -	if (!(inode->i_state & I_FREEING)) {
+> +	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
+>  		if (!(inode->i_state & I_DIRTY) &&
+>  		    mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
+>  			/*
+> @@ -487,7 +487,7 @@ void generic_sync_sb_inodes(struct super
+>  			break;
+>  		}
+>  
+> -		if (inode->i_state & I_NEW) {
+> +		if (inode->i_state & (I_NEW | I_WILL_FREE)) {
+>  			requeue_io(inode);
+>  			continue;
+>  		}
+> @@ -518,7 +518,7 @@ void generic_sync_sb_inodes(struct super
+>  		if (current_is_pdflush() && !writeback_acquire(bdi))
+>  			break;
+>  
+> -		BUG_ON(inode->i_state & I_FREEING);
+> +		BUG_ON(inode->i_state & (I_FREEING | I_CLEAR));
+>  		__iget(inode);
+>  		pages_skipped = wbc->pages_skipped;
+>  		__writeback_single_inode(inode, wbc);
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
