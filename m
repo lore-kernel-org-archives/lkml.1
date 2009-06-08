@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbZFHTe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758265AbZFHTfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758290AbZFHTe5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 15:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZFHTYE
+	id S1758265AbZFHTfO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 15:35:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755495AbZFHTYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 15:24:04 -0400
-Received: from thunk.org ([69.25.196.29]:39639 "EHLO thunker.thunk.org"
+	Mon, 8 Jun 2009 15:24:06 -0400
+Received: from thunk.org ([69.25.196.29]:39635 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbZFHTXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754754AbZFHTXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Jun 2009 15:23:25 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Linux Kernel Developers List <linux-kernel@vger.kernel.org>
 Cc: "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 12/49] ext4: Remove outdated comment about lock_super()
-Date: Mon,  8 Jun 2009 15:22:30 -0400
-Message-Id: <1244488987-32564-13-git-send-email-tytso@mit.edu>
+Subject: [PATCH 15/49] ext4: Replace lock/unlock_super() with an explicit lock for resizing
+Date: Mon,  8 Jun 2009 15:22:33 -0400
+Message-Id: <1244488987-32564-16-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.6.3.2.1.gb9f7d.dirty
-In-Reply-To: <1244488987-32564-12-git-send-email-tytso@mit.edu>
+In-Reply-To: <1244488987-32564-15-git-send-email-tytso@mit.edu>
 References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-2-git-send-email-tytso@mit.edu>
  <1244488987-32564-3-git-send-email-tytso@mit.edu>
@@ -29,6 +29,9 @@ References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-10-git-send-email-tytso@mit.edu>
  <1244488987-32564-11-git-send-email-tytso@mit.edu>
  <1244488987-32564-12-git-send-email-tytso@mit.edu>
+ <1244488987-32564-13-git-send-email-tytso@mit.edu>
+ <1244488987-32564-14-git-send-email-tytso@mit.edu>
+ <1244488987-32564-15-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -36,35 +39,163 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ext4_fill_super() is no longer called by read_super(), and it is no
-longer called with the superblock locked.  The
-unlock_super()/lock_super() is no longer present, so this comment is
-entirely superfluous.
+Use a separate lock to protect s_groups_count and the other block
+group descriptors which get changed via an on-line resize operation,
+so we can stop overloading the use of lock_super().
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/super.c |    8 --------
- 1 files changed, 0 insertions(+), 8 deletions(-)
+ fs/ext4/ext4_sb.h |    1 +
+ fs/ext4/resize.c  |   35 ++++++++++++++++++-----------------
+ fs/ext4/super.c   |    1 +
+ 3 files changed, 20 insertions(+), 17 deletions(-)
 
+diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
+index 4bda2f7..2d36223 100644
+--- a/fs/ext4/ext4_sb.h
++++ b/fs/ext4/ext4_sb.h
+@@ -72,6 +72,7 @@ struct ext4_sb_info {
+ 	struct journal_s *s_journal;
+ 	struct list_head s_orphan;
+ 	struct mutex s_orphan_lock;
++	struct mutex s_resize_lock;
+ 	unsigned long s_commit_interval;
+ 	u32 s_max_batch_time;
+ 	u32 s_min_batch_time;
+diff --git a/fs/ext4/resize.c b/fs/ext4/resize.c
+index 546c7dd..e8ded13 100644
+--- a/fs/ext4/resize.c
++++ b/fs/ext4/resize.c
+@@ -193,7 +193,7 @@ static int setup_new_group_blocks(struct super_block *sb,
+ 	if (IS_ERR(handle))
+ 		return PTR_ERR(handle);
+ 
+-	lock_super(sb);
++	mutex_lock(&sbi->s_resize_lock);
+ 	if (input->group != sbi->s_groups_count) {
+ 		err = -EBUSY;
+ 		goto exit_journal;
+@@ -302,7 +302,7 @@ exit_bh:
+ 	brelse(bh);
+ 
+ exit_journal:
+-	unlock_super(sb);
++	mutex_unlock(&sbi->s_resize_lock);
+ 	if ((err2 = ext4_journal_stop(handle)) && !err)
+ 		err = err2;
+ 
+@@ -643,11 +643,12 @@ exit_free:
+  * important part is that the new block and inode counts are in the backup
+  * superblocks, and the location of the new group metadata in the GDT backups.
+  *
+- * We do not need lock_super() for this, because these blocks are not
+- * otherwise touched by the filesystem code when it is mounted.  We don't
+- * need to worry about last changing from sbi->s_groups_count, because the
+- * worst that can happen is that we do not copy the full number of backups
+- * at this time.  The resize which changed s_groups_count will backup again.
++ * We do not need take the s_resize_lock for this, because these
++ * blocks are not otherwise touched by the filesystem code when it is
++ * mounted.  We don't need to worry about last changing from
++ * sbi->s_groups_count, because the worst that can happen is that we
++ * do not copy the full number of backups at this time.  The resize
++ * which changed s_groups_count will backup again.
+  */
+ static void update_backups(struct super_block *sb,
+ 			   int blk_off, char *data, int size)
+@@ -809,7 +810,7 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
+ 		goto exit_put;
+ 	}
+ 
+-	lock_super(sb);
++	mutex_lock(&sbi->s_resize_lock);
+ 	if (input->group != sbi->s_groups_count) {
+ 		ext4_warning(sb, __func__,
+ 			     "multiple resizers run on filesystem!");
+@@ -840,7 +841,7 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
+         /*
+          * OK, now we've set up the new group.  Time to make it active.
+          *
+-         * Current kernels don't lock all allocations via lock_super(),
++         * We do not lock all allocations via s_resize_lock
+          * so we have to be safe wrt. concurrent accesses the group
+          * data.  So we need to be careful to set all of the relevant
+          * group descriptor data etc. *before* we enable the group.
+@@ -900,12 +901,12 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
+ 	 *
+ 	 * The precise rules we use are:
+ 	 *
+-	 * * Writers of s_groups_count *must* hold lock_super
++	 * * Writers of s_groups_count *must* hold s_resize_lock
+ 	 * AND
+ 	 * * Writers must perform a smp_wmb() after updating all dependent
+ 	 *   data and before modifying the groups count
+ 	 *
+-	 * * Readers must hold lock_super() over the access
++	 * * Readers must hold s_resize_lock over the access
+ 	 * OR
+ 	 * * Readers must perform an smp_rmb() after reading the groups count
+ 	 *   and before reading any dependent data.
+@@ -948,7 +949,7 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
+ 	sb->s_dirt = 1;
+ 
+ exit_journal:
+-	unlock_super(sb);
++	mutex_unlock(&sbi->s_resize_lock);
+ 	if ((err2 = ext4_journal_stop(handle)) && !err)
+ 		err = err2;
+ 	if (!err) {
+@@ -986,7 +987,7 @@ int ext4_group_extend(struct super_block *sb, struct ext4_super_block *es,
+ 
+ 	/* We don't need to worry about locking wrt other resizers just
+ 	 * yet: we're going to revalidate es->s_blocks_count after
+-	 * taking lock_super() below. */
++	 * taking the s_resize_lock below. */
+ 	o_blocks_count = ext4_blocks_count(es);
+ 	o_groups_count = EXT4_SB(sb)->s_groups_count;
+ 
+@@ -1056,11 +1057,11 @@ int ext4_group_extend(struct super_block *sb, struct ext4_super_block *es,
+ 		goto exit_put;
+ 	}
+ 
+-	lock_super(sb);
++	mutex_lock(&EXT4_SB(sb)->s_resize_lock);
+ 	if (o_blocks_count != ext4_blocks_count(es)) {
+ 		ext4_warning(sb, __func__,
+ 			     "multiple resizers run on filesystem!");
+-		unlock_super(sb);
++		mutex_unlock(&EXT4_SB(sb)->s_resize_lock);
+ 		ext4_journal_stop(handle);
+ 		err = -EBUSY;
+ 		goto exit_put;
+@@ -1070,14 +1071,14 @@ int ext4_group_extend(struct super_block *sb, struct ext4_super_block *es,
+ 						 EXT4_SB(sb)->s_sbh))) {
+ 		ext4_warning(sb, __func__,
+ 			     "error %d on journal write access", err);
+-		unlock_super(sb);
++		mutex_unlock(&EXT4_SB(sb)->s_resize_lock);
+ 		ext4_journal_stop(handle);
+ 		goto exit_put;
+ 	}
+ 	ext4_blocks_count_set(es, o_blocks_count + add);
+ 	ext4_handle_dirty_metadata(handle, NULL, EXT4_SB(sb)->s_sbh);
+ 	sb->s_dirt = 1;
+-	unlock_super(sb);
++	mutex_unlock(&EXT4_SB(sb)->s_resize_lock);
+ 	ext4_debug("freeing blocks %llu through %llu\n", o_blocks_count,
+ 		   o_blocks_count + add);
+ 	/* We add the blocks to the bitmap and set the group need init bit */
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index fcd7b24..e3b35f2 100644
+index 7f43fde..1fbf090 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -2828,14 +2828,6 @@ no_journal:
- 		goto failed_mount4;
- 	};
+@@ -2646,6 +2646,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
+ #endif
+ 	INIT_LIST_HEAD(&sbi->s_orphan); /* unlinked but open files */
+ 	mutex_init(&sbi->s_orphan_lock);
++	mutex_init(&sbi->s_resize_lock);
  
--	/*
--	 * akpm: core read_super() calls in here with the superblock locked.
--	 * That deadlocks, because orphan cleanup needs to lock the superblock
--	 * in numerous places.  Here we just pop the lock - it's relatively
--	 * harmless, because we are now ready to accept write_super() requests,
--	 * and aviro says that's the only reason for hanging onto the
--	 * superblock lock.
--	 */
- 	EXT4_SB(sb)->s_mount_state |= EXT4_ORPHAN_FS;
- 	ext4_orphan_cleanup(sb, es);
- 	EXT4_SB(sb)->s_mount_state &= ~EXT4_ORPHAN_FS;
+ 	sb->s_root = NULL;
+ 
 -- 
 1.6.3.2.1.gb9f7d.dirty
 
