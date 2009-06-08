@@ -1,109 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbZFHVN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbZFHVPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756182AbZFHVN7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 17:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbZFHVNs
+	id S1756460AbZFHVPe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 17:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZFHVP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 17:13:48 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:38399 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754644AbZFHVNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 17:13:46 -0400
-Date: Mon, 8 Jun 2009 14:13:48 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jesper Dangaard Brouer <hawk@diku.dk>
-Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Jesper Dangaard Brouer <hawk@comx.dk>, netdev <netdev@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 5/5] sunrpc/auth_gss: Call rcu_barrier() on module
-	unload.
-Message-ID: <20090608211348.GI6961@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090608130959.10052.54590.stgit@localhost> <20090608131148.10052.39869.stgit@localhost> <20090608162656.GF6961@linux.vnet.ibm.com> <1244480449.5040.4.camel@heimdal.trondhjem.org> <Pine.LNX.4.64.0906082128240.1180@ask.diku.dk>
+	Mon, 8 Jun 2009 17:15:27 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:38114 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750794AbZFHVP0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 17:15:26 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Harald Welte <HaraldWelte@viatech.com>
+Subject: Re: [PATCH 1/2] CPUFREQ: Enable acpi-cpufreq driver for VIA/Centaur CPUs
+Date: Mon, 8 Jun 2009 16:15:22 -0500
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <20090608102754.GP4106@prithivi.gnumonks.org> <200906081503.30488.lkml@morethan.org>
+In-Reply-To: <200906081503.30488.lkml@morethan.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0906082128240.1180@ask.diku.dk>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200906081615.25973.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 09:48:54PM +0200, Jesper Dangaard Brouer wrote:
+On Mon June 8 2009, Michael S. Zick wrote:
+> On Mon June 8 2009, Harald Welte wrote:
+> > The VIA/Centaur C7, C7-M and Nano CPU's all support ACPI based cpu p-states
+> > using a MSR interface.  The Linux driver just never made use of it, since in
+> > addition to the check for the EST flag it also checked if the vendor is Intel.
+> > 
+> > Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
+> > ---
+> >  arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    3 ++-
+> >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > index 208ecf6..ee03585 100644
+> > --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > +++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> > @@ -90,7 +90,8 @@ static int check_est_cpu(unsigned int cpuid)
+> >  {
+> >  	struct cpuinfo_x86 *cpu = &cpu_data(cpuid);
+> >  
+> > -	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
+> > +	if ((cpu->x86_vendor != X86_VENDOR_INTEL &&
+> > +	     cpu->x86_vendor != X86_VENDOR_CENTAUR) ||
+> >  	    !cpu_has(cpu, X86_FEATURE_EST))
+> >  		return 0;
+> >  
+> 
+> For my own internal testing, based on subsequent posts, I simplified
+> that to:
+> 
+> static int check_est_cpu(unsigned int cpuid)
+> {
+>         struct cpuinfo_x86 *cpu = &cpu_data(cpuid);
+> 
+>         if (!cpu_has(cpu, X86_FEATURE_EST))
+>                 return 0;
+> 
+>         return 1;
+> }
+> 
+> Have not done anything (yet) to deal with the adaptive controller,
+> **which is safe to (not) do on my test system because I know it isn't enabled**
+> 
+> Note: This machine is known to run common, proprietary operating systems,
+> so I am also assuming its BIOS ACPI is complete enough.
+> 
+> Note 2: Don't try this unless you have a machine to waste.  ;)
 >
-> (trimmed Cc)
->
-> On Mon, 8 Jun 2009, Trond Myklebust wrote:
->
->> Hmm... If this is about ensuring that all the call_rcu() callbacks
->> complete before we remove the module, then don't we also need similar
->> barriers in
->
-> Well, Trond that was a hard question, as I don't know this code... but if 
-> it uses call_rcu() callbacks its most likely.
->
-> I have not done a complete sweep of the tree, I have only looked at the 
-> netdev parts, as this is where I usually snoop around.  So there is 
-> probably plenty of work for some kernel-janitors (Cc'ing the list ;-))
->
->> net/sunrpc/sunrpc_syms.c:cleanup_sunrpc()
->
-> Looking at the code that end up in sunrpc.ko, I see that both 
-> net/sunrpc/auth_unix.c and net/sunrpc/auth_generic.c uses call_rcu() 
-> callbacks.
->
->> and in fs/nfs/inode.c:exit_nfs_fs()?
->
-> Looking at the code which end up into nfs.ko (which includes 
-> fs/nfs/inode.c) I see that the fs/nfs/delegation.c uses call_rcu() 
-> callbacks.
->
-> But its hard for me to figure out how this code interacts.  Don't know if 
-> we need to document a code path that can occur fast enough, before we add 
-> this safe guard?  It should be Paul's saying...
 
-Unless there is some other mechanism to ensure that all the RCU
-callbacks have been invoked before the module exit, there needs to be
-code in the module-exit function that does the following:
+Phooey, close but no cigar - - -
 
-o	Prevent any new RCU callbacks from being posted.  In other
-	words, make sure that no future call_rcu() invocations happen
-	from this module -unless- those call_rcu() invocations touch
-	only functions and data that outlive this module.
+root@cb01:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_available_frequencies
+1200000 1000000 800000 600000 400000
+root@cb01:/sys/devices/system/cpu/cpu0/cpufreq# cat stats/time_in_state
+1200000 3281
+1000000 120
+800000 130
+600000 234
+400000 52980
+root@cb01:/sys/devices/system/cpu/cpu0/cpufreq
 
-o	Invoke rcu_barrier().
+It loads, it appears to work, but that lowest 400Mhz has ACPI entries
+even though this is a 600Mhz..1200Mhz chip.
 
-o	Of course, if the module uses call_rcu_sched() instead of
-	call_rcu(), then it should invoke rcu_barrier_sched() instead
-	of rcu_barrier().  Similarly, if it uses call_rcu_bh() instead
-	of call_rcu(), then it should invoke rcu_barrier_bh() instead of
-	rcu_barrier().	If the module uses more than one of call_rcu(),
-	call_rcu_sched(), and call_rcu_bh(), then it must invoke more than
-	one of rcu_barrier(), rcu_barrier_sched(), and rcu_barrier_bh().
+Should be fixable -
+The code looks like it is "asking" the BIOS for the table ranges -
+It needs to sanity check against the limits etched in the silicon for
+this particular [mask/process run].
 
-What other mechanism could be used?  I cannot think of one that it safe.
-For example, a module that tried to count the number of RCU callbacks in
-flight would be vulnerable to races as follows:
+I am thinking, maybe put the min/max GSF into cpu_boot_data.
+Will probably need it there to fix e_powersaver anyway.
 
-1.	CPU 0: RCU callback decrements the counter.
+Mike 
+> Mike
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-2.	CPU 1: module-exit function notices that the counter is zero,
-	so removes the module.
 
-3.	CPU 0: attempts to execute the code returning from the RCU
-	callback, and dies horribly due to that code no longer being
-	in memory.
-
-If there was an easy solution (or even a hard solution) to this problem,
-then I do not believe that Nikita Danilov would have asked Dipankar Sarma
-for rcu_barrier().  Therefore, I do not expect anyone to be able to come
-up with an alternative to rcu_barrier() and friends.  Always happy to
-learn something by being proven wrong, of course!!!
-
-So unless someone can show me some other safe mechanism, every unloadable
-module that uses call_rcu(), call_rcu_sched(), or call_rcu_bh() must use
-rcu_barrier(), rcu_barrier_sched(), and/or rcu_barrier_bh() in its
-module-exit function.
-
-							Thanx, Paul
