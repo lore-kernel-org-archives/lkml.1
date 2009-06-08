@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753772AbZFHJuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753912AbZFHJ6J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753772AbZFHJuV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 05:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbZFHJuI
+	id S1753912AbZFHJ6J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 05:58:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZFHJ54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 05:50:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48760 "EHLO mx2.redhat.com"
+	Mon, 8 Jun 2009 05:57:56 -0400
+Received: from cantor.suse.de ([195.135.220.2]:47083 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751308AbZFHJuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 05:50:08 -0400
-Message-ID: <4A2CDEC5.2070900@redhat.com>
-Date: Mon, 08 Jun 2009 12:49:57 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1752504AbZFHJ5z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 05:57:55 -0400
+Date: Mon, 8 Jun 2009 11:57:57 +0200 (CEST)
+From: Jiri Kosina <trivial@kernel.org>
+X-X-Sender: jkosina@wotan.suse.de
+To: =?ISO-8859-15?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+Cc: linux-usb@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] usb: fix missing space typo in doc
+In-Reply-To: <4A2AA21C.4020401@freemail.hu>
+Message-ID: <alpine.LNX.2.00.0906081157350.7457@wotan.suse.de>
+References: <4A2AA21C.4020401@freemail.hu>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH -v4] KVM: Add VT-x machine check support
-References: <1244453829.8361.602.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1244453829.8361.602.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="168427776-123415590-1244455077=:7457"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying wrote:
-> From: Andi Kleen <ak@linux.intel.com>
->
-> VT-x needs an explicit MC vector intercept to handle machine checks in the 
-> hyper visor.
->
-> It also has a special option to catch machine checks that happen
-> during VT entry.
->
-> Do these interceptions and forward them to the Linux machine check
-> handler. Make it always look like user space is interrupted because
-> the machine check handler treats kernel/user space differently.
->
-> Thanks to Jiang Yunhong for help and testing.
->
-> v4: move exit_reason to struct vcpu_vmx, add is_machine_check()
->
-> v3: Rebased on kvm.git
->
-> v2: Handle machine checks still in interrupt off context
-> to avoid problems on preemptible kernels.
->
->   
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Applied, thanks.
+--168427776-123415590-1244455077=:7457
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
->  
-> +	vmx->exit_reason = vmcs_read32(VM_EXIT_REASON);
-> +
-> +	/* Handle machine checks before interrupts are enabled */
-> +	if ((vmx->exit_reason == EXIT_REASON_MCE_DURING_VMENTRY) ||
-> +	    is_machine_check(exit_intr_info))
-> +		kvm_machine_check();
-> +
->   
+On Sat, 6 Jun 2009, Németh Márton wrote:
 
-I added a check here for exit_reason == EXCEPTION_NMI.  I don't think 
-exit_intr_info can be trusted otherwise.
+> Signed-off-by: Márton Németh <nm127@freemail.hu>
+> ---
+> --- linux-2.6.30-rc7/Documentation/usb/callbacks.txt.orig	2009-03-24 00:12:14.000000000 +0100
+> +++ linux-2.6.30-rc7/Documentation/usb/callbacks.txt	2009-06-03 19:51:07.000000000 +0200
+> @@ -65,7 +65,7 @@ Accept or decline an interface. If you a
+>  otherwise -ENODEV or -ENXIO. Other error codes should be used only if a
+>  genuine error occurred during initialisation which prevented a driver
+>  from accepting a device that would else have been accepted.
+> -You are strongly encouraged to use usbcore'sfacility,
+> +You are strongly encouraged to use usbcore's facility,
+>  usb_set_intfdata(), to associate a data structure with an interface, so
+>  that you know which internal state and identity you associate with a
+>  particular interface. The device will not be suspended and you may do IO
+
+Applied to trivial tree, thanks.
 
 -- 
-error compiling committee.c: too many arguments to function
+Jiri Kosina
+SUSE Labs
 
+--168427776-123415590-1244455077=:7457--
