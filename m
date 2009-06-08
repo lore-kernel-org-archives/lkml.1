@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755543AbZFHUy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbZFHUyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755543AbZFHUy1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 16:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZFHUyT
+	id S1755824AbZFHUyi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 16:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755295AbZFHUy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 16:54:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37116 "EHLO ogre.sisk.pl"
+	Mon, 8 Jun 2009 16:54:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59024 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751013AbZFHUyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 16:54:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [Bug #13306] hibernate slow on _second_ run
-Date: Mon, 8 Jun 2009 22:54:29 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>
-References: <4to6E2myxvG.A.muC.aIbIKB@chimera> <200906032351.01900.rjw@sisk.pl> <1244125570.22576.78.camel@johannes.local>
-In-Reply-To: <1244125570.22576.78.camel@johannes.local>
+	id S1755499AbZFHUyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 16:54:25 -0400
+Date: Mon, 8 Jun 2009 22:54:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <cl@linux-foundation.org>,
+       Andy Whitcroft <apw@canonical.com>
+Cc: Robin Holt <holt@sgi.com>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, rusty@rustcorp.com.au, davem@davemloft.net
+Subject: Re: [this_cpu_xx 04/11] Use this_cpu ops for network statistics
+Message-ID: <20090608205406.GB13343@elte.hu>
+References: <20090605191819.376530498@gentwo.org> <20090605191851.012334412@gentwo.org> <20090608112736.GL29447@sgi.com> <alpine.DEB.1.10.0906081649020.12271@gentwo.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906082254.30138.rjw@sisk.pl>
+In-Reply-To: <alpine.DEB.1.10.0906081649020.12271@gentwo.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 04 June 2009, Johannes Berg wrote:
-> Alright, I have managed to trace this.
+
+* Christoph Lameter <cl@linux-foundation.org> wrote:
+
+> On Mon, 8 Jun 2009, Robin Holt wrote:
 > 
-> http://johannes.sipsolutions.net/files/hibernate-delay-dmesg.txt
+> > > +	this_cpu_inc((net)->ct.stat->count)
+> >
+> > Why not put this on one line?
+> > #define NF_CT_STAT_INC_ATOMIC(net, count)  this_cpu_inc((net)->ct.stat->count)
 > 
-> has the dmesg, you can clearly see the delay:
-> [50265.143330] ACPI: Waking up from system sleep state S4
-> [50265.679141] HDA Intel 0000:00:08.0: restoring config space at offset 0x1 (was 0xb00006, writing 0xb00002)
-> [50265.689525] forcedeth 0000:00:0a.0: restoring config space at offset 0x1 (was 0xb00003, writing 0xb00007)
-> [50265.699775] ahci 0000:00:0b.0: restoring config space at offset 0x1 (was 0xb00403, writing 0xb00407)
-> [50286.294910] pci 0000:00:03.2: PME# disabled
+> Would be more than 78 characters in a line.
 
-Quite frankly, it looks like resume_device_irqs() itself causes the delay to happen.
+I think you can ignore such types of warnings in general. I think 
+checkpatch should be silent up to 90 chars or so, if there's not 
+more than say 3 tabs in that line. (if there's a lot of tabs that 
+means the indentation level is wrong.)
 
-The next step would be to put a couple of printk()s in there and see which part
-of it triggers the delay.
-
-Best,
-Rafael
+	Ingo
