@@ -1,109 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbZFHXjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbZFHXsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757055AbZFHXjs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 19:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbZFHXjg
+	id S1757309AbZFHXsm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 19:48:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbZFHXse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 19:39:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52381 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754070AbZFHXjf (ORCPT
+	Mon, 8 Jun 2009 19:48:34 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:42810 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751456AbZFHXse (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 19:39:35 -0400
-Date: Mon, 8 Jun 2009 16:38:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: riel@redhat.com, penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] Add a gfp-translate script to help understand page
- allocation failure reports
-Message-Id: <20090608163827.47b4738b.akpm@linux-foundation.org>
-In-Reply-To: <20090608132950.GB15070@csn.ul.ie>
-References: <20090608132950.GB15070@csn.ul.ie>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Jun 2009 19:48:34 -0400
+Date: Tue, 9 Jun 2009 00:48:30 +0100
+From: Matthew Garrett <mjg@redhat.com>
+To: "Michael S. Zick" <lkml@morethan.org>
+Cc: Harald Welte <HaraldWelte@viatech.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [PATCH 1/2] CPUFREQ: Enable acpi-cpufreq driver for
+	VIA/Centaur CPUs
+Message-ID: <20090608234830.GA27843@srcf.ucam.org>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <20090608102754.GP4106@prithivi.gnumonks.org> <200906081503.30488.lkml@morethan.org> <200906081615.25973.lkml@morethan.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906081615.25973.lkml@morethan.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Jun 2009 14:29:50 +0100
-Mel Gorman <mel@csn.ul.ie> wrote:
+On Mon, Jun 08, 2009 at 04:15:22PM -0500, Michael S. Zick wrote:
 
-> The page allocation failure messages include a line that looks like
+> Phooey, close but no cigar - - -
 > 
-> page allocation failure. order:1, mode:0x4020
+> root@cb01:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_available_frequencies
+> 1200000 1000000 800000 600000 400000
+> root@cb01:/sys/devices/system/cpu/cpu0/cpufreq# cat stats/time_in_state
+> 1200000 3281
+> 1000000 120
+> 800000 130
+> 600000 234
+> 400000 52980
+> root@cb01:/sys/devices/system/cpu/cpu0/cpufreq
 > 
-> The mode is easy to translate but irritating for the lazy and a bit error
-> prone. This patch adds a very simple helper script gfp-translate for the mode:
-> portion of the page allocation failure messages. An example usage looks like
-> 
->   mel@machina:~/linux-2.6 $ scripts/gfp-translate 0x4020
->   Source: /home/mel/linux-2.6
->   Parsing: 0x4020
->   #define __GFP_HIGH	(0x20)	/* Should access emergency pools? */
->   #define __GFP_COMP	(0x4000) /* Add compound page metadata */
-> 
-> The script is not a work of art but it has come in handy for me a few times
-> so I thought I would share.
-> 
+> It loads, it appears to work, but that lowest 400Mhz has ACPI entries
+> even though this is a 600Mhz..1200Mhz chip.
 
-hm, OK.  Most of the gfp masks I have to decode are in emails and
-bugzilla reports.  I guess I'm different.  Plus I wouldn't trust a tool
-run on my machine's kernel tree to correctly interpret a gfp mask from
-someone else's kernel of different vintage.
+If the BIOS tables claim it then it's likely Windows uses it on the same 
+hardware. What's the stability like with the ACPI code?
 
-But I can see that it would be useful for someone who's debugging a
-locally built kernel.
-
-> diff --git a/scripts/gfp-translate b/scripts/gfp-translate
-> new file mode 100755
-
-I don't know how to get patches into Linus's tree with the X bit still
-set :(  To avoid solving that problem, maybe Pekka can merge this?
-
-> +# Guess the kernel source directory if it's not set. Preference is in order of
-> +# o current directory
-> +# o /usr/src/linux
-> +if [ "$SOURCE" = "" ]; then
-> +	if [ -r "/usr/src/linux/Makefile" ]; then
-> +		SOURCE=/usr/src/linux
-> +	fi
-> +	if [ -r "`pwd`/Makefile" ]; then
-> +		SOURCE=`pwd`
-> +	fi
-> +fi
-
-OK.
-
-> +# Confirm that a source directory exists
-> +if [ ! -r "$SOURCE/Makefile" ]; then
-> +	die "Could not locate source directory or it is invalid"
-> +fi
-
-"kernel source directory".
-
-> +# Confirm that a GFP mask has been specified
-> +if [ "$GFPMASK" = "none" ]; then
-> +	usage
-> +fi
-> +
-> +# Extract GFP flags from the kernel source
-> +TMPFILE=`mktemp -t gfptranslate-XXXXXX` || exit 1
-> +grep "^#define __GFP" $SOURCE/include/linux/gfp.h | sed -e 's/(__force gfp_t)//' | sed -e 's/u)/)/' | grep -v GFP_BITS | sed -e 's/)\//) \//' > $TMPFILE
-> +
-> +# Parse the flags
-> +IFS="
-> +"
-> +echo Source: $SOURCE
-> +echo Parsing: $GFPMASK
-> +for LINE in `cat $TMPFILE`; do
-> +	MASK=`echo $LINE | awk '{print $3}'`
-> +	if [ $(($GFPMASK&$MASK)) -ne 0 ]; then
-> +		echo $LINE
-> +	fi
-> +done
-> +
-> +rm -f $TMPFILE
-> +exit 0
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
