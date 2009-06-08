@@ -1,100 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbZFHRVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbZFHRWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754425AbZFHRVZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbZFHRUF
+	id S1755445AbZFHRWV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbZFHRUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:20:05 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:43654 "EHLO relay.sgi.com"
+	Mon, 8 Jun 2009 13:20:22 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:57154 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753534AbZFHRUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:20:04 -0400
-Message-Id: <20090608172002.180226000@sgi.com>
+	id S1753662AbZFHRUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 13:20:21 -0400
+Message-Id: <20090608172016.208698000@sgi.com>
 User-Agent: quilt/0.47-1
-Date: Mon, 08 Jun 2009 12:16:54 -0500
+Date: Mon, 08 Jun 2009 12:16:57 -0500
 From: steiner@sgi.com
 To: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [Patch 06/12] GRU - cleanup gru inline functions
+Subject: [Patch 09/12] GRU - fix potential use-after-free when purging GRU tlbs
 References: <20090608171648.988318000@sgi.com>
-Content-Disposition: inline; filename=uv_gru_instruction_wait
+Content-Disposition: inline; filename=uv_gru_flush_tlb_fix
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jack Steiner <steiner@sgi.com>
 
-Cleanup of GRU inline functions to eliminate unnecessary
-inline code. Update function descriptions.
+Fix potential SGI GRU bug that could cause a use-after-free. If one
+thread in a task is flushing the GRU and another thread destroys the GRU context,
+there is the potential to access a table after it has been freed.
+
+Copy the gms pointer to a local variable before unlocking the gts table.
+Note that no refcnt is needed for the gms - the reference is held indirectly
+by the task's mm_struct.
 
 Signed-off-by: Jack Steiner <steiner@sgi.com>
 
 ---
- drivers/misc/sgi-gru/gru_instructions.h |   33 +++++++++++++++-----------------
- 1 file changed, 16 insertions(+), 17 deletions(-)
+ drivers/misc/sgi-gru/grufault.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Index: linux/drivers/misc/sgi-gru/gru_instructions.h
+Index: linux/drivers/misc/sgi-gru/grufault.c
 ===================================================================
---- linux.orig/drivers/misc/sgi-gru/gru_instructions.h	2009-04-29 13:40:17.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/gru_instructions.h	2009-04-29 13:44:25.000000000 -0500
-@@ -623,9 +623,11 @@ static inline int gru_get_cb_substatus(v
- 	return cbs->isubstatus;
- }
- 
--/* Check the status of a CB. If the CB is in UPM mode, call the
-- * OS to handle the UPM status.
-- * Returns the CB status field value (0 for normal completion)
-+/*
-+ * User interface to check an instruction status. UPM and exceptions
-+ * are handled automatically. However, this function does NOT wait
-+ * for an active instruction to complete.
-+ *
-  */
- static inline int gru_check_status(void *cb)
+--- linux.orig/drivers/misc/sgi-gru/grufault.c	2009-06-05 15:33:05.000000000 -0500
++++ linux/drivers/misc/sgi-gru/grufault.c	2009-06-05 15:33:05.000000000 -0500
+@@ -706,6 +706,7 @@ int gru_user_flush_tlb(unsigned long arg
  {
-@@ -633,34 +635,31 @@ static inline int gru_check_status(void 
- 	int ret;
+ 	struct gru_thread_state *gts;
+ 	struct gru_flush_tlb_req req;
++	struct gru_mm_struct *gms;
  
- 	ret = cbs->istatus;
--	if (ret == CBS_CALL_OS)
-+	if (ret != CBS_ACTIVE)
- 		ret = gru_check_status_proc(cb);
- 	return ret;
+ 	STAT(user_flush_tlb);
+ 	if (copy_from_user(&req, (void __user *)arg, sizeof(req)))
+@@ -718,8 +719,9 @@ int gru_user_flush_tlb(unsigned long arg
+ 	if (!gts)
+ 		return -EINVAL;
+ 
+-	gru_flush_tlb_range(gts->ts_gms, req.vaddr, req.len);
++	gms = gts->ts_gms;
+ 	gru_unlock_gts(gts);
++	gru_flush_tlb_range(gms, req.vaddr, req.len);
+ 
+ 	return 0;
  }
- 
--/* Wait for CB to complete.
-- * Returns the CB status field value (0 for normal completion)
-+/*
-+ * User interface (via inline function) to wait for an instruction
-+ * to complete. Completion status (IDLE or EXCEPTION is returned
-+ * to the user. Exception due to hardware errors are automatically
-+ * retried before returning an exception.
-+ *
-  */
- static inline int gru_wait(void *cb)
- {
--	struct gru_control_block_status *cbs = (void *)cb;
--	int ret = cbs->istatus;
--
--	if (ret != CBS_IDLE)
--		ret = gru_wait_proc(cb);
--	return ret;
-+	return gru_wait_proc(cb);
- }
- 
--/* Wait for CB to complete. Aborts program if error. (Note: error does NOT
-+/*
-+ * Wait for CB to complete. Aborts program if error. (Note: error does NOT
-  * mean TLB mis - only fatal errors such as memory parity error or user
-  * bugs will cause termination.
-  */
- static inline void gru_wait_abort(void *cb)
- {
--	struct gru_control_block_status *cbs = (void *)cb;
--
--	if (cbs->istatus != CBS_IDLE)
--		gru_wait_abort_proc(cb);
-+	gru_wait_abort_proc(cb);
- }
- 
- 
 
