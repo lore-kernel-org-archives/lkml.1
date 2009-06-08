@@ -1,84 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbZFHIsc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZFHItj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754431AbZFHIsc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 04:48:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbZFHIsW
+	id S1755236AbZFHItj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 04:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbZFHItb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 04:48:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47332 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752599AbZFHIsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 04:48:21 -0400
-Message-ID: <4A2CD04D.7070603@redhat.com>
-Date: Mon, 08 Jun 2009 11:48:13 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 8 Jun 2009 04:49:31 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:59395 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753962AbZFHIta (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 04:49:30 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH] asm-generic: add dma-mapping-linear.h
+Date: Mon, 8 Jun 2009 10:49:22 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-5-generic; KDE/4.2.85; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+References: <200906041747.04310.arnd@arndb.de> <200906081003.59171.arnd@arndb.de> <20090608172200A.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090608172200A.fujita.tomonori@lab.ntt.co.jp>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Huang Ying <ying.huang@intel.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH -v3] KVM: Add VT-x machine check support
-References: <1244449939.8361.591.camel@yhuang-dev.sh.intel.com>
-In-Reply-To: <1244449939.8361.591.camel@yhuang-dev.sh.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200906081049.23045.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18keIlpThKVn+Xda4SnJd9Dr6H9o60dzAV24yu
+ GwuiDhscHAtbksPlwed2ItG/Fm2ekLayNj5AUf2uDf0XxpUOqD
+ Jc1/4ODWRorUGinIAuksQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Huang Ying wrote:
-> From: Andi Kleen <ak@linux.intel.com>
->
-> VT-x needs an explicit MC vector intercept to handle machine checks in the 
-> hyper visor.
->
-> It also has a special option to catch machine checks that happen
-> during VT entry.
->
-> Do these interceptions and forward them to the Linux machine check
-> handler. Make it always look like user space is interrupted because
-> the machine check handler treats kernel/user space differently.
->
-> Thanks to Jiang Yunhong for help and testing.
->
->   
+On Monday 08 June 2009, FUJITA Tomonori wrote:
 
-Noticed an additional problem.  See below.
+> If you don't clean up them, I think that it's better to leave out
+> asm-generic/dma-generic-linear.h for
+> now. asm-generic/dma-generic-linear.h is supposed to clean up the
+> mess; unify (generalize, or fix) some architecture. It's not supported
+> to add another temporary hack that should be removed.
 
->  static int handle_exception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
->  {
->  	struct vcpu_vmx *vmx = to_vmx(vcpu);
-> @@ -2616,6 +2640,10 @@ static int handle_exception(struct kvm_v
->  	vect_info = vmx->idt_vectoring_info;
->  	intr_info = vmcs_read32(VM_EXIT_INTR_INFO);
->  
-> +	ex_no = intr_info & INTR_INFO_VECTOR_MASK;
-> +	if (ex_no == MC_VECTOR)
-> +		return handle_machine_check(vcpu, kvm_run);
-> +
->   
+Ok. I have no more ideas on how to do that in a cleaner way
+than what I suggested, so I'll stop bothering you with it.
 
-It isn't sufficient to check the vector number; you also need to check 
-the interrupt type.  See for example is_page_fault() and is_no_device().
-
-I suggest you add an is_machine_check() along similar lines.  Later we 
-can collapse all those functions to use a single helper.
-
-
-> --- a/arch/x86/include/asm/kvm_host.h
-> +++ b/arch/x86/include/asm/kvm_host.h
-> @@ -382,6 +382,8 @@ struct kvm_vcpu_arch {
->  	u64 mcg_status;
->  	u64 mcg_ctl;
->  	u64 *mce_banks;
-> +
-> +	u32 exit_reason;
->  };
->   
-
-Please move this into struct vcpu_vmx.
-
--- 
-error compiling committee.c: too many arguments to function
-
+	Arnd <><
