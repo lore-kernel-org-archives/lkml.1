@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZFHDHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751799AbZFHDKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbZFHDHw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 23:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbZFHDHo
+	id S1751799AbZFHDKV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 23:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZFHDKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 23:07:44 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:49302 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbZFHDHn (ORCPT
+	Sun, 7 Jun 2009 23:10:10 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60094 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750927AbZFHDKJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 23:07:43 -0400
-Date: Mon, 8 Jun 2009 04:07:32 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: alan-jenkins@tuffmail.co.uk, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Corentin Chary <corentin.chary@gmail.com>,
-       acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-Subject: Re: [PATCH] eeepc-laptop: enable camera by default
-Message-ID: <20090608030732.GA7018@srcf.ucam.org>
-References: <20090607232856.GA1805@srcf.ucam.org> <Pine.LNX.4.44L0.0906072256190.28801-100000@netrider.rowland.org>
+	Sun, 7 Jun 2009 23:10:09 -0400
+Message-ID: <4A2C8105.9030503@jp.fujitsu.com>
+Date: Mon, 08 Jun 2009 12:09:57 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0906072256190.28801-100000@netrider.rowland.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+To: Huang Ying <ying.huang@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -v4] x86: MCE: Re-implement MCE log ring buffer as per-CPU
+ ring buffer
+References: <1244085090.8361.360.camel@yhuang-dev.sh.intel.com>	 <4A28C2E2.4090309@jp.fujitsu.com>	 <1244189284.8361.514.camel@yhuang-dev.sh.intel.com>	 <4A28D738.8010202@jp.fujitsu.com>	 <1244191174.8361.517.camel@yhuang-dev.sh.intel.com>	 <4A2C66BF.5000401@jp.fujitsu.com> <1244426721.8361.569.camel@yhuang-dev.sh.intel.com>
+In-Reply-To: <1244426721.8361.569.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 07, 2009 at 11:03:48PM -0400, Alan Stern wrote:
+Huang Ying wrote:
+> Emm, it seem hard to analyze mce_log_cpu from per_cpu_var(mce_log_cpus),
+> how about following method:
+> 
+> struct mce_log {
+>     char signature[12];
+>     ...
+>     struct mce_log_cpu *mcelog_cpus[];
+> };
+> 
+> void mcelog_init(void)
+> {
+>     int cpu;
+>     mcelog.mcelog_cpus = kmalloc(sizeof(void *) * num_possible_cpus();
+>     for_each_possible_cpu(cpu)
+> 	mcelog.mcelog_cpus[cpu] = &per_cpu(mce_log_cpus, cpu);
+> }
 
-> There's no mechanism for this.  It many environments it couldn't work,
-> because the decision about whether to enable autosuspend is made when
-> the device is first created (i.e., when the creation uevent is
-> received), whereas driver binding doesn't occur until later.
+It would be good.  Using kzalloc() will be better.
+It might be a bit much, but how about adding:
 
-There's a lot of power management situations where you don't end up with 
-the optimal power configuration until a driver's bound. It's certainly 
-possible to do this in userspace, but if we know that the hardware 
-supported by a given driver will always work then it seems reasonable to 
-have it whitelist autosuspend on that device.
++	mcelog.nr_mcelog_cpus = num_possible_cpus();
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Be careful that mcheck_init(), caller of mcelog_init(), will be called
+for each booted CPU.  You will need:
+
++	if (mcelog.mcelog_cpus)
++		return;
+
+
+Thanks,
+H.Seto
+
