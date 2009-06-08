@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbZFHPVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbZFHPXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756795AbZFHPVm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 11:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756002AbZFHPVe
+	id S1756280AbZFHPXA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 11:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbZFHPWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 11:21:34 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35426 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754244AbZFHPVd (ORCPT
+	Mon, 8 Jun 2009 11:22:53 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:43442 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754026AbZFHPWw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 11:21:33 -0400
-Date: Mon, 8 Jun 2009 08:36:03 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: [RFC][PATCH 1/2] PM: Separate suspend to RAM functionality
-	from core
-Message-ID: <20090608063603.GA1833@ucw.cz>
-References: <200906070054.19207.rjw@sisk.pl> <200906070055.55156.rjw@sisk.pl>
+	Mon, 8 Jun 2009 11:22:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=EwH/BteopsocnR9tO96/J6dvUe6uV6qMDG0Kh8iIjhVkkFpbFfcvrSmMWLFRaBlbVf
+         ktXuphckEP3OJrR55FXoVvdEqJCxsLBrBux0faqxQrhlInTGeNib8A8h567IADMrZaj5
+         ToGwB23pcuMiYEm1+H5wJuOMi4iEdmdvhWiyU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906070055.55156.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.DEB.2.00.0906071617010.27806@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0906061512100.16635@chino.kir.corp.google.com>
+	 <661de9470906070712y7b90d1bbn60b110bdb99a0d01@mail.gmail.com>
+	 <alpine.DEB.2.00.0906071617010.27806@chino.kir.corp.google.com>
+Date: Tue, 9 Jun 2009 00:21:28 +0900
+Message-ID: <28c262360906080821v542bc573r496209402779d5c2@mail.gmail.com>
+Subject: Re: [patch -mmotm] oom: only oom kill exiting tasks with attached 
+	memory
+From: Minchan Kim <minchan.kim@gmail.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2009-06-07 00:55:54, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Move the suspend to RAM and standby code from kernel/power/main.c
-> to two separate files, kernel/power/suspend.c containing the basic
-> functions and kernel/power/suspend-test.c containing the automatic
-> suspend test facility based on the RTC clock alarm.
-> 
-> There are no changes in functionality related to these modifications.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Hi, David.
 
-ACK.
+On Mon, Jun 8, 2009 at 8:18 AM, David Rientjes<rientjes@google.com> wrote:
+> On Sun, 7 Jun 2009, Balbir Singh wrote:
+>
+>> Seems like a good change to make. Did you encounter this situation on
+>> a real machine?
+>>
+>
+> I did, as the result of the chosen task remaining in PF_EXITING state with
+> a detached mm following a previous oom kill.
+> --
+
+Let me have a question.
+If I understand your situation properly, you mean
+
+Time order
+t1 < t2 < t3 < t4.
+
+t1 : oom kill A process - send signal. it doesn't destroy mm_struct yet.
+t2 : destroy A's mm_struct but it is in task list.
+t3 : It happens OOM, again. Process A is selected again since it still
+remain in task list
+t4 : Now A's mm_struct is destroyed => situation you said.
+
+Is right ?
+Do you turn on sysctl oom_kill_allocating_task ?
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Kinds regards,
+Minchan Kim
