@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbZFHSMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754628AbZFHSMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479AbZFHSMG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 14:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbZFHSL4
+	id S1754628AbZFHSMY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 14:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbZFHSMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 14:11:56 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:53468 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbZFHSL4 (ORCPT
+	Mon, 8 Jun 2009 14:12:08 -0400
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:43616 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754067AbZFHSMH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 14:11:56 -0400
-Date: Mon, 8 Jun 2009 21:11:57 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: mingo@elte.hu
-cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, acme@redhat.com
-Subject: [PATCH 1/2] perf_counter: Add mmap event hooks to mprotect()
-Message-ID: <Pine.LNX.4.64.0906082111030.12407@melkki.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Jun 2009 14:12:07 -0400
+X-Trace: 211553410/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.38.33/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.38.33
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtEEAE7xLEpQKSYh/2dsb2JhbACBT8w+hAoF
+X-IronPort-AV: E=Sophos;i="4.41,325,1241391600"; 
+   d="scan'208";a="211553410"
+Date: Mon, 8 Jun 2009 19:01:20 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Izik Eidus <ieidus@redhat.com>
+cc: aarcange@redhat.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       chrisw@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH mmotm] ksm: stop scan skipping pages
+In-Reply-To: <4A2D4D9F.8080103@redhat.com>
+Message-ID: <Pine.LNX.4.64.0906081852540.8764@sister.anvils>
+References: <1242261048-4487-1-git-send-email-ieidus@redhat.com>
+ <Pine.LNX.4.64.0906081555360.22943@sister.anvils> <Pine.LNX.4.64.0906081733390.7729@sister.anvils>
+ <4A2D4D9F.8080103@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+On Mon, 8 Jun 2009, Izik Eidus wrote:
+> 
+> Thanks for the fix,
+> (I saw it while i wrote the RFC patch for the madvise, but beacuse that i
+> thought that the RFC fix this (you can see the removel of the second call to
+> scan_get_next_index()), and we move to madvise, I thought that no patch is
+> needed for this code, guess I was wrong)
 
-Some JIT compilers allocate memory for generated code with
-posix_memalign() + mprotect() so we need to hook into mprotect() to make
-sure 'perf' is aware that we're executing code in anonymous memory.
+Ah, no, I hadn't noticed that, this patch is from several weeks ago,
+before you even posted the madvise() version.
 
-[ penberg@cs.helsinki.fi: move the hook to sys_mprotect() ]
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- mm/mprotect.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+I think myself that we ought to fix the algorithm as it stands now in
+mmotm, rather than hiding the fix in amongst later interface changes.
 
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 258197b..d80311b 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -23,6 +23,7 @@
- #include <linux/swapops.h>
- #include <linux/mmu_notifier.h>
- #include <linux/migrate.h>
-+#include <linux/perf_counter.h>
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
- #include <asm/cacheflush.h>
-@@ -299,6 +300,7 @@ SYSCALL_DEFINE3(mprotect, unsigned long, start, size_t, len,
- 		error = mprotect_fixup(vma, &prev, nstart, tmp, newflags);
- 		if (error)
- 			goto out;
-+		perf_counter_mmap(vma);
- 		nstart = tmp;
- 
- 		if (nstart < prev->vm_end)
--- 
-1.5.6.3
+But it's not a big deal, so long as it gets fixed in the end.
 
+By the time Andrew sends KVM to Linus, it shouldn't be the
+patches currently in mmotm with more on top: they should be
+re-presented with all trace of /dev/ksm gone by then.
+
+Hugh
