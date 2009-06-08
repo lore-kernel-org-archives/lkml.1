@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbZFHIv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754742AbZFHIxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754926AbZFHIv7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 04:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZFHIvw
+	id S1754742AbZFHIxU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 04:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbZFHIxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 04:51:52 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:5415 "EHLO relay.sw.ru"
+	Mon, 8 Jun 2009 04:53:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55249 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753442AbZFHIvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 04:51:51 -0400
-Message-ID: <4A2CD0EB.5080900@openvz.org>
-Date: Mon, 08 Jun 2009 12:50:51 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751308AbZFHIxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 04:53:13 -0400
+Date: Mon, 8 Jun 2009 10:52:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -v5] x86: MCE: Re-implement MCE log ring buffer as
+	per-CPU ring buffer
+Message-ID: <20090608085259.GF6372@elte.hu>
+References: <1244445115.8361.576.camel@yhuang-dev.sh.intel.com> <20090608072030.GA6732@elte.hu> <1244446222.8361.584.camel@yhuang-dev.sh.intel.com> <20090608073845.GA32745@elte.hu> <1244449602.8361.587.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: Dhaval Giani <dhaval@linux.vnet.ibm.com>, bharata@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       kvm@vger.kernel.org,
-       Linux Containers <containers@lists.linux-foundation.org>,
-       Herbert Poetzl <herbert@13thfloor.at>
-Subject: Re: [RFC] CPU hard limits
-References: <20090604053649.GA3701@in.ibm.com>	 <6599ad830906050153i1afd104fqe70f681317349142@mail.gmail.com>	 <20090605092733.GA27486@in.ibm.com>	 <6599ad830906050232n11aa30d8xfcda0a279a482f32@mail.gmail.com>	 <20090605094811.GD4601@linux.vnet.ibm.com>	 <6599ad830906050251h18f4e037h182f61aa80a5b046@mail.gmail.com>	 <20090605095931.GE4601@linux.vnet.ibm.com> <6599ad830906050303r404c325anc60ded4f45a50b95@mail.gmail.com>
-In-Reply-To: <6599ad830906050303r404c325anc60ded4f45a50b95@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244449602.8361.587.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> On Fri, Jun 5, 2009 at 2:59 AM, Dhaval Giani<dhaval@linux.vnet.ibm.com> wrote:
->> I think we are focusing on the wrong use case here. Guarantees is just a
->> useful side-effect we get by using hard limits. I think the more
->> important use case is where the provider wants to limit the amount of
->> time a user gets (such as in a cloud).
->>
->> Maybe we should direct our attention in solving that problem? :)
->>
+
+* Huang Ying <ying.huang@intel.com> wrote:
+
+> On Mon, 2009-06-08 at 15:38 +0800, Ingo Molnar wrote:
+> > * Huang Ying <ying.huang@intel.com> wrote:
+> > 
+> > > On Mon, 2009-06-08 at 15:20 +0800, Ingo Molnar wrote:
+> > > > * Huang Ying <ying.huang@intel.com> wrote:
+> > > > 
+> > > > > Re-implement MCE log ring buffer as per-CPU ring buffer for better 
+> > > > > scalability.
+> > > > 
+> > > > this should be done using the generic ring-buffer code - see 
+> > > > include/linux/ring_buffer.h. Having a private implementation in 
+> > > > architecture code is not really acceptable.
+> > > 
+> > > MCE log ring buffer need to be NMI-safe, while current generic 
+> > > ring-buffer code is not NMI safe. [...]
+> > 
+> > Then please work with Steve to make it NMI safe (or do so yourself) 
+> > - i've Cc:-ed him - that way we help the core kernel: one of its 
+> > essential facilities will get one more user. We dont put private, 
+> > open-coded ring-buffer facilities into architecture code.
 > 
-> Yes, that case and the "predictable load test behaviour" case are both
-> good reasons for hard limits.
+> Steve have said he has a NMI-safe solution, but it is under patent 
+> application. It seems that patent application will take very long 
+> time, so we decide to enhance mce log buffer instead of waiting.
 
-ACK.
+Nah - if patent applications held up releases of code and products 
+up to the point where a patent issues then Intel wouldnt be able to 
+release a new CPU for a decade or so ;-)
 
-I'd like to add two things.
+Anyway, i'll let Steve clarify the status of the NMI-safe ringbuffer 
+patches.
 
-First, the article @openvz.org about guarantees you were discussing was 
-not supposed to be a "best practices" paper. This was just a theoretical
-thoughts on how to get guarantees out of the limit for those resources 
-you cannot reclaim from the user and thus cannot provide the guarantee 
-any other way. E.g. locked memory - once a user has it you cannot take 
-it back, and if you want to guarantee some mount of it for group X you
-have to keep all the other groups away from this amount.
-
-And the second thing is an addition for Dhaval's case about limiting the 
-amount of time a user gets. This is exactly what hosting providers do -
-they _sell_ the CPU power to their customers and thus need to limit the
-CPU time dedicated for containers.
-
-> Paul
-> 
-
+	Ingo
