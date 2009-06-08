@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752291AbZFHGdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751799AbZFHGgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752291AbZFHGdc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 02:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751606AbZFHGdY
+	id S1751799AbZFHGgR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 02:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZFHGgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 02:33:24 -0400
-Received: from www.tglx.de ([62.245.132.106]:60426 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751465AbZFHGdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 02:33:23 -0400
-Date: Mon, 8 Jun 2009 08:33:14 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Feng Tang <feng.tang@intel.com>
-cc: "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Li, Shaohua" <shaohua.li@intel.com>,
-       "Pan, Jacob jun" <jacob.jun.pan@intel.com>
-Subject: Re: [PATCH] tick: add check for the existence of broadcast clock
- event device
-In-Reply-To: <20090608141250.6a5735fa@feng-desktop>
-Message-ID: <alpine.LFD.2.00.0906080828021.3419@localhost.localdomain>
-References: <20090605112711.67e7d5cb@feng-desktop> <alpine.LFD.2.00.0906061121330.3419@localhost.localdomain> <20090606204736.00700bd0@feng-desktop> <alpine.LFD.2.00.0906061450220.3419@localhost.localdomain> <alpine.LFD.2.00.0906061815460.3419@localhost.localdomain>
- <20090608095730.0c945e78@feng-desktop> <alpine.LFD.2.00.0906080739020.3419@localhost.localdomain> <20090608141250.6a5735fa@feng-desktop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 8 Jun 2009 02:36:05 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:32912 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbZFHGgE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 02:36:04 -0400
+Subject: Re: [Bug #13306] hibernate slow on _second_ run
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <D9VoutSOyXP.A.u-H.Ra7KKB@chimera>
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
+	 <D9VoutSOyXP.A.u-H.Ra7KKB@chimera>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Pw5MQ5+MXSaMjMRO+pXz"
+Date: Mon, 08 Jun 2009 08:36:01 +0200
+Message-Id: <1244442961.11457.0.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Feng,
 
-On Mon, 8 Jun 2009, Feng Tang wrote:
-> Our apbt driver is pretty similar with HPET's, including its cpu hotplug
-> notifier. But our platform only has 2 available apbt to use, otherwise we will
-> configure it just like HPET, using one timer as bc and others for per-cpu ones,
-> then it won't hit this case
-> 
-> There are 2 situations, one is for the normal boot, apbt0 will be inited first
-> and registered to OS as cpu0's timer, then tsc/lapic is calculated based on it,
-> and apbt1 is registered later in a fs_initcall() (just like hpet.c does) after basic
-> kernel core is up. so the sequence is:
-> apbt0 --> lapic0 --> lapic1 --> apbt1
+--=-Pw5MQ5+MXSaMjMRO+pXz
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Hmm, I do not like that at all. That explicitely relies on CPU0 doing
-some work which will kick CPU1. That's fragile as hell. 
+On Sun, 2009-06-07 at 11:52 +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>=20
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
+>=20
+>=20
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D13306
+> Subject		: hibernate slow on _second_ run
+> Submitter	: Johannes Berg <johannes@sipsolutions.net>
+> Date		: 2009-05-14 09:34 (25 days old)
 
-Why do you want to make the CPU1 case special? You setup apbt0 before
-you setup local APIC on CPU0, so why can't you do the same for apbt1
-on CPU1 ? That will also remove the complete hotplug logic from your
-code.
+I'm still seeing this, did you get a chance to look at the ftrace?
 
-Thanks,
+johannes
 
-	tglx
+--=-Pw5MQ5+MXSaMjMRO+pXz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKLLFOAAoJEODzc/N7+QmaHycQAILsevi+FrWBDk23U3QGCSdb
+/Bpe4AwvXlGEx9tQ0gO7GEAQucXZPnY8ivHUTkp+/sWmQCAGhoK3pjuF+7IHdOhN
+VFQCndInO4/VaJFx2Uz52wLvCKfdikK8ueTSIpUbzf8STJRSFlgGbsfqx5UbeIkD
+1B0N+P5qUssdSj9a6rc3AwDaIy9a/GqlPLQb+WQEeRc+WjbEzZANnM4HXvNLiK98
+MY2+tz0pP4VeUGQDDJI6gaqVW+M/UdPWHfveAuB5Jfnld90YfXsNH4c5PRUVqBJo
+RKGYGpgj5SSPLCu2txNh/EohioUNgWLWo6D+4uf/Igf2nk8UXC5XSC37tCLWHkCU
+FpMgm+1k8dNgjlBBjqDmbxzWeheCjAES2HkAzPGlzeTir+X1zuvYyyKTPhSN/Ood
+bRo0yUnj9pSL9UjmitaNnKRTlWq8KR8tajVLYIYOaie4+zmrbfJgPnEihREiGxNh
+APcdK8tCsTS8TBrSC6KGYNxahUfKG/rwa3NjeV4QaWQYfV4p5XsHRMguByfFClvc
+fbmlBpefJHluOiTLsU2SnXPU+/aULuyP2kpjim6qEyWJIgL8LbKGRBGr6CmosfY0
+cs4WNGou+ujZXYHecO7YJZBucdU/y/W+fHa45NJUq5hAPGpFej/Swb7XHsjxIDbe
+vdk7POK70pEx5psNY2LE
+=D2ID
+-----END PGP SIGNATURE-----
+
+--=-Pw5MQ5+MXSaMjMRO+pXz--
+
