@@ -1,132 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbZFHRUD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbZFHRUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752633AbZFHRUD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:20:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbZFHRTo
+	id S1753743AbZFHRUY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZFHRTs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:19:44 -0400
-Received: from relay3.sgi.com ([192.48.156.57]:39319 "EHLO relay.sgi.com"
+	Mon, 8 Jun 2009 13:19:48 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:43634 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752873AbZFHRTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:19:43 -0400
-Message-Id: <20090608171942.356996000@sgi.com>
+	id S1752884AbZFHRTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 13:19:47 -0400
+Message-Id: <20090608171946.000713000@sgi.com>
 User-Agent: quilt/0.47-1
-Date: Mon, 08 Jun 2009 12:16:49 -0500
+Date: Mon, 08 Jun 2009 12:16:50 -0500
 From: steiner@sgi.com
 To: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [Patch 01/12] GRU - fix cache coherency issues with instruction retry
+Subject: [Patch 02/12] GRU - add user request to explicitly unload a gru context
 References: <20090608171648.988318000@sgi.com>
-Content-Disposition: inline; filename=uv_gru_flush_cbe_at_exception
+Content-Disposition: inline; filename=uv_gru_free_kernel_gts
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jack Steiner <steiner@sgi.com>
 
-Fix 2 problems related to GRU instruction failures. Cache coherency
-is not maintained for CBEs except when loading or unloading contexts.
-When reading a CBE to extract error information, the CBE must first be flushed
-from the cache.
+Add user function to explicitly unload GRU kernel contexts from the
+GRU. Only contexts that are not in-use will be unloaded.
 
-The function that reads kerrnel CBEs was reading the wrong CBE.
+This function is primarily for testing. It is not expected that this will
+be used in normal production systems.
 
 
 Signed-off-by: Jack Steiner <steiner@sgi.com>
 
 ---
- drivers/misc/sgi-gru/grufault.c     |    3 ++-
- drivers/misc/sgi-gru/grufile.c      |    2 +-
- drivers/misc/sgi-gru/grukservices.c |   12 ++++++++++--
- drivers/misc/sgi-gru/grutables.h    |    1 +
- 4 files changed, 14 insertions(+), 4 deletions(-)
+ drivers/misc/sgi-gru/grufile.c      |   10 ++----
+ drivers/misc/sgi-gru/grukservices.c |   55 ++++++++++++++++++++++--------------
+ drivers/misc/sgi-gru/grutables.h    |    4 +-
+ 3 files changed, 41 insertions(+), 28 deletions(-)
 
-Index: linux/drivers/misc/sgi-gru/grufault.c
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grufault.c	2009-04-29 13:40:17.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grufault.c	2009-04-29 13:40:36.000000000 -0500
-@@ -618,7 +618,7 @@ int gru_get_exception_detail(unsigned lo
- 	} else if (gts->ts_gru) {
- 		cbrnum = thread_cbr_number(gts, ucbnum);
- 		cbe = get_cbe_by_index(gts->ts_gru, cbrnum);
--		prefetchw(cbe);/* Harmless on hardware, required for emulator */
-+		gru_flush_cache(cbe);	/* CBE not coherent */
- 		excdet.opc = cbe->opccpy;
- 		excdet.exopc = cbe->exopccpy;
- 		excdet.ecause = cbe->ecause;
-@@ -626,6 +626,7 @@ int gru_get_exception_detail(unsigned lo
- 		excdet.exceptdet1 = cbe->idef3upd;
- 		excdet.cbrstate = cbe->cbrstate;
- 		excdet.cbrexecstatus = cbe->cbrexecstatus;
-+		gru_flush_cache(cbe);
- 		ret = 0;
- 	} else {
- 		ret = -EAGAIN;
 Index: linux/drivers/misc/sgi-gru/grufile.c
 ===================================================================
---- linux.orig/drivers/misc/sgi-gru/grufile.c	2009-04-29 13:40:16.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grufile.c	2009-04-29 13:41:09.000000000 -0500
-@@ -46,6 +46,7 @@
+--- linux.orig/drivers/misc/sgi-gru/grufile.c	2009-04-29 13:41:09.000000000 -0500
++++ linux/drivers/misc/sgi-gru/grufile.c	2009-04-29 13:42:22.000000000 -0500
+@@ -287,7 +287,6 @@ static void gru_init_chiplet(struct gru_
+ 	gru_dbg(grudev, "bid %d, nid %d, gid %d, vaddr %p (0x%lx)\n",
+ 		bid, nid, gru->gs_gid, gru->gs_gru_base_vaddr,
+ 		gru->gs_gru_base_paddr);
+-	gru_kservices_init(gru);
+ }
  
- struct gru_blade_state *gru_base[GRU_MAX_BLADES] __read_mostly;
- unsigned long gru_start_paddr __read_mostly;
-+void *gru_start_vaddr __read_mostly;
- unsigned long gru_end_paddr __read_mostly;
- unsigned int gru_max_gids __read_mostly;
- struct gru_stats_s gru_stats;
-@@ -376,7 +377,6 @@ static int __init gru_init(void)
+ static int gru_init_tables(unsigned long gru_base_paddr, void *gru_base_vaddr)
+@@ -314,6 +313,7 @@ static int gru_init_tables(unsigned long
+ 		memset(gru_base[bid], 0, sizeof(struct gru_blade_state));
+ 		gru_base[bid]->bs_lru_gru = &gru_base[bid]->bs_grus[0];
+ 		spin_lock_init(&gru_base[bid]->bs_lock);
++		init_rwsem(&gru_base[bid]->bs_kgts_sema);
+ 
+ 		dsrbytes = 0;
+ 		cbrs = 0;
+@@ -426,6 +426,7 @@ static int __init gru_init(void)
+ 		printk(KERN_ERR "%s: init tables failed\n", GRU_DRIVER_ID_STR);
+ 		goto exit3;
+ 	}
++	gru_kservices_init();
+ 
+ 	printk(KERN_INFO "%s: v%s\n", GRU_DRIVER_ID_STR,
+ 	       GRU_DRIVER_VERSION_STR);
+@@ -444,7 +445,7 @@ exit1:
+ 
+ static void __exit gru_exit(void)
  {
- 	int ret, irq, chip;
- 	char id[10];
--	void *gru_start_vaddr;
+-	int i, bid, gid;
++	int i, bid;
+ 	int order = get_order(sizeof(struct gru_state) *
+ 			      GRU_CHIPLETS_PER_BLADE);
  
- 	if (!is_uv_system())
- 		return 0;
+@@ -453,10 +454,7 @@ static void __exit gru_exit(void)
+ 
+ 	for (i = 0; i < GRU_CHIPLETS_PER_BLADE; i++)
+ 		free_irq(IRQ_GRU + i, NULL);
+-
+-	foreach_gid(gid)
+-		gru_kservices_exit(GID_TO_GRU(gid));
+-
++	gru_kservices_exit();
+ 	for (bid = 0; bid < GRU_MAX_BLADES; bid++)
+ 		free_pages((unsigned long)gru_base[bid], order);
+ 
 Index: linux/drivers/misc/sgi-gru/grukservices.c
 ===================================================================
---- linux.orig/drivers/misc/sgi-gru/grukservices.c	2009-04-29 13:40:17.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grukservices.c	2009-04-29 13:40:36.000000000 -0500
-@@ -98,6 +98,9 @@
- #define ASYNC_HAN_TO_BID(h)	((h) - 1)
- #define ASYNC_BID_TO_HAN(b)	((b) + 1)
- #define ASYNC_HAN_TO_BS(h)	gru_base[ASYNC_HAN_TO_BID(h)]
-+#define KCB_TO_GID(cb)		((cb - gru_start_vaddr) /		\
-+					(GRU_SIZE * GRU_CHIPLETS_PER_BLADE))
-+#define KCB_TO_BS(cb)		gru_base[KCB_TO_GID(cb)]
+--- linux.orig/drivers/misc/sgi-gru/grukservices.c	2009-04-29 13:40:36.000000000 -0500
++++ linux/drivers/misc/sgi-gru/grukservices.c	2009-04-29 13:41:24.000000000 -0500
+@@ -188,6 +188,34 @@ static void gru_load_kernel_context(stru
+ }
  
- #define GRU_NUM_KERNEL_CBR	1
- #define GRU_NUM_KERNEL_DSR_BYTES 256
-@@ -354,14 +357,19 @@ int gru_get_cb_exception_detail(void *cb
- 		struct control_block_extended_exc_detail *excdet)
- {
- 	struct gru_control_block_extended *cbe;
+ /*
++ * Free all kernel contexts that are not currently in use.
++ *   Returns 0 if all freed, else number of inuse context.
++ */
++static int gru_free_kernel_contexts(void)
++{
 +	struct gru_blade_state *bs;
-+	int cbrnum;
++	struct gru_thread_state *kgts;
++	int bid, ret = 0;
++
++	for (bid = 0; bid < GRU_MAX_BLADES; bid++) {
++		bs = gru_base[bid];
++		if (!bs)
++			continue;
++		if (down_write_trylock(&bs->bs_kgts_sema)) {
++			kgts = bs->bs_kgts;
++			if (kgts && kgts->ts_gru)
++				gru_unload_context(kgts, 0);
++			kfree(kgts);
++			bs->bs_kgts = NULL;
++			up_write(&bs->bs_kgts_sema);
++		} else {
++			ret++;
++		}
++	}
++	return ret;
++}
++
++/*
+  * Lock & load the kernel context for the specified blade.
+  */
+ static struct gru_blade_state *gru_lock_kernel_context(int blade_id)
+@@ -1009,35 +1037,22 @@ int gru_ktest(unsigned long arg)
+ 	case 2:
+ 		ret = quicktest2(arg);
+ 		break;
++	case 99:
++		ret = gru_free_kernel_contexts();
++		break;
+ 	}
+ 	return ret;
  
--	cbe = get_cbe(GRUBASE(cb), get_cb_number(cb));
--	prefetchw(cbe);	/* Harmless on hardware, required for emulator */
-+	bs = KCB_TO_BS(cb);
-+	cbrnum = thread_cbr_number(bs->bs_kgts, get_cb_number(cb));
-+	cbe = get_cbe(GRUBASE(cb), cbrnum);
-+	gru_flush_cache(cbe);	/* CBE not coherent */
- 	excdet->opc = cbe->opccpy;
- 	excdet->exopc = cbe->exopccpy;
- 	excdet->ecause = cbe->ecause;
- 	excdet->exceptdet0 = cbe->idef1upd;
- 	excdet->exceptdet1 = cbe->idef3upd;
-+	gru_flush_cache(cbe);
+ }
+ 
+-int gru_kservices_init(struct gru_state *gru)
++int gru_kservices_init(void)
+ {
+-	struct gru_blade_state *bs;
+-
+-	bs = gru->gs_blade;
+-	if (gru != &bs->bs_grus[0])
+-		return 0;
+-
+-	init_rwsem(&bs->bs_kgts_sema);
  	return 0;
+ }
+ 
+-void gru_kservices_exit(struct gru_state *gru)
++void gru_kservices_exit(void)
+ {
+-	struct gru_blade_state *bs;
+-	struct gru_thread_state *kgts;
+-
+-	bs = gru->gs_blade;
+-	if (gru != &bs->bs_grus[0])
+-		return;
+-
+-	kgts = bs->bs_kgts;
+-	if (kgts && kgts->ts_gru)
+-		gru_unload_context(kgts, 0);
+-	kfree(kgts);
++	if (gru_free_kernel_contexts())
++		BUG();
  }
  
 Index: linux/drivers/misc/sgi-gru/grutables.h
 ===================================================================
---- linux.orig/drivers/misc/sgi-gru/grutables.h	2009-04-29 13:40:17.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grutables.h	2009-04-29 13:40:36.000000000 -0500
-@@ -153,6 +153,7 @@
- extern struct gru_stats_s gru_stats;
- extern struct gru_blade_state *gru_base[];
- extern unsigned long gru_start_paddr, gru_end_paddr;
-+extern void *gru_start_vaddr;
- extern unsigned int gru_max_gids;
- 
- #define GRU_MAX_BLADES		MAX_NUMNODES
+--- linux.orig/drivers/misc/sgi-gru/grutables.h	2009-04-29 13:40:36.000000000 -0500
++++ linux/drivers/misc/sgi-gru/grutables.h	2009-04-29 13:43:22.000000000 -0500
+@@ -638,8 +638,8 @@ extern void gru_unload_context(struct gr
+ extern int gru_update_cch(struct gru_thread_state *gts, int force_unload);
+ extern void gts_drop(struct gru_thread_state *gts);
+ extern void gru_tgh_flush_init(struct gru_state *gru);
+-extern int gru_kservices_init(struct gru_state *gru);
+-extern void gru_kservices_exit(struct gru_state *gru);
++extern int gru_kservices_init(void);
++extern void gru_kservices_exit(void);
+ extern int gru_dump_chiplet_request(unsigned long arg);
+ extern irqreturn_t gru_intr(int irq, void *dev_id);
+ extern int gru_handle_user_call_os(unsigned long address);
 
