@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZFHOzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756354AbZFHO4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756232AbZFHOzK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 10:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754961AbZFHOzA
+	id S1756354AbZFHO4S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 10:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbZFHO4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 10:55:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54443 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754633AbZFHOzA (ORCPT
+	Mon, 8 Jun 2009 10:56:09 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:46700 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753905AbZFHO4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 10:55:00 -0400
-Date: Mon, 8 Jun 2009 07:53:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>, Gerd Knorr <kraxel@suse.de>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
- kernels
-In-Reply-To: <200906071023.04789.rusty@rustcorp.com.au>
-Message-ID: <alpine.LFD.2.01.0906080749180.6847@localhost.localdomain>
-References: <4A0B62F7.5030802@goop.org> <200906051416.19311.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906050753550.6847@localhost.localdomain> <200906071023.04789.rusty@rustcorp.com.au>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 8 Jun 2009 10:56:08 -0400
+Date: Mon, 8 Jun 2009 10:55:55 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       yanmin.zhang@intel.com, Wu Fengguang <fengguang.wu@intel.com>,
+       linuxram@us.ibm.com, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when zone_reclaim()
+ scans and fails to avoid CPU spinning at 100% on NUMA
+In-Reply-To: <20090608143857.GG15070@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0906081055170.21954@gentwo.org>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-2-git-send-email-mel@csn.ul.ie> <4A2D129D.3020309@redhat.com> <20090608135433.GD15070@csn.ul.ie> <alpine.DEB.1.10.0906081033060.21954@gentwo.org>
+ <20090608143857.GG15070@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 8 Jun 2009, Mel Gorman wrote:
 
-
-On Sun, 7 Jun 2009, Rusty Russell wrote:
+> > The tmpfs pages are unreclaimable and therefore should not be on the anon
+> > lru.
+> >
 >
-> "possible"?  You mean "acceptable".  Gray, not black and white.
+> tmpfs pages can be swap-backed so can be reclaimable. Regardless of what
+> list they are on, we still need to know how many of them there are if
+> this patch is to be avoided.
 
-I don't think we can possibly claim to support UP configurations if we 
-don't patch. 
+If they are reclaimable then why does it matter? They can be pushed out if
+you configure zone reclaim to be that aggressive.
 
-> 1) Where's the line?
 
-"As good as we can make it". There is no line. There's "your code sucks so 
-badly that it needs to get fixed, or we'll rip it out or disable it".
-
-> 2) Where are we?  Does patching claw back 5% of the loss?  50%?  90%?
-
-On some things, especially on P4, the lock overhead was tens of percent. 
-Just a single locked instruction takes closer to two hundred instructions.
-
-Of course, on those P4's, just kernel entry/exit is pretty high too (even 
-with sysenter/exit), so I doubt you'll ever see something be 90% just 
-because of that, unless it causes extra IO or other non-CPU issues.
-
-		Linus
