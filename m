@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757893AbZFHTcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757835AbZFHTcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757893AbZFHTcV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 15:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbZFHTXw
+	id S1757835AbZFHTcA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 15:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZFHTXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 8 Jun 2009 15:23:52 -0400
-Received: from thunk.org ([69.25.196.29]:39604 "EHLO thunker.thunk.org"
+Received: from thunk.org ([69.25.196.29]:39603 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753916AbZFHTXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752646AbZFHTXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Jun 2009 15:23:22 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Linux Kernel Developers List <linux-kernel@vger.kernel.org>
 Cc: "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 25/49] ext4: fix the length returned by fiemap for an unallocated extent
-Date: Mon,  8 Jun 2009 15:22:43 -0400
-Message-Id: <1244488987-32564-26-git-send-email-tytso@mit.edu>
+Subject: [PATCH 19/49] ext4: Move fs/ext4/namei.h into ext4.h
+Date: Mon,  8 Jun 2009 15:22:37 -0400
+Message-Id: <1244488987-32564-20-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.6.3.2.1.gb9f7d.dirty
-In-Reply-To: <1244488987-32564-25-git-send-email-tytso@mit.edu>
+In-Reply-To: <1244488987-32564-19-git-send-email-tytso@mit.edu>
 References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-2-git-send-email-tytso@mit.edu>
  <1244488987-32564-3-git-send-email-tytso@mit.edu>
@@ -36,12 +36,6 @@ References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-17-git-send-email-tytso@mit.edu>
  <1244488987-32564-18-git-send-email-tytso@mit.edu>
  <1244488987-32564-19-git-send-email-tytso@mit.edu>
- <1244488987-32564-20-git-send-email-tytso@mit.edu>
- <1244488987-32564-21-git-send-email-tytso@mit.edu>
- <1244488987-32564-22-git-send-email-tytso@mit.edu>
- <1244488987-32564-23-git-send-email-tytso@mit.edu>
- <1244488987-32564-24-git-send-email-tytso@mit.edu>
- <1244488987-32564-25-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -49,36 +43,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the file's blocks have not yet been allocated because of delayed
-allocation, the length of the extent returned by fiemap is incorrect.
-This commit fixes this bug.
+The fs/ext4/namei.h header file had only a single function
+declaration, and should have never been a standalone file.  Move it
+into ext4.h, where should have been from the beginning.
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/extents.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
+ fs/ext4/ext4.h  |    1 +
+ fs/ext4/namei.c |    1 -
+ fs/ext4/namei.h |    8 --------
+ fs/ext4/super.c |    1 -
+ 4 files changed, 1 insertions(+), 10 deletions(-)
+ delete mode 100644 fs/ext4/namei.h
 
-diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
-index 5f72952..4fec6b7 100644
---- a/fs/ext4/extents.c
-+++ b/fs/ext4/extents.c
-@@ -3244,8 +3244,15 @@ static int ext4_ext_fiemap_cb(struct inode *inode, struct ext4_ext_path *path,
- 	 * XXX this might miss a single-block extent at EXT_MAX_BLOCK
- 	 */
- 	if (ext4_ext_next_allocated_block(path) == EXT_MAX_BLOCK ||
--	    newex->ec_block + newex->ec_len - 1 == EXT_MAX_BLOCK)
-+	    newex->ec_block + newex->ec_len - 1 == EXT_MAX_BLOCK) {
-+		loff_t size = i_size_read(inode);
-+		loff_t bs = EXT4_BLOCK_SIZE(inode->i_sb);
-+
- 		flags |= FIEMAP_EXTENT_LAST;
-+		if ((flags & FIEMAP_EXTENT_DELALLOC) &&
-+		    logical+length > size)
-+			length = (size - logical + bs - 1) & ~(bs-1);
-+	}
+diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
+index af3c906..d9c5251 100644
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -1594,6 +1594,7 @@ extern const struct file_operations ext4_file_operations;
+ /* namei.c */
+ extern const struct inode_operations ext4_dir_inode_operations;
+ extern const struct inode_operations ext4_special_inode_operations;
++extern struct dentry *ext4_get_parent(struct dentry *child);
  
- 	error = fiemap_fill_next_extent(fieinfo, logical, physical,
- 					length, flags);
+ /* symlink.c */
+ extern const struct inode_operations ext4_symlink_inode_operations;
+diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
+index 8018e49..c9690b2 100644
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -37,7 +37,6 @@
+ #include "ext4.h"
+ #include "ext4_jbd2.h"
+ 
+-#include "namei.h"
+ #include "xattr.h"
+ #include "acl.h"
+ 
+diff --git a/fs/ext4/namei.h b/fs/ext4/namei.h
+deleted file mode 100644
+index 5e4dfff..0000000
+--- a/fs/ext4/namei.h
++++ /dev/null
+@@ -1,8 +0,0 @@
+-/*  linux/fs/ext4/namei.h
+- *
+- * Copyright (C) 2005 Simtec Electronics
+- *	Ben Dooks <ben@simtec.co.uk>
+- *
+-*/
+-
+-extern struct dentry *ext4_get_parent(struct dentry *child);
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 1fbf090..d79e1c4 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -46,7 +46,6 @@
+ #include "ext4_jbd2.h"
+ #include "xattr.h"
+ #include "acl.h"
+-#include "namei.h"
+ #include "group.h"
+ 
+ struct proc_dir_entry *ext4_proc_root;
 -- 
 1.6.3.2.1.gb9f7d.dirty
 
