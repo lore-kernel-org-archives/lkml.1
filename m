@@ -1,129 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbZFHOpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755987AbZFHOrE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755676AbZFHOpZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 10:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbZFHOpN
+	id S1755987AbZFHOrE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 10:47:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbZFHOqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 10:45:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52257 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751731AbZFHOpM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 10:45:12 -0400
-Date: Mon, 8 Jun 2009 16:44:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: Run-time PM idea (was: Re: [linux-pm] [RFC][PATCH 0/2] PM:
-	Rearrange core suspend code)
-Message-ID: <20090608144455.GA20905@elte.hu>
-References: <20090608065419.GA13568@elte.hu> <200906081330.50045.rjw@sisk.pl> <20090608130509.GA3272@elte.hu> <20090608131159.GA15100@srcf.ucam.org> <20090608132235.GC13214@elte.hu> <20090608133215.GA15482@srcf.ucam.org> <20090608134647.GA14234@elte.hu> <20090608135431.GA16052@srcf.ucam.org> <20090608142450.GE14234@elte.hu> <20090608143513.GB16752@srcf.ucam.org>
+	Mon, 8 Jun 2009 10:46:54 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:64711 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755196AbZFHOqx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 10:46:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=S5Kx4MSk3Mqt62Iqj4GDaoP4Ahklab6ugynQ5VXu0FZH3NFmOYgkUOMw37zm9CeQRd
+         w1KhY0P0NlGGdbuDToUivBcaWV20U+j9jy56P7cWek118xXkrwp8uJJJwmwTabobrtHh
+         z+OwpWnI3qaSFegxcUzdvuBV3jSmvCDHMYgs8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090608143513.GB16752@srcf.ucam.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090608123133.GA7944@localhost>
+References: <200905271012.668777061@firstfloor.org>
+	 <20090528082616.GG6920@wotan.suse.de>
+	 <20090528093141.GD1065@one.firstfloor.org>
+	 <20090528120854.GJ6920@wotan.suse.de>
+	 <20090528134520.GH1065@one.firstfloor.org>
+	 <20090528145021.GA5503@localhost>
+	 <ab418ea90906032325m302afbb6w6fa68f6b57f53e49@mail.gmail.com>
+	 <20090607160225.GA24315@localhost>
+	 <ab418ea90906080406y34981329y27d360624aa22f7c@mail.gmail.com>
+	 <20090608123133.GA7944@localhost>
+Date: Mon, 8 Jun 2009 22:46:53 +0800
+Message-ID: <ab418ea90906080746m6d1d59d8m395ab76585575db1@mail.gmail.com>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in 
+	the VM v3
+From: Nai Xia <nai.xia@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jun 8, 2009 at 8:31 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> On Mon, Jun 08, 2009 at 07:06:12PM +0800, Nai Xia wrote:
+>> On Mon, Jun 8, 2009 at 12:02 AM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+>> > On Thu, Jun 04, 2009 at 02:25:24PM +0800, Nai Xia wrote:
+>> >> On Thu, May 28, 2009 at 10:50 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
+>> >> > On Thu, May 28, 2009 at 09:45:20PM +0800, Andi Kleen wrote:
+>> >> >> On Thu, May 28, 2009 at 02:08:54PM +0200, Nick Piggin wrote:
+>> >> >
+>> >> > [snip]
+>> >> >
+>> >> >> >
+>> >> >> > BTW. I don't know if you are checking for PG_writeback often enough?
+>> >> >> > You can't remove a PG_writeback page from pagecache. The normal
+>> >> >> > pattern is lock_page(page); wait_on_page_writeback(page); which I
+>> >> >>
+>> >> >> So pages can be in writeback without being locked? I still
+>> >> >> wasn't able to find such a case (in fact unless I'm misreading
+>> >> >> the code badly the writeback bit is only used by NFS and a few
+>> >> >> obscure cases)
+>> >> >
+>> >> > Yes the writeback page is typically not locked. Only read IO requires
+>> >> > to be exclusive. Read IO is in fact page *writer*, while writeback IO
+>> >> > is page *reader* :-)
+>> >>
+>> >> Sorry for maybe somewhat a little bit off topic,
+>> >> I am trying to get a good understanding of PG_writeback & PG_locked ;)
+>> >>
+>> >> So you are saying PG_writeback & PG_locked are acting like a read/write lock?
+>> >> I notice wait_on_page_writeback(page) seems always called with page locked --
+>> >
+>> > No. Note that pages are not locked in wait_on_page_writeback_range().
+>>
+>> I see. This function seems mostly called  on the sync path,
+>> it just waits for data being synchronized to disk.
+>> No writers from the pages' POV, so no lock.
+>> I missed this case, but my argument about the role of read/write lock.
+>> seems still consistent. :)
+>
+> It's more constrained. Normal read/write locks allow concurrent readers,
+> however fsync() must wait for previous IO to finish before starting
+> its own IO.
 
-* Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+Oh, yes, this is what I called "mixed roles". One for lock, one for
+status flag, twisted together in the same path, making the read lock
+semantics totally broken.
 
-> On Mon, Jun 08, 2009 at 04:24:50PM +0200, Ingo Molnar wrote:
-> > * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > > eSATA is pretty common now.
-> > 
-> > [ And 99% of the CPUs have an IDT still 99.9% of the users dont know 
-> >   what it is :) ]
-> 
-> Users know that there's a socket on the front of their computer that 
-> they can plug a hard drive into, and if that doesn't work then they're 
-> going to be upset.
-> 
-> > > The problem with this kind of default is that you get people who 
-> > > are confused that their hardware doesn't work.
-> > 
-> > If the hardware 'doesnt work' that is a kernel bug. Hardware that 
-> > _cannot be suspended_ safely (physically) should not be 
-> > auto-suspended, of course.
-> 
-> So, like I said, the kernel can't automatically suspend AHCI unless it's 
-> received some information from elsewhere that tells it it's ok to. The 
-> kernel can't know if there's an eSATA port or not.
-> 
-> > > If the kernel doesn't have enough information to make a decision 
-> > > it should err on the side of functionality - we're talking about 
-> > > fairly low-level power savings, but potentially several years of 
-> > > aggregate confusion on the part of users.
-> > 
-> > the difference between a 10W and a 1W footprint is a long series of 
-> > 'low-level power savings'.
-> > 
-> > If users are getting confused and if hardware gets broken then tha's 
-> > a plain bug and the wrong path is being walked.
-> 
-> Yes. And powersaving is a tradeoff between functionality and power 
-> consumption. The kernel doesn't know what level of functionality a 
-> given user requires. It *can't* know that itself.
-> 
-> > > Users are generally ok at realising correlation between a setting 
-> > > change and something no longer working, so as long as you provide 
-> > > that they'll be happy. I agree that this sucks. What we actually 
-> > > want is some means of reliably identifying whether a port is 
-> > > hotplug or not, but eSATA makes this very difficult.
-> > 
-> > Is it impossible?
-> 
-> To the best of my knowledge, yes.
-> 
-> > > My argument is "Hardware should work, and if the kernel default is 
-> > > for it to be broken then the default is wrong". We went through 
-> > > this for USB autosuspend. Userspace simply has more available 
-> > > information than the kernel, and it's not just a matter of static 
-> > > configuration (though that may be part of it). For instance, 
-> > > Oliver's example of screensavers and USB keyboards. If nothing's 
-> > > paying attention to volume keys (or if the keyboard doesn't have 
-> > > any) then you can enable remote wakeup and suspend the keyboard. 
-> > > If something /is/ paying attention to volume keys, you can't do 
-> > > that. That's the kind of case I'm discussing.
-> > 
-> > See my reply to Oliver. This is really advocating a broken model 
-> > of device usage. That volume key usage dependency is being 
-> > hidden from the kernel, and then you want to kludge it around by 
-> > pushing suspend functionality to user-space? That way lies 
-> > madness. The proper way is to close the device if it's not used 
-> > by anything. Then the kernel can auto-suspend it just like it 
-> > could auto-suspend network interfaces that are not in use, or 
-> > like it could auto-suspend a dislay port that has no monitor or 
-> > other output device attached.
-> 
-> No, we can't just close it - then we won't get notification that a 
-> key's been hit in order to unlock the screensaver. [...]
+>
+>> >
+>> >> that is the semantics of a writer waiting to get the lock while it's
+>> >> acquired by
+>> >> some reader:The caller(e.g. truncate_inode_pages_range()  and
+>> >> invalidate_inode_pages2_range()) are the writers waiting for
+>> >> writeback readers (as you clarified ) to finish their job, right ?
+>> >
+>> > Sorry if my metaphor confused you. But they are not typical
+>> > reader/writer problems, but more about data integrities.
+>>
+>> No, you didn't :)
+>> Actually, you make me clear about the mixed roles for
+>> those bits.
+>>
+>> >
+>> > Pages have to be "not under writeback" when truncated.
+>> > Otherwise data lost is possible:
+>> >
+>> > 1) create a file with one page (page A)
+>> > 2) truncate page A that is under writeback
+>> > 3) write to file, which creates page B
+>> > 4) sync file, which sends page B to disk quickly
+>> >
+>> > Now if page B reaches disk before A, the new data will be overwritten
+>> > by truncated old data, which corrupts the file.
+>>
+>> I fully understand this scenario which you had already clarified in a
+>> previous message. :)
+>>
+>> 1. someone make index1-> page A
+>> 2. Path P1 is acting as a *reader* to a cache page at index1 by
+>>     setting PG_writeback on, while at the same time as a *writer* to
+>>     the corresponding file blocks.
+>> 3. Another path P2 comes in and  truncate page A, he is the writer
+>>     to the same cache page.
+>> 4. Yet another path P3 comes  as the writer to the cache page
+>>      making it points to page B: index1--> page B.
+>> 5. Path P4 comes writing back the cache page(and set PG_writeback).
+>>    He is the reader of the cache page and the writer to the file blocks.
+>>
+>> The corrupts occur because P1 & P4 races when writing file blocks.
+>> But the _root_ of this racing is because nothing is used to serialize
+>> them on the side of writing the file blocks and above stream reading was
+>> inconsistent because of the writers(P2 & P3) to cache page at index1.
+>>
+>> Note that the "sync file" is somewhat irrelevant, even without "sync file",
+>> the racing still may exists. I know you must want to show me that this could
+>> make the corruption more easy to occur.
+>>
+>> So I think the simple logic is:
+>> 1) if you want to truncate/change the mapping from a index to a struct *page,
+>> test writeback bit because the writebacker to the file blocks is the reader
+>> of this mapping.
+>> 2) if a writebacker want to start a read of this mapping with
+>> test_set_page_writeback()
+>> or set_page_writeback(), he'd be sure this page is locked to keep out the
+>> writers to this mapping of index-->struct *page.
+>>
+>> This is really behavior of a read/write lock, right ?
+>
+> Please, that's a dangerous idea. A page can be written to at any time
+> when writeback to disk is under way. Does PG_writeback (your reader
+> lock) prevents page data writers?  NO.
 
-Looks like a broken notification model.
+I meant PG_writeback stops writers to index---->struct page mapping.
 
-> [...] Yes, we can greatly expand the userland-visible interface to 
-> every piece of hardware in order to make this work, but that's a 
-> huge amount of effort to avoid a model where userspace sets some 
-> tunables appropriately.
+I think I should make my statements more concise and the "reader/writer"
+less vague.
 
-What huge amount of effort? All you are doing is to track the "is 
-the device really used" state in user-space - and, if the current 
-desktop experience is any measure, highly imperfectly so.
+Here we care about the write/read operation for index---->struct page mapping.
+Not for read/write operation for the page content.
 
-What i'm suggesting is to track it properly in the kernel. It's not 
-like the kernel doesnt need to know whether a piece of hardware is 
-under use or not ...
+Anyone who wants to change this mapping  is a writer, he should take
+page lock.
+Anyone who wants to reference this mapping is a reader, writers should
+wait for him. And when this reader wants to get ref, he should wait for
+anyone one who is changing this mapping(e.g. page truncater).
 
-	Ingo
+When a path sets PG_writeback on a page, it need this index-->struct page
+mapping be 100% valid right? (otherwise may leads to corruption.)
+So writeback routines are readers of this index-->struct page mapping.
+(oh, well if we can put the other role of PG_writeback aside)
+
+Ok,Ok, since PG_locked does mean much more than just protecting
+the per-page mapping which makes the lock abstraction even less clear.
+so indeed, forget about it.
+
+>
+> Thanks,
+> Fengguang
+>
+>> wait_on_page_writeback_range() looks different only because "sync"
+>> operates on "struct page", it's not sensitive to index-->struct *page mapping.
+>> It does care about if pages returned by pagevec_lookup_tag() are
+>> still maintains the mapping when wait_on_page_writeback(page).
+>> Here, PG_writeback is only a status flag for "struct page" not a lock bit for
+>> index->struct *page mapping.
+>>
+>> >
+>> >> So do you think the idea is sane to group the two bits together
+>> >> to form a real read/write lock, which does not care about the _number_
+>> >> of readers ?
+>> >
+>> > We don't care number of readers here. So please forget about it.
+>> Yeah, I meant number of readers is not important.
+>>
+>> I still hold that these two bits in some way act like a _sparse_
+>> read/write lock.
+>> But I am going to drop the idea of making them a pure lock, since PG_writeback
+>> does has other meaning -- the page is being writing back: for sync
+>> path, it's only
+>> a status flag.
+>> Making a pure read/write lock definitely will lose that or at least distort it.
+>>
+>>
+>> Hoping I've made my words understandable, correct me if wrong, and
+>> many thanks for your time and patience. :-)
+>>
+>>
+>> Nai Xia
+>>
+>> >
+>> > Thanks,
+>> > Fengguang
+>> >
+>> >> > The writeback bit is _widely_ used.  test_set_page_writeback() is
+>> >> > directly used by NFS/AFS etc. But its main user is in fact
+>> >> > set_page_writeback(), which is called in 26 places.
+>> >> >
+>> >> >> > think would be safest
+>> >> >>
+>> >> >> Okay. I'll just add it after the page lock.
+>> >> >>
+>> >> >> > (then you never have to bother with the writeback bit again)
+>> >> >>
+>> >> >> Until Fengguang does something fancy with it.
+>> >> >
+>> >> > Yes I'm going to do it without wait_on_page_writeback().
+>> >> >
+>> >> > The reason truncate_inode_pages_range() has to wait on writeback page
+>> >> > is to ensure data integrity. Otherwise if there comes two events:
+>> >> >        truncate page A at offset X
+>> >> >        populate page B at offset X
+>> >> > If A and B are all writeback pages, then B can hit disk first and then
+>> >> > be overwritten by A. Which corrupts the data at offset X from user's POV.
+>> >> >
+>> >> > But for hwpoison, there are no such worries. If A is poisoned, we do
+>> >> > our best to isolate it as well as intercepting its IO. If the interception
+>> >> > fails, it will trigger another machine check before hitting the disk.
+>> >> >
+>> >> > After all, poisoned A means the data at offset X is already corrupted.
+>> >> > It doesn't matter if there comes another B page.
+>> >> >
+>> >> > Thanks,
+>> >> > Fengguang
+>> >> > --
+>> >> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> >> > the body of a message to majordomo@vger.kernel.org
+>> >> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> >> > Please read the FAQ at  http://www.tux.org/lkml/
+>> >> >
+>> >
+>
