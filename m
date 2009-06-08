@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbZFHO63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbZFHPAy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756638AbZFHO63 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 10:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665AbZFHO6U
+	id S1756342AbZFHPAy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 11:00:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbZFHPAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 10:58:20 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:50128 "EHLO
+	Mon, 8 Jun 2009 11:00:46 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:40438 "EHLO
 	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756116AbZFHO6S (ORCPT
+	with ESMTP id S1753558AbZFHPAp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 10:58:18 -0400
-Date: Mon, 8 Jun 2009 15:58:16 +0100
+	Mon, 8 Jun 2009 11:00:45 -0400
+Date: Mon, 8 Jun 2009 16:00:39 +0100
 From: Matthew Garrett <mjg@redhat.com>
-To: "Michael S. Zick" <lkml@morethan.org>
-Cc: Harald Welte <HaraldWelte@viatech.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 1/2] CPUFREQ: Enable acpi-cpufreq driver for
-	VIA/Centaur CPUs
-Message-ID: <20090608145816.GA17579@srcf.ucam.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906060856.15016.lkml@morethan.org> <20090608102754.GP4106@prithivi.gnumonks.org> <200906080925.12460.lkml@morethan.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: alan-jenkins@tuffmail.co.uk, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Corentin Chary <corentin.chary@gmail.com>,
+       acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
+       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>
+Subject: Re: [PATCH] eeepc-laptop: enable camera by default
+Message-ID: <20090608150039.GB17579@srcf.ucam.org>
+References: <20090608030732.GA7018@srcf.ucam.org> <Pine.LNX.4.44L0.0906072309560.28801-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906080925.12460.lkml@morethan.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906072309560.28801-100000@netrider.rowland.org>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: mjg59@codon.org.uk
@@ -34,20 +33,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 09:25:09AM -0500, Michael S. Zick wrote:
-> On Mon June 8 2009, Harald Welte wrote:
-> > The VIA/Centaur C7, C7-M and Nano CPU's all support ACPI based cpu p-states
-> > using a MSR interface.  The Linux driver just never made use of it, since in
-> > addition to the check for the EST flag it also checked if the vendor is Intel.
-> >
+On Sun, Jun 07, 2009 at 11:10:52PM -0400, Alan Stern wrote:
+> On Mon, 8 Jun 2009, Matthew Garrett wrote:
 > 
-> It looks like we should modify (conditional on ...MVIAC7 at build, model='d' runtime)
-> the acpi-cpufreq controls to deal properly with the Model-D adaptive controller.
+> > On Sun, Jun 07, 2009 at 11:03:48PM -0400, Alan Stern wrote:
+> > 
+> > > There's no mechanism for this.  It many environments it couldn't work,
+> > > because the decision about whether to enable autosuspend is made when
+> > > the device is first created (i.e., when the creation uevent is
+> > > received), whereas driver binding doesn't occur until later.
+> > 
+> > There's a lot of power management situations where you don't end up with 
+> > the optimal power configuration until a driver's bound. It's certainly 
+> > possible to do this in userspace, but if we know that the hardware 
+> > supported by a given driver will always work then it seems reasonable to 
+> > have it whitelist autosuspend on that device.
+> 
+> Sure.  Such a thing could be added easily enough.  It just doesn't 
+> exist now, that's all.
 
-Can't make it build-time dependent - distribution kernels may not 
-explicitly support the C7. It's valid to have a vendor=centaur 
-conditional that turns off any adaptive control if appropriate ACPI 
-methods are present.
+Something roughly like this? We'd probably also want a function call so 
+drivers can do it based on the ID of the device they're handling, but in 
+some cases we can probably assume that all devices supported by the 
+driver will work.
+
+diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
+index d0a21a5..36f63a7 100644
+--- a/drivers/usb/core/driver.c
++++ b/drivers/usb/core/driver.c
+@@ -355,6 +355,8 @@ int usb_driver_claim_interface(struct usb_driver *driver,
+ 	iface->condition = USB_INTERFACE_BOUND;
+ 	mark_active(iface);
+ 	iface->pm_usage_cnt = !(driver->supports_autosuspend);
++	if (driver->supports_autosuspend && driver->enable_autosuspend)
++		udev->autosuspend_disabled=0;
+ 	usb_pm_unlock(udev);
+ 
+ 	/* if interface was already added, bind now; else let
+diff --git a/include/linux/usb.h b/include/linux/usb.h
+index 3aa2cd1..b4696f2 100644
+--- a/include/linux/usb.h
++++ b/include/linux/usb.h
+@@ -819,6 +819,8 @@ struct usbdrv_wrap {
+  *	added to this driver by preventing the sysfs file from being created.
+  * @supports_autosuspend: if set to 0, the USB core will not allow autosuspend
+  *	for interfaces bound to this driver.
++ * @enable_autosuspend: if set to 1, the USB core will automatically enable
++ *	autosuspend for interfaces bound to this driver.
+  * @soft_unbind: if set to 1, the USB core will not kill URBs and disable
+  *	endpoints before calling the driver's disconnect method.
+  *
+@@ -861,6 +863,7 @@ struct usb_driver {
+ 	struct usbdrv_wrap drvwrap;
+ 	unsigned int no_dynamic_id:1;
+ 	unsigned int supports_autosuspend:1;
++	unsigned int enable_autosuspend:1;
+ 	unsigned int soft_unbind:1;
+ };
+ #define	to_usb_driver(d) container_of(d, struct usb_driver, drvwrap.driver)
+
 
 -- 
 Matthew Garrett | mjg59@srcf.ucam.org
