@@ -1,96 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZFHPYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZFHPY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756178AbZFHPYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 11:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbZFHPYD
+	id S1756218AbZFHPY3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 11:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbZFHPYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 11:24:03 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:48517 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388AbZFHPYB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 11:24:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=WfaVbDX+OobdlPQWZ/ncpEHc958x/awGeivzf5Tj1i782fjNE6mYIwBxXT/JnZopW3
-         Q8xsP5fKw1vNCTRboN62nI1X4pOYCe0YPf8RfuqohF2ZKeSRwXvd6oP1gttOvoclnJhh
-         Mp7NP8Ayt4h8BP4jXm/pbALVs1RgSnxhbpHFU=
-MIME-Version: 1.0
-Reply-To: alan-jenkins@tuffmail.co.uk
-In-Reply-To: <20090404041813.GA30746@srcf.ucam.org>
-References: <504BBE2828%linux@youmustbejoking.demon.co.uk>
-	 <20090404041813.GA30746@srcf.ucam.org>
-Date: Mon, 8 Jun 2009 16:24:01 +0100
-Message-ID: <9b2b86520906080824i134ee546v33990176b0d3e618@mail.gmail.com>
-Subject: Re: [PATCH 2.6.29] eeepc-laptop: report brightness control events via 
-	the input layer
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Darren Salt <linux@youmustbejoking.demon.co.uk>,
-       Corentin Chary <corentincj@iksaif.net>
-Cc: linux-kernel@vger.kernel.org, acpi4asus-user@lists.sourceforge.net,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Jun 2009 11:24:15 -0400
+Received: from cmpxchg.org ([85.214.51.133]:59807 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756824AbZFHPYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 11:24:14 -0400
+Date: Mon, 8 Jun 2009 17:21:50 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch][v2] swap: virtual swap readahead
+Message-ID: <20090608152150.GA7563@cmpxchg.org>
+References: <20090602223738.GA15475@cmpxchg.org> <Pine.LNX.4.64.0906071747440.20105@sister.anvils>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0906071747440.20105@sister.anvils>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/4/09, Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> On Fri, Apr 03, 2009 at 06:57:50PM +0100, Darren Salt wrote:
->> This maps the brightness control events to one of two keys, either
->> KEY_BRIGHTNESSDOWN or KEY_BRIGHTNESSUP, as needed.
->>
->> Some mapping has to be done due to the fact that the BIOS reports them as
->> <base value> + <current brightness index>; the selection is done according
->> to
->> the sign of the change in brightness (if this is 0, no keypress is
->> reported).
->>
->> (Ref.
->> http://lists.alioth.debian.org/pipermail/debian-eeepc-devel/2009-April/002001.html)
->>
->> Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
->
-> The reason I didn't do this is that the Eee changes the input brightness
-> in hardware, which means reporting it via the input layer as well can
-> cause a single keypress to raise the brightness by two steps - one in
-> hardware and one triggered by userland's response to the key press. I'd
-> be a little bit wary of this causing problems.
->
-> On the other hand, the default behaviour of the acpi video driver is to
-> change the brightness itself and then also to send the even to
-> userspace, so I guess if it was going to break things it probably would
-> have done already...
+On Sun, Jun 07, 2009 at 06:55:15PM +0100, Hugh Dickins wrote:
+> On Wed, 3 Jun 2009, Johannes Weiner wrote:
+> >
+> > The current swap readahead implementation reads a physically
+> > contiguous group of swap slots around the faulting page to take
+> > advantage of the disk head's position and in the hope that the
+> > surrounding pages will be needed soon as well.
+> > 
+> > This works as long as the physical swap slot order approximates the
+> > LRU order decently, otherwise it wastes memory and IO bandwidth to
+> > read in pages that are unlikely to be needed soon.
+> > 
+> > However, the physical swap slot layout diverges from the LRU order
+> > with increasing swap activity, i.e. high memory pressure situations,
+> > and this is exactly the situation where swapin should not waste any
+> > memory or IO bandwidth as both are the most contended resources at
+> > this point.
+> > 
+> > Another approximation for LRU-relation is the VMA order as groups of
+> > VMA-related pages are usually used together.
+> > 
+> > This patch combines both the physical and the virtual hint to get a
+> > good approximation of pages that are sensible to read ahead.
+> > 
+> > When both diverge, we either read unrelated data, seek heavily for
+> > related data, or, what this patch does, just decrease the readahead
+> > efforts.
+> > 
+> > To achieve this, we have essentially two readahead windows of the same
+> > size: one spans the virtual, the other one the physical neighborhood
+> > of the faulting page.  We only read where both areas overlap.
+> > 
+> > Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> > Reviewed-by: Rik van Riel <riel@redhat.com>
+> > Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> > Cc: Andi Kleen <andi@firstfloor.org>
+> 
+> I think this a great idea, a very promising approach.  I like it
+> so much better than Andrew's and others' proposals to dedicate
+> areas of swap space to distinct virtual objects: which, as you
+> rightly pointed out, condemn us to unnecessary seeking when
+> writing swap (and is even more of an issue if we're writing
+> to SSD rather than HDD).
+> 
+> It would be nice to get results from a wider set of benchmarks
+> than just qsbench; but I don't think qsbench is biased in your
+> favour, and I don't think you need go to too much trouble on
+> that - let's just aim to get your work into mmotm, then we can
+> all play around with it for a while.  I suppose what I'd most
+> like is to try it with shmem, which you've understandably left
+> out for now.
 
-Actually, I think userspace has learnt to hack around it but it
-doesn't work perfectly.  I would like to request that this change be
-reverted, or otherwise improved.
+I agree, it would be nice to have this in mm soonish and have it
+exposed a bit more until .31 or .32.  And I'll continue to test other
+loads.
 
-Before this patch (2.6.29.4), gnome-power-manager doesn't interfere
-with the brightness keys, and they work smoothly.
+> You'll be hating me for the way I made shmem_truncate_range() etc.
+> nigh incomprehensible when enabling highmem index pages there.
+> Christoph Rohland's original was much nicer.  Again and again and
+> again I've wanted to throw all that out, and keep swap entries in
+> the standard radix tree which keeps the struct page pointers; but
+> again and again and again, I've been unable to justify losing the
+> highmem index ability - for a while it seemed as if x86_64 was
+> going to make highmem a thing of the past, and it's certainly helped
+> us to ignore 32GB 32-bit; but I think 4GB 32-bit is here a long while.
 
-After this patch (2.6.30-rc7), g-p-m produces a "nice" popup in the
-middle of my tiny netbook screen.  Unfortunately it can't be disabled,
-but that's not your fault :-).  The brightness controls generally work
-ok.  It doesn't jump two steps in response to one brightness keypress.
- But:
+Regarding highmem, I have only one 32 bit box with 1G memory and
+highmem= seems to be broken right now.  The documentation says it will
+fix-set the zone.  It does not on x86, but instead seems to set up
+Normal and then complain about the lack of remaining pages to stuff
+into HighMem.
 
-1) If I'm thrashing the SSD.  I get jerky after-effects, where g-p-m
-seems to take too long to "catch up" with the brightness change.
+With 128M HighMem, testing for highpte mapping overhead is a bit bogus
+so I can't do that until I figure something out (either fixing
+highmem= or no-opping GFP_HIGHMEM and use GFP_HIGHPTE for the pte
+pages).
 
-2) If I go all the way down from full (holding down the "brightness
-down" key), and then back up a few steps.  I get a noticable flash
-where the brightness looks to go up two steps, then down one.  It's
-probably most noticable here because the step change between the
-lowest and the second lowest brightness is much more visible than any
-of the other steps.
+Or redoing the patch as you suggested below, which is probably what I
+will opt for.
 
-Both seem realistic use cases on this hardware.  It's obviously a
-cheap SSD which is prone to latency during large writes.  And when I
-move between rooms, I often adjust the brightness this way, to find
-the minimum brightness which is comfortable.
+> Though I like the way you localized it all into swapin_readahead(),
+> I'd prefer to keep ptes out of swap_state.c, and think several issues
+> will fall away if you turn your patch around.  You'll avoid the pte code
+> in swap_state.c, you'll satisfy Andi's concerns about locking/kmapping
+> overhead, and you'll find shmem much much easier, if instead of peering
+> back at where you've come from in swapin_readahead(), you make the outer
+> levels (do_swap_page and shmem_getpage) pass a vector of swap entries to
+> swapin_readahead()?  That vector on stack, and copied from the one page
+> table or index page (don't bother to cross page table or index page
+> boundaries) while it was mapped.
 
-Thanks
-Alan
+That is a nice suggestion.
+
+> It's probably irrelevant to you, but I've attached an untested patch
+> of mine which stomps somewhat on this area: I was shocked to notice
+> shmem_getpage() in a list of deep stack offenders a few months back,
+> realized it was those unpleasant NUMA mempolicy pseudo-vmas, and made
+> a patch to get rid of them.  I've rebased it to 2.6.30-rc8 and checked
+> that the resulting kernel runs, but not really tested it; and I think
+> I didn't even try to get the mpol reference counting right (tends to
+> be an issue precisely in swapin_readahead, where one mpol ends up used
+> repeatedly) - mpol refcounting is an arcane art only Lee understands!
+> I've attached the patch because you may want to glance at it and
+> decide, either that it's something which is helpful to the direction
+> you're going in and you'd like to base upon it, or that it's a
+> distraction and you'd prefer me to keep it to myself until your
+> changes are in.
+
+I will try to make swapin_readahead() take an array of ptes, then your
+patch shouldn't get in my way as I don't need the vma anymore.
+
+> But your patch below is incomplete, isn't it?  The old swapin_readahead()
+> is now called swapin_readahead_phys(), and you want shmem_getpage() to be
+> using that for now: but no prototype for it and no change to mm/shmem.c.
+
+You probably missed the no-vma or no-vma->vm_mm branch in
+swapin_readahead().  shmem either sends in a NULL-vma or the dummy-vma
+that has no vm->vm_mm set.  Oops.  That is of course a bug, vma->vm_mm
+is uninitialized, not NULL.  But that will go away as well.
+
+Thanks,
+
+	Hannes
