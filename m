@@ -1,88 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbZFHRqC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbZFHRqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753237AbZFHRqC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:46:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbZFHRpw
+	id S1755252AbZFHRqY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbZFHRqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:45:52 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:45965 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750806AbZFHRpv convert rfc822-to-8bit (ORCPT
+	Mon, 8 Jun 2009 13:46:16 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:51730 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751482AbZFHRqP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:45:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=KmiaCplrWdNLIpaOWwxYALkPaBUThxOUiYM5iaEE9/74HOGnpdLRLdkztAkkZoNyKx
-         /9qWsOGaHAdP3MP7FlULMjWfw1BxvBlND3Yb3wj4TV6VhQx9Ptb+2T7G92RKXqlOKDQi
-         OoKozaOkUbL7WTtzYPGitAn6r340ZrtYlDXkA=
-MIME-Version: 1.0
-In-Reply-To: <1244480790.2716.7.camel@ht.satnam>
-References: <200906061959.55592.chris2553@googlemail.com>
-	 <1244413881.18742.31.camel@ht.satnam>
-	 <2f9e3044bafcae848f74a1492b0ea471.squirrel@neil.brown.name>
-	 <c6b1100b0906080108y191bb157n67ec681ade2a0d13@mail.gmail.com>
-	 <c6b1100b0906080358y4033c402ra236eff3f972d169@mail.gmail.com>
-	 <1244460875.12644.2.camel@ht.satnam>
-	 <c6b1100b0906080553o2aa77a40pe0077b1b10a7d88a@mail.gmail.com>
-	 <alpine.LFD.2.01.0906080916130.6847@localhost.localdomain>
-	 <1244479879.4079.284.camel@mulgrave.site>
-	 <1244480790.2716.7.camel@ht.satnam>
-Date: Mon, 8 Jun 2009 18:45:51 +0100
-Message-ID: <c6b1100b0906081045t47c77b94ubc89d450c3a75147@mail.gmail.com>
-Subject: Re: 2.6.30-rc8 Oops whilst booting
-From: Chris Clayton <chris2553@googlemail.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       scsi <linux-scsi@vger.kernel.org>, Tejun Heo <tj@kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 8 Jun 2009 13:46:15 -0400
+Date: Mon, 8 Jun 2009 19:48:32 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Subject: [PATCH] ia64: unexport fpswa.h
+Message-ID: <20090608174832.GA29447@uranus.ravnborg.org>
+References: <1244118232.5172.26.camel@ht.satnam> <1244118476.5172.29.camel@ht.satnam> <1244118599.5172.31.camel@ht.satnam> <20090604202212.GD13892@uranus.ravnborg.org> <57C9024A16AD2D4C97DC78E552063EA3A89196D0@orsmsx505.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3A89196D0@orsmsx505.amr.corp.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/8 Jaswinder Singh Rajput <jaswinder@kernel.org>:
+fpswa.h is not relevant for userspace,
+so do not export it.
 
-> But reverting your patch Or if we return like this also fix chris
-> problem :
->
-> diff --git a/kernel/async.c b/kernel/async.c
-> index 94dd36f..3b492cb 100644
-> --- a/kernel/async.c
-> +++ b/kernel/async.c
-> @@ -96,15 +96,13 @@ static async_cookie_t  __lowest_in_progress(struct list_head *running)
->        if (!list_empty(running)) {
->                entry = list_first_entry(running,
->                        struct async_entry, list);
-> -               ret = entry->cookie;
-> +               return entry->cookie;
->        }
->
->        if (!list_empty(&async_pending)) {
->                list_for_each_entry(entry, &async_pending, list)
-> -                       if (entry->running == running) {
-> -                               ret = entry->cookie;
-> -                               break;
-> -                       }
-> +                       if (entry->running == running)
-> +                               return entry->cookie;
->        }
->
->        return ret;
->
->
->
-
-I can confirm that a kernel built with Jaswinder's patch applied
-survived 200 boots without a panic.
-
-Chris
-
--- 
-No, Sir; there is nothing which has yet been contrived by man, by which
-so much happiness is produced as by a good tavern or inn - Doctor Samuel
-Johnson
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>
+---
+diff --git a/arch/ia64/include/asm/Kbuild b/arch/ia64/include/asm/Kbuild
+index ccbe8ae..c7d0a71 100644
+--- a/arch/ia64/include/asm/Kbuild
++++ b/arch/ia64/include/asm/Kbuild
+@@ -2,7 +2,6 @@ include include/asm-generic/Kbuild.asm
+ 
+ header-y += break.h
+ header-y += fpu.h
+-header-y += fpswa.h
+ header-y += ia64regs.h
+ header-y += intel_intrin.h
+ header-y += perfmon_default_smpl.h
