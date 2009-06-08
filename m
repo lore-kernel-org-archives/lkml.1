@@ -1,94 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbZFHVNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756182AbZFHVN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755329AbZFHVNM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 17:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbZFHVM6
+	id S1756182AbZFHVN7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 17:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbZFHVNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 17:12:58 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36394 "EHLO mx2.redhat.com"
+	Mon, 8 Jun 2009 17:13:48 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:38399 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751838AbZFHVM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 17:12:58 -0400
-Date: Mon, 8 Jun 2009 17:11:50 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-       jiayingz@google.com, mbligh@google.com, roland@redhat.com,
-       fche@redhat.com
-Subject: Re: [PATCH 2/2] convert to syscall tracepoints
-Message-ID: <20090608211150.GC3181@redhat.com>
-References: <cover.1244222378.git.jbaron@redhat.com> <af4031af81ce372eac2be125dabc2ea746b4308b.1244222378.git.jbaron@redhat.com> <20090607132936.GC12088@elte.hu> <20090608202406.GA3181@redhat.com> <20090608204056.GA26832@elte.hu>
+	id S1754644AbZFHVNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 17:13:46 -0400
+Date: Mon, 8 Jun 2009 14:13:48 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jesper Dangaard Brouer <hawk@diku.dk>
+Cc: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Jesper Dangaard Brouer <hawk@comx.dk>, netdev <netdev@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 5/5] sunrpc/auth_gss: Call rcu_barrier() on module
+	unload.
+Message-ID: <20090608211348.GI6961@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090608130959.10052.54590.stgit@localhost> <20090608131148.10052.39869.stgit@localhost> <20090608162656.GF6961@linux.vnet.ibm.com> <1244480449.5040.4.camel@heimdal.trondhjem.org> <Pine.LNX.4.64.0906082128240.1180@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090608204056.GA26832@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.64.0906082128240.1180@ask.diku.dk>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 10:40:56PM +0200, Ingo Molnar wrote:
-> * Jason Baron <jbaron@redhat.com> wrote:
-> 
-> > +#ifdef __NR_time
-> > +trace_event_syscall(1, time, time_t __user *, tloc);
-> > +#endif
-> > +
-> > +#ifdef __NR_stime
-> > +trace_event_syscall(1, stime, time_t __user *, tptr);
-> > +#endif
-> > +
-> > +#ifdef __NR_gettimeofday
-> > +trace_event_syscall(2, gettimeofday, struct timeval __user *, tv, struct timezone __user *, tz);
-> > +#endif
-> 
-> This could be reduced to a single line: just add a Kconfig entry 
-> (say TRACE_SYSCALL_TRACEPOINTS) wether an arch supports syscall 
-> tracepoints, enable it on a sane arch, make sure it has all the 
-> syscalls and list them ...
-> 
-> As more architectures turn on SYSCALL_TRACEPOINTS, they'll have to 
-> resolve any deviations in syscall entry points. Ideally we'd have 
-> one generic table that covers 95% of all syscalls, and the remaining 
-> 5% in some architecture specific #ifdef section.
-> 
+On Mon, Jun 08, 2009 at 09:48:54PM +0200, Jesper Dangaard Brouer wrote:
+>
+> (trimmed Cc)
+>
+> On Mon, 8 Jun 2009, Trond Myklebust wrote:
+>
+>> Hmm... If this is about ensuring that all the call_rcu() callbacks
+>> complete before we remove the module, then don't we also need similar
+>> barriers in
+>
+> Well, Trond that was a hard question, as I don't know this code... but if 
+> it uses call_rcu() callbacks its most likely.
+>
+> I have not done a complete sweep of the tree, I have only looked at the 
+> netdev parts, as this is where I usually snoop around.  So there is 
+> probably plenty of work for some kernel-janitors (Cc'ing the list ;-))
+>
+>> net/sunrpc/sunrpc_syms.c:cleanup_sunrpc()
+>
+> Looking at the code that end up in sunrpc.ko, I see that both 
+> net/sunrpc/auth_unix.c and net/sunrpc/auth_generic.c uses call_rcu() 
+> callbacks.
+>
+>> and in fs/nfs/inode.c:exit_nfs_fs()?
+>
+> Looking at the code which end up into nfs.ko (which includes 
+> fs/nfs/inode.c) I see that the fs/nfs/delegation.c uses call_rcu() 
+> callbacks.
+>
+> But its hard for me to figure out how this code interacts.  Don't know if 
+> we need to document a code path that can occur fast enough, before we add 
+> this safe guard?  It should be Paul's saying...
 
-true, but this implementation works for all arches now, why would want to
-slowly add this over time? I think its unnecessary work that could be
-error prone.
+Unless there is some other mechanism to ensure that all the RCU
+callbacks have been invoked before the module exit, there needs to be
+code in the module-exit function that does the following:
 
-> But, more generally, i'm not at all convinced that we need _any_ of 
-> this enumeration. Look how much the above lines duplicate 
-> DEFINE_SYSCALL macros. Why arent those macros re-used?
-> 
+o	Prevent any new RCU callbacks from being posted.  In other
+	words, make sure that no future call_rcu() invocations happen
+	from this module -unless- those call_rcu() invocations touch
+	only functions and data that outlive this module.
 
-The DEFINE_SYSCALL() are located all over the code in various .c files.
-Thus, if we define the tracpoints via the DEFINE_SYSCALL() macros we are
-going to have 'static inline functions' (which is how tracepoints are
-implemented) defined in all these .c files. Now, I need to call all these
-'static inline functions' from ptrace.c. How do I do that? By defining
-these as I've done in syscalls.h I can include that header file and
-create an efficient 'case' statement. I've verified in the assembly that
-the 'case' statments resolve to jumps. Thus, this implementation is
-pretty efficient. Further, by creating a header file other users of the
-tracepoints can include that header. If we use DEFINE_SYSCALL() that is
-not possible. I'd be more than happy to use the DEFINE_SYSCALL() macros,
-if you could explain how to resolve the above issues...We could write a
-pre-processor that creates a dynamic header file from the
-DEFINE_SYSCALL() points? I'm not sure that's simpler...
+o	Invoke rcu_barrier().
 
+o	Of course, if the module uses call_rcu_sched() instead of
+	call_rcu(), then it should invoke rcu_barrier_sched() instead
+	of rcu_barrier().  Similarly, if it uses call_rcu_bh() instead
+	of call_rcu(), then it should invoke rcu_barrier_bh() instead of
+	rcu_barrier().	If the module uses more than one of call_rcu(),
+	call_rcu_sched(), and call_rcu_bh(), then it must invoke more than
+	one of rcu_barrier(), rcu_barrier_sched(), and rcu_barrier_bh().
 
-> We dont need too smart pretty-printing i think - we only want to 
-> know the field size and the field name - nothing else. Duplicating 
-> all those definitions looks outright wrong to me. Do we really, 
-> really, really have to do it?
-> 
+What other mechanism could be used?  I cannot think of one that it safe.
+For example, a module that tried to count the number of RCU callbacks in
+flight would be vulnerable to races as follows:
 
-In terms of pretty-printing, it should be fairly easy to add size and
-the field name to what I have without bloating the syscalls.h file at
-all.
+1.	CPU 0: RCU callback decrements the counter.
 
-thanks,
+2.	CPU 1: module-exit function notices that the counter is zero,
+	so removes the module.
 
--Jason
+3.	CPU 0: attempts to execute the code returning from the RCU
+	callback, and dies horribly due to that code no longer being
+	in memory.
+
+If there was an easy solution (or even a hard solution) to this problem,
+then I do not believe that Nikita Danilov would have asked Dipankar Sarma
+for rcu_barrier().  Therefore, I do not expect anyone to be able to come
+up with an alternative to rcu_barrier() and friends.  Always happy to
+learn something by being proven wrong, of course!!!
+
+So unless someone can show me some other safe mechanism, every unloadable
+module that uses call_rcu(), call_rcu_sched(), or call_rcu_bh() must use
+rcu_barrier(), rcu_barrier_sched(), and/or rcu_barrier_bh() in its
+module-exit function.
+
+							Thanx, Paul
