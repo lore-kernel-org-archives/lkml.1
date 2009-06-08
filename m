@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbZFHTYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755619AbZFHTY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755795AbZFHTYp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 15:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbZFHTXS
+	id S1755619AbZFHTY4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 15:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbZFHTXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 15:23:18 -0400
-Received: from thunk.org ([69.25.196.29]:39528 "EHLO thunker.thunk.org"
+	Mon, 8 Jun 2009 15:23:19 -0400
+Received: from thunk.org ([69.25.196.29]:39531 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753044AbZFHTXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753288AbZFHTXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Jun 2009 15:23:13 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Linux Kernel Developers List <linux-kernel@vger.kernel.org>
 Cc: "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 08/49] ext4: Simplify ext4_commit_super()'s function signature
-Date: Mon,  8 Jun 2009 15:22:26 -0400
-Message-Id: <1244488987-32564-9-git-send-email-tytso@mit.edu>
+Subject: [PATCH 04/49] ext4: Fallback to vmalloc if kmalloc can't allocate s_flex_groups array
+Date: Mon,  8 Jun 2009 15:22:22 -0400
+Message-Id: <1244488987-32564-5-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.6.3.2.1.gb9f7d.dirty
-In-Reply-To: <1244488987-32564-8-git-send-email-tytso@mit.edu>
+In-Reply-To: <1244488987-32564-4-git-send-email-tytso@mit.edu>
 References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-2-git-send-email-tytso@mit.edu>
  <1244488987-32564-3-git-send-email-tytso@mit.edu>
  <1244488987-32564-4-git-send-email-tytso@mit.edu>
- <1244488987-32564-5-git-send-email-tytso@mit.edu>
- <1244488987-32564-6-git-send-email-tytso@mit.edu>
- <1244488987-32564-7-git-send-email-tytso@mit.edu>
- <1244488987-32564-8-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -32,156 +28,80 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ext4_commit_super() function took both a struct super_block * and
-a struct ext4_super_block *, but the struct ext4_super_block can be
-derived from the struct super_block.
+For very large filesystems, the s_flex_groups array can get quite big.
+For example, a filesystem that can be resized up to 16TB will have
+8192 flex groups (assuming the default flex_bg size of 16), so the
+array is 96k, which is *very* marginal for kmalloc().  On the other
+hand, a 160GB filesystem without the resize_inode feature will only
+require 960 bytes.  So we try to allocate the array first using
+kmalloc(), and if that fails, we'll try to use vmalloc() instead.
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 ---
- fs/ext4/super.c |   33 ++++++++++++++++-----------------
- 1 files changed, 16 insertions(+), 17 deletions(-)
+ fs/ext4/super.c |   22 +++++++++++++++++++---
+ 1 files changed, 19 insertions(+), 3 deletions(-)
 
 diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 3e509bc..ad4c9be 100644
+index 2958f4e..3f4475d 100644
 --- a/fs/ext4/super.c
 +++ b/fs/ext4/super.c
-@@ -54,8 +54,7 @@ static struct kset *ext4_kset;
+@@ -20,6 +20,7 @@
+ #include <linux/string.h>
+ #include <linux/fs.h>
+ #include <linux/time.h>
++#include <linux/vmalloc.h>
+ #include <linux/jbd2.h>
+ #include <linux/slab.h>
+ #include <linux/init.h>
+@@ -586,7 +587,10 @@ static void ext4_put_super(struct super_block *sb)
+ 	for (i = 0; i < sbi->s_gdb_count; i++)
+ 		brelse(sbi->s_group_desc[i]);
+ 	kfree(sbi->s_group_desc);
+-	kfree(sbi->s_flex_groups);
++	if (is_vmalloc_addr(sbi->s_flex_groups))
++		vfree(sbi->s_flex_groups);
++	else
++		kfree(sbi->s_flex_groups);
+ 	percpu_counter_destroy(&sbi->s_freeblocks_counter);
+ 	percpu_counter_destroy(&sbi->s_freeinodes_counter);
+ 	percpu_counter_destroy(&sbi->s_dirs_counter);
+@@ -1620,6 +1624,7 @@ static int ext4_fill_flex_info(struct super_block *sb)
+ 	ext4_group_t flex_group_count;
+ 	ext4_group_t flex_group;
+ 	int groups_per_flex = 0;
++	size_t size;
+ 	int i;
  
- static int ext4_load_journal(struct super_block *, struct ext4_super_block *,
- 			     unsigned long journal_devnum);
--static int ext4_commit_super(struct super_block *sb,
--			      struct ext4_super_block *es, int sync);
-+static int ext4_commit_super(struct super_block *sb, int sync);
- static void ext4_mark_recovery_complete(struct super_block *sb,
- 					struct ext4_super_block *es);
- static void ext4_clear_journal_err(struct super_block *sb,
-@@ -306,7 +305,7 @@ static void ext4_handle_error(struct super_block *sb)
- 		printk(KERN_CRIT "Remounting filesystem read-only\n");
- 		sb->s_flags |= MS_RDONLY;
+ 	if (!sbi->s_es->s_log_groups_per_flex) {
+@@ -1634,8 +1639,13 @@ static int ext4_fill_flex_info(struct super_block *sb)
+ 	flex_group_count = ((sbi->s_groups_count + groups_per_flex - 1) +
+ 			((le16_to_cpu(sbi->s_es->s_reserved_gdt_blocks) + 1) <<
+ 			      EXT4_DESC_PER_BLOCK_BITS(sb))) / groups_per_flex;
+-	sbi->s_flex_groups = kzalloc(flex_group_count *
+-				     sizeof(struct flex_groups), GFP_KERNEL);
++	size = flex_group_count * sizeof(struct flex_groups);
++	sbi->s_flex_groups = kzalloc(size, GFP_KERNEL);
++	if (sbi->s_flex_groups == NULL) {
++		sbi->s_flex_groups = vmalloc(size);
++		if (sbi->s_flex_groups)
++			memset(sbi->s_flex_groups, 0, size);
++	}
+ 	if (sbi->s_flex_groups == NULL) {
+ 		printk(KERN_ERR "EXT4-fs: not enough memory for "
+ 				"%u flex groups\n", flex_group_count);
+@@ -2842,6 +2852,12 @@ failed_mount4:
+ 		sbi->s_journal = NULL;
  	}
--	ext4_commit_super(sb, es, 1);
-+	ext4_commit_super(sb, 1);
- 	if (test_opt(sb, ERRORS_PANIC))
- 		panic("EXT4-fs (device %s): panic forced after error\n",
- 			sb->s_id);
-@@ -448,7 +447,7 @@ __acquires(bitlock)
- 	if (test_opt(sb, ERRORS_CONT)) {
- 		EXT4_SB(sb)->s_mount_state |= EXT4_ERROR_FS;
- 		es->s_state |= cpu_to_le16(EXT4_ERROR_FS);
--		ext4_commit_super(sb, es, 0);
-+		ext4_commit_super(sb, 0);
- 		return;
- 	}
- 	ext4_unlock_group(sb, grp);
-@@ -577,7 +576,7 @@ static void ext4_put_super(struct super_block *sb)
- 	if (!(sb->s_flags & MS_RDONLY)) {
- 		EXT4_CLEAR_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
- 		es->s_state = cpu_to_le16(sbi->s_mount_state);
--		ext4_commit_super(sb, es, 1);
-+		ext4_commit_super(sb, 1);
- 	}
- 	if (sbi->s_proc) {
- 		remove_proc_entry(sb->s_id, ext4_proc_root);
-@@ -1596,7 +1595,7 @@ static int ext4_setup_super(struct super_block *sb, struct ext4_super_block *es,
- 	if (sbi->s_journal)
- 		EXT4_SET_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
- 
--	ext4_commit_super(sb, es, 1);
-+	ext4_commit_super(sb, 1);
- 	if (test_opt(sb, DEBUG))
- 		printk(KERN_INFO "[EXT4 FS bs=%lu, gc=%u, "
- 				"bpg=%lu, ipg=%lu, mo=%04lx]\n",
-@@ -2655,7 +2654,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
- 			if (test_opt(sb, ERRORS_PANIC)) {
- 				EXT4_SB(sb)->s_mount_state |= EXT4_ERROR_FS;
- 				es->s_state |= cpu_to_le16(EXT4_ERROR_FS);
--				ext4_commit_super(sb, es, 1);
-+				ext4_commit_super(sb, 1);
- 				goto failed_mount4;
- 			}
- 		}
-@@ -3132,15 +3131,15 @@ static int ext4_load_journal(struct super_block *sb,
- 		sb->s_dirt = 1;
- 
- 		/* Make sure we flush the recovery flag to disk. */
--		ext4_commit_super(sb, es, 1);
-+		ext4_commit_super(sb, 1);
- 	}
- 
- 	return 0;
- }
- 
--static int ext4_commit_super(struct super_block *sb,
--			      struct ext4_super_block *es, int sync)
-+static int ext4_commit_super(struct super_block *sb, int sync)
- {
-+	struct ext4_super_block *es = EXT4_SB(sb)->s_es;
- 	struct buffer_head *sbh = EXT4_SB(sb)->s_sbh;
- 	int error = 0;
- 
-@@ -3212,7 +3211,7 @@ static void ext4_mark_recovery_complete(struct super_block *sb,
- 	    sb->s_flags & MS_RDONLY) {
- 		EXT4_CLEAR_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
- 		sb->s_dirt = 0;
--		ext4_commit_super(sb, es, 1);
-+		ext4_commit_super(sb, 1);
- 	}
- 	unlock_super(sb);
- 
-@@ -3253,7 +3252,7 @@ static void ext4_clear_journal_err(struct super_block *sb,
- 
- 		EXT4_SB(sb)->s_mount_state |= EXT4_ERROR_FS;
- 		es->s_state |= cpu_to_le16(EXT4_ERROR_FS);
--		ext4_commit_super(sb, es, 1);
-+		ext4_commit_super(sb, 1);
- 
- 		jbd2_journal_clear_err(journal);
- 	}
-@@ -3293,7 +3292,7 @@ static void ext4_write_super(struct super_block *sb)
- 			BUG();
- 		sb->s_dirt = 0;
- 	} else {
--		ext4_commit_super(sb, EXT4_SB(sb)->s_es, 1);
-+		ext4_commit_super(sb, 1);
- 	}
- }
- 
-@@ -3312,7 +3311,7 @@ static int ext4_sync_fs(struct super_block *sb, int wait)
- 						     target);
- 		}
- 	} else {
--		ext4_commit_super(sb, EXT4_SB(sb)->s_es, wait);
-+		ext4_commit_super(sb, wait);
- 	}
- 	return ret;
- }
-@@ -3345,7 +3344,7 @@ static int ext4_freeze(struct super_block *sb)
- 
- 		/* Journal blocked and flushed, clear needs_recovery flag. */
- 		EXT4_CLEAR_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
--		error = ext4_commit_super(sb, EXT4_SB(sb)->s_es, 1);
-+		error = ext4_commit_super(sb, 1);
- 		if (error)
- 			goto out;
- 	}
-@@ -3365,7 +3364,7 @@ static int ext4_unfreeze(struct super_block *sb)
- 		lock_super(sb);
- 		/* Reser the needs_recovery flag before the fs is unlocked. */
- 		EXT4_SET_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
--		ext4_commit_super(sb, EXT4_SB(sb)->s_es, 1);
-+		ext4_commit_super(sb, 1);
- 		unlock_super(sb);
- 		jbd2_journal_unlock_updates(EXT4_SB(sb)->s_journal);
- 	}
-@@ -3520,7 +3519,7 @@ static int ext4_remount(struct super_block *sb, int *flags, char *data)
- 		}
- 	}
- 	if (sbi->s_journal == NULL)
--		ext4_commit_super(sb, es, 1);
-+		ext4_commit_super(sb, 1);
- 
- #ifdef CONFIG_QUOTA
- 	/* Release old quota file names */
+ failed_mount3:
++	if (sbi->s_flex_groups) {
++		if (is_vmalloc_addr(sbi->s_flex_groups))
++			vfree(sbi->s_flex_groups);
++		else
++			kfree(sbi->s_flex_groups);
++	}
+ 	percpu_counter_destroy(&sbi->s_freeblocks_counter);
+ 	percpu_counter_destroy(&sbi->s_freeinodes_counter);
+ 	percpu_counter_destroy(&sbi->s_dirs_counter);
 -- 
 1.6.3.2.1.gb9f7d.dirty
 
