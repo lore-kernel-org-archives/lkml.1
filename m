@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbZFHJEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbZFHJJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbZFHJEI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 05:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbZFHJD4
+	id S1753856AbZFHJJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 05:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbZFHJJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 05:03:56 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:54322 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753569AbZFHJD4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 05:03:56 -0400
-Date: Mon, 8 Jun 2009 12:01:20 +0300
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Luke-Jr <luke@dashjr.org>
-Cc: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Solution: N810 keyboard regression
-Message-ID: <20090608090120.GH23310@nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <200906061651.43882.luke@dashjr.org> <20090606224204.GA16764@nokia.com> <200906061815.48026.luke@dashjr.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906061815.48026.luke@dashjr.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-OriginalArrivalTime: 08 Jun 2009 09:03:41.0169 (UTC) FILETIME=[04A71E10:01C9E818]
-X-Nokia-AV: Clean
+	Mon, 8 Jun 2009 05:09:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41232 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751782AbZFHJJS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 05:09:18 -0400
+Subject: Re: [GIT-PULL -tip] x86: xpu_debug patches
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090608083947.GC6372@elte.hu>
+References: <1244447882.6943.2.camel@ht.satnam>
+	 <20090608083947.GC6372@elte.hu>
+Content-Type: text/plain
+Date: Mon, 08 Jun 2009 14:40:25 +0530
+Message-Id: <1244452225.6943.17.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 2009-06-08 at 10:39 +0200, Ingo Molnar wrote:
 
-On Sun, Jun 07, 2009 at 01:15:35AM +0200, ext Luke-Jr wrote:
-> > did you try changing that keysize calculation ?
+> Those look like good fixes - but before we start extending on all 
+> this - a more general question has to be raised: do people find this 
+> useful?
 > 
-> No, I wanted to get the opinion of someone who knows how that code actually is 
-> supposed to work before I try randomly changing things I don't understand.
+> I had a look at the current /debug/x86/cpu*/ layout, and a fair 
+> portion of it looks completely meaningless at the moment: there's a 
+> lot of hexa fields with absolutely zero symbolic information about 
+> what the fields actually mean.
 > 
-> > Do you see irqs comming? Any debugging messages ?
+
+I am planning to send hex to MSR_hex in next series along with :-
+1. IO_hex : (IO registers)
+2. PCI_hex : (PCI defined configuration space)
+3. APIC_hex : (APIC memory based registers)
+4. CPUID_hex : (CPUID Instruction registers)
+5. MSR_hex : MSRs
+
+Which will give almost full information of CPU state and will be more
+useful to users and developers.
+
+> There's a few good exceptions like /debug/x86/cpu/cpu0/apic/apic or 
+> /debug/x86/cpu/cpu0/cr/cr, although even those should probably be 
+> renamed to:
 > 
-> There were no debugging messages when the broken keys were pressed, nor did a 
-> dbg I added to the driver get triggered for them.
+>   /debug/x86/cpu/cpu0/apic/state
+>   /debug/x86/cpu/cpu0/cr/state
+> 
+> as 'apic/apic' and 'cr/cr' is meaningless.
+> 
 
-looks like we're gonna need one of the original writes to take a look at
-this. I don't know the chip that well and don't have enough time to look
-for the docs...
+OK, I will fix it.
 
-but I still suggest you try changing that line and see what happens
-though
+> Or better yet, why isnt there a directory structure to known values:
+> 
+>   /debug/x86/cpu/cpu0/apic/LVTERR/value
+> 
+> ?
 
--- 
-balbi
+Yes. I will also support it as I said above.
+
+I am working on it, can you please pull this series, because these
+patches was pending from more than one month. Once this patches will be
+applied. I can work on next phase.
+
+Thanks,
+--
+JSR
+
