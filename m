@@ -1,80 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbZFHTvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbZFHT5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754364AbZFHTvn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 15:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbZFHTvg
+	id S1755069AbZFHT5Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 15:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZFHT5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 15:51:36 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49440 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbZFHTvg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 15:51:36 -0400
-Subject: Re: [PATCH] perf_counter: extensible perf_counter_attr
-From: Peter Zijlstra <peterz@infradead.org>
-To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A2D6041.4050309@linux.vnet.ibm.com>
-References: <1244481941.13761.9119.camel@twins>
-	 <4A2D6041.4050309@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Mon, 08 Jun 2009 21:51:20 +0200
-Message-Id: <1244490680.6691.1.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 8 Jun 2009 15:57:00 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:57165 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751377AbZFHT47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 15:56:59 -0400
+Message-ID: <4A2D6D0C.6060206@msgid.tls.msk.ru>
+Date: Mon, 08 Jun 2009 23:57:00 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: Linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [Security, resend] Instant crash with rtl8169 and large packets
+References: <4A2D1147.8020101@msgid.tls.msk.ru> <4A2D1FE4.5030100@gmail.com> <4A2D25F6.9080300@msgid.tls.msk.ru> <4A2D2906.6090002@gmail.com> <4A2D301D.9040301@msgid.tls.msk.ru> <4A2D3568.6010901@gmail.com> <4A2D3BC6.3040904@msgid.tls.msk.ru> <4A2D4AA7.6020204@gmail.com>
+In-Reply-To: <4A2D4AA7.6020204@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-08 at 12:02 -0700, Corey Ashford wrote:
-> Hi Peter,
+Eric Dumazet wrote:
+[]
+> OK I suspect driver is buggy since 2.6.10 days :)
 > 
-> Peter Zijlstra wrote:
-> > Allow extending the perf_counter_attr structure by linking extended
-> > structures to it.
-> > 
-> > Also, should we grow the directly reserved space in the structure a
-> > little more?
-> > 
-> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > ---
-> >  include/linux/perf_counter.h |    7 +++++++
-> >  kernel/perf_counter.c        |    1 +
-> >  2 files changed, 8 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-> > index 3586df8..781d8ce 100644
-> > --- a/include/linux/perf_counter.h
-> > +++ b/include/linux/perf_counter.h
-> > @@ -175,6 +175,13 @@ struct perf_counter_attr {
-> >  	__u32			__reserved_3;
-> > 
-> >  	__u64			__reserved_4;
-> > +
-> > +	struct perf_counter_attr_ext *ext_attrs;
-> > +};
-> > +
-> > +struct perf_counter_attr_ext {
-> > +	struct perf_counter_attr_ext 	*next;
-> > +	__u64				perf_attr_ext_type;
-> >  };
+> Could you try this patch ?
+
+Tried it, and it appears to work.  Tried various MTU combinations
+and packet sizes.  Checked iperf too, with and without the patch
+and with different MTU too, to be sure the patch does not introduce
+any slowdowns - everything looks sane.  In case the incoming packet
+is larger than the RX buffer size, `errors' and `frames' RX stats
+gets incremented.
+
+The only somewhat odd thing is that rx path accepts packets larger
+than MTU by 3 bytes.  For example, if I set mtu to 2000, the
+largest packet I can send is 2003 bytes; with mtu=2002, largest
+actual packet size is 2005 bytes.  This is complete frame - in
+terms of ping size (ping -s) it's 1975 and 1977 bytes.  That to
+say, maybe we still have some corner case somewhere, for packets
+larger than mtu by 1, 2 or 3 bytes.
+
+Also I didn't try MTU < 1500.
+
+Other than that,
+
+Tested-By: Michael Tokarev <mjt@tls.msk.ru>
+
+And by the way, your email client uses quoted-printable encoding.
+I had to use trivial perl one-liner to convert your patches to
+plaintext.  JFYI.
+
+Thanks!
+
+/mjt
+
+> diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+> index 8247a94..c5ab5a8 100644
+> --- a/drivers/net/r8169.c
+> +++ b/drivers/net/r8169.c
+> @@ -2357,10 +2357,10 @@ static u16 rtl_rw_cpluscmd(void __iomem *ioaddr)
+>  	return cmd;
+>  }
+>  
+> -static void rtl_set_rx_max_size(void __iomem *ioaddr)
+> +static void rtl_set_rx_max_size(void __iomem *ioaddr, unsigned int rx_buf_sz)
+>  {
+>  	/* Low hurts. Let's disable the filtering. */
+> -	RTL_W16(RxMaxSize, 16383);
+> +	RTL_W16(RxMaxSize, rx_buf_sz);
+>  }
+>  
+>  static void rtl8169_set_magic_reg(void __iomem *ioaddr, unsigned mac_version)
+> @@ -2407,7 +2407,7 @@ static void rtl_hw_start_8169(struct net_device *dev)
+>  
+>  	RTL_W8(EarlyTxThres, EarlyTxThld);
+>  
+> -	rtl_set_rx_max_size(ioaddr);
+> +	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
+>  
+>  	if ((tp->mac_version == RTL_GIGA_MAC_VER_01) ||
+>  	    (tp->mac_version == RTL_GIGA_MAC_VER_02) ||
+> @@ -2668,7 +2668,7 @@ static void rtl_hw_start_8168(struct net_device *dev)
+>  
+>  	RTL_W8(EarlyTxThres, EarlyTxThld);
+>  
+> -	rtl_set_rx_max_size(ioaddr);
+> +	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
+>  
+>  	tp->cp_cmd |= RTL_R16(CPlusCmd) | PktCntrDisable | INTT_1;
+>  
+> @@ -2846,7 +2846,7 @@ static void rtl_hw_start_8101(struct net_device *dev)
+>  
+>  	RTL_W8(EarlyTxThres, EarlyTxThld);
+>  
+> -	rtl_set_rx_max_size(ioaddr);
+> +	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
+>  
+>  	tp->cp_cmd |= rtl_rw_cpluscmd(ioaddr) | PCIMulRW;
+>  
 > 
-> Let's say I want to extend the attributes by four 64-bit quantities... from the 
-> above definition, I'd need four additional records chained together, right?  How 
-> about something like this instead:
-
-Ah, the idea was to do something like:
-
-struct perf_counter_attr_feature {
-	struct perf_counter_attr_ext	head;
-	... more stuff ...
-};
-
-and set head.perf_attr_ext_type = PERF_ATTR_EXT_FEATURE
-
-
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
