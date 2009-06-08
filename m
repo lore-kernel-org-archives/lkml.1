@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758130AbZFHTeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbZFHTd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758130AbZFHTeU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 15:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755444AbZFHTYA
+	id S1758136AbZFHTd6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 15:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbZFHTX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 15:24:00 -0400
-Received: from thunk.org ([69.25.196.29]:39625 "EHLO thunker.thunk.org"
+	Mon, 8 Jun 2009 15:23:59 -0400
+Received: from thunk.org ([69.25.196.29]:39622 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755230AbZFHTXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755226AbZFHTXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Jun 2009 15:23:25 -0400
 From: "Theodore Ts'o" <tytso@mit.edu>
 To: Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>
-Subject: [PATCH 16/49] ext4: Don't avoid using BLOCK_UNINIT block groups in mballoc
-Date: Mon,  8 Jun 2009 15:22:34 -0400
-Message-Id: <1244488987-32564-17-git-send-email-tytso@mit.edu>
+Cc: "Theodore Ts'o" <tytso@mit.edu>
+Subject: [PATCH 14/49] ext4: Replace lock/unlock_super() with an explicit lock for the orphan list
+Date: Mon,  8 Jun 2009 15:22:32 -0400
+Message-Id: <1244488987-32564-15-git-send-email-tytso@mit.edu>
 X-Mailer: git-send-email 1.6.3.2.1.gb9f7d.dirty
-In-Reply-To: <1244488987-32564-16-git-send-email-tytso@mit.edu>
+In-Reply-To: <1244488987-32564-14-git-send-email-tytso@mit.edu>
 References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-2-git-send-email-tytso@mit.edu>
  <1244488987-32564-3-git-send-email-tytso@mit.edu>
@@ -31,8 +31,6 @@ References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
  <1244488987-32564-12-git-send-email-tytso@mit.edu>
  <1244488987-32564-13-git-send-email-tytso@mit.edu>
  <1244488987-32564-14-git-send-email-tytso@mit.edu>
- <1244488987-32564-15-git-send-email-tytso@mit.edu>
- <1244488987-32564-16-git-send-email-tytso@mit.edu>
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
 X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
@@ -40,84 +38,101 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By avoiding the use of not-yet-used block groups (i.e., block groups
-with the BLOCK_UNINIT flag), mballoc had a tendency to create large
-files with large non-contiguous gaps.  In addition avoiding the use of
-new block groups had a tendency to push regular file data into the
-first block group in a flex_bg group, which slows down the speed of
-e2fsck pass 2, since it has a tendency to seek much more.  For
-example:
-
-               Before Patch                       After Patch
-              Time in seconds                   Time in seconds
-            Real /  User/  Sys   MB/s      Real /  User/  Sys    MB/s
-Pass 1      8.52 / 2.21 / 0.46  20.43      8.84 / 4.97 / 1.11   19.68
-Pass 2     21.16 / 1.02 / 1.86  11.30      6.54 / 1.77 / 1.78   36.39
-Pass 3      0.01 / 0.00 / 0.00 139.00      0.01 / 0.01 / 0.00  128.90
-Pass 4      0.16 / 0.15 / 0.00   0.00      0.17 / 0.17 / 0.00    0.00
-Pass 5      2.52 / 1.99 / 0.09   0.79      2.31 / 1.78 / 0.06    0.86
-Total      32.40 / 5.11 / 2.49  12.81     17.99 / 8.75 / 2.98   23.01
-
-This was on a sample 80 gig root filesystem which was approximately
-50% full.  Note the improved e2fsck pass 2 performance, by over a
-factor of 3, due to a decreased number of seeks.  (The total amount of
-I/O in pass 2 was unchanged; the layout of the directory blocks was
-simply much better from e2fsck's's perspective.)
-
-Other changes as a result of this patch on this sample filesystem:
-
-                             Before Patch    After Patch
-# of non-contig files           762             779
-# of non-contig directories     571             570
-# of BLOCK_UNINIT bg's          307             293
-# of INODE_UNINIT bg's          503             503
-
-Out of 640 block groups, of which 333 were in use, this patch caused
-an extra 14 block groups to be utilized.  The number of non-contiguous
-files did go up slightly, but when measured against the 99.9% of the
-files (603,154) which were contiguously allocated, this is pretty
-insignificant.
+Use a separate lock to protect the orphan list, so we can stop
+overloading the use of lock_super().
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Signed-off-by: Andreas Dilger <adilger@sun.com>
 ---
- fs/ext4/mballoc.c |    9 +--------
- 1 files changed, 1 insertions(+), 8 deletions(-)
+ fs/ext4/ext4_sb.h |    1 +
+ fs/ext4/namei.c   |   20 +++++++++++---------
+ fs/ext4/super.c   |    1 +
+ 3 files changed, 13 insertions(+), 9 deletions(-)
 
-diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-index c3af9e6..dbd47ea 100644
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -1728,7 +1728,6 @@ static int ext4_mb_good_group(struct ext4_allocation_context *ac,
- 	unsigned free, fragments;
- 	unsigned i, bits;
- 	int flex_size = ext4_flex_bg_size(EXT4_SB(ac->ac_sb));
--	struct ext4_group_desc *desc;
- 	struct ext4_group_info *grp = ext4_get_group_info(ac->ac_sb, group);
+diff --git a/fs/ext4/ext4_sb.h b/fs/ext4/ext4_sb.h
+index 57b71fe..4bda2f7 100644
+--- a/fs/ext4/ext4_sb.h
++++ b/fs/ext4/ext4_sb.h
+@@ -71,6 +71,7 @@ struct ext4_sb_info {
+ 	struct inode *s_journal_inode;
+ 	struct journal_s *s_journal;
+ 	struct list_head s_orphan;
++	struct mutex s_orphan_lock;
+ 	unsigned long s_commit_interval;
+ 	u32 s_max_batch_time;
+ 	u32 s_min_batch_time;
+diff --git a/fs/ext4/namei.c b/fs/ext4/namei.c
+index 22098e1..8018e49 100644
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -1997,7 +1997,7 @@ int ext4_orphan_add(handle_t *handle, struct inode *inode)
+ 	if (!ext4_handle_valid(handle))
+ 		return 0;
  
- 	BUG_ON(cr < 0 || cr >= 4);
-@@ -1744,10 +1743,6 @@ static int ext4_mb_good_group(struct ext4_allocation_context *ac,
- 	switch (cr) {
- 	case 0:
- 		BUG_ON(ac->ac_2order == 0);
--		/* If this group is uninitialized, skip it initially */
--		desc = ext4_get_group_desc(ac->ac_sb, group, NULL);
--		if (desc->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT))
--			return 0;
+-	lock_super(sb);
++	mutex_lock(&EXT4_SB(sb)->s_orphan_lock);
+ 	if (!list_empty(&EXT4_I(inode)->i_orphan))
+ 		goto out_unlock;
  
- 		/* Avoid using the first bg of a flexgroup for data files */
- 		if ((ac->ac_flags & EXT4_MB_HINT_DATA) &&
-@@ -2067,9 +2062,7 @@ repeat:
+@@ -2006,9 +2006,13 @@ int ext4_orphan_add(handle_t *handle, struct inode *inode)
  
- 			ac->ac_groups_scanned++;
- 			desc = ext4_get_group_desc(sb, group, NULL);
--			if (cr == 0 || (desc->bg_flags &
--					cpu_to_le16(EXT4_BG_BLOCK_UNINIT) &&
--					ac->ac_2order != 0))
-+			if (cr == 0)
- 				ext4_mb_simple_scan_group(ac, &e4b);
- 			else if (cr == 1 &&
- 					ac->ac_g_ex.fe_len == sbi->s_stripe)
+ 	/* @@@ FIXME: Observation from aviro:
+ 	 * I think I can trigger J_ASSERT in ext4_orphan_add().  We block
+-	 * here (on lock_super()), so race with ext4_link() which might bump
++	 * here (on s_orphan_lock), so race with ext4_link() which might bump
+ 	 * ->i_nlink. For, say it, character device. Not a regular file,
+ 	 * not a directory, not a symlink and ->i_nlink > 0.
++	 *
++	 * tytso, 4/25/2009: I'm not sure how that could happen;
++	 * shouldn't the fs core protect us from these sort of
++	 * unlink()/link() races?
+ 	 */
+ 	J_ASSERT((S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode) ||
+ 		  S_ISLNK(inode->i_mode)) || inode->i_nlink == 0);
+@@ -2045,7 +2049,7 @@ int ext4_orphan_add(handle_t *handle, struct inode *inode)
+ 	jbd_debug(4, "orphan inode %lu will point to %d\n",
+ 			inode->i_ino, NEXT_ORPHAN(inode));
+ out_unlock:
+-	unlock_super(sb);
++	mutex_unlock(&EXT4_SB(sb)->s_orphan_lock);
+ 	ext4_std_error(inode->i_sb, err);
+ 	return err;
+ }
+@@ -2066,11 +2070,9 @@ int ext4_orphan_del(handle_t *handle, struct inode *inode)
+ 	if (!ext4_handle_valid(handle))
+ 		return 0;
+ 
+-	lock_super(inode->i_sb);
+-	if (list_empty(&ei->i_orphan)) {
+-		unlock_super(inode->i_sb);
+-		return 0;
+-	}
++	mutex_lock(&EXT4_SB(inode->i_sb)->s_orphan_lock);
++	if (list_empty(&ei->i_orphan))
++		goto out;
+ 
+ 	ino_next = NEXT_ORPHAN(inode);
+ 	prev = ei->i_orphan.prev;
+@@ -2120,7 +2122,7 @@ int ext4_orphan_del(handle_t *handle, struct inode *inode)
+ out_err:
+ 	ext4_std_error(inode->i_sb, err);
+ out:
+-	unlock_super(inode->i_sb);
++	mutex_unlock(&EXT4_SB(inode->i_sb)->s_orphan_lock);
+ 	return err;
+ 
+ out_brelse:
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 45d0ada..7f43fde 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -2645,6 +2645,7 @@ static int ext4_fill_super(struct super_block *sb, void *data, int silent)
+ 	sb->dq_op = &ext4_quota_operations;
+ #endif
+ 	INIT_LIST_HEAD(&sbi->s_orphan); /* unlinked but open files */
++	mutex_init(&sbi->s_orphan_lock);
+ 
+ 	sb->s_root = NULL;
+ 
 -- 
 1.6.3.2.1.gb9f7d.dirty
 
