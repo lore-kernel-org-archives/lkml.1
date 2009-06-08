@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756374AbZFHWTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757343AbZFHWUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756374AbZFHWTU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 18:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbZFHWS7
+	id S1757343AbZFHWUm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 18:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756940AbZFHWTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 18:18:59 -0400
-Received: from build.ossfans.org ([67.223.233.67]:43061 "EHLO
+	Mon, 8 Jun 2009 18:19:35 -0400
+Received: from build.ossfans.org ([67.223.233.67]:43066 "EHLO
 	build.ossfans.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754564AbZFHWS6 (ORCPT
+	with ESMTP id S1754573AbZFHWTD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 18:18:58 -0400
+	Mon, 8 Jun 2009 18:19:03 -0400
 From: Sergey Lapin <slapin@ossfans.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
@@ -17,82 +17,137 @@ Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
        David Miller <davem@davemloft.net>,
        Stephen Rothwell <sfr@canb.auug.org.au>,
        Sergey Lapin <slapin@ossfans.org>
-Subject: [PULL REQUEST] IEEE 802.15.4 stack: generic parts v4
-Date: Tue,  9 Jun 2009 02:18:46 +0400
-Message-Id: <cover.1244498867.git.slapin@ossfans.org>
+Subject: [PATCH 4/5] ieee802154: add documentation about our stack
+Date: Tue,  9 Jun 2009 02:18:50 +0400
+Message-Id: <30584943dc5972320f48c617b3aa940916516ff8.1244498868.git.slapin@ossfans.org>
 X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <8fbaa9563787380929a369db47592935df13f90e.1244498868.git.slapin@ossfans.org>
+References: <cover.1244498867.git.slapin@ossfans.org>
+ <a6f8fdbe615e37cf74816a1b92490c778bcc9035.1244498868.git.slapin@ossfans.org>
+ <192f492e65e4023d0cf75ff40052c41e8a3e79d5.1244498868.git.slapin@ossfans.org>
+ <8fbaa9563787380929a369db47592935df13f90e.1244498868.git.slapin@ossfans.org>
+In-Reply-To: <cover.1244498867.git.slapin@ossfans.org>
+References: <cover.1244498867.git.slapin@ossfans.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Add MAINTAINERS entry and a small text describing our stack interfaces,
+how to hook the drivers, etc.
 
-This is a fourth version of pull/merge request for IEEE 802.15.4 stack.
-
-As per Dmitry request I'm taking over passing this patchset through
-review. This is my first pull request through mail lists, so I might
-do some mistakes, but I hope I did not miss any.
-
-Major changes from previous post:
- * Changed net/ieee802154/Makefile according to Sam Ravnborg suggestion
-
-The following changes since commit 81ee1bad86bd6752c626018d43a74e3f81f1ae72:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../viro/vfs-2.6
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/slapin/lowpan.git for-next
-
-Sergey Lapin (5):
-      Add constants for the ieee 802.15.4 stack
-      net: add IEEE 802.15.4 socket family implementation
-      net: add NL802154 interface for configuration of 802.15.4 devices
-      ieee802154: add documentation about our stack
-      ieee802154: add simple HardMAC driver sample
-
- Documentation/networking/ieee802154.txt |   76 +++++
- MAINTAINERS                             |   12 +
- drivers/Makefile                        |    1 +
- drivers/ieee802154/Kconfig              |   22 ++
- drivers/ieee802154/Makefile             |    3 +
- drivers/ieee802154/fakehard.c           |  270 ++++++++++++++++
- drivers/net/Kconfig                     |    2 +
- include/linux/if_arp.h                  |    2 +
- include/linux/if_ether.h                |    1 +
- include/linux/nl802154.h                |  119 +++++++
- include/linux/socket.h                  |    4 +-
- include/net/ieee802154/af_ieee802154.h  |   60 ++++
- include/net/ieee802154/mac_def.h        |  160 ++++++++++
- include/net/ieee802154/netdevice.h      |  115 +++++++
- include/net/ieee802154/nl802154.h       |   41 +++
- net/Kconfig                             |    1 +
- net/Makefile                            |    1 +
- net/core/dev.c                          |    6 +-
- net/core/sock.c                         |    3 +
- net/ieee802154/Kconfig                  |   12 +
- net/ieee802154/Makefile                 |    5 +
- net/ieee802154/af802154.h               |   36 +++
- net/ieee802154/af_ieee802154.c          |  372 ++++++++++++++++++++++
- net/ieee802154/dgram.c                  |  394 +++++++++++++++++++++++
- net/ieee802154/netlink.c                |  523 +++++++++++++++++++++++++++++++
- net/ieee802154/nl_policy.c              |   52 +++
- net/ieee802154/raw.c                    |  254 +++++++++++++++
- 27 files changed, 2544 insertions(+), 3 deletions(-)
+Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Signed-off-by: Sergey Lapin <slapin@ossfans.org>
+---
+ Documentation/networking/ieee802154.txt |   76 +++++++++++++++++++++++++++++++
+ MAINTAINERS                             |   12 +++++
+ 2 files changed, 88 insertions(+), 0 deletions(-)
  create mode 100644 Documentation/networking/ieee802154.txt
- create mode 100644 drivers/ieee802154/Kconfig
- create mode 100644 drivers/ieee802154/Makefile
- create mode 100644 drivers/ieee802154/fakehard.c
- create mode 100644 include/linux/nl802154.h
- create mode 100644 include/net/ieee802154/af_ieee802154.h
- create mode 100644 include/net/ieee802154/mac_def.h
- create mode 100644 include/net/ieee802154/netdevice.h
- create mode 100644 include/net/ieee802154/nl802154.h
- create mode 100644 net/ieee802154/Kconfig
- create mode 100644 net/ieee802154/Makefile
- create mode 100644 net/ieee802154/af802154.h
- create mode 100644 net/ieee802154/af_ieee802154.c
- create mode 100644 net/ieee802154/dgram.c
- create mode 100644 net/ieee802154/netlink.c
- create mode 100644 net/ieee802154/nl_policy.c
- create mode 100644 net/ieee802154/raw.c
+
+diff --git a/Documentation/networking/ieee802154.txt b/Documentation/networking/ieee802154.txt
+new file mode 100644
+index 0000000..a0280ad
+--- /dev/null
++++ b/Documentation/networking/ieee802154.txt
+@@ -0,0 +1,76 @@
++
++		Linux IEEE 802.15.4 implementation
++
++
++Introduction
++============
++
++The Linux-ZigBee project goal is to provide complete implementation
++of IEEE 802.15.4 / ZigBee / 6LoWPAN protocols. IEEE 802.15.4 is a stack
++of protocols for organizing Low-Rate Wireless Personal Area Networks.
++
++Currently only IEEE 802.15.4 layer is implemented. We have choosen
++to use plain Berkeley socket API, the generic Linux networking stack
++to transfer IEEE 802.15.4 messages and a special protocol over genetlink
++for configuration/management
++
++
++Socket API
++==========
++
++int sd = socket(PF_IEEE802154, SOCK_DGRAM, 0);
++.....
++
++The address family, socket addresses etc. are defined in the
++include/net/ieee802154/af_ieee802154.h header or in the special header
++in our userspace package (see either linux-zigbee sourceforge download page
++or git tree at git://linux-zigbee.git.sourceforge.net/gitroot/linux-zigbee).
++
++One can use SOCK_RAW for passing raw data towards device xmit function. YMMV.
++
++
++MLME - MAC Level Management
++============================
++
++Most of IEEE 802.15.4 MLME interfaces are directly mapped on netlink commands.
++See the include/net/ieee802154/nl802154.h header. Our userspace tools package
++(see above) provides CLI configuration utility for radio interfaces and simple
++coordinator for IEEE 802.15.4 networks as an example users of MLME protocol.
++
++
++Kernel side
++=============
++
++Like with WiFi, there are several types of devices implementing IEEE 802.15.4.
++1) 'HardMAC'. The MAC layer is implemented in the device itself, the device
++   exports MLME and data API.
++2) 'SoftMAC' or just radio. These types of devices are just radio transceivers
++   possibly with some kinds of acceleration like automatic CRC computation and
++   comparation, automagic ACK handling, address matching, etc.
++
++Those types of devices require different approach to be hooked into Linux kernel.
++
++
++HardMAC
++=======
++
++See the header include/net/ieee802154/netdevice.h. You have to implement Linux
++net_device, with .type = ARPHRD_IEEE802154. Data is exchanged with socket family
++code via plain sk_buffs. The control block of sk_buffs will contain additional
++info as described in the struct ieee802154_mac_cb.
++
++To hook the MLME interface you have to populate the ml_priv field of your
++net_device with a pointer to struct ieee802154_mlme_ops instance. All fields are
++required.
++
++We provide an example of simple HardMAC driver at drivers/ieee802154/fakehard.c
++
++
++SoftMAC
++=======
++
++We are going to provide intermediate layer impelementing IEEE 802.15.4 MAC
++in software. This is currently WIP.
++
++See header include/net/ieee802154/mac802154.h and several drivers in
++drivers/ieee802154/
+diff --git a/MAINTAINERS b/MAINTAINERS
+index cf4abdd..a1bbc8f 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2816,6 +2816,18 @@ L:	linux1394-devel@lists.sourceforge.net
+ S:	Maintained
+ F:	drivers/ieee1394/raw1394*
+ 
++IEEE 802.15.4 SUBSYSTEM
++P:	Dmitry Eremin-Solenikov
++M:	dbaryshkov@gmail.com
++P:	Sergey Lapin
++M:	slapin@ossfans.org
++L:	linux-zigbee-devel@lists.sourceforge.net
++W:	http://apps.sourceforge.net/trac/linux-zigbee
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/lumag/lowpan.git
++S:	Maintained
++F:	net/ieee802154/
++F:	drivers/ieee801254/
++
+ INTEGRITY MEASUREMENT ARCHITECTURE (IMA)
+ P:	Mimi Zohar
+ M:	zohar@us.ibm.com
+-- 
+1.6.3.1
+
