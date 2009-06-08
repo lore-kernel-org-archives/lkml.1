@@ -1,108 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753467AbZFHRVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbZFHRVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753467AbZFHRVG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:21:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZFHRUA
+	id S1754425AbZFHRVZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbZFHRUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:20:00 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:43645 "EHLO relay.sgi.com"
+	Mon, 8 Jun 2009 13:20:05 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:43654 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753661AbZFHRT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:19:59 -0400
-Message-Id: <20090608171957.896591000@sgi.com>
+	id S1753534AbZFHRUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 13:20:04 -0400
+Message-Id: <20090608172002.180226000@sgi.com>
 User-Agent: quilt/0.47-1
-Date: Mon, 08 Jun 2009 12:16:53 -0500
+Date: Mon, 08 Jun 2009 12:16:54 -0500
 From: steiner@sgi.com
 To: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [Patch 05/12] GRU - delete user request for fetching chiplet status
+Subject: [Patch 06/12] GRU - cleanup gru inline functions
 References: <20090608171648.988318000@sgi.com>
-Content-Disposition: inline; filename=uv_gru_delete_chiplet_status
+Content-Disposition: inline; filename=uv_gru_instruction_wait
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jack Steiner <steiner@sgi.com>
 
-Delete the user request for fetching the status of a GRU chiplet.
-This request has been made obsolete by other changes. Note: this
-is not a change to a user API - there are no compatibility
-issues with this change.
+Cleanup of GRU inline functions to eliminate unnecessary
+inline code. Update function descriptions.
 
 Signed-off-by: Jack Steiner <steiner@sgi.com>
 
 ---
- drivers/misc/sgi-gru/grufile.c |   38 --------------------------------------
- drivers/misc/sgi-gru/grulib.h  |    3 ---
- 2 files changed, 41 deletions(-)
+ drivers/misc/sgi-gru/gru_instructions.h |   33 +++++++++++++++-----------------
+ 1 file changed, 16 insertions(+), 17 deletions(-)
 
-Index: linux/drivers/misc/sgi-gru/grufile.c
+Index: linux/drivers/misc/sgi-gru/gru_instructions.h
 ===================================================================
---- linux.orig/drivers/misc/sgi-gru/grufile.c	2009-04-29 13:43:42.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grufile.c	2009-04-29 13:44:16.000000000 -0500
-@@ -183,41 +183,6 @@ static long gru_get_config_info(unsigned
+--- linux.orig/drivers/misc/sgi-gru/gru_instructions.h	2009-04-29 13:40:17.000000000 -0500
++++ linux/drivers/misc/sgi-gru/gru_instructions.h	2009-04-29 13:44:25.000000000 -0500
+@@ -623,9 +623,11 @@ static inline int gru_get_cb_substatus(v
+ 	return cbs->isubstatus;
  }
  
- /*
-- * Get GRU chiplet status
-- */
--static long gru_get_chiplet_status(unsigned long arg)
--{
--	struct gru_state *gru;
--	struct gru_chiplet_info info;
--
--	if (copy_from_user(&info, (void __user *)arg, sizeof(info)))
--		return -EFAULT;
--
--	if (info.node == -1)
--		info.node = numa_node_id();
--	if (info.node >= num_possible_nodes() ||
--			info.chiplet >= GRU_CHIPLETS_PER_HUB ||
--			info.node < 0 || info.chiplet < 0)
--		return -EINVAL;
--
--	info.blade = uv_node_to_blade_id(info.node);
--	gru = get_gru(info.blade, info.chiplet);
--
--	info.total_dsr_bytes = GRU_NUM_DSR_BYTES;
--	info.total_cbr = GRU_NUM_CB;
--	info.total_user_dsr_bytes = GRU_NUM_DSR_BYTES -
--		gru->gs_reserved_dsr_bytes;
--	info.total_user_cbr = GRU_NUM_CB - gru->gs_reserved_cbrs;
--	info.free_user_dsr_bytes = hweight64(gru->gs_dsr_map) *
--			GRU_DSR_AU_BYTES;
--	info.free_user_cbr = hweight64(gru->gs_cbr_map) * GRU_CBR_AU_SIZE;
--
--	if (copy_to_user((void __user *)arg, &info, sizeof(info)))
--		return -EFAULT;
--	return 0;
--}
--
--/*
-  * gru_file_unlocked_ioctl
-  *
-  * Called to update file attributes via IOCTL calls.
-@@ -242,9 +207,6 @@ static long gru_file_unlocked_ioctl(stru
- 	case GRU_USER_UNLOAD_CONTEXT:
- 		err = gru_user_unload_context(arg);
- 		break;
--	case GRU_GET_CHIPLET_STATUS:
--		err = gru_get_chiplet_status(arg);
--		break;
- 	case GRU_USER_FLUSH_TLB:
- 		err = gru_user_flush_tlb(arg);
- 		break;
-Index: linux/drivers/misc/sgi-gru/grulib.h
-===================================================================
---- linux.orig/drivers/misc/sgi-gru/grulib.h	2009-04-29 13:43:42.000000000 -0500
-+++ linux/drivers/misc/sgi-gru/grulib.h	2009-04-29 13:44:16.000000000 -0500
-@@ -44,9 +44,6 @@
- /* For user unload context */
- #define GRU_USER_UNLOAD_CONTEXT		_IOWR(GRU_IOCTL_NUM, 9, void *)
+-/* Check the status of a CB. If the CB is in UPM mode, call the
+- * OS to handle the UPM status.
+- * Returns the CB status field value (0 for normal completion)
++/*
++ * User interface to check an instruction status. UPM and exceptions
++ * are handled automatically. However, this function does NOT wait
++ * for an active instruction to complete.
++ *
+  */
+ static inline int gru_check_status(void *cb)
+ {
+@@ -633,34 +635,31 @@ static inline int gru_check_status(void 
+ 	int ret;
  
--/* For fetching GRU chiplet status */
--#define GRU_GET_CHIPLET_STATUS		_IOWR(GRU_IOCTL_NUM, 10, void *)
+ 	ret = cbs->istatus;
+-	if (ret == CBS_CALL_OS)
++	if (ret != CBS_ACTIVE)
+ 		ret = gru_check_status_proc(cb);
+ 	return ret;
+ }
+ 
+-/* Wait for CB to complete.
+- * Returns the CB status field value (0 for normal completion)
++/*
++ * User interface (via inline function) to wait for an instruction
++ * to complete. Completion status (IDLE or EXCEPTION is returned
++ * to the user. Exception due to hardware errors are automatically
++ * retried before returning an exception.
++ *
+  */
+ static inline int gru_wait(void *cb)
+ {
+-	struct gru_control_block_status *cbs = (void *)cb;
+-	int ret = cbs->istatus;
 -
- /* For dumpping GRU chiplet state */
- #define GRU_DUMP_CHIPLET_STATE		_IOWR(GRU_IOCTL_NUM, 11, void *)
+-	if (ret != CBS_IDLE)
+-		ret = gru_wait_proc(cb);
+-	return ret;
++	return gru_wait_proc(cb);
+ }
+ 
+-/* Wait for CB to complete. Aborts program if error. (Note: error does NOT
++/*
++ * Wait for CB to complete. Aborts program if error. (Note: error does NOT
+  * mean TLB mis - only fatal errors such as memory parity error or user
+  * bugs will cause termination.
+  */
+ static inline void gru_wait_abort(void *cb)
+ {
+-	struct gru_control_block_status *cbs = (void *)cb;
+-
+-	if (cbs->istatus != CBS_IDLE)
+-		gru_wait_abort_proc(cb);
++	gru_wait_abort_proc(cb);
+ }
+ 
  
 
