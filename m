@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752675AbZFHHET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751034AbZFHHFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752675AbZFHHET (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 03:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZFHHEE
+	id S1751034AbZFHHFO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 03:05:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbZFHHFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 03:04:04 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:34938 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751203AbZFHHED (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 03:04:03 -0400
-Message-ID: <4A2CB7AE.6080909@gmail.com>
-Date: Mon, 08 Jun 2009 10:03:10 +0300
-From: Artem Bityutskiy <dedekind1@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 8 Jun 2009 03:05:03 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:45554 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750705AbZFHHFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 03:05:02 -0400
+Date: Mon, 8 Jun 2009 09:05:04 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+Cc: Steve Rottinger <steve@pentek.com>, linux-kernel@vger.kernel.org
+Subject: Re: splice methods in character device driver
+Message-ID: <20090608070503.GB11363@kernel.dk>
+References: <4A0838D1.5090102@pentek.com> <20090511192253.GH4694@kernel.dk> <c384c5ea0906061425x3b1ef6eer51d8a7ddeec51e47@mail.gmail.com>
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Jan Kara <jack@suse.cz>, Eric Sandeen <sandeen@sandeen.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       Nick Piggin <npiggin@suse.de>, Jeff Layton <jlayton@redhat.com>
-Subject: Re: [PATCH] writeback: skip new or to-be-freed inodes
-References: <20090324155655.2684.61FB500B@jp.fujitsu.com> <20090324074457.GA7745@localhost> <20090324120502.GC23439@duck.suse.cz> <20090324124001.GA25326@localhost> <4A244A5B.7070605@sandeen.net> <20090602085523.GC7161@localhost> <20090602113736.GB15010@duck.suse.cz> <20090603141021.GB5738@localhost> <20090603141636.GC5650@duck.suse.cz> <20090603144711.GC5738@localhost> <20090606030725.GA12852@localhost>
-In-Reply-To: <20090606030725.GA12852@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 08 Jun 2009 07:03:18.0391 (UTC) FILETIME=[338AA870:01C9E807]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c384c5ea0906061425x3b1ef6eer51d8a7ddeec51e47@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
-> The above race and warning didn't turn up because writeback_inodes() holds
-> the s_umount lock, so generic_forget_inode() finds MS_ACTIVE and returns
-> early. But we are not sure the UBIFS calls and future callers will guarantee
-> that. So skip I_WILL_FREE inodes for the sake of safety.
+On Sat, Jun 06 2009, Leon Woestenberg wrote:
+> Hello Jens,
+> 
+> in the spirit of splice-and-dice I continue asking questions until I grasp this.
+> 
+> On Mon, May 11, 2009 at 9:22 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
+> > So if your design is allocating the pages in the ->splice_read()
+> > handler and initiating IO to these pages, then you need to provide a
+> > suitable ->confirm() hook that can wait on this IO to complete if
+> > needed.
+> 
+> When the driver's splice_read() is called, the kernel wants the driver to
+> allocate pages and later check that they are filled with data through the
+> confirm() hook. Is that correct?
 
-The inode states are a bit vague for me, but vs. UBIFS - feel
-free to ask questions.
+Correct.
+
+> How can I pass information from the splice_read(), which spawns a hardware
+> DMA to the pages in my case, to the confirm() hook which is called at some
+> (random) time in the future?
+
+There's a ->private for each pipe_buffer, so you can pass along info on
+a per-page granularity.
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Jens Axboe
+
