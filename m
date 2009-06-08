@@ -1,97 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756342AbZFHPAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756063AbZFHPCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756342AbZFHPAy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 11:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753801AbZFHPAq
+	id S1756063AbZFHPCw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 11:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbZFHPCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 11:00:46 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:40438 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753558AbZFHPAp (ORCPT
+	Mon, 8 Jun 2009 11:02:45 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:53897 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753801AbZFHPCo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 11:00:45 -0400
-Date: Mon, 8 Jun 2009 16:00:39 +0100
-From: Matthew Garrett <mjg@redhat.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: alan-jenkins@tuffmail.co.uk, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Corentin Chary <corentin.chary@gmail.com>,
-       acpi4asus-user@lists.sourceforge.net, len.brown@intel.com,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>
-Subject: Re: [PATCH] eeepc-laptop: enable camera by default
-Message-ID: <20090608150039.GB17579@srcf.ucam.org>
-References: <20090608030732.GA7018@srcf.ucam.org> <Pine.LNX.4.44L0.0906072309560.28801-100000@netrider.rowland.org>
+	Mon, 8 Jun 2009 11:02:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=o6+zQ1z9cfo/NROvhg6pUPKifkrbz+Oi6IFcVxISXSLu51x/+buVS7flCY2gVnrZo1
+         tQWcA3wuHjTX1sdrS1lmdXVEyd2UWv98OUC8L6XXdWll+peEyv66kEF33IAIOCwLNWkO
+         jvy6mHTRk8XFaULk/54kynMCGH1FSVGMAnyOI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0906072309560.28801-100000@netrider.rowland.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <20090608124643.GA8079@localhost>
+References: <alpine.DEB.1.10.0905181045340.20244@qirst.com>
+	 <20090519133422.4ECC.A69D9226@jp.fujitsu.com>
+	 <20090519062503.GA9580@localhost> <87pre4nhqf.fsf@basil.nowhere.org>
+	 <20090520143258.GA5706@localhost>
+	 <20090520144731.GB4753@basil.nowhere.org>
+	 <20090520145607.GA6281@localhost> <20090520153851.GA6572@localhost>
+	 <ab418ea90906080514k6f46d3fay6a5fe0b848c8ca50@mail.gmail.com>
+	 <20090608124643.GA8079@localhost>
+Date: Mon, 8 Jun 2009 23:02:46 +0800
+Message-ID: <ab418ea90906080802s2556f7c6i5418c12e7592139a@mail.gmail.com>
+Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first class 
+	citizen
+From: Nai Xia <nai.xia@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "gnome-list@gnome.org" <gnome-list@gnome.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>,
+       "xorg@lists.freedesktop.org" <xorg@lists.freedesktop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 07, 2009 at 11:10:52PM -0400, Alan Stern wrote:
-> On Mon, 8 Jun 2009, Matthew Garrett wrote:
-> 
-> > On Sun, Jun 07, 2009 at 11:03:48PM -0400, Alan Stern wrote:
-> > 
-> > > There's no mechanism for this.  It many environments it couldn't work,
-> > > because the decision about whether to enable autosuspend is made when
-> > > the device is first created (i.e., when the creation uevent is
-> > > received), whereas driver binding doesn't occur until later.
-> > 
-> > There's a lot of power management situations where you don't end up with 
-> > the optimal power configuration until a driver's bound. It's certainly 
-> > possible to do this in userspace, but if we know that the hardware 
-> > supported by a given driver will always work then it seems reasonable to 
-> > have it whitelist autosuspend on that device.
-> 
-> Sure.  Such a thing could be added easily enough.  It just doesn't 
-> exist now, that's all.
+On Mon, Jun 8, 2009 at 8:46 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> On Mon, Jun 08, 2009 at 08:14:53PM +0800, Nai Xia wrote:
+>> On Wed, May 20, 2009 at 11:38 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+>> > Hi list,
+>> >
+>> > On Wed, May 20, 2009 at 10:56:07PM +0800, Wu Fengguang wrote:
+>> >> On Wed, May 20, 2009 at 10:47:31PM +0800, Andi Kleen wrote:
+>> >> > > > One scenario that might be useful to test is what happens when some
+>> >> > > > very large processes, all mapped and executable exceed memory and
+>> >> > >
+>> >> > > Good idea. Too bad I may have to install some bloated desktop in order
+>> >> > > to test this out ;) I guess the pgmajfault+pswpin numbers can serve as
+>> >> > > negative scores in that case?
+>> >> >
+>> >> > I would just generate a large C program with a script and compile
+>> >> > and run that. The program can be very dumb (e.g. only run
+>> >> > a gigantic loop), it just needs to be large.
+>> >> >
+>> >> > Just don't compile it with optimization, that can be quite slow.
+>> >> >
+>> >> > And use multiple functions, otherwise gcc might exceed your memory.
+>> >>
+>> >>
+>> >> Hehe, an arbitrary C program may not be persuasive..but I do have some
+>> >> bloated binaries at hand :-)
+>> >>
+>> >> -rwsr-sr-x 1 root wfg   36M 2009-04-22 17:21 Xorg
+>> >> lrwxrwxrwx 1 wfg  wfg     4 2009-04-22 17:21 X -> Xorg
+>> >> -rwxr-xr-x 1 wfg  wfg   39M 2009-04-22 17:21 Xvfb
+>> >> -rwxr-xr-x 1 wfg  wfg   35M 2009-04-22 17:21 Xnest
+>> >
+>> > I would like to create a lot of windows in gnome, and to switch
+>> > between them. Any ideas on scripting/automating the "switch window"
+>> > actions?
+>>
+>> You can easily do this in KDE 3.5 with dcop(Desktop Communications Protocol)\
+>>
+>> e.g.
+>>
+>> $dcop kchmviewer-17502 KCHMMainWindow raise
+>>
+>> will raise the window of my kchmviewer.
+>
+> Thank you, it's a good tip :)
+>
+> The alternative I found is wmctrl:
+>
+> Description: control an EWMH/NetWM compatible X Window Manager
+>  Wmctrl is a command line tool to interact with an
+>  EWMH/NetWM compatible X Window Manager (examples include
+>  Enlightenment, icewm, kwin, metacity, and sawfish).
+>  .
+>  Wmctrl provides command line access to almost all the features
+>  defined in the EWMH specification. For example it can maximize
+>  windows, make them sticky, set them to be always on top. It can
+>  switch and resize desktops and perform many other useful
+>  operations.
 
-Something roughly like this? We'd probably also want a function call so 
-drivers can do it based on the ID of the device they're handling, but in 
-some cases we can probably assume that all devices supported by the 
-driver will work.
+Cool, thanks for the information. :)
 
-diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
-index d0a21a5..36f63a7 100644
---- a/drivers/usb/core/driver.c
-+++ b/drivers/usb/core/driver.c
-@@ -355,6 +355,8 @@ int usb_driver_claim_interface(struct usb_driver *driver,
- 	iface->condition = USB_INTERFACE_BOUND;
- 	mark_active(iface);
- 	iface->pm_usage_cnt = !(driver->supports_autosuspend);
-+	if (driver->supports_autosuspend && driver->enable_autosuspend)
-+		udev->autosuspend_disabled=0;
- 	usb_pm_unlock(udev);
- 
- 	/* if interface was already added, bind now; else let
-diff --git a/include/linux/usb.h b/include/linux/usb.h
-index 3aa2cd1..b4696f2 100644
---- a/include/linux/usb.h
-+++ b/include/linux/usb.h
-@@ -819,6 +819,8 @@ struct usbdrv_wrap {
-  *	added to this driver by preventing the sysfs file from being created.
-  * @supports_autosuspend: if set to 0, the USB core will not allow autosuspend
-  *	for interfaces bound to this driver.
-+ * @enable_autosuspend: if set to 1, the USB core will automatically enable
-+ *	autosuspend for interfaces bound to this driver.
-  * @soft_unbind: if set to 1, the USB core will not kill URBs and disable
-  *	endpoints before calling the driver's disconnect method.
-  *
-@@ -861,6 +863,7 @@ struct usb_driver {
- 	struct usbdrv_wrap drvwrap;
- 	unsigned int no_dynamic_id:1;
- 	unsigned int supports_autosuspend:1;
-+	unsigned int enable_autosuspend:1;
- 	unsigned int soft_unbind:1;
- };
- #define	to_usb_driver(d) container_of(d, struct usb_driver, drvwrap.driver)
+BTW, may be you should make sure that 90% of the  overhead
+when doing crazy window switches is NOT caused by a dumb graphics
+driver (e.g. the widely hated ATI official driver!). hehe
 
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+>
+> Thanks,
+> Fengguang
+>
