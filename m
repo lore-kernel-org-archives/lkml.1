@@ -1,131 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757217AbZFHVen@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbZFHVfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757217AbZFHVen (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 17:34:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757142AbZFHVe1
+	id S1757142AbZFHVfJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 17:35:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbZFHVey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 17:34:27 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40250 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756846AbZFHVeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 17:34:25 -0400
-Date: Mon, 8 Jun 2009 21:33:56 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter tools: Standardize color printing
-Message-ID: <tip-aefcf37b82886260d8540c9fb815e613c8977e06@git.kernel.org>
-Git-Commit-ID: aefcf37b82886260d8540c9fb815e613c8977e06
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 08 Jun 2009 21:33:56 +0000 (UTC)
+	Mon, 8 Jun 2009 17:34:54 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53564
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756610AbZFHVex (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 17:34:53 -0400
+Date: Mon, 08 Jun 2009 14:34:54 -0700 (PDT)
+Message-Id: <20090608.143454.161329513.davem@davemloft.net>
+To: gil.beniamini@gmail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: SOCK_RAW does not receive broadcast (with VLAN unless PROMISC)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <91ac27070906081105x30171bedra10d244d382a6934@mail.gmail.com>
+References: <91ac27070906081105x30171bedra10d244d382a6934@mail.gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n58LZk54012529
 
-Commit-ID:  aefcf37b82886260d8540c9fb815e613c8977e06
-Gitweb:     http://git.kernel.org/tip/aefcf37b82886260d8540c9fb815e613c8977e06
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Mon, 8 Jun 2009 23:15:28 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 8 Jun 2009 23:15:28 +0200
+From: Gil Beniamini <gil.beniamini@gmail.com>
+Date: Mon, 8 Jun 2009 21:05:25 +0300
 
-perf_counter tools: Standardize color printing
+> Dear Linux Experts,
+> 
+> My application is using PF_PACKET and SOCK_RAW in order to receive all
+> Ethernet packets for the machine-unicast MAC plus all broadcast
+> packets (like ARP broadcast).
 
-The rule is:
+Please post networking questions and reports to netdev@vger.kernel.org
+which is where the networking experts are subscribed.
 
- - high overhead: red
- -  mid overhead: green
- -  low overhead: normal (white/black)
+I am also fully aware of your problem as Linus Torvalds forwarded
+your report to me last week, you just need to be patient as I simply
+haven't had a chance to look into it yet.
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> That worked OK with kernel 2.6.20 (Ubuntu 7.04 with or without VLAN).
+> 
+> Now with kernel 2.6.28 (Ubuntu 9.04) it works OK only without-VLAN,
+> but with VLAN the application receive only packets for the
+> machine-unicast MAC, but no broadcast (like ARP broadcast) packets,
+> only if I set the socket to PROMISC mode, I start receive also
+> broadcast packets.
+> 
+> To me it seems a bug, as SOCK_RAW should pass all â€˜receivedâ€™ packet
+> (including broadcast) to the application, without the need for PROMISC
+> (which cause my machine to receive other machine unicast  packets, and
+> filter those by software)!
+> 
+> The original application:
+> 
+> sock=socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+> memset((char *) &sockad, 0, sizeof(sockad));
+> sockad.sll_family = PF_PACKET;
+> sockad.sll_protocol = htons(ETH_P_ALL);
+> sockad.sll_ifindex = ethreq.ifr_ifindex;//the relevant unit number
+> 
+> 
+> 
+> Now the workaround is to set (unwanted) PROMISC mode:
+> 
+> ioctl(sock,SIOCGIFFLAGS,&ethreq);
+> ethreq.ifr_flags|=IFF_PROMISC; // why does 9.04 need this (+0x100) at
+> least once?!
+> ioctl(sock,SIOCSIFFLAGS,&ethreq);
+> 
+> 
+> Many thanks in advance,
+> Gil Beniamini
+> gil.beniamini@gmail.com
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-
----
- tools/perf/builtin-annotate.c |    5 +++--
- tools/perf/builtin-report.c   |   13 ++++++++-----
- tools/perf/builtin-top.c      |   13 ++++++++-----
- 3 files changed, 19 insertions(+), 12 deletions(-)
-
-diff --git a/tools/perf/builtin-annotate.c b/tools/perf/builtin-annotate.c
-index 0e23fe9..3334a8b 100644
---- a/tools/perf/builtin-annotate.c
-+++ b/tools/perf/builtin-annotate.c
-@@ -1085,8 +1085,9 @@ parse_line(FILE *file, struct symbol *sym, uint64_t start, uint64_t len)
- 			percent = 100.0 * hits / sym->hist_sum;
- 
- 		/*
--		 * We color high-overhead entries in red, low-overhead
--		 * entries in green - and keep the middle ground normal:
-+		 * We color high-overhead entries in red, mid-overhead
-+		 * entries in green - and keep the low overhead places
-+		 * normal:
- 		 */
- 		if (percent >= 5.0)
- 			color = PERF_COLOR_RED;
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 61d8718..0b18cb9 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -693,13 +693,16 @@ hist_entry__fprintf(FILE *fp, struct hist_entry *self, uint64_t total_samples)
- 		char *color = PERF_COLOR_NORMAL;
- 
- 		/*
--		 * We color high-overhead entries in red, low-overhead
--		 * entries in green - and keep the middle ground normal:
-+		 * We color high-overhead entries in red, mid-overhead
-+		 * entries in green - and keep the low overhead places
-+		 * normal:
- 		 */
--		if (percent >= 5.0)
-+		if (percent >= 5.0) {
- 			color = PERF_COLOR_RED;
--		if (percent < 0.5)
--			color = PERF_COLOR_GREEN;
-+		} else {
-+			if (percent >= 0.5)
-+				color = PERF_COLOR_GREEN;
-+		}
- 
- 		ret = color_fprintf(fp, color, "   %6.2f%%",
- 				(self->count * 100.0) / total_samples);
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index be1698f..8ba2480 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -248,13 +248,16 @@ static void print_sym_table(void)
- 					 sum_ksamples));
- 
- 		/*
--		 * We color high-overhead entries in red, low-overhead
--		 * entries in green - and keep the middle ground normal:
-+		 * We color high-overhead entries in red, mid-overhead
-+		 * entries in green - and keep the low overhead places
-+		 * normal:
- 		 */
--		if (pcnt >= 5.0)
-+		if (pcnt >= 5.0) {
- 			color = PERF_COLOR_RED;
--		if (pcnt < 0.5)
--			color = PERF_COLOR_GREEN;
-+		} else {
-+			if (pcnt >= 0.5)
-+				color = PERF_COLOR_GREEN;
-+		}
- 
- 		if (nr_counters == 1)
- 			printf("%20.2f - ", syme->weight);
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
