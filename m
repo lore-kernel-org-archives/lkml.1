@@ -1,70 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756280AbZFHPXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbZFHPX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756280AbZFHPXA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 11:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbZFHPWx
+	id S1756899AbZFHPX3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 11:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbZFHPXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 11:22:53 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:43442 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754026AbZFHPWw (ORCPT
+	Mon, 8 Jun 2009 11:23:20 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:54251 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754176AbZFHPXS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 11:22:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=EwH/BteopsocnR9tO96/J6dvUe6uV6qMDG0Kh8iIjhVkkFpbFfcvrSmMWLFRaBlbVf
-         ktXuphckEP3OJrR55FXoVvdEqJCxsLBrBux0faqxQrhlInTGeNib8A8h567IADMrZaj5
-         ToGwB23pcuMiYEm1+H5wJuOMi4iEdmdvhWiyU=
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0906071617010.27806@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0906061512100.16635@chino.kir.corp.google.com>
-	 <661de9470906070712y7b90d1bbn60b110bdb99a0d01@mail.gmail.com>
-	 <alpine.DEB.2.00.0906071617010.27806@chino.kir.corp.google.com>
-Date: Tue, 9 Jun 2009 00:21:28 +0900
-Message-ID: <28c262360906080821v542bc573r496209402779d5c2@mail.gmail.com>
-Subject: Re: [patch -mmotm] oom: only oom kill exiting tasks with attached 
-	memory
-From: Minchan Kim <minchan.kim@gmail.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Mon, 8 Jun 2009 11:23:18 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqAHANPHLEpMQW1W/2dsb2JhbACBT4EwyxKECgU
+Date: Mon, 8 Jun 2009 11:23:16 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Dave Jones <davej@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Dave Young <hidave.darkstar@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       cpufreq@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       trenn@suse.de, sven.wegener@stealer.net,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: rjw@sisk.pl, mingo@elte.hu, Shaohua Li <shaohua.li@intel.com>,
+       cpufreq@vger.kernel.org
+Subject: [PATCH] remove rwsem lock from CPUFREQ_GOV_STOP call (second call
+	site)
+Message-ID: <20090608152316.GA21033@Krystal>
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera> <D9VoutSOyXP.A.7vF.2Y7KKB@chimera> <84144f020906070621r1f480eaeief026d23662df380@mail.gmail.com> <a8e1da0906080035j9f8b38drb46132de5a515915@mail.gmail.com> <1244447366.13471.4.camel@penberg-laptop> <20090608124844.GA17588@Krystal> <20090608143220.GC2516@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090608143220.GC2516@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:17:02 up 100 days, 11:43,  5 users,  load average: 0.39, 0.33,
+	0.24
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, David.
+* Dave Jones (davej@redhat.com) wrote:
+> On Mon, Jun 08, 2009 at 08:48:45AM -0400, Mathieu Desnoyers wrote:
+>  
+>  > > > >> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13475
+>  > > > >> Subject         : suspend/hibernate lockdep warning
+>  > > > >> References      : http://marc.info/?l=linux-kernel&m=124393723321241&w=4
+>  > > > 
+>  > > > I suspect the following commit, after revert this patch I test 5 times
+>  > > > without lockdep warnings.
+>  > > > 
+>  > > > commit b14893a62c73af0eca414cfed505b8c09efc613c
+>  > > > Author: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>  > > > Date:   Sun May 17 10:30:45 2009 -0400
+>  > > > 
+>  > > > 	[CPUFREQ] fix timer teardown in ondemand governor
+>  > > 
+>  > > The patch is probably not at fault here. I suspect it's some latent bug
+>  > > that simply got exposed by the change to cancel_delayed_work_sync(). In
+>  > > any case, Mathieu, can you take a look at this please?
+>  > 
+>  > Yes, it's been looked at and discussed on the cpufreq ML. The short
+>  > answer is that they plan to re-engineer cpufreq and remove the policy
+>  > rwlock taken around almost every operations at the cpufreq level.
+>  > 
+>  > The short-term solution, which is recognised as ugly, would be do to the
+>  > following before doing the cancel_delayed_work_sync() :
+>  > 
+>  > unlock policy rwlock write lock
+>  > 
+>  > lock policy rwlock write lock
+>  > 
+>  > It basically works because this rwlock is unneeded for teardown, hence
+>  > the future re-work planned.
+>  > 
+>  > I'm sorry I cannot prepare a patch current... I've got quite a few pages
+>  > of Ph.D. thesis due for the beginning of July.
+>  
+> I'm kinda scared to touch this code at all for .30 due to the number of
+> unexpected gotchas we seem to run into every time we touch something
+> locking related.  So I'm inclined to just live with the lockdep warning
+> for .30, and see how the real fixes look for .31, and push them back
+> as -stable updates if they work out.
+> 
+> 
+> Venki, what are your thoughts?
+> 
 
-On Mon, Jun 8, 2009 at 8:18 AM, David Rientjes<rientjes@google.com> wrote:
-> On Sun, 7 Jun 2009, Balbir Singh wrote:
->
->> Seems like a good change to make. Did you encounter this situation on
->> a real machine?
->>
->
-> I did, as the result of the chosen task remaining in PF_EXITING state with
-> a detached mm following a previous oom kill.
-> --
+Hi Dave,
 
-Let me have a question.
-If I understand your situation properly, you mean
+I've looked through the cpufreq code, and the following patch should
+address the call site I've missed in commit 
+42a06f2166f2f6f7bf04f32b4e823eacdceafdc9. I've followed all
+__cpufreq_set_policy call sites within cpufreq.c to make sure they all
+hold the rwsem write lock. An extra round of review would be good
+though.
 
-Time order
-t1 < t2 < t3 < t4.
+Can someone try the following patch and see if it fixes the regression ?
+My test machine is currently busy running long formal verifications, and
+therefore unavailable for kernel patch testing. It compiles fine on a
+2.6.30-rc5 kernel with my (now mainlined) cpufreq patches applied.
 
-t1 : oom kill A process - send signal. it doesn't destroy mm_struct yet.
-t2 : destroy A's mm_struct but it is in task list.
-t3 : It happens OOM, again. Process A is selected again since it still
-remain in task list
-t4 : Now A's mm_struct is destroyed => situation you said.
+Mathieu
 
-Is right ?
-Do you turn on sysctl oom_kill_allocating_task ?
+
+remove rwsem lock from CPUFREQ_GOV_STOP call (second call site)
+
+commit	42a06f2166f2f6f7bf04f32b4e823eacdceafdc9
+
+Missed a call site for CPUFREQ_GOV_STOP to remove the rwlock taken around the
+teardown. To make a long story short, the rwlock write-lock causes a circular
+dependency with cancel_delayed_work_sync(), because the timer handler takes the
+read lock.
+
+Note that all callers to __cpufreq_set_policy are taking the rwsem. All sysfs
+callers (writers) hold the write rwsem at the earliest sysfs calling stage.
+
+However, the rwlock write-lock is not needed upon governor stop.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: rjw@sisk.pl
+CC: mingo@elte.hu
+CC: Shaohua Li <shaohua.li@intel.com>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Dave Young <hidave.darkstar@gmail.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Rusty Russell <rusty@rustcorp.com.au>
+CC: trenn@suse.de
+CC: sven.wegener@stealer.net
+CC: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+CC: cpufreq@vger.kernel.org
+---
+ drivers/cpufreq/cpufreq.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+Index: linux-2.6-lttng/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-2.6-lttng.orig/drivers/cpufreq/cpufreq.c	2009-06-08 10:20:48.000000000 -0400
++++ linux-2.6-lttng/drivers/cpufreq/cpufreq.c	2009-06-08 10:48:52.000000000 -0400
+@@ -1697,8 +1697,17 @@ static int __cpufreq_set_policy(struct c
+ 			dprintk("governor switch\n");
+ 
+ 			/* end old governor */
+-			if (data->governor)
++			if (data->governor) {
++				/*
++				 * Need to release the rwsem around governor
++				 * stop due to lock dependency between
++				 * cancel_delayed_work_sync and the read lock
++				 * taken in the delayed work handler.
++				 */
++				unlock_policy_rwsem_write(data->cpu);
+ 				__cpufreq_governor(data, CPUFREQ_GOV_STOP);
++				lock_policy_rwsem_write(data->cpu);
++			}
+ 
+ 			/* start new governor */
+ 			data->governor = policy->governor;
+
 
 -- 
-Kinds regards,
-Minchan Kim
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
