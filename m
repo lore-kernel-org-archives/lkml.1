@@ -1,121 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751969AbZFHRRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbZFHRS5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751969AbZFHRRs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbZFHRRk
+	id S1753254AbZFHRS5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:18:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZFHRSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:17:40 -0400
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:41005 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750784AbZFHRRj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:17:39 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtEEADPgLEpMQW1W/2dsb2JhbACBT8xUhAoF
-Date: Mon, 8 Jun 2009 13:17:31 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Dave Jones <davej@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "trenn@suse.de" <trenn@suse.de>,
-       "sven.wegener@stealer.net" <sven.wegener@stealer.net>,
-       "mingo@elte.hu" <mingo@elte.hu>, "Li, Shaohua" <shaohua.li@intel.com>
-Subject: Re: [PATCH] remove rwsem lock from CPUFREQ_GOV_STOP call (second
-	call site)
-Message-ID: <20090608171731.GA24779@Krystal>
-References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera> <D9VoutSOyXP.A.7vF.2Y7KKB@chimera> <84144f020906070621r1f480eaeief026d23662df380@mail.gmail.com> <a8e1da0906080035j9f8b38drb46132de5a515915@mail.gmail.com> <1244447366.13471.4.camel@penberg-laptop> <20090608124844.GA17588@Krystal> <20090608143220.GC2516@redhat.com> <20090608152316.GA21033@Krystal> <1244480254.4534.265.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 8 Jun 2009 13:18:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39055 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750784AbZFHRSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 13:18:49 -0400
+Message-ID: <4A2D47C1.5020302@redhat.com>
+Date: Mon, 08 Jun 2009 20:17:53 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: aarcange@redhat.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       chrisw@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 0/4] RFC - ksm api change into madvise
+References: <1242261048-4487-1-git-send-email-ieidus@redhat.com> <Pine.LNX.4.64.0906081555360.22943@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0906081555360.22943@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1244480254.4534.265.camel@localhost.localdomain>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:15:48 up 100 days, 13:42,  4 users,  load average: 0.83, 0.90,
-	0.87
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK, here is the re-run, with comment and acked-by added.
+Hugh Dickins wrote:
+> On Thu, 14 May 2009, Izik Eidus wrote:
+>
+>   
+>> This is comment request for ksm api changes.
+>> The following patchs move the api to use madvise instead of ioctls.
+>>     
+>
+> Thanks a lot for doing this.
+>
+> I'm afraid more than three weeks have gone past, and the 2.6.31
+> merge window is almost upon us, and you haven't even got a comment
+> out of me: I apologize for that.
+>
+> Although my (lack of) response is indistinguishable from a conspiracy
+> to keep KSM out of the kernel, I beg to assure you that's not the case.
+> I do want KSM to go in - though I never shared Andrew's optimism that it
+> is 2.6.31 material: I've too long a list of notes/doubts on the existing
+> implementation, which I've not had time to expand upon to you; but I
+> don't think there are any killer issues, we should be able to work
+> things out as 2.6.31 goes through its -rcs, and aim for 2.6.32.
+>
+> But let's get this change of interface sorted out first.
+>   
 
-Thanks,
+Agree.
 
-Mathieu
+> I remain convinced that it's right to go the madvise() route,
+> though I don't necessarily like the details in your patches.
+> And I've come to the conclusion that the only way I can force
+> myself to contribute constructively, is to start from these
+> patches, and shift things around until it's as I think it
+> should be, then see what you think of the result.
+>   
+
+Sound perfect way to go.
+
+> I notice that you chose to integrate fully (though not fully enough)
+> with vmas, adding a VM_MERGEABLE flag.  Fine, that's probably going
+> to be safest in the end, and I'll follow you; but it is further than
+> I was necessarily asking you to go - it might have been okay to use
+> the madvise() interface, but just to declare areas of address space
+> (not necessarily backed by mappings) to ksm.c, as you did via /dev/ksm.
+> But it's fairly likely that if you had stayed with that, it would have
+> proved problematic later, so let's go forward with the full integration
+> with vmas.
+>
+>   
+>> Before i will describe the patchs, i want to note that i rewrote this
+>> patch seires alot of times, all the other methods that i have tried had some
+>> fandumatel issues with them.
+>> The current implemantion does have some issues with it, but i belive they are
+>> all solveable and better than the other ways to do it.
+>> If you feel you have better way how to do it, please tell me :).
+>>
+>> Ok when we changed ksm to use madvise instead of ioctls we wanted to keep
+>> the following rules:
+>>
+>> Not to increase the host memory usage if ksm is not being used (even when it
+>> is compiled), this mean not to add fields into mm_struct / vm_area_struct...
+>>
+>> Not to effect the system performence with notifiers that will have to block
+>> while ksm code is running under some lock - ksm is helper, it should do it
+>> work quitely, - this why i dropped patch that i did that add mmu notifiers
+>> support inside ksm.c and recived notifications from the MM (for example
+>> when vma is destroyed (invalidate_range...)
+>>
+>> Not to change the MM logic.
+>>
+>> Trying to touch as less code as we can outisde ksm.c
+>>     
+>
+> These are well-intentioned goals, and thank you for making the effort
+> to follow them; but I'm probably going to depart from them.  I'd
+> rather we put in what's necessary and appropriate, and then cut
+> that down if necessary.
+>   
+
+That the way to go, i just didnt want to scare anyone (it was obiouse to 
+me that it is needed, just wanted you to say it is needed)
+
+>   
+>> Taking into account all this rules, the end result that we have came with is:
+>> mmlist is now not used only by swapoff, but by ksm as well, this mean that
+>> each time you call to madvise for to set vma as MERGEABLE, madvise will check
+>> if the mm_struct is inside the mmlist and will insert it in case it isnt.
+>> It is belived that it is better to hurt little bit the performence of swapoff
+>> than adding another list into the mm_struct.
+>>     
+>
+> That was a perfectly sensible thing for you to do, given your rules
+> above; but I don't really like the result, and think it'll be clearer
+> to have your own list.  Whether by mm or by vma, I've not yet decided:
+> by mm won't add enough #idef CONFIG_KSM bloat to worry about; by vma,
+> we might be able to reuse some prio_tree fields, I've not checked yet.
+>
+>   
+>> One issue that should be note is: after mm_struct is going into the mmlist, it
+>> wont be kicked from it until the procsses is die (even if there are no more
+>> VM_MERGEABLE vmas), this doesnt mean memory is wasted, but it does mean ksm
+>> will spend little more time in doing cur = cur->next if(...).
+>>
+>> Another issue is: when procsess is die, ksm will have to find (when scanning)
+>> that its mm_users == 1 and then do mmput(), this mean that there might be dealy
+>> from the time that someone do kill until the mm is really free -
+>> i am open for suggestions on how to improve this...
+>>     
+>
+> You've resisted putting in the callbacks you need.  I think they were
+> always (i.e. even when using /dev/ksm) necessary, but should become
+> more obvious now we have this tighter integration with mm's vmas.
+>
+> You seem to have no callback in fork: doesn't that mean that KSM
+> pages get into mms of which mm/ksm.c has no knowledge?  
+What you mean by this?, should the vma flags be copyed into the child 
+and therefore ksm will scan the vma?
+(only thing i have to check is: maybe the process itself wont go into 
+the mmlist, and therefore ksm wont know about it)
+
+> You had
+> no callback in mremap move: doesn't that mean that KSM pages could
+> be moved into areas which mm/ksm.c never tracked?  Though that's
+> probably no issue now we move over to vmas: they should now travel
+> with their VM flag.  You have no callback in unmap: doesn't that
+> mean that KSM never knows when its pages have gone away?
+>   
+
+Yes, Adding all this callbacks would make ksm much more happy, Again, i 
+didnt want to scare anyone...
+
+> (Closing the /dev/ksm fd used to clean up some of this, in the
+> end; but the lifetime of the fd can be so different from that of
+> the mapped area, I've felt very unsafe with that technique - a good
+> technique when you're trying to sneak in special handling for your
+> special driver, but not a good technique once you go to mainline.)
+>
+> I haven't worked out the full consequences of these lost pages:
+> perhaps it's no worse than that you could never properly enforce
+> your ksm_thread_max_kernel_pages quota.
+>   
+
+You mean the shared pages outside the stable tree comment?
+
+>   
+>> (when someone do echo 0 > /sys/kernel/mm/ksm/run ksm will throw away all the
+>> memory, so condtion when the memory wont ever be free wont happen)
+>>
+>>
+>> Another important thing is: this is request for comment, i still not sure few
+>> things that we have made here are totaly safe:
+>> (the mmlist sync with drain_mmlist, and the handle_vmas() function in madvise,
+>> the logic inside ksm for searching the next virtual address on the vmas,
+>> and so on...)
+>> The main purpuse of this is to ask if the new interface is what you guys
+>> want..., and if you like the impelmantion desgin.
+>>     
+>
+> It's in the right direction.  But it would be silly for me to start
+> criticizing your details now: I need to try doing the same, that will
+> force me to think deeply enough about it, and I may then be led to
+> the same decisions as you made.
+>
+>   
+>> (I have added option to scan closed support applications as well)
+>>     
+>
+> That's a nice detail that I'll find very useful for testing,
+> but we might want to hold it back longer than the rest.  I just get
+> naturally more cautious when we consider interfaces for doing things
+> to other processes, and want to spend even longer over it.
+>
+>   
+>> Thanks.
+>>
+>> Izik Eidus (4):
+>>   madvice: add MADV_SHAREABLE and MADV_UNSHAREABLE calls.
+>>     
+>
+> I didn't understand why you went over to VM_MERGEABLE but stuck
+> with MADV_SHAREABLE: there's a confusing mix of shareables and
+> mergeables, I'll head for mergeables throughout, though keep to "KSM".
+>
+>   
+>>   mmlist: share mmlist with ksm.
+>>   ksm: change ksm api to use madvise instead of ioctls.
+>>   ksm: add support for scanning procsses that were not modifided to use
+>>     ksm
+>>     
+>
+> While I'm being communicative, let me mention two things,
+> not related to this RFC patchset, but to what's currently in mmotm.
+>
+> I've a bugfix patch to scan_get_next_index(), I'll send that to you
+>   
+
+Thanks.
 
 
-remove rwsem lock from CPUFREQ_GOV_STOP call (second call site)
+> in a few moments.
+>
+> And a question on your page_wrprotect() addition to mm/rmap.c: though
+> it may contain some important checks (I'm thinking of the get_user_pages
+> protection), isn't it essentially redundant, and should be removed from
+> the patchset?  If we have a private page which is mapped into more than
+> the one address space by which we arrive at it, then, quite independent
+> of KSM, it needs to be write-protected already to prevent mods in one
+> address space leaking into another - doesn't it?  So I see no need for
+> the rmap'ped write-protection there, just make the checks and write
+> protect the pte you have in ksm.c.  Or am I missing something?
+>   
 
-commit	42a06f2166f2f6f7bf04f32b4e823eacdceafdc9
+Ok, so we have here 2 cases for ksm:
+1:
+    When the page is anonymous and is mapped readonly beteween serveal 
+processes:
+         for this you say we shouldnt walk over the rmap and try to 
+writeprotect what is already writeprtected...
 
-Missed a call site for CPUFREQ_GOV_STOP to remove the rwlock taken around the
-teardown. To make a long story short, the rwlock write-lock causes a circular
-dependency with cancel_delayed_work_sync(), because the timer handler takes the
-read lock.
+2:
+   When the page is anonymous and is mapped write by just one process:
+       for this you say it is better to handle it directly from inside 
+ksm beacuse we already know
+       the virtual address mapping of this page?
 
-Note that all callers to __cpufreq_set_policy are taking the rwsem. All sysfs
-callers (writers) hold the write rwsem at the earliest sysfs calling stage.
+       so about this: you are right about the fact that we might dont 
+have to walk over the rmap of the page for pages with mapcount 1
+       but isnt it cleaner to deal it inside rmap.c?
+       another thing,  get_user_pages() protection is needed even in 
+that case, beacuse get_user_pages_fast is lockless, so odirect
+       can run under our legs after we write protecting the page.
 
-However, the rwlock write-lock is not needed upon governor stop.
 
-Change :
-- Added comment from Venkyi at lock definition site.
+      anyway, nothing critical, i dont mind to move 
+page_write_protect_one() into ksm.c, i still think get_user_pages 
+protection is needed.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-CC: rjw@sisk.pl
-CC: mingo@elte.hu
-CC: Shaohua Li <shaohua.li@intel.com>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Dave Young <hidave.darkstar@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Rusty Russell <rusty@rustcorp.com.au>
-CC: trenn@suse.de
-CC: sven.wegener@stealer.net
-CC: cpufreq@vger.kernel.org
----
- drivers/cpufreq/cpufreq.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-2.6-lttng.orig/drivers/cpufreq/cpufreq.c	2009-06-08 12:47:22.000000000 -0400
-+++ linux-2.6-lttng/drivers/cpufreq/cpufreq.c	2009-06-08 12:48:38.000000000 -0400
-@@ -61,6 +61,8 @@ static DEFINE_SPINLOCK(cpufreq_driver_lo
-  *   are concerned with are online after they get the lock.
-  * - Governor routines that can be called in cpufreq hotplug path should not
-  *   take this sem as top level hotplug notifier handler takes this.
-+ * - Lock should not be held across
-+ *     __cpufreq_governor(data, CPUFREQ_GOV_STOP);
-  */
- static DEFINE_PER_CPU(int, policy_cpu);
- static DEFINE_PER_CPU(struct rw_semaphore, cpu_policy_rwsem);
-@@ -1697,8 +1699,17 @@ static int __cpufreq_set_policy(struct c
- 			dprintk("governor switch\n");
- 
- 			/* end old governor */
--			if (data->governor)
-+			if (data->governor) {
-+				/*
-+				 * Need to release the rwsem around governor
-+				 * stop due to lock dependency between
-+				 * cancel_delayed_work_sync and the read lock
-+				 * taken in the delayed work handler.
-+				 */
-+				unlock_policy_rwsem_write(data->cpu);
- 				__cpufreq_governor(data, CPUFREQ_GOV_STOP);
-+				lock_policy_rwsem_write(data->cpu);
-+			}
- 
- 			/* start new governor */
- 			data->governor = policy->governor;
+Thanks alot for your time.
+> Hugh
+>   
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
