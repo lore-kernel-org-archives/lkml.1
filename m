@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217AbZFHNAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758AbZFHNBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753217AbZFHNAZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 09:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZFHNAP
+	id S1754758AbZFHNBm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 09:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbZFHNBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 09:00:15 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:46617 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754628AbZFHNAK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 09:00:10 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Matthew Garrett <mjg@redhat.com>
-Subject: Re: [PATCH 2/2] CPUFREQ: Mark e_powersaver driver as EXPERIMENTAL and DANGEROUS
-Date: Mon, 8 Jun 2009 08:00:07 -0500
-User-Agent: KMail/1.9.9
-Cc: Harald Welte <HaraldWelte@viatech.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>
-References: <20090608102936.GQ4106@prithivi.gnumonks.org> <20090608120846.GA13328@srcf.ucam.org>
-In-Reply-To: <20090608120846.GA13328@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906080800.10312.lkml@morethan.org>
+	Mon, 8 Jun 2009 09:01:31 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:53613 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752587AbZFHNBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 09:01:30 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Mel Gorman <mel@csn.ul.ie>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
+       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com
+Cc: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/3] [RFC] Functional fix to zone_reclaim() and bring behaviour more in line with expectations
+Date: Mon,  8 Jun 2009 14:01:27 +0100
+Message-Id: <1244466090-10711-1-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon June 8 2009, Matthew Garrett wrote:
-> On Mon, Jun 08, 2009 at 06:29:36PM +0800, Harald Welte wrote:
-> > The e_powersaver driver for VIA's C7 CPU's needs to be marked as
-> > DANGEROUS as it configures the CPU to power states that are out
-> > of specification.
-> > 
-> > According to Centaur, all systems with C7 and Nano CPU's support
-> > the ACPI p-state method.  Thus, the acpi-cpufreq driver should
-> > be used instead.
-> 
-> Do we know if vendors are actually shipping with the appropriate BIOS 
-> tables? The number of people using e_powersaver seems to be suspiciously 
-> large, though perhaps that's just because the help text implied it was 
-> the right choice for C7.
-> 
+A bug was brought to my attention against a distro kernel but it affects
+mainline and I believe problems like this have been reported in various guises
+on the mailing lists although I don't have specific examples at the moment.
 
-In part, it was because acpi_freq would not load - H.W. in another post
-has proposed a fix for that.
+The problem that was reported that led to this patchset was that malloc()
+stalled for a long time (minutes in some cases) if a large tmpfs mount
+was occupying a large percentage of memory overall. The pages did not get
+cleaned or reclaimed by zone_reclaim() because the zone_reclaim_mode was
+unsuitable, but the lists are uselessly scanned frequencly making the CPU
+spin at near 100%.
 
-My test machine is a "first production" of the Everex Cloudbook - -
-About as early as you can get of something in the public hands -
-If there is something lacking in a machine's BIOS - it should be
-missing in this one - I can test for that condition.
-(This one is hitting user code with the silicon still setup
-in the state set by "#reset" - untouched by the BIOS.)
+I do not have the bug resolved yet although I believe patch 1 of this series
+addresses it and am waiting to hear back from the bug reporter. However,
+the fix should work two other patches in this series also should bring
+zone_reclaim() more in line with expectations.
 
-Of course, that says nothing about other and/or newer machines -
-At the moment I am toying with the idea of a cpu-quirks routine
-that could check/correct for an incompletely setup chip.
-On the Model-D chips, that could also switch the processor over
-to its on-silicon thermal/power/freq adaptive controller.
+Patch 1 reintroduces zone_reclaim_interval to catch the situation where
+	zone_reclaim() cannot tell in advance that the scan is a waste
+	of time.
 
-All of the Netbooks that I know of have shipped with the Model-D
-processor (ULV) - so the above cpu-quirks routine would "fix" those.
+Patch 2 alters the heuristics that zone_reclaim() uses to determine if the
+	scan should go ahead. Currently, it is basically assuming
+	zone_reclaim_mode is 1
 
-Machines running other C7 models...
-They will just have to trust the BIOS and/or a repaired e_powersaver.
+Patch 3 notes that zone_reclaim() returning a failure automatically means
+	the zone is marked full. This is not always true. It could have failed
+	because the GFP mask or zone_reclaim_mode are unsuitable. The patch
+	makes zone_reclaim() more careful about marking zones temporarily full
 
-Mike
+Note, this patchset has not been tested heavily.
+
+Comments?
+
+ Documentation/sysctl/vm.txt |   13 +++++++++++
+ include/linux/mmzone.h      |    9 ++++++++
+ include/linux/swap.h        |    1 +
+ kernel/sysctl.c             |    9 ++++++++
+ mm/internal.h               |    4 +++
+ mm/page_alloc.c             |   26 +++++++++++++++++++---
+ mm/vmscan.c                 |   48 +++++++++++++++++++++++++++++++++++++-----
+ 7 files changed, 100 insertions(+), 10 deletions(-)
+
