@@ -1,113 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbZFHOXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbZFHOZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755674AbZFHOXc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 10:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbZFHOXX
+	id S1756019AbZFHOZQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 10:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754961AbZFHOZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 10:23:23 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:33278 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754843AbZFHOXW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 10:23:22 -0400
-Subject: Re: 2.6.30-rc8 Oops whilst booting
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Chris Clayton <chris2553@googlemail.com>
-Cc: NeilBrown <neilb@suse.de>, Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       linux-kernel@vger.kernel.org, scsi <linux-scsi@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <c6b1100b0906080108y191bb157n67ec681ade2a0d13@mail.gmail.com>
-References: <200906061959.55592.chris2553@googlemail.com>
-	 <200906062215.30571.chris2553@googlemail.com>
-	 <1244381140.30664.12.camel@ht.satnam>
-	 <c6b1100b0906071138g2c46fb34vc1a2beb9438f1f1e@mail.gmail.com>
-	 <1244413881.18742.31.camel@ht.satnam>
-	 <2f9e3044bafcae848f74a1492b0ea471.squirrel@neil.brown.name>
-	 <c6b1100b0906080108y191bb157n67ec681ade2a0d13@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 08 Jun 2009 14:23:20 +0000
-Message-Id: <1244471000.4079.36.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Jun 2009 10:25:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48702 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754530AbZFHOZC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 10:25:02 -0400
+Date: Mon, 8 Jun 2009 16:24:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: Run-time PM idea (was: Re: [linux-pm] [RFC][PATCH 0/2] PM:
+	Rearrange core suspend code)
+Message-ID: <20090608142450.GE14234@elte.hu>
+References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org> <200906072347.00580.rjw@sisk.pl> <20090608065419.GA13568@elte.hu> <200906081330.50045.rjw@sisk.pl> <20090608130509.GA3272@elte.hu> <20090608131159.GA15100@srcf.ucam.org> <20090608132235.GC13214@elte.hu> <20090608133215.GA15482@srcf.ucam.org> <20090608134647.GA14234@elte.hu> <20090608135431.GA16052@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090608135431.GA16052@srcf.ucam.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-08 at 09:08 +0100, Chris Clayton wrote:
-> Hi Neil,
+
+* Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+
+> On Mon, Jun 08, 2009 at 03:46:47PM +0200, Ingo Molnar wrote:
+> > 
+> > * Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+>
+> > > How does the kernel know whether the user cares about SATA 
+> > > hotplug or not?
+> > 
+> > The typical user probably doesnt know what 'SATA' means, and 
+> > probably has very vague concepts about 'hotplug' as well.
 > 
-> Thanks for the reply.
+> eSATA is pretty common now.
+
+[ And 99% of the CPUs have an IDT still 99.9% of the users dont know 
+  what it is :) ]
+
+> > The kernel default should be: 'yes, if the kernel feature is 
+> > enabled and if the hardware can support it' (it's not on a 
+> > blacklist of some sort, etc., etc.).
 > 
-> 2009/6/7 NeilBrown <neilb@suse.de>:
-> > On Mon, June 8, 2009 8:31 am, Jaswinder Singh Rajput wrote:
-> >> On Sun, 2009-06-07 at 19:38 +0100, Chris Clayton wrote:
-> >>> 2009/6/7 Jaswinder Singh Ra
-> >>> >> > http://img231.imageshack.us/img231/8931/dscn0610.jpg
-> >
-> > This message says that it found a vfat filesystem on 8:3x (I cannot see
-> > what digit should be 'x').  That is probably sdc1 or sdc2. Maybe even
-> > sdc6 or sdc7.
-> > However the vfat filesystem didn't have /sbin/init.
-> >
+> The problem with this kind of default is that you get people who 
+> are confused that their hardware doesn't work.
+
+If the hardware 'doesnt work' that is a kernel bug. Hardware that 
+_cannot be suspended_ safely (physically) should not be 
+auto-suspended, of course.
+
+> If the kernel doesn't have enough information to make a decision 
+> it should err on the side of functionality - we're talking about 
+> fairly low-level power savings, but potentially several years of 
+> aggregate confusion on the part of users.
+
+the difference between a 10W and a 1W footprint is a long series of 
+'low-level power savings'.
+
+If users are getting confused and if hardware gets broken then tha's 
+a plain bug and the wrong path is being walked.
+
+> > What sources of information exactly? Again, the user wont enter 
+> > anything, in 95% of the cases - in the remaining 3% of cases 
+> > what is entered is wrong and only in another 2% of cases is it 
+> > correct ;-)
 > 
-> >>> http://img99.imageshack.us/my.php?image=dscn0617b.jpg
-> >
-> > This one says it couldn't find anything at 8,22, which I think
-> > should be sdb6.
-> > It also shows that you have and sdc6, but sdb only goes up to sdb3.
-> >
-> > So it seems that your disk drives have changed name - not a wholely
-> > unexpected event these days.
-> >
-> > We now need answers to questions like:
-> >  - what device do you expect the root filesystem to be on
-> >  - how is the kernel being told this?  Maybe it is hard coded
-> >    into your initrd.  Knowing which distro and what /etc/fstab
-> >    says might help (though it wouldn't help me, I'm just about out
-> >    of my depth at this point)
-> > Maybe if you changed /etc/fstab to mount by uuid instead of hardcoding
-> > e.g. /etc/sdb3, and then run "mkinitramfs" or whatever, it might work.
-> >
+> Users are generally ok at realising correlation between a setting 
+> change and something no longer working, so as long as you provide 
+> that they'll be happy. I agree that this sucks. What we actually 
+> want is some means of reliably identifying whether a port is 
+> hotplug or not, but eSATA makes this very difficult.
+
+Is it impossible?
+
+> > Sure, there might be tradeoffs when a piece of hardware cannot 
+> > be turned off sanely: obviously the monitor might not know it 
+> > (currently) whether someone is watching it, and 
+> > wake-on-packet-for-me is not commonly implemented in wireless 
+> > and wired networking cards so turning off an active networking 
+> > card might not be possible without the user asking allowing that 
+> > imperfect mode of power saving.
 > 
-> Yes, I've just been looking at the photographs of the panics again and
-> I've noticed that two of my discs are being detected in the "wrong
-> order". There are three HDDS. The first, /dev/sda, is the master on
-> the first IDE port and contains sda1..sda7. The second, normally
-> /dev/sdb, is the slave on that port and contains sdb1..sdb6. The
-> third, normally /dev/sdc, is attached to the first SATA port and
-> contains sdc1..sdc3. The second photograph I posted shows that sdb and
-> sdc have been reversed. The first partition on the disc that is
-> normally /dev/sdb does indeed have a FAT32 filesystem in the first
-> partition.
+> These cases can all be handled with sufficiently intelligent 
+> userland, so I'm not worried about them.
 > 
-> By the way, I should have said that in between the panics that the two
-> photographs show, I copied contents of /dev/sdc1, which I normally
-> boot from, to /dev/sdb6, so that I minimised the risk to sdc1 in the
-> reboot festival that bisecting would involve. I also, of course,
-> changed the name of the root partition that is passed to the kernel by
-> GRUB and amended /etc/fstab on /dev/sdb6. That's why the partitions
-> shown in the photographs seem inconsistent. Sorry I forgot to mention
-> that - I really shouldn't do these things late at night :-).
+> > ( Providing a way to _override_ those defaults is of course natural,
+> >   via /sysfs, should the user express an interest in tweaking it, or
+> >   should the kernel get it so wrong that a distro wants to work it
+> >   around. But your argument seems to be "push configuration and
+> >   handling into user-space" which is really backwards. )
+> 
+> My argument is "Hardware should work, and if the kernel default is 
+> for it to be broken then the default is wrong". We went through 
+> this for USB autosuspend. Userspace simply has more available 
+> information than the kernel, and it's not just a matter of static 
+> configuration (though that may be part of it). For instance, 
+> Oliver's example of screensavers and USB keyboards. If nothing's 
+> paying attention to volume keys (or if the keyboard doesn't have 
+> any) then you can enable remote wakeup and suspend the keyboard. 
+> If something /is/ paying attention to volume keys, you can't do 
+> that. That's the kind of case I'm discussing.
 
-Actually, you can save yourself a lot of pain by mounting by label
-instead ... that way both grub and fstab will find your root disc even
-if it has swapped order.
+See my reply to Oliver. This is really advocating a broken model of 
+device usage. That volume key usage dependency is being hidden from 
+the kernel, and then you want to kludge it around by pushing suspend 
+functionality to user-space? That way lies madness. The proper way 
+is to close the device if it's not used by anything. Then the kernel 
+can auto-suspend it just like it could auto-suspend network 
+interfaces that are not in use, or like it could auto-suspend a 
+dislay port that has no monitor or other output device attached.
 
-> As I indicate above, when booting the partition I have set up to do
-> this bisecting,  I expect the root filesystem to be on /dev/hdb6. As I
-> also indicate, this information is passed to the kernel through GRUB's
-> /boot/grub/menu.lst. The kernel is configured specifically for my
-> system and the drivers needed to boot the system are built in to the
-> kernel, so I don't use an initrd. IIRC, that's the way Slackware is
-> installed today, except, of course, it's a big fat kernel with all
-> drivers needed to boot any system built in. I could be wrong on that
-> though, it's a while since I installed
-
-The fact that a slave on the first channel is detected after the SATA
-indicates a problem with async probing.  What are the two drivers for
-these?
-
-James
-
-
+	Ingo
