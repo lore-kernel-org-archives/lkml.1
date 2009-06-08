@@ -1,351 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758453AbZFHTfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbZFHTgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758453AbZFHTfv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 15:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbZFHTYL
+	id S1756262AbZFHTgH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 15:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757033AbZFHT24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 15:24:11 -0400
-Received: from thunk.org ([69.25.196.29]:39629 "EHLO thunker.thunk.org"
+	Mon, 8 Jun 2009 15:28:56 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:55924 "EHLO isrv.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755243AbZFHTXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 15:23:25 -0400
-From: "Theodore Ts'o" <tytso@mit.edu>
-To: Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Cc: "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 17/49] ext4: Move the ext4_i.h header file into ext4.h
-Date: Mon,  8 Jun 2009 15:22:35 -0400
-Message-Id: <1244488987-32564-18-git-send-email-tytso@mit.edu>
-X-Mailer: git-send-email 1.6.3.2.1.gb9f7d.dirty
-In-Reply-To: <1244488987-32564-17-git-send-email-tytso@mit.edu>
-References: <1244488987-32564-1-git-send-email-tytso@mit.edu>
- <1244488987-32564-2-git-send-email-tytso@mit.edu>
- <1244488987-32564-3-git-send-email-tytso@mit.edu>
- <1244488987-32564-4-git-send-email-tytso@mit.edu>
- <1244488987-32564-5-git-send-email-tytso@mit.edu>
- <1244488987-32564-6-git-send-email-tytso@mit.edu>
- <1244488987-32564-7-git-send-email-tytso@mit.edu>
- <1244488987-32564-8-git-send-email-tytso@mit.edu>
- <1244488987-32564-9-git-send-email-tytso@mit.edu>
- <1244488987-32564-10-git-send-email-tytso@mit.edu>
- <1244488987-32564-11-git-send-email-tytso@mit.edu>
- <1244488987-32564-12-git-send-email-tytso@mit.edu>
- <1244488987-32564-13-git-send-email-tytso@mit.edu>
- <1244488987-32564-14-git-send-email-tytso@mit.edu>
- <1244488987-32564-15-git-send-email-tytso@mit.edu>
- <1244488987-32564-16-git-send-email-tytso@mit.edu>
- <1244488987-32564-17-git-send-email-tytso@mit.edu>
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1755351AbZFHT2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 15:28:55 -0400
+Message-ID: <4A2D6676.1030607@msgid.tls.msk.ru>
+Date: Mon, 08 Jun 2009 23:28:54 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: Linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [Security, resend] Instant crash with rtl8169 and large packets
+References: <4A2D1147.8020101@msgid.tls.msk.ru> <4A2D1FE4.5030100@gmail.com> <4A2D25F6.9080300@msgid.tls.msk.ru> <4A2D2906.6090002@gmail.com> <4A2D301D.9040301@msgid.tls.msk.ru> <4A2D3568.6010901@gmail.com> <4A2D3BC6.3040904@msgid.tls.msk.ru> <4A2D4AA7.6020204@gmail.com>
+In-Reply-To: <4A2D4AA7.6020204@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no longer a reason for a separate ext4_i.h header file, so
-move it into ext4.h just to make life easier for developers to find
-the relevant data structures and typedefs.  Should also speed up
-compiles slightly, too.
+Eric Dumazet wrote:
+> OK I suspect driver is buggy since 2.6.10 days :)
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
----
- fs/ext4/ext4.h   |  122 ++++++++++++++++++++++++++++++++++++++++++++++-
- fs/ext4/ext4_i.h |  140 ------------------------------------------------------
- 2 files changed, 121 insertions(+), 141 deletions(-)
- delete mode 100644 fs/ext4/ext4_i.h
+I browsed the git history for a while but don't see since
+when it might be broken.  But again, I don't know the code
+nor the hardware.
 
-diff --git a/fs/ext4/ext4.h b/fs/ext4/ext4.h
-index 02ec44b..ba57d66 100644
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -21,7 +21,10 @@
- #include <linux/magic.h>
- #include <linux/jbd2.h>
- #include <linux/quota.h>
--#include "ext4_i.h"
-+#include <linux/rwsem.h>
-+#include <linux/rbtree.h>
-+#include <linux/seqlock.h>
-+#include <linux/mutex.h>
- 
- /*
-  * The fourth extended filesystem constants/structures
-@@ -46,6 +49,19 @@
- #define ext4_debug(f, a...)	do {} while (0)
- #endif
- 
-+/* data type for block offset of block group */
-+typedef int ext4_grpblk_t;
-+
-+/* data type for filesystem-wide blocks number */
-+typedef unsigned long long ext4_fsblk_t;
-+
-+/* data type for file logical block number */
-+typedef __u32 ext4_lblk_t;
-+
-+/* data type for block group number */
-+typedef unsigned int ext4_group_t;
-+
-+
- /* prefer goal again. length */
- #define EXT4_MB_HINT_MERGE		1
- /* blocks already reserved */
-@@ -516,6 +532,110 @@ do {									       \
- #endif /* defined(__KERNEL__) || defined(__linux__) */
- 
- /*
-+ * storage for cached extent
-+ */
-+struct ext4_ext_cache {
-+	ext4_fsblk_t	ec_start;
-+	ext4_lblk_t	ec_block;
-+	__u32		ec_len; /* must be 32bit to return holes */
-+	__u32		ec_type;
-+};
-+
-+/*
-+ * fourth extended file system inode data in memory
-+ */
-+struct ext4_inode_info {
-+	__le32	i_data[15];	/* unconverted */
-+	__u32	i_flags;
-+	ext4_fsblk_t	i_file_acl;
-+	__u32	i_dtime;
-+
-+	/*
-+	 * i_block_group is the number of the block group which contains
-+	 * this file's inode.  Constant across the lifetime of the inode,
-+	 * it is ued for making block allocation decisions - we try to
-+	 * place a file's data blocks near its inode block, and new inodes
-+	 * near to their parent directory's inode.
-+	 */
-+	ext4_group_t	i_block_group;
-+	__u32	i_state;		/* Dynamic state flags for ext4 */
-+
-+	ext4_lblk_t		i_dir_start_lookup;
-+#ifdef CONFIG_EXT4_FS_XATTR
-+	/*
-+	 * Extended attributes can be read independently of the main file
-+	 * data. Taking i_mutex even when reading would cause contention
-+	 * between readers of EAs and writers of regular file data, so
-+	 * instead we synchronize on xattr_sem when reading or changing
-+	 * EAs.
-+	 */
-+	struct rw_semaphore xattr_sem;
-+#endif
-+#ifdef CONFIG_EXT4_FS_POSIX_ACL
-+	struct posix_acl	*i_acl;
-+	struct posix_acl	*i_default_acl;
-+#endif
-+
-+	struct list_head i_orphan;	/* unlinked but open inodes */
-+
-+	/*
-+	 * i_disksize keeps track of what the inode size is ON DISK, not
-+	 * in memory.  During truncate, i_size is set to the new size by
-+	 * the VFS prior to calling ext4_truncate(), but the filesystem won't
-+	 * set i_disksize to 0 until the truncate is actually under way.
-+	 *
-+	 * The intent is that i_disksize always represents the blocks which
-+	 * are used by this file.  This allows recovery to restart truncate
-+	 * on orphans if we crash during truncate.  We actually write i_disksize
-+	 * into the on-disk inode when writing inodes out, instead of i_size.
-+	 *
-+	 * The only time when i_disksize and i_size may be different is when
-+	 * a truncate is in progress.  The only things which change i_disksize
-+	 * are ext4_get_block (growth) and ext4_truncate (shrinkth).
-+	 */
-+	loff_t	i_disksize;
-+
-+	/*
-+	 * i_data_sem is for serialising ext4_truncate() against
-+	 * ext4_getblock().  In the 2.4 ext2 design, great chunks of inode's
-+	 * data tree are chopped off during truncate. We can't do that in
-+	 * ext4 because whenever we perform intermediate commits during
-+	 * truncate, the inode and all the metadata blocks *must* be in a
-+	 * consistent state which allows truncation of the orphans to restart
-+	 * during recovery.  Hence we must fix the get_block-vs-truncate race
-+	 * by other means, so we have i_data_sem.
-+	 */
-+	struct rw_semaphore i_data_sem;
-+	struct inode vfs_inode;
-+	struct jbd2_inode jinode;
-+
-+	struct ext4_ext_cache i_cached_extent;
-+	/*
-+	 * File creation time. Its function is same as that of
-+	 * struct timespec i_{a,c,m}time in the generic inode.
-+	 */
-+	struct timespec i_crtime;
-+
-+	/* mballoc */
-+	struct list_head i_prealloc_list;
-+	spinlock_t i_prealloc_lock;
-+
-+	/* ialloc */
-+	ext4_group_t	i_last_alloc_group;
-+
-+	/* allocation reservation info for delalloc */
-+	unsigned int i_reserved_data_blocks;
-+	unsigned int i_reserved_meta_blocks;
-+	unsigned int i_allocated_meta_blocks;
-+	unsigned short i_delalloc_reserved_flag;
-+
-+	/* on-disk additional length */
-+	__u16 i_extra_isize;
-+
-+	spinlock_t i_block_reservation_lock;
-+};
-+
-+/*
-  * File system states
-  */
- #define	EXT4_VALID_FS			0x0001	/* Unmounted cleanly */
-diff --git a/fs/ext4/ext4_i.h b/fs/ext4/ext4_i.h
-deleted file mode 100644
-index 4ce2187..0000000
---- a/fs/ext4/ext4_i.h
-+++ /dev/null
-@@ -1,140 +0,0 @@
--/*
-- *  ext4_i.h
-- *
-- * Copyright (C) 1992, 1993, 1994, 1995
-- * Remy Card (card@masi.ibp.fr)
-- * Laboratoire MASI - Institut Blaise Pascal
-- * Universite Pierre et Marie Curie (Paris VI)
-- *
-- *  from
-- *
-- *  linux/include/linux/minix_fs_i.h
-- *
-- *  Copyright (C) 1991, 1992  Linus Torvalds
-- */
--
--#ifndef _EXT4_I
--#define _EXT4_I
--
--#include <linux/rwsem.h>
--#include <linux/rbtree.h>
--#include <linux/seqlock.h>
--#include <linux/mutex.h>
--
--/* data type for block offset of block group */
--typedef int ext4_grpblk_t;
--
--/* data type for filesystem-wide blocks number */
--typedef unsigned long long ext4_fsblk_t;
--
--/* data type for file logical block number */
--typedef __u32 ext4_lblk_t;
--
--/* data type for block group number */
--typedef unsigned int ext4_group_t;
--
--/*
-- * storage for cached extent
-- */
--struct ext4_ext_cache {
--	ext4_fsblk_t	ec_start;
--	ext4_lblk_t	ec_block;
--	__u32		ec_len; /* must be 32bit to return holes */
--	__u32		ec_type;
--};
--
--/*
-- * fourth extended file system inode data in memory
-- */
--struct ext4_inode_info {
--	__le32	i_data[15];	/* unconverted */
--	__u32	i_flags;
--	ext4_fsblk_t	i_file_acl;
--	__u32	i_dtime;
--
--	/*
--	 * i_block_group is the number of the block group which contains
--	 * this file's inode.  Constant across the lifetime of the inode,
--	 * it is ued for making block allocation decisions - we try to
--	 * place a file's data blocks near its inode block, and new inodes
--	 * near to their parent directory's inode.
--	 */
--	ext4_group_t	i_block_group;
--	__u32	i_state;		/* Dynamic state flags for ext4 */
--
--	ext4_lblk_t		i_dir_start_lookup;
--#ifdef CONFIG_EXT4_FS_XATTR
--	/*
--	 * Extended attributes can be read independently of the main file
--	 * data. Taking i_mutex even when reading would cause contention
--	 * between readers of EAs and writers of regular file data, so
--	 * instead we synchronize on xattr_sem when reading or changing
--	 * EAs.
--	 */
--	struct rw_semaphore xattr_sem;
--#endif
--#ifdef CONFIG_EXT4_FS_POSIX_ACL
--	struct posix_acl	*i_acl;
--	struct posix_acl	*i_default_acl;
--#endif
--
--	struct list_head i_orphan;	/* unlinked but open inodes */
--
--	/*
--	 * i_disksize keeps track of what the inode size is ON DISK, not
--	 * in memory.  During truncate, i_size is set to the new size by
--	 * the VFS prior to calling ext4_truncate(), but the filesystem won't
--	 * set i_disksize to 0 until the truncate is actually under way.
--	 *
--	 * The intent is that i_disksize always represents the blocks which
--	 * are used by this file.  This allows recovery to restart truncate
--	 * on orphans if we crash during truncate.  We actually write i_disksize
--	 * into the on-disk inode when writing inodes out, instead of i_size.
--	 *
--	 * The only time when i_disksize and i_size may be different is when
--	 * a truncate is in progress.  The only things which change i_disksize
--	 * are ext4_get_block (growth) and ext4_truncate (shrinkth).
--	 */
--	loff_t	i_disksize;
--
--	/*
--	 * i_data_sem is for serialising ext4_truncate() against
--	 * ext4_getblock().  In the 2.4 ext2 design, great chunks of inode's
--	 * data tree are chopped off during truncate. We can't do that in
--	 * ext4 because whenever we perform intermediate commits during
--	 * truncate, the inode and all the metadata blocks *must* be in a
--	 * consistent state which allows truncation of the orphans to restart
--	 * during recovery.  Hence we must fix the get_block-vs-truncate race
--	 * by other means, so we have i_data_sem.
--	 */
--	struct rw_semaphore i_data_sem;
--	struct inode vfs_inode;
--	struct jbd2_inode jinode;
--
--	struct ext4_ext_cache i_cached_extent;
--	/*
--	 * File creation time. Its function is same as that of
--	 * struct timespec i_{a,c,m}time in the generic inode.
--	 */
--	struct timespec i_crtime;
--
--	/* mballoc */
--	struct list_head i_prealloc_list;
--	spinlock_t i_prealloc_lock;
--
--	/* ialloc */
--	ext4_group_t	i_last_alloc_group;
--
--	/* allocation reservation info for delalloc */
--	unsigned int i_reserved_data_blocks;
--	unsigned int i_reserved_meta_blocks;
--	unsigned int i_allocated_meta_blocks;
--	unsigned short i_delalloc_reserved_flag;
--
--	/* on-disk additional length */
--	__u16 i_extra_isize;
--
--	spinlock_t i_block_reservation_lock;
--};
--
--#endif	/* _EXT4_I */
--- 
-1.6.3.2.1.gb9f7d.dirty
+> Could you try this patch ?
 
+That makes quite some sense, except of two comments - pure
+speculation/guesses really, since I don't know the hw.
+
+The patch does not re-program the card when we change MTU
+(where we merely set internal rx_buf_sz, but don't tell the
+card about this).  Maybe we should call this method in
+rtl8169_set_rxbufsize() too?
+
+I don't know almost anything about things like vlans for
+example, but guess they use some additional headers.  Does
+those need some space too?  Maybe its better to allocate
+"a bit" more room in skb for that stuff?
+
+Recompiling the driver now...
+
+/mjt
