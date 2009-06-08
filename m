@@ -1,106 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbZFHVZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZFHV2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbZFHVZx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 17:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbZFHVZo
+	id S1756211AbZFHV2J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 17:28:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbZFHV1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 17:25:44 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33590 "EHLO mx2.mail.elte.hu"
+	Mon, 8 Jun 2009 17:27:55 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:57965 "EHLO isrv.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755084AbZFHVZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 17:25:43 -0400
-Date: Mon, 8 Jun 2009 23:25:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jason Baron <jbaron@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org, fweisbec@gmail.com, laijs@cn.fujitsu.com,
-       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
-       jiayingz@google.com, mbligh@google.com, roland@redhat.com,
-       fche@redhat.com
-Subject: Re: [PATCH 2/2] convert to syscall tracepoints
-Message-ID: <20090608212526.GA22049@elte.hu>
-References: <cover.1244222378.git.jbaron@redhat.com> <af4031af81ce372eac2be125dabc2ea746b4308b.1244222378.git.jbaron@redhat.com> <20090607132936.GC12088@elte.hu> <20090608202406.GA3181@redhat.com> <20090608204056.GA26832@elte.hu> <20090608211150.GC3181@redhat.com>
+	id S1753069AbZFHV1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 17:27:55 -0400
+Message-ID: <4A2D825B.6090409@msgid.tls.msk.ru>
+Date: Tue, 09 Jun 2009 01:27:55 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090608211150.GC3181@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: [Security, resend] Instant crash with rtl8169 and large packets
+References: <4A2D1147.8020101@msgid.tls.msk.ru> <4A2D1FE4.5030100@gmail.com> <4A2D25F6.9080300@msgid.tls.msk.ru> <4A2D2906.6090002@gmail.com> <4A2D301D.9040301@msgid.tls.msk.ru> <4A2D3568.6010901@gmail.com> <4A2D3BC6.3040904@msgid.tls.msk.ru> <4A2D4AA7.6020204@gmail.com> <4A2D6D0C.6060206@msgid.tls.msk.ru> <4A2D7FFE.9070701@cosmosbay.com>
+In-Reply-To: <4A2D7FFE.9070701@cosmosbay.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jason Baron <jbaron@redhat.com> wrote:
-
-> On Mon, Jun 08, 2009 at 10:40:56PM +0200, Ingo Molnar wrote:
-> > * Jason Baron <jbaron@redhat.com> wrote:
-> > 
-> > > +#ifdef __NR_time
-> > > +trace_event_syscall(1, time, time_t __user *, tloc);
-> > > +#endif
-> > > +
-> > > +#ifdef __NR_stime
-> > > +trace_event_syscall(1, stime, time_t __user *, tptr);
-> > > +#endif
-> > > +
-> > > +#ifdef __NR_gettimeofday
-> > > +trace_event_syscall(2, gettimeofday, struct timeval __user *, tv, struct timezone __user *, tz);
-> > > +#endif
-> > 
-> > This could be reduced to a single line: just add a Kconfig entry 
-> > (say TRACE_SYSCALL_TRACEPOINTS) wether an arch supports syscall 
-> > tracepoints, enable it on a sane arch, make sure it has all the 
-> > syscalls and list them ...
-> > 
-> > As more architectures turn on SYSCALL_TRACEPOINTS, they'll have to 
-> > resolve any deviations in syscall entry points. Ideally we'd have 
-> > one generic table that covers 95% of all syscalls, and the remaining 
-> > 5% in some architecture specific #ifdef section.
-> > 
+Eric Dumazet wrote:
+> Michael Tokarev a écrit :
+>> Eric Dumazet wrote:
+>> []
+>>> OK I suspect driver is buggy since 2.6.10 days :)
+>>>
+>>> Could you try this patch ?
+>> Tried it, and it appears to work.  Tried various MTU combinations
+>> and packet sizes.  Checked iperf too, with and without the patch
+>> and with different MTU too, to be sure the patch does not introduce
+>> any slowdowns - everything looks sane.  In case the incoming packet
+>> is larger than the RX buffer size, `errors' and `frames' RX stats
+>> gets incremented.
+>>
+>> The only somewhat odd thing is that rx path accepts packets larger
+>> than MTU by 3 bytes.  For example, if I set mtu to 2000, the
+>> largest packet I can send is 2003 bytes; with mtu=2002, largest
+>> actual packet size is 2005 bytes.  This is complete frame - in
+>> terms of ping size (ping -s) it's 1975 and 1977 bytes.  That to
+>> say, maybe we still have some corner case somewhere, for packets
+>> larger than mtu by 1, 2 or 3 bytes.
+>>
+>> Also I didn't try MTU < 1500.
+>>
+>> Other than that,
+>>
+>> Tested-By: Michael Tokarev <mjt@tls.msk.ru>
 > 
-> true, but this implementation works for all arches now, why would 
-> want to slowly add this over time? [...]
+> Could you confirm this last patch was ok without former two patches ?
 
-Because the current solution is butt-ugly ...
+Yes, it's the last patch without former two which were for
+debugging as I understand them.  Got fresh 2.6.29.4 source
+and applied your last patch to it, recompiled.  All the testing
+above were done this way.
 
-> [...] I think its unnecessary work that could be error prone.
-
-This area needs cleanups - making it messier doesnt help. (I've 
-Cc:-ed hpa - he has expressed interest in auto-generating all the 
-syscall related details from another angle ...)
-
-> > But, more generally, i'm not at all convinced that we need _any_ 
-> > of this enumeration. Look how much the above lines duplicate 
-> > DEFINE_SYSCALL macros. Why arent those macros re-used?
+>> And by the way, your email client uses quoted-printable encoding.
+>> I had to use trivial perl one-liner to convert your patches to
+>> plaintext.  JFYI.
 > 
-> The DEFINE_SYSCALL() are located all over the code in various .c files.
+> Ah yes, this is when I reply to one of your mail, thank you for the hint.
+> 
+> When submitting a new mail, my thunderbird agent uses a regular "Content-Transfer-Encoding: 7bit"
 
-yes, and that's good.
+Heh.  I know why it's this way.  Due to your
+"Michael Tokarev a écrit" in first line.  Which
+gets added by Thunderbird, and which causes it
+to force quoted-printable instead of 7bit, because
+of this "é".  Mine offers "пишет" instead of "écrit"
+("wrote" in English) and the result is similar.
 
-> Thus, if we define the tracpoints via the DEFINE_SYSCALL() macros 
-> we are going to have 'static inline functions' (which is how 
-> tracepoints are implemented) defined in all these .c files. Now, I 
-> need to call all these 'static inline functions' from ptrace.c. 
-> How do I do that? [...]
+> BTW, this driver uses NAPI, but still calls dev_kfree_skb_irq() in rtl8169_tx_interrupt()
+> 
+> You probably can get better performance calling dev_kfree_skb(tx_skb->skb); instead
+> 
+> @@ -3372,7 +3372,7 @@ static void rtl8169_tx_interrupt(struct net_device *dev,
+>                 rtl8169_unmap_tx_skb(tp->pci_dev, tx_skb, tp->TxDescArray + entry);
+> 
+>                 if (status & LastFrag) {
+> -                       dev_kfree_skb_irq(tx_skb->skb);
+> +                       dev_kfree_skb(tx_skb->skb);
+>                         tx_skb->skb = NULL;
+>                 }
+>                 dirty_tx++;
 
-And that's bad.
+Well, the performance is quite good -- 935Mb/sec according to iperf
+for TCP.  With UDP I got 1.05Gb/sec, but CPU usage is 100% during
+all test time (for TCP test the CPU is in use for less than 5%).
+I'll try the change tomorrow (it's 01:27 here now already).
 
-We dont want a per syscall tracepoint call site. AT ALL.
+Thank you for the good work!
 
-We want to collect the record information, we want to construct 
-/debug/tracing/events/syscalls/ directories with all the proper 
-tracepoint-lookalike entries, and then we want to use the 
-_existing_, _zero overhead_ method implemented by Frederic to get 
-per syscall functionality.
-
-Have you looked at how the syscall attributes information is 
-constructed by using .section tricks? See: 
-kernel/trace/trace_syscalls.c.
-
-	Ingo
+/mjt
