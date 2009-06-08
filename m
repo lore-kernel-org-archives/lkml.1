@@ -1,109 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbZFHRAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756677AbZFHRBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756803AbZFHRAa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbZFHRAY
+	id S1756677AbZFHRBZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbZFHRBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:00:24 -0400
-Received: from mo-p00-ob.rzone.de ([81.169.146.160]:62765 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754989AbZFHRAW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:00:22 -0400
-X-RZG-AUTH: :I2ANY0W6W/eA95XfH/xfO6gOxLxTty/udEMngcJ/VAKW226lDNJVyuYELDI/Mbox
-X-RZG-CLASS-ID: mo00
-Message-ID: <4A2D439A.4020803@hartkopp.net>
-Date: Mon, 08 Jun 2009 19:00:10 +0200
-From: Oliver Hartkopp <oliver@hartkopp.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
+	Mon, 8 Jun 2009 13:01:18 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:11181 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755960AbZFHRBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 13:01:16 -0400
+X-IronPort-AV: E=Sophos;i="4.41,325,1241420400"; 
+   d="scan'208";a="187596733"
+Subject: Re: [PATCH 5/5] sunrpc/auth_gss: Call rcu_barrier() on module
+ unload.
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 To: paulmck@linux.vnet.ibm.com
-CC: Jesper Dangaard Brouer <hawk@comx.dk>,
+Cc: Jesper Dangaard Brouer <hawk@comx.dk>,
        "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org, urs.thuermann@volkswagen.de,
        oliver.hartkopp@volkswagen.de, wg@grandegger.com,
        vladislav.yasevich@hp.com, sri@us.ibm.com, linux-sctp@vger.kernel.org,
-       Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org,
-       netfilter-devel@vger.kernel.org
-Subject: Re: [PATCH 3/5] can: af_can.c use rcu_barrier() on module unload.
-References: <20090608130959.10052.54590.stgit@localhost> <20090608131138.10052.5408.stgit@localhost> <20090608161329.GD6961@linux.vnet.ibm.com>
-In-Reply-To: <20090608161329.GD6961@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
+       linux-nfs@vger.kernel.org, netfilter-devel@vger.kernel.org
+In-Reply-To: <20090608162656.GF6961@linux.vnet.ibm.com>
+References: <20090608130959.10052.54590.stgit@localhost>
+	 <20090608131148.10052.39869.stgit@localhost>
+	 <20090608162656.GF6961@linux.vnet.ibm.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Mon, 08 Jun 2009 13:00:49 -0400
+Message-Id: <1244480449.5040.4.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 08 Jun 2009 17:00:50.0186 (UTC) FILETIME=[ACE06EA0:01C9E85A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Mon, Jun 08, 2009 at 03:11:38PM +0200, Jesper Dangaard Brouer wrote:
->> This module uses rcu_call() thus it should use rcu_barrier()
->> on module unload.
+On Mon, 2009-06-08 at 09:26 -0700, Paul E. McKenney wrote:
+> On Mon, Jun 08, 2009 at 03:11:48PM +0200, Jesper Dangaard Brouer wrote:
+> > As the module uses rcu_call() we should make sure that all
+> > rcu callback has been completed before removing the code.
 > 
-> This does appear to make things better!!!
+> Good improvement!!!  Assuming that gss_svc_shutdown() and
+> rpcauth_unregister() prevent any future RCU callbacks to be registered,
+> this patch will fix things up.
 > 
-> However, I don't understand why it is safe to do the following in
-> can_exit():
+> Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > 
-> 	hlist_for_each_entry_safe(d, n, next, &can_rx_dev_list, list) {
-> 		hlist_del(&d->list);
-> 		kfree(d);
-> 	}
-> 
-> Given that this list is scanned by RCU readers, shouldn't this kfree()
-> be something like "call_rcu(&d->rcu, can_rx_delete_device);"?
-> 
-> Also, what frees up the "struct receiver" structures?
+> > Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+> > ---
+> > 
+> >  net/sunrpc/auth_gss/auth_gss.c |    1 +
+> >  1 files changed, 1 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/net/sunrpc/auth_gss/auth_gss.c b/net/sunrpc/auth_gss/auth_gss.c
+> > index e630b38..66d458f 100644
+> > --- a/net/sunrpc/auth_gss/auth_gss.c
+> > +++ b/net/sunrpc/auth_gss/auth_gss.c
+> > @@ -1548,6 +1548,7 @@ static void __exit exit_rpcsec_gss(void)
+> >  {
+> >  	gss_svc_shutdown();
+> >  	rpcauth_unregister(&authgss_ops);
+> > +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
+> >  }
+> > 
+> >  MODULE_LICENSE("GPL");
+> > 
 
-Hi Paul,
+Hmm... If this is about ensuring that all the call_rcu() callbacks
+complete before we remove the module, then don't we also need similar
+barriers in net/sunrpc/sunrpc_syms.c:cleanup_sunrpc() and in
+fs/nfs/inode.c:exit_nfs_fs()?
 
-af_can.c only provides an infrastructure for PF_CAN modules like can-raw.ko,
-can-bcm.ko or can-isotp.ko.
+Cheers
+  Trond
+-- 
+Trond Myklebust
+Linux NFS client maintainer
 
-Please take a look into can_notifier() in net/can/af_can.c and raw_notifier()
-in net/can/raw.c:
-
-The receivers are removed when the appropriate socket is closed that created
-the belonging receivers. And you can not remove can.ko (af_can.c) when another
-PF_CAN protocol like can-raw.ko is using it.
-
-So when a netdev notifier removes the interface both the PF_CAN protocol (e.g.
-can-raw.ko) and the PF_CAN core (af_can.c) cleans up all receivers and finally
-removes the per-interface structure dev_rcv_lists (e.g. for can0).
-
-In can_exit() all the dev_rcv_lists for ARPHRD_CAN interfaces are removed that
-had been created by NETDEV_REGISTER notifier and are unused by any of the
-PF_CAN protocols and therefore without any receivers attached to them.
-
-The list is protected by spin_lock(&can_rcvlists_lock) - which is probably not
-even needed in this particular case - and there is no PF_CAN protocol
-registered at this time. So it's really save to remove the empty dev_rcv_lists
-structs here that do not link to any receivers.
-
-Puh - much text. But i hope it clarifies it.
-
-Thinking about the rcu stuff again, rcu_barrier() still makes sense when you
-are unloading the module chain of can-raw.ko and can.ko very fast.
-
-Regards,
-Oliver
-
-
->> Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
->> ---
->>
->>  net/can/af_can.c |    2 ++
->>  1 files changed, 2 insertions(+), 0 deletions(-)
->>
->> diff --git a/net/can/af_can.c b/net/can/af_can.c
->> index 10f0528..e733725 100644
->> --- a/net/can/af_can.c
->> +++ b/net/can/af_can.c
->> @@ -903,6 +903,8 @@ static __exit void can_exit(void)
->>  	}
->>  	spin_unlock(&can_rcvlists_lock);
->>
->> +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
->> +
->>  	kmem_cache_destroy(rcv_cache);
->>  }
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
