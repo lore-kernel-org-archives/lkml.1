@@ -1,184 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbZFHQ7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756803AbZFHRAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756518AbZFHQ7U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 12:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbZFHQ7M
+	id S1756803AbZFHRAa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbZFHRAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 12:59:12 -0400
-Received: from mga09.intel.com ([134.134.136.24]:15141 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755142AbZFHQ7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 12:59:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,325,1241420400"; 
-   d="scan'208";a="522681904"
-Subject: Re: [PATCH] remove rwsem lock from CPUFREQ_GOV_STOP call (second
- call site)
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Dave Jones <davej@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, "trenn@suse.de" <trenn@suse.de>,
-       "sven.wegener@stealer.net" <sven.wegener@stealer.net>,
-       "mingo@elte.hu" <mingo@elte.hu>, "Li, Shaohua" <shaohua.li@intel.com>
-In-Reply-To: <20090608152316.GA21033@Krystal>
-References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
-	 <D9VoutSOyXP.A.7vF.2Y7KKB@chimera>
-	 <84144f020906070621r1f480eaeief026d23662df380@mail.gmail.com>
-	 <a8e1da0906080035j9f8b38drb46132de5a515915@mail.gmail.com>
-	 <1244447366.13471.4.camel@penberg-laptop> <20090608124844.GA17588@Krystal>
-	 <20090608143220.GC2516@redhat.com>  <20090608152316.GA21033@Krystal>
-Content-Type: text/plain
-Date: Mon, 08 Jun 2009 09:57:34 -0700
-Message-Id: <1244480254.4534.265.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	Mon, 8 Jun 2009 13:00:24 -0400
+Received: from mo-p00-ob.rzone.de ([81.169.146.160]:62765 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754989AbZFHRAW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 13:00:22 -0400
+X-RZG-AUTH: :I2ANY0W6W/eA95XfH/xfO6gOxLxTty/udEMngcJ/VAKW226lDNJVyuYELDI/Mbox
+X-RZG-CLASS-ID: mo00
+Message-ID: <4A2D439A.4020803@hartkopp.net>
+Date: Mon, 08 Jun 2009 19:00:10 +0200
+From: Oliver Hartkopp <oliver@hartkopp.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: paulmck@linux.vnet.ibm.com
+CC: Jesper Dangaard Brouer <hawk@comx.dk>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, wg@grandegger.com,
+       vladislav.yasevich@hp.com, sri@us.ibm.com, linux-sctp@vger.kernel.org,
+       Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH 3/5] can: af_can.c use rcu_barrier() on module unload.
+References: <20090608130959.10052.54590.stgit@localhost> <20090608131138.10052.5408.stgit@localhost> <20090608161329.GD6961@linux.vnet.ibm.com>
+In-Reply-To: <20090608161329.GD6961@linux.vnet.ibm.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-08 at 08:23 -0700, Mathieu Desnoyers wrote:
-> * Dave Jones (davej@redhat.com) wrote:
-> > On Mon, Jun 08, 2009 at 08:48:45AM -0400, Mathieu Desnoyers wrote:
-> >  
-> >  > > > >> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13475
-> >  > > > >> Subject         : suspend/hibernate lockdep warning
-> >  > > > >> References      : http://marc.info/?l=linux-kernel&m=124393723321241&w=4
-> >  > > > 
-> >  > > > I suspect the following commit, after revert this patch I test 5 times
-> >  > > > without lockdep warnings.
-> >  > > > 
-> >  > > > commit b14893a62c73af0eca414cfed505b8c09efc613c
-> >  > > > Author: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> >  > > > Date:   Sun May 17 10:30:45 2009 -0400
-> >  > > > 
-> >  > > > 	[CPUFREQ] fix timer teardown in ondemand governor
-> >  > > 
-> >  > > The patch is probably not at fault here. I suspect it's some latent bug
-> >  > > that simply got exposed by the change to cancel_delayed_work_sync(). In
-> >  > > any case, Mathieu, can you take a look at this please?
-> >  > 
-> >  > Yes, it's been looked at and discussed on the cpufreq ML. The short
-> >  > answer is that they plan to re-engineer cpufreq and remove the policy
-> >  > rwlock taken around almost every operations at the cpufreq level.
-> >  > 
-> >  > The short-term solution, which is recognised as ugly, would be do to the
-> >  > following before doing the cancel_delayed_work_sync() :
-> >  > 
-> >  > unlock policy rwlock write lock
-> >  > 
-> >  > lock policy rwlock write lock
-> >  > 
-> >  > It basically works because this rwlock is unneeded for teardown, hence
-> >  > the future re-work planned.
-> >  > 
-> >  > I'm sorry I cannot prepare a patch current... I've got quite a few pages
-> >  > of Ph.D. thesis due for the beginning of July.
-> >  
-> > I'm kinda scared to touch this code at all for .30 due to the number of
-> > unexpected gotchas we seem to run into every time we touch something
-> > locking related.  So I'm inclined to just live with the lockdep warning
-> > for .30, and see how the real fixes look for .31, and push them back
-> > as -stable updates if they work out.
-> > 
-> > 
-> > Venki, what are your thoughts?
-> > 
+Paul E. McKenney wrote:
+> On Mon, Jun 08, 2009 at 03:11:38PM +0200, Jesper Dangaard Brouer wrote:
+>> This module uses rcu_call() thus it should use rcu_barrier()
+>> on module unload.
 > 
-> Hi Dave,
+> This does appear to make things better!!!
 > 
-> I've looked through the cpufreq code, and the following patch should
-> address the call site I've missed in commit 
-> 42a06f2166f2f6f7bf04f32b4e823eacdceafdc9. I've followed all
-> __cpufreq_set_policy call sites within cpufreq.c to make sure they all
-> hold the rwsem write lock. An extra round of review would be good
-> though.
+> However, I don't understand why it is safe to do the following in
+> can_exit():
 > 
-> Can someone try the following patch and see if it fixes the regression ?
-> My test machine is currently busy running long formal verifications, and
-> therefore unavailable for kernel patch testing. It compiles fine on a
-> 2.6.30-rc5 kernel with my (now mainlined) cpufreq patches applied.
+> 	hlist_for_each_entry_safe(d, n, next, &can_rx_dev_list, list) {
+> 		hlist_del(&d->list);
+> 		kfree(d);
+> 	}
 > 
-> Mathieu
+> Given that this list is scanned by RCU readers, shouldn't this kfree()
+> be something like "call_rcu(&d->rcu, can_rx_delete_device);"?
 > 
-> 
-> remove rwsem lock from CPUFREQ_GOV_STOP call (second call site)
-> 
-> commit	42a06f2166f2f6f7bf04f32b4e823eacdceafdc9
-> 
-> Missed a call site for CPUFREQ_GOV_STOP to remove the rwlock taken around the
-> teardown. To make a long story short, the rwlock write-lock causes a circular
-> dependency with cancel_delayed_work_sync(), because the timer handler takes the
-> read lock.
-> 
-> Note that all callers to __cpufreq_set_policy are taking the rwsem. All sysfs
-> callers (writers) hold the write rwsem at the earliest sysfs calling stage.
-> 
-> However, the rwlock write-lock is not needed upon governor stop.
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Also, what frees up the "struct receiver" structures?
 
-Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Hi Paul,
 
-This change is same as the patch that I was testing right now.
-Only additional change I had was a comment for cpu_policy_rwsem
+af_can.c only provides an infrastructure for PF_CAN modules like can-raw.ko,
+can-bcm.ko or can-isotp.ko.
 
-  *   are concerned with are online after they get the lock.
-  * - Governor routines that can be called in cpufreq hotplug path
-should not
-  *   take this sem as top level hotplug notifier handler takes this.
-+ * - Lock should not be held across
-+ *     __cpufreq_governor(data, CPUFREQ_GOV_STOP);
-  */
+Please take a look into can_notifier() in net/can/af_can.c and raw_notifier()
+in net/can/raw.c:
+
+The receivers are removed when the appropriate socket is closed that created
+the belonging receivers. And you can not remove can.ko (af_can.c) when another
+PF_CAN protocol like can-raw.ko is using it.
+
+So when a netdev notifier removes the interface both the PF_CAN protocol (e.g.
+can-raw.ko) and the PF_CAN core (af_can.c) cleans up all receivers and finally
+removes the per-interface structure dev_rcv_lists (e.g. for can0).
+
+In can_exit() all the dev_rcv_lists for ARPHRD_CAN interfaces are removed that
+had been created by NETDEV_REGISTER notifier and are unused by any of the
+PF_CAN protocols and therefore without any receivers attached to them.
+
+The list is protected by spin_lock(&can_rcvlists_lock) - which is probably not
+even needed in this particular case - and there is no PF_CAN protocol
+registered at this time. So it's really save to remove the empty dev_rcv_lists
+structs here that do not link to any receivers.
+
+Puh - much text. But i hope it clarifies it.
+
+Thinking about the rcu stuff again, rcu_barrier() still makes sense when you
+are unloading the module chain of can-raw.ko and can.ko very fast.
+
+Regards,
+Oliver
 
 
-Thanks,
-Venki
-
-
-> CC: rjw@sisk.pl
-> CC: mingo@elte.hu
-> CC: Shaohua Li <shaohua.li@intel.com>
-> CC: Pekka Enberg <penberg@cs.helsinki.fi>
-> CC: Dave Young <hidave.darkstar@gmail.com>
-> CC: "Rafael J. Wysocki" <rjw@sisk.pl>
-> CC: Rusty Russell <rusty@rustcorp.com.au>
-> CC: trenn@suse.de
-> CC: sven.wegener@stealer.net
-> CC: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> CC: cpufreq@vger.kernel.org
-> ---
->  drivers/cpufreq/cpufreq.c |   11 ++++++++++-
->  1 file changed, 10 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6-lttng/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/drivers/cpufreq/cpufreq.c	2009-06-08 10:20:48.000000000 -0400
-> +++ linux-2.6-lttng/drivers/cpufreq/cpufreq.c	2009-06-08 10:48:52.000000000 -0400
-> @@ -1697,8 +1697,17 @@ static int __cpufreq_set_policy(struct c
->  			dprintk("governor switch\n");
->  
->  			/* end old governor */
-> -			if (data->governor)
-> +			if (data->governor) {
-> +				/*
-> +				 * Need to release the rwsem around governor
-> +				 * stop due to lock dependency between
-> +				 * cancel_delayed_work_sync and the read lock
-> +				 * taken in the delayed work handler.
-> +				 */
-> +				unlock_policy_rwsem_write(data->cpu);
->  				__cpufreq_governor(data, CPUFREQ_GOV_STOP);
-> +				lock_policy_rwsem_write(data->cpu);
-> +			}
->  
->  			/* start new governor */
->  			data->governor = policy->governor;
-> 
-> 
-
+>> Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+>> ---
+>>
+>>  net/can/af_can.c |    2 ++
+>>  1 files changed, 2 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/net/can/af_can.c b/net/can/af_can.c
+>> index 10f0528..e733725 100644
+>> --- a/net/can/af_can.c
+>> +++ b/net/can/af_can.c
+>> @@ -903,6 +903,8 @@ static __exit void can_exit(void)
+>>  	}
+>>  	spin_unlock(&can_rcvlists_lock);
+>>
+>> +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
+>> +
+>>  	kmem_cache_destroy(rcv_cache);
+>>  }
