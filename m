@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbZFHQkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756032AbZFHQpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755090AbZFHQkx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 12:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbZFHQkm
+	id S1756032AbZFHQpM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 12:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbZFHQo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 12:40:42 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:4741 "EHLO mms1.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753180AbZFHQkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 12:40:41 -0400
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-Date: Mon, 8 Jun 2009 09:40:38 -0700
-From: "Matt Carlson" <mcarlson@broadcom.com>
-To: "Christian Kujau" <lists@nerdbynature.de>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "Matthew Carlson" <mcarlson@broadcom.com>
-Subject: Re: tg3 stops working when NFS is involved
-Message-ID: <20090608164038.GA8825@xw6200.broadcom.net>
-References: <alpine.DEB.2.01.0906072115420.6439@bogon>
- <alpine.DEB.2.01.0906072215000.6439@bogon>
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.01.0906072215000.6439@bogon>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-WSS-ID: 6633E08C3BW49851995-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Jun 2009 12:44:59 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:48941 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754498AbZFHQo6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 12:44:58 -0400
+To: viro@ZenIV.linux.org.uk
+CC: miklos@szeredi.hu, ebiederm@xmission.com, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, hugh@veritas.com, tj@kernel.org,
+       adobriyan@gmail.com, torvalds@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, gregkh@suse.de, npiggin@suse.de,
+       akpm@linux-foundation.org, hch@infradead.org
+In-reply-to: <20090608162913.GL8633@ZenIV.linux.org.uk> (message from Al Viro
+	on Mon, 8 Jun 2009 17:29:13 +0100)
+Subject: Re: [PATCH 0/23] File descriptor hot-unplug support v2
+References: <m1skkf761y.fsf@fess.ebiederm.org> <m1oct739xu.fsf@fess.ebiederm.org> <20090606080334.GA15204@ZenIV.linux.org.uk> <E1MDbLz-0003wm-Db@pomaz-ex.szeredi.hu> <20090608162913.GL8633@ZenIV.linux.org.uk>
+Message-Id: <E1MDhxh-0004nz-Qm@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 08 Jun 2009 18:44:41 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 07, 2009 at 10:18:52PM -0700, Christian Kujau wrote:
-> On Sun, 7 Jun 2009, Christian Kujau wrote:
-> > anything else - so, I figure it's not a client problem. And I'm not sure 
-> > if it's NFS problem either, because restarting the NFS server doesn't do 
-> > anything, I really have to rmmod/modprobe the tg3 module. OTOH, I cannot 
-> > reproduce this without NFS: running e.g. iperf (TCP, UDP) did not trigger 
-> > it.
+On Mon, 8 Jun 2009, Al Viro wrote:
+> On Mon, Jun 08, 2009 at 11:41:19AM +0200, Miklos Szeredi wrote:
+> > On Sat, 6 Jun 2009, Al Viro wrote:
+> > > Frankly, I very much suspect that force-umount is another case like that;
+> > > we'll need a *lot* of interesting cooperation from fs for that to work and
+> > > to be useful.  I'd be delighted to be proven incorrect on that one, so
+> > > if you have anything serious in that direction, please share the details.
+> > 
+> > Umm, not sure why we'd need cooperation from the fs.  Simply wait for
+> > the operation to exit the filesystem or driver.  If it's a blocking
+> > operation, send a signal to interrupt it.
 > 
-> Just tested with Samba - after a few megabytes of transmitted data, tg3 stops 
-> working, with no messages printed in the kernel log :-\
-> 
-> I don't know why iperf does not trigger it though....
+> And making sure that operations *are* interruptible (and that we can cope
+> with $BIGNUM new failure exits correctly) does not qualify as cooperation?
 
-Hi Christian.  This seems to be a common problem with the 5906 on some
-notebooks.  The word on the street is that turning sg off through
-ethtool seems to avoid the problem.  While I dig deeper into this
-problem, you could try that and see if it helps you.
+I'm still not getting what the problem is.  AFAICS file operations are
+either
 
+ a) non-interruptible but finish within a short time or
+ b) may block indefinitely but are interruptible (or at least killable).
+
+Anything else is already problematic, resulting in processes "stuck in
+D state".
+
+Can you give a more concrete example about your worries?
+
+Thanks,
+Miklos
