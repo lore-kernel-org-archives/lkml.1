@@ -1,75 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbZFHUfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbZFHUhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754552AbZFHUfl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 16:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZFHUfc
+	id S1755439AbZFHUhe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 16:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbZFHUhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 16:35:32 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:37164 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753569AbZFHUfc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 16:35:32 -0400
-Date: Mon, 8 Jun 2009 16:35:32 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Oliver Neukum <oliver@neukum.org>, <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM:
- Rearrange core suspend code)
-In-Reply-To: <200906081329.27047.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906081626120.13888-100000@netrider.rowland.org>
+	Mon, 8 Jun 2009 16:37:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46972 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753499AbZFHUhY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 16:37:24 -0400
+Date: Mon, 8 Jun 2009 20:36:34 GMT
+From: tip-bot for Andreas Herrmann <andreas.herrmann3@amd.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       yinghai@kernel.org, andreas.herrmann3@amd.com,
+       akpm@linux-foundation.org, stable@kernel.org, tglx@linutronix.de,
+       mingo@elte.hu, penguin-kernel@i-love.sakura.ne.jp
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, andreas.herrmann3@amd.com,
+       akpm@linux-foundation.org, stable@kernel.org, tglx@linutronix.de,
+       mingo@elte.hu, penguin-kernel@i-love.sakura.ne.jp
+In-Reply-To: <20090608170939.GB12431@alberich.amd.com>
+References: <20090608170939.GB12431@alberich.amd.com>
+Subject: [tip:x86/urgent] x86: memtest: remove 64-bit division
+Message-ID: <tip-c9690998ef48ffefeccb91c70a7739eebdea57f9@git.kernel.org>
+Git-Commit-ID: c9690998ef48ffefeccb91c70a7739eebdea57f9
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 08 Jun 2009 20:36:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Jun 2009, Rafael J. Wysocki wrote:
+Commit-ID:  c9690998ef48ffefeccb91c70a7739eebdea57f9
+Gitweb:     http://git.kernel.org/tip/c9690998ef48ffefeccb91c70a7739eebdea57f9
+Author:     Andreas Herrmann <andreas.herrmann3@amd.com>
+AuthorDate: Mon, 8 Jun 2009 19:09:39 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 8 Jun 2009 19:18:25 +0200
 
-> On Monday 08 June 2009, Oliver Neukum wrote:
-> > Am Sonntag, 7. Juni 2009 23:46:59 schrieb Rafael J. Wysocki:
-> > > It may be necessary to resume a device synchronously, but I'm still
-> > > thinking how to implement that.
-> > 
-> > This will absolutely be the default. You resume a device because you want
-> > it to do something now. It seems to me that you making your problem worse
-> > by using a spinlock as a lock. A mutex would make it easier.
-> 
-> But I need to be able to call __pm_schedule_resume() (at least) from interrupt
-> context and I can't use a mutex from there.  Otherwise I'd have used a mutex. :-)
-> 
-> Anyway, below is a version with synchronous resume.
+x86: memtest: remove 64-bit division
 
-There are a few things here which need further thought:
+Using gcc 3.3.5 a "make allmodconfig" + "CONFIG_KVM=n"
+triggers a build error:
 
-The implementation of pm_lock_device() assumes it will never be called 
-with interrupts disabled.  This is a bad assumption.
+ arch/x86/mm/built-in.o(.init.text+0x43f7): In function `__change_page_attr':
+ arch/x86/mm/pageattr.c:114: undefined reference to `__udivdi3'
+ make: *** [.tmp_vmlinux1] Error 1
 
-Use of the RPM_UNKNOWN state isn't good.  A bus may have valid reasons 
-of its own for not carrying out an autosuspend.  When this happens the 
-device's state isn't unknown.
+The culprit turned out to be a division in arch/x86/mm/memtest.c
+For more info see this thread:
 
-The scheme doesn't include any mechanism for communicating runtime
-power information up the device tree.  When a device is autosuspended,
-its parent's driver should be told so that the driver can consider
-autosuspending the parent.  Likewise, if we want to autoresume a device 
-below an autosuspended parent, the parent should be autoresumed first.  
-Did you want to make the bus subsystem responsible for all of this?  
-What about device's whose parent belongs to a different subsystem?
+  http://marc.info/?l=linux-kernel&m=124416232620683
 
-There should be a sysfs interface (like the one in USB) to allow
-userspace to prevent a device from being autosuspended -- and perhaps
-also to force it to be suspended.
+The patch entirely removes the division that caused the build
+error.
 
-What about devices that have more than two runtime power states?  For
-example, you can't squeeze PCI's {D0,D1,D2,D3hot} range into {running,
-suspended}.
+[ Impact: build fix with certain GCC versions ]
 
-That's what I come up with on a first reading.  There may be more later 
-on...  :-)
+Reported-by: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: xiyou.wangcong@gmail.com
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: <stable@kernel.org>
+LKML-Reference: <20090608170939.GB12431@alberich.amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Alan Stern
 
+---
+ arch/x86/mm/memtest.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/mm/memtest.c b/arch/x86/mm/memtest.c
+index 605c8be..c0bedcd 100644
+--- a/arch/x86/mm/memtest.c
++++ b/arch/x86/mm/memtest.c
+@@ -40,23 +40,23 @@ static void __init reserve_bad_mem(u64 pattern, u64 start_bad, u64 end_bad)
+ 
+ static void __init memtest(u64 pattern, u64 start_phys, u64 size)
+ {
+-	u64 i, count;
+-	u64 *start;
++	u64 *p;
++	void *start, *end;
+ 	u64 start_bad, last_bad;
+ 	u64 start_phys_aligned;
+ 	size_t incr;
+ 
+ 	incr = sizeof(pattern);
+ 	start_phys_aligned = ALIGN(start_phys, incr);
+-	count = (size - (start_phys_aligned - start_phys))/incr;
+ 	start = __va(start_phys_aligned);
++	end = start + size - (start_phys_aligned - start_phys);
+ 	start_bad = 0;
+ 	last_bad = 0;
+ 
+-	for (i = 0; i < count; i++)
+-		start[i] = pattern;
+-	for (i = 0; i < count; i++, start++, start_phys_aligned += incr) {
+-		if (*start == pattern)
++	for (p = start; p < end; p++)
++		*p = pattern;
++	for (p = start; p < end; p++, start_phys_aligned += incr) {
++		if (*p == pattern)
+ 			continue;
+ 		if (start_phys_aligned == last_bad + incr) {
+ 			last_bad += incr;
