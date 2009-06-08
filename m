@@ -1,96 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbZFHNQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbZFHNQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754461AbZFHNQG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 09:16:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752833AbZFHNP4
+	id S1755047AbZFHNQc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 09:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbZFHNQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 09:15:56 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:47187 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751735AbZFHNP4 (ORCPT
+	Mon, 8 Jun 2009 09:16:24 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:50208 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752833AbZFHNQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 09:15:56 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
+	Mon, 8 Jun 2009 09:16:24 -0400
+Date: Mon, 8 Jun 2009 14:16:20 +0100
+From: Matthew Garrett <mjg@redhat.com>
 To: Harald Welte <HaraldWelte@viatech.com>
-Subject: Re: [PATCH 2/2] CPUFREQ: Mark e_powersaver driver as EXPERIMENTAL and DANGEROUS
-Date: Mon, 8 Jun 2009 08:15:50 -0500
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+Cc: "Michael S. Zick" <lkml@morethan.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Duane Griffin <duaneg@dghda.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Dave Jones <davej@redhat.com>
-References: <20090608102936.GQ4106@prithivi.gnumonks.org> <200906080806.21048.lkml@morethan.org>
-In-Reply-To: <200906080806.21048.lkml@morethan.org>
+Subject: Re: [PATCH 1/2] CPUFREQ: Enable acpi-cpufreq driver for
+	VIA/Centaur CPUs
+Message-ID: <20090608131620.GB15100@srcf.ucam.org>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <20090606132847.GB14088@prithivi.gnumonks.org> <200906060846.36303.lkml@morethan.org> <200906060856.15016.lkml@morethan.org> <20090608102754.GP4106@prithivi.gnumonks.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906080815.52468.lkml@morethan.org>
+In-Reply-To: <20090608102754.GP4106@prithivi.gnumonks.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon June 8 2009, Michael S. Zick wrote:
-> On Mon June 8 2009, Harald Welte wrote:
-> > The e_powersaver driver for VIA's C7 CPU's needs to be marked as
-> > DANGEROUS as it configures the CPU to power states that are out
-> > of specification.
-> > 
-> 
-> I'll put this and your acpi proposal into a test build today - -
-> If my machine survives, I'll post the build for others to try.
-> 
-> The current build posted (-09159) does not have *either* control
->
-Sorry - typo - today is of course the 159th day of the year - -
-The previously posted build *without* either control is the -09156.  ;)
+On Mon, Jun 08, 2009 at 06:27:54PM +0800, Harald Welte wrote:
+> The VIA/Centaur C7, C7-M and Nano CPU's all support ACPI based cpu p-states
+> using a MSR interface.  The Linux driver just never made use of it, since in
+> addition to the check for the EST flag it also checked if the vendor is Intel.
 
-Mike
-> included, leaving the machine running at silicon "#reset" conditions.
-> Slow - but safe.
-> 
-> Mike
-> > According to Centaur, all systems with C7 and Nano CPU's support
-> > the ACPI p-state method.  Thus, the acpi-cpufreq driver should
-> > be used instead.
-> > 
-> > Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
-> > ---
-> >  arch/x86/kernel/cpu/cpufreq/Kconfig |    9 ++++++---
-> >  1 files changed, 6 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/arch/x86/kernel/cpu/cpufreq/Kconfig b/arch/x86/kernel/cpu/cpufreq/Kconfig
-> > index 52c8398..f138c6c 100644
-> > --- a/arch/x86/kernel/cpu/cpufreq/Kconfig
-> > +++ b/arch/x86/kernel/cpu/cpufreq/Kconfig
-> > @@ -220,11 +220,14 @@ config X86_LONGHAUL
-> >  	  If in doubt, say N.
-> >  
-> >  config X86_E_POWERSAVER
-> > -	tristate "VIA C7 Enhanced PowerSaver"
-> > +	tristate "VIA C7 Enhanced PowerSaver (DANGEROUS)"
-> >  	select CPU_FREQ_TABLE
-> > -	depends on X86_32
-> > +	depends on X86_32 && EXPERIMENTAL
-> >  	help
-> > -	  This adds the CPUFreq driver for VIA C7 processors.
-> > +	  This adds the CPUFreq driver for VIA C7 processors.  However, this driver
-> > +	  does not have any safeguards to prevent operating the CPU out of spec
-> > +	  and is thus considered dangerous.  Please use the regular ACPI cpufreq
-> > +	  driver, enabled by CONFIG_X86_ACPI_CPUFREQ.
-> >  
-> >  	  If in doubt, say N.
-> >  
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+Hm. Is the MSR interface compatible with the Intel one? I'm guessing so 
+based on the est flag being present. Maybe we should just drop the intel 
+check and only look for CPUs which claim est support.
 
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
