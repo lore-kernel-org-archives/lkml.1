@@ -1,203 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbZFHXXX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757151AbZFHX2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756996AbZFHXXX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 19:23:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbZFHXXQ
+	id S1757151AbZFHX2Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 19:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752408AbZFHX2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 19:23:16 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:35293 "EHLO
+	Mon, 8 Jun 2009 19:28:18 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:54918 "EHLO
 	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751130AbZFHXXP (ORCPT
+	with ESMTP id S1753928AbZFHX2R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 19:23:15 -0400
+	Mon, 8 Jun 2009 19:28:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=de50oxwT8vWv5VZUX6mDVIm3UPmwCIUAp8qpGSBaj9NANwKK+A1KB+RzQodmA2f1oG
-         kCmQ2LcIbhBw9CdPg0su5FNi0Grq2QpI2Pl6oS55QZIdmlnFBRMwpTm7FvWIsFcFNoG8
-         /7rxlE/srZFLOXFJ1QEci940OF9dWnb9NdrlQ=
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=pCP9olGW8w6ih/YrXAvrM8JQSCmbg2MZXz214AOXXOF30tGkq8SRwz3ew9JZhL68Wx
+         8zKhVAiSQqG5CYRfC2tr2CzKUuaNJPKLblTvIP0sXqnb0RO2ITzajJoYXX+NYGFpj6Xf
+         XdbMVP6ecotR/KyEF437n5veYFbKPkCyuQa1U=
 MIME-Version: 1.0
-Date: Mon, 8 Jun 2009 19:23:16 -0400
-Message-ID: <8bd0f97a0906081623h4dc26492kd70c2e07091730d@mail.gmail.com>
-Subject: scripts/kallsyms: extending region checking for Blackfin memory 
-	regions
+Date: Mon, 8 Jun 2009 19:28:19 -0400
+Message-ID: <8bd0f97a0906081628o7d30e05ld961c00a690c140d@mail.gmail.com>
+Subject: adding lockdep support to the Blackfin arch
 From: Mike Frysinger <vapier.adi@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: kbuild-devel@lists.sourceforge.net,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       uclinux-dist-devel <uclinux-dist-devel@blackfin.uclinux.org>
-Content-Type: multipart/mixed; boundary=001b24be25d0da396a046bde8616
+To: Ingo Molnar <mingo@redhat.com>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---001b24be25d0da396a046bde8616
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ive been extending the Blackfin arch recently to support lockdep.
+since i also had to implement irqflags/stacktrace as well, i wouldnt
+be surprised if this issue is nested in there, plus this is a no-mmu
+system.
 
-intro: the current Blackfin memory architecture is (1) no virtualized
-memory and (2) distinctly harvard.  that means we cannot create a
-linear map of start/end text sections.  we end up with distinct
-regions like so:
-00001000 T __stext
-000dc4c0 T __etext
-feb00000 A __etext_l2
-feb00010 A __stext_l2
-ffa00000 T __stext_l1
-ffa0160c T __etext_l1
-this is because external memory starts at address 0 while on-chip
-regions have different discontiguous hardcoded addresses (L1
-instruction in this case starts at 0xffa00000 while L2 starts at
-0xfeb00000).
+at any rate, when i boot up a Blackfin system with PROVE_LOCKING
+enabled, i end up with this warning:
+Badness at kernel/fork.c:988
 
-the current kallsyms is written to search for the special stext/etext
-symbols only which means the resulting kallsyms output knows nothing
-of the Blackfin symbols living in these on-chip regions.  we've
-written two patches to fix this: the first one is straight forward and
-simply copies & pastes the existing hardcoded regions.  the second
-creates an array of text regions which makes it much easier to extend
-in the future for other people (and can be squashed into the first
-one).
+which correlates to this in copy_process():
+    DEBUG_LOCKS_WARN_ON(!p->hardirqs_enabled);
 
-doesnt matter to me which method is picked :)
-
-(yes, another change is needed to kernel/kallsysms.c, but one thing at a time)
+btw, in order to get this to work in the first place, i had to extend
 -mike
-
---001b24be25d0da396a046bde8616
-Content-Type: application/octet-stream; 
-	name="0001-kallsyms-support-kernel-symbols-in-Blackfin-on-chip-.patch"
-Content-Disposition: attachment; 
-	filename="0001-kallsyms-support-kernel-symbols-in-Blackfin-on-chip-.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fvpt3ebo0
-
-RnJvbSBlZmFmY2U1ZGQwY2ViYTEzMmM4MGZiOTM3NDEyNjg0YWFiNWU4ZjE2IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBSb2JpbiBHZXR6IDxyb2Jpbi5nZXR6QGFuYWxvZy5jb20+CkRh
-dGU6IE1vbiwgMTAgSnVsIDIwMDYgMDY6MjU6NDAgKzAwMDAKU3ViamVjdDogW1BBVENIXSBrYWxs
-c3ltczogc3VwcG9ydCBrZXJuZWwgc3ltYm9scyBpbiBCbGFja2ZpbiBvbi1jaGlwIG1lbW9yeQoK
-VGhlIEJsYWNrZmluIGFyY2ggaGFzIGEgZGlzY29udGlndW91cyAudGV4dCBsYXlvdXQgZHVlIHRv
-IGhhdmluZyBvbi1jaGlwCmluc3RydWN0aW9uIG1lbW9yeSBhbmQgbm8gdmlydHVhbCBtZW1vcnkg
-c3VwcG9ydC4gIEFzIHN1Y2gsIHdlIG5lZWQgdG8KYWRkIGV4cGxpY2l0IGNoZWNrcyBmb3IgdGhl
-c2UgYWRkaXRpb25hbCAudGV4dCByZWdpb25zLgoKU2lnbmVkLW9mZi1ieTogUm9iaW4gR2V0eiA8
-cm9iaW4uZ2V0ekBhbmFsb2cuY29tPgpTaWduZWQtb2ZmLWJ5OiBNaWtlIEZyeXNpbmdlciA8dmFw
-aWVyQGdlbnRvby5vcmc+ClNpZ25lZC1vZmYtYnk6IEJyeWFuIFd1IDxjb29sb25leUBrZXJuZWwu
-b3JnPgotLS0KIHNjcmlwdHMva2FsbHN5bXMuYyB8ICAgMTMgKysrKysrKysrKysrLQogMiBmaWxl
-cyBjaGFuZ2VkLCAxOCBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBh
-L3NjcmlwdHMva2FsbHN5bXMuYyBiL3NjcmlwdHMva2FsbHN5bXMuYwppbmRleCA2NjU0Y2JlLi5m
-YjgyYTViIDEwMDY0NAotLS0gYS9zY3JpcHRzL2thbGxzeW1zLmMKKysrIGIvc2NyaXB0cy9rYWxs
-c3ltcy5jCkBAIC0zNSw2ICszNSw3IEBAIHN0cnVjdCBzeW1fZW50cnkgewogc3RhdGljIHN0cnVj
-dCBzeW1fZW50cnkgKnRhYmxlOwogc3RhdGljIHVuc2lnbmVkIGludCB0YWJsZV9zaXplLCB0YWJs
-ZV9jbnQ7CiBzdGF0aWMgdW5zaWduZWQgbG9uZyBsb25nIF90ZXh0LCBfc3RleHQsIF9ldGV4dCwg
-X3Npbml0dGV4dCwgX2Vpbml0dGV4dDsKK3N0YXRpYyB1bnNpZ25lZCBsb25nIGxvbmcgX3N0ZXh0
-X2wxLCBfZXRleHRfbDEsIF9zdGV4dF9sMiwgX2V0ZXh0X2wyOwogc3RhdGljIGludCBhbGxfc3lt
-Ym9scyA9IDA7CiBzdGF0aWMgY2hhciBzeW1ib2xfcHJlZml4X2NoYXIgPSAnXDAnOwogCkBAIC05
-Miw2ICs5MywxNCBAQCBzdGF0aWMgaW50IHJlYWRfc3ltYm9sKEZJTEUgKmluLCBzdHJ1Y3Qgc3lt
-X2VudHJ5ICpzKQogCQlfc2luaXR0ZXh0ID0gcy0+YWRkcjsKIAllbHNlIGlmIChzdHJjbXAoc3lt
-LCAiX2Vpbml0dGV4dCIpID09IDApCiAJCV9laW5pdHRleHQgPSBzLT5hZGRyOworCWVsc2UgaWYg
-KHN0cmNtcChzeW0sICJfc3RleHRfbDEiKSA9PSAwKQorCQlfc3RleHRfbDEgPSBzLT5hZGRyOwor
-CWVsc2UgaWYgKHN0cmNtcChzeW0sICJfZXRleHRfbDEiKSA9PSAwKQorCQlfZXRleHRfbDEgPSBz
-LT5hZGRyOworCWVsc2UgaWYgKHN0cmNtcChzeW0sICJfc3RleHRfbDIiKSA9PSAwKQorCQlfc3Rl
-eHRfbDIgPSBzLT5hZGRyOworCWVsc2UgaWYgKHN0cmNtcChzeW0sICJfZXRleHRfbDIiKSA9PSAw
-KQorCQlfZXRleHRfbDIgPSBzLT5hZGRyOwogCWVsc2UgaWYgKHRvdXBwZXIoc3R5cGUpID09ICdB
-JykKIAl7CiAJCS8qIEtlZXAgdGhlc2UgdXNlZnVsIGFic29sdXRlIHN5bWJvbHMgKi8KQEAgLTE1
-Nyw3ICsxNjYsOSBAQCBzdGF0aWMgaW50IHN5bWJvbF92YWxpZChzdHJ1Y3Qgc3ltX2VudHJ5ICpz
-KQogCSAqIGFuZCBpbml0dGV4dCBzZWN0aW9ucyBhcmUgZGlzY2FyZGVkICovCiAJaWYgKCFhbGxf
-c3ltYm9scykgewogCQlpZiAoKHMtPmFkZHIgPCBfc3RleHQgfHwgcy0+YWRkciA+IF9ldGV4dCkK
-LQkJICAgICYmIChzLT5hZGRyIDwgX3Npbml0dGV4dCB8fCBzLT5hZGRyID4gX2Vpbml0dGV4dCkp
-CisJCSAgICAmJiAocy0+YWRkciA8IF9zaW5pdHRleHQgfHwgcy0+YWRkciA+IF9laW5pdHRleHQp
-CisJCSAgICAmJiAocy0+YWRkciA8IF9zdGV4dF9sMSB8fCBzLT5hZGRyID4gX2V0ZXh0X2wxKQor
-CQkgICAgJiYgKHMtPmFkZHIgPCBfc3RleHRfbDIgfHwgcy0+YWRkciA+IF9ldGV4dF9sMikpCiAJ
-CQlyZXR1cm4gMDsKIAkJLyogQ29ybmVyIGNhc2UuICBEaXNjYXJkIGFueSBzeW1ib2xzIHdpdGgg
-dGhlIHNhbWUgdmFsdWUgYXMKIAkJICogX2V0ZXh0IF9laW5pdHRleHQ7IHRoZXkgY2FuIG1vdmUg
-YmV0d2VlbiBwYXNzIDEgYW5kIDIgd2hlbgotLSAKMS42LjMuMQoK
---001b24be25d0da396a046bde8616
-Content-Type: application/octet-stream; 
-	name="0005-kallsyms-generalize-text-region-handling.patch"
-Content-Disposition: attachment; 
-	filename="0005-kallsyms-generalize-text-region-handling.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fvpt3q301
-
-RnJvbSAyMWE1MzA4Y2IyMTQ0ZjcyNjhjZWFhMTUwODk3YjhhNzk5NWEyNmMzIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBNaWtlIEZyeXNpbmdlciA8dmFwaWVyQGdlbnRvby5vcmc+CkRh
-dGU6IE1vbiwgOCBKdW4gMjAwOSAxOToxMjoxMyAtMDQwMApTdWJqZWN0OiBbUEFUQ0hdIGthbGxz
-eW1zOiBnZW5lcmFsaXplIHRleHQgcmVnaW9uIGhhbmRsaW5nCgpTaWduZWQtb2ZmLWJ5OiBNaWtl
-IEZyeXNpbmdlciA8dmFwaWVyQGdlbnRvby5vcmc+Ci0tLQogc2NyaXB0cy9rYWxsc3ltcy5jIHwg
-ICA4NyArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0K
-IDEgZmlsZXMgY2hhbmdlZCwgNjEgaW5zZXJ0aW9ucygrKSwgMjYgZGVsZXRpb25zKC0pCgpkaWZm
-IC0tZ2l0IGEvc2NyaXB0cy9rYWxsc3ltcy5jIGIvc2NyaXB0cy9rYWxsc3ltcy5jCmluZGV4IGZi
-ODJhNWIuLjNjYjU3ODkgMTAwNjQ0Ci0tLSBhL3NjcmlwdHMva2FsbHN5bXMuYworKysgYi9zY3Jp
-cHRzL2thbGxzeW1zLmMKQEAgLTIzLDYgKzIzLDEwIEBACiAjaW5jbHVkZSA8c3RyaW5nLmg+CiAj
-aW5jbHVkZSA8Y3R5cGUuaD4KIAorI2lmbmRlZiBBUlJBWV9TSVpFCisjZGVmaW5lIEFSUkFZX1NJ
-WkUoYXJyKSAoc2l6ZW9mKGFycikgLyBzaXplb2YoYXJyWzBdKSkKKyNlbmRpZgorCiAjZGVmaW5l
-IEtTWU1fTkFNRV9MRU4JCTEyOAogCiBzdHJ1Y3Qgc3ltX2VudHJ5IHsKQEAgLTMyLDEwICszNiwy
-MyBAQCBzdHJ1Y3Qgc3ltX2VudHJ5IHsKIAl1bnNpZ25lZCBjaGFyICpzeW07CiB9OwogCitzdHJ1
-Y3QgdGV4dF9yYW5nZSB7CisJY29uc3QgY2hhciAqc3RleHQsICpldGV4dDsKKwl1bnNpZ25lZCBs
-b25nIGxvbmcgc3RhcnQsIGVuZDsKK307CisKK3N0YXRpYyB1bnNpZ25lZCBsb25nIGxvbmcgX3Rl
-eHQ7CitzdGF0aWMgc3RydWN0IHRleHRfcmFuZ2UgdGV4dF9yYW5nZXNbXSA9IHsKKwl7ICJfc3Rl
-eHQiLCAgICAgIl9ldGV4dCIgICAgIH0sCisJeyAiX3Npbml0dGV4dCIsICJfZWluaXR0ZXh0IiB9
-LAorCXsgIl9zdGV4dF9sMSIsICAiX2V0ZXh0X2wxIiAgfSwJLyogQmxhY2tmaW4gb24tY2hpcCBM
-MSBpbnN0IFNSQU0gKi8KKwl7ICJfc3RleHRfbDIiLCAgIl9ldGV4dF9sMiIgIH0sCS8qIEJsYWNr
-ZmluIG9uLWNoaXAgTDIgU1JBTSAqLworfTsKKyNkZWZpbmUgdGV4dF9yYW5nZV90ZXh0ICAgICAo
-JnRleHRfcmFuZ2VzWzBdKQorI2RlZmluZSB0ZXh0X3JhbmdlX2luaXR0ZXh0ICgmdGV4dF9yYW5n
-ZXNbMV0pCisKIHN0YXRpYyBzdHJ1Y3Qgc3ltX2VudHJ5ICp0YWJsZTsKIHN0YXRpYyB1bnNpZ25l
-ZCBpbnQgdGFibGVfc2l6ZSwgdGFibGVfY250Owotc3RhdGljIHVuc2lnbmVkIGxvbmcgbG9uZyBf
-dGV4dCwgX3N0ZXh0LCBfZXRleHQsIF9zaW5pdHRleHQsIF9laW5pdHRleHQ7Ci1zdGF0aWMgdW5z
-aWduZWQgbG9uZyBsb25nIF9zdGV4dF9sMSwgX2V0ZXh0X2wxLCBfc3RleHRfbDIsIF9ldGV4dF9s
-MjsKIHN0YXRpYyBpbnQgYWxsX3N5bWJvbHMgPSAwOwogc3RhdGljIGNoYXIgc3ltYm9sX3ByZWZp
-eF9jaGFyID0gJ1wwJzsKIApAQCAtNjIsNiArNzksMjYgQEAgc3RhdGljIGlubGluZSBpbnQgaXNf
-YXJtX21hcHBpbmdfc3ltYm9sKGNvbnN0IGNoYXIgKnN0cikKIAkgICAgICAgJiYgKHN0clsyXSA9
-PSAnXDAnIHx8IHN0clsyXSA9PSAnLicpOwogfQogCitzdGF0aWMgaW50IHJlYWRfc3ltYm9sX3Ry
-KGNvbnN0IGNoYXIgKnN5bSwgdW5zaWduZWQgbG9uZyBsb25nIGFkZHIpCit7CisJc2l6ZV90IGk7
-CisJc3RydWN0IHRleHRfcmFuZ2UgKnRyOworCisJZm9yIChpID0gMDsgaSA8IEFSUkFZX1NJWkUo
-dGV4dF9yYW5nZXMpOyArK2kpIHsKKwkJdHIgPSAmdGV4dF9yYW5nZXNbaV07CisKKwkJaWYgKHN0
-cmNtcChzeW0sIHRyLT5zdGV4dCkgPT0gMCkgeworCQkJdHItPnN0YXJ0ID0gYWRkcjsKKwkJCXJl
-dHVybiAwOworCQl9IGVsc2UgaWYgKHN0cmNtcChzeW0sIHRyLT5ldGV4dCkgPT0gMCkgeworCQkJ
-dHItPmVuZCA9IGFkZHI7CisJCQlyZXR1cm4gMDsKKwkJfQorCX0KKworCXJldHVybiAxOworfQor
-CiBzdGF0aWMgaW50IHJlYWRfc3ltYm9sKEZJTEUgKmluLCBzdHJ1Y3Qgc3ltX2VudHJ5ICpzKQog
-ewogCWNoYXIgc3RyWzUwMF07CkBAIC04NSwyMiArMTIyLDggQEAgc3RhdGljIGludCByZWFkX3N5
-bWJvbChGSUxFICppbiwgc3RydWN0IHN5bV9lbnRyeSAqcykKIAkvKiBJZ25vcmUgbW9zdCBhYnNv
-bHV0ZS91bmRlZmluZWQgKD8pIHN5bWJvbHMuICovCiAJaWYgKHN0cmNtcChzeW0sICJfdGV4dCIp
-ID09IDApCiAJCV90ZXh0ID0gcy0+YWRkcjsKLQllbHNlIGlmIChzdHJjbXAoc3ltLCAiX3N0ZXh0
-IikgPT0gMCkKLQkJX3N0ZXh0ID0gcy0+YWRkcjsKLQllbHNlIGlmIChzdHJjbXAoc3ltLCAiX2V0
-ZXh0IikgPT0gMCkKLQkJX2V0ZXh0ID0gcy0+YWRkcjsKLQllbHNlIGlmIChzdHJjbXAoc3ltLCAi
-X3Npbml0dGV4dCIpID09IDApCi0JCV9zaW5pdHRleHQgPSBzLT5hZGRyOwotCWVsc2UgaWYgKHN0
-cmNtcChzeW0sICJfZWluaXR0ZXh0IikgPT0gMCkKLQkJX2Vpbml0dGV4dCA9IHMtPmFkZHI7Ci0J
-ZWxzZSBpZiAoc3RyY21wKHN5bSwgIl9zdGV4dF9sMSIpID09IDApCi0JCV9zdGV4dF9sMSA9IHMt
-PmFkZHI7Ci0JZWxzZSBpZiAoc3RyY21wKHN5bSwgIl9ldGV4dF9sMSIpID09IDApCi0JCV9ldGV4
-dF9sMSA9IHMtPmFkZHI7Ci0JZWxzZSBpZiAoc3RyY21wKHN5bSwgIl9zdGV4dF9sMiIpID09IDAp
-Ci0JCV9zdGV4dF9sMiA9IHMtPmFkZHI7Ci0JZWxzZSBpZiAoc3RyY21wKHN5bSwgIl9ldGV4dF9s
-MiIpID09IDApCi0JCV9ldGV4dF9sMiA9IHMtPmFkZHI7CisJZWxzZSBpZiAocmVhZF9zeW1ib2xf
-dHIoc3ltLCBzLT5hZGRyKSA9PSAwKQorCQkvKiBub3RoaW5nIHRvIGRvICovOwogCWVsc2UgaWYg
-KHRvdXBwZXIoc3R5cGUpID09ICdBJykKIAl7CiAJCS8qIEtlZXAgdGhlc2UgdXNlZnVsIGFic29s
-dXRlIHN5bWJvbHMgKi8KQEAgLTEzNiw2ICsxNTksMjEgQEAgc3RhdGljIGludCByZWFkX3N5bWJv
-bChGSUxFICppbiwgc3RydWN0IHN5bV9lbnRyeSAqcykKIAlyZXR1cm4gMDsKIH0KIAorc3RhdGlj
-IGludCBzeW1ib2xfdmFsaWRfdHIoc3RydWN0IHN5bV9lbnRyeSAqcykKK3sKKwlzaXplX3QgaTsK
-KwlzdHJ1Y3QgdGV4dF9yYW5nZSAqdHI7CisKKwlmb3IgKGkgPSAwOyBpIDwgQVJSQVlfU0laRSh0
-ZXh0X3Jhbmdlcyk7ICsraSkgeworCQl0ciA9ICZ0ZXh0X3Jhbmdlc1tpXTsKKworCQlpZiAocy0+
-YWRkciA+PSB0ci0+c3RhcnQgJiYgcy0+YWRkciA8IHRyLT5lbmQpCisJCQlyZXR1cm4gMDsKKwl9
-CisKKwlyZXR1cm4gMTsKK30KKwogc3RhdGljIGludCBzeW1ib2xfdmFsaWQoc3RydWN0IHN5bV9l
-bnRyeSAqcykKIHsKIAkvKiBTeW1ib2xzIHdoaWNoIHZhcnkgYmV0d2VlbiBwYXNzZXMuICBQYXNz
-ZXMgMSBhbmQgMiBtdXN0IGhhdmUKQEAgLTE2NSwxMCArMjAzLDcgQEAgc3RhdGljIGludCBzeW1i
-b2xfdmFsaWQoc3RydWN0IHN5bV9lbnRyeSAqcykKIAkvKiBpZiAtLWFsbC1zeW1ib2xzIGlzIG5v
-dCBzcGVjaWZpZWQsIHRoZW4gc3ltYm9scyBvdXRzaWRlIHRoZSB0ZXh0CiAJICogYW5kIGluaXR0
-ZXh0IHNlY3Rpb25zIGFyZSBkaXNjYXJkZWQgKi8KIAlpZiAoIWFsbF9zeW1ib2xzKSB7Ci0JCWlm
-ICgocy0+YWRkciA8IF9zdGV4dCB8fCBzLT5hZGRyID4gX2V0ZXh0KQotCQkgICAgJiYgKHMtPmFk
-ZHIgPCBfc2luaXR0ZXh0IHx8IHMtPmFkZHIgPiBfZWluaXR0ZXh0KQotCQkgICAgJiYgKHMtPmFk
-ZHIgPCBfc3RleHRfbDEgfHwgcy0+YWRkciA+IF9ldGV4dF9sMSkKLQkJICAgICYmIChzLT5hZGRy
-IDwgX3N0ZXh0X2wyIHx8IHMtPmFkZHIgPiBfZXRleHRfbDIpKQorCQlpZiAoc3ltYm9sX3ZhbGlk
-X3RyKHMpID09IDApCiAJCQlyZXR1cm4gMDsKIAkJLyogQ29ybmVyIGNhc2UuICBEaXNjYXJkIGFu
-eSBzeW1ib2xzIHdpdGggdGhlIHNhbWUgdmFsdWUgYXMKIAkJICogX2V0ZXh0IF9laW5pdHRleHQ7
-IHRoZXkgY2FuIG1vdmUgYmV0d2VlbiBwYXNzIDEgYW5kIDIgd2hlbgpAQCAtMTc2LDEwICsyMTEs
-MTAgQEAgc3RhdGljIGludCBzeW1ib2xfdmFsaWQoc3RydWN0IHN5bV9lbnRyeSAqcykKIAkJICog
-dGhleSBtYXkgZ2V0IGRyb3BwZWQgaW4gcGFzcyAyLCB3aGljaCBicmVha3MgdGhlIGthbGxzeW1z
-CiAJCSAqIHJ1bGVzLgogCQkgKi8KLQkJaWYgKChzLT5hZGRyID09IF9ldGV4dCAmJgotCQkJCXN0
-cmNtcCgoY2hhciAqKXMtPnN5bSArIG9mZnNldCwgIl9ldGV4dCIpKSB8fAotCQkgICAgKHMtPmFk
-ZHIgPT0gX2Vpbml0dGV4dCAmJgotCQkJCXN0cmNtcCgoY2hhciAqKXMtPnN5bSArIG9mZnNldCwg
-Il9laW5pdHRleHQiKSkpCisJCWlmICgocy0+YWRkciA9PSB0ZXh0X3JhbmdlX3RleHQtPmVuZCAm
-JgorCQkJCXN0cmNtcCgoY2hhciAqKXMtPnN5bSArIG9mZnNldCwgdGV4dF9yYW5nZV90ZXh0LT5l
-dGV4dCkpIHx8CisJCSAgICAocy0+YWRkciA9PSB0ZXh0X3JhbmdlX2luaXR0ZXh0LT5lbmQgJiYK
-KwkJCQlzdHJjbXAoKGNoYXIgKilzLT5zeW0gKyBvZmZzZXQsIHRleHRfcmFuZ2VfaW5pdHRleHQt
-PmV0ZXh0KSkpCiAJCQlyZXR1cm4gMDsKIAl9CiAKLS0gCjEuNi4zLjEKCg==
---001b24be25d0da396a046bde8616--
