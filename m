@@ -1,120 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZFHPoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbZFHPvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbZFHPoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 11:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZFHPoJ
+	id S1755615AbZFHPvA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 11:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZFHPuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 11:44:09 -0400
-Received: from relay3.sgi.com ([192.48.156.57]:50090 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751257AbZFHPoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 11:44:09 -0400
-Date: Mon, 8 Jun 2009 10:44:05 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86, UV: Fix nacros for multiple coherency domains
-Message-ID: <20090608154405.GA16395@sgi.com>
+	Mon, 8 Jun 2009 11:50:52 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:55442 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754689AbZFHPuv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 11:50:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=ZBK8XOc/NhPvIpJ5aPOWtVs4r6oL8ijdOhvskQLyAJ3OC41jkWKzmmKNwAsb0ppDTV
+         WYkFadpeThHjRJqrYNTmlNobtC4CeGKcpi6mKQsG8eSWIquGEleNXjbOLkgZWne7Mj+M
+         t9FgLa7jTWecUvGSqIBDak0az0jBacDdMGE+I=
+Date: Mon, 8 Jun 2009 23:50:43 +0800
+From: Ming Lei <tom.leiming@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 0/8] kernel:lockdep:replace DFS with BFS
+Message-ID: <20090608235043.02660ce4@linux-lm>
+In-Reply-To: <1244463727.13761.8700.camel@twins>
+References: <yes>
+	<1243781365-26814-1-git-send-email-tom.leiming@gmail.com>
+	<1244463727.13761.8700.camel@twins>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.4; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix bug in the SGI UV macros that support systems with multiple coherency
-domains.  The macros used for referencing global MMR (chipset registers)
-are failing to correctly "or" the NASID (node identifier) bits that reside
-above M+N. These high bits are supplied automatically by the chipset for
-memory accesses coming from the processor socket. However, the bits must
-be present for references to the special global MMR space used to map chipset
-registers. (See uv_hub.h for more details ...)
+On Mon, 08 Jun 2009 14:22:07 +0200
+Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-The bug results in references to invalid/incorrect nodes.
+> On Sun, 2009-05-31 at 22:49 +0800, tom.leiming@gmail.com wrote:
+> > Hi,
+> > Currently lockdep uses recursion DFS(depth-first search) algorithm
+> > to search target in checking lock
+> > circle(check_noncircular()),irq-safe ->
+> > irq-unsafe(check_irq_usage()) and irq inversion when adding a new
+> > lock dependency. This patches replace the current DFS with BFS,
+> > based on the following consideration:
+> > 
+> >      1,no loss of efficiency, no matter DFS or BFS, the running time
+> >      are O(V+E) (V is vertex count, and E is edge count of one
+> >      graph);
+> > 
+> >      2,BFS may be easily implemented by circular queue and consumes
+> >      much less kernel stack space than DFS for DFS is implemented by
+> >      recursion.
+> > 
+> >      3, The shortest path can be obtained by BFS if the target is
+> >      found, but can't be got by DFS. By the shortest path, we can
+> >      shorten the lock dependency chain and help to troubleshoot lock
+> >      problem easier than before.
+> > 
+> 
+> OK, so I applied the patches and the cleanup below.
+> 
+> mostly little style nits and moving the circular queue into lockdep.c
+> (nobody else uses it, so why share it?).
+> 
+> One thing though, macros with return statements?! that's seriously bad
+> style, don't do that.
+> 
+> One thing that worries me a little is that we loose DaveM's
+> lockdep_dependency_visit() optimization. My brain seems unwilling to
+> co-operate on determining if BFS would make that redundant, so a
+> little word on that would be appreciated.
+> 
+> Then I booted it and all hell broke loose, so either I wrecked
+> something or you did :-), would you terribly mind poking at that a
+> little?
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+I have fixed the bug, which is introduced in your patch:
+	lockdep: clean up after BFS patches.
 
+Please apply and verify the patch,thanks.
+
+I'll go to bed,:-)
+
+>From e99ce7b2b4985032e9f54b08a7790f3df2783286 Mon Sep 17 00:00:00 2001
+From: Ming Lei <tom.leiming@gmail.com>
+Date: Mon, 8 Jun 2009 23:38:59 +0800
+Subject: [PATCH] kernel:lockdep:fix return value of check_usage*()
+
+Return zero if BFS find the target, so fix return value of callers
+of BFS.
+
+The patch fixes the boot failure introduced by the patch:
+	lockdep: clean up after BFS patches
+.
+
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
 ---
- arch/x86/include/asm/uv/uv_hub.h   |    6 ++++--
- arch/x86/kernel/apic/x2apic_uv_x.c |   15 +++++++++------
- 2 files changed, 13 insertions(+), 8 deletions(-)
+ kernel/lockdep.c |   20 ++++++++++++--------
+ 1 files changed, 12 insertions(+), 8 deletions(-)
 
-Index: linux/arch/x86/include/asm/uv/uv_hub.h
-===================================================================
---- linux.orig/arch/x86/include/asm/uv/uv_hub.h	2009-06-07 15:20:13.000000000 -0500
-+++ linux/arch/x86/include/asm/uv/uv_hub.h	2009-06-08 10:13:45.000000000 -0500
-@@ -133,6 +133,7 @@ struct uv_scir_s {
- struct uv_hub_info_s {
- 	unsigned long		global_mmr_base;
- 	unsigned long		gpa_mask;
-+	unsigned int		gnode_extra;
- 	unsigned long		gnode_upper;
- 	unsigned long		lowmem_remap_top;
- 	unsigned long		lowmem_remap_base;
-@@ -159,7 +160,8 @@ DECLARE_PER_CPU(struct uv_hub_info_s, __
-  * 		p -  PNODE (local part of nsids, right shifted 1)
-  */
- #define UV_NASID_TO_PNODE(n)		(((n) >> 1) & uv_hub_info->pnode_mask)
--#define UV_PNODE_TO_NASID(p)		(((p) << 1) | uv_hub_info->gnode_upper)
-+#define UV_PNODE_TO_GNODE(p)		((p) |uv_hub_info->gnode_extra)
-+#define UV_PNODE_TO_NASID(p)		(UV_PNODE_TO_GNODE(p) << 1)
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 09a141f..48c3364 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -1250,8 +1250,6 @@ find_usage_forwards(struct lock_list *root, enum lock_usage_bit bit,
+ 	debug_atomic_inc(&nr_find_usage_forwards_checks);
  
- #define UV_LOCAL_MMR_BASE		0xf4000000UL
- #define UV_GLOBAL_MMR32_BASE		0xf8000000UL
-@@ -173,7 +175,7 @@ DECLARE_PER_CPU(struct uv_hub_info_s, __
- #define UV_GLOBAL_MMR32_PNODE_BITS(p)	((p) << (UV_GLOBAL_MMR32_PNODE_SHIFT))
+ 	result = __bfs_forwards(root, (void *)bit, usage_match, target_entry);
+-	if (result < 0)
+-		return print_bfs_bug(result);
  
- #define UV_GLOBAL_MMR64_PNODE_BITS(p)					\
--	((unsigned long)(p) << UV_GLOBAL_MMR64_PNODE_SHIFT)
-+	((unsigned long)(UV_PNODE_TO_GNODE(p)) << UV_GLOBAL_MMR64_PNODE_SHIFT)
+ 	return result;
+ }
+@@ -1275,8 +1273,6 @@ find_usage_backwards(struct lock_list *root, enum lock_usage_bit bit,
+ 	debug_atomic_inc(&nr_find_usage_backwards_checks);
  
- #define UV_APIC_PNODE_SHIFT	6
+ 	result = __bfs_backwards(root, (void *)bit, usage_match, target_entry);
+-	if (result < 0)
+-		return print_bfs_bug(result);
  
-Index: linux/arch/x86/kernel/apic/x2apic_uv_x.c
-===================================================================
---- linux.orig/arch/x86/kernel/apic/x2apic_uv_x.c	2009-06-08 09:45:42.000000000 -0500
-+++ linux/arch/x86/kernel/apic/x2apic_uv_x.c	2009-06-08 10:15:31.000000000 -0500
-@@ -537,7 +537,7 @@ void __init uv_system_init(void)
- 	union uvh_node_id_u node_id;
- 	unsigned long gnode_upper, lowmem_redir_base, lowmem_redir_size;
- 	int bytes, nid, cpu, lcpu, pnode, blade, i, j, m_val, n_val;
--	int max_pnode = 0;
-+	int gnode_extra, max_pnode = 0;
- 	unsigned long mmr_base, present, paddr;
- 	unsigned short pnode_mask;
+ 	return result;
+ }
+@@ -1397,13 +1393,17 @@ check_usage(struct task_struct *curr, struct held_lock *prev,
  
-@@ -547,6 +547,13 @@ void __init uv_system_init(void)
- 	mmr_base =
- 	    uv_read_local_mmr(UVH_RH_GAM_MMR_OVERLAY_CONFIG_MMR) &
- 	    ~UV_MMR_ENABLE;
-+	pnode_mask = (1 << n_val) - 1;
-+	node_id.v = uv_read_local_mmr(UVH_NODE_ID);
-+	gnode_extra = (node_id.s.node_id & ~((1 << n_val) - 1)) >> 1;
-+	gnode_upper = ((unsigned long)gnode_extra  << m_val);
-+	printk(KERN_DEBUG "UV: N %d, M %d, gnode_upper 0x%lx, gnode_extra 0x%x\n",
-+			n_val, m_val, gnode_upper, gnode_extra);
-+
- 	printk(KERN_DEBUG "UV: global MMR base 0x%lx\n", mmr_base);
+ 	this.class = hlock_class(prev);
+ 	ret = find_usage_backwards(&this, bit_backwards, &target_entry);
+-	if (!ret || ret == 1)
++	if (ret < 0)
++		return print_bfs_bug(ret);
++	if (ret == 1)
+ 		return ret;
  
- 	for(i = 0; i < UVH_NODE_PRESENT_TABLE_DEPTH; i++)
-@@ -583,11 +590,6 @@ void __init uv_system_init(void)
- 		}
- 	}
+ 	that.parent = NULL;
+ 	that.class = hlock_class(next);
+ 	ret = find_usage_forwards(&that, bit_forwards, &target_entry1);
+-	if (!ret || ret == 1)
++	if (ret < 0)
++		return print_bfs_bug(ret);
++	if (ret == 1)
+ 		return ret;
  
--	pnode_mask = (1 << n_val) - 1;
--	node_id.v = uv_read_local_mmr(UVH_NODE_ID);
--	gnode_upper = (((unsigned long)node_id.s.node_id) &
--		       ~((1 << n_val) - 1)) << m_val;
--
- 	uv_bios_init();
- 	uv_bios_get_sn_info(0, &uv_type, &sn_partition_id,
- 			    &sn_coherency_id, &sn_region_size);
-@@ -610,6 +612,7 @@ void __init uv_system_init(void)
- 		uv_cpu_hub_info(cpu)->pnode_mask = pnode_mask;
- 		uv_cpu_hub_info(cpu)->gpa_mask = (1 << (m_val + n_val)) - 1;
- 		uv_cpu_hub_info(cpu)->gnode_upper = gnode_upper;
-+		uv_cpu_hub_info(cpu)->gnode_extra = gnode_extra;
- 		uv_cpu_hub_info(cpu)->global_mmr_base = mmr_base;
- 		uv_cpu_hub_info(cpu)->coherency_domain_number = sn_coherency_id;
- 		uv_cpu_hub_info(cpu)->scir.offset = SCIR_LOCAL_MMR_BASE + lcpu;
+ 	return print_bad_irq_dependency(curr, &this, &that,
+@@ -2088,7 +2088,9 @@ check_usage_forwards(struct task_struct *curr, struct held_lock *this,
+ 	root.parent = NULL;
+ 	root.class = hlock_class(this);
+ 	ret = find_usage_forwards(&root, bit, &target_entry);
+-	if (!ret || ret == 1)
++	if (ret < 0)
++		return print_bfs_bug(ret);
++	if (ret == 1)
+ 		return ret;
+ 
+ 	return print_irq_inversion_bug(curr, &root, target_entry,
+@@ -2110,7 +2112,9 @@ check_usage_backwards(struct task_struct *curr, struct held_lock *this,
+ 	root.parent = NULL;
+ 	root.class = hlock_class(this);
+ 	ret = find_usage_backwards(&root, bit, &target_entry);
+-	if (!ret || ret == 1)
++	if (ret < 0)
++		return print_bfs_bug(ret);
++	if (ret == 1)
+ 		return ret;
+ 
+ 	return print_irq_inversion_bug(curr, &root, target_entry,
+-- 
+1.6.0.GIT
+
+
+
+
+-- 
+Lei Ming
