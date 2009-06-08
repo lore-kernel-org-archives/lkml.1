@@ -1,136 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbZFHQ1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbZFHQ1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757243AbZFHQ1A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 12:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbZFHQ0v
+	id S1755615AbZFHQ1Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 12:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbZFHQ1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 12:26:51 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:38957 "EHLO isrv.corpit.ru"
+	Mon, 8 Jun 2009 12:27:06 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:54233 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756111AbZFHQ0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 12:26:50 -0400
-Message-ID: <4A2D3BC6.3040904@msgid.tls.msk.ru>
-Date: Mon, 08 Jun 2009 20:26:46 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1757006AbZFHQ1E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 12:27:04 -0400
+Date: Mon, 8 Jun 2009 09:26:56 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jesper Dangaard Brouer <hawk@comx.dk>
+Cc: "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, wg@grandegger.com,
+       vladislav.yasevich@hp.com, sri@us.ibm.com, linux-sctp@vger.kernel.org,
+       Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH 5/5] sunrpc/auth_gss: Call rcu_barrier() on module
+	unload.
+Message-ID: <20090608162656.GF6961@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090608130959.10052.54590.stgit@localhost> <20090608131148.10052.39869.stgit@localhost>
 MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: Linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [Security, resend] Instant crash with rtl8169 and large packets
-References: <4A2D1147.8020101@msgid.tls.msk.ru> <4A2D1FE4.5030100@gmail.com> <4A2D25F6.9080300@msgid.tls.msk.ru> <4A2D2906.6090002@gmail.com> <4A2D301D.9040301@msgid.tls.msk.ru> <4A2D3568.6010901@gmail.com>
-In-Reply-To: <4A2D3568.6010901@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090608131148.10052.39869.stgit@localhost>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> Michael Tokarev a écrit :
->> Eric Dumazet wrote:
->>> Michael Tokarev a écrit :
->> []
->>>>>> The situation is very simple: with an RTL8169 (probably
->>>>>> onboard) GigE card which, by default, is configured to
->>>>>> have MTU (maximal transmission unit) to be 1500 bytes,
->>>>>> it's *trivial* to instantly crash the machine by sending
->>>>>> it a *single* packet of size >1500 bytes (provided the
->>>>>> network switch can handle jumbo frames).
->> []
->>> OK, 2nd try then :)
->>> diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
->>> index e94316b..9080b08 100644
->>> --- a/drivers/net/r8169.c
->>> +++ b/drivers/net/r8169.c
->>> @@ -3495,7 +3495,8 @@ static int rtl8169_rx_interrupt(struct
->>> net_device *dev,
->>>               * frames. They are seen as a symptom of over-mtu
->>>               * sized frames.
->>>               */
->>> -            if (unlikely(rtl8169_fragmented_frame(status))) {
->>> +            if (unlikely(rtl8169_fragmented_frame(status) ||
->>> +                     (unsigned int)pkt_size > tp->rx_buf_sz)) {
->>>                  dev->stats.rx_dropped++;
->>>                  dev->stats.rx_length_errors++;
->>>                  rtl8169_mark_to_asic(desc, tp->rx_buf_sz);
->> This one behaves much better.  There's no instant crash anymore, and the
->> 'dropped' and 'frame' stats in ifconfig gets incremented with each ping.
->>
->> It fails down the line however.  I wasn't able to reply to this email after
->> doing the ping test with the above change (no more large packets were
->> sent).
->> With OOPSes like this one:
->>
->>  general protection fault: 0000 [#1] SMP
-[]
->>   [<ffffffff803dbc7f>] ? skb_release_data+0xaf/0xe0
->>   [<ffffffff803db911>] ? __kfree_skb+0x11/0xa0
->>   [<ffffffff80418a88>] ? tcp_recvmsg+0x6d8/0x950
-[]
->> Looks like some memory corruption.  And most probably it is in
->> that error path in r8169 driver - it is the only new codepath
->> which were executed here.  The problem is quite repeatable -
->> after sending a single large ping system starts behaving like
->> the above at random.
-[]
-> Hmm... this code path is not new, I believe your adapter is buggy, because it
-> is overwriting part of memory it should not touch at all.
+On Mon, Jun 08, 2009 at 03:11:48PM +0200, Jesper Dangaard Brouer wrote:
+> As the module uses rcu_call() we should make sure that all
+> rcu callback has been completed before removing the code.
+
+Good improvement!!!  Assuming that gss_svc_shutdown() and
+rpcauth_unregister() prevent any future RCU callbacks to be registered,
+this patch will fix things up.
+
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+> ---
 > 
-> When this driver queues a skb in rx queue, it tells NIC the max size of the skb,
-> and apparently NIC happily delivers packets with larger sizes, so probably DMA
-> wrote data past end of skb data.
-
-That's a very likely situation.
-
-> Try to change 
+>  net/sunrpc/auth_gss/auth_gss.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> static void rtl_set_rx_max_size(void __iomem *ioaddr)
->     RTL_W16(RxMaxSize, 16383); 
+> diff --git a/net/sunrpc/auth_gss/auth_gss.c b/net/sunrpc/auth_gss/auth_gss.c
+> index e630b38..66d458f 100644
+> --- a/net/sunrpc/auth_gss/auth_gss.c
+> +++ b/net/sunrpc/auth_gss/auth_gss.c
+> @@ -1548,6 +1548,7 @@ static void __exit exit_rpcsec_gss(void)
+>  {
+>  	gss_svc_shutdown();
+>  	rpcauth_unregister(&authgss_ops);
+> +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
+>  }
 > 
-> to ->
+>  MODULE_LICENSE("GPL");
 > 
->     RTL_W16(RxMaxSize, RX_BUF_SIZE);
-> 
-> (But it will probably break jumbo frames rx as well)
-
-(RX_BUF_SIZE is defined as 1536).
-Aha, so it should set some flags instead (as were tested in your
-first try), for packets larger than that.  Makes sense.
-
-But if we told the NIC that we can receive 16K buffers, and it
-delivered 3K packet to us, we've got some memory corruption...
-I.e., the problem is that we told the driver that we can handle
-16k buffers but actually we had only 1500, no?
-
-Lemme check this all...
-
-Setting RxMaxSize to RX_BUF_SIZE indeed solved the problem, --
-I don't see random corruptions like the last one above.
-
-But after setting RxMaxSize to 2500, I can trigger your 2nd
-check/patch condition (for pkt_size > tp->rx_buf_sz) for
-packets <2500 in size, and your *first* check/patch condition
-(RxRES | RxRWT | RxRUNT | RxCRC | RxFOVF) for packets >2500
-in size.
-
-So to me (who has no knowledge about hardware at all), it looks
-like the card behaves quite correctly.
-
-Also note that I've seen this behavior on several different
-machines.  Here @home where I'm doing this all testing I've
-Asus M3A78-EM motherboard (AMD780), and the second one is
-Gigabyte GA-MA74GM-S2H (AMD740) - both behaves very similarly.
-Both are AMD7xx, but I've seen the same problem on Intel-based
-machines too.
-
-I'll try out some more tests later today.  (And there's another
-issue with these NICs -- the famous, quite frequent under load
-"NETDEV WATCHDOG: eth0 (r8169): transmit timed out" errors, which
-are quite annoying... Also shown by both the above-mentioned mobos
-and by other machines).
-
-Thanks!
-
-/mjt
