@@ -1,49 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbZFHRqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbZFHRru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252AbZFHRqY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbZFHRqQ
+	id S1753823AbZFHRru (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZFHRrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:46:16 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:51730 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751482AbZFHRqP (ORCPT
+	Mon, 8 Jun 2009 13:47:43 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:50020 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbZFHRrm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:46:15 -0400
-Date: Mon, 8 Jun 2009 19:48:32 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-Subject: [PATCH] ia64: unexport fpswa.h
-Message-ID: <20090608174832.GA29447@uranus.ravnborg.org>
-References: <1244118232.5172.26.camel@ht.satnam> <1244118476.5172.29.camel@ht.satnam> <1244118599.5172.31.camel@ht.satnam> <20090604202212.GD13892@uranus.ravnborg.org> <57C9024A16AD2D4C97DC78E552063EA3A89196D0@orsmsx505.amr.corp.intel.com>
-Mime-Version: 1.0
+	Mon, 8 Jun 2009 13:47:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YRlGYry6FIpVweoh3pla1hlNmR/A0EKJFAPTjyD8U+ysQyL6+sOudyCz2OlzCLYm4H
+         3LGEr6UWRsrCg9nUeBznPhqNNkrSWnRNYTy5aaumbETeh9E3BPItc7qGwVqAnN///n+8
+         S2V4RFTKA+aNgx9QGK4kxa40+8ZZfl7lxlm6Y=
+Date: Mon, 8 Jun 2009 21:47:34 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:irq/numa] x86, apic: Fix dummy apic read operation
+	together with broken MP handling
+Message-ID: <20090608174734.GF5015@lenovo>
+References: <20090607124840.GD4547@lenovo> <tip-103428e57be323c3c5545db8ad12667099bc6005@git.kernel.org> <86802c440906071223w3116f452n7ccd028d52f11c77@mail.gmail.com> <20090607203951.GF4547@lenovo> <86802c440906071559t7f2139c0s55fd15e8cd669cff@mail.gmail.com> <20090608151646.GB5015@lenovo>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3A89196D0@orsmsx505.amr.corp.intel.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090608151646.GB5015@lenovo>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fpswa.h is not relevant for userspace,
-so do not export it.
+[Cyrill Gorcunov - Mon, Jun 08, 2009 at 07:16:46PM +0400]
+...
+| | should be other case:
+| | when MADT is right, but disablelapic is used.
+| | will get cpu_has_apic == 0, and we are not using dummy apic read/write.
+| | 
+| | so don't need to check
+| |         /*
+| |          * If we couldn't find a local APIC, then get out of here now!
+| |          */
+| |         if (APIC_INTEGRATED(apic_version[boot_cpu_physical_apicid]) &&
+| |             !cpu_has_apic) {
+| |                 if (!disable_apic) {
+| |                         pr_err("BIOS bug, local APIC #%d not detected!...\n",
+| |                                 boot_cpu_physical_apicid);
+| |                         pr_err("... forcing use of dummy APIC emulation."
+| |                                 "(tell your hw vendor)\n");
+| |                 }
+| |                 smpboot_clear_io_apic();
+| |                 arch_disable_smp_support();
+| |                 return -1;
+| |         }
+|
+...
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>
----
-diff --git a/arch/ia64/include/asm/Kbuild b/arch/ia64/include/asm/Kbuild
-index ccbe8ae..c7d0a71 100644
---- a/arch/ia64/include/asm/Kbuild
-+++ b/arch/ia64/include/asm/Kbuild
-@@ -2,7 +2,6 @@ include include/asm-generic/Kbuild.asm
+I've just emulated the situation where this if() triggered via
+disable_apic boot option and without if (!disable_apic) we
+have just a wrong message about BIOS bug (which is not since
+we've disabled apic by hands). So no need to remove this
+"if (!disable_apic)" snippet. In most cases it will be
+always-true condition but for rare cases it'll be usefull
+as well.
+
+Now I'm trying to fake apic integrated case so we could
+need additional check here...
  
- header-y += break.h
- header-y += fpu.h
--header-y += fpswa.h
- header-y += ia64regs.h
- header-y += intel_intrin.h
- header-y += perfmon_default_smpl.h
+	-- Cyrill
