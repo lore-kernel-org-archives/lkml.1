@@ -1,78 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752469AbZFHDVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751829AbZFHDXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752469AbZFHDVH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 7 Jun 2009 23:21:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbZFHDUz
+	id S1751829AbZFHDXr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 7 Jun 2009 23:23:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbZFHDXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 7 Jun 2009 23:20:55 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46002 "EHLO
+	Sun, 7 Jun 2009 23:23:39 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46067 "EHLO
 	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750950AbZFHDUz (ORCPT
+	with ESMTP id S1750950AbZFHDXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 7 Jun 2009 23:20:55 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH mmotm] vmscan: fix may_swap handling for memcg
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090608120228.cb70e569.nishimura@mxp.nes.nec.co.jp>
-References: <20090608120228.cb70e569.nishimura@mxp.nes.nec.co.jp>
-Message-Id: <20090608121848.4370.A69D9226@jp.fujitsu.com>
+	Sun, 7 Jun 2009 23:23:38 -0400
+Message-ID: <4A2C8429.2020401@jp.fujitsu.com>
+Date: Mon, 08 Jun 2009 12:23:21 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Alex Chiang <achiang@hp.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>, lenb@kernel.org,
+       linux-acpi@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH v2 07/11] ACPI: acpi_pci_unbind should clean up	properly
+ after acpi_pci_bind
+References: <20090604054504.18802.21690.stgit@bob.kio> <20090604055852.18802.22743.stgit@bob.kio> <4A2788FA.2050606@jp.fujitsu.com> <20090604233521.GA12900@ethanol>
+In-Reply-To: <20090604233521.GA12900@ethanol>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon,  8 Jun 2009 12:20:54 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Alex Chiang wrote:
+> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>>>  
+>> I have a concern about this change.
+>>
+>> The acpi_pci_irq_del_prt() against dev->bus removes not only
+>> the _PRT entries for PCI function corresponding to specified
+>> acpi_device, but also other _PRT entries for working PCI
+>> devices/functions on the same bus. As a result, interrupt
+>> initialization for those PCI functions would no longer work
+>> properly after that.
+>>
+>> So I think we should not call acpi_pci_irq_del_prt() against
+>> dev->bus.
 > 
-> Commit 2e2e425989080cc534fc0fca154cae515f971cf5 ("vmscan,memcg: reintroduce
-> sc->may_swap) add may_swap flag and handle it at get_scan_ratio().
+> Thanks for the review. I agree with you.
 > 
-> But the result of get_scan_ratio() is ignored when priority == 0, and this
-> means, when memcg hits the mem+swap limit, anon pages can be swapped
-> just in vain. Especially when memcg causes oom by mem+swap limit,
-> we can see many and many pages are swapped out.
+> Here is a respun version of this patch.
 > 
-> Instead of not scanning anon lru completely when priority == 0, this patch adds
-> a hook to handle may_swap flag in shrink_page_list() to avoid using useless swaps,
-> and calls try_to_free_swap() if needed because it can reduce
-> both mem.usage and memsw.usage if the page(SwapCache) is unused anymore.
+> From: Alex Chiang <achiang@hp.com>
 > 
-> Such unused-but-managed-under-memcg SwapCache can be made in some paths,
-> for example trylock_page() failure in free_swap_cache().
+> ACPI: acpi_pci_unbind should clean up properly after acpi_pci_bind
 > 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> In acpi_pci_bind, we set device->ops.bind and device->ops.unbind, but
+> never clear them out.
+> 
+> Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> diff --git a/drivers/acpi/pci_bind.c b/drivers/acpi/pci_bind.c
+> index 62cb383..c9cc650 100644
+> --- a/drivers/acpi/pci_bind.c
+> +++ b/drivers/acpi/pci_bind.c
+> @@ -109,11 +109,13 @@ static int acpi_pci_unbind(struct acpi_device *device)
+>  	struct pci_dev *dev;
+>  
+>  	dev = acpi_get_pci_dev(device->handle);
+> -	if (!dev)
+> +	if (!dev || !dev->subordinate)
+>  		return 0;
 
-I think root cause is following branch, right?
-if so, Why can't we handle this issue on shrink_zone()?
+This would leak the pci_dev's refcount
+if dev != NULL && dev->subordinate == NULL.
+
+Thanks,
+Kenji Kaneshige
 
 
----------------------------------------------------------------
-static void shrink_zone(int priority, struct zone *zone,
-                                struct scan_control *sc)
-{
-        get_scan_ratio(zone, sc, percent);
-
-        for_each_evictable_lru(l) {
-                int file = is_file_lru(l);
-                unsigned long scan;
-
-                scan = zone_nr_pages(zone, sc, l);
-                if (priority) {				// !!here!!
-                        scan >>= priority;
-                        scan = (scan * percent[file]) / 100;
-                }
-
-
+>  
+> -	if (dev->subordinate)
+> -		acpi_pci_irq_del_prt(dev->subordinate);
+> +	acpi_pci_irq_del_prt(dev->subordinate);
+> +
+> +	device->ops.bind = NULL;
+> +	device->ops.unbind = NULL;
+>  
+>  	pci_dev_put(dev);
+>  	return 0;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
 
 
