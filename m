@@ -1,59 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753936AbZFHRuc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbZFHRz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753936AbZFHRuc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 13:50:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750727AbZFHRuX
+	id S1752593AbZFHRz0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 13:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbZFHRzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 13:50:23 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:49850 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751190AbZFHRuW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 13:50:22 -0400
-Date: Mon, 8 Jun 2009 18:50:18 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: ebiederm@xmission.com, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, hugh@veritas.com, tj@kernel.org,
-       adobriyan@gmail.com, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, gregkh@suse.de, npiggin@suse.de,
-       akpm@linux-foundation.org, hch@infradead.org
-Subject: Re: [PATCH 0/23] File descriptor hot-unplug support v2
-Message-ID: <20090608175018.GM8633@ZenIV.linux.org.uk>
-References: <m1skkf761y.fsf@fess.ebiederm.org> <m1oct739xu.fsf@fess.ebiederm.org> <20090606080334.GA15204@ZenIV.linux.org.uk> <E1MDbLz-0003wm-Db@pomaz-ex.szeredi.hu> <20090608162913.GL8633@ZenIV.linux.org.uk> <E1MDhxh-0004nz-Qm@pomaz-ex.szeredi.hu>
+	Mon, 8 Jun 2009 13:55:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35583 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750793AbZFHRzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 13:55:17 -0400
+Message-ID: <4A2D506C.5060101@kernel.org>
+Date: Mon, 08 Jun 2009 10:54:52 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1MDhxh-0004nz-Qm@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+CC: Peer Chen <pchen@nvidia.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] firmware_map: fix hang with x86/32bit
+References: <bug-13484-13546@http.bugzilla.kernel.org/> <200906080543.n585hQYj017771@demeter.kernel.org> <4A2CB48C.4080707@kernel.org> <15F501D1A78BD343BE8F4D8DB854566B4283361E@hkemmail01.nvidia.com>
+In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B4283361E@hkemmail01.nvidia.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 06:44:41PM +0200, Miklos Szeredi wrote:
 
-> I'm still not getting what the problem is.  AFAICS file operations are
-> either
-> 
->  a) non-interruptible but finish within a short time or
->  b) may block indefinitely but are interruptible (or at least killable).
-> 
-> Anything else is already problematic, resulting in processes "stuck in
-> D state".
+http://bugzilla.kernel.org/show_bug.cgi?id=13484
 
-Welcome to reality...
+Peer reported:
+| The bug is introduced from kernel 2.6.27, if E820 table reserve the memory
+| above 4G in 32bit OS(BIOS-e820: 00000000fff80000 - 0000000120000000
+| (reserved)), system will report Int 6 error and hang up. The bug is caused by
+| the following code in drivers/firmware/memmap.c, the resource_size_t is 32bit
+| variable in 32bit OS, the BUG_ON() will be invoked to result in the Int 6
+| error. I try the latest 32bit Ubuntu and Fedora distributions, all hit this
+| bug.
+|======
+|static int firmware_map_add_entry(resource_size_t start, resource_size_t end,
+|                  const char *type,
+|                  struct firmware_map_entry *entry)
 
-* bread() is non-interruptible
-* so's copy_from_user()/copy_to_user()
-* IO we are stuck upon _might_ be interruptible, but by sending a signal
-to some other process
+and it only happen with CONFIG_PHYS_ADDR_T_64BIT is not set.
 
-... just for starters.  If you sign up for auditing the tree to eliminate
-"something's stuck in D state", you are welcome to it.  Mind you, you'll
-have to audit filesystems for "doesn't check if metadata IO has failed"
-first, but that _really_ needs to be done anyway.  On the ongoing basis.
+it turns out we need to pass u64 instead of resource_size_t for that.
 
-Drivers, of course, are even more interesting - looking through foo_ioctl()
-instances is a wonderful way to lower pH in stomach, but that's on the
-"we want revoke()" side of it.
+Reported-and-tested-by: Peer Chen <pchen@nvidia.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Bernhard Walle
+Cc: stable@kernel.org
+
+---
+ drivers/firmware/memmap.c    |   12 +++++-------
+ include/linux/firmware-map.h |   12 ++++--------
+ 2 files changed, 9 insertions(+), 15 deletions(-)
+
+Index: linux-2.6/drivers/firmware/memmap.c
+===================================================================
+--- linux-2.6.orig/drivers/firmware/memmap.c
++++ linux-2.6/drivers/firmware/memmap.c
+@@ -31,8 +31,8 @@
+  * information is necessary as for the resource tree.
+  */
+ struct firmware_map_entry {
+-	resource_size_t		start;	/* start of the memory range */
+-	resource_size_t		end;	/* end of the memory range (incl.) */
++	u64			start;	/* start of the memory range */
++	u64			end;	/* end of the memory range (incl.) */
+ 	const char		*type;	/* type of the memory range */
+ 	struct list_head	list;	/* entry for the linked list */
+ 	struct kobject		kobj;   /* kobject for each entry */
+@@ -101,7 +101,7 @@ static LIST_HEAD(map_entries);
+  * Common implementation of firmware_map_add() and firmware_map_add_early()
+  * which expects a pre-allocated struct firmware_map_entry.
+  **/
+-static int firmware_map_add_entry(resource_size_t start, resource_size_t end,
++static int firmware_map_add_entry(u64 start, u64 end,
+ 				  const char *type,
+ 				  struct firmware_map_entry *entry)
+ {
+@@ -132,8 +132,7 @@ static int firmware_map_add_entry(resour
+  *
+  * Returns 0 on success, or -ENOMEM if no memory could be allocated.
+  **/
+-int firmware_map_add(resource_size_t start, resource_size_t end,
+-		     const char *type)
++int firmware_map_add(u64 start, u64 end, const char *type)
+ {
+ 	struct firmware_map_entry *entry;
+ 
+@@ -157,8 +156,7 @@ int firmware_map_add(resource_size_t sta
+  *
+  * Returns 0 on success, or -ENOMEM if no memory could be allocated.
+  **/
+-int __init firmware_map_add_early(resource_size_t start, resource_size_t end,
+-				  const char *type)
++int __init firmware_map_add_early(u64 start, u64 end, const char *type)
+ {
+ 	struct firmware_map_entry *entry;
+ 
+Index: linux-2.6/include/linux/firmware-map.h
+===================================================================
+--- linux-2.6.orig/include/linux/firmware-map.h
++++ linux-2.6/include/linux/firmware-map.h
+@@ -24,21 +24,17 @@
+  */
+ #ifdef CONFIG_FIRMWARE_MEMMAP
+ 
+-int firmware_map_add(resource_size_t start, resource_size_t end,
+-		     const char *type);
+-int firmware_map_add_early(resource_size_t start, resource_size_t end,
+-			   const char *type);
++int firmware_map_add(u64 start, u64 end, const char *type);
++int firmware_map_add_early(u64 start, u64 end, const char *type);
+ 
+ #else /* CONFIG_FIRMWARE_MEMMAP */
+ 
+-static inline int firmware_map_add(resource_size_t start, resource_size_t end,
+-				   const char *type)
++static inline int firmware_map_add(u64 start, u64 end, const char *type)
+ {
+ 	return 0;
+ }
+ 
+-static inline int firmware_map_add_early(resource_size_t start,
+-					 resource_size_t end, const char *type)
++static inline int firmware_map_add_early(u64 start, u64 end, const char *type)
+ {
+ 	return 0;
+ }
