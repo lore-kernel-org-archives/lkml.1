@@ -1,86 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbZFHVSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbZFHVS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755918AbZFHVSP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 17:18:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZFHVR6
+	id S1756805AbZFHVS1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 17:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbZFHVSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 17:17:58 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:43920 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750794AbZFHVR5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 17:17:57 -0400
-Message-ID: <4A2D7FFE.9070701@cosmosbay.com>
-Date: Mon, 08 Jun 2009 23:17:50 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
+	Mon, 8 Jun 2009 17:18:09 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:38918 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755970AbZFHVSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 17:18:08 -0400
+Message-ID: <4A2D8011.9050502@linux.vnet.ibm.com>
+Date: Mon, 08 Jun 2009 14:18:09 -0700
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
 User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Michael Tokarev <mjt@tls.msk.ru>
-CC: Linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: [Security, resend] Instant crash with rtl8169 and large packets
-References: <4A2D1147.8020101@msgid.tls.msk.ru> <4A2D1FE4.5030100@gmail.com> <4A2D25F6.9080300@msgid.tls.msk.ru> <4A2D2906.6090002@gmail.com> <4A2D301D.9040301@msgid.tls.msk.ru> <4A2D3568.6010901@gmail.com> <4A2D3BC6.3040904@msgid.tls.msk.ru> <4A2D4AA7.6020204@gmail.com> <4A2D6D0C.6060206@msgid.tls.msk.ru>
-In-Reply-To: <4A2D6D0C.6060206@msgid.tls.msk.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 08 Jun 2009 23:17:52 +0200 (CEST)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf_counter: extensible perf_counter_attr
+References: <1244481941.13761.9119.camel@twins> <4A2D6041.4050309@linux.vnet.ibm.com> <1244490680.6691.1.camel@laptop>
+In-Reply-To: <1244490680.6691.1.camel@laptop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev a écrit :
-> Eric Dumazet wrote:
-> []
->> OK I suspect driver is buggy since 2.6.10 days :)
+Peter Zijlstra wrote:
+> On Mon, 2009-06-08 at 12:02 -0700, Corey Ashford wrote:
+>> Hi Peter,
 >>
->> Could you try this patch ?
+>> Peter Zijlstra wrote:
+>>> Allow extending the perf_counter_attr structure by linking extended
+>>> structures to it.
+>>>
+>>> Also, should we grow the directly reserved space in the structure a
+>>> little more?
+>>>
+>>> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>>> ---
+>>>  include/linux/perf_counter.h |    7 +++++++
+>>>  kernel/perf_counter.c        |    1 +
+>>>  2 files changed, 8 insertions(+), 0 deletions(-)
+>>>
+>>> diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+>>> index 3586df8..781d8ce 100644
+>>> --- a/include/linux/perf_counter.h
+>>> +++ b/include/linux/perf_counter.h
+>>> @@ -175,6 +175,13 @@ struct perf_counter_attr {
+>>>  	__u32			__reserved_3;
+>>>
+>>>  	__u64			__reserved_4;
+>>> +
+>>> +	struct perf_counter_attr_ext *ext_attrs;
+>>> +};
+>>> +
+>>> +struct perf_counter_attr_ext {
+>>> +	struct perf_counter_attr_ext 	*next;
+>>> +	__u64				perf_attr_ext_type;
+>>>  };
+>> Let's say I want to extend the attributes by four 64-bit quantities... from the 
+>> above definition, I'd need four additional records chained together, right?  How 
+>> about something like this instead:
 > 
-> Tried it, and it appears to work.  Tried various MTU combinations
-> and packet sizes.  Checked iperf too, with and without the patch
-> and with different MTU too, to be sure the patch does not introduce
-> any slowdowns - everything looks sane.  In case the incoming packet
-> is larger than the RX buffer size, `errors' and `frames' RX stats
-> gets incremented.
+> Ah, the idea was to do something like:
 > 
-> The only somewhat odd thing is that rx path accepts packets larger
-> than MTU by 3 bytes.  For example, if I set mtu to 2000, the
-> largest packet I can send is 2003 bytes; with mtu=2002, largest
-> actual packet size is 2005 bytes.  This is complete frame - in
-> terms of ping size (ping -s) it's 1975 and 1977 bytes.  That to
-> say, maybe we still have some corner case somewhere, for packets
-> larger than mtu by 1, 2 or 3 bytes.
+> struct perf_counter_attr_feature {
+> 	struct perf_counter_attr_ext	head;
+> 	... more stuff ...
+> };
 > 
-> Also I didn't try MTU < 1500.
-> 
-> Other than that,
-> 
-> Tested-By: Michael Tokarev <mjt@tls.msk.ru>
-
-Could you confirm this last patch was ok without former two patches ?
-
-> 
-> And by the way, your email client uses quoted-printable encoding.
-> I had to use trivial perl one-liner to convert your patches to
-> plaintext.  JFYI.
-
-Ah yes, this is when I reply to one of your mail, thank you for the hint.
-
-When submitting a new mail, my thunderbird agent uses a regular "Content-Transfer-Encoding: 7bit"
+> and set head.perf_attr_ext_type = PERF_ATTR_EXT_FEATURE
 
 
-BTW, this driver uses NAPI, but still calls dev_kfree_skb_irq() in rtl8169_tx_interrupt()
+So you'd do something like this then when assigning to the perf_counter_attr struct:
 
-You probably can get better performance calling dev_kfree_skb(tx_skb->skb); instead
+struct perf_counter_attr pca;
+...
+struct perf_counter_attr_feature feature;
 
-@@ -3372,7 +3372,7 @@ static void rtl8169_tx_interrupt(struct net_device *dev,
-                rtl8169_unmap_tx_skb(tp->pci_dev, tx_skb, tp->TxDescArray + entry);
+...
+pca.ext_attrs = (struct perf_counter_attr_ext *)&feature;
+-or-
+pca.ext_attrs = &feature.head; /* secretly know that there's data that lies past 
+the attr struct header */
 
-                if (status & LastFrag) {
--                       dev_kfree_skb_irq(tx_skb->skb);
-+                       dev_kfree_skb(tx_skb->skb);
-                        tx_skb->skb = NULL;
-                }
-                dirty_tx++;
+Am I understanding this correctly?
 
-
+- Corey
 
