@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757358AbZFHXNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbZFHXQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757358AbZFHXNW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 19:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbZFHXNF
+	id S1757444AbZFHXQk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 19:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbZFHXQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 19:13:05 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:21481 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752777AbZFHXND (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 19:13:03 -0400
-X-IronPort-AV: E=Sophos;i="4.41,326,1241395200"; 
-   d="scan'208";a="319338787"
-Date: Mon, 8 Jun 2009 16:13:05 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-usb@vger.kernel.org, greg@kroah.com, linux-scsi@vger.kernel.org,
-       netdev@vger.kernel.org, arjan@infradead.org
-Subject: Re: [PATCH 7/7] initdev:kernel:Await block device discovery
-Message-ID: <20090608231305.GA28992@cuplxvomd02.corp.sa.net>
-References: <20090606023416.GA5798@cuplxvomd02.corp.sa.net> <4A2A3F36.4070408@s5r6.in-berlin.de> <20090608223019.GC22222@cuplxvomd02.corp.sa.net> <4A2D96C5.2080604@s5r6.in-berlin.de>
+	Mon, 8 Jun 2009 19:16:32 -0400
+Received: from tundra.namei.org ([65.99.196.166]:56926 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751858AbZFHXQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 19:16:31 -0400
+Date: Tue, 9 Jun 2009 09:16:21 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Mimi Zohar <zohar@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Serge Hallyn <serue@us.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       David Safford <safford@watson.ibm.com>
+Subject: Re: [PATCH] integrity: fix IMA inode leak
+In-Reply-To: <1244486655.3277.65.camel@dyn9002018117.watson.ibm.com>
+Message-ID: <alpine.LRH.2.00.0906090912120.6132@tundra.namei.org>
+References: <Pine.LNX.4.64.0906062109580.8365@sister.anvils>  <alpine.LFD.2.01.0906061416170.6847@localhost.localdomain>  <1244354901.3963.23.camel@dyn9002018117.watson.ibm.com>  <alpine.LFD.2.01.0906071608040.6847@localhost.localdomain> 
+ <1244464135.3277.13.camel@dyn9002018117.watson.ibm.com>  <alpine.LFD.2.01.0906080913020.6847@localhost.localdomain> <1244486655.3277.65.camel@dyn9002018117.watson.ibm.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A2D96C5.2080604@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-3; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 12:55:01AM +0200, Stefan Richter wrote:
-> David VomLehn wrote:
->> On Sat, Jun 06, 2009 at 06:04:38AM -0400, Stefan Richter wrote:
->>> 1.)  It depends on the rootdelay so big that it is guaranteed that 
->>> one or more initdev_found() have been called before 
->>> prepare_namespace()'s ssleep(root_delay) is over.
-> ...
->> I think you misunderstood.  Buses are enumerated before this code is
->> reached and thus initdev_found() has already been called for all attached
->> block devices.
-> ...
->> I would appreciate it if you could take a closer look at the locations where
->> initdev_found() and initdev_probe_done() are called and see if you still
->> think there is a problem.
->
-> I obviously need to do that.
->
-> However, one issue remains:  If somebody wants to use your API for  
-> another bus, he needs to know at which point he can successfully use it,  
-> and after what point (or context) it cannot, even must not, be used  
-> anymore.  This isn't documented --- or is it?
+On Mon, 8 Jun 2009, Mimi Zohar wrote:
 
-Hmm, I tried to make this clear in Documentation/driver-model/initdev.txt,
-but I don't claim to be much of a writer and am open to suggestions.
+> 
+> Ok, so instead of having a full fledge single security layer, only add
+> the security layer for those places where both the LSM hooks and IMA
+> co-exist: security_file_mmap, security_bprm_check, security_inode_alloc,
+> security_inode_free, and security_file_free. As the LSM hooks are called
+> 'security_XXXX', the call would look something like:
+> 
+> security_all_inode_free() {
+>         ima_inode_free()
+>         security_inode_free()
+> }
 
-> (By 'buses are enumerated before...' you surely mean only the buses for  
-> which you implemented this API usage already.)
+Yes, it only needs to be a wrapper.  The above is ugly, how about:
 
-Yes, definitely. In an ideal world, every bus which might have a console,
-network, or block device would be using this API. USB is a big problem for
-me, so that's the itch I scratched. Alan Stern also gave a rub to SCSI.
-If people are using devices on, say, Firewire, they will have whatever
-behavior they had before the introduction of the API.
+security_inode_free()
+{
+	ima_inode_free();
+	lsm_inode_free();
+}
 
-> Stefan Richter
+I think we may have come full circle on the naming of the LSM hook, but 
+'security_*' was never great given that it's only supposed to be covering 
+access control.
 
-David VomLehn
+-- 
+James Morris
+<jmorris@namei.org>
