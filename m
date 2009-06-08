@@ -1,64 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbZFHT7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755004AbZFHUDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbZFHT7U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 15:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZFHT7L
+	id S1755004AbZFHUDj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 16:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbZFHUDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 15:59:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53717 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753392AbZFHT7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 15:59:10 -0400
-Date: Mon, 8 Jun 2009 12:57:52 -0700
-From: Valerie Aurora <vaurora@redhat.com>
-To: Jan Rekorajski <baggins@sith.mimuw.edu.pl>, Jan Blunck <jblunck@suse.de>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
-       mszeredi@suse.cz
-Subject: Re: [PATCH 00/32] VFS based Union Mount (V3)
-Message-ID: <20090608195752.GD4363@fsbox>
-References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <20090521125419.GM30663@sith.mimuw.edu.pl>
+	Mon, 8 Jun 2009 16:03:31 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:41932 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753109AbZFHUDa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 16:03:30 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Harald Welte <HaraldWelte@viatech.com>
+Subject: Re: [PATCH 1/2] CPUFREQ: Enable acpi-cpufreq driver for VIA/Centaur CPUs
+Date: Mon, 8 Jun 2009 15:03:28 -0500
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906060856.15016.lkml@morethan.org> <20090608102754.GP4106@prithivi.gnumonks.org>
+In-Reply-To: <20090608102754.GP4106@prithivi.gnumonks.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090521125419.GM30663@sith.mimuw.edu.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906081503.30488.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 21, 2009 at 02:54:19PM +0200, Jan Rekorajski wrote:
-> On Mon, 18 May 2009, Jan Blunck wrote:
+On Mon June 8 2009, Harald Welte wrote:
+> The VIA/Centaur C7, C7-M and Nano CPU's all support ACPI based cpu p-states
+> using a MSR interface.  The Linux driver just never made use of it, since in
+> addition to the check for the EST flag it also checked if the vendor is Intel.
 > 
-> > Here is another post of the VFS based union mount implementation.
+> Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
+> ---
+>  arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
 > 
-> Is there any chance this will support NFS? I can union-mount tmpfs over
+> diff --git a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> index 208ecf6..ee03585 100644
+> --- a/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> +++ b/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
+> @@ -90,7 +90,8 @@ static int check_est_cpu(unsigned int cpuid)
+>  {
+>  	struct cpuinfo_x86 *cpu = &cpu_data(cpuid);
+>  
+> -	if (cpu->x86_vendor != X86_VENDOR_INTEL ||
+> +	if ((cpu->x86_vendor != X86_VENDOR_INTEL &&
+> +	     cpu->x86_vendor != X86_VENDOR_CENTAUR) ||
+>  	    !cpu_has(cpu, X86_FEATURE_EST))
+>  		return 0;
+>  
 
-NFS as the read-only layer ought to work.  NFS as the read-write layer
-is still up in the air.
+For my own internal testing, based on subsequent posts, I simplified
+that to:
 
-> nfs mounted fs, but if I try to mount --union two NFS filesystems I
-> always get -EBUSY on second mount on the same mountpoint.
-> 
-> Something along these lines:
-> 
-> doesn't matter if I use --union on first mount, the result is always the
-> same.
-> 
-> mount <--union> -t nfs server:/export/system /mnt
-> OK
-> mount --union -t nfs server:/export/profile /mnt
-> mount.nfs: /mnt is busy or already mounted
-> 
-> I patched mount.nfs so it knows about MS_UNION, and strace shows me that
-> it passes that flag to kernel.
+static int check_est_cpu(unsigned int cpuid)
+{
+        struct cpuinfo_x86 *cpu = &cpu_data(cpuid);
 
-FYI, using --union on the first mount will make it union with the
-local directory below it.  The --union option is not needed when you
-mount the lower read-only layer.
+        if (!cpu_has(cpu, X86_FEATURE_EST))
+                return 0;
 
-You'll get -EBUSY on the second mount of any NFS file system over
-another - try it again with the --union flag.  Support for NFS on NFS
-union mount would have to change this.
+        return 1;
+}
 
--VAL
+Have not done anything (yet) to deal with the adaptive controller,
+**which is safe to (not) do on my test system because I know it isn't enabled**
+
+Note: This machine is known to run common, proprietary operating systems,
+so I am also assuming its BIOS ACPI is complete enough.
+
+Note 2: Don't try this unless you have a machine to waste.  ;)
+
+Mike
