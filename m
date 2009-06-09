@@ -1,301 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbZFIG55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758024AbZFIG60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756880AbZFIG55 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 02:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbZFIG5t
+	id S1758024AbZFIG60 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 02:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756271AbZFIG6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 02:57:49 -0400
-Received: from ozlabs.org ([203.10.76.45]:49599 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753146AbZFIG5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 02:57:48 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH 4/6] x86/cpufreq: use cpumask_copy instead of =
-Date: Tue, 9 Jun 2009 16:27:42 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
-References: <4A2835D8.6040903@kernel.org> <4A2AE4AC.60805@kernel.org> <4A2AE570.2010307@kernel.org>
-In-Reply-To: <4A2AE570.2010307@kernel.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906091627.45411.rusty@rustcorp.com.au>
+	Tue, 9 Jun 2009 02:58:17 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59035 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753146AbZFIG6R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 02:58:17 -0400
+To: sfr@canb.auug.org.au
+CC: viro@ZenIV.linux.org.uk, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, tj@kernel.org, miklos@szeredi.hu,
+       vapier@gentoo.org
+In-reply-to: <20090609110815.0abd1de0.sfr@canb.auug.org.au> (message from
+	Stephen Rothwell on Tue, 9 Jun 2009 11:08:15 +1000)
+Subject: Re: linux-next: manual merge of the vfs tree with the  tree
+References: <20090609110815.0abd1de0.sfr@canb.auug.org.au>
+Message-Id: <E1MDvHY-0006N1-06@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 09 Jun 2009 08:58:04 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 7 Jun 2009 07:23:52 am Yinghai Lu wrote:
-> so later could use nr_cpumask_bits in cpumask_size when MAXSMP is used
+On Tue, 9 Jun 2009, Stephen Rothwell wrote:
+> Today's linux-next merge of the vfs tree got a conflict in
+> include/linux/magic.h between commit
+> 81ebac1be35a2c2fe1f4d3810a8e57d315600a32 ("CUSE: implement CUSE -
+> Character device in Userspace") from the fuse tree and commit
+> 5b88aed76b5a1470ec9705c03cf3f0480c018513 ("linux/magic.h: move cramfs
+> magic out of cramfs_fs.h") from the vfs tree.
 
-I have a (more ambitious) patch for this in my queue, which weans it off this
-entirely:
+Hmm, looks like that CUSE_SUPER_MAGIC is an unused remnant from an
+earlier version of the CUSE patchset.  I'll fix that up in the fuse
+tree.
 
-Subject: cpumask: avoid playing with cpus_allowed in powernow-k8.c
-From: Rusty Russell <rusty@rustcorp.com.au>
+Thanks,
+Miklos
 
-It's generally a very bad idea to mug some process's cpumask: it could
-legitimately and reasonably be changed by root, which could break us
-(if done before our code) or them (if we restore the wrong value).
-
-I use work_on_cpu, which is slightly less efficient than the old code,
-but the code is complex enough that using smp_call_function_single()
-is not trivial.
-
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-To: davej@redhat.com
-To: cpufreq@vger.kernel.org
-Cc: mark.langsdorf@amd.com
----
- arch/x86/kernel/cpu/cpufreq/powernow-k8.c |  128 +++++++++++++++---------------
- 1 file changed, 64 insertions(+), 64 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -510,19 +510,10 @@ static int core_voltage_post_transition(
- 	return 0;
- }
- 
--static int check_supported_cpu(unsigned int cpu)
-+static long check_supported_cpu(void *unused)
- {
--	cpumask_t oldmask;
- 	u32 eax, ebx, ecx, edx;
--	unsigned int rc = 0;
--
--	oldmask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
--
--	if (smp_processor_id() != cpu) {
--		printk(KERN_ERR PFX "limiting to cpu %u failed\n", cpu);
--		goto out;
--	}
-+	unsigned int rc = -ENODEV;
- 
- 	if (current_cpu_data.x86_vendor != X86_VENDOR_AMD)
- 		goto out;
-@@ -562,10 +553,9 @@ static int check_supported_cpu(unsigned 
- 			goto out;
- 	}
- 
--	rc = 1;
-+	rc = 0;
- 
- out:
--	set_cpus_allowed_ptr(current, &oldmask);
- 	return rc;
- }
- 
-@@ -1140,11 +1130,16 @@ static int transition_frequency_pstate(s
- 	return res;
- }
- 
--/* Driver entry point to switch to the target frequency */
--static int powernowk8_target(struct cpufreq_policy *pol,
--		unsigned targfreq, unsigned relation)
-+struct target_data {
-+	struct cpufreq_policy *pol;
-+	unsigned targfreq;
-+	unsigned relation;
-+};
-+
-+static long powernowk8_target_on_cpu(void *_tdata)
- {
--	cpumask_t oldmask;
-+	struct target_data *tdata = _tdata;
-+	struct cpufreq_policy *pol = tdata->pol;
- 	struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
- 	u32 checkfid;
- 	u32 checkvid;
-@@ -1157,22 +1152,13 @@ static int powernowk8_target(struct cpuf
- 	checkfid = data->currfid;
- 	checkvid = data->currvid;
- 
--	/* only run on specific CPU from here on */
--	oldmask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pol->cpu));
--
--	if (smp_processor_id() != pol->cpu) {
--		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
--		goto err_out;
--	}
--
- 	if (pending_bit_stuck()) {
- 		printk(KERN_ERR PFX "failing targ, change pending bit set\n");
- 		goto err_out;
- 	}
- 
- 	dprintk("targ: cpu %d, %d kHz, min %d, max %d, relation %d\n",
--		pol->cpu, targfreq, pol->min, pol->max, relation);
-+		pol->cpu, tdata->targfreq, pol->min, pol->max, tdata->relation);
- 
- 	if (query_current_values_with_pending_wait(data))
- 		goto err_out;
-@@ -1192,7 +1178,8 @@ static int powernowk8_target(struct cpuf
- 	}
- 
- 	if (cpufreq_frequency_table_target(pol, data->powernow_table,
--				targfreq, relation, &newstate))
-+					   tdata->targfreq, tdata->relation,
-+					   &newstate))
- 		goto err_out;
- 
- 	mutex_lock(&fidvid_mutex);
-@@ -1219,10 +1206,19 @@ static int powernowk8_target(struct cpuf
- 	ret = 0;
- 
- err_out:
--	set_cpus_allowed_ptr(current, &oldmask);
- 	return ret;
- }
- 
-+/* Driver entry point to switch to the target frequency */
-+static int powernowk8_target(struct cpufreq_policy *pol,
-+			     unsigned targfreq, unsigned relation)
-+{
-+	struct target_data tdata = { .pol = pol,
-+				     .targfreq = targfreq,
-+				     .relation = relation };
-+	return work_on_cpu(pol->cpu, powernowk8_target_on_cpu, &tdata);
-+}
-+
- /* Driver entry point to verify the policy and range of frequencies */
- static int powernowk8_verify(struct cpufreq_policy *pol)
- {
-@@ -1234,6 +1230,29 @@ static int powernowk8_verify(struct cpuf
- 	return cpufreq_frequency_table_verify(pol, data->powernow_table);
- }
- 
-+static long __cpuinit powernowk8_cpu_init_on_cpu(void *_data)
-+{
-+	struct powernow_k8_data *data = _data;
-+
-+	if (smp_processor_id() != data->cpu) {
-+		printk(KERN_ERR PFX "limiting to cpu %u failed\n", data->cpu);
-+		return -EIO;
-+	}
-+
-+	if (pending_bit_stuck()) {
-+		printk(KERN_ERR PFX "failing init, change pending bit set\n");
-+		return -ENODEV;
-+	}
-+
-+	if (query_current_values_with_pending_wait(data))
-+		return -ENODEV;
-+
-+	if (cpu_family == CPU_OPTERON)
-+		fidvid_msr_init();
-+
-+	return 0;
-+}
-+
- static const char ACPI_PSS_BIOS_BUG_MSG[] =
- 	KERN_ERR FW_BUG PFX "No compatible ACPI _PSS objects found.\n"
- 	KERN_ERR FW_BUG PFX "Try again with latest BIOS.\n";
-@@ -1288,27 +1307,9 @@ static int __cpuinit powernowk8_cpu_init
- 		pol->cpuinfo.transition_latency = get_transition_latency(data);
- 
- 	/* only run on specific CPU from here on */
--	oldmask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pol->cpu));
--
--	if (smp_processor_id() != pol->cpu) {
--		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
--		goto err_out_unmask;
--	}
--
--	if (pending_bit_stuck()) {
--		printk(KERN_ERR PFX "failing init, change pending bit set\n");
--		goto err_out_unmask;
--	}
--
--	if (query_current_values_with_pending_wait(data))
--		goto err_out_unmask;
--
--	if (cpu_family == CPU_OPTERON)
--		fidvid_msr_init();
--
--	/* run on any CPU again */
--	set_cpus_allowed_ptr(current, &oldmask);
-+	rc = work_on_cpu(data->cpu, powernowk8_cpu_init_on_cpu, data);
-+	if (rc != 0)
-+		goto err_out_exit_acpi;
- 
- 	if (cpu_family == CPU_HW_PSTATE)
- 		cpumask_copy(pol->cpus, cpumask_of(pol->cpu));
-@@ -1345,8 +1346,7 @@ static int __cpuinit powernowk8_cpu_init
- 
- 	return 0;
- 
--err_out_unmask:
--	set_cpus_allowed_ptr(current, &oldmask);
-+err_out_exit_acpi:
- 	powernow_k8_cpu_exit_acpi(data);
- 
- err_out:
-@@ -1371,12 +1371,20 @@ static int __devexit powernowk8_cpu_exit
- 	return 0;
- }
- 
-+static void query_values_on_cpu(void *_err)
-+{
-+	int *err = _err;
-+	struct powernow_k8_data *data = __get_cpu_var(powernow_data);
-+
-+	*err = query_current_values_with_pending_wait(data);
-+}
-+
- static unsigned int powernowk8_get(unsigned int cpu)
- {
- 	struct powernow_k8_data *data;
--	cpumask_t oldmask = current->cpus_allowed;
- 	unsigned int khz = 0;
- 	unsigned int first;
-+	int err;
- 
- 	first = cpumask_first(cpu_core_mask(cpu));
- 	data = per_cpu(powernow_data, first);
-@@ -1384,15 +1392,8 @@ static unsigned int powernowk8_get(unsig
- 	if (!data)
- 		return -EINVAL;
- 
--	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
--	if (smp_processor_id() != cpu) {
--		printk(KERN_ERR PFX
--			"limiting to CPU %d failed in powernowk8_get\n", cpu);
--		set_cpus_allowed_ptr(current, &oldmask);
--		return 0;
--	}
--
--	if (query_current_values_with_pending_wait(data))
-+	smp_call_function_single(first, query_values_on_cpu, &err, true);
-+	if (err)
- 		goto out;
- 
- 	if (cpu_family == CPU_HW_PSTATE)
-@@ -1403,7 +1404,6 @@ static unsigned int powernowk8_get(unsig
- 
- 
- out:
--	set_cpus_allowed_ptr(current, &oldmask);
- 	return khz;
- }
- 
-@@ -1429,7 +1429,7 @@ static int __cpuinit powernowk8_init(voi
- 	unsigned int i, supported_cpus = 0;
- 
- 	for_each_online_cpu(i) {
--		if (check_supported_cpu(i))
-+		if (work_on_cpu(i, check_supported_cpu, NULL) == 0)
- 			supported_cpus++;
- 	}
- 
-
+> 
+> Just overlapping additions.  I fixed it up (see below) and can carry the
+> fix as necessary.
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> 
+> diff --cc include/linux/magic.h
+> index 4596c9e,192f980..0000000
+> --- a/include/linux/magic.h
+> +++ b/include/linux/magic.h
+> @@@ -3,11 -3,12 +3,13 @@@
+>   
+>   #define ADFS_SUPER_MAGIC	0xadf5
+>   #define AFFS_SUPER_MAGIC	0xadff
+>  -#define AFS_SUPER_MAGIC                0x5346414F
+>  +#define AFS_SUPER_MAGIC		0x5346414F
+>   #define AUTOFS_SUPER_MAGIC	0x0187
+>   #define CODA_SUPER_MAGIC	0x73757245
+> + #define CRAMFS_MAGIC		0x28cd3d45	/* some random number */
+> + #define CRAMFS_MAGIC_WEND	0x453dcd28	/* magic number with the wrong endianess */
+>  -#define DEBUGFS_MAGIC          0x64626720
+>  +#define CUSE_SUPER_MAGIC	0x43555345
+>  +#define DEBUGFS_MAGIC		0x64626720
+>   #define SYSFS_MAGIC		0x62656572
+>   #define SECURITYFS_MAGIC	0x73636673
+>   #define TMPFS_MAGIC		0x01021994
+> 
