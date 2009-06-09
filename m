@@ -1,100 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759912AbZFIJy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759839AbZFIJz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759912AbZFIJy3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 05:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758322AbZFIJyW
+	id S1759839AbZFIJz0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 05:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759195AbZFIJzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 05:54:22 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34804 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757193AbZFIJyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 05:54:22 -0400
-Date: Tue, 9 Jun 2009 11:54:23 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, fengguang.wu@intel.com
-Subject: Re: [PATCH] [7/16] HWPOISON: x86: Add VM_FAULT_HWPOISON handling to x86 page fault handler v2
-Message-ID: <20090609095423.GB14820@wotan.suse.de>
-References: <20090603846.816684333@firstfloor.org> <20090603184640.4FD751D0290@basil.firstfloor.org>
-Mime-Version: 1.0
+	Tue, 9 Jun 2009 05:55:16 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:44023 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754390AbZFIJzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 05:55:14 -0400
+Date: Tue, 9 Jun 2009 04:55:07 -0500
+From: Robin Holt <holt@sgi.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Robin Holt <holt@sgi.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       Wu Fengguang <fengguang.wu@intel.com>, linux-ia64@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v4] zone_reclaim is always 0 by default
+Message-ID: <20090609095507.GA9851@attica.americas.sgi.com>
+References: <20090604192236.9761.A69D9226@jp.fujitsu.com> <20090608115048.GA15070@csn.ul.ie>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090603184640.4FD751D0290@basil.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090608115048.GA15070@csn.ul.ie>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 08:46:40PM +0200, Andi Kleen wrote:
-> 
-> Add VM_FAULT_HWPOISON handling to the x86 page fault handler. This is 
-> very similar to VM_FAULT_OOM, the only difference is that a different
-> si_code is passed to user space and the new addr_lsb field is initialized.
-> 
-> v2: Make the printk more verbose/unique
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> ---
->  arch/x86/mm/fault.c |   19 +++++++++++++++----
->  1 file changed, 15 insertions(+), 4 deletions(-)
-> 
-> Index: linux/arch/x86/mm/fault.c
-> ===================================================================
-> --- linux.orig/arch/x86/mm/fault.c	2009-06-03 19:36:21.000000000 +0200
-> +++ linux/arch/x86/mm/fault.c	2009-06-03 19:36:23.000000000 +0200
-> @@ -166,6 +166,7 @@
->  	info.si_errno	= 0;
->  	info.si_code	= si_code;
->  	info.si_addr	= (void __user *)address;
-> +	info.si_addr_lsb = si_code == BUS_MCEERR_AR ? PAGE_SHIFT : 0;
->  
->  	force_sig_info(si_signo, &info, tsk);
->  }
-> @@ -797,10 +798,12 @@
->  }
->  
->  static void
-> -do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address)
-> +do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
-> +	  unsigned int fault)
->  {
->  	struct task_struct *tsk = current;
->  	struct mm_struct *mm = tsk->mm;
-> +	int code = BUS_ADRERR;
->  
->  	up_read(&mm->mmap_sem);
->  
-> @@ -816,7 +819,15 @@
->  	tsk->thread.error_code	= error_code;
->  	tsk->thread.trap_no	= 14;
->  
-> -	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
-> +#ifdef CONFIG_MEMORY_FAILURE
-> +	if (fault & VM_FAULT_HWPOISON) {
-> +		printk(KERN_ERR
-> +	"MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n",
-> +			tsk->comm, tsk->pid, address);
-> +		code = BUS_MCEERR_AR;
-> +	}
-> +#endif
+On Mon, Jun 08, 2009 at 12:50:48PM +0100, Mel Gorman wrote:
 
-If you make VM_FAULT_HWPOISON 0 when !CONFIG_MEMORY_FAILURE, then
-you can remove this ifdef, can't you?
+Let me start by saying I agree completely with everything you wrote and
+still disagree with this patch, but was willing to compromise and work
+around this for our upcoming x86_64 machine by putting a "value add"
+into our packaging of adding a sysctl that turns reclaim back on.
 
-> +	force_sig_info_fault(SIGBUS, code, address, tsk);
->  }
->  
->  static noinline void
-> @@ -826,8 +837,8 @@
->  	if (fault & VM_FAULT_OOM) {
->  		out_of_memory(regs, error_code, address);
->  	} else {
-> -		if (fault & VM_FAULT_SIGBUS)
-> -			do_sigbus(regs, error_code, address);
-> +		if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON))
-> +			do_sigbus(regs, error_code, address, fault);
->  		else
->  			BUG();
->  	}
+...
+> > Index: b/arch/powerpc/include/asm/topology.h
+> > ===================================================================
+> > --- a/arch/powerpc/include/asm/topology.h
+> > +++ b/arch/powerpc/include/asm/topology.h
+> > @@ -10,6 +10,12 @@ struct device_node;
+> >  
+> >  #include <asm/mmzone.h>
+> >  
+> > +/*
+> > + * Distance above which we begin to use zone reclaim
+> > + */
+> > +#define RECLAIM_DISTANCE 20
+> > +
+> > +
+> 
+> Where is the ia-64-specific modifier to RECAIM_DISTANCE?
+
+It was already defined as 15 in arch/ia64/include/asm/topology.h
+
+Thanks,
+Robin
