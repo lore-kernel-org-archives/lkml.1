@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbZFIMfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760414AbZFIMhD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760867AbZFIMfn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 08:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbZFIMff
+	id S1760414AbZFIMhD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 08:37:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbZFIMgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 08:35:35 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39500 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755969AbZFIMff (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 08:35:35 -0400
-Date: Tue, 9 Jun 2009 14:35:36 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [6/16] HWPOISON: Add various poison checks in mm/memory.c
-Message-ID: <20090609123536.GA15219@wotan.suse.de>
-References: <20090603846.816684333@firstfloor.org> <20090603184639.1933B1D028F@basil.firstfloor.org> <20090609102504.GH14820@wotan.suse.de> <20090609122131.GC5589@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 9 Jun 2009 08:36:55 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:37767 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752173AbZFIMgz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 08:36:55 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Matthew Garrett <mjg@redhat.com>
+Subject: Re: [PATCH 1/2] CPUFREQ: Enable acpi-cpufreq driver for VIA/Centaur CPUs
+Date: Tue, 9 Jun 2009 07:36:52 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906081615.25973.lkml@morethan.org> <20090608234830.GA27843@srcf.ucam.org>
+In-Reply-To: <20090608234830.GA27843@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090609122131.GC5589@localhost>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200906090736.54463.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 08:21:31PM +0800, Wu Fengguang wrote:
-> On Tue, Jun 09, 2009 at 06:25:04PM +0800, Nick Piggin wrote:
-> > On Wed, Jun 03, 2009 at 08:46:38PM +0200, Andi Kleen wrote:
-> > > 
-> > > Bail out early when hardware poisoned pages are found in page fault handling.
-> > > Since they are poisoned they should not be mapped freshly into processes,
-> > > because that would cause another (potentially deadly) machine check
-> > > 
-> > > This is generally handled in the same way as OOM, just a different
-> > > error code is returned to the architecture code.
-> > > 
-> > > Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> > > 
-> > > ---
-> > >  mm/memory.c |    3 +++
-> > >  1 file changed, 3 insertions(+)
-> > > 
-> > > Index: linux/mm/memory.c
-> > > ===================================================================
-> > > --- linux.orig/mm/memory.c	2009-06-03 19:36:23.000000000 +0200
-> > > +++ linux/mm/memory.c	2009-06-03 19:36:23.000000000 +0200
-> > > @@ -2797,6 +2797,9 @@
-> > >  	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
-> > >  		return ret;
-> > >  
-> > > +	if (unlikely(PageHWPoison(vmf.page)))
-> > > +		return VM_FAULT_HWPOISON;
-> > 
-> > Again, it would be nice if you just worry about this in your MCE
-> > handler and don't sprinkle things like this in fastpaths.
+On Mon June 8 2009, Matthew Garrett wrote:
+> On Mon, Jun 08, 2009 at 04:15:22PM -0500, Michael S. Zick wrote:
 > 
-> For this patch, I cannot imagine a clear usage case for it, and
-> proposed to remove it until there comes a case.
+> > Phooey, close but no cigar - - -
+> > 
+> > root@cb01:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_available_frequencies
+> > 1200000 1000000 800000 600000 400000
+> > root@cb01:/sys/devices/system/cpu/cpu0/cpufreq# cat stats/time_in_state
+> > 1200000 3281
+> > 1000000 120
+> > 800000 130
+> > 600000 234
+> > 400000 52980
+> > root@cb01:/sys/devices/system/cpu/cpu0/cpufreq
+> > 
+> > It loads, it appears to work, but that lowest 400Mhz has ACPI entries
+> > even though this is a 600Mhz..1200Mhz chip.
+> 
+> If the BIOS tables claim it then it's likely Windows uses it on the same 
+> hardware. What's the stability like with the ACPI code?
+> 
 
-Yes I didn't see some of your review comments and made some
-of these comments first. If this is gone then I'm happy :)
+Too soon to say - those where first results (about par with "it boots"). ;)
 
+Will be poking at this machine more today -
+
+* * * *
+
+I do not have a copy of any proprietary operating system to compare with
+on this machine.
+
+You could use the search features of this forum:
+http://forum.netbookuser.com/index.php
+to look for windows problem reports/discussions.
+
+That forum was active since the machine was announced and included
+members from Everex.  If there where windows problems, they are
+in there somewhere.
+
+Mike
