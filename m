@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbZFIR7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758508AbZFISDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758052AbZFIR7z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 13:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZFIR7s
+	id S1758508AbZFISDu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbZFISDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 13:59:48 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:53692 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751537AbZFIR7r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 13:59:47 -0400
-Message-ID: <4A2E7B40.4070608@zytor.com>
-Date: Tue, 09 Jun 2009 08:09:52 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 9 Jun 2009 14:03:43 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:42901 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751997AbZFISDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 14:03:42 -0400
+Date: Tue, 9 Jun 2009 20:03:44 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+Subject: Re: [PATCH block#for-2.6.31] block: add request clone interface
+Message-ID: <20090609180344.GQ11363@kernel.dk>
+References: <4A2E1490.7060902@ct.jp.nec.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
- kernels
-References: <4A0B62F7.5030802@goop.org> <200906032208.28061.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906030901460.4880@localhost.localdomain> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain> <20090609093918.GC16940@wotan.suse.de> <20090609111719.GA4463@elte.hu>
-In-Reply-To: <20090609111719.GA4463@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A2E1490.7060902@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+On Tue, Jun 09 2009, Kiyoshi Ueda wrote:
+> Hi Jens,
 > 
-> OTOH, highmem is clearly a useful hardware enablement feature with a 
-> slowly receding upside and a constant downside. The outcome is 
-> clear: when a critical threshold is reached distros will stop 
-> enabling it. (or more likely, there will be pure 64-bit x86 distros)
-> 
+> +/*
+> + * Copy request information of the original request to the clone request.
+> + */
+> +static void __blk_rq_prep_clone(struct request *dst, struct request *src)
+> +{
+> +	dst->cpu = src->cpu;
+> +	dst->cmd_flags = (rq_data_dir(src) | REQ_NOMERGE);
+> +	dst->cmd_type = src->cmd_type;
+> +	dst->__sector = blk_rq_pos(src);
+> +	dst->__data_len = blk_rq_bytes(src);
+> +	dst->nr_phys_segments = src->nr_phys_segments;
+> +	dst->ioprio = src->ioprio;
+> +	dst->buffer = src->buffer;
+> +	dst->cmd_len = src->cmd_len;
+> +	dst->cmd = src->cmd;
 
-A major problem is that distros don't seem to be willing to push 64-bit
-kernels for 32-bit distros.  There are a number of good (and
-not-so-good) reasons why users may want to run a 32-bit userspace, but
-not running a 64-bit kernel on capable hardware is just problematic.
-
-	-hpa
+Are you making sure that 'src' always exists while 'dst' is alive?
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Jens Axboe
 
