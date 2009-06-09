@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759743AbZFIKPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbZFIKQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759743AbZFIKPn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759351AbZFIKP2
+	id S1760176AbZFIKQn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759772AbZFIKPp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:15:28 -0400
-Received: from kroah.org ([198.145.64.141]:59649 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:15:45 -0400
+Received: from kroah.org ([198.145.64.141]:59725 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758871AbZFIKP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:15:27 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:52 2009
-Message-Id: <20090609094052.533568011@blue.kroah.org>
+	id S1759673AbZFIKPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:15:44 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:53 2009
+Message-Id: <20090609094053.454554199@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:38:50 -0700
+Date: Tue, 09 Jun 2009 02:38:54 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       alan@lxorguk.ukuu.org.uk, Eric Dumazet <dada1@cosmosbay.com>,
+       Neil Horman <nhorman@tuxdriver.com>,
        "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 02/87] tcp: fix MSG_PEEK race check
+Subject: [patch 06/87] net: fix length computation in rt_check_expire()
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=tcp-fix-msg_peek-race-check.patch
+Content-Disposition: inline; filename=net-fix-length-computation-in-rt_check_expire.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,60 +41,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>
+From: Eric Dumazet <dada1@cosmosbay.com>
 
-[ Upstream commit 775273131810caa41dfc7f9e552ea5d8508caf40 ]
+[ Upstream commit cf8da764fc6959b7efb482f375dfef9830e98205 ]
 
-Commit 518a09ef11 (tcp: Fix recvmsg MSG_PEEK influence of
-blocking behavior) lets the loop run longer than the race check
-did previously expect, so we need to be more careful with this
-check and consider the work we have been doing.
+rt_check_expire() computes average and standard deviation of chain lengths,
+but not correclty reset length to 0 at beginning of each chain.
+This probably gives overflows for sum2 (and sum) on loaded machines instead
+of meaningful results.
 
-I tried my best to deal with urg hole madness too which happens
-here:
-	if (!sock_flag(sk, SOCK_URGINLINE)) {
-		++*seq;
-		...
-by using additional offset by one but I certainly have very
-little interest in testing that part.
-
-Signed-off-by: Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>
-Tested-by: Frans Pop <elendil@planet.nl>
-Tested-by: Ian Zimmermann <itz@buug.org>
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+Acked-by: Neil Horman <nhorman@tuxdriver.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/tcp.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ net/ipv4/route.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -1286,6 +1286,7 @@ int tcp_recvmsg(struct kiocb *iocb, stru
- 	struct task_struct *user_recv = NULL;
- 	int copied_early = 0;
- 	struct sk_buff *skb;
-+	u32 urg_hole = 0;
+--- a/net/ipv4/route.c
++++ b/net/ipv4/route.c
+@@ -785,7 +785,7 @@ static void rt_check_expire(void)
+ 	static unsigned int rover;
+ 	unsigned int i = rover, goal;
+ 	struct rtable *rth, **rthp;
+-	unsigned long length = 0, samples = 0;
++	unsigned long samples = 0;
+ 	unsigned long sum = 0, sum2 = 0;
+ 	u64 mult;
  
- 	lock_sock(sk);
+@@ -795,9 +795,9 @@ static void rt_check_expire(void)
+ 	goal = (unsigned int)mult;
+ 	if (goal > rt_hash_mask)
+ 		goal = rt_hash_mask + 1;
+-	length = 0;
+ 	for (; goal > 0; goal--) {
+ 		unsigned long tmo = ip_rt_gc_timeout;
++		unsigned long length;
  
-@@ -1497,7 +1498,8 @@ do_prequeue:
- 				}
- 			}
- 		}
--		if ((flags & MSG_PEEK) && peek_seq != tp->copied_seq) {
-+		if ((flags & MSG_PEEK) &&
-+		    (peek_seq - copied - urg_hole != tp->copied_seq)) {
- 			if (net_ratelimit())
- 				printk(KERN_DEBUG "TCP(%s:%d): Application bug, race in MSG_PEEK.\n",
- 				       current->comm, task_pid_nr(current));
-@@ -1518,6 +1520,7 @@ do_prequeue:
- 				if (!urg_offset) {
- 					if (!sock_flag(sk, SOCK_URGINLINE)) {
- 						++*seq;
-+						urg_hole++;
- 						offset++;
- 						used--;
- 						if (!used)
+ 		i = (i + 1) & rt_hash_mask;
+ 		rthp = &rt_hash_table[i].chain;
+@@ -809,6 +809,7 @@ static void rt_check_expire(void)
+ 
+ 		if (*rthp == NULL)
+ 			continue;
++		length = 0;
+ 		spin_lock_bh(rt_hash_lock_addr(i));
+ 		while ((rth = *rthp) != NULL) {
+ 			if (rt_is_expired(rth)) {
 
 
