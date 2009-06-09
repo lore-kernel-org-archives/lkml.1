@@ -1,97 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755417AbZFIAmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbZFIAnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755417AbZFIAmz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 20:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbZFIAms
+	id S1756083AbZFIAnj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 20:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbZFIAnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 20:42:48 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42580 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998AbZFIAmr (ORCPT
+	Mon, 8 Jun 2009 20:43:32 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:55247 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750967AbZFIAnc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 20:42:47 -0400
-Date: Tue, 9 Jun 2009 09:41:17 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Matthew Von Maszewski <matthew@thehive.com>
-Cc: linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: huge mem mmap eats all CPU when multiple processes
-Message-Id: <20090609094117.8226c0ca.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <8FDBF172-AAA8-4737-A6C6-50B468CA0CBF@thehive.com>
-References: <8FDBF172-AAA8-4737-A6C6-50B468CA0CBF@thehive.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Jun 2009 20:43:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rSEaRoNbw/VDZzfO5IWvmbeKpTNuSoNAkFklGuMxXJh4aqytRY2UjSPU2a+efdUhW3
+         2bvgFXdCg7xVBmQGRclvdp2RlQbC01iqPhVsTQFwx2jEyQzXBEuKs535VfenBNqZwyy4
+         Q0IZ7suADDrqTt2Iek8cqloS+ICrlEeiMV44k=
+MIME-Version: 1.0
+In-Reply-To: <4A2CC52B.9010602@oracle.com>
+References: <20090605075614.GC8171@cr0.nay.redhat.com>
+	 <20090605095155.GC8354@cr0.nay.redhat.com>
+	 <4A292B0D.8030807@oracle.com> <4A295AFB.80909@kernel.org>
+	 <4A2A7F33.4030807@oracle.com> <4A2AEBE3.4000100@kernel.org>
+	 <20090608015242.GB2596@cr0.nay.redhat.com>
+	 <4A2CA96D.3090502@oracle.com>
+	 <2375c9f90906072341o2cded749m45bdddfdb499469@mail.gmail.com>
+	 <4A2CC52B.9010602@oracle.com>
+Date: Tue, 9 Jun 2009 08:43:34 +0800
+Message-ID: <2375c9f90906081743p77934f47n8ba1a018d333b95b@mail.gmail.com>
+Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64 
+	2.6.30-rc8.
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: Tao Ma <tao.ma@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Jun 2009 10:27:49 -0400
-Matthew Von Maszewski <matthew@thehive.com> wrote:
+On Mon, Jun 8, 2009 at 4:00 PM, Tao Ma<tao.ma@oracle.com> wrote:
+>>>
+>>> But the result is the same
+>>
+>> Yes?
+>> Your printk() shows kcore size is: 5301604352, and in your subject it is
+>> 281474974617600...
+>>
+>> Or they happened in the same time?
+>
+> yes. the same box and the same linux version.
+> A bit strange.
+>
+> [taoma@ocfs2-test2 ~]$ dmesg|grep "high memory"
+> high memory ffff88013c000000, size 5301604352
+> [taoma@ocfs2-test2 ~]$ ll /proc/kcore
+> -r-------- 1 root root 281474974617600 Jun  8 15:20 /proc/kcore
 
-> [note: not on kernel mailing list, please cc author]
-> 
-> Symptom:  9 processes mmap same 2 Gig memory section for a shared C  
-> heap (lots of random access).  All process begin extreme CPU load in  
-> top.
-> 
-> - Same code works well when only single process access huge mem.
-Does this "huge mem" means HugeTLB(2M/4Mbytes) pages ?
+Really weird...
+They should be the same. This means we have some problem in our procfs.
 
-> - Code works well with standard vm based mmap file and 9 processes.
-> 
+And, we have no problem on i386, I, myself, even can't reproduce this on my
+x86_64 box...
 
-What is sys/user ratio in top ? Almost all cpus are used by "sys" ?
+Drop Cc to x86 people, add some Cc to proc people. :)
 
-> Environment:
-> 
-> - Intel x86_64:  Dual core Xeon with hyperthreading (4 logical  
-> processors)
-> - 6 Gig ram, 2.5G allocated to huge mem
-by boot option ?
+Eric, Alexey, any ideas?
 
-> - tried with kernels 2.6.29.4 and 2.6.30-rc8
-> - following mmap() call has base address as NULL on first process,  
-> then returned address passed to subsequent processes (not threads,  
-> processes)
-> 
->             m_MemSize=((m_MemSize/(2048*1024))+1)*2048*1024;
->              m_BaseAddr=mmap(m_File->GetFixedBase(), m_MemSize,
->                              (PROT_READ | PROT_WRITE),
->                              MAP_SHARED, m_File->GetFileId(), m_Offset);
-> 
-> 
-> I am not a kernel hacker so I have not attempted to debug.  Will be  
-> able to spend time on a sample program for sharing later today or  
-> tomorrow.  Sending this note now in case this is already known.
-> 
-
-IIUC, all page faults to hugetlb are serialized by system's mutex. Then, touching
-in parallel doesn't do fast job..
-Then, I wonder touching all necessary maps by one thread is good, in general.
-
-
-
-> Don't suppose this is as simple as a Copy-On-Write flag being set wrong?
-> 
-I don't think, so.
-
-> Please send notes as to things I need to capture to better describe  
-> this bug.  Happy to do the work.
-> 
-Add cc to linux-mm.
-
-Thanks,
--Kame
-
-
-> Thanks,
-> Matthew
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+Tao, would you like to send us your .config? Thanks.
