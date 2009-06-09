@@ -1,149 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761243AbZFINsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761346AbZFINsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761243AbZFINsW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbZFINq5
+	id S1761346AbZFINsf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZFINq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:46:57 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:51563 "EHLO mx1.emlix.com"
+	Tue, 9 Jun 2009 09:46:58 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:55131 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751584AbZFINqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751524AbZFINqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Jun 2009 09:46:53 -0400
 From: "Oskar Schirmer" <os@emlix.com>
 To: Sascha Hauer <kernel@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Oskar Schirmer <os@emlix.com>
-Subject: [PATCH 1/8] imx: serial: fix whitespaces (no changes in functionality)
-Date: Tue,  9 Jun 2009 15:46:44 +0200
-Message-Id: <1244555211-15618-2-git-send-email-os@emlix.com>
-In-Reply-To: <1244555211-15618-1-git-send-email-os@emlix.com>
+Cc: linux-kernel@vger.kernel.org, Oskar Schirmer <os@emlix.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 6/8] lib: isolate rational fractions helper function
+Date: Tue,  9 Jun 2009 15:46:49 +0200
+Message-Id: <1244555211-15618-7-git-send-email-os@emlix.com>
+In-Reply-To: <1244555211-15618-6-git-send-email-os@emlix.com>
 References: <1244555211-15618-1-git-send-email-os@emlix.com>
+ <1244555211-15618-2-git-send-email-os@emlix.com>
+ <1244555211-15618-3-git-send-email-os@emlix.com>
+ <1244555211-15618-4-git-send-email-os@emlix.com>
+ <1244555211-15618-5-git-send-email-os@emlix.com>
+ <1244555211-15618-6-git-send-email-os@emlix.com>
 Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Provide a helper function to determine optimum numerator
+denominator value pairs taking into account restricted
+register size. Useful especially with PLL and other clock
+configurations.
+
 Signed-off-by: Oskar Schirmer <os@emlix.com>
 ---
- drivers/serial/imx.c |   48 +++++++++++++++++++++++-------------------------
- 1 files changed, 23 insertions(+), 25 deletions(-)
+ include/linux/rational.h |   19 ++++++++++++++
+ lib/Kconfig              |    3 ++
+ lib/Makefile             |    1 +
+ lib/rational.c           |   60 ++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 83 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/rational.h
+ create mode 100644 lib/rational.c
 
-diff --git a/drivers/serial/imx.c b/drivers/serial/imx.c
-index 9f460b1..424f679 100644
---- a/drivers/serial/imx.c
-+++ b/drivers/serial/imx.c
-@@ -302,8 +302,7 @@ static inline void imx_transmit_buffer(struct imx_port *sport)
- 		/* send xmit->buf[xmit->tail]
- 		 * out the port here */
- 		writel(xmit->buf[xmit->tail], sport->port.membase + URTX0);
--		xmit->tail = (xmit->tail + 1) &
--		         (UART_XMIT_SIZE - 1);
-+		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
- 		sport->port.icount.tx++;
- 		if (uart_circ_empty(xmit))
- 			break;
-@@ -395,8 +394,7 @@ static irqreturn_t imx_rxint(int irq, void *dev_id)
- 				continue;
- 		}
+diff --git a/include/linux/rational.h b/include/linux/rational.h
+new file mode 100644
+index 0000000..4f532fc
+--- /dev/null
++++ b/include/linux/rational.h
+@@ -0,0 +1,19 @@
++/*
++ * rational fractions
++ *
++ * Copyright (C) 2009 emlix GmbH, Oskar Schirmer <os@emlix.com>
++ *
++ * helper functions when coping with rational numbers,
++ * e.g. when calculating optimum numerator/denominator pairs for
++ * pll configuration taking into account restricted register size
++ */
++
++#ifndef _LINUX_RATIONAL_H
++#define _LINUX_RATIONAL_H
++
++void rational_best_approximation(
++	unsigned long given_numerator, unsigned long given_denominator,
++	unsigned long max_numerator, unsigned long max_denominator,
++	unsigned long *best_numerator, unsigned long *best_denominator);
++
++#endif /* _LINUX_RATIONAL_H */
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 8ade0a7..9960be0 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -10,6 +10,9 @@ menu "Library routines"
+ config BITREVERSE
+ 	tristate
  
--		if (uart_handle_sysrq_char
--		            (&sport->port, (unsigned char)rx))
-+		if (uart_handle_sysrq_char(&sport->port, (unsigned char)rx))
- 			continue;
++config RATIONAL
++	boolean
++
+ config GENERIC_FIND_FIRST_BIT
+ 	bool
  
- 		if (rx & (URXD_PRERR | URXD_OVRRUN | URXD_FRMERR) ) {
-@@ -471,26 +469,26 @@ static unsigned int imx_tx_empty(struct uart_port *port)
-  */
- static unsigned int imx_get_mctrl(struct uart_port *port)
- {
--        struct imx_port *sport = (struct imx_port *)port;
--        unsigned int tmp = TIOCM_DSR | TIOCM_CAR;
-+	struct imx_port *sport = (struct imx_port *)port;
-+	unsigned int tmp = TIOCM_DSR | TIOCM_CAR;
+diff --git a/lib/Makefile b/lib/Makefile
+index 33a40e4..1f6edef 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -50,6 +50,7 @@ ifneq ($(CONFIG_HAVE_DEC_LOCK),y)
+ endif
  
--        if (readl(sport->port.membase + USR1) & USR1_RTSS)
--                tmp |= TIOCM_CTS;
-+	if (readl(sport->port.membase + USR1) & USR1_RTSS)
-+		tmp |= TIOCM_CTS;
- 
--        if (readl(sport->port.membase + UCR2) & UCR2_CTS)
--                tmp |= TIOCM_RTS;
-+	if (readl(sport->port.membase + UCR2) & UCR2_CTS)
-+		tmp |= TIOCM_RTS;
- 
--        return tmp;
-+	return tmp;
- }
- 
- static void imx_set_mctrl(struct uart_port *port, unsigned int mctrl)
- {
--        struct imx_port *sport = (struct imx_port *)port;
-+	struct imx_port *sport = (struct imx_port *)port;
- 	unsigned long temp;
- 
- 	temp = readl(sport->port.membase + UCR2) & ~UCR2_CTS;
- 
--        if (mctrl & TIOCM_RTS)
-+	if (mctrl & TIOCM_RTS)
- 		temp |= UCR2_CTS;
- 
- 	writel(temp, sport->port.membase + UCR2);
-@@ -1070,22 +1068,22 @@ static struct uart_driver imx_reg = {
- 
- static int serial_imx_suspend(struct platform_device *dev, pm_message_t state)
- {
--        struct imx_port *sport = platform_get_drvdata(dev);
-+	struct imx_port *sport = platform_get_drvdata(dev);
- 
--        if (sport)
--                uart_suspend_port(&imx_reg, &sport->port);
-+	if (sport)
-+		uart_suspend_port(&imx_reg, &sport->port);
- 
--        return 0;
-+	return 0;
- }
- 
- static int serial_imx_resume(struct platform_device *dev)
- {
--        struct imx_port *sport = platform_get_drvdata(dev);
-+	struct imx_port *sport = platform_get_drvdata(dev);
- 
--        if (sport)
--                uart_resume_port(&imx_reg, &sport->port);
-+	if (sport)
-+		uart_resume_port(&imx_reg, &sport->port);
- 
--        return 0;
-+	return 0;
- }
- 
- static int serial_imx_probe(struct platform_device *pdev)
-@@ -1141,7 +1139,7 @@ static int serial_imx_probe(struct platform_device *pdev)
- 	imx_ports[pdev->id] = sport;
- 
- 	pdata = pdev->dev.platform_data;
--	if(pdata && (pdata->flags & IMXUART_HAVE_RTSCTS))
-+	if (pdata && (pdata->flags & IMXUART_HAVE_RTSCTS))
- 		sport->have_rtscts = 1;
- 
- 	if (pdata->init) {
-@@ -1191,13 +1189,13 @@ static int serial_imx_remove(struct platform_device *pdev)
- }
- 
- static struct platform_driver serial_imx_driver = {
--        .probe          = serial_imx_probe,
--        .remove         = serial_imx_remove,
-+	.probe		= serial_imx_probe,
-+	.remove		= serial_imx_remove,
- 
- 	.suspend	= serial_imx_suspend,
- 	.resume		= serial_imx_resume,
- 	.driver		= {
--	        .name	= "imx-uart",
-+		.name	= "imx-uart",
- 		.owner	= THIS_MODULE,
- 	},
- };
+ obj-$(CONFIG_BITREVERSE) += bitrev.o
++obj-$(CONFIG_RATIONAL)	+= rational.o
+ obj-$(CONFIG_CRC_CCITT)	+= crc-ccitt.o
+ obj-$(CONFIG_CRC16)	+= crc16.o
+ obj-$(CONFIG_CRC_T10DIF)+= crc-t10dif.o
+diff --git a/lib/rational.c b/lib/rational.c
+new file mode 100644
+index 0000000..76f5a0c
+--- /dev/null
++++ b/lib/rational.c
+@@ -0,0 +1,60 @@
++/*
++ * rational fractions
++ *
++ * Copyright (C) 2009 emlix GmbH, Oskar Schirmer <os@emlix.com>
++ *
++ * helper functions when coping with rational numbers
++ */
++
++#include <linux/rational.h>
++
++/*
++ * calculate best rational approximation for a given fraction
++ * taking into account restricted register size, e.g. to find
++ * appropriate values for a pll with 5 bit denominator and
++ * 8 bit numerator register fields, trying to set up with a
++ * frequency ratio of 3.1415, one would say:
++ *
++ * rational_best_approximation(31415, 10000,
++ *		(1 << 8) - 1, (1 << 5) - 1, &n, &d);
++ *
++ * you may look at given_numerator as a fixed point number,
++ * with the fractional part size described in given_denominator.
++ *
++ * for theoretical background, see:
++ * http://en.wikipedia.org/wiki/Continued_fraction
++ */
++
++void rational_best_approximation(
++	unsigned long given_numerator, unsigned long given_denominator,
++	unsigned long max_numerator, unsigned long max_denominator,
++	unsigned long *best_numerator, unsigned long *best_denominator)
++{
++	unsigned long n, d, n0, d0, n1, d1;
++	n = given_numerator;
++	d = given_denominator;
++	n0 = d1 = 0;
++	n1 = d0 = 1;
++	for (;;) {
++		unsigned long t, a;
++		if ((n1 > max_numerator) || (d1 > max_denominator)) {
++			n1 = n0;
++			d1 = d0;
++			break;
++		}
++		if (d == 0)
++			break;
++		t = d;
++		a = n / d;
++		d = n % d;
++		n = t;
++		t = n0 + a * n1;
++		n0 = n1;
++		n1 = t;
++		t = d0 + a * d1;
++		d0 = d1;
++		d1 = t;
++	}
++	*best_numerator = n1;
++	*best_denominator = d1;
++}
 -- 
 1.5.3.7
 
