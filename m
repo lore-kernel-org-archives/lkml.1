@@ -1,200 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932200AbZFINNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761011AbZFINOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932200AbZFINNS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZFINNH
+	id S1761011AbZFINOi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbZFINOd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:13:07 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:8203 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758244AbZFINNG (ORCPT
+	Tue, 9 Jun 2009 09:14:33 -0400
+Received: from stinky.trash.net ([213.144.137.162]:62834 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbZFINOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:13:06 -0400
-X-Trace: 208503684/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.115.137/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.115.137
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAH/8LUpQKXOJ/2dsb2JhbACBT81egUN5gU4FiHs
-X-IronPort-AV: E=Sophos;i="4.41,331,1241391600"; 
-   d="scan'208";a="208503684"
-Date: Tue, 9 Jun 2009 14:02:20 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Joao Ramos <joao.ramos@inov.pt>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH next] ide: fix PowerMac bootup oops
-In-Reply-To: <200906091436.19710.bzolnier@gmail.com>
-Message-ID: <Pine.LNX.4.64.0906091357490.21803@sister.anvils>
-References: <Pine.LNX.4.64.0906082137120.22183@sister.anvils>
- <200906082328.02729.bzolnier@gmail.com> <Pine.LNX.4.64.0906091237290.14065@sister.anvils>
- <200906091436.19710.bzolnier@gmail.com>
+	Tue, 9 Jun 2009 09:14:33 -0400
+Message-ID: <4A2E6039.2060805@trash.net>
+Date: Tue, 09 Jun 2009 15:14:33 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gil Beniamini <gil.beniamini@gmail.com>
+CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: SOCK_RAW does not receive broadcast (with VLAN unless PROMISC)
+References: <91ac27070906081105x30171bedra10d244d382a6934@mail.gmail.com>	 <20090608.143454.161329513.davem@davemloft.net>	 <4A2E4077.8080407@trash.net>	 <91ac27070906090427k6f57745xc72f9fcb6801957a@mail.gmail.com>	 <4A2E4A32.1060705@trash.net> <91ac27070906090608me50af3bv23b150d8d0cd0080@mail.gmail.com>
+In-Reply-To: <91ac27070906090608me50af3bv23b150d8d0cd0080@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009, Bartlomiej Zolnierkiewicz wrote:
-> On Tuesday 09 June 2009 13:44:25 Hugh Dickins wrote:
-> > 
-> > But memset id in probe_for_drive() when it might be being reused -
-> > or would it be better to memset it wherever it used to be kfreed?
-> 
-> Please memset() it in ide_port_init_devices_data() -- this function
-> is called before IDE device structure is going to be (re-)used.
+Please don't top-post.
 
-That makes sense too, thanks, here we go...
+Gil Beniamini wrote:
+> On the specific NIC (eth1) no vlan is defined, and in the new Linux
+> the application receive NOTHING at all. In order to debug, I start
+> "wireshark as root" and "wireshark" set PROMISC on, and the
+> application start receive the raw packets as expected. Later I started
+> setting PROMISC by my application, and it can receive the packets even
+> when "wireshark" is not running.
+> The problem that I have with PROMISC mode, is that I need to do the
+> irelevant  unicast filtering in software rather than get it from the
+> hardware (as it works in old kernel 2.6.20).
 
+in older kernels the hardware filtering was inconsistent. Some drivers
+behaved as today, meaning they filtered out all VLANs unless locally
+configured, some filtered nothing until the first VLAN was added,
+at which point they would filter all other VLANs (and maybe enable
+header stripping).
 
-[PATCH next] ide: fix PowerMac bootup oops
-
-PowerMac bootup with CONFIG_IDE=y oopses in ide_pio_cycle_time():
-because "ide: try to use PIO Mode 0 during probe if possible" causes
-pmac_ide_set_pio_mode() to be called before drive->id has been set.
-
-Bart points out other places which now need drive->id set earlier,
-so follow his advice to allocate it in ide_port_alloc_devices()
-(using kzalloc_node, without error message, as when allocating drive)
-and memset it for reuse in ide_port_init_devices_data().
-
-Fixed in passing: ide_host_alloc() was missing ide_port_free_devices()
-from an error path.
-
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
-
- drivers/ide/ide-probe.c |   47 ++++++++++++++++----------------------
- 1 file changed, 21 insertions(+), 26 deletions(-)
-
---- lnext/drivers/ide/ide-probe.c	2009-06-03 11:45:13.000000000 +0100
-+++ linux/drivers/ide/ide-probe.c	2009-06-09 13:50:03.000000000 +0100
-@@ -465,23 +465,8 @@ static u8 probe_for_drive(ide_drive_t *d
- 	int rc;
- 	u8 cmd;
- 
--	/*
--	 *	In order to keep things simple we have an id
--	 *	block for all drives at all times. If the device
--	 *	is pre ATA or refuses ATA/ATAPI identify we
--	 *	will add faked data to this.
--	 *
--	 *	Also note that 0 everywhere means "can't do X"
--	 */
-- 
- 	drive->dev_flags &= ~IDE_DFLAG_ID_READ;
- 
--	drive->id = kzalloc(SECTOR_SIZE, GFP_KERNEL);
--	if (drive->id == NULL) {
--		printk(KERN_ERR "ide: out of memory for id data.\n");
--		return 0;
--	}
--
- 	m = (char *)&drive->id[ATA_ID_PROD];
- 	strcpy(m, "UNKNOWN");
- 
-@@ -497,7 +482,7 @@ static u8 probe_for_drive(ide_drive_t *d
- 		}
- 
- 		if ((drive->dev_flags & IDE_DFLAG_PRESENT) == 0)
--			goto out_free;
-+			return 0;
- 
- 		/* identification failed? */
- 		if ((drive->dev_flags & IDE_DFLAG_ID_READ) == 0) {
-@@ -521,7 +506,7 @@ static u8 probe_for_drive(ide_drive_t *d
- 	}
- 
- 	if ((drive->dev_flags & IDE_DFLAG_PRESENT) == 0)
--		goto out_free;
-+		return 0;
- 
- 	/* The drive wasn't being helpful. Add generic info only */
- 	if ((drive->dev_flags & IDE_DFLAG_ID_READ) == 0) {
-@@ -535,9 +520,6 @@ static u8 probe_for_drive(ide_drive_t *d
- 	}
- 
- 	return 1;
--out_free:
--	kfree(drive->id);
--	return 0;
- }
- 
- static void hwif_release_dev(struct device *dev)
-@@ -817,8 +799,6 @@ static int ide_port_setup_devices(ide_hw
- 		if (ide_init_queue(drive)) {
- 			printk(KERN_ERR "ide: failed to init %s\n",
- 					drive->name);
--			kfree(drive->id);
--			drive->id = NULL;
- 			drive->dev_flags &= ~IDE_DFLAG_PRESENT;
- 			continue;
- 		}
-@@ -947,9 +927,6 @@ static void drive_release_dev (struct de
- 	blk_cleanup_queue(drive->queue);
- 	drive->queue = NULL;
- 
--	kfree(drive->id);
--	drive->id = NULL;
--
- 	drive->dev_flags &= ~IDE_DFLAG_PRESENT;
- 
- 	complete(&drive->gendev_rel_comp);
-@@ -1132,8 +1109,11 @@ static void ide_port_init_devices_data(i
- 
- 	ide_port_for_each_dev(i, drive, hwif) {
- 		u8 j = (hwif->index * MAX_DRIVES) + i;
-+		u16 *saved_id = drive->id;
- 
- 		memset(drive, 0, sizeof(*drive));
-+		memset(saved_id, 0, SECTOR_SIZE);
-+		drive->id = saved_id;
- 
- 		drive->media			= ide_disk;
- 		drive->select			= (i << 4) | ATA_DEVICE_OBS;
-@@ -1240,8 +1220,10 @@ static void ide_port_free_devices(ide_hw
- 	ide_drive_t *drive;
- 	int i;
- 
--	ide_port_for_each_dev(i, drive, hwif)
-+	ide_port_for_each_dev(i, drive, hwif) {
-+		kfree(drive->id);
- 		kfree(drive);
-+	}
- }
- 
- static int ide_port_alloc_devices(ide_hwif_t *hwif, int node)
-@@ -1255,6 +1237,18 @@ static int ide_port_alloc_devices(ide_hw
- 		if (drive == NULL)
- 			goto out_nomem;
- 
-+		/*
-+		 * In order to keep things simple we have an id
-+		 * block for all drives at all times. If the device
-+		 * is pre ATA or refuses ATA/ATAPI identify we
-+		 * will add faked data to this.
-+		 *
-+		 * Also note that 0 everywhere means "can't do X"
-+		 */
-+		drive->id = kzalloc_node(SECTOR_SIZE, GFP_KERNEL, node);
-+		if (drive->id == NULL)
-+			goto out_nomem;
-+
- 		hwif->devices[i] = drive;
- 	}
- 	return 0;
-@@ -1296,6 +1290,7 @@ struct ide_host *ide_host_alloc(const st
- 		if (idx < 0) {
- 			printk(KERN_ERR "%s: no free slot for interface\n",
- 					d ? d->name : "ide");
-+			ide_port_free_devices(hwif);
- 			kfree(hwif);
- 			continue;
- 		}
+The behaviour you describe is intended, only locally configured VLANs
+are received unless you switch to promiscous mode.
