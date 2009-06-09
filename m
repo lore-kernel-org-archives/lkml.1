@@ -1,97 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbZFIIOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758991AbZFIIPC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758051AbZFIIOk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 04:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZFIIO1
+	id S1758991AbZFIIPC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 04:15:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbZFIIOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 04:14:27 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:60466 "EHLO gir.skynet.ie"
+	Tue, 9 Jun 2009 04:14:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50506 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753221AbZFIIOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 04:14:25 -0400
-Date: Tue, 9 Jun 2009 09:14:25 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when
-	zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
-Message-ID: <20090609081424.GD18380@csn.ul.ie>
-References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-2-git-send-email-mel@csn.ul.ie> <20090609015822.GA6740@localhost>
+	id S1758869AbZFIIOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 04:14:42 -0400
+Message-ID: <4A2E19A7.1000302@kernel.org>
+Date: Tue, 09 Jun 2009 01:13:27 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090609015822.GA6740@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
+Subject: Re: [PATCH 4/6] x86/cpufreq: use cpumask_copy instead of =
+References: <4A2835D8.6040903@kernel.org> <4A2AE4AC.60805@kernel.org> <4A2AE570.2010307@kernel.org> <200906091627.45411.rusty@rustcorp.com.au>
+In-Reply-To: <200906091627.45411.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 09:58:22AM +0800, Wu Fengguang wrote:
-> On Mon, Jun 08, 2009 at 09:01:28PM +0800, Mel Gorman wrote:
-> > On NUMA machines, the administrator can configure zone_reclaim_mode that is a
-> > more targetted form of direct reclaim. On machines with large NUMA distances,
-> > zone_reclaim_mode defaults to 1 meaning that clean unmapped pages will be
-> > reclaimed if the zone watermarks are not being met. The problem is that
-> > zone_reclaim() can be in a situation where it scans excessively without
-> > making progress.
-> > 
-> > One such situation is where a large tmpfs mount is occupying a large
-> > percentage of memory overall. The pages do not get cleaned or reclaimed by
-> > zone_reclaim(), but the lists are uselessly scanned frequencly making the
-> > CPU spin at 100%. The scanning occurs because zone_reclaim() cannot tell
-> > in advance the scan is pointless because the counters do not distinguish
-> > between pagecache pages backed by disk and by RAM.  The observation in
-> > the field is that malloc() stalls for a long time (minutes in some cases)
-> > when this situation occurs.
-> > 
-> > Accounting for ram-backed file pages was considered but not implemented on
-> > the grounds it would be introducing new branches and expensive checks into
-> > the page cache add/remove patches and increase the number of statistics
-> > needed in the zone. As zone_reclaim() failing is currently considered a
-> > corner case, this seemed like overkill. Note, if there are a large number
-> > of reports about CPU spinning at 100% on NUMA that is fixed by disabling
-> > zone_reclaim, then this assumption is false and zone_reclaim() scanning
-> > and failing is not a corner case but a common occurance
-> > 
-> > This patch reintroduces zone_reclaim_interval which was removed by commit
-> > 34aa1330f9b3c5783d269851d467326525207422 [zoned vm counters: zone_reclaim:
-> > remove /proc/sys/vm/zone_reclaim_interval] because the zone counters were
-> > considered sufficient to determine in advance if the scan would succeed.
-> > As unsuccessful scans can still occur, zone_reclaim_interval is still
-> > required.
-> 
-> Can we avoid the user visible parameter zone_reclaim_interval?
-> 
+Rusty Russell wrote:
+> On Sun, 7 Jun 2009 07:23:52 am Yinghai Lu wrote:
+>   
+>> so later could use nr_cpumask_bits in cpumask_size when MAXSMP is used
+>>     
+>
+> I have a (more ambitious) patch for this in my queue, which weans it off this
+> entirely:
+>
+> Subject: cpumask: avoid playing with cpus_allowed in powernow-k8.c
+> From: Rusty Russell <rusty@rustcorp.com.au>
+>
+> It's generally a very bad idea to mug some process's cpumask: it could
+> legitimately and reasonably be changed by root, which could break us
+> (if done before our code) or them (if we restore the wrong value).
+>
+> I use work_on_cpu, which is slightly less efficient than the old code,
+> but the code is complex enough that using smp_call_function_single()
+> is not trivial.
+>   
 
-You could, but then there is no way of disabling it by setting it to 0
-either. I can't imagine why but the desired behaviour might really be to
-spin and never go off-node unless there is no other option. They might
-want to set it to 0 for example when determining what the right value for
-zone_reclaim_mode is for their workloads.
+will be in .31?
 
-> That means to introduce some heuristics for it.
-
-I suspect the vast majority of users will ignore it unless they are runing
-zone_reclaim_mode at the same time and even then will probably just leave
-it as 30 as a LRU scan every 30 seconds worst case is not going to show up
-on many profiles.
-
-> Since the whole point
-> is to avoid 100% CPU usage, we can take down the time used for this
-> failed zone reclaim (T) and forbid zone reclaim until (NOW + 100*T).
-> 
-
-i.e. just fix it internally at 100 seconds? How is that better than
-having an obscure tunable? I think if this heuristic exists at all, it's
-important that an administrator be able to turn it off if absolutly
-necessary and so something must be user-visible.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+YH
