@@ -1,90 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbZFINIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbZFINKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760930AbZFINIa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759786AbZFINIG
+	id S1760057AbZFINKW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756916AbZFINKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:08:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:59541 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757455AbZFINID (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:08:03 -0400
-Date: Tue, 9 Jun 2009 09:08:05 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
-Subject: Re: [RFC PATCH 5/5] tracing/events: modify kmem print to new
- format
-In-Reply-To: <20090609080656.GB18380@csn.ul.ie>
-Message-ID: <alpine.DEB.2.00.0906090907110.17452@gandalf.stny.rr.com>
-References: <20090609014534.790466803@goodmis.org> <20090609014747.188279837@goodmis.org> <1244531562.13761.9955.camel@twins> <20090609080656.GB18380@csn.ul.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 9 Jun 2009 09:10:11 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41192 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755588AbZFINKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 09:10:10 -0400
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Products GmbH
+To: Vladimir Zajac <eightgraph@gmail.com>
+Subject: Re: [PATCH 2.6.30-rc4] thermal: fix off-by-1 error in trip point trigger condition
+Date: Tue, 9 Jun 2009 15:10:10 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.19-3.2-default; KDE/4.1.3; x86_64; ; )
+Cc: rui.zhang@intel.com, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200905061934.21821.eightgraph@gmail.com>
+In-Reply-To: <200905061934.21821.eightgraph@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906091510.11285.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 9 Jun 2009, Mel Gorman wrote:
-
-> On Tue, Jun 09, 2009 at 09:12:42AM +0200, Peter Zijlstra wrote:
-> > On Mon, 2009-06-08 at 21:45 -0400, Steven Rostedt wrote:
-> > 
-> > > +#define show_gfp_flags(end...)						\
-> > > +	"0=GFP_NOWAIT,"							\
-> > > +	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-> > > +	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-> > > +	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-> > > +	"0x%lx=%s,0x%lx=%s>" end ,					\
-> > > +	(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE", \
-> > > +	(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER",		\
-> > > +	(unsigned long)GFP_USER,		"GFP_USER",		\
-> > > +	(unsigned long)GFP_TEMPORARY,		"GFP_TEMPORARY",	\
-> > > +	(unsigned long)GFP_KERNEL,		"GFP_KERNEL",		\
-> > > +	(unsigned long)GFP_NOFS,		"GFP_NOFS",		\
-> > > +	(unsigned long)GFP_ATOMIC,		"GFP_ATOMIC",		\
-> > > +	(unsigned long)GFP_NOIO,		"GFP_NOIO",		\
-> > > +	(unsigned long)__GFP_HIGH,		"GFP_HIGH",		\
-> > > +	(unsigned long)__GFP_WAIT,		"GFP_WAIT",		\
-> > > +	(unsigned long)__GFP_IO,		"GFP_IO",		\
-> > > +	(unsigned long)__GFP_COLD,		"GFP_COLD",		\
-> > > +	(unsigned long)__GFP_NOWARN,		"GFP_NOWARN",		\
-> > > +	(unsigned long)__GFP_REPEAT,		"GFP_REPEAT",		\
-> > > +	(unsigned long)__GFP_NOFAIL,		"GFP_NOFAIL",		\
-> > > +	(unsigned long)__GFP_NORETRY,		"GFP_NORETRY",		\
-> > > +	(unsigned long)__GFP_COMP,		"GFP_COMP",		\
-> > > +	(unsigned long)__GFP_ZERO,		"GFP_ZERO",		\
-> > > +	(unsigned long)__GFP_NOMEMALLOC,	"GFP_NOMEMALLOC",	\
-> > > +	(unsigned long)__GFP_HARDWALL,		"GFP_HARDWALL",		\
-> > > +	(unsigned long)__GFP_THISNODE,		"GFP_THISNODE",		\
-> > > +	(unsigned long)__GFP_RECLAIMABLE,	"GFP_RECLAIMABLE",	\
-> > > +	(unsigned long)__GFP_MOVABLE,		"GFP_MOVABLE"
-> > 
-> > Just curious, how unhappy does stuff become when we add a __GFP_ flag
-> > and forget to extend this table?
-> > 
+On Wednesday 06 May 2009 19:34:21 Vladimir Zajac wrote:
+> This patch fixes a regression caused by commit
+> b1569e99c795bf83b4ddf41c4f1c42761ab7f75e
+> "ACPI: move thermal trip handling to generic thermal layer"
+> which accidentally changed trip point trigger condition to
+>   temp > trip_temp
 > 
-> If it's the same behaviour as what I was looking at yesterday, it prints
-> the remaining flags it doesn't recognise as the number.
+> This patch changes the trigger condition back to
+>   temp >= trip_temp
 > 
-> GFP_KERNEL|__GFP_DMA got outputted as |GFP_KERNEL|0x1|
+> Signed-off-by: Vladimir Zajac <eightgraph@gmail.com>
+This one should have
+CC: stable@kernel.org
+added.
+Vladimir, do you mind submitting this one for stable inclusion
+if not done already.
 
-Yep, that is what would happen here too.
+Thanks,
 
-Any comments on this approach? I'll go ahead and start fixing it up more 
-(handling all the memory freeing on errors) and get it ready to push out.
+     Thomas
 
--- Steve
+> ---
+> 
+>  thermal_sys.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+> 
+> --- linux-2.6.30-rc4/drivers/thermal/thermal_sys.c	2009-04-30 
+23:52:59.000000000 +0200
+> +++ linux-2.6.30-rc4-p1/drivers/thermal/thermal_sys.c	2009-05-04 
+19:58:30.000000000 +0200
+> @@ -961,7 +961,7 @@ void thermal_zone_device_update(struct t
+>  
+>  		switch (trip_type) {
+>  		case THERMAL_TRIP_CRITICAL:
+> -			if (temp > trip_temp) {
+> +			if (temp >= trip_temp) {
+>  				if (tz->ops->notify)
+>  					ret = tz->ops->notify(tz, count,
+>  							      trip_type);
+> @@ -974,7 +974,7 @@ void thermal_zone_device_update(struct t
+>  			}
+>  			break;
+>  		case THERMAL_TRIP_HOT:
+> -			if (temp > trip_temp)
+> +			if (temp >= trip_temp)
+>  				if (tz->ops->notify)
+>  					tz->ops->notify(tz, count, trip_type);
+>  			break;
+> @@ -986,14 +986,14 @@ void thermal_zone_device_update(struct t
+>  
+>  				cdev = instance->cdev;
+>  
+> -				if (temp > trip_temp)
+> +				if (temp >= trip_temp)
+>  					cdev->ops->set_cur_state(cdev, 1);
+>  				else
+>  					cdev->ops->set_cur_state(cdev, 0);
+>  			}
+>  			break;
+>  		case THERMAL_TRIP_PASSIVE:
+> -			if (temp > trip_temp || tz->passive)
+> +			if (temp >= trip_temp || tz->passive)
+>  				thermal_zone_device_passive(tz, temp,
+>  							    trip_temp, count);
+>  			break;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-
+acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
 
