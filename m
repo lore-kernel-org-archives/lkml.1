@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbZFIRDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbZFIRGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758645AbZFIRDO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 13:03:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbZFIRCG
+	id S1755527AbZFIRGg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 13:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZFIRG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 13:02:06 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:54661 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757186AbZFIRCE (ORCPT
+	Tue, 9 Jun 2009 13:06:28 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:36911 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752973AbZFIRG1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 13:02:04 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: liqin.chen@sunplusct.com
-Subject: Re: [PATCH 00/27] score arch files for linux
-Date: Tue, 9 Jun 2009 19:00:31 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-References: <OF54D30DF0.6974DE98-ON482575D0.0021670B-482575D0.00234606@sunplusct.com>
-In-Reply-To: <OF54D30DF0.6974DE98-ON482575D0.0021670B-482575D0.00234606@sunplusct.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 9 Jun 2009 13:06:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=Oau+aKD3+Eo94hXhfZOB9M/xUNPmdZ3BRmwTPOgZ/gNX41Ermsq6e5YR6PFEqSh6j6
+         jVIHdXwvv6LrZZYWW6nDBxLKZktc1LKZZY9SNf1sB2pOuZvs+6dAOmNUc4C4Rof+TDf5
+         ElPUtdgVJop1e3+IjAMkV1srMRR7whO6urLjo=
+From: Vladimir Zajac <eightgraph@gmail.com>
+To: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH 2.6.30-rc4] thermal: fix off-by-1 error in trip point trigger condition
+Date: Tue, 9 Jun 2009 19:06:21 +0200
+User-Agent: KMail/1.9.9
+Cc: rui.zhang@intel.com, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200905061934.21821.eightgraph@gmail.com> <200906091510.11285.trenn@suse.de>
+In-Reply-To: <200906091510.11285.trenn@suse.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
+Content-Disposition: inline
+Message-Id: <200906091906.22162.eightgraph@gmail.com>
+Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906091900.32379.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/D0HoXYH5kKp2rwaAFhVfq2b4AWBf0dLx2pjm
- to6JRBI8ntsPMzcO+95BK9IholU0E79QkG+EWJhAZR26zCtzqc
- Nk+cHYtIhQ8XDpHzhMafVzVJ2I+AFc1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 June 2009, liqin.chen@sunplusct.com wrote:
-> Hi Arnd, Andrew Morton and linus,
+On Tuesday 09 June 2009 15:10:10 Thomas Renninger wrote:
+> This one should have
+> CC: stable@kernel.org
+> added.
+> Vladimir, do you mind submitting this one for stable inclusion
+> if not done already.
 > 
-> According to your comment on score arch code, 
-> we update score code base on asm-generic#next repository.
-> use arch microblaze and blackfin as reference.
->
+Inclusion into stable is not needed.
+The bug was introduced in 2.6.30-rc1, stable release is not affected. 
 
-Some general notes about the patch submission, not the contents:
-Your mail client still has a 'wordwrap' problem, which breaks
-importing the patches into a repository. The easiest workaround
-for this is to use 'git send-email', which handles it correctly.
-Play around with the '--dry-run' and '--suppress-cc=all' options
-at first to send the patches to yourself, so you know how it
-works.
-
-For 'git format-patch', please use the '-M -B --thread=shallow'
-options so that all your mails end up nicely in a single mail
-thread and renames are detected (the latter would not change
-anything for your current set of patches, but may some day).
-
-	Arnd <><
+Vladimir
