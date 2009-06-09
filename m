@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbZFIKUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbZFIKXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932086AbZFIKUt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:20:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760528AbZFIKSY
+	id S1760251AbZFIKXi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760319AbZFIKTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:18:24 -0400
-Received: from kroah.org ([198.145.64.141]:54531 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:19:00 -0400
+Received: from kroah.org ([198.145.64.141]:54694 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760546AbZFIKSW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:18:22 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:57 2009
-Message-Id: <20090609094056.925934429@blue.kroah.org>
+	id S1760622AbZFIKS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:18:59 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:59 2009
+Message-Id: <20090609094059.003720718@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:39:09 -0700
+Date: Tue, 09 Jun 2009 02:39:18 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Frank Filz <ffilzlnx@us.ibm.com>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       alan@lxorguk.ukuu.org.uk, Roel Kluin <roel.kluin@gmail.com>,
+       Wolfram Sang <w.sang@pengutronix.de>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 21/87] nfs: Fix NFS v4 client handling of MAY_EXEC in nfs_permission.
+Subject: [patch 30/87] drivers/serial/mpc52xx_uart.c: fix array overindexing check
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=nfs-fix-nfs-v4-client-handling-of-may_exec-in-nfs_permission.patch
+Content-Disposition: inline; filename=drivers-serial-mpc52xx_uart.c-fix-array-overindexing-check.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,42 +42,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Frank Filz <ffilzlnx@us.ibm.com>
+From: Roel Kluin <roel.kluin@gmail.com>
 
-commit 7ee2cb7f32b299c2b06a31fde155457203e4b7dd upstream.
+commit b898f4f869da5b9d41f297fff87aca4cd42d80b3 upstream.
 
-The problem is that permission checking is skipped if atomic open is
-possible, but when exec opens a file, it just opens it O_READONLY which
-means EXEC permission will not be checked at that time.
+The check for an overindexing of mpc52xx_uart_{ports,nodes} has an
+off-by-one.
 
-This problem is observed by the following sequence (executed as root):
-
-  mount -t nfs4 server:/ /mnt4
-  echo "ls" >/mnt4/foo
-  chmod 744 /mnt4/foo
-  su guest -c "mnt4/foo"
-
-Signed-off-by: Frank Filz <ffilzlnx@us.ibm.com>
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Tested-by: Eugene Teo <eugeneteo@kernel.sg>
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Acked-by: Wolfram Sang <w.sang@pengutronix.de>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfs/dir.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/serial/mpc52xx_uart.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/nfs/dir.c
-+++ b/fs/nfs/dir.c
-@@ -1943,7 +1943,8 @@ int nfs_permission(struct inode *inode, 
- 		case S_IFREG:
- 			/* NFSv4 has atomic_open... */
- 			if (nfs_server_capable(inode, NFS_CAP_ATOMIC_OPEN)
--					&& (mask & MAY_OPEN))
-+					&& (mask & MAY_OPEN)
-+					&& !(mask & MAY_EXEC))
- 				goto out;
- 			break;
- 		case S_IFDIR:
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -988,7 +988,7 @@ mpc52xx_console_setup(struct console *co
+ 	pr_debug("mpc52xx_console_setup co=%p, co->index=%i, options=%s\n",
+ 		 co, co->index, options);
+ 
+-	if ((co->index < 0) || (co->index > MPC52xx_PSC_MAXNUM)) {
++	if ((co->index < 0) || (co->index >= MPC52xx_PSC_MAXNUM)) {
+ 		pr_debug("PSC%x out of range\n", co->index);
+ 		return -EINVAL;
+ 	}
 
 
