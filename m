@@ -1,135 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759021AbZFIKsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761660AbZFIKst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759021AbZFIKsh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759222AbZFIKsN
+	id S1761660AbZFIKst (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbZFIKsO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:48:13 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:64828 "EHLO atmel-es2.atmel.fr"
+	Tue, 9 Jun 2009 06:48:14 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:51622 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756270AbZFIKsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:48:09 -0400
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: linux-usb@vger.kernel.org, avictor.za@gmail.com
-Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net,
-       haavard.skinnemoen@atmel.com, patrice.vilchez@atmel.com,
-       Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH 2/2] at91/USB: at91sam9g45 series USB host integration
-Date: Tue,  9 Jun 2009 13:38:13 +0200
-Message-Id: <1244547493-19654-3-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1244547493-19654-2-git-send-email-nicolas.ferre@atmel.com>
-References: <1244547493-19654-1-git-send-email-nicolas.ferre@atmel.com>
- <1244547493-19654-2-git-send-email-nicolas.ferre@atmel.com>
-Message-Id: <37875dad9f270c834319c78b1af15f2f12c52e46.1244545093.git.nicolas.ferre@atmel.com>
-In-Reply-To: <7d35ee50ea2e14a3d4f350406693b1e884b034f3.1244545093.git.nicolas.ferre@atmel.com>
-References: <7d35ee50ea2e14a3d4f350406693b1e884b034f3.1244545093.git.nicolas.ferre@atmel.com>
+	id S1757307AbZFIKsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:48:11 -0400
+Date: Tue, 9 Jun 2009 11:48:10 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] Properly account for the number of page cache
+	pages zone_reclaim() can reclaim
+Message-ID: <20090609104809.GQ18380@csn.ul.ie>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-3-git-send-email-mel@csn.ul.ie> <20090609022549.GB6740@localhost> <20090609082728.GF18380@csn.ul.ie> <20090609084550.GB7108@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090609084550.GB7108@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the at91 specific part of USB host integration. The EHCI high speed
-controller has a companion OHCI controller to manage USB full and low speed.
-They are sharing the same IRQ line and vbus pin.
+On Tue, Jun 09, 2009 at 04:45:50PM +0800, Wu Fengguang wrote:
+> On Tue, Jun 09, 2009 at 04:27:29PM +0800, Mel Gorman wrote:
+> > On Tue, Jun 09, 2009 at 10:25:49AM +0800, Wu Fengguang wrote:
+> > > On Mon, Jun 08, 2009 at 09:01:29PM +0800, Mel Gorman wrote:
+> > > > On NUMA machines, the administrator can configure zone_relcaim_mode that
+> > > > is a more targetted form of direct reclaim. On machines with large NUMA
+> > > > distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
+> > > > unmapped pages will be reclaimed if the zone watermarks are not being met.
+> > > > 
+> > > > There is a heuristic that determines if the scan is worthwhile but the
+> > > > problem is that the heuristic is not being properly applied and is basically
+> > > > assuming zone_reclaim_mode is 1 if it is enabled.
+> > > > 
+> > > > This patch makes zone_reclaim() makes a better attempt at working out how
+> > > > many pages it might be able to reclaim given the current reclaim_mode. If it
+> > > > cannot clean pages, then NR_FILE_DIRTY number of pages are not candidates. If
+> > > > it cannot swap, then NR_FILE_MAPPED are not. This indirectly addresses tmpfs
+> > > > as those pages tend to be dirty as they are not cleaned by pdflush or sync.
+> > > 
+> > > No, tmpfs pages are not accounted in NR_FILE_DIRTY because of the
+> > > BDI_CAP_NO_ACCT_AND_WRITEBACK bits.
+> > > 
+> > 
+> > Ok, that explains why the dirty page count was not as high as I was
+> > expecting. Thanks.
+> > 
+> > > > The ideal would be that the number of tmpfs pages would also be known
+> > > > and account for like NR_FILE_MAPPED as swap is required to discard them.
+> > > > A means of working this out quickly was not obvious but a comment is added
+> > > > noting the problem.
+> > > 
+> > > I'd rather prefer it be accounted separately than to muck up NR_FILE_MAPPED :)
+> > > 
+> > 
+> > Maybe I used a poor choice of words. What I meant was that the ideal would
+> > be we had a separate count for tmpfs pages. As tmpfs pages and mapped pages
+> > both have to be unmapped and potentially, they are "like" each other with
+> > respect to the zone_reclaim_mode and how it behaves. We would end up
+> > with something like
+> > 
+> > 	pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
+> > 	pagecache_reclaimable -= zone_page_state(zone, NR_FILE_TMPFS);
+> 
+> OK. But tmpfs pages may be mapped, so there will be double counting.
+> We must at least make sure pagecache_reclaimable won't get underflowed.
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
- arch/arm/mach-at91/at91sam9g45_devices.c |   56 ++++++++++++++++++++++++++++++
- arch/arm/mach-at91/board-sam9m10g45ek.c  |    1 +
- arch/arm/mach-at91/include/mach/board.h  |    1 +
- 3 files changed, 58 insertions(+), 0 deletions(-)
+True. What vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch
+does might be better overall.
 
-diff --git a/arch/arm/mach-at91/at91sam9g45_devices.c b/arch/arm/mach-at91/at91sam9g45_devices.c
-index d746e86..c2ecbb6 100644
---- a/arch/arm/mach-at91/at91sam9g45_devices.c
-+++ b/arch/arm/mach-at91/at91sam9g45_devices.c
-@@ -83,6 +83,62 @@ void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data) {}
- 
- 
- /* --------------------------------------------------------------------
-+ *  USB Host HS (EHCI)
-+ *  Needs an OHCI host for low and full speed management
-+ * -------------------------------------------------------------------- */
-+
-+#if defined(CONFIG_USB_EHCI_HCD) || defined(CONFIG_USB_EHCI_HCD_MODULE)
-+static u64 ehci_dmamask = DMA_BIT_MASK(32);
-+static struct at91_usbh_data usbh_ehci_data;
-+
-+static struct resource usbh_ehci_resources[] = {
-+	[0] = {
-+		.start	= AT91SAM9G45_EHCI_BASE,
-+		.end	= AT91SAM9G45_EHCI_BASE + SZ_1M - 1,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= AT91SAM9G45_ID_UHPHS,
-+		.end	= AT91SAM9G45_ID_UHPHS,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device at91_usbh_ehci_device = {
-+	.name		= "atmel-ehci",
-+	.id		= -1,
-+	.dev		= {
-+				.dma_mask		= &ehci_dmamask,
-+				.coherent_dma_mask	= DMA_BIT_MASK(32),
-+				.platform_data		= &usbh_ehci_data,
-+	},
-+	.resource	= usbh_ehci_resources,
-+	.num_resources	= ARRAY_SIZE(usbh_ehci_resources),
-+};
-+
-+void __init at91_add_device_usbh_ehci(struct at91_usbh_data *data)
-+{
-+	int i;
-+
-+	if (!data)
-+		return;
-+
-+	/* Enable VBus control for UHP ports */
-+	for (i = 0; i < data->ports; i++) {
-+		if (data->vbus_pin[i])
-+			at91_set_gpio_output(data->vbus_pin[i], 0);
-+	}
-+
-+	usbh_ehci_data = *data;
-+	at91_clock_associate("uhphs_clk", &at91_usbh_ehci_device.dev, "ehci_clk");
-+	platform_device_register(&at91_usbh_ehci_device);
-+}
-+#else
-+void __init at91_add_device_usbh_ehci(struct at91_usbh_data *data) {}
-+#endif
-+
-+
-+/* --------------------------------------------------------------------
-  *  USB HS Device (Gadget)
-  * -------------------------------------------------------------------- */
- 
-diff --git a/arch/arm/mach-at91/board-sam9m10g45ek.c b/arch/arm/mach-at91/board-sam9m10g45ek.c
-index b8558ea..d7251b7 100644
---- a/arch/arm/mach-at91/board-sam9m10g45ek.c
-+++ b/arch/arm/mach-at91/board-sam9m10g45ek.c
-@@ -358,6 +358,7 @@ static void __init ek_board_init(void)
- 	at91_add_device_serial();
- 	/* USB HS Host */
- 	at91_add_device_usbh_ohci(&ek_usbh_hs_data);
-+	at91_add_device_usbh_ehci(&ek_usbh_hs_data);
- 	/* USB HS Device */
- 	at91_add_device_usba(&ek_usba_udc_data);
- 	/* SPI */
-diff --git a/arch/arm/mach-at91/include/mach/board.h b/arch/arm/mach-at91/include/mach/board.h
-index 74801d2..13640b0 100644
---- a/arch/arm/mach-at91/include/mach/board.h
-+++ b/arch/arm/mach-at91/include/mach/board.h
-@@ -92,6 +92,7 @@ struct at91_usbh_data {
- };
- extern void __init at91_add_device_usbh(struct at91_usbh_data *data);
- extern void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data);
-+extern void __init at91_add_device_usbh_ehci(struct at91_usbh_data *data);
- 
-  /* NAND / SmartMedia */
- struct atmel_nand_data {
+> (Or make another LRU list for tmpfs pages?)
+> 
+
+Another LRU won't help the accounting and will changes too significantly
+how reclaim works.
+
+> > > > +	int pagecache_reclaimable;
+> > > > +
+> > > > +	/*
+> > > > +	 * Work out how many page cache pages we can reclaim in this mode.
+> > > > +	 *
+> > > > +	 * NOTE: Ideally, tmpfs pages would be accounted as if they were
+> > > > +	 *       NR_FILE_MAPPED as swap is required to discard those
+> > > > +	 *       pages even when they are clean. However, there is no
+> > > > +	 *       way of quickly identifying the number of tmpfs pages
+> > > > +	 */
+> > > 
+> > > So can you remove the note on NR_FILE_MAPPED?
+> > > 
+> > 
+> > Why would I remove the note? I can alter the wording but the intention is
+> > to show we cannot count the number of tmpfs pages quickly and it would be
+> > nice if we could. Maybe this is clearer?
+> > 
+> > Note: Ideally tmpfs pages would be accounted for as NR_FILE_TMPFS or
+> > 	similar and treated similar to NR_FILE_MAPPED as both require
+> > 	unmapping from page tables and potentially swap to reclaim.
+> > 	However, no such counter exists.
+> 
+> That's better. Thanks.
+> 
+> > > > +	pagecache_reclaimable = zone_page_state(zone, NR_FILE_PAGES);
+> > > > +	if (!(zone_reclaim_mode & RECLAIM_WRITE))
+> > > > +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_DIRTY);
+> > > 
+> > > > +	if (!(zone_reclaim_mode & RECLAIM_SWAP))
+> > > > +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
+> > > 
+> > > So the "if" can be removed because NR_FILE_MAPPED is not related to swapping?
+> > > 
+> > 
+> > It's partially related with respect to what zone_reclaim() is doing.
+> > Once something is mapped, we need RECLAIM_SWAP set on the
+> > zone_reclaim_mode to do anything useful with them.
+> 
+> You are referring to mapped anonymous/tmpfs pages? But I mean
+> NR_FILE_MAPPED pages won't goto swap when unmapped.
+> 
+
+Not all of them. But some of them backed by real files will be discarded
+if clean at the next pass
+
+> Thanks,
+> Fengguang
+> 
+> > > >  	/*
+> > > >  	 * Zone reclaim reclaims unmapped file backed pages and
+> > > > @@ -2391,8 +2406,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+> > > >  	 * if less than a specified percentage of the zone is used by
+> > > >  	 * unmapped file backed pages.
+> > > >  	 */
+> > > > -	if (zone_page_state(zone, NR_FILE_PAGES) -
+> > > > -	    zone_page_state(zone, NR_FILE_MAPPED) <= zone->min_unmapped_pages
+> > > > +	if (pagecache_reclaimable <= zone->min_unmapped_pages
+> > > >  	    && zone_page_state(zone, NR_SLAB_RECLAIMABLE)
+> > > >  			<= zone->min_slab_pages)
+> > > >  		return 0;
+> > > > -- 
+> > > > 1.5.6.5
+> > > 
+> > 
+> > -- 
+> > Mel Gorman
+> > Part-time Phd Student                          Linux Technology Center
+> > University of Limerick                         IBM Dublin Software Lab
+> 
+
 -- 
-1.5.3.7
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
