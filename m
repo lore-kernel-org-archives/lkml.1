@@ -1,227 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759562AbZFIIq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759550AbZFIIrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759562AbZFIIq4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 04:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZFIIqt
+	id S1759550AbZFIIrz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 04:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbZFIIrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 04:46:49 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53216 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758851AbZFIIqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 04:46:48 -0400
-Message-ID: <4A2E211A.3030303@cn.fujitsu.com>
-Date: Tue, 09 Jun 2009 16:45:14 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Tue, 9 Jun 2009 04:47:47 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:46316 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752668AbZFIIrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 04:47:46 -0400
+Date: Tue, 9 Jun 2009 09:47:46 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
+       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] Properly account for the number of page cache
+	pages zone_reclaim() can reclaim
+Message-ID: <20090609084746.GH18380@csn.ul.ie>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-3-git-send-email-mel@csn.ul.ie> <20090609171027.DD79.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 02/19] io-controller: Common flat fair queuing code in
- elevaotor layer
-References: <1244513342-11758-1-git-send-email-vgoyal@redhat.com> <1244513342-11758-3-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1244513342-11758-3-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090609171027.DD79.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
-> +
-> +ssize_t elv_slice_idle_store(struct request_queue *q, const char *name,
-> +			  size_t count)
-> +{
-> +	struct elv_fq_data *efqd;
-> +	unsigned int data;
-> +	unsigned long flags;
-> +
-> +	char *p = (char *)name;
-> +
-> +	data = simple_strtoul(p, &p, 10);
-> +
-> +	if (data < 0)
+On Tue, Jun 09, 2009 at 05:19:41PM +0900, KOSAKI Motohiro wrote:
+> Hi
+> 
+> > On NUMA machines, the administrator can configure zone_relcaim_mode that
+> > is a more targetted form of direct reclaim. On machines with large NUMA
+> > distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
+> > unmapped pages will be reclaimed if the zone watermarks are not being met.
+> > 
+> > There is a heuristic that determines if the scan is worthwhile but the
+> > problem is that the heuristic is not being properly applied and is basically
+> > assuming zone_reclaim_mode is 1 if it is enabled.
+> > 
+> > This patch makes zone_reclaim() makes a better attempt at working out how
+> > many pages it might be able to reclaim given the current reclaim_mode. If it
+> > cannot clean pages, then NR_FILE_DIRTY number of pages are not candidates. If
+> > it cannot swap, then NR_FILE_MAPPED are not. This indirectly addresses tmpfs
+> > as those pages tend to be dirty as they are not cleaned by pdflush or sync.
+> > 
+> > The ideal would be that the number of tmpfs pages would also be known
+> > and account for like NR_FILE_MAPPED as swap is required to discard them.
+> > A means of working this out quickly was not obvious but a comment is added
+> > noting the problem.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > ---
+> >  mm/vmscan.c |   18 ++++++++++++++++--
+> >  1 files changed, 16 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > index ba211c1..ffe2f32 100644
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -2380,6 +2380,21 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+> >  {
+> >  	int node_id;
+> >  	int ret;
+> > +	int pagecache_reclaimable;
+> > +
+> > +	/*
+> > +	 * Work out how many page cache pages we can reclaim in this mode.
+> > +	 *
+> > +	 * NOTE: Ideally, tmpfs pages would be accounted as if they were
+> > +	 *       NR_FILE_MAPPED as swap is required to discard those
+> > +	 *       pages even when they are clean. However, there is no
+> > +	 *       way of quickly identifying the number of tmpfs pages
+> > +	 */
+> 
+> I think I and you tackle the same issue.
+> Please see vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch in -mm.
+> 
 
-Hi Vivek,
+Awesome. This is why I posted the patches a bit earlier than I would
+normally. Stuff like this is found :D
 
-data can never be less than zero. Same problems also exist for other sysfs entry.
+> My intension mean, tmpfs page and swapcache increased NR_FILE_PAGES.
+> but they can't be reclaimed by zone_reclaim_mode==1.
+> 
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/elevator-fq.c |   40 +++++++++++++---------------------------
- block/elevator-fq.h |    6 +++---
- 2 files changed, 16 insertions(+), 30 deletions(-)
+Sounds familiar!
 
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 42d4279..8027f4c 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -2643,32 +2643,27 @@ ssize_t elv_fairness_store(struct request_queue *q, const char *name,
- ssize_t elv_slice_idle_show(struct request_queue *q, char *name)
- {
- 	struct elv_fq_data *efqd;
--	unsigned int data;
-+	unsigned long data;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(q->queue_lock, flags);
- 	efqd = &q->elevator->efqd;
- 	data = jiffies_to_msecs(efqd->elv_slice_idle);
- 	spin_unlock_irqrestore(q->queue_lock, flags);
--	return sprintf(name, "%d\n", data);
-+	return sprintf(name, "%lu\n", data);
- }
- 
- ssize_t elv_slice_idle_store(struct request_queue *q, const char *name,
- 			  size_t count)
- {
- 	struct elv_fq_data *efqd;
--	unsigned int data;
-+	unsigned long data;
- 	unsigned long flags;
- 
- 	char *p = (char *)name;
- 
- 	data = simple_strtoul(p, &p, 10);
- 
--	if (data < 0)
--		data = 0;
--	else if (data > INT_MAX)
--		data = INT_MAX;
--
- 	data = msecs_to_jiffies(data);
- 
- 	spin_lock_irqsave(q->queue_lock, flags);
-@@ -2683,32 +2678,27 @@ ssize_t elv_slice_idle_store(struct request_queue *q, const char *name,
- ssize_t elv_async_slice_idle_show(struct request_queue *q, char *name)
- {
- 	struct elv_fq_data *efqd;
--	unsigned int data;
-+	unsigned long data;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(q->queue_lock, flags);
- 	efqd = &q->elevator->efqd;
- 	data = jiffies_to_msecs(efqd->elv_async_slice_idle);
- 	spin_unlock_irqrestore(q->queue_lock, flags);
--	return sprintf(name, "%d\n", data);
-+	return sprintf(name, "%lu\n", data);
- }
- 
- ssize_t elv_async_slice_idle_store(struct request_queue *q, const char *name,
- 			  size_t count)
- {
- 	struct elv_fq_data *efqd;
--	unsigned int data;
-+	unsigned long data;
- 	unsigned long flags;
- 
- 	char *p = (char *)name;
- 
- 	data = simple_strtoul(p, &p, 10);
- 
--	if (data < 0)
--		data = 0;
--	else if (data > INT_MAX)
--		data = INT_MAX;
--
- 	data = msecs_to_jiffies(data);
- 
- 	spin_lock_irqsave(q->queue_lock, flags);
-@@ -2730,24 +2720,22 @@ ssize_t elv_slice_sync_show(struct request_queue *q, char *name)
- 	efqd = &q->elevator->efqd;
- 	data = efqd->elv_slice[1];
- 	spin_unlock_irqrestore(q->queue_lock, flags);
--	return sprintf(name, "%d\n", data);
-+	return sprintf(name, "%lu\n", data);
- }
- 
- ssize_t elv_slice_sync_store(struct request_queue *q, const char *name,
- 			  size_t count)
- {
- 	struct elv_fq_data *efqd;
--	unsigned int data;
-+	unsigned long data;
- 	unsigned long flags;
- 
- 	char *p = (char *)name;
- 
- 	data = simple_strtoul(p, &p, 10);
- 
--	if (data < 0)
--		data = 0;
- 	/* 100ms is the limit for now*/
--	else if (data > 100)
-+	if (data > 100)
- 		data = 100;
- 
- 	spin_lock_irqsave(q->queue_lock, flags);
-@@ -2762,31 +2750,29 @@ ssize_t elv_slice_sync_store(struct request_queue *q, const char *name,
- ssize_t elv_slice_async_show(struct request_queue *q, char *name)
- {
- 	struct elv_fq_data *efqd;
--	unsigned int data;
-+	unsigned long data;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(q->queue_lock, flags);
- 	efqd = &q->elevator->efqd;
- 	data = efqd->elv_slice[0];
- 	spin_unlock_irqrestore(q->queue_lock, flags);
--	return sprintf(name, "%d\n", data);
-+	return sprintf(name, "%lu\n", data);
- }
- 
- ssize_t elv_slice_async_store(struct request_queue *q, const char *name,
- 			  size_t count)
- {
- 	struct elv_fq_data *efqd;
--	unsigned int data;
-+	unsigned long data;
- 	unsigned long flags;
- 
- 	char *p = (char *)name;
- 
- 	data = simple_strtoul(p, &p, 10);
- 
--	if (data < 0)
--		data = 0;
- 	/* 100ms is the limit for now*/
--	else if (data > 100)
-+	if (data > 100)
- 		data = 100;
- 
- 	spin_lock_irqsave(q->queue_lock, flags);
-diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index 4fe843a..46e4dbc 100644
---- a/block/elevator-fq.h
-+++ b/block/elevator-fq.h
-@@ -338,13 +338,13 @@ struct elv_fq_data {
- 	 * have any notion of anticipation/idling. As of now, these are the
- 	 * users of this functionality.
- 	 */
--	unsigned int elv_slice_idle;
-+	unsigned long elv_slice_idle;
- 	/* idle slice for async queue */
--	unsigned int elv_async_slice_idle;
-+	unsigned long elv_async_slice_idle;
- 	struct timer_list idle_slice_timer;
- 	struct work_struct unplug_work;
- 
--	unsigned int elv_slice[2];
-+	unsigned long elv_slice[2];
- 
- 	/* Fields for keeping track of average disk rate */
- 	unsigned long rate_sectors; /* number of sectors finished */
+> Then, I decide to use following calculation.
+> 
+> +	nr_unmapped_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +
+> +				 zone_page_state(zone, NR_ACTIVE_FILE) -
+> +				 zone_page_state(zone, NR_FILE_MAPPED);
+> 
+
+That should now be in a helper. If I use that calculation, it'll appear
+in three different places. I'll do the shuffling.
+
+> 
+> > +	pagecache_reclaimable = zone_page_state(zone, NR_FILE_PAGES);
+> > +	if (!(zone_reclaim_mode & RECLAIM_WRITE))
+> > +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_DIRTY);
+> > +	if (!(zone_reclaim_mode & RECLAIM_SWAP))
+> > +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
+> 
+> if you hope to solve tmpfs issue, RECLAIM_WRITE/RECLAIM_SWAP are unrelated, I think.
+
+For reclaim_zone() to do anything useful, the pages have to be cleaned
+and swapped and that needs RECLAIM_WRITE and RECLAIM_SWAP. So, how are
+they unrelated?
+
+> Plus, Could you please see vmscan-zone_reclaim-use-may_swap.patch in -mm?
+> it improve RECLAIM_SWAP by another way.
+> 
+
+Looking now, I'm going to rebase this patchset on top of -mm where I can
+take advantage of that patch.
+
+Thanks a lot
+
+> 
+> 
+> >  
+> >  	/*
+> >  	 * Zone reclaim reclaims unmapped file backed pages and
+> > @@ -2391,8 +2406,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+> >  	 * if less than a specified percentage of the zone is used by
+> >  	 * unmapped file backed pages.
+> >  	 */
+> > -	if (zone_page_state(zone, NR_FILE_PAGES) -
+> > -	    zone_page_state(zone, NR_FILE_MAPPED) <= zone->min_unmapped_pages
+> > +	if (pagecache_reclaimable <= zone->min_unmapped_pages
+> >  	    && zone_page_state(zone, NR_SLAB_RECLAIMABLE)
+> >  			<= zone->min_slab_pages)
+> >  		return 0;
+
 -- 
-1.5.4.rc3
-
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
