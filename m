@@ -1,198 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbZFINgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761077AbZFINga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757357AbZFINgP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZFINgE
+	id S1761077AbZFINga (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759994AbZFINgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:36:04 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35951 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbZFINgD (ORCPT
+	Tue, 9 Jun 2009 09:36:09 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:53115 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759152AbZFINgH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:36:03 -0400
-Date: Tue, 9 Jun 2009 15:36:04 +0200
-From: Jan Kara <jack@suse.cz>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Mingming Cao <cmm@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] jbd/jbd2 :clean up journal_try_to_free_buffers
-Message-ID: <20090609133602.GA13755@atrey.karlin.mff.cuni.cz>
-References: <6.0.0.20.2.20090604194409.071baf80@172.19.0.2>
+	Tue, 9 Jun 2009 09:36:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=L1/1fcShrLuY5IeUEHAADI6CayIKWfNedskOUNZ1mkldJYdf0pneQ8chEH5vqANNA5
+         aCAP0QqP/y0oSEdGMBrjSaZfFBFaiLrSg8WR+IUZIuf8VRRJXCQTProoqHZnJt0oTWyT
+         WqLCydOzUW5Dz7ohI5PJstIe0KAeo3kPkZzmE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6.0.0.20.2.20090604194409.071baf80@172.19.0.2>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090609124755.GA6583@localhost>
+References: <20090528145021.GA5503@localhost>
+	 <20090607160225.GA24315@localhost>
+	 <ab418ea90906080406y34981329y27d360624aa22f7c@mail.gmail.com>
+	 <20090608123133.GA7944@localhost>
+	 <ab418ea90906080746m6d1d59d8m395ab76585575db1@mail.gmail.com>
+	 <20090609064855.GB5490@localhost>
+	 <20090609104825.GJ14820@wotan.suse.de>
+	 <20090609121510.GB5589@localhost>
+	 <20090609121722.GC9158@wotan.suse.de>
+	 <20090609124755.GA6583@localhost>
+Date: Tue, 9 Jun 2009 21:36:09 +0800
+Message-ID: <ab418ea90906090636w4ba884bduee8a6fc7833d07ac@mail.gmail.com>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in 
+	the VM v3
+From: Nai Xia <nai.xia@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Nick Piggin <npiggin@suse.de>, Andi Kleen <andi@firstfloor.org>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+On Tue, Jun 9, 2009 at 8:47 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> On Tue, Jun 09, 2009 at 08:17:22PM +0800, Nick Piggin wrote:
+>> On Tue, Jun 09, 2009 at 08:15:10PM +0800, Wu Fengguang wrote:
+>> > On Tue, Jun 09, 2009 at 06:48:25PM +0800, Nick Piggin wrote:
+>> > > On Tue, Jun 09, 2009 at 02:48:55PM +0800, Wu Fengguang wrote:
+>> > > > On Mon, Jun 08, 2009 at 10:46:53PM +0800, Nai Xia wrote:
+>> > > > > I meant PG_writeback stops writers to index---->struct page mapping.
+>> > > >
+>> > > > It's protected by the radix tree RCU locks. Period.
+>> > > >
+>> > > > If you are referring to the reverse mapping: page->mapping is procted
+>> > > > by PG_lock. No one should make assumption that it won't change under
+>> > > > page writeback.
+>> > >
+>> > > Well... I think probably PG_writeback should be enough. Phrased another
+>> > > way: I think it is a very bad idea to truncate PG_writeback pages out of
+>> > > pagecache. Does anything actually do that?
+>> >
+>> > There shall be no one. OK I will follow that convention..
+>> >
+>> > But as I stated it is only safe do rely on the fact "no one truncates
+>> > PG_writeback pages" in end_writeback_io handlers. And I suspect if
+>> > there does exist such a handler, it could be trivially converted to
+>> > take the page lock.
+>>
+>> Well, the writeback submitter first sets writeback, then unlocks
+>> the page. I don't think he wants a truncate coming in at that point.
+>
+> OK. I think we've mostly agreed on the consequences of PG_writeback vs
+> truncation. I'll follow the least surprise principle and stop here, hehe.
 
-> I delete the following patch 
-> "commit 3f31fddfa26b7594b44ff2b34f9a04ba409e0f91
-> Author: Mingming Cao <cmm@us.ibm.com>
-> Date:   Fri Jul 25 01:46:22 2008 -0700
-> 
->     jbd: fix race between free buffer and commit transaction
-> " 
-> This patch is no longer needed because if race between freeing buffer
-> and committing transaction functionality occurs and dio gets error,
-> currently dio falls back to buffered IO by the following patch.
-> 
-> 	commit 6ccfa806a9cfbbf1cd43d5b6aa47ef2c0eb518fd
-> 	Author: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-> 	Date:   Tue Sep 2 14:35:40 2008 -0700
-> 
->    	VFS: fix dio write returning EIO when try_to_release_page fails 
-> 
-> Thanks.
-> 
-> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-  OK, makes sence. At least it has an advantage that we don't have to
-wait for a transaction commit in DIO path.
+And thank you both for your time & patience, :-)
 
-Acked-by: Jan Kara <jack@suse.cz>
+Best Regards,
+Nai Xia
 
-								Honza
-> 
-> diff -Nrup linux-2.6.30-rc8.org/fs/jbd/transaction.c linux-2.6.30-rc8.ext3_4/fs/jbd/transaction.c
-> --- linux-2.6.30-rc8.org/fs/jbd/transaction.c	2009-06-04 16:26:26.000000000 +0900
-> +++ linux-2.6.30-rc8.ext3_4/fs/jbd/transaction.c	2009-06-04 19:14:53.000000000 +0900
-> @@ -1686,35 +1686,6 @@ out:
->  	return;
->  }
->  
-> -/*
-> - * journal_try_to_free_buffers() could race with journal_commit_transaction()
-> - * The latter might still hold the a count on buffers when inspecting
-> - * them on t_syncdata_list or t_locked_list.
-> - *
-> - * journal_try_to_free_buffers() will call this function to
-> - * wait for the current transaction to finish syncing data buffers, before
-> - * tryinf to free that buffer.
-> - *
-> - * Called with journal->j_state_lock held.
-> - */
-> -static void journal_wait_for_transaction_sync_data(journal_t *journal)
-> -{
-> -	transaction_t *transaction = NULL;
-> -	tid_t tid;
-> -
-> -	spin_lock(&journal->j_state_lock);
-> -	transaction = journal->j_committing_transaction;
-> -
-> -	if (!transaction) {
-> -		spin_unlock(&journal->j_state_lock);
-> -		return;
-> -	}
-> -
-> -	tid = transaction->t_tid;
-> -	spin_unlock(&journal->j_state_lock);
-> -	log_wait_commit(journal, tid);
-> -}
-> -
->  /**
->   * int journal_try_to_free_buffers() - try to free page buffers.
->   * @journal: journal for operation
-> @@ -1786,25 +1757,6 @@ int journal_try_to_free_buffers(journal_
->  
->  	ret = try_to_free_buffers(page);
->  
-> -	/*
-> -	* There are a number of places where journal_try_to_free_buffers()
-> -	* could race with journal_commit_transaction(), the later still
-> -	* holds the reference to the buffers to free while processing them.
-> -	* try_to_free_buffers() failed to free those buffers. Some of the
-> -	* caller of releasepage() request page buffers to be dropped, otherwise
-> -	* treat the fail-to-free as errors (such as generic_file_direct_IO())
-> -	*
-> -	* So, if the caller of try_to_release_page() wants the synchronous
-> -	* behaviour(i.e make sure buffers are dropped upon return),
-> -	* let's wait for the current transaction to finish flush of
-> -	* dirty data buffers, then try to free those buffers again,
-> -	* with the journal locked.
-> -	*/
-> -	if (ret == 0 && (gfp_mask & __GFP_WAIT) && (gfp_mask & __GFP_FS)) {
-> -		journal_wait_for_transaction_sync_data(journal);
-> -		ret = try_to_free_buffers(page);
-> -	}
-> -
->  busy:
->  	return ret;
->  }
-> diff -Nrup linux-2.6.30-rc8.org/fs/jbd2/transaction.c linux-2.6.30-rc8.ext3_4/fs/jbd2/transaction.c
-> --- linux-2.6.30-rc8.org/fs/jbd2/transaction.c	2009-06-04 16:26:26.000000000 +0900
-> +++ linux-2.6.30-rc8.ext3_4/fs/jbd2/transaction.c	2009-06-04 19:17:12.000000000 +0900
-> @@ -1547,36 +1547,6 @@ out:
->  	return;
->  }
->  
-> -/*
-> - * jbd2_journal_try_to_free_buffers() could race with
-> - * jbd2_journal_commit_transaction(). The later might still hold the
-> - * reference count to the buffers when inspecting them on
-> - * t_syncdata_list or t_locked_list.
-> - *
-> - * jbd2_journal_try_to_free_buffers() will call this function to
-> - * wait for the current transaction to finish syncing data buffers, before
-> - * try to free that buffer.
-> - *
-> - * Called with journal->j_state_lock hold.
-> - */
-> -static void jbd2_journal_wait_for_transaction_sync_data(journal_t *journal)
-> -{
-> -	transaction_t *transaction;
-> -	tid_t tid;
-> -
-> -	spin_lock(&journal->j_state_lock);
-> -	transaction = journal->j_committing_transaction;
-> -
-> -	if (!transaction) {
-> -		spin_unlock(&journal->j_state_lock);
-> -		return;
-> -	}
-> -
-> -	tid = transaction->t_tid;
-> -	spin_unlock(&journal->j_state_lock);
-> -	jbd2_log_wait_commit(journal, tid);
-> -}
-> -
->  /**
->   * int jbd2_journal_try_to_free_buffers() - try to free page buffers.
->   * @journal: journal for operation
-> @@ -1649,25 +1619,6 @@ int jbd2_journal_try_to_free_buffers(jou
->  
->  	ret = try_to_free_buffers(page);
->  
-> -	/*
-> -	* There are a number of places where jbd2_journal_try_to_free_buffers()
-> -	* could race with jbd2_journal_commit_transaction(), the later still
-> -	* holds the reference to the buffers to free while processing them.
-> -	* try_to_free_buffers() failed to free those buffers. Some of the
-> -	* caller of releasepage() request page buffers to be dropped, otherwise
-> -	* treat the fail-to-free as errors (such as generic_file_direct_IO())
-> -	*
-> -	* So, if the caller of try_to_release_page() wants the synchronous
-> -	* behaviour(i.e make sure buffers are dropped upon return),
-> -	* let's wait for the current transaction to finish flush of
-> -	* dirty data buffers, then try to free those buffers again,
-> -	* with the journal locked.
-> -	*/
-> -	if (ret == 0 && (gfp_mask & __GFP_WAIT) && (gfp_mask & __GFP_FS)) {
-> -		jbd2_journal_wait_for_transaction_sync_data(journal);
-> -		ret = try_to_free_buffers(page);
-> -	}
-> -
->  busy:
->  	return ret;
->  }
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+>
+> Thanks,
+> Fengguang
+>
