@@ -1,43 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbZFII7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759276AbZFIJCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759430AbZFII7T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 04:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136AbZFII7C
+	id S1759276AbZFIJCT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 05:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZFIJCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 04:59:02 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:33805 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751506AbZFII7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 04:59:01 -0400
-Message-ID: <4A2E2456.4020703@msgid.tls.msk.ru>
-Date: Tue, 09 Jun 2009 12:59:02 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: jonathan@jonmasters.org, eric.dumazet@gmail.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, romieu@fr.zoreil.com, stable@kernel.org
-Subject: Re: [patch] r8169: fix crash when large packets are received
-References: <4A2D8B8B.80905@gmail.com>	<1244511638.30733.41.camel@localhost.localdomain> <20090608.195709.158667574.davem@davemloft.net>
-In-Reply-To: <20090608.195709.158667574.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Jun 2009 05:02:07 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:46182 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751809AbZFIJCG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 05:02:06 -0400
+From: alexander.shishckin@gmail.com
+To: linux-fsdevel@vger.kernel.org
+Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org,
+       Alexander Shishkin <alexander.shishckin@gmail.com>
+Subject: [PATCH] [RESEND] RFC: List per-process file descriptor consumption when hitting file-max
+Date: Tue,  9 Jun 2009 12:01:11 +0300
+Message-Id: <1244538071-992-1-git-send-email-alexander.shishckin@gmail.com>
+X-Mailer: git-send-email 1.6.3.1
+X-OriginalArrivalTime: 09 Jun 2009 09:02:01.0963 (UTC) FILETIME=[F3EF3BB0:01C9E8E0]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Jon Masters <jonathan@jonmasters.org>
-> Date: Mon, 08 Jun 2009 21:40:38 -0400
-> 
->> CC -stable team - remote DoS with this hardware present.
-> 
-> "remote", if on the same physical subnet, otherwise easily protectable
-> if not impossible to trigger
+From: Alexander Shishkin <alexander.shishckin@gmail.com>
 
-"remote" as "from outside of the host in question".
-But still, this is definitely worth fixing.
+[resending to aim at wider audience]
+When a file descriptor limit is hit, it might be useful to see all the
+users to be able to identify those that leak descriptors.
 
-Thanks.
+Signed-off-by: Alexander Shishkin <alexander.shishckin@gmail.com>
+---
+ fs/file_table.c |   27 +++++++++++++++++++++++++++
+ 1 files changed, 27 insertions(+), 0 deletions(-)
 
-/mjt
+diff --git a/fs/file_table.c b/fs/file_table.c
+index 54018fe..9e53167 100644
+--- a/fs/file_table.c
++++ b/fs/file_table.c
+@@ -136,8 +136,35 @@ struct file *get_empty_filp(void)
+ over:
+ 	/* Ran out of filps - report that */
+ 	if (get_nr_files() > old_max) {
++		struct task_struct *p;
++		struct files_struct *files;
++		struct fdtable *fdt;
++		int i, count = 0;
++
+ 		printk(KERN_INFO "VFS: file-max limit %d reached\n",
+ 					get_max_files());
++
++		read_lock(&tasklist_lock);
++		for_each_process(p) {
++			files = get_files_struct(p);
++			if (!files)
++				continue;
++
++			spin_lock(&files->file_lock);
++			fdt = files_fdtable(files);
++
++			/* we have to actually *count* the fds */
++			for (count = i = 0; i < fdt->max_fds; i++)
++				count += !!fcheck_files(files, i);
++
++			printk(KERN_INFO "=> %s [%d]: %d\n", p->comm,
++					p->pid, count);
++
++			spin_unlock(&files->file_lock);
++			put_files_struct(files);
++		}
++		read_unlock(&tasklist_lock);
++
+ 		old_max = get_nr_files();
+ 	}
+ 	goto fail;
+-- 
+1.6.1.3
+
