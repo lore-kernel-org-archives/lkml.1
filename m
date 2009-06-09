@@ -1,306 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbZFIVDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbZFIVvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760185AbZFIVDb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 17:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZFIVDX
+	id S1757541AbZFIVvA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 17:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbZFIVuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 17:03:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56601 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752103AbZFIVDW (ORCPT
+	Tue, 9 Jun 2009 17:50:52 -0400
+Received: from dallas.jonmasters.org ([72.29.103.172]:51501 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754549AbZFIVuv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 17:03:22 -0400
-Date: Tue, 9 Jun 2009 14:02:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Baruch Siach <baruch@tkos.co.il>
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux@arm.linux.org.uk,
-       baruch@tkos.co.il
-Subject: Re: [PATCH v4] gpio: driver for PrimeCell PL061 GPIO controller
-Message-Id: <20090609140239.260428eb.akpm@linux-foundation.org>
-In-Reply-To: <1244399935-23128-1-git-send-email-baruch@tkos.co.il>
-References: <1244399935-23128-1-git-send-email-baruch@tkos.co.il>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 9 Jun 2009 17:50:51 -0400
+Subject: Re: [RFC PATCH 1/1] smi_detector: A System Management Interrupt
+ detector
+From: Jon Masters <jonathan@jonmasters.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       rostedt@goodmis.org
+In-Reply-To: <20090601205720.825d3048.akpm@linux-foundation.org>
+References: <20090531163117.502167374@jonmasters.org>
+	 <20090531163343.771922592@jonmasters.org>
+	 <20090601205720.825d3048.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Tue, 09 Jun 2009 17:50:01 -0400
+Message-Id: <1244584201.30733.93.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun,  7 Jun 2009 21:38:55 +0300
-Baruch Siach <baruch@tkos.co.il> wrote:
-
-> This is a driver for the ARM PrimeCell PL061 GPIO AMBA peripheral. The driver
-> is implemented using the gpiolib framework.
+On Mon, 2009-06-01 at 20:57 -0700, Andrew Morton wrote:
+> On Sun, 31 May 2009 12:31:18 -0400 Jon Masters <jonathan@jonmasters.org> wrote:
 > 
-> This driver also includes support for the use of the PL061 as an interrupt
-> controller (secondary).
+> > This patch introduces a new SMI (System Management Interrupt) detector module
+> > that can be used to detect high latencies within the system. It was originally
+> > written for use in the RT kernel, but has wider applications.
+> > 
 > 
-> Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-> ---
-> Changes in v4:
-> 	- Depend on CONFIG_ARM_AMBA
-> 	- Do not request the gpio for IRQ automatically, just warn if it's not 
-> 	  requested
-> 	- Remove SZ_4K
-> 	- Iterate through a linked list find the source of interrupt when 
-> 	  multiple PL061s are connected to the same IRQ trigger
-> 	- Move hardware register defines into the .c file
+> Neat-looking code.
 
-I generated an incremental diff so that we can see what you did.
+Thanks. Finally gotten around to cleaning it up, and renamed it. I think
+I should have hwlat_detector out in a few minutes.
 
+> AFACIT it can be used on any platform.
 
->  drivers/gpio/Kconfig       |    1 
->  drivers/gpio/pl061.c       |   92 ++++++++++++++++-------------------
->  include/linux/amba/pl061.h |   19 +++----
->  3 files changed, 54 insertions(+), 58 deletions(-)
+Agreed. I've added a description that is generic in terms of system
+hardware latencies - nothing specific to SMIs except in a comment.
+
+> > +	smi_kthread = kthread_run(smi_kthread_fn, NULL,
+> > +					"smi_detector");
+> > +	if (!smi_kthread) {
 > 
-> diff -puN drivers/gpio/Kconfig~gpio-driver-for-primecell-pl061-gpio-controller-v4 drivers/gpio/Kconfig
-> --- a/drivers/gpio/Kconfig~gpio-driver-for-primecell-pl061-gpio-controller-v4
-> +++ a/drivers/gpio/Kconfig
-> @@ -69,6 +69,7 @@ comment "Memory mapped GPIO expanders:"
->  
->  config GPIO_PL061
->  	bool "PrimeCell PL061 GPIO support"
-> +	depends on ARM_AMBA
->  	help
->  	  Say yes here to support the PrimeCell PL061 GPIO device
->  
-> diff -puN drivers/gpio/pl061.c~gpio-driver-for-primecell-pl061-gpio-controller-v4 drivers/gpio/pl061.c
-> --- a/drivers/gpio/pl061.c~gpio-driver-for-primecell-pl061-gpio-controller-v4
-> +++ a/drivers/gpio/pl061.c
-> @@ -14,6 +14,7 @@
->  #include <linux/spinlock.h>
->  #include <linux/errno.h>
->  #include <linux/module.h>
-> +#include <linux/list.h>
->  #include <linux/io.h>
->  #include <linux/ioport.h>
->  #include <linux/irq.h>
-> @@ -24,9 +25,22 @@
->  #include <linux/amba/bus.h>
->  #include <linux/amba/pl061.h>
->  
-> +#define GPIODIR 0x400
-> +#define GPIOIS  0x404
-> +#define GPIOIBE 0x408
-> +#define GPIOIEV 0x40C
-> +#define GPIOIE  0x410
-> +#define GPIORIS 0x414
-> +#define GPIOMIS 0x418
-> +#define GPIOIC  0x41C
-> +
->  #define PL061_GPIO_NR	8
->  
-> +#define PL061_REG_SIZE	(4*1024)
-> +
->  struct pl061_gpio {
-> +	struct list_head	list;
+> You'll need an IS_ERR() test here.
 
-Some commentary which describes this field would be nice.  What lock
-protects it, what other list_head this list is anchored to, etc
+Thanks. I realized later that I did, because there's no reason that the
+value returned couldn't, in theory, change someday (recent zero page
+discussions notwithstanding).
 
->  	/* Each of the two spinlocks protects a different set of hardware
->  	 * regiters and data structurs. This decouples the code of the IRQ from
->  	 * the GPIO code. This also makes the case of a GPIO routine call from
-> @@ -37,12 +51,8 @@ struct pl061_gpio {
->  
->  	void __iomem		*base;
->  	struct gpio_chip	gc;
-> -	struct work_struct	gpio_free_work;
-> -	DECLARE_BITMAP(gpios_to_free, PL061_GPIO_NR);
->  };
->  
-> -static u32 (*pl061_pending_irq)(int irq);
-> -
->  static int pl061_direction_input(struct gpio_chip *gc, unsigned offset)
->  {
->  	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
-> @@ -112,16 +122,6 @@ static void pl061_irq_disable(unsigned i
->  	spin_unlock_irqrestore(&chip->irq_lock, flags);
->  }
->  
-> -static void pl061_irq_shutdown(unsigned irq)
-> -{
-> -	struct pl061_gpio *chip = get_irq_chip_data(irq);
-> -	int offset = irq_to_gpio(irq) - chip->gc.base;
-> -
-> -	pl061_irq_disable(irq);
-> -	set_bit(offset, chip->gpios_to_free);
-> -	schedule_work(&chip->gpio_free_work);
-> -}
-> -
->  static void pl061_irq_enable(unsigned irq)
->  {
->  	struct pl061_gpio *chip = get_irq_chip_data(irq);
-> @@ -138,16 +138,10 @@ static void pl061_irq_enable(unsigned ir
->  
->  static unsigned int pl061_irq_startup(unsigned irq)
->  {
-> -	int ret;
-> -
-> -	ret = gpio_request(irq_to_gpio(irq), "IRQ");
-> -	if (ret < 0) {
-> -		pr_warning("%s: warning: gpio_request(%d) returned %d\n",
-> -				__func__, irq_to_gpio(irq), ret);
-> -		return 0;
-> -	}
-> +	if (gpio_request(irq_to_gpio(irq), "IRQ") == 0)
-> +		pr_warning("%s: warning: GPIO%d has not been requested\n",
-> +				__func__, irq_to_gpio(irq));
-
-This is wrong, isn't it?  gpio_request() returns 0 on success.
-
-> -	gpio_direction_input(irq_to_gpio(irq));
->  	pl061_irq_enable(irq);
->  
->  	return 0;
-> @@ -202,45 +196,38 @@ static struct irq_chip pl061_irqchip = {
->  	.startup	= pl061_irq_startup,
->  	.enable		= pl061_irq_enable,
->  	.disable	= pl061_irq_disable,
-> -	.shutdown	= pl061_irq_shutdown,
->  	.set_type	= pl061_irq_type,
->  };
->  
->  static void pl061_irq_handler(unsigned irq, struct irq_desc *desc)
->  {
-> +	struct list_head *chip_list = get_irq_chip_data(irq);
-> +	struct list_head *ptr;
-> +	struct pl061_gpio *chip;
-> +
->  	desc->chip->ack(irq);
-> -	while (1) {
-> +	list_for_each(ptr, chip_list) {
-
-What locking protects the newly-added list?
-
->  		unsigned long pending;
->  		int gpio;
->  
-> -		pending = pl061_pending_irq(irq);
-> +		chip = list_entry(ptr, struct pl061_gpio, list);
-> +		pending = readb(chip->base + GPIOMIS);
-> +		writeb(pending, chip->base + GPIOIC);
-> +
->  		if (pending == 0)
-> -			break;
-> +			continue;
->  
-> -		for_each_bit(gpio, &pending, BITS_PER_LONG)
-> +		for_each_bit(gpio, &pending, PL061_GPIO_NR)
->  			generic_handle_irq(gpio_to_irq(gpio));
->  	}
->  	desc->chip->unmask(irq);
->  }
->  
-> -static void pl061_gpio_free(struct work_struct *work)
-> -{
-> -	struct pl061_gpio *chip = container_of(work, struct pl061_gpio,
-> -			gpio_free_work);
-> -	int offset;
-> -
-> -	for_each_bit(offset, chip->gpios_to_free, PL061_GPIO_NR) {
-> -		int gpio = offset + chip->gc.base;
-> -
-> -		if (test_and_clear_bit(offset, chip->gpios_to_free))
-> -			gpio_free(gpio);
-> -	}
-> -}
-> -
->  static int __init pl061_probe(struct amba_device *dev, struct amba_id *id)
->  {
->  	struct pl061_platform_data *pdata;
->  	struct pl061_gpio *chip;
-> +	struct list_head *chip_list;
->  	int ret, irq, i;
->  
->  	pdata = dev->dev.platform_data;
-> @@ -251,12 +238,12 @@ static int __init pl061_probe(struct amb
->  	if (chip == NULL)
->  		return -ENOMEM;
->  
-> -	if (request_mem_region(dev->res.start, SZ_4K, "pl061") == NULL) {
-> +	if (!request_mem_region(dev->res.start, PL061_REG_SIZE, "pl061")) {
->  		ret = -EBUSY;
->  		goto free_mem;
->  	}
->  
-> -	chip->base = ioremap(dev->res.start, SZ_4K);
-> +	chip->base = ioremap(dev->res.start, PL061_REG_SIZE);
->  	if (chip->base == NULL) {
->  		ret = -ENOMEM;
->  		goto release_region;
-> @@ -264,8 +251,7 @@ static int __init pl061_probe(struct amb
->  
->  	spin_lock_init(&chip->lock);
->  	spin_lock_init(&chip->irq_lock);
-> -
-> -	INIT_WORK(&chip->gpio_free_work, pl061_gpio_free);
-> +	INIT_LIST_HEAD(&chip->list);
->  
->  	chip->gc.direction_input = pl061_direction_input;
->  	chip->gc.direction_output = pl061_direction_output;
-> @@ -291,7 +277,17 @@ static int __init pl061_probe(struct amb
->  		goto iounmap;
->  	}
->  	set_irq_chained_handler(irq, pl061_irq_handler);
-> -	pl061_pending_irq = pdata->pending_irqs;
-> +	if (!pdata->is_irq_initialized || !pdata->is_irq_initialized(irq)) {
-> +		chip_list = kmalloc(sizeof(*chip_list), GFP_KERNEL);
-> +		if (chip_list == NULL) {
-> +			ret = -ENOMEM;
-> +			goto iounmap;
-> +		}
-> +		INIT_LIST_HEAD(chip_list);
-> +		set_irq_chip_data(irq, chip_list);
-> +	} else
-> +		chip_list = get_irq_chip_data(irq);
-> +	list_add(&chip->list, chip_list);
->  
->  	for (i = 0; i < PL061_GPIO_NR; i++) {
->  		if (pdata->directions & (1 << i))
-> @@ -312,7 +308,7 @@ static int __init pl061_probe(struct amb
->  iounmap:
->  	iounmap(chip->base);
->  release_region:
-> -	release_mem_region(dev->res.start, SZ_4K);
-> +	release_mem_region(dev->res.start, PL061_REG_SIZE);
->  free_mem:
->  	kfree(chip);
->  
-> diff -puN include/linux/amba/pl061.h~gpio-driver-for-primecell-pl061-gpio-controller-v4 include/linux/amba/pl061.h
-> --- a/include/linux/amba/pl061.h~gpio-driver-for-primecell-pl061-gpio-controller-v4
-> +++ a/include/linux/amba/pl061.h
-> @@ -1,18 +1,17 @@
->  /* platform data for the PL061 GPIO driver */
->  
-> -#define GPIODIR 0x400
-> -#define GPIOIS  0x404
-> -#define GPIOIBE 0x408
-> -#define GPIOIEV 0x40C
-> -#define GPIOIE  0x410
-> -#define GPIORIS 0x414
-> -#define GPIOMIS 0x418
-> -#define GPIOIC  0x41C
-> -
->  struct pl061_platform_data {
->  	/* number of the first GPIO */
->  	unsigned	gpio_base;
-> -	u32		(*pending_irqs)(int irq);
-> +
->  	u8		directions;	/* startup directions, 1: out, 0: in */
->  	u8		values;		/* startup values */
-> +
-> +	/* This callback may be used when you have more than one PL061
-> +	 * connected to the same IRQ trigger. This callback must return 0 on
-> +	 * the first time it is called for each irq, and 1 on any other call.
-> +	 * In case you are not unfortunate enough to have this setup, this
-> +	 * pointer must be set to NULL.
-> +	 */
-> +	int		(*is_irq_initialized)(int irq);
->  };
-> _
+> > +	if (0 != err)
 > 
+> 	if (err != 0)
 > 
+> or
+> 
+> 	if (err)
+> 
+> would be more typical.
+
+The former runs the risk of assignment, whereas <value> != <variable>
+will generate a compiler error if it goes wrong, so I trained myself to
+always do that. The desired value is zero, so I prefer to show that in
+the test, but I have changed it following your advice anyway - it's like
+how I have to force myself not to use '{' '}' on single line
+if-statements despite generally doing so, again for safety :)
+
+> There's a lot of code duplication amongst all these debugfs write()
+> handlers.  Can a common helper be used?
+
+I originally used the generic debugfs _u|s<blah> functions to just
+read/write from the variables directly but then needed some side effects
+- but in any case, the generic functions don't offer any locking AFAIK.
+I'm adding a little helper function instead.
+
+> > +static int smi_debug_sample_fopen(struct inode *inode, struct file *filp)
+> > +{
+> > +	int ret = 0;
+> > +
+> > +	mutex_lock(&smi_data.lock);
+> > +	if (atomic_read(&smi_data.sample_open))
+> > +		ret = -EBUSY;
+> > +	else
+> > +		atomic_inc(&smi_data.sample_open);
+> > +	mutex_unlock(&smi_data.lock);
+> > +
+> > +	return ret;
+> > +}
+> 
+> It's strange to use a lock to protect an atomic_t.  A simple
+> atomic_add_unless() might suffice.
+
+You're right. I was just being pedantic to use the lock every time. I'll
+take that out and wrap it with an _unless, I think.
+
+Jon.
+
+
