@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbZFIW3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862AbZFIWgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756331AbZFIW3g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 18:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZFIW32
+	id S1753862AbZFIWgv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 18:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbZFIWgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 18:29:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40494 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751063AbZFIW31 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 18:29:27 -0400
-Date: Tue, 9 Jun 2009 15:28:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: jbarnes@virtuousgeek.org, penberg@cs.helsinki.fi,
-       intel-gfx@lists.freedesktop.org, woodys@xandros.com,
-       stefan.bader@canonical.com, linux-kernel@vger.kernel.org,
-       apw@canonical.com, tim.gardner@canonical.com,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: [Intel-gfx] Intel 915GM MCHBAR bug
-Message-Id: <20090609152828.d82528f3.akpm@linux-foundation.org>
-In-Reply-To: <20090609150757.4a2109a9@jbarnes-x200>
-References: <4A242C81.6020906@cs.helsinki.fi>
-	<4A298971.5080006@xandros.com>
-	<4A2A0951.1020608@cs.helsinki.fi>
-	<20090605232711.d8503262.akpm@linux-foundation.org>
-	<4A2A0E8C.1010109@cs.helsinki.fi>
-	<20090606212759.31970fae@jbarnes-x200>
-	<20090609150757.4a2109a9@jbarnes-x200>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 9 Jun 2009 18:36:43 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47518 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752171AbZFIWgm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 18:36:42 -0400
+Subject: Re: [BUILD FAILURE 01/04] Next June 04:PPC64 randconfig
+ [drivers/staging/comedi/drivers.o]
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: subrata@linux.vnet.ibm.com
+Cc: Greg KH <greg@kroah.com>, fmhess@users.sourceforge.net,
+       Ian Abbott <abbotti@mev.co.uk>, David Miller <davem@davemloft.net>,
+       sachinp@linux.vnet.ibm.com, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, Linuxppc-dev@ozlabs.org,
+       linux-next@vger.kernel.org, paulus@samba.org,
+       Geert.Uytterhoeven@sonycom.com, geert@linux-m68k.org
+In-Reply-To: <1244572446.5497.32.camel@subratamodak.linux.ibm.com>
+References: <20090605182625.24093.7808.sendpatchset@elm3a191.beaverton.ibm.com>
+	 <1244261806.31984.36.camel@pasglop> <20090606055103.GA9446@kroah.com>
+	 <200906060936.22322.fmhess@speakeasy.net>
+	 <1244385405.5265.7.camel@subratamodak.linux.ibm.com>
+	 <1244519418.5235.2.camel@pasglop>
+	 <1244572446.5497.32.camel@subratamodak.linux.ibm.com>
+Content-Type: text/plain
+Date: Wed, 10 Jun 2009 08:34:39 +1000
+Message-Id: <1244586879.24481.19.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009 15:07:57 -0700
-Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 
-> > > Andrew Morton wrote:
-> > > > These might end up being 2.6.30.1 material.
-> > > 
-> > > Yes, agreed completely. We probably want ACK from Jesse and Bjorn,
-> > > though.
-> > 
-> > I'm ok with it being 2.6.30.1 stuff, but given the significance of the
-> > change we were worried about putting it into 2.6.30 late in the cycle.
-> > But as you say, it's a very important performance fix for many
-> > machines...
-> > 
-> > Anyway, Eric may already have it merged.  Eric?
-> > 
+> > In any case, doing PAGE_KERNEL_NOCACHE for DMA memory is incorrect on
+> > many architectures. So at this stage, there's no much option but ifdef I
+> > suspect for now until this is fixed properly.
 > 
-> It's merged now into the drm-intel-next tree, and therefore queued for
-> the merge window.
+> Ok. But, i am not sure whether Greg will agree to this. If, Ok, is the
+> following patch i sent earlier Ok ?
+> 
+> http://lkml.org/lkml/2009/6/5/462,
 
-<hunts around for a while>
+Not really.
 
-This? http://git.kernel.org/?p=linux/kernel/git/anholt/drm-intel.git;a=commitdiff;h=d765898970f35acef960581f678b9da9d5c779fa;hp=1b8e69662e1a086878bf930a6042daf7f8a076cc
+You probably want to use a constant (call it MY_DMA_MAP_PGPROT), and
+in a header, you have a bunch of ifdef's that set it to PAGE_KERNEL,
+PAGE_KERNEL_NOCACHE or PAGE_KERNEL_NC depending on what's needed.
 
-It doesn't have cc:stable in the changelog, so there's a reasonable
-chance that it will get lost.
+Today, you can pretty much assume that
 
-The -stable guys troll the commit list looking for mainline commits
-which mention stable@kernel.org in the changelog.
+ - x86*, sparc*, ia64*, alpha, ... needs PAGE_KERNEL
+ - powerpc needs PAGE_KERNEL if !CONFIG_NOT_COHERENT_CACHE
+ - powerpc needs PAGE_KERNEL_NC if CONFIG_NOT_COHERENT_CACHE
+ - ARM and MIPS, I think, needs PAGE_KERNEL_NOCACHE
+ - ... others I don't know.
+
+Cheers,
+Ben.
+
+> Regards--
+> Subrata
+> 
+> > 
+> > It does make sense to want to have some memory like that shared between
+> > user space and DMA, though I don't know what the right approach that
+> > works on all archs is at this stage. Worth asking the Alsa guys, I think
+> > they have similar issues :-)
+> > 
+> > But doing double buffering might do the trick fine for now.
+> > 
+> > Cheers,
+> > Ben.
+> > 
+> > 
+> > 
+> > 
 
