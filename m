@@ -1,184 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757515AbZFIOik@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759951AbZFIOix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757515AbZFIOik (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 10:38:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZFIOi2
+	id S1759951AbZFIOix (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 10:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759158AbZFIOil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 10:38:28 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:48483 "EHLO gir.skynet.ie"
+	Tue, 9 Jun 2009 10:38:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48601 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbZFIOi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 10:38:27 -0400
-Date: Tue, 9 Jun 2009 15:38:27 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Robin Holt <holt@sgi.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       Wu Fengguang <fengguang.wu@intel.com>, linux-ia64@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v4] zone_reclaim is always 0 by default
-Message-ID: <20090609143826.GS18380@csn.ul.ie>
-References: <20090604192236.9761.A69D9226@jp.fujitsu.com> <20090608115048.GA15070@csn.ul.ie> <20090609211721.DD9A.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090609211721.DD9A.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1755323AbZFIOij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 10:38:39 -0400
+Date: Tue, 9 Jun 2009 10:37:46 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+To: Harald Welte <HaraldWelte@viatech.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org,
+       Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+Subject: [patch 2/3] crypto: padlock-aes: work around Nano CPU errata in CBC
+ mode
+Message-ID: <20090609103746.23a0287a@dhcp-100-2-144.bos.redhat.com>
+In-Reply-To: <20090609103533.0c334594@dhcp-100-2-144.bos.redhat.com>
+References: <20090609103533.0c334594@dhcp-100-2-144.bos.redhat.com>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 10:48:34PM +0900, KOSAKI Motohiro wrote:
-> Hi
-> 
-> sorry for late responce. my e-mail reading speed is very slow ;-)
-> 
-> First, Could you please read past thread?
-> I think many topic of this mail are already discussed.
-> 
+From: Chuck Ebbert <cebbert@redhat.com>
+crypto: padlock-aes: work around Nano CPU errata in CBC mode
 
-I think I caught them all but the horrible fact of the matter is that
-whether zone_reclaim_mode should be 1 or 0 on NUMA machines is "it depends".
-There are arguements for both and no clear winner.
+Extend previous workarounds for the prefetch bug to cover CBC mode,
+clean up the code a bit.
 
-> 
-> > On Thu, Jun 04, 2009 at 07:23:15PM +0900, KOSAKI Motohiro wrote:
-> > > 
-> > > Current linux policy is, zone_reclaim_mode is enabled by default if the machine
-> > > has large remote node distance. it's because we could assume that large distance
-> > > mean large server until recently.
-> > > 
-> > 
-> > We don't make assumptions about the server being large, small or otherwise. The
-> > affinity tables reporting a distance of 20 or more is saying "remote memory
-> > has twice the latency of local memory". This is true irrespective of workload
-> > and implies that going off-node has a real penalty regardless of workload.
-> 
-> No.
-> Now, we talk about off-node allocation vs unnecessary file cache dropping.
-> IOW, off-node allocation vs disk access.
-> 
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
 
-Even if we used GFP flags to identify the file pages, there is no guarantee
-that we are taking the correct action to keep "relevant" pages in memory.
-
-> Then, the worth doesn't only depend on off-node distance, but also depend on
-> workload IO tendency and IO speed.
-> 
-> Fujitsu has 64 core ia64 HPC box, zone-reclaim sometimes made performance
-> degression although its box. 
-> 
-
-I bet if it was 0, that the off-node accesses would somewtimes make
-"performance degression" as well :(
-
-> So, I don't think this problem is small vs large machine issue.
-> nor i7 issue.
-> high-speed P2P CPU integrated memory controller expose old issue.
-> 
-> 
-> > > In general, workload depended configration shouldn't put into default settings.
-> > > 
-> > > However, current code is long standing about two year. Highest POWER and IA64 HPC machine
-> > > (only) use this setting.
-> > > 
-> > > Thus, x86 and almost rest architecture change default setting, but Only power and ia64
-> > > remain current configuration for backward-compatibility.
-> > > 
-> > 
-> > What about if it's x86-64-based NUMA but it's not i7 based. There, the
-> > NUMA distances might really mean something and that zone_reclaim behaviour
-> > is desirable.
-> 
-> hmmm..
-> I don't hope ignore AMD, I think it's common characterastic of P2P and
-> integrated memory controller machine.
-> 
-> Also, I don't hope detect CPU family or similar, because we need update
-> such code evey when Intel makes new cpu.
-> 
-> Can we detect P2P interconnect machine? I'm not sure.
-> 
-
-I've no idea. It's not just I7 because some of the AMD chips will have
-integrated memory controllers as well. We were somewhat depending on the
-affinity information providing the necessary information.
-
-> > I think if we're going down the road of setting the default, it shouldn't be
-> > per-architecture defaults as such. Other choices for addressing this might be;
-> > 
-> > 1. Make RECLAIM_DISTANCE a variable on x86. Set it to 20 by default, and 5
-> >    (or some other sensible figure) on i7
-> > 
-> > 2. There should be a per-arch modifier callback for the affinity
-> >    distances. If the x86 code detects the CPU is an i7, it can reduce the
-> >    reported latencies to be more in line with expected reality.
-> > 
-> > 3. Do not use zone_reclaim() for file-backed data if more than 20% of memory
-> >    overall is free. The difficulty is figuring out if the allocation is for
-> >    file pages.
-> > 
-> > 4. Change zone_reclaim_mode default to mean "do your best to figure it
-> >    out". Patch 1 would default large distances to 1 to see what happens.
-> >    Then apply a heuristic when in figure-it-out mode and using reclaim_mode == 1
-> > 
-> > 	If we have locally reclaimed 2% of the nodes memory in file pages
-> > 	within the last 5 seconds when >= 20% of total physical memory was
-> > 	free, then set the reclaim_mode to 0 on the assumption the node is
-> > 	mostly caching pages and shouldn't be reclaimed to avoid excessive IO
-> > 
-> > Option 1 would appear to be the most straight-forward but option 2
-> > should be doable. Option 3 and 4 could turn into a rats nest and I would
-> > consider those approaches a bit more drastic.
-> 
-> hmhm. 
-> I think the key-point of option 1 and 2 are proper hardware detecting way.
-> 
-> option 3 and 4 are more prefere idea to me. I like workload adapted heuristic.
-> but you already pointed out its hard, because page-allocator don't know
-> allocation purpose ;)
-> 
-
-Option 3 may be undoable. Even if the allocations are tagged as "this is
-a file-backed allocation", we have no way of detecting how important
-that is to the overall workload. Option 4 would be the preference. It's
-a heuristic that might let us down, but the administrator can override
-it and fix the reclaim_mode in the event we get it wrong.
-
-> 
-> > > @@ -10,6 +10,12 @@ struct device_node;
-> > >  
-> > >  #include <asm/mmzone.h>
-> > >  
-> > > +/*
-> > > + * Distance above which we begin to use zone reclaim
-> > > + */
-> > > +#define RECLAIM_DISTANCE 20
-> > > +
-> > > +
-> > 
-> > Where is the ia-64-specific modifier to RECAIM_DISTANCE?
-> 
-> 
-> arch/ia64/include/asm/topology.h has
-> 
-> 	/*
-> 	 * Distance above which we begin to use zone reclaim
-> 	 */
-> 	#define RECLAIM_DISTANCE 15
-> 
-> 
-> I don't think distance==15 is machine independent proper definition.
-> but there is long lived definition ;)
-> 
-> 
-> 
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+--- work-2.6.29.4.orig/drivers/crypto/padlock-aes.c
++++ work-2.6.29.4/drivers/crypto/padlock-aes.c
+@@ -22,11 +22,16 @@
+ #include <asm/i387.h>
+ #include "padlock.h"
+ 
+-/* number of data blocks actually fetched for each xcrypt insn */
++/*
++ * Number of data blocks actually fetched for each xcrypt insn.
++ * Processors with prefetch errata will fetch extra blocks.
++ */
+ static unsigned int ecb_fetch_blocks = 2;
+-static unsigned int cbc_fetch_blocks = 1;
+-
++#define MAX_ECB_FETCH_BLOCKS (8)
+ #define ecb_fetch_bytes (ecb_fetch_blocks * AES_BLOCK_SIZE)
++
++static unsigned int cbc_fetch_blocks = 1;
++#define MAX_CBC_FETCH_BLOCKS (4)
+ #define cbc_fetch_bytes (cbc_fetch_blocks * AES_BLOCK_SIZE)
+ 
+ /* Control word. */
+@@ -176,7 +181,7 @@ static inline void padlock_store_cword(s
+  * should be used only inside the irq_ts_save/restore() context
+  */
+ 
+-static inline void padlock_xcrypt(const u8 *input, u8 *output, void *key,
++static inline void rep_xcrypt_ecb(const u8 *input, u8 *output, void *key,
+ 				  struct cword *control_word, int count)
+ {
+ 	asm volatile (".byte 0xf3,0x0f,0xa7,0xc8"	/* rep xcryptecb */
+@@ -184,32 +189,65 @@ static inline void padlock_xcrypt(const 
+ 		      : "d"(control_word), "b"(key), "c"(count));
+ }
+ 
+-static void aes_crypt_copy(const u8 *in, u8 *out, u32 *key,
++static inline u8 *rep_xcrypt_cbc(const u8 *input, u8 *output, void *key,
++				 u8 *iv, struct cword *control_word, int count)
++{
++	asm volatile (".byte 0xf3,0x0f,0xa7,0xd0"	/* rep xcryptcbc */
++		      : "+S" (input), "+D" (output), "+a" (iv)
++		      : "d" (control_word), "b" (key), "c" (count));
++	return iv;
++}
++
++static void ecb_crypt_copy(const u8 *in, u8 *out, u32 *key,
+ 			   struct cword *cword, int count)
+ {
+ 	/*
+ 	 * Padlock prefetches extra data so we must provide mapped input buffers.
+ 	 * Assume there are at least 16 bytes of stack already in use.
+ 	 */
+-	u8 buf[AES_BLOCK_SIZE * 7 + PADLOCK_ALIGNMENT - 1];
++	u8 buf[AES_BLOCK_SIZE * (MAX_ECB_FETCH_BLOCKS - 1) + PADLOCK_ALIGNMENT - 1];
+ 	u8 *tmp = PTR_ALIGN(&buf[0], PADLOCK_ALIGNMENT);
+ 
+ 	memcpy(tmp, in, count * AES_BLOCK_SIZE);
+-	padlock_xcrypt(tmp, out, key, cword, count);
++	rep_xcrypt_ecb(tmp, out, key, cword, count);
+ }
+ 
+-static inline void aes_crypt(const u8 *in, u8 *out, u32 *key,
++static u8 *cbc_crypt_copy(const u8 *in, u8 *out, u32 *key,
++			   u8 *iv, struct cword *cword, int count)
++{
++	/*
++	 * Padlock prefetches extra data so we must provide mapped input buffers.
++	 * Assume there are at least 16 bytes of stack already in use.
++	 */
++	u8 buf[AES_BLOCK_SIZE * (MAX_CBC_FETCH_BLOCKS - 1) + PADLOCK_ALIGNMENT - 1];
++	u8 *tmp = PTR_ALIGN(&buf[0], PADLOCK_ALIGNMENT);
++
++	memcpy(tmp, in, count * AES_BLOCK_SIZE);
++	return rep_xcrypt_cbc(tmp, out, key, iv, cword, count);
++}
++
++static inline void ecb_crypt(const u8 *in, u8 *out, u32 *key,
+ 			     struct cword *cword, int count)
+ {
+ 	/* Padlock in ECB mode fetches at least ecb_fetch_bytes of data.
+ 	 * We could avoid some copying here but it's probably not worth it.
+ 	 */
+ 	if (unlikely(((unsigned long)in & PAGE_SIZE) + ecb_fetch_bytes > PAGE_SIZE)) {
+-		aes_crypt_copy(in, out, key, cword, count);
++		ecb_crypt_copy(in, out, key, cword, count);
+ 		return;
+ 	}
+ 
+-	padlock_xcrypt(in, out, key, cword, count);
++	rep_xcrypt_ecb(in, out, key, cword, count);
++}
++
++static inline u8 *cbc_crypt(const u8 *in, u8 *out, u32 *key,
++			    u8 *iv, struct cword *cword, int count)
++{
++	/* Padlock in CBC mode fetches at least cbc_fetch_bytes of data. */
++	if (unlikely(((unsigned long)in & PAGE_SIZE) + cbc_fetch_bytes > PAGE_SIZE))
++		return cbc_crypt_copy(in, out, key, iv, cword, count);
++
++	return rep_xcrypt_cbc(in, out, key, iv, cword, count);
+ }
+ 
+ static inline void padlock_xcrypt_ecb(const u8 *input, u8 *output, void *key,
+@@ -218,7 +256,7 @@ static inline void padlock_xcrypt_ecb(co
+ 	u32 initial = count & (ecb_fetch_blocks - 1);
+ 
+ 	if (count < ecb_fetch_blocks) {
+-		aes_crypt(input, output, key, control_word, count);
++		ecb_crypt(input, output, key, control_word, count);
+ 		return;
+ 	}
+ 
+@@ -235,10 +273,19 @@ static inline void padlock_xcrypt_ecb(co
+ static inline u8 *padlock_xcrypt_cbc(const u8 *input, u8 *output, void *key,
+ 				     u8 *iv, void *control_word, u32 count)
+ {
+-	/* rep xcryptcbc */
+-	asm volatile (".byte 0xf3,0x0f,0xa7,0xd0"
++	u32 initial = count & (cbc_fetch_blocks - 1);
++
++	if (count < cbc_fetch_blocks)
++		return cbc_crypt(input, output, key, iv, control_word, count);
++
++	if (initial)
++		asm volatile (".byte 0xf3,0x0f,0xa7,0xd0"	/* rep xcryptcbc */
++			      : "+S" (input), "+D" (output), "+a" (iv)
++			      : "d" (control_word), "b" (key), "c" (count));
++
++	asm volatile (".byte 0xf3,0x0f,0xa7,0xd0"	/* rep xcryptcbc */
+ 		      : "+S" (input), "+D" (output), "+a" (iv)
+-		      : "d" (control_word), "b" (key), "c" (count));
++		      : "d" (control_word), "b" (key), "c" (count-initial));
+ 	return iv;
+ }
+ 
+@@ -249,7 +296,7 @@ static void aes_encrypt(struct crypto_tf
+ 
+ 	padlock_reset_key(&ctx->cword.encrypt);
+ 	ts_state = irq_ts_save();
+-	aes_crypt(in, out, ctx->E, &ctx->cword.encrypt, 1);
++	ecb_crypt(in, out, ctx->E, &ctx->cword.encrypt, 1);
+ 	irq_ts_restore(ts_state);
+ 	padlock_store_cword(&ctx->cword.encrypt);
+ }
+@@ -261,7 +308,7 @@ static void aes_decrypt(struct crypto_tf
+ 
+ 	padlock_reset_key(&ctx->cword.encrypt);
+ 	ts_state = irq_ts_save();
+-	aes_crypt(in, out, ctx->D, &ctx->cword.decrypt, 1);
++	ecb_crypt(in, out, ctx->D, &ctx->cword.decrypt, 1);
+ 	irq_ts_restore(ts_state);
+ 	padlock_store_cword(&ctx->cword.encrypt);
+ }
+@@ -478,8 +525,8 @@ static int __init padlock_init(void)
+ 	printk(KERN_NOTICE PFX "Using VIA PadLock ACE for AES algorithm.\n");
+ 
+ 	if (c->x86 == 6 && c->x86_model == 15 && c->x86_mask == 2) {
+-		ecb_fetch_blocks = 8;
+-		cbc_fetch_blocks = 4; /* NOTE: notused */
++		ecb_fetch_blocks = MAX_ECB_FETCH_BLOCKS;
++		cbc_fetch_blocks = MAX_CBC_FETCH_BLOCKS;
+ 		printk(KERN_NOTICE PFX "VIA Nano stepping 2 detected: enabling workaround.\n");
+ 	}
+ 
