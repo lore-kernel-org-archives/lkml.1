@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759640AbZFITgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759819AbZFIThI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759640AbZFITgT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 15:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbZFITgG
+	id S1759819AbZFIThI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 15:37:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbZFITg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 15:36:06 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:53536 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756003AbZFITgF (ORCPT
+	Tue, 9 Jun 2009 15:36:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54190 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751749AbZFITg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 15:36:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=H0BI/NJf7e7j6CGRa2Z7jquQEGrqNXfpenWyYVjmH3GxVNd1ghcswR1OmCyjGDQeDX
-         F2X9Xrtx56ML4y5xDTCxvipTjEvuczTVW0rz/bXJ68RRRfvUVRs6CIjVIFOOHRonuosJ
-         QHBFoTwKlxcIUHZe5eg1L3s6xUOBk58Ct9TCk=
-Message-ID: <4A2EB9A4.4040403@gmail.com>
-Date: Tue, 09 Jun 2009 21:36:04 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.1 Thunderbird/3.0b3pre
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org, eibach@gdsys.de
-Subject: Re: [PATCH 1/1] Char: moxa, prevent opening unavailable ports
-References: <1244557981-9443-1-git-send-email-jirislaby@gmail.com> <20090609122735.9a915cbf.akpm@linux-foundation.org>
-In-Reply-To: <20090609122735.9a915cbf.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 9 Jun 2009 15:36:58 -0400
+Date: Tue, 9 Jun 2009 12:36:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch] proc.txt: Update kernel filesystem/proc.txt
+ documentation
+Message-Id: <20090609123641.f4733d8b.akpm@linux-foundation.org>
+In-Reply-To: <1244543758.13948.5.camel@wall-e>
+References: <1238511505.364.61.camel@matrix>
+	<20090401193135.GA12316@elte.hu>
+	<1244543758.13948.5.camel@wall-e>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/09/2009 09:27 PM, Andrew Morton wrote:
-> btw, what's this code in moxa_open() doing?
+On Tue, 09 Jun 2009 12:35:58 +0200
+Stefani Seibold <stefani@seibold.net> wrote:
+
+> This is a patch against the file Documentation/filesystem/proc.txt.
 > 
-> 	if (port == MAX_PORTS) {
-> 		return capable(CAP_SYS_ADMIN) ? 0 : -EPERM;
-> 	}
-> 
-> why does it return 0 if CAP_SYS_ADMIN?				
+> It is an update for the "Process-Specific Subdirectories" to reflect 
+> the changes till kernel 2.6.30. It also introduce the my 
+> "provide stack information for threads".
 
-There is some global stats ioctl crap on that port number available only
-to users with permissions. Look at moxa_ioctl, there is:
+Sorry, but it would be much preferable to do this as two patches.  The
+first fixes up proc.txt and the second adds the
+stack-information-for-threads material.
 
-        if (tty->index == MAX_PORTS) {
-                if (cmd != MOXA_GETDATACOUNT && cmd != MOXA_GET_IOQUEUE &&
-                                cmd != MOXA_GETMSTATUS)
-                        return -EINVAL;
+This is because the two changes are quite conceptually distinct, and we
+might end up wanting to merge one chage and not the other.
 
-Of course, there is also alloc_tty_driver(MAX_PORTS + 1).
