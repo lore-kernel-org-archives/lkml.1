@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZFIRaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbZFIRdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755666AbZFIRaP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 13:30:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbZFIRaD
+	id S1758185AbZFIRdx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 13:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZFIRdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 13:30:03 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:54235 "EHLO
+	Tue, 9 Jun 2009 13:33:43 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:61842 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751752AbZFIRaC (ORCPT
+	with ESMTP id S1752396AbZFIRdn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 13:30:02 -0400
+	Tue, 9 Jun 2009 13:33:43 -0400
 From: Arnd Bergmann <arnd@arndb.de>
 To: liqin.chen@sunplusct.com
-Subject: Re: [PATCH 08/27] score: create head files fb.h fcntl.h fixmap.h ftrace.h futex.h
-Date: Tue, 9 Jun 2009 19:30:02 +0200
+Subject: Re: [PATCH 09/27] score: create head files hardirq.h hw_irq.h
+Date: Tue, 9 Jun 2009 19:33:08 +0200
 User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
 Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org
-References: <OF7A6C7D8F.B4BC990D-ON482575D0.00236CE1-482575D0.0023DDA8@sunplusct.com>
-In-Reply-To: <OF7A6C7D8F.B4BC990D-ON482575D0.00236CE1-482575D0.0023DDA8@sunplusct.com>
+References: <OFE06CA763.2ED1275C-ON482575D0.00237A09-482575D0.0023EB63@sunplusct.com>
+In-Reply-To: <OFE06CA763.2ED1275C-ON482575D0.00237A09-482575D0.0023EB63@sunplusct.com>
 X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
  =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
  =?utf-8?q?3zb?=)
@@ -29,52 +29,39 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906091930.02985.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19kpH3MgUq7bLzWHDt+zs/2kAqSlHybw5tYO8V
- oNIU5MfOOtSZQoUznUiPS9t3fsKfu5bZAhVxzbpe7A2YSQWits
- DiZDF4FYYxzE7X2uhMDZOTNNFuu0clg
+Message-Id: <200906091933.08483.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18WliR3CVEZtNtLUxzBYegkbASBvmS+4h5rcFp
+ y3+FS3akHeFNCdB7hNDRKUX1YKGO1+m4YV5Me610qK6tuGiJ5n
+ p2HzeBnyPc0xHGO+0l6sQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Tuesday 09 June 2009, liqin.chen@sunplusct.com wrote:
-
-> diff --git a/arch/score/include/asm/fb.h b/arch/score/include/asm/fb.h
-> new file mode 100644
-> index 0000000..6bb525e
 > --- /dev/null
-> +++ b/arch/score/include/asm/fb.h
-> @@ -0,0 +1,15 @@
-> +#ifndef _ASM_SCORE_FB_H
-> +#define _ASM_SCORE_FB_H
+> +++ b/arch/score/include/asm/hardirq.h
+> @@ -0,0 +1,16 @@
+> +#ifndef _ASM_SCORE_HARDIRQ_H
+> +#define _ASM_SCORE_HARDIRQ_H
 > +
-> +#include <linux/device.h>
+> +#include <linux/threads.h>
+> +#include <linux/irq.h>
 > +
-> +static inline void fb_pgprotect(struct file *file, struct vm_area_struct 
-> *vma,
-> +                               unsigned long off)
-> +{}
+> +typedef struct {
+> +       unsigned int __softirq_pending;
+> +} ____cacheline_aligned irq_cpustat_t;
 > +
-> +static inline int fb_is_primary_device(struct fb_info *info)
-> +{
-> +       return 0;
-> +}
+> +/* Standard mappings for irq_cpustat_t above */
+> +#include <linux/irq_cpustat.h>
 > +
-> +#endif /* _ASM_SCORE_FB_H */
+> +extern void ack_bad_irq(unsigned int irq);
 
-This is the same as the asm-generic version (better actually, because it
-doesn't use macros). Just use the existing code here, and maybe add
-a patch to fix that one to use an inline function as well ;-)
+In this case (ack_bad_irq is extern), you can still use
+the generic file by adding
 
-> index 0000000..ee16766
-> --- /dev/null
-> +++ b/arch/score/include/asm/fixmap.h
-> @@ -0,0 +1,82 @@
-> +#ifndef _ASM_SCORE_FIXMAP_H
-> +#define _ASM_SCORE_FIXMAP_H
+#define ack_bad_irq ack_bad_irq
 
-Hmm, I missed that file in my asm-generic series. Your code is 90% shared
-with mips, parisc, sh, sparc and um, so it seems like I should put it
-on my TODO list for generalization.
+in front of the #include, in order to override the default
+implementation.
 
 	Arnd <><
