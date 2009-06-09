@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932074AbZFINIO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbZFINIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932074AbZFINIO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:08:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757487AbZFINID
+	id S1760930AbZFINIa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759786AbZFINIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:08:03 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:16168 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752806AbZFINIC convert rfc822-to-8bit (ORCPT
+	Tue, 9 Jun 2009 09:08:06 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:59541 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757455AbZFINID (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:08:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=I2Fi7JdKMdY/FHjTptNKlfbFFFznqANP4WelWj0ZNvlvsa6joEvivfC1/AzjuyxhvU
-         3oep+j8ib+t5RIIdJpB02GSYimx5reDLWY+yVU0w9lix8i8ZGY2sDmW/Ian7x+lpIUA/
-         wh5iYeQL/gdRsxUSBeRcVwLQGOvwgbHRKwbR4=
+	Tue, 9 Jun 2009 09:08:03 -0400
+Date: Tue, 9 Jun 2009 09:08:05 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
+Subject: Re: [RFC PATCH 5/5] tracing/events: modify kmem print to new
+ format
+In-Reply-To: <20090609080656.GB18380@csn.ul.ie>
+Message-ID: <alpine.DEB.2.00.0906090907110.17452@gandalf.stny.rr.com>
+References: <20090609014534.790466803@goodmis.org> <20090609014747.188279837@goodmis.org> <1244531562.13761.9955.camel@twins> <20090609080656.GB18380@csn.ul.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <4A2E4A32.1060705@trash.net>
-References: <91ac27070906081105x30171bedra10d244d382a6934@mail.gmail.com>
-	 <20090608.143454.161329513.davem@davemloft.net>
-	 <4A2E4077.8080407@trash.net>
-	 <91ac27070906090427k6f57745xc72f9fcb6801957a@mail.gmail.com>
-	 <4A2E4A32.1060705@trash.net>
-Date: Tue, 9 Jun 2009 16:08:01 +0300
-Message-ID: <91ac27070906090608me50af3bv23b150d8d0cd0080@mail.gmail.com>
-Subject: Re: SOCK_RAW does not receive broadcast (with VLAN unless PROMISC)
-From: Gil Beniamini <gil.beniamini@gmail.com>
-To: Patrick McHardy <kaber@trash.net>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick,
-On the specific NIC (eth1) no vlan is defined, and in the new Linux
-the application receive NOTHING at all. In order to debug, I start
-"wireshark as root" and "wireshark" set PROMISC on, and the
-application start receive the raw packets as expected. Later I started
-setting PROMISC by my application, and it can receive the packets even
-when "wireshark" is not running.
-The problem that I have with PROMISC mode, is that I need to do the
-irelevant  unicast filtering in software rather than get it from the
-hardware (as it works in old kernel 2.6.20).
-Thanks a lot, Gil
 
-On Tue, Jun 9, 2009 at 2:40 PM, Patrick McHardy<kaber@trash.net> wrote:
-> Gil Beniamini wrote:
->>
->> 9Jun09, The problem was seen with eth1 using driver e1000e, but also
->> was reproduced on 3c59x, to me it seems that the problem is not
->> related to a specific nic driver.
->> VLAN is running for other NICs, but on the application specific nic
->> (eth1) I use PF_PACKET (SOCK_RAW) , in order to get  the raw-packet
->> from the underlying device, and this start working again (like in
->> older kernel) as soon as the application set the socket to PROMISC
->> mode.
->
-> OK, that might explain it. e1000e performs VLAN filtering in hardware
-> and unless there are VLANs configured locally, all VLANs are filtered
-> out. Are you seeing seeing only unicast VLAN traffic or no VLAN traffic
-> at all? Please post a dump of the packets with and without promiscous
-> mode.
->
->
+On Tue, 9 Jun 2009, Mel Gorman wrote:
+
+> On Tue, Jun 09, 2009 at 09:12:42AM +0200, Peter Zijlstra wrote:
+> > On Mon, 2009-06-08 at 21:45 -0400, Steven Rostedt wrote:
+> > 
+> > > +#define show_gfp_flags(end...)						\
+> > > +	"0=GFP_NOWAIT,"							\
+> > > +	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
+> > > +	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
+> > > +	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
+> > > +	"0x%lx=%s,0x%lx=%s>" end ,					\
+> > > +	(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE", \
+> > > +	(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER",		\
+> > > +	(unsigned long)GFP_USER,		"GFP_USER",		\
+> > > +	(unsigned long)GFP_TEMPORARY,		"GFP_TEMPORARY",	\
+> > > +	(unsigned long)GFP_KERNEL,		"GFP_KERNEL",		\
+> > > +	(unsigned long)GFP_NOFS,		"GFP_NOFS",		\
+> > > +	(unsigned long)GFP_ATOMIC,		"GFP_ATOMIC",		\
+> > > +	(unsigned long)GFP_NOIO,		"GFP_NOIO",		\
+> > > +	(unsigned long)__GFP_HIGH,		"GFP_HIGH",		\
+> > > +	(unsigned long)__GFP_WAIT,		"GFP_WAIT",		\
+> > > +	(unsigned long)__GFP_IO,		"GFP_IO",		\
+> > > +	(unsigned long)__GFP_COLD,		"GFP_COLD",		\
+> > > +	(unsigned long)__GFP_NOWARN,		"GFP_NOWARN",		\
+> > > +	(unsigned long)__GFP_REPEAT,		"GFP_REPEAT",		\
+> > > +	(unsigned long)__GFP_NOFAIL,		"GFP_NOFAIL",		\
+> > > +	(unsigned long)__GFP_NORETRY,		"GFP_NORETRY",		\
+> > > +	(unsigned long)__GFP_COMP,		"GFP_COMP",		\
+> > > +	(unsigned long)__GFP_ZERO,		"GFP_ZERO",		\
+> > > +	(unsigned long)__GFP_NOMEMALLOC,	"GFP_NOMEMALLOC",	\
+> > > +	(unsigned long)__GFP_HARDWALL,		"GFP_HARDWALL",		\
+> > > +	(unsigned long)__GFP_THISNODE,		"GFP_THISNODE",		\
+> > > +	(unsigned long)__GFP_RECLAIMABLE,	"GFP_RECLAIMABLE",	\
+> > > +	(unsigned long)__GFP_MOVABLE,		"GFP_MOVABLE"
+> > 
+> > Just curious, how unhappy does stuff become when we add a __GFP_ flag
+> > and forget to extend this table?
+> > 
+> 
+> If it's the same behaviour as what I was looking at yesterday, it prints
+> the remaining flags it doesn't recognise as the number.
+> 
+> GFP_KERNEL|__GFP_DMA got outputted as |GFP_KERNEL|0x1|
+
+Yep, that is what would happen here too.
+
+Any comments on this approach? I'll go ahead and start fixing it up more 
+(handling all the memory freeing on errors) and get it ready to push out.
+
+-- Steve
+
