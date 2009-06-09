@@ -1,70 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757837AbZFICU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbZFIC0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757837AbZFICU0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 22:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbZFICUP
+	id S1756213AbZFIC0K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 22:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbZFICZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 22:20:15 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:46496 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751749AbZFICUO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 22:20:14 -0400
-Date: Tue, 9 Jun 2009 10:15:51 +0800
-From: Harald Welte <HaraldWelte@viatech.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Michael S. Zick" <lkml@morethan.org>, Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH 1/2] CPUFREQ: Enable acpi-cpufreq driver for
-	VIA/Centaur CPUs
-Message-ID: <20090609021551.GG4455@prithivi.gnumonks.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <20090606132847.GB14088@prithivi.gnumonks.org> <200906060846.36303.lkml@morethan.org> <200906060856.15016.lkml@morethan.org> <20090608102754.GP4106@prithivi.gnumonks.org> <alpine.LFD.2.01.0906081128410.6847@localhost.localdomain>
+	Mon, 8 Jun 2009 22:25:57 -0400
+Received: from mga14.intel.com ([143.182.124.37]:11660 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753171AbZFICZ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 22:25:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,328,1241420400"; 
+   d="scan'208";a="152075691"
+Date: Tue, 9 Jun 2009 10:25:49 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] Properly account for the number of page cache
+	pages zone_reclaim() can reclaim
+Message-ID: <20090609022549.GB6740@localhost>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-3-git-send-email-mel@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906081128410.6847@localhost.localdomain>
+In-Reply-To: <1244466090-10711-3-git-send-email-mel@csn.ul.ie>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 11:35:12AM -0700, Linus Torvalds wrote:
-> Hmm. This all really should be just
+On Mon, Jun 08, 2009 at 09:01:29PM +0800, Mel Gorman wrote:
+> On NUMA machines, the administrator can configure zone_relcaim_mode that
+> is a more targetted form of direct reclaim. On machines with large NUMA
+> distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
+> unmapped pages will be reclaimed if the zone watermarks are not being met.
 > 
-> 	static int check_est_cpu(unsigned int cpuid)
-> 	{
-> 		struct cpuinfo_x86 *cpu = &cpu_data(cpuid);
-> 		return cpu_has(cpu, X86_FEATURE_EST);
-> 	}
+> There is a heuristic that determines if the scan is worthwhile but the
+> problem is that the heuristic is not being properly applied and is basically
+> assuming zone_reclaim_mode is 1 if it is enabled.
 > 
-> I suspect, with no vendor tests. That's the whole _point_ of CPU features, 
-> after all.
+> This patch makes zone_reclaim() makes a better attempt at working out how
+> many pages it might be able to reclaim given the current reclaim_mode. If it
+> cannot clean pages, then NR_FILE_DIRTY number of pages are not candidates. If
+> it cannot swap, then NR_FILE_MAPPED are not. This indirectly addresses tmpfs
+> as those pages tend to be dirty as they are not cleaned by pdflush or sync.
 
-That's what I was thinking, too.  If there was no such vendor test, it would
-have worked ever since the code was written (the C7 is by far not a new
-component, it's around for years).
+No, tmpfs pages are not accounted in NR_FILE_DIRTY because of the
+BDI_CAP_NO_ACCT_AND_WRITEBACK bits.
 
-> If some vendor claims EST but doesn't actually support the EST interfaces, 
-> we should just have fixups to clear the bit in the per-vendor cpuinfo 
-> code, not in some random driver.
+> The ideal would be that the number of tmpfs pages would also be known
+> and account for like NR_FILE_MAPPED as swap is required to discard them.
+> A means of working this out quickly was not obvious but a comment is added
+> noting the problem.
 
-agreed.
+I'd rather prefer it be accounted separately than to muck up NR_FILE_MAPPED :)
 
-> The only thing that makes me nervous about this is how close to 2.6.30 we 
-> are. I'd be happier if this was resolved by doing this as a patch 
-> post-2.6.30, and then adding 'stable@kernel.org' as a Cc: tag, and 
-> backporting it to 2.6.30.1 if no problems appear. 
-> 
-> It's not like this is a regression, I think.
-> 
-> Does that sound like a reasonable plan?
+> +	int pagecache_reclaimable;
+> +
+> +	/*
+> +	 * Work out how many page cache pages we can reclaim in this mode.
+> +	 *
+> +	 * NOTE: Ideally, tmpfs pages would be accounted as if they were
+> +	 *       NR_FILE_MAPPED as swap is required to discard those
+> +	 *       pages even when they are clean. However, there is no
+> +	 *       way of quickly identifying the number of tmpfs pages
+> +	 */
 
-Sounds fine with me. But what I would definitely suggest merging before 2.6.30
-is the marking e_powersaver EXPERIMENTAL + DANGEROUS patch.
+So can you remove the note on NR_FILE_MAPPED?
 
-Regards,
--- 
-- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
-============================================================================
-VIA Free and Open Source Software Liaison
+> +	pagecache_reclaimable = zone_page_state(zone, NR_FILE_PAGES);
+> +	if (!(zone_reclaim_mode & RECLAIM_WRITE))
+> +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_DIRTY);
+
+> +	if (!(zone_reclaim_mode & RECLAIM_SWAP))
+> +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
+
+So the "if" can be removed because NR_FILE_MAPPED is not related to swapping?
+
+Thanks,
+Fengguang
+
+>  	/*
+>  	 * Zone reclaim reclaims unmapped file backed pages and
+> @@ -2391,8 +2406,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  	 * if less than a specified percentage of the zone is used by
+>  	 * unmapped file backed pages.
+>  	 */
+> -	if (zone_page_state(zone, NR_FILE_PAGES) -
+> -	    zone_page_state(zone, NR_FILE_MAPPED) <= zone->min_unmapped_pages
+> +	if (pagecache_reclaimable <= zone->min_unmapped_pages
+>  	    && zone_page_state(zone, NR_SLAB_RECLAIMABLE)
+>  			<= zone->min_slab_pages)
+>  		return 0;
+> -- 
+> 1.5.6.5
