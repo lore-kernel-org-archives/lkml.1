@@ -1,183 +1,301 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758651AbZFIGyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbZFIG55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758651AbZFIGyy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 02:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbZFIGyp
+	id S1756880AbZFIG55 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 02:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbZFIG5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 02:54:45 -0400
-Received: from 219-87-157-179.static.tfn.net.tw ([219.87.157.179]:53666 "EHLO
-	mswedge1.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755245AbZFIGyo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 02:54:44 -0400
-To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
+	Tue, 9 Jun 2009 02:57:49 -0400
+Received: from ozlabs.org ([203.10.76.45]:49599 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753146AbZFIG5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 02:57:48 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH 4/6] x86/cpufreq: use cpumask_copy instead of =
+Date: Tue, 9 Jun 2009 16:27:42 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
+References: <4A2835D8.6040903@kernel.org> <4A2AE4AC.60805@kernel.org> <4A2AE570.2010307@kernel.org>
+In-Reply-To: <4A2AE570.2010307@kernel.org>
 MIME-Version: 1.0
-Subject: [PATCH 07/27] score: create head files elf.h emergency-restart.h errno.h
-X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OF1B185198.8D225D85-ON482575D0.00235FF4-482575D0.0023D06F@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Tue, 9 Jun 2009 14:26:53 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/09 ?? 02:26:54,
-	Serialize complete at 2009/06/09 ?? 02:26:54
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906091627.45411.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 92de1d59c5c52dc1d64a9f6918b46afa4135afa3 Mon Sep 17 00:00:00 2001
-From: Chen Liqin <liqin.chen@sunplusct.com>
-Date: Tue, 9 Jun 2009 13:43:08 +0800
+On Sun, 7 Jun 2009 07:23:52 am Yinghai Lu wrote:
+> so later could use nr_cpumask_bits in cpumask_size when MAXSMP is used
 
+I have a (more ambitious) patch for this in my queue, which weans it off this
+entirely:
 
+Subject: cpumask: avoid playing with cpus_allowed in powernow-k8.c
+From: Rusty Russell <rusty@rustcorp.com.au>
 
-Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
+It's generally a very bad idea to mug some process's cpumask: it could
+legitimately and reasonably be changed by root, which could break us
+(if done before our code) or them (if we restore the wrong value).
+
+I use work_on_cpu, which is slightly less efficient than the old code,
+but the code is complex enough that using smp_call_function_single()
+is not trivial.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+To: davej@redhat.com
+To: cpufreq@vger.kernel.org
+Cc: mark.langsdorf@amd.com
 ---
- arch/score/include/asm/elf.h               |   99 
-++++++++++++++++++++++++++++
- arch/score/include/asm/emergency-restart.h |    6 ++
- arch/score/include/asm/errno.h             |    7 ++
- 3 files changed, 112 insertions(+), 0 deletions(-)
- create mode 100644 arch/score/include/asm/elf.h
- create mode 100644 arch/score/include/asm/emergency-restart.h
- create mode 100644 arch/score/include/asm/errno.h
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |  128 +++++++++++++++---------------
+ 1 file changed, 64 insertions(+), 64 deletions(-)
 
-diff --git a/arch/score/include/asm/elf.h b/arch/score/include/asm/elf.h
-new file mode 100644
-index 0000000..8324363
---- /dev/null
-+++ b/arch/score/include/asm/elf.h
-@@ -0,0 +1,99 @@
-+#ifndef _ASM_SCORE_ELF_H
-+#define _ASM_SCORE_ELF_H
+diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+--- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -510,19 +510,10 @@ static int core_voltage_post_transition(
+ 	return 0;
+ }
+ 
+-static int check_supported_cpu(unsigned int cpu)
++static long check_supported_cpu(void *unused)
+ {
+-	cpumask_t oldmask;
+ 	u32 eax, ebx, ecx, edx;
+-	unsigned int rc = 0;
+-
+-	oldmask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-
+-	if (smp_processor_id() != cpu) {
+-		printk(KERN_ERR PFX "limiting to cpu %u failed\n", cpu);
+-		goto out;
+-	}
++	unsigned int rc = -ENODEV;
+ 
+ 	if (current_cpu_data.x86_vendor != X86_VENDOR_AMD)
+ 		goto out;
+@@ -562,10 +553,9 @@ static int check_supported_cpu(unsigned 
+ 			goto out;
+ 	}
+ 
+-	rc = 1;
++	rc = 0;
+ 
+ out:
+-	set_cpus_allowed_ptr(current, &oldmask);
+ 	return rc;
+ }
+ 
+@@ -1140,11 +1130,16 @@ static int transition_frequency_pstate(s
+ 	return res;
+ }
+ 
+-/* Driver entry point to switch to the target frequency */
+-static int powernowk8_target(struct cpufreq_policy *pol,
+-		unsigned targfreq, unsigned relation)
++struct target_data {
++	struct cpufreq_policy *pol;
++	unsigned targfreq;
++	unsigned relation;
++};
 +
-+/* ELF register definitions */
-+#define ELF_NGREG      45
-+#define ELF_NFPREG     33
-+#define EM_SCORE7      135
++static long powernowk8_target_on_cpu(void *_tdata)
+ {
+-	cpumask_t oldmask;
++	struct target_data *tdata = _tdata;
++	struct cpufreq_policy *pol = tdata->pol;
+ 	struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
+ 	u32 checkfid;
+ 	u32 checkvid;
+@@ -1157,22 +1152,13 @@ static int powernowk8_target(struct cpuf
+ 	checkfid = data->currfid;
+ 	checkvid = data->currvid;
+ 
+-	/* only run on specific CPU from here on */
+-	oldmask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pol->cpu));
+-
+-	if (smp_processor_id() != pol->cpu) {
+-		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
+-		goto err_out;
+-	}
+-
+ 	if (pending_bit_stuck()) {
+ 		printk(KERN_ERR PFX "failing targ, change pending bit set\n");
+ 		goto err_out;
+ 	}
+ 
+ 	dprintk("targ: cpu %d, %d kHz, min %d, max %d, relation %d\n",
+-		pol->cpu, targfreq, pol->min, pol->max, relation);
++		pol->cpu, tdata->targfreq, pol->min, pol->max, tdata->relation);
+ 
+ 	if (query_current_values_with_pending_wait(data))
+ 		goto err_out;
+@@ -1192,7 +1178,8 @@ static int powernowk8_target(struct cpuf
+ 	}
+ 
+ 	if (cpufreq_frequency_table_target(pol, data->powernow_table,
+-				targfreq, relation, &newstate))
++					   tdata->targfreq, tdata->relation,
++					   &newstate))
+ 		goto err_out;
+ 
+ 	mutex_lock(&fidvid_mutex);
+@@ -1219,10 +1206,19 @@ static int powernowk8_target(struct cpuf
+ 	ret = 0;
+ 
+ err_out:
+-	set_cpus_allowed_ptr(current, &oldmask);
+ 	return ret;
+ }
+ 
++/* Driver entry point to switch to the target frequency */
++static int powernowk8_target(struct cpufreq_policy *pol,
++			     unsigned targfreq, unsigned relation)
++{
++	struct target_data tdata = { .pol = pol,
++				     .targfreq = targfreq,
++				     .relation = relation };
++	return work_on_cpu(pol->cpu, powernowk8_target_on_cpu, &tdata);
++}
 +
-+/* Relocation types. */
-+#define R_SCORE_NONE           0
-+#define R_SCORE_HI16           1
-+#define R_SCORE_LO16           2
-+#define R_SCORE_BCMP           3
-+#define R_SCORE_24             4
-+#define R_SCORE_PC19           5
-+#define R_SCORE16_11           6
-+#define R_SCORE16_PC8          7
-+#define R_SCORE_ABS32          8
-+#define R_SCORE_ABS16          9
-+#define R_SCORE_DUMMY2         10
-+#define R_SCORE_GP15           11
-+#define R_SCORE_GNU_VTINHERIT  12
-+#define R_SCORE_GNU_VTENTRY    13
-+#define R_SCORE_GOT15          14
-+#define R_SCORE_GOT_LO16       15
-+#define R_SCORE_CALL15         16
-+#define R_SCORE_GPREL32                17
-+#define R_SCORE_REL32          18
-+#define R_SCORE_DUMMY_HI16     19
-+#define R_SCORE_IMM30          20
-+#define R_SCORE_IMM32          21
+ /* Driver entry point to verify the policy and range of frequencies */
+ static int powernowk8_verify(struct cpufreq_policy *pol)
+ {
+@@ -1234,6 +1230,29 @@ static int powernowk8_verify(struct cpuf
+ 	return cpufreq_frequency_table_verify(pol, data->powernow_table);
+ }
+ 
++static long __cpuinit powernowk8_cpu_init_on_cpu(void *_data)
++{
++	struct powernow_k8_data *data = _data;
 +
-+typedef unsigned long elf_greg_t;
-+typedef elf_greg_t elf_gregset_t[ELF_NGREG];
++	if (smp_processor_id() != data->cpu) {
++		printk(KERN_ERR PFX "limiting to cpu %u failed\n", data->cpu);
++		return -EIO;
++	}
 +
-+typedef double elf_fpreg_t;
-+typedef elf_fpreg_t elf_fpregset_t[ELF_NFPREG];
++	if (pending_bit_stuck()) {
++		printk(KERN_ERR PFX "failing init, change pending bit set\n");
++		return -ENODEV;
++	}
 +
-+#define elf_check_arch(x)      ((x)->e_machine == EM_SCORE7)
++	if (query_current_values_with_pending_wait(data))
++		return -ENODEV;
 +
-+/*
-+ * These are used to set parameters in the core dumps.
-+ */
-+#define ELF_CLASS      ELFCLASS32
++	if (cpu_family == CPU_OPTERON)
++		fidvid_msr_init();
 +
-+/*
-+ * These are used to set parameters in the core dumps.
-+ */
-+#define ELF_DATA       ELFDATA2LSB
-+#define ELF_ARCH       EM_SCORE7
++	return 0;
++}
 +
-+#define SET_PERSONALITY(ex)                                    \
-+do {                                                           \
-+       set_personality(PER_LINUX);                             \
-+} while (0)
+ static const char ACPI_PSS_BIOS_BUG_MSG[] =
+ 	KERN_ERR FW_BUG PFX "No compatible ACPI _PSS objects found.\n"
+ 	KERN_ERR FW_BUG PFX "Try again with latest BIOS.\n";
+@@ -1288,27 +1307,9 @@ static int __cpuinit powernowk8_cpu_init
+ 		pol->cpuinfo.transition_latency = get_transition_latency(data);
+ 
+ 	/* only run on specific CPU from here on */
+-	oldmask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pol->cpu));
+-
+-	if (smp_processor_id() != pol->cpu) {
+-		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
+-		goto err_out_unmask;
+-	}
+-
+-	if (pending_bit_stuck()) {
+-		printk(KERN_ERR PFX "failing init, change pending bit set\n");
+-		goto err_out_unmask;
+-	}
+-
+-	if (query_current_values_with_pending_wait(data))
+-		goto err_out_unmask;
+-
+-	if (cpu_family == CPU_OPTERON)
+-		fidvid_msr_init();
+-
+-	/* run on any CPU again */
+-	set_cpus_allowed_ptr(current, &oldmask);
++	rc = work_on_cpu(data->cpu, powernowk8_cpu_init_on_cpu, data);
++	if (rc != 0)
++		goto err_out_exit_acpi;
+ 
+ 	if (cpu_family == CPU_HW_PSTATE)
+ 		cpumask_copy(pol->cpus, cpumask_of(pol->cpu));
+@@ -1345,8 +1346,7 @@ static int __cpuinit powernowk8_cpu_init
+ 
+ 	return 0;
+ 
+-err_out_unmask:
+-	set_cpus_allowed_ptr(current, &oldmask);
++err_out_exit_acpi:
+ 	powernow_k8_cpu_exit_acpi(data);
+ 
+ err_out:
+@@ -1371,12 +1371,20 @@ static int __devexit powernowk8_cpu_exit
+ 	return 0;
+ }
+ 
++static void query_values_on_cpu(void *_err)
++{
++	int *err = _err;
++	struct powernow_k8_data *data = __get_cpu_var(powernow_data);
 +
-+struct task_struct;
-+struct pt_regs;
++	*err = query_current_values_with_pending_wait(data);
++}
 +
-+#define USE_ELF_CORE_DUMP
-+#define ELF_EXEC_PAGESIZE      PAGE_SIZE
-+
-+/* This yields a mask that user programs can use to figure out what
-+   instruction set this cpu supports.  This could be done in userspace,
-+   but it's not easy, and we've already done it here.  */
-+
-+#define ELF_HWCAP      (0)
-+
-+/* This yields a string that ld.so will use to load implementation
-+   specific libraries for optimization.  This is more specific in
-+   intent than poking at uname or /proc/cpuinfo.
-+
-+   For the moment, we have only optimizations for the Intel generations,
-+   but that could change... */
-+
-+#define ELF_PLATFORM   (NULL)
-+
-+#define ELF_PLAT_INIT(_r, load_addr)                                   \
-+do {                                                                   \
-+       _r->regs[1] = _r->regs[2] = _r->regs[3] = _r->regs[4] = 0;      \
-+       _r->regs[5] = _r->regs[6] = _r->regs[7] = _r->regs[8] = 0;      \
-+       _r->regs[9] = _r->regs[10] = _r->regs[11] = _r->regs[12] = 0;   \
-+       _r->regs[13] = _r->regs[14] = _r->regs[15] = _r->regs[16] = 0;  \
-+       _r->regs[17] = _r->regs[18] = _r->regs[19] = _r->regs[20] = 0;  \
-+       _r->regs[21] = _r->regs[22] = _r->regs[23] = _r->regs[24] = 0;  \
-+       _r->regs[25] = _r->regs[26] = _r->regs[27] = _r->regs[28] = 0;  \
-+       _r->regs[30] = _r->regs[31] = 0;                                \
-+} while (0)
-+
-+/* This is the location that an ET_DYN program is loaded if exec'ed. 
-Typical
-+   use of this is to invoke "./ld.so someprog" to test out a new version 
-of
-+   the loader.  We need to make sure that it is out of the way of the 
-program
-+   that it will "exec", and that there is sufficient room for the brk. */
-+
-+#ifndef ELF_ET_DYN_BASE
-+#define ELF_ET_DYN_BASE                (TASK_SIZE / 3 * 2)
-+#endif
-+
-+#endif /* _ASM_SCORE_ELF_H */
-diff --git a/arch/score/include/asm/emergency-restart.h 
-b/arch/score/include/asm/emergency-restart.h
-new file mode 100644
-index 0000000..ca31e98
---- /dev/null
-+++ b/arch/score/include/asm/emergency-restart.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_EMERGENCY_RESTART_H
-+#define _ASM_SCORE_EMERGENCY_RESTART_H
-+
-+#include <asm-generic/emergency-restart.h>
-+
-+#endif /* _ASM_SCORE_EMERGENCY_RESTART_H */
-diff --git a/arch/score/include/asm/errno.h 
-b/arch/score/include/asm/errno.h
-new file mode 100644
-index 0000000..7cd3e1f
---- /dev/null
-+++ b/arch/score/include/asm/errno.h
-@@ -0,0 +1,7 @@
-+#ifndef _ASM_SCORE_ERRNO_H
-+#define _ASM_SCORE_ERRNO_H
-+
-+#include <asm-generic/errno.h>
-+#define EMAXERRNO 1024
-+
-+#endif /* _ASM_SCORE_ERRNO_H */
--- 
-1.6.2
+ static unsigned int powernowk8_get(unsigned int cpu)
+ {
+ 	struct powernow_k8_data *data;
+-	cpumask_t oldmask = current->cpus_allowed;
+ 	unsigned int khz = 0;
+ 	unsigned int first;
++	int err;
+ 
+ 	first = cpumask_first(cpu_core_mask(cpu));
+ 	data = per_cpu(powernow_data, first);
+@@ -1384,15 +1392,8 @@ static unsigned int powernowk8_get(unsig
+ 	if (!data)
+ 		return -EINVAL;
+ 
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-	if (smp_processor_id() != cpu) {
+-		printk(KERN_ERR PFX
+-			"limiting to CPU %d failed in powernowk8_get\n", cpu);
+-		set_cpus_allowed_ptr(current, &oldmask);
+-		return 0;
+-	}
+-
+-	if (query_current_values_with_pending_wait(data))
++	smp_call_function_single(first, query_values_on_cpu, &err, true);
++	if (err)
+ 		goto out;
+ 
+ 	if (cpu_family == CPU_HW_PSTATE)
+@@ -1403,7 +1404,6 @@ static unsigned int powernowk8_get(unsig
+ 
+ 
+ out:
+-	set_cpus_allowed_ptr(current, &oldmask);
+ 	return khz;
+ }
+ 
+@@ -1429,7 +1429,7 @@ static int __cpuinit powernowk8_init(voi
+ 	unsigned int i, supported_cpus = 0;
+ 
+ 	for_each_online_cpu(i) {
+-		if (check_supported_cpu(i))
++		if (work_on_cpu(i, check_supported_cpu, NULL) == 0)
+ 			supported_cpus++;
+ 	}
+ 
 
