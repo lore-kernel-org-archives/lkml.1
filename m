@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbZFIDOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbZFIDOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752904AbZFIDOH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 23:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbZFIDNt
+	id S1755609AbZFIDOY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 23:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbZFIDOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 23:13:49 -0400
-Received: from mga03.intel.com ([143.182.124.21]:53223 "EHLO mga03.intel.com"
+	Mon, 8 Jun 2009 23:14:14 -0400
+Received: from mga03.intel.com ([143.182.124.21]:14162 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751972AbZFIDNn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 23:13:43 -0400
+	id S1753685AbZFIDON (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 23:14:13 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,328,1241420400"; 
-   d="scan'208";a="152085972"
-Date: Tue, 9 Jun 2009 11:11:19 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] Do not unconditionally treat zones that fail
-	zone_reclaim() as full
-Message-ID: <20090609031119.GB7875@localhost>
-References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-4-git-send-email-mel@csn.ul.ie>
+   d="scan'208";a="152086051"
+Date: Tue, 9 Jun 2009 18:48:53 +0800
+From: Yunpeng Gao <yunpeng.gao@intel.com>
+To: Greg KH <gregkh@suse.de>
+Cc: David Woodhouse <dwmw2@infradead.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2]Intel Moorestown NAND driver patch for mainline
+Message-ID: <20090609104853.GA3046@intel.com>
+References: <20090606164455.GB27257@intel.com> <20090606160413.08c254cf@lxorguk.ukuu.org.uk> <38D9F46DFF92C54980D2F2C1E8EE313001A45F4F3C@pdsmsx503.ccr.corp.intel.com> <1244458030.30939.216.camel@macbook.infradead.org> <20090609003839.GB22766@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1244466090-10711-4-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090609003839.GB22766@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 09:01:30PM +0800, Mel Gorman wrote:
-> On NUMA machines, the administrator can configure zone_reclaim_mode that
-> is a more targetted form of direct reclaim. On machines with large NUMA
-> distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
-> unmapped pages will be reclaimed if the zone watermarks are not being
-> met. The problem is that zone_reclaim() failing at all means the zone
-> gets marked full.
+On Tue, Jun 09, 2009 at 08:38:39AM +0800, Greg KH wrote:
+> On Mon, Jun 08, 2009 at 11:47:10AM +0100, David Woodhouse wrote:
+> > On Mon, 2009-06-08 at 12:23 +0800, Gao, Yunpeng wrote:
+> > > The Moorestown NAND flash driver is licensed from the Moorestown NAND
+> > > controller vendor. It's a standalone NAND driver. According to the
+> > > vendor, this driver has some advanced features specific to the
+> > > controller hardware and is difficult to port to MTD subsystem. 
+> > 
+> > I don't believe it. If the MTD subsystem doesn't support certain
+> > features, the MTD subsystem needs to be updated to cope.
 > 
-> This can cause situations where a zone is usable, but is being skipped
-> because it has been considered full. Take a situation where a large tmpfs
-> mount is occuping a large percentage of memory overall. The pages do not
-> get cleaned or reclaimed by zone_reclaim(), but the zone gets marked full
-> and the zonelist cache considers them not worth trying in the future.
+> Based on this response, I am guessing that you do not want me to take
+> this in the staging tree? :)
 > 
-> This patch makes zone_reclaim() return more fine-grained information about
-> what occured when zone_reclaim() failued. The zone only gets marked full if
-> it really is unreclaimable. If it's a case that the scan did not occur or
-> if enough pages were not reclaimed with the limited reclaim_mode, then the
-> zone is simply skipped.
+> If so, please let me know and I'll drop it.
 > 
-> There is a side-effect to this patch. Currently, if zone_reclaim()
-> successfully reclaimed SWAP_CLUSTER_MAX, an allocation attempt would
-> go ahead. With this patch applied, zone watermarks are rechecked after
-> zone_reclaim() does some work.
->
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> thanks,
+> 
+> greg k-h
 
-Thanks for making the code a lot more readable :)
+Hi Greg,
 
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+   Thanks for the reminder. But I need to discuss with David first to get more
+   info from him and then decide to submit to MTD or not. Before that, please
+   hold this patch in staging tree and don't drop it. Thank you.
 
->  	/*
->  	 * Do not scan if the allocation should not be delayed.
->  	 */
->  	if (!(gfp_mask & __GFP_WAIT) || (current->flags & PF_MEMALLOC))
-> -			return 0;
-> +			return ZONE_RECLAIM_NOSCAN;
-
-Why not kill the extra tab?
+   Rgds,
+   Yunpeng
 
