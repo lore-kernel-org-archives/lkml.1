@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761884AbZFIK3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761878AbZFIK36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761884AbZFIK3q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760246AbZFIKU0
+	id S1761878AbZFIK36 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:29:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760753AbZFIKU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:20:26 -0400
-Received: from kroah.org ([198.145.64.141]:55115 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:20:29 -0400
+Received: from kroah.org ([198.145.64.141]:55132 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760790AbZFIKUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:20:24 -0400
+	id S1760790AbZFIKU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:20:28 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:04 2009
-Message-Id: <20090609094104.269896926@blue.kroah.org>
+Message-Id: <20090609094104.496693358@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:39:40 -0700
+Date: Tue, 09 Jun 2009 02:39:41 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Chan <mchan@broadcom.com>,
-       "David S. Miller" <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 52/87] bnx2: Fix panic in bnx2_poll_work().
+Subject: [patch 53/87] random: make get_random_int() more random
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=bnx2-fix-panic-in-bnx2_poll_work.patch
+Content-Disposition: inline; filename=random-make-get_random_int-more-random.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,62 +39,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Michael Chan <mchan@broadcom.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-commit 581daf7e00c5e766f26aff80a61a860a17b0d75a upstream.
+commit 8a0a9bd4db63bc45e3017bedeafbd88d0eb84d02 upstream.
 
-Add barrier() to bnx2_get_hw_{tx|rx}_cons() to fix this issue:
+It's a really simple patch that basically just open-codes the current
+"secure_ip_id()" call, but when open-coding it we now use a _static_
+hashing area, so that it gets updated every time.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12698
+And to make sure somebody can't just start from the same original seed of
+all-zeroes, and then do the "half_md4_transform()" over and over until
+they get the same sequence as the kernel has, each iteration also mixes in
+the same old "current->pid + jiffies" we used - so we should now have a
+regular strong pseudo-number generator, but we also have one that doesn't
+have a single seed.
 
-This issue was reported by multiple i386 users.  Without barrier(),
-the compiled code looks like the following where %eax contains the
-address of the tx_cons or rx_cons in the DMA status block.  The
-status block contents can change between the cmpb and the movzwl
-instruction.  The driver would crash if the value was not 0xff during
-the cmpb instruction, but changed to 0xff during the movzwl
-instruction.
+Note: the "pid + jiffies" is just meant to be a tiny tiny bit of noise. It
+has no real meaning. It could be anything. I just picked the previous
+seed, it's just that now we keep the state in between calls and that will
+feed into the next result, and that should make all the difference.
 
-6828:	80 38 ff             	cmpb   $0xff,(%eax)
-682b:	0f b7 10             	movzwl (%eax),%edx
+I made that hash be a per-cpu data just to avoid cache-line ping-pong:
+having multiple CPU's write to the same data would be fine for randomness,
+and add yet another layer of chaos to it, but since get_random_int() is
+supposed to be a fast interface I did it that way instead. I considered
+using "__raw_get_cpu_var()" to avoid any preemption overhead while still
+getting the hash be _mostly_ ping-pong free, but in the end good taste won
+out.
 
-With the added barrier(), the compiled code now looks correct:
-
-683d:	0f b7 10             	movzwl (%eax),%edx
-6840:	0f b6 c2             	movzbl %dl,%eax
-6843:	3d ff 00 00 00       	cmp    $0xff,%eax
-
-Thanks to Pascal de Bruijn <pmjdebruijn@pcode.nl> for reporting the
-problem and Holger Noefer <hnoefer@pironet-ndh.com> for patiently
-testing test patches for us.
-
-[greg - took out version change]
-
-Signed-off-by: Michael Chan <mchan@broadcom.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jake Edge <jake@lwn.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/bnx2.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/char/random.c |   19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
 
---- a/drivers/net/bnx2.c
-+++ b/drivers/net/bnx2.c
-@@ -2585,6 +2585,7 @@ bnx2_get_hw_tx_cons(struct bnx2_napi *bn
- 	/* Tell compiler that status block fields can change. */
- 	barrier();
- 	cons = *bnapi->hw_tx_cons_ptr;
-+	barrier();
- 	if (unlikely((cons & MAX_TX_DESC_CNT) == MAX_TX_DESC_CNT))
- 		cons++;
- 	return cons;
-@@ -2864,6 +2865,7 @@ bnx2_get_hw_rx_cons(struct bnx2_napi *bn
- 	/* Tell compiler that status block fields can change. */
- 	barrier();
- 	cons = *bnapi->hw_rx_cons_ptr;
-+	barrier();
- 	if (unlikely((cons & MAX_RX_DESC_CNT) == MAX_RX_DESC_CNT))
- 		cons++;
- 	return cons;
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -1660,15 +1660,20 @@ EXPORT_SYMBOL(secure_dccp_sequence_numbe
+  * value is not cryptographically secure but for several uses the cost of
+  * depleting entropy is too high
+  */
++DEFINE_PER_CPU(__u32 [4], get_random_int_hash);
+ unsigned int get_random_int(void)
+ {
+-	/*
+-	 * Use IP's RNG. It suits our purpose perfectly: it re-keys itself
+-	 * every second, from the entropy pool (and thus creates a limited
+-	 * drain on it), and uses halfMD4Transform within the second. We
+-	 * also mix it with jiffies and the PID:
+-	 */
+-	return secure_ip_id((__force __be32)(current->pid + jiffies));
++	struct keydata *keyptr;
++	__u32 *hash = get_cpu_var(get_random_int_hash);
++	int ret;
++
++	keyptr = get_keyptr();
++	hash[0] += current->pid + jiffies + get_cycles() + (int)(long)&ret;
++
++	ret = half_md4_transform(hash, keyptr->secret);
++	put_cpu_var(get_random_int_hash);
++
++	return ret;
+ }
+ 
+ /*
 
 
