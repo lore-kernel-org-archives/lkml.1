@@ -1,115 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbZFIBfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbZFIBg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbZFIBfu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 21:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbZFIBfl
+	id S1756180AbZFIBg6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 21:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbZFIBgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 21:35:41 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:52195 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751536AbZFIBfl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 21:35:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=gQFboYHo++zHhNapa1Hx3ApSm24zDHJlXx0rfq5NmHMID5KUWDojc8q5EORoVD7Gsx
-         rwC03DvI9JxiA8gtdiHBGEEFBlO/1PeH5Y1cr2VXQaNS527NnuJjTQP2VIfOTrFAiXCo
-         /TH/Re5Kqn+OFf3XKL6Lo6st8wgpyvkCapN7A=
-MIME-Version: 1.0
-In-Reply-To: <a8e1da0906081801j7169bec1ja1242dcea1aaba7d@mail.gmail.com>
-References: <a8e1da0906080040k7852f770v1e2aa2ebb0f52369@mail.gmail.com>
-	 <20090608081439.GB6372@elte.hu>
-	 <20090608012845.9c428525.akpm@linux-foundation.org>
-	 <a8e1da0906080142u62a45c47g2181a79addfb6168@mail.gmail.com>
-	 <20090608084807.GE6372@elte.hu>
-	 <20090608092607.8b331bf0.akpm@linux-foundation.org>
-	 <20090608171501.GA15399@elte.hu>
-	 <20090608143913.749e19c5.akpm@linux-foundation.org>
-	 <a8e1da0906081801j7169bec1ja1242dcea1aaba7d@mail.gmail.com>
-Date: Tue, 9 Jun 2009 09:35:42 +0800
-Message-ID: <a8e1da0906081835h144d9f1av561dcfb26a643a35@mail.gmail.com>
-Subject: Re: [PATCH v3] printk: add halt_delay parameter for printk delay in 
-	halt phase
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 8 Jun 2009 21:36:50 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:35538 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752036AbZFIBgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 21:36:49 -0400
+Date: Tue, 9 Jun 2009 11:36:46 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Mike Frysinger <vapier@gentoo.org>
+Subject: linux-next: manual merge of the kbuild tree with the x86 tree
+Message-Id: <20090609113646.975023d0.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__9_Jun_2009_11_36_46_+1000_dbSFb4zWV9.6Z8U0"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 9, 2009 at 9:01 AM, Dave Young<hidave.darkstar@gmail.com> wrote:
-> On Tue, Jun 9, 2009 at 5:39 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
->> On Mon, 8 Jun 2009 19:15:01 +0200
->> Ingo Molnar <mingo@elte.hu> wrote:
->>
->>> > questions: is it possible for interrupts to be disabled at this
->>> > time? If so, can we get an NMI watchdog hit?
->>>
->>> no, we generally turn off the nmi watchdog during shutdown, disable
->>> the lapic and io-apic, etc.
->>
->> Is x86 the only architecture which implements an NMI watchdog?
->>
->>> > Is the softlockup detector still running and if so, can it
->>> > trigger?
->>>
->>> in (non-emergency) reboot, last i checked, we stopped all other CPUs
->>> first, and then killed the current one. There's no chance for the
->>> watchdog thread to run.
->>
->> OK, but...  See below.
->>
->>> Anyway ... you seem to be uncomfortable about this patch - should i
->>> delay it for now to let it all play out? We are close to the merge
->>> window.
->>
->> I'm OK - I'm just bouncing ideas and questions off you guys, to make sure
->> that we've thought this through all the way.
->>
->> Here's another: why is it a boot option rather than a runtime-tunable?
->> A /proc tweakable is generally preferable because it avoids the
->> oh-crap-i-forgot-to-edit-grub.conf thing.  And we could perhaps then
->> remove all those system_state tests: userspace sets printk_delay
->> immediately prior to running halt/reboot/etc?
->
-> Andrew, thanks your comments.
-> I original intention is to use not boot options but sysfs interface.
-> Do you perfer proc?
-> without system_state testing we will have to consider the NMI watchdog
-> and softlockup issue.
->
->>
->> Plus the feature becomes more general - perhaps there are use cases
->> where people want to slow down printks, such as: kernel goes oops, data
->> scrolls off, serial console/netconsole unavailable.  pause_on_oops is
->> supposed to help here but last time I tried it, it kinda didn't work,
->> plus pause_on_oops doesn't solve the data-scrolled-off problem.
->
-> Seems make sense
+--Signature=_Tue__9_Jun_2009_11_36_46_+1000_dbSFb4zWV9.6Z8U0
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-And, if making it a general feature, I think maybe delay per screen
-(ie. 25 lines) is a good way.
+Hi Sam,
 
->
->>
->> Thirdly, if we do this as a general /proc/printk_delay thing, perhaps
->> it can be consolidated with the existing boot_delay= implementation.
->>
->
->
->
-> --
-> Regards
-> dave
->
+Today's linux-next merge of the kbuild tree got a conflict in
+scripts/Makefile.lib between commit
+d3dd3b5a29bb9582957451531fed461628dfc834 ("kbuild: allow compressors
+(gzip, bzip2, lzma) to take multiple inputs") from the x86 tree and
+commit c3434a63db85504449450625f229441c256b6f47 ("kbuild: fix spacing for
+bzip2 commands") from the kbuild tree.
 
+I used the version from the x86 tree which, as a side affect, fixed the
+same spacing issue as the kbuild patch.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Tue__9_Jun_2009_11_36_46_+1000_dbSFb4zWV9.6Z8U0
+Content-Type: application/pgp-signature
 
--- 
-Regards
-dave
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkotvK4ACgkQjjKRsyhoI8w0jQCfZl+AReI7rZ5+bxn/8rLhKwNv
+7T8An3SrNvdb5ekeQHScF99kaS2qBvZN
+=s9z2
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__9_Jun_2009_11_36_46_+1000_dbSFb4zWV9.6Z8U0--
