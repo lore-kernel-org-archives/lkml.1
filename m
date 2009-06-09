@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757632AbZFIKWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760610AbZFIKVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757632AbZFIKWg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760568AbZFIKSp
+	id S1760610AbZFIKVG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:21:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760564AbZFIKSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:18:45 -0400
-Received: from kroah.org ([198.145.64.141]:54613 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:18:33 -0400
+Received: from kroah.org ([198.145.64.141]:54565 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760311AbZFIKSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:18:44 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:58 2009
-Message-Id: <20090609094058.091815716@blue.kroah.org>
+	id S1760522AbZFIKSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:18:32 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:57 2009
+Message-Id: <20090609094057.382414792@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:39:14 -0700
+Date: Tue, 09 Jun 2009 02:39:11 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Avi Kivity <avi@redhat.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 26/87] KVM: Make paravirt tlb flush also reload the PAE PDPTRs
+       alan@lxorguk.ukuu.org.uk, Ian Campbell <ian.campbell@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 23/87] xen/blkfront: allow xenbus state transition to Closing->Closed  when not Connected
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=kvm-make-paravirt-tlb-flush-also-reload-the-pae-pdptrs.patch
+Content-Disposition: inline; filename=xen-blkfront-allow-xenbus-state-transition-to-closing-closed-when-not-connected.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,33 +40,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Avi Kivity <avi@redhat.com>
+From: Ian Campbell <ian.campbell@citrix.com>
 
-commit a8cd0244e9cebcf9b358d24c7e7410062f3665cb upstream.
+commit 28afea5b2ffaa48f4f43d22ae8edcc384c05df80 upstream.
 
-The paravirt tlb flush may be used not only to flush TLBs, but also
-to reload the four page-directory-pointer-table entries, as it is used
-as a replacement for reloading CR3.  Change the code to do the entire
-CR3 reloading dance instead of simply flushing the TLB.
+This situation can occur when attempting to attach a block device whose
+backend is an empty physical CD-ROM driver. The backend in this case
+will go directly from the Initialising state to Closing->Closed.
+Previously this would result in a NULL pointer deref on info->gd
+(xenbus_dev_fatal does not return as a1a15ac5 seems to expect)
 
-Signed-off-by: Avi Kivity <avi@redhat.com>
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kvm/mmu.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/block/xen-blkfront.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -2906,8 +2906,7 @@ static int kvm_pv_mmu_write(struct kvm_v
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -977,8 +977,10 @@ static void backend_changed(struct xenbu
+ 		break;
  
- static int kvm_pv_mmu_flush_tlb(struct kvm_vcpu *vcpu)
- {
--	kvm_x86_ops->tlb_flush(vcpu);
--	set_bit(KVM_REQ_MMU_SYNC, &vcpu->requests);
-+	kvm_set_cr3(vcpu, vcpu->arch.cr3);
- 	return 1;
- }
- 
+ 	case XenbusStateClosing:
+-		if (info->gd == NULL)
+-			xenbus_dev_fatal(dev, -ENODEV, "gd is NULL");
++		if (info->gd == NULL) {
++			xenbus_frontend_closed(dev);
++			break;
++		}
+ 		bd = bdget_disk(info->gd, 0);
+ 		if (bd == NULL)
+ 			xenbus_dev_fatal(dev, -ENODEV, "bdget failed");
 
 
