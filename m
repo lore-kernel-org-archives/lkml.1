@@ -1,89 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760722AbZFIWDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760532AbZFIWGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760722AbZFIWDo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 18:03:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbZFIWDh
+	id S1760532AbZFIWGf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 18:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbZFIWG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 18:03:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39942 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752768AbZFIWDg (ORCPT
+	Tue, 9 Jun 2009 18:06:29 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:56368 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750810AbZFIWG2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 18:03:36 -0400
-Date: Tue, 9 Jun 2009 14:13:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch] proc.txt: Update kernel filesystem/proc.txt
- documentation
-Message-Id: <20090609141323.aae795a9.akpm@linux-foundation.org>
-In-Reply-To: <1244580807.30614.10.camel@wall-e>
-References: <1238511505.364.61.camel@matrix>
-	<20090401193135.GA12316@elte.hu>
-	<1244543758.13948.5.camel@wall-e>
-	<20090609123641.f4733d8b.akpm@linux-foundation.org>
-	<1244580807.30614.10.camel@wall-e>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Jun 2009 18:06:28 -0400
+Date: Tue, 9 Jun 2009 23:06:30 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
+Subject: Re: regulator_register() API
+Message-ID: <20090609220629.GA13204@opensource.wolfsonmicro.com>
+References: <20090609135947.GB18591@gundam.enneenne.com> <20090609151834.GA30774@rakim.wolfsonmicro.main> <20090609155235.GK18591@gundam.enneenne.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090609155235.GK18591@gundam.enneenne.com>
+X-Cookie: You have no real enemies.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 09 Jun 2009 22:53:27 +0200
-Stefani Seibold <stefani@seibold.net> wrote:
+On Tue, Jun 09, 2009 at 05:52:35PM +0200, Rodolfo Giometti wrote:
 
-> Am Dienstag, den 09.06.2009, 12:36 -0700 schrieb Andrew Morton:
-> > On Tue, 09 Jun 2009 12:35:58 +0200
-> > Stefani Seibold <stefani@seibold.net> wrote:
-> > 
-> > > This is a patch against the file Documentation/filesystem/proc.txt.
-> > > 
-> > > It is an update for the "Process-Specific Subdirectories" to reflect 
-> > > the changes till kernel 2.6.30. It also introduce the my 
-> > > "provide stack information for threads".
-> > 
-> > Sorry, but it would be much preferable to do this as two patches.  The
-> > first fixes up proc.txt and the second adds the
-> > stack-information-for-threads material.
-> > 
+> Great! However this resolve one issue, the caller still needs to
+> allocate a device struct by itsown. On the other hand, doing like
+> led_classdev_register() does will resolve it also!
+
+The regulator driver does not need to allocate a struct device.  The
+struct device that is passed in is for the chip as a whole and would
+normally be something like the struct device for the I2C client.  As
+I say it's there mostly for the benefit of printk().
+
+The regulator API returns a pointer to the class device that is
+allocated and ensures that that class device is parented by the device
+that was passed in.
+
+> As you can see in this case I simply can do:
 > 
-> That is really frustrating. I did everything that you and ingo molnar
-> had complained.
-> 
-> What is wrong with the "provide stack information for threads"? It is a
-> very tiny patch which did not harm.
-> 
-> The only reason to fix and update the proc.txt was that you told me that
-> this is the last thing that you miss.
+>         /* Register the led devices */
+>         for (i = 0; i < 6; i++)
+>                 if (pdata->led[i].name) {
+>                         data->led[i].dev.name = pdata->led[i].name;
 
-It's more a procedural thing really.  We've learnt that it's best to
-avoid mixing more than a single "concept" into a single patch.  For a
-whole pile of reasons: reviewability, bisectability, revertability,
-testability, etc.
-
-In this case, it's unobvious which parts of the patch were specific to
-the stack-information-for-threads changes and which parts were not. 
-This makes it hard to review your proposed changes.
-
-> > This is because the two changes are quite conceptually distinct, and we
-> > might end up wanting to merge one chage and not the other.
-> > 
-> 
-> Okay, if the other patch will not included than it makes no sense for me
-> to get in the other.
-> 
-> Simple question: will you accept the thread stack info patch or not? If
-> yes, i will spent the time to split proc.txt patch.
-> 
-
-It looks OK to me now.  If it passes testing and nobody has fatal
-objections then yes, I expect it'll be merged in 2.6.31.
-
-The way to organise these changes is
-
-[patch 1/2] fix proc.txt
-[patch 2/2] procfs: provide stack information for threads
-
-The second patch will contain a small update to proc.txt.
+The code in, for example, the lp3971 driver looks pretty much the same
+as this except instead of copying data into the struct it passes data
+into the registration API.
