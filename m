@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760991AbZFIKY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbZFIKSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760991AbZFIKY0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760644AbZFIKTO
+	id S1760006AbZFIKSo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760109AbZFIKQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:19:14 -0400
-Received: from kroah.org ([198.145.64.141]:54754 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:16:31 -0400
+Received: from kroah.org ([198.145.64.141]:59869 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760634AbZFIKTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:19:12 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:59 2009
-Message-Id: <20090609094059.705737171@blue.kroah.org>
+	id S1760131AbZFIKQa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:16:30 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:55 2009
+Message-Id: <20090609094055.307662062@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:39:21 -0700
+Date: Tue, 09 Jun 2009 02:39:02 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Warren Free <wfree@ipmn.com>,
-       Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+       alan@lxorguk.ukuu.org.uk, Jay Vosburgh <fubar@us.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 33/87] USB: isp1760: urb_dequeue doesnt always find the urbs
+Subject: [patch 14/87] bonding: Remove debug printk
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=usb-isp1760-urb_dequeue-doesn-t-always-find-the-urbs.patch
+Content-Disposition: inline; filename=bonding-remove-debug-printk.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,99 +40,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Warren Free <wfree@ipmn.com>
+From: Jay Vosburgh <fubar@us.ibm.com>
 
-commit 0afb20e00b5053170c85298fed842b32d20b4ea9 upstream.
+[ Upstream commit 2690f8d62e98779c71625dba9a0fd525d8b2263d ]
 
-The option driver (and presumably others) allocates several URBs when it
-opens and tries to free them when it closes. The isp1760_urb_dequeue
-function gets called, but the packet being dequeued is not necessarily at
-the
-front of one of the 32 queues. If not, the isp1760_urb_done function doesn't
-get called for the URB and the process trying to free it hangs forever on a
-wait_queue. This patch does two things. If the URB being dequeued has others
-queued behind it, it re-queues them. And it searches the queues looking for
-the URB being dequeued rather than just looking at the one at the front of
-the queue.
+	Remove debug printk I accidently left in as part of commit:
 
-[bigeasy@linutronix] whitespace fixes, reformating
+commit 6146b1a4da98377e4abddc91ba5856bef8f23f1e
+Author: Jay Vosburgh <fubar@us.ibm.com>
+Date:   Tue Nov 4 17:51:15 2008 -0800
 
-Signed-off-by: Warren Free <wfree@ipmn.com>
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+    bonding: Fix ALB mode to balance traffic on VLANs
+
+	Reported by Duncan Gibb <duncan.gibb@siriusit.co.uk>
+
+Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- drivers/usb/host/isp1760-hcd.c |   24 ++++++++++++++++++++++--
- 1 file changed, 22 insertions(+), 2 deletions(-)
+ drivers/net/bonding/bond_alb.c |    2 --
+ 1 file changed, 2 deletions(-)
 
---- a/drivers/usb/host/isp1760-hcd.c
-+++ b/drivers/usb/host/isp1760-hcd.c
-@@ -1644,6 +1644,7 @@ static int isp1760_urb_dequeue(struct us
- 	u32 reg_base, or_reg, skip_reg;
- 	unsigned long flags;
- 	struct ptd ptd;
-+	packet_enqueue *pe;
+--- a/drivers/net/bonding/bond_alb.c
++++ b/drivers/net/bonding/bond_alb.c
+@@ -370,8 +370,6 @@ static int rlb_arp_recv(struct sk_buff *
  
- 	switch (usb_pipetype(urb->pipe)) {
- 	case PIPE_ISOCHRONOUS:
-@@ -1655,6 +1656,7 @@ static int isp1760_urb_dequeue(struct us
- 		reg_base = INT_REGS_OFFSET;
- 		or_reg = HC_INT_IRQ_MASK_OR_REG;
- 		skip_reg = HC_INT_PTD_SKIPMAP_REG;
-+		pe = enqueue_an_INT_packet;
- 		break;
- 
- 	default:
-@@ -1662,6 +1664,7 @@ static int isp1760_urb_dequeue(struct us
- 		reg_base = ATL_REGS_OFFSET;
- 		or_reg = HC_ATL_IRQ_MASK_OR_REG;
- 		skip_reg = HC_ATL_PTD_SKIPMAP_REG;
-+		pe =  enqueue_an_ATL_packet;
- 		break;
- 	}
- 
-@@ -1673,6 +1676,7 @@ static int isp1760_urb_dequeue(struct us
- 			u32 skip_map;
- 			u32 or_map;
- 			struct isp1760_qtd *qtd;
-+			struct isp1760_qh *qh = ints->qh;
- 
- 			skip_map = isp1760_readl(hcd->regs + skip_reg);
- 			skip_map |= 1 << i;
-@@ -1685,8 +1689,7 @@ static int isp1760_urb_dequeue(struct us
- 			priv_write_copy(priv, (u32 *)&ptd, hcd->regs + reg_base
- 					+ i * sizeof(ptd), sizeof(ptd));
- 			qtd = ints->qtd;
--
--			clean_up_qtdlist(qtd);
-+			qtd = clean_up_qtdlist(qtd);
- 
- 			free_mem(priv, ints->payload);
- 
-@@ -1697,7 +1700,24 @@ static int isp1760_urb_dequeue(struct us
- 			ints->payload = 0;
- 
- 			isp1760_urb_done(priv, urb, status);
-+			if (qtd)
-+				pe(hcd, qh, qtd);
- 			break;
-+
-+		} else if (ints->qtd) {
-+			struct isp1760_qtd *qtd, *prev_qtd = ints->qtd;
-+
-+			for (qtd = ints->qtd->hw_next; qtd; qtd = qtd->hw_next) {
-+				if (qtd->urb == urb) {
-+					prev_qtd->hw_next = clean_up_qtdlist(qtd);
-+					isp1760_urb_done(priv, urb, status);
-+					break;
-+				}
-+				prev_qtd = qtd;
-+			}
-+			/* we found the urb before the end of the list */
-+			if (qtd)
-+				break;
- 		}
- 		ints++;
- 	}
+ 	if (arp->op_code == htons(ARPOP_REPLY)) {
+ 		/* update rx hash table for this ARP */
+-		printk("rar: update orig %s bond_dev %s\n", orig_dev->name,
+-		       bond_dev->name);
+ 		bond = netdev_priv(bond_dev);
+ 		rlb_update_entry_from_arp(bond, arp);
+ 		pr_debug("Server received an ARP Reply from client\n");
 
 
