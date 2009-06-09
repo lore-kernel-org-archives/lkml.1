@@ -1,116 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760570AbZFIWAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760722AbZFIWDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760570AbZFIWAu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 18:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756063AbZFIWAm
+	id S1760722AbZFIWDo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 18:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753774AbZFIWDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 18:00:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54478 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755785AbZFIWAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 18:00:41 -0400
-Date: Wed, 10 Jun 2009 00:00:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf_counter: extensible perf_counter_attr
-Message-ID: <20090609220020.GA26526@elte.hu>
-References: <1244490680.6691.1.camel@laptop> <4A2D8011.9050502@linux.vnet.ibm.com> <1244496223.6691.2.camel@laptop> <4A2D82CE.9000206@linux.vnet.ibm.com> <20090608215002.GB22049@elte.hu> <4A2DB1C6.6090209@linux.vnet.ibm.com> <20090609065117.GA16707@elte.hu> <4A2E19A9.3070201@linux.vnet.ibm.com> <20090609115346.GB3062@elte.hu> <4A2E9157.2030108@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A2E9157.2030108@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 9 Jun 2009 18:03:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39942 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752768AbZFIWDg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 18:03:36 -0400
+Date: Tue, 9 Jun 2009 14:13:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch] proc.txt: Update kernel filesystem/proc.txt
+ documentation
+Message-Id: <20090609141323.aae795a9.akpm@linux-foundation.org>
+In-Reply-To: <1244580807.30614.10.camel@wall-e>
+References: <1238511505.364.61.camel@matrix>
+	<20090401193135.GA12316@elte.hu>
+	<1244543758.13948.5.camel@wall-e>
+	<20090609123641.f4733d8b.akpm@linux-foundation.org>
+	<1244580807.30614.10.camel@wall-e>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 09 Jun 2009 22:53:27 +0200
+Stefani Seibold <stefani@seibold.net> wrote:
 
-* Corey Ashford <cjashfor@linux.vnet.ibm.com> wrote:
+> Am Dienstag, den 09.06.2009, 12:36 -0700 schrieb Andrew Morton:
+> > On Tue, 09 Jun 2009 12:35:58 +0200
+> > Stefani Seibold <stefani@seibold.net> wrote:
+> > 
+> > > This is a patch against the file Documentation/filesystem/proc.txt.
+> > > 
+> > > It is an update for the "Process-Specific Subdirectories" to reflect 
+> > > the changes till kernel 2.6.30. It also introduce the my 
+> > > "provide stack information for threads".
+> > 
+> > Sorry, but it would be much preferable to do this as two patches.  The
+> > first fixes up proc.txt and the second adds the
+> > stack-information-for-threads material.
+> > 
+> 
+> That is really frustrating. I did everything that you and ingo molnar
+> had complained.
+> 
+> What is wrong with the "provide stack information for threads"? It is a
+> very tiny patch which did not harm.
+> 
+> The only reason to fix and update the proc.txt was that you told me that
+> this is the last thing that you miss.
 
-> Thanks for your reply, Ingo.
->
-> Ingo Molnar wrote:
->> I think PEBS is best supported by a generic abstraction. Something  
->> like this: it's basically a special sampling format, that generates a 
->> record of:
->>
->> 	struct pt_regs regs;
->> 	__u64 insn_latency; /* optional */
->> 	__u64 data_address; /* optional */
->>
->> this is pretty generic.
->>
->> The raw CPU records have a CPU specific format, and they have to be  
->> demultiplexed anyway (on Nehalem, which can have up to four separate  
->> PEBS counters - but each output into the same DS area), so the  
->> lowlevel arch code converts the CPU record into the above generic  
->> sample record when it copies it into the mmap pages. It's a quick copy 
->> so no big deal performance-wise.
->>
->> ( Details:
->>
->>    - there might be some additional complications from sampling      
->> 32-bit contexts, but that too is a mostly low level detail that      
->> gets hidden.
->>
->>    - we might use a tiny bit more compact registers structure than
->>      struct pt_regs. OTOH it's a well-known structure so it makes      
->> sense to standardize on it, even if the CPU doesnt sample all      
->> registers.
->> )
->>
->>   
-> I see, so that's how you'd return the data.  How would a user 
-> specify that they want to use PEBS?
+It's more a procedural thing really.  We've learnt that it's best to
+avoid mixing more than a single "concept" into a single patch.  For a
+whole pile of reasons: reviewability, bisectability, revertability,
+testability, etc.
 
-They wouldnt need to. PEBS would result in more precise samples when 
-certain counters are used - and transparently so.
+In this case, it's unobvious which parts of the patch were specific to
+the stack-information-for-threads changes and which parts were not. 
+This makes it hard to review your proposed changes.
 
-The non-PEBS NMI samples are pretty accurate to begin with, so it's 
-not a _major_ difference in quality.
+> > This is because the two changes are quite conceptually distinct, and we
+> > might end up wanting to merge one chage and not the other.
+> > 
+> 
+> Okay, if the other patch will not included than it makes no sense for me
+> to get in the other.
+> 
+> Simple question: will you accept the thread stack info patch or not? If
+> yes, i will spent the time to split proc.txt patch.
+> 
 
-PEBS would also auto-activate when a user wants to sample say the 
-instruction latency as well - and on non-PEBS hardware the platform 
-code would refuse to open the counter.
+It looks OK to me now.  If it passes testing and nobody has fatal
+objections then yes, I expect it'll be merged in 2.6.31.
 
-PEBS could also be used to reduce the number of NMIs needed - so 
-it's a transparent speedup as well.
+The way to organise these changes is
 
-> Another observation is that you'd need some sort of bit vector, or 
-> at the least a document, that describes which registers are valid 
-> in the pt_regs struct.
+[patch 1/2] fix proc.txt
+[patch 2/2] procfs: provide stack information for threads
 
-Initially i think we should use PEBS to transparently enhance 
-regular IP samples.
-
-What would we use the other registers for? Many registers will have 
-stack context dependencies so the PEBS data cannot really be 
-analyzed in any meaningful way after the fact.
-
-(except perhaps for the narrow purpose of debugging)
-
->> Can you see desirable PEBS-alike PMU features that cannot be expressed 
->> via such means?
->
-> Power PMU's provide some fairly complex features, such as a 
-> thresholding mechanism which is used for marking instructions, and 
-> also there's an Instruction Matching CAM which can be used to mark 
-> only on certain instruction types.  Since these features are 
-> present only on Power, I'm not sure it makes sense to go to the 
-> trouble of abstracting them for use on other arch/chip designs.
-
-Could you please describe the low level semantics more accurately - 
-at least of the ones you find to be the most useful in practice?
-
-	Ingo
+The second patch will contain a small update to proc.txt.
