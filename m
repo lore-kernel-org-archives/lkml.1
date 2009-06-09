@@ -1,61 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763267AbZFIKj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932289AbZFIKiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763267AbZFIKj3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761189AbZFIKZF
+	id S932289AbZFIKiy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757023AbZFIKWg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:25:05 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35732 "EHLO mx2.suse.de"
+	Tue, 9 Jun 2009 06:22:36 -0400
+Received: from kroah.org ([198.145.64.141]:32952 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761132AbZFIKZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:25:03 -0400
-Date: Tue, 9 Jun 2009 12:25:04 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, fengguang.wu@intel.com
-Subject: Re: [PATCH] [6/16] HWPOISON: Add various poison checks in mm/memory.c
-Message-ID: <20090609102504.GH14820@wotan.suse.de>
-References: <20090603846.816684333@firstfloor.org> <20090603184639.1933B1D028F@basil.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090603184639.1933B1D028F@basil.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+	id S1758001AbZFIKWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:22:35 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:13 2009
+Message-Id: <20090609094112.789197843@blue.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Tue, 09 Jun 2009 02:40:15 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 87/87] ext4: Fix race in ext4_inode_info.i_cached_extent
+References: <20090609093848.204935043@blue.kroah.org>
+Content-Disposition: inline; filename=ext4-fix-race-in-ext4_inode_info.i_cached_extent.patch
+In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 08:46:38PM +0200, Andi Kleen wrote:
-> 
-> Bail out early when hardware poisoned pages are found in page fault handling.
-> Since they are poisoned they should not be mapped freshly into processes,
-> because that would cause another (potentially deadly) machine check
-> 
-> This is generally handled in the same way as OOM, just a different
-> error code is returned to the architecture code.
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> ---
->  mm/memory.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> Index: linux/mm/memory.c
-> ===================================================================
-> --- linux.orig/mm/memory.c	2009-06-03 19:36:23.000000000 +0200
-> +++ linux/mm/memory.c	2009-06-03 19:36:23.000000000 +0200
-> @@ -2797,6 +2797,9 @@
->  	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
->  		return ret;
->  
-> +	if (unlikely(PageHWPoison(vmf.page)))
-> +		return VM_FAULT_HWPOISON;
+2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
-Again, it would be nice if you just worry about this in your MCE
-handler and don't sprinkle things like this in fastpaths.
+------------------
 
-> +
->  	/*
->  	 * For consistency in subsequent calls, make the faulted page always
->  	 * locked.
+From: "Theodore Ts'o" <tytso@mit.edu>
+
+(cherry picked from commit 2ec0ae3acec47f628179ee95fe2c4da01b5e9fc4)
+
+If two CPU's simultaneously call ext4_ext_get_blocks() at the same
+time, there is nothing protecting the i_cached_extent structure from
+being used and updated at the same time.  This could potentially cause
+the wrong location on disk to be read or written to, including
+potentially causing the corruption of the block group descriptors
+and/or inode table.
+
+This bug has been in the ext4 code since almost the very beginning of
+ext4's development.  Fortunately once the data is stored in the page
+cache cache, ext4_get_blocks() doesn't need to be called, so trying to
+replicate this problem to the point where we could identify its root
+cause was *extremely* difficult.  Many thanks to Kevin Shanahan for
+working over several months to be able to reproduce this easily so we
+could finally nail down the cause of the corruption.
+
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Reviewed-by: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ fs/ext4/extents.c |   17 ++++++++++++-----
+ 1 file changed, 12 insertions(+), 5 deletions(-)
+
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -1740,11 +1740,13 @@ ext4_ext_put_in_cache(struct inode *inod
+ {
+ 	struct ext4_ext_cache *cex;
+ 	BUG_ON(len == 0);
++	spin_lock(&EXT4_I(inode)->i_block_reservation_lock);
+ 	cex = &EXT4_I(inode)->i_cached_extent;
+ 	cex->ec_type = type;
+ 	cex->ec_block = block;
+ 	cex->ec_len = len;
+ 	cex->ec_start = start;
++	spin_unlock(&EXT4_I(inode)->i_block_reservation_lock);
+ }
+ 
+ /*
+@@ -1801,12 +1803,17 @@ ext4_ext_in_cache(struct inode *inode, e
+ 			struct ext4_extent *ex)
+ {
+ 	struct ext4_ext_cache *cex;
++	int ret = EXT4_EXT_CACHE_NO;
+ 
++	/*
++	 * We borrow i_block_reservation_lock to protect i_cached_extent
++	 */
++	spin_lock(&EXT4_I(inode)->i_block_reservation_lock);
+ 	cex = &EXT4_I(inode)->i_cached_extent;
+ 
+ 	/* has cache valid data? */
+ 	if (cex->ec_type == EXT4_EXT_CACHE_NO)
+-		return EXT4_EXT_CACHE_NO;
++		goto errout;
+ 
+ 	BUG_ON(cex->ec_type != EXT4_EXT_CACHE_GAP &&
+ 			cex->ec_type != EXT4_EXT_CACHE_EXTENT);
+@@ -1817,11 +1824,11 @@ ext4_ext_in_cache(struct inode *inode, e
+ 		ext_debug("%u cached by %u:%u:%llu\n",
+ 				block,
+ 				cex->ec_block, cex->ec_len, cex->ec_start);
+-		return cex->ec_type;
++		ret = cex->ec_type;
+ 	}
+-
+-	/* not in cache */
+-	return EXT4_EXT_CACHE_NO;
++errout:
++	spin_unlock(&EXT4_I(inode)->i_block_reservation_lock);
++	return ret;
+ }
+ 
+ /*
+
+
