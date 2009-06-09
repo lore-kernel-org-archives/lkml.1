@@ -1,96 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761660AbZFIKul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759021AbZFIKu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761660AbZFIKul (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762179AbZFIKuc
+	id S1759021AbZFIKu1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759019AbZFIKuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:50:32 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35730 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759019AbZFIKub (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:50:31 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
-       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090609104404.GP18380@csn.ul.ie>
-References: <20090609185036.DD8E.A69D9226@jp.fujitsu.com> <20090609104404.GP18380@csn.ul.ie>
-Message-Id: <20090609194551.DD94.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  9 Jun 2009 19:50:30 +0900 (JST)
+	Tue, 9 Jun 2009 06:50:13 -0400
+Received: from ns.penguin.cz ([84.21.108.25]:39809 "EHLO ns.penguin.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758666AbZFIKuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:50:12 -0400
+Subject: Re: zaurus needs generic pxa suspend/resume routines
+From: Stanislav Brabec <utx@penguin.cz>
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Pavel Machek <pavel@ucw.cz>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com
+In-Reply-To: <f17812d70906081843x6731898fl35252664e5a580a1@mail.gmail.com>
+References: <20090605131625.GC1376@ucw.cz>
+	 <20090607152152.GA7785@n2100.arm.linux.org.uk>
+	 <f17812d70906072358i69b4ce09oeb6cd455277b050f@mail.gmail.com>
+	 <20090608161929.GD32140@n2100.arm.linux.org.uk>
+	 <f17812d70906081843x6731898fl35252664e5a580a1@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-2"
+Date: Tue, 09 Jun 2009 12:50:00 +0200
+Message-Id: <1244544600.9997.8.camel@hammer.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.27.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, Jun 09, 2009 at 06:59:03PM +0900, KOSAKI Motohiro wrote:
-> > > > > > Here it is just recording the jiffies value. The real smarts with the counter
-> > > > > > use time_before() which I assumed could handle jiffie wrap-arounds. Even
-> > > > > > if it doesn't, the consequence is that one scan will occur that could have
-> > > > > > been avoided around the time of the jiffie wraparound. The value will then
-> > > > > > be reset and it will be fine.
-> > > > > 
-> > > > > time_before() assume two argument are enough nearly time.
-> > > > > if we use 32bit cpu and HZ=1000, about jiffies wraparound about one month.
-> > > > > 
-> > > > > Then, 
-> > > > > 
-> > > > > 1. zone reclaim failure occur
-> > > > > 2. system works fine for one month
-> > > > > 3. jiffies wrap and time_before() makes mis-calculation.
-> > > > > 
-> > > > 
-> > > > And the scan occurs uselessly and zone_reclaim_failure gets set again.
-> > > > I believe the one useless scan is not significant enough to warrent dealing
-> > > > with jiffie wraparound.
-> > > 
-> > > Thank you for kindful explanation.
-> > > I fully agreed.
-> > 
-> > Bah, no, not agreed.
-> > simple last failure recording makes following scenario.
-> > 
-> > 
-> > 1. zone reclaim failure occur. update zone_reclaim_failure.
-> >       ^
-> >       |  time_before() return 1, and zone_reclaim() return immediately.
-> >       v
-> > 2. after 32 second.
-> >       ^
-> >       |  time_before() return 0, and zone_reclaim() works normally
-> >       v
-> > 3. after one month
-> >       ^
-> >       |  time_before() return 1, and zone_reclaim() return immediately.
-> >       |  although recent zone_reclaim() never failed.
-> >       v
-> > 4. after more one month
-> >       
-> 
-> Pants.
-> 
-> /me slaps self
-> 
-> +       /* Watch for jiffie wraparound */
-> +       if (unlikely(jiffies < zone->zone_reclaim_failure))
-> +               zone->zone_reclaim_failure = jiffies;
-> +
-> +       /* Do not attempt a scan if scanning failed recently */
-> +       if (time_before(jiffies,
-> +                       zone->zone_reclaim_failure + zone_reclaim_interval))
-> +               return 0;
-> +
-> 
-> ?
+Eric Miao wrote:
 
-looks good.
+> >> Yes, I think this is the best trade-off for the moment.
+> >>
+> >> Acked-by: Eric Miao <eric.miao@marvell.com>
+> >>
 
+However resume still does not work with this patch on top of yesterday's
+Linus tree snapshot (SL-C3200, ccc0d38). It seems to go to resume for
+~300 milliseconds (orange LED lights for a moment, power consumption
+increases) and then runs back to the sleep. It seems that it disables
+offline charging, too. When battery cover switch is open it goes to
+resume just for ~50 milliseconds (orange LED does not light).
 
+The last Pavel's hack from last week at least fixed resume at cost of
+breaking offline charging (and broken serial after resume).
 
+-- 
+Best Regards / S pozdravem,
+
+Stanislav Brabec
+software developer
+---------------------------------------------------------------------
+SUSE LINUX, s. r. o.                          e-mail: sbrabec@suse.cz
+Lihovarská 1060/12           tel: +420 284 028 966, +49 911 740538747
+190 00 Praha 9                                  fax: +420 284 028 951
+Czech Republic                                    http://www.suse.cz/
 
