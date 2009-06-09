@@ -1,127 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758750AbZFISg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759434AbZFIShQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758750AbZFISg6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbZFISgt
+	id S1759434AbZFIShQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbZFIShB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:36:49 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:55570 "EHLO e3.ny.us.ibm.com"
+	Tue, 9 Jun 2009 14:37:01 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:54513 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754196AbZFISgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:36:48 -0400
-Subject: Re: [BUILD FAILURE 02/04] Next June 04:PPC64 randconfig
-	[drivers/usb/host/ohci-hcd.o]
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
-To: linux-usb@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Arnd Bergmann <arnd@arndb.de>
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux-Next <linux-next@vger.kernel.org>, Jon Smirl <jonsmirl@gmail.com>,
-       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-       Roman Weissgaerber <weissg@vienna.at>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, kernel@wantstofly.org
-In-Reply-To: <20090605182651.24094.36577.sendpatchset@elm3a191.beaverton.ibm.com>
-References: <20090605182651.24094.36577.sendpatchset@elm3a191.beaverton.ibm.com>
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 10 Jun 2009 00:06:31 +0530
-Message-Id: <1244572592.5497.35.camel@subratamodak.linux.ibm.com>
+	id S1758981AbZFIShA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 14:37:00 -0400
+Date: Tue, 9 Jun 2009 11:36:56 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Dan Williams <dan.j.williams@intel.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #13116] Can't boot with nosmp
+Message-ID: <20090609113656.46ed6335@nehalam>
+In-Reply-To: <4A2EAA53.7060006@redhat.com>
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
+	<D9VoutSOyXP.A.xm.Vb7KKB@chimera>
+	<20090608091544.53a94235@nehalam>
+	<e9c3a7c20906080929l1a4ec739t7585f6bba54bf684@mail.gmail.com>
+	<20090608170437.1c2386a5@nehalam>
+	<e9c3a7c20906091020m19abf3b5wbbb7f5364b2d4905@mail.gmail.com>
+	<4A2EAA53.7060006@redhat.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-06-05 at 13:26 -0500, Subrata Modak wrote:
-> >On Thu, 2009-06-04 at 10:07 -0400, Jon Smirl wrote:
-> >On Thu, Jun 4, 2009 at 9:31 AM, Subrata Modak
-> > <subrata@linux.vnet.ibm.com> wrote:
-> > > CC      drivers/usb/host/ohci-hcd.o
-> > > In file included from drivers/usb/host/ohci-hcd.c:1060:
-> > > drivers/usb/host/ohci-ppc-of.c:242:2: error: #error "No endianess selected for ppc-of-ohci"
-> > > make[3]: *** [drivers/usb/host/ohci-hcd.o] Error 1
-> > > make[2]: *** [drivers/usb/host] Error 2
-> > > make[1]: *** [drivers/usb] Error 2
-> > > make: *** [drivers] Error 2
-> > >
-> > > I reported this earlier, and there were some discussions:
-> > > http://groups.google.co.kr/group/linux.kernel/browse_thread/thread/edff9d5572d3d225
-> > 
-> > Proposed patch by Arnd should fix this. It has not been merged.
-> > http://lkml.org/lkml/2009/4/22/49
-> 
-> Correct, it fixes the issue. However, since few changes might have gone
-> to the Kconfig, the patch does not apply cleanly. Below is the patch, just
-> a retake of the earlier one, but on the latest code. 
-> 
-> David,
-> 
-> Can you please pickup the following patch ?
+On Tue, 09 Jun 2009 21:30:43 +0300
+Avi Kivity <avi@redhat.com> wrote:
 
-David,
-
-Is it you who will be merging this patch. Or, do i need to send it to
-somebody else ?
-
-Regards--
-Subrata
-
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>,
-> Resent-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-> ---
-> 
-> --- linux-2.6.30-rc8/drivers/usb/host/Kconfig.orig	2009-06-05 10:31:30.000000000 -0500
-> +++ linux-2.6.30-rc8/drivers/usb/host/Kconfig	2009-06-05 10:37:53.000000000 -0500
-> @@ -181,26 +181,26 @@ config USB_OHCI_HCD_PPC_SOC
->  	  Enables support for the USB controller on the MPC52xx or
->  	  STB03xxx processor chip.  If unsure, say Y.
-> 
-> -config USB_OHCI_HCD_PPC_OF
-> -	bool "OHCI support for PPC USB controller on OF platform bus"
-> -	depends on USB_OHCI_HCD && PPC_OF
-> -	default y
-> -	---help---
-> -	  Enables support for the USB controller PowerPC present on the
-> -	  OpenFirmware platform bus.
-> -
->  config USB_OHCI_HCD_PPC_OF_BE
-> -	bool "Support big endian HC"
-> -	depends on USB_OHCI_HCD_PPC_OF
-> -	default y
-> +	bool "OHCI support for OF platform bus (big endian)"
-> +	depends on USB_OHCI_HCD && PPC_OF
->  	select USB_OHCI_BIG_ENDIAN_DESC
->  	select USB_OHCI_BIG_ENDIAN_MMIO
-> +	---help---
-> +	Enables support for big-endian USB controllers present on the
-> +	OpenFirmware platform bus.
-> 
->  config USB_OHCI_HCD_PPC_OF_LE
-> -	bool "Support little endian HC"
-> -	depends on USB_OHCI_HCD_PPC_OF
-> -	default n
-> +	bool "OHCI support for OF platform bus (little endian)"
-> +	depends on USB_OHCI_HCD && PPC_OF
->  	select USB_OHCI_LITTLE_ENDIAN
-> +	---help---
-> +	Enables support for little-endian USB controllers present on the
-> +	OpenFirmware platform bus.
-> +
-> +	config USB_OHCI_HCD_PPC_OF
-> +	bool
-> +	default USB_OHCI_HCD_PPC_OF_BE || USB_OHCI_HCD_PPC_OF_LE
-> 
->  config USB_OHCI_HCD_PCI
->  	bool "OHCI support for PCI-bus USB controllers"
-> 
-> ---
-> Regards--
-> Subrata
+> Dan Williams wrote:
+> > On Mon, Jun 8, 2009 at 5:04 PM, Stephen Hemminger<shemminger@vyatta.com> wrote:
+> >   
+> >> I did some more debugging, and the problem appears to be that
+> >> booting with nosmp still leaves all the CPU's present in the cpu
+> >> possible mask. So code like dma engine (or loopback device), that
+> >> use alloc_percpu get broken.
+> >>
+> >> Not sure why all the cpu's are still showing up in the possible mask.
+> >> Rusty? do you have an answer.
+> >>     
 > >
+> > Would this recent commit also fix this issue?
+> >
+> > commit a4c0364be3f43d3e17fe19270f8b3d64881606e6
+> > Author: Avi Kivity <avi@redhat.com>
+> > Date:   Sat Jun 6 12:34:39 2009 +0300
+> >
+> >     KVM: Explicity initialize cpus_hardware_enabled
+> >
+> >     Under CONFIG_MAXSMP, cpus_hardware_enabled is allocated from the heap and
+> >     not statically initialized.  This causes a crash on reboot when kvm thinks
+> >     vmx is enabled on random nonexistent cpus and accesses nonexistent percpu
+> >     lists.
+> >
+> >     Fix by explicitly clearing the variable.
+> >
+> >     Cc: stable@kernel.org
+> >     Reported-and-tested-by: Yinghai Lu <yinghai@kernel.org>
+> >     Signed-off-by: Avi Kivity <avi@redhat.com>
+> >   
+> 
+> This only affects reboots.  But yes, the cpumask code has bugs.  Does 
+> the .config involved select MAXSMP?
+> 
 
+Patch does not fix the problem. Not sure if it is KVM only problem.
+Look like possible cpumask always equals what ACPI / SMP tables report.
+So currently looking into alloc_percpu which may not handle the possible
+but never used cpus.
+
+It is x86-64 config and does not have MAXSMP set. It does have NR_CPUS set.
+
+-- 
