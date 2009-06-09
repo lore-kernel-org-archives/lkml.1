@@ -1,39 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbZFITWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759665AbZFIT1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760096AbZFITWb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 15:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758847AbZFITWO
+	id S1759665AbZFIT1y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 15:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbZFIT1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 15:22:14 -0400
-Received: from windsormachine.com ([216.8.138.2]:42780 "EHLO
-	router.windsormachine.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757330AbZFITWO (ORCPT
+	Tue, 9 Jun 2009 15:27:46 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54188 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753883AbZFIT1p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 15:22:14 -0400
-Date: Tue, 9 Jun 2009 15:22:16 -0400 (EDT)
-From: Mike Dresser <mdresser_l@windsormachine.com>
-To: Mathias Kretschmer <mathias@blx4.net>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alex Samad <alex@samad.com.au>, Dave Chinner <david@fromorbit.com>
-Subject: Re: [Bug #13375] Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
-In-Reply-To: <200906092111.54073.mathias@blx4.net>
-Message-ID: <alpine.DEB.1.10.0906091521470.9067@router.windsormachine.com>
-References: <sIiXQlfwS3D.A.81.dj7KKB@chimera> <200906080940.14650.posting@blx4.net> <alpine.DEB.1.10.0906091457510.28108@router.windsormachine.com> <200906092111.54073.mathias@blx4.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-scanner: Scanned by Xamime-LT 0.1.5
+	Tue, 9 Jun 2009 15:27:45 -0400
+Date: Tue, 9 Jun 2009 12:27:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org,
+       jirislaby@gmail.com, eibach@gdsys.de
+Subject: Re: [PATCH 1/1] Char: moxa, prevent opening unavailable ports
+Message-Id: <20090609122735.9a915cbf.akpm@linux-foundation.org>
+In-Reply-To: <1244557981-9443-1-git-send-email-jirislaby@gmail.com>
+References: <1244557981-9443-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009, Mathias Kretschmer wrote:
+On Tue,  9 Jun 2009 16:33:01 +0200
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-> machine is stable for the last 36 hours with nfs turned off.
+> From: Dirk Eibach <eibach@gdsys.de>
+> 
+> In moxa.c there are 32 minor numbers reserved for each device. The
+> number of ports actually available per device is stored in
+> moxa_board_conf->numPorts. This number is not considered in moxa_open().
+> Opening a port that is not available results in a kernel oops.
+> This patch adds a test to moxa_open() that prevents opening unavailable
+> ports.
+> 
+> Signed-off-by: Dirk Eibach <eibach@gdsys.de>
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> ---
+>  drivers/char/moxa.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
+> index 4a4cab7..65b6ff2 100644
+> --- a/drivers/char/moxa.c
+> +++ b/drivers/char/moxa.c
+> @@ -1184,6 +1184,11 @@ static int moxa_open(struct tty_struct *tty, struct file *filp)
+>  		return -ENODEV;
+>  	}
+>  
+> +	if (port % MAX_PORTS_PER_BOARD >= brd->numPorts) {
+> +		mutex_unlock(&moxa_openlock);
+> +		return -ENODEV;
+> +	}
+> +
+>  	ch = &brd->ports[port % MAX_PORTS_PER_BOARD];
+>  	ch->port.count++;
+>  	tty->driver_data = ch;
 
-Is the system load different with nfs off? (no clients accessing it, etc?)
+Looks good to me.  But please, let's avoid adding the
+multiple-return-statement hand grenade?
 
-Mike
+--- a/drivers/char/moxa.c~char-moxa-prevent-opening-unavailable-ports
++++ a/drivers/char/moxa.c
+@@ -1184,6 +1184,11 @@ static int moxa_open(struct tty_struct *
+ 		return -ENODEV;
+ 	}
+ 
++	if (port % MAX_PORTS_PER_BOARD >= brd->numPorts) {
++		retval = -ENODEV;
++		goto out_unlock;
++	}
++
+ 	ch = &brd->ports[port % MAX_PORTS_PER_BOARD];
+ 	ch->port.count++;
+ 	tty->driver_data = ch;
+@@ -1208,8 +1213,8 @@ static int moxa_open(struct tty_struct *
+ 				moxa_close_port(tty);
+ 	} else
+ 		ch->port.flags |= ASYNC_NORMAL_ACTIVE;
++out_unlock:
+ 	mutex_unlock(&moxa_openlock);
+-
+ 	return retval;
+ }
+ 
+_
 
+
+
+btw, what's this code in moxa_open() doing?
+
+	if (port == MAX_PORTS) {
+		return capable(CAP_SYS_ADMIN) ? 0 : -EPERM;
+	}
+
+why does it return 0 if CAP_SYS_ADMIN?				
