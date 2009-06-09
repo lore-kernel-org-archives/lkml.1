@@ -1,99 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbZFIIpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbZFIIqD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759255AbZFIIpU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 04:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756952AbZFIIpH
+	id S1759384AbZFIIqD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 04:46:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbZFIIpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 04:45:07 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37277 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755761AbZFIIpE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 04:45:04 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+	Tue, 9 Jun 2009 04:45:53 -0400
+Received: from mga14.intel.com ([143.182.124.37]:13374 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753982AbZFIIpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 04:45:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,330,1241420400"; 
+   d="scan'208";a="152169459"
+Date: Tue, 9 Jun 2009 16:45:50 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
 To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
-       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
        linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090609081821.GE18380@csn.ul.ie>
-References: <20090609143211.DD64.A69D9226@jp.fujitsu.com> <20090609081821.GE18380@csn.ul.ie>
-Message-Id: <20090609173011.DD7F.A69D9226@jp.fujitsu.com>
+Subject: Re: [PATCH 2/3] Properly account for the number of page cache
+	pages zone_reclaim() can reclaim
+Message-ID: <20090609084550.GB7108@localhost>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-3-git-send-email-mel@csn.ul.ie> <20090609022549.GB6740@localhost> <20090609082728.GF18380@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  9 Jun 2009 17:45:02 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090609082728.GF18380@csn.ul.ie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-> > > @@ -1192,6 +1192,15 @@ static struct ctl_table vm_table[] = {
-> > >  		.extra1		= &zero,
-> > >  	},
-> > >  	{
-> > > +		.ctl_name       = CTL_UNNUMBERED,
-> > > +		.procname       = "zone_reclaim_interval",
-> > > +		.data           = &zone_reclaim_interval,
-> > > +		.maxlen         = sizeof(zone_reclaim_interval),
-> > > +		.mode           = 0644,
-> > > +		.proc_handler   = &proc_dointvec_jiffies,
-> > > +		.strategy       = &sysctl_jiffies,
-> > > +	},
+On Tue, Jun 09, 2009 at 04:27:29PM +0800, Mel Gorman wrote:
+> On Tue, Jun 09, 2009 at 10:25:49AM +0800, Wu Fengguang wrote:
+> > On Mon, Jun 08, 2009 at 09:01:29PM +0800, Mel Gorman wrote:
+> > > On NUMA machines, the administrator can configure zone_relcaim_mode that
+> > > is a more targetted form of direct reclaim. On machines with large NUMA
+> > > distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
+> > > unmapped pages will be reclaimed if the zone watermarks are not being met.
+> > > 
+> > > There is a heuristic that determines if the scan is worthwhile but the
+> > > problem is that the heuristic is not being properly applied and is basically
+> > > assuming zone_reclaim_mode is 1 if it is enabled.
+> > > 
+> > > This patch makes zone_reclaim() makes a better attempt at working out how
+> > > many pages it might be able to reclaim given the current reclaim_mode. If it
+> > > cannot clean pages, then NR_FILE_DIRTY number of pages are not candidates. If
+> > > it cannot swap, then NR_FILE_MAPPED are not. This indirectly addresses tmpfs
+> > > as those pages tend to be dirty as they are not cleaned by pdflush or sync.
 > > 
-> > hmmm, I think nobody can know proper interval settings on his own systems.
-> > I agree with Wu. It can be hidden.
-> > 
-> 
-> For the few users that case, I expect the majority of those will choose
-> either 0 or the default value of 30. They might want to alter this while
-> setting zone_reclaim_mode if they don't understand the different values
-> it can have for example.
-> 
-> My preference would be that this not exist at all but the
-> scan-avoidance-heuristic has to be perfect to allow that.
-
-Ah, I didn't concern interval==0. thanks.
-I can ack this now, but please add documentation about interval==0 meaning?
-
-
-
-
-> > > @@ -2414,6 +2426,16 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> > >  	ret = __zone_reclaim(zone, gfp_mask, order);
-> > >  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
-> > >  
-> > > +	if (!ret) {
-> > > +		/*
-> > > +		 * We were unable to reclaim enough pages to stay on node and
-> > > +		 * unable to detect in advance that the scan would fail. Allow
-> > > +		 * off node accesses for zone_reclaim_inteval jiffies before
-> > > +		 * trying zone_reclaim() again
-> > > +		 */
-> > > +		zone->zone_reclaim_failure = jiffies;
-> > 
-> > Oops, this simple assignment don't care jiffies round-trip.
+> > No, tmpfs pages are not accounted in NR_FILE_DIRTY because of the
+> > BDI_CAP_NO_ACCT_AND_WRITEBACK bits.
 > > 
 > 
-> Here it is just recording the jiffies value. The real smarts with the counter
-> use time_before() which I assumed could handle jiffie wrap-arounds. Even
-> if it doesn't, the consequence is that one scan will occur that could have
-> been avoided around the time of the jiffie wraparound. The value will then
-> be reset and it will be fine.
+> Ok, that explains why the dirty page count was not as high as I was
+> expecting. Thanks.
+> 
+> > > The ideal would be that the number of tmpfs pages would also be known
+> > > and account for like NR_FILE_MAPPED as swap is required to discard them.
+> > > A means of working this out quickly was not obvious but a comment is added
+> > > noting the problem.
+> > 
+> > I'd rather prefer it be accounted separately than to muck up NR_FILE_MAPPED :)
+> > 
+> 
+> Maybe I used a poor choice of words. What I meant was that the ideal would
+> be we had a separate count for tmpfs pages. As tmpfs pages and mapped pages
+> both have to be unmapped and potentially, they are "like" each other with
+> respect to the zone_reclaim_mode and how it behaves. We would end up
+> with something like
+> 
+> 	pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
+> 	pagecache_reclaimable -= zone_page_state(zone, NR_FILE_TMPFS);
 
-time_before() assume two argument are enough nearly time.
-if we use 32bit cpu and HZ=1000, about jiffies wraparound about one month.
+OK. But tmpfs pages may be mapped, so there will be double counting.
+We must at least make sure pagecache_reclaimable won't get underflowed.
+(Or make another LRU list for tmpfs pages?)
 
-Then, 
+> > > +	int pagecache_reclaimable;
+> > > +
+> > > +	/*
+> > > +	 * Work out how many page cache pages we can reclaim in this mode.
+> > > +	 *
+> > > +	 * NOTE: Ideally, tmpfs pages would be accounted as if they were
+> > > +	 *       NR_FILE_MAPPED as swap is required to discard those
+> > > +	 *       pages even when they are clean. However, there is no
+> > > +	 *       way of quickly identifying the number of tmpfs pages
+> > > +	 */
+> > 
+> > So can you remove the note on NR_FILE_MAPPED?
+> > 
+> 
+> Why would I remove the note? I can alter the wording but the intention is
+> to show we cannot count the number of tmpfs pages quickly and it would be
+> nice if we could. Maybe this is clearer?
+> 
+> Note: Ideally tmpfs pages would be accounted for as NR_FILE_TMPFS or
+> 	similar and treated similar to NR_FILE_MAPPED as both require
+> 	unmapping from page tables and potentially swap to reclaim.
+> 	However, no such counter exists.
 
-1. zone reclaim failure occur
-2. system works fine for one month
-3. jiffies wrap and time_before() makes mis-calculation.
+That's better. Thanks.
 
-I think.
+> > > +	pagecache_reclaimable = zone_page_state(zone, NR_FILE_PAGES);
+> > > +	if (!(zone_reclaim_mode & RECLAIM_WRITE))
+> > > +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_DIRTY);
+> > 
+> > > +	if (!(zone_reclaim_mode & RECLAIM_SWAP))
+> > > +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
+> > 
+> > So the "if" can be removed because NR_FILE_MAPPED is not related to swapping?
+> > 
+> 
+> It's partially related with respect to what zone_reclaim() is doing.
+> Once something is mapped, we need RECLAIM_SWAP set on the
+> zone_reclaim_mode to do anything useful with them.
 
+You are referring to mapped anonymous/tmpfs pages? But I mean
+NR_FILE_MAPPED pages won't goto swap when unmapped.
 
+Thanks,
+Fengguang
 
+> > >  	/*
+> > >  	 * Zone reclaim reclaims unmapped file backed pages and
+> > > @@ -2391,8 +2406,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+> > >  	 * if less than a specified percentage of the zone is used by
+> > >  	 * unmapped file backed pages.
+> > >  	 */
+> > > -	if (zone_page_state(zone, NR_FILE_PAGES) -
+> > > -	    zone_page_state(zone, NR_FILE_MAPPED) <= zone->min_unmapped_pages
+> > > +	if (pagecache_reclaimable <= zone->min_unmapped_pages
+> > >  	    && zone_page_state(zone, NR_SLAB_RECLAIMABLE)
+> > >  			<= zone->min_slab_pages)
+> > >  		return 0;
+> > > -- 
+> > > 1.5.6.5
+> > 
+> 
+> -- 
+> Mel Gorman
+> Part-time Phd Student                          Linux Technology Center
+> University of Limerick                         IBM Dublin Software Lab
