@@ -1,173 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbZFIMIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932246AbZFIMHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932247AbZFIMIV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 08:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758837AbZFIMIL
+	id S932246AbZFIMHs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 08:07:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932199AbZFIMHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 08:08:11 -0400
-Received: from mga03.intel.com ([143.182.124.21]:51840 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757820AbZFIMIK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 08:08:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,331,1241420400"; 
-   d="scan'208";a="152230235"
-Date: Tue, 9 Jun 2009 20:08:02 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] Properly account for the number of page cache
-	pages zone_reclaim() can reclaim
-Message-ID: <20090609120802.GA5589@localhost>
-References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-3-git-send-email-mel@csn.ul.ie> <20090609022549.GB6740@localhost> <20090609082728.GF18380@csn.ul.ie> <20090609084550.GB7108@localhost> <20090609104809.GQ18380@csn.ul.ie>
+	Tue, 9 Jun 2009 08:07:17 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:34445 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932183AbZFIMHO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 08:07:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Fx3RjAmItY+Sg8/WFRr9uY3hQjf/Iha2XtUnQ4m77RDFdiNzBOpf1VKVl3/yJq6MmB
+         84qfNTfDsgh7A12pcuqvLU8LcNqFz2/G8hMeL1/tRkmk+ZyzxhVnG37Mezk1RMXLMAV/
+         GkxMg7d0ZqSIUdxCZLpRaltSKPHaoV8cwSAJw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090609104809.GQ18380@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <7ca0521d9b798ef8b56212e5b17ea713.squirrel@webmail-b.css.fujitsu.com>
+References: <20090609181505.4083a213.kamezawa.hiroyu@jp.fujitsu.com>
+	 <28c262360906090300s13f4ee09mcc9622c1e477eaad@mail.gmail.com>
+	 <e8f208a7c6bec1818947c24658dc1561.squirrel@webmail-b.css.fujitsu.com>
+	 <28c262360906090430p21125c51g10cfdc377a78d07b@mail.gmail.com>
+	 <7ca0521d9b798ef8b56212e5b17ea713.squirrel@webmail-b.css.fujitsu.com>
+Date: Tue, 9 Jun 2009 21:07:16 +0900
+Message-ID: <28c262360906090507u75f5b594o71906777a91efa1@mail.gmail.com>
+Subject: Re: [BUGFIX][PATCH] fix wrong lru rotate back at lumpty reclaim
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andy Whitcroft <apw@canonical.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       riel@redhat.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 06:48:10PM +0800, Mel Gorman wrote:
-> On Tue, Jun 09, 2009 at 04:45:50PM +0800, Wu Fengguang wrote:
-> > On Tue, Jun 09, 2009 at 04:27:29PM +0800, Mel Gorman wrote:
-> > > On Tue, Jun 09, 2009 at 10:25:49AM +0800, Wu Fengguang wrote:
-> > > > On Mon, Jun 08, 2009 at 09:01:29PM +0800, Mel Gorman wrote:
-> > > > > On NUMA machines, the administrator can configure zone_relcaim_mode that
-> > > > > is a more targetted form of direct reclaim. On machines with large NUMA
-> > > > > distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
-> > > > > unmapped pages will be reclaimed if the zone watermarks are not being met.
-> > > > > 
-> > > > > There is a heuristic that determines if the scan is worthwhile but the
-> > > > > problem is that the heuristic is not being properly applied and is basically
-> > > > > assuming zone_reclaim_mode is 1 if it is enabled.
-> > > > > 
-> > > > > This patch makes zone_reclaim() makes a better attempt at working out how
-> > > > > many pages it might be able to reclaim given the current reclaim_mode. If it
-> > > > > cannot clean pages, then NR_FILE_DIRTY number of pages are not candidates. If
-> > > > > it cannot swap, then NR_FILE_MAPPED are not. This indirectly addresses tmpfs
-> > > > > as those pages tend to be dirty as they are not cleaned by pdflush or sync.
-> > > > 
-> > > > No, tmpfs pages are not accounted in NR_FILE_DIRTY because of the
-> > > > BDI_CAP_NO_ACCT_AND_WRITEBACK bits.
-> > > > 
-> > > 
-> > > Ok, that explains why the dirty page count was not as high as I was
-> > > expecting. Thanks.
-> > > 
-> > > > > The ideal would be that the number of tmpfs pages would also be known
-> > > > > and account for like NR_FILE_MAPPED as swap is required to discard them.
-> > > > > A means of working this out quickly was not obvious but a comment is added
-> > > > > noting the problem.
-> > > > 
-> > > > I'd rather prefer it be accounted separately than to muck up NR_FILE_MAPPED :)
-> > > > 
-> > > 
-> > > Maybe I used a poor choice of words. What I meant was that the ideal would
-> > > be we had a separate count for tmpfs pages. As tmpfs pages and mapped pages
-> > > both have to be unmapped and potentially, they are "like" each other with
-> > > respect to the zone_reclaim_mode and how it behaves. We would end up
-> > > with something like
-> > > 
-> > > 	pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
-> > > 	pagecache_reclaimable -= zone_page_state(zone, NR_FILE_TMPFS);
-> > 
-> > OK. But tmpfs pages may be mapped, so there will be double counting.
-> > We must at least make sure pagecache_reclaimable won't get underflowed.
-> 
-> True. What vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch
-> does might be better overall.
+2009/6/9 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
+> Minchan Kim wrote:
+>
+>> I mean follow as
+>>  908         /*
+>>  909          * Attempt to take all pages in the order aligned region
+>>  910          * surrounding the tag page.  Only take those pages of
+>>  911          * the same active state as that tag page.  We may safely
+>>  912          * round the target page pfn down to the requested order
+>>  913          * as the mem_map is guarenteed valid out to MAX_ORDER,
+>>  914          * where that page is in a different zone we will detect
+>>  915          * it from its zone id and abort this block scan.
+>>  916          */
+>>  917         zone_id = page_zone_id(page);
+>>
+> But what this code really do is.
+> ==
+> 931                         /* Check that we have not crossed a zone
+> boundary. */
+>  932                         if (unlikely(page_zone_id(cursor_page) !=
+> zone_id))
+>  933                                 continue;
+> ==
+> continue. I think this should be "break"
+> I wonder what "This block scan" means is "scanning this aligned block".
 
-Yup.
+It is to find first page in same zone with target page when we have
+crossed a zone.
+so it shouldn't stop due to that.
 
-> > (Or make another LRU list for tmpfs pages?)
-> > 
-> 
-> Another LRU won't help the accounting and will changes too significantly
-> how reclaim works.
+I think 'abort' means stopping only the page.
+If it is right, it would be better to change follow as.
+"and continue scanning next page"
 
-OK.
+Let's Cced Andy Whitcroft.
 
-> > > > > +	int pagecache_reclaimable;
-> > > > > +
-> > > > > +	/*
-> > > > > +	 * Work out how many page cache pages we can reclaim in this mode.
-> > > > > +	 *
-> > > > > +	 * NOTE: Ideally, tmpfs pages would be accounted as if they were
-> > > > > +	 *       NR_FILE_MAPPED as swap is required to discard those
-> > > > > +	 *       pages even when they are clean. However, there is no
-> > > > > +	 *       way of quickly identifying the number of tmpfs pages
-> > > > > +	 */
-> > > > 
-> > > > So can you remove the note on NR_FILE_MAPPED?
-> > > > 
-> > > 
-> > > Why would I remove the note? I can alter the wording but the intention is
-> > > to show we cannot count the number of tmpfs pages quickly and it would be
-> > > nice if we could. Maybe this is clearer?
-> > > 
-> > > Note: Ideally tmpfs pages would be accounted for as NR_FILE_TMPFS or
-> > > 	similar and treated similar to NR_FILE_MAPPED as both require
-> > > 	unmapping from page tables and potentially swap to reclaim.
-> > > 	However, no such counter exists.
-> > 
-> > That's better. Thanks.
-> > 
-> > > > > +	pagecache_reclaimable = zone_page_state(zone, NR_FILE_PAGES);
-> > > > > +	if (!(zone_reclaim_mode & RECLAIM_WRITE))
-> > > > > +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_DIRTY);
-> > > > 
-> > > > > +	if (!(zone_reclaim_mode & RECLAIM_SWAP))
-> > > > > +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
-> > > > 
-> > > > So the "if" can be removed because NR_FILE_MAPPED is not related to swapping?
-> > > > 
-> > > 
-> > > It's partially related with respect to what zone_reclaim() is doing.
-> > > Once something is mapped, we need RECLAIM_SWAP set on the
-> > > zone_reclaim_mode to do anything useful with them.
-> > 
-> > You are referring to mapped anonymous/tmpfs pages? But I mean
-> > NR_FILE_MAPPED pages won't goto swap when unmapped.
-> > 
-> 
-> Not all of them. But some of them backed by real files will be discarded
-> if clean at the next pass
+> But I think the whoe code is not written as commented.
+>
+>>
+>>>> If I understand it properly , don't we add goto phrase ?
+>>>>
+>>> No.
+>>
+>> If it is so, the break also is meaningless.
+>>
+> yes. I'll remove it. But need to add "exit from for loop" logic again.
+>
+> I'm sorry that the wrong logic of this loop was out of my sight.
+> I'll review and rewrite this part all, tomorrow.
 
-Right.
+Yes. I will review tomorrow, too. :)
 
-Thanks,
-Fengguang
+> Thanks,
+> -Kame
+>
+>
 
-> > > > >  	/*
-> > > > >  	 * Zone reclaim reclaims unmapped file backed pages and
-> > > > > @@ -2391,8 +2406,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> > > > >  	 * if less than a specified percentage of the zone is used by
-> > > > >  	 * unmapped file backed pages.
-> > > > >  	 */
-> > > > > -	if (zone_page_state(zone, NR_FILE_PAGES) -
-> > > > > -	    zone_page_state(zone, NR_FILE_MAPPED) <= zone->min_unmapped_pages
-> > > > > +	if (pagecache_reclaimable <= zone->min_unmapped_pages
-> > > > >  	    && zone_page_state(zone, NR_SLAB_RECLAIMABLE)
-> > > > >  			<= zone->min_slab_pages)
-> > > > >  		return 0;
-> > > > > -- 
-> > > > > 1.5.6.5
-> > > > 
-> > > 
-> > > -- 
-> > > Mel Gorman
-> > > Part-time Phd Student                          Linux Technology Center
-> > > University of Limerick                         IBM Dublin Software Lab
-> > 
-> 
-> -- 
-> Mel Gorman
-> Part-time Phd Student                          Linux Technology Center
-> University of Limerick                         IBM Dublin Software Lab
+
+
+-- 
+Kinds regards,
+Minchan Kim
