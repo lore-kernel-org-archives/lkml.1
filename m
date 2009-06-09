@@ -1,58 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758447AbZFIQpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbZFIQsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758447AbZFIQpv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 12:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758367AbZFIQpd
+	id S1757987AbZFIQsJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 12:48:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbZFIQr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 12:45:33 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:55411 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758350AbZFIQpa (ORCPT
+	Tue, 9 Jun 2009 12:47:56 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:62324 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751158AbZFIQrz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 12:45:30 -0400
-Date: Tue, 9 Jun 2009 17:45:29 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Azael Avalos <coproscefalo@gmail.com>
-Cc: linux-acpi@vger.kernel.org, dsilvers@simtec.co.uk,
-       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] toshiba-acpi: Support TOS1900-type devices
-Message-ID: <20090609164529.GA11592@srcf.ucam.org>
-References: <20090331221107.GA30383@srcf.ucam.org> <74962ea30903311519s2fb6087fxfe8859e3c570ac99@mail.gmail.com> <20090331230217.GA31599@srcf.ucam.org> <74962ea30904010950u31fbdca3w51eafb9b7ec1ca73@mail.gmail.com> <20090401165345.GA13939@srcf.ucam.org> <74962ea30904011003o354e8780ya5e9ac1a6a579084@mail.gmail.com> <20090401170708.GA14167@srcf.ucam.org> <74962ea30904011013v5ffa0620y1f1aefa2c84e1ce@mail.gmail.com> <20090602140357.GA13548@srcf.ucam.org> <74962ea30906090942r43d374e7ra00e5056eca040a8@mail.gmail.com>
+	Tue, 9 Jun 2009 12:47:55 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: liqin.chen@sunplusct.com
+Subject: Re: [PATCH 01/27] score: create Kconfig Kconfig.debug Makefile
+Date: Tue, 9 Jun 2009 18:47:12 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
+References: <OF2086513E.4B4F803C-ON482575D0.0022E294-482575D0.0023688F@sunplusct.com>
+In-Reply-To: <OF2086513E.4B4F803C-ON482575D0.0022E294-482575D0.0023688F@sunplusct.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <74962ea30906090942r43d374e7ra00e5056eca040a8@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906091847.13539.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18XoF8QzpgXrCAFLLkGtVa5jrIk0LVuD1k4lCN
+ boR2tV5L743PUqdOvES+kfWVCGKhuMIsraypjVPeX63Qi8HjpX
+ W1XUrzTwfoeijyPL/XFog==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 10:42:00AM -0600, Azael Avalos wrote:
+On Tuesday 09 June 2009, liqin.chen@sunplusct.com wrote:
 
-> However, everytime you poll the INFO method, the TECF variable receives
-> a zero, so the next time you want to poll the INFO method, you
-> receive a zero also, unless you "activate" the TECF variable again
-> perhaps tru' _Q43 or by directly writing a one into it.
+> +++ b/arch/score/Kconfig
+> @@ -0,0 +1,243 @@
+> +config SCORE
+> +       bool
+> +       default y
+> +       select EMBEDDED
 
-Right, but _Q43 should be called when you hit a hotkey. The fact that 
-it's not is what's causing the problem here.
+I don't think you should select EMBEDDED. The option is slightly
+misnamed and just enables some other config options. If you need
+any of those that are protected by EMBEDDED, then maybe select those
+directly.
 
-> 1. Activate Hotkey Events call 0x1E.
-> 2. It activates something internally causing Hotkey Events being
->    stored in TOHK.
-> 3. Whenever I press an Fn-Key combo let's say Fn-Esc, the actual key gets
->    stored in TOHK, in this case 0x101, but just lasting a couple seconds
->    (or even less...), it seems it's volatile.
-> 4. Polling TOHK via the INFO method or directly gets me the actual hotkey,
->    but again, must real quick since it will disappear (I used 100 ms polling).
-> 5. Figure out a way of getting those Hotkey Events in a nice manner...
->    I managed to get them, but sometimes I got them repeated due to the
->    polling timer...
+> +config NO_DMA
+> +       bool
+> +       default y
 
-When you hit a hotkey, what happens in /proc/interrupts? Do you see an 
-i8042 event or an acpi event?
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Are you planning to implement DMA support? We just had a lenghty
+discussion about how to do it generically. While we did not find
+a solution, you can probably easily take the
+asm-generic/dma-mapping-linear.h I posted and adapt that to your
+needs.
+
+> +config SCORE_L1_CACHE_SHIFT
+> +       int
+> +       default "5"
+
+Your arch/score/include/asm/cache.h contains
+
+#define L1_CACHE_SHIFT         4
+
+One of the two looks wrong ;-)
+
+If you have different cache implementations, this value
+should probably be the maximum of all CPUs that are configured
+in the kernel.
+
+> +config HZ
+> +       int
+> +       default 100
+
+Have you looked into implementing NO_HZ? It is not required in any
+way, but can probably reduce your power consumption, which may be
+interesting for embedded systems.
+
+> +config KEXEC
+> +       bool "Kexec system call (EXPERIMENTAL)"
+> +       depends on EXPERIMENTAL
+> +       help
+
+Do you actually support this? I did not look very closely,
+but could not find anything about kexec in the other patches.
+If not, just drop the config option.
+
+	Arnd <><
