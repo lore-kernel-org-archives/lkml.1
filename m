@@ -1,160 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbZFIOxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbZFIOxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755725AbZFIOxK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 10:53:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZFIOw6
+	id S1755900AbZFIOxa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 10:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZFIOxU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 10:52:58 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43885 "EHLO hera.kernel.org"
+	Tue, 9 Jun 2009 10:53:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43917 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbZFIOw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 10:52:57 -0400
-Date: Tue, 9 Jun 2009 14:52:02 GMT
-From: tip-bot for Peter Zijlstra <peterz@infradead.org>
+	id S1753450AbZFIOxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 10:53:19 -0400
+Date: Tue, 9 Jun 2009 14:52:47 GMT
+From: tip-bot for Andreas Herrmann <andreas.herrmann3@amd.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
+       andreas.herrmann3@amd.com, stable@kernel.org, tglx@linutronix.de,
+       mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, a.p.zijlstra@chello.nl, peterz@infradead.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1244477919.13761.9042.camel@twins>
-References: <1244477919.13761.9042.camel@twins>
-Subject: [tip:tracing/core] ring-buffer: pass in lockdep class key for reader_lock
-Message-ID: <tip-1f8a6a10fb9437eac3f516ea4324a19087872f30@git.kernel.org>
-Git-Commit-ID: 1f8a6a10fb9437eac3f516ea4324a19087872f30
+       andreas.herrmann3@amd.com, stable@kernel.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090608135509.GA12431@alberich.amd.com>
+References: <20090608135509.GA12431@alberich.amd.com>
+Subject: [tip:x86/urgent] x86: Detect use of extended APIC ID for AMD CPUs
+Message-ID: <tip-42937e81a82b6bbc51a309c83da140b3a7ca5945@git.kernel.org>
+Git-Commit-ID: 42937e81a82b6bbc51a309c83da140b3a7ca5945
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 09 Jun 2009 14:52:04 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 09 Jun 2009 14:52:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1f8a6a10fb9437eac3f516ea4324a19087872f30
-Gitweb:     http://git.kernel.org/tip/1f8a6a10fb9437eac3f516ea4324a19087872f30
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Mon, 8 Jun 2009 18:18:39 +0200
-Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Mon, 8 Jun 2009 18:50:20 -0400
+Commit-ID:  42937e81a82b6bbc51a309c83da140b3a7ca5945
+Gitweb:     http://git.kernel.org/tip/42937e81a82b6bbc51a309c83da140b3a7ca5945
+Author:     Andreas Herrmann <andreas.herrmann3@amd.com>
+AuthorDate: Mon, 8 Jun 2009 15:55:09 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 9 Jun 2009 15:28:46 +0200
 
-ring-buffer: pass in lockdep class key for reader_lock
+x86: Detect use of extended APIC ID for AMD CPUs
 
-On Sun, 7 Jun 2009, Ingo Molnar wrote:
-> Testing tracer sched_switch: <6>Starting ring buffer hammer
-> PASSED
-> Testing tracer sysprof: PASSED
-> Testing tracer function: PASSED
-> Testing tracer irqsoff:
-> =============================================
-> PASSED
-> Testing tracer preemptoff: PASSED
-> Testing tracer preemptirqsoff: [ INFO: possible recursive locking detected ]
-> PASSED
-> Testing tracer branch: 2.6.30-rc8-tip-01972-ge5b9078-dirty #5760
-> ---------------------------------------------
-> rb_consumer/431 is trying to acquire lock:
->  (&cpu_buffer->reader_lock){......}, at: [<c109eef7>] ring_buffer_reset_cpu+0x37/0x70
->
-> but task is already holding lock:
->  (&cpu_buffer->reader_lock){......}, at: [<c10a019e>] ring_buffer_consume+0x7e/0xc0
->
-> other info that might help us debug this:
-> 1 lock held by rb_consumer/431:
->  #0:  (&cpu_buffer->reader_lock){......}, at: [<c10a019e>] ring_buffer_consume+0x7e/0xc0
+Booting a 32-bit kernel on Magny-Cours results in the following panic:
 
-The ring buffer is a generic structure, and can be used outside of
-ftrace. If ftrace traces within the use of the ring buffer, it can produce
-false positives with lockdep.
+  ...
+  Using APIC driver default
+  ...
+  Overriding APIC driver with bigsmp
+  ...
+  Getting VERSION: 80050010
+  Getting VERSION: 80050010
+  Getting ID: 10000000
+  Getting ID: ef000000
+  Getting LVT0: 700
+  Getting LVT1: 10000
+  Kernel panic - not syncing: Boot APIC ID in local APIC unexpected (16 vs 0)
+  Pid: 1, comm: swapper Not tainted 2.6.30-rcX #2
+  Call Trace:
+   [<c05194da>] ? panic+0x38/0xd3
+   [<c0743102>] ? native_smp_prepare_cpus+0x259/0x31f
+   [<c073b19d>] ? kernel_init+0x3e/0x141
+   [<c073b15f>] ? kernel_init+0x0/0x141
+   [<c020325f>] ? kernel_thread_helper+0x7/0x10
 
-This patch passes in a static lock key into the allocation of the ring
-buffer, so that different ring buffers will have their own lock class.
+The reason is that default_get_apic_id handled extension of local APIC
+ID field just in case of XAPIC.
 
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1244477919.13761.9042.camel@twins>
+Thus for this AMD CPU, default_get_apic_id() returns 0 and
+bigsmp_get_apic_id() returns 16 which leads to the respective kernel
+panic.
 
-[ store key in ring buffer descriptor ]
+This patch introduces a Linux specific feature flag to indicate
+support for extended APIC id (8 bits instead of 4 bits width) and sets
+the flag on AMD CPUs if applicable.
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: <stable@kernel.org>
+LKML-Reference: <20090608135509.GA12431@alberich.amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/ring_buffer.h |   14 +++++++++++++-
- kernel/trace/ring_buffer.c  |    9 +++++++--
- 2 files changed, 20 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/apic.h       |    2 +-
+ arch/x86/include/asm/cpufeature.h |    1 +
+ arch/x86/kernel/cpu/amd.c         |   10 ++++++++++
+ 3 files changed, 12 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
-index f134582..8670f15 100644
---- a/include/linux/ring_buffer.h
-+++ b/include/linux/ring_buffer.h
-@@ -105,7 +105,19 @@ void ring_buffer_discard_commit(struct ring_buffer *buffer,
-  * size is in bytes for each per CPU buffer.
-  */
- struct ring_buffer *
--ring_buffer_alloc(unsigned long size, unsigned flags);
-+__ring_buffer_alloc(unsigned long size, unsigned flags, struct lock_class_key *key);
-+
-+/*
-+ * Because the ring buffer is generic, if other users of the ring buffer get
-+ * traced by ftrace, it can produce lockdep warnings. We need to keep each
-+ * ring buffer's lock class separate.
-+ */
-+#define ring_buffer_alloc(size, flags)			\
-+({							\
-+	static struct lock_class_key __key;		\
-+	__ring_buffer_alloc((size), (flags), &__key);	\
-+})
-+
- void ring_buffer_free(struct ring_buffer *buffer);
- 
- int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size);
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 7102d7a..22878b0 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -426,6 +426,8 @@ struct ring_buffer {
- 	atomic_t			record_disabled;
- 	cpumask_var_t			cpumask;
- 
-+	struct lock_class_key		*reader_lock_key;
-+
- 	struct mutex			mutex;
- 
- 	struct ring_buffer_per_cpu	**buffers;
-@@ -565,6 +567,7 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
- 	cpu_buffer->cpu = cpu;
- 	cpu_buffer->buffer = buffer;
- 	spin_lock_init(&cpu_buffer->reader_lock);
-+	lockdep_set_class(&cpu_buffer->reader_lock, buffer->reader_lock_key);
- 	cpu_buffer->lock = (raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
- 	INIT_LIST_HEAD(&cpu_buffer->pages);
- 
-@@ -635,7 +638,8 @@ static int rb_cpu_notify(struct notifier_block *self,
-  * when the buffer wraps. If this flag is not set, the buffer will
-  * drop data when the tail hits the head.
-  */
--struct ring_buffer *ring_buffer_alloc(unsigned long size, unsigned flags)
-+struct ring_buffer *__ring_buffer_alloc(unsigned long size, unsigned flags,
-+					struct lock_class_key *key)
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index 42f2f83..9b2c049 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -410,7 +410,7 @@ static inline unsigned default_get_apic_id(unsigned long x)
  {
- 	struct ring_buffer *buffer;
- 	int bsize;
-@@ -658,6 +662,7 @@ struct ring_buffer *ring_buffer_alloc(unsigned long size, unsigned flags)
- 	buffer->pages = DIV_ROUND_UP(size, BUF_PAGE_SIZE);
- 	buffer->flags = flags;
- 	buffer->clock = trace_clock_local;
-+	buffer->reader_lock_key = key;
+ 	unsigned int ver = GET_APIC_VERSION(apic_read(APIC_LVR));
  
- 	/* need at least two pages */
- 	if (buffer->pages == 1)
-@@ -715,7 +720,7 @@ struct ring_buffer *ring_buffer_alloc(unsigned long size, unsigned flags)
- 	kfree(buffer);
- 	return NULL;
+-	if (APIC_XAPIC(ver))
++	if (APIC_XAPIC(ver) || boot_cpu_has(X86_FEATURE_EXTD_APICID))
+ 		return (x >> 24) & 0xFF;
+ 	else
+ 		return (x >> 24) & 0x0F;
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index bb83b1c..78dee4f 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -94,6 +94,7 @@
+ #define X86_FEATURE_TSC_RELIABLE (3*32+23) /* TSC is known to be reliable */
+ #define X86_FEATURE_NONSTOP_TSC	(3*32+24) /* TSC does not stop in C states */
+ #define X86_FEATURE_CLFLUSH_MONITOR (3*32+25) /* "" clflush reqd with monitor */
++#define X86_FEATURE_EXTD_APICID	(3*32+26) /* has extended APICID (8 bits) */
+ 
+ /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
+ #define X86_FEATURE_XMM3	(4*32+ 0) /* "pni" SSE-3 */
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index 7e4a459..0802e15 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -6,6 +6,7 @@
+ #include <asm/processor.h>
+ #include <asm/apic.h>
+ #include <asm/cpu.h>
++#include <asm/pci-direct.h>
+ 
+ #ifdef CONFIG_X86_64
+ # include <asm/numa_64.h>
+@@ -351,6 +352,15 @@ static void __cpuinit early_init_amd(struct cpuinfo_x86 *c)
+ 		    (c->x86_model == 8 && c->x86_mask >= 8))
+ 			set_cpu_cap(c, X86_FEATURE_K6_MTRR);
+ #endif
++#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_PCI)
++	/* check CPU config space for extended APIC ID */
++	if (c->x86 >= 0xf) {
++		unsigned int val;
++		val = read_pci_config(0, 24, 0, 0x68);
++		if ((val & ((1 << 17) | (1 << 18))) == ((1 << 17) | (1 << 18)))
++			set_cpu_cap(c, X86_FEATURE_EXTD_APICID);
++	}
++#endif
  }
--EXPORT_SYMBOL_GPL(ring_buffer_alloc);
-+EXPORT_SYMBOL_GPL(__ring_buffer_alloc);
  
- /**
-  * ring_buffer_free - free a ring buffer.
+ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
