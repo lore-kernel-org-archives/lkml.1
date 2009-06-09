@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbZFIQSa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757038AbZFIQUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756978AbZFIQSa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 12:18:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbZFIQSX
+	id S1757038AbZFIQUN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 12:20:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbZFIQUD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 12:18:23 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:45672 "EHLO mx1.emlix.com"
+	Tue, 9 Jun 2009 12:20:03 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:45676 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753562AbZFIQSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 12:18:23 -0400
-From: "Oskar Schirmer" <os@emlix.com>
-Date: Tue, 9 Jun 2009 18:18:18 +0200
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Oskar Schirmer <os@emlix.com>, Sascha Hauer <kernel@pengutronix.de>,
-       linux-kernel@vger.kernel.org, Fabian Godehardt <fg@emlix.com>
-Subject: Re: [PATCH 8/8] imx: serial: add IrDA support to serial driver
-Message-ID: <20090609161817.GA17246@emlix.com>
-References: <1244555211-15618-1-git-send-email-os@emlix.com> <1244555211-15618-2-git-send-email-os@emlix.com> <1244555211-15618-3-git-send-email-os@emlix.com> <1244555211-15618-4-git-send-email-os@emlix.com> <1244555211-15618-5-git-send-email-os@emlix.com> <1244555211-15618-6-git-send-email-os@emlix.com> <1244555211-15618-7-git-send-email-os@emlix.com> <1244555211-15618-8-git-send-email-os@emlix.com> <1244555211-15618-9-git-send-email-os@emlix.com> <20090609160132.31265ffc@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090609160132.31265ffc@lxorguk.ukuu.org.uk>
-Organization: emlix GmbH
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1753076AbZFIQUC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 12:20:02 -0400
+Date: Wed, 10 Jun 2009 02:19:59 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: kbuild tree build failure
+Message-Id: <20090610021959.b7856ea9.sfr@canb.auug.org.au>
+In-Reply-To: <20090609161512.GB6675@uranus.ravnborg.org>
+References: <20090609114820.69d23ab3.sfr@canb.auug.org.au>
+	<20090609161512.GB6675@uranus.ravnborg.org>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__10_Jun_2009_02_19_59_+1000_RbBOob8_6TUHqRvF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 16:01:32 +0100, Alan Cox wrote:
-> > +#ifdef CONFIG_IRDA
-> > +#define USE_IRDA(sport)	((sport)->use_irda)
-> > +#else
-> > +#define USE_IRDA(sport)	(0)
-> > +#endif
-> > +
-> 
-> You define this but only use it in about half the cases ?
+--Signature=_Wed__10_Jun_2009_02_19_59_+1000_RbBOob8_6TUHqRvF
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, with CONFIG_IRDA undefined several locations look like e.g.:
+Hi Sam,
 
-if (0) {
-	... (sport)->irda_inv_rx ...
-}
+On Tue, 9 Jun 2009 18:15:12 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
+>
+> I will fix when the kids are sleeping (as in a few hours from now).
 
-Sure, the path will be optimized away, but still
-the conditional statement is subjected to syntax
-and scope analysis and gcc will correctly complain
-that irda_inv_rx is not declared.
+Thanks.  I won't be needing it for about 7 hours.
 
-On the other hand, we could omit the USE_IRDA macro
-altogether, but then we would have even more ifdefs
-around.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-> 
-> > +#ifdef CONFIG_IRDA
-> > +	if (sport->use_irda) {
-> > +		/* half duplex - wait for end of transmission */
-> > +		int n = 256;
-> 
-> Otherwise this series looks sound.
-> 
-> While you are fiddling with the baud rate the driver really should work
-> out the resulting actual baud rate and call
-> 
-> 	tty_encode_baud_rate(tty, in-rate, out-rate);
-> 
-> that will report back the resulting rate and knows how to encode all the
-> termios fields as well as reporting close values to the requested speed
-> as the speed requested (eg if you ask for B38400 and it tries to encode
-> 38215 or similar it will encode back B38400)
+--Signature=_Wed__10_Jun_2009_02_19_59_+1000_RbBOob8_6TUHqRvF
+Content-Type: application/pgp-signature
 
-Ok, the driver will need another fix here with respect to its
-interface to the upper layers. But the changes in
-baud rate calculation we made are with focus on correct
-peripheral register settings, because the old baud rate
-calculation was not accurate enough for IrDA use.
-That's why we introduced the approximation function
-(and finally generalised it into lib/).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-  Oskar
+iEYEARECAAYFAkoui68ACgkQjjKRsyhoI8zzJwCfc7uWg9NsHNyHndq0LK+AsyBO
+LOcAn3nBJVkGEScLnnB9gwoGSRFAMLTL
+=//tP
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__10_Jun_2009_02_19_59_+1000_RbBOob8_6TUHqRvF--
