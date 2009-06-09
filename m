@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbZFIBs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757696AbZFIBsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757547AbZFIBs2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 21:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbZFIBrs
+	id S1757696AbZFIBsj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 21:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756136AbZFIBrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 21:47:48 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63280 "EHLO
+	Mon, 8 Jun 2009 21:47:49 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:56619 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753528AbZFIBrq (ORCPT
+	with ESMTP id S1753878AbZFIBrq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Jun 2009 21:47:46 -0400
-Message-Id: <20090609014747.188279837@goodmis.org>
+Message-Id: <20090609014746.955665544@goodmis.org>
 References: <20090609014534.790466803@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 08 Jun 2009 21:45:39 -0400
+Date: Mon, 08 Jun 2009 21:45:38 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -26,171 +26,158 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
-Subject: [RFC PATCH 5/5] tracing/events: modify kmem print to new format
-Content-Disposition: inline; filename=0005-tracing-events-modify-kmem-print-to-new-format.patch
+Subject: [RFC PATCH 4/5] tracing/events: modify sched print to new format
+Content-Disposition: inline; filename=0004-tracing-events-modify-sched-print-to-new-format.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Use new format for better parsing of kmem events.
+Use new format for better parsing of sched events.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/trace/events/kmem.h |   97 +++++++++++++++++++------------------------
- 1 files changed, 43 insertions(+), 54 deletions(-)
+ include/trace/events/sched.h |   49 ++++++++++++++---------------------------
+ 1 files changed, 17 insertions(+), 32 deletions(-)
 
-diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
-index 9baba50..2ffa8ae 100644
---- a/include/trace/events/kmem.h
-+++ b/include/trace/events/kmem.h
-@@ -17,32 +17,35 @@
-  *
-  * Thus most bits set go first.
-  */
--#define show_gfp_flags(flags)						\
--	(flags) ? __print_flags(flags, "|",				\
--	{(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE"}, \
--	{(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER"},	\
--	{(unsigned long)GFP_USER,		"GFP_USER"},		\
--	{(unsigned long)GFP_TEMPORARY,		"GFP_TEMPORARY"},	\
--	{(unsigned long)GFP_KERNEL,		"GFP_KERNEL"},		\
--	{(unsigned long)GFP_NOFS,		"GFP_NOFS"},		\
--	{(unsigned long)GFP_ATOMIC,		"GFP_ATOMIC"},		\
--	{(unsigned long)GFP_NOIO,		"GFP_NOIO"},		\
--	{(unsigned long)__GFP_HIGH,		"GFP_HIGH"},		\
--	{(unsigned long)__GFP_WAIT,		"GFP_WAIT"},		\
--	{(unsigned long)__GFP_IO,		"GFP_IO"},		\
--	{(unsigned long)__GFP_COLD,		"GFP_COLD"},		\
--	{(unsigned long)__GFP_NOWARN,		"GFP_NOWARN"},		\
--	{(unsigned long)__GFP_REPEAT,		"GFP_REPEAT"},		\
--	{(unsigned long)__GFP_NOFAIL,		"GFP_NOFAIL"},		\
--	{(unsigned long)__GFP_NORETRY,		"GFP_NORETRY"},		\
--	{(unsigned long)__GFP_COMP,		"GFP_COMP"},		\
--	{(unsigned long)__GFP_ZERO,		"GFP_ZERO"},		\
--	{(unsigned long)__GFP_NOMEMALLOC,	"GFP_NOMEMALLOC"},	\
--	{(unsigned long)__GFP_HARDWALL,		"GFP_HARDWALL"},	\
--	{(unsigned long)__GFP_THISNODE,		"GFP_THISNODE"},	\
--	{(unsigned long)__GFP_RECLAIMABLE,	"GFP_RECLAIMABLE"},	\
--	{(unsigned long)__GFP_MOVABLE,		"GFP_MOVABLE"}		\
--	) : "GFP_NOWAIT"
-+#define show_gfp_flags(end...)						\
-+	"0=GFP_NOWAIT,"							\
-+	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-+	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-+	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-+	"0x%lx=%s,0x%lx=%s>" end ,					\
-+	(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE", \
-+	(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER",		\
-+	(unsigned long)GFP_USER,		"GFP_USER",		\
-+	(unsigned long)GFP_TEMPORARY,		"GFP_TEMPORARY",	\
-+	(unsigned long)GFP_KERNEL,		"GFP_KERNEL",		\
-+	(unsigned long)GFP_NOFS,		"GFP_NOFS",		\
-+	(unsigned long)GFP_ATOMIC,		"GFP_ATOMIC",		\
-+	(unsigned long)GFP_NOIO,		"GFP_NOIO",		\
-+	(unsigned long)__GFP_HIGH,		"GFP_HIGH",		\
-+	(unsigned long)__GFP_WAIT,		"GFP_WAIT",		\
-+	(unsigned long)__GFP_IO,		"GFP_IO",		\
-+	(unsigned long)__GFP_COLD,		"GFP_COLD",		\
-+	(unsigned long)__GFP_NOWARN,		"GFP_NOWARN",		\
-+	(unsigned long)__GFP_REPEAT,		"GFP_REPEAT",		\
-+	(unsigned long)__GFP_NOFAIL,		"GFP_NOFAIL",		\
-+	(unsigned long)__GFP_NORETRY,		"GFP_NORETRY",		\
-+	(unsigned long)__GFP_COMP,		"GFP_COMP",		\
-+	(unsigned long)__GFP_ZERO,		"GFP_ZERO",		\
-+	(unsigned long)__GFP_NOMEMALLOC,	"GFP_NOMEMALLOC",	\
-+	(unsigned long)__GFP_HARDWALL,		"GFP_HARDWALL",		\
-+	(unsigned long)__GFP_THISNODE,		"GFP_THISNODE",		\
-+	(unsigned long)__GFP_RECLAIMABLE,	"GFP_RECLAIMABLE",	\
-+	(unsigned long)__GFP_MOVABLE,		"GFP_MOVABLE"
- 
- TRACE_EVENT(kmalloc,
- 
-@@ -70,12 +73,9 @@ TRACE_EVENT(kmalloc,
- 		__entry->gfp_flags	= gfp_flags;
+diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
+index 24ab5bc..beb1584 100644
+--- a/include/trace/events/sched.h
++++ b/include/trace/events/sched.h
+@@ -26,7 +26,7 @@ TRACE_EVENT(sched_kthread_stop,
+ 		__entry->pid	= t->pid;
  	),
  
--	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s",
--		__entry->call_site,
--		__entry->ptr,
--		__entry->bytes_req,
--		__entry->bytes_alloc,
--		show_gfp_flags(__entry->gfp_flags))
-+	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
-+		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
-+		  show_gfp_flags())
+-	TP_printk("task %s:%d", __entry->comm, __entry->pid)
++	TP_FORMAT("task <strarray:comm>:<int:pid>")
  );
  
- TRACE_EVENT(kmem_cache_alloc,
-@@ -104,12 +104,9 @@ TRACE_EVENT(kmem_cache_alloc,
- 		__entry->gfp_flags	= gfp_flags;
+ /*
+@@ -46,7 +46,7 @@ TRACE_EVENT(sched_kthread_stop_ret,
+ 		__entry->ret	= ret;
  	),
  
--	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s",
--		__entry->call_site,
--		__entry->ptr,
--		__entry->bytes_req,
--		__entry->bytes_alloc,
--		show_gfp_flags(__entry->gfp_flags))
-+	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
-+		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
-+		  show_gfp_flags())
+-	TP_printk("ret %d", __entry->ret)
++	TP_FORMAT("ret <int:ret>")
  );
  
- TRACE_EVENT(kmalloc_node,
-@@ -141,13 +138,9 @@ TRACE_EVENT(kmalloc_node,
- 		__entry->node		= node;
+ /*
+@@ -73,8 +73,7 @@ TRACE_EVENT(sched_wait_task,
+ 		__entry->prio	= p->prio;
  	),
  
--	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s node=%d",
--		__entry->call_site,
--		__entry->ptr,
--		__entry->bytes_req,
--		__entry->bytes_alloc,
--		show_gfp_flags(__entry->gfp_flags),
--		__entry->node)
-+	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
-+		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
-+		  show_gfp_flags(" node=<int:node>"))
+-	TP_printk("task %s:%d [%d]",
+-		  __entry->comm, __entry->pid, __entry->prio)
++	TP_FORMAT("task <strarray:comm>:<int:pid> [<int:prio>]")
  );
  
- TRACE_EVENT(kmem_cache_alloc_node,
-@@ -179,13 +172,9 @@ TRACE_EVENT(kmem_cache_alloc_node,
- 		__entry->node		= node;
+ /*
+@@ -103,9 +102,7 @@ TRACE_EVENT(sched_wakeup,
+ 		__entry->success	= success;
  	),
  
--	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s node=%d",
--		__entry->call_site,
--		__entry->ptr,
--		__entry->bytes_req,
--		__entry->bytes_alloc,
--		show_gfp_flags(__entry->gfp_flags),
--		__entry->node)
-+	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
-+		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
-+		  show_gfp_flags(" node=<int:node>"))
+-	TP_printk("task %s:%d [%d] success=%d",
+-		  __entry->comm, __entry->pid, __entry->prio,
+-		  __entry->success)
++	TP_FORMAT("task <strarray:comm>:<int:pid> [<int:prio>] success=<int:success>")
  );
  
- TRACE_EVENT(kfree,
-@@ -204,7 +193,7 @@ TRACE_EVENT(kfree,
- 		__entry->ptr		= ptr;
+ /*
+@@ -134,9 +131,7 @@ TRACE_EVENT(sched_wakeup_new,
+ 		__entry->success	= success;
  	),
  
--	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
-+	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr>")
+-	TP_printk("task %s:%d [%d] success=%d",
+-		  __entry->comm, __entry->pid, __entry->prio,
+-		  __entry->success)
++	TP_FORMAT("task <strarray:comm>:<int:pid> [<int:prio>] success=<int:success>")
  );
  
- TRACE_EVENT(kmem_cache_free,
-@@ -223,7 +212,7 @@ TRACE_EVENT(kmem_cache_free,
- 		__entry->ptr		= ptr;
+ /*
+@@ -172,14 +167,10 @@ TRACE_EVENT(sched_switch,
+ 		__entry->next_prio	= next->prio;
  	),
  
--	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
-+	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr>")
+-	TP_printk("task %s:%d [%d] (%s) ==> %s:%d [%d]",
+-		__entry->prev_comm, __entry->prev_pid, __entry->prev_prio,
+-		__entry->prev_state ?
+-		  __print_flags(__entry->prev_state, "|",
+-				{ 1, "S"} , { 2, "D" }, { 4, "T" }, { 8, "t" },
+-				{ 16, "Z" }, { 32, "X" }, { 64, "x" },
+-				{ 128, "W" }) : "R",
+-		__entry->next_comm, __entry->next_pid, __entry->next_prio)
++	TP_FORMAT("task <strarray:prev_comm>:<int:prev_pid> [<int:prev_prio>] "
++		  "(<mask:prev_state:|:0=R,1=S,2=D,4=T,8=t,16=Z,32=X,64=x,128=W>)"
++		  " ==> "
++		  "task <strarray:next_comm>:<int:next_pid> [<int:next_prio>]")
  );
- #endif /* _TRACE_KMEM_H */
  
+ /*
+@@ -207,9 +198,8 @@ TRACE_EVENT(sched_migrate_task,
+ 		__entry->dest_cpu	= dest_cpu;
+ 	),
+ 
+-	TP_printk("task %s:%d [%d] from: %d  to: %d",
+-		  __entry->comm, __entry->pid, __entry->prio,
+-		  __entry->orig_cpu, __entry->dest_cpu)
++	TP_FORMAT("task <strarray:comm>:<int:pid> [<int:prio>] "
++		  "from: <int:orig_cpu>  to: <int:dest_cpu>")
+ );
+ 
+ /*
+@@ -233,8 +223,7 @@ TRACE_EVENT(sched_process_free,
+ 		__entry->prio		= p->prio;
+ 	),
+ 
+-	TP_printk("task %s:%d [%d]",
+-		  __entry->comm, __entry->pid, __entry->prio)
++	TP_FORMAT("task <strarray:comm>:<int:pid> [<int:prio>]")
+ );
+ 
+ /*
+@@ -258,8 +247,7 @@ TRACE_EVENT(sched_process_exit,
+ 		__entry->prio		= p->prio;
+ 	),
+ 
+-	TP_printk("task %s:%d [%d]",
+-		  __entry->comm, __entry->pid, __entry->prio)
++	TP_FORMAT("task <strarray:comm>:<int:pid> [<int:prio>]")
+ );
+ 
+ /*
+@@ -283,8 +271,7 @@ TRACE_EVENT(sched_process_wait,
+ 		__entry->prio		= current->prio;
+ 	),
+ 
+-	TP_printk("task %s:%d [%d]",
+-		  __entry->comm, __entry->pid, __entry->prio)
++	TP_FORMAT("task <strarray:comm>:<int:pid> [<int:prio>]")
+ );
+ 
+ /*
+@@ -310,9 +297,8 @@ TRACE_EVENT(sched_process_fork,
+ 		__entry->child_pid	= child->pid;
+ 	),
+ 
+-	TP_printk("parent %s:%d  child %s:%d",
+-		__entry->parent_comm, __entry->parent_pid,
+-		__entry->child_comm, __entry->child_pid)
++	TP_FORMAT("parent <strarray:parent_comm>:<int:parent_pid>"
++		  "  child <strarray:child_comm>:<int:child_pid>")
+ );
+ 
+ /*
+@@ -336,8 +322,7 @@ TRACE_EVENT(sched_signal_send,
+ 		__entry->sig	= sig;
+ 	),
+ 
+-	TP_printk("sig: %d  task %s:%d",
+-		  __entry->sig, __entry->comm, __entry->pid)
++	TP_FORMAT("sig: <int:sig>  task <strarray:comm>:<int:pid>")
+ );
+ 
+ #endif /* _TRACE_SCHED_H */
 -- 
 1.6.3.1
 
