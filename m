@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753471AbZFIOV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbZFIOXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753471AbZFIOV1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 10:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZFIOVS
+	id S1757583AbZFIOXQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 10:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZFIOXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 10:21:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49482 "EHLO mx2.mail.elte.hu"
+	Tue, 9 Jun 2009 10:23:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51835 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750995AbZFIOVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 10:21:17 -0400
-Date: Tue, 9 Jun 2009 16:21:10 +0200
+	id S1751467AbZFIOXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 10:23:01 -0400
+Date: Tue, 9 Jun 2009 16:22:54 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [git pull][PATCH 0/4] amd-iommu fixes for tip/core/iommu
-Message-ID: <20090609142110.GB32703@elte.hu>
-References: <1244555840-3855-1-git-send-email-joerg.roedel@amd.com>
+To: Chuck Ebbert <cebbert@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] x86: clear TS in irq_ts_save() when in an atomic
+	section
+Message-ID: <20090609142254.GC32703@elte.hu>
+References: <20090609100512.7d191fd4@dhcp-100-2-144.bos.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1244555840-3855-1-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <20090609100512.7d191fd4@dhcp-100-2-144.bos.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -33,34 +35,18 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Joerg Roedel <joerg.roedel@amd.com> wrote:
+* Chuck Ebbert <cebbert@redhat.com> wrote:
 
-> Hi Ingo,
-> 
-> The following changes since commit 62a6f465f6572e1f28765c583c12753bb3e23715:
->   Ingo Molnar (1):
->         Merge branch 'dma-debug/2.6.31' of git://git.kernel.org/.../joro/linux-2.6-iommu into core/iommu
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git amd-iommu/fixes
-> 
-> Jiri Slaby (1):
->       amd_iommu: fix lock imbalance
-> 
-> Joerg Roedel (4):
->       Merge commit 'tip/core/iommu' into amd-iommu/fixes
->       amd-iommu: remove BUS_NOTIFY_BOUND_DRIVER handling
->       amd-iommu: detach device explicitly before attaching it to a new domain
->       amd-iommu: remove unnecessary "AMD IOMMU: " prefix
-> 
->  arch/x86/kernel/amd_iommu.c |   22 ++++++----------------
->  1 files changed, 6 insertions(+), 16 deletions(-)
-> 
-> These patches fix issues with device assignment to KVM, a possible
-> deadlock due to an unreleased lock and a minor printk style issue.
-> Please pull.
+> -	if (!in_interrupt())
+> +	if (!in_atomic() && !in_interrupt())
+>  		return 0;
 
-Pulled into tip:core/iommu, thanks a lot Joerg!
+since in_interrupt() implies in_atomic() (upstream), why not just 
+do:
+
+	if (!in_atomic())
+ 		return 0;
+
+?
 
 	Ingo
