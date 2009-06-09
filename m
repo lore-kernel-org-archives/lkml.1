@@ -1,80 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759854AbZFILr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbZFILyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759854AbZFILr5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 07:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbZFILrt
+	id S1757820AbZFILyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 07:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbZFILyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 07:47:49 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39088 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755142AbZFILrs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 07:47:48 -0400
-Message-ID: <7ca0521d9b798ef8b56212e5b17ea713.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <28c262360906090430p21125c51g10cfdc377a78d07b@mail.gmail.com>
-References: <20090609181505.4083a213.kamezawa.hiroyu@jp.fujitsu.com>
-    <28c262360906090300s13f4ee09mcc9622c1e477eaad@mail.gmail.com>
-    <e8f208a7c6bec1818947c24658dc1561.squirrel@webmail-b.css.fujitsu.com>
-    <28c262360906090430p21125c51g10cfdc377a78d07b@mail.gmail.com>
-Date: Tue, 9 Jun 2009 20:47:45 +0900 (JST)
-Subject: Re: [BUGFIX][PATCH] fix wrong lru rotate back at lumpty reclaim
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Minchan Kim" <minchan.kim@gmail.com>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       riel@redhat.com
-User-Agent: SquirrelMail/1.4.16
+	Tue, 9 Jun 2009 07:54:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40660 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754978AbZFILyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 07:54:04 -0400
+Date: Tue, 9 Jun 2009 13:53:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf_counter: extensible perf_counter_attr
+Message-ID: <20090609115346.GB3062@elte.hu>
+References: <1244481941.13761.9119.camel@twins> <4A2D6041.4050309@linux.vnet.ibm.com> <1244490680.6691.1.camel@laptop> <4A2D8011.9050502@linux.vnet.ibm.com> <1244496223.6691.2.camel@laptop> <4A2D82CE.9000206@linux.vnet.ibm.com> <20090608215002.GB22049@elte.hu> <4A2DB1C6.6090209@linux.vnet.ibm.com> <20090609065117.GA16707@elte.hu> <4A2E19A9.3070201@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A2E19A9.3070201@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minchan Kim wrote:
 
-> I mean follow as
->  908         /*
->  909          * Attempt to take all pages in the order aligned region
->  910          * surrounding the tag page.  Only take those pages of
->  911          * the same active state as that tag page.  We may safely
->  912          * round the target page pfn down to the requested order
->  913          * as the mem_map is guarenteed valid out to MAX_ORDER,
->  914          * where that page is in a different zone we will detect
->  915          * it from its zone id and abort this block scan.
->  916          */
->  917         zone_id = page_zone_id(page);
+* Corey Ashford <cjashfor@linux.vnet.ibm.com> wrote:
+
+>> So 'arch dependent attributes' per se are bad and against the 
+>> perfcounters design. "Generic perfcounter feature only supported 
+>> by a single architecture initially" is better.
+>   
+> Well, I think Intel has PEBS and AMD has some similar mechanism.  
+> I would guess that at some point you would want to provide access 
+> to those PMU features via these attributes.  Since these 
+> mechanisms are very chip-specific, I don't think you would want to 
+> try to create an arch-independent interface to them.  There may be 
+> future mechanisms that only make sense on one particular chip 
+> design, and would therefore not be a candidate for wider use, but 
+> would still make sense to provide some support for that mechanism 
+> via the attributes.
 >
-But what this code really do is.
-==
-931                         /* Check that we have not crossed a zone
-boundary. */
- 932                         if (unlikely(page_zone_id(cursor_page) !=
-zone_id))
- 933                                 continue;
-==
-continue. I think this should be "break"
-I wonder what "This block scan" means is "scanning this aligned block".
+> Did you have some different plan for PEBS (etc.) ?
 
-But I think the whoe code is not written as commented.
+I think PEBS is best supported by a generic abstraction. Something 
+like this: it's basically a special sampling format, that generates 
+a record of:
 
->
->>> If I understand it properly , don't we add goto phrase ?
->>>
->> No.
->
-> If it is so, the break also is meaningless.
->
-yes. I'll remove it. But need to add "exit from for loop" logic again.
+	struct pt_regs regs;
+	__u64 insn_latency; /* optional */
+	__u64 data_address; /* optional */
 
-I'm sorry that the wrong logic of this loop was out of my sight.
-I'll review and rewrite this part all, tomorrow.
+this is pretty generic.
 
-Thanks,
--Kame
+The raw CPU records have a CPU specific format, and they have to be 
+demultiplexed anyway (on Nehalem, which can have up to four separate 
+PEBS counters - but each output into the same DS area), so the 
+lowlevel arch code converts the CPU record into the above generic 
+sample record when it copies it into the mmap pages. It's a quick 
+copy so no big deal performance-wise.
 
+( Details:
+
+   - there might be some additional complications from sampling 
+     32-bit contexts, but that too is a mostly low level detail that 
+     gets hidden.
+
+   - we might use a tiny bit more compact registers structure than
+     struct pt_regs. OTOH it's a well-known structure so it makes 
+     sense to standardize on it, even if the CPU doesnt sample all 
+     registers.
+)
+
+Can you see desirable PEBS-alike PMU features that cannot be 
+expressed via such means?
+
+	Ingo
