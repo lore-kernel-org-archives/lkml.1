@@ -1,63 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbZFILVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbZFILZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757986AbZFILVT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 07:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZFILVJ
+	id S1757897AbZFILZj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 07:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbZFILZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 07:21:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52175 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755790AbZFILVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 07:21:08 -0400
-Date: Tue, 9 Jun 2009 13:20:53 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH][GIT PULL] ring-buffer: pass in lockdep class key for
-	reader_lock
-Message-ID: <20090609112053.GB4463@elte.hu>
-References: <20090603151724.144915858@goodmis.org> <20090605145219.GA14830@elte.hu> <20090607082257.GA16761@elte.hu> <alpine.DEB.2.00.0906081135320.9522@gandalf.stny.rr.com> <1244477919.13761.9042.camel@twins> <alpine.DEB.2.00.0906081858580.9522@gandalf.stny.rr.com>
+	Tue, 9 Jun 2009 07:25:31 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:40512 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755234AbZFILZa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 07:25:30 -0400
+X-Auth-Info: j194mqbtrkDYvEEmpLyrn3xo9pEVZeMmx46ZWQsHgCQ=
+Message-ID: <4A2E46A7.6020302@grandegger.com>
+Date: Tue, 09 Jun 2009 13:25:27 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0906081858580.9522@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: "David S. Miller" <davem@davemloft.net>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: net tree build warning
+References: <20090609203639.96e503fe.sfr@canb.auug.org.au>
+In-Reply-To: <20090609203639.96e503fe.sfr@canb.auug.org.au>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Stephen Rothwell wrote:
+> Hi Dave,
+> 
+> Today's linux-next build (powerpc allyesconfig) produced these warnings:
+> 
+> drivers/net/can/sja1000/sja1000_of_platform.c: In function 'sja1000_ofp_probe':
+> drivers/net/can/sja1000/sja1000_of_platform.c:111: warning: format '%#x' expects type 'unsigned int', but argument 4 has type 'resource_size_t'
+> drivers/net/can/sja1000/sja1000_of_platform.c:111: warning: format '%#x' expects type 'unsigned int', but argument 5 has type 'resource_size_t'
+> drivers/net/can/sja1000/sja1000_of_platform.c:118: warning: format '%#x' expects type 'unsigned int', but argument 4 has type 'resource_size_t'
+> drivers/net/can/sja1000/sja1000_of_platform.c:118: warning: format '%#x' expects type 'unsigned int', but argument 5 has type 'resource_size_t'
+> 
+> Introduced by commit d1a277c584d0862dbf51991baea947ea5f2ce6bf ("can:
+> sja1000: generic OF platform bus driver").
 
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Peter Zijlstra (1):
->       ring-buffer: pass in lockdep class key for reader_lock
-> 
-> ----
->  include/linux/ring_buffer.h |   14 +++++++++++++-
->  kernel/trace/ring_buffer.c  |    9 +++++++--
->  2 files changed, 20 insertions(+), 3 deletions(-)
-
-hm, this doesnt pull anything new here - forgot to push it out 
-perhaps?
+The patch below should fix the build problems (which I cannot
+reproduce on my test systems).
 
 Thanks,
 
-	Ingo
+Wolfgang.
+
+-----------------------------------------------------------------------
+[PATCH] can: sja1000_of_platform: fix build problems with printk format
+
+Variables of type size_t should be printed with the format "%zx".
+
+Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+---
+ drivers/net/can/sja1000/sja1000_of_platform.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: net-next-2.6/drivers/net/can/sja1000/sja1000_of_platform.c
+===================================================================
+--- net-next-2.6.orig/drivers/net/can/sja1000/sja1000_of_platform.c	2009-06-09 12:45:38.000000000 +0200
++++ net-next-2.6/drivers/net/can/sja1000/sja1000_of_platform.c	2009-06-09 13:06:56.495718952 +0200
+@@ -108,14 +108,14 @@
+ 	res_size = resource_size(&res);
+ 
+ 	if (!request_mem_region(res.start, res_size, DRV_NAME)) {
+-		dev_err(&ofdev->dev, "couldn't request %#x..%#x\n",
++		dev_err(&ofdev->dev, "couldn't request %#zx..%#zx\n",
+ 			res.start, res.end);
+ 		return -EBUSY;
+ 	}
+ 
+ 	base = ioremap_nocache(res.start, res_size);
+ 	if (!base) {
+-		dev_err(&ofdev->dev, "couldn't ioremap %#x..%#x\n",
++		dev_err(&ofdev->dev, "couldn't ioremap %#zx..%#zx\n",
+ 			res.start, res.end);
+ 		err = -ENOMEM;
+ 		goto exit_release_mem;
+
