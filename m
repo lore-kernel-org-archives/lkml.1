@@ -1,80 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbZFIHFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbZFIHGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758020AbZFIHFH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 03:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbZFIHEy
+	id S1756405AbZFIHGu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 03:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbZFIHGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 03:04:54 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:42257 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbZFIHEx (ORCPT
+	Tue, 9 Jun 2009 03:06:43 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:58111 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754152AbZFIHGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 03:04:53 -0400
-Message-ID: <4A2E095C.6070603@gmail.com>
-Date: Tue, 09 Jun 2009 10:03:56 +0300
-From: Artem Bityutskiy <dedekind1@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Jan Kara <jack@suse.cz>, Eric Sandeen <sandeen@sandeen.net>,
+	Tue, 9 Jun 2009 03:06:41 -0400
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Rik van Riel <riel@redhat.com>, Larry Finger <Larry.Finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       Nick Piggin <npiggin@suse.de>, Jeff Layton <jlayton@redhat.com>
-Subject: Re: [PATCH] writeback: skip new or to-be-freed inodes
-References: <20090324120502.GC23439@duck.suse.cz> <20090324124001.GA25326@localhost> <4A244A5B.7070605@sandeen.net> <20090602085523.GC7161@localhost> <20090602113736.GB15010@duck.suse.cz> <20090603141021.GB5738@localhost> <20090603141636.GC5650@duck.suse.cz> <20090603144711.GC5738@localhost> <20090606030725.GA12852@localhost> <4A2CB7AE.6080909@gmail.com> <20090608092930.GA13846@localhost>
-In-Reply-To: <20090608092930.GA13846@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 09 Jun 2009 07:04:03.0878 (UTC) FILETIME=[79112C60:01C9E8D0]
-X-Nokia-AV: Clean
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>, npiggin@suse.de
+In-Reply-To: <20090608141212.GE15070@csn.ul.ie>
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
+	 <D9VoutSOyXP.A.hvH.Ha7KKB@chimera> <4A2BBC30.2030300@lwfinger.net>
+	 <84144f020906070640rf5ab14nbf66d3ca7c97675f@mail.gmail.com>
+	 <4A2BCC6F.8090004@redhat.com>
+	 <84144f020906070732l31786156r5d9753a0cabfde79@mail.gmail.com>
+	 <20090608101739.GA15377@csn.ul.ie>
+	 <84144f020906080352k57f12ff9pbd696da5f332ac1a@mail.gmail.com>
+	 <20090608110303.GD15377@csn.ul.ie>
+	 <Pine.LNX.4.64.0906081657001.7036@melkki.cs.Helsinki.FI>
+	 <20090608141212.GE15070@csn.ul.ie>
+Date: Tue, 09 Jun 2009 10:06:41 +0300
+Message-Id: <1244531201.5024.3.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
-> Hi Artem,
+Hi Mel,
+
+On Mon, 2009-06-08 at 15:12 +0100, Mel Gorman wrote:
+> > diff --git a/mm/slub.c b/mm/slub.c
+> > index 65ffda5..b5acf18 100644
+> > --- a/mm/slub.c
+> > +++ b/mm/slub.c
+> > @@ -1565,6 +1565,8 @@ new_slab:
+> >  		c->page = new;
+> >  		goto load_freelist;
+> >  	}
+> > +	printk(KERN_WARNING "SLUB: unable to satisfy allocation for cache %s (size=%d, node=%d, gfp=%x)\n",
+> > +		s->name, s->size, node, gfpflags);
 > 
-> On Mon, Jun 08, 2009 at 03:03:10PM +0800, Artem Bityutskiy wrote:
->> Wu Fengguang wrote:
->>> The above race and warning didn't turn up because writeback_inodes() holds
->>> the s_umount lock, so generic_forget_inode() finds MS_ACTIVE and returns
->>> early. But we are not sure the UBIFS calls and future callers will guarantee
->>> that. So skip I_WILL_FREE inodes for the sake of safety.
->> The inode states are a bit vague for me, but vs. UBIFS - feel
->> free to ask questions.
+> size could be almost anything here for a casual reader. You are
+> outputting the size of the object plus its metadata so the name should
+> reflect that. I think it would be better to output objsize= and the
+> object size without the metadata overhead. What do you think?
 > 
-> Thank you. Basically I'm not sure if UBIFS guarantees it won't be
-> unmounted (hence the MS_ACTIVE bit is on) when calling
-> generic_sync_sb_inodes() in shrink_liability() and ubifs_sync_fs().
+> In addition, include how many objects there are per-slab and include what
+> the order is being passed to the page allocator when allocating new slabs.
+> Would that be enough to determine if fallback-to-smaller orders occured?
 
-To be frank my VFS knowledge is not good enough to give you a
-good answer. MS_ACTIVE seems to be set by file-systems when
-they are mounted, and cleaned by VFS when unmounting.
-I guess MS_ACTIVE is used by FS-es to check whether unmounting
-is in progress or not. Anyway, UBIFS does not use it.
+So how about something like this then?
 
-The generic_sync_sb_inodes() is called only from within
-VFS operations, e.g., from ->create, ->rename, ->mknod,
-->write_begin, ->setattr, etc. I mean, it is called from
-UBIFS implementations of the above calls. UBIFS never calls
-generic_sync_sb_inodes() function by itself, e.g., from
-the UBIFS background thread.
+			Pekka
 
-Also, all calls to generic_sync_sb_inodes() are from within
-VFS operations which need writing, e.g., VFS called
-'mnt_want_write()' for all of them.
+diff --git a/mm/slub.c b/mm/slub.c
+index 65ffda5..a03dbe8 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1484,6 +1484,58 @@ static inline int node_match(struct kmem_cache_cpu *c, int node)
+ 	return 1;
+ }
+ 
++static int count_free(struct page *page)
++{
++	return page->objects - page->inuse;
++}
++
++static unsigned long count_partial(struct kmem_cache_node *n,
++					int (*get_count)(struct page *))
++{
++	unsigned long flags;
++	unsigned long x = 0;
++	struct page *page;
++
++	spin_lock_irqsave(&n->list_lock, flags);
++	list_for_each_entry(page, &n->partial, lru)
++		x += get_count(page);
++	spin_unlock_irqrestore(&n->list_lock, flags);
++	return x;
++}
++
++static noinline void
++slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags, int nid)
++{
++	int node;
++
++	printk(KERN_WARNING
++		"SLUB: Unable to allocate memory on node %d (gfp=%x)\n",
++		nid, gfpflags);
++	printk(KERN_WARNING "  cache: %s, object size: %d, buffer size: %d, "
++		"default order: %d, min order: %d\n", s->name, s->objsize,
++		s->size, oo_order(s->oo), oo_order(s->min));
++
++	for_each_online_node(node) {
++		struct kmem_cache_node *n = get_node(s, node);
++		unsigned long nr_partials;
++		unsigned long nr_slabs;
++		unsigned long nr_objs;
++		unsigned long nr_free;
++
++		if (!n)
++			continue;
++
++		nr_partials = n->nr_partial;
++		nr_slabs = atomic_long_read(&n->nr_slabs);
++		nr_objs = atomic_long_read(&n->total_objects);
++		nr_free = count_partial(n, count_free);
++
++		printk(KERN_WARNING
++			"  node %d: partials: %ld, slabs: %ld, objs: %ld, free: %ld\n",
++			node, nr_partials, nr_slabs, nr_objs, nr_free);
++	}
++}
++
+ /*
+  * Slow path. The lockless freelist is empty or we need to perform
+  * debugging duties.
+@@ -1565,6 +1617,7 @@ new_slab:
+ 		c->page = new;
+ 		goto load_freelist;
+ 	}
++	slab_out_of_memory(s, gfpflags, node);
+ 	return NULL;
+ debug:
+ 	if (!alloc_debug_processing(s, c->page, object, addr))
+@@ -3318,20 +3371,6 @@ void *__kmalloc_node_track_caller(size_t size, gfp_t gfpflags,
+ }
+ 
+ #ifdef CONFIG_SLUB_DEBUG
+-static unsigned long count_partial(struct kmem_cache_node *n,
+-					int (*get_count)(struct page *))
+-{
+-	unsigned long flags;
+-	unsigned long x = 0;
+-	struct page *page;
+-
+-	spin_lock_irqsave(&n->list_lock, flags);
+-	list_for_each_entry(page, &n->partial, lru)
+-		x += get_count(page);
+-	spin_unlock_irqrestore(&n->list_lock, flags);
+-	return x;
+-}
+-
+ static int count_inuse(struct page *page)
+ {
+ 	return page->inuse;
+@@ -3342,11 +3381,6 @@ static int count_total(struct page *page)
+ 	return page->objects;
+ }
+ 
+-static int count_free(struct page *page)
+-{
+-	return page->objects - page->inuse;
+-}
+-
+ static int validate_slab(struct kmem_cache *s, struct page *page,
+ 						unsigned long *map)
+ {
 
-I think VFS must protect the FS from being unmunted while
-it is in the middle of an operation, right? I'm just not
-sure how this mechanism works. This would mean that yes,
-we cannot be unmounted while we are in
-generic_sync_sb_inodes() called by UBIFS.
 
-Did this help :-) ?
-
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
