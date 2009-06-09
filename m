@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbZFIKVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760612AbZFIKS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760224AbZFIKVZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760538AbZFIKSf
+	id S1760612AbZFIKS6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760319AbZFIKRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:18:35 -0400
-Received: from kroah.org ([198.145.64.141]:54571 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:17:39 -0400
+Received: from kroah.org ([198.145.64.141]:54415 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760568AbZFIKSd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:18:33 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:57 2009
-Message-Id: <20090609094057.155281670@blue.kroah.org>
+	id S1759903AbZFIKRi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:17:38 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:55 2009
+Message-Id: <20090609094055.531841123@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:39:10 -0700
+Date: Tue, 09 Jun 2009 02:39:03 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Gleixner <tglx@linutronix.de>,
+       alan@lxorguk.ukuu.org.uk, David Dillow <dave@thedillows.org>,
+       "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 22/87] futex: setup writeable mapping for futex ops which modify user space data
+Subject: [patch 15/87] r8169: avoid losing MSI interrupts
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=futex-setup-writeable-mapping-for-futex-ops-which-modify-user-space-data.patch
+Content-Disposition: inline; filename=r8169-avoid-losing-msi-interrupts.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,134 +40,159 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Michael Buesch <mb@bu3sch.de>
 
-commit 64d1304a64477629cb16b75491a77bafe6f86963 upstream.
+[ Upstream commit f11a377b3f4e897d11f0e8d1fc688667e2f19708 ]
 
-The futex code installs a read only mapping via get_user_pages_fast()
-even if the futex op function has to modify user space data. The
-eventual fault was fixed up by futex_handle_fault() which walked the
-VMA with mmap_sem held.
+The 8169 chip only generates MSI interrupts when all enabled event
+sources are quiescent and one or more sources transition to active. If
+not all of the active events are acknowledged, or a new event becomes
+active while the existing ones are cleared in the handler, we will not
+see a new interrupt.
 
-After the cleanup patches which removed the mmap_sem dependency of the
-futex code commit 4dc5b7a36a49eff97050894cf1b3a9a02523717 (futex:
-clean up fault logic) removed the private VMA walk logic from the
-futex code. This change results in a stale RO mapping which is not
-fixed up.
+The current interrupt handler masks off the Rx and Tx events once the
+NAPI handler has been scheduled, which opens a race window in which we
+can get another Rx or Tx event and never ACK'ing it, stopping all
+activity until the link is reset (ifconfig down/up). Fix this by always
+ACK'ing all event sources, and loop in the handler until we have all
+sources quiescent.
 
-Instead of reintroducing the previous fault logic we set up the
-mapping in get_user_pages_fast() read/write for all operations which
-modify user space data. Also handle private futexes in the same way
-and make the current unconditional access_ok(VERIFY_WRITE) depend on
-the futex op.
-
-Reported-by: Andreas Schwab <schwab@linux-m68k.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: David Dillow <dave@thedillows.org>
+Tested-by: Michael Buesch <mb@bu3sch.de>
+Tested-by: Michael Riepe <michael.riepe@googlemail.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- kernel/futex.c |   24 +++++++++++++-----------
- 1 file changed, 13 insertions(+), 11 deletions(-)
+ drivers/net/r8169.c |  102 +++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 57 insertions(+), 45 deletions(-)
 
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -192,6 +192,7 @@ static void drop_futex_key_refs(union fu
-  * @shared: NULL for a PROCESS_PRIVATE futex,
-  *	&current->mm->mmap_sem for a PROCESS_SHARED futex
-  * @key: address where result is stored.
-+ * @rw: mapping needs to be read/write (values: VERIFY_READ, VERIFY_WRITE)
-  *
-  * Returns a negative error code or 0
-  * The key words are stored in *key on success.
-@@ -204,7 +205,8 @@ static void drop_futex_key_refs(union fu
-  * For other futexes, it points to &current->mm->mmap_sem and
-  * caller must have taken the reader lock. but NOT any spinlocks.
-  */
--static int get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key)
-+static int
-+get_futex_key(u32 __user *uaddr, int fshared, union futex_key *key, int rw)
- {
- 	unsigned long address = (unsigned long)uaddr;
- 	struct mm_struct *mm = current->mm;
-@@ -227,7 +229,7 @@ static int get_futex_key(u32 __user *uad
- 	 *        but access_ok() should be faster than find_vma()
- 	 */
- 	if (!fshared) {
--		if (unlikely(!access_ok(VERIFY_WRITE, uaddr, sizeof(u32))))
-+		if (unlikely(!access_ok(rw, uaddr, sizeof(u32))))
- 			return -EFAULT;
- 		key->private.mm = mm;
- 		key->private.address = address;
-@@ -236,7 +238,7 @@ static int get_futex_key(u32 __user *uad
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -3554,54 +3554,64 @@ static irqreturn_t rtl8169_interrupt(int
+ 	int handled = 0;
+ 	int status;
+ 
++	/* loop handling interrupts until we have no new ones or
++	 * we hit a invalid/hotplug case.
++	 */
+ 	status = RTL_R16(IntrStatus);
++	while (status && status != 0xffff) {
++		handled = 1;
+ 
+-	/* hotplug/major error/no more work/shared irq */
+-	if ((status == 0xffff) || !status)
+-		goto out;
+-
+-	handled = 1;
++		/* Handle all of the error cases first. These will reset
++		 * the chip, so just exit the loop.
++		 */
++		if (unlikely(!netif_running(dev))) {
++			rtl8169_asic_down(ioaddr);
++			break;
++		}
+ 
+-	if (unlikely(!netif_running(dev))) {
+-		rtl8169_asic_down(ioaddr);
+-		goto out;
+-	}
++		/* Work around for rx fifo overflow */
++		if (unlikely(status & RxFIFOOver) &&
++		(tp->mac_version == RTL_GIGA_MAC_VER_11)) {
++			netif_stop_queue(dev);
++			rtl8169_tx_timeout(dev);
++			break;
++		}
+ 
+-	status &= tp->intr_mask;
+-	RTL_W16(IntrStatus,
+-		(status & RxFIFOOver) ? (status | RxOverflow) : status);
++		if (unlikely(status & SYSErr)) {
++			rtl8169_pcierr_interrupt(dev);
++			break;
++		}
+ 
+-	if (!(status & tp->intr_event))
+-		goto out;
++		if (status & LinkChg)
++			rtl8169_check_link_status(dev, tp, ioaddr);
+ 
+-	/* Work around for rx fifo overflow */
+-	if (unlikely(status & RxFIFOOver) &&
+-	    (tp->mac_version == RTL_GIGA_MAC_VER_11)) {
+-		netif_stop_queue(dev);
+-		rtl8169_tx_timeout(dev);
+-		goto out;
+-	}
++		/* We need to see the lastest version of tp->intr_mask to
++		 * avoid ignoring an MSI interrupt and having to wait for
++		 * another event which may never come.
++		 */
++		smp_rmb();
++		if (status & tp->intr_mask & tp->napi_event) {
++			RTL_W16(IntrMask, tp->intr_event & ~tp->napi_event);
++			tp->intr_mask = ~tp->napi_event;
++
++			if (likely(netif_rx_schedule_prep(&tp->napi)))
++				__netif_rx_schedule(&tp->napi);
++			else if (netif_msg_intr(tp)) {
++				printk(KERN_INFO "%s: interrupt %04x in poll\n",
++				dev->name, status);
++			}
++		}
+ 
+-	if (unlikely(status & SYSErr)) {
+-		rtl8169_pcierr_interrupt(dev);
+-		goto out;
++		/* We only get a new MSI interrupt when all active irq
++		 * sources on the chip have been acknowledged. So, ack
++		 * everything we've seen and check if new sources have become
++		 * active to avoid blocking all interrupts from the chip.
++		 */
++		RTL_W16(IntrStatus,
++			(status & RxFIFOOver) ? (status | RxOverflow) : status);
++		status = RTL_R16(IntrStatus);
  	}
  
- again:
--	err = get_user_pages_fast(address, 1, 0, &page);
-+	err = get_user_pages_fast(address, 1, rw == VERIFY_WRITE, &page);
- 	if (err < 0)
- 		return err;
+-	if (status & LinkChg)
+-		rtl8169_check_link_status(dev, tp, ioaddr);
+-
+-	if (status & tp->napi_event) {
+-		RTL_W16(IntrMask, tp->intr_event & ~tp->napi_event);
+-		tp->intr_mask = ~tp->napi_event;
+-
+-		if (likely(netif_rx_schedule_prep(&tp->napi)))
+-			__netif_rx_schedule(&tp->napi);
+-		else if (netif_msg_intr(tp)) {
+-			printk(KERN_INFO "%s: interrupt %04x in poll\n",
+-			       dev->name, status);
+-		}
+-	}
+-out:
+ 	return IRQ_RETVAL(handled);
+ }
  
-@@ -707,7 +709,7 @@ static int futex_wake(u32 __user *uaddr,
- 	if (!bitset)
- 		return -EINVAL;
+@@ -3617,13 +3627,15 @@ static int rtl8169_poll(struct napi_stru
  
--	ret = get_futex_key(uaddr, fshared, &key);
-+	ret = get_futex_key(uaddr, fshared, &key, VERIFY_READ);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-@@ -753,10 +755,10 @@ futex_wake_op(u32 __user *uaddr1, int fs
- 	int ret, op_ret, attempt = 0;
- 
- retryfull:
--	ret = get_futex_key(uaddr1, fshared, &key1);
-+	ret = get_futex_key(uaddr1, fshared, &key1, VERIFY_READ);
- 	if (unlikely(ret != 0))
- 		goto out;
--	ret = get_futex_key(uaddr2, fshared, &key2);
-+	ret = get_futex_key(uaddr2, fshared, &key2, VERIFY_WRITE);
- 	if (unlikely(ret != 0))
- 		goto out_put_key1;
- 
-@@ -859,10 +861,10 @@ static int futex_requeue(u32 __user *uad
- 	int ret, drop_count = 0;
- 
- retry:
--	ret = get_futex_key(uaddr1, fshared, &key1);
-+	ret = get_futex_key(uaddr1, fshared, &key1, VERIFY_READ);
- 	if (unlikely(ret != 0))
- 		goto out;
--	ret = get_futex_key(uaddr2, fshared, &key2);
-+	ret = get_futex_key(uaddr2, fshared, &key2, VERIFY_WRITE);
- 	if (unlikely(ret != 0))
- 		goto out_put_key1;
- 
-@@ -1181,7 +1183,7 @@ static int futex_wait(u32 __user *uaddr,
- 	q.bitset = bitset;
- retry:
- 	q.key = FUTEX_KEY_INIT;
--	ret = get_futex_key(uaddr, fshared, &q.key);
-+	ret = get_futex_key(uaddr, fshared, &q.key, VERIFY_READ);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-@@ -1370,7 +1372,7 @@ static int futex_lock_pi(u32 __user *uad
- 	q.pi_state = NULL;
- retry:
- 	q.key = FUTEX_KEY_INIT;
--	ret = get_futex_key(uaddr, fshared, &q.key);
-+	ret = get_futex_key(uaddr, fshared, &q.key, VERIFY_WRITE);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
-@@ -1630,7 +1632,7 @@ retry:
- 	if ((uval & FUTEX_TID_MASK) != task_pid_vnr(current))
- 		return -EPERM;
- 
--	ret = get_futex_key(uaddr, fshared, &key);
-+	ret = get_futex_key(uaddr, fshared, &key, VERIFY_WRITE);
- 	if (unlikely(ret != 0))
- 		goto out;
- 
+ 	if (work_done < budget) {
+ 		netif_rx_complete(napi);
+-		tp->intr_mask = 0xffff;
+-		/*
+-		 * 20040426: the barrier is not strictly required but the
+-		 * behavior of the irq handler could be less predictable
+-		 * without it. Btw, the lack of flush for the posted pci
+-		 * write is safe - FR
++
++		/* We need for force the visibility of tp->intr_mask
++		 * for other CPUs, as we can loose an MSI interrupt
++		 * and potentially wait for a retransmit timeout if we don't.
++		 * The posted write to IntrMask is safe, as it will
++		 * eventually make it to the chip and we won't loose anything
++		 * until it does.
+ 		 */
++		tp->intr_mask = 0xffff;
+ 		smp_wmb();
+ 		RTL_W16(IntrMask, tp->intr_event);
+ 	}
 
 
