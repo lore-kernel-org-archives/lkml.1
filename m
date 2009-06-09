@@ -1,62 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758935AbZFIHc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757770AbZFIHsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758935AbZFIHc1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 03:32:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758883AbZFIHcE
+	id S1757770AbZFIHsS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 03:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbZFIHsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 03:32:04 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:59721 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758881AbZFIHcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 03:32:03 -0400
-Subject: Re: [PATCH] x86: clean up vdso-layout.lds.S
-From: Petr Tesarik <ptesarik@suse.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-In-Reply-To: <4A2946B9.3070701@zytor.com>
-References: <1243865115.24278.8.camel@nathan.suse.cz>
-	 <1244215559.1604.12.camel@nathan.suse.cz>
-	 <20090605162738.GI1065@one.firstfloor.org>  <4A2946B9.3070701@zytor.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: SUSE LINUX
-Date: Tue, 09 Jun 2009 09:32:12 +0200
-Message-Id: <1244532732.5199.29.camel@nathan.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 9 Jun 2009 03:48:07 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55743 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754393AbZFIHsF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 03:48:05 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 3/3] Do not unconditionally treat zones that fail zone_reclaim() as full
+Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
+       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1244466090-10711-4-git-send-email-mel@csn.ul.ie>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-4-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090609143806.DD67.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  9 Jun 2009 16:48:02 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin píše v Pá 05. 06. 2009 v 09:24 -0700:
-> Andi Kleen wrote:
-> >> Any comments on this? It doesn't change anything. It only makes it
-> >> harder to break vDSOs by accident (such as the latest buglet with TSC
-> >> synchronization).
-> > 
-> > Looks ok to me. Although it would have been nicer if you hadn't mixed
-> > that many changes together.
-> > 
-> > Acked-by: Andi Kleen <ak@linux.intel.com>
-> > 
+Hi
+
+> On NUMA machines, the administrator can configure zone_reclaim_mode that
+> is a more targetted form of direct reclaim. On machines with large NUMA
+> distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
+> unmapped pages will be reclaimed if the zone watermarks are not being
+> met. The problem is that zone_reclaim() failing at all means the zone
+> gets marked full.
 > 
-> It would have.  That makes review harder, and right at the moment time
-> is a bit at a premium.  It looks like a good cleanup, but it also looks
-> like it's going to need some testing, which means that since it is not a
-> functional change I would feel best if we could put it on the .32 track
-> after the imminent merge window craziness is over.
+> This can cause situations where a zone is usable, but is being skipped
+> because it has been considered full. Take a situation where a large tmpfs
+> mount is occuping a large percentage of memory overall. The pages do not
+> get cleaned or reclaimed by zone_reclaim(), but the zone gets marked full
+> and the zonelist cache considers them not worth trying in the future.
+> 
+> This patch makes zone_reclaim() return more fine-grained information about
+> what occured when zone_reclaim() failued. The zone only gets marked full if
+> it really is unreclaimable. If it's a case that the scan did not occur or
+> if enough pages were not reclaimed with the limited reclaim_mode, then the
+> zone is simply skipped.
+> 
+> There is a side-effect to this patch. Currently, if zone_reclaim()
+> successfully reclaimed SWAP_CLUSTER_MAX, an allocation attempt would
+> go ahead. With this patch applied, zone watermarks are rechecked after
+> zone_reclaim() does some work.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  mm/internal.h   |    4 ++++
+>  mm/page_alloc.c |   26 ++++++++++++++++++++++----
+>  mm/vmscan.c     |   10 +++++-----
+>  3 files changed, 31 insertions(+), 9 deletions(-)
+> 
+> diff --git a/mm/internal.h b/mm/internal.h
+> index 987bb03..090c267 100644
+> --- a/mm/internal.h
+> +++ b/mm/internal.h
+> @@ -284,4 +284,8 @@ int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+>  		     unsigned long start, int len, int flags,
+>  		     struct page **pages, struct vm_area_struct **vmas);
+>  
+> +#define ZONE_RECLAIM_NOSCAN	-2
+> +#define ZONE_RECLAIM_FULL	-1
+> +#define ZONE_RECLAIM_SOME	0
+> +#define ZONE_RECLAIM_SUCCESS	1
+>  #endif
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index fe753ec..ce2f684 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1420,20 +1420,38 @@ zonelist_scan:
+>  
+>  		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+>  			unsigned long mark;
+> +			int ret;
 
-You're right. It doesn't make any functional change, so I'm completely
-fine with taking it on the .32 track.
+Please insert one empty line here.
 
-For the time being, please hold on, as I'm going to split the patch into
-a series to make reviewing easier. But to be honest, the current content
-of vdso-layout.lds.S is such mess that I'm convinced it must have been
-done in a big hurry (and then moved around a few times, so a quick
-glance at git-blame doesn't tell you that the most messy pieces have
-been there since the very beginning).
+>  			if (alloc_flags & ALLOC_WMARK_MIN)
+>  				mark = zone->pages_min;
+>  			else if (alloc_flags & ALLOC_WMARK_LOW)
+>  				mark = zone->pages_low;
+>  			else
+>  				mark = zone->pages_high;
+> -			if (!zone_watermark_ok(zone, order, mark,
+> -				    classzone_idx, alloc_flags)) {
+> -				if (!zone_reclaim_mode ||
+> -				    !zone_reclaim(zone, gfp_mask, order))
+> +			if (zone_watermark_ok(zone, order, mark,
+> +				    classzone_idx, alloc_flags))
+> +				goto try_this_zone;
+> +
+> +			if (zone_reclaim_mode == 0)
+> +				goto this_zone_full;
+> +
+> +			ret = zone_reclaim(zone, gfp_mask, order);
+> +			switch (ret) {
+> +				case ZONE_RECLAIM_NOSCAN:
+> +					/* did not scan */
+> +					goto try_next_zone;
+> +				case ZONE_RECLAIM_FULL:
+> +					/* scanned but unreclaimable */
+>  					goto this_zone_full;
+> +				default:
+> +					/* did we reclaim enough */
+> +					if (!zone_watermark_ok(zone, order,
+> +							mark, classzone_idx,
+> +							alloc_flags))
+> +						goto try_next_zone;
 
-Petr Tesarik
+hmmm
+I haven't catch your mention yet. sorry.
+Could you please explain more?
+
+My confuseness are:
+
+1.
+----
+I think your patch almost revert Paul's 9276b1bc96a132f4068fdee00983c532f43d3a26 essence.
+after your patch applied, zlc_mark_zone_full() is called only when zone_is_all_unreclaimable()==1
+or memory stealed after zone_watermark_ok() rechecking.
+
+but zone_is_all_unreclaimable() is very rare on large NUMA machine. Thus
+your patch makes zlc_zone_worth_trying() check to worthless.
+So, I like simple reverting 9276b1bc rather than introduce more messy if necessary.
+
+but necessary? why?
+
+
+2.
+-----
+Why simple following switch-case is wrong?
+
+	case ZONE_RECLAIM_NOSCAN:
+		goto try_next_zone;
+	case ZONE_RECLAIM_FULL:
+	case ZONE_RECLAIM_SOME:
+		goto this_zone_full;
+	case ZONE_RECLAIM_SUCCESS
+		; /* do nothing */
+
+I mean, 
+ (1) ZONE_RECLAIM_SOME and zone_watermark_ok()==1
+
+are rare.
+Is rechecking really worth?
+In my experience, zone_watermark_ok() is not so fast function.
+
+And,
+
+ (2) ZONE_RECLAIM_SUCCESS and zone_watermark_ok()==0
+
+is also rare.
+What do you afraid bad thing?
+
+I guess, high-order allocation and ZONE_RECLAIM_SUCCESS and 
+zone_watermark_ok()==0 case, right?
+
+if so, Why your system makes high order allocation so freqently?
+
+3.
+------
+your patch do:
+
+1. call zone_reclaim() and return ZONE_RECLAIM_SUCCESS
+2. another thread steal memory
+3. call zone_watermark_ok() and return 0
+
+Then, jump to try_next_zone
+
+but
+
+1. call zone_reclaim() and return ZONE_RECLAIM_SUCCESS
+2. call zone_watermark_ok() and return 1
+3. another thread steal memory
+4. call buffered_rmqueue() and return NULL
+
+Then, it call zlc_mark_zone_full().
+
+it seems a bit inconsistency.
+
+
+
+
+>  			}
+>  		}
+>  
+> +try_this_zone:
+>  		page = buffered_rmqueue(preferred_zone, zone, order, gfp_mask);
+>  		if (page)
+>  			break;
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index ffe2f32..84cdae2 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2409,7 +2409,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  	if (pagecache_reclaimable <= zone->min_unmapped_pages
+>  	    && zone_page_state(zone, NR_SLAB_RECLAIMABLE)
+>  			<= zone->min_slab_pages)
+> -		return 0;
+> +		return ZONE_RECLAIM_NOSCAN;
+>  
+>  	/* Do not attempt a scan if scanning failed recently */
+>  	if (time_before(jiffies,
+> @@ -2417,13 +2417,13 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  		return 0;
+>  
+>  	if (zone_is_all_unreclaimable(zone))
+> -		return 0;
+> +		return ZONE_RECLAIM_FULL;
+>  
+>  	/*
+>  	 * Do not scan if the allocation should not be delayed.
+>  	 */
+>  	if (!(gfp_mask & __GFP_WAIT) || (current->flags & PF_MEMALLOC))
+> -			return 0;
+> +			return ZONE_RECLAIM_NOSCAN;
+>  
+>  	/*
+>  	 * Only run zone reclaim on the local zone or on zones that do not
+> @@ -2433,10 +2433,10 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  	 */
+>  	node_id = zone_to_nid(zone);
+>  	if (node_state(node_id, N_CPU) && node_id != numa_node_id())
+> -		return 0;
+> +		return ZONE_RECLAIM_NOSCAN;
+>  
+>  	if (zone_test_and_set_flag(zone, ZONE_RECLAIM_LOCKED))
+> -		return 0;
+> +		return ZONE_RECLAIM_NOSCAN;
+>  	ret = __zone_reclaim(zone, gfp_mask, order);
+>  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
+>  
+> -- 
+> 1.5.6.5
+> 
+
 
 
