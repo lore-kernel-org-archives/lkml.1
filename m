@@ -1,163 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761660AbZFIKst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761993AbZFIKtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761660AbZFIKst (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbZFIKsO
+	id S1761993AbZFIKtB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759999AbZFIKsR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:48:14 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:51622 "EHLO gir.skynet.ie"
+	Tue, 9 Jun 2009 06:48:17 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:65329 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757307AbZFIKsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:48:11 -0400
-Date: Tue, 9 Jun 2009 11:48:10 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] Properly account for the number of page cache
-	pages zone_reclaim() can reclaim
-Message-ID: <20090609104809.GQ18380@csn.ul.ie>
-References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-3-git-send-email-mel@csn.ul.ie> <20090609022549.GB6740@localhost> <20090609082728.GF18380@csn.ul.ie> <20090609084550.GB7108@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090609084550.GB7108@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1759264AbZFIKsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:48:16 -0400
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+To: linux-usb@vger.kernel.org, avictor.za@gmail.com
+Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net,
+       haavard.skinnemoen@atmel.com, patrice.vilchez@atmel.com
+Subject: at91/USB: high speed USB support for at91sam9g45 series
+Date: Tue,  9 Jun 2009 13:38:11 +0200
+Message-Id: <1244547493-19654-1-git-send-email-nicolas.ferre@atmel.com>
+X-Mailer: git-send-email 1.5.3.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 04:45:50PM +0800, Wu Fengguang wrote:
-> On Tue, Jun 09, 2009 at 04:27:29PM +0800, Mel Gorman wrote:
-> > On Tue, Jun 09, 2009 at 10:25:49AM +0800, Wu Fengguang wrote:
-> > > On Mon, Jun 08, 2009 at 09:01:29PM +0800, Mel Gorman wrote:
-> > > > On NUMA machines, the administrator can configure zone_relcaim_mode that
-> > > > is a more targetted form of direct reclaim. On machines with large NUMA
-> > > > distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
-> > > > unmapped pages will be reclaimed if the zone watermarks are not being met.
-> > > > 
-> > > > There is a heuristic that determines if the scan is worthwhile but the
-> > > > problem is that the heuristic is not being properly applied and is basically
-> > > > assuming zone_reclaim_mode is 1 if it is enabled.
-> > > > 
-> > > > This patch makes zone_reclaim() makes a better attempt at working out how
-> > > > many pages it might be able to reclaim given the current reclaim_mode. If it
-> > > > cannot clean pages, then NR_FILE_DIRTY number of pages are not candidates. If
-> > > > it cannot swap, then NR_FILE_MAPPED are not. This indirectly addresses tmpfs
-> > > > as those pages tend to be dirty as they are not cleaned by pdflush or sync.
-> > > 
-> > > No, tmpfs pages are not accounted in NR_FILE_DIRTY because of the
-> > > BDI_CAP_NO_ACCT_AND_WRITEBACK bits.
-> > > 
-> > 
-> > Ok, that explains why the dirty page count was not as high as I was
-> > expecting. Thanks.
-> > 
-> > > > The ideal would be that the number of tmpfs pages would also be known
-> > > > and account for like NR_FILE_MAPPED as swap is required to discard them.
-> > > > A means of working this out quickly was not obvious but a comment is added
-> > > > noting the problem.
-> > > 
-> > > I'd rather prefer it be accounted separately than to muck up NR_FILE_MAPPED :)
-> > > 
-> > 
-> > Maybe I used a poor choice of words. What I meant was that the ideal would
-> > be we had a separate count for tmpfs pages. As tmpfs pages and mapped pages
-> > both have to be unmapped and potentially, they are "like" each other with
-> > respect to the zone_reclaim_mode and how it behaves. We would end up
-> > with something like
-> > 
-> > 	pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
-> > 	pagecache_reclaimable -= zone_page_state(zone, NR_FILE_TMPFS);
-> 
-> OK. But tmpfs pages may be mapped, so there will be double counting.
-> We must at least make sure pagecache_reclaimable won't get underflowed.
+Those 2 patches are adding the USB high speed 
+support to the at91sam9g45 SOC family.
 
-True. What vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch
-does might be better overall.
+They are relying on the integration of at91sam9g45 
+already posted. Here is the patch series that you 
+will have to take into account before applying 
+those patches.
 
-> (Or make another LRU list for tmpfs pages?)
-> 
+clock.c changes:
+http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=5438/1
 
-Another LRU won't help the accounting and will changes too significantly
-how reclaim works.
+9g45 introduction:
+http://lkml.org/lkml/2009/6/4/77
+http://lkml.org/lkml/2009/6/4/76
+http://lkml.org/lkml/2009/6/4/78
 
-> > > > +	int pagecache_reclaimable;
-> > > > +
-> > > > +	/*
-> > > > +	 * Work out how many page cache pages we can reclaim in this mode.
-> > > > +	 *
-> > > > +	 * NOTE: Ideally, tmpfs pages would be accounted as if they were
-> > > > +	 *       NR_FILE_MAPPED as swap is required to discard those
-> > > > +	 *       pages even when they are clean. However, there is no
-> > > > +	 *       way of quickly identifying the number of tmpfs pages
-> > > > +	 */
-> > > 
-> > > So can you remove the note on NR_FILE_MAPPED?
-> > > 
-> > 
-> > Why would I remove the note? I can alter the wording but the intention is
-> > to show we cannot count the number of tmpfs pages quickly and it would be
-> > nice if we could. Maybe this is clearer?
-> > 
-> > Note: Ideally tmpfs pages would be accounted for as NR_FILE_TMPFS or
-> > 	similar and treated similar to NR_FILE_MAPPED as both require
-> > 	unmapping from page tables and potentially swap to reclaim.
-> > 	However, no such counter exists.
-> 
-> That's better. Thanks.
-> 
-> > > > +	pagecache_reclaimable = zone_page_state(zone, NR_FILE_PAGES);
-> > > > +	if (!(zone_reclaim_mode & RECLAIM_WRITE))
-> > > > +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_DIRTY);
-> > > 
-> > > > +	if (!(zone_reclaim_mode & RECLAIM_SWAP))
-> > > > +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
-> > > 
-> > > So the "if" can be removed because NR_FILE_MAPPED is not related to swapping?
-> > > 
-> > 
-> > It's partially related with respect to what zone_reclaim() is doing.
-> > Once something is mapped, we need RECLAIM_SWAP set on the
-> > zone_reclaim_mode to do anything useful with them.
-> 
-> You are referring to mapped anonymous/tmpfs pages? But I mean
-> NR_FILE_MAPPED pages won't goto swap when unmapped.
-> 
+atmel_usba tiny modification (bias function only for 9rl):
+http://lkml.org/lkml/2009/6/5/355
 
-Not all of them. But some of them backed by real files will be discarded
-if clean at the next pass
+ arch/arm/mach-at91/at91sam9g45_devices.c |   56 +++++
+ arch/arm/mach-at91/board-sam9m10g45ek.c  |    1 +
+ arch/arm/mach-at91/include/mach/board.h  |    1 +
+ arch/arm/tools/mach-types                |    1 +
+ drivers/usb/Kconfig                      |    1 +
+ drivers/usb/gadget/Kconfig               |    4 +-
+ drivers/usb/host/ehci-atmel.c            |  251 ++++++++++++++++++++
+ drivers/usb/host/ehci-hcd.c              |    5 +
+ drivers/usb/host/ohci-at91.c             |    3 +-
+ 9 files changed, 320 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/usb/host/ehci-atmel.c
 
-> Thanks,
-> Fengguang
-> 
-> > > >  	/*
-> > > >  	 * Zone reclaim reclaims unmapped file backed pages and
-> > > > @@ -2391,8 +2406,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> > > >  	 * if less than a specified percentage of the zone is used by
-> > > >  	 * unmapped file backed pages.
-> > > >  	 */
-> > > > -	if (zone_page_state(zone, NR_FILE_PAGES) -
-> > > > -	    zone_page_state(zone, NR_FILE_MAPPED) <= zone->min_unmapped_pages
-> > > > +	if (pagecache_reclaimable <= zone->min_unmapped_pages
-> > > >  	    && zone_page_state(zone, NR_SLAB_RECLAIMABLE)
-> > > >  			<= zone->min_slab_pages)
-> > > >  		return 0;
-> > > > -- 
-> > > > 1.5.6.5
-> > > 
-> > 
-> > -- 
-> > Mel Gorman
-> > Part-time Phd Student                          Linux Technology Center
-> > University of Limerick                         IBM Dublin Software Lab
-> 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
