@@ -1,324 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbZFITjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759747AbZFITpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758655AbZFITjk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 15:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbZFITjb
+	id S1759747AbZFITpj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 15:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZFITp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 15:39:31 -0400
-Received: from cmpxchg.org ([85.214.51.133]:43421 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754779AbZFITja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 15:39:30 -0400
-Date: Tue, 9 Jun 2009 21:37:02 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rik van Riel <riel@redhat.com>, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch v3] swap: virtual swap readahead
-Message-ID: <20090609193702.GA2017@cmpxchg.org>
-References: <20090609190128.GA1785@cmpxchg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 9 Jun 2009 15:45:28 -0400
+Received: from 65-36-7-9.static.grandenetworks.net ([65.36.7.9]:44623 "EHLO
+	bpointsys.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751885AbZFITp1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 15:45:27 -0400
+X-Greylist: delayed 910 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Jun 2009 15:45:27 EDT
+From: Brent Cook <bcook@bpointsys.com>
+To: Gil Beniamini <gil.beniamini@gmail.com>
+Subject: Re: SOCK_RAW does not receive broadcast (with VLAN unless PROMISC)
+Date: Tue, 9 Jun 2009 14:30:31 -0500
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; x86_64; ; )
+Cc: Patrick McHardy <kaber@trash.net>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <91ac27070906081105x30171bedra10d244d382a6934@mail.gmail.com> <4A2E4A32.1060705@trash.net> <91ac27070906090608me50af3bv23b150d8d0cd0080@mail.gmail.com>
+In-Reply-To: <91ac27070906090608me50af3bv23b150d8d0cd0080@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090609190128.GA1785@cmpxchg.org>
+Message-Id: <200906091430.32294.bcook@bpointsys.com>
+X-OriginalArrivalTime: 09 Jun 2009 19:30:16.0950 (UTC) FILETIME=[B7E5C960:01C9E938]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 09:01:28PM +0200, Johannes Weiner wrote:
-> [resend with lists cc'd, sorry]
+On Tuesday 09 June 2009 08:08:01 am Gil Beniamini wrote:
+> Patrick,
+> On the specific NIC (eth1) no vlan is defined, and in the new Linux
+> the application receive NOTHING at all. In order to debug, I start
+> "wireshark as root" and "wireshark" set PROMISC on, and the
+> application start receive the raw packets as expected. Later I started
+> setting PROMISC by my application, and it can receive the packets even
+> when "wireshark" is not running.
+> The problem that I have with PROMISC mode, is that I need to do the
+> irelevant  unicast filtering in software rather than get it from the
+> hardware (as it works in old kernel 2.6.20).
+> Thanks a lot, Gil
 
-[and fixed Hugh's email.  crap]
+One solution is to attach a BPF filter to the socket. Then you will only 
+receive packets for whatever you are filtering. This is still in software, but 
+it is higher up in the abstraction, and undoubtedly more efficient than doing 
+it at the app level.
 
-> Hi,
-> 
-> here is a new iteration of the virtual swap readahead.  Per Hugh's
-> suggestion, I moved the pte collecting to the callsite and thus out
-> ouf swap code.  Unfortunately, I had to bound page_cluster due to an
-> array of that many swap entries on the stack, but I think it is better
-> to limit the cluster size to a sane maximum than using dynamic
-> allocation for this purpose.
-> 
-> Thanks all for the helpful suggestions.  KAMEZAWA-san and Minchan, I
-> didn't incorporate your ideas in this patch as I think they belong in
-> a different one with their own justifications.  I didn't ignore them.
-> 
->        Hannes
-> 
-> ---
-> The current swap readahead implementation reads a physically
-> contiguous group of swap slots around the faulting page to take
-> advantage of the disk head's position and in the hope that the
-> surrounding pages will be needed soon as well.
-> 
-> This works as long as the physical swap slot order approximates the
-> LRU order decently, otherwise it wastes memory and IO bandwidth to
-> read in pages that are unlikely to be needed soon.
-> 
-> However, the physical swap slot layout diverges from the LRU order
-> with increasing swap activity, i.e. high memory pressure situations,
-> and this is exactly the situation where swapin should not waste any
-> memory or IO bandwidth as both are the most contended resources at
-> this point.
-> 
-> Another approximation for LRU-relation is the VMA order as groups of
-> VMA-related pages are usually used together.
-> 
-> This patch combines both the physical and the virtual hint to get a
-> good approximation of pages that are sensible to read ahead.
-> 
-> When both diverge, we either read unrelated data, seek heavily for
-> related data, or, what this patch does, just decrease the readahead
-> efforts.
-> 
-> To achieve this, we have essentially two readahead windows of the same
-> size: one spans the virtual, the other one the physical neighborhood
-> of the faulting page.  We only read where both areas overlap.
-> 
-> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-> Reviewed-by: Rik van Riel <riel@redhat.com>
-> Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Cc: Andi Kleen <andi@firstfloor.org>
-> Cc: Wu Fengguang <fengguang.wu@intel.com>
-> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> ---
->  include/linux/swap.h |    4 ++-
->  kernel/sysctl.c      |    7 ++++-
->  mm/memory.c          |   55 +++++++++++++++++++++++++++++++++++++++++
->  mm/shmem.c           |    4 +--
->  mm/swap_state.c      |   67 ++++++++++++++++++++++++++++++++++++++-------------
->  5 files changed, 116 insertions(+), 21 deletions(-)
-> 
-> version 3:
->   o move pte selection to callee (per Hugh)
->   o limit ra ptes to one pmd entry to avoid multiple
->     locking/mapping of highptes (per Hugh)
-> 
-> version 2:
->   o fall back to physical ra window for shmem
->   o add documentation to the new ra algorithm (per Andrew)
-> 
-> --- a/mm/swap_state.c
-> +++ b/mm/swap_state.c
-> @@ -327,27 +327,14 @@ struct page *read_swap_cache_async(swp_e
->  	return found_page;
->  }
->  
-> -/**
-> - * swapin_readahead - swap in pages in hope we need them soon
-> - * @entry: swap entry of this memory
-> - * @gfp_mask: memory allocation flags
-> - * @vma: user vma this address belongs to
-> - * @addr: target address for mempolicy
-> - *
-> - * Returns the struct page for entry and addr, after queueing swapin.
-> - *
-> +/*
->   * Primitive swap readahead code. We simply read an aligned block of
->   * (1 << page_cluster) entries in the swap area. This method is chosen
->   * because it doesn't cost us any seek time.  We also make sure to queue
->   * the 'original' request together with the readahead ones...
-> - *
-> - * This has been extended to use the NUMA policies from the mm triggering
-> - * the readahead.
-> - *
-> - * Caller must hold down_read on the vma->vm_mm if vma is not NULL.
->   */
-> -struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
-> -			struct vm_area_struct *vma, unsigned long addr)
-> +static struct page *swapin_readahead_phys(swp_entry_t entry, gfp_t gfp_mask,
-> +				struct vm_area_struct *vma, unsigned long addr)
->  {
->  	int nr_pages;
->  	struct page *page;
-> @@ -373,3 +360,51 @@ struct page *swapin_readahead(swp_entry_
->  	lru_add_drain();	/* Push any new pages onto the LRU now */
->  	return read_swap_cache_async(entry, gfp_mask, vma, addr);
->  }
-> +
-> +/**
-> + * swapin_readahead - swap in pages in hope we need them soon
-> + * @entry: swap entry of this memory
-> + * @gfp_mask: memory allocation flags
-> + * @vma: user vma this address belongs to
-> + * @addr: target address for mempolicy
-> + * @entries: swap slots to consider reading
-> + * @nr_entries: number of @entries
-> + * @cluster: readahead window size in swap slots
-> + *
-> + * Returns the struct page for entry and addr, after queueing swapin.
-> + *
-> + * This has been extended to use the NUMA policies from the mm
-> + * triggering the readahead.
-> + *
-> + * Caller must hold down_read on the vma->vm_mm if vma is not NULL.
-> + */
-> +struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
-> +			struct vm_area_struct *vma, unsigned long addr,
-> +			swp_entry_t *entries, int nr_entries,
-> +			unsigned long cluster)
-> +{
-> +	unsigned long pmin, pmax;
-> +	int i;
-> +
-> +	if (!entries)	/* XXX: shmem case */
-> +		return swapin_readahead_phys(entry, gfp_mask, vma, addr);
-> +	pmin = swp_offset(entry) & ~(cluster - 1);
-> +	pmax = pmin + cluster;
-> +	for (i = 0; i < nr_entries; i++) {
-> +		swp_entry_t swp = entries[i];
-> +		struct page *page;
-> +
-> +		if (swp_type(swp) != swp_type(entry))
-> +			continue;
-> +		if (swp_offset(swp) > pmax)
-> +			continue;
-> +		if (swp_offset(swp) < pmin)
-> +			continue;
-> +		page = read_swap_cache_async(swp, gfp_mask, vma, addr);
-> +		if (!page)
-> +			break;
-> +		page_cache_release(page);
-> +	}
-> +	lru_add_drain();	/* Push any new pages onto the LRU now */
-> +	return read_swap_cache_async(entry, gfp_mask, vma, addr);
-> +}
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -292,7 +292,9 @@ extern struct page *lookup_swap_cache(sw
->  extern struct page *read_swap_cache_async(swp_entry_t, gfp_t,
->  			struct vm_area_struct *vma, unsigned long addr);
->  extern struct page *swapin_readahead(swp_entry_t, gfp_t,
-> -			struct vm_area_struct *vma, unsigned long addr);
-> +			struct vm_area_struct *vma, unsigned long addr,
-> +			swp_entry_t *entries, int nr_entries,
-> +			unsigned long cluster);
->  
->  /* linux/mm/swapfile.c */
->  extern long nr_swap_pages;
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -2440,6 +2440,54 @@ int vmtruncate_range(struct inode *inode
->  }
->  
->  /*
-> + * The readahead window is the virtual area around the faulting page,
-> + * where the physical proximity of the swap slots is taken into
-> + * account as well in swapin_readahead().
-> + *
-> + * While the swap allocation algorithm tries to keep LRU-related pages
-> + * together on the swap backing, it is not reliable on heavy thrashing
-> + * systems where concurrent reclaimers allocate swap slots and/or most
-> + * anonymous memory pages are already in swap cache.
-> + *
-> + * On the virtual side, subgroups of VMA-related pages are usually
-> + * used together, which gives another hint to LRU relationship.
-> + *
-> + * By taking both aspects into account, we get a good approximation of
-> + * which pages are sensible to read together with the faulting one.
-> + */
-> +static int swap_readahead_ptes(struct mm_struct *mm,
-> +			unsigned long addr, pmd_t *pmd,
-> +			swp_entry_t *entries,
-> +			unsigned long cluster)
-> +{
-> +	unsigned long window, min, max, limit;
-> +	spinlock_t *ptl;
-> +	pte_t *ptep;
-> +	int i, nr;
-> +
-> +	window = cluster << PAGE_SHIFT;
-> +	min = addr & ~(window - 1);
-> +	max = min + cluster;
-> +	/*
-> +	 * To keep the locking/highpte mapping simple, stay
-> +	 * within the PTE range of one PMD entry.
-> +	 */
-> +	limit = addr & PMD_MASK;
-> +	if (limit > min)
-> +		min = limit;
-> +	limit = pmd_addr_end(addr, max);
-> +	if (limit < max)
-> +		max = limit;
-> +	limit = max - min;
-> +	ptep = pte_offset_map_lock(mm, pmd, min, &ptl);
-> +	for (i = nr = 0; i < limit; i++)
-> +		if (is_swap_pte(ptep[i]))
-> +			entries[nr++] = pte_to_swp_entry(ptep[i]);
-> +	pte_unmap_unlock(ptep, ptl);
-> +	return nr;
-> +}
-> +
-> +/*
->   * We enter with non-exclusive mmap_sem (to exclude vma changes,
->   * but allow concurrent faults), and pte mapped but not yet locked.
->   * We return with mmap_sem still held, but pte unmapped and unlocked.
-> @@ -2466,9 +2514,14 @@ static int do_swap_page(struct mm_struct
->  	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
->  	page = lookup_swap_cache(entry);
->  	if (!page) {
-> +		int nr, cluster = 1 << page_cluster;
-> +		swp_entry_t entries[cluster];
-> +
->  		grab_swap_token(); /* Contend for token _before_ read-in */
-> +		nr = swap_readahead_ptes(mm, address, pmd, entries, cluster);
->  		page = swapin_readahead(entry,
-> -					GFP_HIGHUSER_MOVABLE, vma, address);
-> +					GFP_HIGHUSER_MOVABLE, vma, address,
-> +					entries, nr, cluster);
->  		if (!page) {
->  			/*
->  			 * Back out if somebody else faulted in this pte
-> --- a/mm/shmem.c
-> +++ b/mm/shmem.c
-> @@ -1148,7 +1148,7 @@ static struct page *shmem_swapin(swp_ent
->  	pvma.vm_pgoff = idx;
->  	pvma.vm_ops = NULL;
->  	pvma.vm_policy = spol;
-> -	page = swapin_readahead(entry, gfp, &pvma, 0);
-> +	page = swapin_readahead(entry, gfp, &pvma, 0, NULL, 0, 0);
->  	return page;
->  }
->  
-> @@ -1178,7 +1178,7 @@ static inline void shmem_show_mpol(struc
->  static inline struct page *shmem_swapin(swp_entry_t entry, gfp_t gfp,
->  			struct shmem_inode_info *info, unsigned long idx)
->  {
-> -	return swapin_readahead(entry, gfp, NULL, 0);
-> +	return swapin_readahead(entry, gfp, NULL, 0, NULL, 0, 0);
->  }
->  
->  static inline struct page *shmem_alloc_page(gfp_t gfp,
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -112,6 +112,8 @@ static int min_percpu_pagelist_fract = 8
->  
->  static int ngroups_max = NGROUPS_MAX;
->  
-> +static int page_cluster_max = 5;
-> +
->  #ifdef CONFIG_MODULES
->  extern char modprobe_path[];
->  #endif
-> @@ -966,7 +968,10 @@ static struct ctl_table vm_table[] = {
->  		.data		= &page_cluster,
->  		.maxlen		= sizeof(int),
->  		.mode		= 0644,
-> -		.proc_handler	= &proc_dointvec,
-> +		.proc_handler	= &proc_dointvec_minmax,
-> +		.strategy	= &sysctl_intvec,
-> +		.extra1		= &zero,
-> +		.extra2		= &page_cluster_max,
->  	},
->  	{
->  		.ctl_name	= VM_DIRTY_BACKGROUND,
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Simply compile the BPF program you wish to filter, e.g:
+
+# tcpdump -dd vlan 4
+{ 0x28, 0, 0, 0x0000000c },
+{ 0x15, 0, 4, 0x00008100 },
+{ 0x28, 0, 0, 0x0000000e },
+{ 0x54, 0, 0, 0x00000fff },
+{ 0x15, 0, 1, 0x00000004 },
+{ 0x6, 0, 0, 0x00000060 },
+{ 0x6, 0, 0, 0x00000000 },
+
+Then attach it to your socket:
+
+    struct sock_filter filter[] = {
+      { 0x28, 0, 0, 0x0000000c },
+      { 0x15, 0, 4, 0x00008100 },
+      { 0x28, 0, 0, 0x0000000e },
+      { 0x54, 0, 0, 0x00000fff },
+      { 0x15, 0, 1, 0x00000004 },
+      { 0x6, 0, 0, 0x00000060 },
+      { 0x6, 0, 0, 0x00000000 },
+    };
+
+    struct sock_fprog inbound_filter = {
+        .len = 7, .filter = filter
+    };
+
+    if (setsockopt(fd, SOL_SOCKET, SO_ATTACH_FILTER,
+        &inbound_filter, sizeof(inbound_filter)) < 0) {
+        return -1;
+    }
+
+Also, note, you can easily set promiscuous mode directly with socket opts too. 
+If you're more curious, just look at libpcap source.
+
+ - Brent
