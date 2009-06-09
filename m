@@ -1,80 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbZFICPM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbZFICSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757420AbZFICPM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 22:15:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756439AbZFICL2
+	id S1757879AbZFICSS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 22:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbZFICSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 22:11:28 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44073 "EHLO mx2.redhat.com"
+	Mon, 8 Jun 2009 22:18:06 -0400
+Received: from mail.lang.hm ([64.81.33.126]:43995 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751882AbZFICL1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 22:11:27 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com
-Cc: agk@redhat.com, snitzer@redhat.com, vgoyal@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org
-Subject: [PATCH 11/19] io-controller: noop changes for hierarchical fair queuing
-Date: Mon,  8 Jun 2009 22:08:54 -0400
-Message-Id: <1244513342-11758-12-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1244513342-11758-1-git-send-email-vgoyal@redhat.com>
-References: <1244513342-11758-1-git-send-email-vgoyal@redhat.com>
+	id S1751280AbZFICSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 22:18:05 -0400
+Date: Mon, 8 Jun 2009 19:16:53 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard
+To: Tejun Heo <tj@kernel.org>
+cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Intel X25E doesn't work with nv sata in current kernels
+In-Reply-To: <4A125841.5000608@kernel.org>
+Message-ID: <alpine.DEB.1.10.0906081912000.9159@asgard>
+References: <alpine.DEB.1.10.0905181041310.15782@asgard> <4A125841.5000608@kernel.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes noop to use queue scheduling code from elevator layer.
-One can go back to old noop by deselecting CONFIG_IOSCHED_NOOP_HIER.
+Tejun did come up with a patch that makes this work, I haven't heard from 
+him in a couple of days so I don't know if he considers it good enough to 
+go in or not.
 
-Signed-off-by: Nauman Rafique <nauman@google.com>
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
----
- block/Kconfig.iosched |   11 +++++++++++
- block/noop-iosched.c  |    3 +++
- 2 files changed, 14 insertions(+), 0 deletions(-)
+it would be very nice to have this expensive SSD usable without having to 
+patch the kernel or run an old kernel ;-)
 
-diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
-index a91a807..9da6657 100644
---- a/block/Kconfig.iosched
-+++ b/block/Kconfig.iosched
-@@ -25,6 +25,17 @@ config IOSCHED_NOOP
- 	  that do their own scheduling and require only minimal assistance from
- 	  the kernel.
- 
-+config IOSCHED_NOOP_HIER
-+	bool "Noop Hierarchical Scheduling support"
-+	depends on IOSCHED_NOOP && CGROUPS
-+	select ELV_FAIR_QUEUING
-+	select GROUP_IOSCHED
-+	default n
-+	---help---
-+	  Enable hierarhical scheduling in noop. In this mode noop keeps
-+	  one IO queue per cgroup instead of a global queue. Elevator
-+	  fair queuing logic ensures fairness among various queues.
-+
- config IOSCHED_AS
- 	tristate "Anticipatory I/O scheduler"
- 	default y
-diff --git a/block/noop-iosched.c b/block/noop-iosched.c
-index 731dbf2..926aed9 100644
---- a/block/noop-iosched.c
-+++ b/block/noop-iosched.c
-@@ -92,6 +92,9 @@ static struct elevator_type elevator_noop = {
- 		.elevator_alloc_sched_queue_fn	= noop_alloc_noop_queue,
- 		.elevator_free_sched_queue_fn	= noop_free_noop_queue,
- 	},
-+#ifdef CONFIG_IOSCHED_NOOP_HIER
-+	.elevator_features = ELV_IOSCHED_NEED_FQ | ELV_IOSCHED_SINGLE_IOQ,
-+#endif
- 	.elevator_name = "noop",
- 	.elevator_owner = THIS_MODULE,
- };
--- 
-1.6.0.6
+I verified that 2.6.18 from centos 5.3 is able to see the SSD on this 
+hardware, but 2.6.28-13 (debian) and 2.6.29-[13] and 2.6.30-rc[67] cannot.
 
+for those who have seen my other problem report on missing cores, this 
+SATA problem happens on systems that have no problem at all with the CPUs.
+
+the bugzilla for this is http://bugzilla.kernel.org/show_bug.cgi?id=12703
+
+I will have time for testing this tomorrow, but then will be out of town 
+for a couple of days.
+
+David Lang
+
+On Tue, 19 May 2009, Tejun Heo wrote:
+
+> david@lang.hm wrote:
+>> according to but 12703 ( http://bugzilla.kernel.org/show_bug.cgi?id=12703 )
+>> this worked with older kernels, but with 2.6.29.[13] and 2.6.30-rc6
+>>
+>> according to this ticket it did work with older vendor kernels, but it's
+>> not clear which ones (and no older vanilla kernels)
+>>
+>> I have verified that this drive does work on a PCI controller card in
+>> the same machine (with the same cables), so this is definantly a
+>> controller/kernel issue
+>>
+>> booting with libata.force=#:nohrst (with # being the SATA controller
+>> that the SSD is on) does allow it to be detected, but the patch listed
+>> in the ticket
+>>
+>> diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
+>> index 6cda12b..6673b1d 100644
+>> --- a/drivers/ata/sata_nv.c
+>> +++ b/drivers/ata/sata_nv.c
+>> @@ -1565,7 +1565,7 @@ static int nv_noclassify_hardreset(struct ata_link
+>> *link, unsigned int *class,
+>>         bool online;
+>>         int rc;
+>>
+>> -       rc = sata_link_hardreset(link, sata_deb_timing_hotplug, deadline,
+>> +       rc = sata_link_hardreset(link, sata_deb_timing_long, deadline,
+>>                                  &online, NULL);
+>>         return online ? -EAGAIN : rc;
+>>  }
+>>
+>> does not work.
+>>
+>> Tejun Heo was working on this back in April, but it looks like the
+>> troubleshooting petered out.
+>>
+>> one issue that I did notice, in the dmesg I see
+>>
+>> $ grep SATA dmesg
+>> ata1: SATA max UDMA/133 cmd 0xd480 ctl 0xd400 bmdma 0xcc00 irq 11
+>> ata2: SATA max UDMA/133 cmd 0xd080 ctl 0xd000 bmdma 0xcc08 irq 11
+>> ata1: SATA link down (SStatus 100 SControl 300)
+>> ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+>> ata3: SATA max UDMA/133 cmd 0xc880 ctl 0xc800 bmdma 0xc080 irq 5
+>> ata4: SATA max UDMA/133 cmd 0xc480 ctl 0xc400 bmdma 0xc088 irq 5
+>> ata3: SATA link down (SStatus 0 SControl 300)
+>> ata4: SATA link down (SStatus 0 SControl 300)
+>> ata5: SATA max UDMA/133 cmd 0xc000 ctl 0xbc00 bmdma 0xb480 irq 10
+>> ata6: SATA max UDMA/133 cmd 0xb880 ctl 0xb800 bmdma 0xb488 irq 10
+>> ata5: SATA link down (SStatus 0 SControl 300)
+>> ata6: SATA link down (SStatus 0 SControl 300)
+>>
+>> note the ata1 line. it detects something different than the links where
+>> there really is nothing plugged in, but it doesn't come up
+>>
+>> booting with nohrst results in SStatus 123
+>
+> Great, a new tester.  :-)
+>
+> Let's track it on the bz.
+>
+> Thanks.
+>
+>
