@@ -1,47 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760734AbZFIKyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762048AbZFIK5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760734AbZFIKyp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757622AbZFIKye
+	id S1762048AbZFIK5j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758754AbZFIK5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:54:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37720
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755046AbZFIKyd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:54:33 -0400
-Date: Tue, 09 Jun 2009 03:54:35 -0700 (PDT)
-Message-Id: <20090609.035435.193703945.davem@davemloft.net>
-To: mjt@tls.msk.ru
-Cc: jonathan@jonmasters.org, eric.dumazet@gmail.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, romieu@fr.zoreil.com, stable@kernel.org
-Subject: Re: [patch] r8169: fix crash when large packets are received
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4A2E2456.4020703@msgid.tls.msk.ru>
-References: <1244511638.30733.41.camel@localhost.localdomain>
-	<20090608.195709.158667574.davem@davemloft.net>
-	<4A2E2456.4020703@msgid.tls.msk.ru>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Jun 2009 06:57:31 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36888 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757622AbZFIK5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:57:31 -0400
+Date: Tue, 9 Jun 2009 03:51:01 -0700
+From: Greg KH <gregkh@suse.de>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Forest Bond <forest@alittletooquiet.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Staging: vt6656 ?
+Message-ID: <20090609105101.GB15378@suse.de>
+References: <a4423d670906090331o6363fe56g34374967f21552e8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4423d670906090331o6363fe56g34374967f21552e8@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Tokarev <mjt@tls.msk.ru>
-Date: Tue, 09 Jun 2009 12:59:02 +0400
-
-> David Miller wrote:
->> From: Jon Masters <jonathan@jonmasters.org>
->> Date: Mon, 08 Jun 2009 21:40:38 -0400
->> 
->>> CC -stable team - remote DoS with this hardware present.
->> "remote", if on the same physical subnet, otherwise easily protectable
->> if not impossible to trigger
+On Tue, Jun 09, 2009 at 02:31:30PM +0400, Alexander Beregalov wrote:
+> Hi Greg, Forest
 > 
-> "remote" as "from outside of the host in question".
-> But still, this is definitely worth fixing.
+> Are you going to merge driver for VT6656 also?
 
-Of course, just wanted to make sure the true nature of the problem
-was explicit.
+If someone sends me some patches for it, sure, I will.
+
+thanks,
+
+greg k-h
