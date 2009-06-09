@@ -1,84 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZFIDNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbZFIDOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbZFIDNr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 23:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZFIDNl
+	id S1752904AbZFIDOH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 23:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbZFIDNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 23:13:41 -0400
+	Mon, 8 Jun 2009 23:13:49 -0400
 Received: from mga03.intel.com ([143.182.124.21]:53223 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751803AbZFIDNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 23:13:40 -0400
+	id S1751972AbZFIDNn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 23:13:43 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,328,1241420400"; 
-   d="scan'208";a="152085913"
-Date: Tue, 9 Jun 2009 11:07:26 +0800
+   d="scan'208";a="152085972"
+Date: Tue, 9 Jun 2009 11:11:19 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-btrfs@vger.kernel.org" <linux-btrfs@vger.kernel.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>
-Subject: Re: sk_lock: inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W}
-	usage
-Message-ID: <20090609030726.GA8026@localhost>
-References: <20090608023757.GA6244@localhost> <20090608134428.4373.A69D9226@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] Do not unconditionally treat zones that fail
+	zone_reclaim() as full
+Message-ID: <20090609031119.GB7875@localhost>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-4-git-send-email-mel@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090608134428.4373.A69D9226@jp.fujitsu.com>
+In-Reply-To: <1244466090-10711-4-git-send-email-mel@csn.ul.ie>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 12:55:18PM +0800, KOSAKI Motohiro wrote:
-> Hi
+On Mon, Jun 08, 2009 at 09:01:30PM +0800, Mel Gorman wrote:
+> On NUMA machines, the administrator can configure zone_reclaim_mode that
+> is a more targetted form of direct reclaim. On machines with large NUMA
+> distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
+> unmapped pages will be reclaimed if the zone watermarks are not being
+> met. The problem is that zone_reclaim() failing at all means the zone
+> gets marked full.
 > 
-> > Hi,
-> > 
-> > This lockdep warning appears when doing stress memory tests over NFS.
-> > 
-> > page reclaim => nfs_writepage => tcp_sendmsg => lock sk_lock
-> > 
-> > tcp_close => lock sk_lock => tcp_send_fin => alloc_skb_fclone => page reclaim
-> > 
-> > Any ideas?
+> This can cause situations where a zone is usable, but is being skipped
+> because it has been considered full. Take a situation where a large tmpfs
+> mount is occuping a large percentage of memory overall. The pages do not
+> get cleaned or reclaimed by zone_reclaim(), but the zone gets marked full
+> and the zonelist cache considers them not worth trying in the future.
 > 
-> AFAIK, btrfs has re-dirty hack. 
+> This patch makes zone_reclaim() return more fine-grained information about
+> what occured when zone_reclaim() failued. The zone only gets marked full if
+> it really is unreclaimable. If it's a case that the scan did not occur or
+> if enough pages were not reclaimed with the limited reclaim_mode, then the
+> zone is simply skipped.
 > 
-> ------------------------------------------------------------------
-> static int btrfs_writepage(struct page *page, struct writeback_control *wbc)
-> {
->         struct extent_io_tree *tree;
-> 
-> 
->         if (current->flags & PF_MEMALLOC) {
->                 redirty_page_for_writepage(wbc, page);
->                 unlock_page(page);
->                 return 0;
->         }
->         tree = &BTRFS_I(page->mapping->host)->io_tree;
->         return extent_write_full_page(tree, page, btrfs_get_extent, wbc);
-> }
-> ---------------------------------------------------------------
-> 
-> PF_MEMALLOC mean caller is try_to_free_pages(). (not normal write nor kswapd)
+> There is a side-effect to this patch. Currently, if zone_reclaim()
+> successfully reclaimed SWAP_CLUSTER_MAX, an allocation attempt would
+> go ahead. With this patch applied, zone watermarks are rechecked after
+> zone_reclaim() does some work.
+>
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-No, kswapd also sets the PF_MEMALLOC flag. It looks like btrfs_writepage()
-is trying to avoid inefficient page outs at the cost of pinning dirty
-pages in memory (even when we really want free pages).
+Thanks for making the code a lot more readable :)
 
-Thanks,
-Fengguang
+Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
 
-> Can't nfs does similar hack? 
-> 
-> 
-> I'm not net nor nfs expert. perhaps I'm wrong :-)
-> 
-> 
-> Thanks.
-> 
-> 
+>  	/*
+>  	 * Do not scan if the allocation should not be delayed.
+>  	 */
+>  	if (!(gfp_mask & __GFP_WAIT) || (current->flags & PF_MEMALLOC))
+> -			return 0;
+> +			return ZONE_RECLAIM_NOSCAN;
+
+Why not kill the extra tab?
+
