@@ -1,191 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbZFISWO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbZFISYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755725AbZFISWO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:22:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbZFISV7
+	id S1752036AbZFISYR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZFISYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:21:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39631 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751537AbZFISV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:21:59 -0400
-Message-ID: <4A2EA789.60608@RedHat.com>
-Date: Tue, 09 Jun 2009 14:18:49 -0400
-From: Steve Dickson <SteveD@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 9 Jun 2009 14:24:08 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:46429 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750976AbZFISYI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 14:24:08 -0400
+Date: Tue, 9 Jun 2009 14:24:07 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: linux-kernel@vger.kernel.org
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 2/2] tracing/events: convert block trace points to
+ TRACE_EVENT()
+In-Reply-To: <20090609163754.619632066@goodmis.org>
+Message-ID: <alpine.DEB.2.00.0906091421370.17452@gandalf.stny.rr.com>
+References: <20090609163657.557589106@goodmis.org> <20090609163754.619632066@goodmis.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: Linux NFS Mailing list <linux-nfs@vger.kernel.org>,
-       Linux Kernel Mailing list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>, Jason Baron <jbaron@redhat.com>
-Subject: [PATCH] sunrpc: Adding trace points to status routines (take 2)
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Trond,
 
-Here is an updated version of the patch I sent out a while
-back... all that has changed was the addtion of 'rpc_'  to
-the name of the trace points which coincides with the
-other trace points naming convention.
+Ingo,
 
-Here is a pointer to the previous email that has the 
-fairly long winded explanation of how all this works:
+I added the patch the fix the compiler warnings on top of my last pull 
+request.
 
-   http://marc.info/?l=linux-kernel&m=124058933520183&w=2
+Please pull the latest tip/tracing/ftrace tree, which can be found at:
 
-And below is the updated patch which is based on Ingo's
-linux-2.6-tip.git tree. 
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/ftrace
 
-Comments?
 
-steved.
- 
-Author: Steve Dickson <steved@redhat.com>
-Date:   Tue Jun  9 14:12:07 EDT 2009
+Steven Rostedt (1):
+      tracing: fix the block trace points print size
 
-    Adds three trace points to the status routines in the
-    sunrpc state machine. The trace points will only execute
-    in error conditions.
+----
+ include/trace/events/block.h |   45 ++++++++++++++++++++++++++++--------------
+ 1 files changed, 30 insertions(+), 15 deletions(-)
+---------------------------
+commit 6556d1df88fe68f9836beeb43342a336691cb67c
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Tue Jun 9 14:04:26 2009 -0400
+
+    tracing: fix the block trace points print size
     
-    The goal of these trace points it to make it easier to
-    debug process that spin or get hung up in the NFS and
-    related subsystems.
+    The sector field is either u64 or unsigned long depending on
+    the arch. This patch casts the sector to unsigned long long to
+    prevent the printf warnings.
     
-    Signed-off-by: Steve Dickson <steved@redhat.com>
+    [ Impact: remove compile warnings ]
+    
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-diff --git a/include/trace/events/sunrpc.h b/include/trace/events/sunrpc.h
-new file mode 100644
-index 0000000..f502eb4
---- /dev/null
-+++ b/include/trace/events/sunrpc.h
-@@ -0,0 +1,86 @@
-+#if !defined(_TRACE_SUNRPC_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_SUNRPC_H
-+
-+#include <linux/tracepoint.h>
-+
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM sunrpc
-+
-+TRACE_EVENT(rpc_call_status,
-+
-+	TP_PROTO(struct rpc_task *task),
-+
-+	TP_ARGS(task),
-+
-+	TP_STRUCT__entry(
-+		__field(u32, cl_prog)
-+		__field(u32, cl_vers)
-+		__field(u32, p_proc)
-+		__field(int, tk_status)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->cl_prog = task->tk_client->cl_prog;
-+		__entry->cl_vers = task->tk_client->cl_vers;
-+		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
-+		__entry->cl_prog = task->tk_client->cl_prog;
-+		__entry->tk_status = task->tk_status;
-+	),
-+
-+	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
-+		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
-+);
-+
-+TRACE_EVENT(rpc_bind_status,
-+
-+	TP_PROTO(struct rpc_task *task),
-+
-+	TP_ARGS(task),
-+
-+	TP_STRUCT__entry(
-+		__field(u32, cl_prog)
-+		__field(u32, cl_vers)
-+		__field(u32, p_proc)
-+		__field(int, tk_status)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->cl_prog = task->tk_client->cl_prog;
-+		__entry->cl_vers = task->tk_client->cl_vers;
-+		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
-+		__entry->cl_prog = task->tk_client->cl_prog;
-+		__entry->tk_status = task->tk_status;
-+	),
-+
-+	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
-+		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
-+);
-+TRACE_EVENT(rpc_connect_status,
-+
-+	TP_PROTO(struct rpc_task *task, int status),
-+
-+	TP_ARGS(task, status),
-+
-+	TP_STRUCT__entry(
-+		__field(u32, cl_prog)
-+		__field(u32, cl_vers)
-+		__field(u32, p_proc)
-+		__field(int, tk_status)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->cl_prog = task->tk_client->cl_prog;
-+		__entry->cl_vers = task->tk_client->cl_vers;
-+		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
-+		__entry->cl_prog = task->tk_client->cl_prog;
-+		__entry->tk_status = status;
-+	),
-+
-+	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
-+		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
-+
-+);
-+#endif /* __TRACE_SUNRPC_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
-diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
-index 5abab09..b86ee2a 100644
---- a/net/sunrpc/clnt.c
-+++ b/net/sunrpc/clnt.c
-@@ -37,6 +37,9 @@
- #include <linux/sunrpc/rpc_pipe_fs.h>
- #include <linux/sunrpc/metrics.h>
+diff --git a/include/trace/events/block.h b/include/trace/events/block.h
+index a99d1e5..53effd4 100644
+--- a/include/trace/events/block.h
++++ b/include/trace/events/block.h
+@@ -37,7 +37,8 @@ TRACE_EVENT(block_rq_abort,
+ 	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev),
+ 		  __entry->rwbs, __get_str(cmd),
+-		  __entry->sector, __entry->nr_sector, __entry->errors)
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector, __entry->errors)
+ );
  
-+#include <linux/ftrace.h>
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/sunrpc.h>
+ TRACE_EVENT(block_rq_insert,
+@@ -71,7 +72,8 @@ TRACE_EVENT(block_rq_insert,
+ 	TP_printk("%d,%d %s %u (%s) %llu + %u [%s]",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev),
+ 		  __entry->rwbs, __entry->bytes, __get_str(cmd),
+-		  __entry->sector, __entry->nr_sector, __entry->comm)
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector, __entry->comm)
+ );
  
- #ifdef RPC_DEBUG
- # define RPCDBG_FACILITY	RPCDBG_CALL
-@@ -957,6 +960,7 @@ call_bind_status(struct rpc_task *task)
- 		return;
- 	}
+ TRACE_EVENT(block_rq_issue,
+@@ -105,7 +107,8 @@ TRACE_EVENT(block_rq_issue,
+ 	TP_printk("%d,%d %s %u (%s) %llu + %u [%s]",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev),
+ 		  __entry->rwbs, __entry->bytes, __get_str(cmd),
+-		  __entry->sector, __entry->nr_sector, __entry->comm)
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector, __entry->comm)
+ );
  
-+	trace_rpc_bind_status(task);
- 	switch (task->tk_status) {
- 	case -ENOMEM:
- 		dprintk("RPC: %5u rpcbind out of memory\n", task->tk_pid);
-@@ -1038,6 +1042,7 @@ call_connect_status(struct rpc_task *task)
- 		return;
- 	}
+ TRACE_EVENT(block_rq_requeue,
+@@ -137,7 +140,8 @@ TRACE_EVENT(block_rq_requeue,
+ 	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev),
+ 		  __entry->rwbs, __get_str(cmd),
+-		  __entry->sector, __entry->nr_sector, __entry->errors)
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector, __entry->errors)
+ );
  
-+	trace_rpc_connect_status(task, status);
- 	switch (status) {
- 		/* if soft mounted, test if we've timed out */
- 	case -ETIMEDOUT:
-@@ -1141,6 +1146,7 @@ call_status(struct rpc_task *task)
- 		return;
- 	}
+ TRACE_EVENT(block_rq_complete,
+@@ -169,7 +173,8 @@ TRACE_EVENT(block_rq_complete,
+ 	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev),
+ 		  __entry->rwbs, __get_str(cmd),
+-		  __entry->sector, __entry->nr_sector, __entry->errors)
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector, __entry->errors)
+ );
+ TRACE_EVENT(block_bio_bounce,
  
-+	trace_rpc_call_status(task);
- 	task->tk_status = 0;
- 	switch(status) {
- 	case -EHOSTDOWN:
+@@ -195,7 +200,8 @@ TRACE_EVENT(block_bio_bounce,
+ 
+ 	TP_printk("%d,%d %s %llu + %u [%s]",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  __entry->sector, __entry->nr_sector, __entry->comm)
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector, __entry->comm)
+ );
+ 
+ TRACE_EVENT(block_bio_complete,
+@@ -221,7 +227,8 @@ TRACE_EVENT(block_bio_complete,
+ 
+ 	TP_printk("%d,%d %s %llu + %u [%d]",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  __entry->sector, __entry->nr_sector, __entry->error)
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector, __entry->error)
+ );
+ 
+ TRACE_EVENT(block_bio_backmerge,
+@@ -248,7 +255,8 @@ TRACE_EVENT(block_bio_backmerge,
+ 
+ 	TP_printk("%d,%d %s %llu + %u [%s]",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  __entry->sector, __entry->nr_sector, __entry->comm)
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector, __entry->comm)
+ );
+ 
+ TRACE_EVENT(block_bio_frontmerge,
+@@ -275,7 +283,8 @@ TRACE_EVENT(block_bio_frontmerge,
+ 
+ 	TP_printk("%d,%d %s %llu + %u [%s]",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  __entry->sector, __entry->nr_sector, __entry->comm)
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector, __entry->comm)
+ );
+ 
+ TRACE_EVENT(block_bio_queue,
+@@ -302,7 +311,8 @@ TRACE_EVENT(block_bio_queue,
+ 
+ 	TP_printk("%d,%d %s %llu + %u [%s]",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  __entry->sector, __entry->nr_sector, __entry->comm)
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector, __entry->comm)
+ );
+ 
+ TRACE_EVENT(block_getrq,
+@@ -330,7 +340,8 @@ TRACE_EVENT(block_getrq,
+ 
+ 	TP_printk("%d,%d %s %llu + %u [%s]",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  __entry->sector, __entry->nr_sector, __entry->comm)
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector, __entry->comm)
+ );
+ 
+ TRACE_EVENT(block_sleeprq,
+@@ -358,7 +369,8 @@ TRACE_EVENT(block_sleeprq,
+ 
+ 	TP_printk("%d,%d %s %llu + %u [%s]",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  __entry->sector, __entry->nr_sector, __entry->comm)
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector, __entry->comm)
+ );
+ 
+ TRACE_EVENT(block_plug,
+@@ -441,7 +453,9 @@ TRACE_EVENT(block_split,
+ 
+ 	TP_printk("%d,%d %s %llu / %llu [%s]",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  __entry->sector, __entry->new_sector, __entry->comm)
++		  (unsigned long long)__entry->sector,
++		  (unsigned long long)__entry->new_sector,
++		  __entry->comm)
+ );
+ 
+ TRACE_EVENT(block_remap,
+@@ -471,9 +485,10 @@ TRACE_EVENT(block_remap,
+ 
+ 	TP_printk("%d,%d %s %llu + %u <- (%d,%d) %llu",
+ 		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  __entry->sector, __entry->nr_sector,
++		  (unsigned long long)__entry->sector,
++		  __entry->nr_sector,
+ 		  MAJOR(__entry->old_dev), MINOR(__entry->old_dev),
+-		  __entry->old_sector)
++		  (unsigned long long)__entry->old_sector)
+ );
+ 
+ #endif /* _TRACE_BLOCK_H */
 
 
