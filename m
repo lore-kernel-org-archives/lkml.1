@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763023AbZFIKhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763267AbZFIKj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763023AbZFIKhr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757007AbZFIKWW
+	id S1763267AbZFIKj3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761189AbZFIKZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:22:22 -0400
-Received: from kroah.org ([198.145.64.141]:32875 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:25:05 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35732 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758036AbZFIKWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:22:19 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:12 2009
-Message-Id: <20090609094111.858261931@blue.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:40:11 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 83/87] ext4: Ignore i_file_acl_high unless EXT4_FEATURE_INCOMPAT_64BIT is present
-References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-ignore-i_file_acl_high-unless-ext4_feature_incompat_64bit-is-present.patch
-In-Reply-To: <20090609094451.GA26439@kroah.com>
+	id S1761132AbZFIKZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:25:03 -0400
+Date: Tue, 9 Jun 2009 12:25:04 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com
+Subject: Re: [PATCH] [6/16] HWPOISON: Add various poison checks in mm/memory.c
+Message-ID: <20090609102504.GH14820@wotan.suse.de>
+References: <20090603846.816684333@firstfloor.org> <20090603184639.1933B1D028F@basil.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090603184639.1933B1D028F@basil.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.29-stable review patch.  If anyone has any objections, please let us know.
+On Wed, Jun 03, 2009 at 08:46:38PM +0200, Andi Kleen wrote:
+> 
+> Bail out early when hardware poisoned pages are found in page fault handling.
+> Since they are poisoned they should not be mapped freshly into processes,
+> because that would cause another (potentially deadly) machine check
+> 
+> This is generally handled in the same way as OOM, just a different
+> error code is returned to the architecture code.
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> 
+> ---
+>  mm/memory.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: linux/mm/memory.c
+> ===================================================================
+> --- linux.orig/mm/memory.c	2009-06-03 19:36:23.000000000 +0200
+> +++ linux/mm/memory.c	2009-06-03 19:36:23.000000000 +0200
+> @@ -2797,6 +2797,9 @@
+>  	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
+>  		return ret;
+>  
+> +	if (unlikely(PageHWPoison(vmf.page)))
+> +		return VM_FAULT_HWPOISON;
 
-------------------
+Again, it would be nice if you just worry about this in your MCE
+handler and don't sprinkle things like this in fastpaths.
 
-From: "Theodore Ts'o" <tytso@mit.edu>
-
-(cherry picked from commit a9e817425dc0baede8ebe5fbc9984a640257432b)
-
-Don't try to look at i_file_acl_high unless the INCOMPAT_64BIT feature
-bit is set.  The field is normally zero, but older versions of e2fsck
-didn't automatically check to make sure of this, so in the spirit of
-"be liberal in what you accept", don't look at i_file_acl_high unless
-we are using a 64-bit filesystem.
-
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/ext4/inode.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -4300,11 +4300,9 @@ struct inode *ext4_iget(struct super_blo
- 	ei->i_flags = le32_to_cpu(raw_inode->i_flags);
- 	inode->i_blocks = ext4_inode_blocks(raw_inode, ei);
- 	ei->i_file_acl = le32_to_cpu(raw_inode->i_file_acl_lo);
--	if (EXT4_SB(inode->i_sb)->s_es->s_creator_os !=
--	    cpu_to_le32(EXT4_OS_HURD)) {
-+	if (EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_64BIT))
- 		ei->i_file_acl |=
- 			((__u64)le16_to_cpu(raw_inode->i_file_acl_high)) << 32;
--	}
- 	inode->i_size = ext4_isize(raw_inode);
- 	ei->i_disksize = inode->i_size;
- 	inode->i_generation = le32_to_cpu(raw_inode->i_generation);
-
-
+> +
+>  	/*
+>  	 * For consistency in subsequent calls, make the faulted page always
+>  	 * locked.
