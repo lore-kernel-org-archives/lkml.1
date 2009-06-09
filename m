@@ -1,41 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755943AbZFIAEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755784AbZFIALZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755943AbZFIAEt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 20:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753923AbZFIAEl
+	id S1755784AbZFIALZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 20:11:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbZFIALQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 20:04:41 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:35720 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753128AbZFIAEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 20:04:40 -0400
-Date: Mon, 8 Jun 2009 17:04:37 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Dan Williams <dan.j.williams@intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #13116] Can't boot with nosmp
-Message-ID: <20090608170437.1c2386a5@nehalam>
-In-Reply-To: <e9c3a7c20906080929l1a4ec739t7585f6bba54bf684@mail.gmail.com>
-References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
-	<D9VoutSOyXP.A.xm.Vb7KKB@chimera>
-	<20090608091544.53a94235@nehalam>
-	<e9c3a7c20906080929l1a4ec739t7585f6bba54bf684@mail.gmail.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	Mon, 8 Jun 2009 20:11:16 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:52298 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753604AbZFIALP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 20:11:15 -0400
+Message-Id: <6.0.0.20.2.20090604194409.071baf80@172.19.0.2>
+X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
+Date: Tue, 09 Jun 2009 09:06:22 +0900
+To: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Mingming Cao <cmm@us.ibm.com>
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: [PATCH] jbd/jbd2 :clean up journal_try_to_free_buffers
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I did some more debugging, and the problem appears to be that
-booting with nosmp still leaves all the CPU's present in the cpu
-possible mask. So code like dma engine (or loopback device), that
-use alloc_percpu get broken.
+Hi.
 
-Not sure why all the cpu's are still showing up in the possible mask.
-Rusty? do you have an answer.
+I delete the following patch 
+"commit 3f31fddfa26b7594b44ff2b34f9a04ba409e0f91
+Author: Mingming Cao <cmm@us.ibm.com>
+Date:   Fri Jul 25 01:46:22 2008 -0700
+
+    jbd: fix race between free buffer and commit transaction
+" 
+This patch is no longer needed because if race between freeing buffer
+and committing transaction functionality occurs and dio gets error,
+currently dio falls back to buffered IO by the following patch.
+
+	commit 6ccfa806a9cfbbf1cd43d5b6aa47ef2c0eb518fd
+	Author: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+	Date:   Tue Sep 2 14:35:40 2008 -0700
+
+   	VFS: fix dio write returning EIO when try_to_release_page fails 
+
+Thanks.
+
+Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+
+diff -Nrup linux-2.6.30-rc8.org/fs/jbd/transaction.c linux-2.6.30-rc8.ext3_4/fs/jbd/transaction.c
+--- linux-2.6.30-rc8.org/fs/jbd/transaction.c	2009-06-04 16:26:26.000000000 +0900
++++ linux-2.6.30-rc8.ext3_4/fs/jbd/transaction.c	2009-06-04 19:14:53.000000000 +0900
+@@ -1686,35 +1686,6 @@ out:
+ 	return;
+ }
+ 
+-/*
+- * journal_try_to_free_buffers() could race with journal_commit_transaction()
+- * The latter might still hold the a count on buffers when inspecting
+- * them on t_syncdata_list or t_locked_list.
+- *
+- * journal_try_to_free_buffers() will call this function to
+- * wait for the current transaction to finish syncing data buffers, before
+- * tryinf to free that buffer.
+- *
+- * Called with journal->j_state_lock held.
+- */
+-static void journal_wait_for_transaction_sync_data(journal_t *journal)
+-{
+-	transaction_t *transaction = NULL;
+-	tid_t tid;
+-
+-	spin_lock(&journal->j_state_lock);
+-	transaction = journal->j_committing_transaction;
+-
+-	if (!transaction) {
+-		spin_unlock(&journal->j_state_lock);
+-		return;
+-	}
+-
+-	tid = transaction->t_tid;
+-	spin_unlock(&journal->j_state_lock);
+-	log_wait_commit(journal, tid);
+-}
+-
+ /**
+  * int journal_try_to_free_buffers() - try to free page buffers.
+  * @journal: journal for operation
+@@ -1786,25 +1757,6 @@ int journal_try_to_free_buffers(journal_
+ 
+ 	ret = try_to_free_buffers(page);
+ 
+-	/*
+-	* There are a number of places where journal_try_to_free_buffers()
+-	* could race with journal_commit_transaction(), the later still
+-	* holds the reference to the buffers to free while processing them.
+-	* try_to_free_buffers() failed to free those buffers. Some of the
+-	* caller of releasepage() request page buffers to be dropped, otherwise
+-	* treat the fail-to-free as errors (such as generic_file_direct_IO())
+-	*
+-	* So, if the caller of try_to_release_page() wants the synchronous
+-	* behaviour(i.e make sure buffers are dropped upon return),
+-	* let's wait for the current transaction to finish flush of
+-	* dirty data buffers, then try to free those buffers again,
+-	* with the journal locked.
+-	*/
+-	if (ret == 0 && (gfp_mask & __GFP_WAIT) && (gfp_mask & __GFP_FS)) {
+-		journal_wait_for_transaction_sync_data(journal);
+-		ret = try_to_free_buffers(page);
+-	}
+-
+ busy:
+ 	return ret;
+ }
+diff -Nrup linux-2.6.30-rc8.org/fs/jbd2/transaction.c linux-2.6.30-rc8.ext3_4/fs/jbd2/transaction.c
+--- linux-2.6.30-rc8.org/fs/jbd2/transaction.c	2009-06-04 16:26:26.000000000 +0900
++++ linux-2.6.30-rc8.ext3_4/fs/jbd2/transaction.c	2009-06-04 19:17:12.000000000 +0900
+@@ -1547,36 +1547,6 @@ out:
+ 	return;
+ }
+ 
+-/*
+- * jbd2_journal_try_to_free_buffers() could race with
+- * jbd2_journal_commit_transaction(). The later might still hold the
+- * reference count to the buffers when inspecting them on
+- * t_syncdata_list or t_locked_list.
+- *
+- * jbd2_journal_try_to_free_buffers() will call this function to
+- * wait for the current transaction to finish syncing data buffers, before
+- * try to free that buffer.
+- *
+- * Called with journal->j_state_lock hold.
+- */
+-static void jbd2_journal_wait_for_transaction_sync_data(journal_t *journal)
+-{
+-	transaction_t *transaction;
+-	tid_t tid;
+-
+-	spin_lock(&journal->j_state_lock);
+-	transaction = journal->j_committing_transaction;
+-
+-	if (!transaction) {
+-		spin_unlock(&journal->j_state_lock);
+-		return;
+-	}
+-
+-	tid = transaction->t_tid;
+-	spin_unlock(&journal->j_state_lock);
+-	jbd2_log_wait_commit(journal, tid);
+-}
+-
+ /**
+  * int jbd2_journal_try_to_free_buffers() - try to free page buffers.
+  * @journal: journal for operation
+@@ -1649,25 +1619,6 @@ int jbd2_journal_try_to_free_buffers(jou
+ 
+ 	ret = try_to_free_buffers(page);
+ 
+-	/*
+-	* There are a number of places where jbd2_journal_try_to_free_buffers()
+-	* could race with jbd2_journal_commit_transaction(), the later still
+-	* holds the reference to the buffers to free while processing them.
+-	* try_to_free_buffers() failed to free those buffers. Some of the
+-	* caller of releasepage() request page buffers to be dropped, otherwise
+-	* treat the fail-to-free as errors (such as generic_file_direct_IO())
+-	*
+-	* So, if the caller of try_to_release_page() wants the synchronous
+-	* behaviour(i.e make sure buffers are dropped upon return),
+-	* let's wait for the current transaction to finish flush of
+-	* dirty data buffers, then try to free those buffers again,
+-	* with the journal locked.
+-	*/
+-	if (ret == 0 && (gfp_mask & __GFP_WAIT) && (gfp_mask & __GFP_FS)) {
+-		jbd2_journal_wait_for_transaction_sync_data(journal);
+-		ret = try_to_free_buffers(page);
+-	}
+-
+ busy:
+ 	return ret;
+ }
+
