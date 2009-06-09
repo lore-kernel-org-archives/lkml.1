@@ -1,86 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757677AbZFICeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757801AbZFIChv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757677AbZFICeI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 22:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757275AbZFICdy
+	id S1757801AbZFIChv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 22:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbZFICho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 22:33:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43116 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757591AbZFICdx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 22:33:53 -0400
-Date: Mon, 8 Jun 2009 19:33:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH v3] printk: add halt_delay parameter for printk delay in
-  halt phase
-Message-Id: <20090608193341.07e94b79.akpm@linux-foundation.org>
-In-Reply-To: <a8e1da0906081801j7169bec1ja1242dcea1aaba7d@mail.gmail.com>
-References: <a8e1da0906080040k7852f770v1e2aa2ebb0f52369@mail.gmail.com>
-	<20090608081439.GB6372@elte.hu>
-	<20090608012845.9c428525.akpm@linux-foundation.org>
-	<a8e1da0906080142u62a45c47g2181a79addfb6168@mail.gmail.com>
-	<20090608084807.GE6372@elte.hu>
-	<20090608092607.8b331bf0.akpm@linux-foundation.org>
-	<20090608171501.GA15399@elte.hu>
-	<20090608143913.749e19c5.akpm@linux-foundation.org>
-	<a8e1da0906081801j7169bec1ja1242dcea1aaba7d@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 8 Jun 2009 22:37:44 -0400
+Received: from mga14.intel.com ([143.182.124.37]:1225 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751938AbZFIChn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 22:37:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,328,1241420400"; 
+   d="scan'208";a="152078349"
+Date: Tue, 9 Jun 2009 10:37:31 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] Properly account for the number of page cache
+	pages zone_reclaim() can reclaim
+Message-ID: <20090609023731.GA7875@localhost>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-3-git-send-email-mel@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244466090-10711-3-git-send-email-mel@csn.ul.ie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009 09:01:19 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
-
-> On Tue, Jun 9, 2009 at 5:39 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
-> > On Mon, 8 Jun 2009 19:15:01 +0200
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> >> > questions: is it possible for interrupts to be disabled at this
-> >> > time? If so, can we get an NMI watchdog hit?
-> >>
-> >> no, we generally turn off the nmi watchdog during shutdown, disable
-> >> the lapic and io-apic, etc.
-> >
-> > Is x86 the only architecture which implements an NMI watchdog?
-> >
-> >> > Is the softlockup detector still running and if so, can it
-> >> > trigger?
-> >>
-> >> in (non-emergency) reboot, last i checked, we stopped all other CPUs
-> >> first, and then killed the current one. There's no chance for the
-> >> watchdog thread to run.
-> >
-> > OK, but... __See below.
-> >
-> >> Anyway ... you seem to be uncomfortable about this patch - should i
-> >> delay it for now to let it all play out? We are close to the merge
-> >> window.
-> >
-> > I'm OK - I'm just bouncing ideas and questions off you guys, to make sure
-> > that we've thought this through all the way.
-> >
-> > Here's another: why is it a boot option rather than a runtime-tunable?
-> > A /proc tweakable is generally preferable because it avoids the
-> > oh-crap-i-forgot-to-edit-grub.conf thing. __And we could perhaps then
-> > remove all those system_state tests: userspace sets printk_delay
-> > immediately prior to running halt/reboot/etc?
+On Mon, Jun 08, 2009 at 09:01:29PM +0800, Mel Gorman wrote:
+> On NUMA machines, the administrator can configure zone_relcaim_mode that
+> is a more targetted form of direct reclaim. On machines with large NUMA
+> distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
+> unmapped pages will be reclaimed if the zone watermarks are not being met.
 > 
-> Andrew, thanks your comments.
-> I original intention is to use not boot options but sysfs interface.
-> Do you perfer proc?
+> There is a heuristic that determines if the scan is worthwhile but the
+> problem is that the heuristic is not being properly applied and is basically
+> assuming zone_reclaim_mode is 1 if it is enabled.
+> 
+> This patch makes zone_reclaim() makes a better attempt at working out how
+> many pages it might be able to reclaim given the current reclaim_mode. If it
+> cannot clean pages, then NR_FILE_DIRTY number of pages are not candidates. If
+> it cannot swap, then NR_FILE_MAPPED are not. This indirectly addresses tmpfs
+> as those pages tend to be dirty as they are not cleaned by pdflush or sync.
+> 
+> The ideal would be that the number of tmpfs pages would also be known
+> and account for like NR_FILE_MAPPED as swap is required to discard them.
+> A means of working this out quickly was not obvious but a comment is added
+> noting the problem.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  mm/vmscan.c |   18 ++++++++++++++++--
+>  1 files changed, 16 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index ba211c1..ffe2f32 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2380,6 +2380,21 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  {
+>  	int node_id;
+>  	int ret;
+> +	int pagecache_reclaimable;
+> +
+> +	/*
+> +	 * Work out how many page cache pages we can reclaim in this mode.
+> +	 *
+> +	 * NOTE: Ideally, tmpfs pages would be accounted as if they were
+> +	 *       NR_FILE_MAPPED as swap is required to discard those
+> +	 *       pages even when they are clean. However, there is no
+> +	 *       way of quickly identifying the number of tmpfs pages
+> +	 */
+> +	pagecache_reclaimable = zone_page_state(zone, NR_FILE_PAGES);
+> +	if (!(zone_reclaim_mode & RECLAIM_WRITE))
+> +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_DIRTY);
 
-sysfs is OK, if there's a logical place for it.  /sys/kernel/, I suppose.
+> +	if (!(zone_reclaim_mode & RECLAIM_SWAP))
+> +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
 
-> without system_state testing we will have to consider the NMI watchdog
-> and softlockup issue.
+Your patch seems to conflict with KOSAKI's earlier patch "vmscan: change the
+number of the unmapped files in zone reclaim", where he offers a better way for
+getting rid of the tmpfs pages:
 
-Yup.
++       nr_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +                                                                    
++                       zone_page_state(zone, NR_ACTIVE_FILE);                                                                       
++       nr_mapped = zone_page_state(zone, NR_FILE_MAPPED);                                                                           
++       if (likely(nr_file_pages >= nr_mapped))                                                                                      
++               nr_unmapped_file_pages = nr_file_pages - nr_mapped;                                                                  
+                                                                                                                                     
+        if (nr_unmapped_file_pages > zone->min_unmapped_pages) {                                                                     
 
+Thanks,
+Fengguang
 
+>  	/*
+>  	 * Zone reclaim reclaims unmapped file backed pages and
+> @@ -2391,8 +2406,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  	 * if less than a specified percentage of the zone is used by
+>  	 * unmapped file backed pages.
+>  	 */
+> -	if (zone_page_state(zone, NR_FILE_PAGES) -
+> -	    zone_page_state(zone, NR_FILE_MAPPED) <= zone->min_unmapped_pages
+> +	if (pagecache_reclaimable <= zone->min_unmapped_pages
+>  	    && zone_page_state(zone, NR_SLAB_RECLAIMABLE)
+>  			<= zone->min_slab_pages)
+>  		return 0;
+> -- 
+> 1.5.6.5
