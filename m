@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760595AbZFIMR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759560AbZFIMVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760595AbZFIMR2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 08:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZFIMRV
+	id S1759560AbZFIMVq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 08:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756890AbZFIMVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 08:17:21 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58558 "EHLO mx1.suse.de"
+	Tue, 9 Jun 2009 08:21:37 -0400
+Received: from mga14.intel.com ([143.182.124.37]:19495 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752173AbZFIMRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 08:17:21 -0400
-Date: Tue, 9 Jun 2009 14:17:22 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Nai Xia <nai.xia@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
+	id S1756806AbZFIMVh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 08:21:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,331,1241420400"; 
+   d="scan'208";a="152234532"
+Date: Tue, 9 Jun 2009 20:21:31 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in  the VM v3
-Message-ID: <20090609121722.GC9158@wotan.suse.de>
-References: <20090528134520.GH1065@one.firstfloor.org> <20090528145021.GA5503@localhost> <ab418ea90906032325m302afbb6w6fa68f6b57f53e49@mail.gmail.com> <20090607160225.GA24315@localhost> <ab418ea90906080406y34981329y27d360624aa22f7c@mail.gmail.com> <20090608123133.GA7944@localhost> <ab418ea90906080746m6d1d59d8m395ab76585575db1@mail.gmail.com> <20090609064855.GB5490@localhost> <20090609104825.GJ14820@wotan.suse.de> <20090609121510.GB5589@localhost>
-Mime-Version: 1.0
+Subject: Re: [PATCH] [6/16] HWPOISON: Add various poison checks in
+	mm/memory.c
+Message-ID: <20090609122131.GC5589@localhost>
+References: <20090603846.816684333@firstfloor.org> <20090603184639.1933B1D028F@basil.firstfloor.org> <20090609102504.GH14820@wotan.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090609121510.GB5589@localhost>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090609102504.GH14820@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 08:15:10PM +0800, Wu Fengguang wrote:
-> On Tue, Jun 09, 2009 at 06:48:25PM +0800, Nick Piggin wrote:
-> > On Tue, Jun 09, 2009 at 02:48:55PM +0800, Wu Fengguang wrote:
-> > > On Mon, Jun 08, 2009 at 10:46:53PM +0800, Nai Xia wrote:
-> > > > I meant PG_writeback stops writers to index---->struct page mapping.
-> > > 
-> > > It's protected by the radix tree RCU locks. Period.
-> > > 
-> > > If you are referring to the reverse mapping: page->mapping is procted
-> > > by PG_lock. No one should make assumption that it won't change under
-> > > page writeback.
+On Tue, Jun 09, 2009 at 06:25:04PM +0800, Nick Piggin wrote:
+> On Wed, Jun 03, 2009 at 08:46:38PM +0200, Andi Kleen wrote:
 > > 
-> > Well... I think probably PG_writeback should be enough. Phrased another
-> > way: I think it is a very bad idea to truncate PG_writeback pages out of
-> > pagecache. Does anything actually do that?
+> > Bail out early when hardware poisoned pages are found in page fault handling.
+> > Since they are poisoned they should not be mapped freshly into processes,
+> > because that would cause another (potentially deadly) machine check
+> > 
+> > This is generally handled in the same way as OOM, just a different
+> > error code is returned to the architecture code.
+> > 
+> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> > 
+> > ---
+> >  mm/memory.c |    3 +++
+> >  1 file changed, 3 insertions(+)
+> > 
+> > Index: linux/mm/memory.c
+> > ===================================================================
+> > --- linux.orig/mm/memory.c	2009-06-03 19:36:23.000000000 +0200
+> > +++ linux/mm/memory.c	2009-06-03 19:36:23.000000000 +0200
+> > @@ -2797,6 +2797,9 @@
+> >  	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
+> >  		return ret;
+> >  
+> > +	if (unlikely(PageHWPoison(vmf.page)))
+> > +		return VM_FAULT_HWPOISON;
 > 
-> There shall be no one. OK I will follow that convention.. 
-> 
-> But as I stated it is only safe do rely on the fact "no one truncates
-> PG_writeback pages" in end_writeback_io handlers. And I suspect if
-> there does exist such a handler, it could be trivially converted to
-> take the page lock.
+> Again, it would be nice if you just worry about this in your MCE
+> handler and don't sprinkle things like this in fastpaths.
 
-Well, the writeback submitter first sets writeback, then unlocks
-the page. I don't think he wants a truncate coming in at that point.
+For this patch, I cannot imagine a clear usage case for it, and
+proposed to remove it until there comes a case.
+
+Thanks,
+Fengguang
 
