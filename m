@@ -1,98 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760170AbZFIMCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbZFIMDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760170AbZFIMCn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 08:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759176AbZFIMCP
+	id S1760243AbZFIMDv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 08:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759516AbZFIMDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 08:02:15 -0400
-Received: from relay3.sgi.com ([192.48.156.57]:36434 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759658AbZFIMCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 08:02:13 -0400
-Date: Tue, 9 Jun 2009 07:02:14 -0500
-From: Robin Holt <holt@sgi.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Robin Holt <holt@sgi.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       Wu Fengguang <fengguang.wu@intel.com>, linux-ia64@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v4] zone_reclaim is always 0 by default
-Message-ID: <20090609120213.GA18753@attica.americas.sgi.com>
-References: <20090604192236.9761.A69D9226@jp.fujitsu.com> <20090608115048.GA15070@csn.ul.ie> <20090609095507.GA9851@attica.americas.sgi.com> <20090609103754.GN18380@csn.ul.ie>
+	Tue, 9 Jun 2009 08:03:44 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49128 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758205AbZFIMDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 08:03:43 -0400
+Date: Tue, 9 Jun 2009 14:03:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH][GIT PULL] ring-buffer: pass in lockdep class key for
+	reader_lock
+Message-ID: <20090609120331.GA25586@elte.hu>
+References: <20090603151724.144915858@goodmis.org> <20090605145219.GA14830@elte.hu> <20090607082257.GA16761@elte.hu> <alpine.DEB.2.00.0906081135320.9522@gandalf.stny.rr.com> <1244477919.13761.9042.camel@twins> <alpine.DEB.2.00.0906081858580.9522@gandalf.stny.rr.com> <20090609112053.GB4463@elte.hu> <alpine.DEB.2.00.0906090743460.17452@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090609103754.GN18380@csn.ul.ie>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <alpine.DEB.2.00.0906090743460.17452@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 11:37:55AM +0100, Mel Gorman wrote:
-> On Tue, Jun 09, 2009 at 04:55:07AM -0500, Robin Holt wrote:
-> > On Mon, Jun 08, 2009 at 12:50:48PM +0100, Mel Gorman wrote:
-> > 
-> > Let me start by saying I agree completely with everything you wrote and
-> > still disagree with this patch, but was willing to compromise and work
-> > around this for our upcoming x86_64 machine by putting a "value add"
-> > into our packaging of adding a sysctl that turns reclaim back on.
-> > 
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
 > 
-> To be honest, I'm more leaning towards a NACK than an ACK on this one. I
-> don't support enough NUMA machines to feel strongly enough about it but
-> unconditionally setting zone_reclaim_mode to 0 on x86-64 just because i7's
-> might be there seems ill-advised to me and will have other consequences for
-> existing more traditional x86-64 NUMA machines.
+> On Tue, 9 Jun 2009, Ingo Molnar wrote:
+> 
+> > 
+> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > 
+> > > Ingo,
+> > > 
+> > > Please pull the latest tip/tracing/ftrace tree, which can be found at:
+> > > 
+> > >   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> > > tip/tracing/ftrace
+> > > 
+> > > 
+> > > Peter Zijlstra (1):
+> > >       ring-buffer: pass in lockdep class key for reader_lock
+> > > 
+> > > ----
+> > >  include/linux/ring_buffer.h |   14 +++++++++++++-
+> > >  kernel/trace/ring_buffer.c  |    9 +++++++--
+> > >  2 files changed, 20 insertions(+), 3 deletions(-)
+> > 
+> > hm, this doesnt pull anything new here - forgot to push it out 
+> > perhaps?
+> 
+> I didn't notice my push failed. It is not a fast forward push. I rebased 
+> it against your branch. I just pushed it again now.
 
-I was sort-of planning on coming up with an x86_64 arch specific function
-for setting zone_reclaim_mode, but didn't like the direction things
-were going.
+Pulled, thanks Steve!
 
-Something to the effect of...
---- 20090609.orig/mm/page_alloc.c       2009-06-09 06:51:34.000000000 -0500
-+++ 20090609/mm/page_alloc.c    2009-06-09 06:55:00.160762069 -0500
-@@ -2326,12 +2326,7 @@ static void build_zonelists(pg_data_t *p
-        while ((node = find_next_best_node(local_node, &used_mask)) >= 0) {
-                int distance = node_distance(local_node, node);
- 
--               /*
--                * If another node is sufficiently far away then it is better
--                * to reclaim pages in a zone before going off node.
--                */
--               if (distance > RECLAIM_DISTANCE)
--                       zone_reclaim_mode = 1;
-+               zone_reclaim_mode = arch_zone_reclaim_mode(distance);
- 
-                /*
-                 * We don't want to pressure a particular node.
-
-And then letting each arch define an arch_zone_reclaim_mode().  If other
-values are needed in the determination, we would add parameters to
-reflect this.
-
-For ia64, add
-
-static inline ia64_zone_reclaim_mode(int distance)
-{
-	if (distance > 15)
-		return 1;
-}
-
-#define	arch_zone_reclaim_mode(_d)	ia64_zone_reclaim_mode(_d)
-
-
-Then, inside x86_64_zone_reclaim_mode(), I could make it something like
-	if (distance > 40 || is_uv_system())
-		return 1;
-
-In the end, I didn't think this fight was worth fighting given how ugly
-this felt.  Upon second thought, I am beginning to think it is not that
-bad, but I also don't think it is that good either.
-
-Thanks,
-Robin
+	Ingo
