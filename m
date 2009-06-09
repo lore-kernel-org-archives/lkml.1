@@ -1,128 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbZFISjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbZFISkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758905AbZFISjW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZFISjK
+	id S1758833AbZFISkM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbZFISkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:39:10 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:46069 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751537AbZFISjI (ORCPT
+	Tue, 9 Jun 2009 14:40:00 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:49526 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbZFISj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:39:08 -0400
-To: Nick Piggin <npiggin@suse.de>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, Hugh Dickins <hugh@veritas.com>,
-       Tejun Heo <tj@kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>
-References: <m1oct739xu.fsf@fess.ebiederm.org>
-	<1243893048-17031-3-git-send-email-ebiederm@xmission.com>
-	<20090602070642.GD31556@wotan.suse.de>
-	<m1ab4m5vbs.fsf@fess.ebiederm.org>
-	<20090609103832.GI14820@wotan.suse.de>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 09 Jun 2009 11:38:59 -0700
-In-Reply-To: <20090609103832.GI14820@wotan.suse.de> (Nick Piggin's message of "Tue\, 9 Jun 2009 12\:38\:32 +0200")
-Message-ID: <m1hbypmev0.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 9 Jun 2009 14:39:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=x6gvHuSR7E/4PtKtiv+W90dp0YqrYC3nz272awQHI0ToHqKMWaXcFXUY5HhuwQ2PR2
+         3wOBJ4+2Tri9alVCL/48kV8PNe5NhSv2X3Xovo6KSCjoIg6dDnhcnMqEL6xAJEH+OtWf
+         voOBjWpKi2EVSlnCbzNtQmoll8sm8vHD7ny0Q=
+Date: Tue, 9 Jun 2009 20:39:57 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jan Kara <jack@suse.cz>, Chris Mason <chris.mason@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, tytso@mit.edu, david@fromorbit.com,
+       hch@infradead.org, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, damien.wyart@free.fr
+Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
+Message-ID: <20090609183954.GB6057@nowhere>
+References: <20090604201012.GD11363@kernel.dk> <20090604223449.GA13780@nowhere> <20090605191528.GV11363@kernel.dk> <20090605211438.GA11650@duck.suse.cz> <20090606001814.GD3824@think> <20090606002339.GH11650@duck.suse.cz> <20090606010629.GC7809@nowhere> <20090608092338.GD11363@kernel.dk> <20090608122302.GA8524@duck.suse.cz> <20090608122834.GH11363@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: npiggin@suse.de, ebiederm@aristanetworks.com, hch@infradead.org, akpm@linux-foundation.org, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org, adobriyan@gmail.com, tj@kernel.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Nick Piggin <npiggin@suse.de>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH 03/23] vfs: Generalize the file_list
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20090608122834.GH11363@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin <npiggin@suse.de> writes:
+On Mon, Jun 08, 2009 at 02:28:34PM +0200, Jens Axboe wrote:
+> On Mon, Jun 08 2009, Jan Kara wrote:
+> > On Mon 08-06-09 11:23:38, Jens Axboe wrote:
+> > > On Sat, Jun 06 2009, Frederic Weisbecker wrote:
+> > > > On Sat, Jun 06, 2009 at 02:23:40AM +0200, Jan Kara wrote:
+> > > > > On Fri 05-06-09 20:18:15, Chris Mason wrote:
+> > > > > > On Fri, Jun 05, 2009 at 11:14:38PM +0200, Jan Kara wrote:
+> > > > > > > On Fri 05-06-09 21:15:28, Jens Axboe wrote:
+> > > > > > > > On Fri, Jun 05 2009, Frederic Weisbecker wrote:
+> > > > > > > > > The result with noop is even more impressive.
+> > > > > > > > > 
+> > > > > > > > > See: http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop.pdf
+> > > > > > > > > 
+> > > > > > > > > Also a comparison, noop with pdflush against noop with bdi writeback:
+> > > > > > > > > 
+> > > > > > > > > http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop-cmp.pdf
+> > > > > > > > 
+> > > > > > > > OK, so things aren't exactly peachy here to begin with. It may not
+> > > > > > > > actually BE an issue, or at least now a new one, but that doesn't mean
+> > > > > > > > that we should not attempt to quantify the impact.
+> > > > > > >   What looks interesting is also the overall throughput. With pdflush we
+> > > > > > > get to 2.5 MB/s + 26 MB/s while with per-bdi we get to 2.7 MB/s + 13 MB/s.
+> > > > > > > So per-bdi seems to be *more* fair but throughput suffers a lot (which
+> > > > > > > might be inevitable due to incurred seeks).
+> > > > > > >   Frederic, how much does dbench achieve for you just on one partition
+> > > > > > > (test both consecutively if possible) with as many threads as have those
+> > > > > > > two dbench instances together? Thanks.
+> > > > > > 
+> > > > > > Is the graph showing us dbench tput or disk tput?  I'm assuming it is
+> > > > > > disk tput, so bdi may just be writing less?
+> > > > >   Good, question. I was assuming dbench throughput :).
+> > > > > 
+> > > > > 									Honza
+> > > > 
+> > > > 
+> > > > Yeah it's dbench. May be that's not the right tool to measure the writeback
+> > > > layer, even though dbench results are necessarily influenced by the writeback
+> > > > behaviour.
+> > > > 
+> > > > May be I should use something else?
+> > > > 
+> > > > Note that if you want I can put some surgicals trace_printk()
+> > > > in fs/fs-writeback.c
+> > > 
+> > > FWIW, I ran a similar test here just now. CFQ was used, two partitions
+> > > on an (otherwise) idle drive. I used 30 clients per dbench and 600s
+> > > runtime. Results are nearly identical, both throughout the run and
+> > > total:
+> > > 
+> > > /dev/sdb1
+> > > Throughput 165.738 MB/sec  30 clients  30 procs  max_latency=459.002 ms
+> > > 
+> > > /dev/sdb2
+> > > Throughput 165.773 MB/sec  30 clients  30 procs  max_latency=607.198 ms
+> >   Hmm, interesting. 165 MB/sec (in fact 330 MB/sec for that drive) sounds
+> > like quite a lot ;). This usually happens with dbench when the processes
+> > manage to delete / redirty data before writeback thread gets to them (so
+> > some IO happens in memory only and throughput is bound by the CPU / memory
+> > speed). So I think you are on a different part of the performance curve
+> > than Frederic. Probably you have to run with more threads so that dbench
+> > threads get throttled because of total amount of dirty data generated...
+> 
+> Certainly, the actual disk data rate was consistenctly in the
+> 60-70MB/sec region. The issue is likely that the box has 6GB of RAM, if
+> I boot with less than 30 clients will do.
+> 
+> But unless the situation changes radically with memory pressure, it
+> still shows a fair distribution of IO between the two. Since they have
+> identical results throughout, it should be safe to assume that the have
+> equal bandwidth distribution at the disk end. A fast dbench run is one
+> that doesn't touch the disk at all, once you start touching disk you
+> lose :-)
 
-> On Fri, Jun 05, 2009 at 12:33:59PM -0700, Eric W. Biederman wrote:
->> Nick Piggin <npiggin@suse.de> writes:
->> 
->> >> +static inline void file_list_unlock(struct file_list *files)
->> >> +{
->> >> +	spin_unlock(&files->lock);
->> >> +}
->> >
->> > I don't really like this. It's just a list head. Get rid of
->> > all these wrappers and crap I'd say. In fact, starting with my
->> > patch to unexport files_lock and remove these wrappers would
->> > be reasonable, wouldn't it?
->> 
->> I don't really mind killing the wrappers.
->> 
->> I do mind your patch because it makes the list going through
->> the tty's something very different.  In my view of the world
->> that is the only use case is what I'm working to move up more
->> into the vfs layer.  So orphaning it seems wrong.
->
-> My patch doesn't orphan it, it just makes the locking more
-> explicit and that's all so it should be easier to work with.
-> I just mean start with my patch and you could change things
-> as needed.
 
-As I recall you weren't using the files_lock for the tty layer.  I
-seem to recall you were still walking through the same list head on
-struct file.
 
-Regardless it sure felt like pushing the tty usage out into
-some weird special case.  My goal is to make it reasonable for
-more character drivers to use the list so it isn't an especially
-comfortable starting place for me.
+When I ran my tests, I only had 384 MB of memory, 100 threads and
+only one CPU. So I was in a constant writeback, which should
+be smoother with 6 GB of memory and 30 threads.
 
->> > Increasing the size of the struct inode by 24 bytes hurts.
->> > Even when you decrapify it and can reuse i_lock or something,
->> > then it is still 16 bytes on 64-bit.
->> 
->> We can get it even smaller if we make it an hlist.  A hlist_head is
->> only a single pointer.  This size growth appears to be one of the
->> biggest weakness of the code.
->
-> 8 bytes would be a lot better than 24.
+May be that's why you had a so well balanced result... Or may
+be there is too much entropy in my testbox :)
 
-Definitely.
 
->> > I haven't looked through all the patches... but this is to
->> > speed up a slowpath operation, isn't it? Or does revoke
->> > need to be especially performant?
->> 
->> This was more about simplicity rather than performance.  The
->> performance gain is using a per inode lock instead of a global lock.
->> Which keeps cache lines from bouncing.
->
-> Yes but we already have such a global lock which has been
-> OK until now. Granted that some users are running into these
-> locks, but fine graining them can be considered independently
-> I think. So using per-sb lists of files and not bloating
-> struct inode any more could be a less controversial step
-> for you.
+ 
+> -- 
+> Jens Axboe
+> 
 
-I will take a look.  Certainly doing the work in a couple
-of patches seems reasonable.  If I can move all of the list
-maintenance out of the tty layer.  That looks to be the ideal
-case.
-
-Eric
