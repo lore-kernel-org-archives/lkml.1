@@ -1,48 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759362AbZFIK7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760266AbZFILAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759362AbZFIK7V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757922AbZFIK7E
+	id S1760266AbZFILAL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 07:00:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759882AbZFIK75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:59:04 -0400
-Received: from stinky.trash.net ([213.144.137.162]:59816 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755046AbZFIK7E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:59:04 -0400
-Message-ID: <4A2E4077.8080407@trash.net>
-Date: Tue, 09 Jun 2009 12:59:03 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Tue, 9 Jun 2009 06:59:57 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54782 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1759336AbZFIK74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:59:56 -0400
+Message-ID: <4A2E4088.1010403@cn.fujitsu.com>
+Date: Tue, 09 Jun 2009 18:59:20 +0800
+From: Shan Wei <shanwei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: gil.beniamini@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: SOCK_RAW does not receive broadcast (with VLAN unless PROMISC)
-References: <91ac27070906081105x30171bedra10d244d382a6934@mail.gmail.com> <20090608.143454.161329513.davem@davemloft.net>
-In-Reply-To: <20090608.143454.161329513.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] CFQ:optimize the cfq_should_preempt()
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Gil Beniamini <gil.beniamini@gmail.com>
-> Date: Mon, 8 Jun 2009 21:05:25 +0300
-> 
->> My application is using PF_PACKET and SOCK_RAW in order to receive all
->> Ethernet packets for the machine-unicast MAC plus all broadcast
->> packets (like ARP broadcast).
-> 
->> That worked OK with kernel 2.6.20 (Ubuntu 7.04 with or without VLAN).
->>
->> Now with kernel 2.6.28 (Ubuntu 9.04) it works OK only without-VLAN,
->> but with VLAN the application receive only packets for the
->> machine-unicast MAC, but no broadcast (like ARP broadcast) packets,
->> only if I set the socket to PROMISC mode, I start receive also
->> broadcast packets.
 
-Which driver are you using? Are you sniffing on the VLAN device
-or on the underlying device?
+The patch don't fix bug, just optimizes the cfq_should_preempt()
+to preempt higher priority queue.
 
+Additionally, the comment above cfq_preempt_queue() is outdated.
+
+
+Signed-off-by: Shan Wei <shanwei@cn.fujitsu.com>
+---
+ block/cfq-iosched.c |   17 +++++------------
+ 1 files changed, 5 insertions(+), 12 deletions(-)
+
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index a55a9bd..427f522 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1993,10 +1993,10 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
+ 	if (cfq_slice_used(cfqq))
+ 		return 1;
+ 
+-	if (cfq_class_idle(new_cfqq))
+-		return 0;
+-
+-	if (cfq_class_idle(cfqq))
++	/*
++	 * if new_cfqq is of higher priority, preempting the active queue.
++	 */
++	if (new_cfqq->ioprio_class < cfqq->ioprio_class)
+ 		return 1;
+ 
+ 	/*
+@@ -2013,12 +2013,6 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
+ 	if (rq_is_meta(rq) && !cfqq->meta_pending)
+ 		return 1;
+ 
+-	/*
+-	 * Allow an RT request to pre-empt an ongoing non-RT cfqq timeslice.
+-	 */
+-	if (cfq_class_rt(new_cfqq) && !cfq_class_rt(cfqq))
+-		return 1;
+-
+ 	if (!cfqd->active_cic || !cfq_cfqq_wait_request(cfqq))
+ 		return 0;
+ 
+@@ -2033,8 +2027,7 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
+ }
+ 
+ /*
+- * cfqq preempts the active queue. if we allowed preempt with no slice left,
+- * let it have half of its nominal slice.
++ * cfqq preempts the active queue, and is set a new slice time.
+  */
+ static void cfq_preempt_queue(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ {
