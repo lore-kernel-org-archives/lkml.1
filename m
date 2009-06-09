@@ -1,95 +1,368 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932258AbZFIKoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759701AbZFIKsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932258AbZFIKoT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756193AbZFIKoG
+	id S1759701AbZFIKsY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758731AbZFIKsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:44:06 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:34298 "EHLO gir.skynet.ie"
+	Tue, 9 Jun 2009 06:48:11 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:64838 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754616AbZFIKoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:44:05 -0400
-Date: Tue, 9 Jun 2009 11:44:04 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
-       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when
-	zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
-Message-ID: <20090609104404.GP18380@csn.ul.ie>
-References: <20090609094231.GM18380@csn.ul.ie> <20090609184422.DD8B.A69D9226@jp.fujitsu.com> <20090609185036.DD8E.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090609185036.DD8E.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1754830AbZFIKsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:48:09 -0400
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+To: linux-usb@vger.kernel.org, avictor.za@gmail.com
+Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net,
+       haavard.skinnemoen@atmel.com, patrice.vilchez@atmel.com,
+       Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: [PATCH 1/2] at91/USB: Add USB drivers for at91sam9g45 series
+Date: Tue,  9 Jun 2009 13:38:12 +0200
+Message-Id: <1244547493-19654-2-git-send-email-nicolas.ferre@atmel.com>
+X-Mailer: git-send-email 1.5.3.7
+In-Reply-To: <1244547493-19654-1-git-send-email-nicolas.ferre@atmel.com>
+References: <1244547493-19654-1-git-send-email-nicolas.ferre@atmel.com>
+Message-Id: <7d35ee50ea2e14a3d4f350406693b1e884b034f3.1244545093.git.nicolas.ferre@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 06:59:03PM +0900, KOSAKI Motohiro wrote:
-> > > > > Here it is just recording the jiffies value. The real smarts with the counter
-> > > > > use time_before() which I assumed could handle jiffie wrap-arounds. Even
-> > > > > if it doesn't, the consequence is that one scan will occur that could have
-> > > > > been avoided around the time of the jiffie wraparound. The value will then
-> > > > > be reset and it will be fine.
-> > > > 
-> > > > time_before() assume two argument are enough nearly time.
-> > > > if we use 32bit cpu and HZ=1000, about jiffies wraparound about one month.
-> > > > 
-> > > > Then, 
-> > > > 
-> > > > 1. zone reclaim failure occur
-> > > > 2. system works fine for one month
-> > > > 3. jiffies wrap and time_before() makes mis-calculation.
-> > > > 
-> > > 
-> > > And the scan occurs uselessly and zone_reclaim_failure gets set again.
-> > > I believe the one useless scan is not significant enough to warrent dealing
-> > > with jiffie wraparound.
-> > 
-> > Thank you for kindful explanation.
-> > I fully agreed.
-> 
-> Bah, no, not agreed.
-> simple last failure recording makes following scenario.
-> 
-> 
-> 1. zone reclaim failure occur. update zone_reclaim_failure.
->       ^
->       |  time_before() return 1, and zone_reclaim() return immediately.
->       v
-> 2. after 32 second.
->       ^
->       |  time_before() return 0, and zone_reclaim() works normally
->       v
-> 3. after one month
->       ^
->       |  time_before() return 1, and zone_reclaim() return immediately.
->       |  although recent zone_reclaim() never failed.
->       v
-> 4. after more one month
->       
+Add both host and gadget USB drivers for at91sam9g45 series. Those SOC embed
+high speed USB interfaces.
+The gadget driver is the already available atmel_usba_udc.
+The host driver is an EHCI with its companion OHCI. EHCI is handled by the new
+ehci-atmel.c whereas the OHCI is always handled by ohci-at91.c. This last
+wrapper is modified to allow IRQ sharing between two controllers.
 
-Pants.
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+ drivers/usb/Kconfig           |    1 +
+ drivers/usb/gadget/Kconfig    |    4 +-
+ drivers/usb/host/ehci-atmel.c |  251 +++++++++++++++++++++++++++++++++++++++++
+ drivers/usb/host/ehci-hcd.c   |    5 +
+ drivers/usb/host/ohci-at91.c  |    3 +-
+ 5 files changed, 261 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/usb/host/ehci-atmel.c
 
-/me slaps self
-
-+       /* Watch for jiffie wraparound */
-+       if (unlikely(jiffies < zone->zone_reclaim_failure))
-+               zone->zone_reclaim_failure = jiffies;
+diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
+index c6c816b..3974c9c 100644
+--- a/drivers/usb/Kconfig
++++ b/drivers/usb/Kconfig
+@@ -57,6 +57,7 @@ config USB_ARCH_HAS_EHCI
+ 	default y if PPC_83xx
+ 	default y if SOC_AU1200
+ 	default y if ARCH_IXP4XX
++	default y if ARCH_AT91SAM9G45
+ 	default PCI
+ 
+ # ARM SA1111 chips have a non-PCI based "OHCI-compatible" USB host interface.
+diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+index 080bb1e..9beea52 100644
+--- a/drivers/usb/gadget/Kconfig
++++ b/drivers/usb/gadget/Kconfig
+@@ -124,7 +124,7 @@ choice
+ 
+ config USB_GADGET_AT91
+ 	boolean "Atmel AT91 USB Device Port"
+-	depends on ARCH_AT91 && !ARCH_AT91SAM9RL && !ARCH_AT91CAP9
++	depends on ARCH_AT91 && !ARCH_AT91SAM9RL && !ARCH_AT91CAP9 && !ARCH_AT91SAM9G45
+ 	select USB_GADGET_SELECTED
+ 	help
+ 	   Many Atmel AT91 processors (such as the AT91RM2000) have a
+@@ -143,7 +143,7 @@ config USB_AT91
+ config USB_GADGET_ATMEL_USBA
+ 	boolean "Atmel USBA"
+ 	select USB_GADGET_DUALSPEED
+-	depends on AVR32 || ARCH_AT91CAP9 || ARCH_AT91SAM9RL
++	depends on AVR32 || ARCH_AT91CAP9 || ARCH_AT91SAM9RL || ARCH_AT91SAM9G45
+ 	help
+ 	  USBA is the integrated high-speed USB Device controller on
+ 	  the AT32AP700x, some AT91SAM9 and AT91CAP9 processors from Atmel.
+diff --git a/drivers/usb/host/ehci-atmel.c b/drivers/usb/host/ehci-atmel.c
+new file mode 100644
+index 0000000..c5f2303
+--- /dev/null
++++ b/drivers/usb/host/ehci-atmel.c
+@@ -0,0 +1,251 @@
++/*
++ * Driver for EHCI UHP on Atmel chips
++ *
++ *  Copyright (C) 2009 Atmel Corporation,
++ *                     Nicolas Ferre <nicolas.ferre@atmel.com>
++ *
++ *  Based on various ehci-*.c drivers
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file COPYING in the main directory of this archive for
++ * more details.
++ */
 +
-+       /* Do not attempt a scan if scanning failed recently */
-+       if (time_before(jiffies,
-+                       zone->zone_reclaim_failure + zone_reclaim_interval))
-+               return 0;
++#include <linux/clk.h>
++#include <linux/platform_device.h>
 +
-
-?
-
++/* interface and function clocks */
++static struct clk *iclk, *fclk;
++static int clocked;
++
++/*-------------------------------------------------------------------------*/
++
++static void atmel_start_clock(void)
++{
++	clk_enable(iclk);
++	clk_enable(fclk);
++	clocked = 1;
++}
++
++static void atmel_stop_clock(void)
++{
++	clk_disable(fclk);
++	clk_disable(iclk);
++	clocked = 0;
++}
++
++static void atmel_start_ehci(struct platform_device *pdev)
++{
++
++	dev_dbg(&pdev->dev, "start\n");
++
++	/*
++	 * Start the USB clocks.
++	 */
++	atmel_start_clock();
++}
++
++static void atmel_stop_ehci(struct platform_device *pdev)
++{
++	dev_dbg(&pdev->dev, "stop\n");
++
++	/*
++	 * Stop the USB clocks.
++	 */
++	atmel_stop_clock();
++}
++
++/*-------------------------------------------------------------------------*/
++
++static int ehci_atmel_setup(struct usb_hcd *hcd)
++{
++	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
++	int retval = 0;
++
++	/*
++	 * registers start at offset 0x0
++	 */
++	ehci->caps = hcd->regs;
++	ehci->regs = hcd->regs +
++		HC_LENGTH(ehci_readl(ehci, &ehci->caps->hc_capbase));
++	dbg_hcs_params(ehci, "reset");
++	dbg_hcc_params(ehci, "reset");
++
++	/*
++	 * cache this readonly data; minimize chip reads
++	 */
++	ehci->hcs_params = ehci_readl(ehci, &ehci->caps->hcs_params);
++
++	retval = ehci_halt(ehci);
++	if (retval)
++		return retval;
++
++	/*
++	 * data structure init
++	 */
++	retval = ehci_init(hcd);
++	if (retval)
++		return retval;
++
++	ehci->sbrn = 0x20;
++
++	ehci_reset(ehci);
++	ehci_port_power(ehci, 0);
++
++	return retval;
++}
++
++static const struct hc_driver ehci_atmel_hc_driver = {
++	.description		= hcd_name,
++	.product_desc		= "Atmel EHCI UHP HS",
++	.hcd_priv_size		= sizeof(struct ehci_hcd),
++
++	/*
++	 * generic hardware linkage
++	 */
++	.irq			= ehci_irq,
++	.flags			= HCD_MEMORY | HCD_USB2,
++
++	/*
++	 * basic lifecycle operations
++	 */
++	.reset			= ehci_atmel_setup,
++	.start			= ehci_run,
++	.stop			= ehci_stop,
++	.shutdown		= ehci_shutdown,
++
++	/*
++	 * managing i/o requests and associated device resources
++	 */
++	.urb_enqueue		= ehci_urb_enqueue,
++	.urb_dequeue		= ehci_urb_dequeue,
++	.endpoint_disable	= ehci_endpoint_disable,
++
++	/*
++	 * scheduling support
++	 */
++	.get_frame_number	= ehci_get_frame,
++
++	/*
++	 * root hub support
++	 */
++	.hub_status_data	= ehci_hub_status_data,
++	.hub_control		= ehci_hub_control,
++	.bus_suspend		= ehci_bus_suspend,
++	.bus_resume		= ehci_bus_resume,
++	.relinquish_port	= ehci_relinquish_port,
++	.port_handed_over	= ehci_port_handed_over,
++};
++
++static int __init ehci_atmel_drv_probe(struct platform_device *pdev)
++{
++	struct usb_hcd *hcd;
++	const struct hc_driver *driver = &ehci_atmel_hc_driver;
++	struct resource *res;
++	int irq;
++	int retval;
++
++	if (usb_disabled())
++		return -ENODEV;
++
++	pr_debug("Initializing Atmel-SoC USB Host Controller\n");
++
++	irq = platform_get_irq(pdev, 0);
++	if (irq <= 0) {
++		dev_err(&pdev->dev,
++			"Found HC with no IRQ. Check %s setup!\n",
++			dev_name(&pdev->dev));
++		retval = -ENODEV;
++		goto fail_create_hcd;
++	}
++
++	hcd = usb_create_hcd(driver, &pdev->dev, dev_name(&pdev->dev));
++	if (!hcd) {
++		retval = -ENOMEM;
++		goto fail_create_hcd;
++	}
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res) {
++		dev_err(&pdev->dev,
++			"Found HC with no register addr. Check %s setup!\n",
++			dev_name(&pdev->dev));
++		retval = -ENODEV;
++		goto fail_request_resource;
++	}
++	hcd->rsrc_start = res->start;
++	hcd->rsrc_len = res->end - res->start + 1;
++
++	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len,
++				driver->description)) {
++		dev_dbg(&pdev->dev, "controller already in use\n");
++		retval = -EBUSY;
++		goto fail_request_resource;
++	}
++
++	hcd->regs = ioremap_nocache(hcd->rsrc_start, hcd->rsrc_len);
++	if (hcd->regs == NULL) {
++		dev_dbg(&pdev->dev, "error mapping memory\n");
++		retval = -EFAULT;
++		goto fail_ioremap;
++	}
++
++	iclk = clk_get(&pdev->dev, "ehci_clk");
++	fclk = clk_get(&pdev->dev, "uhpck");
++	if (IS_ERR(iclk) || IS_ERR(fclk)) {
++		dev_err(&pdev->dev, "Error getting clocks\n");
++		retval = -ENOENT;
++		goto fail_get_clk;
++	}
++
++	atmel_start_ehci(pdev);
++
++	retval = usb_add_hcd(hcd, irq, IRQF_SHARED);
++	if (retval)
++		goto fail_add_hcd;
++
++	return retval;
++
++fail_add_hcd:
++	atmel_stop_ehci(pdev);
++fail_get_clk:
++	clk_put(fclk);
++	clk_put(iclk);
++	iounmap(hcd->regs);
++fail_ioremap:
++	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
++fail_request_resource:
++	usb_put_hcd(hcd);
++fail_create_hcd:
++	dev_err(&pdev->dev, "init %s fail, %d\n",
++		dev_name(&pdev->dev), retval);
++
++	return retval;
++}
++
++static int __exit ehci_atmel_drv_remove(struct platform_device *pdev)
++{
++	struct usb_hcd *hcd = platform_get_drvdata(pdev);
++
++	ehci_shutdown(hcd);
++	usb_remove_hcd(hcd);
++	iounmap(hcd->regs);
++	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
++	usb_put_hcd(hcd);
++
++	atmel_stop_ehci(pdev);
++	clk_put(fclk);
++	clk_put(iclk);
++	fclk = iclk = NULL;
++
++	return 0;
++}
++
++MODULE_ALIAS("platform:atmel-ehci");
++
++static struct platform_driver ehci_atmel_driver = {
++	.probe		= ehci_atmel_drv_probe,
++	.remove		= __exit_p(ehci_atmel_drv_remove),
++	.shutdown	= usb_hcd_platform_shutdown,
++	.driver.name	= "atmel-ehci",
++};
+diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
+index c637207..df2ddee 100644
+--- a/drivers/usb/host/ehci-hcd.c
++++ b/drivers/usb/host/ehci-hcd.c
+@@ -1072,6 +1072,11 @@ MODULE_LICENSE ("GPL");
+ #define	PLATFORM_DRIVER		ixp4xx_ehci_driver
+ #endif
+ 
++#ifdef CONFIG_ARCH_AT91
++#include "ehci-atmel.c"
++#define	PLATFORM_DRIVER		ehci_atmel_driver
++#endif
++
+ #if !defined(PCI_DRIVER) && !defined(PLATFORM_DRIVER) && \
+     !defined(PS3_SYSTEM_BUS_DRIVER) && !defined(OF_PLATFORM_DRIVER)
+ #error "missing bus glue for ehci-hcd"
+diff --git a/drivers/usb/host/ohci-at91.c b/drivers/usb/host/ohci-at91.c
+index bb5e6f6..b29b0fe 100644
+--- a/drivers/usb/host/ohci-at91.c
++++ b/drivers/usb/host/ohci-at91.c
+@@ -148,7 +148,8 @@ static int usb_hcd_at91_probe(const struct hc_driver *driver,
+ 	at91_start_hc(pdev);
+ 	ohci_hcd_init(hcd_to_ohci(hcd));
+ 
+-	retval = usb_add_hcd(hcd, pdev->resource[1].start, IRQF_DISABLED);
++	retval = usb_add_hcd(hcd, pdev->resource[1].start,
++				IRQF_DISABLED | IRQF_SHARED);
+ 	if (retval == 0)
+ 		return retval;
+ 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.5.3.7
+
