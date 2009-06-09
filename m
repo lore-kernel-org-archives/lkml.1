@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759069AbZFIIYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759239AbZFIIZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759069AbZFIIYW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 04:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbZFIIYM
+	id S1759239AbZFIIZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 04:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756543AbZFIIZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 04:24:12 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36218 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755442AbZFIIYK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 04:24:10 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH mmotm] vmscan: handle may_swap more strictly (Re: [PATCH  mmotm] vmscan: fix may_swap handling for memcg)
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <28c262360906090119r6e881caq9b74028ba43567a7@mail.gmail.com>
-References: <20090609164850.DD73.A69D9226@jp.fujitsu.com> <28c262360906090119r6e881caq9b74028ba43567a7@mail.gmail.com>
-Message-Id: <20090609172035.DD7C.A69D9226@jp.fujitsu.com>
+	Tue, 9 Jun 2009 04:25:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54507 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755499AbZFIIZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 04:25:13 -0400
+Message-ID: <4A2E1C67.4040301@redhat.com>
+Date: Tue, 09 Jun 2009 11:25:11 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Kallol Biswas <nucleodyne@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: looking for ideas on VM related research projects
+References: <438397970906072249pe76fafdj49626f20eea31eab@mail.gmail.com>	 <4A2CAC32.5030904@redhat.com> <438397970906090114m7ebc6e6fub0c6085f462d2e1a@mail.gmail.com>
+In-Reply-To: <438397970906090114m7ebc6e6fub0c6085f462d2e1a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  9 Jun 2009 17:24:10 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, Jun 9, 2009 at 4:58 PM, KOSAKI
-> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
-> >> Hi, KOSAKI.
-> >>
-> >> As you know, this problem caused by if condition(priority) in shrink_zone.
-> >> Let me have a question.
-> >>
-> >> Why do we have to prevent scan value calculation when the priority is zero ?
-> >> As I know, before split-lru, we didn't do it.
-> >>
-> >> Is there any specific issue in case of the priority is zero ?
-> >
-> > Yes.
-> >
-> > example:
-> >
-> > get_scan_ratio() return anon:80%, file=20%. and the system have
-> > 10000 anon pages and 10000 file pages.
-> >
-> > shrink_zone() picked up 8000 anon pages and 2000 file pages.
-> > it mean 8000 file pages aren't scanned at all.
-> >
-> > Oops, it can makes OOM-killer although system have droppable file cache.
-> >
-> Hmm..Can that problem be happen in real system ?
-> The file ratio is big means that file lru list scanning is so big but
-> rotate is small.
-> It means file lru have few reclaimable page.
-> 
-> Isn't it ? I am confusing.
-> Could you elaborate, please if you don't mind ?
+Kallol Biswas wrote:
+> Hi,
+>     I am from IO and driver background, and not up to date with
+> current VM developments in linux.
+>
+> Are you talking about NUMA architecture? 
 
-hm, ok, my example was wrong.
-I intention is, if there are droppable file-back pages (althout only 1 page), 
-OOM-killer shouldn't occuer.
+Yes.
 
-many or few is unrelated.
+> Could you clarify or point me
+> to document that describes the problem with VMA/task affinity?
 
+Linux will try to allocate memory on the same node that the allocating 
+thread ran on on the time the page was faulted in.  However, for long 
+running processes, the thread will eventually migrate to some other cpu 
+with only 1/N chance of actually running on the same node (N being the 
+number of nodes).
 
+If we can specify that a thread is related to some vma, the scheduler 
+can try to keep that thread running on the vma's node, or else it can 
+migrate the vma to a node with available cpu power.
 
+>  Where do affinity issues arise?
+>   
+
+Large, long-running processes.  My specific interest is virtualization 
+with kvm, but I believe HPC and databases can make use of this as well.  
+HPC currently solves the problem by statically allocating memory and cpu 
+resources.
+
+-- 
+error compiling committee.c: too many arguments to function
 
