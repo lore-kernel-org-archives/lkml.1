@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760615AbZFIKeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762760AbZFIKfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760615AbZFIKeA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760824AbZFIKVa
+	id S1762760AbZFIKfm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760880AbZFIKVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:21:30 -0400
-Received: from kroah.org ([198.145.64.141]:55415 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:21:51 -0400
+Received: from kroah.org ([198.145.64.141]:55522 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760576AbZFIKV3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:21:29 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:08 2009
-Message-Id: <20090609094108.439675561@blue.kroah.org>
+	id S1760869AbZFIKVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:21:49 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:10 2009
+Message-Id: <20090609094109.986748238@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:39:57 -0700
+Date: Tue, 09 Jun 2009 02:40:03 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Ingo Molnar <mingo@elte.hu>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 69/87] x86: hpet: fix periodic mode programming on AMD 81xx
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 75/87] ext4: Automatically allocate delay allocated blocks on close
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=x86-hpet-fix-periodic-mode-programming-on-amd-81xx.patch
+Content-Disposition: inline; filename=ext4-automatically-allocate-delay-allocated-blocks-on-close.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,90 +39,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
+From: "Theodore Ts'o" <tytso@mit.edu>
 
-commit 7a6f9cbb37120c745fc187083fb5c3de4dca4f97 upstream.
+(cherry picked from commit 7d8f9f7d150dded7b68e61ca6403a1f166fb4edf)
 
-(See http://bugzilla.kernel.org/show_bug.cgi?id=12961)
+When closing a file that had been previously truncated, force any
+delay allocated blocks that to be allocated so that if the filesystem
+is mounted with data=ordered, the data blocks will be pushed out to
+disk along with the journal commit.  Many application programs expect
+this, so we do this to avoid zero length files if the system crashes
+unexpectedly.
 
-It partially reverts commit c23e253e67c9d8a91a0ffa33c1f571a17f0a2403
-(x86: hpet: stop HPET_COUNTER when programming periodic mode)
-
-HPET on AMD 81xx chipset needs a second write (with HPET_TN_SETVAL
-cleared) to T0_CMP register to set the period in periodic mode.
-
-With this patch HPET_COUNTER is still stopped but not reset when HPET
-is programmed in periodic mode. This should help to avoid races when
-HPET is programmed in periodic mode and fixes a boot time hang that
-I've observed on a machine when using 1000HZ.
-
-[ Impact: fix boot time hang on machines with AMD 81xx chipset ]
-
-Reported-by: Jeff Mahoney <jeffm@suse.com>
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
-Tested-by: Jeff Mahoney <jeffm@suse.com>
-LKML-Reference: <20090421180037.GA2763@alberich.amd.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- arch/x86/kernel/hpet.c |   18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+ fs/ext4/ext4.h  |    1 +
+ fs/ext4/file.c  |    4 ++++
+ fs/ext4/inode.c |    3 +++
+ 3 files changed, 8 insertions(+)
 
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -196,6 +196,10 @@ static void hpet_stop_counter(void)
- 	unsigned long cfg = hpet_readl(HPET_CFG);
- 	cfg &= ~HPET_CFG_ENABLE;
- 	hpet_writel(cfg, HPET_CFG);
-+}
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -279,6 +279,7 @@ static inline __u32 ext4_mask_flags(umod
+ #define EXT4_STATE_NEW			0x00000002 /* inode is newly created */
+ #define EXT4_STATE_XATTR		0x00000004 /* has in-inode xattrs */
+ #define EXT4_STATE_NO_EXPAND		0x00000008 /* No space for expansion */
++#define EXT4_STATE_DA_ALLOC_CLOSE	0x00000010 /* Alloc DA blks on close */
+ 
+ /* Used to pass group descriptor data when online resize is done */
+ struct ext4_new_group_input {
+--- a/fs/ext4/file.c
++++ b/fs/ext4/file.c
+@@ -33,6 +33,10 @@
+  */
+ static int ext4_release_file(struct inode *inode, struct file *filp)
+ {
++	if (EXT4_I(inode)->i_state & EXT4_STATE_DA_ALLOC_CLOSE) {
++		ext4_alloc_da_blocks(inode);
++		EXT4_I(inode)->i_state &= ~EXT4_STATE_DA_ALLOC_CLOSE;
++	}
+ 	/* if we are the last writer on the inode, drop the block reservation */
+ 	if ((filp->f_mode & FMODE_WRITE) &&
+ 			(atomic_read(&inode->i_writecount) == 1))
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -3880,6 +3880,9 @@ void ext4_truncate(struct inode *inode)
+ 	if (!ext4_can_truncate(inode))
+ 		return;
+ 
++	if (inode->i_size == 0)
++		ei->i_state |= EXT4_STATE_DA_ALLOC_CLOSE;
 +
-+static void hpet_reset_counter(void)
-+{
- 	hpet_writel(0, HPET_COUNTER);
- 	hpet_writel(0, HPET_COUNTER + 4);
- }
-@@ -210,6 +214,7 @@ static void hpet_start_counter(void)
- static void hpet_restart_counter(void)
- {
- 	hpet_stop_counter();
-+	hpet_reset_counter();
- 	hpet_start_counter();
- }
- 
-@@ -269,7 +274,7 @@ static int hpet_setup_msi_irq(unsigned i
- static void hpet_set_mode(enum clock_event_mode mode,
- 			  struct clock_event_device *evt, int timer)
- {
--	unsigned long cfg;
-+	unsigned long cfg, cmp, now;
- 	uint64_t delta;
- 
- 	switch (mode) {
-@@ -277,12 +282,23 @@ static void hpet_set_mode(enum clock_eve
- 		hpet_stop_counter();
- 		delta = ((uint64_t)(NSEC_PER_SEC/HZ)) * evt->mult;
- 		delta >>= evt->shift;
-+		now = hpet_readl(HPET_COUNTER);
-+		cmp = now + (unsigned long) delta;
- 		cfg = hpet_readl(HPET_Tn_CFG(timer));
- 		/* Make sure we use edge triggered interrupts */
- 		cfg &= ~HPET_TN_LEVEL;
- 		cfg |= HPET_TN_ENABLE | HPET_TN_PERIODIC |
- 		       HPET_TN_SETVAL | HPET_TN_32BIT;
- 		hpet_writel(cfg, HPET_Tn_CFG(timer));
-+		hpet_writel(cmp, HPET_Tn_CMP(timer));
-+		udelay(1);
-+		/*
-+		 * HPET on AMD 81xx needs a second write (with HPET_TN_SETVAL
-+		 * cleared) to T0_CMP to set the period. The HPET_TN_SETVAL
-+		 * bit is automatically cleared after the first write.
-+		 * (See AMD-8111 HyperTransport I/O Hub Data Sheet,
-+		 * Publication # 24674)
-+		 */
- 		hpet_writel((unsigned long) delta, HPET_Tn_CMP(timer));
- 		hpet_start_counter();
- 		break;
+ 	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
+ 		ext4_ext_truncate(inode);
+ 		return;
 
 
