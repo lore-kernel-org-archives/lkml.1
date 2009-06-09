@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758837AbZFIKPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760055AbZFIKQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758837AbZFIKPb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbZFIKPW
+	id S1760055AbZFIKQR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759747AbZFIKPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:15:22 -0400
-Received: from kroah.org ([198.145.64.141]:59631 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:15:36 -0400
+Received: from kroah.org ([198.145.64.141]:59686 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753301AbZFIKPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:15:22 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:52 2009
-Message-Id: <20090609094052.306238753@blue.kroah.org>
+	id S1759706AbZFIKPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:15:35 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:53 2009
+Message-Id: <20090609094052.993171749@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:38:49 -0700
+Date: Tue, 09 Jun 2009 02:38:52 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Nicolas Dichtel <nicolas.dichtel@6wind.com>,
+       alan@lxorguk.ukuu.org.uk, Thomas Chenault <thomas_chenault@dell.com>,
        "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 01/87] xfrm: wrong hash value for temporary SA
+Subject: [patch 04/87] net: fix skb_seq_read returning wrong offset/length for page frag data
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=xfrm-wrong-hash-value-for-temporary-sa.patch
+Content-Disposition: inline; filename=net-fix-skb_seq_read-returning-wrong-offset-length-for-page-frag-data.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,44 +40,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+From: Thomas Chenault <thomas_chenault@dell.com>
 
-[ Upstream commit 6a783c9067e3f71aac61a9262fe42c1f68efd4fc ]
+[ Upstream commit 995b337952cdf7e05d288eede580257b632a8343 ]
 
-When kernel inserts a temporary SA for IKE, it uses the wrong hash
-value for dst list. Two hash values were calcultated before: one with
-source address and one with a wildcard source address.
+When called with a consumed value that is less than skb_headlen(skb)
+bytes into a page frag, skb_seq_read() incorrectly returns an
+offset/length relative to skb->data. Ensure that data which should come
+from a page frag does.
 
-Bug hinted by Junwei Zhang <junwei.zhang@6wind.com>
-Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Signed-off-by: Thomas Chenault <thomas_chenault@dell.com>
+Tested-by: Shyam Iyer <shyam_iyer@dell.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- net/xfrm/xfrm_state.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ net/core/skbuff.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/xfrm/xfrm_state.c
-+++ b/net/xfrm/xfrm_state.c
-@@ -794,7 +794,7 @@ xfrm_state_find(xfrm_address_t *daddr, x
- {
- 	static xfrm_address_t saddr_wildcard = { };
- 	struct net *net = xp_net(pol);
--	unsigned int h;
-+	unsigned int h, h_wildcard;
- 	struct hlist_node *entry;
- 	struct xfrm_state *x, *x0, *to_put;
- 	int acquire_in_progress = 0;
-@@ -819,8 +819,8 @@ xfrm_state_find(xfrm_address_t *daddr, x
- 	if (best)
- 		goto found;
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -2206,7 +2206,7 @@ unsigned int skb_seq_read(unsigned int c
+ next_skb:
+ 	block_limit = skb_headlen(st->cur_skb) + st->stepped_offset;
  
--	h = xfrm_dst_hash(net, daddr, &saddr_wildcard, tmpl->reqid, family);
--	hlist_for_each_entry(x, entry, net->xfrm.state_bydst+h, bydst) {
-+	h_wildcard = xfrm_dst_hash(net, daddr, &saddr_wildcard, tmpl->reqid, family);
-+	hlist_for_each_entry(x, entry, net->xfrm.state_bydst+h_wildcard, bydst) {
- 		if (x->props.family == family &&
- 		    x->props.reqid == tmpl->reqid &&
- 		    !(x->props.flags & XFRM_STATE_WILDRECV) &&
+-	if (abs_offset < block_limit) {
++	if (abs_offset < block_limit && !st->frag_data) {
+ 		*data = st->cur_skb->data + (abs_offset - st->stepped_offset);
+ 		return block_limit - abs_offset;
+ 	}
 
 
