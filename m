@@ -1,117 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbZFIDTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbZFIDm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756233AbZFIDTS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 23:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZFIDTL
+	id S1754882AbZFIDm3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 23:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbZFIDmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 23:19:11 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59628 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751752AbZFIDTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 23:19:10 -0400
-Date: Tue, 9 Jun 2009 13:19:10 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Vasu Dev <vasu.dev@intel.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: linux-next: manual merge of the net tree with the scsi tree
-Message-Id: <20090609131910.3c6e78f2.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 8 Jun 2009 23:42:21 -0400
+Received: from smtp105.prem.mail.sp1.yahoo.com ([98.136.44.60]:30552 "HELO
+	smtp105.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752547AbZFIDmU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 23:42:20 -0400
+X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
+X-YMail-OSG: 9gc.jJ0VM1kF4GLfZRQJ0pEGq1r5Ino3te4zwGHhrDyXI0fzIktiT42uxzCShTv38TjEyUYlBYZnHGEHhfFaP.9dIC9wn.BEIvewHXaof63SLiiR012h19jsDWdJMSmEGqWfDtPXXV.0jdtKQJ62urK4AmjqxWyRBo.RvtFlOoEPV7S5O_1H6akvLDp7xW680jZDeVX4DmWAsxK.u2oYa4mBDZcK7HxvxQGQ6xVS80QhooRORZ70ynR7MMidUuminbr9PEE3vstQT1ceIFTcWyTpmCTHmc0SS9JIIKu0h1Box9SJYQ7o144.8mErmYx6gJvLFF_vVqgXY7Y-
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <4A2DDA12.3020907@schaufler-ca.com>
+Date: Mon, 08 Jun 2009 20:42:10 -0700
+From: Casey Schaufler <casey@schaufler-ca.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+CC: James Morris <jmorris@namei.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Mimi Zohar <zohar@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Serge Hallyn <serue@us.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       David Safford <safford@watson.ibm.com>
+Subject: Re: [PATCH] integrity: fix IMA inode leak
+References: <Pine.LNX.4.64.0906062109580.8365@sister.anvils>	 <alpine.LFD.2.01.0906061416170.6847@localhost.localdomain>	 <1244354901.3963.23.camel@dyn9002018117.watson.ibm.com>	 <alpine.LFD.2.01.0906071608040.6847@localhost.localdomain>	 <1244464135.3277.13.camel@dyn9002018117.watson.ibm.com>	 <alpine.LFD.2.01.0906080913020.6847@localhost.localdomain>	 <1244486655.3277.65.camel@dyn9002018117.watson.ibm.com>	 <alpine.LRH.2.00.0906090912120.6132@tundra.namei.org> <1244516211.3804.24.camel@dyn9002018117.watson.ibm.com>
+In-Reply-To: <1244516211.3804.24.camel@dyn9002018117.watson.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+Mimi Zohar wrote:
+> On Tue, 2009-06-09 at 09:16 +1000, James Morris wrote:
+>   
+>> On Mon, 8 Jun 2009, Mimi Zohar wrote:
+>>
+>>     
+>>> Ok, so instead of having a full fledge single security layer, only add
+>>> the security layer for those places where both the LSM hooks and IMA
+>>> co-exist: security_file_mmap, security_bprm_check, security_inode_alloc,
+>>> security_inode_free, and security_file_free. As the LSM hooks are called
+>>> 'security_XXXX', the call would look something like:
+>>>
+>>> security_all_inode_free() {
+>>>         ima_inode_free()
+>>>         security_inode_free()
+>>> }
+>>>       
+>> Yes, it only needs to be a wrapper.  The above is ugly, how about:
+>>     
+>
+> agreed!  But changing only these 5 security_ hook names and leaving the
+> rest alone is even uglier.
+>
+>   
+>> security_inode_free()
+>> {
+>> 	ima_inode_free();
+>> 	lsm_inode_free();
+>> }
+>>
+>> I think we may have come full circle on the naming of the LSM hook, but 
+>> 'security_*' was never great given that it's only supposed to be covering 
+>> access control.
+>>     
+>
+> so why not 'mac_'?
+>   
 
-Today's linux-next merge of the net tree got a conflict in
-drivers/scsi/fcoe/fcoe.c between commit
-1047f22108bd9bfedefd3ff014cb56691dfbaa3f ("[SCSI] fcoe: removes
-fcoe_watchdog") from the scsi tree and commit
-ab6b85c1d7a1bf6c2b27fb542a7b2404e45b7e24 ("fcoe: consolidates netdev
-related config and cleanup for spma mode") from the net tree.
+An LSM could introduce a discretionary scheme. If you use SELinux with
+just MCS that's what you get. Although POSIX ACLs can't be implemented
+via the LSM (the mode bit interactions preclude doing so) there are other
+ACL schemes that could use the LSM. I have gotten suggestions on "label
+ownership" that would turn Smack into DAC. If you wanted to call it
+Additional Access Control (AAC) or Supplemental Access Control (SAC)
+I would go along with it, but not MAC.
 
-Just overlapping additions.  I fixed it up (see below) and can carry the
-fix as necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --cc drivers/scsi/fcoe/fcoe.c
-index e606b48,f791348..0000000
---- a/drivers/scsi/fcoe/fcoe.c
-+++ b/drivers/scsi/fcoe/fcoe.c
-@@@ -167,18 -219,30 +219,42 @@@ static int fcoe_lport_config(struct fc_
-  }
-  
-  /**
- + * fcoe_queue_timer() - fcoe queue timer
- + * @lp: the fc_lport pointer
- + *
- + * Calls fcoe_check_wait_queue on timeout
- + *
- + */
- +static void fcoe_queue_timer(ulong lp)
- +{
- +	fcoe_check_wait_queue((struct fc_lport *)lp, NULL);
- +}
- +
- +/**
-+  * fcoe_netdev_cleanup() - clean up netdev configurations
-+  * @fc: ptr to the fcoe_softc
-+  */
-+ void fcoe_netdev_cleanup(struct fcoe_softc *fc)
-+ {
-+ 	u8 flogi_maddr[ETH_ALEN];
-+ 
-+ 	/* Don't listen for Ethernet packets anymore */
-+ 	dev_remove_pack(&fc->fcoe_packet_type);
-+ 	dev_remove_pack(&fc->fip_packet_type);
-+ 
-+ 	/* Delete secondary MAC addresses */
-+ 	rtnl_lock();
-+ 	memcpy(flogi_maddr, (u8[6]) FC_FCOE_FLOGI_MAC, ETH_ALEN);
-+ 	dev_unicast_delete(fc->real_dev, flogi_maddr);
-+ 	if (!is_zero_ether_addr(fc->ctlr.data_src_addr))
-+ 		dev_unicast_delete(fc->real_dev, fc->ctlr.data_src_addr);
-+ 	if (fc->ctlr.spma)
-+ 		dev_unicast_delete(fc->real_dev, fc->ctlr.ctl_src_addr);
-+ 	dev_mc_delete(fc->real_dev, FIP_ALL_ENODE_MACS, ETH_ALEN, 0);
-+ 	rtnl_unlock();
-+ }
-+ 
-+ /**
-   * fcoe_netdev_config() - Set up netdev for SW FCoE
-   * @lp : ptr to the fc_lport
-   * @netdev : ptr to the associated netdevice struct
-@@@ -248,11 -313,24 +325,25 @@@ static int fcoe_netdev_config(struct fc
-  	}
-  	skb_queue_head_init(&fc->fcoe_pending_queue);
-  	fc->fcoe_pending_queue_active = 0;
- +	setup_timer(&fc->timer, fcoe_queue_timer, (unsigned long)lp);
-  
-+ 	/* look for SAN MAC address, if multiple SAN MACs exist, only
-+ 	 * use the first one for SPMA */
-+ 	rcu_read_lock();
-+ 	for_each_dev_addr(netdev, ha) {
-+ 		if ((ha->type == NETDEV_HW_ADDR_T_SAN) &&
-+ 		    (is_valid_ether_addr(fc->ctlr.ctl_src_addr))) {
-+ 			memcpy(fc->ctlr.ctl_src_addr, ha->addr, ETH_ALEN);
-+ 			fc->ctlr.spma = 1;
-+ 			break;
-+ 		}
-+ 	}
-+ 	rcu_read_unlock();
-+ 
-  	/* setup Source Mac Address */
-- 	memcpy(fc->ctlr.ctl_src_addr, fc->real_dev->dev_addr,
-- 	       fc->real_dev->addr_len);
-+ 	if (!fc->ctlr.spma)
-+ 		memcpy(fc->ctlr.ctl_src_addr, fc->real_dev->dev_addr,
-+ 		       fc->real_dev->addr_len);
-  
-  	wwnn = fcoe_wwn_from_mac(fc->real_dev->dev_addr, 1, 0);
-  	fc_set_wwnn(lp, wwnn);
+> Mimi Zohar
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
+>   
