@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbZFICLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758091AbZFICMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757842AbZFICLa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 22:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757578AbZFICKY
+	id S1758091AbZFICMR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 22:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757599AbZFICKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 22:10:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43965 "EHLO mx2.redhat.com"
+	Mon, 8 Jun 2009 22:10:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44008 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757517AbZFICKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 22:10:18 -0400
+	id S1757528AbZFICKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 22:10:32 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
@@ -20,369 +20,416 @@ To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com
 Cc: agk@redhat.com, snitzer@redhat.com, vgoyal@redhat.com,
        akpm@linux-foundation.org, peterz@infradead.org
-Subject: [PATCH 01/19] io-controller: Documentation
-Date: Mon,  8 Jun 2009 22:08:44 -0400
-Message-Id: <1244513342-11758-2-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 17/19] io-controller: Support per cgroup per device weights and io class
+Date: Mon,  8 Jun 2009 22:09:00 -0400
+Message-Id: <1244513342-11758-18-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1244513342-11758-1-git-send-email-vgoyal@redhat.com>
 References: <1244513342-11758-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-o Documentation for io-controller.
+This patch enables per-cgroup per-device weight and ioprio_class handling.
+A new cgroup interface "policy" is introduced. You can make use of this
+file to configure weight and ioprio_class for each device in a given cgroup.
+The original "weight" and "ioprio_class" files are still available. If you
+don't do special configuration for a particular device, "weight" and
+"ioprio_class" are used as default values in this device.
 
+You can use the following format to play with the new interface.
+#echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
+weight=0 means removing the policy for DEV.
+
+Examples:
+Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
+# echo /dev/hdb:300:2 > io.policy
+# cat io.policy
+dev weight class
+/dev/hdb 300 2
+
+Configure weight=500 ioprio_class=1 on /dev/hda in this cgroup
+# echo /dev/hda:500:1 > io.policy
+# cat io.policy
+dev weight class
+/dev/hda 500 1
+/dev/hdb 300 2
+
+Remove the policy for /dev/hda in this cgroup
+# echo /dev/hda:0:1 > io.policy
+# cat io.policy
+dev weight class
+/dev/hdb 300 2
+
+Changelog (v1 -> v2)
+- Rename some structures
+- Use spin_lock_irqsave() and spin_lock_irqrestore() version to prevent
+  from enabling the interrupts unconditionally.
+- Fix policy setup bug when switching to another io scheduler.
+- If a policy is available for a specific device, don't update weight and
+  io class when writing "weight" and "iprio_class".
+- Fix a bug when parsing policy string.
+
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- Documentation/block/00-INDEX          |    2 +
- Documentation/block/io-controller.txt |  326 +++++++++++++++++++++++++++++++++
- 2 files changed, 328 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/block/io-controller.txt
+ block/elevator-fq.c |  246 +++++++++++++++++++++++++++++++++++++++++++++++++--
+ block/elevator-fq.h |   11 +++
+ 2 files changed, 251 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/block/00-INDEX b/Documentation/block/00-INDEX
-index 961a051..dc8bf95 100644
---- a/Documentation/block/00-INDEX
-+++ b/Documentation/block/00-INDEX
-@@ -10,6 +10,8 @@ capability.txt
- 	- Generic Block Device Capability (/sys/block/<disk>/capability)
- deadline-iosched.txt
- 	- Deadline IO scheduler tunables
-+io-controller.txt
-+	- IO controller for provding hierarchical IO scheduling
- ioprio.txt
- 	- Block io priorities (in CFQ scheduler)
- request.txt
-diff --git a/Documentation/block/io-controller.txt b/Documentation/block/io-controller.txt
-new file mode 100644
-index 0000000..26c9421
---- /dev/null
-+++ b/Documentation/block/io-controller.txt
-@@ -0,0 +1,326 @@
-+				IO Controller
-+				=============
-+
-+Overview
-+========
-+
-+This patchset implements a proportional weight IO controller. That is one
-+can create cgroups and assign prio/weights to those cgroups and task group
-+will get access to disk proportionate to the weight of the group.
-+
-+These patches modify elevator layer and individual IO schedulers to do
-+IO control hence this io controller works only on block devices which use
-+one of the standard io schedulers can not be used with any xyz logical block
-+device.
-+
-+The assumption/thought behind modifying IO scheduler is that resource control
-+is needed only on leaf nodes where the actual contention for resources is
-+present and not on intertermediate logical block devices.
-+
-+Consider following hypothetical scenario. Lets say there are three physical
-+disks, namely sda, sdb and sdc. Two logical volumes (lv0 and lv1) have been
-+created on top of these. Some part of sdb is in lv0 and some part is in lv1.
-+
-+			    lv0      lv1
-+			  /	\  /     \
-+			sda      sdb      sdc
-+
-+Also consider following cgroup hierarchy
-+
-+				root
-+				/   \
-+			       A     B
-+			      / \    / \
-+			     T1 T2  T3  T4
-+
-+A and B are two cgroups and T1, T2, T3 and T4 are tasks with-in those cgroups.
-+Assuming T1, T2, T3 and T4 are doing IO on lv0 and lv1. These tasks should
-+get their fair share of bandwidth on disks sda, sdb and sdc. There is no
-+IO control on intermediate logical block nodes (lv0, lv1).
-+
-+So if tasks T1 and T2 are doing IO on lv0 and T3 and T4 are doing IO on lv1
-+only, there will not be any contetion for resources between group A and B if
-+IO is going to sda or sdc. But if actual IO gets translated to disk sdb, then
-+IO scheduler associated with the sdb will distribute disk bandwidth to
-+group A and B proportionate to their weight.
-+
-+CFQ already has the notion of fairness and it provides differential disk
-+access based on priority and class of the task. Just that it is flat and
-+with cgroup stuff, it needs to be made hierarchical to achive a good
-+hierarchical control on IO.
-+
-+Rest of the IO schedulers (noop, deadline and AS) don't have any notion
-+of fairness among various threads. They maintain only one queue where all
-+the IO gets queued (internally this queue is split in read and write queue
-+for deadline and AS). With this patchset, now we maintain one queue per
-+cgropu per device and then try to do fair queuing among those queues.
-+
-+One of the concerns raised with modifying IO schedulers was that we don't
-+want to replicate the code in all the IO schedulers. These patches share
-+the fair queuing code which has been moved to a common layer (elevator
-+layer). Hence we don't end up replicating code across IO schedulers. Following
-+diagram depicts the concept.
-+
-+			--------------------------------
-+			| Elevator Layer + Fair Queuing |
-+			--------------------------------
-+			 |	     |	     |       |
-+			NOOP     DEADLINE    AS     CFQ
-+
-+Design
-+======
-+This patchset primarily uses BFQ (Budget Fair Queuing) code to provide
-+fairness among different IO queues. Fabio and Paolo implemented BFQ which uses
-+B-WF2Q+ algorithm for fair queuing.
-+
-+Why BFQ?
-+
-+- Not sure if weighted round robin logic of CFQ can be easily extended for
-+  hierarchical mode. One of the things is that we can not keep dividing
-+  the time slice of parent group among childrens. Deeper we go in hierarchy
-+  time slice will get smaller.
-+
-+  One of the ways to implement hierarchical support could be to keep track
-+  of virtual time and service provided to queue/group and select a queue/group
-+  for service based on any of the various available algoriths.
-+
-+  BFQ already had support for hierarchical scheduling, taking those patches
-+  was easier.
-+
-+- BFQ was designed to provide tighter bounds/delay w.r.t service provided
-+  to a queue. Delay/Jitter with BFQ is O(1).
-+
-+  Note: BFQ originally used amount of IO done (number of sectors) as notion
-+        of service provided. IOW, it tried to provide fairness in terms of
-+        actual IO done and not in terms of actual time disk access was
-+	given to a queue.
-+
-+	This patcheset modified BFQ to provide fairness in time domain because
-+	that's what CFQ does. So idea was try not to deviate too much from
-+	the CFQ behavior initially.
-+
-+	Providing fairness in time domain makes accounting trciky because
-+	due to command queueing, at one time there might be multiple requests
-+	from different queues and there is no easy way to find out how much
-+	disk time actually was consumed by the requests of a particular
-+	queue. More about this in comments in source code.
-+
-+We have taken BFQ code as starting point for providing fairness among groups
-+because it already contained lots of features which we required to implement
-+hierarhical IO scheduling. With this patch set, I am not trying to ensure O(1)
-+delay here as my goal is to provide fairness among groups. Most likely that
-+will mean that latencies are not worse than what cfq currently provides (if
-+not improved ones). Once fairness is ensured, one can look into  more in
-+ensuring O(1) latencies.
-+
-+From data structure point of view, one can think of a tree per device, where
-+io groups and io queues are hanging and are being scheduled using B-WF2Q+
-+algorithm. io_queue, is end queue where requests are actually stored and
-+dispatched from (like cfqq).
-+
-+These io queues are primarily created by and managed by end io schedulers
-+depending on its semantics. For example, noop, deadline and AS ioschedulers
-+keep one io queues per cgroup and cfqq keeps one io queue per io_context in
-+a cgroup (apart from async queues).
-+
-+A request is mapped to an io group by elevator layer and which io queue it
-+is mapped to with in group depends on ioscheduler. Currently "current" task
-+is used to determine the cgroup (hence io group) of the request. Down the
-+line we need to make use of bio-cgroup patches to map delayed writes to
-+right group.
-+
-+Going back to old behavior
-+==========================
-+In new scheme of things essentially we are creating hierarchical fair
-+queuing logic in elevator layer and chaning IO schedulers to make use of
-+that logic so that end IO schedulers start supporting hierarchical scheduling.
-+
-+Elevator layer continues to support the old interfaces. So even if fair queuing
-+is enabled at elevator layer, one can have both new hierchical scheduler as
-+well as old non-hierarchical scheduler operating.
-+
-+Also noop, deadline and AS have option of enabling hierarchical scheduling.
-+If it is selected, fair queuing is done in hierarchical manner. If hierarchical
-+scheduling is disabled, noop, deadline and AS should retain their existing
-+behavior.
-+
-+CFQ is the only exception where one can not disable fair queuing as it is
-+needed for provding fairness among various threads even in non-hierarchical
-+mode.
-+
-+Various user visible config options
-+===================================
-+CONFIG_IOSCHED_NOOP_HIER
-+	- Enables hierchical fair queuing in noop. Not selecting this option
-+	  leads to old behavior of noop.
-+
-+CONFIG_IOSCHED_DEADLINE_HIER
-+	- Enables hierchical fair queuing in deadline. Not selecting this
-+	  option leads to old behavior of deadline.
-+
-+CONFIG_IOSCHED_AS_HIER
-+	- Enables hierchical fair queuing in AS. Not selecting this option
-+	  leads to old behavior of AS.
-+
-+CONFIG_IOSCHED_CFQ_HIER
-+	- Enables hierarchical fair queuing in CFQ. Not selecting this option
-+	  still does fair queuing among various queus but it is flat and not
-+	  hierarchical.
-+
-+CGROUP_BLKIO
-+	- This option enables blkio-cgroup controller for IO tracking
-+	  purposes. That means, by this controller one can attribute a write
-+	  to the original cgroup and not assume that it belongs to submitting
-+	  thread.
-+
-+CONFIG_TRACK_ASYNC_CONTEXT
-+	- Currently CFQ attributes the writes to the submitting thread and
-+	  caches the async queue pointer in the io context of the process.
-+	  If this option is set, it tells cfq and elevator fair queuing logic
-+	  that for async writes make use of IO tracking patches and attribute
-+	  writes to original cgroup and not to write submitting thread.
-+
-+CONFIG_DEBUG_GROUP_IOSCHED
-+	- Throws extra debug messages in blktrace output helpful in doing
-+	  doing debugging in hierarchical setup.
-+
-+	- Also allows for export of extra debug statistics like group queue
-+	  and dequeue statistics on device through cgroup interface.
-+
-+Config options selected automatically
-+=====================================
-+These config options are not user visible and are selected/deselected
-+automatically based on IO scheduler configurations.
-+
-+CONFIG_ELV_FAIR_QUEUING
-+	- Enables/Disables the fair queuing logic at elevator layer.
-+
-+CONFIG_GROUP_IOSCHED
-+	- Enables/Disables hierarchical queuing and associated cgroup bits.
-+
-+HOWTO
-+=====
-+So far I have done very simple testing of running two dd threads in two
-+different cgroups. Here is what you can do.
-+
-+- Enable hierarchical scheduling in io scheuduler of your choice (say cfq).
-+	CONFIG_IOSCHED_CFQ_HIER=y
-+
-+- Enable IO tracking for async writes.
-+	CONFIG_TRACK_ASYNC_CONTEXT=y
-+
-+  (This will automatically select CGROUP_BLKIO)
-+
-+- Compile and boot into kernel and mount IO controller and blkio io tracking
-+  controller.
-+
-+	mount -t cgroup -o io,blkio none /cgroup
-+
-+- Create two cgroups
-+	mkdir -p /cgroup/test1/ /cgroup/test2
-+
-+- Set weights of group test1 and test2
-+	echo 1000 > /cgroup/test1/io.weight
-+	echo 500 > /cgroup/test2/io.weight
-+
-+- Set "fairness" parameter to 1 at the disk you are testing.
-+
-+  echo 1 > /sys/block/<disk>/queue/fairness
-+
-+- Create two same size files (say 512MB each) on same disk (file1, file2) and
-+  launch two dd threads in different cgroup to read those files. Make sure
-+  right io scheduler is being used for the block device where files are
-+  present (the one you compiled in hierarchical mode).
-+
-+	sync
-+	echo 3 > /proc/sys/vm/drop_caches
-+
-+	dd if=/mnt/sdb/zerofile1 of=/dev/null &
-+	echo $! > /cgroup/test1/tasks
-+	cat /cgroup/test1/tasks
-+
-+	dd if=/mnt/sdb/zerofile2 of=/dev/null &
-+	echo $! > /cgroup/test2/tasks
-+	cat /cgroup/test2/tasks
-+
-+- At macro level, first dd should finish first. To get more precise data, keep
-+  on looking at (with the help of script), at io.disk_time and io.disk_sectors
-+  files of both test1 and test2 groups. This will tell how much disk time
-+  (in milli seconds), each group got and how many secotors each group
-+  dispatched to the disk. We provide fairness in terms of disk time, so
-+  ideally io.disk_time of cgroups should be in proportion to the weight.
-+  (It is hard to achieve though :-)).
-+
-+Details of cgroup files
-+=======================
-+- io.ioprio_class
-+	- Specifies class of the cgroup (RT, BE, IDLE). This is default io
-+	  class of the group on all the devices until and unless overridden by
-+	  per device rule. (See io.policy).
-+
-+	  1 = RT; 2 = BE, 3 = IDLE
-+
-+- io.weight
-+	- Specifies per cgroup weight. This is default weight of the group
-+	  on all the devices until and unless overridden by per device rule.
-+	  (See io.policy).
-+
-+- io.disk_time
-+	- disk time allocated to cgroup per device in milliseconds. First
-+	  two fields specify the major and minor number of the device and
-+	  third field specifies the disk time allocated to group in
-+	  milliseconds.
-+
-+- io.disk_sectors
-+	- number of sectors transferred to/from disk by the group. First
-+	  two fields specify the major and minor number of the device and
-+	  third field specifies the number of sectors transferred by the
-+	  group to/from the device.
-+
-+- io.disk_queue
-+	- Debugging aid only enabled if CONFIG_DEBUG_GROUP_IOSCHED=y. This
-+	  gives the statistics about how many a times a group was queued
-+	  on service tree of the device. First two fields specify the major
-+	  and minor number of the device and third field specifies the number
-+	  of times a group was queued on a particular device.
-+
-+- io.disk_queue
-+	- Debugging aid only enabled if CONFIG_DEBUG_GROUP_IOSCHED=y. This
-+	  gives the statistics about how many a times a group was de-queued
-+	  or removed from the service tree of the device. This basically gives
-+	  and idea if we can generate enough IO to create continuously
-+	  backlogged groups. First two fields specify the major and minor
-+	  number of the device and third field specifies the number
-+	  of times a group was de-queued on a particular device.
-+
-+- io.policy
-+	- One can specify per cgroup per device rules using this interface.
-+	  These rules override the default value of group weight and class as
-+	  specified by io.weight and io.ioprio_class.
-+
-+	  Following is the format.
-+
-+	#echo DEV:weight:ioprio_class > /patch/to/cgroup/io.policy
-+
-+	weight=0 means removing a policy.
-+
-+	Examples:
-+
-+	Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
-+	# echo /dev/hdb:300:2 > io.policy
-+	# cat io.policy
-+	dev weight class
-+	/dev/hdb 300 2
-+
-+	Configure weight=500 ioprio_class=1 on /dev/hda in this cgroup
-+	# echo /dev/hda:500:1 > io.policy
-+	# cat io.policy
-+	dev weight class
-+	/dev/hda 500 1
-+	/dev/hdb 300 2
-+
-+	Remove the policy for /dev/hda in this cgroup
-+	# echo /dev/hda:0:1 > io.policy
-+	# cat io.policy
-+	dev weight class
-+	/dev/hdb 300 2
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index 68aaaa7..207664d 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -15,6 +15,7 @@
+ #include <linux/blktrace_api.h>
+ #include <linux/seq_file.h>
+ #include <linux/biotrack.h>
++#include <linux/genhd.h>
+ 
+ /* Values taken from cfq */
+ const int elv_slice_sync = HZ / 10;
+@@ -1041,12 +1042,31 @@ struct io_group *io_cgroup_lookup_group(struct io_cgroup *iocg, void *key)
+ 	return NULL;
+ }
+ 
+-void io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog)
++static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
++						 dev_t dev);
++
++void io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog,
++			  dev_t dev)
+ {
+ 	struct io_entity *entity = &iog->entity;
++	struct io_policy_node *pn;
++	unsigned long flags;
++
++	spin_lock_irqsave(&iocg->lock, flags);
++	pn = policy_search_node(iocg, dev);
++	if (pn) {
++		entity->weight = pn->weight;
++		entity->new_weight = pn->weight;
++		entity->ioprio_class = pn->ioprio_class;
++		entity->new_ioprio_class = pn->ioprio_class;
++	} else {
++		entity->weight = iocg->weight;
++		entity->new_weight = iocg->weight;
++		entity->ioprio_class = iocg->ioprio_class;
++		entity->new_ioprio_class = iocg->ioprio_class;
++	}
++	spin_unlock_irqrestore(&iocg->lock, flags);
+ 
+-	entity->weight = entity->new_weight = iocg->weight;
+-	entity->ioprio_class = entity->new_ioprio_class = iocg->ioprio_class;
+ 	entity->ioprio_changed = 1;
+ 	entity->my_sched_data = &iog->sched_data;
+ }
+@@ -1098,6 +1118,7 @@ static int io_cgroup_##__VAR##_write(struct cgroup *cgroup,		\
+ 	struct io_cgroup *iocg;					\
+ 	struct io_group *iog;						\
+ 	struct hlist_node *n;						\
++	struct io_policy_node *pn;					\
+ 									\
+ 	if (val < (__MIN) || val > (__MAX))				\
+ 		return -EINVAL;						\
+@@ -1110,6 +1131,9 @@ static int io_cgroup_##__VAR##_write(struct cgroup *cgroup,		\
+ 	spin_lock_irq(&iocg->lock);					\
+ 	iocg->__VAR = (unsigned long)val;				\
+ 	hlist_for_each_entry(iog, n, &iocg->group_data, group_node) {	\
++		pn = policy_search_node(iocg, iog->dev);		\
++		if (pn)							\
++			continue;					\
+ 		iog->entity.new_##__VAR = (unsigned long)val;		\
+ 		smp_wmb();						\
+ 		iog->entity.ioprio_changed = 1;				\
+@@ -1218,9 +1242,6 @@ struct io_group *io_group_chain_alloc(struct request_queue *q, void *key,
+ 		if (!iog)
+ 			goto cleanup;
+ 
+-		io_group_init_entity(iocg, iog);
+-		iog->my_entity = &iog->entity;
+-
+ 		atomic_set(&iog->ref, 0);
+ 		iog->deleting = 0;
+ 
+@@ -1233,6 +1254,8 @@ struct io_group *io_group_chain_alloc(struct request_queue *q, void *key,
+ 		elv_get_iog(iog);
+ 
+ 		iog->iocg_id = css_id(&iocg->css);
++		io_group_init_entity(iocg, iog, iog->dev);
++		iog->my_entity = &iog->entity;
+ 
+ 		if (bio) {
+ 			struct gendisk *disk = bio->bi_bdev->bd_disk;
+@@ -1520,8 +1543,212 @@ struct io_group *io_alloc_root_group(struct request_queue *q,
+ 	return iog;
+ }
+ 
++static int io_cgroup_policy_read(struct cgroup *cgrp, struct cftype *cft,
++				  struct seq_file *m)
++{
++	struct io_cgroup *iocg;
++	struct io_policy_node *pn;
++
++	iocg = cgroup_to_io_cgroup(cgrp);
++
++	if (list_empty(&iocg->policy_list))
++		goto out;
++
++	seq_printf(m, "dev weight class\n");
++
++	spin_lock_irq(&iocg->lock);
++	list_for_each_entry(pn, &iocg->policy_list, node) {
++		seq_printf(m, "%s %lu %lu\n", pn->dev_name,
++			   pn->weight, pn->ioprio_class);
++	}
++	spin_unlock_irq(&iocg->lock);
++out:
++	return 0;
++}
++
++static inline void policy_insert_node(struct io_cgroup *iocg,
++					  struct io_policy_node *pn)
++{
++	list_add(&pn->node, &iocg->policy_list);
++}
++
++/* Must be called with iocg->lock held */
++static inline void policy_delete_node(struct io_policy_node *pn)
++{
++	list_del(&pn->node);
++}
++
++/* Must be called with iocg->lock held */
++static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
++						 dev_t dev)
++{
++	struct io_policy_node *pn;
++
++	if (list_empty(&iocg->policy_list))
++		return NULL;
++
++	list_for_each_entry(pn, &iocg->policy_list, node) {
++		if (pn->dev == dev)
++			return pn;
++	}
++
++	return NULL;
++}
++
++static int devname_to_devnum(const char *buf, dev_t *dev)
++{
++	struct block_device *bdev;
++	struct gendisk *disk;
++	int part;
++
++	bdev = lookup_bdev(buf);
++	if (IS_ERR(bdev))
++		return -ENODEV;
++
++	disk = get_gendisk(bdev->bd_dev, &part);
++	if (part)
++		return -EINVAL;
++
++	*dev = MKDEV(disk->major, disk->first_minor);
++	bdput(bdev);
++
++	return 0;
++}
++
++static int policy_parse_and_set(char *buf, struct io_policy_node *newpn)
++{
++	char *s[3], *p;
++	int ret;
++	int i = 0;
++
++	memset(s, 0, sizeof(s));
++	while ((p = strsep(&buf, ":")) != NULL) {
++		if (!*p)
++			continue;
++		s[i++] = p;
++	}
++
++	ret = devname_to_devnum(s[0], &newpn->dev);
++	if (ret)
++		return ret;
++
++	strcpy(newpn->dev_name, s[0]);
++
++	if (s[1] == NULL)
++		return -EINVAL;
++
++	ret = strict_strtoul(s[1], 10, &newpn->weight);
++	if (ret || newpn->weight > WEIGHT_MAX)
++		return -EINVAL;
++
++	if (s[2] == NULL)
++		return -EINVAL;
++
++	ret = strict_strtoul(s[2], 10, &newpn->ioprio_class);
++	if (ret || newpn->ioprio_class < IOPRIO_CLASS_RT ||
++	    newpn->ioprio_class > IOPRIO_CLASS_IDLE)
++		return -EINVAL;
++
++	return 0;
++}
++
++static int io_cgroup_policy_write(struct cgroup *cgrp, struct cftype *cft,
++			    const char *buffer)
++{
++	struct io_cgroup *iocg;
++	struct io_policy_node *newpn, *pn;
++	char *buf;
++	int ret = 0;
++	int keep_newpn = 0;
++	struct hlist_node *n;
++	struct io_group *iog;
++
++	buf = kstrdup(buffer, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	newpn = kzalloc(sizeof(*newpn), GFP_KERNEL);
++	if (!newpn) {
++		ret = -ENOMEM;
++		goto free_buf;
++	}
++
++	ret = policy_parse_and_set(buf, newpn);
++	if (ret)
++		goto free_newpn;
++
++	if (!cgroup_lock_live_group(cgrp)) {
++		ret = -ENODEV;
++		goto free_newpn;
++	}
++
++	iocg = cgroup_to_io_cgroup(cgrp);
++	spin_lock_irq(&iocg->lock);
++
++	pn = policy_search_node(iocg, newpn->dev);
++	if (!pn) {
++		if (newpn->weight != 0) {
++			policy_insert_node(iocg, newpn);
++			keep_newpn = 1;
++		}
++		goto update_io_group;
++	}
++
++	if (newpn->weight == 0) {
++		/* weight == 0 means deleteing a policy */
++		policy_delete_node(pn);
++		goto update_io_group;
++	}
++
++	pn->weight = newpn->weight;
++	pn->ioprio_class = newpn->ioprio_class;
++
++update_io_group:
++	hlist_for_each_entry(iog, n, &iocg->group_data, group_node) {
++		if (iog->dev == newpn->dev) {
++			if (newpn->weight) {
++				iog->entity.new_weight = newpn->weight;
++				iog->entity.new_ioprio_class =
++					newpn->ioprio_class;
++				/*
++				 * iog weight and ioprio_class updating
++				 * actually happens if ioprio_changed is set.
++				 * So ensure ioprio_changed is not set until
++				 * new weight and new ioprio_class are updated.
++				 */
++				smp_wmb();
++				iog->entity.ioprio_changed = 1;
++			} else {
++				iog->entity.new_weight = iocg->weight;
++				iog->entity.new_ioprio_class =
++					iocg->ioprio_class;
++
++				/* The same as above */
++				smp_wmb();
++				iog->entity.ioprio_changed = 1;
++			}
++		}
++	}
++	spin_unlock_irq(&iocg->lock);
++
++	cgroup_unlock();
++
++free_newpn:
++	if (!keep_newpn)
++		kfree(newpn);
++free_buf:
++	kfree(buf);
++	return ret;
++}
++
+ struct cftype bfqio_files[] = {
+ 	{
++		.name = "policy",
++		.read_seq_string = io_cgroup_policy_read,
++		.write_string = io_cgroup_policy_write,
++		.max_write_len = 256,
++	},
++	{
+ 		.name = "weight",
+ 		.read_u64 = io_cgroup_weight_read,
+ 		.write_u64 = io_cgroup_weight_write,
+@@ -1563,6 +1790,7 @@ struct cgroup_subsys_state *iocg_create(struct cgroup_subsys *subsys,
+ 	INIT_HLIST_HEAD(&iocg->group_data);
+ 	iocg->weight = IO_DEFAULT_GRP_WEIGHT;
+ 	iocg->ioprio_class = IO_DEFAULT_GRP_CLASS;
++	INIT_LIST_HEAD(&iocg->policy_list);
+ 
+ 	return &iocg->css;
+ }
+@@ -1752,6 +1980,7 @@ void iocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
+ 	struct io_group *iog;
+ 	struct elv_fq_data *efqd;
+ 	unsigned long uninitialized_var(flags);
++	struct io_policy_node *pn, *pntmp;
+ 
+ 	/*
+ 	 * io groups are linked in two lists. One list is maintained
+@@ -1790,6 +2019,11 @@ remove_entry:
+ 	goto remove_entry;
+ 
+ done:
++	list_for_each_entry_safe(pn, pntmp, &iocg->policy_list, node) {
++		policy_delete_node(pn);
++		kfree(pn);
++	}
++
+ 	free_css_id(&io_subsys, &iocg->css);
+ 	rcu_read_unlock();
+ 	BUG_ON(!hlist_empty(&iocg->group_data));
+diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+index 2655611..ff409ec 100644
+--- a/block/elevator-fq.h
++++ b/block/elevator-fq.h
+@@ -253,6 +253,14 @@ struct io_group {
+ 	struct request_list rl;
+ };
+ 
++struct io_policy_node {
++	struct list_head node;
++	char dev_name[32];
++	dev_t dev;
++	unsigned long weight;
++	unsigned long ioprio_class;
++};
++
+ /**
+  * struct bfqio_cgroup - bfq cgroup data structure.
+  * @css: subsystem state for bfq in the containing cgroup.
+@@ -269,6 +277,9 @@ struct io_cgroup {
+ 
+ 	unsigned long weight, ioprio_class;
+ 
++	/* list of io_policy_node */
++	struct list_head policy_list;
++
+ 	spinlock_t lock;
+ 	struct hlist_head group_data;
+ };
 -- 
 1.6.0.6
 
