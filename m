@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758799AbZFIH3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbZFIHa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758799AbZFIH3x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 03:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756820AbZFIH3q
+	id S1757564AbZFIHa5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 03:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756820AbZFIHau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 03:29:46 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54828 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754467AbZFIH3p (ORCPT
+	Tue, 9 Jun 2009 03:30:50 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:43494 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753897AbZFIHat convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 03:29:45 -0400
-Date: Tue, 9 Jun 2009 16:28:13 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH mmotm] vmscan: handle may_swap more strictly (Re: [PATCH
- mmotm] vmscan: fix may_swap handling for memcg)
-Message-Id: <20090609162813.4bd1c1f2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090609161330.fcd5facb.nishimura@mxp.nes.nec.co.jp>
-References: <20090608121848.4370.A69D9226@jp.fujitsu.com>
-	<20090608153916.3ccaeb9a.nishimura@mxp.nes.nec.co.jp>
-	<20090608154634.437F.A69D9226@jp.fujitsu.com>
-	<20090608165457.fa8d17e6.nishimura@mxp.nes.nec.co.jp>
-	<20090609161330.fcd5facb.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Jun 2009 03:30:49 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+Date: Tue, 9 Jun 2009 09:31:37 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       linux-pm@lists.linux-foundation.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0906081626120.13888-100000@netrider.rowland.org> <200906082331.58933.rjw@sisk.pl>
+In-Reply-To: <200906082331.58933.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200906090931.37626.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009 16:13:30 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+Am Montag, 8. Juni 2009 23:31:58 schrieb Rafael J. Wysocki:
+> If ->autosuspend() fails, the device power state may be known, but the core
+> can't be sure if the device is active.  This information is available to
+> the driver and/or the bus type, which should change the status to whatever
+> is appropriate.
 
-> > > and, too many recliaming pages is not only memcg issue. I don't think this
-> > > patch provide generic solution.
-> > > 
-> > Ah, you're right. It's not only memcg issue.
-> > 
-> How about this one ?
-> 
-> ===
-> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
-> Commit 2e2e425989080cc534fc0fca154cae515f971cf5 ("vmscan,memcg: reintroduce
-> sc->may_swap) add may_swap flag and handle it at get_scan_ratio().
-> 
-> But the result of get_scan_ratio() is ignored when priority == 0,
-> so anon lru is scanned even if may_swap == 0 or nr_swap_pages == 0.
-> IMHO, this is not an expected behavior.
-> 
-> As for memcg especially, because of this behavior many and many pages are
-> swapped-out just in vain when oom is invoked by mem+swap limit.
-> 
-> This patch is for handling may_swap flag more strictly.
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+That is quite confusing. You'd better define error returns.
+One that would mean that the suspension has failed but the device is
+unaffected, and another one that means that the device is in an
+undefined state now.
 
-Thanks,
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > The scheme doesn't include any mechanism for communicating runtime
+> > power information up the device tree.  When a device is autosuspended,
+> > its parent's driver should be told so that the driver can consider
+> > autosuspending the parent.
+>
+> I thought the bus type's ->autosuspend() callback could take care of this.
+
+That can't work because you have to operate between busses.
+
+> > Likewise, if we want to autoresume a device below an autosuspended
+> > parent, the parent should be autoresumed first.  Did you want to make the
+> > bus subsystem responsible for all of this?
+>
+> Yes, that was the idea.
+
+That is an important point. Can some subsytems operate with a parent still
+suspended?
+
+	Regards
+		Oliver
 
