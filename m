@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761993AbZFIKtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762097AbZFIKtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761993AbZFIKtB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:49:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759999AbZFIKsR
+	id S1762097AbZFIKtV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759831AbZFIKs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:48:17 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:65329 "EHLO atmel-es2.atmel.fr"
+	Tue, 9 Jun 2009 06:48:26 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36535 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759264AbZFIKsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:48:16 -0400
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: linux-usb@vger.kernel.org, avictor.za@gmail.com
-Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net,
-       haavard.skinnemoen@atmel.com, patrice.vilchez@atmel.com
-Subject: at91/USB: high speed USB support for at91sam9g45 series
-Date: Tue,  9 Jun 2009 13:38:11 +0200
-Message-Id: <1244547493-19654-1-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.3.7
+	id S1757307AbZFIKsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:48:25 -0400
+Date: Tue, 9 Jun 2009 12:48:25 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Nai Xia <nai.xia@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in  the VM v3
+Message-ID: <20090609104825.GJ14820@wotan.suse.de>
+References: <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090528145021.GA5503@localhost> <ab418ea90906032325m302afbb6w6fa68f6b57f53e49@mail.gmail.com> <20090607160225.GA24315@localhost> <ab418ea90906080406y34981329y27d360624aa22f7c@mail.gmail.com> <20090608123133.GA7944@localhost> <ab418ea90906080746m6d1d59d8m395ab76585575db1@mail.gmail.com> <20090609064855.GB5490@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090609064855.GB5490@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Those 2 patches are adding the USB high speed 
-support to the at91sam9g45 SOC family.
+On Tue, Jun 09, 2009 at 02:48:55PM +0800, Wu Fengguang wrote:
+> On Mon, Jun 08, 2009 at 10:46:53PM +0800, Nai Xia wrote:
+> > I meant PG_writeback stops writers to index---->struct page mapping.
+> 
+> It's protected by the radix tree RCU locks. Period.
+> 
+> If you are referring to the reverse mapping: page->mapping is procted
+> by PG_lock. No one should make assumption that it won't change under
+> page writeback.
 
-They are relying on the integration of at91sam9g45 
-already posted. Here is the patch series that you 
-will have to take into account before applying 
-those patches.
-
-clock.c changes:
-http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=5438/1
-
-9g45 introduction:
-http://lkml.org/lkml/2009/6/4/77
-http://lkml.org/lkml/2009/6/4/76
-http://lkml.org/lkml/2009/6/4/78
-
-atmel_usba tiny modification (bias function only for 9rl):
-http://lkml.org/lkml/2009/6/5/355
-
- arch/arm/mach-at91/at91sam9g45_devices.c |   56 +++++
- arch/arm/mach-at91/board-sam9m10g45ek.c  |    1 +
- arch/arm/mach-at91/include/mach/board.h  |    1 +
- arch/arm/tools/mach-types                |    1 +
- drivers/usb/Kconfig                      |    1 +
- drivers/usb/gadget/Kconfig               |    4 +-
- drivers/usb/host/ehci-atmel.c            |  251 ++++++++++++++++++++
- drivers/usb/host/ehci-hcd.c              |    5 +
- drivers/usb/host/ohci-at91.c             |    3 +-
- 9 files changed, 320 insertions(+), 3 deletions(-)
- create mode 100644 drivers/usb/host/ehci-atmel.c
-
-
+Well... I think probably PG_writeback should be enough. Phrased another
+way: I think it is a very bad idea to truncate PG_writeback pages out of
+pagecache. Does anything actually do that?
