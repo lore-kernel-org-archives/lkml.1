@@ -1,185 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbZFIOQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753471AbZFIOV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755588AbZFIOQs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 10:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZFIOQk
+	id S1753471AbZFIOV1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 10:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZFIOVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 10:16:40 -0400
-Received: from honey.thehive.com ([206.83.74.4]:39016 "EHLO honey.thehive.com"
+	Tue, 9 Jun 2009 10:21:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49482 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757620AbZFIOQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 10:16:39 -0400
-Cc: linux-kernel@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>
-Message-Id: <D03E346D-8DDF-4134-84C9-07AB66493A58@thehive.com>
-From: Matthew Von Maszewski <matthew@thehive.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090609094117.8226c0ca.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: huge mem mmap eats all CPU when multiple processes
-Date: Tue, 9 Jun 2009 10:16:30 -0400
-References: <8FDBF172-AAA8-4737-A6C6-50B468CA0CBF@thehive.com> <20090609094117.8226c0ca.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Apple Mail (2.935.3)
+	id S1750995AbZFIOVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 10:21:17 -0400
+Date: Tue, 9 Jun 2009 16:21:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [git pull][PATCH 0/4] amd-iommu fixes for tip/core/iommu
+Message-ID: <20090609142110.GB32703@elte.hu>
+References: <1244555840-3855-1-git-send-email-joerg.roedel@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244555840-3855-1-git-send-email-joerg.roedel@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My apologies for lack of clarity in the original email.  I am working  
-on a test program to send out later today.   Here are my responses to  
-the questions asked:
 
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-On Jun 8, 2009, at 8:41 PM, KAMEZAWA Hiroyuki wrote:
+> Hi Ingo,
+> 
+> The following changes since commit 62a6f465f6572e1f28765c583c12753bb3e23715:
+>   Ingo Molnar (1):
+>         Merge branch 'dma-debug/2.6.31' of git://git.kernel.org/.../joro/linux-2.6-iommu into core/iommu
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git amd-iommu/fixes
+> 
+> Jiri Slaby (1):
+>       amd_iommu: fix lock imbalance
+> 
+> Joerg Roedel (4):
+>       Merge commit 'tip/core/iommu' into amd-iommu/fixes
+>       amd-iommu: remove BUS_NOTIFY_BOUND_DRIVER handling
+>       amd-iommu: detach device explicitly before attaching it to a new domain
+>       amd-iommu: remove unnecessary "AMD IOMMU: " prefix
+> 
+>  arch/x86/kernel/amd_iommu.c |   22 ++++++----------------
+>  1 files changed, 6 insertions(+), 16 deletions(-)
+> 
+> These patches fix issues with device assignment to KVM, a possible
+> deadlock due to an unreleased lock and a minor printk style issue.
+> Please pull.
 
-> On Mon, 8 Jun 2009 10:27:49 -0400
-> Matthew Von Maszewski <matthew@thehive.com> wrote:
->
->> [note: not on kernel mailing list, please cc author]
->>
->> Symptom:  9 processes mmap same 2 Gig memory section for a shared C
->> heap (lots of random access).  All process begin extreme CPU load in
->> top.
->>
->> - Same code works well when only single process access huge mem.
-> Does this "huge mem" means HugeTLB(2M/4Mbytes) pages ?
+Pulled into tip:core/iommu, thanks a lot Joerg!
 
-Yes.  My debian x86_64 kernel build uses 2m pages.  Test by one  
-process is really fast.  Test by multiple process against same mmap()  
-file are really slow
-
->
->
->> - Code works well with standard vm based mmap file and 9 processes.
->>
->
-> What is sys/user ratio in top ? Almost all cpus are used by "sys" ?
-
-
-Tasks:  94 total,   3 running,  91 sleeping,   0 stopped,   0 zombie
-Cpu0  :  5.6%us, 86.4%sy,  0.0%ni,  1.3%id,  5.3%wa,  0.0%hi,   
-1.3%si,  0.0%st
-Cpu1  :  1.0%us, 92.4%sy,  0.0%ni,  0.0%id,  5.6%wa,  0.0%hi,   
-1.0%si,  0.0%st
-Cpu2  :  1.7%us, 90.4%sy,  0.0%ni,  0.0%id,  7.3%wa,  0.0%hi,   
-0.7%si,  0.0%st
-Cpu3  :  0.0%us, 70.4%sy,  0.0%ni, 25.1%id,  4.0%wa,  0.0%hi,   
-0.5%si,  0.0%st
-Mem:   6103960k total,  2650044k used,  3453916k free,     6068k buffers
-Swap:  5871716k total,        0k used,  5871716k free,    84504k cached
-
-   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-  3681 proxy     20   0 2638m 1596 1312 S   43  0.0   0:07.87  
-tentacle.e.prof
-  3687 proxy     20   0 2656m 1592 1312 S   43  0.0   0:07.69  
-tentacle.e.prof
-  3689 proxy     20   0 2662m 1600 1312 S   42  0.0   0:07.82  
-tentacle.e.prof
-  3683 proxy     20   0 2652m 1596 1312 S   41  0.0   0:07.75  
-tentacle.e.prof
-  3684 proxy     20   0 2650m 1596 1312 S   41  0.0   0:07.89  
-tentacle.e.prof
-  3686 proxy     20   0 2644m 1596 1312 S   40  0.0   0:07.80  
-tentacle.e.prof
-  3685 proxy     20   0 2664m 1592 1312 S   40  0.0   0:07.82  
-tentacle.e.prof
-  3682 proxy     20   0 2646m 1616 1328 S   38  0.0   0:07.73  
-tentacle.e.prof
-  3664 proxy     20   0 2620m 1320  988 R   36  0.0   0:01.08 tentacle.e
-  3678 proxy     20   0 72352  35m 1684 R   11  0.6   0:01.79 squid
-
-tentacle.e and tentacle.e.prof are copies of the same executable file,  
-started with different command line options.  tentacle.e is started by  
-an init.d script.  tentacle.e.prof processes are started by squid.
-
-I am creating a simplified program to duplicate the scenario.  Will  
-send it along later today.
-
->
->
->> Environment:
->>
->> - Intel x86_64:  Dual core Xeon with hyperthreading (4 logical
->> processors)
->> - 6 Gig ram, 2.5G allocated to huge mem
-> by boot option ?
-
-huge mem initialization
-
-1.  sysctl.conf allocates the desired number of 2M pages:
-
-system:/mnt$ tail -n 3 /etc/sysctl.conf
-#huge
-vm.nr_hugepages=1200
-
-
-2. init.d script for tentacle.e mounts the file system and  
-preallocates space
-
-(from init.d file starting tentacle.e)
-
-     umount /mnt/hugefs
-     mount -t hugetlbfs -o uid=proxy,size=2300M none /mnt/hugefs
-
-system:/mnt df -kP
-Filesystem         1024-blocks      Used Available Capacity Mounted on
-/dev/sda1            135601864  32634960  96078636      26% /
-tmpfs                  3051980         0   3051980       0% /lib/init/rw
-udev                     10240        68     10172       1% /dev
-tmpfs                  3051980         0   3051980       0% /dev/shm
-none                   2355200   2117632    237568      90% /mnt/hugefs
-
-
->
->
->> - tried with kernels 2.6.29.4 and 2.6.30-rc8
->> - following mmap() call has base address as NULL on first process,
->> then returned address passed to subsequent processes (not threads,
->> processes)
->>
->>            m_MemSize=((m_MemSize/(2048*1024))+1)*2048*1024;
->>             m_BaseAddr=mmap(m_File->GetFixedBase(), m_MemSize,
->>                             (PROT_READ | PROT_WRITE),
->>                             MAP_SHARED, m_File->GetFileId(),  
->> m_Offset);
->>
->>
->> I am not a kernel hacker so I have not attempted to debug.  Will be
->> able to spend time on a sample program for sharing later today or
->> tomorrow.  Sending this note now in case this is already known.
->>
->
-> IIUC, all page faults to hugetlb are serialized by system's mutex.  
-> Then, touching
-> in parallel doesn't do fast job..
-> Then, I wonder touching all necessary maps by one thread is good, in  
-> general.
->
->
->
->> Don't suppose this is as simple as a Copy-On-Write flag being set  
->> wrong?
->>
-> I don't think, so.
->
->> Please send notes as to things I need to capture to better describe
->> this bug.  Happy to do the work.
->>
-> Add cc to linux-mm.
->
-> Thanks,
-> -Kame
->
->
->> Thanks,
->> Matthew
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux- 
->> kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
->
-
+	Ingo
