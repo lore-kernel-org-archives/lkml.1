@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759536AbZFIIur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759034AbZFIIwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759536AbZFIIur (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 04:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbZFIIuk
+	id S1759034AbZFIIwn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 04:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbZFIIwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 04:50:40 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:46342 "EHLO gir.skynet.ie"
+	Tue, 9 Jun 2009 04:52:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43983 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752668AbZFIIuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 04:50:39 -0400
-Date: Tue, 9 Jun 2009 09:50:38 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] Do not unconditionally treat zones that fail
-	zone_reclaim() as full
-Message-ID: <20090609085037.GI18380@csn.ul.ie>
-References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-4-git-send-email-mel@csn.ul.ie> <20090609031119.GB7875@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090609031119.GB7875@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1754564AbZFIIwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 04:52:34 -0400
+Subject: Re: [PATCH] X86: cpu_debug support for VIA / Centaur CPU's
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Harald Welte <HaraldWelte@viatech.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20090609082931.GD25316@prithivi.gnumonks.org>
+References: <20090609082931.GD25316@prithivi.gnumonks.org>
+Content-Type: text/plain
+Date: Tue, 09 Jun 2009 14:23:18 +0530
+Message-Id: <1244537598.2558.9.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 11:11:19AM +0800, Wu Fengguang wrote:
-> On Mon, Jun 08, 2009 at 09:01:30PM +0800, Mel Gorman wrote:
-> > On NUMA machines, the administrator can configure zone_reclaim_mode that
-> > is a more targetted form of direct reclaim. On machines with large NUMA
-> > distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
-> > unmapped pages will be reclaimed if the zone watermarks are not being
-> > met. The problem is that zone_reclaim() failing at all means the zone
-> > gets marked full.
-> > 
-> > This can cause situations where a zone is usable, but is being skipped
-> > because it has been considered full. Take a situation where a large tmpfs
-> > mount is occuping a large percentage of memory overall. The pages do not
-> > get cleaned or reclaimed by zone_reclaim(), but the zone gets marked full
-> > and the zonelist cache considers them not worth trying in the future.
-> > 
-> > This patch makes zone_reclaim() return more fine-grained information about
-> > what occured when zone_reclaim() failued. The zone only gets marked full if
-> > it really is unreclaimable. If it's a case that the scan did not occur or
-> > if enough pages were not reclaimed with the limited reclaim_mode, then the
-> > zone is simply skipped.
-> > 
-> > There is a side-effect to this patch. Currently, if zone_reclaim()
-> > successfully reclaimed SWAP_CLUSTER_MAX, an allocation attempt would
-> > go ahead. With this patch applied, zone watermarks are rechecked after
-> > zone_reclaim() does some work.
-> >
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> 
-> Thanks for making the code a lot more readable :)
-> 
-> Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-> 
+Hello Harald,
 
-Thanks.
-
-> >  	/*
-> >  	 * Do not scan if the allocation should not be delayed.
-> >  	 */
-> >  	if (!(gfp_mask & __GFP_WAIT) || (current->flags & PF_MEMALLOC))
-> > -			return 0;
-> > +			return ZONE_RECLAIM_NOSCAN;
+On Tue, 2009-06-09 at 16:29 +0800, Harald Welte wrote:
+> This patch adds the MSR definitions for the VIA/Centaur CPU models
+> to cpu_debug.c
 > 
-> Why not kill the extra tab?
-> 
+> Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
 
-Why not indeed. Tab is now killed.
+As per Ingo suggestion, we removed model information from cpu_debug and
+is available in -tip :
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commitdiff;h=5095f59bda6793a7b8f0856096d6893fe98e0e51
+
+Please check latest -tip from and see how it works with your chips :
+git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git
+
+Currently I am doing more changes and available in :
+
+http://git.kernel.org/?p=linux/kernel/git/jaswinder/linux-2.6-cpu.git;a=shortlog;h=x86/cpu
+
+Thanks,
+--
+JSR
+
