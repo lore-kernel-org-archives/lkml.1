@@ -1,76 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbZFIQQK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756710AbZFIQQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755644AbZFIQQK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 12:16:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136AbZFIQPy
+	id S1756710AbZFIQQx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 12:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbZFIQQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 12:15:54 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:45356 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753387AbZFIQPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 12:15:53 -0400
-From: Jay Vosburgh <fubar@us.ibm.com>
-To: Patrick McHardy <kaber@trash.net>
-cc: Stephen Hemminger <shemminger@vyatta.com>, Arnd Bergmann <arnd@arndb.de>,
-       "David S. Miller" <davem@davemloft.net>, bonding-devel@lists.sf.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: BUG: bonding module can only be loaded once
-In-reply-to: <4A2E80B3.6010600@trash.net>
-References: <20090608151127.70146505@nehalam> <200906091406.45463.arnd@arndb.de> <20090609080232.45f81833@nehalam> <4A2E80B3.6010600@trash.net>
-Comments: In-reply-to Patrick McHardy <kaber@trash.net>
-   message dated "Tue, 09 Jun 2009 17:33:07 +0200."
-X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
-Date: Tue, 09 Jun 2009 09:14:42 -0700
-Message-ID: <4752.1244564082@death.nxdomain.ibm.com>
+	Tue, 9 Jun 2009 12:16:45 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:1085 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754136AbZFIQQp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 12:16:45 -0400
+X-Trace: 212486052/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.4.238/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.4.238
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAJ4nLkpQKQTu/2dsb2JhbACBT848hAoF
+X-IronPort-AV: E=Sophos;i="4.41,333,1241391600"; 
+   d="scan'208";a="212486052"
+Date: Tue, 9 Jun 2009 17:05:53 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Nick Piggin <npiggin@suse.de>
+cc: Andi Kleen <andi@firstfloor.org>, riel@redhat.com, chris.mason@oracle.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
+ in the VM v5
+In-Reply-To: <20090609100922.GF14820@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0906091637430.13213@sister.anvils>
+References: <20090603846.816684333@firstfloor.org>
+ <20090603184648.2E2131D028F@basil.firstfloor.org> <20090609100922.GF14820@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy <kaber@trash.net> wrote:
+On Tue, 9 Jun 2009, Nick Piggin wrote:
+> On Wed, Jun 03, 2009 at 08:46:47PM +0200, Andi Kleen wrote:
+> 
+> Why not have this in rmap.c and not export the locking?
+> I don't know.. does Hugh care?
 
->Stephen Hemminger wrote:
->>> --- a/drivers/net/bonding/bond_main.c
->>> +++ b/drivers/net/bonding/bond_main.c
->>> @@ -5203,7 +5203,7 @@ static int __init bonding_init(void)
->>>   	res = bond_create_sysfs();
->>>  	if (res)
->>> -		goto err;
->>> +		pr_info("Loading bonding module without sysfs interface\n");
->>>   	register_netdevice_notifier(&bond_netdev_notifier);
->>>  	register_inetaddr_notifier(&bond_inetaddr_notifier);
->>
->> That only makes it limp along, and there still are warnings.
->> The point is that who ever added the WARN() in proc and sysfs, effectively
->> broke a bonding usage model.
->
->It did already dump the stack before that change, didn't it?
->
->In any case, this is not the first time this has been broken and the
->fundamental reason is in my opinion that the bonding interface is
->broken to begin with. The module aliasing thing is complete crap
->and should have been phased out long ago. At this point its probably
->not worth anymore to migrate people to the sysfs interface though,
->the best thing would be to add an rtnl_link interface and phase out
->both.
+Thanks for catching my eye with this, Nick.
 
-	The "load bonding multiple times" stuff is only there now for
-backwards compatibility with old distro initscripts / sysconfig packages
-that don't configure bonding through sysfs (a sysfs API was added to
-bonding three or four years ago).
+As I've said to Andi, I don't actually have time to study all this.
+To me, it's just another layer of complexity and maintenance burden
+that one special-interest group is imposing upon mm, and I can't
+keep up with it myself.
 
-	All of the current distro releases I'm aware of use sysfs to
-configure bonding, and have done so for at least a year or two.  I
-haven't done an exhaustive survey, but it seems unlikely that users are
-running a current up to date kernel with a two or three year old
-initscripts / sysconfig package.  Anybody have information to the
-contrary?
+But looking at this one set of extracts: you're right that I'm much
+happier when page_lock_anon_vma() isn't leaked outside of mm/rmap.c,
+though I'd probably hate this whichever way round it was; and I
+share your lock ordering concern.
 
-	If nobody has any heartburn at dropping support for multiple
-bonding instances on old distros, I'm as happy as anybody to remove all
-of the multiple load logic from bonding.  There's been plenty of time
-for transitioning from "multiple load" to sysfs.
+However, if I'm interpreting these extracts correctly, the whole
+thing looks very misguided to me.  Are we really going to kill any
+process that has a cousin who might once have mapped the page that's
+been found hwpoisonous?  The hwpoison secret police are dangerously
+out of control, I'd say.
 
-	-J
+The usual use of rmap lookup loops is to go on to look into the page
+table to see whether the page is actually mapped: I see no attempt
+at that here, just an assumption that anyone on the list is guilty
+of mapping the page and must be killed.  And even if it did go on
+to check if the page is there, maybe the process lost interest in
+that page several weeks ago, why kill it?
 
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+At least in the file's prio_tree case, we'll only be killing those
+who mmapped the range which happens to include the page.  But in the
+anon case, remember the anon_vma is just a bundle of "related" vmas
+outside of which the page will not be found; so if one process got a
+poisonous page through COW, all the other processes which happen to
+be sharing that anon_vma through fork or through adjacent merging,
+are going to get killed too.
+
+Guilty by association.
+
+I think a much more sensible approach would be to follow the page
+migration technique of replacing the page's ptes by a special swap-like
+entry, then do the killing from do_swap_page() if a process actually
+tries to access the page.
+
+But perhaps that has already been discussed and found impossible,
+or I'm taking "kill" too seriously and other checks are done
+elsewhere, or...
+
+Hugh
+
+> 
+> > +/*
+> > + * Collect processes when the error hit an anonymous page.
+> > + */
+> > +static void collect_procs_anon(struct page *page, struct list_head *to_kill,
+> > +			      struct to_kill **tkc)
+> > +{
+> > +	struct vm_area_struct *vma;
+> > +	struct task_struct *tsk;
+> > +	struct anon_vma *av = page_lock_anon_vma(page);
+> > +
+> > +	if (av == NULL)	/* Not actually mapped anymore */
+> > +		return;
+> > +
+> > +	read_lock(&tasklist_lock);
+> > +	for_each_process (tsk) {
+> > +		if (!tsk->mm)
+> > +			continue;
+> > +		list_for_each_entry (vma, &av->head, anon_vma_node) {
+> > +			if (vma->vm_mm == tsk->mm)
+> > +				add_to_kill(tsk, page, vma, to_kill, tkc);
+> > +		}
+> > +	}
+> > +	page_unlock_anon_vma(av);
+> > +	read_unlock(&tasklist_lock);
+> > +}
+> > +
+> > +/*
+> > + * Collect processes when the error hit a file mapped page.
+> > + */
+> > +static void collect_procs_file(struct page *page, struct list_head *to_kill,
+> > +			      struct to_kill **tkc)
+> > +{
+> > +	struct vm_area_struct *vma;
+> > +	struct task_struct *tsk;
+> > +	struct prio_tree_iter iter;
+> > +	struct address_space *mapping = page_mapping(page);
+> > +
+> > +	/*
+> > +	 * A note on the locking order between the two locks.
+> > +	 * We don't rely on this particular order.
+> > +	 * If you have some other code that needs a different order
+> > +	 * feel free to switch them around. Or add a reverse link
+> > +	 * from mm_struct to task_struct, then this could be all
+> > +	 * done without taking tasklist_lock and looping over all tasks.
+> > +	 */
+> > +
+> > +	read_lock(&tasklist_lock);
+> > +	spin_lock(&mapping->i_mmap_lock);
+> 
+> This still has my original complaint that it nests tasklist lock inside
+> anon vma lock and outside inode mmap lock (and anon_vma nests inside i_mmap).
+> I guess the property of our current rw locks means that does not matter,
+> but it could if we had "fair" rw locks, or some tree (-rt tree maybe)
+> changed rw lock to a plain exclusive lock.
+> 
+> 
+> > +	for_each_process(tsk) {
+> > +		pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+> > +
+> > +		if (!tsk->mm)
+> > +			continue;
+> > +
+> > +		vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff,
+> > +				      pgoff)
+> > +			if (vma->vm_mm == tsk->mm)
+> > +				add_to_kill(tsk, page, vma, to_kill, tkc);
+> > +	}
+> > +	spin_unlock(&mapping->i_mmap_lock);
+> > +	read_unlock(&tasklist_lock);
+> > +}
+> > +
+> > +/*
+> > + * Collect the processes who have the corrupted page mapped to kill.
+> > + * This is done in two steps for locking reasons.
+> > + * First preallocate one tokill structure outside the spin locks,
+> > + * so that we can kill at least one process reasonably reliable.
+> > + */
+> > +static void collect_procs(struct page *page, struct list_head *tokill)
+> > +{
+> > +	struct to_kill *tk;
+> > +
+> > +	tk = kmalloc(sizeof(struct to_kill), GFP_KERNEL);
+> > +	/* memory allocation failure is implicitly handled */
+> > +	if (PageAnon(page))
+> > +		collect_procs_anon(page, tokill, &tk);
+> > +	else
+> > +		collect_procs_file(page, tokill, &tk);
+> > +	kfree(tk);
+> > +}
+> 
+> > Index: linux/mm/filemap.c
+> > ===================================================================
+> > --- linux.orig/mm/filemap.c	2009-06-03 19:37:38.000000000 +0200
+> > +++ linux/mm/filemap.c	2009-06-03 20:13:43.000000000 +0200
+> > @@ -105,6 +105,10 @@
+> >   *
+> >   *  ->task->proc_lock
+> >   *    ->dcache_lock		(proc_pid_lookup)
+> > + *
+> > + *  (code doesn't rely on that order, so you could switch it around)
+> > + *  ->tasklist_lock             (memory_failure, collect_procs_ao)
+> > + *    ->i_mmap_lock
+> >   */
+> >  
+> >  /*
+> > Index: linux/mm/rmap.c
+> > ===================================================================
+> > --- linux.orig/mm/rmap.c	2009-06-03 19:37:38.000000000 +0200
+> > +++ linux/mm/rmap.c	2009-06-03 20:13:43.000000000 +0200
+> > @@ -36,6 +36,10 @@
+> >   *                 mapping->tree_lock (widely used, in set_page_dirty,
+> >   *                           in arch-dependent flush_dcache_mmap_lock,
+> >   *                           within inode_lock in __sync_single_inode)
+> > + *
+> > + * (code doesn't rely on that order so it could be switched around)
+> > + * ->tasklist_lock
+> > + *   anon_vma->lock      (memory_failure, collect_procs_anon)
+> >   */
+> >  
+> >  #include <linux/mm.h>
