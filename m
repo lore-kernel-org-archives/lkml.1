@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbZFINzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbZFIN5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752648AbZFINzl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbZFINzW
+	id S1753761AbZFIN5v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751809AbZFIN5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:55:22 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:39812 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754473AbZFINzU (ORCPT
+	Tue, 9 Jun 2009 09:57:42 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:42829
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751463AbZFIN5l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:55:20 -0400
-Subject: Re: linux-next: net/wireless tree build failure
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: "John W. Linville" <linville@tuxdriver.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <20090609233357.5d3801a0.sfr@canb.auug.org.au>
-References: <20090609233357.5d3801a0.sfr@canb.auug.org.au>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-SdA5J9/05dd6ih2RCURT"
-Date: Tue, 09 Jun 2009 15:54:42 +0200
-Message-Id: <1244555682.4672.7.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+	Tue, 9 Jun 2009 09:57:41 -0400
+X-SpamScore: 4
+X-BigFish: VPS4(zzzz1202hzz5a6ciz32i17ch43j63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KKZ5FV-03-LAU-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 1/4] amd_iommu: fix lock imbalance
+Date: Tue, 9 Jun 2009 15:57:17 +0200
+Message-ID: <1244555840-3855-2-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.3.1
+In-Reply-To: <1244555840-3855-1-git-send-email-joerg.roedel@amd.com>
+References: <1244555840-3855-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 09 Jun 2009 13:57:31.0392 (UTC) FILETIME=[3B7F6800:01C9E90A]
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jiri Slaby <jirislaby@gmail.com>
 
---=-SdA5J9/05dd6ih2RCURT
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+In alloc_coherent there is an omitted unlock on the path where mapping
+fails. Add the unlock.
 
-On Tue, 2009-06-09 at 23:33 +1000, Stephen Rothwell wrote:
+[ Impact: fix lock imbalance in alloc_coherent ]
 
-> Probably caused by commit 19d337dff95cbf76edd3ad95c0cee2732c3e1ec5
-> ("rfkill: rewrite") which added uses of ERR_PTR to inlines in rfkill.h
-> but did not include linux/err.h.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kernel/amd_iommu.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-Indeed. Something must be including linux/err.h for me, I'll send a fix.
+diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
+index d689883..9f89bb6 100644
+--- a/arch/x86/kernel/amd_iommu.c
++++ b/arch/x86/kernel/amd_iommu.c
+@@ -1541,8 +1541,10 @@ static void *alloc_coherent(struct device *dev, size_t size,
+ 	*dma_addr = __map_single(dev, iommu, domain->priv, paddr,
+ 				 size, DMA_BIDIRECTIONAL, true, dma_mask);
+ 
+-	if (*dma_addr == bad_dma_address)
++	if (*dma_addr == bad_dma_address) {
++		spin_unlock_irqrestore(&domain->lock, flags);
+ 		goto out_free;
++	}
+ 
+ 	iommu_completion_wait(iommu);
+ 
+-- 
+1.6.3.1
 
-johannes
-
---=-SdA5J9/05dd6ih2RCURT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKLmmeAAoJEODzc/N7+QmaM4MP/3qNo2XML9s6DgxKHDhEKfGn
-8o1fPOp9VOIVfQF97YZNn/3Wf/nomqx0bgXnd4HJoYtBecuAvHX+7n0oBdc6DJMR
-qLCI1i10bjSO6pY+hN3w2brGArnxXuzX1NddFdxYOwRx6bRD0c9CiVPrUvdyXodR
-2BLwdukU+YSClQvV0oAxnJivNSgUNzOgRfePXyae1F9mLOtdSNrZPFfjcfeGtSL7
-8wmuMpw/XVYwgXewSdGyyninyqGQ7dZSv0gzdCowsszh5Jo+F2eD0qebQ/AKRdTq
-ns66NDiJo60a4D+isSI4rbe3behjD8FSKFeJZzOxLZHkE59/wp/C01QaNVsvHeOl
-J4ua4UjWA7ztw2W3TRJWA/ogGsPthyVyTVL0tedvPXMONqD1Swo4YwyyntlckDJt
-JoGD9EhG7ZaR7EMQ2lI9MGLJZ3Pm7F2FbPCLYiqoq0Dk09Io1bl5ohXry+7OV6i0
-L8hkiYzQsCuqeD2ip4BMy59Q/CHxDeEBSTYQDX98WVQK0/JkMgo/U7YUMPpGIACx
-t0CPCdoVIafKJ4e0OMG6FF91KsKFvzNQTXhxk9qXHak40PzF6Ri+x4iq+LCjrd9P
-Up0tTNjRHl6VWuKc/62nrif7iAQcLK3t338TppqpWHZuW2bLyzZBeQ//zlPeOXni
-IgLam7iLkpZIPIXf5JRz
-=n9H0
------END PGP SIGNATURE-----
-
---=-SdA5J9/05dd6ih2RCURT--
 
