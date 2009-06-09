@@ -1,57 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbZFJAHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbZFJAMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757627AbZFJAHj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 20:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZFJAHc
+	id S1755644AbZFJAMj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 20:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZFJAMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 20:07:32 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:56497 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108AbZFJAHb (ORCPT
+	Tue, 9 Jun 2009 20:12:31 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:48128 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751463AbZFJAMa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 20:07:31 -0400
-Message-ID: <4A2EF93E.70807@zytor.com>
-Date: Tue, 09 Jun 2009 17:07:26 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ray Lee <ray-lk@madrabbit.org>, renton@renton.name,
-       linux-kernel@vger.kernel.org
-Subject: Re: devpts mounts too slowly
-References: <20090603142801.GC21646@beaver.vrungel.ru>	<4A26EB18.6060907@zytor.com>	<20090609161945.811cc01f.akpm@linux-foundation.org>	<2c0942db0906091630l1cc79647h8689e9e929ed1bba@mail.gmail.com> <20090609165304.add1a872.akpm@linux-foundation.org>
-In-Reply-To: <20090609165304.add1a872.akpm@linux-foundation.org>
-Content-Type: multipart/mixed;
- boundary="------------050302000901070002020701"
+	Tue, 9 Jun 2009 20:12:30 -0400
+Date: Wed, 10 Jun 2009 08:58:58 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [PATCH] memcg: fix mem_cgroup_isolate_lru_page to use the same
+ rotate logic at busy path
+Message-Id: <20090610085858.fd3a60ed.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090609182253.009c98a3.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090609181505.4083a213.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090609182253.009c98a3.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050302000901070002020701
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-Andrew Morton wrote:
-> hm, OK.
+On Tue, 9 Jun 2009 18:22:53 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > 
-> I've now mounted 15000 devpts's and still no slowdown is evident.
+> This patch tries to fix memcg's lru rotation sanity...make memcg use
+> the same logic as global LRU does.
+> 
+> Now, at __isolate_lru_page() retruns -EBUSY, the page is rotated to
+> the tail of LRU in global LRU's isolate LRU pages. But in memcg,
+> it's not handled. This makes memcg do the same behavior as global LRU
+> and rotate LRU in the page is busy.
+> 
+> Note: __isolate_lru_page() is not isolate_lru_page() and it's just used
+> in sc->isolate_pages() logic.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+Looks good to me.
 
-This is the test script I used; graphing the results is quite interesting.
+	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-	-hpa
-
---------------050302000901070002020701
-Content-Type: application/x-shellscript;
- name="test.sh"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="test.sh"
-
-IyEvYmluL3NoCnJvb3Q9L3RtcC9kZXZwdHMKVElNRUZPUk1BVD0nJTNTJwpuPTEwMDAwMApm
-b3IgYSBpbiBgc2VxIDEgJG5gOyBkbwogIG1rZGlyIC1wICRyb290LyRhL2Rldi9wdHMKICAj
-IHRpbWUgbW91bnQgLW4gLWkgLXQgZGV2cHRzIG5vbmUgJHJvb3QvJGEvZGV2L3B0cwogIHRp
-bWUgbW91bnQgLW4gLWkgLXQgcmFtZnMgbm9uZSAkcm9vdC8kYS9kZXYvcHRzCmRvbmUKZm9y
-IGEgaW4gYHNlcSAxICRuYDsgZG8KICB1bW91bnQgLW4gJHJvb3QvJGEvZGV2L3B0cwpkb25l
-CnJtIC1yZiAkcm9vdAo=
---------------050302000901070002020701--
+> ---
+>  mm/memcontrol.c |   13 ++++++++++++-
+>  mm/vmscan.c     |    4 +++-
+>  2 files changed, 15 insertions(+), 2 deletions(-)
+> 
+> Index: mmotm-2.6.30-Jun4/mm/vmscan.c
+> ===================================================================
+> --- mmotm-2.6.30-Jun4.orig/mm/vmscan.c
+> +++ mmotm-2.6.30-Jun4/mm/vmscan.c
+> @@ -842,7 +842,6 @@ int __isolate_lru_page(struct page *page
+>  		 */
+>  		ClearPageLRU(page);
+>  		ret = 0;
+> -		mem_cgroup_del_lru(page);
+>  	}
+>  
+>  	return ret;
+> @@ -890,12 +889,14 @@ static unsigned long isolate_lru_pages(u
+>  		switch (__isolate_lru_page(page, mode, file)) {
+>  		case 0:
+>  			list_move(&page->lru, dst);
+> +			mem_cgroup_del_lru(page);
+>  			nr_taken++;
+>  			break;
+>  
+>  		case -EBUSY:
+>  			/* else it is being freed elsewhere */
+>  			list_move(&page->lru, src);
+> +			mem_cgroup_rotate_lru_list(page, page_lru(page));
+>  			continue;
+>  
+>  		default:
+> @@ -937,6 +938,7 @@ static unsigned long isolate_lru_pages(u
+>  			switch (__isolate_lru_page(cursor_page, mode, file)) {
+>  			case 0:
+>  				list_move(&cursor_page->lru, dst);
+> +				mem_cgroup_del_lru(page);
+>  				nr_taken++;
+>  				scan++;
+>  				break;
+> Index: mmotm-2.6.30-Jun4/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.30-Jun4.orig/mm/memcontrol.c
+> +++ mmotm-2.6.30-Jun4/mm/memcontrol.c
+> @@ -649,6 +649,7 @@ unsigned long mem_cgroup_isolate_pages(u
+>  	int zid = zone_idx(z);
+>  	struct mem_cgroup_per_zone *mz;
+>  	int lru = LRU_FILE * !!file + !!active;
+> +	int ret;
+>  
+>  	BUG_ON(!mem_cont);
+>  	mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
+> @@ -666,9 +667,19 @@ unsigned long mem_cgroup_isolate_pages(u
+>  			continue;
+>  
+>  		scan++;
+> -		if (__isolate_lru_page(page, mode, file) == 0) {
+> +		ret = __isolate_lru_page(page, mode, file);
+> +		switch (ret) {
+> +		case 0:
+>  			list_move(&page->lru, dst);
+> +			mem_cgroup_del_lru(page);
+>  			nr_taken++;
+> +			break;
+> +		case -EBUSY:
+> +			/* we don't affect global LRU but rotate in our LRU */
+> +			mem_cgroup_rotate_lru_list(page, page_lru(page));
+> +			break;
+> +		default:
+> +			break;
+>  		}
+>  	}
+>  
+> 
