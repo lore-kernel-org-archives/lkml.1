@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758454AbZFISnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbZFISqD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758454AbZFISnV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756279AbZFISnK
+	id S1754386AbZFISqD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:46:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbZFISpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:43:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43278 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751742AbZFISnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:43:09 -0400
-Message-ID: <4A2EAD2F.5010505@redhat.com>
-Date: Tue, 09 Jun 2009 21:42:55 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 9 Jun 2009 14:45:55 -0400
+Received: from mail05do.versatel.de ([89.245.129.25]:53572 "EHLO
+	mail05do.versatel.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754178AbZFISpz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 14:45:55 -0400
+Message-ID: <20090609204550.9s3uk1nunmio4oo4@webmail.versatel.de>
+Date: Tue,  9 Jun 2009 20:45:50 +0200
+From: WEBMAIL SERVICE HELP DESK <servicedesk@webmail.info>
+Reply-to: service-help-desk@8u8.com
+To: undisclosed-recipients:;
+Subject: Webmail Account Verification Update ! ! !
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: Dan Williams <dan.j.williams@intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #13116] Can't boot with nosmp
-References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>	<D9VoutSOyXP.A.xm.Vb7KKB@chimera>	<20090608091544.53a94235@nehalam>	<e9c3a7c20906080929l1a4ec739t7585f6bba54bf684@mail.gmail.com>	<20090608170437.1c2386a5@nehalam>	<e9c3a7c20906091020m19abf3b5wbbb7f5364b2d4905@mail.gmail.com>	<4A2EAA53.7060006@redhat.com> <20090609113656.46ed6335@nehalam>
-In-Reply-To: <20090609113656.46ed6335@nehalam>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset=ISO-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.0.3)
+X-Originating-IP: 82.128.16.141
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
+Dear Webmail User,
 
-  
+The Webmail Program that periodically checks the size of your e-mail
+space is sending you this information. The program runs weekly to
+ensure your inbox does not grow too large, thus  preventing you from
+receiving or sending new e-mail. As this message is being sent, you
+have 18 megabytes (MB) or more stored in  your inbox. To help us reset
+your space in our database, please  enter your current user
+name (_________________) password  (_______________)
 
->> This only affects reboots.  But yes, the cpumask code has bugs.  Does 
->> the .config involved select MAXSMP?
->>
->>     
->
-> Patch does not fix the problem. Not sure if it is KVM only problem.
-> Look like possible cpumask always equals what ACPI / SMP tables report.
-> So currently looking into alloc_percpu which may not handle the possible
-> but never used cpus.
->
->   
+You will receive a periodic alert if your inbox size is between 18
+and 20 MB. If your inbox size is 20 MB, a program on your Webmail
+will move your oldest e-mails to a folder in your home directory to
+ensure you can continue receiving incoming e-mail. You will be
+notified this has taken place. If your inbox grows to 25 MB, you will
+be unable to receive new e-mail and it will be returned to  sender.
+All this is programmed to ensure your e-mail continues to function
+well. Thank you for your cooperation and understanding.
 
-Right, it shouldn't have.
+Information Technology Services Apologizes for any inconvenience caused
+by this required work.
 
-> It is x86-64 config and does not have MAXSMP set. It does have NR_CPUS set.
->   
-
-So it's not cpumask.  Dare I suggest a bisect?
-
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+IT Service Desk.
 
