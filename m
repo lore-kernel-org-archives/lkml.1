@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759771AbZFIVyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760296AbZFIVyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759771AbZFIVyW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 17:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbZFIVxk
+	id S1760296AbZFIVyf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 17:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758156AbZFIVxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 17:53:40 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:56681 "EHLO
+	Tue, 9 Jun 2009 17:53:41 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:56731 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756415AbZFIVxi (ORCPT
+	with ESMTP id S1756875AbZFIVxi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Jun 2009 17:53:38 -0400
-Message-Id: <20090609215338.727397649@goodmis.org>
+Message-Id: <20090609215339.384594898@goodmis.org>
 References: <20090609215211.307980196@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 09 Jun 2009 17:52:12 -0400
+Date: Tue, 09 Jun 2009 17:52:15 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -27,79 +27,98 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
        Tom Zanussi <tzanussi@gmail.com>
-Subject: [PATCH 1/8] tracing: add trace_seq_vprint interface
-Content-Disposition: inline; filename=0001-tracing-add-trace_seq_vprint-interface.patch
+Subject: [PATCH 4/8] tracing/events: modify irq print to new format
+Content-Disposition: inline; filename=0004-tracing-events-modify-irq-print-to-new-format.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The code to update the print formats for events requires a vprintf
-format in the trace_seq. This patch adds that interface.
+Use new format for better parsing of irq events.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/trace_seq.h   |    2 ++
- kernel/trace/trace_output.c |   32 ++++++++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+), 0 deletions(-)
+ include/trace/events/irq.h |   38 +++++++++++++++++++-------------------
+ 1 files changed, 19 insertions(+), 19 deletions(-)
 
-diff --git a/include/linux/trace_seq.h b/include/linux/trace_seq.h
-index ba9627f..c68bccb 100644
---- a/include/linux/trace_seq.h
-+++ b/include/linux/trace_seq.h
-@@ -27,6 +27,8 @@ trace_seq_init(struct trace_seq *s)
- #ifdef CONFIG_TRACING
- extern int trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
- 	__attribute__ ((format (printf, 2, 3)));
-+extern int trace_seq_vprintf(struct trace_seq *s, const char *fmt, va_list args)
-+	__attribute__ ((format (printf, 2, 0)));
- extern int
- trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary);
- extern void trace_print_seq(struct seq_file *m, struct trace_seq *s);
-diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 425725c..c05aff4 100644
---- a/kernel/trace/trace_output.c
-+++ b/kernel/trace/trace_output.c
-@@ -100,6 +100,38 @@ trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
- }
- EXPORT_SYMBOL_GPL(trace_seq_printf);
+diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
+index b0c7ede..c6c0ff1 100644
+--- a/include/trace/events/irq.h
++++ b/include/trace/events/irq.h
+@@ -7,18 +7,19 @@
+ #undef TRACE_SYSTEM
+ #define TRACE_SYSTEM irq
  
-+/**
-+ * trace_seq_vprintf - sequence printing of trace information
-+ * @s: trace sequence descriptor
-+ * @fmt: printf format string
-+ *
-+ * The tracer may use either sequence operations or its own
-+ * copy to user routines. To simplify formating of a trace
-+ * trace_seq_printf is used to store strings into a special
-+ * buffer (@s). Then the output may be either used by
-+ * the sequencer or pulled into another buffer.
-+ */
-+int
-+trace_seq_vprintf(struct trace_seq *s, const char *fmt, va_list args)
-+{
-+	int len = (PAGE_SIZE - 1) - s->len;
-+	int ret;
-+
-+	if (!len)
-+		return 0;
-+
-+	ret = vsnprintf(s->buffer + s->len, len, fmt, args);
-+
-+	/* If we can't write it all, don't bother writing anything */
-+	if (ret >= len)
-+		return 0;
-+
-+	s->len += ret;
-+
-+	return len;
-+}
-+EXPORT_SYMBOL_GPL(trace_seq_vprintf);
-+
- int trace_seq_bprintf(struct trace_seq *s, const char *fmt, const u32 *binary)
- {
- 	int len = (PAGE_SIZE - 1) - s->len;
+-#define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
+-#define show_softirq_name(val)			\
+-	__print_symbolic(val,			\
+-			 softirq_name(HI),	\
+-			 softirq_name(TIMER),	\
+-			 softirq_name(NET_TX),	\
+-			 softirq_name(NET_RX),	\
+-			 softirq_name(BLOCK),	\
+-			 softirq_name(TASKLET),	\
+-			 softirq_name(SCHED),	\
+-			 softirq_name(HRTIMER),	\
+-			 softirq_name(RCU))
++#define softirq_name(sirq) sirq##_SOFTIRQ, #sirq
++#define show_softirq_name_format(val)					\
++	"%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s>"
++#define show_softirq_name_args()					\
++		softirq_name(HI),					\
++		softirq_name(TIMER),					\
++		softirq_name(NET_TX),					\
++		softirq_name(NET_RX),					\
++		softirq_name(BLOCK),					\
++		softirq_name(TASKLET),					\
++		softirq_name(SCHED),					\
++		softirq_name(HRTIMER),					\
++		softirq_name(RCU)
+ 
+ /**
+  * irq_handler_entry - called immediately before the irq action handler
+@@ -47,7 +48,7 @@ TRACE_EVENT(irq_handler_entry,
+ 		__assign_str(name, action->name);
+ 	),
+ 
+-	TP_printk("irq=%d handler=%s", __entry->irq, __get_str(name))
++	TP_FORMAT("irq=<int:irq> handler=<string:name>")
+ );
+ 
+ /**
+@@ -77,8 +78,7 @@ TRACE_EVENT(irq_handler_exit,
+ 		__entry->ret	= ret;
+ 	),
+ 
+-	TP_printk("irq=%d return=%s",
+-		  __entry->irq, __entry->ret ? "handled" : "unhandled")
++	TP_FORMAT("irq=<int:irq> return=<if:ret:handled:unhandled>")
+ );
+ 
+ /**
+@@ -106,8 +106,8 @@ TRACE_EVENT(softirq_entry,
+ 		__entry->vec = (int)(h - vec);
+ 	),
+ 
+-	TP_printk("softirq=%d action=%s", __entry->vec,
+-		  show_softirq_name(__entry->vec))
++	TP_FORMAT("softirq=<int:vec> action=<sym:vec:" show_softirq_name_format(),
++		  show_softirq_name_args())
+ );
+ 
+ /**
+@@ -135,8 +135,8 @@ TRACE_EVENT(softirq_exit,
+ 		__entry->vec = (int)(h - vec);
+ 	),
+ 
+-	TP_printk("softirq=%d action=%s", __entry->vec,
+-		  show_softirq_name(__entry->vec))
++	TP_FORMAT("softirq=<int:vec> action=<sym:vec:" show_softirq_name_format(),
++		  show_softirq_name_args())
+ );
+ 
+ #endif /*  _TRACE_IRQ_H */
 -- 
 1.6.3.1
 
