@@ -1,543 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757661AbZFIRwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758274AbZFIRxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757661AbZFIRwd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 13:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZFIRwY
+	id S1758274AbZFIRxR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 13:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755471AbZFIRxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 13:52:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60623 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754535AbZFIRwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 13:52:22 -0400
-Date: Tue, 9 Jun 2009 13:51:31 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 08/18] io-controller: idle for sometime on sync queue
-	before expiring it
-Message-ID: <20090609175131.GB13476@redhat.com>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-9-git-send-email-vgoyal@redhat.com> <4A2E15B6.8030001@cn.fujitsu.com>
+	Tue, 9 Jun 2009 13:53:00 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:60060 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755846AbZFIRw7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 13:52:59 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: liqin.chen@sunplusct.com
+Subject: Re: [PATCH 22/27] score: create kernel files signal.c sys_score.c time.c
+Date: Tue, 9 Jun 2009 19:52:47 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
+References: <OF32AB4A20.4574C065-ON482575D0.00243CB1-482575D0.0024AD26@sunplusct.com>
+In-Reply-To: <OF32AB4A20.4574C065-ON482575D0.00243CB1-482575D0.0024AD26@sunplusct.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A2E15B6.8030001@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906091952.47842.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19xTtvGsmjN4/bGCw5U8vcTe3N6fsprWT18WAJ
+ +SkkMxjefZPH33MzU7TcFjFMOCBf/xmvdYYSItUNy6zgOMKdPw
+ oZkq8RSynqiKuITjNrs+w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 03:56:38PM +0800, Gui Jianfeng wrote:
-> Vivek Goyal wrote:
-> ...
-> > +ssize_t elv_fairness_store(struct request_queue *q, const char *name,
-> > +			  size_t count)
-> > +{
-> > +	struct elv_fq_data *efqd;
-> > +	unsigned int data;
-> > +	unsigned long flags;
-> > +
-> > +	char *p = (char *)name;
-> > +
-> > +	data = simple_strtoul(p, &p, 10);
-> > +
-> > +	if (data < 0)
-> > +		data = 0;
-> > +	else if (data > INT_MAX)
-> > +		data = INT_MAX;
-> 
->   Hi Vivek,
-> 
->   data might overflow on 64 bit systems. In addition, since "fairness" is nothing 
->   more than a switch, just let it be.
-> 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> ---
+On Tuesday 09 June 2009, liqin.chen@sunplusct.com wrote:
+> +asmlinkage long sys_mmap(unsigned long addr, size_t len,
+> +                       unsigned long prot, unsigned long flags,
+> +                       unsigned long fd, off_t offset)
+> +{
+> +       int err = -EINVAL;
+> +
+> +       if (offset & ~PAGE_MASK) {
+> +               printk(KERN_INFO "no pagemask in mmap\r\n");
+> +               goto out;
+> +       }
+> +
+> +       err = sys_mmap2(addr, len, prot, flags, fd, offset >> PAGE_SHIFT);
+> +out:
+> +       return err;
+> +}
 
-Hi Gui,
+A 32 bit kernel should only need sys_mmap2, not sys_mmap, because it is
+trivial to convert in user space.
 
-How about following patch? Currently this should apply at the end of the
-patch series. If it looks good, I will merge the changes in higher level
-patches.
+> +
+> +asmlinkage long score_vfork(struct pt_regs *regs)
+> +{
+> +       return do_fork(CLONE_VFORK | CLONE_VM | SIGCHLD, regs->regs[0],
+> +                                               regs, 0, NULL, NULL);
+> +}
+> +
+> +/*
+> + * Fork a new task - this creates a new program thread.
+> + * This is called indirectly via a small wrapper
+> + */
+> +asmlinkage int
+> +score_fork(struct pt_regs *regs)
+> +{
+> +       return do_fork(SIGCHLD, regs->regs[0], regs, 0, NULL, NULL);
+> +}
 
-Thanks
-Vivek
+Similarly, you should not need vfork and fork any more, because they can
+be handled in user space through clone().
 
-o Previously common layer elevator parameters were appearing as request
-  queue parameters in sysfs. But actually these are io scheduler parameters
-  in hiearchical mode. Fix it.
-
-o Use macros to define multiple sysfs C functions doing the same thing. Code
-  borrowed from CFQ. Helps reduce the number of lines of by 140.
-
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
----
- block/as-iosched.c       |    5 
- block/blk-sysfs.c        |   39 -------
- block/cfq-iosched.c      |    5 
- block/deadline-iosched.c |    5 
- block/elevator-fq.c      |  245 +++++++++++------------------------------------
- block/elevator-fq.h      |   26 ++--
- block/noop-iosched.c     |   10 +
- 7 files changed, 97 insertions(+), 238 deletions(-)
-
-Index: linux18/block/elevator-fq.h
-===================================================================
---- linux18.orig/block/elevator-fq.h	2009-06-09 10:34:59.000000000 -0400
-+++ linux18/block/elevator-fq.h	2009-06-09 13:35:03.000000000 -0400
-@@ -27,6 +27,9 @@ struct io_queue;
- 
- #ifdef CONFIG_ELV_FAIR_QUEUING
- 
-+#define ELV_ATTR(name) \
-+	__ATTR(name, S_IRUGO|S_IWUSR, elv_##name##_show, elv_##name##_store)
-+
- /**
-  * struct bfq_service_tree - per ioprio_class service tree.
-  * @active: tree for active entities (i.e., those backlogged).
-@@ -364,7 +367,7 @@ struct elv_fq_data {
- 	 * throughput and focus more on providing fairness for sync
- 	 * queues.
- 	 */
--	int fairness;
-+	unsigned int fairness;
- 	int only_root_group;
- };
- 
-@@ -650,23 +653,22 @@ static inline struct io_queue *elv_looku
- 
- #endif /* GROUP_IOSCHED */
- 
--/* Functions used by blksysfs.c */
--extern ssize_t elv_slice_idle_show(struct request_queue *q, char *name);
--extern ssize_t elv_slice_idle_store(struct request_queue *q, const char *name,
-+extern ssize_t elv_slice_idle_show(struct elevator_queue *e, char *name);
-+extern ssize_t elv_slice_idle_store(struct elevator_queue *e, const char *name,
- 						size_t count);
--extern ssize_t elv_slice_sync_show(struct request_queue *q, char *name);
--extern ssize_t elv_slice_sync_store(struct request_queue *q, const char *name,
-+extern ssize_t elv_slice_sync_show(struct elevator_queue *e, char *name);
-+extern ssize_t elv_slice_sync_store(struct elevator_queue *e, const char *name,
- 						size_t count);
- 
--extern ssize_t elv_async_slice_idle_show(struct request_queue *q, char *name);
--extern ssize_t elv_async_slice_idle_store(struct request_queue *q,
-+extern ssize_t elv_async_slice_idle_show(struct elevator_queue *e, char *name);
-+extern ssize_t elv_async_slice_idle_store(struct elevator_queue *e,
- 					const char *name, size_t count);
- 
--extern ssize_t elv_slice_async_show(struct request_queue *q, char *name);
--extern ssize_t elv_slice_async_store(struct request_queue *q, const char *name,
-+extern ssize_t elv_slice_async_show(struct elevator_queue *e, char *name);
-+extern ssize_t elv_slice_async_store(struct elevator_queue *e, const char *name,
- 						size_t count);
--extern ssize_t elv_fairness_show(struct request_queue *q, char *name);
--extern ssize_t elv_fairness_store(struct request_queue *q, const char *name,
-+extern ssize_t elv_fairness_show(struct elevator_queue *e, char *name);
-+extern ssize_t elv_fairness_store(struct elevator_queue *e, const char *name,
- 						size_t count);
- 
- /* Functions used by elevator.c */
-Index: linux18/block/elevator-fq.c
-===================================================================
---- linux18.orig/block/elevator-fq.c	2009-06-09 10:34:59.000000000 -0400
-+++ linux18/block/elevator-fq.c	2009-06-09 13:39:48.000000000 -0400
-@@ -2618,201 +2618,72 @@ static inline int is_root_group_ioq(stru
- 	return (ioq->entity.sched_data == &efqd->root_group->sched_data);
- }
- 
--/* Functions to show and store fairness value through sysfs */
--ssize_t elv_fairness_show(struct request_queue *q, char *name)
--{
--	struct elv_fq_data *efqd;
--	unsigned int data;
--	unsigned long flags;
--
--	spin_lock_irqsave(q->queue_lock, flags);
--	efqd = &q->elevator->efqd;
--	data = efqd->fairness;
--	spin_unlock_irqrestore(q->queue_lock, flags);
--	return sprintf(name, "%d\n", data);
--}
--
--ssize_t elv_fairness_store(struct request_queue *q, const char *name,
--			  size_t count)
--{
--	struct elv_fq_data *efqd;
--	unsigned int data;
--	unsigned long flags;
--
--	char *p = (char *)name;
--
--	data = simple_strtoul(p, &p, 10);
--
--	if (data < 0)
--		data = 0;
--	else if (data > INT_MAX)
--		data = INT_MAX;
--
--	spin_lock_irqsave(q->queue_lock, flags);
--	efqd = &q->elevator->efqd;
--	efqd->fairness = data;
--	spin_unlock_irqrestore(q->queue_lock, flags);
--
--	return count;
--}
--
--/* Functions to show and store elv_idle_slice value through sysfs */
--ssize_t elv_slice_idle_show(struct request_queue *q, char *name)
--{
--	struct elv_fq_data *efqd;
--	unsigned int data;
--	unsigned long flags;
--
--	spin_lock_irqsave(q->queue_lock, flags);
--	efqd = &q->elevator->efqd;
--	data = jiffies_to_msecs(efqd->elv_slice_idle);
--	spin_unlock_irqrestore(q->queue_lock, flags);
--	return sprintf(name, "%d\n", data);
--}
--
--ssize_t elv_slice_idle_store(struct request_queue *q, const char *name,
--			  size_t count)
--{
--	struct elv_fq_data *efqd;
--	unsigned int data;
--	unsigned long flags;
--
--	char *p = (char *)name;
--
--	data = simple_strtoul(p, &p, 10);
--
--	if (data < 0)
--		data = 0;
--	else if (data > INT_MAX)
--		data = INT_MAX;
--
--	data = msecs_to_jiffies(data);
--
--	spin_lock_irqsave(q->queue_lock, flags);
--	efqd = &q->elevator->efqd;
--	efqd->elv_slice_idle = data;
--	spin_unlock_irqrestore(q->queue_lock, flags);
--
--	return count;
--}
--
--/* Functions to show and store elv_idle_slice value through sysfs */
--ssize_t elv_async_slice_idle_show(struct request_queue *q, char *name)
--{
--	struct elv_fq_data *efqd;
--	unsigned int data;
--	unsigned long flags;
--
--	spin_lock_irqsave(q->queue_lock, flags);
--	efqd = &q->elevator->efqd;
--	data = jiffies_to_msecs(efqd->elv_async_slice_idle);
--	spin_unlock_irqrestore(q->queue_lock, flags);
--	return sprintf(name, "%d\n", data);
--}
--
--ssize_t elv_async_slice_idle_store(struct request_queue *q, const char *name,
--			  size_t count)
--{
--	struct elv_fq_data *efqd;
--	unsigned int data;
--	unsigned long flags;
--
--	char *p = (char *)name;
--
--	data = simple_strtoul(p, &p, 10);
--
--	if (data < 0)
--		data = 0;
--	else if (data > INT_MAX)
--		data = INT_MAX;
--
--	data = msecs_to_jiffies(data);
--
--	spin_lock_irqsave(q->queue_lock, flags);
--	efqd = &q->elevator->efqd;
--	efqd->elv_async_slice_idle = data;
--	spin_unlock_irqrestore(q->queue_lock, flags);
--
--	return count;
--}
--
--/* Functions to show and store elv_slice_sync value through sysfs */
--ssize_t elv_slice_sync_show(struct request_queue *q, char *name)
-+/*
-+ * sysfs parts below -->
-+ */
-+static ssize_t
-+elv_var_show(unsigned int var, char *page)
- {
--	struct elv_fq_data *efqd;
--	unsigned int data;
--	unsigned long flags;
--
--	spin_lock_irqsave(q->queue_lock, flags);
--	efqd = &q->elevator->efqd;
--	data = efqd->elv_slice[1];
--	spin_unlock_irqrestore(q->queue_lock, flags);
--	return sprintf(name, "%d\n", data);
-+	return sprintf(page, "%d\n", var);
- }
- 
--ssize_t elv_slice_sync_store(struct request_queue *q, const char *name,
--			  size_t count)
-+static ssize_t
-+elv_var_store(unsigned int *var, const char *page, size_t count)
- {
--	struct elv_fq_data *efqd;
--	unsigned int data;
--	unsigned long flags;
--
--	char *p = (char *)name;
--
--	data = simple_strtoul(p, &p, 10);
--
--	if (data < 0)
--		data = 0;
--	/* 100ms is the limit for now*/
--	else if (data > 100)
--		data = 100;
--
--	spin_lock_irqsave(q->queue_lock, flags);
--	efqd = &q->elevator->efqd;
--	efqd->elv_slice[1] = data;
--	spin_unlock_irqrestore(q->queue_lock, flags);
-+	char *p = (char *) page;
- 
-+	*var = simple_strtoul(p, &p, 10);
- 	return count;
- }
- 
--/* Functions to show and store elv_slice_async value through sysfs */
--ssize_t elv_slice_async_show(struct request_queue *q, char *name)
--{
--	struct elv_fq_data *efqd;
--	unsigned int data;
--	unsigned long flags;
--
--	spin_lock_irqsave(q->queue_lock, flags);
--	efqd = &q->elevator->efqd;
--	data = efqd->elv_slice[0];
--	spin_unlock_irqrestore(q->queue_lock, flags);
--	return sprintf(name, "%d\n", data);
--}
--
--ssize_t elv_slice_async_store(struct request_queue *q, const char *name,
--			  size_t count)
--{
--	struct elv_fq_data *efqd;
--	unsigned int data;
--	unsigned long flags;
--
--	char *p = (char *)name;
--
--	data = simple_strtoul(p, &p, 10);
--
--	if (data < 0)
--		data = 0;
--	/* 100ms is the limit for now*/
--	else if (data > 100)
--		data = 100;
--
--	spin_lock_irqsave(q->queue_lock, flags);
--	efqd = &q->elevator->efqd;
--	efqd->elv_slice[0] = data;
--	spin_unlock_irqrestore(q->queue_lock, flags);
--
--	return count;
--}
-+#define SHOW_FUNCTION(__FUNC, __VAR, __CONV)				\
-+ssize_t __FUNC(struct elevator_queue *e, char *page)		\
-+{									\
-+	struct elv_fq_data *efqd = &e->efqd;				\
-+	unsigned int __data = __VAR;					\
-+	if (__CONV)							\
-+		__data = jiffies_to_msecs(__data);			\
-+	return elv_var_show(__data, (page));				\
-+}
-+SHOW_FUNCTION(elv_fairness_show, efqd->fairness, 0);
-+EXPORT_SYMBOL(elv_fairness_show);
-+SHOW_FUNCTION(elv_slice_idle_show, efqd->elv_slice_idle, 1);
-+EXPORT_SYMBOL(elv_slice_idle_show);
-+SHOW_FUNCTION(elv_async_slice_idle_show, efqd->elv_async_slice_idle, 1);
-+EXPORT_SYMBOL(elv_async_slice_idle_show);
-+SHOW_FUNCTION(elv_slice_sync_show, efqd->elv_slice[1], 1);
-+EXPORT_SYMBOL(elv_slice_sync_show);
-+SHOW_FUNCTION(elv_slice_async_show, efqd->elv_slice[0], 1);
-+EXPORT_SYMBOL(elv_slice_async_show);
-+#undef SHOW_FUNCTION
-+
-+#define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
-+ssize_t __FUNC(struct elevator_queue *e, const char *page, size_t count)	\
-+{									\
-+	struct elv_fq_data *efqd = &e->efqd;				\
-+	unsigned int __data;						\
-+	int ret = elv_var_store(&__data, (page), count);		\
-+	if (__data < (MIN))						\
-+		__data = (MIN);						\
-+	else if (__data > (MAX))					\
-+		__data = (MAX);						\
-+	if (__CONV)							\
-+		*(__PTR) = msecs_to_jiffies(__data);			\
-+	else								\
-+		*(__PTR) = __data;					\
-+	return ret;							\
-+}
-+STORE_FUNCTION(elv_fairness_store, &efqd->fairness, 0, 1, 0);
-+EXPORT_SYMBOL(elv_fairness_store);
-+STORE_FUNCTION(elv_slice_idle_store, &efqd->elv_slice_idle, 0, UINT_MAX, 1);
-+EXPORT_SYMBOL(elv_slice_idle_store);
-+STORE_FUNCTION(elv_async_slice_idle_store, &efqd->elv_async_slice_idle, 0, UINT_MAX, 1);
-+EXPORT_SYMBOL(elv_async_slice_idle_store);
-+STORE_FUNCTION(elv_slice_sync_store, &efqd->elv_slice[1], 1, UINT_MAX, 1);
-+EXPORT_SYMBOL(elv_slice_sync_store);
-+STORE_FUNCTION(elv_slice_async_store, &efqd->elv_slice[0], 1, UINT_MAX, 1);
-+EXPORT_SYMBOL(elv_slice_async_store);
-+#undef STORE_FUNCTION
- 
- void elv_schedule_dispatch(struct request_queue *q)
- {
-Index: linux18/block/blk-sysfs.c
-===================================================================
---- linux18.orig/block/blk-sysfs.c	2009-06-09 10:34:59.000000000 -0400
-+++ linux18/block/blk-sysfs.c	2009-06-09 13:24:42.000000000 -0400
-@@ -307,38 +307,6 @@ static struct queue_sysfs_entry queue_io
- 	.store = queue_iostats_store,
- };
- 
--#ifdef CONFIG_ELV_FAIR_QUEUING
--static struct queue_sysfs_entry queue_slice_idle_entry = {
--	.attr = {.name = "slice_idle", .mode = S_IRUGO | S_IWUSR },
--	.show = elv_slice_idle_show,
--	.store = elv_slice_idle_store,
--};
--
--static struct queue_sysfs_entry queue_async_slice_idle_entry = {
--	.attr = {.name = "async_slice_idle", .mode = S_IRUGO | S_IWUSR },
--	.show = elv_async_slice_idle_show,
--	.store = elv_async_slice_idle_store,
--};
--
--static struct queue_sysfs_entry queue_slice_sync_entry = {
--	.attr = {.name = "slice_sync", .mode = S_IRUGO | S_IWUSR },
--	.show = elv_slice_sync_show,
--	.store = elv_slice_sync_store,
--};
--
--static struct queue_sysfs_entry queue_slice_async_entry = {
--	.attr = {.name = "slice_async", .mode = S_IRUGO | S_IWUSR },
--	.show = elv_slice_async_show,
--	.store = elv_slice_async_store,
--};
--
--static struct queue_sysfs_entry queue_fairness_entry = {
--	.attr = {.name = "fairness", .mode = S_IRUGO | S_IWUSR },
--	.show = elv_fairness_show,
--	.store = elv_fairness_store,
--};
--#endif
--
- static struct attribute *default_attrs[] = {
- 	&queue_requests_entry.attr,
- #ifdef CONFIG_GROUP_IOSCHED
-@@ -353,13 +321,6 @@ static struct attribute *default_attrs[]
- 	&queue_nomerges_entry.attr,
- 	&queue_rq_affinity_entry.attr,
- 	&queue_iostats_entry.attr,
--#ifdef CONFIG_ELV_FAIR_QUEUING
--	&queue_slice_idle_entry.attr,
--	&queue_async_slice_idle_entry.attr,
--	&queue_slice_sync_entry.attr,
--	&queue_slice_async_entry.attr,
--	&queue_fairness_entry.attr,
--#endif
- 	NULL,
- };
- 
-Index: linux18/block/cfq-iosched.c
-===================================================================
---- linux18.orig/block/cfq-iosched.c	2009-06-09 10:34:55.000000000 -0400
-+++ linux18/block/cfq-iosched.c	2009-06-09 13:25:42.000000000 -0400
-@@ -2095,6 +2095,11 @@ static struct elv_fs_entry cfq_attrs[] =
- 	CFQ_ATTR(back_seek_max),
- 	CFQ_ATTR(back_seek_penalty),
- 	CFQ_ATTR(slice_async_rq),
-+	ELV_ATTR(fairness),
-+	ELV_ATTR(slice_idle),
-+	ELV_ATTR(async_slice_idle),
-+	ELV_ATTR(slice_sync),
-+	ELV_ATTR(slice_async),
- 	__ATTR_NULL
- };
- 
-Index: linux18/block/as-iosched.c
-===================================================================
---- linux18.orig/block/as-iosched.c	2009-06-09 10:34:58.000000000 -0400
-+++ linux18/block/as-iosched.c	2009-06-09 13:27:38.000000000 -0400
-@@ -1766,6 +1766,11 @@ static struct elv_fs_entry as_attrs[] = 
- 	AS_ATTR(antic_expire),
- 	AS_ATTR(read_batch_expire),
- 	AS_ATTR(write_batch_expire),
-+#ifdef CONFIG_IOSCHED_AS_HIER
-+	ELV_ATTR(fairness),
-+	ELV_ATTR(slice_idle),
-+	ELV_ATTR(slice_sync),
-+#endif
- 	__ATTR_NULL
- };
- 
-Index: linux18/block/deadline-iosched.c
-===================================================================
---- linux18.orig/block/deadline-iosched.c	2009-06-09 10:34:55.000000000 -0400
-+++ linux18/block/deadline-iosched.c	2009-06-09 13:28:51.000000000 -0400
-@@ -460,6 +460,11 @@ static struct elv_fs_entry deadline_attr
- 	DD_ATTR(writes_starved),
- 	DD_ATTR(front_merges),
- 	DD_ATTR(fifo_batch),
-+#ifdef CONFIG_IOSCHED_DEADLINE_HIER
-+	ELV_ATTR(fairness),
-+	ELV_ATTR(slice_idle),
-+	ELV_ATTR(slice_sync),
-+#endif
- 	__ATTR_NULL
- };
- 
-Index: linux18/block/noop-iosched.c
-===================================================================
---- linux18.orig/block/noop-iosched.c	2009-06-09 10:34:52.000000000 -0400
-+++ linux18/block/noop-iosched.c	2009-06-09 13:31:48.000000000 -0400
-@@ -82,6 +82,15 @@ static void noop_free_noop_queue(struct 
- 	kfree(nq);
- }
- 
-+#ifdef CONFIG_IOSCHED_NOOP_HIER
-+static struct elv_fs_entry noop_attrs[] = {
-+	ELV_ATTR(fairness),
-+	ELV_ATTR(slice_idle),
-+	ELV_ATTR(slice_sync),
-+	__ATTR_NULL
-+};
-+#endif
-+
- static struct elevator_type elevator_noop = {
- 	.ops = {
- 		.elevator_merge_req_fn		= noop_merged_requests,
-@@ -94,6 +103,7 @@ static struct elevator_type elevator_noo
- 	},
- #ifdef CONFIG_IOSCHED_NOOP_HIER
- 	.elevator_features = ELV_IOSCHED_NEED_FQ | ELV_IOSCHED_SINGLE_IOQ,
-+	.elevator_attrs = noop_attrs,
- #endif
- 	.elevator_name = "noop",
- 	.elevator_owner = THIS_MODULE,
+	Arnd <><
