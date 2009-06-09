@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760347AbZFIKhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762918AbZFIKgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760347AbZFIKhM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:37:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760877AbZFIKWO
+	id S1762918AbZFIKgm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760849AbZFIKWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:22:14 -0400
-Received: from kroah.org ([198.145.64.141]:55632 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:22:06 -0400
+Received: from kroah.org ([198.145.64.141]:55600 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758138AbZFIKWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:22:12 -0400
+	id S1757846AbZFIKWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:22:04 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:11 2009
-Message-Id: <20090609094111.375778822@blue.kroah.org>
+Message-Id: <20090609094110.922941731@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:40:09 -0700
+Date: Tue, 09 Jun 2009 02:40:07 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,47 +27,53 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 81/87] ext4: really print the find_group_flex fallback warning only once
+Subject: [patch 79/87] ext4: Check for an valid i_mode when reading the inode from disk
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-really-print-the-find_group_flex-fallback-warning-only-once.patch
+Content-Disposition: inline; filename=ext4-check-for-an-valid-i_mode-when-reading-the-inode-from-disk.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Chuck Ebbert <cebbert@redhat.com>
+From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit 6b82f3cb2d480b7714eb0ff61aee99c22160389e)
+(cherry picked from commit 563bdd61fe4dbd6b58cf7eb06f8d8f14479ae1dc)
 
-Missing braces caused the warning to print more than once.
-
-Signed-Off-By: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ialloc.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ fs/ext4/inode.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -720,11 +720,12 @@ struct inode *ext4_new_inode(handle_t *h
- 		ret2 = find_group_flex(sb, dir, &group);
- 		if (ret2 == -1) {
- 			ret2 = find_group_other(sb, dir, &group);
--			if (ret2 == 0 && once)
-+			if (ret2 == 0 && once) {
- 				once = 0;
- 				printk(KERN_NOTICE "ext4: find_group_flex "
- 				       "failed, fallback succeeded dir %lu\n",
- 				       dir->i_ino);
-+			}
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -4367,7 +4367,8 @@ struct inode *ext4_iget(struct super_blo
+ 			inode->i_op = &ext4_symlink_inode_operations;
+ 			ext4_set_aops(inode);
  		}
- 		goto got_group;
+-	} else {
++	} else if (S_ISCHR(inode->i_mode) || S_ISBLK(inode->i_mode) ||
++	      S_ISFIFO(inode->i_mode) || S_ISSOCK(inode->i_mode)) {
+ 		inode->i_op = &ext4_special_inode_operations;
+ 		if (raw_inode->i_block[0])
+ 			init_special_inode(inode, inode->i_mode,
+@@ -4375,6 +4376,13 @@ struct inode *ext4_iget(struct super_blo
+ 		else
+ 			init_special_inode(inode, inode->i_mode,
+ 			   new_decode_dev(le32_to_cpu(raw_inode->i_block[1])));
++	} else {
++		brelse(bh);
++		ret = -EIO;
++		ext4_error(inode->i_sb, __func__,
++			   "bogus i_mode (%o) for inode=%lu",
++			   inode->i_mode, inode->i_ino);
++		goto bad_inode;
  	}
+ 	brelse(iloc.bh);
+ 	ext4_set_inode_flags(inode);
 
 
