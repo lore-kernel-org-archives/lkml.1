@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbZFIQCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbZFIQGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756755AbZFIQCV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 12:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbZFIQCN
+	id S1755084AbZFIQGS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 12:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZFIQGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 12:02:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36106 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753437AbZFIQCM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 12:02:12 -0400
-Date: Tue, 9 Jun 2009 09:00:08 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Nick Piggin <npiggin@suse.de>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
- kernels
-In-Reply-To: <20090609153847.GB9211@wotan.suse.de>
-Message-ID: <alpine.LFD.2.01.0906090849080.6847@localhost.localdomain>
-References: <4A0B62F7.5030802@goop.org> <200906032208.28061.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906030901460.4880@localhost.localdomain> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain>
- <20090609093918.GC16940@wotan.suse.de> <alpine.LFD.2.01.0906090749380.6847@localhost.localdomain> <20090609153847.GB9211@wotan.suse.de>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 9 Jun 2009 12:06:08 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47851 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751764AbZFIQGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 12:06:07 -0400
+Date: Wed, 10 Jun 2009 02:06:04 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: voyager tree build failure
+Message-Id: <20090610020604.fb2b47f3.sfr@canb.auug.org.au>
+In-Reply-To: <1244560718.4137.26.camel@mulgrave.site>
+References: <20090609194038.826289f3.sfr@canb.auug.org.au>
+	<1244560718.4137.26.camel@mulgrave.site>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__10_Jun_2009_02_06_04_+1000_E0XsGo.vQ5J_/viI"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Wed__10_Jun_2009_02_06_04_+1000_E0XsGo.vQ5J_/viI
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi James,
 
-On Tue, 9 Jun 2009, Nick Piggin wrote:
-> 
-> If it's such a problem, it could be made a lot faster without too
-> much problem. You could just introduce a FIFO of ptes behind it 
-> and flush them all in one go. 4K worth of ptes per CPU might
-> hopefully bring your overhead down to < 1%.
+On Tue, 09 Jun 2009 10:18:38 -0500 James Bottomley <James.Bottomley@HansenP=
+artnership.com> wrote:
+>
+> Thanks for finding this.  The fix looks to be a dummy definition of this
+> function for x86_64.  The final fix (which has been under discussion)
+> will be the elimination of safe_smp_processor_id() altogether.
+>=20
+> I've merged this into the
+>=20
+> [VOYAGER] x86: add {safe,hard}_smp_processor_id to smp_ops
+>=20
+> patch and respun the tree (and built it with an x86-64 cross compiler),
+> so it should be safe to include next time around
 
-We already have that. The regular kmap() does that. It's just not usable 
-in atomic context.
+Thanks.  We will see how we do (later) in the morning.
 
-We'd need to fix the locking: right now kmap_high() uses non-irq-safe 
-locks, and it does that whole cross-cpu flushing thing (which is why 
-those locks _have_ to be non-irq-safe.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-The way to fix that, though, would be to never do any cross-cpu calls, and 
-instead just have a cpumask saying "you need to flush before you do 
-anything with kmap".  So you'd just set that cpumask inside the lock, and 
-if/when some other CPU does a kmap, they'd flush their local TLB at _that_ 
-point instead of having to have an IPI call.
+--Signature=_Wed__10_Jun_2009_02_06_04_+1000_E0XsGo.vQ5J_/viI
+Content-Type: application/pgp-signature
 
-If we can get rid of kmap_atomic(), I'd already like HIGHMEM more. Right 
-now I absolutely _hate_ all the different "levels" of kmap_atomic() and 
-having to be careful about crazy nesting rules etc.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-		Linus
+iEYEARECAAYFAkouiGwACgkQjjKRsyhoI8z68ACdF2UZ+1EBUACp/4n6YsHBzbV2
+lqUAoKWrfoAg2ri1d5AzkSwEe54+AL8h
+=yXWE
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__10_Jun_2009_02_06_04_+1000_E0XsGo.vQ5J_/viI--
