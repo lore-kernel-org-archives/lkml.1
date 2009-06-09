@@ -1,74 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758290AbZFIST6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755725AbZFISWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758290AbZFIST6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:19:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbZFISTu
+	id S1755725AbZFISWO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:22:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbZFISV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:19:50 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:63907 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754104AbZFISTt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:19:49 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: liqin.chen@sunplusct.com
-Subject: Re: [PATCH 00/27] score arch files for linux
-Date: Tue, 9 Jun 2009 20:19:06 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-References: <OF54D30DF0.6974DE98-ON482575D0.0021670B-482575D0.00234606@sunplusct.com>
-In-Reply-To: <OF54D30DF0.6974DE98-ON482575D0.0021670B-482575D0.00234606@sunplusct.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 9 Jun 2009 14:21:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39631 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751537AbZFISV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 14:21:59 -0400
+Message-ID: <4A2EA789.60608@RedHat.com>
+Date: Tue, 09 Jun 2009 14:18:49 -0400
+From: Steve Dickson <SteveD@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: Linux NFS Mailing list <linux-nfs@vger.kernel.org>,
+       Linux Kernel Mailing list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>, Jason Baron <jbaron@redhat.com>
+Subject: [PATCH] sunrpc: Adding trace points to status routines (take 2)
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906092019.06812.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18b9yJb7yUDvRAMIWOqIlLWYTHRuzMHt9pTQyg
- 5T23syL2eL2wn5Hv3HNZkCypr6g20WM7n5qfi2Om/MKoJN9A5Q
- wBl7I6yBWFuxuxHqEwRrA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 June 2009, liqin.chen@sunplusct.com wrote:
-> Hi Arnd, Andrew Morton and linus,
-> 
-> According to your comment on score arch code, 
-> we update score code base on asm-generic#next repository.
-> use arch microblaze and blackfin as reference.
+Hey Trond,
 
-Ok, just finished looking over the patches and I am generally
-very happy about their quality, it usually takes much longer
-for a submission of this size to get into a mergeable shape.
+Here is an updated version of the patch I sent out a while
+back... all that has changed was the addtion of 'rpc_'  to
+the name of the trace points which coincides with the
+other trace points naming convention.
 
-The only thing that I think needs to be fixed before a
-2.6.31 release is my comment about unistd.h still containing
-the __ARCH_WANT_SYSCALL_* #defines. I consider that my fault
-because I did not make it clear enough what those are meant
-for in asm-generic/unistd.h.
+Here is a pointer to the previous email that has the 
+fairly long winded explanation of how all this works:
 
-One more general thought: I noticed that you split the header
-files by alphabetical ordering. While there is no good way to
-split a set of interdependent files, a logical grouping
-(e.g. ABI, memory management, device, cpu) would be nice.
+   http://marc.info/?l=linux-kernel&m=124058933520183&w=2
 
-Everything else I found are only polite suggestions of what
-can still be improved, not issues that I think need to
-be addressed immediately. I especially love how the work
-that Remis and I put into the generic header files starts
-paying off, because it makes reviewing an architecture so
-much simpler.
+And below is the updated patch which is based on Ingo's
+linux-2.6-tip.git tree. 
 
-Please add my 'Reviewed-by: Arnd Bergmann <arnd@arndb.de>'
-to your patches.
+Comments?
 
-Thanks,
+steved.
+ 
+Author: Steve Dickson <steved@redhat.com>
+Date:   Tue Jun  9 14:12:07 EDT 2009
 
-	Arnd <><
+    Adds three trace points to the status routines in the
+    sunrpc state machine. The trace points will only execute
+    in error conditions.
+    
+    The goal of these trace points it to make it easier to
+    debug process that spin or get hung up in the NFS and
+    related subsystems.
+    
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+diff --git a/include/trace/events/sunrpc.h b/include/trace/events/sunrpc.h
+new file mode 100644
+index 0000000..f502eb4
+--- /dev/null
++++ b/include/trace/events/sunrpc.h
+@@ -0,0 +1,86 @@
++#if !defined(_TRACE_SUNRPC_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_SUNRPC_H
++
++#include <linux/tracepoint.h>
++
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM sunrpc
++
++TRACE_EVENT(rpc_call_status,
++
++	TP_PROTO(struct rpc_task *task),
++
++	TP_ARGS(task),
++
++	TP_STRUCT__entry(
++		__field(u32, cl_prog)
++		__field(u32, cl_vers)
++		__field(u32, p_proc)
++		__field(int, tk_status)
++	),
++
++	TP_fast_assign(
++		__entry->cl_prog = task->tk_client->cl_prog;
++		__entry->cl_vers = task->tk_client->cl_vers;
++		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
++		__entry->cl_prog = task->tk_client->cl_prog;
++		__entry->tk_status = task->tk_status;
++	),
++
++	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
++		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
++);
++
++TRACE_EVENT(rpc_bind_status,
++
++	TP_PROTO(struct rpc_task *task),
++
++	TP_ARGS(task),
++
++	TP_STRUCT__entry(
++		__field(u32, cl_prog)
++		__field(u32, cl_vers)
++		__field(u32, p_proc)
++		__field(int, tk_status)
++	),
++
++	TP_fast_assign(
++		__entry->cl_prog = task->tk_client->cl_prog;
++		__entry->cl_vers = task->tk_client->cl_vers;
++		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
++		__entry->cl_prog = task->tk_client->cl_prog;
++		__entry->tk_status = task->tk_status;
++	),
++
++	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
++		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
++);
++TRACE_EVENT(rpc_connect_status,
++
++	TP_PROTO(struct rpc_task *task, int status),
++
++	TP_ARGS(task, status),
++
++	TP_STRUCT__entry(
++		__field(u32, cl_prog)
++		__field(u32, cl_vers)
++		__field(u32, p_proc)
++		__field(int, tk_status)
++	),
++
++	TP_fast_assign(
++		__entry->cl_prog = task->tk_client->cl_prog;
++		__entry->cl_vers = task->tk_client->cl_vers;
++		__entry->p_proc = task->tk_client->cl_procinfo->p_proc;
++		__entry->cl_prog = task->tk_client->cl_prog;
++		__entry->tk_status = status;
++	),
++
++	TP_printk("%d[%d]:%d status=%d", __entry->cl_prog, 
++		__entry->cl_vers,__entry->p_proc, __entry->tk_status)
++
++);
++#endif /* __TRACE_SUNRPC_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+diff --git a/net/sunrpc/clnt.c b/net/sunrpc/clnt.c
+index 5abab09..b86ee2a 100644
+--- a/net/sunrpc/clnt.c
++++ b/net/sunrpc/clnt.c
+@@ -37,6 +37,9 @@
+ #include <linux/sunrpc/rpc_pipe_fs.h>
+ #include <linux/sunrpc/metrics.h>
+ 
++#include <linux/ftrace.h>
++#define CREATE_TRACE_POINTS
++#include <trace/events/sunrpc.h>
+ 
+ #ifdef RPC_DEBUG
+ # define RPCDBG_FACILITY	RPCDBG_CALL
+@@ -957,6 +960,7 @@ call_bind_status(struct rpc_task *task)
+ 		return;
+ 	}
+ 
++	trace_rpc_bind_status(task);
+ 	switch (task->tk_status) {
+ 	case -ENOMEM:
+ 		dprintk("RPC: %5u rpcbind out of memory\n", task->tk_pid);
+@@ -1038,6 +1042,7 @@ call_connect_status(struct rpc_task *task)
+ 		return;
+ 	}
+ 
++	trace_rpc_connect_status(task, status);
+ 	switch (status) {
+ 		/* if soft mounted, test if we've timed out */
+ 	case -ETIMEDOUT:
+@@ -1141,6 +1146,7 @@ call_status(struct rpc_task *task)
+ 		return;
+ 	}
+ 
++	trace_rpc_call_status(task);
+ 	task->tk_status = 0;
+ 	switch(status) {
+ 	case -EHOSTDOWN:
+
+
