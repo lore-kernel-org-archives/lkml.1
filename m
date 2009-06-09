@@ -1,48 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759664AbZFIUCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759936AbZFIUDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759664AbZFIUCV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 16:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbZFIUCJ
+	id S1759936AbZFIUDz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 16:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbZFIUDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 16:02:09 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47658 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752560AbZFIUCJ (ORCPT
+	Tue, 9 Jun 2009 16:03:48 -0400
+Received: from mail.electro-mechanical.com ([216.184.71.30]:36856 "EHLO
+	mail.electro-mechanical.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752303AbZFIUDr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 16:02:09 -0400
-Date: Tue, 9 Jun 2009 22:02:02 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: dda@awalis.com, kernel list <linux-kernel@vger.kernel.org>
-Cc: jikos@suse.cz
-Subject: keyboard problems on HP Pavilion ZE4200
-Message-ID: <20090609200202.GC1388@ucw.cz>
-References: <3277220fa08b0d9b83dd7598e6f360d5@192.168.1.20>
+	Tue, 9 Jun 2009 16:03:47 -0400
+X-Greylist: delayed 769 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Jun 2009 16:03:47 EDT
+Date: Tue, 9 Jun 2009 15:51:00 -0400
+From: William Thompson <wt@electro-mechanical.com>
+To: linux-kernel@vger.kernel.org
+Subject: 3com 3crxjk10075 with ath5k driver
+Message-ID: <20090609195100.GY19203@electro-mechanical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <3277220fa08b0d9b83dd7598e6f360d5@192.168.1.20>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+This card has the "xjack" antennae which is supposed to disable the radio (I
+thought it was in hardware, but it's not) when it is not extended.  The
+madwifi driver (Last time I actually used this card with it) did disable the
+radio (Or refused packets, not sure which).
 
-> I write to you on behalf of Bruno Ducrot, you seem to have worked  
-> together on related things
-> I have a HP Pavilion ze4200, that have a very nasty  
-> bug
-
-Well, my work on input was  little and long time ago.
-
-> Under linux (ubuntu 9) some keys are "pressed" even when I'm not  
-> touching the keyboard, so for example it launches the tool for the  
-> printscreen hundreds of times and then the machine is not usable  
-> anymore...
-
-Which kernel? Does it happen on 2.6.30? Does it happen on console?
-Which keys?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The kernel ath5k driver (last tested 2.6.29.4) will work regardless if the
+antannae is in or out.
