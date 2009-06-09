@@ -1,148 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758010AbZFIHsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758464AbZFIHsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758010AbZFIHsd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 03:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755626AbZFIHsW
+	id S1758464AbZFIHsq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 03:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757538AbZFIHsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 03:48:22 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:2311 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757592AbZFIHsS convert rfc822-to-8bit (ORCPT
+	Tue, 9 Jun 2009 03:48:32 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56112 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758100AbZFIHsa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 03:48:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=a5xgA9+ZEhQiESASAA4Vzzby9RGK0ozvnmu98FibEDjX4YckHHRx1X4EwjWuega5gl
-         8aw831/e5Pvn7nbiEtWm3d5soqf9aJsun8cUJQmx8tohO3m6KI+0nBamFutR7iQJ0DM/
-         EPt27BV4LlCUrrhzGS2dEFTS3+BjuJq3Pq+4s=
+	Tue, 9 Jun 2009 03:48:30 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
+Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
+       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1244466090-10711-2-git-send-email-mel@csn.ul.ie>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-2-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090609143211.DD64.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20090609161925.DD70.A69D9226@jp.fujitsu.com>
-References: <20090608165457.fa8d17e6.nishimura@mxp.nes.nec.co.jp>
-	 <20090609161330.fcd5facb.nishimura@mxp.nes.nec.co.jp>
-	 <20090609161925.DD70.A69D9226@jp.fujitsu.com>
-Date: Tue, 9 Jun 2009 16:48:20 +0900
-Message-ID: <28c262360906090048x792fb3f9i6678298b693f6c5a@mail.gmail.com>
-Subject: Re: [PATCH mmotm] vmscan: handle may_swap more strictly (Re: [PATCH 
-	mmotm] vmscan: fix may_swap handling for memcg)
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  9 Jun 2009 16:48:28 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, KOSAKI.
+Hi
 
-As you know, this problem caused by if condition(priority) in shrink_zone.
-Let me have a question.
+> On NUMA machines, the administrator can configure zone_reclaim_mode that is a
+> more targetted form of direct reclaim. On machines with large NUMA distances,
+> zone_reclaim_mode defaults to 1 meaning that clean unmapped pages will be
+> reclaimed if the zone watermarks are not being met. The problem is that
+> zone_reclaim() can be in a situation where it scans excessively without
+> making progress.
+> 
+> One such situation is where a large tmpfs mount is occupying a large
+> percentage of memory overall. The pages do not get cleaned or reclaimed by
+> zone_reclaim(), but the lists are uselessly scanned frequencly making the
+> CPU spin at 100%. The scanning occurs because zone_reclaim() cannot tell
+> in advance the scan is pointless because the counters do not distinguish
+> between pagecache pages backed by disk and by RAM.  The observation in
+> the field is that malloc() stalls for a long time (minutes in some cases)
+> when this situation occurs.
+> 
+> Accounting for ram-backed file pages was considered but not implemented on
+> the grounds it would be introducing new branches and expensive checks into
+> the page cache add/remove patches and increase the number of statistics
+> needed in the zone. As zone_reclaim() failing is currently considered a
+> corner case, this seemed like overkill. Note, if there are a large number
+> of reports about CPU spinning at 100% on NUMA that is fixed by disabling
+> zone_reclaim, then this assumption is false and zone_reclaim() scanning
+> and failing is not a corner case but a common occurance
+> 
+> This patch reintroduces zone_reclaim_interval which was removed by commit
+> 34aa1330f9b3c5783d269851d467326525207422 [zoned vm counters: zone_reclaim:
+> remove /proc/sys/vm/zone_reclaim_interval] because the zone counters were
+> considered sufficient to determine in advance if the scan would succeed.
+> As unsuccessful scans can still occur, zone_reclaim_interval is still
+> required.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie
+> ---
+>  Documentation/sysctl/vm.txt |   13 +++++++++++++
+>  include/linux/mmzone.h      |    9 +++++++++
+>  include/linux/swap.h        |    1 +
+>  kernel/sysctl.c             |    9 +++++++++
+>  mm/vmscan.c                 |   22 ++++++++++++++++++++++
+>  5 files changed, 54 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
+> index c302ddf..f9b8db5 100644
+> --- a/Documentation/sysctl/vm.txt
+> +++ b/Documentation/sysctl/vm.txt
+> @@ -52,6 +52,7 @@ Currently, these files are in /proc/sys/vm:
+>  - swappiness
+>  - vfs_cache_pressure
+>  - zone_reclaim_mode
+> +- zone_reclaim_interval
+>  
+>  
+>  ==============================================================
+> @@ -620,4 +621,16 @@ Allowing regular swap effectively restricts allocations to the local
+>  node unless explicitly overridden by memory policies or cpuset
+>  configurations.
+>  
+> +================================================================
+> +
+> +zone_reclaim_interval:
+> +
+> +The time allowed for off node allocations after zone reclaim
+> +has failed to reclaim enough pages to allow a local allocation.
+> +
+> +Time is set in seconds and set by default to 30 seconds.
+> +
+> +Reduce the interval if undesired off node allocations occur. However, too
+> +frequent scans will have a negative impact on off-node allocation performance.
+> +
+>  ============ End of Document =================================
+> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+> index a47c879..f1f0fb2 100644
+> --- a/include/linux/mmzone.h
+> +++ b/include/linux/mmzone.h
+> @@ -337,6 +337,15 @@ struct zone {
+>  	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
+>  
+>  	/*
+> +	 * timestamp (in jiffies) of the last zone_reclaim that scanned
+> +	 * but failed to free enough pages. This is used to avoid repeated
+> +	 * scans when zone_reclaim() is unable to detect in advance that
+> +	 * the scanning is useless. This can happen for example if a zone
+> +	 * has large numbers of clean unmapped file pages on tmpfs
+> +	 */
+> +	unsigned long		zone_reclaim_failure;
+> +
+> +	/*
+>  	 * prev_priority holds the scanning priority for this zone.  It is
+>  	 * defined as the scanning priority at which we achieved our reclaim
+>  	 * target at the previous try_to_free_pages() or balance_pgdat()
+> diff --git a/include/linux/swap.h b/include/linux/swap.h
+> index d476aad..6a71368 100644
+> --- a/include/linux/swap.h
+> +++ b/include/linux/swap.h
+> @@ -224,6 +224,7 @@ extern long vm_total_pages;
+>  
+>  #ifdef CONFIG_NUMA
+>  extern int zone_reclaim_mode;
+> +extern int zone_reclaim_interval;
+>  extern int sysctl_min_unmapped_ratio;
+>  extern int sysctl_min_slab_ratio;
+>  extern int zone_reclaim(struct zone *, gfp_t, unsigned int);
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index b2970d5..cc0623c 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -1192,6 +1192,15 @@ static struct ctl_table vm_table[] = {
+>  		.extra1		= &zero,
+>  	},
+>  	{
+> +		.ctl_name       = CTL_UNNUMBERED,
+> +		.procname       = "zone_reclaim_interval",
+> +		.data           = &zone_reclaim_interval,
+> +		.maxlen         = sizeof(zone_reclaim_interval),
+> +		.mode           = 0644,
+> +		.proc_handler   = &proc_dointvec_jiffies,
+> +		.strategy       = &sysctl_jiffies,
+> +	},
 
-Why do we have to prevent scan value calculation when the priority is zero ?
-As I know, before split-lru, we didn't do it.
+hmmm, I think nobody can know proper interval settings on his own systems.
+I agree with Wu. It can be hidden.
 
-Is there any specific issue in case of the priority is zero ?
 
-On Tue, Jun 9, 2009 at 4:20 PM, KOSAKI
-Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
->> > > and, too many recliaming pages is not only memcg issue. I don't think this
->> > > patch provide generic solution.
->> > >
->> > Ah, you're right. It's not only memcg issue.
->> >
->> How about this one ?
->>
->> ===
->> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
->>
->> Commit 2e2e425989080cc534fc0fca154cae515f971cf5 ("vmscan,memcg: reintroduce
->> sc->may_swap) add may_swap flag and handle it at get_scan_ratio().
->>
->> But the result of get_scan_ratio() is ignored when priority == 0,
->> so anon lru is scanned even if may_swap == 0 or nr_swap_pages == 0.
->> IMHO, this is not an expected behavior.
->>
->> As for memcg especially, because of this behavior many and many pages are
->> swapped-out just in vain when oom is invoked by mem+swap limit.
->>
->> This patch is for handling may_swap flag more strictly.
->>
->> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
->
-> Looks great.
-> your patch doesn't only improve memcg, bug also improve noswap system.
->
-> Thanks.
->        Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->
->
->
->> ---
->>  mm/vmscan.c |   18 +++++++++---------
->>  1 files changed, 9 insertions(+), 9 deletions(-)
->>
->> diff --git a/mm/vmscan.c b/mm/vmscan.c
->> index 2ddcfc8..bacb092 100644
->> --- a/mm/vmscan.c
->> +++ b/mm/vmscan.c
->> @@ -1407,13 +1407,6 @@ static void get_scan_ratio(struct zone *zone, struct scan_control *sc,
->>       unsigned long ap, fp;
->>       struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
->>
->> -     /* If we have no swap space, do not bother scanning anon pages. */
->> -     if (!sc->may_swap || (nr_swap_pages <= 0)) {
->> -             percent[0] = 0;
->> -             percent[1] = 100;
->> -             return;
->> -     }
->> -
->>       anon  = zone_nr_pages(zone, sc, LRU_ACTIVE_ANON) +
->>               zone_nr_pages(zone, sc, LRU_INACTIVE_ANON);
->>       file  = zone_nr_pages(zone, sc, LRU_ACTIVE_FILE) +
->> @@ -1511,15 +1504,22 @@ static void shrink_zone(int priority, struct zone *zone,
->>       enum lru_list l;
->>       unsigned long nr_reclaimed = sc->nr_reclaimed;
->>       unsigned long swap_cluster_max = sc->swap_cluster_max;
->> +     int noswap = 0;
->>
->> -     get_scan_ratio(zone, sc, percent);
->> +     /* If we have no swap space, do not bother scanning anon pages. */
->> +     if (!sc->may_swap || (nr_swap_pages <= 0)) {
->> +             noswap = 1;
->> +             percent[0] = 0;
->> +             percent[1] = 100;
->> +     } else
->> +             get_scan_ratio(zone, sc, percent);
->>
->>       for_each_evictable_lru(l) {
->>               int file = is_file_lru(l);
->>               unsigned long scan;
->>
->>               scan = zone_nr_pages(zone, sc, l);
->> -             if (priority) {
->> +             if (priority || noswap) {
->>                       scan >>= priority;
->>                       scan = (scan * percent[file]) / 100;
->>               }
->
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+> +	{
+>  		.ctl_name	= VM_MIN_UNMAPPED,
+>  		.procname	= "min_unmapped_ratio",
+>  		.data		= &sysctl_min_unmapped_ratio,
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index d254306..ba211c1 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2272,6 +2272,13 @@ int zone_reclaim_mode __read_mostly;
+>  #define RECLAIM_SWAP (1<<2)	/* Swap pages out during reclaim */
+>  
+>  /*
+> + * Minimum time between zone_reclaim() scans that failed. Ordinarily, a
+> + * scan will not fail because it will be determined in advance if it can
+> + * succeeed but this does not always work. See mmzone.h
+> + */
+> +int zone_reclaim_interval __read_mostly = 30*HZ;
+> +
+> +/*
+>   * Priority for ZONE_RECLAIM. This determines the fraction of pages
+>   * of a node considered for each zone_reclaim. 4 scans 1/16th of
+>   * a zone.
+> @@ -2390,6 +2397,11 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  			<= zone->min_slab_pages)
+>  		return 0;
+>  
+> +	/* Do not attempt a scan if scanning failed recently */
+> +	if (time_before(jiffies,
+> +			zone->zone_reclaim_failure + zone_reclaim_interval))
+> +		return 0;
+> +
+>  	if (zone_is_all_unreclaimable(zone))
+>  		return 0;
+>  
+> @@ -2414,6 +2426,16 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  	ret = __zone_reclaim(zone, gfp_mask, order);
+>  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
+>  
+> +	if (!ret) {
+> +		/*
+> +		 * We were unable to reclaim enough pages to stay on node and
+> +		 * unable to detect in advance that the scan would fail. Allow
+> +		 * off node accesses for zone_reclaim_inteval jiffies before
+> +		 * trying zone_reclaim() again
+> +		 */
+> +		zone->zone_reclaim_failure = jiffies;
+
+Oops, this simple assignment don't care jiffies round-trip.
+
+
+> +	}
+> +
+>  	return ret;
+>  }
+>  #endif
+> -- 
+> 1.5.6.5
+> 
 
 
 
--- 
-Kinds regards,
-Minchan Kim
