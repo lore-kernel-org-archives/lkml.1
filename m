@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753861AbZFIPiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752577AbZFIPog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753861AbZFIPiz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 11:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbZFIPir
+	id S1752577AbZFIPog (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 11:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZFIPoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 11:38:47 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48060 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751376AbZFIPir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 11:38:47 -0400
-Date: Tue, 9 Jun 2009 17:38:47 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native kernels
-Message-ID: <20090609153847.GB9211@wotan.suse.de>
-References: <4A0B62F7.5030802@goop.org> <200906032208.28061.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906030901460.4880@localhost.localdomain> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain> <20090609093918.GC16940@wotan.suse.de> <alpine.LFD.2.01.0906090749380.6847@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906090749380.6847@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+	Tue, 9 Jun 2009 11:44:25 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:34807 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbZFIPoX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 11:44:23 -0400
+Message-ID: <4A2E8357.80509@hp.com>
+Date: Tue, 09 Jun 2009 11:44:23 -0400
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: paulmck@linux.vnet.ibm.com
+CC: Jesper Dangaard Brouer <hawk@comx.dk>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, wg@grandegger.com, sri@us.ibm.com,
+       linux-sctp@vger.kernel.org, Trond.Myklebust@netapp.com,
+       linux-nfs@vger.kernel.org, netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH 4/5] sctp: protocol.c call rcu_barrier() on unload.
+References: <20090608130959.10052.54590.stgit@localhost> <20090608131143.10052.96470.stgit@localhost> <20090608162227.GE6961@linux.vnet.ibm.com>
+In-Reply-To: <20090608162227.GE6961@linux.vnet.ibm.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 07:54:00AM -0700, Linus Torvalds wrote:
+Paul E. McKenney wrote:
+> On Mon, Jun 08, 2009 at 03:11:43PM +0200, Jesper Dangaard Brouer wrote:
+>> On module unload call rcu_barrier(), this is needed as synchronize_rcu()
+>> is not strong enough.  The kmem_cache_destroy() does invoke
+>> synchronize_rcu() but it does not provide same protection.
 > 
+> Good, looks like sctp_v4_del_protocol() invokes call_rcu(), which the
+> rcu_barrier() would then wait for.  And it looks like sctp_v6_del_protocol()
+> does the same for IPv6.
 > 
-> On Tue, 9 Jun 2009, Nick Piggin wrote:
-> > > 
-> > > And don't get me wrong - I don't like HIGHMEM. I detest the damn thing. I 
-> > > hated having to merge it, and I still hate it. It's a stupid, ugly, and 
-> > > very invasive config option. It's just that it's there to support a 
-> > > stupid, ugly and very annoying fundamental hardware problem.
-> > 
-> > I was looking forward to be able to get rid of it... unfortunately
-> > other 32-bit architectures are starting to use it again :(
+> Reviewed_by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > 
-> .. and 32-bit x86 is still not dead, and there are still people who use it 
-> with more than 1G of RAM (ie it's not like it's just purely a "small 
-> embedded cell-phones with Atom" kind of thing that Intel seems to be 
-> pushing for eventually).
-> 
-> > I guess it is not incredibly intrusive for generic mm code. A bit
-> > of kmap sprinkled around which is actually quite a useful delimiter
-> > of where pagecache is addressed via its kernel mapping.
-> > 
-> > Do you hate more the x86 code? Maybe that can be removed?
-> 
-> No, we can't remove the x86 code, and quite frankly, I don't even mind 
-> that. The part I mind is actually the sprinkling of kmap all over. Do a 
-> "git grep kmap fs", and you'll see that there are four times as many 
-> kmap's in filesystem code than there are in mm/.
+>> Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+>> ---
+>>
+>>  net/sctp/protocol.c |    2 ++
+>>  1 files changed, 2 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/net/sctp/protocol.c b/net/sctp/protocol.c
+>> index cb2c50d..79cbd47 100644
+>> --- a/net/sctp/protocol.c
+>> +++ b/net/sctp/protocol.c
+>> @@ -1370,6 +1370,8 @@ SCTP_STATIC __exit void sctp_exit(void)
+>>  	sctp_proc_exit();
+>>  	cleanup_sctp_mibs();
+>>
+>> +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
+>> +
+>>  	kmem_cache_destroy(sctp_chunk_cachep);
+>>  	kmem_cache_destroy(sctp_bucket_cachep);
+>>  }
+>>
 
-Yeah, I guess I just don't see it as such a bad thing. As I said,
-it's nice to have something to grep for and not have pointers into
-pagecache stored around the place (although filesystems do that
-with buffercache).
+Shouldn't the rcu_barrier call be before sctp_free_local_addr_list()?
 
-If code has to jump through particular nasty hoops to use atomic
-kmaps, that's not such a good thing...
-
-
-> I was benchmarking btrfs on my little EeePC. There, kmap overhead was 25% 
-> of file access time. Part of it is that people have been taught to use 
-> "kmap_atomic()", which is usable under spinlocks and people have been told 
-> that it's "fast". It's not fast. The whole TLB thing is slow as hell. 
-> 
-> Oh well. It's sad. But we can't get rid of it.
-
-If it's such a problem, it could be made a lot faster without too
-much problem. You could just introduce a FIFO of ptes behind it 
-and flush them all in one go. 4K worth of ptes per CPU might
-hopefully bring your overhead down to < 1%.
-
-
+-vlad
