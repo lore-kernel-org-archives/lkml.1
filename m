@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760259AbZFIKRm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760332AbZFIKR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760259AbZFIKRm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:17:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760069AbZFIKQD
+	id S1760332AbZFIKR4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760081AbZFIKQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:16:03 -0400
-Received: from kroah.org ([198.145.64.141]:59792 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:16:07 -0400
+Received: from kroah.org ([198.145.64.141]:59813 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760050AbZFIKQA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:16:00 -0400
+	id S1760065AbZFIKQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:16:05 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:54 2009
-Message-Id: <20090609094054.391134475@blue.kroah.org>
+Message-Id: <20090609094054.619326056@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:38:58 -0700
+Date: Tue, 09 Jun 2009 02:38:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Stanislaw Gruszka <sgruszka@redhat.com>,
+       alan@lxorguk.ukuu.org.uk, Patrick McHardy <kaber@trash.net>,
        "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 10/87] myr10ge: again fix lro_gen_skb() alignment
+Subject: [patch 11/87] vlan/macvlan: fix NULL pointer dereferences in ethtool handlers
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=myr10ge-again-fix-lro_gen_skb-alignment.patch
+Content-Disposition: inline; filename=vlan-macvlan-fix-null-pointer-dereferences-in-ethtool-handlers.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,32 +40,65 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Stanislaw Gruszka <sgruszka@redhat.com>
+From: Patrick McHardy <kaber@trash.net>
 
-[ Upstream commit 636d2f68a0814d84de26c021b2c15e3b4ffa29de ]
+[ Upstream commit 7816a0a862d851d0b05710e7d94bfe390f3180e2 ]
 
-Add LRO alignment initially committed in
-621544eb8c3beaa859c75850f816dd9b056a00a3 ("[LRO]: fix lro_gen_skb()
-alignment") and removed in 0dcffac1a329be69bab0ac604bf7283737108e68
-("myri10ge: add multislices support") during conversion to
-multi-slice.
+Check whether the underlying device provides a set of ethtool ops before
+checking for individual handlers to avoid NULL pointer dereferences.
 
-Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
+Reported-by: Art van Breemen <ard@telegraafnet.nl>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/myri10ge/myri10ge.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/net/macvlan.c |    9 ++++++---
+ net/8021q/vlan_dev.c  |    3 ++-
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
---- a/drivers/net/myri10ge/myri10ge.c
-+++ b/drivers/net/myri10ge/myri10ge.c
-@@ -2446,6 +2446,7 @@ static int myri10ge_open(struct net_devi
- 		lro_mgr->lro_arr = ss->rx_done.lro_desc;
- 		lro_mgr->get_frag_header = myri10ge_get_frag_header;
- 		lro_mgr->max_aggr = myri10ge_lro_max_pkts;
-+		lro_mgr->frag_align_pad = 2;
- 		if (lro_mgr->max_aggr > MAX_SKB_FRAGS)
- 			lro_mgr->max_aggr = MAX_SKB_FRAGS;
+--- a/drivers/net/macvlan.c
++++ b/drivers/net/macvlan.c
+@@ -329,7 +329,8 @@ static u32 macvlan_ethtool_get_rx_csum(s
+ 	const struct macvlan_dev *vlan = netdev_priv(dev);
+ 	struct net_device *lowerdev = vlan->lowerdev;
  
+-	if (lowerdev->ethtool_ops->get_rx_csum == NULL)
++	if (lowerdev->ethtool_ops == NULL ||
++	    lowerdev->ethtool_ops->get_rx_csum == NULL)
+ 		return 0;
+ 	return lowerdev->ethtool_ops->get_rx_csum(lowerdev);
+ }
+@@ -340,7 +341,8 @@ static int macvlan_ethtool_get_settings(
+ 	const struct macvlan_dev *vlan = netdev_priv(dev);
+ 	struct net_device *lowerdev = vlan->lowerdev;
+ 
+-	if (!lowerdev->ethtool_ops->get_settings)
++	if (!lowerdev->ethtool_ops ||
++	    !lowerdev->ethtool_ops->get_settings)
+ 		return -EOPNOTSUPP;
+ 
+ 	return lowerdev->ethtool_ops->get_settings(lowerdev, cmd);
+@@ -351,7 +353,8 @@ static u32 macvlan_ethtool_get_flags(str
+ 	const struct macvlan_dev *vlan = netdev_priv(dev);
+ 	struct net_device *lowerdev = vlan->lowerdev;
+ 
+-	if (!lowerdev->ethtool_ops->get_flags)
++	if (!lowerdev->ethtool_ops ||
++	    !lowerdev->ethtool_ops->get_flags)
+ 		return 0;
+ 	return lowerdev->ethtool_ops->get_flags(lowerdev);
+ }
+--- a/net/8021q/vlan_dev.c
++++ b/net/8021q/vlan_dev.c
+@@ -668,7 +668,8 @@ static int vlan_ethtool_get_settings(str
+ 	const struct vlan_dev_info *vlan = vlan_dev_info(dev);
+ 	struct net_device *real_dev = vlan->real_dev;
+ 
+-	if (!real_dev->ethtool_ops->get_settings)
++	if (!real_dev->ethtool_ops ||
++	    !real_dev->ethtool_ops->get_settings)
+ 		return -EOPNOTSUPP;
+ 
+ 	return real_dev->ethtool_ops->get_settings(real_dev, cmd);
 
 
