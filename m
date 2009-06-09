@@ -1,45 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756536AbZFIQaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZFIQbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756536AbZFIQaW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 12:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZFIQaL
+	id S1756178AbZFIQbg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 12:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbZFIQbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 12:30:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34720 "EHLO mx2.redhat.com"
+	Tue, 9 Jun 2009 12:31:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34929 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751834AbZFIQaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 12:30:09 -0400
-Date: Tue, 9 Jun 2009 12:29:10 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Harald Welte <HaraldWelte@viatech.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
-       linux-crypto@vger.kernel.org,
-       Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-Subject: Re: [patch 0/3] crypto: padlock-aes: enable on VIA Nano
-Message-ID: <20090609122910.13972109@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <20090609103533.0c334594@dhcp-100-2-144.bos.redhat.com>
-References: <20090609103533.0c334594@dhcp-100-2-144.bos.redhat.com>
-Organization: Red Hat, Inc.
+	id S1750749AbZFIQbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 12:31:24 -0400
+Subject: Re: [dm-devel] Re: ANNOUNCE: mdadm 3.0 - A tool for managing Soft
+ RAID under Linux
+From: Heinz Mauelshagen <heinzm@redhat.com>
+Reply-To: heinzm@redhat.com
+To: device-mapper development <dm-devel@redhat.com>
+Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-raid@vger.kernel.org,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <18989.40871.865610.422540@notabene.brown>
+References: <18980.48553.328662.80987@notabene.brown>
+	 <4A25876A.1010901@garzik.org> <18981.62579.171350.910761@notabene.brown>
+	 <1244040123.6938.19.camel@o>  <18989.40871.865610.422540@notabene.brown>
+Content-Type: text/plain
+Organization: Red Hat GmbH
+Date: Tue, 09 Jun 2009 18:29:53 +0200
+Message-Id: <1244564993.2407.27.camel@o>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009 10:35:33 -0400
-Chuck Ebbert <cebbert@redhat.com> wrote:
-
-> The VIA Nano has a bug that makes the padlock unit fetch extra data
-> during encryption operations. Add workarounds for that, and enable
-> the driver on x86_64.
+On Tue, 2009-06-09 at 09:32 +1000, Neil Brown wrote:
+> On Wednesday June 3, heinzm@redhat.com wrote:
+> > > 
+> > > I haven't spoken to them, no (except for a couple of barely-related
+> > > chats with Alasdair).
+> > > By and large, they live in their little walled garden, and I/we live
+> > > in ours.
+> > 
+> > Maybe we are about to change that? ;-)
 > 
-> 1/3 Fix ECB encryption mode
-> 2/3 Fix CBC mode, clean up code
-> 3/3 Enable building for 64-bit kernels
+> Maybe ... what should we talk about?
+> 
+> Two areas where I think we might be able to have productive
+> discussion:
+> 
+>  1/ Making md personalities available as dm targets.
+>     In one sense this is trivial as an block device can be a DM
+>     target, and any md personality can be a block device.
 
-Forgot to mention, I have 64-bit working on a Samsung NC20 with LVM
-encrypted disks using AES. The cryptomgr self-tests pass too. Before
-the prefetch fixes it was oopsing near page boundaries when trying to
-decrypt disk blocks.
+Of course one could stack a linear target on any MD personality and live
+with the minor overhead in the io path. The overhead to handle such
+stacking on the tool side of things is not negligible though, hence it's
+a better option to have native dm targets for these mappings.
+
+>     However it might be more attractive if the md personality
+>     responded to dm ioctls.
+
+Indeed, we need the full interface to be covered in order to stay
+homogeneous.
+
+>     Considering specifically raid5, some aspects of plugging
+>     md/raid5 underneath dm would be trivial - e.g. assembling the
+>     array at the start.
+>     However others are not so straight forward.
+>     In particular, when a drive fails in a raid5, you need to update
+>     the metadata before allowing any writes which depend on that drive
+>     to complete.  Given that metadata is managed in user-space, this
+>     means signalling user-space and waiting for a response.
+>     md does this via a file in sysfs.  I cannot see any similar
+>     mechanism in dm, but I haven't looked very hard.
+
+We use events passed to a uspace daemon via an ioctl interface and our
+suspend/resume mechanism to ensure such metadata updates.
+
+> 
+>     Would it be useful to pursue this do you think?
+
+I looked at the MD personality back in time when I was searching for an
+option to support RAID5 in dm but, like you similarly noted above,
+didn't find a simple way to wrap it into a dm target so the answer *was*
+no. That's why I picked some code (e.g. the RAID adressing) and
+implemented a target of my own.
+
+> 
+> 
+>  2/ It might be useful to have a common view how virtual devices in
+>     general should be managed in Linux.  Then we could independently
+>     migrated md and dm towards this goal.
+> 
+>     I imagine a block-layer level function which allows a blank
+>     virtual device to be created, with an arbitrary major/minor
+>     allocated.
+>     e.g.
+>          echo foo > /sys/block/.new
+>     causes
+>          /sys/devices/virtual/block/foo/
+>     to be created.
+>     Then a similar mechanism associates that with a particular driver.
+>     That causes more attributes to appear in  ../block/foo/ which
+>     can be used to flesh out the details of the device.
+> 
+>     There would be library code that a driver could use to:
+>       - accept subordinate devices
+>       - manage the state of those devices
+>       - maintain a write-intent bitmap
+>     etc.
+
+Yes, and such library can be filled with ported dm/md and other code.
+
+> 
+>     There would also need to be a block-layer function to 
+>     suspend/resume or similar so that a block device can be changed
+>     underneath a filesystem.
+
+Yes, consolidating such functionality in a central place is the proper
+design but we still need an interface into any block driver which is
+initiating io on its own behalf (e.g. mirror resynchronization) in order
+to ensure, that such io gets suspended/resumed consistently
+
+> 
+>     We currently have three structures for a block device:
+>       struct block_device -> struct gendisk -> struct request_queue
+> 
+>     I imagine allow either the "struct gendisk" or  the "struct
+>     request_queue" to be swapped between two "struct block_device".
+>     I'm not sure which, and the rest of the details are even more
+>     fuzzy.
+> 
+>     That sort of infrastructure would allow interesting migrations
+>     without being limited to "just with dm" or "just within md".
+
+Or just with other virtual drivers such as drbd.
+
+Hard to imagine issues at the detailed spec level before they are
+fleshed out but this sounds like a good idea to start with.
+
+Heinz
+
+> 
+>     Thoughts?
+> 
+> NeilBrown
+> 
+> --
+> dm-devel mailing list
+> dm-devel@redhat.com
+> https://www.redhat.com/mailman/listinfo/dm-devel
 
