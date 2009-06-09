@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750962AbZFIQ10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbZFIQ1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750962AbZFIQ10 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 12:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756447AbZFIQ1Q
+	id S1757437AbZFIQ1v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 12:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbZFIQ1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 12:27:16 -0400
-Received: from stinky.trash.net ([213.144.137.162]:33917 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755678AbZFIQ1Q (ORCPT
+	Tue, 9 Jun 2009 12:27:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36263 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752945AbZFIQ1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 12:27:16 -0400
-Message-ID: <4A2E8D62.6090004@trash.net>
-Date: Tue, 09 Jun 2009 18:27:14 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Tue, 9 Jun 2009 12:27:42 -0400
+Date: Tue, 9 Jun 2009 09:26:47 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Nick Piggin <npiggin@suse.de>
+cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
+ kernels
+In-Reply-To: <20090609162125.GC9211@wotan.suse.de>
+Message-ID: <alpine.LFD.2.01.0906090924580.6847@localhost.localdomain>
+References: <4A0B62F7.5030802@goop.org> <200906032208.28061.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906030901460.4880@localhost.localdomain> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain>
+ <20090609093918.GC16940@wotan.suse.de> <alpine.LFD.2.01.0906090749380.6847@localhost.localdomain> <20090609153847.GB9211@wotan.suse.de> <alpine.LFD.2.01.0906090849080.6847@localhost.localdomain> <20090609162125.GC9211@wotan.suse.de>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Jay Vosburgh <fubar@us.ibm.com>
-CC: Stephen Hemminger <shemminger@vyatta.com>, Arnd Bergmann <arnd@arndb.de>,
-       "David S. Miller" <davem@davemloft.net>, bonding-devel@lists.sf.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: BUG: bonding module can only be loaded once
-References: <20090608151127.70146505@nehalam> <200906091406.45463.arnd@arndb.de> <20090609080232.45f81833@nehalam> <4A2E80B3.6010600@trash.net> <4752.1244564082@death.nxdomain.ibm.com>
-In-Reply-To: <4752.1244564082@death.nxdomain.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Vosburgh wrote:
-> Patrick McHardy <kaber@trash.net> wrote:
-> 
->> In any case, this is not the first time this has been broken and the
->> fundamental reason is in my opinion that the bonding interface is
->> broken to begin with. The module aliasing thing is complete crap
->> and should have been phased out long ago. At this point its probably
->> not worth anymore to migrate people to the sysfs interface though,
->> the best thing would be to add an rtnl_link interface and phase out
->> both.
-> 
-> 	The "load bonding multiple times" stuff is only there now for
-> backwards compatibility with old distro initscripts / sysconfig packages
-> that don't configure bonding through sysfs (a sysfs API was added to
-> bonding three or four years ago).
-> 
-> 	All of the current distro releases I'm aware of use sysfs to
-> configure bonding, and have done so for at least a year or two.  I
-> haven't done an exhaustive survey, but it seems unlikely that users are
-> running a current up to date kernel with a two or three year old
-> initscripts / sysconfig package.  Anybody have information to the
-> contrary?
 
-I'd expect its not the distros, but rather the applicances which might
-still be using this. I know a vendor I used to work for a couple of
-years ago just recently made the switch from 2.6.16 to a current kernel,
-and I'd expect that they are still using this (I can find out tommorrow
-if you want to know for sure). Vyatta likewise, I guess.
 
-> 	If nobody has any heartburn at dropping support for multiple
-> bonding instances on old distros, I'm as happy as anybody to remove all
-> of the multiple load logic from bonding.  There's been plenty of time
-> for transitioning from "multiple load" to sysfs.
+On Tue, 9 Jun 2009, Nick Piggin wrote:
+> 
+> The idea seems nice but isn't the problem that kmap gives back a
+> basically 1st class kernel virtual memory? (ie. it can then be used
+> by any other CPU at any point without it having to use kmap?).
 
-In my opinion it would need a feature-removal-schedule announcement.
+No, everybody has to use kmap()/kunmap().
+
+The "problem" is that you could in theory run out of kmap frames, since if 
+everybody does a kmap() in an interruptible context and you have lots and 
+lots of threads doing different pages, you'd run out. But that has nothing 
+to do with kmap_atomic(), which is basically limited to just the number of 
+CPU's and a (very small) level of nesting.
+
+			Linus
