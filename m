@@ -1,97 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbZFIPCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbZFIPG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755006AbZFIPCr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 11:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbZFIPCh
+	id S1755075AbZFIPG2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 11:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbZFIPGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 11:02:37 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:42799 "EHLO mail.vyatta.com"
+	Tue, 9 Jun 2009 11:06:20 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:45526 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752208AbZFIPCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 11:02:36 -0400
-Date: Tue, 9 Jun 2009 08:02:32 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Jay Vosburgh <fubar@us.ibm.com>, "David S. Miller" <davem@davemloft.net>,
-       bonding-devel@lists.sf.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: BUG: bonding module can only be loaded once
-Message-ID: <20090609080232.45f81833@nehalam>
-In-Reply-To: <200906091406.45463.arnd@arndb.de>
-References: <20090608151127.70146505@nehalam>
-	<200906091406.45463.arnd@arndb.de>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752428AbZFIPGU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 11:06:20 -0400
+Date: Tue, 9 Jun 2009 16:06:19 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when
+	zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
+Message-ID: <20090609150619.GT18380@csn.ul.ie>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-2-git-send-email-mel@csn.ul.ie> <20090609015822.GA6740@localhost> <20090609081424.GD18380@csn.ul.ie> <20090609082539.GA6897@localhost> <20090609083153.GG18380@csn.ul.ie> <20090609090735.GC7108@localhost> <20090609094050.GL18380@csn.ul.ie> <20090609133804.GB6583@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090609133804.GB6583@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009 14:06:44 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
+On Tue, Jun 09, 2009 at 09:38:04PM +0800, Wu Fengguang wrote:
+> On Tue, Jun 09, 2009 at 05:40:50PM +0800, Mel Gorman wrote:
+> > On Tue, Jun 09, 2009 at 05:07:35PM +0800, Wu Fengguang wrote:
+> > > On Tue, Jun 09, 2009 at 04:31:54PM +0800, Mel Gorman wrote:
+> > > > On Tue, Jun 09, 2009 at 04:25:39PM +0800, Wu Fengguang wrote:
+> > > > > On Tue, Jun 09, 2009 at 04:14:25PM +0800, Mel Gorman wrote:
+> > > > > > On Tue, Jun 09, 2009 at 09:58:22AM +0800, Wu Fengguang wrote:
+> > > > > > > On Mon, Jun 08, 2009 at 09:01:28PM +0800, Mel Gorman wrote:
+> > > > > > > > On NUMA machines, the administrator can configure zone_reclaim_mode that is a
+> > > > > > > > more targetted form of direct reclaim. On machines with large NUMA distances,
+> > > > > > > > zone_reclaim_mode defaults to 1 meaning that clean unmapped pages will be
+> > > > > > > > reclaimed if the zone watermarks are not being met. The problem is that
+> > > > > > > > zone_reclaim() can be in a situation where it scans excessively without
+> > > > > > > > making progress.
+> > > > > > > > 
+> > > > > > > > One such situation is where a large tmpfs mount is occupying a large
+> > > > > > > > percentage of memory overall. The pages do not get cleaned or reclaimed by
+> > > > > > > > zone_reclaim(), but the lists are uselessly scanned frequencly making the
+> > > > > > > > CPU spin at 100%. The scanning occurs because zone_reclaim() cannot tell
+> > > > > > > > in advance the scan is pointless because the counters do not distinguish
+> > > > > > > > between pagecache pages backed by disk and by RAM.  The observation in
+> > > > > > > > the field is that malloc() stalls for a long time (minutes in some cases)
+> > > > > > > > when this situation occurs.
+> > > > > > > > 
+> > > > > > > > Accounting for ram-backed file pages was considered but not implemented on
+> > > > > > > > the grounds it would be introducing new branches and expensive checks into
+> > > > > > > > the page cache add/remove patches and increase the number of statistics
+> > > > > > > > needed in the zone. As zone_reclaim() failing is currently considered a
+> > > > > > > > corner case, this seemed like overkill. Note, if there are a large number
+> > > > > > > > of reports about CPU spinning at 100% on NUMA that is fixed by disabling
+> > > > > > > > zone_reclaim, then this assumption is false and zone_reclaim() scanning
+> > > > > > > > and failing is not a corner case but a common occurance
+> > > > > > > > 
+> > > > > > > > This patch reintroduces zone_reclaim_interval which was removed by commit
+> > > > > > > > 34aa1330f9b3c5783d269851d467326525207422 [zoned vm counters: zone_reclaim:
+> > > > > > > > remove /proc/sys/vm/zone_reclaim_interval] because the zone counters were
+> > > > > > > > considered sufficient to determine in advance if the scan would succeed.
+> > > > > > > > As unsuccessful scans can still occur, zone_reclaim_interval is still
+> > > > > > > > required.
+> > > > > > > 
+> > > > > > > Can we avoid the user visible parameter zone_reclaim_interval?
+> > > > > > > 
+> > > > > > 
+> > > > > > You could, but then there is no way of disabling it by setting it to 0
+> > > > > > either. I can't imagine why but the desired behaviour might really be to
+> > > > > > spin and never go off-node unless there is no other option. They might
+> > > > > > want to set it to 0 for example when determining what the right value for
+> > > > > > zone_reclaim_mode is for their workloads.
+> > > > > > 
+> > > > > > > That means to introduce some heuristics for it.
+> > > > > > 
+> > > > > > I suspect the vast majority of users will ignore it unless they are runing
+> > > > > > zone_reclaim_mode at the same time and even then will probably just leave
+> > > > > > it as 30 as a LRU scan every 30 seconds worst case is not going to show up
+> > > > > > on many profiles.
+> > > > > > 
+> > > > > > > Since the whole point
+> > > > > > > is to avoid 100% CPU usage, we can take down the time used for this
+> > > > > > > failed zone reclaim (T) and forbid zone reclaim until (NOW + 100*T).
+> > > > > > > 
+> > > > > > 
+> > > > > > i.e. just fix it internally at 100 seconds? How is that better than
+> > > > > > having an obscure tunable? I think if this heuristic exists at all, it's
+> > > > > > important that an administrator be able to turn it off if absolutly
+> > > > > > necessary and so something must be user-visible.
+> > > > > 
+> > > > > That 100*T don't mean 100 seconds. It means to keep CPU usage under 1%:
+> > > > > after busy scanning for time T, let's go relax for 100*T.
+> > > > > 
+> > > > 
+> > > > Do I have a means of calculating what my CPU usage is as a result of
+> > > > scanning the LRU list?
+> > > > 
+> > > > If I don't and the machine is busy, would I not avoid scanning even in
+> > > > situations where it should have been scanned?
+> > > 
+> > > I guess we don't really care about the exact number for the ratio 100.
+> > > If the box is busy, it automatically scales the effective ratio to 200
+> > > or more, which I think is reasonable behavior.
+> > > 
+> > > Something like this.
+> > > 
+> > > Thanks,
+> > > Fengguang
+> > > 
+> > > ---
+> > >  include/linux/mmzone.h |    2 ++
+> > >  mm/vmscan.c            |   11 +++++++++++
+> > >  2 files changed, 13 insertions(+)
+> > > 
+> > > --- linux.orig/include/linux/mmzone.h
+> > > +++ linux/include/linux/mmzone.h
+> > > @@ -334,6 +334,8 @@ struct zone {
+> > >  	/* Zone statistics */
+> > >  	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
+> > >  
+> > > +	unsigned long		zone_reclaim_relax;
+> > > +
+> > >  	/*
+> > >  	 * prev_priority holds the scanning priority for this zone.  It is
+> > >  	 * defined as the scanning priority at which we achieved our reclaim
+> > > --- linux.orig/mm/vmscan.c
+> > > +++ linux/mm/vmscan.c
+> > > @@ -2453,6 +2453,7 @@ int zone_reclaim(struct zone *zone, gfp_
+> > >  	int ret;
+> > >  	long nr_unmapped_file_pages;
+> > >  	long nr_slab_reclaimable;
+> > > +	unsigned long t;
+> > >  
+> > >  	/*
+> > >  	 * Zone reclaim reclaims unmapped file backed pages and
+> > > @@ -2475,6 +2476,11 @@ int zone_reclaim(struct zone *zone, gfp_
+> > >  	if (zone_is_all_unreclaimable(zone))
+> > >  		return 0;
+> > >  
+> > > +	if (time_in_range(zone->zone_reclaim_relax - 10000 * HZ,
+> > > +			  jiffies,
+> > > +			  zone->zone_reclaim_relax))
+> > > +		return 0;
+> > > +
+> > 
+> > So. zone_reclaim_relax is some value between now and 100 times the approximate
+> > time it takes to scan the LRU list. This check ensures that we do not scan
+> > multiple times within the same interval. Is that right?
+> 
+> Yes and no: zone_reclaim_relax is the *absolute* time for that.
+> This check ensures that if we wasted T seconds doing a fruitless
+> zone reclaim, zone reclaim won't be repeated in the following 100*T
+> seconds - which is a coarse relax period.
+> 
+> Its simpler form is: time_before(jiffies, zone_reclaim_relax),
+> if not considering wraparound issues.
+> 
 
-> On Tuesday 09 June 2009, Stephen Hemminger wrote:
-> > In order to create multiple bonding dynamically, it is common practice to
-> > load the bonding module multiple times.  This got broken in recent kernels
-> > 2.6.29 and later.
-> > 
-> > Doing the following will OOPS:
-> >   modprobe -o bond0 bonding
-> >   modprobe -o bond1 bonding
-> > 
-> > 2.6.29 actually OOPS on error handling, but that is fixed in 2.6.30.
-> > But 2.6.30 still has the regression (caused by sysfs).
-> > 
-> > This regression was introduced by changes to sysfs and proc that
-> > made duplicate insertion a problem.
-> 
-> Well, I guess it's more like the changes just made it obvious that
-> it's wrong to do this. Registering the same entries in procfs or sysfs 
-> means that the user will only be able to talk to one of the two
-> bonding drivers through these interfaces. 
-> 
-> The log messages you quoted are not actually Oops but rather WARNING,
-> which is (in this case) not fatal at all, just an indication that the
-> root user did something he should not have:
-> 
-> > [  134.012578] WARNING: at fs/proc/generic.c:590 proc_register+0x154/0x191()
-> > [  134.012583] proc_dir_entry 'net/bonding' already registered
-> 
-> > [  134.014516] WARNING: at fs/sysfs/dir.c:487 sysfs_add_one+0xcc/0xe4()
-> > [  134.014521] sysfs: cannot create duplicate filename '/class/net/bonding_masters'
-> 
-> The bonding driver could work around this by checking if the directories
-> already exist before registering them. One can also add rtnl_link_ops to
-> the driver for dynamically adding more interfaces.
-> 
-> If you combine the two, you can even print a helpful message like 'please
-> use "ip link add type bonding" instead of "modprobe -o bond0 bonding"'.
-> 
-> In the mean time, you could probably work around this by ignoring the error
-> condition (see below), but I would suspect that there may be more problems
-> with the concept of just loading the module again. The best advice to
-> users is probably to configure the maximum number of bonding devices they
-> might need with the max_bonds= module parameter (if I understand that
-> parameter correctly.
-> 
-> 	Arnd <><
-> 
-> --- a/drivers/net/bonding/bond_main.c
-> +++ b/drivers/net/bonding/bond_main.c
-> @@ -5203,7 +5203,7 @@ static int __init bonding_init(void)
->  
->  	res = bond_create_sysfs();
->  	if (res)
-> -		goto err;
-> +		pr_info("Loading bonding module without sysfs interface\n");
->  
->  	register_netdevice_notifier(&bond_netdev_notifier);
->  	register_inetaddr_notifier(&bond_inetaddr_notifier);
+Ok
 
-That only makes it limp along, and there still are warnings.
-The point is that who ever added the WARN() in proc and sysfs, effectively
-broke a bonding usage model.
+> > >  	/*
+> > >  	 * Do not scan if the allocation should not be delayed.
+> > >  	 */
+> > > @@ -2493,7 +2499,12 @@ int zone_reclaim(struct zone *zone, gfp_
+> > >  
+> > >  	if (zone_test_and_set_flag(zone, ZONE_RECLAIM_LOCKED))
+> > >  		return 0;
+> > > +	t = jiffies;
+> > >  	ret = __zone_reclaim(zone, gfp_mask, order);
+> > > +	if (sc.nr_reclaimed == 0) {
+> > > +		t = min_t(unsigned long, 10000 * HZ, 100 * (jiffies - t));
+> > > +		zone->zone_reclaim_relax = jiffies + t;
+> > > +	}
+> > 
+> > This appears to be a way of automatically selecting a value for
+> > zone_reclaim_interval but is 100 times the length of time it takes to scan the
+> > LRU list enough to avoid excessive scanning of the LRU lists by zone_reclaim?
+> 
+> Exactly.
+> 
+> > I don't know and unlike zone_reclaim_interval, we have no way for the
+> > administrator to intervene in the event we get the calculation wrong.
+> > 
+> > Conceivably though, zone_reclaim_interval could automatically tune
+> > itself based on a heuristic like this if the administrator does not give
+> > a specific value. I think that would be an interesting follow on once
+> > we've brought back zone_reclaim_interval and get a feeling for how often
+> > it is actually used.
+> 
+> Well I don't think that's good practice. There are heuristic
+> calculations all over the kernel. Shall we exporting parameters to
+> user space just because we are not absolutely sure? Or shall we ship
+> the heuristics and do adjustments based on feedbacks and only export
+> parameters when we find _known cases_ that cannot be covered by pure
+> heuristics?
+> 
+
+Good question - I don't have a satisfactory answer but I intuitively find
+the zone_reclaim_interval easier to deal with than the heuristic.  That said,
+I would prefer if neither was required.
+
+In the patchset, I've added a counter for the number of times that the
+scan-avoidance heuristic fails. If the tmpfs problem has been resolved
+(patch with bug reporter, am awaiting test), I'll drop zone_reclaim_interval
+altogether and we'll use the counter to detect if/when this situation
+occurs again.
+
+> > >  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
+> > >  
+> > >  	return ret;
+> > > 
+> > 
+> > -- 
+> > Mel Gorman
+> > Part-time Phd Student                          Linux Technology Center
+> > University of Limerick                         IBM Dublin Software Lab
+> 
 
 -- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
