@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZFIVzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932082AbZFIVz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755341AbZFIVzE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 17:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758589AbZFIVxn
+	id S932082AbZFIVz1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 17:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758729AbZFIVxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 9 Jun 2009 17:53:43 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51206 "EHLO
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:56764 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756949AbZFIVxi (ORCPT
+	with ESMTP id S1757085AbZFIVxi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Jun 2009 17:53:38 -0400
-Message-Id: <20090609215339.785773173@goodmis.org>
+Message-Id: <20090609215340.207386644@goodmis.org>
 References: <20090609215211.307980196@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 09 Jun 2009 17:52:17 -0400
+Date: Tue, 09 Jun 2009 17:52:19 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -27,172 +27,140 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
        Tom Zanussi <tzanussi@gmail.com>
-Subject: [PATCH 6/8] tracing/events: modify kmem print to new format
-Content-Disposition: inline; filename=0006-tracing-events-modify-kmem-print-to-new-format.patch
+Subject: [PATCH 8/8] tracing: add entry size to iterator
+Content-Disposition: inline; filename=0008-tracing-add-entry-size-to-iterator.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Use new format for better parsing of kmem events.
+In order to test against corruption of records, the size of the entry
+needs to be passed to callbacks. This patch places the entry size
+into a new field of the iterator "ent_size", that print call backs
+can access.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/trace/events/kmem.h |   98 +++++++++++++++++++-----------------------
- 1 files changed, 44 insertions(+), 54 deletions(-)
+ include/linux/ftrace_event.h |    1 +
+ kernel/trace/trace.c         |   39 ++++++++++++++++++++++++---------------
+ 2 files changed, 25 insertions(+), 15 deletions(-)
 
-diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
-index 9baba50..5c8f942 100644
---- a/include/trace/events/kmem.h
-+++ b/include/trace/events/kmem.h
-@@ -17,32 +17,36 @@
-  *
-  * Thus most bits set go first.
-  */
--#define show_gfp_flags(flags)						\
--	(flags) ? __print_flags(flags, "|",				\
--	{(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE"}, \
--	{(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER"},	\
--	{(unsigned long)GFP_USER,		"GFP_USER"},		\
--	{(unsigned long)GFP_TEMPORARY,		"GFP_TEMPORARY"},	\
--	{(unsigned long)GFP_KERNEL,		"GFP_KERNEL"},		\
--	{(unsigned long)GFP_NOFS,		"GFP_NOFS"},		\
--	{(unsigned long)GFP_ATOMIC,		"GFP_ATOMIC"},		\
--	{(unsigned long)GFP_NOIO,		"GFP_NOIO"},		\
--	{(unsigned long)__GFP_HIGH,		"GFP_HIGH"},		\
--	{(unsigned long)__GFP_WAIT,		"GFP_WAIT"},		\
--	{(unsigned long)__GFP_IO,		"GFP_IO"},		\
--	{(unsigned long)__GFP_COLD,		"GFP_COLD"},		\
--	{(unsigned long)__GFP_NOWARN,		"GFP_NOWARN"},		\
--	{(unsigned long)__GFP_REPEAT,		"GFP_REPEAT"},		\
--	{(unsigned long)__GFP_NOFAIL,		"GFP_NOFAIL"},		\
--	{(unsigned long)__GFP_NORETRY,		"GFP_NORETRY"},		\
--	{(unsigned long)__GFP_COMP,		"GFP_COMP"},		\
--	{(unsigned long)__GFP_ZERO,		"GFP_ZERO"},		\
--	{(unsigned long)__GFP_NOMEMALLOC,	"GFP_NOMEMALLOC"},	\
--	{(unsigned long)__GFP_HARDWALL,		"GFP_HARDWALL"},	\
--	{(unsigned long)__GFP_THISNODE,		"GFP_THISNODE"},	\
--	{(unsigned long)__GFP_RECLAIMABLE,	"GFP_RECLAIMABLE"},	\
--	{(unsigned long)__GFP_MOVABLE,		"GFP_MOVABLE"}		\
--	) : "GFP_NOWAIT"
-+#define show_gfp_flags_format()						\
-+	"0=GFP_NOWAIT,"							\
-+	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-+	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-+	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-+	"0x%lx=%s,0x%lx=%s>"
-+#define show_gfp_flags_args()						\
-+	(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE", \
-+	(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER",		\
-+	(unsigned long)GFP_USER,		"GFP_USER",		\
-+	(unsigned long)GFP_TEMPORARY,		"GFP_TEMPORARY",	\
-+	(unsigned long)GFP_KERNEL,		"GFP_KERNEL",		\
-+	(unsigned long)GFP_NOFS,		"GFP_NOFS",		\
-+	(unsigned long)GFP_ATOMIC,		"GFP_ATOMIC",		\
-+	(unsigned long)GFP_NOIO,		"GFP_NOIO",		\
-+	(unsigned long)__GFP_HIGH,		"GFP_HIGH",		\
-+	(unsigned long)__GFP_WAIT,		"GFP_WAIT",		\
-+	(unsigned long)__GFP_IO,		"GFP_IO",		\
-+	(unsigned long)__GFP_COLD,		"GFP_COLD",		\
-+	(unsigned long)__GFP_NOWARN,		"GFP_NOWARN",		\
-+	(unsigned long)__GFP_REPEAT,		"GFP_REPEAT",		\
-+	(unsigned long)__GFP_NOFAIL,		"GFP_NOFAIL",		\
-+	(unsigned long)__GFP_NORETRY,		"GFP_NORETRY",		\
-+	(unsigned long)__GFP_COMP,		"GFP_COMP",		\
-+	(unsigned long)__GFP_ZERO,		"GFP_ZERO",		\
-+	(unsigned long)__GFP_NOMEMALLOC,	"GFP_NOMEMALLOC",	\
-+	(unsigned long)__GFP_HARDWALL,		"GFP_HARDWALL",		\
-+	(unsigned long)__GFP_THISNODE,		"GFP_THISNODE",		\
-+	(unsigned long)__GFP_RECLAIMABLE,	"GFP_RECLAIMABLE",	\
-+	(unsigned long)__GFP_MOVABLE,		"GFP_MOVABLE"
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index d963a78..1802459 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -56,6 +56,7 @@ struct trace_iterator {
+ 	/* The below is zeroed out in pipe_read */
+ 	struct trace_seq	seq;
+ 	struct trace_entry	*ent;
++	unsigned int		ent_size;
+ 	int			cpu;
+ 	u64			ts;
  
- TRACE_EVENT(kmalloc,
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index cae34c6..d83036d 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -1398,7 +1398,7 @@ static void trace_iterator_increment(struct trace_iterator *iter)
+ 	ftrace_enable_cpu();
+ }
  
-@@ -70,12 +74,9 @@ TRACE_EVENT(kmalloc,
- 		__entry->gfp_flags	= gfp_flags;
- 	),
+-static struct trace_entry *
++static struct ring_buffer_event *
+ peek_next_entry(struct trace_iterator *iter, int cpu, u64 *ts)
+ {
+ 	struct ring_buffer_event *event;
+@@ -1414,15 +1414,17 @@ peek_next_entry(struct trace_iterator *iter, int cpu, u64 *ts)
  
--	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s",
--		__entry->call_site,
--		__entry->ptr,
--		__entry->bytes_req,
--		__entry->bytes_alloc,
--		show_gfp_flags(__entry->gfp_flags))
-+	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
-+		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
-+		  show_gfp_flags_format(), show_gfp_flags_args())
- );
+ 	ftrace_enable_cpu();
  
- TRACE_EVENT(kmem_cache_alloc,
-@@ -104,12 +105,9 @@ TRACE_EVENT(kmem_cache_alloc,
- 		__entry->gfp_flags	= gfp_flags;
- 	),
+-	return event ? ring_buffer_event_data(event) : NULL;
++	return event;
+ }
  
--	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s",
--		__entry->call_site,
--		__entry->ptr,
--		__entry->bytes_req,
--		__entry->bytes_alloc,
--		show_gfp_flags(__entry->gfp_flags))
-+	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
-+		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
-+		  show_gfp_flags_format(), show_gfp_flags_args())
- );
+ static struct trace_entry *
+-__find_next_entry(struct trace_iterator *iter, int *ent_cpu, u64 *ent_ts)
++__find_next_entry(struct trace_iterator *iter, int *ent_cpu, u64 *ent_ts,
++		  unsigned int *ent_size)
+ {
+ 	struct ring_buffer *buffer = iter->tr->buffer;
+-	struct trace_entry *ent, *next = NULL;
++	struct ring_buffer_event *event, *next = NULL;
+ 	int cpu_file = iter->cpu_file;
++	struct trace_entry *ent;
+ 	u64 next_ts = 0, ts;
+ 	int next_cpu = -1;
+ 	int cpu;
+@@ -1434,11 +1436,9 @@ __find_next_entry(struct trace_iterator *iter, int *ent_cpu, u64 *ent_ts)
+ 	if (cpu_file > TRACE_PIPE_ALL_CPU) {
+ 		if (ring_buffer_empty_cpu(buffer, cpu_file))
+ 			return NULL;
+-		ent = peek_next_entry(iter, cpu_file, ent_ts);
+-		if (ent_cpu)
+-			*ent_cpu = cpu_file;
+-
+-		return ent;
++		next_cpu = cpu_file;
++		next = peek_next_entry(iter, cpu_file, &next_ts);
++		goto out;
+ 	}
  
- TRACE_EVENT(kmalloc_node,
-@@ -141,13 +139,9 @@ TRACE_EVENT(kmalloc_node,
- 		__entry->node		= node;
- 	),
+ 	for_each_tracing_cpu(cpu) {
+@@ -1446,38 +1446,47 @@ __find_next_entry(struct trace_iterator *iter, int *ent_cpu, u64 *ent_ts)
+ 		if (ring_buffer_empty_cpu(buffer, cpu))
+ 			continue;
  
--	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s node=%d",
--		__entry->call_site,
--		__entry->ptr,
--		__entry->bytes_req,
--		__entry->bytes_alloc,
--		show_gfp_flags(__entry->gfp_flags),
--		__entry->node)
-+	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
-+		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
-+		  show_gfp_flags_format() " node=<int:node>", show_gfp_flags_args())
- );
+-		ent = peek_next_entry(iter, cpu, &ts);
++		event = peek_next_entry(iter, cpu, &ts);
  
- TRACE_EVENT(kmem_cache_alloc_node,
-@@ -179,13 +173,9 @@ TRACE_EVENT(kmem_cache_alloc_node,
- 		__entry->node		= node;
- 	),
+ 		/*
+ 		 * Pick the entry with the smallest timestamp:
+ 		 */
+-		if (ent && (!next || ts < next_ts)) {
+-			next = ent;
++		if (event && (!next || ts < next_ts)) {
++			next = event;
+ 			next_cpu = cpu;
+ 			next_ts = ts;
+ 		}
+ 	}
  
--	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s node=%d",
--		__entry->call_site,
--		__entry->ptr,
--		__entry->bytes_req,
--		__entry->bytes_alloc,
--		show_gfp_flags(__entry->gfp_flags),
--		__entry->node)
-+	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
-+		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
-+		  show_gfp_flags_format() " node=<int:node>", show_gfp_flags_args())
- );
++ out:
+ 	if (ent_cpu)
+ 		*ent_cpu = next_cpu;
  
- TRACE_EVENT(kfree,
-@@ -204,7 +194,7 @@ TRACE_EVENT(kfree,
- 		__entry->ptr		= ptr;
- 	),
+ 	if (ent_ts)
+ 		*ent_ts = next_ts;
  
--	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
-+	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr>")
- );
+-	return next;
++	if (!next)
++		return NULL;
++
++	ent = ring_buffer_event_data(next);
++	if (ent_size)
++		*ent_size = ring_buffer_event_length(next);
++
++	return ent;
+ }
  
- TRACE_EVENT(kmem_cache_free,
-@@ -223,7 +213,7 @@ TRACE_EVENT(kmem_cache_free,
- 		__entry->ptr		= ptr;
- 	),
+ /* Find the next real entry, without updating the iterator itself */
+ struct trace_entry *trace_find_next_entry(struct trace_iterator *iter,
+ 					  int *ent_cpu, u64 *ent_ts)
+ {
+-	return __find_next_entry(iter, ent_cpu, ent_ts);
++	return __find_next_entry(iter, ent_cpu, ent_ts, NULL);
+ }
  
--	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
-+	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr>")
- );
- #endif /* _TRACE_KMEM_H */
+ /* Find the next real entry, and increment the iterator to the next entry */
+ static void *find_next_entry_inc(struct trace_iterator *iter)
+ {
+-	iter->ent = __find_next_entry(iter, &iter->cpu, &iter->ts);
++	iter->ent = __find_next_entry(iter, &iter->cpu, &iter->ts,
++				      &iter->ent_size);
  
+ 	if (iter->ent)
+ 		trace_iterator_increment(iter);
 -- 
 1.6.3.1
 
