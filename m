@@ -1,418 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbZFIGm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758336AbZFIGnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758087AbZFIGm7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 02:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756813AbZFIGms
+	id S1758336AbZFIGnU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 02:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758092AbZFIGm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 02:42:48 -0400
-Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:46160 "EHLO
-	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755261AbZFIGmr (ORCPT
+	Tue, 9 Jun 2009 02:42:58 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:60099 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758289AbZFIGm4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 02:42:47 -0400
-To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
+	Tue, 9 Jun 2009 02:42:56 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, Miklos Szeredi <miklos@szeredi.hu>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+       linux-mm@kvack.org, linux-fsdevel@vger.kernel.org, hugh@veritas.com,
+       tj@kernel.org, adobriyan@gmail.com, alan@lxorguk.ukuu.org.uk,
+       gregkh@suse.de, npiggin@suse.de, akpm@linux-foundation.org,
+       hch@infradead.org
+References: <m1skkf761y.fsf@fess.ebiederm.org>
+	<m1oct739xu.fsf@fess.ebiederm.org>
+	<20090606080334.GA15204@ZenIV.linux.org.uk>
+	<E1MDbLz-0003wm-Db@pomaz-ex.szeredi.hu>
+	<20090608162913.GL8633@ZenIV.linux.org.uk>
+	<E1MDhxh-0004nz-Qm@pomaz-ex.szeredi.hu>
+	<20090608175018.GM8633@ZenIV.linux.org.uk>
+	<alpine.LFD.2.01.0906081100000.6847@localhost.localdomain>
+	<20090608185041.GN8633@ZenIV.linux.org.uk>
+	<alpine.LFD.2.01.0906081217340.6847@localhost.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 08 Jun 2009 23:42:53 -0700
+In-Reply-To: <alpine.LFD.2.01.0906081217340.6847@localhost.localdomain> (Linus Torvalds's message of "Mon\, 8 Jun 2009 12\:18\:41 -0700 \(PDT\)")
+Message-ID: <m1ocsxykk2.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Subject: [PATCH 25/27] score: create lib files libgcc.h lshrdi3.c Makefile string.S
- ucmpdi2.c
-X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OFEE0AD7EF.9133B29A-ON482575D0.0024626F-482575D0.0024D37B@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Tue, 9 Jun 2009 14:37:57 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/09 ?? 02:37:57,
-	Serialize complete at 2009/06/09 ?? 02:37:57
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: torvalds@linux-foundation.org, hch@infradead.org, akpm@linux-foundation.org, npiggin@suse.de, gregkh@suse.de, alan@lxorguk.ukuu.org.uk, adobriyan@gmail.com, tj@kernel.org, hugh@veritas.com, linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu, viro@ZenIV.linux.org.uk
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Linus Torvalds <torvalds@linux-foundation.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  1.6 XMSubMetaSx_00 1+ Sexy Words
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH 0/23] File descriptor hot-unplug support v2
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 08bc9cdf7162a2c2f1029ca72f074d881974956f Mon Sep 17 00:00:00 2001
-From: Chen Liqin <liqin.chen@sunplusct.com>
-Date: Tue, 9 Jun 2009 13:43:19 +0800
-Subject: [PATCH 25/27] score: create lib files libgcc.h lshrdi3.c Makefile 
-string.S ucmpdi2.c
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
+> On Mon, 8 Jun 2009, Al Viro wrote:
+>> 
+>> Sure, even though I'm not at all certain that copy_from_user() is that easy.
+>> We can make locking current->mm in there interruptible, all right, but that's
+>> only a part of the answer - even aside of the allocations, we'd need vma
+>> ->fault() interruptible as well, which leads to interruptible instances of
+>> ->readpage(), with all the fun _that_ would be.
+>
+> We already have all that - the NFS people wanted it.
+>
+> More importantly, you don't actually need to interrupt readpage itself - 
+> you just need to stop _waiting_ on it. So in your fault handler, just stop 
+> waiting, and instead just return FAULT_RETRY or whatever.
 
-Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
----
- arch/score/lib/Makefile  |    8 ++
- arch/score/lib/libgcc.h  |   37 +++++++++
- arch/score/lib/lshrdi3.c |   47 +++++++++++
- arch/score/lib/string.S  |  203 
-++++++++++++++++++++++++++++++++++++++++++++++
- arch/score/lib/ucmpdi2.c |   38 +++++++++
- 5 files changed, 333 insertions(+), 0 deletions(-)
- create mode 100644 arch/score/lib/Makefile
- create mode 100644 arch/score/lib/libgcc.h
- create mode 100644 arch/score/lib/lshrdi3.c
- create mode 100644 arch/score/lib/string.S
- create mode 100644 arch/score/lib/ucmpdi2.c
+That sounds doable.  Has that code been merged yet?
 
-diff --git a/arch/score/lib/Makefile b/arch/score/lib/Makefile
-new file mode 100644
-index 0000000..553e30e
---- /dev/null
-+++ b/arch/score/lib/Makefile
-@@ -0,0 +1,8 @@
-+#
-+# Makefile for SCORE-specific library files..
-+#
-+
-+lib-y += string.o checksum.o checksum_copy.o
-+
-+# libgcc-style stuff needed in the kernel
-+obj-y += ashldi3.o ashrdi3.o cmpdi2.o lshrdi3.o ucmpdi2.o
-diff --git a/arch/score/lib/libgcc.h b/arch/score/lib/libgcc.h
-new file mode 100644
-index 0000000..0f12543
---- /dev/null
-+++ b/arch/score/lib/libgcc.h
-@@ -0,0 +1,37 @@
-+/*
-+ * arch/score/lib/libgcc.h
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+
-+#ifndef __ASM_LIBGCC_H
-+#define __ASM_LIBGCC_H
-+
-+#include <asm/byteorder.h>
-+
-+typedef int word_type __attribute__((mode(__word__)));
-+
-+struct DWstruct {
-+       int low, high;
-+};
-+
-+typedef union {
-+       struct DWstruct s;
-+       long long ll;
-+} DWunion;
-+
-+#endif /* __ASM_LIBGCC_H */
-diff --git a/arch/score/lib/lshrdi3.c b/arch/score/lib/lshrdi3.c
-new file mode 100644
-index 0000000..ce21175
---- /dev/null
-+++ b/arch/score/lib/lshrdi3.c
-@@ -0,0 +1,47 @@
-+/*
-+ * arch/score/lib/lshrdi3.c
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+
-+#include <linux/module.h>
-+#include "libgcc.h"
-+
-+long long __lshrdi3(long long u, word_type b)
-+{
-+       DWunion uu, w;
-+       word_type bm;
-+
-+       if (b == 0)
-+               return u;
-+
-+       uu.ll = u;
-+       bm = 32 - b;
-+
-+       if (bm <= 0) {
-+               w.s.high = 0;
-+               w.s.low = (unsigned int) uu.s.high >> -bm;
-+       } else {
-+               const unsigned int carries = (unsigned int) uu.s.high << 
-bm;
-+
-+               w.s.high = (unsigned int) uu.s.high >> b;
-+               w.s.low = ((unsigned int) uu.s.low >> b) | carries;
-+       }
-+
-+       return w.ll;
-+}
-+EXPORT_SYMBOL(__lshrdi3);
-diff --git a/arch/score/lib/string.S b/arch/score/lib/string.S
-new file mode 100644
-index 0000000..ff9df3b
---- /dev/null
-+++ b/arch/score/lib/string.S
-@@ -0,0 +1,203 @@
-+/*
-+ * arch/score/lib/string.S
-+ *
-+ * Score Processor version.
-+ *
-+ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
-+ *  Chen Liqin <liqin.chen@sunplusct.com>
-+ *  Lennox Wu <lennox.wu@sunplusct.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <asm-generic/errno.h>
-+
-+       .text
-+       .globl  __strncpy_from_user
-+       .align 2
-+__strncpy_from_user:
-+       cmpi.c  r6, 0
-+       mv      r9, r6
-+       ble     .L2
-+0:     lbu     r7, [r5]
-+       ldi     r8, 0
-+1:     sb      r7, [r4]
-+2:     lb      r6, [r5]
-+       cmp.c   r6, r8
-+       beq     .L2
-+
-+.L5:
-+       addi    r8, 1
-+       cmp.c   r8, r9
-+       beq     .L7
-+3:     lbu     r6, [r5, 1]+
-+4:     sb      r6, [r4, 1]+
-+5:     lb      r7, [r5]
-+       cmpi.c  r7, 0
-+       bne     .L5
-+.L7:
-+       mv      r4, r8
-+       br      r3
-+.L2:
-+       ldi     r8, 0
-+       mv      r4, r8
-+       br      r3
-+       .section .fixup, "ax"
-+99:
-+       ldi     r4, -EFAULT
-+       br      r3
-+       .previous
-+       .section __ex_table, "a"
-+       .align  2
-+       .word   0b ,99b
-+       .word   1b ,99b
-+       .word   2b ,99b
-+       .word   3b ,99b
-+       .word   4b ,99b
-+       .word   5b ,99b
-+       .previous
-+
-+       .globl __strnlen_user
-+       .align 2
-+__strnlen_user:
-+       cmpi.c  r5, 0
-+       ble     .L11
-+0:     lb      r6, [r4]
-+       ldi     r7, 0
-+       cmp.c   r6, r7
-+       beq     .L11
-+.L15:
-+       addi    r7, 1
-+       cmp.c   r7, r5
-+       beq     .L23
-+1:     lb      r6, [r4,1]+
-+       cmpi.c  r6, 0
-+       bne     .L15
-+.L23:
-+       addri   r4, r7, 1
-+       br      r3
-+
-+.L11:
-+       ldi     r4, 1
-+       br      r3
-+       .section .fixup, "ax"
-+99:
-+       ldi     r4, 0
-+       br      r3
-+
-+       .section __ex_table,"a"
-+       .align 2
-+       .word   0b, 99b
-+       .word   1b, 99b
-+       .previous
-+
-+       .globl  __strlen_user
-+       .align 2
-+__strlen_user:
-+0:     lb      r6, [r4]
-+       mv      r7, r4
-+       extsb   r6, r6
-+       cmpi.c  r6, 0
-+       mv      r4, r6
-+       beq     .L27
-+.L28:
-+1:     lb      r6, [r7, 1]+
-+       addi    r6, 1
-+       cmpi.c  r6, 0
-+       bne     .L28
-+.L27:
-+       br      r3
-+       .section .fixup, "ax"
-+       ldi     r4, 0x0
-+       br      r3
-+99:
-+       ldi     r4, 0
-+       br      r3
-+       .previous
-+       .section __ex_table, "a"
-+       .align  2
-+       .word   0b ,99b
-+       .word   1b ,99b
-+       .previous
-+
-+       .globl  __copy_tofrom_user
-+       .align 2
-+__copy_tofrom_user:
-+       cmpi.c  r6, 0
-+       mv      r10,r6
-+       beq     .L32
-+       ldi     r9, 0
-+.L34:
-+       add     r6, r5, r9
-+0:     lbu     r8, [r6]
-+       add     r7, r4, r9
-+1:     sb      r8, [r7]
-+       addi    r9, 1
-+       cmp.c   r9, r10
-+       bne     .L34
-+.L32:
-+       ldi     r4, 0
-+       br      r3
-+       .section .fixup, "ax"
-+99:
-+       sub     r4, r10, r9
-+       br      r3
-+       .previous
-+       .section __ex_table, "a"
-+       .align  2
-+       .word   0b, 99b
-+       .word   1b, 99b
-+       .previous
-+
-+       .globl __clear_user
-+       .align 2
-+__clear_user:
-+       cmpi.c  r5, 0
-+       beq     .L38
-+       ldi     r6, 0
-+       mv      r7, r6
-+.L40:
-+       addi    r6, 1
-+0:     sb      r7, [r4]+, 1
-+       cmp.c   r6, r5
-+       bne     .L40
-+.L38:
-+       ldi     r4, 0
-+       br      r3
-+
-+       .section .fixup, "ax"
-+       br      r3
-+       .previous
-+       .section __ex_table, "a"
-+       .align  2
-+99:
-+       .word   0b, 99b
-+       .previous
-+
-+       .align  2
-+       .globl  __put_user_unknown
-+__put_user_unknown:
-+       .set volatile
-+       ldi     r4, -EFAULT
-+       br      r3
-+
-+       .align  2
-+       .globl  __get_user_unknown
-+       .set volatile
-+__get_user_unknown:
-+       ldi     r5, 0
-+       ldi     r4, -EFAULT
-+       br      r3
-diff --git a/arch/score/lib/ucmpdi2.c b/arch/score/lib/ucmpdi2.c
-new file mode 100644
-index 0000000..b15241e
---- /dev/null
-+++ b/arch/score/lib/ucmpdi2.c
-@@ -0,0 +1,38 @@
-+/*
-+ * arch/score/lib/ucmpdi2.c
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/module.h>
-+#include "libgcc.h"
-+
-+word_type __ucmpdi2(unsigned long long a, unsigned long long b)
-+{
-+       const DWunion au = {.ll = a};
-+       const DWunion bu = {.ll = b};
-+
-+       if ((unsigned int) au.s.high < (unsigned int) bu.s.high)
-+               return 0;
-+       else if ((unsigned int) au.s.high > (unsigned int) bu.s.high)
-+               return 2;
-+       if ((unsigned int) au.s.low < (unsigned int) bu.s.low)
-+               return 0;
-+       else if ((unsigned int) au.s.low > (unsigned int) bu.s.low)
-+               return 2;
-+       return 1;
-+}
-+EXPORT_SYMBOL(__ucmpdi2);
--- 
-1.6.2
+I took a quick look and it didn't see anyone breaking out of page fault with a
+signal or code to really handle that.
 
+Eric
