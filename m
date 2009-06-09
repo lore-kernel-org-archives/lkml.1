@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbZFIGgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbZFIGhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757452AbZFIGgz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 02:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756640AbZFIGgr
+	id S1757887AbZFIGhd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 02:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbZFIGhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 02:36:47 -0400
-Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:58054 "EHLO
-	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756878AbZFIGgq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 02:36:46 -0400
-To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-MIME-Version: 1.0
-Subject: [PATCH 15/27] score: create head files resource.h
-X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OF79067DAA.30777D1C-ON482575D0.0023D45B-482575D0.00244621@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Tue, 9 Jun 2009 14:31:55 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/09 ?? 02:31:56,
-	Serialize complete at 2009/06/09 ?? 02:31:56
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 9 Jun 2009 02:37:24 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:54734 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754194AbZFIGhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 02:37:23 -0400
+Date: Tue, 9 Jun 2009 16:37:18 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Wim Van Sebroeck <wim@iguana.be>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Nicolas Pitre <nico@cam.org>, Russell King <rmk@arm.linux.org.uk>
+Subject: linux-next: manual merge of the watchdog tree with the arm tree
+Message-Id: <20090609163718.ccefad1d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From c01a13da77fa5e44db8f1f701fac3df686d37aac Mon Sep 17 00:00:00 2001
-From: Chen Liqin <liqin.chen@sunplusct.com>
-Date: Tue, 9 Jun 2009 13:43:12 +0800
-Subject: [PATCH 15/27] score: create head files resource.h
+Hi Wim,
 
+Today's linux-next merge of the watchdog tree got a conflict in
+drivers/watchdog/Makefile between commit
+3b937a7dbddbedd9457b33fcc8fa369c0c229c6e ("[ARM] Orion/Kirkwood: rename
+orion5x_wdt to orion_wdt") from the arm tree and commit
+e35f878d8313518a20d3c53393d14761dca74624 ("[WATCHDOG] U300 COH 901 327
+watchdog driver") from the watchdog tree.
 
-Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
----
- arch/score/include/asm/resource.h |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
- create mode 100644 arch/score/include/asm/resource.h
-
-diff --git a/arch/score/include/asm/resource.h 
-b/arch/score/include/asm/resource.h
-new file mode 100644
-index 0000000..9ce22bc
---- /dev/null
-+++ b/arch/score/include/asm/resource.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_RESOURCE_H
-+#define _ASM_SCORE_RESOURCE_H
-+
-+#include <asm-generic/resource.h>
-+
-+#endif /* _ASM_SCORE_RESOURCE_H */
+Just context changes.  I fixed it up (see below) and can carry the fix as
+necessary.
 -- 
-1.6.2
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
+diff --cc drivers/watchdog/Makefile
+index c3afa14,9eb74b7..0000000
+--- a/drivers/watchdog/Makefile
++++ b/drivers/watchdog/Makefile
+@@@ -40,7 -41,8 +41,8 @@@ obj-$(CONFIG_EP93XX_WATCHDOG) += ep93xx
+  obj-$(CONFIG_PNX4008_WATCHDOG) += pnx4008_wdt.o
+  obj-$(CONFIG_IOP_WATCHDOG) += iop_wdt.o
+  obj-$(CONFIG_DAVINCI_WATCHDOG) += davinci_wdt.o
+ -obj-$(CONFIG_ORION5X_WATCHDOG) += orion5x_wdt.o
+ +obj-$(CONFIG_ORION_WATCHDOG) += orion_wdt.o
++ obj-$(CONFIG_COH901327_WATCHDOG) += coh901327_wdt.o
+  
+  # AVR32 Architecture
+  obj-$(CONFIG_AT32AP700X_WDT) += at32ap700x_wdt.o
