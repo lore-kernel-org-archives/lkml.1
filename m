@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759970AbZFIJ5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759841AbZFIJ6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759970AbZFIJ5c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 05:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757356AbZFIJ5Z
+	id S1759841AbZFIJ6V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 05:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758969AbZFIJ6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 05:57:25 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34882 "EHLO mx2.suse.de"
+	Tue, 9 Jun 2009 05:58:14 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:48561 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754054AbZFIJ5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 05:57:24 -0400
-Date: Tue, 9 Jun 2009 11:57:25 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com
-Subject: Re: [PATCH] [8/16] HWPOISON: Use bitmask/action code for try_to_unmap behaviour
-Message-ID: <20090609095725.GC14820@wotan.suse.de>
-References: <20090603846.816684333@firstfloor.org> <20090603184641.868D31D0282@basil.firstfloor.org>
-Mime-Version: 1.0
+	id S1758650AbZFIJ6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 05:58:13 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090603184641.868D31D0282@basil.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
+Message-ID: <18990.12846.941708.201337@cargo.ozlabs.ibm.com>
+Date: Tue, 9 Jun 2009 19:58:06 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf_counter: extensible perf_counter_attr
+In-Reply-To: <20090609065350.GB16707@elte.hu>
+References: <1244481941.13761.9119.camel@twins>
+	<18989.57919.895309.847520@drongo.ozlabs.ibm.com>
+	<20090609065350.GB16707@elte.hu>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 08:46:41PM +0200, Andi Kleen wrote:
-> 
-> try_to_unmap currently has multiple modi (migration, munlock, normal unmap)
-> which are selected by magic flag variables. The logic is not very straight
-> forward, because each of these flag change multiple behaviours (e.g.
-> migration turns off aging, not only sets up migration ptes etc.)
-> Also the different flags interact in magic ways.
-> 
-> A later patch in this series adds another mode to try_to_unmap, so 
-> this becomes quickly unmanageable.
-> 
-> Replace the different flags with a action code (migration, munlock, munmap)
-> and some additional flags as modifiers (ignore mlock, ignore aging).
-> This makes the logic more straight forward and allows easier extension
-> to new behaviours. Change all the caller to declare what they want to 
-> do.
-> 
-> This patch is supposed to be a nop in behaviour. If anyone can prove 
-> it is not that would be a bug.
-> 
-> Cc: Lee.Schermerhorn@hp.com
-> Cc: npiggin@suse.de
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> ---
->  include/linux/rmap.h |   14 +++++++++++++-
->  mm/migrate.c         |    2 +-
->  mm/rmap.c            |   40 ++++++++++++++++++++++------------------
->  mm/vmscan.c          |    2 +-
->  4 files changed, 37 insertions(+), 21 deletions(-)
-> 
-> Index: linux/include/linux/rmap.h
-> ===================================================================
-> --- linux.orig/include/linux/rmap.h	2009-06-03 19:36:23.000000000 +0200
-> +++ linux/include/linux/rmap.h	2009-06-03 20:39:50.000000000 +0200
-> @@ -84,7 +84,19 @@
->   * Called from mm/vmscan.c to handle paging out
->   */
->  int page_referenced(struct page *, int is_locked, struct mem_cgroup *cnt);
-> -int try_to_unmap(struct page *, int ignore_refs);
-> +
-> +enum ttu_flags {
-> +	TTU_UNMAP = 0,			/* unmap mode */
-> +	TTU_MIGRATION = 1,		/* migration mode */
-> +	TTU_MUNLOCK = 2,		/* munlock mode */
-> +	TTU_ACTION_MASK = 0xff,
-> +
-> +	TTU_IGNORE_MLOCK = (1 << 8),	/* ignore mlock */
-> +	TTU_IGNORE_ACCESS = (1 << 9),	/* don't age */
-> +};
-> +#define TTU_ACTION(x) ((x) & TTU_ACTION_MASK)
+Ingo Molnar writes:
 
-I still think this is nasty and should work like Gfp flags.
+> * Paul Mackerras <paulus@samba.org> wrote:
 
+> > Since this is a user-visible structure, you've just introduced an 
+> > ABI difference between 32-bit and 64-bit processes, which we've 
+> > managed to avoid so far. [...]
+> 
+> This is a good point too - handling pointers in ABIs is possible but 
+> should be avoided as much as possible: it creates the need to 
+> introduce a compat_sys_perf_counter_open() and doubles the syscall 
+> table complexity.
+> 
+> Lets do the s/__reserved_1/attr_size ABI i suggested (i outlined 
+> various properties of it in the previous mail). Agreed?
+
+Yep, sounds good.
+
+We also need a way to allow access to random machine-specific features
+that might not be supported in a generic way, such as the instruction
+matching CAM on POWER4/PPC970, or (apparently) PEBS.  That's what I
+had intended exclusive groups + the extra_config_len field to be used
+for, but Peter removed extra_config_len...
+
+Paul.
