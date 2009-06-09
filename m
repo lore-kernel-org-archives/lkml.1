@@ -1,94 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760751AbZFIMzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932138AbZFIM5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760751AbZFIMzq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 08:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757848AbZFIMzi
+	id S932138AbZFIM5S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 08:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932067AbZFIM5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 08:55:38 -0400
-Received: from khc.piap.pl ([195.187.100.11]:39223 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757620AbZFIMzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 08:55:38 -0400
-To: <linux-kernel@vger.kernel.org>, linux-serial@vger.kernel.org
-Cc: Lee Howard <lee.howard@mainpine.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Oxford 16954 UART capabilities
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 09 Jun 2009 14:55:37 +0200
-Message-ID: <m3eittlg6u.fsf@intrepid.localdomain>
+	Tue, 9 Jun 2009 08:57:08 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:47311 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932066AbZFIM5H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 08:57:07 -0400
+Date: Tue, 9 Jun 2009 08:57:06 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
+Subject: Re: [RFC PATCH 0/5] simplify the print fmt in the event format
+ files
+In-Reply-To: <20090609120729.GB25586@elte.hu>
+Message-ID: <alpine.DEB.2.00.0906090852390.17452@gandalf.stny.rr.com>
+References: <20090609014534.790466803@goodmis.org> <20090609120729.GB25586@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I'm using a quadruple UART card based on Oxford's OX16PCI954 chip. There
-is a message about a capability mismatch for which I no longer have
-enough patience to ignore:
+On Tue, 9 Jun 2009, Ingo Molnar wrote:
+> 
+> > 
+> > We go from this:
+> > 
+> >  print fmt: "irq=%d handler=%s", REC->irq, (char *)((void *)REC + REC->__data_loc_name)
+> > 
+> > to this:
+> > 
+> >  format: irq=<int:irq> handler=<string:name>
+> > 
+> > and this:
+> > 
+> >   print fmt: "softirq=%d action=%s", REC->vec, ({ static const struct trace_print_flags symbols[] = { { HI_SOFTIRQ, "HI" }, { TIMER_SOFTIRQ, "TIMER" }, { NET_TX_SOFTIRQ, "NET_TX" }, { NET_RX_SOFTIRQ, "NET_RX" }, { BLOCK_SOFTIRQ, "BLOCK" }, { TASKLET_SOFTIRQ, "TASKLET" }, { SCHED_SOFTIRQ, "SCHED" }, { HRTIMER_SOFTIRQ, "HRTIMER" }, { RCU_SOFTIRQ, "RCU" }, { -1, ((void *)0) }}; ftrace_print_symbols_seq (p, REC->vec, symbols); })
+> > 
+> > To this:
+> > 
+> > format: softirq=<int:vec> action=<sym:vec:0=HI,1=TIMER,2=NET_TX,3=NET_RX,4=BLOCK,5=TASKLET,6=SCHED,7=HRTIMER,8=RCU
+> 
+> Introducing new, elaborate description languages is always risky. 
+> Would there be a way to reuse something existing - ideally some nice 
+> sub-set of C structure definitions?
 
-Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
-serial 0000:04:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-ttyS0: detected caps 00000700 should be 00000100
-0000:04:00.0: ttyS0 at I/O 0xec00 (irq = 16) is a 16C950/954
-ttyS1: detected caps 00000700 should be 00000100
-0000:04:00.0: ttyS1 at I/O 0xec08 (irq = 16) is a 16C950/954
-ttyS2: detected caps 00000700 should be 00000100
-0000:04:00.0: ttyS2 at I/O 0xec10 (irq = 16) is a 16C950/954
-ttyS3: detected caps 00000700 should be 00000100
-0000:04:00.0: ttyS3 at I/O 0xec18 (irq = 16) is a 16C950/954
+I'm open for suggestions. Yeah, I was trying to avoid the new markup, but 
+C is more for code and not for printing. In fact C sucks for text markup 
+:-(
 
-I'm not sure what's the problem:
+But I would also like to avoid a full xml parser in the kernel ;-)
 
-8250.h:
-#define UART_CAP_FIFO  (1 << 8)        /* UART has FIFO */
-#define UART_CAP_EFR   (1 << 9)        /* UART has EFR */
-#define UART_CAP_SLEEP (1 << 10)       /* UART has IER sleep */
+> 
+> Also, would it be possible to put more newlines into the format, so 
+> that human inspection is more straightforward. It wont matter to the 
+> tools.
 
-8250.c (uart_config[]):
+Actually, you can add newlines in the tags, and they will not affect the 
+mark up. Well, at least before the numbers. You can have:
 
-        [PORT_16C950] = {
-                .name           = "16C950/954",
-                .fifo_size      = 128,
-                .tx_loadsz      = 128,
-                .fcr            = UART_FCR_ENABLE_FIFO | UART_FCR_R_TRIG_10,
-                .flags          = UART_CAP_FIFO,
-        },
+<sym:vec:
+  0=HI,
+  1=TIMER,
+  2=NET_TX,
+  3=NET_RX,
+  4=BLOCK,
+  5=TASKLET,
+  6=SCHED,
+  7=HRTIMER,
+  8=RCU>
 
-...
+But actually, this would make it harder on the tools. Since currently my 
+tool just reads one entire line. But I guess I can fix that too.
 
-/*
- * This is a helper routine to autodetect StarTech/Exar/Oxsemi UART's.
- * When this function is called we know it is at least a StarTech
- * 16650 V2, but it might be one of several StarTech UARTs, or one of
- * its clones.  (We treat the broken original StarTech 16650 V1 as a
- * 16550, and why not?  Startech doesn't seem to even acknowledge its
- * existence.)
- *
- * What evil have men's minds wrought...
- */
-static void autoconfig_has_efr(struct uart_8250_port *up)
-{
-        unsigned int id1, id2, id3, rev;
+-- Steve
 
-        /*
-         * Everything with an EFR has SLEEP
-         */
-        up->capabilities |= UART_CAP_EFR | UART_CAP_SLEEP;
-
-then for OX 16950 it does:
-        up->port.type = PORT_16C950;
-        return;
-
-so the above CAP_EFR | CAP_SLEEP stay set.
-
-Should autoconfig_has_efr() clear these bits, or are the caps in
-uart_config[] incorrect?
-
-The datasheet lists bit 4 of IER register as "sleep mode". The EFR is
-enabled by writing 0xBF to LCR which seem consistent with the driver
-code.
-
-Should we just add UART_CAP_EFR and _SLEEP to uart_config[PORT_16C950]?
--- 
-Krzysztof Halasa
