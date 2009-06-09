@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbZFISav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbZFISbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755729AbZFISav (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZFISao
+	id S1753726AbZFISbP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbZFISa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:30:44 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44018 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752001AbZFISan (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:30:43 -0400
-Date: Tue, 9 Jun 2009 20:29:40 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Oskar Schirmer <os@emlix.com>
-Cc: Sascha Hauer <kernel@pengutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: imx: serial: add IrDA support to serial driver
-Message-ID: <20090609182939.GC32355@pengutronix.de>
-References: <1244555211-15618-1-git-send-email-os@emlix.com>
+	Tue, 9 Jun 2009 14:30:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34350 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752428AbZFISa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 14:30:58 -0400
+Message-ID: <4A2EAA53.7060006@redhat.com>
+Date: Tue, 09 Jun 2009 21:30:43 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244555211-15618-1-git-send-email-os@emlix.com>
-X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
-X-URL: http://www.pengutronix.de/
-X-IRC: #ptxdist @freenode
-X-Accept-Language: de,en
-X-Accept-Content-Type: text/plain
-X-Impressum: Pengutronix - Linux Solutions for Science and Industry
-	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
-	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
-	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
-X-Message-Flag: See Message Headers for Impressum
-X-Uptime: 20:27:33 up 29 days,  8:51, 15 users,  load average: 0.08, 0.04,
-	0.01
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: sha@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: Dan Williams <dan.j.williams@intel.com>
+CC: Stephen Hemminger <shemminger@vyatta.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #13116] Can't boot with nosmp
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>	 <D9VoutSOyXP.A.xm.Vb7KKB@chimera> <20090608091544.53a94235@nehalam>	 <e9c3a7c20906080929l1a4ec739t7585f6bba54bf684@mail.gmail.com>	 <20090608170437.1c2386a5@nehalam> <e9c3a7c20906091020m19abf3b5wbbb7f5364b2d4905@mail.gmail.com>
+In-Reply-To: <e9c3a7c20906091020m19abf3b5wbbb7f5364b2d4905@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oskar,
+Dan Williams wrote:
+> On Mon, Jun 8, 2009 at 5:04 PM, Stephen Hemminger<shemminger@vyatta.com> wrote:
+>   
+>> I did some more debugging, and the problem appears to be that
+>> booting with nosmp still leaves all the CPU's present in the cpu
+>> possible mask. So code like dma engine (or loopback device), that
+>> use alloc_percpu get broken.
+>>
+>> Not sure why all the cpu's are still showing up in the possible mask.
+>> Rusty? do you have an answer.
+>>     
+>
+> Would this recent commit also fix this issue?
+>
+> commit a4c0364be3f43d3e17fe19270f8b3d64881606e6
+> Author: Avi Kivity <avi@redhat.com>
+> Date:   Sat Jun 6 12:34:39 2009 +0300
+>
+>     KVM: Explicity initialize cpus_hardware_enabled
+>
+>     Under CONFIG_MAXSMP, cpus_hardware_enabled is allocated from the heap and
+>     not statically initialized.  This causes a crash on reboot when kvm thinks
+>     vmx is enabled on random nonexistent cpus and accesses nonexistent percpu
+>     lists.
+>
+>     Fix by explicitly clearing the variable.
+>
+>     Cc: stable@kernel.org
+>     Reported-and-tested-by: Yinghai Lu <yinghai@kernel.org>
+>     Signed-off-by: Avi Kivity <avi@redhat.com>
+>   
 
-On Tue, Jun 09, 2009 at 03:46:43PM +0200, Oskar Schirmer wrote:
-> 
-> Using the iMX serial driver with an IrDA device
-> needs extra peripheral settings and specific
-> timing depending on the transmitter circuitry used.
-> 
-> The first five patches fix minor problems in the
-> generic part of the iMX serial driver
-> 
-> The sixth introduces a generic function to calculate optimum
-> numerator denominator value pairs for PLL and clock
-> register settings, the seventh patch uses this function
-> in the iMX serial driver.
-> 
-> The last patch finally adds IrDA support to the iMX serial driver.
-> 
-
-Out of interest: On which i.MX type system(s) did you test the
-IRDA support?
-
-Sascha
-
+This only affects reboots.  But yes, the cpumask code has bugs.  Does 
+the .config involved select MAXSMP?
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
