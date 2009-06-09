@@ -1,60 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759239AbZFIIZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759358AbZFIIZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759239AbZFIIZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 04:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756543AbZFIIZO
+	id S1759358AbZFIIZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 04:25:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757972AbZFIIZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 04:25:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54507 "EHLO mx2.redhat.com"
+	Tue, 9 Jun 2009 04:25:42 -0400
+Received: from mga14.intel.com ([143.182.124.37]:45189 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755499AbZFIIZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 04:25:13 -0400
-Message-ID: <4A2E1C67.4040301@redhat.com>
-Date: Tue, 09 Jun 2009 11:25:11 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1758861AbZFIIZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 04:25:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,330,1241420400"; 
+   d="scan'208";a="152163675"
+Date: Tue, 9 Jun 2009 16:25:39 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when
+	zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
+Message-ID: <20090609082539.GA6897@localhost>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-2-git-send-email-mel@csn.ul.ie> <20090609015822.GA6740@localhost> <20090609081424.GD18380@csn.ul.ie>
 MIME-Version: 1.0
-To: Kallol Biswas <nucleodyne@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: looking for ideas on VM related research projects
-References: <438397970906072249pe76fafdj49626f20eea31eab@mail.gmail.com>	 <4A2CAC32.5030904@redhat.com> <438397970906090114m7ebc6e6fub0c6085f462d2e1a@mail.gmail.com>
-In-Reply-To: <438397970906090114m7ebc6e6fub0c6085f462d2e1a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090609081424.GD18380@csn.ul.ie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kallol Biswas wrote:
-> Hi,
->     I am from IO and driver background, and not up to date with
-> current VM developments in linux.
->
-> Are you talking about NUMA architecture? 
+On Tue, Jun 09, 2009 at 04:14:25PM +0800, Mel Gorman wrote:
+> On Tue, Jun 09, 2009 at 09:58:22AM +0800, Wu Fengguang wrote:
+> > On Mon, Jun 08, 2009 at 09:01:28PM +0800, Mel Gorman wrote:
+> > > On NUMA machines, the administrator can configure zone_reclaim_mode that is a
+> > > more targetted form of direct reclaim. On machines with large NUMA distances,
+> > > zone_reclaim_mode defaults to 1 meaning that clean unmapped pages will be
+> > > reclaimed if the zone watermarks are not being met. The problem is that
+> > > zone_reclaim() can be in a situation where it scans excessively without
+> > > making progress.
+> > > 
+> > > One such situation is where a large tmpfs mount is occupying a large
+> > > percentage of memory overall. The pages do not get cleaned or reclaimed by
+> > > zone_reclaim(), but the lists are uselessly scanned frequencly making the
+> > > CPU spin at 100%. The scanning occurs because zone_reclaim() cannot tell
+> > > in advance the scan is pointless because the counters do not distinguish
+> > > between pagecache pages backed by disk and by RAM.  The observation in
+> > > the field is that malloc() stalls for a long time (minutes in some cases)
+> > > when this situation occurs.
+> > > 
+> > > Accounting for ram-backed file pages was considered but not implemented on
+> > > the grounds it would be introducing new branches and expensive checks into
+> > > the page cache add/remove patches and increase the number of statistics
+> > > needed in the zone. As zone_reclaim() failing is currently considered a
+> > > corner case, this seemed like overkill. Note, if there are a large number
+> > > of reports about CPU spinning at 100% on NUMA that is fixed by disabling
+> > > zone_reclaim, then this assumption is false and zone_reclaim() scanning
+> > > and failing is not a corner case but a common occurance
+> > > 
+> > > This patch reintroduces zone_reclaim_interval which was removed by commit
+> > > 34aa1330f9b3c5783d269851d467326525207422 [zoned vm counters: zone_reclaim:
+> > > remove /proc/sys/vm/zone_reclaim_interval] because the zone counters were
+> > > considered sufficient to determine in advance if the scan would succeed.
+> > > As unsuccessful scans can still occur, zone_reclaim_interval is still
+> > > required.
+> > 
+> > Can we avoid the user visible parameter zone_reclaim_interval?
+> > 
+> 
+> You could, but then there is no way of disabling it by setting it to 0
+> either. I can't imagine why but the desired behaviour might really be to
+> spin and never go off-node unless there is no other option. They might
+> want to set it to 0 for example when determining what the right value for
+> zone_reclaim_mode is for their workloads.
+> 
+> > That means to introduce some heuristics for it.
+> 
+> I suspect the vast majority of users will ignore it unless they are runing
+> zone_reclaim_mode at the same time and even then will probably just leave
+> it as 30 as a LRU scan every 30 seconds worst case is not going to show up
+> on many profiles.
+> 
+> > Since the whole point
+> > is to avoid 100% CPU usage, we can take down the time used for this
+> > failed zone reclaim (T) and forbid zone reclaim until (NOW + 100*T).
+> > 
+> 
+> i.e. just fix it internally at 100 seconds? How is that better than
+> having an obscure tunable? I think if this heuristic exists at all, it's
+> important that an administrator be able to turn it off if absolutly
+> necessary and so something must be user-visible.
 
-Yes.
-
-> Could you clarify or point me
-> to document that describes the problem with VMA/task affinity?
-
-Linux will try to allocate memory on the same node that the allocating 
-thread ran on on the time the page was faulted in.  However, for long 
-running processes, the thread will eventually migrate to some other cpu 
-with only 1/N chance of actually running on the same node (N being the 
-number of nodes).
-
-If we can specify that a thread is related to some vma, the scheduler 
-can try to keep that thread running on the vma's node, or else it can 
-migrate the vma to a node with available cpu power.
-
->  Where do affinity issues arise?
->   
-
-Large, long-running processes.  My specific interest is virtualization 
-with kvm, but I believe HPC and databases can make use of this as well.  
-HPC currently solves the problem by statically allocating memory and cpu 
-resources.
-
--- 
-error compiling committee.c: too many arguments to function
-
+That 100*T don't mean 100 seconds. It means to keep CPU usage under 1%:
+after busy scanning for time T, let's go relax for 100*T.
