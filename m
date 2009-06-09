@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbZFIBsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbZFIBs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756604AbZFIBsM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 21:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbZFIBrr
+	id S1757547AbZFIBs2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 21:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbZFIBrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 21:47:47 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:52726 "EHLO
+	Mon, 8 Jun 2009 21:47:48 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:63280 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753632AbZFIBrq (ORCPT
+	with ESMTP id S1753528AbZFIBrq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 8 Jun 2009 21:47:46 -0400
-Message-Id: <20090609014746.709245674@goodmis.org>
+Message-Id: <20090609014747.188279837@goodmis.org>
 References: <20090609014534.790466803@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 08 Jun 2009 21:45:37 -0400
+Date: Mon, 08 Jun 2009 21:45:39 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -26,95 +26,171 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
-Subject: [RFC PATCH 3/5] tracing/events: modify irq print to new format
-Content-Disposition: inline; filename=0003-tracing-events-modify-irq-print-to-new-format.patch
+Subject: [RFC PATCH 5/5] tracing/events: modify kmem print to new format
+Content-Disposition: inline; filename=0005-tracing-events-modify-kmem-print-to-new-format.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Use new format for better parsing of irq events.
+Use new format for better parsing of kmem events.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/trace/events/irq.h |   35 ++++++++++++++++-------------------
- 1 files changed, 16 insertions(+), 19 deletions(-)
+ include/trace/events/kmem.h |   97 +++++++++++++++++++------------------------
+ 1 files changed, 43 insertions(+), 54 deletions(-)
 
-diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
-index b0c7ede..e1350fc 100644
---- a/include/trace/events/irq.h
-+++ b/include/trace/events/irq.h
-@@ -7,18 +7,18 @@
- #undef TRACE_SYSTEM
- #define TRACE_SYSTEM irq
+diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
+index 9baba50..2ffa8ae 100644
+--- a/include/trace/events/kmem.h
++++ b/include/trace/events/kmem.h
+@@ -17,32 +17,35 @@
+  *
+  * Thus most bits set go first.
+  */
+-#define show_gfp_flags(flags)						\
+-	(flags) ? __print_flags(flags, "|",				\
+-	{(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE"}, \
+-	{(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER"},	\
+-	{(unsigned long)GFP_USER,		"GFP_USER"},		\
+-	{(unsigned long)GFP_TEMPORARY,		"GFP_TEMPORARY"},	\
+-	{(unsigned long)GFP_KERNEL,		"GFP_KERNEL"},		\
+-	{(unsigned long)GFP_NOFS,		"GFP_NOFS"},		\
+-	{(unsigned long)GFP_ATOMIC,		"GFP_ATOMIC"},		\
+-	{(unsigned long)GFP_NOIO,		"GFP_NOIO"},		\
+-	{(unsigned long)__GFP_HIGH,		"GFP_HIGH"},		\
+-	{(unsigned long)__GFP_WAIT,		"GFP_WAIT"},		\
+-	{(unsigned long)__GFP_IO,		"GFP_IO"},		\
+-	{(unsigned long)__GFP_COLD,		"GFP_COLD"},		\
+-	{(unsigned long)__GFP_NOWARN,		"GFP_NOWARN"},		\
+-	{(unsigned long)__GFP_REPEAT,		"GFP_REPEAT"},		\
+-	{(unsigned long)__GFP_NOFAIL,		"GFP_NOFAIL"},		\
+-	{(unsigned long)__GFP_NORETRY,		"GFP_NORETRY"},		\
+-	{(unsigned long)__GFP_COMP,		"GFP_COMP"},		\
+-	{(unsigned long)__GFP_ZERO,		"GFP_ZERO"},		\
+-	{(unsigned long)__GFP_NOMEMALLOC,	"GFP_NOMEMALLOC"},	\
+-	{(unsigned long)__GFP_HARDWALL,		"GFP_HARDWALL"},	\
+-	{(unsigned long)__GFP_THISNODE,		"GFP_THISNODE"},	\
+-	{(unsigned long)__GFP_RECLAIMABLE,	"GFP_RECLAIMABLE"},	\
+-	{(unsigned long)__GFP_MOVABLE,		"GFP_MOVABLE"}		\
+-	) : "GFP_NOWAIT"
++#define show_gfp_flags(end...)						\
++	"0=GFP_NOWAIT,"							\
++	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
++	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
++	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
++	"0x%lx=%s,0x%lx=%s>" end ,					\
++	(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE", \
++	(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER",		\
++	(unsigned long)GFP_USER,		"GFP_USER",		\
++	(unsigned long)GFP_TEMPORARY,		"GFP_TEMPORARY",	\
++	(unsigned long)GFP_KERNEL,		"GFP_KERNEL",		\
++	(unsigned long)GFP_NOFS,		"GFP_NOFS",		\
++	(unsigned long)GFP_ATOMIC,		"GFP_ATOMIC",		\
++	(unsigned long)GFP_NOIO,		"GFP_NOIO",		\
++	(unsigned long)__GFP_HIGH,		"GFP_HIGH",		\
++	(unsigned long)__GFP_WAIT,		"GFP_WAIT",		\
++	(unsigned long)__GFP_IO,		"GFP_IO",		\
++	(unsigned long)__GFP_COLD,		"GFP_COLD",		\
++	(unsigned long)__GFP_NOWARN,		"GFP_NOWARN",		\
++	(unsigned long)__GFP_REPEAT,		"GFP_REPEAT",		\
++	(unsigned long)__GFP_NOFAIL,		"GFP_NOFAIL",		\
++	(unsigned long)__GFP_NORETRY,		"GFP_NORETRY",		\
++	(unsigned long)__GFP_COMP,		"GFP_COMP",		\
++	(unsigned long)__GFP_ZERO,		"GFP_ZERO",		\
++	(unsigned long)__GFP_NOMEMALLOC,	"GFP_NOMEMALLOC",	\
++	(unsigned long)__GFP_HARDWALL,		"GFP_HARDWALL",		\
++	(unsigned long)__GFP_THISNODE,		"GFP_THISNODE",		\
++	(unsigned long)__GFP_RECLAIMABLE,	"GFP_RECLAIMABLE",	\
++	(unsigned long)__GFP_MOVABLE,		"GFP_MOVABLE"
  
--#define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
--#define show_softirq_name(val)			\
--	__print_symbolic(val,			\
--			 softirq_name(HI),	\
--			 softirq_name(TIMER),	\
--			 softirq_name(NET_TX),	\
--			 softirq_name(NET_RX),	\
--			 softirq_name(BLOCK),	\
--			 softirq_name(TASKLET),	\
--			 softirq_name(SCHED),	\
--			 softirq_name(HRTIMER),	\
--			 softirq_name(RCU))
-+#define softirq_name(sirq) sirq##_SOFTIRQ, #sirq
-+#define show_softirq_name(val)						\
-+	"%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s>",	\
-+		softirq_name(HI),					\
-+		softirq_name(TIMER),					\
-+		softirq_name(NET_TX),					\
-+		softirq_name(NET_RX),					\
-+		softirq_name(BLOCK),					\
-+		softirq_name(TASKLET),					\
-+		softirq_name(SCHED),					\
-+		softirq_name(HRTIMER),					\
-+		softirq_name(RCU)
+ TRACE_EVENT(kmalloc,
  
- /**
-  * irq_handler_entry - called immediately before the irq action handler
-@@ -47,7 +47,7 @@ TRACE_EVENT(irq_handler_entry,
- 		__assign_str(name, action->name);
+@@ -70,12 +73,9 @@ TRACE_EVENT(kmalloc,
+ 		__entry->gfp_flags	= gfp_flags;
  	),
  
--	TP_printk("irq=%d handler=%s", __entry->irq, __get_str(name))
-+	TP_FORMAT("irq=<int:irq> handler=<string:name>")
+-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s",
+-		__entry->call_site,
+-		__entry->ptr,
+-		__entry->bytes_req,
+-		__entry->bytes_alloc,
+-		show_gfp_flags(__entry->gfp_flags))
++	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
++		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
++		  show_gfp_flags())
  );
  
- /**
-@@ -77,8 +77,7 @@ TRACE_EVENT(irq_handler_exit,
- 		__entry->ret	= ret;
+ TRACE_EVENT(kmem_cache_alloc,
+@@ -104,12 +104,9 @@ TRACE_EVENT(kmem_cache_alloc,
+ 		__entry->gfp_flags	= gfp_flags;
  	),
  
--	TP_printk("irq=%d return=%s",
--		  __entry->irq, __entry->ret ? "handled" : "unhandled")
-+	TP_FORMAT("irq=<int:irq> return=<if:ret:handled:unhandled>")
+-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s",
+-		__entry->call_site,
+-		__entry->ptr,
+-		__entry->bytes_req,
+-		__entry->bytes_alloc,
+-		show_gfp_flags(__entry->gfp_flags))
++	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
++		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
++		  show_gfp_flags())
  );
  
- /**
-@@ -106,8 +105,7 @@ TRACE_EVENT(softirq_entry,
- 		__entry->vec = (int)(h - vec);
+ TRACE_EVENT(kmalloc_node,
+@@ -141,13 +138,9 @@ TRACE_EVENT(kmalloc_node,
+ 		__entry->node		= node;
  	),
  
--	TP_printk("softirq=%d action=%s", __entry->vec,
--		  show_softirq_name(__entry->vec))
-+	TP_FORMAT("softirq=<int:vec> action=<sym:vec:" show_softirq_name(__entry->vec))
+-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s node=%d",
+-		__entry->call_site,
+-		__entry->ptr,
+-		__entry->bytes_req,
+-		__entry->bytes_alloc,
+-		show_gfp_flags(__entry->gfp_flags),
+-		__entry->node)
++	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
++		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
++		  show_gfp_flags(" node=<int:node>"))
  );
  
- /**
-@@ -135,8 +133,7 @@ TRACE_EVENT(softirq_exit,
- 		__entry->vec = (int)(h - vec);
+ TRACE_EVENT(kmem_cache_alloc_node,
+@@ -179,13 +172,9 @@ TRACE_EVENT(kmem_cache_alloc_node,
+ 		__entry->node		= node;
  	),
  
--	TP_printk("softirq=%d action=%s", __entry->vec,
--		  show_softirq_name(__entry->vec))
-+	TP_FORMAT("softirq=<int:vec> action=<sym:vec:" show_softirq_name(__entry->vec))
+-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s node=%d",
+-		__entry->call_site,
+-		__entry->ptr,
+-		__entry->bytes_req,
+-		__entry->bytes_alloc,
+-		show_gfp_flags(__entry->gfp_flags),
+-		__entry->node)
++	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
++		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
++		  show_gfp_flags(" node=<int:node>"))
  );
  
- #endif /*  _TRACE_IRQ_H */
+ TRACE_EVENT(kfree,
+@@ -204,7 +193,7 @@ TRACE_EVENT(kfree,
+ 		__entry->ptr		= ptr;
+ 	),
+ 
+-	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
++	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr>")
+ );
+ 
+ TRACE_EVENT(kmem_cache_free,
+@@ -223,7 +212,7 @@ TRACE_EVENT(kmem_cache_free,
+ 		__entry->ptr		= ptr;
+ 	),
+ 
+-	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
++	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr>")
+ );
+ #endif /* _TRACE_KMEM_H */
+ 
 -- 
 1.6.3.1
 
