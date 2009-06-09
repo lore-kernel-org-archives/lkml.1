@@ -1,79 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932265AbZFIM5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760328AbZFINBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932265AbZFIM5c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 08:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932067AbZFIM5X
+	id S1760328AbZFINBn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755483AbZFINBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 08:57:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42878 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932130AbZFIM5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 08:57:22 -0400
-Message-ID: <4A2E5BF1.5060405@redhat.com>
-Date: Tue, 09 Jun 2009 15:56:17 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 9 Jun 2009 09:01:36 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:41816 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752527AbZFINBf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 09:01:35 -0400
+Date: Tue, 9 Jun 2009 14:00:58 +0100
+From: Andy Whitcroft <apw@canonical.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       riel@redhat.com
+Subject: Re: [BUGFIX][PATCH] fix wrong lru rotate back at lumpty reclaim
+Message-ID: <20090609130058.GA25007@shadowen.org>
+References: <20090609181505.4083a213.kamezawa.hiroyu@jp.fujitsu.com> <28c262360906090300s13f4ee09mcc9622c1e477eaad@mail.gmail.com> <e8f208a7c6bec1818947c24658dc1561.squirrel@webmail-b.css.fujitsu.com> <28c262360906090430p21125c51g10cfdc377a78d07b@mail.gmail.com> <7ca0521d9b798ef8b56212e5b17ea713.squirrel@webmail-b.css.fujitsu.com> <28c262360906090507u75f5b594o71906777a91efa1@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
- kernels
-References: <4A0B62F7.5030802@goop.org> <200906032208.28061.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906030901460.4880@localhost.localdomain> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain> <20090609093918.GC16940@wotan.suse.de> <20090609111719.GA4463@elte.hu> <20090609121055.GA9158@wotan.suse.de> <20090609122529.GD25586@elte.hu>
-In-Reply-To: <20090609122529.GD25586@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <28c262360906090507u75f5b594o71906777a91efa1@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> Fork is pretty much the worst-case measurement for larger pte 
-> overhead, as it has to copy around a lot of pagetables.
->   
+On Tue, Jun 09, 2009 at 09:07:16PM +0900, Minchan Kim wrote:
+> 2009/6/9 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
+> > Minchan Kim wrote:
+> >
+> >> I mean follow as
+> >>  908         /*
+> >>  909          * Attempt to take all pages in the order aligned region
+> >>  910          * surrounding the tag page.  Only take those pages of
+> >>  911          * the same active state as that tag page.  We may safely
+> >>  912          * round the target page pfn down to the requested order
+> >>  913          * as the mem_map is guarenteed valid out to MAX_ORDER,
+> >>  914          * where that page is in a different zone we will detect
+> >>  915          * it from its zone id and abort this block scan.
+> >>  916          */
+> >>  917         zone_id = page_zone_id(page);
+> >>
+> > But what this code really do is.
+> > ==
+> > 931                         /* Check that we have not crossed a zone
+> > boundary. */
+> >  932                         if (unlikely(page_zone_id(cursor_page) !=
+> > zone_id))
+> >  933                                 continue;
+> > ==
+> > continue. I think this should be "break"
+> > I wonder what "This block scan" means is "scanning this aligned block".
+> 
+> It is to find first page in same zone with target page when we have
+> crossed a zone.
+> so it shouldn't stop due to that.
+> 
+> I think 'abort' means stopping only the page.
+> If it is right, it would be better to change follow as.
+> "and continue scanning next page"
+> 
+> Let's Cced Andy Whitcroft.
+> 
+> > But I think the whoe code is not written as commented.
+> >
+> >>
+> >>>> If I understand it properly , don't we add goto phrase ?
+> >>>>
+> >>> No.
+> >>
+> >> If it is so, the break also is meaningless.
+> >>
+> > yes. I'll remove it. But need to add "exit from for loop" logic again.
+> >
+> > I'm sorry that the wrong logic of this loop was out of my sight.
+> > I'll review and rewrite this part all, tomorrow.
+> 
+> Yes. I will review tomorrow, too. :)
 
-We could eliminate that if we use the R/W bit on pgd entries.  fork() 
-would be 256 clear_bit()s (1536 and 768 on i386 pae and nonpae).
+The comment is not the best wording.  The point here is that we need to
+round down in order to safely scan the free blocks as they are only
+marked at the start.  In rounding down however we may move back into the
+previous zone as zones are not necessarily MAX_ORDER aligned.  We want
+to ignore the bit before our zone starts and that check moves us on to
+the next page.  It should be noted that this occurs rarely, ie. only
+when we touch the start of a zone and only then where the zone
+boundaries are not MAX_ORDER aligned.
 
-copy_one_pte() disagrees though:
-
-        if (unlikely(!pte_present(pte))) {
-                if (!pte_file(pte)) {
-                        swp_entry_t entry = pte_to_swp_entry(pte);
-
-                        swap_duplicate(entry);
-                        /* make sure dst_mm is on swapoff's mmlist. */
-                        if (unlikely(list_empty(&dst_mm->mmlist))) {
-                                spin_lock(&mmlist_lock);
-                                if (list_empty(&dst_mm->mmlist))
-                                        list_add(&dst_mm->mmlist,
-                                                 &src_mm->mmlist);
-                                spin_unlock(&mmlist_lock);
-                        }
-                        if (is_write_migration_entry(entry) &&
-                                        is_cow_mapping(vm_flags)) {
-                                /*
-                                 * COW mappings require pages in both parent
-                                 * and child to be set to read.
-                                 */
-                                make_migration_entry_read(&entry);
-                                pte = swp_entry_to_pte(entry);
-                                set_pte_at(src_mm, addr, src_pte, pte);
-                        }
-                }
-                goto out_set_pte;
-        }
-
-
-Not sure how we can enlaze this thing.
-
--- 
-error compiling committee.c: too many arguments to function
-
+-apw
