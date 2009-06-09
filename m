@@ -1,104 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbZFINKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932200AbZFINNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760057AbZFINKW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756916AbZFINKL
+	id S932200AbZFINNS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZFINNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:10:11 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:41192 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755588AbZFINKK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:10:10 -0400
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Products GmbH
-To: Vladimir Zajac <eightgraph@gmail.com>
-Subject: Re: [PATCH 2.6.30-rc4] thermal: fix off-by-1 error in trip point trigger condition
-Date: Tue, 9 Jun 2009 15:10:10 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.19-3.2-default; KDE/4.1.3; x86_64; ; )
-Cc: rui.zhang@intel.com, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200905061934.21821.eightgraph@gmail.com>
-In-Reply-To: <200905061934.21821.eightgraph@gmail.com>
+	Tue, 9 Jun 2009 09:13:07 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:8203 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758244AbZFINNG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 09:13:06 -0400
+X-Trace: 208503684/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.115.137/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.115.137
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAH/8LUpQKXOJ/2dsb2JhbACBT81egUN5gU4FiHs
+X-IronPort-AV: E=Sophos;i="4.41,331,1241391600"; 
+   d="scan'208";a="208503684"
+Date: Tue, 9 Jun 2009 14:02:20 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Joao Ramos <joao.ramos@inov.pt>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH next] ide: fix PowerMac bootup oops
+In-Reply-To: <200906091436.19710.bzolnier@gmail.com>
+Message-ID: <Pine.LNX.4.64.0906091357490.21803@sister.anvils>
+References: <Pine.LNX.4.64.0906082137120.22183@sister.anvils>
+ <200906082328.02729.bzolnier@gmail.com> <Pine.LNX.4.64.0906091237290.14065@sister.anvils>
+ <200906091436.19710.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906091510.11285.trenn@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 May 2009 19:34:21 Vladimir Zajac wrote:
-> This patch fixes a regression caused by commit
-> b1569e99c795bf83b4ddf41c4f1c42761ab7f75e
-> "ACPI: move thermal trip handling to generic thermal layer"
-> which accidentally changed trip point trigger condition to
->   temp > trip_temp
+On Tue, 9 Jun 2009, Bartlomiej Zolnierkiewicz wrote:
+> On Tuesday 09 June 2009 13:44:25 Hugh Dickins wrote:
+> > 
+> > But memset id in probe_for_drive() when it might be being reused -
+> > or would it be better to memset it wherever it used to be kfreed?
 > 
-> This patch changes the trigger condition back to
->   temp >= trip_temp
-> 
-> Signed-off-by: Vladimir Zajac <eightgraph@gmail.com>
-This one should have
-CC: stable@kernel.org
-added.
-Vladimir, do you mind submitting this one for stable inclusion
-if not done already.
+> Please memset() it in ide_port_init_devices_data() -- this function
+> is called before IDE device structure is going to be (re-)used.
 
-Thanks,
-
-     Thomas
-
-> ---
-> 
->  thermal_sys.c |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> --- linux-2.6.30-rc4/drivers/thermal/thermal_sys.c	2009-04-30 
-23:52:59.000000000 +0200
-> +++ linux-2.6.30-rc4-p1/drivers/thermal/thermal_sys.c	2009-05-04 
-19:58:30.000000000 +0200
-> @@ -961,7 +961,7 @@ void thermal_zone_device_update(struct t
->  
->  		switch (trip_type) {
->  		case THERMAL_TRIP_CRITICAL:
-> -			if (temp > trip_temp) {
-> +			if (temp >= trip_temp) {
->  				if (tz->ops->notify)
->  					ret = tz->ops->notify(tz, count,
->  							      trip_type);
-> @@ -974,7 +974,7 @@ void thermal_zone_device_update(struct t
->  			}
->  			break;
->  		case THERMAL_TRIP_HOT:
-> -			if (temp > trip_temp)
-> +			if (temp >= trip_temp)
->  				if (tz->ops->notify)
->  					tz->ops->notify(tz, count, trip_type);
->  			break;
-> @@ -986,14 +986,14 @@ void thermal_zone_device_update(struct t
->  
->  				cdev = instance->cdev;
->  
-> -				if (temp > trip_temp)
-> +				if (temp >= trip_temp)
->  					cdev->ops->set_cur_state(cdev, 1);
->  				else
->  					cdev->ops->set_cur_state(cdev, 0);
->  			}
->  			break;
->  		case THERMAL_TRIP_PASSIVE:
-> -			if (temp > trip_temp || tz->passive)
-> +			if (temp >= trip_temp || tz->passive)
->  				thermal_zone_device_passive(tz, temp,
->  							    trip_temp, count);
->  			break;
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-
-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+That makes sense too, thanks, here we go...
 
 
+[PATCH next] ide: fix PowerMac bootup oops
+
+PowerMac bootup with CONFIG_IDE=y oopses in ide_pio_cycle_time():
+because "ide: try to use PIO Mode 0 during probe if possible" causes
+pmac_ide_set_pio_mode() to be called before drive->id has been set.
+
+Bart points out other places which now need drive->id set earlier,
+so follow his advice to allocate it in ide_port_alloc_devices()
+(using kzalloc_node, without error message, as when allocating drive)
+and memset it for reuse in ide_port_init_devices_data().
+
+Fixed in passing: ide_host_alloc() was missing ide_port_free_devices()
+from an error path.
+
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+---
+
+ drivers/ide/ide-probe.c |   47 ++++++++++++++++----------------------
+ 1 file changed, 21 insertions(+), 26 deletions(-)
+
+--- lnext/drivers/ide/ide-probe.c	2009-06-03 11:45:13.000000000 +0100
++++ linux/drivers/ide/ide-probe.c	2009-06-09 13:50:03.000000000 +0100
+@@ -465,23 +465,8 @@ static u8 probe_for_drive(ide_drive_t *d
+ 	int rc;
+ 	u8 cmd;
+ 
+-	/*
+-	 *	In order to keep things simple we have an id
+-	 *	block for all drives at all times. If the device
+-	 *	is pre ATA or refuses ATA/ATAPI identify we
+-	 *	will add faked data to this.
+-	 *
+-	 *	Also note that 0 everywhere means "can't do X"
+-	 */
+- 
+ 	drive->dev_flags &= ~IDE_DFLAG_ID_READ;
+ 
+-	drive->id = kzalloc(SECTOR_SIZE, GFP_KERNEL);
+-	if (drive->id == NULL) {
+-		printk(KERN_ERR "ide: out of memory for id data.\n");
+-		return 0;
+-	}
+-
+ 	m = (char *)&drive->id[ATA_ID_PROD];
+ 	strcpy(m, "UNKNOWN");
+ 
+@@ -497,7 +482,7 @@ static u8 probe_for_drive(ide_drive_t *d
+ 		}
+ 
+ 		if ((drive->dev_flags & IDE_DFLAG_PRESENT) == 0)
+-			goto out_free;
++			return 0;
+ 
+ 		/* identification failed? */
+ 		if ((drive->dev_flags & IDE_DFLAG_ID_READ) == 0) {
+@@ -521,7 +506,7 @@ static u8 probe_for_drive(ide_drive_t *d
+ 	}
+ 
+ 	if ((drive->dev_flags & IDE_DFLAG_PRESENT) == 0)
+-		goto out_free;
++		return 0;
+ 
+ 	/* The drive wasn't being helpful. Add generic info only */
+ 	if ((drive->dev_flags & IDE_DFLAG_ID_READ) == 0) {
+@@ -535,9 +520,6 @@ static u8 probe_for_drive(ide_drive_t *d
+ 	}
+ 
+ 	return 1;
+-out_free:
+-	kfree(drive->id);
+-	return 0;
+ }
+ 
+ static void hwif_release_dev(struct device *dev)
+@@ -817,8 +799,6 @@ static int ide_port_setup_devices(ide_hw
+ 		if (ide_init_queue(drive)) {
+ 			printk(KERN_ERR "ide: failed to init %s\n",
+ 					drive->name);
+-			kfree(drive->id);
+-			drive->id = NULL;
+ 			drive->dev_flags &= ~IDE_DFLAG_PRESENT;
+ 			continue;
+ 		}
+@@ -947,9 +927,6 @@ static void drive_release_dev (struct de
+ 	blk_cleanup_queue(drive->queue);
+ 	drive->queue = NULL;
+ 
+-	kfree(drive->id);
+-	drive->id = NULL;
+-
+ 	drive->dev_flags &= ~IDE_DFLAG_PRESENT;
+ 
+ 	complete(&drive->gendev_rel_comp);
+@@ -1132,8 +1109,11 @@ static void ide_port_init_devices_data(i
+ 
+ 	ide_port_for_each_dev(i, drive, hwif) {
+ 		u8 j = (hwif->index * MAX_DRIVES) + i;
++		u16 *saved_id = drive->id;
+ 
+ 		memset(drive, 0, sizeof(*drive));
++		memset(saved_id, 0, SECTOR_SIZE);
++		drive->id = saved_id;
+ 
+ 		drive->media			= ide_disk;
+ 		drive->select			= (i << 4) | ATA_DEVICE_OBS;
+@@ -1240,8 +1220,10 @@ static void ide_port_free_devices(ide_hw
+ 	ide_drive_t *drive;
+ 	int i;
+ 
+-	ide_port_for_each_dev(i, drive, hwif)
++	ide_port_for_each_dev(i, drive, hwif) {
++		kfree(drive->id);
+ 		kfree(drive);
++	}
+ }
+ 
+ static int ide_port_alloc_devices(ide_hwif_t *hwif, int node)
+@@ -1255,6 +1237,18 @@ static int ide_port_alloc_devices(ide_hw
+ 		if (drive == NULL)
+ 			goto out_nomem;
+ 
++		/*
++		 * In order to keep things simple we have an id
++		 * block for all drives at all times. If the device
++		 * is pre ATA or refuses ATA/ATAPI identify we
++		 * will add faked data to this.
++		 *
++		 * Also note that 0 everywhere means "can't do X"
++		 */
++		drive->id = kzalloc_node(SECTOR_SIZE, GFP_KERNEL, node);
++		if (drive->id == NULL)
++			goto out_nomem;
++
+ 		hwif->devices[i] = drive;
+ 	}
+ 	return 0;
+@@ -1296,6 +1290,7 @@ struct ide_host *ide_host_alloc(const st
+ 		if (idx < 0) {
+ 			printk(KERN_ERR "%s: no free slot for interface\n",
+ 					d ? d->name : "ide");
++			ide_port_free_devices(hwif);
+ 			kfree(hwif);
+ 			continue;
+ 		}
