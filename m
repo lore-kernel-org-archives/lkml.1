@@ -1,117 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbZFINFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932074AbZFINIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760975AbZFINFp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbZFINFk
+	id S932074AbZFINIO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:08:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757487AbZFINID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:05:40 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:51196 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755588AbZFINFj (ORCPT
+	Tue, 9 Jun 2009 09:08:03 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:16168 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752806AbZFINIC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:05:39 -0400
-From: Karsten Keil <kernel@linux-pingi.de>
-To: netdev@vger.kernel.org
-Subject: Re: mISDN: WARNING: at kernel/softirq.c:124 local_bh_enable+0x8f/0xb0()
-Date: Tue, 9 Jun 2009 15:05:31 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mathias Kretschmer <psoting@blx4.net>, linux-kernel@vger.kernel.org
-References: <20090603190952.2dd0cc70.sfr@canb.auug.org.au> <20090604195948.9c7af254.akpm@linux-foundation.org> <200906051201.04185.isdn@linux-pingi.de>
-In-Reply-To: <200906051201.04185.isdn@linux-pingi.de>
+	Tue, 9 Jun 2009 09:08:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=I2Fi7JdKMdY/FHjTptNKlfbFFFznqANP4WelWj0ZNvlvsa6joEvivfC1/AzjuyxhvU
+         3oep+j8ib+t5RIIdJpB02GSYimx5reDLWY+yVU0w9lix8i8ZGY2sDmW/Ian7x+lpIUA/
+         wh5iYeQL/gdRsxUSBeRcVwLQGOvwgbHRKwbR4=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906091505.31537.kernel@linux-pingi.de>
-X-Provags-ID: V01U2FsdGVkX1+1LY37XDHZa156mp9zIz8G1DCC5LfEjqx48TD
- rebMbwthaAOkdjaiMm7YqHfZZHkU5v9gjdjHELQ2JFS7e1rpdA
- jPof7lLjZc9kY2WaKQTeJTV2U+fRSvT
+In-Reply-To: <4A2E4A32.1060705@trash.net>
+References: <91ac27070906081105x30171bedra10d244d382a6934@mail.gmail.com>
+	 <20090608.143454.161329513.davem@davemloft.net>
+	 <4A2E4077.8080407@trash.net>
+	 <91ac27070906090427k6f57745xc72f9fcb6801957a@mail.gmail.com>
+	 <4A2E4A32.1060705@trash.net>
+Date: Tue, 9 Jun 2009 16:08:01 +0300
+Message-ID: <91ac27070906090608me50af3bv23b150d8d0cd0080@mail.gmail.com>
+Subject: Re: SOCK_RAW does not receive broadcast (with VLAN unless PROMISC)
+From: Gil Beniamini <gil.beniamini@gmail.com>
+To: Patrick McHardy <kaber@trash.net>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Freitag, 5. Juni 2009 12:01:03 Karsten Keil wrote:
-> Hi,
+Patrick,
+On the specific NIC (eth1) no vlan is defined, and in the new Linux
+the application receive NOTHING at all. In order to debug, I start
+"wireshark as root" and "wireshark" set PROMISC on, and the
+application start receive the raw packets as expected. Later I started
+setting PROMISC by my application, and it can receive the packets even
+when "wireshark" is not running.
+The problem that I have with PROMISC mode, is that I need to do the
+irelevant  unicast filtering in software rather than get it from the
+hardware (as it works in old kernel 2.6.20).
+Thanks a lot, Gil
+
+On Tue, Jun 9, 2009 at 2:40 PM, Patrick McHardy<kaber@trash.net> wrote:
+> Gil Beniamini wrote:
+>>
+>> 9Jun09, The problem was seen with eth1 using driver e1000e, but also
+>> was reproduced on 3c59x, to me it seems that the problem is not
+>> related to a specific nic driver.
+>> VLAN is running for other NICs, but on the application specific nic
+>> (eth1) I use PF_PACKET (SOCK_RAW) , in order to get  the raw-packet
+>> from the underlying device, and this start working again (like in
+>> older kernel) as soon as the application set the socket to PROMISC
+>> mode.
 >
-> I'm currently see this too from time to time, but have no idea about it.
+> OK, that might explain it. e1000e performs VLAN filtering in hardware
+> and unless there are VLANs configured locally, all VLANs are filtered
+> out. Are you seeing seeing only unicast VLAN traffic or no VLAN traffic
+> at all? Please post a dump of the packets with and without promiscous
+> mode.
 >
-...
-
-> > > [88563.318126] ------------[ cut here ]------------
-> > > [88563.318129] WARNING: at kernel/softirq.c:124
-> > > local_bh_enable+0x8f/0xb0() [88563.318130] Hardware name: empty
-> > > [88563.318132] Modules linked in: usbtouchscreen dvb_usb_cinergyT2
-> > > dummy bonding snd_emu10k1 snd_rawmidi snd_ac97_codec ath9k ac97_bus
-> > > snd_pcm snd_page_alloc snd_util_mem forcedeth snd_hwdep
-> > > [88563.318141] Pid: 826, comm: mISDN_hfc-pci.1 Not tainted
-> > > 2.6.29.4-grsec #13 [88563.318142] Call Trace:
-> > > [88563.318147]  [<ffffffff8025909a>] warn_slowpath+0xea/0x160
-> > > [88563.318149]  [<ffffffff8025ee0f>] local_bh_enable+0x8f/0xb0
-> > > [88563.318152]  [<ffffffff8065f284>] sk_filter+0x44/0xa0
-> > > [88563.318154]  [<ffffffff8064548d>] sock_queue_rcv_skb+0x5d/0x120
-> > > [88563.318156]  [<ffffffff8060410f>] mISDN_send+0x4f/0xa0
-> > > [88563.318159]  [<ffffffff8060790e>] l2up_create+0x7e/0x100
-> > > [88563.318161]  [<ffffffff8060b6e0>] l2_got_tei+0x0/0x90
-> > > [88563.318163]  [<ffffffff8060b722>] l2_got_tei+0x42/0x90
-> > > [88563.318164]  [<ffffffff80602d32>] mISDN_FsmEvent+0x82/0x100
-> > > [88563.318167]  [<ffffffff8060cb00>] tei_id_assign+0x0/0x120
-> > > [88563.318168]  [<ffffffff80602d32>] mISDN_FsmEvent+0x82/0x100
-> > > [88563.318170]  [<ffffffff8060e373>] mgr_send+0x4d3/0x660
-
-OK found it, it was in a inlined function call ph_data_ind() in mgr_send().
-
-This patch should fix it (will send it upstream later).
-
-
-From: Karsten Keil <keil@b1-systems.de>
-Date: Tue, 9 Jun 2009 14:38:39 +0200
-Subject: [PATCH] mISDN: Do not disable IRQ in ph_data_ind()
-
-
-This fix triggering the WARN_ON_ONCE(in_irq() || irqs_disabled()); in
-local_bh_enable().
-
-Here is no need to grab this lock, this was wrong at all and may
-cause a deadlock and access to freed memory, since on a TEI remove
-the current listelement can be deleted under us. So this is clearly
-a case for list_for_each_entry_safe.
-
-Signed-off-by: Karsten Keil <keil@b1-systems.de>
----
- drivers/isdn/mISDN/tei.c |    7 ++-----
- 1 files changed, 2 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/isdn/mISDN/tei.c b/drivers/isdn/mISDN/tei.c
-index bfcdd97..e04bad6 100644
---- a/drivers/isdn/mISDN/tei.c
-+++ b/drivers/isdn/mISDN/tei.c
-@@ -862,8 +862,7 @@ static int
- ph_data_ind(struct manager *mgr, struct sk_buff *skb)
- {
- 	int		ret = -EINVAL;
--	struct layer2	*l2;
--	u_long		flags;
-+	struct layer2	*l2, *nl2;
- 	u_char		mt;
- 
- 	if (skb->len < 8) {
-@@ -908,11 +907,9 @@ ph_data_ind(struct manager *mgr, struct sk_buff *skb)
- 		new_tei_req(mgr, &skb->data[4]);
- 		goto done;
- 	}
--	read_lock_irqsave(&mgr->lock, flags);
--	list_for_each_entry(l2, &mgr->layer2, list) {
-+	list_for_each_entry_safe(l2, nl2, &mgr->layer2, list) {
- 		tei_ph_data_ind(l2->tm, mt, &skb->data[4], skb->len - 4);
- 	}
--	read_unlock_irqrestore(&mgr->lock, flags);
- done:
- 	return ret;
- }
--- 
-1.6.0.2
-
-
-
+>
