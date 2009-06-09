@@ -1,72 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbZFIHNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbZFIHOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758501AbZFIHNT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 03:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757065AbZFIHNL
+	id S1758242AbZFIHOt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 03:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754933AbZFIHOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 03:13:11 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45082 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757468AbZFIHNK (ORCPT
+	Tue, 9 Jun 2009 03:14:41 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:38129 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754588AbZFIHOl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 03:13:10 -0400
-Subject: Re: [RFC PATCH 5/5] tracing/events: modify kmem print to new format
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	Tue, 9 Jun 2009 03:14:41 -0400
+Date: Tue, 9 Jun 2009 16:13:30 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
-In-Reply-To: <20090609014747.188279837@goodmis.org>
-References: <20090609014534.790466803@goodmis.org>
-	 <20090609014747.188279837@goodmis.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 09 Jun 2009 09:12:42 +0200
-Message-Id: <1244531562.13761.9955.camel@twins>
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: [PATCH mmotm] vmscan: handle may_swap more strictly (Re: [PATCH
+ mmotm] vmscan: fix may_swap handling for memcg)
+Message-Id: <20090609161330.fcd5facb.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090608165457.fa8d17e6.nishimura@mxp.nes.nec.co.jp>
+References: <20090608121848.4370.A69D9226@jp.fujitsu.com>
+	<20090608153916.3ccaeb9a.nishimura@mxp.nes.nec.co.jp>
+	<20090608154634.437F.A69D9226@jp.fujitsu.com>
+	<20090608165457.fa8d17e6.nishimura@mxp.nes.nec.co.jp>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-08 at 21:45 -0400, Steven Rostedt wrote:
+> > and, too many recliaming pages is not only memcg issue. I don't think this
+> > patch provide generic solution.
+> > 
+> Ah, you're right. It's not only memcg issue.
+> 
+How about this one ?
 
-> +#define show_gfp_flags(end...)						\
-> +	"0=GFP_NOWAIT,"							\
-> +	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-> +	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-> +	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-> +	"0x%lx=%s,0x%lx=%s>" end ,					\
-> +	(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE", \
-> +	(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER",		\
-> +	(unsigned long)GFP_USER,		"GFP_USER",		\
-> +	(unsigned long)GFP_TEMPORARY,		"GFP_TEMPORARY",	\
-> +	(unsigned long)GFP_KERNEL,		"GFP_KERNEL",		\
-> +	(unsigned long)GFP_NOFS,		"GFP_NOFS",		\
-> +	(unsigned long)GFP_ATOMIC,		"GFP_ATOMIC",		\
-> +	(unsigned long)GFP_NOIO,		"GFP_NOIO",		\
-> +	(unsigned long)__GFP_HIGH,		"GFP_HIGH",		\
-> +	(unsigned long)__GFP_WAIT,		"GFP_WAIT",		\
-> +	(unsigned long)__GFP_IO,		"GFP_IO",		\
-> +	(unsigned long)__GFP_COLD,		"GFP_COLD",		\
-> +	(unsigned long)__GFP_NOWARN,		"GFP_NOWARN",		\
-> +	(unsigned long)__GFP_REPEAT,		"GFP_REPEAT",		\
-> +	(unsigned long)__GFP_NOFAIL,		"GFP_NOFAIL",		\
-> +	(unsigned long)__GFP_NORETRY,		"GFP_NORETRY",		\
-> +	(unsigned long)__GFP_COMP,		"GFP_COMP",		\
-> +	(unsigned long)__GFP_ZERO,		"GFP_ZERO",		\
-> +	(unsigned long)__GFP_NOMEMALLOC,	"GFP_NOMEMALLOC",	\
-> +	(unsigned long)__GFP_HARDWALL,		"GFP_HARDWALL",		\
-> +	(unsigned long)__GFP_THISNODE,		"GFP_THISNODE",		\
-> +	(unsigned long)__GFP_RECLAIMABLE,	"GFP_RECLAIMABLE",	\
-> +	(unsigned long)__GFP_MOVABLE,		"GFP_MOVABLE"
+===
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-Just curious, how unhappy does stuff become when we add a __GFP_ flag
-and forget to extend this table?
+Commit 2e2e425989080cc534fc0fca154cae515f971cf5 ("vmscan,memcg: reintroduce
+sc->may_swap) add may_swap flag and handle it at get_scan_ratio().
+
+But the result of get_scan_ratio() is ignored when priority == 0,
+so anon lru is scanned even if may_swap == 0 or nr_swap_pages == 0.
+IMHO, this is not an expected behavior.
+
+As for memcg especially, because of this behavior many and many pages are
+swapped-out just in vain when oom is invoked by mem+swap limit.
+
+This patch is for handling may_swap flag more strictly.
+
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+---
+ mm/vmscan.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 2ddcfc8..bacb092 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1407,13 +1407,6 @@ static void get_scan_ratio(struct zone *zone, struct scan_control *sc,
+ 	unsigned long ap, fp;
+ 	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
+ 
+-	/* If we have no swap space, do not bother scanning anon pages. */
+-	if (!sc->may_swap || (nr_swap_pages <= 0)) {
+-		percent[0] = 0;
+-		percent[1] = 100;
+-		return;
+-	}
+-
+ 	anon  = zone_nr_pages(zone, sc, LRU_ACTIVE_ANON) +
+ 		zone_nr_pages(zone, sc, LRU_INACTIVE_ANON);
+ 	file  = zone_nr_pages(zone, sc, LRU_ACTIVE_FILE) +
+@@ -1511,15 +1504,22 @@ static void shrink_zone(int priority, struct zone *zone,
+ 	enum lru_list l;
+ 	unsigned long nr_reclaimed = sc->nr_reclaimed;
+ 	unsigned long swap_cluster_max = sc->swap_cluster_max;
++	int noswap = 0;
+ 
+-	get_scan_ratio(zone, sc, percent);
++	/* If we have no swap space, do not bother scanning anon pages. */
++	if (!sc->may_swap || (nr_swap_pages <= 0)) {
++		noswap = 1;
++		percent[0] = 0;
++		percent[1] = 100;
++	} else
++		get_scan_ratio(zone, sc, percent);
+ 
+ 	for_each_evictable_lru(l) {
+ 		int file = is_file_lru(l);
+ 		unsigned long scan;
+ 
+ 		scan = zone_nr_pages(zone, sc, l);
+-		if (priority) {
++		if (priority || noswap) {
+ 			scan >>= priority;
+ 			scan = (scan * percent[file]) / 100;
+ 		}
