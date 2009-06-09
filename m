@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762400AbZFIKdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762605AbZFIKeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762400AbZFIKdU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760819AbZFIKVT
+	id S1762605AbZFIKeT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760576AbZFIKVd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:21:19 -0400
-Received: from kroah.org ([198.145.64.141]:55360 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:21:33 -0400
+Received: from kroah.org ([198.145.64.141]:55443 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760166AbZFIKVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:21:18 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:07 2009
-Message-Id: <20090609094107.655778381@blue.kroah.org>
+	id S1760840AbZFIKVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:21:32 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:09 2009
+Message-Id: <20090609094108.798977298@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:39:54 -0700
+Date: Tue, 09 Jun 2009 02:39:58 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,90 +25,73 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Oleg Nesterov <oleg@redhat.com>,
-       Jerome Marchand <jmarchan@redhat.com>,
-       Roland McGrath <roland@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 66/87] ptrace: fix possible zombie leak on PTRACE_DETACH
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
+       Duane Griffin <duaneg@dghda.com>, Andreas Dilger <adilger@sun.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 70/87] ext4: dont inherit inappropriate inode flags from parent
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=ptrace-fix-possible-zombie-leak-on-ptrace_detach.patch
+Content-Disposition: inline; filename=ext4-don-t-inherit-inappropriate-inode-flags-from-parent.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Oleg Nesterov <oleg@redhat.com>
+From: Duane Griffin <duaneg@dghda.com>
 
-commit 4576145c1ecdaaea9ef8976a48335206aa1ebf91 upstream.
+(cherry picked from commit 8fa43a81b97853fc69417bb6054182e78f95cbeb)
 
-When ptrace_detach() takes tasklist, the tracee can be SIGKILL'ed.  If it
-has already passed exit_notify() we can leak a zombie, because a) ptracing
-disables the auto-reaping logic, and b) ->real_parent was not notified
-about the child's death.
+At present INDEX and EXTENTS are the only flags that new ext4 inodes do
+NOT inherit from their parent.  In addition prevent the flags DIRTY,
+ECOMPR, IMAGIC, TOPDIR, HUGE_FILE and EXT_MIGRATE from being inherited.
+List inheritable flags explicitly to prevent future flags from
+accidentally being inherited.
 
-ptrace_detach() should follow the ptrace_exit's logic, change the code
-accordingly.
+This fixes the TOPDIR flag inheritance bug reported at
+http://bugzilla.kernel.org/show_bug.cgi?id=9866.
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-Cc: Jerome Marchand <jmarchan@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>
-Tested-by: Denys Vlasenko <dvlasenk@redhat.com>
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
+Acked-by: Andreas Dilger <adilger@sun.com>
+Cc: <linux-ext4@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/ptrace.h |    1 +
- kernel/ptrace.c        |    9 +++++++--
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ fs/ext4/ext4.h   |    7 +++++++
+ fs/ext4/ialloc.c |    2 +-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
 
---- a/include/linux/ptrace.h
-+++ b/include/linux/ptrace.h
-@@ -94,6 +94,7 @@ extern void ptrace_notify(int exit_code)
- extern void __ptrace_link(struct task_struct *child,
- 			  struct task_struct *new_parent);
- extern void __ptrace_unlink(struct task_struct *child);
-+extern int __ptrace_detach(struct task_struct *tracer, struct task_struct *p);
- extern void ptrace_fork(struct task_struct *task, unsigned long clone_flags);
- #define PTRACE_MODE_READ   1
- #define PTRACE_MODE_ATTACH 2
---- a/kernel/ptrace.c
-+++ b/kernel/ptrace.c
-@@ -237,6 +237,8 @@ out:
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -248,6 +248,13 @@ struct flex_groups {
+ #define EXT4_FL_USER_VISIBLE		0x000BDFFF /* User visible flags */
+ #define EXT4_FL_USER_MODIFIABLE		0x000B80FF /* User modifiable flags */
  
- int ptrace_detach(struct task_struct *child, unsigned int data)
- {
-+	int dead = 0;
++/* Flags that should be inherited by new inodes from their parent. */
++#define EXT4_FL_INHERITED (EXT4_SECRM_FL | EXT4_UNRM_FL | EXT4_COMPR_FL |\
++			   EXT4_SYNC_FL | EXT4_IMMUTABLE_FL | EXT4_APPEND_FL |\
++			   EXT4_NODUMP_FL | EXT4_NOATIME_FL |\
++			   EXT4_NOCOMPR_FL | EXT4_JOURNAL_DATA_FL |\
++			   EXT4_NOTAIL_FL | EXT4_DIRSYNC_FL)
 +
- 	if (!valid_signal(data))
- 		return -EIO;
- 
-@@ -244,18 +246,21 @@ int ptrace_detach(struct task_struct *ch
- 	ptrace_disable(child);
- 	clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
- 
--	/* protect against de_thread()->release_task() */
- 	write_lock_irq(&tasklist_lock);
-+	/* protect against de_thread()->release_task() */
- 	if (child->ptrace) {
- 		child->exit_code = data;
- 
--		__ptrace_unlink(child);
-+		dead = __ptrace_detach(current, child);
- 
- 		if (!child->exit_state)
- 			wake_up_process(child);
- 	}
- 	write_unlock_irq(&tasklist_lock);
- 
-+	if (unlikely(dead))
-+		release_task(child);
-+
- 	return 0;
- }
- 
+ /*
+  * Inode dynamic state flags
+  */
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -889,7 +889,7 @@ got:
+ 	 * newly created directory and file only if -o extent mount option is
+ 	 * specified
+ 	 */
+-	ei->i_flags = EXT4_I(dir)->i_flags & ~(EXT4_INDEX_FL|EXT4_EXTENTS_FL);
++	ei->i_flags = EXT4_I(dir)->i_flags & EXT4_FL_INHERITED;
+ 	if (S_ISLNK(mode))
+ 		ei->i_flags &= ~(EXT4_IMMUTABLE_FL|EXT4_APPEND_FL);
+ 	/* dirsync only applies to directories */
 
 
