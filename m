@@ -1,130 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbZFILaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758937AbZFILak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758133AbZFILaJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 07:30:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755497AbZFIL37
+	id S1758937AbZFILak (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 07:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758205AbZFILac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 07:29:59 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:22357 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753197AbZFIL36 convert rfc822-to-8bit (ORCPT
+	Tue, 9 Jun 2009 07:30:32 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44748 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756847AbZFILac (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 07:29:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZhLuKEsIfU4XB5+ia1DClL2aC7ZdjVpu8FsTzk0I16U3iBWbRoTsupMtzsM6MQ66zW
-         U3SpZkg+UEL8zVrUJUUmSOoaAqayQoYyaMjgqlzl+lRkCOWsFlMH8jmXxkToVWTsPFh4
-         8nOg3L2ZiIhCoSG3y7iz04XPv16INFt4DLJTY=
-MIME-Version: 1.0
-In-Reply-To: <e8f208a7c6bec1818947c24658dc1561.squirrel@webmail-b.css.fujitsu.com>
-References: <20090609181505.4083a213.kamezawa.hiroyu@jp.fujitsu.com>
-	 <28c262360906090300s13f4ee09mcc9622c1e477eaad@mail.gmail.com>
-	 <e8f208a7c6bec1818947c24658dc1561.squirrel@webmail-b.css.fujitsu.com>
-Date: Tue, 9 Jun 2009 20:30:00 +0900
-Message-ID: <28c262360906090430p21125c51g10cfdc377a78d07b@mail.gmail.com>
-Subject: Re: [BUGFIX][PATCH] fix wrong lru rotate back at lumpty reclaim
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Tue, 9 Jun 2009 07:30:32 -0400
+Subject: Re: [patch 19/87] Fix oops on close of hot-unplugged FTDI serial
+ converter
+From: David Woodhouse <dwmw2@infradead.org>
+To: Greg KH <gregkh@suse.de>, Alan Stern <stern@rowland.harvard.edu>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "stable@kernel.org" <stable@kernel.org>,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       riel@redhat.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090609094056.465155618@blue.kroah.org>
+References: <20090609093848.204935043@blue.kroah.org>
+	 <20090609094056.465155618@blue.kroah.org>
+Content-Type: text/plain
+Date: Tue, 09 Jun 2009 12:30:11 +0100
+Message-Id: <1244547011.4538.7.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/9 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
->
-> Minchan Kim wrote:
->> On Tue, Jun 9, 2009 at 6:15 PM, KAMEZAWA
->> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->>>
->>> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>>
->>> In lumpty reclaim, "cursor_page" is found just by pfn. Then, we don't
->>> know
->>> from which LRU "cursor" page came from. Then, putback it to "src" list
->>> is BUG.
->>> Just leave it as it is.
->>> (And I think rotate here is overkilling even if "src" is correct.)
->>>
->>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>> ---
->>> mm/vmscan.c | 5 ++---
->>> 1 file changed, 2 insertions(+), 3 deletions(-)
->>>
->>> Index: mmotm-2.6.30-Jun4/mm/vmscan.c
->>> ===================================================================
->>> --- mmotm-2.6.30-Jun4.orig/mm/vmscan.c
->>> +++ mmotm-2.6.30-Jun4/mm/vmscan.c
->>> @@ -940,10 +940,9 @@ static unsigned long isolate_lru_pages(u
->>> nr_taken++;
->>> scan++;
->>> break;
->>> -
->>>case -EBUSY:
->>
->> We can remove case -EBUSY itself, too.
->> It is meaningless.
->>
-> Sure, will post v2 and remove EBUSY case.
-> (I'm sorry my webmail system converts a space to a multibyte char...
->  then I cut some.)
->
->>> - /* else it is being freed
->>> elsewhere */
->>> -
->>> list_move(&cursor_page->lru, src);
->>> +  /* Do nothing because we
->>> don't know where
->>> + cusrsor_page comes
->>> from */
->>>default:
->>> break; /* ! on LRU or
->>> wrong list */
->>
->> Hmm.. what meaning of this break ?
->> We are in switch case.
->> This "break" can't go out of loop.
-> yes.
->
->> But comment said "abort this block scan".
->>
-> Where ? the comment says the cursor_page is not on lru (PG_lru is unset)
+On Tue, 2009-06-09 at 02:39 -0700, Greg KH wrote:
+> 2.6.29-stable review patch.  If anyone has any objections, please let
+> us know.
 
-I mean follow as
- 908         /*
- 909          * Attempt to take all pages in the order aligned region
- 910          * surrounding the tag page.  Only take those pages of
- 911          * the same active state as that tag page.  We may safely
- 912          * round the target page pfn down to the requested order
- 913          * as the mem_map is guarenteed valid out to MAX_ORDER,
- 914          * where that page is in a different zone we will detect
- 915          * it from its zone id and abort this block scan.
- 916          */
- 917         zone_id = page_zone_id(page);
+Many USB-serial drivers have similar problems; Alan Stern posted a
+better fix which splits the shutdown() method into separate disconnect()
+and release().
 
-
->> If I understand it properly , don't we add goto phrase ?
->>
-> No.
-
-If it is so, the break also is meaningless.
-
-> Just try next page on list.
->
-> Thank you for review, I'll post updated one tomorrow.
-> -Kame
->
->
-
-
+Admittedly, he didn't include ftdi in his patch because it already had
+this workaround submitted -- but Alan's approach is better. We should
+probably fix ftdi that way, not with this patch.
 
 -- 
-Kinds regards,
-Minchan Kim
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
