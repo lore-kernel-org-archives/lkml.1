@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbZFINqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751238AbZFINrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757545AbZFINqO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:46:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbZFINqI
+	id S1751238AbZFINrI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:47:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbZFINqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:46:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39948 "EHLO mx2.redhat.com"
+	Tue, 9 Jun 2009 09:46:54 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:45764 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750709AbZFINqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:46:07 -0400
-Date: Tue, 9 Jun 2009 09:42:17 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Greg KH <gregkh@suse.de>, Alan Stern <stern@rowland.harvard.edu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch 19/87] Fix oops on close of hot-unplugged FTDI serial
- converter
-Message-ID: <20090609094217.2c722ca8@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <1244547011.4538.7.camel@macbook.infradead.org>
-References: <20090609093848.204935043@blue.kroah.org>
-	<20090609094056.465155618@blue.kroah.org>
-	<1244547011.4538.7.camel@macbook.infradead.org>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751105AbZFINqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 09:46:53 -0400
+From: "Oskar Schirmer" <os@emlix.com>
+To: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org,
+       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>,
+       Oskar Schirmer <os@emlix.com>
+Subject: [PATCH 2/8] imx: serial: fix one bit field type
+Date: Tue,  9 Jun 2009 15:46:45 +0200
+Message-Id: <1244555211-15618-3-git-send-email-os@emlix.com>
+In-Reply-To: <1244555211-15618-2-git-send-email-os@emlix.com>
+References: <1244555211-15618-1-git-send-email-os@emlix.com>
+ <1244555211-15618-2-git-send-email-os@emlix.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 09 Jun 2009 12:30:11 +0100
-David Woodhouse <dwmw2@infradead.org> wrote:
+From: Daniel Glöckner <dg@emlix.com>
 
-> On Tue, 2009-06-09 at 02:39 -0700, Greg KH wrote:
-> > 2.6.29-stable review patch.  If anyone has any objections, please let
-> > us know.
-> 
-> Many USB-serial drivers have similar problems; Alan Stern posted a
-> better fix which splits the shutdown() method into separate disconnect()
-> and release().
-> 
-> Admittedly, he didn't include ftdi in his patch because it already had
-> this workaround submitted -- but Alan's approach is better. We should
-> probably fix ftdi that way, not with this patch.
-> 
+"have_rtscts" is assigned 1, while it is declared
+int:1, two's complement, which can hold 0 and -1
+only. The code works, as the upper bits are cut
+off, and tests are done against 0 only.
 
-But this is for -stable, where proven patches are preferred over
-yet-to-be-written ones. That rewrite would have to go upstream first.
+Nonetheless, correctly declaring the bit field
+as unsigned int:1 renders the code more robust.
+
+Signed-off-by: Daniel Glöckner <dg@emlix.com>
+Signed-off-by: Oskar Schirmer <os@emlix.com>
+---
+ drivers/serial/imx.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/serial/imx.c b/drivers/serial/imx.c
+index 424f679..5ee325f 100644
+--- a/drivers/serial/imx.c
++++ b/drivers/serial/imx.c
+@@ -211,7 +211,7 @@ struct imx_port {
+ 	struct timer_list	timer;
+ 	unsigned int		old_status;
+ 	int			txirq,rxirq,rtsirq;
+-	int			have_rtscts:1;
++	unsigned int		have_rtscts:1;
+ 	struct clk		*clk;
+ };
+ 
+-- 
+1.5.3.7
 
