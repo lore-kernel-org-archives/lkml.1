@@ -1,98 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbZFICt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752830AbZFIC5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757490AbZFICt3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 22:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZFICtU
+	id S1752830AbZFIC5G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 22:57:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbZFIC4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 22:49:20 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:60233 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752987AbZFICtT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 22:49:19 -0400
-Date: Mon, 8 Jun 2009 22:49:21 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Oliver Neukum <oliver@neukum.org>, <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM:
- Rearrange core suspend code)
-In-Reply-To: <200906082331.58933.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906082233490.19072-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 8 Jun 2009 22:56:54 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:48677 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751079AbZFIC4x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 22:56:53 -0400
+Subject: Re: [PATCH] integrity: fix IMA inode leak
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Mimi Zohar <zohar@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Serge Hallyn <serue@us.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       David Safford <safford@watson.ibm.com>
+In-Reply-To: <alpine.LRH.2.00.0906090912120.6132@tundra.namei.org>
+References: <Pine.LNX.4.64.0906062109580.8365@sister.anvils>
+	 <alpine.LFD.2.01.0906061416170.6847@localhost.localdomain>
+	 <1244354901.3963.23.camel@dyn9002018117.watson.ibm.com>
+	 <alpine.LFD.2.01.0906071608040.6847@localhost.localdomain>
+	 <1244464135.3277.13.camel@dyn9002018117.watson.ibm.com>
+	 <alpine.LFD.2.01.0906080913020.6847@localhost.localdomain>
+	 <1244486655.3277.65.camel@dyn9002018117.watson.ibm.com>
+	 <alpine.LRH.2.00.0906090912120.6132@tundra.namei.org>
+Content-Type: text/plain
+Date: Mon, 08 Jun 2009 22:56:51 -0400
+Message-Id: <1244516211.3804.24.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Jun 2009, Rafael J. Wysocki wrote:
-
-> > Use of the RPM_UNKNOWN state isn't good.  A bus may have valid reasons 
-> > of its own for not carrying out an autosuspend.  When this happens the 
-> > device's state isn't unknown.
+On Tue, 2009-06-09 at 09:16 +1000, James Morris wrote:
+> On Mon, 8 Jun 2009, Mimi Zohar wrote:
 > 
-> I'm not sure what you mean exactly.
+> > 
+> > Ok, so instead of having a full fledge single security layer, only add
+> > the security layer for those places where both the LSM hooks and IMA
+> > co-exist: security_file_mmap, security_bprm_check, security_inode_alloc,
+> > security_inode_free, and security_file_free. As the LSM hooks are called
+> > 'security_XXXX', the call would look something like:
+> > 
+> > security_all_inode_free() {
+> >         ima_inode_free()
+> >         security_inode_free()
+> > }
 > 
-> If ->autosuspend() fails, the device power state may be known, but the core
-> can't be sure if the device is active.  This information is available to the
-> driver and/or the bus type, which should change the status to whatever is
-> appropriate.
+> Yes, it only needs to be a wrapper.  The above is ugly, how about:
 
-But no matter what the driver or bus type sets the state to, your 
-pm_autosuspend() will change it to one of RPM_UNKNOWN or RPM_SUSPENDED.  
-Neither might be right.
+agreed!  But changing only these 5 security_ hook names and leaving the
+rest alone is even uglier.
 
-> The name of this constant may be confusing, but I didn't have any better ideas.
-
-It's not clear what RPM_ACTIVE, RPM_IDLE, and RPM_SUSPENDED are 
-supposed to mean; this should be documented in the code.  Also, why 
-isn't there RPM_RESUMING?
-
-By the way, a legitimate reason for aborting an autosuspend is if the
-device's driver requires remote wakeup to be enabled during suspend but
-the user has disabled it.
-
-> > The scheme doesn't include any mechanism for communicating runtime
-> > power information up the device tree.  When a device is autosuspended,
-> > its parent's driver should be told so that the driver can consider
-> > autosuspending the parent.
+> security_inode_free()
+> {
+> 	ima_inode_free();
+> 	lsm_inode_free();
+> }
 > 
-> I thought the bus type's ->autosuspend() callback could take care of this.
+> I think we may have come full circle on the naming of the LSM hook, but 
+> 'security_*' was never great given that it's only supposed to be covering 
+> access control.
 
-Shouldn't this happen after the device's state has changed to 
-RPM_SUSPENDED?  That's not until after the callback returns.
+so why not 'mac_'?
 
-> > There should be a sysfs interface (like the one in USB) to allow
-> > userspace to prevent a device from being autosuspended -- and perhaps
-> > also to force it to be suspended.
-> 
-> To prevent a device from being suspended - yes.  To force it to stay suspended
-> - I'm not sure.
-
-I'm not sure either.  Oliver Neukum requested it originally and it has
-been useful for debugging, but I haven't seen many places where it
-would come in useful in practice.
-
-> > What about devices that have more than two runtime power states?  For
-> > example, you can't squeeze PCI's {D0,D1,D2,D3hot} range into {running,
-> > suspended}.
-> 
-> That has to be bus type-specific.
-> 
-> In the case of PCI all of the low power states (D1-D3) are in fact substates of
-> "suspended", because we generally need to quiesce the device before putting
-> it into any of these states.
-> 
-> I'm not sure if we can introduce more "levels of suspension", so to speak, at
-> the core level, but in any case we can easily distinguish between "device
-> quiesced and in a low power state" and "device fully active".
-> 
-> So, in this picture the device is "suspended" from the core's point of view
-> once it's bus type's ->autosuspend() callback has been successfully executed. 
-
-This too should be documented in the code.  Or in a Documentation file.
-
-Alan Stern
+Mimi Zohar
 
