@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbZFIKWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757632AbZFIKWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbZFIKWF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:22:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760567AbZFIKSn
+	id S1757632AbZFIKWg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760568AbZFIKSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:18:43 -0400
-Received: from kroah.org ([198.145.64.141]:54599 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:18:45 -0400
+Received: from kroah.org ([198.145.64.141]:54613 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760600AbZFIKSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:18:41 -0400
+	id S1760311AbZFIKSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:18:44 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:58 2009
-Message-Id: <20090609094057.846111783@blue.kroah.org>
+Message-Id: <20090609094058.091815716@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:39:13 -0700
+Date: Tue, 09 Jun 2009 02:39:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Breno Leitao <leitao@linux.vnet.ibm.com>,
+       alan@lxorguk.ukuu.org.uk, Avi Kivity <avi@redhat.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 25/87] icom: fix rmmod crash
+Subject: [patch 26/87] KVM: Make paravirt tlb flush also reload the PAE PDPTRs
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=icom-fix-rmmod-crash.patch
+Content-Disposition: inline; filename=kvm-make-paravirt-tlb-flush-also-reload-the-pae-pdptrs.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,53 +39,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Breno Leitao <leitao@linux.vnet.ibm.com>
+From: Avi Kivity <avi@redhat.com>
 
-commit 95caa0a9bdaf93607bd0cc8932f53112496f2f22 upstream.
+commit a8cd0244e9cebcf9b358d24c7e7410062f3665cb upstream.
 
-Actually the icom driver is crashing when is being removed because
-the driver is kfreeing the adapter structure before calling
-pci_release_regions(), which result in the following error:
+The paravirt tlb flush may be used not only to flush TLBs, but also
+to reload the four page-directory-pointer-table entries, as it is used
+as a replacement for reloading CR3.  Change the code to do the entire
+CR3 reloading dance instead of simply flushing the TLB.
 
-  Unable to handle kernel paging request for data at address 0x6b6b6b6b6b6b6d33
-  Faulting instruction address: 0xc000000000246b80
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  ....
-  [c000000012d436a0] [c0000000001002d0] .kfree+0x120/0x34c (unreliable)
-  [c000000012d43730] [c000000000246d60] .pci_release_selected_regions+0x3c/0x68
-  [c000000012d437c0] [d000000002d54700] .icom_kref_release+0xf4/0x118 [icom]
-  [c000000012d43850] [c000000000232e50] .kref_put+0x74/0x94
-  [c000000012d438d0] [d000000002d56c58] .icom_remove+0x40/0xa4 [icom]
-  [c000000012d43960] [c000000000249e48] .pci_device_remove+0x50/0x90
-  [c000000012d439e0] [c0000000002d68d8] .__device_release_driver+0x94/0xd4
-  [c000000012d43a70] [c0000000002d7104] .driver_detach+0xf8/0x12c
-  [c000000012d43b00] [c0000000002d549c] .bus_remove_driver+0xbc/0x11c
-  [c000000012d43b90] [c0000000002d71dc] .driver_unregister+0x60/0x80
-  [c000000012d43c20] [c00000000024a07c] .pci_unregister_driver+0x44/0xe8
-  [c000000012d43cb0] [d000000002d56bf4] .icom_exit+0x1c/0x40 [icom]
-  [c000000012d43d30] [c000000000095fa8] .SyS_delete_module+0x214/0x2a8
-  [c000000012d43e30] [c00000000000852c] syscall_exit+0x0/0x40
-
-Signed-off-by: Breno Leitao <leitao@linux.vnet.ibm.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/icom.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kvm/mmu.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/drivers/serial/icom.c
-+++ b/drivers/serial/icom.c
-@@ -1482,8 +1482,8 @@ static void icom_remove_adapter(struct i
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -2906,8 +2906,7 @@ static int kvm_pv_mmu_write(struct kvm_v
  
- 	free_irq(icom_adapter->pci_dev->irq, (void *) icom_adapter);
- 	iounmap(icom_adapter->base_addr);
--	icom_free_adapter(icom_adapter);
- 	pci_release_regions(icom_adapter->pci_dev);
-+	icom_free_adapter(icom_adapter);
+ static int kvm_pv_mmu_flush_tlb(struct kvm_vcpu *vcpu)
+ {
+-	kvm_x86_ops->tlb_flush(vcpu);
+-	set_bit(KVM_REQ_MMU_SYNC, &vcpu->requests);
++	kvm_set_cr3(vcpu, vcpu->arch.cr3);
+ 	return 1;
  }
  
- static void icom_kref_release(struct kref *kref)
 
 
