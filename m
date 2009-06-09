@@ -1,54 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbZFINX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758704AbZFIN2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760042AbZFINX1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:23:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbZFINXU
+	id S1758704AbZFIN2y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbZFIN2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:23:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41196 "EHLO mx3.mail.elte.hu"
+	Tue, 9 Jun 2009 09:28:47 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33598 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755188AbZFINXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:23:19 -0400
-Date: Tue, 9 Jun 2009 15:23:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yong Wang <yong.y.wang@linux.intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] perf_counter/x86: Fix incorrect default branch
-Message-ID: <20090609132313.GE25586@elte.hu>
-References: <20090609074621.GA19290@ywang-moblin2.bj.intel.com>
-MIME-Version: 1.0
+	id S1753527AbZFIN2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 09:28:46 -0400
+Date: Tue, 9 Jun 2009 15:28:47 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [11/16] HWPOISON: check and isolate corrupted free pages v2
+Message-ID: <20090609132847.GC15219@wotan.suse.de>
+References: <20090603846.816684333@firstfloor.org> <20090603184645.68FA21D0286@basil.firstfloor.org> <20090609100229.GE14820@wotan.suse.de> <20090609130304.GF5589@localhost>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090609074621.GA19290@ywang-moblin2.bj.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090609130304.GF5589@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 09, 2009 at 09:03:04PM +0800, Wu Fengguang wrote:
+> On Tue, Jun 09, 2009 at 06:02:29PM +0800, Nick Piggin wrote:
+> > On Wed, Jun 03, 2009 at 08:46:45PM +0200, Andi Kleen wrote:
+> > > 
+> > > From: Wu Fengguang <fengguang.wu@intel.com>
+> > > 
+> > > If memory corruption hits the free buddy pages, we can safely ignore them.
+> > > No one will access them until page allocation time, then prep_new_page()
+> > > will automatically check and isolate PG_hwpoison page for us (for 0-order
+> > > allocation).
+> > 
+> > It would be kinda nice if this could be done in the handler
+> > directly (ie. take the page directly out of the allocator
+> > or pcp list). Completely avoiding fastpaths would be a
+> > wonderful goal.
+> 
+> In fact Andi have code to do that. We prefer this one because
+> - it's simple
+> - it's good sanity check for possible software BUGs
+> - it mainly adds overhead to high order pages, which is acceptable
 
-* Yong Wang <yong.y.wang@linux.intel.com> wrote:
+Yeah it's not bad. But we don't have much other non-debug options
+that check for random memory corruption like this. Given that the
+struct page is a very tiny proportion of memory, then I'm not
+totally convinced that all this checking in the page allocator is
+worthwhile for everyone. It's a much bigger cost if checks and
+branches have to be there just for hwpoison.
 
-> The event selector and UMASK values of Nehalem do not apply to all 
-> Intel processors.
+And I don't think removing a free page from the page allocator is
+too much more complex than removing a live page from the pagecache ;)
 
-The idea was to offer _some_ sort of table on new CPUs, instead of 
-nothing...
 
-Eventually Intel stops changing those model specific index values in 
-future CPUs and puts them into architectural perfmon, for 
-fundamental stats like L1/LLC cache statistics.
-
-In that case defaulting to the latest (known) enumeration might work 
-out to be just the thing used by all future CPUs.
-
-So this is a subtle hint ;-)
-
-	Ingo
+> 
+> Thanks,
+> Fengguang
+> 
+> > >  
+> > > +	/* Don't complain about poisoned pages */
+> > > +	if (PageHWPoison(page)) {
+> > > +		__ClearPageBuddy(page);
+> > > +		return;
+> > > +	}
+> > > +
+> 
+> I do think the above chunk is not absolutely necessary, though.
+> 
+> Thanks,
+> Fengguang
+> 
+> 
+> > >  	/*
+> > >  	 * Allow a burst of 60 reports, then keep quiet for that minute;
+> > >  	 * or allow a steady drip of one report per second.
+> > > @@ -650,7 +656,7 @@
+> > >  /*
+> > >   * This page is about to be returned from the page allocator
+> > >   */
+> > > -static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
+> > > +static inline int check_new_page(struct page *page)
+> > >  {
+> > >  	if (unlikely(page_mapcount(page) |
+> > >  		(page->mapping != NULL)  |
+> > > @@ -659,6 +665,18 @@
+> > >  		bad_page(page);
+> > >  		return 1;
+> > >  	}
+> > > +	return 0;
+> > > +}
+> > > +
+> > > +static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
+> > > +{
+> > > +	int i;
+> > > +
+> > > +	for (i = 0; i < (1 << order); i++) {
+> > > +		struct page *p = page + i;
+> > > +		if (unlikely(check_new_page(p)))
+> > > +			return 1;
+> > > +	}
+> > >  
+> > >  	set_page_private(page, 0);
+> > >  	set_page_refcounted(page);
