@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760863AbZFIN6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761198AbZFIN60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760863AbZFIN6G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:58:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbZFIN5n
+	id S1761198AbZFIN60 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbZFIN5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:57:43 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:59063 "EHLO
-	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751859AbZFIN5m (ORCPT
+	Tue, 9 Jun 2009 09:57:46 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:29315
+	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755766AbZFIN5p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:57:42 -0400
-X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i17ch43j)
-X-WSS-ID: 0KKZ5FT-03-LAP-01
+	Tue, 9 Jun 2009 09:57:45 -0400
+X-SpamScore: -1
+X-BigFish: VPS-1(zz4015Lzz1202hzzz32i17ch43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KKZ5FZ-04-0AI-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
-CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Joerg Roedel <joerg.roedel@amd.com>, Chris Wright <chrisw@sous-sol.org>
-Subject: [PATCH 3/4] amd-iommu: detach device explicitly before attaching it to a new domain
-Date: Tue, 9 Jun 2009 15:57:19 +0200
-Message-ID: <1244555840-3855-4-git-send-email-joerg.roedel@amd.com>
+CC: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [git pull][PATCH 0/4] amd-iommu fixes for tip/core/iommu
+Date: Tue, 9 Jun 2009 15:57:16 +0200
+Message-ID: <1244555840-3855-1-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1244555840-3855-1-git-send-email-joerg.roedel@amd.com>
-References: <1244555840-3855-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 09 Jun 2009 13:57:30.0954 (UTC) FILETIME=[3B3C92A0:01C9E90A]
+X-OriginalArrivalTime: 09 Jun 2009 13:57:30.0908 (UTC) FILETIME=[3B358DC0:01C9E90A]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes a bug with a device that could not be assigned to a KVM guest
-because it is still assigned to a dma_ops protection domain.
+Hi Ingo,
 
-[chrisw: simply remove WARN_ON(), will always fire since dev->driver
-will be pci-sub]
+The following changes since commit 62a6f465f6572e1f28765c583c12753bb3e23715:
+  Ingo Molnar (1):
+        Merge branch 'dma-debug/2.6.31' of git://git.kernel.org/.../joro/linux-2.6-iommu into core/iommu
 
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/amd_iommu.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+are available in the git repository at:
 
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 8187260..772e910 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -2073,7 +2073,7 @@ static int amd_iommu_attach_device(struct iommu_domain *dom,
- 
- 	old_domain = domain_for_device(devid);
- 	if (old_domain)
--		return -EBUSY;
-+		detach_device(old_domain, devid);
- 
- 	attach_device(iommu, domain, devid);
- 
--- 
-1.6.3.1
+  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git amd-iommu/fixes
+
+Jiri Slaby (1):
+      amd_iommu: fix lock imbalance
+
+Joerg Roedel (4):
+      Merge commit 'tip/core/iommu' into amd-iommu/fixes
+      amd-iommu: remove BUS_NOTIFY_BOUND_DRIVER handling
+      amd-iommu: detach device explicitly before attaching it to a new domain
+      amd-iommu: remove unnecessary "AMD IOMMU: " prefix
+
+ arch/x86/kernel/amd_iommu.c |   22 ++++++----------------
+ 1 files changed, 6 insertions(+), 16 deletions(-)
+
+These patches fix issues with device assignment to KVM, a possible
+deadlock due to an unreleased lock and a minor printk style issue.
+Please pull.
+
+Thanks,
+
+	Joerg
 
 
