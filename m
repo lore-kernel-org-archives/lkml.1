@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbZFIIUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759069AbZFIIYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759384AbZFIIUb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 04:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758869AbZFIIUP
+	id S1759069AbZFIIYW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 04:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbZFIIYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 04:20:15 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:53121 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759335AbZFIIUN (ORCPT
+	Tue, 9 Jun 2009 04:24:12 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36218 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755442AbZFIIYK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 04:20:13 -0400
-Date: Tue, 9 Jun 2009 16:14:31 +0800
-From: Harald Welte <HaraldWelte@viatech.com>
-To: "Michael S. Zick" <lkml@morethan.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Duane Griffin <duaneg@dghda.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.30-rc8 [also: VIA Support]
-Message-ID: <20090609081431.GA25316@prithivi.gnumonks.org>
-References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906041227.10529.lkml@morethan.org> <alpine.LFD.2.01.0906041038130.4880@localhost.localdomain> <200906060717.46964.lkml@morethan.org>
+	Tue, 9 Jun 2009 04:24:10 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Subject: Re: [PATCH mmotm] vmscan: handle may_swap more strictly (Re: [PATCH  mmotm] vmscan: fix may_swap handling for memcg)
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <28c262360906090119r6e881caq9b74028ba43567a7@mail.gmail.com>
+References: <20090609164850.DD73.A69D9226@jp.fujitsu.com> <28c262360906090119r6e881caq9b74028ba43567a7@mail.gmail.com>
+Message-Id: <20090609172035.DD7C.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200906060717.46964.lkml@morethan.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  9 Jun 2009 17:24:10 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 06, 2009 at 07:17:44AM -0500, Michael S. Zick wrote:
-> The mainstream kernel, e_powersaver, is *under-clocking* my machine -
+> On Tue, Jun 9, 2009 at 4:58 PM, KOSAKI
+> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
+> >> Hi, KOSAKI.
+> >>
+> >> As you know, this problem caused by if condition(priority) in shrink_zone.
+> >> Let me have a question.
+> >>
+> >> Why do we have to prevent scan value calculation when the priority is zero ?
+> >> As I know, before split-lru, we didn't do it.
+> >>
+> >> Is there any specific issue in case of the priority is zero ?
+> >
+> > Yes.
+> >
+> > example:
+> >
+> > get_scan_ratio() return anon:80%, file=20%. and the system have
+> > 10000 anon pages and 10000 file pages.
+> >
+> > shrink_zone() picked up 8000 anon pages and 2000 file pages.
+> > it mean 8000 file pages aren't scanned at all.
+> >
+> > Oops, it can makes OOM-killer although system have droppable file cache.
+> >
+> Hmm..Can that problem be happen in real system ?
+> The file ratio is big means that file lru list scanning is so big but
+> rotate is small.
+> It means file lru have few reclaimable page.
 > 
-> The cpuid instruction provides the minimum and maximum GSF values 
-> (Guaranteed Stable Frequency) for that processor mask run -
-> Passing that on as the lower and upper limits to e_powersaver should
-> stop that problem.  Will be testing this RSN.
+> Isn't it ? I am confusing.
+> Could you elaborate, please if you don't mind ?
 
-Can you provide more information on where you think you are getting the GSF
-values from?  I am not aware of such information.
+hm, ok, my example was wrong.
+I intention is, if there are droppable file-back pages (althout only 1 page), 
+OOM-killer shouldn't occuer.
 
-The internal documentation always only refres to the minimum VID/FID values
-from the MSR.  Also, according to the specifications of all C7 models listed,
-there are some that require a minimum of 400MHz, others require a minimum of
-800.  I have not found any that would require a minimum of 600MHz.
+many or few is unrelated.
 
-So I don't really know if your system really operates outside any specified
-range.
 
-The only thing I know of that you can read from the CPUID vendor string is
-the maximum clock frequency in ASCII.
 
-So it seems, e_powersaver is not really at all as dangerous as it appeared!
 
--- 
-- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
-============================================================================
-VIA Free and Open Source Software Liaison
