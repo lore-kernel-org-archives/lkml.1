@@ -1,62 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757117AbZFISHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758598AbZFISIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757117AbZFISHW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751537AbZFISHL
+	id S1758598AbZFISIT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbZFISIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:07:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51426 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751158AbZFISHK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:07:10 -0400
-Date: Tue, 9 Jun 2009 11:06:10 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
- kernels
-In-Reply-To: <4A2E7B40.4070608@zytor.com>
-Message-ID: <alpine.LFD.2.01.0906091103080.6847@localhost.localdomain>
-References: <4A0B62F7.5030802@goop.org> <200906032208.28061.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906030901460.4880@localhost.localdomain> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain>
- <20090609093918.GC16940@wotan.suse.de> <20090609111719.GA4463@elte.hu> <4A2E7B40.4070608@zytor.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 9 Jun 2009 14:08:10 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:40002 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754535AbZFISIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 14:08:09 -0400
+Date: Tue, 9 Jun 2009 20:07:50 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: Wolfgang =?UTF-8?B?TcO8ZXM=?= <wolfgang.mues@auerswald.de>
+Cc: "David Brownell" <david-b@pacbell.net>,
+       "Matt Fleming" <matt@console-pimps.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mmc_spi: use EILSEQ for possible transmission errors
+Message-ID: <20090609200750.2fa38dfe@mjolnir.ossman.eu>
+In-Reply-To: <200905251659.17396.wolfgang.mues@auerswald.de>
+References: <200905250243.46984.david-b@pacbell.net>
+	<200905251218.18262.wolfgang.mues@auerswald.de>
+	<20090525135012.13be624c@mjolnir.ossman.eu>
+	<200905251659.17396.wolfgang.mues@auerswald.de>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-13902-1244570888-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
+--=_freyr.ossman.eu-13902-1244570888-0001-2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 9 Jun 2009, H. Peter Anvin wrote:
-> 
-> A major problem is that distros don't seem to be willing to push 64-bit
-> kernels for 32-bit distros.  There are a number of good (and
-> not-so-good) reasons why users may want to run a 32-bit userspace, but
-> not running a 64-bit kernel on capable hardware is just problematic.
+On Mon, 25 May 2009 16:59:17 +0200
+Wolfgang M=C3=BCes <wolfgang.mues@auerswald.de> wrote:
 
-Yeah, that's just stupid. A 64-bit kernel should work well with 32-bit 
-tools, and while we've occasionally had compat issues (the intel gfx 
-people used to claim that they needed to work with a 32-bit kernel because 
-they cared about 32-bit tools), they aren't unfixable or even all _that_ 
-common.
+> Pierre,
+>=20
+> Am Montag, 25. Mai 2009 schrieb Pierre Ossman:
+> > I don't remember why
+> > mmc_spi is looking at responses to begin with.
+>=20
+> Because responses are very different.
+>=20
+> First of all, responses in SD mode and SPI mode are different.
+>=20
 
-And they'd be even less common if the whole "64-bit kernel even if you do 
-a 32-bit distro" was more common.
+MMC and SD aren't identical either, but we don't delegate that to the
+host drivers.
 
-The nice thing about a 64-bit kernel is that you should be able to build 
-one even if you don't in general have all the 64-bit libraries. So you 
-don't need a full 64-bit development environment, you just need a compiler 
-that can generate code for both (and that should be the default on x86 
-these days).
+> Second, responses in SD mode are CRC-7 protected, so that it is easy to c=
+heck=20
+> for transmission errors.
+>=20
+> SPI mode responses (R1...) are without any CRC.
+>=20
 
-			Linus
+This however is more relevant. But OTOH, I don't think mmc_spi has a
+better idea if the status can be trusted or not than a higher layer.
+
+> Third, if you have SD mode, you use a hardware host controller which mana=
+ges=20
+> all command/data/response actions, and what you typically get is the cont=
+ent=20
+> of the status register of the host controller (which is different from the
+> error code of the SD card).
+>=20
+> So it is very natural that every host controller driver mapps the respons=
+es=20
+> from the host controller to a common representation (=3D=3D error code). =
+The=20
+> error codes with special meanings for MMC/SD are summed up in mmc/core.h .
+>=20
+
+But the other drivers don't attempt to interpret the response from the
+card. They just give the response back up and let the next layer deal
+with it.
+
+> The SPI host driver is a recent addition to the linux kernel, and the fac=
+t=20
+> that SPI responses are not CRC-protected was not accounted for in the cod=
+e.
+>=20
+> As it makes no sense to code the retry logic in every driver, the prefere=
+d way=20
+> is to code the retry logic in block.c. The non-SPI-mode-drivers will prof=
+it=20
+> from this logic, because they are getting retries for EILSEQ (CRC error) =
+and
+> ETIMEDOUT (card has not understand the command).
+
+Indeed. But I don't like the fact that we're hiding interpretation of
+responses down in the driver. It should be up to the layer issuing the
+MMC request how the response should be interpreted.
+
+But that's an issue that can be left for another day...
+
+>=20
+> The biggest problem in the error codes is that EINVAL is used by the SPI=
+=20
+> driver both for recoverable and for non-recoverable errors, which has to =
+be=20
+> splitted IMHO.
+>=20
+
+Indeed. I'll queue up the patch.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-13902-1244570888-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkoupQYACgkQ7b8eESbyJLhHSwCfaHYqiQf8KqScYKerKKqSzy7T
+4WUAoJFUIYuHHEAlVn4kYkR68QB4xuDv
+=QJ5X
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-13902-1244570888-0001-2--
