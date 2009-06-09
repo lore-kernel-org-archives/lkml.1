@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbZFIQGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbZFIQNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755084AbZFIQGS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 12:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZFIQGI
+	id S1755903AbZFIQNJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 12:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZFIQM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 12:06:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47851 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751764AbZFIQGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 12:06:07 -0400
-Date: Wed, 10 Jun 2009 02:06:04 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
+	Tue, 9 Jun 2009 12:12:56 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:33140 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752973AbZFIQM4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 12:12:56 -0400
+Date: Tue, 9 Jun 2009 18:15:12 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: voyager tree build failure
-Message-Id: <20090610020604.fb2b47f3.sfr@canb.auug.org.au>
-In-Reply-To: <1244560718.4137.26.camel@mulgrave.site>
-References: <20090609194038.826289f3.sfr@canb.auug.org.au>
-	<1244560718.4137.26.camel@mulgrave.site>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Subject: Re: linux-next: kbuild tree build failure
+Message-ID: <20090609161512.GB6675@uranus.ravnborg.org>
+References: <20090609114820.69d23ab3.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__10_Jun_2009_02_06_04_+1000_E0XsGo.vQ5J_/viI"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090609114820.69d23ab3.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__10_Jun_2009_02_06_04_+1000_E0XsGo.vQ5J_/viI
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Jun 09, 2009 at 11:48:20AM +1000, Stephen Rothwell wrote:
+> Hi Sam,
+> 
+> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+> 
+> powerpc-linux-ld:arch/powerpc/kernel/vmlinux.lds:190: syntax error
+> 
+> Caused by commit 59d59d97e34c6593bec43666679b28da5d583958 ("Improve
+> vmlinux.lds.h support for arch specific linker scripts") which was
+> clearly not build tested - don't do that! There is a missing \ at the end
+> of a line in the definition of the HEAD_SECTION macro.
+> 
+> I have used the version of the kbuild tree from next-20090605.
 
-Hi James,
+My bad - obviously.
+I will fix when the kids are sleeping (as in a few hours from now).
 
-On Tue, 09 Jun 2009 10:18:38 -0500 James Bottomley <James.Bottomley@HansenP=
-artnership.com> wrote:
->
-> Thanks for finding this.  The fix looks to be a dummy definition of this
-> function for x86_64.  The final fix (which has been under discussion)
-> will be the elimination of safe_smp_processor_id() altogether.
->=20
-> I've merged this into the
->=20
-> [VOYAGER] x86: add {safe,hard}_smp_processor_id to smp_ops
->=20
-> patch and respun the tree (and built it with an x86-64 cross compiler),
-> so it should be safe to include next time around
-
-Thanks.  We will see how we do (later) in the morning.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__10_Jun_2009_02_06_04_+1000_E0XsGo.vQ5J_/viI
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkouiGwACgkQjjKRsyhoI8z68ACdF2UZ+1EBUACp/4n6YsHBzbV2
-lqUAoKWrfoAg2ri1d5AzkSwEe54+AL8h
-=yXWE
------END PGP SIGNATURE-----
-
---Signature=_Wed__10_Jun_2009_02_06_04_+1000_E0XsGo.vQ5J_/viI--
+	Sam
