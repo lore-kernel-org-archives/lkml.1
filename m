@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763132AbZFIKh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760175AbZFIKiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763132AbZFIKh7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758493AbZFIKW0
+	id S1760175AbZFIKiY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757415AbZFIKW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:22:26 -0400
-Received: from kroah.org ([198.145.64.141]:32894 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:22:28 -0400
+Received: from kroah.org ([198.145.64.141]:32919 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757622AbZFIKWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:22:23 -0400
+	id S1758608AbZFIKW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:22:26 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:12 2009
-Message-Id: <20090609094112.103140898@blue.kroah.org>
+Message-Id: <20090609094112.328089030@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:40:12 -0700
+Date: Tue, 09 Jun 2009 02:40:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -28,9 +28,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
        "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 84/87] ext4: Fix sub-block zeroing for writes into preallocated extents
+Subject: [patch 85/87] ext4: Use a fake block number for delayed new buffer_head
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-fix-sub-block-zeroing-for-writes-into-preallocated-extents.patch
+Content-Disposition: inline; filename=ext4-use-a-fake-block-number-for-delayed-new-buffer_head.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -43,51 +43,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit 9c1ee184a30394e54165fa4c15923cabd952c106)
+(cherry picked from commit 33b9817e2ae097c7b8d256e3510ac6c54fc6d9d0)
 
-We need to mark the buffer_head mapping preallocated space as new
-during write_begin. Otherwise we don't zero out the page cache content
-properly for a partial write. This will cause file corruption with
-preallocation.
-
-Now that we mark the buffer_head new we also need to have a valid
-buffer_head blocknr so that unmap_underlying_metadata() unmaps the
-correct block.
+Use a very large unsigned number (~0xffff) as as the fake block number
+for the delayed new buffer. The VFS should never try to write out this
+number, but if it does, this will make it obvious.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/extents.c |    2 ++
- fs/ext4/inode.c   |    7 +++++++
- 2 files changed, 9 insertions(+)
+ fs/ext4/inode.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- a/fs/ext4/extents.c
-+++ b/fs/ext4/extents.c
-@@ -2776,6 +2776,8 @@ int ext4_ext_get_blocks(handle_t *handle
- 				if (allocated > max_blocks)
- 					allocated = max_blocks;
- 				set_buffer_unwritten(bh_result);
-+				bh_result->b_bdev = inode->i_sb->s_bdev;
-+				bh_result->b_blocknr = newblock;
- 				goto out2;
- 			}
- 
 --- a/fs/ext4/inode.c
 +++ b/fs/ext4/inode.c
-@@ -2246,6 +2246,13 @@ static int ext4_da_get_block_prep(struct
+@@ -2220,6 +2220,10 @@ static int ext4_da_get_block_prep(struct
+ 				  struct buffer_head *bh_result, int create)
+ {
+ 	int ret = 0;
++	sector_t invalid_block = ~((sector_t) 0xffff);
++
++	if (invalid_block < ext4_blocks_count(EXT4_SB(inode->i_sb)->s_es))
++		invalid_block = ~0;
+ 
+ 	BUG_ON(create == 0);
+ 	BUG_ON(bh_result->b_size != inode->i_sb->s_blocksize);
+@@ -2241,7 +2245,7 @@ static int ext4_da_get_block_prep(struct
+ 			/* not enough space to reserve */
+ 			return ret;
+ 
+-		map_bh(bh_result, inode->i_sb, 0);
++		map_bh(bh_result, inode->i_sb, invalid_block);
+ 		set_buffer_new(bh_result);
  		set_buffer_delay(bh_result);
  	} else if (ret > 0) {
- 		bh_result->b_size = (ret << inode->i_blkbits);
-+		/*
-+		 * With sub-block writes into unwritten extents
-+		 * we also need to mark the buffer as new so that
-+		 * the unwritten parts of the buffer gets correctly zeroed.
-+		 */
-+		if (buffer_unwritten(bh_result))
-+			set_buffer_new(bh_result);
- 		ret = 0;
- 	}
- 
 
 
