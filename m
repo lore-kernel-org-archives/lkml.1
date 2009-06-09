@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759041AbZFIIHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759140AbZFIIHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759041AbZFIIHO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 04:07:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbZFIIG6
+	id S1759140AbZFIIHf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 04:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759023AbZFIIHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 04:06:58 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:56222 "EHLO gir.skynet.ie"
+	Tue, 9 Jun 2009 04:07:14 -0400
+Received: from mxs2.siemens.at ([194.138.12.133]:60064 "EHLO mxs2.siemens.at"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751089AbZFIIG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 04:06:57 -0400
-Date: Tue, 9 Jun 2009 09:06:56 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
-Subject: Re: [RFC PATCH 5/5] tracing/events: modify kmem print to new format
-Message-ID: <20090609080656.GB18380@csn.ul.ie>
-References: <20090609014534.790466803@goodmis.org> <20090609014747.188279837@goodmis.org> <1244531562.13761.9955.camel@twins>
+	id S1758960AbZFIIHJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 04:07:09 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1244531562.13761.9955.camel@twins>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Catch program crash, and collect core dump.
+Date: Tue, 9 Jun 2009 10:07:08 +0200
+Message-ID: <89AFFE04075E4449A469671466FA948549ACC6@nets11ca>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Catch program crash, and collect core dump.
+Thread-Index: AcnoQ+F2LwuKlJbeTPK9l8IhxG+iWAAlSS8gAAAC8yA=
+From: "Naray, Gabor" <gabor.naray@siemens-enterprise.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 09 Jun 2009 08:07:07.0981 (UTC) FILETIME=[489177D0:01C9E8D9]
+X-purgate: clean
+X-purgate: This mail is considered clean
+X-purgate-type: clean
+X-purgate-Ad: Checked for Spam by eleven - eXpurgate www.eXpurgate.net
+X-purgate-ID: 149917::090609100719-088A3BA0-1F1C69B3/0-0/0-15
+X-purgate-size: 1435/999999
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 09:12:42AM +0200, Peter Zijlstra wrote:
-> On Mon, 2009-06-08 at 21:45 -0400, Steven Rostedt wrote:
-> 
-> > +#define show_gfp_flags(end...)						\
-> > +	"0=GFP_NOWAIT,"							\
-> > +	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-> > +	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-> > +	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
-> > +	"0x%lx=%s,0x%lx=%s>" end ,					\
-> > +	(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE", \
-> > +	(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER",		\
-> > +	(unsigned long)GFP_USER,		"GFP_USER",		\
-> > +	(unsigned long)GFP_TEMPORARY,		"GFP_TEMPORARY",	\
-> > +	(unsigned long)GFP_KERNEL,		"GFP_KERNEL",		\
-> > +	(unsigned long)GFP_NOFS,		"GFP_NOFS",		\
-> > +	(unsigned long)GFP_ATOMIC,		"GFP_ATOMIC",		\
-> > +	(unsigned long)GFP_NOIO,		"GFP_NOIO",		\
-> > +	(unsigned long)__GFP_HIGH,		"GFP_HIGH",		\
-> > +	(unsigned long)__GFP_WAIT,		"GFP_WAIT",		\
-> > +	(unsigned long)__GFP_IO,		"GFP_IO",		\
-> > +	(unsigned long)__GFP_COLD,		"GFP_COLD",		\
-> > +	(unsigned long)__GFP_NOWARN,		"GFP_NOWARN",		\
-> > +	(unsigned long)__GFP_REPEAT,		"GFP_REPEAT",		\
-> > +	(unsigned long)__GFP_NOFAIL,		"GFP_NOFAIL",		\
-> > +	(unsigned long)__GFP_NORETRY,		"GFP_NORETRY",		\
-> > +	(unsigned long)__GFP_COMP,		"GFP_COMP",		\
-> > +	(unsigned long)__GFP_ZERO,		"GFP_ZERO",		\
-> > +	(unsigned long)__GFP_NOMEMALLOC,	"GFP_NOMEMALLOC",	\
-> > +	(unsigned long)__GFP_HARDWALL,		"GFP_HARDWALL",		\
-> > +	(unsigned long)__GFP_THISNODE,		"GFP_THISNODE",		\
-> > +	(unsigned long)__GFP_RECLAIMABLE,	"GFP_RECLAIMABLE",	\
-> > +	(unsigned long)__GFP_MOVABLE,		"GFP_MOVABLE"
-> 
-> Just curious, how unhappy does stuff become when we add a __GFP_ flag
-> and forget to extend this table?
-> 
+Hi!
 
-If it's the same behaviour as what I was looking at yesterday, it prints
-the remaining flags it doesn't recognise as the number.
+I would like to create a small daemon which can recognize if 
+a user-space program crashes, and can collect the core dump 
+of that program, but could also perform additional tasks.
+I am looking for something like a /proc configuration, which 
+can define what to do, if a program crashes. I haven't found 
+anything like that.
 
-GFP_KERNEL|__GFP_DMA got outputted as |GFP_KERNEL|0x1|
+Right now, my best bet is something like this: ``echo 
+"/tmp/corefiles/core" > /proc/sys/kernel/core_pattern'', and 
+then monitor the directory with inotify.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+We are developing an application which stands from multiple 
+modules, and generates detailed logs, which under heavy load 
+can rotate out under 10 sec. Therefore we need to save these 
+logs as soon as possible in case of a crash. Polling the 
+crash logs is not an option (the more it is loaded, the less 
+we should poll, but the more we need to catch in time). 
+
+Best solution would be, if a command could be configured 
+which is triggered in case of a user-space crash.
+
+I have found ``apport'', as a project which does something 
+like that, but I couldn't figure it out yet, how it does 
+that. I haven't found any entries regarding this problem in 
+the list archives.
+
+If you have any idea - other than my suggestion -, please help me.
+ 
+Best regards,
+Gábor Náray.
+ 
+PS: I am not subscribed to the mailing list, so please CC me 
+directly into the answers.
+ 
+ 
