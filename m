@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbZFISqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbZFISrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754386AbZFISqD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:46:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbZFISpz
+	id S1754431AbZFISrc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbZFISrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:45:55 -0400
-Received: from mail05do.versatel.de ([89.245.129.25]:53572 "EHLO
-	mail05do.versatel.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754178AbZFISpz (ORCPT
+	Tue, 9 Jun 2009 14:47:24 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:49964 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751463AbZFISrY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:45:55 -0400
-Message-ID: <20090609204550.9s3uk1nunmio4oo4@webmail.versatel.de>
-Date: Tue,  9 Jun 2009 20:45:50 +0200
-From: WEBMAIL SERVICE HELP DESK <servicedesk@webmail.info>
-Reply-to: service-help-desk@8u8.com
-To: undisclosed-recipients:;
-Subject: Webmail Account Verification Update ! ! !
+	Tue, 9 Jun 2009 14:47:24 -0400
+Date: Tue, 9 Jun 2009 20:47:20 +0200
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Harald Welte <HaraldWelte@viatech.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [patch 3/3] crypto: padlock-aes: enable on 64-bit kernels
+Message-ID: <20090609184720.GB22084@Chamillionaire.breakpoint.cc>
+References: <20090609103533.0c334594@dhcp-100-2-144.bos.redhat.com> <20090609103907.1903878c@dhcp-100-2-144.bos.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.0.3)
-X-Originating-IP: 82.128.16.141
+In-Reply-To: <20090609103907.1903878c@dhcp-100-2-144.bos.redhat.com>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Webmail User,
+* Chuck Ebbert | 2009-06-09 10:39:07 [-0400]:
 
-The Webmail Program that periodically checks the size of your e-mail
-space is sending you this information. The program runs weekly to
-ensure your inbox does not grow too large, thus  preventing you from
-receiving or sending new e-mail. As this message is being sent, you
-have 18 megabytes (MB) or more stored in  your inbox. To help us reset
-your space in our database, please  enter your current user
-name (_________________) password  (_______________)
+>From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+>crypto: padlock-aes: enable on 64-bit kernels
+>
+>The only required change now is using the right push/pop instruction
+>on x86-64. Taken from the original patch by Sebastian Andrzej Siewior.
+>(Added a dependency on X86.)
+My original patch is allready in cryptodev followed by another patch for
+the correct dependency.
 
-You will receive a periodic alert if your inbox size is between 18
-and 20 MB. If your inbox size is 20 MB, a program on your Webmail
-will move your oldest e-mails to a folder in your home directory to
-ensure you can continue receiving incoming e-mail. You will be
-notified this has taken place. If your inbox grows to 25 MB, you will
-be unable to receive new e-mail and it will be returned to  sender.
-All this is programmed to ensure your e-mail continues to function
-well. Thank you for your cooperation and understanding.
-
-Information Technology Services Apologizes for any inconvenience caused
-by this required work.
-
-IT Service Desk.
-
+Sebastian
