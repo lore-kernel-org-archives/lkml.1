@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759714AbZFIKZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760991AbZFIKY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759714AbZFIKZJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760661AbZFIKTZ
+	id S1760991AbZFIKY0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760644AbZFIKTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:19:25 -0400
-Received: from kroah.org ([198.145.64.141]:54817 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:19:14 -0400
+Received: from kroah.org ([198.145.64.141]:54754 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760638AbZFIKTY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:19:24 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:00 2009
-Message-Id: <20090609094100.473905544@blue.kroah.org>
+	id S1760634AbZFIKTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:19:12 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:59 2009
+Message-Id: <20090609094059.705737171@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:39:24 -0700
+Date: Tue, 09 Jun 2009 02:39:21 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       alan@lxorguk.ukuu.org.uk, Warren Free <wfree@ipmn.com>,
+       Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 36/87] x86/pci: fix mmconfig detection with 32bit near 4g
+Subject: [patch 33/87] USB: isp1760: urb_dequeue doesnt always find the urbs
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=x86-pci-fix-mmconfig-detection-with-32bit-near-4g.patch
+Content-Disposition: inline; filename=usb-isp1760-urb_dequeue-doesn-t-always-find-the-urbs.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,68 +40,99 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Yinghai Lu <yinghai@kernel.org>
+From: Warren Free <wfree@ipmn.com>
 
-commit 75e613cdc7bb2ba3795b1bc3ddf19476c767ba68 upstream.
+commit 0afb20e00b5053170c85298fed842b32d20b4ea9 upstream.
 
-Pascal reported and bisected a commit:
-|	x86/PCI: don't call e820_all_mapped with -1 in the mmconfig case
+The option driver (and presumably others) allocates several URBs when it
+opens and tries to free them when it closes. The isp1760_urb_dequeue
+function gets called, but the packet being dequeued is not necessarily at
+the
+front of one of the 32 queues. If not, the isp1760_urb_done function doesn't
+get called for the URB and the process trying to free it hangs forever on a
+wait_queue. This patch does two things. If the URB being dequeued has others
+queued behind it, it re-queues them. And it searches the queues looking for
+the URB being dequeued rather than just looking at the one at the front of
+the queue.
 
-which broke one system system.
+[bigeasy@linutronix] whitespace fixes, reformating
 
-ACPI: Using IOAPIC for interrupt routing
-PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 255
-PCI: MCFG area at f0000000 reserved in ACPI motherboard resources
-PCI: Using MMCONFIG for extended config space
-
-it didn't have
-PCI: updated MCFG configuration 0: base f0000000 segment 0 buses 0 - 63
-anymore, and try to use 0xf000000 - 0xffffffff for mmconfig
-
-For 32bit, mcfg_res->end could be 32bit only (if 64 resources aren't used)
-So use end - 1 to pass the value in mcfg->end to avoid overflow.
-
-We don't need to worry about the e820 path, they are always 64 bit.
-
-Reported-by: Pascal Terjan <pterjan@mandriva.com>
-Bisected-by: Pascal Terjan <pterjan@mandriva.com>
-Tested-by: Pascal Terjan <pterjan@mandriva.com>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Warren Free <wfree@ipmn.com>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/pci/mmconfig-shared.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/usb/host/isp1760-hcd.c |   24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
 
---- a/arch/x86/pci/mmconfig-shared.c
-+++ b/arch/x86/pci/mmconfig-shared.c
-@@ -254,7 +254,7 @@ static acpi_status __init check_mcfg_res
- 		if (!fixmem32)
- 			return AE_OK;
- 		if ((mcfg_res->start >= fixmem32->address) &&
--		    (mcfg_res->end <= (fixmem32->address +
-+		    (mcfg_res->end < (fixmem32->address +
- 				      fixmem32->address_length))) {
- 			mcfg_res->flags = 1;
- 			return AE_CTRL_TERMINATE;
-@@ -271,7 +271,7 @@ static acpi_status __init check_mcfg_res
- 		return AE_OK;
+--- a/drivers/usb/host/isp1760-hcd.c
++++ b/drivers/usb/host/isp1760-hcd.c
+@@ -1644,6 +1644,7 @@ static int isp1760_urb_dequeue(struct us
+ 	u32 reg_base, or_reg, skip_reg;
+ 	unsigned long flags;
+ 	struct ptd ptd;
++	packet_enqueue *pe;
  
- 	if ((mcfg_res->start >= address.minimum) &&
--	    (mcfg_res->end <= (address.minimum + address.address_length))) {
-+	    (mcfg_res->end < (address.minimum + address.address_length))) {
- 		mcfg_res->flags = 1;
- 		return AE_CTRL_TERMINATE;
+ 	switch (usb_pipetype(urb->pipe)) {
+ 	case PIPE_ISOCHRONOUS:
+@@ -1655,6 +1656,7 @@ static int isp1760_urb_dequeue(struct us
+ 		reg_base = INT_REGS_OFFSET;
+ 		or_reg = HC_INT_IRQ_MASK_OR_REG;
+ 		skip_reg = HC_INT_PTD_SKIPMAP_REG;
++		pe = enqueue_an_INT_packet;
+ 		break;
+ 
+ 	default:
+@@ -1662,6 +1664,7 @@ static int isp1760_urb_dequeue(struct us
+ 		reg_base = ATL_REGS_OFFSET;
+ 		or_reg = HC_ATL_IRQ_MASK_OR_REG;
+ 		skip_reg = HC_ATL_PTD_SKIPMAP_REG;
++		pe =  enqueue_an_ATL_packet;
+ 		break;
  	}
-@@ -297,7 +297,7 @@ static int __init is_acpi_reserved(u64 s
- 	struct resource mcfg_res;
  
- 	mcfg_res.start = start;
--	mcfg_res.end = end;
-+	mcfg_res.end = end - 1;
- 	mcfg_res.flags = 0;
+@@ -1673,6 +1676,7 @@ static int isp1760_urb_dequeue(struct us
+ 			u32 skip_map;
+ 			u32 or_map;
+ 			struct isp1760_qtd *qtd;
++			struct isp1760_qh *qh = ints->qh;
  
- 	acpi_get_devices("PNP0C01", find_mboard_resource, &mcfg_res, NULL);
+ 			skip_map = isp1760_readl(hcd->regs + skip_reg);
+ 			skip_map |= 1 << i;
+@@ -1685,8 +1689,7 @@ static int isp1760_urb_dequeue(struct us
+ 			priv_write_copy(priv, (u32 *)&ptd, hcd->regs + reg_base
+ 					+ i * sizeof(ptd), sizeof(ptd));
+ 			qtd = ints->qtd;
+-
+-			clean_up_qtdlist(qtd);
++			qtd = clean_up_qtdlist(qtd);
+ 
+ 			free_mem(priv, ints->payload);
+ 
+@@ -1697,7 +1700,24 @@ static int isp1760_urb_dequeue(struct us
+ 			ints->payload = 0;
+ 
+ 			isp1760_urb_done(priv, urb, status);
++			if (qtd)
++				pe(hcd, qh, qtd);
+ 			break;
++
++		} else if (ints->qtd) {
++			struct isp1760_qtd *qtd, *prev_qtd = ints->qtd;
++
++			for (qtd = ints->qtd->hw_next; qtd; qtd = qtd->hw_next) {
++				if (qtd->urb == urb) {
++					prev_qtd->hw_next = clean_up_qtdlist(qtd);
++					isp1760_urb_done(priv, urb, status);
++					break;
++				}
++				prev_qtd = qtd;
++			}
++			/* we found the urb before the end of the list */
++			if (qtd)
++				break;
+ 		}
+ 		ints++;
+ 	}
 
 
