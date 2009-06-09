@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbZFIQp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbZFIQpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758300AbZFIQp2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 12:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbZFIQpT
+	id S1758094AbZFIQpk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 12:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758061AbZFIQp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 12:45:19 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50122 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755174AbZFIQpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 12:45:18 -0400
-Date: Tue, 9 Jun 2009 18:45:19 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
+	Tue, 9 Jun 2009 12:45:26 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:59207 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758229AbZFIQpZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 12:45:25 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: [PATCH 1/2] CPUFREQ: Enable acpi-cpufreq driver for VIA/Centaur CPUs
+Date: Tue, 9 Jun 2009 11:45:19 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native kernels
-Message-ID: <20090609164519.GE9211@wotan.suse.de>
-References: <200906032208.28061.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906030901460.4880@localhost.localdomain> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain> <20090609093918.GC16940@wotan.suse.de> <alpine.LFD.2.01.0906090749380.6847@localhost.localdomain> <20090609153847.GB9211@wotan.suse.de> <alpine.LFD.2.01.0906090849080.6847@localhost.localdomain> <20090609162125.GC9211@wotan.suse.de> <alpine.LFD.2.01.0906090924580.6847@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       Dave Jones <davej@redhat.com>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <200906090726.14187.lkml@morethan.org> <20090609122255.147b680a@dhcp-100-2-144.bos.redhat.com>
+In-Reply-To: <20090609122255.147b680a@dhcp-100-2-144.bos.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906090924580.6847@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200906091145.22959.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 09:26:47AM -0700, Linus Torvalds wrote:
+On Tue June 9 2009, Chuck Ebbert wrote:
+> On Tue, 9 Jun 2009 07:26:11 -0500
+> "Michael S. Zick" <lkml@morethan.org> wrote:
 > 
-> 
-> On Tue, 9 Jun 2009, Nick Piggin wrote:
+> > > Sounds fine with me. But what I would definitely suggest merging before 2.6.30
+> > > is the marking e_powersaver EXPERIMENTAL + DANGEROUS patch.
+> > >  
 > > 
-> > The idea seems nice but isn't the problem that kmap gives back a
-> > basically 1st class kernel virtual memory? (ie. it can then be used
-> > by any other CPU at any point without it having to use kmap?).
+> > As posted somewhere in this thread,
+> > the acpi-cpufreq controller appears to work on my machine in initial tests.
 > 
-> No, everybody has to use kmap()/kunmap().
+> It works great on the Samsung NC20 with an x86_64 kernel.
+>
 
-So it is strictly a bug to expose a pointer returned by kmap to
-another CPU? That would make it easier, although it would need
-to remove the global bit I think so when one task migrates CPUs
-then the entry will be flushed and reloaded properly.
+For non-NetBook aware readers, that means the:
+VIA Nano U2250 processor with the VX800 system chipset.
 
+Mike
 
-> The "problem" is that you could in theory run out of kmap frames, since if 
-> everybody does a kmap() in an interruptible context and you have lots and 
-> lots of threads doing different pages, you'd run out. But that has nothing 
-> to do with kmap_atomic(), which is basically limited to just the number of 
-> CPU's and a (very small) level of nesting.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-This could be avoided with an anti-deadlock pool. If a task
-attempts a nested kmap and already holds a kmap, then give it
-exclusive access to this pool until it releases its last
-nested kmap.
 
