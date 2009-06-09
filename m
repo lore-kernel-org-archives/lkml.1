@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762665AbZFIKeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760078AbZFIKee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762665AbZFIKeq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760842AbZFIKVk
+	id S1760078AbZFIKee (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760731AbZFIKVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:21:40 -0400
-Received: from kroah.org ([198.145.64.141]:55475 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:21:38 -0400
+Received: from kroah.org ([198.145.64.141]:55455 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760843AbZFIKVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:21:39 -0400
+	id S1759395AbZFIKVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:21:36 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:09 2009
-Message-Id: <20090609094109.269138659@blue.kroah.org>
+Message-Id: <20090609094109.038712318@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:40:00 -0700
+Date: Tue, 09 Jun 2009 02:39:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,10 +26,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
-       Bryan Donlan <bdonlan@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 72/87] ext4: return -EIO not -ESTALE on directory traversal through deleted inode
+       Duane Griffin <duaneg@dghda.com>, Andreas Dilger <adilger@sun.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 71/87] ext4: tighten restrictions on inode flags
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-return-eio-not-estale-on-directory-traversal-through-deleted-inode.patch
+Content-Disposition: inline; filename=ext4-tighten-restrictions-on-inode-flags.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,55 +41,93 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Bryan Donlan <bdonlan@gmail.com>
+From: Duane Griffin <duaneg@dghda.com>
 
-(cherry picked from commit e6f009b0b45220c004672d41a58865e94946104d)
+(cherry picked from commit 2dc6b0d48ca0599837df21b14bb8393d0804af57)
 
-ext4_iget() returns -ESTALE if invoked on a deleted inode, in order to
-report errors to NFS properly.  However, in ext4_lookup(), this
--ESTALE can be propagated to userspace if the filesystem is corrupted
-such that a directory entry references a deleted inode.  This leads to
-a misleading error message - "Stale NFS file handle" - and confusion
-on the part of the admin.
+At the moment there are few restrictions on which flags may be set on
+which inodes.  Specifically DIRSYNC may only be set on directories and
+IMMUTABLE and APPEND may not be set on links.  Tighten that to disallow
+TOPDIR being set on non-directories and only NODUMP and NOATIME to be set
+on non-regular file, non-directories.
 
-The bug can be easily reproduced by creating a new filesystem, making
-a link to an unused inode using debugfs, then mounting and attempting
-to ls -l said link.
+Introduces a flags masking function which masks flags based on mode and
+use it during inode creation and when flags are set via the ioctl to
+facilitate future consistency.
 
-This patch thus changes ext4_lookup to return -EIO if it receives
--ESTALE from ext4_iget(), as ext4 does for other filesystem metadata
-corruption; and also invokes the appropriate ext*_error functions when
-this case is detected.
-
-Signed-off-by: Bryan Donlan <bdonlan@gmail.com>
+Signed-off-by: Duane Griffin <duaneg@dghda.com>
+Acked-by: Andreas Dilger <adilger@sun.com>
 Cc: <linux-ext4@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/namei.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ fs/ext4/ext4.h   |   17 +++++++++++++++++
+ fs/ext4/ialloc.c |   14 +++++---------
+ fs/ext4/ioctl.c  |    3 +--
+ 3 files changed, 23 insertions(+), 11 deletions(-)
 
---- a/fs/ext4/namei.c
-+++ b/fs/ext4/namei.c
-@@ -1052,8 +1052,16 @@ static struct dentry *ext4_lookup(struct
- 			return ERR_PTR(-EIO);
- 		}
- 		inode = ext4_iget(dir->i_sb, ino);
--		if (IS_ERR(inode))
--			return ERR_CAST(inode);
-+		if (unlikely(IS_ERR(inode))) {
-+			if (PTR_ERR(inode) == -ESTALE) {
-+				ext4_error(dir->i_sb, __func__,
-+						"deleted inode referenced: %u",
-+						ino);
-+				return ERR_PTR(-EIO);
-+			} else {
-+				return ERR_CAST(inode);
-+			}
-+		}
- 	}
- 	return d_splice_alias(inode, dentry);
- }
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -255,6 +255,23 @@ struct flex_groups {
+ 			   EXT4_NOCOMPR_FL | EXT4_JOURNAL_DATA_FL |\
+ 			   EXT4_NOTAIL_FL | EXT4_DIRSYNC_FL)
+ 
++/* Flags that are appropriate for regular files (all but dir-specific ones). */
++#define EXT4_REG_FLMASK (~(EXT4_DIRSYNC_FL | EXT4_TOPDIR_FL))
++
++/* Flags that are appropriate for non-directories/regular files. */
++#define EXT4_OTHER_FLMASK (EXT4_NODUMP_FL | EXT4_NOATIME_FL)
++
++/* Mask out flags that are inappropriate for the given type of inode. */
++static inline __u32 ext4_mask_flags(umode_t mode, __u32 flags)
++{
++	if (S_ISDIR(mode))
++		return flags;
++	else if (S_ISREG(mode))
++		return flags & EXT4_REG_FLMASK;
++	else
++		return flags & EXT4_OTHER_FLMASK;
++}
++
+ /*
+  * Inode dynamic state flags
+  */
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -885,16 +885,12 @@ got:
+ 	ei->i_disksize = 0;
+ 
+ 	/*
+-	 * Don't inherit extent flag from directory. We set extent flag on
+-	 * newly created directory and file only if -o extent mount option is
+-	 * specified
++	 * Don't inherit extent flag from directory, amongst others. We set
++	 * extent flag on newly created directory and file only if -o extent
++	 * mount option is specified
+ 	 */
+-	ei->i_flags = EXT4_I(dir)->i_flags & EXT4_FL_INHERITED;
+-	if (S_ISLNK(mode))
+-		ei->i_flags &= ~(EXT4_IMMUTABLE_FL|EXT4_APPEND_FL);
+-	/* dirsync only applies to directories */
+-	if (!S_ISDIR(mode))
+-		ei->i_flags &= ~EXT4_DIRSYNC_FL;
++	ei->i_flags =
++		ext4_mask_flags(mode, EXT4_I(dir)->i_flags & EXT4_FL_INHERITED);
+ 	ei->i_file_acl = 0;
+ 	ei->i_dtime = 0;
+ 	ei->i_block_group = group;
+--- a/fs/ext4/ioctl.c
++++ b/fs/ext4/ioctl.c
+@@ -48,8 +48,7 @@ long ext4_ioctl(struct file *filp, unsig
+ 		if (err)
+ 			return err;
+ 
+-		if (!S_ISDIR(inode->i_mode))
+-			flags &= ~EXT4_DIRSYNC_FL;
++		flags = ext4_mask_flags(inode->i_mode, flags);
+ 
+ 		err = -EPERM;
+ 		mutex_lock(&inode->i_mutex);
 
 
