@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761351AbZFIK0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761533AbZFIK1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761351AbZFIK0d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:26:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760468AbZFIKTm
+	id S1761533AbZFIK1l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:27:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760744AbZFIKT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:19:42 -0400
-Received: from kroah.org ([198.145.64.141]:54897 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:19:59 -0400
+Received: from kroah.org ([198.145.64.141]:54978 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760695AbZFIKTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:19:39 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:01 2009
-Message-Id: <20090609094101.420026206@blue.kroah.org>
+	id S1760719AbZFIKT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:19:58 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:02 2009
+Message-Id: <20090609094102.610840271@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:39:28 -0700
+Date: Tue, 09 Jun 2009 02:39:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Shaohua Li <shaohua.li@intel.com>,
-       Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 40/87] cpuidle: fix AMD C1E suspend hang
+       alan@lxorguk.ukuu.org.uk, Eric Paris <eparis@redhat.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 45/87] SELinux: BUG in SELinux compat_net code
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=cpuidle-fix-amd-c1e-suspend-hang.patch
+Content-Disposition: inline; filename=selinux-bug-in-selinux-compat_net-code.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,38 +39,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Shaohua Li <shaohua.li@intel.com>
+From: Eric Paris <eparis@redhat.com>
 
-commit 7d60e8ab0d5507229dfbdf456501cc378610fa01 upstream.
+This patch is not applicable to Linus's tree as the code in question has
+been removed for 2.6.30.  I'm sending in case any of the stable
+maintainers would like to push to their branches (which I think anything
+pre 2.6.30 would like to do).
 
-When AMD C1E is enabled, local APIC timer will stop even in C1. To avoid
-suspend/resume hang, this patch removes C1 and replace it with a cpu_relax() in
-suspend/resume path. This hasn't any impact in runtime path.
+Ubuntu users were experiencing a kernel panic when they enabled SELinux
+due to an old bug in our handling of the compatibility mode network
+controls, introduced Jan 1 2008 effad8df44261031a882e1a895415f7186a5098e
+Most distros have not used the compat_net code since the new code was
+introduced and so noone has hit this problem before.  Ubuntu is the only
+distro I know that enabled that legacy cruft by default.  But, I was ask
+to look at it and found that the above patch changed a call to
+avc_has_perm from if(send_perm) to if(!send_perm) in
+selinux_ip_postroute_iptables_compat().  The result is that users who
+turn on SELinux and have compat_net set can (and oftern will) BUG() in
+avc_has_perm_noaudit since they are requesting 0 permissions.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=13233
+This patch corrects that accidental bug introduction.
 
-[ impact: avoid suspend/resume hang in AMD CPU with C1E enabled ]
-
-Tested-by: Dmitry Lyzhyn <thisistempbox@yahoo.com>
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
+Signed-off-by: Eric Paris <eparis@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/processor_idle.c |    2 +-
+ security/selinux/hooks.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -870,8 +870,8 @@ static int acpi_idle_enter_c1(struct cpu
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -4648,7 +4648,7 @@ static int selinux_ip_postroute_iptables
+ 	if (err)
+ 		return err;
  
- 	/* Do not access any ACPI IO ports in suspend path */
- 	if (acpi_idle_suspend) {
--		acpi_safe_halt();
- 		local_irq_enable();
-+		cpu_relax();
+-	if (send_perm != 0)
++	if (!send_perm)
  		return 0;
- 	}
  
+ 	err = sel_netport_sid(sk->sk_protocol,
 
 
