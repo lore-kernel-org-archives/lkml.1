@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758937AbZFILak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759715AbZFILbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758937AbZFILak (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 07:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758205AbZFILac
+	id S1759715AbZFILbs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 07:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbZFILbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 07:30:32 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44748 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756847AbZFILac (ORCPT
+	Tue, 9 Jun 2009 07:31:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47328
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750885AbZFILbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 07:30:32 -0400
-Subject: Re: [patch 19/87] Fix oops on close of hot-unplugged FTDI serial
- converter
-From: David Woodhouse <dwmw2@infradead.org>
-To: Greg KH <gregkh@suse.de>, Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "stable@kernel.org" <stable@kernel.org>,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090609094056.465155618@blue.kroah.org>
-References: <20090609093848.204935043@blue.kroah.org>
-	 <20090609094056.465155618@blue.kroah.org>
-Content-Type: text/plain
-Date: Tue, 09 Jun 2009 12:30:11 +0100
-Message-Id: <1244547011.4538.7.camel@macbook.infradead.org>
+	Tue, 9 Jun 2009 07:31:36 -0400
+Date: Tue, 09 Jun 2009 04:31:38 -0700 (PDT)
+Message-Id: <20090609.043138.236579164.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-09 at 02:39 -0700, Greg KH wrote:
-> 2.6.29-stable review patch.  If anyone has any objections, please let
-> us know.
 
-Many USB-serial drivers have similar problems; Alan Stern posted a
-better fix which splits the shutdown() method into separate disconnect()
-and release().
+These two are crashers and well isolated, so I'm sending these
+now.
 
-Admittedly, he didn't include ftdi in his patch because it already had
-this workaround submitted -- but Alan's approach is better. We should
-probably fix ftdi that way, not with this patch.
+Please pull, thanks a lot!
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+The following changes since commit 3af968e066d593bc4dacc021715f3e95ddf0996f:
+  Linus Torvalds (1):
+        async: Fix lack of boot-time console due to insufficient synchronization
 
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Eric Dumazet (1):
+      r8169: fix crash when large packets are received
+
+Minoru Usui (1):
+      cls_cgroup: Fix oops when user send improperly 'tc filter add' request
+
+ drivers/net/r8169.c    |   11 +++++------
+ net/sched/cls_cgroup.c |    3 +++
+ 2 files changed, 8 insertions(+), 6 deletions(-)
