@@ -1,130 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761627AbZFINtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761634AbZFINuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761627AbZFINtu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761488AbZFINtT
+	id S1761634AbZFINuE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:50:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761429AbZFINtW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:49:19 -0400
-Received: from mga14.intel.com ([143.182.124.37]:18981 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761459AbZFINtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:49:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,331,1241420400"; 
-   d="scan'208";a="152263786"
-Date: Tue, 9 Jun 2009 21:49:03 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+	Tue, 9 Jun 2009 09:49:22 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34269 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761472AbZFINtU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 09:49:20 -0400
+Date: Tue, 9 Jun 2009 15:49:22 +0200
+From: Jan Kara <jack@suse.cz>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "axboe@kernel.dk" <axboe@kernel.dk>,
+       "hirofumi@mail.parknet.co.jp" <hirofumi@mail.parknet.co.jp>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [11/16] HWPOISON: check and isolate corrupted free
-	pages v2
-Message-ID: <20090609134903.GC6583@localhost>
-References: <20090603846.816684333@firstfloor.org> <20090603184645.68FA21D0286@basil.firstfloor.org> <20090609100229.GE14820@wotan.suse.de> <20090609130304.GF5589@localhost> <20090609132847.GC15219@wotan.suse.de>
+       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>
+Subject: Re: [PATCH 0/4] FS: userspace notification of errors
+Message-ID: <20090609134921.GB13755@atrey.karlin.mff.cuni.cz>
+References: <1244041518-32229-1-git-send-email-ext-denis.2.karpov@nokia.com> <20090603115611.6bbbaf55.akpm@linux-foundation.org> <ac3eb2510906040553j294f1015wfb7deb4b4fc63afc@mail.gmail.com> <4A28FC8F.5020802@nokia.com> <20090605115127.GF28764@smart.research.nokia.com> <ac3eb2510906050606u7527654dv789364549b36f3e7@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090609132847.GC15219@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <ac3eb2510906050606u7527654dv789364549b36f3e7@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 09:28:47PM +0800, Nick Piggin wrote:
-> On Tue, Jun 09, 2009 at 09:03:04PM +0800, Wu Fengguang wrote:
-> > On Tue, Jun 09, 2009 at 06:02:29PM +0800, Nick Piggin wrote:
-> > > On Wed, Jun 03, 2009 at 08:46:45PM +0200, Andi Kleen wrote:
-> > > > 
-> > > > From: Wu Fengguang <fengguang.wu@intel.com>
-> > > > 
-> > > > If memory corruption hits the free buddy pages, we can safely ignore them.
-> > > > No one will access them until page allocation time, then prep_new_page()
-> > > > will automatically check and isolate PG_hwpoison page for us (for 0-order
-> > > > allocation).
-> > > 
-> > > It would be kinda nice if this could be done in the handler
-> > > directly (ie. take the page directly out of the allocator
-> > > or pcp list). Completely avoiding fastpaths would be a
-> > > wonderful goal.
-> > 
-> > In fact Andi have code to do that. We prefer this one because
-> > - it's simple
-> > - it's good sanity check for possible software BUGs
-> > - it mainly adds overhead to high order pages, which is acceptable
+> On Fri, Jun 5, 2009 at 13:51, Denis Karpov<ext-denis.2.karpov@nokia.com> wrote:
+> > This is doable, e.g. in the form of optional fields "tag[:value]"
+> > (field 7, Documentation/filesystems/proc.txti for mountinfo).
 > 
-> Yeah it's not bad. But we don't have much other non-debug options
-> that check for random memory corruption like this. Given that the
-> struct page is a very tiny proportion of memory, then I'm not
-> totally convinced that all this checking in the page allocator is
-> worthwhile for everyone. It's a much bigger cost if checks and
-> branches have to be there just for hwpoison.
-
-Maybe.
-
-> And I don't think removing a free page from the page allocator is
-> too much more complex than removing a live page from the pagecache ;)
-
-There are usable functions for doing pagecache isolations, but no one
-to isolate one specific page from the buddy system.
-
-Plus, if we did present such a function, you'll then ask for it being
-included in page_alloc.c, injecting a big chunk of dead code into the
-really hot code blocks and possibly polluting the L2 cache. Will it be
-better than just inserting several lines? Hardly. Smaller text itself
-yields faster speed.
-
-Thanks,
-Fengguang
-
+> > But is using procfs generally a good idea ? Last several years all a lot of
+> > stuff moved out from procfs into sysfs. Not to forget what procfs is
+> > originally meant for: storing the proceses related information.
 > 
-> > 
-> > Thanks,
-> > Fengguang
-> > 
-> > > >  
-> > > > +	/* Don't complain about poisoned pages */
-> > > > +	if (PageHWPoison(page)) {
-> > > > +		__ClearPageBuddy(page);
-> > > > +		return;
-> > > > +	}
-> > > > +
-> > 
-> > I do think the above chunk is not absolutely necessary, though.
-> > 
-> > Thanks,
-> > Fengguang
-> > 
-> > 
-> > > >  	/*
-> > > >  	 * Allow a burst of 60 reports, then keep quiet for that minute;
-> > > >  	 * or allow a steady drip of one report per second.
-> > > > @@ -650,7 +656,7 @@
-> > > >  /*
-> > > >   * This page is about to be returned from the page allocator
-> > > >   */
-> > > > -static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
-> > > > +static inline int check_new_page(struct page *page)
-> > > >  {
-> > > >  	if (unlikely(page_mapcount(page) |
-> > > >  		(page->mapping != NULL)  |
-> > > > @@ -659,6 +665,18 @@
-> > > >  		bad_page(page);
-> > > >  		return 1;
-> > > >  	}
-> > > > +	return 0;
-> > > > +}
-> > > > +
-> > > > +static int prep_new_page(struct page *page, int order, gfp_t gfp_flags)
-> > > > +{
-> > > > +	int i;
-> > > > +
-> > > > +	for (i = 0; i < (1 << order); i++) {
-> > > > +		struct page *p = page + i;
-> > > > +		if (unlikely(check_new_page(p)))
-> > > > +			return 1;
-> > > > +	}
-> > > >  
-> > > >  	set_page_private(page, 0);
-> > > >  	set_page_refcounted(page);
+> Yeah, but mounted volumes are namespace dependent, and namespaces are
+> process dependent. So events for your current namespace wouldn't be
+> too bad here. There might be reasons we don't want the mountinfo file,
+> but the "use sysfs for new stuff" does not count in this case. :)
+  As much as I don't like the using /proc/mountinfo for this, it also
+has the advantage that it nicely solves the problem with a filesystem
+being bind-mounted on several directories...  Otherwise you have to
+solve the problem which mountpoint of the filesystem should be used
+(especially because the real root of the filesystem need not be
+accessible from the namespace of the process).
+
+> > - /sys/fs seems to be a perfect fit for the purpose judging by ext4 example
+> > cons:
+> > - uevent interface is unneeded extra(?); can be made optional, per attribute
+> 
+> You can not pass the mount path with the uevent, like you example
+> shows, you just don't know that reliably, and there can be many mount
+> points.
+> 
+> How do you want to name the /sys/fs/ device? By "dev_t st_dev" or the
+> underlying block device name? How do you indentify the mountpoint in
+> your current namespace, of the device that raised the error? The event
+> might be for a filesystem you can not reach at all in your mount tree.
+> 
+> The /sys/fs/ approach sounds very much like an "export known
+> superblocks in /sys/fs/", something like this could be useful, but we
+> need to check carefully with other people what are the issues of such
+> an interface, and if there is something that should not be exported
+> that way.
+> 
+> How are device-less superblocks like btrfs handled in such an
+> interface, how is the device named, if it does not have a direct block
+> device underneath?
+  Generally, it is an unclear question how should kernel identify a
+filesystem where the problem happened. We could have a kobject for
+superblock but it's still unclear how to map this to a device /
+mountpoints because that's what userspace ultimately wants to tell the
+sysadmin and possibly make some automated decision.
+  What currently seems as the cleanest solution to me, is to add some
+"filesystem identifier" field to /proc/self/mountinfo (which could be
+UUID, superblock pointer or whatever) and pass this along with the error
+message to userspace. Passing could be done either via sysfs (but I
+agree it isn't the best fit because a filesystem need not be bound to a
+device) or just via generic netlink (which has the disadvantage that you
+cannot use the udev framework everyone knows)...
+
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
