@@ -1,115 +1,378 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbZFIHUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbZFIHWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758064AbZFIHUt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 03:20:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbZFIHUl
+	id S1757949AbZFIHWH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 03:22:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbZFIHV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 03:20:41 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60631 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750810AbZFIHUl (ORCPT
+	Tue, 9 Jun 2009 03:21:56 -0400
+Received: from mga10.intel.com ([192.55.52.92]:29496 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752394AbZFIHVz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 03:20:41 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH mmotm] vmscan: handle may_swap more strictly (Re: [PATCH mmotm] vmscan: fix may_swap handling for memcg)
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090609161330.fcd5facb.nishimura@mxp.nes.nec.co.jp>
-References: <20090608165457.fa8d17e6.nishimura@mxp.nes.nec.co.jp> <20090609161330.fcd5facb.nishimura@mxp.nes.nec.co.jp>
-Message-Id: <20090609161925.DD70.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  9 Jun 2009 16:20:40 +0900 (JST)
+	Tue, 9 Jun 2009 03:21:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,330,1241420400"; 
+   d="scan'208";a="464676916"
+Subject: [PATCH V3: 1/3] pci: Provide Multiple Error Received and no error
+	source id support on AER
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 09 Jun 2009 15:22:03 +0800
+Message-Id: <1244532123.2560.219.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > and, too many recliaming pages is not only memcg issue. I don't think this
-> > > patch provide generic solution.
-> > > 
-> > Ah, you're right. It's not only memcg issue.
-> > 
-> How about this one ?
-> 
-> ===
-> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
-> Commit 2e2e425989080cc534fc0fca154cae515f971cf5 ("vmscan,memcg: reintroduce
-> sc->may_swap) add may_swap flag and handle it at get_scan_ratio().
-> 
-> But the result of get_scan_ratio() is ignored when priority == 0,
-> so anon lru is scanned even if may_swap == 0 or nr_swap_pages == 0.
-> IMHO, this is not an expected behavior.
-> 
-> As for memcg especially, because of this behavior many and many pages are
-> swapped-out just in vain when oom is invoked by mem+swap limit.
-> 
-> This patch is for handling may_swap flag more strictly.
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+﻿
+﻿Changelog since V2:
+        1) Probe devices under the root port when the bus id of
+	the source id is equal to 0; V2 does so when device id is
+	equal to 0;
+	2) Add more comments on critical path of finding devices.
 
-Looks great.
-your patch doesn't only improve memcg, bug also improve noswap system.
+﻿Changelog since V1:
+        Version 2 adds nosourceid, a boot parameter. When
+        aerdriver.nosourceid=y, aerdriver doesn't use the source
+        id saved by root port. Instead, it searches the device
+        tree under the root port to find the reporter. So if hardware
+        has errata and root port saves a bad source id, aerdriver
+        still could find the reporter.
+        There are 2 scenarios under which ﻿aerdriver searches the
+        device tree under root port:
+        1) nosourceid=n and error source id is equal to 0;
+        2) nosourceid=y.
 
-Thanks.
-	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+﻿Based on PCI Express AER specs, a root port might receive multiple
+TLP errors while it could only save a correctable error source id
+and an uncorrectable error source id at the same time. In addition,
+some root port hardware might be unable to provide a correct source
+id, i.e., the source id, or the bus id part of the source id provided
+by root port might be equal to 0.
 
+The patchset implements the support in kernel by searching the device
+tree under the root port.
 
+Patch 1 changes parameter cb of function pci_walk_bus to return a value.
+When cb return non-zero, pci_walk_bus stops more searching on the
+device tree.
 
-> ---
->  mm/vmscan.c |   18 +++++++++---------
->  1 files changed, 9 insertions(+), 9 deletions(-)
-> 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 2ddcfc8..bacb092 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1407,13 +1407,6 @@ static void get_scan_ratio(struct zone *zone, struct scan_control *sc,
->  	unsigned long ap, fp;
->  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
->  
-> -	/* If we have no swap space, do not bother scanning anon pages. */
-> -	if (!sc->may_swap || (nr_swap_pages <= 0)) {
-> -		percent[0] = 0;
-> -		percent[1] = 100;
-> -		return;
-> -	}
-> -
->  	anon  = zone_nr_pages(zone, sc, LRU_ACTIVE_ANON) +
->  		zone_nr_pages(zone, sc, LRU_INACTIVE_ANON);
->  	file  = zone_nr_pages(zone, sc, LRU_ACTIVE_FILE) +
-> @@ -1511,15 +1504,22 @@ static void shrink_zone(int priority, struct zone *zone,
->  	enum lru_list l;
->  	unsigned long nr_reclaimed = sc->nr_reclaimed;
->  	unsigned long swap_cluster_max = sc->swap_cluster_max;
-> +	int noswap = 0;
->  
-> -	get_scan_ratio(zone, sc, percent);
-> +	/* If we have no swap space, do not bother scanning anon pages. */
-> +	if (!sc->may_swap || (nr_swap_pages <= 0)) {
-> +		noswap = 1;
-> +		percent[0] = 0;
-> +		percent[1] = 100;
-> +	} else
-> +		get_scan_ratio(zone, sc, percent);
->  
->  	for_each_evictable_lru(l) {
->  		int file = is_file_lru(l);
->  		unsigned long scan;
->  
->  		scan = zone_nr_pages(zone, sc, l);
-> -		if (priority) {
-> +		if (priority || noswap) {
->  			scan >>= priority;
->  			scan = (scan * percent[file]) / 100;
->  		}
+﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
 
+---
+
+--- linux-2.6.30-rc3/arch/powerpc/platforms/pseries/eeh_driver.c	2009-04-27 15:48:28.000000000 +0800
++++ linux-2.6.30-rc3_pciwalk/arch/powerpc/platforms/pseries/eeh_driver.c	2009-04-29 10:39:41.000000000 +0800
+@@ -122,7 +122,7 @@ static void eeh_enable_irq(struct pci_de
+  * passed back in "userdata".
+  */
+ 
+-static void eeh_report_error(struct pci_dev *dev, void *userdata)
++static int eeh_report_error(struct pci_dev *dev, void *userdata)
+ {
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver = dev->driver;
+@@ -130,19 +130,21 @@ static void eeh_report_error(struct pci_
+ 	dev->error_state = pci_channel_io_frozen;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	eeh_disable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->error_detected)
+-		return;
++		return 0;
+ 
+ 	rc = driver->err_handler->error_detected (dev, pci_channel_io_frozen);
+ 
+ 	/* A driver that needs a reset trumps all others */
+ 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
++
++	return 0;
+ }
+ 
+ /**
+@@ -153,7 +155,7 @@ static void eeh_report_error(struct pci_
+  * Cumulative response passed back in "userdata".
+  */
+ 
+-static void eeh_report_mmio_enabled(struct pci_dev *dev, void *userdata)
++static int eeh_report_mmio_enabled(struct pci_dev *dev, void *userdata)
+ {
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver = dev->driver;
+@@ -161,26 +163,28 @@ static void eeh_report_mmio_enabled(stru
+ 	if (!driver ||
+ 	    !driver->err_handler ||
+ 	    !driver->err_handler->mmio_enabled)
+-		return;
++		return 0;
+ 
+ 	rc = driver->err_handler->mmio_enabled (dev);
+ 
+ 	/* A driver that needs a reset trumps all others */
+ 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
++
++	return 0;
+ }
+ 
+ /**
+  * eeh_report_reset - tell device that slot has been reset
+  */
+ 
+-static void eeh_report_reset(struct pci_dev *dev, void *userdata)
++static int eeh_report_reset(struct pci_dev *dev, void *userdata)
+ {
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver = dev->driver;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	dev->error_state = pci_channel_io_normal;
+ 
+@@ -188,35 +192,39 @@ static void eeh_report_reset(struct pci_
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->slot_reset)
+-		return;
++		return 0;
+ 
+ 	rc = driver->err_handler->slot_reset(dev);
+ 	if ((*res == PCI_ERS_RESULT_NONE) ||
+ 	    (*res == PCI_ERS_RESULT_RECOVERED)) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_DISCONNECT &&
+ 	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
++
++	return 0;
+ }
+ 
+ /**
+  * eeh_report_resume - tell device to resume normal operations
+  */
+ 
+-static void eeh_report_resume(struct pci_dev *dev, void *userdata)
++static int eeh_report_resume(struct pci_dev *dev, void *userdata)
+ {
+ 	struct pci_driver *driver = dev->driver;
+ 
+ 	dev->error_state = pci_channel_io_normal;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	eeh_enable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->resume)
+-		return;
++		return 0;
+ 
+ 	driver->err_handler->resume(dev);
++
++	return 0;
+ }
+ 
+ /**
+@@ -226,22 +234,24 @@ static void eeh_report_resume(struct pci
+  * dead, and that no further recovery attempts will be made on it.
+  */
+ 
+-static void eeh_report_failure(struct pci_dev *dev, void *userdata)
++static int eeh_report_failure(struct pci_dev *dev, void *userdata)
+ {
+ 	struct pci_driver *driver = dev->driver;
+ 
+ 	dev->error_state = pci_channel_io_perm_failure;
+ 
+ 	if (!driver)
+-		return;
++		return 0;
+ 
+ 	eeh_disable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+ 	    !driver->err_handler->error_detected)
+-		return;
++		return 0;
+ 
+ 	driver->err_handler->error_detected(dev, pci_channel_io_perm_failure);
++
++	return 0;
+ }
+ 
+ /* ------------------------------------------------------- */
+--- linux-2.6.30-rc3/drivers/pci/bus.c	2009-04-27 15:48:31.000000000 +0800
++++ linux-2.6.30-rc3_pciwalk/drivers/pci/bus.c	2009-05-05 14:10:36.000000000 +0800
+@@ -201,13 +201,18 @@ void pci_enable_bridges(struct pci_bus *
+  *  Walk the given bus, including any bridged devices
+  *  on buses under this bus.  Call the provided callback
+  *  on each device found.
++ *
++ *  We check the return of @cb each time. If it returns anything
++ *  other than 0, we break out.
++ *
+  */
+-void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
++void pci_walk_bus(struct pci_bus *top, int (*cb)(struct pci_dev *, void *),
+ 		  void *userdata)
+ {
+ 	struct pci_dev *dev;
+ 	struct pci_bus *bus;
+ 	struct list_head *next;
++	int retval;
+ 
+ 	bus = top;
+ 	down_read(&pci_bus_sem);
+@@ -231,8 +236,10 @@ void pci_walk_bus(struct pci_bus *top, v
+ 
+ 		/* Run device routines with the device locked */
+ 		down(&dev->dev.sem);
+-		cb(dev, userdata);
++		retval = cb(dev, userdata);
+ 		up(&dev->dev.sem);
++		if (retval)
++			break;
+ 	}
+ 	up_read(&pci_bus_sem);
+ }
+--- linux-2.6.30-rc3/drivers/pci/pcie/aer/aerdrv_core.c	2009-04-27 15:48:31.000000000 +0800
++++ linux-2.6.30-rc3_pciwalk/drivers/pci/pcie/aer/aerdrv_core.c	2009-04-29 10:37:16.000000000 +0800
+@@ -109,19 +109,21 @@ int pci_cleanup_aer_correct_error_status
+ #endif  /*  0  */
+ 
+ 
+-static void set_device_error_reporting(struct pci_dev *dev, void *data)
++static int set_device_error_reporting(struct pci_dev *dev, void *data)
+ {
+ 	bool enable = *((bool *)data);
+ 
+ 	if (dev->pcie_type != PCIE_RC_PORT &&
+ 	    dev->pcie_type != PCIE_SW_UPSTREAM_PORT &&
+ 	    dev->pcie_type != PCIE_SW_DOWNSTREAM_PORT)
+-		return;
++		return 0;
+ 
+ 	if (enable)
+ 		pci_enable_pcie_error_reporting(dev);
+ 	else
+ 		pci_disable_pcie_error_reporting(dev);
++
++	return 0;
+ }
+ 
+ /**
+@@ -205,7 +207,7 @@ static struct device* find_source_device
+ 	return NULL;
+ }
+ 
+-static void report_error_detected(struct pci_dev *dev, void *data)
++static int report_error_detected(struct pci_dev *dev, void *data)
+ {
+ 	pci_ers_result_t vote;
+ 	struct pci_error_handlers *err_handler;
+@@ -230,16 +232,16 @@ static void report_error_detected(struct
+ 				   dev->driver ?
+ 				   "no AER-aware driver" : "no driver");
+ 		}
+-		return;
++		return 0;
+ 	}
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	vote = err_handler->error_detected(dev, result_data->state);
+ 	result_data->result = merge_result(result_data->result, vote);
+-	return;
++	return 0;
+ }
+ 
+-static void report_mmio_enabled(struct pci_dev *dev, void *data)
++static int report_mmio_enabled(struct pci_dev *dev, void *data)
+ {
+ 	pci_ers_result_t vote;
+ 	struct pci_error_handlers *err_handler;
+@@ -249,15 +251,15 @@ static void report_mmio_enabled(struct p
+ 	if (!dev->driver ||
+ 		!dev->driver->err_handler ||
+ 		!dev->driver->err_handler->mmio_enabled)
+-		return;
++		return 0;
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	vote = err_handler->mmio_enabled(dev);
+ 	result_data->result = merge_result(result_data->result, vote);
+-	return;
++	return 0;
+ }
+ 
+-static void report_slot_reset(struct pci_dev *dev, void *data)
++static int report_slot_reset(struct pci_dev *dev, void *data)
+ {
+ 	pci_ers_result_t vote;
+ 	struct pci_error_handlers *err_handler;
+@@ -267,15 +269,15 @@ static void report_slot_reset(struct pci
+ 	if (!dev->driver ||
+ 		!dev->driver->err_handler ||
+ 		!dev->driver->err_handler->slot_reset)
+-		return;
++		return 0;
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	vote = err_handler->slot_reset(dev);
+ 	result_data->result = merge_result(result_data->result, vote);
+-	return;
++	return 0;
+ }
+ 
+-static void report_resume(struct pci_dev *dev, void *data)
++static int report_resume(struct pci_dev *dev, void *data)
+ {
+ 	struct pci_error_handlers *err_handler;
+ 
+@@ -284,11 +286,11 @@ static void report_resume(struct pci_dev
+ 	if (!dev->driver ||
+ 		!dev->driver->err_handler ||
+ 		!dev->driver->err_handler->resume)
+-		return;
++		return 0;
+ 
+ 	err_handler = dev->driver->err_handler;
+ 	err_handler->resume(dev);
+-	return;
++	return 0;
+ }
+ 
+ /**
+@@ -305,7 +307,7 @@ static void report_resume(struct pci_dev
+ static pci_ers_result_t broadcast_error_message(struct pci_dev *dev,
+ 	enum pci_channel_state state,
+ 	char *error_mesg,
+-	void (*cb)(struct pci_dev *, void *))
++	int (*cb)(struct pci_dev *, void *))
+ {
+ 	struct aer_broadcast_data result_data;
+ 
+--- linux-2.6.30-rc3/include/linux/pci.h	2009-04-27 15:48:33.000000000 +0800
++++ linux-2.6.30-rc3_pciwalk/include/linux/pci.h	2009-04-29 10:31:58.000000000 +0800
+@@ -790,7 +790,7 @@ const struct pci_device_id *pci_match_id
+ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
+ 		    int pass);
+ 
+-void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
++void pci_walk_bus(struct pci_bus *top, int (*cb)(struct pci_dev *, void *),
+ 		  void *userdata);
+ int pci_cfg_space_size_ext(struct pci_dev *dev);
+ int pci_cfg_space_size(struct pci_dev *dev);
 
 
