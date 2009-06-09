@@ -1,151 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756709AbZFIWWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbZFIW3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756709AbZFIWWa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 18:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbZFIWWW
+	id S1756331AbZFIW3g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 18:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZFIW32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 18:22:22 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:60688 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752496AbZFIWWW (ORCPT
+	Tue, 9 Jun 2009 18:29:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40494 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751063AbZFIW31 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 18:22:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=bUxOuLz+v5LgNcEfTYO3nqXn2kE/DjVc+7X9JzagUdD2Kq4KlbOp05ftOIlzafh+Rp
-         bnlhIgiFEMvL6H3lzWVsEDv7nIrxRK7SNttS5sZjum/7QKy4WHgdvj4kQAi21j1zdiD7
-         uYs1E3hRBV4rPYph14XWegZK8nJMTwzKnw2BQ=
-Date: Wed, 10 Jun 2009 00:22:19 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [PATCH 4/8] tracing/events: modify irq print to new format
-Message-ID: <20090609222217.GE6057@nowhere>
-References: <20090609215211.307980196@goodmis.org> <20090609215339.384594898@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090609215339.384594898@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 9 Jun 2009 18:29:27 -0400
+Date: Tue, 9 Jun 2009 15:28:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: jbarnes@virtuousgeek.org, penberg@cs.helsinki.fi,
+       intel-gfx@lists.freedesktop.org, woodys@xandros.com,
+       stefan.bader@canonical.com, linux-kernel@vger.kernel.org,
+       apw@canonical.com, tim.gardner@canonical.com,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: [Intel-gfx] Intel 915GM MCHBAR bug
+Message-Id: <20090609152828.d82528f3.akpm@linux-foundation.org>
+In-Reply-To: <20090609150757.4a2109a9@jbarnes-x200>
+References: <4A242C81.6020906@cs.helsinki.fi>
+	<4A298971.5080006@xandros.com>
+	<4A2A0951.1020608@cs.helsinki.fi>
+	<20090605232711.d8503262.akpm@linux-foundation.org>
+	<4A2A0E8C.1010109@cs.helsinki.fi>
+	<20090606212759.31970fae@jbarnes-x200>
+	<20090609150757.4a2109a9@jbarnes-x200>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 05:52:15PM -0400, Steven Rostedt wrote:
-> From: Steven Rostedt <srostedt@redhat.com>
+On Tue, 9 Jun 2009 15:07:57 -0700
+Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+
+> > > Andrew Morton wrote:
+> > > > These might end up being 2.6.30.1 material.
+> > > 
+> > > Yes, agreed completely. We probably want ACK from Jesse and Bjorn,
+> > > though.
+> > 
+> > I'm ok with it being 2.6.30.1 stuff, but given the significance of the
+> > change we were worried about putting it into 2.6.30 late in the cycle.
+> > But as you say, it's a very important performance fix for many
+> > machines...
+> > 
+> > Anyway, Eric may already have it merged.  Eric?
+> > 
 > 
-> Use new format for better parsing of irq events.
-> 
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> ---
->  include/trace/events/irq.h |   38 +++++++++++++++++++-------------------
->  1 files changed, 19 insertions(+), 19 deletions(-)
-> 
-> diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
-> index b0c7ede..c6c0ff1 100644
-> --- a/include/trace/events/irq.h
-> +++ b/include/trace/events/irq.h
-> @@ -7,18 +7,19 @@
->  #undef TRACE_SYSTEM
->  #define TRACE_SYSTEM irq
->  
-> -#define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
-> -#define show_softirq_name(val)			\
-> -	__print_symbolic(val,			\
-> -			 softirq_name(HI),	\
-> -			 softirq_name(TIMER),	\
-> -			 softirq_name(NET_TX),	\
-> -			 softirq_name(NET_RX),	\
-> -			 softirq_name(BLOCK),	\
-> -			 softirq_name(TASKLET),	\
-> -			 softirq_name(SCHED),	\
-> -			 softirq_name(HRTIMER),	\
-> -			 softirq_name(RCU))
-> +#define softirq_name(sirq) sirq##_SOFTIRQ, #sirq
-> +#define show_softirq_name_format(val)					\
-> +	"%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s>"
-> +#define show_softirq_name_args()					\
-> +		softirq_name(HI),					\
-> +		softirq_name(TIMER),					\
-> +		softirq_name(NET_TX),					\
-> +		softirq_name(NET_RX),					\
-> +		softirq_name(BLOCK),					\
-> +		softirq_name(TASKLET),					\
-> +		softirq_name(SCHED),					\
-> +		softirq_name(HRTIMER),					\
-> +		softirq_name(RCU)
->  
->  /**
->   * irq_handler_entry - called immediately before the irq action handler
-> @@ -47,7 +48,7 @@ TRACE_EVENT(irq_handler_entry,
->  		__assign_str(name, action->name);
->  	),
->  
-> -	TP_printk("irq=%d handler=%s", __entry->irq, __get_str(name))
-> +	TP_FORMAT("irq=<int:irq> handler=<string:name>")
->  );
->  
->  /**
-> @@ -77,8 +78,7 @@ TRACE_EVENT(irq_handler_exit,
->  		__entry->ret	= ret;
->  	),
->  
-> -	TP_printk("irq=%d return=%s",
-> -		  __entry->irq, __entry->ret ? "handled" : "unhandled")
-> +	TP_FORMAT("irq=<int:irq> return=<if:ret:handled:unhandled>")
->  );
->  
->  /**
-> @@ -106,8 +106,8 @@ TRACE_EVENT(softirq_entry,
->  		__entry->vec = (int)(h - vec);
->  	),
->  
-> -	TP_printk("softirq=%d action=%s", __entry->vec,
-> -		  show_softirq_name(__entry->vec))
-> +	TP_FORMAT("softirq=<int:vec> action=<sym:vec:" show_softirq_name_format(),
+> It's merged now into the drm-intel-next tree, and therefore queued for
+> the merge window.
 
+<hunts around for a while>
 
-Just to zap the confusion, I would suggest to explicitly close the '>' here instead
-of inside the macro. The current state suggests a kind of imbalance at a first glance.
+This? http://git.kernel.org/?p=linux/kernel/git/anholt/drm-intel.git;a=commitdiff;h=d765898970f35acef960581f678b9da9d5c779fa;hp=1b8e69662e1a086878bf930a6042daf7f8a076cc
 
+It doesn't have cc:stable in the changelog, so there's a reasonable
+chance that it will get lost.
 
-> +		  show_softirq_name_args())
->  );
->  
->  /**
-> @@ -135,8 +135,8 @@ TRACE_EVENT(softirq_exit,
->  		__entry->vec = (int)(h - vec);
->  	),
->  
-> -	TP_printk("softirq=%d action=%s", __entry->vec,
-> -		  show_softirq_name(__entry->vec))
-> +	TP_FORMAT("softirq=<int:vec> action=<sym:vec:" show_softirq_name_format(),
-
-
-And ditto.
-
-Frederic.
-
-
-
-> +		  show_softirq_name_args())
->  );
->  
->  #endif /*  _TRACE_IRQ_H */
-> -- 
-> 1.6.3.1
-> 
-> -- 
+The -stable guys troll the commit list looking for mainline commits
+which mention stable@kernel.org in the changelog.
 
