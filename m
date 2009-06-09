@@ -1,75 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbZFIBtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZFIB6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757909AbZFIBtg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 21:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757621AbZFIBsw
+	id S1756211AbZFIB6t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 21:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbZFIB6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 21:48:52 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:64516 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757750AbZFIBsv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 21:48:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vWtej+7P0BiGbxmKSGllEsQbPH6aO3PqbNtNn3ytnrSqm9UfuEyz5V8GGWTe6zsxfn
-         PyfvOIyQlbAMxQmRGvpGrYUelSffith0siC299fK6BmuK+FlCsWzbX2+5WopYqbot5AG
-         frIUrwOoHfFFzBG7Vnm08cV/p2YhqyROLb8RQ=
+	Mon, 8 Jun 2009 21:58:40 -0400
+Received: from mga14.intel.com ([143.182.124.37]:22772 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753528AbZFIB6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 21:58:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,328,1241420400"; 
+   d="scan'208";a="152068689"
+Date: Tue, 9 Jun 2009 09:58:22 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when
+	zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
+Message-ID: <20090609015822.GA6740@localhost>
+References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-2-git-send-email-mel@csn.ul.ie>
 MIME-Version: 1.0
-In-Reply-To: <20090608161929.GD32140@n2100.arm.linux.org.uk>
-References: <20090605131625.GC1376@ucw.cz>
-	 <20090607152152.GA7785@n2100.arm.linux.org.uk>
-	 <f17812d70906072358i69b4ce09oeb6cd455277b050f@mail.gmail.com>
-	 <20090608161929.GD32140@n2100.arm.linux.org.uk>
-Date: Tue, 9 Jun 2009 09:43:31 +0800
-Message-ID: <f17812d70906081843x6731898fl35252664e5a580a1@mail.gmail.com>
-Subject: Re: zaurus needs generic pxa suspend/resume routines
-From: Eric Miao <eric.y.miao@gmail.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244466090-10711-2-git-send-email-mel@csn.ul.ie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 9, 2009 at 12:19 AM, Russell King - ARM
-Linux<linux@arm.linux.org.uk> wrote:
-> On Mon, Jun 08, 2009 at 02:58:54PM +0800, Eric Miao wrote:
->> On Sun, Jun 7, 2009 at 11:21 PM, Russell King - ARM
->> Linux<linux@arm.linux.org.uk> wrote:
->> > On Fri, Jun 05, 2009 at 03:16:25PM +0200, Pavel Machek wrote:
->> >> For suspend/resume to work, spitz needs pxa_pm_suspend/resume to be
->> >> called. Otherwise PSPR is not set properly, and system will die during
->> >> resume.
->> >
->> > 100 points for copying lots of people.  0 points for omitting the right
->> > person.  Add Eric.
->> >
->> > Eric, ack?
->> >
->>
->> Yes, I think this is the best trade-off for the moment.
->>
->> Acked-by: Eric Miao <eric.miao@marvell.com>
->>
->> And Russell you may want to queue this for this -rc phase, looks
->> it's still -rc8-git5.
->
-> I think it's missed .30, unless Linus does a -rc9.  I sent what was
-> probably my final pull request last night.
->
+On Mon, Jun 08, 2009 at 09:01:28PM +0800, Mel Gorman wrote:
+> On NUMA machines, the administrator can configure zone_reclaim_mode that is a
+> more targetted form of direct reclaim. On machines with large NUMA distances,
+> zone_reclaim_mode defaults to 1 meaning that clean unmapped pages will be
+> reclaimed if the zone watermarks are not being met. The problem is that
+> zone_reclaim() can be in a situation where it scans excessively without
+> making progress.
+> 
+> One such situation is where a large tmpfs mount is occupying a large
+> percentage of memory overall. The pages do not get cleaned or reclaimed by
+> zone_reclaim(), but the lists are uselessly scanned frequencly making the
+> CPU spin at 100%. The scanning occurs because zone_reclaim() cannot tell
+> in advance the scan is pointless because the counters do not distinguish
+> between pagecache pages backed by disk and by RAM.  The observation in
+> the field is that malloc() stalls for a long time (minutes in some cases)
+> when this situation occurs.
+> 
+> Accounting for ram-backed file pages was considered but not implemented on
+> the grounds it would be introducing new branches and expensive checks into
+> the page cache add/remove patches and increase the number of statistics
+> needed in the zone. As zone_reclaim() failing is currently considered a
+> corner case, this seemed like overkill. Note, if there are a large number
+> of reports about CPU spinning at 100% on NUMA that is fixed by disabling
+> zone_reclaim, then this assumption is false and zone_reclaim() scanning
+> and failing is not a corner case but a common occurance
+> 
+> This patch reintroduces zone_reclaim_interval which was removed by commit
+> 34aa1330f9b3c5783d269851d467326525207422 [zoned vm counters: zone_reclaim:
+> remove /proc/sys/vm/zone_reclaim_interval] because the zone counters were
+> considered sufficient to determine in advance if the scan would succeed.
+> As unsuccessful scans can still occur, zone_reclaim_interval is still
+> required.
 
-That should be fine. There are some other changes in my
-'sharpsl_pm' branch, so I'd queue this patch for the next
-merge window and make some adjustment.
+Can we avoid the user visible parameter zone_reclaim_interval?
 
--- 
-Cheers
-- eric
+That means to introduce some heuristics for it. Since the whole point
+is to avoid 100% CPU usage, we can take down the time used for this
+failed zone reclaim (T) and forbid zone reclaim until (NOW + 100*T).
+
+Thanks,
+Fengguang
