@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbZFIH1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758799AbZFIH3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758738AbZFIH1u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 03:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756697AbZFIH1m
+	id S1758799AbZFIH3x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 03:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756820AbZFIH3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 03:27:42 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49634 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756240AbZFIH1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 03:27:42 -0400
-Date: Tue, 9 Jun 2009 17:27:29 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: viro@ZenIV.linux.org.uk, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tj@kernel.org, vapier@gentoo.org
-Subject: Re: linux-next: manual merge of the vfs tree with the  tree
-Message-Id: <20090609172729.0217dfd2.sfr@canb.auug.org.au>
-In-Reply-To: <E1MDvHY-0006N1-06@pomaz-ex.szeredi.hu>
-References: <20090609110815.0abd1de0.sfr@canb.auug.org.au>
-	<E1MDvHY-0006N1-06@pomaz-ex.szeredi.hu>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Tue, 9 Jun 2009 03:29:46 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54828 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754467AbZFIH3p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 03:29:45 -0400
+Date: Tue, 9 Jun 2009 16:28:13 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH mmotm] vmscan: handle may_swap more strictly (Re: [PATCH
+ mmotm] vmscan: fix may_swap handling for memcg)
+Message-Id: <20090609162813.4bd1c1f2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090609161330.fcd5facb.nishimura@mxp.nes.nec.co.jp>
+References: <20090608121848.4370.A69D9226@jp.fujitsu.com>
+	<20090608153916.3ccaeb9a.nishimura@mxp.nes.nec.co.jp>
+	<20090608154634.437F.A69D9226@jp.fujitsu.com>
+	<20090608165457.fa8d17e6.nishimura@mxp.nes.nec.co.jp>
+	<20090609161330.fcd5facb.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__9_Jun_2009_17_27_29_+1000_G+CRR8zfKwutohg2"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__9_Jun_2009_17_27_29_+1000_G+CRR8zfKwutohg2
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 9 Jun 2009 16:13:30 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-HI Miklos,
+> > > and, too many recliaming pages is not only memcg issue. I don't think this
+> > > patch provide generic solution.
+> > > 
+> > Ah, you're right. It's not only memcg issue.
+> > 
+> How about this one ?
+> 
+> ===
+> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> 
+> Commit 2e2e425989080cc534fc0fca154cae515f971cf5 ("vmscan,memcg: reintroduce
+> sc->may_swap) add may_swap flag and handle it at get_scan_ratio().
+> 
+> But the result of get_scan_ratio() is ignored when priority == 0,
+> so anon lru is scanned even if may_swap == 0 or nr_swap_pages == 0.
+> IMHO, this is not an expected behavior.
+> 
+> As for memcg especially, because of this behavior many and many pages are
+> swapped-out just in vain when oom is invoked by mem+swap limit.
+> 
+> This patch is for handling may_swap flag more strictly.
+> 
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-On Tue, 09 Jun 2009 08:58:04 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
->
-> Hmm, looks like that CUSE_SUPER_MAGIC is an unused remnant from an
-> earlier version of the CUSE patchset.  I'll fix that up in the fuse
-> tree.
+Thanks,
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Excellent, thanks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__9_Jun_2009_17_27_29_+1000_G+CRR8zfKwutohg2
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkouDuEACgkQjjKRsyhoI8ygygCfb6VF2RL4KAe7SGIf2A9vQ4Jm
-GroAoLKKVAkfkpXQFueLBDsrxAEE1xn1
-=eP04
------END PGP SIGNATURE-----
-
---Signature=_Tue__9_Jun_2009_17_27_29_+1000_G+CRR8zfKwutohg2--
