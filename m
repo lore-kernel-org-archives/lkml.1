@@ -1,229 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932084AbZFIMFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932140AbZFIMGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932084AbZFIMFg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 08:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760117AbZFIMF3
+	id S932140AbZFIMGA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 08:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760106AbZFIMFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 08:05:29 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45022 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760101AbZFIMF2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 08:05:28 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 3/3] Do not unconditionally treat zones that fail zone_reclaim() as full
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
-       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090609092554.GJ18380@csn.ul.ie>
-References: <20090609143806.DD67.A69D9226@jp.fujitsu.com> <20090609092554.GJ18380@csn.ul.ie>
-Message-Id: <20090609190232.DD91.A69D9226@jp.fujitsu.com>
+	Tue, 9 Jun 2009 08:05:52 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:50731 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1758913AbZFIMFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 08:05:51 -0400
+Message-ID: <4A2E506D.9090107@cn.fujitsu.com>
+Date: Tue, 09 Jun 2009 20:07:09 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: paulmck@linux.vnet.ibm.com, Gautham R Shenoy <ego@in.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@redhat.com>,
+       dipankar@in.ibm.com
+Subject: [PATCH -mm] cpuhotplug: introduce try_get_online_cpus() take 3
+References: <4A1F9CEA.1070705@cn.fujitsu.com> <20090530015342.GA21502@linux.vnet.ibm.com> <20090530043739.GA12157@in.ibm.com> <4A27708C.6030703@cn.fujitsu.com> <20090605153714.GB6778@linux.vnet.ibm.com> <20090608041934.GB17979@in.ibm.com> <20090608142520.GA6961@linux.vnet.ibm.com>
+In-Reply-To: <20090608142520.GA6961@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  9 Jun 2009 21:05:19 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > hmmm
-> > I haven't catch your mention yet. sorry.
-> > Could you please explain more?
-> > 
-> > My confuseness are:
-> > 
-> > 1.
-> > ----
-> > I think your patch almost revert Paul's 9276b1bc96a132f4068fdee00983c532f43d3a26 essence.
-> > after your patch applied, zlc_mark_zone_full() is called only when zone_is_all_unreclaimable()==1
-> > or memory stealed after zone_watermark_ok() rechecking.
-> > 
-> 
-> It's true that the zone is only being marked full when it's .... full due
-> to all pages being unreclaimable. Maybe this is too aggressive.
-> 
-> > but zone_is_all_unreclaimable() is very rare on large NUMA machine. Thus
-> > your patch makes zlc_zone_worth_trying() check to worthless.
-> > So, I like simple reverting 9276b1bc rather than introduce more messy if necessary.
-> > 
-> > but necessary? why?
-> > 
-> 
-> Allegedly the ZLC cache reduces on large NUMA machines but I have no figures
-> proving or disproving that so I'm wary of a full revert.
-> 
-> The danger as I see it is that zones get skipped when there was no need
-> simply because the previous caller failed to scan with the case of the GFP
-> flags causing the zone to be marked full of particular concern.
-> 
-> I was also concerned that once it was marked full, the zone was unconditionally
-> skipped even though the next caller might be using a different watermark
-> level like ALLOC_WMARK_LOW or ALLOC_NO_WATERMARKS.
+It's for -mm tree.
 
-Right.
+It also works for mainline if you apply this at first:
+http://lkml.org/lkml/2009/2/17/58
 
+Subject: [PATCH -mm] cpuhotplug: introduce try_get_online_cpus() take 3
 
-> How about the following.
-> 
-> o If the zone is fully unreclaimable - mark full
-> o If the zone_reclaim() avoids the scan because of the number of pages
->   and the current setting of reclaim_mode - mark full
-> o If the scan occurs but enough pages were not reclaimed to meet the
->   watermarks - mark full
+get_online_cpus() is a typically coarsely granular lock.
+It's a source of ABBA deadlock.
 
-Looks good.
+Thanks to the CPU notifiers, Some subsystem's global lock will
+be required after cpu_hotplug.lock. Subsystem's global lock
+is coarsely granular lock too, thus a lot's of lock in kernel
+should be required after cpu_hotplug.lock(if we need
+cpu_hotplug.lock held too)
 
+Otherwise it may come to a ABBA deadlock like this:
 
-> 
-> This is the important part
-> 
-> o Push down the zlc_zone_worth_trying() further down to take place after
->   the watermark check has failed but before reclaim_zone() is considered
-> 
-> The last part in particular is important because it might mean the
-> zone_reclaim_interval can be later dropped because the zlc does the necessary
-> scan avoidance for a period of time. It also means that a check of a bitmap
-> is happening outside of a fast path.
+thread 1                                      |        thread 2
+_cpu_down()                                   |  Lock a-kernel-lock.
+  cpu_hotplug_begin()                         |
+    down_write(&cpu_hotplug.lock)             |
+  __raw_notifier_call_chain(CPU_DOWN_PREPARE) |  get_online_cpus()
+------------------------------------------------------------------------
+    Lock a-kernel-lock.(wait thread2)         |    down_read(&cpu_hotplug.lock)
+                                                   (wait thread 1)
 
-hmmm...
-I guess the intension of zlc_zone_worth_trying() is for reduce zone_watermark_ok() calling.
-it's because zone_watermark_ok() is a bit heavy weight function.
+But CPU online/offline are happened very rarely, get_online_cpus()
+returns success quickly in all probability.
+So it's an asinine behavior that get_online_cpus() is not allowed
+to be required after we had held "a-kernel-lock".
 
-I also strongly hope to improve fast-path of page allocator. but I'm afraid 
-this change break ZLC worth perfectly.
+To dispel the ABBA deadlock, this patch introduces
+try_get_online_cpus(). It returns fail very rarely. It gives the
+caller a chance to select an alternative way to finish works,
+instead of sleeping or deadlock.
 
-What do you think this? I think this is key point of this change.
+Changed from V1
+Lockless for get_online_cpus()'s fast path
 
+Changed from V2
+Fix patch as Oleg Nesterov valuable suggestions.
 
-
-> > 2.
-> > -----
-> > Why simple following switch-case is wrong?
-> > 
-> > 	case ZONE_RECLAIM_NOSCAN:
-> > 		goto try_next_zone;
-> > 	case ZONE_RECLAIM_FULL:
-> > 	case ZONE_RECLAIM_SOME:
-> > 		goto this_zone_full;
-> > 	case ZONE_RECLAIM_SUCCESS
-> > 		; /* do nothing */
-> > 
-> > I mean, 
-> >  (1) ZONE_RECLAIM_SOME and zone_watermark_ok()==1
-> > are rare.
-> 
-> How rare? In the event the zone is under pressure, we could be just on the
-> watermark. If we're within 32 pages of that watermark, then reclaiming some
-> pages might just be enough to meet the watermark so why consider it full?
-
-I mean, typically zone-reclaim can found reclaimable clean 32 pages easily.
-it mean
-  - in current kernel, dirty-ratio works perfectly.
-    all pages dirty scenario never happend.
-  - now, we have split lru. plenty anon pages don't prevent
-    reclaim file-backed page.
-
-
-> > Is rechecking really worth?
-> 
-> If we don't recheck and we reclaimed just 1 page, we allow a caller
-> to go below watermarks. This could have an impact on GFP_ATOMIC
-> allocations.
-
-Is jsut 1 page reclaimed really happen?
-
-
-> > In my experience, zone_watermark_ok() is not so fast function.
-> > 
-> 
-> It's not, but watermarks can't be ignored just because the function is not
-> fast. For what it's worth, we are already in a horrible slow path by the
-> time we're reclaiming pages and the cost of zone_watermark_ok() is less
-> of a concern?
-
-for clarification,
-
-reclaim bail out (commit a79311c1) changed zone-reclaim behavior too.
-
-distro zone reclaim is horrible slow. it's because ZONE_RECLAIM_PRIORITY==4.
-but mainline kernel's zone reclaim isn't so slow. it have bail-out and
-effective split-lru based reclaim.
-
-but unfortunately bail-out cause frequently zone-reclaim calling, because
-one time zone-reclaim only reclaim 32 pages.
-
-in distro kernel, zone_watermark_ok() x number-of-called-zone-reclaim is not
-heavy at all. but its premise was changed.
-
-
-
-> > And,
-> > 
-> >  (2) ZONE_RECLAIM_SUCCESS and zone_watermark_ok()==0
-> > 
-> > is also rare.
-> 
-> Again, how rare? I don't actually know myself.
-
-it only happen reclaim success and another thread steal it.
-
-
-> 
-> > What do you afraid bad thing?
-> 
-> Because watermarks are important.
-
-Yes.
-
-
-
-> > I guess, high-order allocation and ZONE_RECLAIM_SUCCESS and 
-> > zone_watermark_ok()==0 case, right?
-> > 
-> > if so, Why your system makes high order allocation so freqently?
-> 
-> This is not about high-order allocations.
-
-ok.
-
-
-> > 3.
-> > ------
-> > your patch do:
-> > 
-> > 1. call zone_reclaim() and return ZONE_RECLAIM_SUCCESS
-> > 2. another thread steal memory
-> > 3. call zone_watermark_ok() and return 0
-> > 
-> > but
-> > 
-> > 1. call zone_reclaim() and return ZONE_RECLAIM_SUCCESS
-> > 2. call zone_watermark_ok() and return 1
-> > 3. another thread steal memory
-> > 4. call buffered_rmqueue() and return NULL
-> > 
-> > Then, it call zlc_mark_zone_full().
-> > 
-> > it seems a bit inconsistency.
-> > 
-> 
-> There is a relatively harmless race in there when memory is extremely
-> tight and there are multiple threads contending. Potentially, we go one
-> page below the watermark per thread contending on the one zone because
-> we are not locking in this path and the allocation could be satisified
-> from the per-cpu allocator.
-> 
-> However, I do not see this issue as being serious enough to warrent
-> fixing because it would require a lock just to very strictly adhere to
-> the watermarks. It's different to the case above where if we did not check
-> watermarks, a thread can go below the watermark without any other thread
-> contending.
-
-I agree with this is not so important. ok, I get rid of this claim.
-
-
-
+Suggested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index 4d668e0..eeb9ca5 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -99,6 +99,7 @@ extern struct sysdev_class cpu_sysdev_class;
+ 
+ extern void get_online_cpus(void);
+ extern void put_online_cpus(void);
++extern int try_get_online_cpus(void);
+ #define hotcpu_notifier(fn, pri) {				\
+ 	static struct notifier_block fn##_nb __cpuinitdata =	\
+ 		{ .notifier_call = fn, .priority = pri };	\
+@@ -112,6 +113,7 @@ int cpu_down(unsigned int cpu);
+ 
+ #define get_online_cpus()	do { } while (0)
+ #define put_online_cpus()	do { } while (0)
++static inline int try_get_online_cpus(void) { return 1; }
+ #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
+ /* These aren't inline functions due to a GCC bug. */
+ #define register_hotcpu_notifier(nb)	({ (void)(nb); 0; })
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 609fae1..afecc95 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -14,6 +14,8 @@
+ #include <linux/kthread.h>
+ #include <linux/stop_machine.h>
+ #include <linux/mutex.h>
++#include <asm/atomic.h>
++#include <linux/wait.h>
+ 
+ #ifdef CONFIG_SMP
+ /* Serializes the updates to cpu_online_mask, cpu_present_mask */
+@@ -26,16 +28,23 @@ static __cpuinitdata RAW_NOTIFIER_HEAD(cpu_chain);
+  */
+ static int cpu_hotplug_disabled;
+ 
++/*
++ * @cpu_hotplug is a special read-write semaphore with these semantics:
++ * 1) It is read-preference and allows reader-in-reader recursion.
++ * 2) It allows writer to downgrade to a reader when required.
++ *    (allows reader-in-writer recursion.)
++ * 3) It allows only one thread to require the write-side lock at most.
++ *    (cpu_add_remove_lock ensures it.)
++ */
+ static struct {
+ 	struct task_struct *active_writer;
+-	struct mutex lock; /* Synchronizes accesses to refcount, */
+-	/*
+-	 * Also blocks the new readers during
+-	 * an ongoing cpu hotplug operation.
+-	 */
+-	int refcount;
++	wait_queue_head_t sleeping_readers;
++	/* refcount = 0 means the writer owns the lock. */
++	atomic_t refcount;
+ } cpu_hotplug = {
+-	.lock = __MUTEX_INITIALIZER(cpu_hotplug.lock),
++	NULL,
++	__WAIT_QUEUE_HEAD_INITIALIZER(cpu_hotplug.sleeping_readers),
++	ATOMIC_INIT(1),
+ };
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+@@ -45,10 +54,9 @@ void get_online_cpus(void)
+ 	might_sleep();
+ 	if (cpu_hotplug.active_writer == current)
+ 		return;
+-	mutex_lock(&cpu_hotplug.lock);
+-	cpu_hotplug.refcount++;
+-	mutex_unlock(&cpu_hotplug.lock);
+ 
++	wait_event(cpu_hotplug.sleeping_readers,
++		   likely(atomic_inc_not_zero(&cpu_hotplug.refcount)));
+ }
+ EXPORT_SYMBOL_GPL(get_online_cpus);
+ 
+@@ -56,14 +64,27 @@ void put_online_cpus(void)
+ {
+ 	if (cpu_hotplug.active_writer == current)
+ 		return;
+-	mutex_lock(&cpu_hotplug.lock);
+-	if (!--cpu_hotplug.refcount && unlikely(cpu_hotplug.active_writer))
+-		wake_up_process(cpu_hotplug.active_writer);
+-	mutex_unlock(&cpu_hotplug.lock);
+ 
++	if (unlikely(atomic_dec_and_test(&cpu_hotplug.refcount))) {
++		/* atomic_dec_and_test() implies smp_mb__after_atomic_dec() */
++		BUG_ON(!cpu_hotplug.active_writer);
++		wake_up_process(cpu_hotplug.active_writer);
++	}
+ }
+ EXPORT_SYMBOL_GPL(put_online_cpus);
+ 
++int try_get_online_cpus(void)
++{
++	if (cpu_hotplug.active_writer == current)
++		return 1;
++
++	if (likely(atomic_inc_not_zero(&cpu_hotplug.refcount)))
++		return 1;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(try_get_online_cpus);
++
+ #endif	/* CONFIG_HOTPLUG_CPU */
+ 
+ /*
+@@ -81,46 +102,42 @@ void cpu_maps_update_done(void)
+ }
+ 
+ /*
+- * This ensures that the hotplug operation can begin only when the
+- * refcount goes to zero.
++ * This ensures that the hotplug operation can begin only when
++ * there is no ongoing reader.
+  *
+  * Note that during a cpu-hotplug operation, the new readers, if any,
+- * will be blocked by the cpu_hotplug.lock
++ * will be blocked and queued at cpu_hotplug.sleeping_readers.
+  *
+  * Since cpu_hotplug_begin() is always called after invoking
+  * cpu_maps_update_begin(), we can be sure that only one writer is active.
+  *
+- * Note that theoretically, there is a possibility of a livelock:
+- * - Refcount goes to zero, last reader wakes up the sleeping
+- *   writer.
+- * - Last reader unlocks the cpu_hotplug.lock.
+- * - A new reader arrives at this moment, bumps up the refcount.
+- * - The writer acquires the cpu_hotplug.lock finds the refcount
+- *   non zero and goes to sleep again.
+- *
+- * However, this is very difficult to achieve in practice since
+- * get_online_cpus() not an api which is called all that often.
+- *
+  */
+ static void cpu_hotplug_begin(void)
+ {
+ 	cpu_hotplug.active_writer = current;
+ 
++	/* atomic_dec_and_test() implies smp_mb__before_atomic_dec() */
++	if (atomic_dec_and_test(&cpu_hotplug.refcount))
++		return;
++
+ 	for (;;) {
+-		mutex_lock(&cpu_hotplug.lock);
+-		if (likely(!cpu_hotplug.refcount))
++		set_current_state(TASK_UNINTERRUPTIBLE);
++		if (!atomic_read(&cpu_hotplug.refcount))
+ 			break;
+-		__set_current_state(TASK_UNINTERRUPTIBLE);
+-		mutex_unlock(&cpu_hotplug.lock);
+ 		schedule();
+ 	}
++
++	__set_current_state(TASK_RUNNING);
+ }
+ 
+ static void cpu_hotplug_done(void)
+ {
++	atomic_inc(&cpu_hotplug.refcount);
++	wake_up_all(&cpu_hotplug.sleeping_readers);
++
+ 	cpu_hotplug.active_writer = NULL;
+-	mutex_unlock(&cpu_hotplug.lock);
+ }
++
+ /* Need to know about CPUs going up/down? */
+ int __ref register_cpu_notifier(struct notifier_block *nb)
+ {
 
