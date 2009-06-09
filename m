@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbZFIFy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbZFIGVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756458AbZFIFy1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 01:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbZFIFyN
+	id S1755375AbZFIGVW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 02:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZFIGVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 01:54:13 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56829 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754186AbZFIFyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 01:54:11 -0400
-Message-ID: <4A2DF91F.7030906@cn.fujitsu.com>
-Date: Tue, 09 Jun 2009 13:54:39 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 9 Jun 2009 02:21:13 -0400
+Received: from moutng.kundenserver.de ([212.227.17.9]:49882 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752120AbZFIGVN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 02:21:13 -0400
+X-Greylist: delayed 336 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Jun 2009 02:21:12 EDT
+Date: Mon, 8 Jun 2009 23:15:23 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Dan Carpenter <error27@gmail.com>
+cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: smatch 1.53 released
+In-Reply-To: <a63d67fe0906041250v6e4252c2g594322a3a49e7307@mail.gmail.com>
+Message-ID: <alpine.DEB.2.01.0906082208430.6439@bogon>
+References: <alpine.DEB.2.00.0906021141010.19390@bicker>  <87iqjedf2a.fsf@basil.nowhere.org> <a63d67fe0906041250v6e4252c2g594322a3a49e7307@mail.gmail.com>
+User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
 MIME-Version: 1.0
-To: Ingo <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       David Miller <davem@davemloft.net>, Neil Horman <nhorman@tuxdriver.com>
-Subject: [PATCH RESEND] ftrace: change the export format of trace_kfree_skb()
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX19Qlj7TvQcrHqgka3+DWwvZYR5EWUsAFhQA9+b
+ aEQXzcQFm7D6FQe3A5VQdbSfLMF/3/OehjP54rVJgD0LkpKTbR
+ H0IfAZGApiaekGW5NK61w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use %pf instead of %p to output the function's address, use 0x%04X instead
-of %u to output the skb's protocol
+On Thu, 4 Jun 2009, Dan Carpenter wrote:
+>> Smatch is a source code checker for C.  Right now the focus is on checking
+>> for kernel bugs.
 
-Before patch:
+Hm, smatch is pretty noisy. I'm getting hundreds of warnings and errors on 
+a randconfig build: http://nerdbynature.de/bits/smatch/
 
-          <idle>-0     [000] 60144.542521: kfree_skb: skbaddr=de7b8240 protocol=2048 location=c1365429
-          <idle>-0     [000] 60164.488153: kfree_skb: skbaddr=da66f900 protocol=2048 location=c1365429
-          <idle>-0     [000] 60193.493933: kfree_skb: skbaddr=deaeb480 protocol=4 location=c134ec25
-          <idle>-0     [000] 60253.118421: kfree_skb: skbaddr=de7c4900 protocol=4 location=c134ec25
-          
-After patch:
+False positives or real issues?
 
-            bash-2587  [001] 97685.781173: kfree_skb: skbaddr=deb9cc00 protocol=0x0000 location=netlink_unicast
-            bash-2587  [000] 97686.501121: kfree_skb: skbaddr=df9bb840 protocol=0x0000 location=netlink_unicast
-          <idle>-0     [000] 97696.200184: kfree_skb: skbaddr=df741240 protocol=0x0800 location=ip_rcv
-          <idle>-0     [000] 97696.200198: kfree_skb: skbaddr=dfb3de40 protocol=0x0800 location=ip_rcv
-
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
----
-
-Recover the file mode of include/trace/events/skb.h
-
----
- include/trace/events/skb.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/include/trace/events/skb.h b/include/trace/events/skb.h
-index 1e8fabb..a58bef8 100644
---- a/include/trace/events/skb.h
-+++ b/include/trace/events/skb.h
-@@ -30,7 +30,7 @@ TRACE_EVENT(kfree_skb,
- 		__entry->location = location;
- 	),
- 
--	TP_printk("skbaddr=%p protocol=%u location=%p",
-+	TP_printk("skbaddr=%p protocol=0x%04X location=%pf",
- 		__entry->skbaddr, __entry->protocol, __entry->location)
- );
- 
+Thanks,
+Christian.
 -- 
-1.6.1.2
+BOFH excuse #182:
 
+endothermal recalibration
