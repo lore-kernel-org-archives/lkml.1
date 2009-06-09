@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbZFIWOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757553AbZFIWPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754136AbZFIWOU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 18:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbZFIWOJ
+	id S1757553AbZFIWPv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 18:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbZFIWPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 18:14:09 -0400
-Received: from stinky.trash.net ([213.144.137.162]:40635 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbZFIWOI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 18:14:08 -0400
-Message-ID: <4A2EDEB0.2080006@trash.net>
-Date: Wed, 10 Jun 2009 00:14:08 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Tue, 9 Jun 2009 18:15:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37658 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751000AbZFIWPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 18:15:41 -0400
+Date: Tue, 9 Jun 2009 15:15:20 -0700
+From: Valerie Aurora <vaurora@redhat.com>
+To: Scott James Remnant <scott@ubuntu.com>
+Cc: Jan Blunck <jblunck@suse.de>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       bharata@in.ibm.com, dwmw2@infradead.org, mszeredi@suse.cz
+Subject: Re: [PATCH 00/32] VFS based Union Mount (V3)
+Message-ID: <20090609221517.GA3608@fsbox>
+References: <1242662968-11684-1-git-send-email-jblunck@suse.de> <1244115530.4120.30.camel@quest>
 MIME-Version: 1.0
-To: Jay Vosburgh <fubar@us.ibm.com>
-CC: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, bonding-devel@lists.sf.net,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [Bonding-devel] BUG: bonding module can only be loaded once
-References: <20090608151127.70146505@nehalam> <200906091406.45463.arnd@arndb.de> <20090609080232.45f81833@nehalam> <4A2E80B3.6010600@trash.net> <4752.1244564082@death.nxdomain.ibm.com> <4A2E8D62.6090004@trash.net> <13521.1244568251@death.nxdomain.ibm.com>
-In-Reply-To: <13521.1244568251@death.nxdomain.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244115530.4120.30.camel@quest>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Vosburgh wrote:
-> Patrick McHardy <kaber@trash.net> wrote:
+On Thu, Jun 04, 2009 at 12:38:50PM +0100, Scott James Remnant wrote:
+> On Mon, 2009-05-18 at 18:08 +0200, Jan Blunck wrote:
 > 
->> I'd expect its not the distros, but rather the applicances which might
->> still be using this. I know a vendor I used to work for a couple of
->> years ago just recently made the switch from 2.6.16 to a current kernel,
->> and I'd expect that they are still using this (I can find out tommorrow
->> if you want to know for sure). Vyatta likewise, I guess.
+> > Here is another post of the VFS based union mount implementation.
+> > 
+> Awesome work, this may just get us out of a tight spot with our LiveCD.
+> A switch to a devmapper/snapshot based implementation lost the property
+> that we could rsync the filesystem (squashfs has been nicely rsyncable).
 > 
-> 	Yes, I'd like to know for sure; thanks.
+> What kind of testing do you need doing, and where would you like the bug
+> reports/patches? :-)
 
-I'll let you know.
+Just try to use it to do real work and I'm sure it will break real
+good. :) Bug reports and patches to linux-fsdevel@vger.kernel.org and
+cc'd to Jan and I.
 
->>> 	If nobody has any heartburn at dropping support for multiple
->>> bonding instances on old distros, I'm as happy as anybody to remove all
->>> of the multiple load logic from bonding.  There's been plenty of time
->>> for transitioning from "multiple load" to sysfs.
->> In my opinion it would need a feature-removal-schedule announcement.
-> 
-> 	Yah, probably.  The multiple load stuff was working fine as of,
-> oh, a year or two ago, so I wasn't worried so much about getting rid of
-> it.  If it's causing problems, though, it's time for it to go (or be
-> scheduled to go in the not too distant future).  Can't keep driving that
-> Ford Pinto forever.
+Thanks!
 
-Well, if it has been broken for long enough, maybe we don't need
-a feature-removal-schedule warning.
+-VAL
