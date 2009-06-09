@@ -1,87 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761012AbZFINe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbZFINgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761012AbZFINe3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760064AbZFINeG
+	id S1757357AbZFINgP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZFINgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:34:06 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:59417 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759636AbZFINeE (ORCPT
+	Tue, 9 Jun 2009 09:36:04 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35951 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbZFINgD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:34:04 -0400
-Date: Tue, 9 Jun 2009 15:34:02 +0200
-From: Hans-Joachim Picht <hans@linux.vnet.ibm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [patch 05/38] s390: hibernation support for s390
-Message-ID: <20090609153402.58e6b841@blc4eb509856389.ibm.com>
-In-Reply-To: <20090608064451.GD1444@ucw.cz>
-References: <20090604161847.513682672@de.ibm.com>
-	<20090604161900.659762303@de.ibm.com>
-	<20090608064451.GD1444@ucw.cz>
-Organization: IBM Deutschland Research & Development GmbH
-X-Mailer: Claws Mail 3.7.0cvs74 (GTK+ 2.16.1; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Jun 2009 09:36:03 -0400
+Date: Tue, 9 Jun 2009 15:36:04 +0200
+From: Jan Kara <jack@suse.cz>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Mingming Cao <cmm@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH] jbd/jbd2 :clean up journal_try_to_free_buffers
+Message-ID: <20090609133602.GA13755@atrey.karlin.mff.cuni.cz>
+References: <6.0.0.20.2.20090604194409.071baf80@172.19.0.2>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6.0.0.20.2.20090604194409.071baf80@172.19.0.2>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 8 Jun 2009 08:44:51 +0200
-Pavel Machek <pavel@ucw.cz> wrote:
+  Hi,
 
-
-> > Index: linux-2.6/arch/s390/power/swsusp.c
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6/arch/s390/power/swsusp.c
-> > @@ -0,0 +1,31 @@
-> > +/*
-> > + * Support for suspend and resume on s390
-> > + *
-> > + * Copyright IBM Corp. 2009
-> > + *
-> > + * Author(s): Hans-Joachim Picht <hans@linux.vnet.ibm.com>
-> > + *
-> > + */
-> > +
-> > +#include <linux/suspend.h>
-> > +#include <linux/gfp.h>
-> > +#include <linux/cpu.h>
-> > +#include <linux/smp.h>
-> > +#include <linux/cpumask.h>
-> > +#include <asm/ipl.h>
-> > +#include <asm/processor.h>
+> I delete the following patch 
+> "commit 3f31fddfa26b7594b44ff2b34f9a04ba409e0f91
+> Author: Mingming Cao <cmm@us.ibm.com>
+> Date:   Fri Jul 25 01:46:22 2008 -0700
 > 
-> Empty functions do not need 1000 includes...
-
-Thanks for spotting this. I will remove these.
- 
-> > +/*
-> > + * save CPU registers before creating a hibernation image and
-> > before
-> > + * restoring the memory state from it
-> > + */
-> > +void save_processor_state(void)
-> > +{
-> > +}
-> > +
-> > +/*
-> > + * restore the contents of CPU registers
-> > + */
-> > +void restore_processor_state(void)
-> > +{
-> > +}
+>     jbd: fix race between free buffer and commit transaction
+> " 
+> This patch is no longer needed because if race between freeing buffer
+> and committing transaction functionality occurs and dio gets error,
+> currently dio falls back to buffered IO by the following patch.
 > 
-> ...and explaining why the functions can be emmpty would be nice.
+> 	commit 6ccfa806a9cfbbf1cd43d5b6aa47ef2c0eb518fd
+> 	Author: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+> 	Date:   Tue Sep 2 14:35:40 2008 -0700
+> 
+>    	VFS: fix dio write returning EIO when try_to_release_page fails 
+> 
+> Thanks.
+> 
+> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+  OK, makes sence. At least it has an advantage that we don't have to
+wait for a transaction commit in DIO path.
 
-I integrated the code for this in the assembly backend in the
-swsusp_arch_suspend & swsusp_arch_resume functions.
+Acked-by: Jan Kara <jack@suse.cz>
 
-With best regards,
-
-    --Hans
+								Honza
+> 
+> diff -Nrup linux-2.6.30-rc8.org/fs/jbd/transaction.c linux-2.6.30-rc8.ext3_4/fs/jbd/transaction.c
+> --- linux-2.6.30-rc8.org/fs/jbd/transaction.c	2009-06-04 16:26:26.000000000 +0900
+> +++ linux-2.6.30-rc8.ext3_4/fs/jbd/transaction.c	2009-06-04 19:14:53.000000000 +0900
+> @@ -1686,35 +1686,6 @@ out:
+>  	return;
+>  }
+>  
+> -/*
+> - * journal_try_to_free_buffers() could race with journal_commit_transaction()
+> - * The latter might still hold the a count on buffers when inspecting
+> - * them on t_syncdata_list or t_locked_list.
+> - *
+> - * journal_try_to_free_buffers() will call this function to
+> - * wait for the current transaction to finish syncing data buffers, before
+> - * tryinf to free that buffer.
+> - *
+> - * Called with journal->j_state_lock held.
+> - */
+> -static void journal_wait_for_transaction_sync_data(journal_t *journal)
+> -{
+> -	transaction_t *transaction = NULL;
+> -	tid_t tid;
+> -
+> -	spin_lock(&journal->j_state_lock);
+> -	transaction = journal->j_committing_transaction;
+> -
+> -	if (!transaction) {
+> -		spin_unlock(&journal->j_state_lock);
+> -		return;
+> -	}
+> -
+> -	tid = transaction->t_tid;
+> -	spin_unlock(&journal->j_state_lock);
+> -	log_wait_commit(journal, tid);
+> -}
+> -
+>  /**
+>   * int journal_try_to_free_buffers() - try to free page buffers.
+>   * @journal: journal for operation
+> @@ -1786,25 +1757,6 @@ int journal_try_to_free_buffers(journal_
+>  
+>  	ret = try_to_free_buffers(page);
+>  
+> -	/*
+> -	* There are a number of places where journal_try_to_free_buffers()
+> -	* could race with journal_commit_transaction(), the later still
+> -	* holds the reference to the buffers to free while processing them.
+> -	* try_to_free_buffers() failed to free those buffers. Some of the
+> -	* caller of releasepage() request page buffers to be dropped, otherwise
+> -	* treat the fail-to-free as errors (such as generic_file_direct_IO())
+> -	*
+> -	* So, if the caller of try_to_release_page() wants the synchronous
+> -	* behaviour(i.e make sure buffers are dropped upon return),
+> -	* let's wait for the current transaction to finish flush of
+> -	* dirty data buffers, then try to free those buffers again,
+> -	* with the journal locked.
+> -	*/
+> -	if (ret == 0 && (gfp_mask & __GFP_WAIT) && (gfp_mask & __GFP_FS)) {
+> -		journal_wait_for_transaction_sync_data(journal);
+> -		ret = try_to_free_buffers(page);
+> -	}
+> -
+>  busy:
+>  	return ret;
+>  }
+> diff -Nrup linux-2.6.30-rc8.org/fs/jbd2/transaction.c linux-2.6.30-rc8.ext3_4/fs/jbd2/transaction.c
+> --- linux-2.6.30-rc8.org/fs/jbd2/transaction.c	2009-06-04 16:26:26.000000000 +0900
+> +++ linux-2.6.30-rc8.ext3_4/fs/jbd2/transaction.c	2009-06-04 19:17:12.000000000 +0900
+> @@ -1547,36 +1547,6 @@ out:
+>  	return;
+>  }
+>  
+> -/*
+> - * jbd2_journal_try_to_free_buffers() could race with
+> - * jbd2_journal_commit_transaction(). The later might still hold the
+> - * reference count to the buffers when inspecting them on
+> - * t_syncdata_list or t_locked_list.
+> - *
+> - * jbd2_journal_try_to_free_buffers() will call this function to
+> - * wait for the current transaction to finish syncing data buffers, before
+> - * try to free that buffer.
+> - *
+> - * Called with journal->j_state_lock hold.
+> - */
+> -static void jbd2_journal_wait_for_transaction_sync_data(journal_t *journal)
+> -{
+> -	transaction_t *transaction;
+> -	tid_t tid;
+> -
+> -	spin_lock(&journal->j_state_lock);
+> -	transaction = journal->j_committing_transaction;
+> -
+> -	if (!transaction) {
+> -		spin_unlock(&journal->j_state_lock);
+> -		return;
+> -	}
+> -
+> -	tid = transaction->t_tid;
+> -	spin_unlock(&journal->j_state_lock);
+> -	jbd2_log_wait_commit(journal, tid);
+> -}
+> -
+>  /**
+>   * int jbd2_journal_try_to_free_buffers() - try to free page buffers.
+>   * @journal: journal for operation
+> @@ -1649,25 +1619,6 @@ int jbd2_journal_try_to_free_buffers(jou
+>  
+>  	ret = try_to_free_buffers(page);
+>  
+> -	/*
+> -	* There are a number of places where jbd2_journal_try_to_free_buffers()
+> -	* could race with jbd2_journal_commit_transaction(), the later still
+> -	* holds the reference to the buffers to free while processing them.
+> -	* try_to_free_buffers() failed to free those buffers. Some of the
+> -	* caller of releasepage() request page buffers to be dropped, otherwise
+> -	* treat the fail-to-free as errors (such as generic_file_direct_IO())
+> -	*
+> -	* So, if the caller of try_to_release_page() wants the synchronous
+> -	* behaviour(i.e make sure buffers are dropped upon return),
+> -	* let's wait for the current transaction to finish flush of
+> -	* dirty data buffers, then try to free those buffers again,
+> -	* with the journal locked.
+> -	*/
+> -	if (ret == 0 && (gfp_mask & __GFP_WAIT) && (gfp_mask & __GFP_FS)) {
+> -		jbd2_journal_wait_for_transaction_sync_data(journal);
+> -		ret = try_to_free_buffers(page);
+> -	}
+> -
+>  busy:
+>  	return ret;
+>  }
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
