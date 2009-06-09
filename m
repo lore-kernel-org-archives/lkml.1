@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757572AbZFIQhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbZFIQiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757572AbZFIQhT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 12:37:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbZFIQhI
+	id S1757593AbZFIQiE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 12:38:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757162AbZFIQhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 12:37:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45413 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754392AbZFIQhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 12:37:06 -0400
-Date: Tue, 9 Jun 2009 12:28:08 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yinghai@kernel.org>,
-       Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       cpufreq@vger.kernel.org
-Subject: Re: [PATCH 4/6] x86/cpufreq: use cpumask_copy instead of =
-Message-ID: <20090609162808.GC2491@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Rusty Russell <rusty@rustcorp.com.au>,
-	Yinghai Lu <yinghai@kernel.org>, Avi Kivity <avi@redhat.com>,
-	Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	cpufreq@vger.kernel.org
-References: <4A2835D8.6040903@kernel.org> <4A2AE4AC.60805@kernel.org> <4A2AE570.2010307@kernel.org> <200906091627.45411.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906090842120.6847@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906090842120.6847@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 9 Jun 2009 12:37:54 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:34493 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756176AbZFIQhx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 12:37:53 -0400
+Message-Id: <20090609163754.392651394@goodmis.org>
+References: <20090609163657.557589106@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Tue, 09 Jun 2009 12:36:58 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 1/2] ring-buffer: fix ret in rb_add_time_stamp
+Content-Disposition: inline; filename=0001-ring-buffer-fix-ret-in-rb_add_time_stamp.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 08:46:44AM -0700, Linus Torvalds wrote:
+From: Steven Rostedt <srostedt@redhat.com>
+
+The update of ret got mistakenly added to the if statement of
+rb_try_to_discard. The variable ret should be 1 on commit and zero
+otherwise.
+
+[ Impact: fix compiler warning and real bug ]
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/ring_buffer.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 22878b0..2e642b2 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -1433,8 +1433,8 @@ rb_add_time_stamp(struct ring_buffer_per_cpu *cpu_buffer,
+ 			/* Darn, this is just wasted space */
+ 			event->time_delta = 0;
+ 			event->array[0] = 0;
+-			ret = 0;
+ 		}
++		ret = 0;
+ 	}
  
- > Please STOP USING THAT HORRIBLE "work_on_cpu()" crap.
- > 
- > Is there any reason you do that? We've had to fix up the fallout from that 
- > kind of crazy crap several times.
- > 
- > Just use a regular IPI. Use "smp_call_function_[single|many]()" instead.
- > 
- > See for example commit 01599fca6758d2cd133e78f87426fc851c9ea725, where 
- > another "work_on_cpu()" thing was broken.
- > 
- > I don't understand why you guys keep on using that _known_ bad function. 
- > The whole point of "work_on_cpu()" is for big, slow, and rare things. Not 
- > as a random "let's make that CPU do this".
- > 
- > So stop it. 
+ 	*delta = 0;
+-- 
+1.6.3.1
 
-work_on_cpu()'s definition could probably use a fat comment describing
-why it sucks.
-
-
-	Dave
-
+-- 
