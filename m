@@ -1,97 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757171AbZFIRqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbZFIRwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757171AbZFIRqc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 13:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbZFIRqY
+	id S1755474AbZFIRwR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 13:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZFIRwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 13:46:24 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:58775 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbZFIRqX (ORCPT
+	Tue, 9 Jun 2009 13:52:04 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:53349 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752749AbZFIRwD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 13:46:23 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: liqin.chen@sunplusct.com
-Subject: Re: [PATCH 18/27] score: create head files uaccess.h unaligned.h unistd.h user.h
-Date: Tue, 9 Jun 2009 19:46:10 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-References: <OF596C037E.9CF83913-ON482575D0.0024055D-482575D0.002476E7@sunplusct.com>
-In-Reply-To: <OF596C037E.9CF83913-ON482575D0.0024055D-482575D0.002476E7@sunplusct.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 9 Jun 2009 13:52:03 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: Matthew Garrett <mjg@redhat.com>
+Subject: Re: [PATCH 1/2] CPUFREQ: Enable acpi-cpufreq driver for VIA/Centaur CPUs
+Date: Tue, 9 Jun 2009 12:51:59 -0500
+User-Agent: KMail/1.9.9
+Cc: Harald Welte <HaraldWelte@viatech.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Duane Griffin <duaneg@dghda.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>
+References: <alpine.LFD.2.01.0906022055030.4880@localhost.localdomain> <20090608234830.GA27843@srcf.ucam.org> <200906090736.54463.lkml@morethan.org>
+In-Reply-To: <200906090736.54463.lkml@morethan.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906091946.10195.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+v54J7uDtU6gFW6IxMHOXEWa/ndCMt4y+Waqq
- zADOGUuxldHbNDil5ZFe8a7TjBzSFi/ZNs/X6ymEIrhas4vtOT
- 8emzk4RxhRFB0EPZIUs6A==
+Content-Disposition: inline
+Message-Id: <200906091252.02719.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 09 June 2009, liqin.chen@sunplusct.com wrote:
+On Tue June 9 2009, Michael S. Zick wrote:
+> On Mon June 8 2009, Matthew Garrett wrote:
+> > On Mon, Jun 08, 2009 at 04:15:22PM -0500, Michael S. Zick wrote:
+> > 
+> > > Phooey, close but no cigar - - -
+> > > 
+> > > root@cb01:/sys/devices/system/cpu/cpu0/cpufreq# cat scaling_available_frequencies
+> > > 1200000 1000000 800000 600000 400000
+> > > root@cb01:/sys/devices/system/cpu/cpu0/cpufreq# cat stats/time_in_state
+> > > 1200000 3281
+> > > 1000000 120
+> > > 800000 130
+> > > 600000 234
+> > > 400000 52980
+> > > root@cb01:/sys/devices/system/cpu/cpu0/cpufreq
+> > > 
+> > > It loads, it appears to work, but that lowest 400Mhz has ACPI entries
+> > > even though this is a 600Mhz..1200Mhz chip.
+> > 
+> > If the BIOS tables claim it then it's likely Windows uses it on the same 
+> > hardware. What's the stability like with the ACPI code?
+> > 
+> 
+> Too soon to say - those where first results (about par with "it boots"). ;)
+> 
+> Will be poking at this machine more today -
+> 
 
-> diff --git a/arch/score/include/asm/unaligned.h 
-> b/arch/score/include/asm/unaligned.h
-> new file mode 100644
-> index 0000000..4b8fec0
-> --- /dev/null
-> +++ b/arch/score/include/asm/unaligned.h
-> @@ -0,0 +1,11 @@
-> +#ifndef _ASM_SCORE_UNALIGNED_H
-> +#define _ASM_SCORE_UNALIGNED_H
-> +
-> +#include <linux/unaligned/le_struct.h>
-> +#include <linux/unaligned/be_byteshift.h>
-> +#include <linux/unaligned/generic.h>
-> +
-> +#define get_unaligned  __get_unaligned_le
-> +#define put_unaligned  __put_unaligned_le
-> +
-> +#endif /* _ASM_SCORE_UNALIGNED_H */
+Naw - e_powersaver does a better job and consistently provides
+nearly an order of magnitude better up-time.
 
-Any reason not to use the asm-generic version of this file?
-If it didn't work, that is probably a bug in my code, not
-yours, but they really look compatible.
+Guess I'll go back to reading/auditing e_powersaver.  ;)
 
-> diff --git a/arch/score/include/asm/unistd.h 
-> b/arch/score/include/asm/unistd.h
-> new file mode 100644
-> index 0000000..0cbfef8
-> --- /dev/null
-> +++ b/arch/score/include/asm/unistd.h
-> @@ -0,0 +1,12 @@
-> +#ifndef _ASM_SCORE_UNISTD_H
-> +#define _ASM_SCORE_UNISTD_H
-> +
-> +#define __ARCH_HAVE_MMU
-> +#define __ARCH_WANT_SYSCALL_NO_AT
-> +#define __ARCH_WANT_SYSCALL_NO_FLAGS
-> +#define __ARCH_WANT_SYSCALL_OFF_T
-> +#define __ARCH_WANT_SYSCALL_DEPRECATED
-> +
-> +#include <asm-generic/unistd.h>
+Mike
+> * * * *
+> 
+> I do not have a copy of any proprietary operating system to compare with
+> on this machine.
+> 
+> You could use the search features of this forum:
+> http://forum.netbookuser.com/index.php
+> to look for windows problem reports/discussions.
+> 
+> That forum was active since the machine was announced and included
+> members from Everex.  If there where windows problems, they are
+> in there somewhere.
+> 
+> Mike
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-I realize that this is the code I added to microblaze in my tree.
-However, the four __ARCH_WANT_SYSCALL_* definitions are really
-only meant as a transitional helper to get your code ported
-from the older ABI. They should be removed from your file in 
-order to get the short system call list. Have you tried this?
 
-In order to get there, you probably need to add a lot of wrappers
-to libc along the lines of
-
-int unlink(const char *pathname)
-{
-	return unlinkat(AT_FDCWD, pathname, 0);
-}
-
-	Arnd <><
