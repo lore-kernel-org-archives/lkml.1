@@ -1,116 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757801AbZFIChv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbZFICt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757801AbZFIChv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 22:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbZFICho
+	id S1757490AbZFICt3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 22:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZFICtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 22:37:44 -0400
-Received: from mga14.intel.com ([143.182.124.37]:1225 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751938AbZFIChn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 22:37:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,328,1241420400"; 
-   d="scan'208";a="152078349"
-Date: Tue, 9 Jun 2009 10:37:31 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] Properly account for the number of page cache
-	pages zone_reclaim() can reclaim
-Message-ID: <20090609023731.GA7875@localhost>
-References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-3-git-send-email-mel@csn.ul.ie>
+	Mon, 8 Jun 2009 22:49:20 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:60233 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752987AbZFICtT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 22:49:19 -0400
+Date: Mon, 8 Jun 2009 22:49:21 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Oliver Neukum <oliver@neukum.org>, <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM:
+ Rearrange core suspend code)
+In-Reply-To: <200906082331.58933.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0906082233490.19072-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244466090-10711-3-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 09:01:29PM +0800, Mel Gorman wrote:
-> On NUMA machines, the administrator can configure zone_relcaim_mode that
-> is a more targetted form of direct reclaim. On machines with large NUMA
-> distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
-> unmapped pages will be reclaimed if the zone watermarks are not being met.
-> 
-> There is a heuristic that determines if the scan is worthwhile but the
-> problem is that the heuristic is not being properly applied and is basically
-> assuming zone_reclaim_mode is 1 if it is enabled.
-> 
-> This patch makes zone_reclaim() makes a better attempt at working out how
-> many pages it might be able to reclaim given the current reclaim_mode. If it
-> cannot clean pages, then NR_FILE_DIRTY number of pages are not candidates. If
-> it cannot swap, then NR_FILE_MAPPED are not. This indirectly addresses tmpfs
-> as those pages tend to be dirty as they are not cleaned by pdflush or sync.
-> 
-> The ideal would be that the number of tmpfs pages would also be known
-> and account for like NR_FILE_MAPPED as swap is required to discard them.
-> A means of working this out quickly was not obvious but a comment is added
-> noting the problem.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> ---
->  mm/vmscan.c |   18 ++++++++++++++++--
->  1 files changed, 16 insertions(+), 2 deletions(-)
-> 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index ba211c1..ffe2f32 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -2380,6 +2380,21 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
->  {
->  	int node_id;
->  	int ret;
-> +	int pagecache_reclaimable;
-> +
-> +	/*
-> +	 * Work out how many page cache pages we can reclaim in this mode.
-> +	 *
-> +	 * NOTE: Ideally, tmpfs pages would be accounted as if they were
-> +	 *       NR_FILE_MAPPED as swap is required to discard those
-> +	 *       pages even when they are clean. However, there is no
-> +	 *       way of quickly identifying the number of tmpfs pages
-> +	 */
-> +	pagecache_reclaimable = zone_page_state(zone, NR_FILE_PAGES);
-> +	if (!(zone_reclaim_mode & RECLAIM_WRITE))
-> +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_DIRTY);
+On Mon, 8 Jun 2009, Rafael J. Wysocki wrote:
 
-> +	if (!(zone_reclaim_mode & RECLAIM_SWAP))
-> +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
+> > Use of the RPM_UNKNOWN state isn't good.  A bus may have valid reasons 
+> > of its own for not carrying out an autosuspend.  When this happens the 
+> > device's state isn't unknown.
+> 
+> I'm not sure what you mean exactly.
+> 
+> If ->autosuspend() fails, the device power state may be known, but the core
+> can't be sure if the device is active.  This information is available to the
+> driver and/or the bus type, which should change the status to whatever is
+> appropriate.
 
-Your patch seems to conflict with KOSAKI's earlier patch "vmscan: change the
-number of the unmapped files in zone reclaim", where he offers a better way for
-getting rid of the tmpfs pages:
+But no matter what the driver or bus type sets the state to, your 
+pm_autosuspend() will change it to one of RPM_UNKNOWN or RPM_SUSPENDED.  
+Neither might be right.
 
-+       nr_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +                                                                    
-+                       zone_page_state(zone, NR_ACTIVE_FILE);                                                                       
-+       nr_mapped = zone_page_state(zone, NR_FILE_MAPPED);                                                                           
-+       if (likely(nr_file_pages >= nr_mapped))                                                                                      
-+               nr_unmapped_file_pages = nr_file_pages - nr_mapped;                                                                  
-                                                                                                                                     
-        if (nr_unmapped_file_pages > zone->min_unmapped_pages) {                                                                     
+> The name of this constant may be confusing, but I didn't have any better ideas.
 
-Thanks,
-Fengguang
+It's not clear what RPM_ACTIVE, RPM_IDLE, and RPM_SUSPENDED are 
+supposed to mean; this should be documented in the code.  Also, why 
+isn't there RPM_RESUMING?
 
->  	/*
->  	 * Zone reclaim reclaims unmapped file backed pages and
-> @@ -2391,8 +2406,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
->  	 * if less than a specified percentage of the zone is used by
->  	 * unmapped file backed pages.
->  	 */
-> -	if (zone_page_state(zone, NR_FILE_PAGES) -
-> -	    zone_page_state(zone, NR_FILE_MAPPED) <= zone->min_unmapped_pages
-> +	if (pagecache_reclaimable <= zone->min_unmapped_pages
->  	    && zone_page_state(zone, NR_SLAB_RECLAIMABLE)
->  			<= zone->min_slab_pages)
->  		return 0;
-> -- 
-> 1.5.6.5
+By the way, a legitimate reason for aborting an autosuspend is if the
+device's driver requires remote wakeup to be enabled during suspend but
+the user has disabled it.
+
+> > The scheme doesn't include any mechanism for communicating runtime
+> > power information up the device tree.  When a device is autosuspended,
+> > its parent's driver should be told so that the driver can consider
+> > autosuspending the parent.
+> 
+> I thought the bus type's ->autosuspend() callback could take care of this.
+
+Shouldn't this happen after the device's state has changed to 
+RPM_SUSPENDED?  That's not until after the callback returns.
+
+> > There should be a sysfs interface (like the one in USB) to allow
+> > userspace to prevent a device from being autosuspended -- and perhaps
+> > also to force it to be suspended.
+> 
+> To prevent a device from being suspended - yes.  To force it to stay suspended
+> - I'm not sure.
+
+I'm not sure either.  Oliver Neukum requested it originally and it has
+been useful for debugging, but I haven't seen many places where it
+would come in useful in practice.
+
+> > What about devices that have more than two runtime power states?  For
+> > example, you can't squeeze PCI's {D0,D1,D2,D3hot} range into {running,
+> > suspended}.
+> 
+> That has to be bus type-specific.
+> 
+> In the case of PCI all of the low power states (D1-D3) are in fact substates of
+> "suspended", because we generally need to quiesce the device before putting
+> it into any of these states.
+> 
+> I'm not sure if we can introduce more "levels of suspension", so to speak, at
+> the core level, but in any case we can easily distinguish between "device
+> quiesced and in a low power state" and "device fully active".
+> 
+> So, in this picture the device is "suspended" from the core's point of view
+> once it's bus type's ->autosuspend() callback has been successfully executed. 
+
+This too should be documented in the code.  Or in a Documentation file.
+
+Alan Stern
+
