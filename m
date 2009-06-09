@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760837AbZFIWK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbZFIWOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760837AbZFIWK3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 18:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbZFIWKS
+	id S1754136AbZFIWOU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 18:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751000AbZFIWOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 18:10:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38365 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752139AbZFIWKR (ORCPT
+	Tue, 9 Jun 2009 18:14:09 -0400
+Received: from stinky.trash.net ([213.144.137.162]:40635 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750749AbZFIWOI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 18:10:17 -0400
-Date: Tue, 9 Jun 2009 15:09:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Anholt <eric@anholt.net>
-Cc: penberg@cs.helsinki.fi, elendil@planet.nl, linux-kernel@vger.kernel.org,
-       apw@canonical.com, colin.king@canonical.com, tim.gardner@canonicalc.com,
-       bjorn.helgaas@hp.com
-Subject: Re: [PATCH 2/2] pnp: add PNP resource range checking function
-Message-Id: <20090609150944.6ffa8038.akpm@linux-foundation.org>
-In-Reply-To: <1244508839.7564.0.camel@gaiman.anholt.net>
-References: <Pine.LNX.4.64.0906060934500.11247@melkki.cs.Helsinki.FI>
-	<200906060931.36168.elendil@planet.nl>
-	<4A2A1AB6.9020808@cs.helsinki.fi>
-	<1244508839.7564.0.camel@gaiman.anholt.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 9 Jun 2009 18:14:08 -0400
+Message-ID: <4A2EDEB0.2080006@trash.net>
+Date: Wed, 10 Jun 2009 00:14:08 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Jay Vosburgh <fubar@us.ibm.com>
+CC: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, bonding-devel@lists.sf.net,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [Bonding-devel] BUG: bonding module can only be loaded once
+References: <20090608151127.70146505@nehalam> <200906091406.45463.arnd@arndb.de> <20090609080232.45f81833@nehalam> <4A2E80B3.6010600@trash.net> <4752.1244564082@death.nxdomain.ibm.com> <4A2E8D62.6090004@trash.net> <13521.1244568251@death.nxdomain.ibm.com>
+In-Reply-To: <13521.1244568251@death.nxdomain.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 08 Jun 2009 17:53:59 -0700
-Eric Anholt <eric@anholt.net> wrote:
-
-> On Sat, 2009-06-06 at 10:28 +0300, Pekka Enberg wrote:
-> > Hi Frans,
-> > 
-> > Frans Pop wrote:
-> > >> Add a PNP resource range check function, indicating whether a resource
-> > >> has been assigned to any device.
-> > > 
-> > > Shouldn't this patch come *before* your patch 1/2?
-> > > You now seem to use this function in a commit where it has not yet been 
-> > > defined, which could result in build errors during bisections.
-> > 
-> > Yes, correct. Sorry about that!
-> > 
-> > 			Pekka
+Jay Vosburgh wrote:
+> Patrick McHardy <kaber@trash.net> wrote:
 > 
-> This is already in drm-intel-next
+>> I'd expect its not the distros, but rather the applicances which might
+>> still be using this. I know a vendor I used to work for a couple of
+>> years ago just recently made the switch from 2.6.16 to a current kernel,
+>> and I'd expect that they are still using this (I can find out tommorrow
+>> if you want to know for sure). Vyatta likewise, I guess.
 > 
+> 	Yes, I'd like to know for sure; thanks.
 
-Neither patch is in linux-next.  So either a) drm-intel-next contains
-2.6.31 material or b) your processes broke.
+I'll let you know.
 
-Either way, these patches fix a "serious performance regression".  They
-should be merged into 2.6.30 or 2.6.30.x, shouldn't they?
+>>> 	If nobody has any heartburn at dropping support for multiple
+>>> bonding instances on old distros, I'm as happy as anybody to remove all
+>>> of the multiple load logic from bonding.  There's been plenty of time
+>>> for transitioning from "multiple load" to sysfs.
+>> In my opinion it would need a feature-removal-schedule announcement.
+> 
+> 	Yah, probably.  The multiple load stuff was working fine as of,
+> oh, a year or two ago, so I wasn't worried so much about getting rid of
+> it.  If it's causing problems, though, it's time for it to go (or be
+> scheduled to go in the not too distant future).  Can't keep driving that
+> Ford Pinto forever.
 
+Well, if it has been broken for long enough, maybe we don't need
+a feature-removal-schedule warning.
