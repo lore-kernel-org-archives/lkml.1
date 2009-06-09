@@ -1,52 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbZFITQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759345AbZFITSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760009AbZFITQb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 15:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759805AbZFITQR
+	id S1759345AbZFITSZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 15:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756003AbZFITSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 15:16:17 -0400
-Received: from windsormachine.com ([216.8.138.2]:43732 "EHLO
-	router.windsormachine.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759760AbZFITQQ (ORCPT
+	Tue, 9 Jun 2009 15:18:15 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:41151 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755098AbZFITSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 15:16:16 -0400
-Date: Tue, 9 Jun 2009 15:16:18 -0400 (EDT)
-From: Mike Dresser <mdresser_l@windsormachine.com>
-To: Mathias Kretschmer <mathias@blx4.net>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alex Samad <alex@samad.com.au>, Dave Chinner <david@fromorbit.com>
-Subject: Re: [Bug #13375] Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
-In-Reply-To: <200906092111.54073.mathias@blx4.net>
-Message-ID: <alpine.DEB.1.10.0906091514280.9067@router.windsormachine.com>
-References: <sIiXQlfwS3D.A.81.dj7KKB@chimera> <200906080940.14650.posting@blx4.net> <alpine.DEB.1.10.0906091457510.28108@router.windsormachine.com> <200906092111.54073.mathias@blx4.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-scanner: Scanned by Xamime-LT 0.1.5
+	Tue, 9 Jun 2009 15:18:14 -0400
+Date: Tue, 9 Jun 2009 21:20:32 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: liqin.chen@sunplusct.com
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Arnd Bergmann <arnd@arndb.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
+Subject: Re: Subject: [PATCH 27/27] score: create mm files Makefile pgtable.c tlb-miss.S tlb-score.c MAINTAINERS
+Message-ID: <20090609192032.GE7181@uranus.ravnborg.org>
+References: <OF3FCD7D17.46B74348-ON482575D0.00247D15-482575D0.0024EF46@sunplusct.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <OF3FCD7D17.46B74348-ON482575D0.00247D15-482575D0.0024EF46@sunplusct.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009, Mathias Kretschmer wrote:
+On Tue, Jun 09, 2009 at 02:39:08PM +0800, liqin.chen@sunplusct.com wrote:
+> >From d6d79cbcf39cd522208231ed717e1c12e5401b33 Mon Sep 17 00:00:00 2001
+> From: Chen Liqin <liqin.chen@sunplusct.com>
+> Date: Tue, 9 Jun 2009 13:43:20 +0800
+> Subject: [PATCH 27/27] score: create mm files Makefile pgtable.c 
+> tlb-miss.S tlb-score.c MAINTAINERS
+> 
+> 
+> Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
+> ---
+>  MAINTAINERS               |    8 ++
+>  arch/score/mm/Makefile    |    8 ++
+>  arch/score/mm/pgtable.c   |   60 +++++++++++
+>  arch/score/mm/tlb-miss.S  |  204 ++++++++++++++++++++++++++++++++++++
+>  arch/score/mm/tlb-score.c |  251 
+> +++++++++++++++++++++++++++++++++++++++++++++
+>  5 files changed, 531 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/score/mm/Makefile
+>  create mode 100644 arch/score/mm/pgtable.c
+>  create mode 100644 arch/score/mm/tlb-miss.S
+>  create mode 100644 arch/score/mm/tlb-score.c
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 2b349ba..d6993a1 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -4881,6 +4881,14 @@ S:       Maintained
+>  F:     kernel/sched*
+>  F:     include/linux/sched.h
+>  
+> +SCORE ARCHITECTURE
+> +P:     Chen Liqin
+> +M:     liqin.chen@sunplusct.com
+> +P:     Lennox Wu
+> +M:     lennox.wu@sunplusct.com
+> +W:     http://www.sunplusct.com
+> +S:     Supported
+> +
+>  SCSI CDROM DRIVER
+>  P:     Jens Axboe
+>  M:     axboe@kernel.dk
+> diff --git a/arch/score/mm/Makefile b/arch/score/mm/Makefile
+> new file mode 100644
+> index 0000000..6da8ce5
+> --- /dev/null
+> +++ b/arch/score/mm/Makefile
+> @@ -0,0 +1,8 @@
+> +#
+> +# Makefile for the Linux/SCORE-specific parts of the memory manager.
+> +#
+> +
+> +obj-y += cache.o extable.o fault.o init.o \
+> +       tlb-miss.o tlb-score.o pgtable.o
+> +
+> +EXTRA_CFLAGS +=
 
-> same observation here. it's kswapd that dies.
->
-> swap space itself is hardly ever really used, since my box has 8GB and not
-> that much stuff is running on it.
+Please remove this redundant line.
+If you need to add extra options to cc use: ccflags-y := ...
 
-Same here, 5GB ram.. I might try turning swap off and seeing what happens.
-
-> my XFS mount opts: noatime,nodiratime,logbufs=8
-
-noatime,nodiratime,logbufs=8,logbsize=256k,inode64,nobarrier
-
-> drive/fs config:  sata => raid6 => lvm => xfs => nfs
-
-sata => 3ware in raid5 => xfs
-
-> machine is stable for the last 36 hours with nfs turned off.
-
-Not using NFS here.
-
+	Sam
