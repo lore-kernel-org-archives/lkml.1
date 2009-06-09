@@ -1,78 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760605AbZFINeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761012AbZFINe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760605AbZFINeL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbZFINeD
+	id S1761012AbZFINe3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760064AbZFINeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:34:03 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40171 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753905AbZFINeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:34:02 -0400
-Date: Tue, 9 Jun 2009 23:33:57 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: linux-next: net/wireless tree build failure
-Message-Id: <20090609233357.5d3801a0.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Tue, 9 Jun 2009 09:34:06 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:59417 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759636AbZFINeE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 09:34:04 -0400
+Date: Tue, 9 Jun 2009 15:34:02 +0200
+From: Hans-Joachim Picht <hans@linux.vnet.ibm.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [patch 05/38] s390: hibernation support for s390
+Message-ID: <20090609153402.58e6b841@blc4eb509856389.ibm.com>
+In-Reply-To: <20090608064451.GD1444@ucw.cz>
+References: <20090604161847.513682672@de.ibm.com>
+	<20090604161900.659762303@de.ibm.com>
+	<20090608064451.GD1444@ucw.cz>
+Organization: IBM Deutschland Research & Development GmbH
+X-Mailer: Claws Mail 3.7.0cvs74 (GTK+ 2.16.1; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__9_Jun_2009_23_33_57_+1000_Cp8+li_LyWa4aXcp"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__9_Jun_2009_23_33_57_+1000_Cp8+li_LyWa4aXcp
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 8 Jun 2009 08:44:51 +0200
+Pavel Machek <pavel@ucw.cz> wrote:
 
-Hi John, Dave,
 
-Today's linux-next build (pmac32 defconfig) failed like this:
+> > Index: linux-2.6/arch/s390/power/swsusp.c
+> > ===================================================================
+> > --- /dev/null
+> > +++ linux-2.6/arch/s390/power/swsusp.c
+> > @@ -0,0 +1,31 @@
+> > +/*
+> > + * Support for suspend and resume on s390
+> > + *
+> > + * Copyright IBM Corp. 2009
+> > + *
+> > + * Author(s): Hans-Joachim Picht <hans@linux.vnet.ibm.com>
+> > + *
+> > + */
+> > +
+> > +#include <linux/suspend.h>
+> > +#include <linux/gfp.h>
+> > +#include <linux/cpu.h>
+> > +#include <linux/smp.h>
+> > +#include <linux/cpumask.h>
+> > +#include <asm/ipl.h>
+> > +#include <asm/processor.h>
+> 
+> Empty functions do not need 1000 includes...
 
-In file included from drivers/net/wireless/b43/phy_common.h:5,
-                 from drivers/net/wireless/b43/phy_common.c:30:
-include/linux/rfkill.h: In function 'rfkill_alloc':
-include/linux/rfkill.h:279: error: implicit declaration of function 'ERR_PT=
-R'
-include/linux/rfkill.h:279: warning: return makes pointer from integer with=
-out a cast
-include/linux/rfkill.h: In function 'rfkill_register':
-include/linux/rfkill.h:284: warning: comparison between pointer and integer
-In file included from include/linux/dma-mapping.h:6,
-                 from arch/powerpc/include/asm/pci.h:16,
-                 from include/linux/pci.h:1101,
-                 from include/linux/ssb/ssb.h:9,
-                 from drivers/net/wireless/b43/b43.h:9,
-                 from drivers/net/wireless/b43/phy_common.c:35:
-include/linux/err.h: At top level:
-include/linux/err.h:22: error: conflicting types for 'ERR_PTR'
-include/linux/rfkill.h:279: note: previous implicit declaration of 'ERR_PTR=
-' was here
+Thanks for spotting this. I will remove these.
+ 
+> > +/*
+> > + * save CPU registers before creating a hibernation image and
+> > before
+> > + * restoring the memory state from it
+> > + */
+> > +void save_processor_state(void)
+> > +{
+> > +}
+> > +
+> > +/*
+> > + * restore the contents of CPU registers
+> > + */
+> > +void restore_processor_state(void)
+> > +{
+> > +}
+> 
+> ...and explaining why the functions can be emmpty would be nice.
 
-Probably caused by commit 19d337dff95cbf76edd3ad95c0cee2732c3e1ec5
-("rfkill: rewrite") which added uses of ERR_PTR to inlines in rfkill.h
-but did not include linux/err.h.
+I integrated the code for this in the assembly backend in the
+swsusp_arch_suspend & swsusp_arch_resume functions.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+With best regards,
 
---Signature=_Tue__9_Jun_2009_23_33_57_+1000_Cp8+li_LyWa4aXcp
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkouZMUACgkQjjKRsyhoI8wP7gCgomUIyx252X51QTy/yTD2osC0
-FXcAnjadNQ7R+ty/A+03PBhOk5HCnY46
-=q72Q
------END PGP SIGNATURE-----
-
---Signature=_Tue__9_Jun_2009_23_33_57_+1000_Cp8+li_LyWa4aXcp--
+    --Hans
