@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758508AbZFISDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbZFISE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758508AbZFISDu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbZFISDn
+	id S1758781AbZFISE2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbZFISEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:03:43 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:42901 "EHLO kernel.dk"
+	Tue, 9 Jun 2009 14:04:21 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:34016 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751997AbZFISDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:03:42 -0400
-Date: Tue, 9 Jun 2009 20:03:44 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Cc: linux-kernel@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>,
-       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Subject: Re: [PATCH block#for-2.6.31] block: add request clone interface
-Message-ID: <20090609180344.GQ11363@kernel.dk>
-References: <4A2E1490.7060902@ct.jp.nec.com>
+	id S1751997AbZFISEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 14:04:20 -0400
+Date: Tue, 9 Jun 2009 20:04:16 +0200
+From: Oskar Schirmer <os@emlix.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Oskar Schirmer <os@emlix.com>, Sascha Hauer <kernel@pengutronix.de>,
+       linux-kernel@vger.kernel.org, Fabian Godehardt <fg@emlix.com>
+Subject: Re: [PATCH 8/8] imx: serial: add IrDA support to serial driver
+Message-ID: <20090609180416.GA1213@emlix.com>
+References: <1244555211-15618-3-git-send-email-os@emlix.com> <1244555211-15618-4-git-send-email-os@emlix.com> <1244555211-15618-5-git-send-email-os@emlix.com> <1244555211-15618-6-git-send-email-os@emlix.com> <1244555211-15618-7-git-send-email-os@emlix.com> <1244555211-15618-8-git-send-email-os@emlix.com> <1244555211-15618-9-git-send-email-os@emlix.com> <20090609160132.31265ffc@lxorguk.ukuu.org.uk> <20090609161817.GA17246@emlix.com> <20090609180738.10014627@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <4A2E1490.7060902@ct.jp.nec.com>
+In-Reply-To: <20090609180738.10014627@lxorguk.ukuu.org.uk>
+Organization: emlix GmbH
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09 2009, Kiyoshi Ueda wrote:
-> Hi Jens,
+On Tue, Jun 09, 2009 at 18:07:38 +0100, Alan Cox wrote:
+> > Sure, the path will be optimized away, but still
+> > the conditional statement is subjected to syntax
+> > and scope analysis and gcc will correctly complain
+> > that irda_inv_rx is not declared.
 > 
-> +/*
-> + * Copy request information of the original request to the clone request.
-> + */
-> +static void __blk_rq_prep_clone(struct request *dst, struct request *src)
-> +{
-> +	dst->cpu = src->cpu;
-> +	dst->cmd_flags = (rq_data_dir(src) | REQ_NOMERGE);
-> +	dst->cmd_type = src->cmd_type;
-> +	dst->__sector = blk_rq_pos(src);
-> +	dst->__data_len = blk_rq_bytes(src);
-> +	dst->nr_phys_segments = src->nr_phys_segments;
-> +	dst->ioprio = src->ioprio;
-> +	dst->buffer = src->buffer;
-> +	dst->cmd_len = src->cmd_len;
-> +	dst->cmd = src->cmd;
+> Why are only about half of them done this way rather than all ?
 
-Are you making sure that 'src' always exists while 'dst' is alive?
+Because only half of them use IrDA specific struct fields
+directly, thus need to be ifdef'd explicitely.
 
--- 
-Jens Axboe
+Like I wrote before, we could replace all the
 
+if (USE_IRDA(x)) ...
+
+with some
+
+#ifdef CONFIG_IRDA
+if (x->use_irda) ...
+
+but that way we would have more ifdef's around.
+A matter of taste, I'ld say. If you vote for the
+latter, we can adjust the patch accordingly, of
+course.
+
+  Oskar
