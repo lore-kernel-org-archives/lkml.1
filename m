@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZFIB6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757662AbZFIB7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbZFIB6t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 21:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbZFIB6k
+	id S1757662AbZFIB7A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 21:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755288AbZFIB6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 21:58:40 -0400
-Received: from mga14.intel.com ([143.182.124.37]:22772 "EHLO mga14.intel.com"
+	Mon, 8 Jun 2009 21:58:47 -0400
+Received: from sh.osrg.net ([192.16.179.4]:48976 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753528AbZFIB6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 21:58:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,328,1241420400"; 
-   d="scan'208";a="152068689"
-Date: Tue, 9 Jun 2009 09:58:22 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when
-	zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
-Message-ID: <20090609015822.GA6740@localhost>
-References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-2-git-send-email-mel@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244466090-10711-2-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1756325AbZFIB6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 21:58:46 -0400
+Date: Tue, 9 Jun 2009 10:57:46 +0900
+To: jens.axboe@oracle.com
+Cc: tj@kernel.org, giridhar.malavali@qlogic.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] block: needs to set the residual length of a bidi request.
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090609105709A.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 09 Jun 2009 10:57:47 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 09:01:28PM +0800, Mel Gorman wrote:
-> On NUMA machines, the administrator can configure zone_reclaim_mode that is a
-> more targetted form of direct reclaim. On machines with large NUMA distances,
-> zone_reclaim_mode defaults to 1 meaning that clean unmapped pages will be
-> reclaimed if the zone watermarks are not being met. The problem is that
-> zone_reclaim() can be in a situation where it scans excessively without
-> making progress.
-> 
-> One such situation is where a large tmpfs mount is occupying a large
-> percentage of memory overall. The pages do not get cleaned or reclaimed by
-> zone_reclaim(), but the lists are uselessly scanned frequencly making the
-> CPU spin at 100%. The scanning occurs because zone_reclaim() cannot tell
-> in advance the scan is pointless because the counters do not distinguish
-> between pagecache pages backed by disk and by RAM.  The observation in
-> the field is that malloc() stalls for a long time (minutes in some cases)
-> when this situation occurs.
-> 
-> Accounting for ram-backed file pages was considered but not implemented on
-> the grounds it would be introducing new branches and expensive checks into
-> the page cache add/remove patches and increase the number of statistics
-> needed in the zone. As zone_reclaim() failing is currently considered a
-> corner case, this seemed like overkill. Note, if there are a large number
-> of reports about CPU spinning at 100% on NUMA that is fixed by disabling
-> zone_reclaim, then this assumption is false and zone_reclaim() scanning
-> and failing is not a corner case but a common occurance
-> 
-> This patch reintroduces zone_reclaim_interval which was removed by commit
-> 34aa1330f9b3c5783d269851d467326525207422 [zoned vm counters: zone_reclaim:
-> remove /proc/sys/vm/zone_reclaim_interval] because the zone counters were
-> considered sufficient to determine in advance if the scan would succeed.
-> As unsuccessful scans can still occur, zone_reclaim_interval is still
-> required.
+This is against for-2.6.31.
 
-Can we avoid the user visible parameter zone_reclaim_interval?
+This should fix the following problem:
 
-That means to introduce some heuristics for it. Since the whole point
-is to avoid 100% CPU usage, we can take down the time used for this
-failed zone reclaim (T) and forbid zone reclaim until (NOW + 100*T).
+http://marc.info/?l=linux-scsi&m=124449210813269&w=2
 
-Thanks,
-Fengguang
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] block: needs to set the residual length of a bidi request
+
+Tejun's "block: set rq->resid_len to blk_rq_bytes() on issue" patch
+seems to be incomplete; It doesn't set rq->resid_len to blk_rq_bytes()
+for a bidi request (req->next_rq). As a result, all bidi users are
+broken.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ block/blk-core.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 7ae83a1..03c5a64 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1846,6 +1846,9 @@ void blk_start_request(struct request *req)
+ 	 * resid_len to full count and add the timeout handler.
+ 	 */
+ 	req->resid_len = blk_rq_bytes(req);
++	if (unlikely(blk_bidi_rq(req)))
++		req->next_rq->resid_len = blk_rq_bytes(req->next_rq);
++
+ 	blk_add_timer(req);
+ }
+ EXPORT_SYMBOL(blk_start_request);
+-- 
+1.6.0.6
+
