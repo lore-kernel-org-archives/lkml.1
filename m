@@ -1,70 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760862AbZFIODI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbZFIOGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760862AbZFIODI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 10:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZFIOC5
+	id S1758918AbZFIOGZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 10:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbZFIOGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 10:02:57 -0400
-Received: from mga01.intel.com ([192.55.52.88]:13251 "EHLO mga01.intel.com"
+	Tue, 9 Jun 2009 10:06:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55264 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753022AbZFIOC4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 10:02:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,331,1241420400"; 
-   d="scan'208";a="464768221"
-From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-To: "Williams, Dan J" <dan.j.williams@intel.com>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Tejun Heo <tj@kernel.org>, Eric Biederman <ebiederm@aristanetworks.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       David L Stevens <dlstevens@us.ibm.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
-       "davem@davemloft.net" <davem@davemloft.net>
-Date: Tue, 9 Jun 2009 15:02:27 +0100
-Subject: RE: [this_cpu_xx 06/11] Eliminate get/put_cpu
-Thread-Topic: [this_cpu_xx 06/11] Eliminate get/put_cpu
-Thread-Index: AcnmFKxf3cVzfAm7TeC6MU8EHJ14NwC9h00A
-Message-ID: <129600E5E5FB004392DDC3FB599660D7ACCAE1C6@irsmsx504.ger.corp.intel.com>
-References: <20090605191819.376530498@gentwo.org>
-	 <20090605191851.393195588@gentwo.org>
- <e9c3a7c20906051234m499aefbrd1828a6bbee3caf9@mail.gmail.com>
-In-Reply-To: <e9c3a7c20906051234m499aefbrd1828a6bbee3caf9@mail.gmail.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1751688AbZFIOGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 10:06:15 -0400
+Date: Tue, 9 Jun 2009 10:05:12 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, linux-kernel@vger.kernel.org
+Subject: [patch] x86: clear TS in irq_ts_save() when in an atomic section
+Message-ID: <20090609100512.7d191fd4@dhcp-100-2-144.bos.redhat.com>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams wrote:
-> [ added Maciej to the cc ]
+x86: clear TS in irq_ts_save() when in an atomic section
 
-Thanks Dan.
+The dynamic FPU context allocation changes caused the padlock driver
+to generate the below warning. Fix it by masking TS when doing padlock
+encryption operations in an atomic section.
 
-> 
-> On Fri, Jun 5, 2009 at 12:18 PM, <cl@linux-foundation.org> wrote:
->> There are cases where we can use this_cpu_ptr and as the result
->> of using this_cpu_ptr() we no longer need to determine the current executing cpu.
->> 
->> In those places no get/put_cpu combination is needed anymore.
->> The local cpu variable can be eliminated.
->> 
->> Preemption still needs to be disabled and enabled since the
->> modifications of the per cpu variables is not atomic. There may
->> be multiple per cpu variables modified and those must all
->> be from the same processor.
->> 
->> cc: Dan Williams <dan.j.williams@intel.com>
-> 
-> Acked-by: Dan Williams <dan.j.williams@intel.com>
+BUG: sleeping function called from invalid context at mm/slub.c:1602
+in_atomic(): 1, irqs_disabled(): 0, pid: 82, name: cryptomgr_test
+Pid: 82, comm: cryptomgr_test Not tainted 2.6.29.4-168.test7.fc11.x86_64 #1
+Call Trace:
+[<ffffffff8103ff16>] __might_sleep+0x10b/0x110
+[<ffffffff810cd3b2>] kmem_cache_alloc+0x37/0xf1
+[<ffffffff81018505>] init_fpu+0x49/0x8a
+[<ffffffff81012a83>] math_state_restore+0x3e/0xbc
+[<ffffffff813ac6d0>] do_device_not_available+0x9/0xb
+[<ffffffff810123ab>] device_not_available+0x1b/0x20
+[<ffffffffa001c066>] ? aes_crypt+0x66/0x74 [padlock_aes]
+[<ffffffff8119a51a>] ? blkcipher_walk_next+0x257/0x2e0
+[<ffffffff8119a731>] ? blkcipher_walk_first+0x18e/0x19d
+[<ffffffffa001c1fe>] aes_encrypt+0x9d/0xe5 [padlock_aes]
+[<ffffffffa0027253>] crypt+0x6b/0x114 [xts]
+[<ffffffffa001c161>] ? aes_encrypt+0x0/0xe5 [padlock_aes]
+[<ffffffffa001c161>] ? aes_encrypt+0x0/0xe5 [padlock_aes]
+[<ffffffffa0027390>] encrypt+0x49/0x4b [xts]
+[<ffffffff81199acc>] async_encrypt+0x3c/0x3e
+[<ffffffff8119dafc>] test_skcipher+0x1da/0x658
+[<ffffffff811979c3>] ? crypto_spawn_tfm+0x8e/0xb1
+[<ffffffff8119672d>] ? __crypto_alloc_tfm+0x11b/0x15f
+[<ffffffff811979c3>] ? crypto_spawn_tfm+0x8e/0xb1
+[<ffffffff81199dbe>] ? skcipher_geniv_init+0x2b/0x47
+[<ffffffff8119a905>] ? async_chainiv_init+0x5c/0x61
+[<ffffffff8119dfdd>] alg_test_skcipher+0x63/0x9b
+[<ffffffff8119e1bc>] alg_test+0x12d/0x175
+[<ffffffff8119c488>] cryptomgr_test+0x38/0x54
+[<ffffffff8119c450>] ? cryptomgr_test+0x0/0x54
+[<ffffffff8105c6c9>] kthread+0x4d/0x78
+[<ffffffff8101264a>] child_rip+0xa/0x20
+[<ffffffff81011f67>] ? restore_args+0x0/0x30
+[<ffffffff8105c67c>] ? kthread+0x0/0x78
+[<ffffffff81012640>] ? child_rip+0x0/0x20
 
-Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+
+--- work-2.6.29.4.orig/arch/x86/include/asm/i387.h
++++ work-2.6.29.4/arch/x86/include/asm/i387.h
+@@ -305,18 +305,18 @@ static inline void kernel_fpu_end(void)
+ /*
+  * Some instructions like VIA's padlock instructions generate a spurious
+  * DNA fault but don't modify SSE registers. And these instructions
+- * get used from interrupt context aswell. To prevent these kernel instructions
+- * in interrupt context interact wrongly with other user/kernel fpu usage, we
++ * get used from interrupt context as well. To prevent these kernel instructions
++ * in interrupt context interacting wrongly with other user/kernel fpu usage, we
+  * should use them only in the context of irq_ts_save/restore()
+  */
+ static inline int irq_ts_save(void)
+ {
+ 	/*
+-	 * If we are in process context, we are ok to take a spurious DNA fault.
+-	 * Otherwise, doing clts() in process context require pre-emption to
+-	 * be disabled or some heavy lifting like kernel_fpu_begin()
++	 * If in process context and not atomic, we can handle a spurious DNA fault.
++	 * Otherwise, doing clts() in process context requires disabling preemption
++	 * or some heavy lifting like kernel_fpu_begin()
+ 	 */
+-	if (!in_interrupt())
++	if (!in_atomic() && !in_interrupt())
+ 		return 0;
+ 
+ 	if (read_cr0() & X86_CR0_TS) {
