@@ -1,78 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbZFIRYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZFIRaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758195AbZFIRYX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 13:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbZFIRYK
+	id S1755666AbZFIRaP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 13:30:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbZFIRaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 13:24:10 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:38508 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753587AbZFIRYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 13:24:09 -0400
-From: Jay Vosburgh <fubar@us.ibm.com>
-To: Patrick McHardy <kaber@trash.net>
-cc: Arnd Bergmann <arnd@arndb.de>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, bonding-devel@lists.sf.net,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [Bonding-devel] BUG: bonding module can only be loaded once
-In-reply-to: <4A2E8D62.6090004@trash.net>
-References: <20090608151127.70146505@nehalam> <200906091406.45463.arnd@arndb.de> <20090609080232.45f81833@nehalam> <4A2E80B3.6010600@trash.net> <4752.1244564082@death.nxdomain.ibm.com> <4A2E8D62.6090004@trash.net>
-Comments: In-reply-to Patrick McHardy <kaber@trash.net>
-   message dated "Tue, 09 Jun 2009 18:27:14 +0200."
-X-Mailer: MH-E 8.0.3; nmh 1.3-RC3; GNU Emacs 22.2.1
-Date: Tue, 09 Jun 2009 10:24:11 -0700
-Message-ID: <13521.1244568251@death.nxdomain.ibm.com>
+	Tue, 9 Jun 2009 13:30:03 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:54235 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751752AbZFIRaC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 13:30:02 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: liqin.chen@sunplusct.com
+Subject: Re: [PATCH 08/27] score: create head files fb.h fcntl.h fixmap.h ftrace.h futex.h
+Date: Tue, 9 Jun 2009 19:30:02 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
+References: <OF7A6C7D8F.B4BC990D-ON482575D0.00236CE1-482575D0.0023DDA8@sunplusct.com>
+In-Reply-To: <OF7A6C7D8F.B4BC990D-ON482575D0.00236CE1-482575D0.0023DDA8@sunplusct.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906091930.02985.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19kpH3MgUq7bLzWHDt+zs/2kAqSlHybw5tYO8V
+ oNIU5MfOOtSZQoUznUiPS9t3fsKfu5bZAhVxzbpe7A2YSQWits
+ DiZDF4FYYxzE7X2uhMDZOTNNFuu0clg
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick McHardy <kaber@trash.net> wrote:
+On Tuesday 09 June 2009, liqin.chen@sunplusct.com wrote:
 
->Jay Vosburgh wrote:
->> Patrick McHardy <kaber@trash.net> wrote:
->> 
->>> In any case, this is not the first time this has been broken and the
->>> fundamental reason is in my opinion that the bonding interface is
->>> broken to begin with. The module aliasing thing is complete crap
->>> and should have been phased out long ago. At this point its probably
->>> not worth anymore to migrate people to the sysfs interface though,
->>> the best thing would be to add an rtnl_link interface and phase out
->>> both.
->> 
->> 	The "load bonding multiple times" stuff is only there now for
->> backwards compatibility with old distro initscripts / sysconfig packages
->> that don't configure bonding through sysfs (a sysfs API was added to
->> bonding three or four years ago).
->> 
->> 	All of the current distro releases I'm aware of use sysfs to
->> configure bonding, and have done so for at least a year or two.  I
->> haven't done an exhaustive survey, but it seems unlikely that users are
->> running a current up to date kernel with a two or three year old
->> initscripts / sysconfig package.  Anybody have information to the
->> contrary?
->
->I'd expect its not the distros, but rather the applicances which might
->still be using this. I know a vendor I used to work for a couple of
->years ago just recently made the switch from 2.6.16 to a current kernel,
->and I'd expect that they are still using this (I can find out tommorrow
->if you want to know for sure). Vyatta likewise, I guess.
+> diff --git a/arch/score/include/asm/fb.h b/arch/score/include/asm/fb.h
+> new file mode 100644
+> index 0000000..6bb525e
+> --- /dev/null
+> +++ b/arch/score/include/asm/fb.h
+> @@ -0,0 +1,15 @@
+> +#ifndef _ASM_SCORE_FB_H
+> +#define _ASM_SCORE_FB_H
+> +
+> +#include <linux/device.h>
+> +
+> +static inline void fb_pgprotect(struct file *file, struct vm_area_struct 
+> *vma,
+> +                               unsigned long off)
+> +{}
+> +
+> +static inline int fb_is_primary_device(struct fb_info *info)
+> +{
+> +       return 0;
+> +}
+> +
+> +#endif /* _ASM_SCORE_FB_H */
 
-	Yes, I'd like to know for sure; thanks.
+This is the same as the asm-generic version (better actually, because it
+doesn't use macros). Just use the existing code here, and maybe add
+a patch to fix that one to use an inline function as well ;-)
 
->> 	If nobody has any heartburn at dropping support for multiple
->> bonding instances on old distros, I'm as happy as anybody to remove all
->> of the multiple load logic from bonding.  There's been plenty of time
->> for transitioning from "multiple load" to sysfs.
->
->In my opinion it would need a feature-removal-schedule announcement.
+> index 0000000..ee16766
+> --- /dev/null
+> +++ b/arch/score/include/asm/fixmap.h
+> @@ -0,0 +1,82 @@
+> +#ifndef _ASM_SCORE_FIXMAP_H
+> +#define _ASM_SCORE_FIXMAP_H
 
-	Yah, probably.  The multiple load stuff was working fine as of,
-oh, a year or two ago, so I wasn't worried so much about getting rid of
-it.  If it's causing problems, though, it's time for it to go (or be
-scheduled to go in the not too distant future).  Can't keep driving that
-Ford Pinto forever.
+Hmm, I missed that file in my asm-generic series. Your code is 90% shared
+with mips, parisc, sh, sparc and um, so it seems like I should put it
+on my TODO list for generalization.
 
-	-J
-
----
-	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+	Arnd <><
