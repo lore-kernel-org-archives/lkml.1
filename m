@@ -1,153 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZFIQbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbZFIQfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756178AbZFIQbg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 12:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbZFIQbZ
+	id S1756853AbZFIQfU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 12:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbZFIQfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 12:31:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34929 "EHLO mx2.redhat.com"
+	Tue, 9 Jun 2009 12:35:09 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40615 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750749AbZFIQbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 12:31:24 -0400
-Subject: Re: [dm-devel] Re: ANNOUNCE: mdadm 3.0 - A tool for managing Soft
- RAID under Linux
-From: Heinz Mauelshagen <heinzm@redhat.com>
-Reply-To: heinzm@redhat.com
-To: device-mapper development <dm-devel@redhat.com>
-Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-raid@vger.kernel.org,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <18989.40871.865610.422540@notabene.brown>
-References: <18980.48553.328662.80987@notabene.brown>
-	 <4A25876A.1010901@garzik.org> <18981.62579.171350.910761@notabene.brown>
-	 <1244040123.6938.19.camel@o>  <18989.40871.865610.422540@notabene.brown>
-Content-Type: text/plain
-Organization: Red Hat GmbH
-Date: Tue, 09 Jun 2009 18:29:53 +0200
-Message-Id: <1244564993.2407.27.camel@o>
+	id S1751655AbZFIQfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 12:35:08 -0400
+Date: Tue, 9 Jun 2009 18:35:08 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andi Kleen <andi@firstfloor.org>, riel@redhat.com, chris.mason@oracle.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v5
+Message-ID: <20090609163508.GD9211@wotan.suse.de>
+References: <20090603846.816684333@firstfloor.org> <20090603184648.2E2131D028F@basil.firstfloor.org> <20090609100922.GF14820@wotan.suse.de> <Pine.LNX.4.64.0906091637430.13213@sister.anvils>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0906091637430.13213@sister.anvils>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-09 at 09:32 +1000, Neil Brown wrote:
-> On Wednesday June 3, heinzm@redhat.com wrote:
-> > > 
-> > > I haven't spoken to them, no (except for a couple of barely-related
-> > > chats with Alasdair).
-> > > By and large, they live in their little walled garden, and I/we live
-> > > in ours.
+On Tue, Jun 09, 2009 at 05:05:53PM +0100, Hugh Dickins wrote:
+> On Tue, 9 Jun 2009, Nick Piggin wrote:
+> > On Wed, Jun 03, 2009 at 08:46:47PM +0200, Andi Kleen wrote:
 > > 
-> > Maybe we are about to change that? ;-)
+> > Why not have this in rmap.c and not export the locking?
+> > I don't know.. does Hugh care?
 > 
-> Maybe ... what should we talk about?
+> Thanks for catching my eye with this, Nick.
 > 
-> Two areas where I think we might be able to have productive
-> discussion:
+> As I've said to Andi, I don't actually have time to study all this.
+> To me, it's just another layer of complexity and maintenance burden
+> that one special-interest group is imposing upon mm, and I can't
+> keep up with it myself.
+
+I know how it feels. But the problem with unreviewed patches is
+just that eventually you find yourself needing to review it in
+6 months and find the problems then.
+
+There are a few options. Further question the cost/benefit of
+a feature; slow down merging until it is satisfactorily reviewed;
+or merge it anyway (aka. creative definition of satisfactory).
+
+Not for me to decide, sorry. I'm nearly always further to
+conservative with merging features than popular opinion (except
+perhaps performance improvements, which are my weakness!)
+
+ 
+> But looking at this one set of extracts: you're right that I'm much
+> happier when page_lock_anon_vma() isn't leaked outside of mm/rmap.c,
+> though I'd probably hate this whichever way round it was; and I
+> share your lock ordering concern.
 > 
->  1/ Making md personalities available as dm targets.
->     In one sense this is trivial as an block device can be a DM
->     target, and any md personality can be a block device.
-
-Of course one could stack a linear target on any MD personality and live
-with the minor overhead in the io path. The overhead to handle such
-stacking on the tool side of things is not negligible though, hence it's
-a better option to have native dm targets for these mappings.
-
->     However it might be more attractive if the md personality
->     responded to dm ioctls.
-
-Indeed, we need the full interface to be covered in order to stay
-homogeneous.
-
->     Considering specifically raid5, some aspects of plugging
->     md/raid5 underneath dm would be trivial - e.g. assembling the
->     array at the start.
->     However others are not so straight forward.
->     In particular, when a drive fails in a raid5, you need to update
->     the metadata before allowing any writes which depend on that drive
->     to complete.  Given that metadata is managed in user-space, this
->     means signalling user-space and waiting for a response.
->     md does this via a file in sysfs.  I cannot see any similar
->     mechanism in dm, but I haven't looked very hard.
-
-We use events passed to a uspace daemon via an ioctl interface and our
-suspend/resume mechanism to ensure such metadata updates.
-
+> However, if I'm interpreting these extracts correctly, the whole
+> thing looks very misguided to me.  Are we really going to kill any
+> process that has a cousin who might once have mapped the page that's
+> been found hwpoisonous?  The hwpoison secret police are dangerously
+> out of control, I'd say.
 > 
->     Would it be useful to pursue this do you think?
+> The usual use of rmap lookup loops is to go on to look into the page
+> table to see whether the page is actually mapped: I see no attempt
+> at that here, just an assumption that anyone on the list is guilty
+> of mapping the page and must be killed.  And even if it did go on
+> to check if the page is there, maybe the process lost interest in
+> that page several weeks ago, why kill it?
+> 
+> At least in the file's prio_tree case, we'll only be killing those
+> who mmapped the range which happens to include the page.  But in the
+> anon case, remember the anon_vma is just a bundle of "related" vmas
+> outside of which the page will not be found; so if one process got a
+> poisonous page through COW, all the other processes which happen to
+> be sharing that anon_vma through fork or through adjacent merging,
+> are going to get killed too.
+> 
+> Guilty by association.
 
-I looked at the MD personality back in time when I was searching for an
-option to support RAID5 in dm but, like you similarly noted above,
-didn't find a simple way to wrap it into a dm target so the answer *was*
-no. That's why I picked some code (e.g. the RAID adressing) and
-implemented a target of my own.
+That's a very good point and I didn't even really notice that
+(I didn't come across a writeup of the intended policy/semantics
+in case of a bad page, so I've not really been able to tell most
+of the time whether code matches intention, but I would say you
+are probably right about this case).
 
+ 
+> I think a much more sensible approach would be to follow the page
+> migration technique of replacing the page's ptes by a special swap-like
+> entry, then do the killing from do_swap_page() if a process actually
+> tries to access the page.
 > 
-> 
->  2/ It might be useful to have a common view how virtual devices in
->     general should be managed in Linux.  Then we could independently
->     migrated md and dm towards this goal.
-> 
->     I imagine a block-layer level function which allows a blank
->     virtual device to be created, with an arbitrary major/minor
->     allocated.
->     e.g.
->          echo foo > /sys/block/.new
->     causes
->          /sys/devices/virtual/block/foo/
->     to be created.
->     Then a similar mechanism associates that with a particular driver.
->     That causes more attributes to appear in  ../block/foo/ which
->     can be used to flesh out the details of the device.
-> 
->     There would be library code that a driver could use to:
->       - accept subordinate devices
->       - manage the state of those devices
->       - maintain a write-intent bitmap
->     etc.
+> But perhaps that has already been discussed and found impossible,
+> or I'm taking "kill" too seriously and other checks are done
+> elsewhere, or...
 
-Yes, and such library can be filled with ported dm/md and other code.
-
-> 
->     There would also need to be a block-layer function to 
->     suspend/resume or similar so that a block device can be changed
->     underneath a filesystem.
-
-Yes, consolidating such functionality in a central place is the proper
-design but we still need an interface into any block driver which is
-initiating io on its own behalf (e.g. mirror resynchronization) in order
-to ensure, that such io gets suspended/resumed consistently
-
-> 
->     We currently have three structures for a block device:
->       struct block_device -> struct gendisk -> struct request_queue
-> 
->     I imagine allow either the "struct gendisk" or  the "struct
->     request_queue" to be swapped between two "struct block_device".
->     I'm not sure which, and the rest of the details are even more
->     fuzzy.
-> 
->     That sort of infrastructure would allow interesting migrations
->     without being limited to "just with dm" or "just within md".
-
-Or just with other virtual drivers such as drbd.
-
-Hard to imagine issues at the detailed spec level before they are
-fleshed out but this sounds like a good idea to start with.
-
-Heinz
-
-> 
->     Thoughts?
-> 
-> NeilBrown
-> 
-> --
-> dm-devel mailing list
-> dm-devel@redhat.com
-> https://www.redhat.com/mailman/listinfo/dm-devel
+No, I think this might be a very good suggestion.
 
