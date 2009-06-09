@@ -1,117 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759448AbZFITsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759539AbZFIT62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759448AbZFITsS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 15:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbZFITsK
+	id S1759539AbZFIT62 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 15:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbZFIT6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 15:48:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37557 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752594AbZFITsI (ORCPT
+	Tue, 9 Jun 2009 15:58:20 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36105 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751885AbZFIT6T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 15:48:08 -0400
-Date: Tue, 9 Jun 2009 12:47:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Robin Holt <holt@sgi.com>
-Cc: mel@csn.ul.ie, holt@sgi.com, kosaki.motohiro@jp.fujitsu.com,
-       cl@linux-foundation.org, riel@redhat.com, yanmin.zhang@intel.com,
-       fengguang.wu@intel.com, linux-ia64@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH v4] zone_reclaim is always 0 by default
-Message-Id: <20090609124710.87da85ce.akpm@linux-foundation.org>
-In-Reply-To: <20090609120213.GA18753@attica.americas.sgi.com>
-References: <20090604192236.9761.A69D9226@jp.fujitsu.com>
-	<20090608115048.GA15070@csn.ul.ie>
-	<20090609095507.GA9851@attica.americas.sgi.com>
-	<20090609103754.GN18380@csn.ul.ie>
-	<20090609120213.GA18753@attica.americas.sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 9 Jun 2009 15:58:19 -0400
+Date: Tue, 9 Jun 2009 21:58:13 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate file.
+Message-ID: <20090609195813.GA1388@ucw.cz>
+References: <20090604161847.513682672@de.ibm.com> <20090608063501.GC1444@ucw.cz> <20090608173611.16238cf9@gondolin> <200906082048.28779.rjw@sisk.pl> <20090609104003.50830165@gondolin>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090609104003.50830165@gondolin>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009 07:02:14 -0500
-Robin Holt <holt@sgi.com> wrote:
+On Tue 2009-06-09 10:40:03, Cornelia Huck wrote:
+> The *_nvs_* routines in swsusp.c make use of the io*map()
+> functions, which are only provided for HAS_IOMEM, thus
+> breaking compilation if HAS_IOMEM is not set. Fix this
+> by moving the *_nvs_* routines into hibernation_nvs.c, which
+> is only compiled if HAS_IOMEM is set.
+> 
+> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-> On Tue, Jun 09, 2009 at 11:37:55AM +0100, Mel Gorman wrote:
-> > On Tue, Jun 09, 2009 at 04:55:07AM -0500, Robin Holt wrote:
-> > > On Mon, Jun 08, 2009 at 12:50:48PM +0100, Mel Gorman wrote:
-> > > 
-> > > Let me start by saying I agree completely with everything you wrote and
-> > > still disagree with this patch, but was willing to compromise and work
-> > > around this for our upcoming x86_64 machine by putting a "value add"
-> > > into our packaging of adding a sysctl that turns reclaim back on.
-> > > 
-> > 
-> > To be honest, I'm more leaning towards a NACK than an ACK on this one. I
-> > don't support enough NUMA machines to feel strongly enough about it but
-> > unconditionally setting zone_reclaim_mode to 0 on x86-64 just because i7's
-> > might be there seems ill-advised to me and will have other consequences for
-> > existing more traditional x86-64 NUMA machines.
-> 
-> I was sort-of planning on coming up with an x86_64 arch specific function
-> for setting zone_reclaim_mode, but didn't like the direction things
-> were going.
-> 
-> Something to the effect of...
-> --- 20090609.orig/mm/page_alloc.c       2009-06-09 06:51:34.000000000 -0500
-> +++ 20090609/mm/page_alloc.c    2009-06-09 06:55:00.160762069 -0500
-> @@ -2326,12 +2326,7 @@ static void build_zonelists(pg_data_t *p
->         while ((node = find_next_best_node(local_node, &used_mask)) >= 0) {
->                 int distance = node_distance(local_node, node);
->  
-> -               /*
-> -                * If another node is sufficiently far away then it is better
-> -                * to reclaim pages in a zone before going off node.
-> -                */
-> -               if (distance > RECLAIM_DISTANCE)
-> -                       zone_reclaim_mode = 1;
-> +               zone_reclaim_mode = arch_zone_reclaim_mode(distance);
->  
->                 /*
->                  * We don't want to pressure a particular node.
-> 
-> And then letting each arch define an arch_zone_reclaim_mode().  If other
-> values are needed in the determination, we would add parameters to
-> reflect this.
-> 
-> For ia64, add
-> 
-> static inline ia64_zone_reclaim_mode(int distance)
-> {
-> 	if (distance > 15)
-> 		return 1;
-> }
-> 
-> #define	arch_zone_reclaim_mode(_d)	ia64_zone_reclaim_mode(_d)
-> 
-> 
-> Then, inside x86_64_zone_reclaim_mode(), I could make it something like
-> 	if (distance > 40 || is_uv_system())
-> 		return 1;
-> 
-> In the end, I didn't think this fight was worth fighting given how ugly
-> this felt.  Upon second thought, I am beginning to think it is not that
-> bad, but I also don't think it is that good either.
-> 
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-We've done worse before now...
+> @@ -0,0 +1,135 @@
+> +/*
+> + * linux/kernel/power/hibernation_nvs.c
+> + *
+> + * Copyright (C) 2008,2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
+> + *
+> + * Routines for NVS memory handling
+> + */
 
-Is it not possible to work out at runtime whether zone reclaim mode is
-beneficial?
-
-Given that zone_reclaim_mode is settable from initscripts, why all the
-fuss?
-
-Is anyone testing RECLAIM_WRITE and RECLAIM_SWAP, btw?
-
-The root cause of this problem: having something called "mode".  Any
-time we put a "mode" in the kernel, we get in a mess trying to work out
-when to set it and to what.
-
-I think I'll drop this patch for now.
-
+Specifying  GPLv2 here would be nice. If it contains copyright, it
+should contain license, too.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
