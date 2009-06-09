@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757987AbZFIQsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbZFIQvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757987AbZFIQsJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 12:48:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbZFIQr4
+	id S1757584AbZFIQvj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 12:51:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbZFIQva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 12:47:56 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:62324 "EHLO
+	Tue, 9 Jun 2009 12:51:30 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:59070 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751158AbZFIQrz (ORCPT
+	with ESMTP id S1752749AbZFIQv3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 12:47:55 -0400
+	Tue, 9 Jun 2009 12:51:29 -0400
 From: Arnd Bergmann <arnd@arndb.de>
 To: liqin.chen@sunplusct.com
-Subject: Re: [PATCH 01/27] score: create Kconfig Kconfig.debug Makefile
-Date: Tue, 9 Jun 2009 18:47:12 +0200
+Subject: Re: [PATCH 04/27] score: create head files bitops.h bitsperlong.h bug.h bugs.h byteorder.h
+Date: Tue, 9 Jun 2009 18:50:57 +0200
 User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
 Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org
-References: <OF2086513E.4B4F803C-ON482575D0.0022E294-482575D0.0023688F@sunplusct.com>
-In-Reply-To: <OF2086513E.4B4F803C-ON482575D0.0022E294-482575D0.0023688F@sunplusct.com>
+References: <OFBB948A5B.D38E1AE1-ON482575D0.00233280-482575D0.0023A73C@sunplusct.com>
+In-Reply-To: <OFBB948A5B.D38E1AE1-ON482575D0.00233280-482575D0.0023A73C@sunplusct.com>
 X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
  =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
  =?utf-8?q?3zb?=)
@@ -29,67 +29,43 @@ MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200906091847.13539.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18XoF8QzpgXrCAFLLkGtVa5jrIk0LVuD1k4lCN
- boR2tV5L743PUqdOvES+kfWVCGKhuMIsraypjVPeX63Qi8HjpX
- W1XUrzTwfoeijyPL/XFog==
+Message-Id: <200906091850.58266.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18LCZPxcPRJ2ZVi/IEU7UniQX31L5I123kH0Bk
+ H9dvZabH7AS/CnR2YK9T+4VdtVQXETU0MZslo3TQtEV/8ldXEr
+ MVHc6Uj2cd8RaimlqU9ig==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Tuesday 09 June 2009, liqin.chen@sunplusct.com wrote:
 
-> +++ b/arch/score/Kconfig
-> @@ -0,0 +1,243 @@
-> +config SCORE
-> +       bool
-> +       default y
-> +       select EMBEDDED
+> diff --git a/arch/score/include/asm/bitops.h 
+> b/arch/score/include/asm/bitops.h
+> new file mode 100644
+> index 0000000..2763b05
+> --- /dev/null
+> +++ b/arch/score/include/asm/bitops.h
+> @@ -0,0 +1,16 @@
+> +#ifndef _ASM_SCORE_BITOPS_H
+> +#define _ASM_SCORE_BITOPS_H
+> +
+> +#include <asm/byteorder.h> /* swab32 */
+> +#include <asm/system.h> /* save_flags */
+> +
+> +/*
+> + * clear_bit() doesn't provide any barrier for the compiler.
+> + */
+> +#define smp_mb__before_clear_bit()     barrier()
+> +#define smp_mb__after_clear_bit()      barrier()
+> +
+> +#include <asm-generic/bitops.h>
+> +#include <asm-generic/bitops/__fls.h>
+> +
+> +#endif /* _ASM_SCORE_BITOPS_H */
 
-I don't think you should select EMBEDDED. The option is slightly
-misnamed and just enables some other config options. If you need
-any of those that are protected by EMBEDDED, then maybe select those
-directly.
-
-> +config NO_DMA
-> +       bool
-> +       default y
-
-Are you planning to implement DMA support? We just had a lenghty
-discussion about how to do it generically. While we did not find
-a solution, you can probably easily take the
-asm-generic/dma-mapping-linear.h I posted and adapt that to your
-needs.
-
-> +config SCORE_L1_CACHE_SHIFT
-> +       int
-> +       default "5"
-
-Your arch/score/include/asm/cache.h contains
-
-#define L1_CACHE_SHIFT         4
-
-One of the two looks wrong ;-)
-
-If you have different cache implementations, this value
-should probably be the maximum of all CPUs that are configured
-in the kernel.
-
-> +config HZ
-> +       int
-> +       default 100
-
-Have you looked into implementing NO_HZ? It is not required in any
-way, but can probably reduce your power consumption, which may be
-interesting for embedded systems.
-
-> +config KEXEC
-> +       bool "Kexec system call (EXPERIMENTAL)"
-> +       depends on EXPERIMENTAL
-> +       help
-
-Do you actually support this? I did not look very closely,
-but could not find anything about kexec in the other patches.
-If not, just drop the config option.
+I guess you tried using the asm-generic version of this file and
+failed. Since you don't do anything architecture specific in
+here, that could well mean that my version needs to be fixed.
+What problem did you see?
 
 	Arnd <><
