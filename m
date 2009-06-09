@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757367AbZFIQ0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750962AbZFIQ10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757367AbZFIQ0h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 12:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755678AbZFIQ00
+	id S1750962AbZFIQ10 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 12:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756447AbZFIQ1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 12:26:26 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:3818 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753338AbZFIQ0Z (ORCPT
+	Tue, 9 Jun 2009 12:27:16 -0400
+Received: from stinky.trash.net ([213.144.137.162]:33917 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755678AbZFIQ1Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 12:26:25 -0400
-Message-ID: <4A2E8D31.1030307@hp.com>
-Date: Tue, 09 Jun 2009 12:26:25 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Tue, 9 Jun 2009 12:27:16 -0400
+Message-ID: <4A2E8D62.6090004@trash.net>
+Date: Tue, 09 Jun 2009 18:27:14 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: Jesper Dangaard Brouer <hawk@comx.dk>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, urs.thuermann@volkswagen.de,
-       oliver.hartkopp@volkswagen.de, wg@grandegger.com, sri@us.ibm.com,
-       linux-sctp@vger.kernel.org, Trond.Myklebust@netapp.com,
-       linux-nfs@vger.kernel.org, netfilter-devel@vger.kernel.org
-Subject: Re: [PATCH 4/5] sctp: protocol.c call rcu_barrier() on unload.
-References: <20090608130959.10052.54590.stgit@localhost> <20090608131143.10052.96470.stgit@localhost> <20090608162227.GE6961@linux.vnet.ibm.com> <4A2E8357.80509@hp.com> <20090609155011.GD6789@linux.vnet.ibm.com>
-In-Reply-To: <20090609155011.GD6789@linux.vnet.ibm.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jay Vosburgh <fubar@us.ibm.com>
+CC: Stephen Hemminger <shemminger@vyatta.com>, Arnd Bergmann <arnd@arndb.de>,
+       "David S. Miller" <davem@davemloft.net>, bonding-devel@lists.sf.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: BUG: bonding module can only be loaded once
+References: <20090608151127.70146505@nehalam> <200906091406.45463.arnd@arndb.de> <20090609080232.45f81833@nehalam> <4A2E80B3.6010600@trash.net> <4752.1244564082@death.nxdomain.ibm.com>
+In-Reply-To: <4752.1244564082@death.nxdomain.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Tue, Jun 09, 2009 at 11:44:23AM -0400, Vlad Yasevich wrote:
->> Paul E. McKenney wrote:
->>> On Mon, Jun 08, 2009 at 03:11:43PM +0200, Jesper Dangaard Brouer wrote:
->>>> On module unload call rcu_barrier(), this is needed as synchronize_rcu()
->>>> is not strong enough.  The kmem_cache_destroy() does invoke
->>>> synchronize_rcu() but it does not provide same protection.
->>> Good, looks like sctp_v4_del_protocol() invokes call_rcu(), which the
->>> rcu_barrier() would then wait for.  And it looks like sctp_v6_del_protocol()
->>> does the same for IPv6.
->>>
->>> Reviewed_by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->>>
->>>> Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
->>>> ---
->>>>
->>>>  net/sctp/protocol.c |    2 ++
->>>>  1 files changed, 2 insertions(+), 0 deletions(-)
->>>>
->>>> diff --git a/net/sctp/protocol.c b/net/sctp/protocol.c
->>>> index cb2c50d..79cbd47 100644
->>>> --- a/net/sctp/protocol.c
->>>> +++ b/net/sctp/protocol.c
->>>> @@ -1370,6 +1370,8 @@ SCTP_STATIC __exit void sctp_exit(void)
->>>>  	sctp_proc_exit();
->>>>  	cleanup_sctp_mibs();
->>>>
->>>> +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
->>>> +
->>>>  	kmem_cache_destroy(sctp_chunk_cachep);
->>>>  	kmem_cache_destroy(sctp_bucket_cachep);
->>>>  }
->> Shouldn't the rcu_barrier call be before sctp_free_local_addr_list()?
+Jay Vosburgh wrote:
+> Patrick McHardy <kaber@trash.net> wrote:
 > 
-> Hmmm...  What sequence of events would lead to a failure if
-> rcu_barrier() is after sctp_free_local_addr_list()?
+>> In any case, this is not the first time this has been broken and the
+>> fundamental reason is in my opinion that the bonding interface is
+>> broken to begin with. The module aliasing thing is complete crap
+>> and should have been phased out long ago. At this point its probably
+>> not worth anymore to migrate people to the sysfs interface though,
+>> the best thing would be to add an rtnl_link interface and phase out
+>> both.
 > 
-> 							Thanx, Paul
+> 	The "load bonding multiple times" stuff is only there now for
+> backwards compatibility with old distro initscripts / sysconfig packages
+> that don't configure bonding through sysfs (a sysfs API was added to
+> bonding three or four years ago).
 > 
+> 	All of the current distro releases I'm aware of use sysfs to
+> configure bonding, and have done so for at least a year or two.  I
+> haven't done an exhaustive survey, but it seems unlikely that users are
+> running a current up to date kernel with a two or three year old
+> initscripts / sysconfig package.  Anybody have information to the
+> contrary?
 
-I thought that the notifier could could potentially execute at the
-same time as the unregister(), but I see that's protected.  So, I guess
-it doesn't really matter then where the barrier is.
+I'd expect its not the distros, but rather the applicances which might
+still be using this. I know a vendor I used to work for a couple of
+years ago just recently made the switch from 2.6.16 to a current kernel,
+and I'd expect that they are still using this (I can find out tommorrow
+if you want to know for sure). Vyatta likewise, I guess.
 
-Acked-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+> 	If nobody has any heartburn at dropping support for multiple
+> bonding instances on old distros, I'm as happy as anybody to remove all
+> of the multiple load logic from bonding.  There's been plenty of time
+> for transitioning from "multiple load" to sysfs.
 
--vlad
+In my opinion it would need a feature-removal-schedule announcement.
