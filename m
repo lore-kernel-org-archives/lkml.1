@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZFIPb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbZFIPdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754232AbZFIPb0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 11:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZFIPbT
+	id S1753866AbZFIPdU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 11:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZFIPdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 11:31:19 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38586 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752144AbZFIPbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 11:31:18 -0400
-Date: Tue, 9 Jun 2009 17:31:20 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [11/16] HWPOISON: check and isolate corrupted free pages v2
-Message-ID: <20090609153119.GA9211@wotan.suse.de>
-References: <20090603846.816684333@firstfloor.org> <20090603184645.68FA21D0286@basil.firstfloor.org> <20090609100229.GE14820@wotan.suse.de> <20090609130304.GF5589@localhost> <20090609132847.GC15219@wotan.suse.de> <20090609134903.GC6583@localhost> <20090609135514.GD15219@wotan.suse.de> <20090609145614.GA5590@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090609145614.GA5590@localhost>
-User-Agent: Mutt/1.5.9i
+	Tue, 9 Jun 2009 11:33:09 -0400
+Received: from stinky.trash.net ([213.144.137.162]:32899 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750990AbZFIPdI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 11:33:08 -0400
+Message-ID: <4A2E80B3.6010600@trash.net>
+Date: Tue, 09 Jun 2009 17:33:07 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Arnd Bergmann <arnd@arndb.de>, Jay Vosburgh <fubar@us.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>, bonding-devel@lists.sf.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: BUG: bonding module can only be loaded once
+References: <20090608151127.70146505@nehalam>	<200906091406.45463.arnd@arndb.de> <20090609080232.45f81833@nehalam>
+In-Reply-To: <20090609080232.45f81833@nehalam>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 10:56:14PM +0800, Wu Fengguang wrote:
-> > Moving hot and cold functions together could become an issue
-> > indeed. Mostly it probably matters a little less than code
-> > within a single function due to their size. But I think gcc
-> > already has options to annotate this kind of thing which we
-> > could be using.
+Stephen Hemminger wrote:
+>> --- a/drivers/net/bonding/bond_main.c
+>> +++ b/drivers/net/bonding/bond_main.c
+>> @@ -5203,7 +5203,7 @@ static int __init bonding_init(void)
+>>  
+>>  	res = bond_create_sysfs();
+>>  	if (res)
+>> -		goto err;
+>> +		pr_info("Loading bonding module without sysfs interface\n");
+>>  
+>>  	register_netdevice_notifier(&bond_netdev_notifier);
+>>  	register_inetaddr_notifier(&bond_inetaddr_notifier);
 > 
-> Can we tell gcc "I bet this _function_ is rarely used"?
+> That only makes it limp along, and there still are warnings.
+> The point is that who ever added the WARN() in proc and sysfs, effectively
+> broke a bonding usage model.
 
-Yes you can annotate a function as hot or cold.
+It did already dump the stack before that change, didn't it?
 
- 
-> > So it's not such a good argument against moving things out of
-> > hotpaths, or guiding in which files to place functions.
-> 
-> Yes.
-> 
-> > Anyway, in this case it is not a "nack" from me. Just that I
-> > would like to see the non-fastpath code too or at least if
-> > it can be thought about.
-> 
-> I think Andi would be pleased to present you with his buddy page
-> isolation code :)
-
-
+In any case, this is not the first time this has been broken and the
+fundamental reason is in my opinion that the bonding interface is
+broken to begin with. The module aliasing thing is complete crap
+and should have been phased out long ago. At this point its probably
+not worth anymore to migrate people to the sysfs interface though,
+the best thing would be to add an rtnl_link interface and phase out
+both.
