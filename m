@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758728AbZFIUxQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbZFIUxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758728AbZFIUxQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 16:53:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755758AbZFIUxB
+	id S1759688AbZFIUxw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 16:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756852AbZFIUxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 16:53:01 -0400
-Received: from www.tglx.de ([62.245.132.106]:59454 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753891AbZFIUxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 16:53:00 -0400
-Date: Tue, 9 Jun 2009 22:52:51 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-cc: linux-kernel@vger.kernel.org, Rob van der Heij <rvdheij@gmail.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       john stultz <johnstul@us.ibm.com>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch 0/2] NOHZ vs. profile/oprofile v2
-In-Reply-To: <20090603152223.083010123@de.ibm.com>
-Message-ID: <alpine.LFD.2.00.0906092252150.3351@localhost.localdomain>
-References: <20090603152223.083010123@de.ibm.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 9 Jun 2009 16:53:44 -0400
+Received: from www84.your-server.de ([213.133.104.84]:59349 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755758AbZFIUxn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 16:53:43 -0400
+Subject: Re: [patch] proc.txt: Update kernel filesystem/proc.txt
+ documentation
+From: Stefani Seibold <stefani@seibold.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20090609123641.f4733d8b.akpm@linux-foundation.org>
+References: <1238511505.364.61.camel@matrix>
+	 <20090401193135.GA12316@elte.hu> <1244543758.13948.5.camel@wall-e>
+	 <20090609123641.f4733d8b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 09 Jun 2009 22:53:27 +0200
+Message-Id: <1244580807.30614.10.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 3 Jun 2009, Martin Schwidefsky wrote:
+Am Dienstag, den 09.06.2009, 12:36 -0700 schrieb Andrew Morton:
+> On Tue, 09 Jun 2009 12:35:58 +0200
+> Stefani Seibold <stefani@seibold.net> wrote:
+> 
+> > This is a patch against the file Documentation/filesystem/proc.txt.
+> > 
+> > It is an update for the "Process-Specific Subdirectories" to reflect 
+> > the changes till kernel 2.6.30. It also introduce the my 
+> > "provide stack information for threads".
+> 
+> Sorry, but it would be much preferable to do this as two patches.  The
+> first fixes up proc.txt and the second adds the
+> stack-information-for-threads material.
+> 
 
-> Greetings,
-> version 2 of the profile patches. The only change is the in_interrupt()
-> fix in tick_nohz_stop_idle(). I would like to know how to proceed with
-> the issue.
-> Andy, do you still prefer to handle the old style profiler analog to
-> the oprofile patch? If yes I would drop patch #1 and extend patch #2
-> with another tick_nohz_disable().
+That is really frustrating. I did everything that you and ingo molnar
+had complained.
 
-Any update on this one ?
+What is wrong with the "provide stack information for threads"? It is a
+very tiny patch which did not harm.
 
-Thanks,
+The only reason to fix and update the proc.txt was that you told me that
+this is the last thing that you miss.
 
-	tglx
+> This is because the two changes are quite conceptually distinct, and we
+> might end up wanting to merge one chage and not the other.
+> 
+
+Okay, if the other patch will not included than it makes no sense for me
+to get in the other.
+
+Simple question: will you accept the thread stack info patch or not? If
+yes, i will spent the time to split proc.txt patch.
+
+
