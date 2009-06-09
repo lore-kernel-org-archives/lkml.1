@@ -1,368 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759701AbZFIKsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759021AbZFIKsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759701AbZFIKsY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758731AbZFIKsL
+	id S1759021AbZFIKsh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759222AbZFIKsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:48:11 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:64838 "EHLO atmel-es2.atmel.fr"
+	Tue, 9 Jun 2009 06:48:13 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:64828 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754830AbZFIKsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756270AbZFIKsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Jun 2009 06:48:09 -0400
 From: Nicolas Ferre <nicolas.ferre@atmel.com>
 To: linux-usb@vger.kernel.org, avictor.za@gmail.com
 Cc: linux-kernel@vger.kernel.org, david-b@pacbell.net,
        haavard.skinnemoen@atmel.com, patrice.vilchez@atmel.com,
        Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: [PATCH 1/2] at91/USB: Add USB drivers for at91sam9g45 series
-Date: Tue,  9 Jun 2009 13:38:12 +0200
-Message-Id: <1244547493-19654-2-git-send-email-nicolas.ferre@atmel.com>
+Subject: [PATCH 2/2] at91/USB: at91sam9g45 series USB host integration
+Date: Tue,  9 Jun 2009 13:38:13 +0200
+Message-Id: <1244547493-19654-3-git-send-email-nicolas.ferre@atmel.com>
 X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1244547493-19654-1-git-send-email-nicolas.ferre@atmel.com>
+In-Reply-To: <1244547493-19654-2-git-send-email-nicolas.ferre@atmel.com>
 References: <1244547493-19654-1-git-send-email-nicolas.ferre@atmel.com>
-Message-Id: <7d35ee50ea2e14a3d4f350406693b1e884b034f3.1244545093.git.nicolas.ferre@atmel.com>
+ <1244547493-19654-2-git-send-email-nicolas.ferre@atmel.com>
+Message-Id: <37875dad9f270c834319c78b1af15f2f12c52e46.1244545093.git.nicolas.ferre@atmel.com>
+In-Reply-To: <7d35ee50ea2e14a3d4f350406693b1e884b034f3.1244545093.git.nicolas.ferre@atmel.com>
+References: <7d35ee50ea2e14a3d4f350406693b1e884b034f3.1244545093.git.nicolas.ferre@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add both host and gadget USB drivers for at91sam9g45 series. Those SOC embed
-high speed USB interfaces.
-The gadget driver is the already available atmel_usba_udc.
-The host driver is an EHCI with its companion OHCI. EHCI is handled by the new
-ehci-atmel.c whereas the OHCI is always handled by ohci-at91.c. This last
-wrapper is modified to allow IRQ sharing between two controllers.
+This is the at91 specific part of USB host integration. The EHCI high speed
+controller has a companion OHCI controller to manage USB full and low speed.
+They are sharing the same IRQ line and vbus pin.
 
 Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 ---
- drivers/usb/Kconfig           |    1 +
- drivers/usb/gadget/Kconfig    |    4 +-
- drivers/usb/host/ehci-atmel.c |  251 +++++++++++++++++++++++++++++++++++++++++
- drivers/usb/host/ehci-hcd.c   |    5 +
- drivers/usb/host/ohci-at91.c  |    3 +-
- 5 files changed, 261 insertions(+), 3 deletions(-)
- create mode 100644 drivers/usb/host/ehci-atmel.c
+ arch/arm/mach-at91/at91sam9g45_devices.c |   56 ++++++++++++++++++++++++++++++
+ arch/arm/mach-at91/board-sam9m10g45ek.c  |    1 +
+ arch/arm/mach-at91/include/mach/board.h  |    1 +
+ 3 files changed, 58 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
-index c6c816b..3974c9c 100644
---- a/drivers/usb/Kconfig
-+++ b/drivers/usb/Kconfig
-@@ -57,6 +57,7 @@ config USB_ARCH_HAS_EHCI
- 	default y if PPC_83xx
- 	default y if SOC_AU1200
- 	default y if ARCH_IXP4XX
-+	default y if ARCH_AT91SAM9G45
- 	default PCI
+diff --git a/arch/arm/mach-at91/at91sam9g45_devices.c b/arch/arm/mach-at91/at91sam9g45_devices.c
+index d746e86..c2ecbb6 100644
+--- a/arch/arm/mach-at91/at91sam9g45_devices.c
++++ b/arch/arm/mach-at91/at91sam9g45_devices.c
+@@ -83,6 +83,62 @@ void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data) {}
  
- # ARM SA1111 chips have a non-PCI based "OHCI-compatible" USB host interface.
-diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
-index 080bb1e..9beea52 100644
---- a/drivers/usb/gadget/Kconfig
-+++ b/drivers/usb/gadget/Kconfig
-@@ -124,7 +124,7 @@ choice
  
- config USB_GADGET_AT91
- 	boolean "Atmel AT91 USB Device Port"
--	depends on ARCH_AT91 && !ARCH_AT91SAM9RL && !ARCH_AT91CAP9
-+	depends on ARCH_AT91 && !ARCH_AT91SAM9RL && !ARCH_AT91CAP9 && !ARCH_AT91SAM9G45
- 	select USB_GADGET_SELECTED
- 	help
- 	   Many Atmel AT91 processors (such as the AT91RM2000) have a
-@@ -143,7 +143,7 @@ config USB_AT91
- config USB_GADGET_ATMEL_USBA
- 	boolean "Atmel USBA"
- 	select USB_GADGET_DUALSPEED
--	depends on AVR32 || ARCH_AT91CAP9 || ARCH_AT91SAM9RL
-+	depends on AVR32 || ARCH_AT91CAP9 || ARCH_AT91SAM9RL || ARCH_AT91SAM9G45
- 	help
- 	  USBA is the integrated high-speed USB Device controller on
- 	  the AT32AP700x, some AT91SAM9 and AT91CAP9 processors from Atmel.
-diff --git a/drivers/usb/host/ehci-atmel.c b/drivers/usb/host/ehci-atmel.c
-new file mode 100644
-index 0000000..c5f2303
---- /dev/null
-+++ b/drivers/usb/host/ehci-atmel.c
-@@ -0,0 +1,251 @@
-+/*
-+ * Driver for EHCI UHP on Atmel chips
-+ *
-+ *  Copyright (C) 2009 Atmel Corporation,
-+ *                     Nicolas Ferre <nicolas.ferre@atmel.com>
-+ *
-+ *  Based on various ehci-*.c drivers
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file COPYING in the main directory of this archive for
-+ * more details.
-+ */
+ /* --------------------------------------------------------------------
++ *  USB Host HS (EHCI)
++ *  Needs an OHCI host for low and full speed management
++ * -------------------------------------------------------------------- */
 +
-+#include <linux/clk.h>
-+#include <linux/platform_device.h>
++#if defined(CONFIG_USB_EHCI_HCD) || defined(CONFIG_USB_EHCI_HCD_MODULE)
++static u64 ehci_dmamask = DMA_BIT_MASK(32);
++static struct at91_usbh_data usbh_ehci_data;
 +
-+/* interface and function clocks */
-+static struct clk *iclk, *fclk;
-+static int clocked;
-+
-+/*-------------------------------------------------------------------------*/
-+
-+static void atmel_start_clock(void)
-+{
-+	clk_enable(iclk);
-+	clk_enable(fclk);
-+	clocked = 1;
-+}
-+
-+static void atmel_stop_clock(void)
-+{
-+	clk_disable(fclk);
-+	clk_disable(iclk);
-+	clocked = 0;
-+}
-+
-+static void atmel_start_ehci(struct platform_device *pdev)
-+{
-+
-+	dev_dbg(&pdev->dev, "start\n");
-+
-+	/*
-+	 * Start the USB clocks.
-+	 */
-+	atmel_start_clock();
-+}
-+
-+static void atmel_stop_ehci(struct platform_device *pdev)
-+{
-+	dev_dbg(&pdev->dev, "stop\n");
-+
-+	/*
-+	 * Stop the USB clocks.
-+	 */
-+	atmel_stop_clock();
-+}
-+
-+/*-------------------------------------------------------------------------*/
-+
-+static int ehci_atmel_setup(struct usb_hcd *hcd)
-+{
-+	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
-+	int retval = 0;
-+
-+	/*
-+	 * registers start at offset 0x0
-+	 */
-+	ehci->caps = hcd->regs;
-+	ehci->regs = hcd->regs +
-+		HC_LENGTH(ehci_readl(ehci, &ehci->caps->hc_capbase));
-+	dbg_hcs_params(ehci, "reset");
-+	dbg_hcc_params(ehci, "reset");
-+
-+	/*
-+	 * cache this readonly data; minimize chip reads
-+	 */
-+	ehci->hcs_params = ehci_readl(ehci, &ehci->caps->hcs_params);
-+
-+	retval = ehci_halt(ehci);
-+	if (retval)
-+		return retval;
-+
-+	/*
-+	 * data structure init
-+	 */
-+	retval = ehci_init(hcd);
-+	if (retval)
-+		return retval;
-+
-+	ehci->sbrn = 0x20;
-+
-+	ehci_reset(ehci);
-+	ehci_port_power(ehci, 0);
-+
-+	return retval;
-+}
-+
-+static const struct hc_driver ehci_atmel_hc_driver = {
-+	.description		= hcd_name,
-+	.product_desc		= "Atmel EHCI UHP HS",
-+	.hcd_priv_size		= sizeof(struct ehci_hcd),
-+
-+	/*
-+	 * generic hardware linkage
-+	 */
-+	.irq			= ehci_irq,
-+	.flags			= HCD_MEMORY | HCD_USB2,
-+
-+	/*
-+	 * basic lifecycle operations
-+	 */
-+	.reset			= ehci_atmel_setup,
-+	.start			= ehci_run,
-+	.stop			= ehci_stop,
-+	.shutdown		= ehci_shutdown,
-+
-+	/*
-+	 * managing i/o requests and associated device resources
-+	 */
-+	.urb_enqueue		= ehci_urb_enqueue,
-+	.urb_dequeue		= ehci_urb_dequeue,
-+	.endpoint_disable	= ehci_endpoint_disable,
-+
-+	/*
-+	 * scheduling support
-+	 */
-+	.get_frame_number	= ehci_get_frame,
-+
-+	/*
-+	 * root hub support
-+	 */
-+	.hub_status_data	= ehci_hub_status_data,
-+	.hub_control		= ehci_hub_control,
-+	.bus_suspend		= ehci_bus_suspend,
-+	.bus_resume		= ehci_bus_resume,
-+	.relinquish_port	= ehci_relinquish_port,
-+	.port_handed_over	= ehci_port_handed_over,
++static struct resource usbh_ehci_resources[] = {
++	[0] = {
++		.start	= AT91SAM9G45_EHCI_BASE,
++		.end	= AT91SAM9G45_EHCI_BASE + SZ_1M - 1,
++		.flags	= IORESOURCE_MEM,
++	},
++	[1] = {
++		.start	= AT91SAM9G45_ID_UHPHS,
++		.end	= AT91SAM9G45_ID_UHPHS,
++		.flags	= IORESOURCE_IRQ,
++	},
 +};
 +
-+static int __init ehci_atmel_drv_probe(struct platform_device *pdev)
-+{
-+	struct usb_hcd *hcd;
-+	const struct hc_driver *driver = &ehci_atmel_hc_driver;
-+	struct resource *res;
-+	int irq;
-+	int retval;
-+
-+	if (usb_disabled())
-+		return -ENODEV;
-+
-+	pr_debug("Initializing Atmel-SoC USB Host Controller\n");
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq <= 0) {
-+		dev_err(&pdev->dev,
-+			"Found HC with no IRQ. Check %s setup!\n",
-+			dev_name(&pdev->dev));
-+		retval = -ENODEV;
-+		goto fail_create_hcd;
-+	}
-+
-+	hcd = usb_create_hcd(driver, &pdev->dev, dev_name(&pdev->dev));
-+	if (!hcd) {
-+		retval = -ENOMEM;
-+		goto fail_create_hcd;
-+	}
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		dev_err(&pdev->dev,
-+			"Found HC with no register addr. Check %s setup!\n",
-+			dev_name(&pdev->dev));
-+		retval = -ENODEV;
-+		goto fail_request_resource;
-+	}
-+	hcd->rsrc_start = res->start;
-+	hcd->rsrc_len = res->end - res->start + 1;
-+
-+	if (!request_mem_region(hcd->rsrc_start, hcd->rsrc_len,
-+				driver->description)) {
-+		dev_dbg(&pdev->dev, "controller already in use\n");
-+		retval = -EBUSY;
-+		goto fail_request_resource;
-+	}
-+
-+	hcd->regs = ioremap_nocache(hcd->rsrc_start, hcd->rsrc_len);
-+	if (hcd->regs == NULL) {
-+		dev_dbg(&pdev->dev, "error mapping memory\n");
-+		retval = -EFAULT;
-+		goto fail_ioremap;
-+	}
-+
-+	iclk = clk_get(&pdev->dev, "ehci_clk");
-+	fclk = clk_get(&pdev->dev, "uhpck");
-+	if (IS_ERR(iclk) || IS_ERR(fclk)) {
-+		dev_err(&pdev->dev, "Error getting clocks\n");
-+		retval = -ENOENT;
-+		goto fail_get_clk;
-+	}
-+
-+	atmel_start_ehci(pdev);
-+
-+	retval = usb_add_hcd(hcd, irq, IRQF_SHARED);
-+	if (retval)
-+		goto fail_add_hcd;
-+
-+	return retval;
-+
-+fail_add_hcd:
-+	atmel_stop_ehci(pdev);
-+fail_get_clk:
-+	clk_put(fclk);
-+	clk_put(iclk);
-+	iounmap(hcd->regs);
-+fail_ioremap:
-+	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-+fail_request_resource:
-+	usb_put_hcd(hcd);
-+fail_create_hcd:
-+	dev_err(&pdev->dev, "init %s fail, %d\n",
-+		dev_name(&pdev->dev), retval);
-+
-+	return retval;
-+}
-+
-+static int __exit ehci_atmel_drv_remove(struct platform_device *pdev)
-+{
-+	struct usb_hcd *hcd = platform_get_drvdata(pdev);
-+
-+	ehci_shutdown(hcd);
-+	usb_remove_hcd(hcd);
-+	iounmap(hcd->regs);
-+	release_mem_region(hcd->rsrc_start, hcd->rsrc_len);
-+	usb_put_hcd(hcd);
-+
-+	atmel_stop_ehci(pdev);
-+	clk_put(fclk);
-+	clk_put(iclk);
-+	fclk = iclk = NULL;
-+
-+	return 0;
-+}
-+
-+MODULE_ALIAS("platform:atmel-ehci");
-+
-+static struct platform_driver ehci_atmel_driver = {
-+	.probe		= ehci_atmel_drv_probe,
-+	.remove		= __exit_p(ehci_atmel_drv_remove),
-+	.shutdown	= usb_hcd_platform_shutdown,
-+	.driver.name	= "atmel-ehci",
++static struct platform_device at91_usbh_ehci_device = {
++	.name		= "atmel-ehci",
++	.id		= -1,
++	.dev		= {
++				.dma_mask		= &ehci_dmamask,
++				.coherent_dma_mask	= DMA_BIT_MASK(32),
++				.platform_data		= &usbh_ehci_data,
++	},
++	.resource	= usbh_ehci_resources,
++	.num_resources	= ARRAY_SIZE(usbh_ehci_resources),
 +};
-diff --git a/drivers/usb/host/ehci-hcd.c b/drivers/usb/host/ehci-hcd.c
-index c637207..df2ddee 100644
---- a/drivers/usb/host/ehci-hcd.c
-+++ b/drivers/usb/host/ehci-hcd.c
-@@ -1072,6 +1072,11 @@ MODULE_LICENSE ("GPL");
- #define	PLATFORM_DRIVER		ixp4xx_ehci_driver
- #endif
- 
-+#ifdef CONFIG_ARCH_AT91
-+#include "ehci-atmel.c"
-+#define	PLATFORM_DRIVER		ehci_atmel_driver
++
++void __init at91_add_device_usbh_ehci(struct at91_usbh_data *data)
++{
++	int i;
++
++	if (!data)
++		return;
++
++	/* Enable VBus control for UHP ports */
++	for (i = 0; i < data->ports; i++) {
++		if (data->vbus_pin[i])
++			at91_set_gpio_output(data->vbus_pin[i], 0);
++	}
++
++	usbh_ehci_data = *data;
++	at91_clock_associate("uhphs_clk", &at91_usbh_ehci_device.dev, "ehci_clk");
++	platform_device_register(&at91_usbh_ehci_device);
++}
++#else
++void __init at91_add_device_usbh_ehci(struct at91_usbh_data *data) {}
 +#endif
 +
- #if !defined(PCI_DRIVER) && !defined(PLATFORM_DRIVER) && \
-     !defined(PS3_SYSTEM_BUS_DRIVER) && !defined(OF_PLATFORM_DRIVER)
- #error "missing bus glue for ehci-hcd"
-diff --git a/drivers/usb/host/ohci-at91.c b/drivers/usb/host/ohci-at91.c
-index bb5e6f6..b29b0fe 100644
---- a/drivers/usb/host/ohci-at91.c
-+++ b/drivers/usb/host/ohci-at91.c
-@@ -148,7 +148,8 @@ static int usb_hcd_at91_probe(const struct hc_driver *driver,
- 	at91_start_hc(pdev);
- 	ohci_hcd_init(hcd_to_ohci(hcd));
++
++/* --------------------------------------------------------------------
+  *  USB HS Device (Gadget)
+  * -------------------------------------------------------------------- */
  
--	retval = usb_add_hcd(hcd, pdev->resource[1].start, IRQF_DISABLED);
-+	retval = usb_add_hcd(hcd, pdev->resource[1].start,
-+				IRQF_DISABLED | IRQF_SHARED);
- 	if (retval == 0)
- 		return retval;
+diff --git a/arch/arm/mach-at91/board-sam9m10g45ek.c b/arch/arm/mach-at91/board-sam9m10g45ek.c
+index b8558ea..d7251b7 100644
+--- a/arch/arm/mach-at91/board-sam9m10g45ek.c
++++ b/arch/arm/mach-at91/board-sam9m10g45ek.c
+@@ -358,6 +358,7 @@ static void __init ek_board_init(void)
+ 	at91_add_device_serial();
+ 	/* USB HS Host */
+ 	at91_add_device_usbh_ohci(&ek_usbh_hs_data);
++	at91_add_device_usbh_ehci(&ek_usbh_hs_data);
+ 	/* USB HS Device */
+ 	at91_add_device_usba(&ek_usba_udc_data);
+ 	/* SPI */
+diff --git a/arch/arm/mach-at91/include/mach/board.h b/arch/arm/mach-at91/include/mach/board.h
+index 74801d2..13640b0 100644
+--- a/arch/arm/mach-at91/include/mach/board.h
++++ b/arch/arm/mach-at91/include/mach/board.h
+@@ -92,6 +92,7 @@ struct at91_usbh_data {
+ };
+ extern void __init at91_add_device_usbh(struct at91_usbh_data *data);
+ extern void __init at91_add_device_usbh_ohci(struct at91_usbh_data *data);
++extern void __init at91_add_device_usbh_ehci(struct at91_usbh_data *data);
  
+  /* NAND / SmartMedia */
+ struct atmel_nand_data {
 -- 
 1.5.3.7
 
