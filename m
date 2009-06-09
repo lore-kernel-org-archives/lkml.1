@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760777AbZFIWJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760837AbZFIWK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760777AbZFIWJx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 18:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbZFIWJr
+	id S1760837AbZFIWK3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 18:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbZFIWKS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 18:09:47 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44442 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752145AbZFIWJq (ORCPT
+	Tue, 9 Jun 2009 18:10:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38365 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752139AbZFIWKR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 18:09:46 -0400
-Date: Wed, 10 Jun 2009 00:09:42 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: Eric Miao <eric.y.miao@gmail.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>, rpurdie@rpsys.net,
-       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com
-Subject: Re: zaurus needs generic pxa suspend/resume routines
-Message-ID: <20090609220942.GA13231@elf.ucw.cz>
-References: <20090605131625.GC1376@ucw.cz> <20090607152152.GA7785@n2100.arm.linux.org.uk> <f17812d70906072358i69b4ce09oeb6cd455277b050f@mail.gmail.com> <20090608161929.GD32140@n2100.arm.linux.org.uk> <f17812d70906081843x6731898fl35252664e5a580a1@mail.gmail.com> <1244544600.9997.8.camel@hammer.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244544600.9997.8.camel@hammer.suse.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 9 Jun 2009 18:10:17 -0400
+Date: Tue, 9 Jun 2009 15:09:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Anholt <eric@anholt.net>
+Cc: penberg@cs.helsinki.fi, elendil@planet.nl, linux-kernel@vger.kernel.org,
+       apw@canonical.com, colin.king@canonical.com, tim.gardner@canonicalc.com,
+       bjorn.helgaas@hp.com
+Subject: Re: [PATCH 2/2] pnp: add PNP resource range checking function
+Message-Id: <20090609150944.6ffa8038.akpm@linux-foundation.org>
+In-Reply-To: <1244508839.7564.0.camel@gaiman.anholt.net>
+References: <Pine.LNX.4.64.0906060934500.11247@melkki.cs.Helsinki.FI>
+	<200906060931.36168.elendil@planet.nl>
+	<4A2A1AB6.9020808@cs.helsinki.fi>
+	<1244508839.7564.0.camel@gaiman.anholt.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-06-09 12:50:00, Stanislav Brabec wrote:
-> Eric Miao wrote:
+On Mon, 08 Jun 2009 17:53:59 -0700
+Eric Anholt <eric@anholt.net> wrote:
+
+> On Sat, 2009-06-06 at 10:28 +0300, Pekka Enberg wrote:
+> > Hi Frans,
+> > 
+> > Frans Pop wrote:
+> > >> Add a PNP resource range check function, indicating whether a resource
+> > >> has been assigned to any device.
+> > > 
+> > > Shouldn't this patch come *before* your patch 1/2?
+> > > You now seem to use this function in a commit where it has not yet been 
+> > > defined, which could result in build errors during bisections.
+> > 
+> > Yes, correct. Sorry about that!
+> > 
+> > 			Pekka
 > 
-> > >> Yes, I think this is the best trade-off for the moment.
-> > >>
-> > >> Acked-by: Eric Miao <eric.miao@marvell.com>
-> > >>
+> This is already in drm-intel-next
 > 
-> However resume still does not work with this patch on top of yesterday's
-> Linus tree snapshot (SL-C3200, ccc0d38). It seems to go to resume for
-> ~300 milliseconds (orange LED lights for a moment, power consumption
-> increases) and then runs back to the sleep. It seems that it disables
-> offline charging, too. When battery cover switch is open it goes to
-> resume just for ~50 milliseconds (orange LED does not light).
 
-Yes, the patch fixes just the "cpu registers not set correctly"
-problem. Problem with charging remains. Unfortunately, I do have
-patch to fix that, yet. (Yes, it can be worked around by disabling
-offline charge, but that is not a fix).
+Neither patch is in linux-next.  So either a) drm-intel-next contains
+2.6.31 material or b) your processes broke.
 
-> The last Pavel's hack from last week at least fixed resume at cost of
-> breaking offline charging (and broken serial after resume).
+Either way, these patches fix a "serious performance regression".  They
+should be merged into 2.6.30 or 2.6.30.x, shouldn't they?
 
-Hmm, do you have a serial cable? :-).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
