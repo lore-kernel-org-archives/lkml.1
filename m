@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbZFISso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759238AbZFISuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758905AbZFISso (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZFISsh
+	id S1759238AbZFISuU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbZFISuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:48:37 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:63460 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751749AbZFISsg (ORCPT
+	Tue, 9 Jun 2009 14:50:09 -0400
+Received: from ganesha.gnumonks.org ([213.95.27.120]:41356 "EHLO
+	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751467AbZFISuI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:48:36 -0400
-Date: Tue, 9 Jun 2009 14:48:18 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Mike Galbraith <efault@gmx.de>, Diego Calleja <diegocg@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Performance regressions in 2.6.30-rc7?
-Message-ID: <20090609184818.GD9556@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Jan Kara <jack@suse.cz>, Mike Galbraith <efault@gmx.de>,
-	Diego Calleja <diegocg@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <200905282249.28592.diegocg@gmail.com> <20090529210718.bef7a9c1.akpm@linux-foundation.org> <200905301851.47708.diegocg@gmail.com> <20090603195806.GA9571@atrey.karlin.mff.cuni.cz> <1244100382.7131.12.camel@marge.simson.net> <20090604112109.GC2859@duck.suse.cz> <1244142795.5731.31.camel@marge.simson.net> <20090609103208.GB9235@duck.suse.cz>
+	Tue, 9 Jun 2009 14:50:08 -0400
+Date: Wed, 10 Jun 2009 02:45:52 +0800
+From: Harald Welte <HaraldWelte@viatech.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org,
+       Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+Subject: Re: [patch 0/3] crypto: padlock-aes: enable on VIA Nano
+Message-ID: <20090609184552.GL5304@prithivi.gnumonks.org>
+References: <20090609103533.0c334594@dhcp-100-2-144.bos.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090609103208.GB9235@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010204.4A2EAE75.0012:SCFSTAT5015188,ss=1,fgs=0
+In-Reply-To: <20090609103533.0c334594@dhcp-100-2-144.bos.redhat.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 12:32:08PM +0200, Jan Kara wrote:
-> On Thu 04-06-09 21:13:15, Mike Galbraith wrote:
-> > On Thu, 2009-06-04 at 13:21 +0200, Jan Kara wrote:
-> > 
-> > > > Sequential Writes
-> > > > 2.6.30-smp-ordered            6000  65536  32   50.16 508.9%    31.996    45595.78   0.64965  0.02402    10
-> > > > 2.6.29.4-smp-ordered          6000  65536  32   52.70 543.2%    33.658    23794.92   0.71754  0.00836    10
-> > > > 
-> > > > 2.6.30-smp-writeback          6000  65536  32   47.82 525.4%    35.003    32588.84   0.56192  0.02298     9
-> > > > 2.6.29.4-smp-writeback        6000  65536  32   52.52 467.6%    32.397    12972.78   0.53580  0.00522    11
-> > > > 
-> > > > 2.6.30-smp-ordered            6000  65536  16   56.08 254.9%    15.463    33000.68   0.39687  0.00521    22
-> > > > 2.6.29.4-smp-ordered          6000  65536  16   62.40 308.4%    14.701    13455.02   0.13125  0.00208    20
-> > > > 
-> > > > 2.6.30-smp-writeback          6000  65536  16   51.90 281.4%    17.098    12869.85   0.36771  0.00104    18
-> > > > 2.6.29.4-smp-writeback        6000  65536  16   60.53 272.6%    14.977     8637.08   0.21146  0.00000    22
-> > > > 
-> > > > 2.6.30-smp-ordered            6000  65536   8   51.09 113.4%     8.700    14856.55   0.06771  0.00417    45
-> > > > 2.6.29.4-smp-ordered          6000  65536   8   56.13 130.6%     8.098     8400.45   0.03958  0.00000    43
-> > > > 
-> > > > 2.6.30-smp-writeback          6000  65536   8   50.19 131.7%     8.680    16821.04   0.11979  0.00208    38
-> > > > 2.6.29.4-smp-writeback        6000  65536   8   54.90 130.7%     8.244     4925.48   0.10000  0.00000    42
-> > >   It really seems write has some problems... There's consistently lower
-> > > throughput and it also seems some writes take really long. I'll try to
-> > > reproduce it here.
-> > 
-> > Looked "pretty solid" to me.  I haven't observed enough to ~trust.
->   OK, I did a few runs of tiobench here and I can confirm that I see about
-> 6% performance regression in Sequential Write throughput between 2.6.29
-> and 2.6.30-rc8. I'll try to find what's causing it.
+On Tue, Jun 09, 2009 at 10:35:33AM -0400, Chuck Ebbert wrote:
+> The VIA Nano has a bug that makes the padlock unit fetch extra data
+> during encryption operations. Add workarounds for that, and enable
+> the driver on x86_64.
 
-My first guess would be the WRITE_SYNC style changes.  Is the regression
-still there with noop?
+Thanks!
 
--chris
+Where did you get the errata from, and what kind of document / revision is it?
+I have not seen that document so far.
 
+I've asked Centaur to confirm the errata, also inquired whether there will be
+a microcode update or a new stepping to fix it.  If yes, we should add proper
+checks to the workaround to make sure it's only enabled when we need it.
+
+Out of curiosity: Only the ACE (crypto) is affected, not PHE (hashing)?
+
+I'll also put on my todo list to do some actual benchmarking to determine
+how much impact this bug has.  I expect especially for storage encryption,
+many crypto operations will be page aligned and thus need the extra memcpy :(
+
+p.s.: the patch to enable padlock on x86_64 is already in the crypto-dev tree,
+as far as I know.  Interestingly, I have not observed this problem so far,
+despite running dm-crypt on a nano for quite some time. 
+
+Cheers,
+-- 
+- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
+============================================================================
+VIA Free and Open Source Software Liaison
