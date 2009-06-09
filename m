@@ -1,70 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbZFISbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbZFISbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753726AbZFISbP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:31:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbZFISa7
+	id S1758041AbZFISbf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbZFISbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:30:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34350 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752428AbZFISa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:30:58 -0400
-Message-ID: <4A2EAA53.7060006@redhat.com>
-Date: Tue, 09 Jun 2009 21:30:43 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 9 Jun 2009 14:31:25 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:36014 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751997AbZFISbY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 14:31:24 -0400
+Date: Tue, 9 Jun 2009 20:13:16 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Oskar Schirmer <os@emlix.com>
+Cc: Sascha Hauer <kernel@pengutronix.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 6/8] lib: isolate rational fractions helper function
+Message-ID: <20090609181316.GB32355@pengutronix.de>
+References: <1244555211-15618-1-git-send-email-os@emlix.com> <1244555211-15618-2-git-send-email-os@emlix.com> <1244555211-15618-3-git-send-email-os@emlix.com> <1244555211-15618-4-git-send-email-os@emlix.com> <1244555211-15618-5-git-send-email-os@emlix.com> <1244555211-15618-6-git-send-email-os@emlix.com> <1244555211-15618-7-git-send-email-os@emlix.com>
 MIME-Version: 1.0
-To: Dan Williams <dan.j.williams@intel.com>
-CC: Stephen Hemminger <shemminger@vyatta.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #13116] Can't boot with nosmp
-References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>	 <D9VoutSOyXP.A.xm.Vb7KKB@chimera> <20090608091544.53a94235@nehalam>	 <e9c3a7c20906080929l1a4ec739t7585f6bba54bf684@mail.gmail.com>	 <20090608170437.1c2386a5@nehalam> <e9c3a7c20906091020m19abf3b5wbbb7f5364b2d4905@mail.gmail.com>
-In-Reply-To: <e9c3a7c20906091020m19abf3b5wbbb7f5364b2d4905@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244555211-15618-7-git-send-email-os@emlix.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 20:11:04 up 29 days,  8:35, 15 users,  load average: 0.05, 0.02,
+	0.00
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams wrote:
-> On Mon, Jun 8, 2009 at 5:04 PM, Stephen Hemminger<shemminger@vyatta.com> wrote:
->   
->> I did some more debugging, and the problem appears to be that
->> booting with nosmp still leaves all the CPU's present in the cpu
->> possible mask. So code like dma engine (or loopback device), that
->> use alloc_percpu get broken.
->>
->> Not sure why all the cpu's are still showing up in the possible mask.
->> Rusty? do you have an answer.
->>     
->
-> Would this recent commit also fix this issue?
->
-> commit a4c0364be3f43d3e17fe19270f8b3d64881606e6
-> Author: Avi Kivity <avi@redhat.com>
-> Date:   Sat Jun 6 12:34:39 2009 +0300
->
->     KVM: Explicity initialize cpus_hardware_enabled
->
->     Under CONFIG_MAXSMP, cpus_hardware_enabled is allocated from the heap and
->     not statically initialized.  This causes a crash on reboot when kvm thinks
->     vmx is enabled on random nonexistent cpus and accesses nonexistent percpu
->     lists.
->
->     Fix by explicitly clearing the variable.
->
->     Cc: stable@kernel.org
->     Reported-and-tested-by: Yinghai Lu <yinghai@kernel.org>
->     Signed-off-by: Avi Kivity <avi@redhat.com>
->   
+On Tue, Jun 09, 2009 at 03:46:49PM +0200, Oskar Schirmer wrote:
+> Provide a helper function to determine optimum numerator
+> denominator value pairs taking into account restricted
+> register size. Useful especially with PLL and other clock
+> configurations.
+> 
+> Signed-off-by: Oskar Schirmer <os@emlix.com>
+> ---
+>  include/linux/rational.h |   19 ++++++++++++++
+>  lib/Kconfig              |    3 ++
+>  lib/Makefile             |    1 +
+>  lib/rational.c           |   60 ++++++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 83 insertions(+), 0 deletions(-)
+>  create mode 100644 include/linux/rational.h
+>  create mode 100644 lib/rational.c
+> 
+> diff --git a/include/linux/rational.h b/include/linux/rational.h
+> new file mode 100644
+> index 0000000..4f532fc
+> --- /dev/null
+> +++ b/include/linux/rational.h
+> @@ -0,0 +1,19 @@
+> +/*
+> + * rational fractions
+> + *
+> + * Copyright (C) 2009 emlix GmbH, Oskar Schirmer <os@emlix.com>
+> + *
+> + * helper functions when coping with rational numbers,
+> + * e.g. when calculating optimum numerator/denominator pairs for
+> + * pll configuration taking into account restricted register size
+> + */
+> +
+> +#ifndef _LINUX_RATIONAL_H
+> +#define _LINUX_RATIONAL_H
+> +
+> +void rational_best_approximation(
+> +	unsigned long given_numerator, unsigned long given_denominator,
+> +	unsigned long max_numerator, unsigned long max_denominator,
+> +	unsigned long *best_numerator, unsigned long *best_denominator);
+> +
+> +#endif /* _LINUX_RATIONAL_H */
+> diff --git a/lib/Kconfig b/lib/Kconfig
+> index 8ade0a7..9960be0 100644
+> --- a/lib/Kconfig
+> +++ b/lib/Kconfig
+> @@ -10,6 +10,9 @@ menu "Library routines"
+>  config BITREVERSE
+>  	tristate
+>  
+> +config RATIONAL
+> +	boolean
+> +
+>  config GENERIC_FIND_FIRST_BIT
+>  	bool
+>  
+> diff --git a/lib/Makefile b/lib/Makefile
+> index 33a40e4..1f6edef 100644
+> --- a/lib/Makefile
+> +++ b/lib/Makefile
+> @@ -50,6 +50,7 @@ ifneq ($(CONFIG_HAVE_DEC_LOCK),y)
+>  endif
+>  
+>  obj-$(CONFIG_BITREVERSE) += bitrev.o
+> +obj-$(CONFIG_RATIONAL)	+= rational.o
+>  obj-$(CONFIG_CRC_CCITT)	+= crc-ccitt.o
+>  obj-$(CONFIG_CRC16)	+= crc16.o
+>  obj-$(CONFIG_CRC_T10DIF)+= crc-t10dif.o
+> diff --git a/lib/rational.c b/lib/rational.c
+> new file mode 100644
+> index 0000000..76f5a0c
+> --- /dev/null
+> +++ b/lib/rational.c
+> @@ -0,0 +1,60 @@
+> +/*
+> + * rational fractions
+> + *
+> + * Copyright (C) 2009 emlix GmbH, Oskar Schirmer <os@emlix.com>
+> + *
+> + * helper functions when coping with rational numbers
+> + */
+> +
+> +#include <linux/rational.h>
+> +
+> +/*
+> + * calculate best rational approximation for a given fraction
+> + * taking into account restricted register size, e.g. to find
+> + * appropriate values for a pll with 5 bit denominator and
+> + * 8 bit numerator register fields, trying to set up with a
+> + * frequency ratio of 3.1415, one would say:
+> + *
+> + * rational_best_approximation(31415, 10000,
+> + *		(1 << 8) - 1, (1 << 5) - 1, &n, &d);
+> + *
+> + * you may look at given_numerator as a fixed point number,
+> + * with the fractional part size described in given_denominator.
+> + *
+> + * for theoretical background, see:
+> + * http://en.wikipedia.org/wiki/Continued_fraction
+> + */
+> +
+> +void rational_best_approximation(
+> +	unsigned long given_numerator, unsigned long given_denominator,
+> +	unsigned long max_numerator, unsigned long max_denominator,
+> +	unsigned long *best_numerator, unsigned long *best_denominator)
+> +{
+> +	unsigned long n, d, n0, d0, n1, d1;
+> +	n = given_numerator;
+> +	d = given_denominator;
+> +	n0 = d1 = 0;
+> +	n1 = d0 = 1;
+> +	for (;;) {
+> +		unsigned long t, a;
+> +		if ((n1 > max_numerator) || (d1 > max_denominator)) {
+> +			n1 = n0;
+> +			d1 = d0;
+> +			break;
+> +		}
+> +		if (d == 0)
+> +			break;
+> +		t = d;
+> +		a = n / d;
+> +		d = n % d;
+> +		n = t;
+> +		t = n0 + a * n1;
+> +		n0 = n1;
+> +		n1 = t;
+> +		t = d0 + a * d1;
+> +		d0 = d1;
+> +		d1 = t;
+> +	}
+> +	*best_numerator = n1;
+> +	*best_denominator = d1;
+> +}
 
-This only affects reboots.  But yes, the cpumask code has bugs.  Does 
-the .config involved select MAXSMP?
+EXPORT_SYMBOL(_GPL)?
+
+Sascha
 
 -- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
