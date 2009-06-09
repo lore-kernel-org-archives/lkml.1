@@ -1,95 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZFIS1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbZFISav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660AbZFIS1q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbZFIS1g
+	id S1755729AbZFISav (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZFISao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:27:36 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:40381 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751579AbZFIS1f (ORCPT
+	Tue, 9 Jun 2009 14:30:44 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44018 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752001AbZFISan (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:27:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=nx3Q2N+JGdaxXObiWKAb5avcVcC9M5AUvONIEhEUACYL0zARo+VZHtGyaW43yK+FHr
-         4D9RTS94vCtkvNxUA5+4yzmD9tDKUzV/exv4WR8Bmuk5tJUWykAGI+nVBLeDZI1mTp8d
-         olNpMzgvjmGLNnJqU+WjTVnxHy96YjFrfsyyg=
-Date: Tue, 9 Jun 2009 20:27:32 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       David Miller <davem@davemloft.net>, Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: [PATCH RESEND] ftrace: change the export format of
-	trace_kfree_skb()
-Message-ID: <20090609182730.GA6057@nowhere>
-References: <4A2DF91F.7030906@cn.fujitsu.com>
+	Tue, 9 Jun 2009 14:30:43 -0400
+Date: Tue, 9 Jun 2009 20:29:40 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Oskar Schirmer <os@emlix.com>
+Cc: Sascha Hauer <kernel@pengutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: imx: serial: add IrDA support to serial driver
+Message-ID: <20090609182939.GC32355@pengutronix.de>
+References: <1244555211-15618-1-git-send-email-os@emlix.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A2DF91F.7030906@cn.fujitsu.com>
+In-Reply-To: <1244555211-15618-1-git-send-email-os@emlix.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 20:27:33 up 29 days,  8:51, 15 users,  load average: 0.08, 0.04,
+	0.01
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 01:54:39PM +0800, Xiao Guangrong wrote:
-> Use %pf instead of %p to output the function's address, use 0x%04X instead
-> of %u to output the skb's protocol
-> 
-> Before patch:
-> 
->           <idle>-0     [000] 60144.542521: kfree_skb: skbaddr=de7b8240 protocol=2048 location=c1365429
->           <idle>-0     [000] 60164.488153: kfree_skb: skbaddr=da66f900 protocol=2048 location=c1365429
->           <idle>-0     [000] 60193.493933: kfree_skb: skbaddr=deaeb480 protocol=4 location=c134ec25
->           <idle>-0     [000] 60253.118421: kfree_skb: skbaddr=de7c4900 protocol=4 location=c134ec25
->           
-> After patch:
-> 
->             bash-2587  [001] 97685.781173: kfree_skb: skbaddr=deb9cc00 protocol=0x0000 location=netlink_unicast
->             bash-2587  [000] 97686.501121: kfree_skb: skbaddr=df9bb840 protocol=0x0000 location=netlink_unicast
->           <idle>-0     [000] 97696.200184: kfree_skb: skbaddr=df741240 protocol=0x0800 location=ip_rcv
->           <idle>-0     [000] 97696.200198: kfree_skb: skbaddr=dfb3de40 protocol=0x0800 location=ip_rcv
-> 
-> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Hi Oskar,
 
-
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-
-Would you also be interested in adding the conversion from raw numeric protocol
-to its name defined in include/linux/if_ether.h
-
-I guess __print_flags() can be used for that.
-
-Thanks,
-Frederic.
-
-
-> ---
+On Tue, Jun 09, 2009 at 03:46:43PM +0200, Oskar Schirmer wrote:
 > 
-> Recover the file mode of include/trace/events/skb.h
+> Using the iMX serial driver with an IrDA device
+> needs extra peripheral settings and specific
+> timing depending on the transmitter circuitry used.
 > 
-> ---
->  include/trace/events/skb.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> The first five patches fix minor problems in the
+> generic part of the iMX serial driver
 > 
-> diff --git a/include/trace/events/skb.h b/include/trace/events/skb.h
-> index 1e8fabb..a58bef8 100644
-> --- a/include/trace/events/skb.h
-> +++ b/include/trace/events/skb.h
-> @@ -30,7 +30,7 @@ TRACE_EVENT(kfree_skb,
->  		__entry->location = location;
->  	),
->  
-> -	TP_printk("skbaddr=%p protocol=%u location=%p",
-> +	TP_printk("skbaddr=%p protocol=0x%04X location=%pf",
->  		__entry->skbaddr, __entry->protocol, __entry->location)
->  );
->  
-> -- 
-> 1.6.1.2
+> The sixth introduces a generic function to calculate optimum
+> numerator denominator value pairs for PLL and clock
+> register settings, the seventh patch uses this function
+> in the iMX serial driver.
+> 
+> The last patch finally adds IrDA support to the iMX serial driver.
 > 
 
+Out of interest: On which i.MX type system(s) did you test the
+IRDA support?
+
+Sascha
+
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
