@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbZFIOQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbZFIOQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194AbZFIOQW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 10:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbZFIOQP
+	id S1754564AbZFIOQh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 10:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZFIOQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 10:16:15 -0400
-Received: from sous-sol.org ([216.99.217.87]:35325 "EHLO sequoia.sous-sol.org"
+	Tue, 9 Jun 2009 10:16:28 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50083 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750878AbZFIOQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 10:16:14 -0400
-Date: Tue, 9 Jun 2009 07:15:30 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] amd-iommu: remove BUS_NOTIFY_BOUND_DRIVER handling
-Message-ID: <20090609141530.GL20823@sequoia.sous-sol.org>
-References: <1244555840-3855-1-git-send-email-joerg.roedel@amd.com> <1244555840-3855-3-git-send-email-joerg.roedel@amd.com>
+	id S1750998AbZFIOQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 10:16:27 -0400
+Date: Tue, 9 Jun 2009 16:16:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yong Wang <yong.y.wang@linux.intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip] perf_counter/x86: Correct some event and umask
+	values for Intel processors
+Message-ID: <20090609141621.GA32703@elte.hu>
+References: <20090609131553.GA12489@ywang-moblin2.bj.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1244555840-3855-3-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <20090609131553.GA12489@ywang-moblin2.bj.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.5
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0221]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Joerg Roedel (joerg.roedel@amd.com) wrote:
-> Handling this event causes device assignment in KVM to fail because the
-> device gets re-attached as soon as the pci-stub registers as the driver
-> for the device.
-> 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 
-Yep, makes good sense, will get picked up from get_device_resources.
+* Yong Wang <yong.y.wang@linux.intel.com> wrote:
 
-Acked-by: Chris Wright <chrisw@sous-sol.org>
+> Correct some event and UMASK values according to Intel SDM.
 
-thanks,
--chris
+Very nice, thanks!
+
+were you able to test the Atom ones by any chance?
+
+	Ingo
