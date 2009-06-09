@@ -1,119 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759659AbZFITQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbZFITQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759659AbZFITQT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 15:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbZFITQK
+	id S1760009AbZFITQb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 15:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759805AbZFITQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 15:16:10 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:40220 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752560AbZFITQJ (ORCPT
+	Tue, 9 Jun 2009 15:16:17 -0400
+Received: from windsormachine.com ([216.8.138.2]:43732 "EHLO
+	router.windsormachine.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759760AbZFITQQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 15:16:09 -0400
-Date: Tue, 9 Jun 2009 21:18:26 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: liqin.chen@sunplusct.com
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Arnd Bergmann <arnd@arndb.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 19/27] score: create kernel files asm-offsets.c entry.S head.S
-Message-ID: <20090609191826.GD7181@uranus.ravnborg.org>
-References: <OF62B83071.8F1A9FCF-ON482575D0.00241345-482575D0.0024859C@sunplusct.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <OF62B83071.8F1A9FCF-ON482575D0.00241345-482575D0.0024859C@sunplusct.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 9 Jun 2009 15:16:16 -0400
+Date: Tue, 9 Jun 2009 15:16:18 -0400 (EDT)
+From: Mike Dresser <mdresser_l@windsormachine.com>
+To: Mathias Kretschmer <mathias@blx4.net>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alex Samad <alex@samad.com.au>, Dave Chinner <david@fromorbit.com>
+Subject: Re: [Bug #13375] Kernel crash with 2.6.29 + nfs + xfs (radix-tree)
+In-Reply-To: <200906092111.54073.mathias@blx4.net>
+Message-ID: <alpine.DEB.1.10.0906091514280.9067@router.windsormachine.com>
+References: <sIiXQlfwS3D.A.81.dj7KKB@chimera> <200906080940.14650.posting@blx4.net> <alpine.DEB.1.10.0906091457510.28108@router.windsormachine.com> <200906092111.54073.mathias@blx4.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-scanner: Scanned by Xamime-LT 0.1.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> new file mode 100644
-> index 0000000..a7432c1
-> --- /dev/null
-> +++ b/arch/score/kernel/head.S
-> @@ -0,0 +1,70 @@
-> +/*
-> + * arch/score/kernel/head.S
-> + *
-> + * Score Processor version.
-> + *
-> + * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
-> + *  Chen Liqin <liqin.chen@sunplusct.com>
-> + *  Lennox Wu <lennox.wu@sunplusct.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, see the file COPYING, or write
-> + * to the Free Software Foundation, Inc.,
-> + * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-> + */
-> +
-> +#include <asm/asm-offsets.h>
-> +
-> +       .extern start_kernel
-> +       .global init_thread_union
-> +       .global kernelsp
-> +
-> +       .section .init.text, "ax"
+On Tue, 9 Jun 2009, Mathias Kretschmer wrote:
 
-Please use section definitions from include/linux/init.h.
-__INIT in this case.
+> same observation here. it's kswapd that dies.
+>
+> swap space itself is hardly ever really used, since my box has 8GB and not
+> that much stuff is running on it.
 
-Other architectures uses __HEAD so they have full control
-on where to add this code in the final image.
+Same here, 5GB ram.. I might try turning swap off and seeing what happens.
 
+> my XFS mount opts: noatime,nodiratime,logbufs=8
 
-> +       .align  2;
-> +       .globl  _stext;
-> +_stext:
+noatime,nodiratime,logbufs=8,logbsize=256k,inode64,nobarrier
 
-Usually a linker defined symbol?
+> drive/fs config:  sata => raid6 => lvm => xfs => nfs
 
-> +       la      r30, __bss_start        /* initialize BSS segment. */
-> +       la      r31, _end
-> +       xor     r8, r8, r8
-> +
-> +1:     cmp.c   r31, r30
-> +       beq     2f
-> +
-> +       sw      r8, [r30]               /* clean memory. */
-> +       addi    r30, 4
-> +       b       1b
-> +
-> +2:     la      r28, init_thread_union  /* set kernel stack. */
-> +       mv      r0, r28
-> +       addi    r0, KERNEL_STACK_SIZE - 32
-> +       la      r30, kernelsp
-> +       sw      r0, [r30]
-> +       subi    r0, 4*4
-> +       xor     r30, r30, r30
-> +       ori     r30, 0x02               /* enable MMU. */
-> +       mtcr    r30, cr4
-> +       nop
-> +       nop
-> +       nop
-> +       nop
-> +       nop
-> +       nop
-> +       nop
-> +
-> +       /* there is no parameter */
-> +       xor     r4, r4, r4
-> +       xor     r5, r5, r5
-> +       xor     r6, r6, r6
-> +       xor     r7, r7, r7
-> +       la      r30, start_kernel       /* jump to init_arch */
-> +       br      r30
+sata => 3ware in raid5 => xfs
 
-	Sam
+> machine is stable for the last 36 hours with nfs turned off.
+
+Not using NFS here.
+
