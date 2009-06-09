@@ -1,143 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbZFIPw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZFIP4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756309AbZFIPw4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 11:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbZFIPwu
+	id S1756194AbZFIP4t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 11:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZFIP4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 11:52:50 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:56051 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753778AbZFIPwt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 11:52:49 -0400
-Date: Tue, 9 Jun 2009 17:52:35 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
-Message-ID: <20090609155235.GK18591@gundam.enneenne.com>
-Mail-Followup-To: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
-References: <20090609135947.GB18591@gundam.enneenne.com> <20090609151834.GA30774@rakim.wolfsonmicro.main>
+	Tue, 9 Jun 2009 11:56:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46132 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751995AbZFIP4l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 11:56:41 -0400
+Message-ID: <4A2E860D.8070903@redhat.com>
+Date: Tue, 09 Jun 2009 18:55:57 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090609151834.GA30774@rakim.wolfsonmicro.main>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SA-Exim-Connect-IP: 192.168.32.254
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: regulator_register() API
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
+ kernels
+References: <4A0B62F7.5030802@goop.org> <200906032208.28061.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906030901460.4880@localhost.localdomain> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain> <20090609093918.GC16940@wotan.suse.de> <alpine.LFD.2.01.0906090749380.6847@localhost.localdomain> <20090609145736.GA31535@elte.hu>
+In-Reply-To: <20090609145736.GA31535@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 04:18:34PM +0100, Mark Brown wrote:
-> On Tue, Jun 09, 2009 at 03:59:47PM +0200, Rodolfo Giometti wrote:
-> 
-> > Current regulator_register() implementation forces the caller to
-> > allocate a proper device for each regulators and also the line:
-> 
-> >    struct regulator_init_data *init_data = dev->platform_data;
-> 
-> > forces the user to define the pointer platform_data as a "struct
-> > regulator_init_data" only.
-> 
-> That's not the case in current mainline - the init data is passed in as
-> an argument to regulator_register().  There should be no requirement
-> that the struct device be unique, you should be able to use the same
-> struct device for all the regulators on the device.  It's mostly just
-> used for printk.
-> 
-> > However if the regulator_register() worked in a similar way to
-> > led_classdev_register(), I simply can do something like this:
-> 
-> >         for (i = 0; i < regulators_num; i++) {
-> > 	       /* init regulators structs */
-> > 	       ...
-> > 
-> >                ret = regulator_register(&client->dev, &reg[i].dev);
-> >                if (ret < 0)
-> > 		       dev_warn(&client->dev, "unable to register\n");
-> >         }
-> 
-> You can do exactly this in current mainline.  You do need to supply init
-> data for each regulator to make them useful.  The change came in commit
-> 0527100fd11d9710c7e153d791da78824b7b46fa which was merged during the
-> 2.6.30 merge window.
+Ingo Molnar wrote:
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>   
+>> I was benchmarking btrfs on my little EeePC. There, kmap overhead 
+>> was 25% of file access time. Part of it is that people have been 
+>> taught to use "kmap_atomic()", which is usable under spinlocks and 
+>> people have been told that it's "fast". It's not fast. The whole 
+>> TLB thing is slow as hell.
+>>     
+>
+> yeah. I noticed it some time ago that INVLPG is unreasonably slow.
+>
+> My theory is that in the CPU it's perhaps a loop (in microcode?) 
+> over _all_ TLBs - so as TLB caches get larger, INVLPG gets slower 
+> and slower ...
+>   
 
-Great! However this resolve one issue, the caller still needs to
-allocate a device struct by itsown. On the other hand, doing like
-led_classdev_register() does will resolve it also!
+The tlb already content-addresses entries when looking up translations, 
+so it shouldn't be that bad.
 
-See first lines of the function:
+invlpg does have to invalidate all the intermediate entries 
+("paging-structure caches"), and it does (obviously) force a tlb reload.
 
-   int led_classdev_register(struct device *parent, struct led_classdev
-   *led_cdev)
-   {
-           int rc;
-
-           led_cdev->dev = device_create(leds_class, parent, 0, led_cdev,
-                                         "%s", led_cdev->name);
-           if (IS_ERR(led_cdev->dev))
-                   return PTR_ERR(led_cdev->dev);
-
-           /* register the attributes */
-           rc = device_create_file(led_cdev->dev, &dev_attr_brightness);
-           if (rc)
-                   goto err_out;
-
-	   ...
-
-As you can see in this case I simply can do:
-
-        /* Register the led devices */
-        for (i = 0; i < 6; i++)
-                if (pdata->led[i].name) {
-                        data->led[i].dev.name = pdata->led[i].name;
-                        data->led[i].dev.brightness = pdata->led[i].brightness;
-                        data->led[i].dev.brightness_set = max8821_led_set;
-#ifdef CONFIG_LEDS_TRIGGERS
-                        data->led[i].dev.default_trigger =
-                                                pdata->led[i].trigger;
-#endif
-                        INIT_WORK(&data->led[i].work, max8821_led_set_work);
-                        ret = led_classdev_register(&client->dev,
-                                                        &data->led[i].dev);
-                        if (ret < 0)
-                                dev_warn(&client->dev, "unable to register "
-                                                "led%d into the system\n",
-                                                i + 1);
-                }
-
-No device allocation at all, I simply supply the parent device and the
-register function does the rest, also all info regarding the led
-device are into "struct led_classdev".
-
-> > This will keep backward compatibility with old drivers and may offer a
-> > more versatile way to define a regulator expecially for
-> > multifunctional devices.
-> 
-> Most of the regulators currently supported are part of multi-function
-> devices so they're not an unusual case here.  
-
-But I never said that it is an unusual case, I said it's more complex
-to manage. :)
-
-By doing a "struct regulator_classdev" and defining a
-regulator_classdev_register() the device driver writer will be easier!
-Maybe we can just adding the regulator_classdev_register() as a
-wrapper function...
-
-Ciao,
-
-Rodolfo
+I seem to recall 50 cycles for invlpg, what do you characterize as 
+unreasonably slow?
 
 -- 
+error compiling committee.c: too many arguments to function
 
-GNU/Linux Solutions                  e-mail: giometti@enneenne.com
-Linux Device Driver                          giometti@linux.it
-Embedded Systems                     phone:  +39 349 2432127
-UNIX programming                     skype:  rodolfo.giometti
