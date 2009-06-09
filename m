@@ -1,102 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbZFILUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbZFILVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757048AbZFILUj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 07:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756792AbZFILUa
+	id S1757986AbZFILVT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 07:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZFILVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 07:20:30 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36529 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756547AbZFILU3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 07:20:29 -0400
-Message-ID: <e8f208a7c6bec1818947c24658dc1561.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <28c262360906090300s13f4ee09mcc9622c1e477eaad@mail.gmail.com>
-References: <20090609181505.4083a213.kamezawa.hiroyu@jp.fujitsu.com>
-    <28c262360906090300s13f4ee09mcc9622c1e477eaad@mail.gmail.com>
-Date: Tue, 9 Jun 2009 20:20:29 +0900 (JST)
-Subject: Re: [BUGFIX][PATCH] fix wrong lru rotate back at lumpty reclaim
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Minchan Kim" <minchan.kim@gmail.com>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       riel@redhat.com
-User-Agent: SquirrelMail/1.4.16
+	Tue, 9 Jun 2009 07:21:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52175 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755790AbZFILVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 07:21:08 -0400
+Date: Tue, 9 Jun 2009 13:20:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH][GIT PULL] ring-buffer: pass in lockdep class key for
+	reader_lock
+Message-ID: <20090609112053.GB4463@elte.hu>
+References: <20090603151724.144915858@goodmis.org> <20090605145219.GA14830@elte.hu> <20090607082257.GA16761@elte.hu> <alpine.DEB.2.00.0906081135320.9522@gandalf.stny.rr.com> <1244477919.13761.9042.camel@twins> <alpine.DEB.2.00.0906081858580.9522@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0906081858580.9522@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Minchan Kim wrote:
-> On Tue, Jun 9, 2009 at 6:15 PM, KAMEZAWA
-> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->>
->> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>
->> In lumpty reclaim, "cursor_page" is found just by pfn. Then, we don't
->> know
->> from which LRU "cursor" page came from. Then, putback it to "src" list
->> is BUG.
->> Just leave it as it is.
->> (And I think rotate here is overkilling even if "src" is correct.)
->>
->> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->> ---
->> mm/vmscan.c | 5 ++---
->> 1 file changed, 2 insertions(+), 3 deletions(-)
->>
->> Index: mmotm-2.6.30-Jun4/mm/vmscan.c
->> ===================================================================
->> --- mmotm-2.6.30-Jun4.orig/mm/vmscan.c
->> +++ mmotm-2.6.30-Jun4/mm/vmscan.c
->> @@ -940,10 +940,9 @@ static unsigned long isolate_lru_pages(u
->> nr_taken++;
->> scan++;
->> break;
->> -
->>case -EBUSY:
->
-> We can remove case -EBUSY itself, too.
-> It is meaningless.
->
-Sure, will post v2 and remove EBUSY case.
-(I'm sorry my webmail system converts a space to a multibyte char...
- then I cut some.)
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
->> - /* else it is being freed
->> elsewhere */
->> -
->> list_move(&cursor_page->lru, src);
->> +  /* Do nothing because we
->> don't know where
->> + cusrsor_page comes
->> from */
->>default:
->> break; /* ! on LRU or
->> wrong list */
->
-> Hmm.. what meaning of this break ?
-> We are in switch case.
-> This "break" can't go out of loop.
-yes.
+> 
+> Ingo,
+> 
+> Please pull the latest tip/tracing/ftrace tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/ftrace
+> 
+> 
+> Peter Zijlstra (1):
+>       ring-buffer: pass in lockdep class key for reader_lock
+> 
+> ----
+>  include/linux/ring_buffer.h |   14 +++++++++++++-
+>  kernel/trace/ring_buffer.c  |    9 +++++++--
+>  2 files changed, 20 insertions(+), 3 deletions(-)
 
-> But comment said "abort this block scan".
->
-Where ? the comment says the cursor_page is not on lru (PG_lru is unset)
-> If I understand it properly , don't we add goto phrase ?
->
-No.
+hm, this doesnt pull anything new here - forgot to push it out 
+perhaps?
 
-Just try next page on list.
+Thanks,
 
-Thank you for review, I'll post updated one tomorrow.
--Kame
-
+	Ingo
