@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754922AbZFIPAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZFIPBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754922AbZFIPAU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 11:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbZFIPAJ
+	id S1755494AbZFIPBZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 11:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZFIPBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 11:00:09 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:43116 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751238AbZFIPAI (ORCPT
+	Tue, 9 Jun 2009 11:01:16 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53998 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751885AbZFIPBQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 11:00:08 -0400
-Date: Tue, 9 Jun 2009 22:53:05 +0800
-From: Harald Welte <HaraldWelte@viatech.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] X86: cpu_debug support for VIA / Centaur CPU's
-Message-ID: <20090609145305.GD3986@prithivi.gnumonks.org>
-References: <20090609082931.GD25316@prithivi.gnumonks.org> <1244537598.2558.9.camel@ht.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244537598.2558.9.camel@ht.satnam>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 9 Jun 2009 11:01:16 -0400
+Date: Tue, 9 Jun 2009 16:01:32 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Oskar Schirmer" <os@emlix.com>
+Cc: Sascha Hauer <kernel@pengutronix.de>, linux-kernel@vger.kernel.org,
+       Fabian Godehardt <fg@emlix.com>, Oskar Schirmer <os@emlix.com>
+Subject: Re: [PATCH 8/8] imx: serial: add IrDA support to serial driver
+Message-ID: <20090609160132.31265ffc@lxorguk.ukuu.org.uk>
+In-Reply-To: <1244555211-15618-9-git-send-email-os@emlix.com>
+References: <1244555211-15618-1-git-send-email-os@emlix.com>
+	<1244555211-15618-2-git-send-email-os@emlix.com>
+	<1244555211-15618-3-git-send-email-os@emlix.com>
+	<1244555211-15618-4-git-send-email-os@emlix.com>
+	<1244555211-15618-5-git-send-email-os@emlix.com>
+	<1244555211-15618-6-git-send-email-os@emlix.com>
+	<1244555211-15618-7-git-send-email-os@emlix.com>
+	<1244555211-15618-8-git-send-email-os@emlix.com>
+	<1244555211-15618-9-git-send-email-os@emlix.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for your quick response.
+> +#ifdef CONFIG_IRDA
+> +#define USE_IRDA(sport)	((sport)->use_irda)
+> +#else
+> +#define USE_IRDA(sport)	(0)
+> +#endif
+> +
 
-On Tue, Jun 09, 2009 at 02:23:18PM +0530, Jaswinder Singh Rajput wrote:
- 
-> On Tue, 2009-06-09 at 16:29 +0800, Harald Welte wrote:
-> > This patch adds the MSR definitions for the VIA/Centaur CPU models
-> > to cpu_debug.c
-> > 
-> > Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
-> 
-> As per Ingo suggestion, we removed model information from cpu_debug and
-> is available in -tip :
+You define this but only use it in about half the cases ?
 
-but what happens if one MSR has a different group from vendor A to vendor B?
-and what happens if you read MSR's on a CPU that doesn't have them?  I suppose
-you get a segmentation fault, at least that's what I've received in the past
-when accidentially reading a MSR that doesn't exist.  Is that what the _safe_
-variant of rdmsr is for?
+> +#ifdef CONFIG_IRDA
+> +	if (sport->use_irda) {
+> +		/* half duplex - wait for end of transmission */
+> +		int n = 256;
 
-> Please check latest -tip from and see how it works with your chips :
+Otherwise this series looks sound.
 
-I suppose it works, but it probably lacks all the via/centaur specific MSR's.
-I'll work on a patch as soon as i find time.
+While you are fiddling with the baud rate the driver really should work
+out the resulting actual baud rate and call
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git
-> 
-> Currently I am doing more changes and available in :
-> 
-> http://git.kernel.org/?p=linux/kernel/git/jaswinder/linux-2.6-cpu.git;a=shortlog;h=x86/cpu
+	tty_encode_baud_rate(tty, in-rate, out-rate);
 
-Which means I should base on which of those tree to make sure it can be merged?
+that will report back the resulting rate and knows how to encode all the
+termios fields as well as reporting close values to the requested speed
+as the speed requested (eg if you ask for B38400 and it tries to encode
+38215 or similar it will encode back B38400)
 
--- 
-- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
-============================================================================
-VIA Free and Open Source Software Liaison
+Alan
