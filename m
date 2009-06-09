@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbZFIAnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753467AbZFIArT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083AbZFIAnj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 20:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752902AbZFIAnc
+	id S1753467AbZFIArT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 20:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbZFIArM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 20:43:32 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:55247 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750967AbZFIAnc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 20:43:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=rSEaRoNbw/VDZzfO5IWvmbeKpTNuSoNAkFklGuMxXJh4aqytRY2UjSPU2a+efdUhW3
-         2bvgFXdCg7xVBmQGRclvdp2RlQbC01iqPhVsTQFwx2jEyQzXBEuKs535VfenBNqZwyy4
-         Q0IZ7suADDrqTt2Iek8cqloS+ICrlEeiMV44k=
+	Mon, 8 Jun 2009 20:47:12 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53882 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751893AbZFIArM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 20:47:12 -0400
+Date: Mon, 8 Jun 2009 17:38:39 -0700
+From: Greg KH <gregkh@suse.de>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: "Gao, Yunpeng" <yunpeng.gao@intel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2]Intel Moorestown NAND driver patch for mainline
+Message-ID: <20090609003839.GB22766@suse.de>
+References: <20090606164455.GB27257@intel.com> <20090606160413.08c254cf@lxorguk.ukuu.org.uk> <38D9F46DFF92C54980D2F2C1E8EE313001A45F4F3C@pdsmsx503.ccr.corp.intel.com> <1244458030.30939.216.camel@macbook.infradead.org>
 MIME-Version: 1.0
-In-Reply-To: <4A2CC52B.9010602@oracle.com>
-References: <20090605075614.GC8171@cr0.nay.redhat.com>
-	 <20090605095155.GC8354@cr0.nay.redhat.com>
-	 <4A292B0D.8030807@oracle.com> <4A295AFB.80909@kernel.org>
-	 <4A2A7F33.4030807@oracle.com> <4A2AEBE3.4000100@kernel.org>
-	 <20090608015242.GB2596@cr0.nay.redhat.com>
-	 <4A2CA96D.3090502@oracle.com>
-	 <2375c9f90906072341o2cded749m45bdddfdb499469@mail.gmail.com>
-	 <4A2CC52B.9010602@oracle.com>
-Date: Tue, 9 Jun 2009 08:43:34 +0800
-Message-ID: <2375c9f90906081743p77934f47n8ba1a018d333b95b@mail.gmail.com>
-Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64 
-	2.6.30-rc8.
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: Tao Ma <tao.ma@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244458030.30939.216.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 8, 2009 at 4:00 PM, Tao Ma<tao.ma@oracle.com> wrote:
->>>
->>> But the result is the same
->>
->> Yes?
->> Your printk() shows kcore size is: 5301604352, and in your subject it is
->> 281474974617600...
->>
->> Or they happened in the same time?
->
-> yes. the same box and the same linux version.
-> A bit strange.
->
-> [taoma@ocfs2-test2 ~]$ dmesg|grep "high memory"
-> high memory ffff88013c000000, size 5301604352
-> [taoma@ocfs2-test2 ~]$ ll /proc/kcore
-> -r-------- 1 root root 281474974617600 Jun  8 15:20 /proc/kcore
+On Mon, Jun 08, 2009 at 11:47:10AM +0100, David Woodhouse wrote:
+> On Mon, 2009-06-08 at 12:23 +0800, Gao, Yunpeng wrote:
+> > The Moorestown NAND flash driver is licensed from the Moorestown NAND
+> > controller vendor. It's a standalone NAND driver. According to the
+> > vendor, this driver has some advanced features specific to the
+> > controller hardware and is difficult to port to MTD subsystem. 
+> 
+> I don't believe it. If the MTD subsystem doesn't support certain
+> features, the MTD subsystem needs to be updated to cope.
 
-Really weird...
-They should be the same. This means we have some problem in our procfs.
+Based on this response, I am guessing that you do not want me to take
+this in the staging tree? :)
 
-And, we have no problem on i386, I, myself, even can't reproduce this on my
-x86_64 box...
+If so, please let me know and I'll drop it.
 
-Drop Cc to x86 people, add some Cc to proc people. :)
+thanks,
 
-Eric, Alexey, any ideas?
-
-Tao, would you like to send us your .config? Thanks.
+greg k-h
