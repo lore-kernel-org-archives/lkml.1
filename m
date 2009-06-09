@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759841AbZFIJ6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbZFIJ7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759841AbZFIJ6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 05:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758969AbZFIJ6O
+	id S1760009AbZFIJ7R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 05:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbZFIJ7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 05:58:14 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:48561 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758650AbZFIJ6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 05:58:13 -0400
+	Tue, 9 Jun 2009 05:59:05 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40909 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754439AbZFIJ7E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 05:59:04 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
+Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
+       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090609184422.DD8B.A69D9226@jp.fujitsu.com>
+References: <20090609094231.GM18380@csn.ul.ie> <20090609184422.DD8B.A69D9226@jp.fujitsu.com>
+Message-Id: <20090609185036.DD8E.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18990.12846.941708.201337@cargo.ozlabs.ibm.com>
-Date: Tue, 9 Jun 2009 19:58:06 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf_counter: extensible perf_counter_attr
-In-Reply-To: <20090609065350.GB16707@elte.hu>
-References: <1244481941.13761.9119.camel@twins>
-	<18989.57919.895309.847520@drongo.ozlabs.ibm.com>
-	<20090609065350.GB16707@elte.hu>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  9 Jun 2009 18:59:03 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
-
-> * Paul Mackerras <paulus@samba.org> wrote:
-
-> > Since this is a user-visible structure, you've just introduced an 
-> > ABI difference between 32-bit and 64-bit processes, which we've 
-> > managed to avoid so far. [...]
+> > > > Here it is just recording the jiffies value. The real smarts with the counter
+> > > > use time_before() which I assumed could handle jiffie wrap-arounds. Even
+> > > > if it doesn't, the consequence is that one scan will occur that could have
+> > > > been avoided around the time of the jiffie wraparound. The value will then
+> > > > be reset and it will be fine.
+> > > 
+> > > time_before() assume two argument are enough nearly time.
+> > > if we use 32bit cpu and HZ=1000, about jiffies wraparound about one month.
+> > > 
+> > > Then, 
+> > > 
+> > > 1. zone reclaim failure occur
+> > > 2. system works fine for one month
+> > > 3. jiffies wrap and time_before() makes mis-calculation.
+> > > 
+> > 
+> > And the scan occurs uselessly and zone_reclaim_failure gets set again.
+> > I believe the one useless scan is not significant enough to warrent dealing
+> > with jiffie wraparound.
 > 
-> This is a good point too - handling pointers in ABIs is possible but 
-> should be avoided as much as possible: it creates the need to 
-> introduce a compat_sys_perf_counter_open() and doubles the syscall 
-> table complexity.
-> 
-> Lets do the s/__reserved_1/attr_size ABI i suggested (i outlined 
-> various properties of it in the previous mail). Agreed?
+> Thank you for kindful explanation.
+> I fully agreed.
 
-Yep, sounds good.
+Bah, no, not agreed.
+simple last failure recording makes following scenario.
 
-We also need a way to allow access to random machine-specific features
-that might not be supported in a generic way, such as the instruction
-matching CAM on POWER4/PPC970, or (apparently) PEBS.  That's what I
-had intended exclusive groups + the extra_config_len field to be used
-for, but Peter removed extra_config_len...
 
-Paul.
+1. zone reclaim failure occur. update zone_reclaim_failure.
+      ^
+      |  time_before() return 1, and zone_reclaim() return immediately.
+      v
+2. after 32 second.
+      ^
+      |  time_before() return 0, and zone_reclaim() works normally
+      v
+3. after one month
+      ^
+      |  time_before() return 1, and zone_reclaim() return immediately.
+      |  although recent zone_reclaim() never failed.
+      v
+4. after more one month
+      
+
+
+
