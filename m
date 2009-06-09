@@ -1,52 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759695AbZFIJcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759145AbZFIJjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759695AbZFIJcy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 05:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758871AbZFIJcr
+	id S1759145AbZFIJjc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 05:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbZFIJjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 05:32:47 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:57656 "EHLO smtps.tip.net.au"
+	Tue, 9 Jun 2009 05:39:24 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53887 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757815AbZFIJcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 05:32:46 -0400
-Date: Tue, 9 Jun 2009 19:32:46 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: linux-next: manual merge of the voyager tree with the rr tree
-Message-Id: <20090609193246.d86bf703.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	id S1754571AbZFIJjX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 05:39:23 -0400
+Date: Tue, 9 Jun 2009 11:39:18 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native kernels
+Message-ID: <20090609093918.GC16940@wotan.suse.de>
+References: <4A0B62F7.5030802@goop.org> <200906032208.28061.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906030901460.4880@localhost.localdomain> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi James,
+On Thu, Jun 04, 2009 at 08:02:14AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 4 Jun 2009, Rusty Russell wrote:
+> > >
+> > > Turn off HIGHMEM64G, please (and HIGHMEM4G too, for that matter - you
+> > > can't compare it to a no-highmem case).
+> > 
+> > Thanks, your point is demonstrated below.  I don't think HIGHMEM4G is 
+> > unreasonable for a distro tho, so I turned that on instead.
+> 
+> Well, I agree that HIGHMEM4G is a _reasonable_ thing to turn on.
+> 
+> The thing I disagree with is that it's at all valid to then compare to 
+> some all-software feature thing. HIGHMEM doesn't expand any esoteric 
+> capability that some people might use - it's about regular RAM for regular 
+> users.
+> 
+> And don't get me wrong - I don't like HIGHMEM. I detest the damn thing. I 
+> hated having to merge it, and I still hate it. It's a stupid, ugly, and 
+> very invasive config option. It's just that it's there to support a 
+> stupid, ugly and very annoying fundamental hardware problem.
 
-Today's linux-next merge of the voyager tree got a conflict in
-drivers/lguest/Kconfig between commit
-7f8f1b5390ac9c433b0c4c693201a36fa3234a41 ("lguest:eventfd-notify") from
-the rr tree and commit 0ff51d1467af91bca4210b0d09372b6e7ded7524 ("Revert
-"x86: remove the Voyager 32-bit subarch"") from the voyager tree.
+I was looking forward to be able to get rid of it... unfortunately
+other 32-bit architectures are starting to use it again :(
 
-I fixed it up (see below) and can carry the fix as necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+I guess it is not incredibly intrusive for generic mm code. A bit
+of kmap sprinkled around which is actually quite a useful delimiter
+of where pagecache is addressed via its kernel mapping.
 
-diff --cc drivers/lguest/Kconfig
-index 6c566c1,76f2b36..0000000
---- a/drivers/lguest/Kconfig
-+++ b/drivers/lguest/Kconfig
-@@@ -1,6 -1,6 +1,6 @@@
-  config LGUEST
-  	tristate "Linux hypervisor example code"
-- 	depends on X86_32 && EXPERIMENTAL && !X86_PAE && EVENTFD
- -	depends on X86_32 && EXPERIMENTAL && !X86_PAE && FUTEX && !X86_VOYAGER
-++	depends on X86_32 && EXPERIMENTAL && !X86_PAE && EVENTFD && !X86_VOYAGER
-  	select HVC_DRIVER
-  	---help---
-  	  This is a very simple module which allows you to run
+Do you hate more the x86 code? Maybe that can be removed?
+
