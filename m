@@ -1,532 +1,412 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757859AbZFIGho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757781AbZFIGi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757859AbZFIGho (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 02:37:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757893AbZFIGh2
+	id S1757781AbZFIGi0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 02:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756590AbZFIGiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 02:37:28 -0400
-Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:58198 "EHLO
+	Tue, 9 Jun 2009 02:38:18 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:58380 "EHLO
 	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757564AbZFIGh0 (ORCPT
+	with ESMTP id S1755111AbZFIGiQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 02:37:26 -0400
+	Tue, 9 Jun 2009 02:38:16 -0400
 To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org
 MIME-Version: 1.0
-Subject: [PATCH 16/27] score: create head files scatterlist.h scoreregs.h sections.h
- segment.h sembuf.h setup.h shmbuf.h shmparam.h sigcontext.h siginfo.h
- signal.h socket.h sockios.h statfs.h stat.h string.h swab.h syscalls.h
- system.h
+Subject: [PATCH 17/27] score: create head files termbits.h termios.h thread_info.h
+ timex.h tlbflush.h tlb.h topology.h types.h
 X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OF6E98041E.B5C6A199-ON482575D0.0023E412-482575D0.00245A53@sunplusct.com>
+Message-ID: <OFAD8FAF98.DFB73657-ON482575D0.0023F74A-482575D0.002468DA@sunplusct.com>
 From: liqin.chen@sunplusct.com
-Date: Tue, 9 Jun 2009 14:32:46 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/09 ?? 02:32:47,
-	Serialize complete at 2009/06/09 ?? 02:32:47
+Date: Tue, 9 Jun 2009 14:33:24 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/09 ?? 02:33:25,
+	Serialize complete at 2009/06/09 ?? 02:33:25
 Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 1a9b8306208068d0967894a6e9fb1fbdecd84bed Mon Sep 17 00:00:00 2001
+>From a8821850ed08c0d2a49a1564f2a10e0d2cc6f2f4 Mon Sep 17 00:00:00 2001
 From: Chen Liqin <liqin.chen@sunplusct.com>
-Date: Tue, 9 Jun 2009 13:43:13 +0800
-Subject: [PATCH 16/27] score: create head files scatterlist.h scoreregs.h 
-sections.h segment.h sembuf.h setup.h shmbuf.h shmparam.h sigcontext.h 
-siginfo.h signal.h socket.h sockios.h statfs.h stat.h string.h swab.h 
-syscalls.h system.h
+Date: Tue, 9 Jun 2009 13:43:14 +0800
+Subject: [PATCH 17/27] score: create head files termbits.h termios.h 
+thread_info.h timex.h tlbflush.h tlb.h topology.h types.h
 
 
 Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
 ---
- arch/score/include/asm/scatterlist.h |    6 ++
- arch/score/include/asm/scoreregs.h   |   51 +++++++++++++++++++
- arch/score/include/asm/sections.h    |    6 ++
- arch/score/include/asm/segment.h     |   21 ++++++++
- arch/score/include/asm/sembuf.h      |    6 ++
- arch/score/include/asm/setup.h       |   40 +++++++++++++++
- arch/score/include/asm/shmbuf.h      |    6 ++
- arch/score/include/asm/shmparam.h    |    6 ++
- arch/score/include/asm/sigcontext.h  |   22 ++++++++
- arch/score/include/asm/siginfo.h     |    6 ++
- arch/score/include/asm/signal.h      |    6 ++
- arch/score/include/asm/socket.h      |    6 ++
- arch/score/include/asm/sockios.h     |    6 ++
- arch/score/include/asm/stat.h        |    6 ++
- arch/score/include/asm/statfs.h      |    6 ++
- arch/score/include/asm/string.h      |    8 +++
- arch/score/include/asm/swab.h        |    6 ++
- arch/score/include/asm/syscalls.h    |    9 +++
- arch/score/include/asm/system.h      |   90 
+ arch/score/include/asm/termbits.h    |    6 ++
+ arch/score/include/asm/termios.h     |    6 ++
+ arch/score/include/asm/thread_info.h |  103 ++++++++++++++++++++++++
+ arch/score/include/asm/timex.h       |    6 ++
+ arch/score/include/asm/tlb.h         |   17 ++++
+ arch/score/include/asm/tlbflush.h    |  142 
 ++++++++++++++++++++++++++++++++++
- 19 files changed, 313 insertions(+), 0 deletions(-)
- create mode 100644 arch/score/include/asm/scatterlist.h
- create mode 100644 arch/score/include/asm/scoreregs.h
- create mode 100644 arch/score/include/asm/sections.h
- create mode 100644 arch/score/include/asm/segment.h
- create mode 100644 arch/score/include/asm/sembuf.h
- create mode 100644 arch/score/include/asm/setup.h
- create mode 100644 arch/score/include/asm/shmbuf.h
- create mode 100644 arch/score/include/asm/shmparam.h
- create mode 100644 arch/score/include/asm/sigcontext.h
- create mode 100644 arch/score/include/asm/siginfo.h
- create mode 100644 arch/score/include/asm/signal.h
- create mode 100644 arch/score/include/asm/socket.h
- create mode 100644 arch/score/include/asm/sockios.h
- create mode 100644 arch/score/include/asm/stat.h
- create mode 100644 arch/score/include/asm/statfs.h
- create mode 100644 arch/score/include/asm/string.h
- create mode 100644 arch/score/include/asm/swab.h
- create mode 100644 arch/score/include/asm/syscalls.h
- create mode 100644 arch/score/include/asm/system.h
+ arch/score/include/asm/topology.h    |    6 ++
+ arch/score/include/asm/types.h       |    6 ++
+ 8 files changed, 292 insertions(+), 0 deletions(-)
+ create mode 100644 arch/score/include/asm/termbits.h
+ create mode 100644 arch/score/include/asm/termios.h
+ create mode 100644 arch/score/include/asm/thread_info.h
+ create mode 100644 arch/score/include/asm/timex.h
+ create mode 100644 arch/score/include/asm/tlb.h
+ create mode 100644 arch/score/include/asm/tlbflush.h
+ create mode 100644 arch/score/include/asm/topology.h
+ create mode 100644 arch/score/include/asm/types.h
 
-diff --git a/arch/score/include/asm/scatterlist.h 
-b/arch/score/include/asm/scatterlist.h
+diff --git a/arch/score/include/asm/termbits.h 
+b/arch/score/include/asm/termbits.h
 new file mode 100644
-index 0000000..9f533b8
+index 0000000..9a95c14
 --- /dev/null
-+++ b/arch/score/include/asm/scatterlist.h
++++ b/arch/score/include/asm/termbits.h
 @@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_SCATTERLIST_H
-+#define _ASM_SCORE_SCATTERLIST_H
++#ifndef _ASM_SCORE_TERMBITS_H
++#define _ASM_SCORE_TERMBITS_H
 +
-+#include <asm-generic/scatterlist.h>
++#include <asm-generic/termbits.h>
 +
-+#endif /* _ASM_SCORE_SCATTERLIST_H */
-diff --git a/arch/score/include/asm/scoreregs.h 
-b/arch/score/include/asm/scoreregs.h
++#endif /* _ASM_SCORE_TERMBITS_H */
+diff --git a/arch/score/include/asm/termios.h 
+b/arch/score/include/asm/termios.h
 new file mode 100644
-index 0000000..d0ad292
+index 0000000..40984e8
 --- /dev/null
-+++ b/arch/score/include/asm/scoreregs.h
-@@ -0,0 +1,51 @@
-+#ifndef _ASM_SCORE_SCOREREGS_H
-+#define _ASM_SCORE_SCOREREGS_H
-+
-+#include <linux/linkage.h>
-+
-+/* TIMER register */
-+#define TIME0BASE              0x96080000
-+#define P_TIMER0_CTRL          (TIME0BASE + 0x00)
-+#define P_TIMER0_CPP_CTRL      (TIME0BASE + 0x04)
-+#define P_TIMER0_PRELOAD       (TIME0BASE + 0x08)
-+#define P_TIMER0_CPP_REG       (TIME0BASE + 0x0C)
-+#define P_TIMER0_UPCNT         (TIME0BASE + 0x10)
-+
-+/* Timer Controller Register */
-+/* bit 0 Timer enable */
-+#define TMR_DISABLE    0x0000
-+#define TMR_ENABLE     0x0001
-+
-+/* bit 1 Interrupt enable */
-+#define TMR_IE_DISABLE 0x0000
-+#define TMR_IE_ENABLE  0x0002
-+
-+/* bit 2 Output enable */
-+#define TMR_OE_DISABLE 0x0004
-+#define TMR_OE_ENABLE  0x0000
-+
-+/* bit4 Up/Down counting selection */
-+#define TMR_UD_DOWN    0x0000
-+#define TMR_UD_UP      0x0010
-+
-+/* bit5 Up/Down counting control selection */
-+#define TMR_UDS_UD     0x0000
-+#define TMR_UDS_EXTUD  0x0020
-+
-+/* bit6 Time output mode */
-+#define TMR_OM_TOGGLE  0x0000
-+#define TMR_OM_PILSE   0x0040
-+
-+/* bit 8..9 External input active edge selection */
-+#define TMR_ES_PE      0x0000
-+#define TMR_ES_NE      0x0100
-+#define TMR_ES_BOTH    0x0200
-+
-+/* bit 10..11 Operating mode */
-+#define TMR_M_FREE     0x0000 /* free running timer mode */
-+#define TMR_M_PERIODIC 0x0400 /* periodic timer mode */
-+#define TMR_M_FC       0x0800 /* free running counter mode */
-+#define TMR_M_PC       0x0c00 /* periodic counter mode */
-+
-+#define SYSTEM_CLOCK           (27*1000000/4)          /* 27 MHz */
-+#endif /* _ASM_SCORE_SCOREREGS_H */
-diff --git a/arch/score/include/asm/sections.h 
-b/arch/score/include/asm/sections.h
-new file mode 100644
-index 0000000..9441d23
---- /dev/null
-+++ b/arch/score/include/asm/sections.h
++++ b/arch/score/include/asm/termios.h
 @@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_SECTIONS_H
-+#define _ASM_SCORE_SECTIONS_H
++#ifndef _ASM_SCORE_TERMIOS_H
++#define _ASM_SCORE_TERMIOS_H
 +
-+#include <asm-generic/sections.h>
++#include <asm-generic/termios.h>
 +
-+#endif /* _ASM_SCORE_SECTIONS_H */
-diff --git a/arch/score/include/asm/segment.h 
-b/arch/score/include/asm/segment.h
++#endif /* _ASM_SCORE_TERMIOS_H */
+diff --git a/arch/score/include/asm/thread_info.h 
+b/arch/score/include/asm/thread_info.h
 new file mode 100644
-index 0000000..e16cf6a
+index 0000000..0af8ca0
 --- /dev/null
-+++ b/arch/score/include/asm/segment.h
-@@ -0,0 +1,21 @@
-+#ifndef _ASM_SCORE_SEGMENT_H
-+#define _ASM_SCORE_SEGMENT_H
-+
-+#ifndef __ASSEMBLY__
-+
-+typedef struct {
-+       unsigned long seg;
-+} mm_segment_t;
-+
-+#define KERNEL_DS      ((mm_segment_t){0})
-+#define USER_DS        KERNEL_DS
-+
-+# define get_ds()      (KERNEL_DS)
-+# define get_fs()      (current_thread_info()->addr_limit)
-+# define set_fs(x)     \
-+       do { current_thread_info()->addr_limit = (x); } while (0)
-+
-+# define segment_eq(a, b)      ((a).seg == (b).seg)
-+
-+# endif /* __ASSEMBLY__ */
-+#endif /* _ASM_SCORE_SEGMENT_H */
-diff --git a/arch/score/include/asm/sembuf.h 
-b/arch/score/include/asm/sembuf.h
-new file mode 100644
-index 0000000..dae5e83
---- /dev/null
-+++ b/arch/score/include/asm/sembuf.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_SEMBUF_H
-+#define _ASM_SCORE_SEMBUF_H
-+
-+#include <asm-generic/sembuf.h>
-+
-+#endif /* _ASM_SCORE_SEMBUF_H */
-diff --git a/arch/score/include/asm/setup.h 
-b/arch/score/include/asm/setup.h
-new file mode 100644
-index 0000000..de89eff
---- /dev/null
-+++ b/arch/score/include/asm/setup.h
-@@ -0,0 +1,40 @@
-+#ifndef _ASM_SCORE_SETUP_H
-+#define _ASM_SCORE_SETUP_H
-+
-+#define COMMAND_LINE_SIZE      256
-+#define MEM_SIZE               0x2000000
++++ b/arch/score/include/asm/thread_info.h
+@@ -0,0 +1,103 @@
++#ifndef _ASM_SCORE_THREAD_INFO_H
++#define _ASM_SCORE_THREAD_INFO_H
 +
 +#ifdef __KERNEL__
 +
-+extern void pagetable_init(void);
-+extern void pgd_init(unsigned long page);
-+
-+extern void setup_early_printk(void);
-+extern void cpu_cache_init(void);
-+extern void tlb_init(void);
-+
-+extern void handle_nmi(void);
-+extern void handle_adelinsn(void);
-+extern void handle_adedata(void);
-+extern void handle_ibe(void);
-+extern void handle_pel(void);
-+extern void handle_sys(void);
-+extern void handle_ccu(void);
-+extern void handle_ri(void);
-+extern void handle_tr(void);
-+extern void handle_ades(void);
-+extern void handle_cee(void);
-+extern void handle_cpe(void);
-+extern void handle_dve(void);
-+extern void handle_dbe(void);
-+extern void handle_reserved(void);
-+extern void handle_tlb_refill(void);
-+extern void handle_tlb_invaild(void);
-+extern void handle_mod(void);
-+extern void debug_exception_vector(void);
-+extern void general_exception_vector(void);
-+extern void interrupt_exception_vector(void);
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _ASM_SCORE_SETUP_H */
-diff --git a/arch/score/include/asm/shmbuf.h 
-b/arch/score/include/asm/shmbuf.h
-new file mode 100644
-index 0000000..c85b242
---- /dev/null
-+++ b/arch/score/include/asm/shmbuf.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_SHMBUF_H
-+#define _ASM_SCORE_SHMBUF_H
-+
-+#include <asm-generic/shmbuf.h>
-+
-+#endif /* _ASM_SCORE_SHMBUF_H */
-diff --git a/arch/score/include/asm/shmparam.h 
-b/arch/score/include/asm/shmparam.h
-new file mode 100644
-index 0000000..1d60813
---- /dev/null
-+++ b/arch/score/include/asm/shmparam.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_SHMPARAM_H
-+#define _ASM_SCORE_SHMPARAM_H
-+
-+#include <asm-generic/shmparam.h>
-+
-+#endif /* _ASM_SCORE_SHMPARAM_H */
-diff --git a/arch/score/include/asm/sigcontext.h 
-b/arch/score/include/asm/sigcontext.h
-new file mode 100644
-index 0000000..5ffda39
---- /dev/null
-+++ b/arch/score/include/asm/sigcontext.h
-@@ -0,0 +1,22 @@
-+#ifndef _ASM_SCORE_SIGCONTEXT_H
-+#define _ASM_SCORE_SIGCONTEXT_H
-+
-+/*
-+ * Keep this struct definition in sync with the sigcontext fragment
-+ * in arch/score/tools/offset.c
-+ */
-+struct sigcontext {
-+       unsigned int            sc_regmask;
-+       unsigned int            sc_psr;
-+       unsigned int            sc_condition;
-+       unsigned long           sc_pc;
-+       unsigned long           sc_regs[32];
-+       unsigned int            sc_ssflags;
-+       unsigned int            sc_mdceh;
-+       unsigned int            sc_mdcel;
-+       unsigned int            sc_ecr;
-+       unsigned long           sc_ema;
-+       unsigned long           sc_sigset[4];
-+};
-+
-+#endif /* _ASM_SCORE_SIGCONTEXT_H */
-diff --git a/arch/score/include/asm/siginfo.h 
-b/arch/score/include/asm/siginfo.h
-new file mode 100644
-index 0000000..87ca356
---- /dev/null
-+++ b/arch/score/include/asm/siginfo.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_SIGINFO_H
-+#define _ASM_SCORE_SIGINFO_H
-+
-+#include <asm-generic/siginfo.h>
-+
-+#endif /* _ASM_SCORE_SIGINFO_H */
-diff --git a/arch/score/include/asm/signal.h 
-b/arch/score/include/asm/signal.h
-new file mode 100644
-index 0000000..2605bc0
---- /dev/null
-+++ b/arch/score/include/asm/signal.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_SIGNAL_H
-+#define _ASM_SCORE_SIGNAL_H
-+
-+#include <asm-generic/signal.h>
-+
-+#endif /* _ASM_SCORE_SIGNAL_H */
-diff --git a/arch/score/include/asm/socket.h 
-b/arch/score/include/asm/socket.h
-new file mode 100644
-index 0000000..612a70e
---- /dev/null
-+++ b/arch/score/include/asm/socket.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_SOCKET_H
-+#define _ASM_SCORE_SOCKET_H
-+
-+#include <asm-generic/socket.h>
-+
-+#endif /* _ASM_SCORE_SOCKET_H */
-diff --git a/arch/score/include/asm/sockios.h 
-b/arch/score/include/asm/sockios.h
-new file mode 100644
-index 0000000..ba82564
---- /dev/null
-+++ b/arch/score/include/asm/sockios.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_SOCKIOS_H
-+#define _ASM_SCORE_SOCKIOS_H
-+
-+#include <asm-generic/sockios.h>
-+
-+#endif /* _ASM_SCORE_SOCKIOS_H */
-diff --git a/arch/score/include/asm/stat.h b/arch/score/include/asm/stat.h
-new file mode 100644
-index 0000000..5037055
---- /dev/null
-+++ b/arch/score/include/asm/stat.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_STAT_H
-+#define _ASM_SCORE_STAT_H
-+
-+#include <asm-generic/stat.h>
-+
-+#endif /* _ASM_SCORE_STAT_H */
-diff --git a/arch/score/include/asm/statfs.h 
-b/arch/score/include/asm/statfs.h
-new file mode 100644
-index 0000000..36e4100
---- /dev/null
-+++ b/arch/score/include/asm/statfs.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_STATFS_H
-+#define _ASM_SCORE_STATFS_H
-+
-+#include <asm-generic/statfs.h>
-+
-+#endif /* _ASM_SCORE_STATFS_H */
-diff --git a/arch/score/include/asm/string.h 
-b/arch/score/include/asm/string.h
-new file mode 100644
-index 0000000..8a6bf50
---- /dev/null
-+++ b/arch/score/include/asm/string.h
-@@ -0,0 +1,8 @@
-+#ifndef _ASM_SCORE_STRING_H
-+#define _ASM_SCORE_STRING_H
-+
-+extern void *memset(void *__s, int __c, size_t __count);
-+extern void *memcpy(void *__to, __const__ void *__from, size_t __n);
-+extern void *memmove(void *__dest, __const__ void *__src, size_t __n);
-+
-+#endif /* _ASM_SCORE_STRING_H */
-diff --git a/arch/score/include/asm/swab.h b/arch/score/include/asm/swab.h
-new file mode 100644
-index 0000000..fadc3cc
---- /dev/null
-+++ b/arch/score/include/asm/swab.h
-@@ -0,0 +1,6 @@
-+#ifndef _ASM_SCORE_SWAB_H
-+#define _ASM_SCORE_SWAB_H
-+
-+#include <asm-generic/swab.h>
-+
-+#endif /* _ASM_SCORE_SWAB_H */
-diff --git a/arch/score/include/asm/syscalls.h 
-b/arch/score/include/asm/syscalls.h
-new file mode 100644
-index 0000000..00c28e0
---- /dev/null
-+++ b/arch/score/include/asm/syscalls.h
-@@ -0,0 +1,9 @@
-+#ifndef _ASM_SCORE_SYSCALLS_H
-+#define _ASM_SCORE_SYSCALLS_H
-+
-+asmlinkage long sys_clone(int flags, unsigned long stack, struct pt_regs 
-*regs);
-+#define sys_clone sys_clone
-+
-+#include <asm-generic/syscalls.h>
-+
-+#endif /* _ASM_SCORE_SYSCALLS_H */
-diff --git a/arch/score/include/asm/system.h 
-b/arch/score/include/asm/system.h
-new file mode 100644
-index 0000000..589d5c7
---- /dev/null
-+++ b/arch/score/include/asm/system.h
-@@ -0,0 +1,90 @@
-+#ifndef _ASM_SCORE_SYSTEM_H
-+#define _ASM_SCORE_SYSTEM_H
-+
-+#include <linux/types.h>
-+#include <linux/irqflags.h>
-+
-+struct pt_regs;
-+struct task_struct;
-+
-+extern void *resume(void *last, void *next, void *next_ti);
-+
-+#define switch_to(prev, next, last)                            \
-+do {                                                           \
-+       (last) = resume(prev, next, task_thread_info(next));    \
-+} while (0)
-+
-+#define finish_arch_switch(prev)       do {} while (0)
-+
-+typedef void (*vi_handler_t)(void);
-+extern unsigned long arch_align_stack(unsigned long sp);
-+
-+#define mb()           barrier()
-+#define rmb()          barrier()
-+#define wmb()          barrier()
-+#define smp_mb()       barrier()
-+#define smp_rmb()      barrier()
-+#define smp_wmb()      barrier()
-+
-+#define read_barrier_depends()         do {} while (0)
-+#define smp_read_barrier_depends()     do {} while (0)
-+
-+#define set_mb(var, value)             do {var = value; wmb(); } while 
-(0)
-+
-+#define __HAVE_ARCH_CMPXCHG    1
-+
-+#include <asm-generic/cmpxchg-local.h>
++#define KU_MASK        0x08
++#define KU_USER        0x08
++#define KU_KERN        0x00
 +
 +#ifndef __ASSEMBLY__
 +
-+struct __xchg_dummy { unsigned long a[100]; };
-+#define __xg(x) ((struct __xchg_dummy *)(x))
++#include <asm/processor.h>
 +
-+static inline
-+unsigned long __xchg(volatile unsigned long *m, unsigned long val)
-+{
-+       unsigned long retval;
-+       unsigned long flags;
++/*
++ * low level task data that entry.S needs immediate access to
++ * - this struct should fit entirely inside of one cache line
++ * - this struct shares the supervisor stack pages
++ * - if the contents of this structure are changed, the assembly 
+constants
++ *   must also be changed
++ */
++struct thread_info {
++       struct task_struct      *task;          /* main task structure */
++       struct exec_domain      *exec_domain;   /* execution domain */
++       unsigned long           flags;          /* low level flags */
++       unsigned long           tp_value;       /* thread pointer */
++       __u32                   cpu;            /* current CPU */
 +
-+       local_irq_save(flags);
-+       retval = *m;
-+       *m = val;
-+       local_irq_restore(flags);
-+       return retval;
++       /* 0 => preemptable, < 0 => BUG */
++       int                     preempt_count;
++
++       /*
++        * thread address space:
++        * 0-0xBFFFFFFF for user-thead
++        * 0-0xFFFFFFFF for kernel-thread
++        */
++       mm_segment_t            addr_limit;
++       struct restart_block    restart_block;
++       struct pt_regs          *regs;
++};
++
++/*
++ * macros/functions for gaining access to the thread information 
+structure
++ *
++ * preempt_count needs to be 1 initially, until the scheduler is 
+functional.
++ */
++#define INIT_THREAD_INFO(tsk)                  \
++{                                              \
++       .task           = &tsk,                 \
++       .exec_domain    = &default_exec_domain, \
++       .cpu            = 0,                    \
++       .preempt_count  = 1,                    \
++       .addr_limit     = KERNEL_DS,            \
++       .restart_block  = {                     \
++               .fn = do_no_restart_syscall,    \
++       },                                      \
 +}
 +
-+#define xchg(ptr, v)                                           \
-+       ((__typeof__(*(ptr))) __xchg((unsigned long *)(ptr),    \
-+                                       (unsigned long)(v)))
++#define init_thread_info       (init_thread_union.thread_info)
++#define init_stack             (init_thread_union.stack)
 +
-+static inline unsigned long __cmpxchg(volatile unsigned long *m,
-+                               unsigned long old, unsigned long new)
-+{
-+       unsigned long retval;
-+       unsigned long flags;
++/* How to get the thread information struct from C. */
++register struct thread_info *__current_thread_info __asm__("r28");
++#define current_thread_info()  __current_thread_info
 +
-+       local_irq_save(flags);
-+       retval = *m;
-+       if (retval == old)
-+               *m = new;
-+       local_irq_restore(flags);
-+       return retval;
-+}
++/* thread information allocation */
++#define THREAD_SIZE_ORDER      (1)
++#define THREAD_SIZE            (PAGE_SIZE << THREAD_SIZE_ORDER)
++#define THREAD_MASK            (THREAD_SIZE - 1UL)
++#define __HAVE_ARCH_THREAD_INFO_ALLOCATOR
 +
-+#define cmpxchg(ptr, o, n)                                     \
-+       ((__typeof__(*(ptr))) __cmpxchg((unsigned long *)(ptr), \
-+                                       (unsigned long)(o),     \
-+                                       (unsigned long)(n)))
-+
-+extern void __die(const char *, struct pt_regs *, const char *,
-+       const char *, unsigned long) __attribute__((noreturn));
-+extern void __die_if_kernel(const char *, struct pt_regs *, const char *,
-+       const char *, unsigned long);
-+
-+#define die(msg, regs)                                                 \
-+       __die(msg, regs, __FILE__ ":", __func__, __LINE__)
-+#define die_if_kernel(msg, regs)                                       \
-+       __die_if_kernel(msg, regs, __FILE__ ":", __func__, __LINE__)
++#define alloc_thread_info(tsk) kmalloc(THREAD_SIZE, GFP_KERNEL)
++#define free_thread_info(info) kfree(info)
 +
 +#endif /* !__ASSEMBLY__ */
-+#endif /* _ASM_SCORE_SYSTEM_H */
++
++#define PREEMPT_ACTIVE         0x10000000
++
++/*
++ * thread information flags
++ * - these are process state flags that various assembly files may need 
+to
++ *   access
++ * - pending work-to-be-done flags are in LSW
++ * - other flags in MSW
++ */
++#define TIF_SYSCALL_TRACE      0       /* syscall trace active */
++#define TIF_SIGPENDING         1       /* signal pending */
++#define TIF_NEED_RESCHED       2       /* rescheduling necessary */
++#define TIF_RESTORE_SIGMASK    9       /* restore signal mask in 
+do_signal() */
++#define TIF_POLLING_NRFLAG     17      /* true if poll_idle() is polling
++                                                TIF_NEED_RESCHED */
++#define TIF_MEMDIE             18
++
++#define _TIF_SYSCALL_TRACE     (1<<TIF_SYSCALL_TRACE)
++#define _TIF_SIGPENDING                (1<<TIF_SIGPENDING)
++#define _TIF_NEED_RESCHED      (1<<TIF_NEED_RESCHED)
++#define _TIF_RESTORE_SIGMASK   (1<<TIF_RESTORE_SIGMASK)
++#define _TIF_POLLING_NRFLAG    (1<<TIF_POLLING_NRFLAG)
++
++#define _TIF_WORK_MASK         (0x0000ffff)
++
++#endif /* __KERNEL__ */
++
++#endif /* _ASM_SCORE_THREAD_INFO_H */
+diff --git a/arch/score/include/asm/timex.h 
+b/arch/score/include/asm/timex.h
+new file mode 100644
+index 0000000..5f3c92b
+--- /dev/null
++++ b/arch/score/include/asm/timex.h
+@@ -0,0 +1,6 @@
++#ifndef _ASM_SCORE_TIMEX_H
++#define _ASM_SCORE_TIMEX_H
++
++#include <asm-generic/timex.h>
++
++#endif /* _ASM_SCORE_TIMEX_H */
+diff --git a/arch/score/include/asm/tlb.h b/arch/score/include/asm/tlb.h
+new file mode 100644
+index 0000000..46882ed
+--- /dev/null
++++ b/arch/score/include/asm/tlb.h
+@@ -0,0 +1,17 @@
++#ifndef _ASM_SCORE_TLB_H
++#define _ASM_SCORE_TLB_H
++
++/*
++ * SCORE doesn't need any special per-pte or per-vma handling, except
++ * we need to flush cache for area to be unmapped.
++ */
++#define tlb_start_vma(tlb, vma)                do {} while (0)
++#define tlb_end_vma(tlb, vma)          do {} while (0)
++#define __tlb_remove_tlb_entry(tlb, ptep, address) do {} while (0)
++#define tlb_flush(tlb)                 flush_tlb_mm((tlb)->mm)
++
++extern void score7_FTLB_refill_Handler(void);
++
++#include <asm-generic/tlb.h>
++
++#endif /* _ASM_SCORE_TLB_H */
+diff --git a/arch/score/include/asm/tlbflush.h 
+b/arch/score/include/asm/tlbflush.h
+new file mode 100644
+index 0000000..9cce978
+--- /dev/null
++++ b/arch/score/include/asm/tlbflush.h
+@@ -0,0 +1,142 @@
++#ifndef _ASM_SCORE_TLBFLUSH_H
++#define _ASM_SCORE_TLBFLUSH_H
++
++#include <linux/mm.h>
++
++/*
++ * TLB flushing:
++ *
++ * - flush_tlb_all() flushes all processes TLB entries
++ * - flush_tlb_mm(mm) flushes the specified mm context TLB entries
++ * - flush_tlb_page(vma, vmaddr) flushes one page
++ * - flush_tlb_range(vma, start, end) flushes a range of pages
++ * - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
++ */
++extern void local_flush_tlb_all(void);
++extern void local_flush_tlb_mm(struct mm_struct *mm);
++extern void local_flush_tlb_range(struct vm_area_struct *vma,
++       unsigned long start, unsigned long end);
++extern void local_flush_tlb_kernel_range(unsigned long start,
++       unsigned long end);
++extern void local_flush_tlb_page(struct vm_area_struct *vma,
++       unsigned long page);
++extern void local_flush_tlb_one(unsigned long vaddr);
++
++#define flush_tlb_all()                        local_flush_tlb_all()
++#define flush_tlb_mm(mm)               local_flush_tlb_mm(mm)
++#define flush_tlb_range(vma, vmaddr, end) \
++       local_flush_tlb_range(vma, vmaddr, end)
++#define flush_tlb_kernel_range(vmaddr, end) \
++       local_flush_tlb_kernel_range(vmaddr, end)
++#define flush_tlb_page(vma, page)      local_flush_tlb_page(vma, page)
++#define flush_tlb_one(vaddr)           local_flush_tlb_one(vaddr)
++
++#ifndef __ASSEMBLY__
++
++static inline unsigned long pevn_get(void)
++{
++       unsigned long val;
++
++       __asm__ __volatile__(
++               "mfcr %0, cr11\n"
++               "nop\nnop\n"
++               : "=r" (val));
++
++       return val;
++}
++
++static inline void pevn_set(unsigned long val)
++{
++       __asm__ __volatile__(
++               "mtcr %0, cr11\n"
++               "nop\nnop\nnop\nnop\nnop\n"
++       : : "r" (val));
++}
++
++static inline void pectx_set(unsigned long val)
++{
++       __asm__ __volatile__(
++               "mtcr %0, cr12\n"
++               "nop\nnop\nnop\nnop\nnop\n"
++       : : "r" (val));
++}
++
++static inline unsigned long pectx_get(void)
++{
++       unsigned long val;
++       __asm__ __volatile__(
++               "mfcr %0, cr12\n"
++               "nop\nnop\n"
++       : "=r" (val));
++       return val;
++}
++static inline unsigned long tlblock_get(void)
++{
++       unsigned long val;
++
++       __asm__ __volatile__(
++               "mfcr %0, cr7\n"
++               "nop\nnop\n"
++       : "=r" (val));
++       return val;
++}
++static inline void tlblock_set(unsigned long val)
++{
++       __asm__ __volatile__(
++               "mtcr %0, cr7\n"
++               "nop\nnop\nnop\nnop\nnop\n"
++       : : "r" (val));
++}
++
++static inline void tlbpt_set(unsigned long val)
++{
++       __asm__ __volatile__(
++               "mtcr %0, cr8\n"
++               "nop\nnop\nnop\nnop\nnop\n"
++               : : "r" (val));
++}
++
++static inline long tlbpt_get(void)
++{
++       long val;
++
++       __asm__ __volatile__(
++               "mfcr %0, cr8\n"
++               "nop\nnop\n"
++               : "=r" (val));
++
++       return val;
++}
++
++static inline void peaddr_set(unsigned long val)
++{
++       __asm__ __volatile__(
++               "mtcr %0, cr9\n"
++               "nop\nnop\nnop\nnop\nnop\n"
++               : : "r" (val));
++}
++
++/* TLB operations. */
++static inline void tlb_probe(void)
++{
++       __asm__ __volatile__("stlb;nop;nop;nop;nop;nop");
++}
++
++static inline void tlb_read(void)
++{
++       __asm__ __volatile__("mftlb;nop;nop;nop;nop;nop");
++}
++
++static inline void tlb_write_indexed(void)
++{
++       __asm__ __volatile__("mtptlb;nop;nop;nop;nop;nop");
++}
++
++static inline void tlb_write_random(void)
++{
++       __asm__ __volatile__("mtrtlb;nop;nop;nop;nop;nop");
++}
++
++#endif /* Not __ASSEMBLY__ */
++
++#endif /* _ASM_SCORE_TLBFLUSH_H */
+diff --git a/arch/score/include/asm/topology.h 
+b/arch/score/include/asm/topology.h
+new file mode 100644
+index 0000000..425fba3
+--- /dev/null
++++ b/arch/score/include/asm/topology.h
+@@ -0,0 +1,6 @@
++#ifndef _ASM_SCORE_TOPOLOGY_H
++#define _ASM_SCORE_TOPOLOGY_H
++
++#include <asm-generic/topology.h>
++
++#endif /* _ASM_SCORE_TOPOLOGY_H */
+diff --git a/arch/score/include/asm/types.h 
+b/arch/score/include/asm/types.h
+new file mode 100644
+index 0000000..2140032
+--- /dev/null
++++ b/arch/score/include/asm/types.h
+@@ -0,0 +1,6 @@
++#ifndef _ASM_SCORE_TYPES_H
++#define _ASM_SCORE_TYPES_H
++
++#include <asm-generic/types.h>
++
++#endif /* _ASM_SCORE_TYPES_H */
 -- 
 1.6.2
 
