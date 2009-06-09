@@ -1,141 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759860AbZFIJuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759838AbZFIJwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759860AbZFIJuU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 05:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbZFIJuK
+	id S1759838AbZFIJwH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 05:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757442AbZFIJvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 05:50:10 -0400
-Received: from kroah.org ([198.145.64.141]:37479 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 05:51:55 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34734 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753951AbZFIJuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 05:50:08 -0400
-Date: Tue, 9 Jun 2009 02:44:51 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/87] 2.6.29-stable review
-Message-ID: <20090609094451.GA26439@kroah.com>
-MIME-Version: 1.0
+	id S1753561AbZFIJvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 05:51:54 -0400
+Date: Tue, 9 Jun 2009 11:51:55 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: hugh.dickins@tiscali.co.uk, riel@redhat.com, chris.mason@oracle.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v5
+Message-ID: <20090609095155.GA14820@wotan.suse.de>
+References: <20090603846.816684333@firstfloor.org> <20090603184648.2E2131D028F@basil.firstfloor.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090603184648.2E2131D028F@basil.firstfloor.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jun 03, 2009 at 08:46:47PM +0200, Andi Kleen wrote:
+> +static int me_pagecache_clean(struct page *p, unsigned long pfn)
+> +{
+> +	struct address_space *mapping;
+> +
+> +	if (!isolate_lru_page(p))
+> +		page_cache_release(p);
+> +
+> +	/*
+> +	 * Now truncate the page in the page cache. This is really
+> +	 * more like a "temporary hole punch"
+> +	 * Don't do this for block devices when someone else
+> +	 * has a reference, because it could be file system metadata
+> +	 * and that's not safe to truncate.
+> +	 */
+> +	mapping = page_mapping(p);
+> +	if (mapping && S_ISBLK(mapping->host->i_mode) && page_count(p) > 1) {
+> +		printk(KERN_ERR
+> +			"MCE %#lx: page looks like a unsupported file system metadata page\n",
+> +			pfn);
+> +		return FAILED;
+> +	}
 
-This is the start of the stable review cycle for the 2.6.29.5 release.
-There are 87 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+page_count check is racy. Hmm, S_ISBLK should handle xfs's private mapping.
+AFAIK btrfs has a similar private mapping but a quick grep does not show
+up S_IFBLK anywhere, so I don't know what the situation is there.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+Unfortunately though, the linear mapping is not the only metadata mapping
+a filesystem might have. Many work on directories in seperate mappings
+(ext2, for example, which is where I first looked and will still oops with
+your check).
 
-Responses should be made by June 11 09:00:00 UTC.  Anything received
-after that time might be too late.
+Also, others may have other interesting inodes they use for metadata. Do
+any of them go through the pagecache? I dont know. The ext3 journal,
+for example? How does that work?
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.29.5-rc1.gz
-and the diffstat can be found below.
-
-
-thanks,
-
-greg k-h
+Unfortunately I don't know a good way to detect regular data mappings
+easily. Ccing linux-fsdevel. Until that is worked out, you'd need to
+use the safe pagecache invalidate rather than unsafe truncate.
 
 
- Documentation/filesystems/ext4.txt     |    5 +-
- Makefile                               |    2 +-
- arch/powerpc/mm/tlb_nohash_low.S       |    2 +-
- arch/sparc/kernel/of_device_32.c       |   21 ++++++-
- arch/sparc/kernel/of_device_64.c       |   21 ++++++-
- arch/sparc/kernel/smp_64.c             |    4 +-
- arch/x86/kernel/hpet.c                 |   41 +++++++++---
- arch/x86/kvm/mmu.c                     |    3 +-
- arch/x86/kvm/x86.c                     |    6 ++-
- arch/x86/mm/hugetlbpage.c              |    6 ++-
- arch/x86/pci/mmconfig-shared.c         |    6 +-
- crypto/api.c                           |    3 +-
- drivers/acpi/processor_idle.c          |    8 ++-
- drivers/block/xen-blkfront.c           |    6 +-
- drivers/char/random.c                  |   19 ++++--
- drivers/char/tpm/tpm_bios.c            |    3 +-
- drivers/crypto/padlock-aes.c           |    2 +-
- drivers/gpu/drm/r128/r128_cce.c        |    6 +-
- drivers/hid/usbhid/hid-core.c          |    2 +-
- drivers/hwmon/lm78.c                   |    2 +-
- drivers/ide/ide-io.c                   |    4 +-
- drivers/ide/ide-iops.c                 |   21 +++++-
- drivers/ide/ide-pci-generic.c          |   11 +++
- drivers/ide/ide-tape.c                 |    6 --
- drivers/mtd/devices/mtd_dataflash.c    |    2 +-
- drivers/net/Makefile                   |    2 +-
- drivers/net/bnx2.c                     |    2 +
- drivers/net/bonding/bond_alb.c         |   10 +---
- drivers/net/e1000/e1000_main.c         |    5 +-
- drivers/net/igb/igb_ethtool.c          |    4 +
- drivers/net/mac8390.c                  |   10 ++--
- drivers/net/macvlan.c                  |    9 ++-
- drivers/net/myri10ge/myri10ge.c        |    1 +
- drivers/net/r8169.c                    |  102 +++++++++++++++++-------------
- drivers/net/wireless/iwlwifi/iwl-sta.c |   21 +++---
- drivers/scsi/3w-xxxx.c                 |    5 +-
- drivers/scsi/3w-xxxx.h                 |    2 +-
- drivers/serial/icom.c                  |    2 +-
- drivers/serial/mpc52xx_uart.c          |    2 +-
- drivers/usb/class/cdc-acm.c            |    4 -
- drivers/usb/host/isp1760-hcd.c         |   24 +++++++-
- drivers/usb/serial/ftdi_sio.c          |    9 +---
- drivers/usb/serial/usb-serial.c        |    1 +
- fs/ext4/ext4.h                         |   30 +++++++++-
- fs/ext4/extents.c                      |   19 ++++--
- fs/ext4/file.c                         |    7 ++-
- fs/ext4/ialloc.c                       |   17 ++---
- fs/ext4/inode.c                        |  106 ++++++++++++++++++++++++++++++--
- fs/ext4/ioctl.c                        |   17 +++++-
- fs/ext4/namei.c                        |   18 +++++-
- fs/ext4/super.c                        |   25 ++++----
- fs/jbd2/revoke.c                       |   24 ++++++--
- fs/nfs/dir.c                           |    3 +-
- include/linux/ptrace.h                 |    1 +
- kernel/exit.c                          |   83 ++++++++++++-------------
- kernel/futex.c                         |   24 ++++---
- kernel/ptrace.c                        |   25 ++++----
- mm/hugetlb.c                           |   26 ++++----
- mm/slub.c                              |    3 +
- net/8021q/vlan_dev.c                   |    3 +-
- net/core/pktgen.c                      |    2 +-
- net/core/skbuff.c                      |    2 +-
- net/ipv4/route.c                       |   60 ++++++------------
- net/ipv4/tcp.c                         |    5 +-
- net/ipv4/tcp_input.c                   |    3 +
- net/mac80211/rc80211_minstrel.c        |    4 +-
- net/mac80211/rc80211_pid_algo.c        |   73 ++++++++++++----------
- net/rose/af_rose.c                     |   10 ---
- net/sched/sch_teql.c                   |    5 +-
- net/wimax/op-msg.c                     |   11 ++--
- net/wireless/reg.c                     |    7 ++
- net/xfrm/xfrm_state.c                  |    6 +-
- security/keys/request_key.c            |    9 ++-
- security/selinux/hooks.c               |    2 +-
- sound/pci/hda/patch_realtek.c          |    1 +
- sound/usb/usbaudio.c                   |    2 +-
- sound/usb/usbaudio.h                   |    2 +-
- sound/usb/usbmidi.c                    |   12 +++-
- sound/usb/usbquirks.h                  |    2 +-
- virt/kvm/kvm_main.c                    |    1 +
- 80 files changed, 692 insertions(+), 385 deletions(-)
+> +	if (mapping) {
+> +		truncate_inode_page(mapping, p);
+> +		if (page_has_private(p) && !try_to_release_page(p, GFP_NOIO)) {
+> +			pr_debug(KERN_ERR "MCE %#lx: failed to release buffers\n",
+> +				pfn);
+> +			return FAILED;
+> +		}
+> +	}
+> +	return RECOVERED;
+> +}
