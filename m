@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932406AbZFIOCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760862AbZFIODI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932406AbZFIOCU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 10:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbZFIOCN
+	id S1760862AbZFIODI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 10:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZFIOC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 10:02:13 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58213 "EHLO smtps.tip.net.au"
+	Tue, 9 Jun 2009 10:02:57 -0400
+Received: from mga01.intel.com ([192.55.52.88]:13251 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750880AbZFIOCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 10:02:12 -0400
-Date: Wed, 10 Jun 2009 00:02:06 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: "John W. Linville" <linville@tuxdriver.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-Subject: Re: linux-next: net/wireless tree build failure
-Message-Id: <20090610000206.999e2865.sfr@canb.auug.org.au>
-In-Reply-To: <1244555682.4672.7.camel@johannes.local>
-References: <20090609233357.5d3801a0.sfr@canb.auug.org.au>
-	<1244555682.4672.7.camel@johannes.local>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__10_Jun_2009_00_02_06_+1000_QFkjpG_knd4Ilfn0"
+	id S1753022AbZFIOC4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 10:02:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,331,1241420400"; 
+   d="scan'208";a="464768221"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>,
+       "cl@linux-foundation.org" <cl@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>, Eric Biederman <ebiederm@aristanetworks.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       David L Stevens <dlstevens@us.ibm.com>, "mingo@elte.hu" <mingo@elte.hu>,
+       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
+       "davem@davemloft.net" <davem@davemloft.net>
+Date: Tue, 9 Jun 2009 15:02:27 +0100
+Subject: RE: [this_cpu_xx 06/11] Eliminate get/put_cpu
+Thread-Topic: [this_cpu_xx 06/11] Eliminate get/put_cpu
+Thread-Index: AcnmFKxf3cVzfAm7TeC6MU8EHJ14NwC9h00A
+Message-ID: <129600E5E5FB004392DDC3FB599660D7ACCAE1C6@irsmsx504.ger.corp.intel.com>
+References: <20090605191819.376530498@gentwo.org>
+	 <20090605191851.393195588@gentwo.org>
+ <e9c3a7c20906051234m499aefbrd1828a6bbee3caf9@mail.gmail.com>
+In-Reply-To: <e9c3a7c20906051234m499aefbrd1828a6bbee3caf9@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__10_Jun_2009_00_02_06_+1000_QFkjpG_knd4Ilfn0
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Dan Williams wrote:
+> [ added Maciej to the cc ]
 
-Hi Johannes,
+Thanks Dan.
 
-On Tue, 09 Jun 2009 15:54:42 +0200 Johannes Berg <johannes@sipsolutions.net=
-> wrote:
->
-> On Tue, 2009-06-09 at 23:33 +1000, Stephen Rothwell wrote:
->=20
-> > Probably caused by commit 19d337dff95cbf76edd3ad95c0cee2732c3e1ec5
-> > ("rfkill: rewrite") which added uses of ERR_PTR to inlines in rfkill.h
-> > but did not include linux/err.h.
->=20
-> Indeed. Something must be including linux/err.h for me, I'll send a fix.
+> 
+> On Fri, Jun 5, 2009 at 12:18 PM, <cl@linux-foundation.org> wrote:
+>> There are cases where we can use this_cpu_ptr and as the result
+>> of using this_cpu_ptr() we no longer need to determine the current executing cpu.
+>> 
+>> In those places no get/put_cpu combination is needed anymore.
+>> The local cpu variable can be eliminated.
+>> 
+>> Preemption still needs to be disabled and enabled since the
+>> modifications of the per cpu variables is not atomic. There may
+>> be multiple per cpu variables modified and those must all
+>> be from the same processor.
+>> 
+>> cc: Dan Williams <dan.j.williams@intel.com>
+> 
+> Acked-by: Dan Williams <dan.j.williams@intel.com>
 
-Thanks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__10_Jun_2009_00_02_06_+1000_QFkjpG_knd4Ilfn0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoua14ACgkQjjKRsyhoI8wXHwCfYMsCXgBSTwUgjBHov6+D6TUq
-JjUAoJJxTr/iRL9mY94kaAQCRDin/064
-=kt1y
------END PGP SIGNATURE-----
-
---Signature=_Wed__10_Jun_2009_00_02_06_+1000_QFkjpG_knd4Ilfn0--
+Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
