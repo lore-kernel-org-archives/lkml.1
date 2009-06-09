@@ -1,217 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758464AbZFIHsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758191AbZFIHug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758464AbZFIHsq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 03:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757538AbZFIHsc
+	id S1758191AbZFIHug (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 03:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbZFIHu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 03:48:32 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56112 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758100AbZFIHsa (ORCPT
+	Tue, 9 Jun 2009 03:50:29 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:63723 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754784AbZFIHu2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 03:48:30 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
-       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1244466090-10711-2-git-send-email-mel@csn.ul.ie>
-References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-2-git-send-email-mel@csn.ul.ie>
-Message-Id: <20090609143211.DD64.A69D9226@jp.fujitsu.com>
+	Tue, 9 Jun 2009 03:50:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=AFMdck5MS4PmaxatZg/tnAwGASU+r0g1xgt+lz1h0Di3k6sJ2DvZukcDQMWo4pd5OM
+         mNTBx62e9jYuwwy0vZdVETXWOLuAtxnoX6VkHucQ4L2FBtZJZxDIPCLX2gpoZWH59uo1
+         Q6x2FIZfMD4ejckgtgUYcHIAizDwne0klORTU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+In-Reply-To: <20090608141212.GE15070@csn.ul.ie>
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera> <4A2BBC30.2030300@lwfinger.net>
+	 <84144f020906070640rf5ab14nbf66d3ca7c97675f@mail.gmail.com>
+	 <4A2BCC6F.8090004@redhat.com>
+	 <84144f020906070732l31786156r5d9753a0cabfde79@mail.gmail.com>
+	 <20090608101739.GA15377@csn.ul.ie>
+	 <84144f020906080352k57f12ff9pbd696da5f332ac1a@mail.gmail.com>
+	 <20090608110303.GD15377@csn.ul.ie>
+	 <Pine.LNX.4.64.0906081657001.7036@melkki.cs.Helsinki.FI>
+	 <20090608141212.GE15070@csn.ul.ie>
+Date: Tue, 9 Jun 2009 10:50:28 +0300
+X-Google-Sender-Auth: 54c3e314add1e3cc
+Message-ID: <84144f020906090050y351e3e9cmb69a089e1a996cd4@mail.gmail.com>
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Rik van Riel <riel@redhat.com>, Larry Finger <Larry.Finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  9 Jun 2009 16:48:28 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Mon, Jun 8, 2009 at 5:12 PM, Mel Gorman<mel@csn.ul.ie> wrote:
+> In addition, include how many objects there are per-slab and include what
+> the order is being passed to the page allocator when allocating new slabs.
+> Would that be enough to determine if fallback-to-smaller orders occured?
 
-> On NUMA machines, the administrator can configure zone_reclaim_mode that is a
-> more targetted form of direct reclaim. On machines with large NUMA distances,
-> zone_reclaim_mode defaults to 1 meaning that clean unmapped pages will be
-> reclaimed if the zone watermarks are not being met. The problem is that
-> zone_reclaim() can be in a situation where it scans excessively without
-> making progress.
-> 
-> One such situation is where a large tmpfs mount is occupying a large
-> percentage of memory overall. The pages do not get cleaned or reclaimed by
-> zone_reclaim(), but the lists are uselessly scanned frequencly making the
-> CPU spin at 100%. The scanning occurs because zone_reclaim() cannot tell
-> in advance the scan is pointless because the counters do not distinguish
-> between pagecache pages backed by disk and by RAM.  The observation in
-> the field is that malloc() stalls for a long time (minutes in some cases)
-> when this situation occurs.
-> 
-> Accounting for ram-backed file pages was considered but not implemented on
-> the grounds it would be introducing new branches and expensive checks into
-> the page cache add/remove patches and increase the number of statistics
-> needed in the zone. As zone_reclaim() failing is currently considered a
-> corner case, this seemed like overkill. Note, if there are a large number
-> of reports about CPU spinning at 100% on NUMA that is fixed by disabling
-> zone_reclaim, then this assumption is false and zone_reclaim() scanning
-> and failing is not a corner case but a common occurance
-> 
-> This patch reintroduces zone_reclaim_interval which was removed by commit
-> 34aa1330f9b3c5783d269851d467326525207422 [zoned vm counters: zone_reclaim:
-> remove /proc/sys/vm/zone_reclaim_interval] because the zone counters were
-> considered sufficient to determine in advance if the scan would succeed.
-> As unsuccessful scans can still occur, zone_reclaim_interval is still
-> required.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie
-> ---
->  Documentation/sysctl/vm.txt |   13 +++++++++++++
->  include/linux/mmzone.h      |    9 +++++++++
->  include/linux/swap.h        |    1 +
->  kernel/sysctl.c             |    9 +++++++++
->  mm/vmscan.c                 |   22 ++++++++++++++++++++++
->  5 files changed, 54 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
-> index c302ddf..f9b8db5 100644
-> --- a/Documentation/sysctl/vm.txt
-> +++ b/Documentation/sysctl/vm.txt
-> @@ -52,6 +52,7 @@ Currently, these files are in /proc/sys/vm:
->  - swappiness
->  - vfs_cache_pressure
->  - zone_reclaim_mode
-> +- zone_reclaim_interval
->  
->  
->  ==============================================================
-> @@ -620,4 +621,16 @@ Allowing regular swap effectively restricts allocations to the local
->  node unless explicitly overridden by memory policies or cpuset
->  configurations.
->  
-> +================================================================
-> +
-> +zone_reclaim_interval:
-> +
-> +The time allowed for off node allocations after zone reclaim
-> +has failed to reclaim enough pages to allow a local allocation.
-> +
-> +Time is set in seconds and set by default to 30 seconds.
-> +
-> +Reduce the interval if undesired off node allocations occur. However, too
-> +frequent scans will have a negative impact on off-node allocation performance.
-> +
->  ============ End of Document =================================
-> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-> index a47c879..f1f0fb2 100644
-> --- a/include/linux/mmzone.h
-> +++ b/include/linux/mmzone.h
-> @@ -337,6 +337,15 @@ struct zone {
->  	atomic_long_t		vm_stat[NR_VM_ZONE_STAT_ITEMS];
->  
->  	/*
-> +	 * timestamp (in jiffies) of the last zone_reclaim that scanned
-> +	 * but failed to free enough pages. This is used to avoid repeated
-> +	 * scans when zone_reclaim() is unable to detect in advance that
-> +	 * the scanning is useless. This can happen for example if a zone
-> +	 * has large numbers of clean unmapped file pages on tmpfs
-> +	 */
-> +	unsigned long		zone_reclaim_failure;
-> +
-> +	/*
->  	 * prev_priority holds the scanning priority for this zone.  It is
->  	 * defined as the scanning priority at which we achieved our reclaim
->  	 * target at the previous try_to_free_pages() or balance_pgdat()
-> diff --git a/include/linux/swap.h b/include/linux/swap.h
-> index d476aad..6a71368 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -224,6 +224,7 @@ extern long vm_total_pages;
->  
->  #ifdef CONFIG_NUMA
->  extern int zone_reclaim_mode;
-> +extern int zone_reclaim_interval;
->  extern int sysctl_min_unmapped_ratio;
->  extern int sysctl_min_slab_ratio;
->  extern int zone_reclaim(struct zone *, gfp_t, unsigned int);
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index b2970d5..cc0623c 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -1192,6 +1192,15 @@ static struct ctl_table vm_table[] = {
->  		.extra1		= &zero,
->  	},
->  	{
-> +		.ctl_name       = CTL_UNNUMBERED,
-> +		.procname       = "zone_reclaim_interval",
-> +		.data           = &zone_reclaim_interval,
-> +		.maxlen         = sizeof(zone_reclaim_interval),
-> +		.mode           = 0644,
-> +		.proc_handler   = &proc_dointvec_jiffies,
-> +		.strategy       = &sysctl_jiffies,
-> +	},
-
-hmmm, I think nobody can know proper interval settings on his own systems.
-I agree with Wu. It can be hidden.
-
-
-> +	{
->  		.ctl_name	= VM_MIN_UNMAPPED,
->  		.procname	= "min_unmapped_ratio",
->  		.data		= &sysctl_min_unmapped_ratio,
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index d254306..ba211c1 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -2272,6 +2272,13 @@ int zone_reclaim_mode __read_mostly;
->  #define RECLAIM_SWAP (1<<2)	/* Swap pages out during reclaim */
->  
->  /*
-> + * Minimum time between zone_reclaim() scans that failed. Ordinarily, a
-> + * scan will not fail because it will be determined in advance if it can
-> + * succeeed but this does not always work. See mmzone.h
-> + */
-> +int zone_reclaim_interval __read_mostly = 30*HZ;
-> +
-> +/*
->   * Priority for ZONE_RECLAIM. This determines the fraction of pages
->   * of a node considered for each zone_reclaim. 4 scans 1/16th of
->   * a zone.
-> @@ -2390,6 +2397,11 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
->  			<= zone->min_slab_pages)
->  		return 0;
->  
-> +	/* Do not attempt a scan if scanning failed recently */
-> +	if (time_before(jiffies,
-> +			zone->zone_reclaim_failure + zone_reclaim_interval))
-> +		return 0;
-> +
->  	if (zone_is_all_unreclaimable(zone))
->  		return 0;
->  
-> @@ -2414,6 +2426,16 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
->  	ret = __zone_reclaim(zone, gfp_mask, order);
->  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
->  
-> +	if (!ret) {
-> +		/*
-> +		 * We were unable to reclaim enough pages to stay on node and
-> +		 * unable to detect in advance that the scan would fail. Allow
-> +		 * off node accesses for zone_reclaim_inteval jiffies before
-> +		 * trying zone_reclaim() again
-> +		 */
-> +		zone->zone_reclaim_failure = jiffies;
-
-Oops, this simple assignment don't care jiffies round-trip.
-
-
-> +	}
-> +
->  	return ret;
->  }
->  #endif
-> -- 
-> 1.5.6.5
-> 
-
-
-
+Well, if the slab_out_of_memory() is called, we already know the
+higher order allocation failed _and_ the fallback allocation failed.
+So yes, it would be enough.
