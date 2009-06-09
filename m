@@ -1,430 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbZFIIeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbZFIIfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759354AbZFIIeY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 04:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756814AbZFIIeQ
+	id S1759354AbZFIIfT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 04:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757795AbZFIIfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 04:34:16 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:52508 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753098AbZFIIeO (ORCPT
+	Tue, 9 Jun 2009 04:35:08 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:18698 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757610AbZFIIfH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 04:34:14 -0400
-Date: Tue, 9 Jun 2009 16:34:06 +0800
-From: Harald Welte <HaraldWelte@viatech.com>
-To: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Cc: lm-sensors@lm-sensors.org
-Subject: [PATCH] hwmon: Add driver for VIA CPU core temperature
-Message-ID: <20090609083406.GE25316@prithivi.gnumonks.org>
+	Tue, 9 Jun 2009 04:35:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=bP6/4Q2pa6Qns8zY94lMcAnzJk0kDdQwmMyiwbu4x7YOOQy4ZVqFqEeh/YdKfAdOCt
+         gTnas8cqgNV8JKpp2meWyBKl9zPf1GDwoD4RnVYKWP3H8D7/UBGSP2EmutXTv7feNIKf
+         yYGwHdjjYCyJ5LiNWDp8C3duQClahF1g15uKw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090609172035.DD7C.A69D9226@jp.fujitsu.com>
+References: <20090609164850.DD73.A69D9226@jp.fujitsu.com>
+	 <28c262360906090119r6e881caq9b74028ba43567a7@mail.gmail.com>
+	 <20090609172035.DD7C.A69D9226@jp.fujitsu.com>
+Date: Tue, 9 Jun 2009 17:35:09 +0900
+Message-ID: <28c262360906090135x3382456by3518434a9939002b@mail.gmail.com>
+Subject: Re: [PATCH mmotm] vmscan: handle may_swap more strictly (Re: [PATCH 
+	mmotm] vmscan: fix may_swap handling for memcg)
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a driver for the on-die digital temperature sensor of
-VIA's recent CPU models.
+On Tue, Jun 9, 2009 at 5:24 PM, KOSAKI
+Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
+>> On Tue, Jun 9, 2009 at 4:58 PM, KOSAKI
+>> Motohiro<kosaki.motohiro@jp.fujitsu.com> wrote:
+>> >> Hi, KOSAKI.
+>> >>
+>> >> As you know, this problem caused by if condition(priority) in shrink_zone.
+>> >> Let me have a question.
+>> >>
+>> >> Why do we have to prevent scan value calculation when the priority is zero ?
+>> >> As I know, before split-lru, we didn't do it.
+>> >>
+>> >> Is there any specific issue in case of the priority is zero ?
+>> >
+>> > Yes.
+>> >
+>> > example:
+>> >
+>> > get_scan_ratio() return anon:80%, file=20%. and the system have
+>> > 10000 anon pages and 10000 file pages.
+>> >
+>> > shrink_zone() picked up 8000 anon pages and 2000 file pages.
+>> > it mean 8000 file pages aren't scanned at all.
+>> >
+>> > Oops, it can makes OOM-killer although system have droppable file cache.
+>> >
+>> Hmm..Can that problem be happen in real system ?
+>> The file ratio is big means that file lru list scanning is so big but
+>> rotate is small.
+>> It means file lru have few reclaimable page.
+>>
+>> Isn't it ? I am confusing.
+>> Could you elaborate, please if you don't mind ?
+>
+> hm, ok, my example was wrong.
+> I intention is, if there are droppable file-back pages (althout only 1 page),
+> OOM-killer shouldn't occuer.
+>
+> many or few is unrelated.
+>
 
-Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
----
- drivers/hwmon/Kconfig       |    8 +
- drivers/hwmon/Makefile      |    1 +
- drivers/hwmon/via-cputemp.c |  354 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 363 insertions(+), 0 deletions(-)
- create mode 100644 drivers/hwmon/via-cputemp.c
+I am not sure that is effective.
+Have you ever met this problem in real situation ?
 
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index d73f5f4..e863833 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -787,6 +787,14 @@ config SENSORS_THMC50
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called thmc50.
- 
-+config SENSORS_VIA_CPUTEMP
-+	tristate "VIA CPU temperature sensor"
-+	depends on X86
-+	help
-+	  If you say yes here you get support for the temperature
-+	  sensor inside your CPU. Supported all are all known variants
-+	  of the VIA C7 and Nano.
-+
- config SENSORS_VIA686A
- 	tristate "VIA686A"
- 	depends on PCI
-diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index 0ae2698..3edf7fa 100644
---- a/drivers/hwmon/Makefile
-+++ b/drivers/hwmon/Makefile
-@@ -82,6 +82,7 @@ obj-$(CONFIG_SENSORS_SMSC47B397)+= smsc47b397.o
- obj-$(CONFIG_SENSORS_SMSC47M1)	+= smsc47m1.o
- obj-$(CONFIG_SENSORS_SMSC47M192)+= smsc47m192.o
- obj-$(CONFIG_SENSORS_THMC50)	+= thmc50.o
-+obj-$(CONFIG_SENSORS_VIA_CPUTEMP)+= via-cputemp.o
- obj-$(CONFIG_SENSORS_VIA686A)	+= via686a.o
- obj-$(CONFIG_SENSORS_VT1211)	+= vt1211.o
- obj-$(CONFIG_SENSORS_VT8231)	+= vt8231.o
-diff --git a/drivers/hwmon/via-cputemp.c b/drivers/hwmon/via-cputemp.c
-new file mode 100644
-index 0000000..1032355
---- /dev/null
-+++ b/drivers/hwmon/via-cputemp.c
-@@ -0,0 +1,354 @@
-+/*
-+ * via-cputemp.c - Driver for VIA CPU core temperature monitoring
-+ * Copyright (C) 2009 VIA Technologies, Inc.
-+ *
-+ * based on existing coretemp.c, which is
-+ *
-+ * Copyright (C) 2007 Rudolf Marek <r.marek@assembler.cz>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; version 2 of the License.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-+ * 02110-1301 USA.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/delay.h>
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/jiffies.h>
-+#include <linux/hwmon.h>
-+#include <linux/sysfs.h>
-+#include <linux/hwmon-sysfs.h>
-+#include <linux/err.h>
-+#include <linux/mutex.h>
-+#include <linux/list.h>
-+#include <linux/platform_device.h>
-+#include <linux/cpu.h>
-+#include <asm/msr.h>
-+#include <asm/processor.h>
-+
-+#define DRVNAME	"via-cputemp"
-+
-+typedef enum { SHOW_TEMP, SHOW_LABEL, SHOW_NAME } SHOW;
-+
-+/*
-+ * Functions declaration
-+ */
-+
-+struct via_cputemp_data {
-+	struct device *hwmon_dev;
-+	const char *name;
-+	u32 id;
-+	u32 msr;
-+};
-+
-+/*
-+ * Sysfs stuff
-+ */
-+
-+static ssize_t show_name(struct device *dev, struct device_attribute
-+			  *devattr, char *buf)
-+{
-+	int ret;
-+	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
-+	struct via_cputemp_data *data = dev_get_drvdata(dev);
-+
-+	if (attr->index == SHOW_NAME)
-+		ret = sprintf(buf, "%s\n", data->name);
-+	else	/* show label */
-+		ret = sprintf(buf, "Core %d\n", data->id);
-+	return ret;
-+}
-+
-+static ssize_t show_temp(struct device *dev,
-+			 struct device_attribute *devattr, char *buf)
-+{
-+	struct via_cputemp_data *data = dev_get_drvdata(dev);
-+	u32 eax, edx;
-+	int err;
-+
-+	err = rdmsr_safe_on_cpu(data->id, data->msr, &eax, &edx);
-+	if (err)
-+		return -EAGAIN;
-+
-+	err = sprintf(buf, "%d\n", eax & 0xffffff);
-+
-+	return err;
-+}
-+
-+static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp, NULL,
-+			  SHOW_TEMP);
-+static SENSOR_DEVICE_ATTR(temp1_label, S_IRUGO, show_name, NULL, SHOW_LABEL);
-+static SENSOR_DEVICE_ATTR(name, S_IRUGO, show_name, NULL, SHOW_NAME);
-+
-+static struct attribute *via_cputemp_attributes[] = {
-+	&sensor_dev_attr_name.dev_attr.attr,
-+	&sensor_dev_attr_temp1_label.dev_attr.attr,
-+	&sensor_dev_attr_temp1_input.dev_attr.attr,
-+	NULL
-+};
-+
-+static const struct attribute_group via_cputemp_group = {
-+	.attrs = via_cputemp_attributes,
-+};
-+
-+static int __devinit via_cputemp_probe(struct platform_device *pdev)
-+{
-+	struct via_cputemp_data *data;
-+	struct cpuinfo_x86 *c = &cpu_data(pdev->id);
-+	int err;
-+	u32 eax, edx;
-+
-+	if (!(data = kzalloc(sizeof(struct via_cputemp_data), GFP_KERNEL))) {
-+		err = -ENOMEM;
-+		dev_err(&pdev->dev, "Out of memory\n");
-+		goto exit;
-+	}
-+
-+	data->id = pdev->id;
-+	data->name = "via-cputemp";
-+
-+	switch (c->x86_model) {
-+	case 0xA:
-+		/* C7 A */
-+	case 0xD:
-+		/* C7 D */
-+		data->msr = 0x1169;
-+		break;
-+	case 0xF:
-+		/* Nano */
-+		data->msr = 0x1423;
-+		break;
-+	default:
-+		err = -ENODEV;
-+		goto exit_free;
-+	}
-+
-+	/* test if we can access the TEMPERATURE MSR */
-+	err = rdmsr_safe_on_cpu(data->id, data->msr, &eax, &edx);
-+	if (err) {
-+		dev_err(&pdev->dev,
-+			"Unable to access TEMPERATURE MSR, giving up\n");
-+		goto exit_free;
-+	}
-+
-+	platform_set_drvdata(pdev, data);
-+
-+	if ((err = sysfs_create_group(&pdev->dev.kobj, &via_cputemp_group)))
-+		goto exit_free;
-+
-+	data->hwmon_dev = hwmon_device_register(&pdev->dev);
-+	if (IS_ERR(data->hwmon_dev)) {
-+		err = PTR_ERR(data->hwmon_dev);
-+		dev_err(&pdev->dev, "Class registration failed (%d)\n",
-+			err);
-+		goto exit_class;
-+	}
-+
-+	return 0;
-+
-+exit_class:
-+	sysfs_remove_group(&pdev->dev.kobj, &via_cputemp_group);
-+exit_free:
-+	kfree(data);
-+exit:
-+	return err;
-+}
-+
-+static int __devexit via_cputemp_remove(struct platform_device *pdev)
-+{
-+	struct via_cputemp_data *data = platform_get_drvdata(pdev);
-+
-+	hwmon_device_unregister(data->hwmon_dev);
-+	sysfs_remove_group(&pdev->dev.kobj, &via_cputemp_group);
-+	platform_set_drvdata(pdev, NULL);
-+	kfree(data);
-+	return 0;
-+}
-+
-+static struct platform_driver via_cputemp_driver = {
-+	.driver = {
-+		.owner = THIS_MODULE,
-+		.name = DRVNAME,
-+	},
-+	.probe = via_cputemp_probe,
-+	.remove = __devexit_p(via_cputemp_remove),
-+};
-+
-+struct pdev_entry {
-+	struct list_head list;
-+	struct platform_device *pdev;
-+	unsigned int cpu;
-+};
-+
-+static LIST_HEAD(pdev_list);
-+static DEFINE_MUTEX(pdev_list_mutex);
-+
-+static int __cpuinit via_cputemp_device_add(unsigned int cpu)
-+{
-+	int err;
-+	struct platform_device *pdev;
-+	struct pdev_entry *pdev_entry;
-+
-+	pdev = platform_device_alloc(DRVNAME, cpu);
-+	if (!pdev) {
-+		err = -ENOMEM;
-+		printk(KERN_ERR DRVNAME ": Device allocation failed\n");
-+		goto exit;
-+	}
-+
-+	pdev_entry = kzalloc(sizeof(struct pdev_entry), GFP_KERNEL);
-+	if (!pdev_entry) {
-+		err = -ENOMEM;
-+		goto exit_device_put;
-+	}
-+
-+	err = platform_device_add(pdev);
-+	if (err) {
-+		printk(KERN_ERR DRVNAME ": Device addition failed (%d)\n",
-+		       err);
-+		goto exit_device_free;
-+	}
-+
-+	pdev_entry->pdev = pdev;
-+	pdev_entry->cpu = cpu;
-+	mutex_lock(&pdev_list_mutex);
-+	list_add_tail(&pdev_entry->list, &pdev_list);
-+	mutex_unlock(&pdev_list_mutex);
-+
-+	return 0;
-+
-+exit_device_free:
-+	kfree(pdev_entry);
-+exit_device_put:
-+	platform_device_put(pdev);
-+exit:
-+	return err;
-+}
-+
-+#ifdef CONFIG_HOTPLUG_CPU
-+static void via_cputemp_device_remove(unsigned int cpu)
-+{
-+	struct pdev_entry *p, *n;
-+	mutex_lock(&pdev_list_mutex);
-+	list_for_each_entry_safe(p, n, &pdev_list, list) {
-+		if (p->cpu == cpu) {
-+			platform_device_unregister(p->pdev);
-+			list_del(&p->list);
-+			kfree(p);
-+		}
-+	}
-+	mutex_unlock(&pdev_list_mutex);
-+}
-+
-+static int __cpuinit via_cputemp_cpu_callback(struct notifier_block *nfb,
-+				 unsigned long action, void *hcpu)
-+{
-+	unsigned int cpu = (unsigned long) hcpu;
-+
-+	switch (action) {
-+	case CPU_ONLINE:
-+	case CPU_DOWN_FAILED:
-+		via_cputemp_device_add(cpu);
-+		break;
-+	case CPU_DOWN_PREPARE:
-+		via_cputemp_device_remove(cpu);
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block via_cputemp_cpu_notifier __refdata = {
-+	.notifier_call = via_cputemp_cpu_callback,
-+};
-+#endif				/* !CONFIG_HOTPLUG_CPU */
-+
-+static int __init via_cputemp_init(void)
-+{
-+	int i, err = -ENODEV;
-+	struct pdev_entry *p, *n;
-+
-+	if (cpu_data(0).x86_vendor != X86_VENDOR_CENTAUR) {
-+		printk(KERN_DEBUG "not a VIA CPU\n");
-+		goto exit;
-+	}
-+
-+	err = platform_driver_register(&via_cputemp_driver);
-+	if (err)
-+		goto exit;
-+
-+	for_each_online_cpu(i) {
-+		struct cpuinfo_x86 *c = &cpu_data(i);
-+
-+		if (c->x86 != 6)
-+			continue;
-+
-+		if (c->x86_model < 0x0a)
-+			continue;
-+
-+		if (c->x86_model > 0x0f) {
-+			printk(KERN_WARNING DRVNAME ": Unknown CPU "
-+				"model %x\n", c->x86_model);
-+			continue;
-+		}
-+
-+		err = via_cputemp_device_add(i);
-+		if (err)
-+			goto exit_devices_unreg;
-+	}
-+	if (list_empty(&pdev_list)) {
-+		err = -ENODEV;
-+		goto exit_driver_unreg;
-+	}
-+
-+#ifdef CONFIG_HOTPLUG_CPU
-+	register_hotcpu_notifier(&via_cputemp_cpu_notifier);
-+#endif
-+	return 0;
-+
-+exit_devices_unreg:
-+	mutex_lock(&pdev_list_mutex);
-+	list_for_each_entry_safe(p, n, &pdev_list, list) {
-+		platform_device_unregister(p->pdev);
-+		list_del(&p->list);
-+		kfree(p);
-+	}
-+	mutex_unlock(&pdev_list_mutex);
-+exit_driver_unreg:
-+	platform_driver_unregister(&via_cputemp_driver);
-+exit:
-+	return err;
-+}
-+
-+static void __exit via_cputemp_exit(void)
-+{
-+	struct pdev_entry *p, *n;
-+#ifdef CONFIG_HOTPLUG_CPU
-+	unregister_hotcpu_notifier(&via_cputemp_cpu_notifier);
-+#endif
-+	mutex_lock(&pdev_list_mutex);
-+	list_for_each_entry_safe(p, n, &pdev_list, list) {
-+		platform_device_unregister(p->pdev);
-+		list_del(&p->list);
-+		kfree(p);
-+	}
-+	mutex_unlock(&pdev_list_mutex);
-+	platform_driver_unregister(&via_cputemp_driver);
-+}
-+
-+MODULE_AUTHOR("Harald Welte <HaraldWelte@viatech.com>");
-+MODULE_DESCRIPTION("VIA CPU temperature monitor");
-+MODULE_LICENSE("GPL");
-+
-+module_init(via_cputemp_init)
-+module_exit(via_cputemp_exit)
+BTW, I have to dive into code. :)
+Thanks for spending valuable time for commenting
+
 -- 
-1.6.3.1
+Kinds regards,
+Minchan Kim
