@@ -1,156 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761420AbZFINtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761243AbZFINsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761420AbZFINtW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761315AbZFINsh
+	id S1761243AbZFINsW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbZFINq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:48:37 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42404 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761344AbZFINsf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:48:35 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH v4] zone_reclaim is always 0 by default
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Robin Holt <holt@sgi.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       Wu Fengguang <fengguang.wu@intel.com>, linux-ia64@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090608115048.GA15070@csn.ul.ie>
-References: <20090604192236.9761.A69D9226@jp.fujitsu.com> <20090608115048.GA15070@csn.ul.ie>
-Message-Id: <20090609211721.DD9A.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  9 Jun 2009 22:48:34 +0900 (JST)
+	Tue, 9 Jun 2009 09:46:57 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:51563 "EHLO mx1.emlix.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751584AbZFINqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 09:46:53 -0400
+From: "Oskar Schirmer" <os@emlix.com>
+To: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Oskar Schirmer <os@emlix.com>
+Subject: [PATCH 1/8] imx: serial: fix whitespaces (no changes in functionality)
+Date: Tue,  9 Jun 2009 15:46:44 +0200
+Message-Id: <1244555211-15618-2-git-send-email-os@emlix.com>
+In-Reply-To: <1244555211-15618-1-git-send-email-os@emlix.com>
+References: <1244555211-15618-1-git-send-email-os@emlix.com>
+Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Signed-off-by: Oskar Schirmer <os@emlix.com>
+---
+ drivers/serial/imx.c |   48 +++++++++++++++++++++++-------------------------
+ 1 files changed, 23 insertions(+), 25 deletions(-)
 
-sorry for late responce. my e-mail reading speed is very slow ;-)
-
-First, Could you please read past thread?
-I think many topic of this mail are already discussed.
-
-
-> On Thu, Jun 04, 2009 at 07:23:15PM +0900, KOSAKI Motohiro wrote:
-> > 
-> > Current linux policy is, zone_reclaim_mode is enabled by default if the machine
-> > has large remote node distance. it's because we could assume that large distance
-> > mean large server until recently.
-> > 
-> 
-> We don't make assumptions about the server being large, small or otherwise. The
-> affinity tables reporting a distance of 20 or more is saying "remote memory
-> has twice the latency of local memory". This is true irrespective of workload
-> and implies that going off-node has a real penalty regardless of workload.
-
-No.
-Now, we talk about off-node allocation vs unnecessary file cache dropping.
-IOW, off-node allocation vs disk access.
-
-Then, the worth doesn't only depend on off-node distance, but also depend on
-workload IO tendency and IO speed.
-
-Fujitsu has 64 core ia64 HPC box, zone-reclaim sometimes made performance
-degression although its box. 
-
-So, I don't think this problem is small vs large machine issue.
-nor i7 issue.
-high-speed P2P CPU integrated memory controller expose old issue.
-
-
-> > In general, workload depended configration shouldn't put into default settings.
-> > 
-> > However, current code is long standing about two year. Highest POWER and IA64 HPC machine
-> > (only) use this setting.
-> > 
-> > Thus, x86 and almost rest architecture change default setting, but Only power and ia64
-> > remain current configuration for backward-compatibility.
-> > 
-> 
-> What about if it's x86-64-based NUMA but it's not i7 based. There, the
-> NUMA distances might really mean something and that zone_reclaim behaviour
-> is desirable.
-
-hmmm..
-I don't hope ignore AMD, I think it's common characterastic of P2P and
-integrated memory controller machine.
-
-Also, I don't hope detect CPU family or similar, because we need update
-such code evey when Intel makes new cpu.
-
-Can we detect P2P interconnect machine? I'm not sure.
-
-
-> I think if we're going down the road of setting the default, it shouldn't be
-> per-architecture defaults as such. Other choices for addressing this might be;
-> 
-> 1. Make RECLAIM_DISTANCE a variable on x86. Set it to 20 by default, and 5
->    (or some other sensible figure) on i7
-> 
-> 2. There should be a per-arch modifier callback for the affinity
->    distances. If the x86 code detects the CPU is an i7, it can reduce the
->    reported latencies to be more in line with expected reality.
-> 
-> 3. Do not use zone_reclaim() for file-backed data if more than 20% of memory
->    overall is free. The difficulty is figuring out if the allocation is for
->    file pages.
-> 
-> 4. Change zone_reclaim_mode default to mean "do your best to figure it
->    out". Patch 1 would default large distances to 1 to see what happens.
->    Then apply a heuristic when in figure-it-out mode and using reclaim_mode == 1
-> 
-> 	If we have locally reclaimed 2% of the nodes memory in file pages
-> 	within the last 5 seconds when >= 20% of total physical memory was
-> 	free, then set the reclaim_mode to 0 on the assumption the node is
-> 	mostly caching pages and shouldn't be reclaimed to avoid excessive IO
-> 
-> Option 1 would appear to be the most straight-forward but option 2
-> should be doable. Option 3 and 4 could turn into a rats nest and I would
-> consider those approaches a bit more drastic.
-
-hmhm. 
-I think the key-point of option 1 and 2 are proper hardware detecting way.
-
-option 3 and 4 are more prefere idea to me. I like workload adapted heuristic.
-but you already pointed out its hard, because page-allocator don't know
-allocation purpose ;)
-
-
-> > @@ -10,6 +10,12 @@ struct device_node;
-> >  
-> >  #include <asm/mmzone.h>
-> >  
-> > +/*
-> > + * Distance above which we begin to use zone reclaim
-> > + */
-> > +#define RECLAIM_DISTANCE 20
-> > +
-> > +
-> 
-> Where is the ia-64-specific modifier to RECAIM_DISTANCE?
-
-
-arch/ia64/include/asm/topology.h has
-
-	/*
-	 * Distance above which we begin to use zone reclaim
-	 */
-	#define RECLAIM_DISTANCE 15
-
-
-I don't think distance==15 is machine independent proper definition.
-but there is long lived definition ;)
-
-
-
+diff --git a/drivers/serial/imx.c b/drivers/serial/imx.c
+index 9f460b1..424f679 100644
+--- a/drivers/serial/imx.c
++++ b/drivers/serial/imx.c
+@@ -302,8 +302,7 @@ static inline void imx_transmit_buffer(struct imx_port *sport)
+ 		/* send xmit->buf[xmit->tail]
+ 		 * out the port here */
+ 		writel(xmit->buf[xmit->tail], sport->port.membase + URTX0);
+-		xmit->tail = (xmit->tail + 1) &
+-		         (UART_XMIT_SIZE - 1);
++		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
+ 		sport->port.icount.tx++;
+ 		if (uart_circ_empty(xmit))
+ 			break;
+@@ -395,8 +394,7 @@ static irqreturn_t imx_rxint(int irq, void *dev_id)
+ 				continue;
+ 		}
+ 
+-		if (uart_handle_sysrq_char
+-		            (&sport->port, (unsigned char)rx))
++		if (uart_handle_sysrq_char(&sport->port, (unsigned char)rx))
+ 			continue;
+ 
+ 		if (rx & (URXD_PRERR | URXD_OVRRUN | URXD_FRMERR) ) {
+@@ -471,26 +469,26 @@ static unsigned int imx_tx_empty(struct uart_port *port)
+  */
+ static unsigned int imx_get_mctrl(struct uart_port *port)
+ {
+-        struct imx_port *sport = (struct imx_port *)port;
+-        unsigned int tmp = TIOCM_DSR | TIOCM_CAR;
++	struct imx_port *sport = (struct imx_port *)port;
++	unsigned int tmp = TIOCM_DSR | TIOCM_CAR;
+ 
+-        if (readl(sport->port.membase + USR1) & USR1_RTSS)
+-                tmp |= TIOCM_CTS;
++	if (readl(sport->port.membase + USR1) & USR1_RTSS)
++		tmp |= TIOCM_CTS;
+ 
+-        if (readl(sport->port.membase + UCR2) & UCR2_CTS)
+-                tmp |= TIOCM_RTS;
++	if (readl(sport->port.membase + UCR2) & UCR2_CTS)
++		tmp |= TIOCM_RTS;
+ 
+-        return tmp;
++	return tmp;
+ }
+ 
+ static void imx_set_mctrl(struct uart_port *port, unsigned int mctrl)
+ {
+-        struct imx_port *sport = (struct imx_port *)port;
++	struct imx_port *sport = (struct imx_port *)port;
+ 	unsigned long temp;
+ 
+ 	temp = readl(sport->port.membase + UCR2) & ~UCR2_CTS;
+ 
+-        if (mctrl & TIOCM_RTS)
++	if (mctrl & TIOCM_RTS)
+ 		temp |= UCR2_CTS;
+ 
+ 	writel(temp, sport->port.membase + UCR2);
+@@ -1070,22 +1068,22 @@ static struct uart_driver imx_reg = {
+ 
+ static int serial_imx_suspend(struct platform_device *dev, pm_message_t state)
+ {
+-        struct imx_port *sport = platform_get_drvdata(dev);
++	struct imx_port *sport = platform_get_drvdata(dev);
+ 
+-        if (sport)
+-                uart_suspend_port(&imx_reg, &sport->port);
++	if (sport)
++		uart_suspend_port(&imx_reg, &sport->port);
+ 
+-        return 0;
++	return 0;
+ }
+ 
+ static int serial_imx_resume(struct platform_device *dev)
+ {
+-        struct imx_port *sport = platform_get_drvdata(dev);
++	struct imx_port *sport = platform_get_drvdata(dev);
+ 
+-        if (sport)
+-                uart_resume_port(&imx_reg, &sport->port);
++	if (sport)
++		uart_resume_port(&imx_reg, &sport->port);
+ 
+-        return 0;
++	return 0;
+ }
+ 
+ static int serial_imx_probe(struct platform_device *pdev)
+@@ -1141,7 +1139,7 @@ static int serial_imx_probe(struct platform_device *pdev)
+ 	imx_ports[pdev->id] = sport;
+ 
+ 	pdata = pdev->dev.platform_data;
+-	if(pdata && (pdata->flags & IMXUART_HAVE_RTSCTS))
++	if (pdata && (pdata->flags & IMXUART_HAVE_RTSCTS))
+ 		sport->have_rtscts = 1;
+ 
+ 	if (pdata->init) {
+@@ -1191,13 +1189,13 @@ static int serial_imx_remove(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver serial_imx_driver = {
+-        .probe          = serial_imx_probe,
+-        .remove         = serial_imx_remove,
++	.probe		= serial_imx_probe,
++	.remove		= serial_imx_remove,
+ 
+ 	.suspend	= serial_imx_suspend,
+ 	.resume		= serial_imx_resume,
+ 	.driver		= {
+-	        .name	= "imx-uart",
++		.name	= "imx-uart",
+ 		.owner	= THIS_MODULE,
+ 	},
+ };
+-- 
+1.5.3.7
 
