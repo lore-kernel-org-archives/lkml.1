@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760496AbZFIKg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762938AbZFIKgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760496AbZFIKg3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757420AbZFIKWD
+	id S1762938AbZFIKgz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760572AbZFIKWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:22:03 -0400
-Received: from kroah.org ([198.145.64.141]:55576 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:22:11 -0400
+Received: from kroah.org ([198.145.64.141]:55612 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760849AbZFIKWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:22:00 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:10 2009
-Message-Id: <20090609094110.692675455@blue.kroah.org>
+	id S1758217AbZFIKWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:22:08 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:11 2009
+Message-Id: <20090609094111.149644013@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:40:06 -0700
+Date: Tue, 09 Jun 2009 02:40:08 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,157 +26,83 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
+       Jan Kara <jack@suse.cz>, Lin Tan <tammy000@gmail.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 78/87] ext4: Add auto_da_alloc mount option
+Subject: [patch 80/87] jbd2: Update locking coments
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-add-auto_da_alloc-mount-option.patch
+Content-Disposition: inline; filename=jbd2-update-locking-coments.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: "Theodore Ts'o" <tytso@mit.edu>
+From: Jan Kara <jack@suse.cz>
 
-(cherry picked from commit afd4672dc7610b7feef5190168aa917cc2e417e4)
+(cherry picked from commit 86db97c87f744364d5889ca8a4134ca2048b8f83)
 
-Add a mount option which allows the user to disable automatic
-allocation of blocks whose allocation by delayed allocation when the
-file was originally truncated or when the file is renamed over an
-existing file.  This feature is intended to save users from the
-effects of naive application writers, but it reduces the effectiveness
-of the delayed allocation code.  This mount option disables this
-safety feature, which may be desirable for prodcutions systems where
-the risk of unclean shutdowns or unexpected system crashes is low.
+Update information about locking in JBD2 revoke code. Inconsistency in
+comments found by Lin Tan <tammy000@gmail.com>
 
+CC: Lin Tan <tammy000@gmail.com>
+Signed-off-by: Jan Kara <jack@suse.cz>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ext4.h  |    2 +-
- fs/ext4/inode.c |    2 +-
- fs/ext4/namei.c |    3 ++-
- fs/ext4/super.c |   25 +++++++++++++------------
- 4 files changed, 17 insertions(+), 15 deletions(-)
+ fs/jbd2/revoke.c |   24 +++++++++++++++++++-----
+ 1 file changed, 19 insertions(+), 5 deletions(-)
 
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -557,7 +557,7 @@ do {									       \
- #define EXT4_MOUNT_NO_UID32		0x02000  /* Disable 32-bit UIDs */
- #define EXT4_MOUNT_XATTR_USER		0x04000	/* Extended user attributes */
- #define EXT4_MOUNT_POSIX_ACL		0x08000	/* POSIX Access Control Lists */
--#define EXT4_MOUNT_RESERVATION		0x10000	/* Preallocation */
-+#define EXT4_MOUNT_NO_AUTO_DA_ALLOC	0x10000	/* No auto delalloc mapping */
- #define EXT4_MOUNT_BARRIER		0x20000 /* Use block barriers */
- #define EXT4_MOUNT_NOBH			0x40000 /* No bufferheads */
- #define EXT4_MOUNT_QUOTA		0x80000 /* Some quota option set */
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -3887,7 +3887,7 @@ void ext4_truncate(struct inode *inode)
- 	if (!ext4_can_truncate(inode))
- 		return;
+--- a/fs/jbd2/revoke.c
++++ b/fs/jbd2/revoke.c
+@@ -55,6 +55,25 @@
+  *			need do nothing.
+  * RevokeValid set, Revoked set:
+  *			buffer has been revoked.
++ *
++ * Locking rules:
++ * We keep two hash tables of revoke records. One hashtable belongs to the
++ * running transaction (is pointed to by journal->j_revoke), the other one
++ * belongs to the committing transaction. Accesses to the second hash table
++ * happen only from the kjournald and no other thread touches this table.  Also
++ * journal_switch_revoke_table() which switches which hashtable belongs to the
++ * running and which to the committing transaction is called only from
++ * kjournald. Therefore we need no locks when accessing the hashtable belonging
++ * to the committing transaction.
++ *
++ * All users operating on the hash table belonging to the running transaction
++ * have a handle to the transaction. Therefore they are safe from kjournald
++ * switching hash tables under them. For operations on the lists of entries in
++ * the hash table j_revoke_lock is used.
++ *
++ * Finally, also replay code uses the hash tables but at this moment noone else
++ * can touch them (filesystem isn't mounted yet) and hence no locking is
++ * needed.
+  */
  
--	if (inode->i_size == 0)
-+	if (inode->i_size == 0 && !test_opt(inode->i_sb, NO_AUTO_DA_ALLOC))
- 		ei->i_state |= EXT4_STATE_DA_ALLOC_CLOSE;
- 
- 	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
---- a/fs/ext4/namei.c
-+++ b/fs/ext4/namei.c
-@@ -2457,7 +2457,8 @@ static int ext4_rename(struct inode *old
- 		ext4_mark_inode_dirty(handle, new_inode);
- 		if (!new_inode->i_nlink)
- 			ext4_orphan_add(handle, new_inode);
--		force_da_alloc = 1;
-+		if (!test_opt(new_dir->i_sb, NO_AUTO_DA_ALLOC))
-+			force_da_alloc = 1;
- 	}
- 	retval = 0;
- 
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -803,8 +803,6 @@ static int ext4_show_options(struct seq_
- 	if (!test_opt(sb, POSIX_ACL) && (def_mount_opts & EXT4_DEFM_ACL))
- 		seq_puts(seq, ",noacl");
- #endif
--	if (!test_opt(sb, RESERVATION))
--		seq_puts(seq, ",noreservation");
- 	if (sbi->s_commit_interval != JBD2_DEFAULT_MAX_COMMIT_AGE*HZ) {
- 		seq_printf(seq, ",commit=%u",
- 			   (unsigned) (sbi->s_commit_interval / HZ));
-@@ -855,6 +853,9 @@ static int ext4_show_options(struct seq_
- 	if (test_opt(sb, DATA_ERR_ABORT))
- 		seq_puts(seq, ",data_err=abort");
- 
-+	if (test_opt(sb, NO_AUTO_DA_ALLOC))
-+		seq_puts(seq, ",auto_da_alloc=0");
-+
- 	ext4_show_quota_options(seq, sb);
- 	return 0;
- }
-@@ -1002,7 +1003,7 @@ enum {
- 	Opt_resgid, Opt_resuid, Opt_sb, Opt_err_cont, Opt_err_panic, Opt_err_ro,
- 	Opt_nouid32, Opt_debug, Opt_oldalloc, Opt_orlov,
- 	Opt_user_xattr, Opt_nouser_xattr, Opt_acl, Opt_noacl,
--	Opt_reservation, Opt_noreservation, Opt_noload, Opt_nobh, Opt_bh,
-+	Opt_auto_da_alloc, Opt_noload, Opt_nobh, Opt_bh,
- 	Opt_commit, Opt_min_batch_time, Opt_max_batch_time,
- 	Opt_journal_update, Opt_journal_dev,
- 	Opt_journal_checksum, Opt_journal_async_commit,
-@@ -1037,8 +1038,6 @@ static const match_table_t tokens = {
- 	{Opt_nouser_xattr, "nouser_xattr"},
- 	{Opt_acl, "acl"},
- 	{Opt_noacl, "noacl"},
--	{Opt_reservation, "reservation"},
--	{Opt_noreservation, "noreservation"},
- 	{Opt_noload, "noload"},
- 	{Opt_nobh, "nobh"},
- 	{Opt_bh, "bh"},
-@@ -1073,6 +1072,7 @@ static const match_table_t tokens = {
- 	{Opt_nodelalloc, "nodelalloc"},
- 	{Opt_inode_readahead_blks, "inode_readahead_blks=%u"},
- 	{Opt_journal_ioprio, "journal_ioprio=%u"},
-+	{Opt_auto_da_alloc, "auto_da_alloc=%u"},
- 	{Opt_err, NULL},
- };
- 
-@@ -1205,12 +1205,6 @@ static int parse_options(char *options, 
- 			       "not supported\n");
- 			break;
- #endif
--		case Opt_reservation:
--			set_opt(sbi->s_mount_opt, RESERVATION);
--			break;
--		case Opt_noreservation:
--			clear_opt(sbi->s_mount_opt, RESERVATION);
--			break;
- 		case Opt_journal_update:
- 			/* @@@ FIXME */
- 			/* Eventually we will want to be able to create
-@@ -1471,6 +1465,14 @@ set_qf_format:
- 			*journal_ioprio = IOPRIO_PRIO_VALUE(IOPRIO_CLASS_BE,
- 							    option);
- 			break;
-+		case Opt_auto_da_alloc:
-+			if (match_int(&args[0], &option))
-+				return 0;
-+			if (option)
-+				clear_opt(sbi->s_mount_opt, NO_AUTO_DA_ALLOC);
-+			else
-+				set_opt(sbi->s_mount_opt,NO_AUTO_DA_ALLOC);
-+			break;
- 		default:
- 			printk(KERN_ERR
- 			       "EXT4-fs: Unrecognized mount option \"%s\" "
-@@ -2099,7 +2101,6 @@ static int ext4_fill_super(struct super_
- 	sbi->s_min_batch_time = EXT4_DEF_MIN_BATCH_TIME;
- 	sbi->s_max_batch_time = EXT4_DEF_MAX_BATCH_TIME;
- 
--	set_opt(sbi->s_mount_opt, RESERVATION);
- 	set_opt(sbi->s_mount_opt, BARRIER);
- 
- 	/*
+ #ifndef __KERNEL__
+@@ -401,8 +420,6 @@ int jbd2_journal_revoke(handle_t *handle
+  * the second time we would still have a pending revoke to cancel.  So,
+  * do not trust the Revoked bit on buffers unless RevokeValid is also
+  * set.
+- *
+- * The caller must have the journal locked.
+  */
+ int jbd2_journal_cancel_revoke(handle_t *handle, struct journal_head *jh)
+ {
+@@ -480,10 +497,7 @@ void jbd2_journal_switch_revoke_table(jo
+ /*
+  * Write revoke records to the journal for all entries in the current
+  * revoke hash, deleting the entries as we go.
+- *
+- * Called with the journal lock held.
+  */
+-
+ void jbd2_journal_write_revoke_records(journal_t *journal,
+ 				  transaction_t *transaction)
+ {
 
 
