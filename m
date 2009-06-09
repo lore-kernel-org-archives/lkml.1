@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759195AbZFISQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbZFISRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759195AbZFISQR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbZFISQD
+	id S1758873AbZFISRw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbZFISRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:16:03 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35928 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753789AbZFISQC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:16:02 -0400
-Message-ID: <4A2EA6A6.30003@redhat.com>
-Date: Tue, 09 Jun 2009 14:15:02 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Tue, 9 Jun 2009 14:17:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49341 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753817AbZFISRo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 14:17:44 -0400
+Message-ID: <4A2EA719.2000608@zytor.com>
+Date: Tue, 09 Jun 2009 11:16:57 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
-       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/4] Properly account for the number of page cache pages
- zone_reclaim() can reclaim
-References: <1244566904-31470-1-git-send-email-mel@csn.ul.ie> <1244566904-31470-2-git-send-email-mel@csn.ul.ie>
-In-Reply-To: <1244566904-31470-2-git-send-email-mel@csn.ul.ie>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Petr Tesarik <ptesarik@suse.cz>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH] x86: clean up vdso-layout.lds.S
+References: <1243865115.24278.8.camel@nathan.suse.cz> <1244215559.1604.12.camel@nathan.suse.cz> <20090605200701.GB23195@uranus.ravnborg.org> <1244532418.5199.24.camel@nathan.suse.cz> <20090609181157.GA7181@uranus.ravnborg.org>
+In-Reply-To: <20090609181157.GA7181@uranus.ravnborg.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mel Gorman wrote:
-
-> This patch alters how zone_reclaim() works out how many pages it might be
-> able to reclaim given the current reclaim_mode. If RECLAIM_SWAP is set
-> in the reclaim_mode it will either consider NR_FILE_PAGES as potential
-> candidates or else use NR_{IN}ACTIVE}_PAGES-NR_FILE_MAPPED to discount
-> swapcache and other non-file-backed pages.  If RECLAIM_WRITE is not set,
-> then NR_FILE_DIRTY number of pages are not candidates. If RECLAIM_SWAP is
-> not set, then NR_FILE_MAPPED are not.
+Sam Ravnborg wrote:
+>>
+>>> Why do we need *(.data .data.*) rather than *(.data*)?
+>>> *(.dynbss*)?
+>> I don't have any strong opinion here, but the former is exactly what the
+>> default linker script has.
 > 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> Acked-by: Christoph Lameter <cl@linux-foundation.org>
+> My general take on this is that we should know and deal with what the linker produces.
+> So if we only expect .data then .data.* could go into .broken so we catch it. 
+> 
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
+That will break if we change to per-function sections.
 
--- 
-All rights reversed.
+	-hpa
