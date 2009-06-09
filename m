@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760764AbZFIKUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760458AbZFIKXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760764AbZFIKUH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:20:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760454AbZFIKSP
+	id S1760458AbZFIKXZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760279AbZFIKS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:18:15 -0400
-Received: from kroah.org ([198.145.64.141]:54496 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:18:57 -0400
+Received: from kroah.org ([198.145.64.141]:54670 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760437AbZFIKSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:18:14 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:56 2009
-Message-Id: <20090609094056.465155618@blue.kroah.org>
+	id S1758845AbZFIKSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:18:55 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:58 2009
+Message-Id: <20090609094058.773848825@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:39:07 -0700
+Date: Tue, 09 Jun 2009 02:39:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, David Woodhouse <David.Woodhouse@intel.com>,
+       alan@lxorguk.ukuu.org.uk, Dave Airlie <airlied@redhat.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 19/87] Fix oops on close of hot-unplugged FTDI serial converter
+Subject: [patch 29/87] drm/r128: fix r128 ioremaps to use ioremap_wc.
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=fix-oops-on-close-of-hot-unplugged-ftdi-serial-converter.patch
+Content-Disposition: inline; filename=drm-r128-fix-r128-ioremaps-to-use-ioremap_wc.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,57 +40,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David Woodhouse <dwmw2@infradead.org>
+From: Dave Airlie <airlied@redhat.com>
 
-commit 80193195f87ebca6d7417516d6edeb3969631c15 upstream.
+commit 42beefc0093725ec0f8cea340cc54c36ccaceea0 upstream.
 
-Commit c45d6320 ("fix reference counting of ftdi_private") stopped
-ftdi_sio_port_remove() from directly freeing the port-private data, with
-the intention if the port was still open, it would be freed when
-ftdi_close() is eventually called and releases the last refcount on the
-structure.
+This should allow r128 to start working again since PAT changes.
 
-That's all very well, but ftdi_sio_port_remove() still contains a call
-to usb_set_serial_port_data(port, NULL) -- so by the time we get to
-ftdi_close() for the port which was unplugged, it _still_ oopses on
-dereferencing that NULL pointer, as it did before (and does in 2.6.29).
+taken from F-11 kernel.
 
-The fix is just not to clear the private data in ftdi_sio_port_remove().
-Then the refcount is properly reduced to zero when the final kref_put()
-happens in ftdi_close().
-
-Remove a bogus comment too, while we're at it. And stop doing things
-inside "if (priv)" -- it must _always_ be there.
-
-Based loosely on an earlier patch by Daniel Mack, and suggestions by
-Alan Stern.
-
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-Tested-by: Daniel Mack <daniel@caiaq.de>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Dave Airlie <airlied@redhat.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/ftdi_sio.c |    9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ drivers/gpu/drm/r128/r128_cce.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -1485,14 +1485,7 @@ static int ftdi_sio_port_remove(struct u
+--- a/drivers/gpu/drm/r128/r128_cce.c
++++ b/drivers/gpu/drm/r128/r128_cce.c
+@@ -511,9 +511,9 @@ static int r128_do_init_cce(struct drm_d
  
- 	remove_sysfs_attrs(port);
- 
--	/* all open ports are closed at this point
--	 *    (by usbserial.c:__serial_close, which calls ftdi_close)
--	 */
--
--	if (priv) {
--		usb_set_serial_port_data(port, NULL);
--		kref_put(&priv->kref, ftdi_sio_priv_release);
--	}
-+	kref_put(&priv->kref, ftdi_sio_priv_release);
- 
- 	return 0;
- }
+ #if __OS_HAS_AGP
+ 	if (!dev_priv->is_pci) {
+-		drm_core_ioremap(dev_priv->cce_ring, dev);
+-		drm_core_ioremap(dev_priv->ring_rptr, dev);
+-		drm_core_ioremap(dev->agp_buffer_map, dev);
++		drm_core_ioremap_wc(dev_priv->cce_ring, dev);
++		drm_core_ioremap_wc(dev_priv->ring_rptr, dev);
++		drm_core_ioremap_wc(dev->agp_buffer_map, dev);
+ 		if (!dev_priv->cce_ring->handle ||
+ 		    !dev_priv->ring_rptr->handle ||
+ 		    !dev->agp_buffer_map->handle) {
 
 
