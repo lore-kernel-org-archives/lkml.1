@@ -1,43 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760416AbZFIMe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760624AbZFIMfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760416AbZFIMe3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 08:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbZFIMeU
+	id S1760624AbZFIMfT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 08:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753877AbZFIMfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 08:34:20 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56725 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752173AbZFIMeT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 08:34:19 -0400
-Date: Tue, 9 Jun 2009 08:34:21 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: XFS status update for May 2009
-Message-ID: <20090609123421.GA15623@infradead.org>
+	Tue, 9 Jun 2009 08:35:08 -0400
+Received: from mga03.intel.com ([143.182.124.21]:51579 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752208AbZFIMfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 08:35:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,331,1241420400"; 
+   d="scan'208";a="152239181"
+Date: Tue, 9 Jun 2009 20:34:16 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: [PATCH] HWPOISON: define VM_FAULT_HWPOISON to 0 when feature is
+	disabled
+Message-ID: <20090609123416.GD5589@localhost>
+References: <20090603846.816684333@firstfloor.org> <20090603184640.4FD751D0290@basil.firstfloor.org> <20090609095423.GB14820@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090609095423.GB14820@wotan.suse.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 09, 2009 at 05:54:23PM +0800, Nick Piggin wrote:
+> On Wed, Jun 03, 2009 at 08:46:40PM +0200, Andi Kleen wrote:
 
-In May Linux 2.6.30 was getting close to be released, and various
-important XFS fixes made it during the latest release candidates.
-In the meantime some big patch series to rework the sync code and
-the inode allocator have been posted for the next merge window.
+> > -	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
+> > +#ifdef CONFIG_MEMORY_FAILURE
+> > +	if (fault & VM_FAULT_HWPOISON) {
+> > +		printk(KERN_ERR
+> > +	"MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n",
+> > +			tsk->comm, tsk->pid, address);
+> > +		code = BUS_MCEERR_AR;
+> > +	}
+> > +#endif
+> 
+> If you make VM_FAULT_HWPOISON 0 when !CONFIG_MEMORY_FAILURE, then
+> you can remove this ifdef, can't you?
 
-On the userspace side xfsprogs and xfsdump 3.0.1 were finally released,
-quickly followed by 3.0.2 releases with updated Debian packaging.
-After that various small patches that were held back made it into xfsprogs.
-A patch to add the xfs_reno tool which allows to move inodes around to
-fit into 32 bit inode number space has been posted which is also one
-central aspect of future online shrinking support.
+Sure we can. Here is the incremental patch.
 
-There has been major activity on xfstests including adding generic
-filesystems support to allow running tests that aren't XFS-specific on
-any Linux filesystems.
+---
+HWPOISON: define VM_FAULT_HWPOISON to 0 when feature is disabled
+
+So as to eliminate one #ifdef in the c source.
+
+Proposed by Nick Piggin.
+
+CC: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ arch/x86/mm/fault.c |    3 +--
+ include/linux/mm.h  |    7 ++++++-
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+--- sound-2.6.orig/arch/x86/mm/fault.c
++++ sound-2.6/arch/x86/mm/fault.c
+@@ -819,14 +819,13 @@ do_sigbus(struct pt_regs *regs, unsigned
+ 	tsk->thread.error_code	= error_code;
+ 	tsk->thread.trap_no	= 14;
+ 
+-#ifdef CONFIG_MEMORY_FAILURE
+ 	if (fault & VM_FAULT_HWPOISON) {
+ 		printk(KERN_ERR
+ 	"MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n",
+ 			tsk->comm, tsk->pid, address);
+ 		code = BUS_MCEERR_AR;
+ 	}
+-#endif
++
+ 	force_sig_info_fault(SIGBUS, code, address, tsk);
+ }
+ 
+--- sound-2.6.orig/include/linux/mm.h
++++ sound-2.6/include/linux/mm.h
+@@ -702,11 +702,16 @@ static inline int page_mapped(struct pag
+ #define VM_FAULT_SIGBUS	0x0002
+ #define VM_FAULT_MAJOR	0x0004
+ #define VM_FAULT_WRITE	0x0008	/* Special case for get_user_pages */
+-#define VM_FAULT_HWPOISON 0x0010	/* Hit poisoned page */
+ 
+ #define VM_FAULT_NOPAGE	0x0100	/* ->fault installed the pte, not return page */
+ #define VM_FAULT_LOCKED	0x0200	/* ->fault locked the returned page */
+ 
++#ifdef CONFIG_MEMORY_FAILURE
++#define VM_FAULT_HWPOISON 0x0010	/* Hit poisoned page */
++#else
++#define VM_FAULT_HWPOISON 0
++#endif
++
+ #define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_HWPOISON)
+ 
+ /*
