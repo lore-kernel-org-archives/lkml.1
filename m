@@ -1,134 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759046AbZFII1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbZFII3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759046AbZFII1s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 04:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbZFII1c
+	id S1759192AbZFII3F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 04:29:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZFII2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 04:27:32 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:57953 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752879AbZFII1b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 04:27:31 -0400
-Date: Tue, 9 Jun 2009 09:27:29 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] Properly account for the number of page cache
-	pages zone_reclaim() can reclaim
-Message-ID: <20090609082728.GF18380@csn.ul.ie>
-References: <1244466090-10711-1-git-send-email-mel@csn.ul.ie> <1244466090-10711-3-git-send-email-mel@csn.ul.ie> <20090609022549.GB6740@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090609022549.GB6740@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 9 Jun 2009 04:28:46 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:56715 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750932AbZFII2n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 04:28:43 -0400
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: David Rientjes <rientjes@google.com>
+Cc: Mel Gorman <mel@csn.ul.ie>, Rik van Riel <riel@redhat.com>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>, npiggin@suse.de
+In-Reply-To: <alpine.DEB.2.00.0906090105270.28701@chino.kir.corp.google.com>
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
+	 <D9VoutSOyXP.A.hvH.Ha7KKB@chimera> <4A2BBC30.2030300@lwfinger.net>
+	 <84144f020906070640rf5ab14nbf66d3ca7c97675f@mail.gmail.com>
+	 <4A2BCC6F.8090004@redhat.com>
+	 <84144f020906070732l31786156r5d9753a0cabfde79@mail.gmail.com>
+	 <20090608101739.GA15377@csn.ul.ie>
+	 <84144f020906080352k57f12ff9pbd696da5f332ac1a@mail.gmail.com>
+	 <20090608110303.GD15377@csn.ul.ie>
+	 <Pine.LNX.4.64.0906081657001.7036@melkki.cs.Helsinki.FI>
+	 <20090608141212.GE15070@csn.ul.ie> <1244531201.5024.3.camel@penberg-laptop>
+	 <alpine.DEB.2.00.0906090046000.28701@chino.kir.corp.google.com>
+	 <1244534315.5024.34.camel@penberg-laptop>
+	 <alpine.DEB.2.00.0906090105270.28701@chino.kir.corp.google.com>
+Date: Tue, 09 Jun 2009 11:28:44 +0300
+Message-Id: <1244536124.5024.41.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 10:25:49AM +0800, Wu Fengguang wrote:
-> On Mon, Jun 08, 2009 at 09:01:29PM +0800, Mel Gorman wrote:
-> > On NUMA machines, the administrator can configure zone_relcaim_mode that
-> > is a more targetted form of direct reclaim. On machines with large NUMA
-> > distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
-> > unmapped pages will be reclaimed if the zone watermarks are not being met.
-> > 
-> > There is a heuristic that determines if the scan is worthwhile but the
-> > problem is that the heuristic is not being properly applied and is basically
-> > assuming zone_reclaim_mode is 1 if it is enabled.
-> > 
-> > This patch makes zone_reclaim() makes a better attempt at working out how
-> > many pages it might be able to reclaim given the current reclaim_mode. If it
-> > cannot clean pages, then NR_FILE_DIRTY number of pages are not candidates. If
-> > it cannot swap, then NR_FILE_MAPPED are not. This indirectly addresses tmpfs
-> > as those pages tend to be dirty as they are not cleaned by pdflush or sync.
-> 
-> No, tmpfs pages are not accounted in NR_FILE_DIRTY because of the
-> BDI_CAP_NO_ACCT_AND_WRITEBACK bits.
-> 
+Hi David,
 
-Ok, that explains why the dirty page count was not as high as I was
-expecting. Thanks.
+On Tue, 2009-06-09 at 01:14 -0700, David Rientjes wrote:
+> I wasn't sure whether you were proposing the patch as an addition to slub 
+> or just to help with this issue.  I agree it would help in a hopefully 
+> ratelimited manner for general slab allocation failures and would have 
+> avoided some of the confusion for this issue from lack of diagnostics.
 
-> > The ideal would be that the number of tmpfs pages would also be known
-> > and account for like NR_FILE_MAPPED as swap is required to discard them.
-> > A means of working this out quickly was not obvious but a comment is added
-> > noting the problem.
+I am proposing it as a generic addition to SLUB.
+
+On Tue, 2009-06-09 at 01:14 -0700, David Rientjes wrote:
+> > It doesn't hurt either, does it? Yes, we expect the partial lists to be
+> > exhausted but it's better to print that out just in case we have a bug
+> > some day somewhere and that condition is not true. This is very
+> > infrequent slow patch code here anyway.
 > 
-> I'd rather prefer it be accounted separately than to muck up NR_FILE_MAPPED :)
-> 
+> It will lead to false postiives since you can get a free to a full slab 
+> which moves it back to an allowed node's partial list before count_free() 
+> is printed.
 
-Maybe I used a poor choice of words. What I meant was that the ideal would
-be we had a separate count for tmpfs pages. As tmpfs pages and mapped pages
-both have to be unmapped and potentially, they are "like" each other with
-respect to the zone_reclaim_mode and how it behaves. We would end up
-with something like
+Fair enough, lets drop it then!
 
-	pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
-	pagecache_reclaimable -= zone_page_state(zone, NR_FILE_TMPFS);
+			Pekka
 
-> > +	int pagecache_reclaimable;
-> > +
-> > +	/*
-> > +	 * Work out how many page cache pages we can reclaim in this mode.
-> > +	 *
-> > +	 * NOTE: Ideally, tmpfs pages would be accounted as if they were
-> > +	 *       NR_FILE_MAPPED as swap is required to discard those
-> > +	 *       pages even when they are clean. However, there is no
-> > +	 *       way of quickly identifying the number of tmpfs pages
-> > +	 */
-> 
-> So can you remove the note on NR_FILE_MAPPED?
-> 
+diff --git a/mm/slub.c b/mm/slub.c
+index 65ffda5..2bbacfc 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1484,6 +1484,56 @@ static inline int node_match(struct kmem_cache_cpu *c, int node)
+ 	return 1;
+ }
+ 
++static int count_free(struct page *page)
++{
++	return page->objects - page->inuse;
++}
++
++static unsigned long count_partial(struct kmem_cache_node *n,
++					int (*get_count)(struct page *))
++{
++	unsigned long flags;
++	unsigned long x = 0;
++	struct page *page;
++
++	spin_lock_irqsave(&n->list_lock, flags);
++	list_for_each_entry(page, &n->partial, lru)
++		x += get_count(page);
++	spin_unlock_irqrestore(&n->list_lock, flags);
++	return x;
++}
++
++static noinline void
++slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags, int nid)
++{
++	int node;
++
++	printk(KERN_WARNING
++		"SLUB: Unable to allocate memory on node %d (gfp=%x)\n",
++		nid, gfpflags);
++	printk(KERN_WARNING "  cache: %s, object size: %d, buffer size: %d, "
++		"default order: %d, min order: %d\n", s->name, s->objsize,
++		s->size, oo_order(s->oo), oo_order(s->min));
++
++	for_each_online_node(node) {
++		struct kmem_cache_node *n = get_node(s, node);
++		unsigned long nr_slabs;
++		unsigned long nr_objs;
++		unsigned long nr_free;
++
++		if (!n)
++			continue;
++
++		nr_slabs = atomic_long_read(&n->nr_slabs);
++		nr_objs = atomic_long_read(&n->total_objects);
++		nr_free = count_partial(n, count_free);
++
++		printk(KERN_WARNING
++			"  node %d: slabs: %ld, objs: %ld, free: %ld\n",
++			node, nr_slabs, nr_objs, nr_free);
++	}
++}
++
+ /*
+  * Slow path. The lockless freelist is empty or we need to perform
+  * debugging duties.
+@@ -1565,6 +1615,7 @@ new_slab:
+ 		c->page = new;
+ 		goto load_freelist;
+ 	}
++	slab_out_of_memory(s, gfpflags, node);
+ 	return NULL;
+ debug:
+ 	if (!alloc_debug_processing(s, c->page, object, addr))
+@@ -3318,20 +3369,6 @@ void *__kmalloc_node_track_caller(size_t size, gfp_t gfpflags,
+ }
+ 
+ #ifdef CONFIG_SLUB_DEBUG
+-static unsigned long count_partial(struct kmem_cache_node *n,
+-					int (*get_count)(struct page *))
+-{
+-	unsigned long flags;
+-	unsigned long x = 0;
+-	struct page *page;
+-
+-	spin_lock_irqsave(&n->list_lock, flags);
+-	list_for_each_entry(page, &n->partial, lru)
+-		x += get_count(page);
+-	spin_unlock_irqrestore(&n->list_lock, flags);
+-	return x;
+-}
+-
+ static int count_inuse(struct page *page)
+ {
+ 	return page->inuse;
+@@ -3342,11 +3379,6 @@ static int count_total(struct page *page)
+ 	return page->objects;
+ }
+ 
+-static int count_free(struct page *page)
+-{
+-	return page->objects - page->inuse;
+-}
+-
+ static int validate_slab(struct kmem_cache *s, struct page *page,
+ 						unsigned long *map)
+ {
 
-Why would I remove the note? I can alter the wording but the intention is
-to show we cannot count the number of tmpfs pages quickly and it would be
-nice if we could. Maybe this is clearer?
 
-Note: Ideally tmpfs pages would be accounted for as NR_FILE_TMPFS or
-	similar and treated similar to NR_FILE_MAPPED as both require
-	unmapping from page tables and potentially swap to reclaim.
-	However, no such counter exists.
-
-> > +	pagecache_reclaimable = zone_page_state(zone, NR_FILE_PAGES);
-> > +	if (!(zone_reclaim_mode & RECLAIM_WRITE))
-> > +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_DIRTY);
-> 
-> > +	if (!(zone_reclaim_mode & RECLAIM_SWAP))
-> > +		pagecache_reclaimable -= zone_page_state(zone, NR_FILE_MAPPED);
-> 
-> So the "if" can be removed because NR_FILE_MAPPED is not related to swapping?
-> 
-
-It's partially related with respect to what zone_reclaim() is doing.
-Once something is mapped, we need RECLAIM_SWAP set on the
-zone_reclaim_mode to do anything useful with them.
-
-> Thanks,
-> Fengguang
-> 
-> >  	/*
-> >  	 * Zone reclaim reclaims unmapped file backed pages and
-> > @@ -2391,8 +2406,7 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> >  	 * if less than a specified percentage of the zone is used by
-> >  	 * unmapped file backed pages.
-> >  	 */
-> > -	if (zone_page_state(zone, NR_FILE_PAGES) -
-> > -	    zone_page_state(zone, NR_FILE_MAPPED) <= zone->min_unmapped_pages
-> > +	if (pagecache_reclaimable <= zone->min_unmapped_pages
-> >  	    && zone_page_state(zone, NR_SLAB_RECLAIMABLE)
-> >  			<= zone->min_slab_pages)
-> >  		return 0;
-> > -- 
-> > 1.5.6.5
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
