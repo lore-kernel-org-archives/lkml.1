@@ -1,96 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbZFILHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbZFILOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758393AbZFILHU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 07:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbZFILHI
+	id S1758932AbZFILOn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 07:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZFILOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 07:07:08 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:63999 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752231AbZFILHG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 07:07:06 -0400
-X-Greylist: delayed 327 seconds by postgrey-1.27 at vger.kernel.org; Tue, 09 Jun 2009 07:07:06 EDT
-Message-ID: <4A2E4104.5080509@vlnb.net>
-Date: Tue, 09 Jun 2009 15:01:24 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "hifumi.hisashi@oss.ntt.co.jp" <hifumi.hisashi@oss.ntt.co.jp>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Beheer InterCommIT <intercommit@gmail.com>, linux-nfs@vger.kernel.org,
-       scst-devel@lists.sourceforge.net
-Subject: Re: mmotm 2009-06-02-16-11 uploaded (readahead)
-References: <200906022331.n52NVJhG015117@imap1.linux-foundation.org> <4A25F3FF.5060404@oracle.com> <20090603134739.97d8a461.akpm@linux-foundation.org> <20090609035915.GW11363@kernel.dk> <20090608213817.999143dd.akpm@linux-foundation.org> <20090609045106.GA9370@localhost>
-In-Reply-To: <20090609045106.GA9370@localhost>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18DIEB2yhAs+l89OrnpH8BqPB8+ok2aZLTC1ge
- kA4atZSn99mPipeWWXUz8QKoQPx0FGBuLmM1I2Fz8CVSP9fzc+
- AoLJI7Y/W5wsYQuuWg8Mw==
+	Tue, 9 Jun 2009 07:14:32 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56855 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751786AbZFILOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 07:14:31 -0400
+Date: Tue, 9 Jun 2009 13:14:32 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: hugh.dickins@tiscali.co.uk, riel@redhat.com, chris.mason@oracle.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v5
+Message-ID: <20090609111432.GL14820@wotan.suse.de>
+References: <20090603846.816684333@firstfloor.org> <20090603184648.2E2131D028F@basil.firstfloor.org> <20090609095155.GA14820@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090609095155.GA14820@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Wu Fengguang, on 06/09/2009 08:51 AM wrote:
-> On Tue, Jun 09, 2009 at 12:38:17PM +0800, Andrew Morton wrote:
->> On Tue, 9 Jun 2009 05:59:16 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
->>
->>> ...
->>>> Doing a block-specific call from inside page_cache_async_readahead() is
->>>> a bit of a layering violation - this may not be a block-backed
->>>> filesystem at all.
->>>>
->>>> otoh, perhaps blk_run_backing_dev() is wrongly named and defined in the
->>>> wrong place.  Perhaps non-block-backed backing_devs want to implement
->>>> an unplug-style function too?  In which case the whole thing should be
->>>> renamed and moved outside blkdev.h.
->>>>
->>>> If we don't want to do that, shouldn't backing_dev_info.unplug* be
->>>> wrapped in #ifdef CONFIG_BLOCK?  And wasn't it a layering violation to
->>>> put block-specific things into the backing_dev_info?
->>>>
->>>> Jens, talk to me!
->>>>
->>>> From the readahead POV: does it make sense to call the backing-dev's
->>>> "unplug" function even if that isn't a block-based device?  Or was this
->>>> just a weird block-device-only performance problem?  Hard to say.
->>> Layering wise, I don't think it's that bad. It would have looked cleaner
->>> to do:
->>>
->>>         blk_run_address_space(mapping);
->>>
->>> instead, but we would still need to make that available outside of
->>> CONFIG_BLOCK as well.
->>>
->>> What I don't like about the patch is that it's a heuristic, a "I poked
->>> this and it made that faster" with nobody really understanding why.
->> Well.  I _think_ we understand it.  I'm not sure that we understand why
->> it made scst faster though.
+On Tue, Jun 09, 2009 at 11:51:55AM +0200, Nick Piggin wrote:
+> On Wed, Jun 03, 2009 at 08:46:47PM +0200, Andi Kleen wrote:
+> > +static int me_pagecache_clean(struct page *p, unsigned long pfn)
+> > +{
+> > +	struct address_space *mapping;
+> > +
+> > +	if (!isolate_lru_page(p))
+> > +		page_cache_release(p);
+> > +
+> > +	/*
+> > +	 * Now truncate the page in the page cache. This is really
+> > +	 * more like a "temporary hole punch"
+> > +	 * Don't do this for block devices when someone else
+> > +	 * has a reference, because it could be file system metadata
+> > +	 * and that's not safe to truncate.
+> > +	 */
+> > +	mapping = page_mapping(p);
+> > +	if (mapping && S_ISBLK(mapping->host->i_mode) && page_count(p) > 1) {
+> > +		printk(KERN_ERR
+> > +			"MCE %#lx: page looks like a unsupported file system metadata page\n",
+> > +			pfn);
+> > +		return FAILED;
+> > +	}
 > 
-> Because the NFS/SCST servers are running RAID?
+> page_count check is racy. Hmm, S_ISBLK should handle xfs's private mapping.
+> AFAIK btrfs has a similar private mapping but a quick grep does not show
+> up S_IFBLK anywhere, so I don't know what the situation is there.
 > 
-> Also the client side NFS/SCST IO request may be slitted up and served
-> by a pool of server processes, which introduces the same disorderness
-> as in RAID configuration. But I wonder whether blk_* work for them,
-> or NFS/SCST have the "plug" concept at all.
+> Unfortunately though, the linear mapping is not the only metadata mapping
+> a filesystem might have. Many work on directories in seperate mappings
+> (ext2, for example, which is where I first looked and will still oops with
+> your check).
+> 
+> Also, others may have other interesting inodes they use for metadata. Do
+> any of them go through the pagecache? I dont know. The ext3 journal,
+> for example? How does that work?
+> 
+> Unfortunately I don't know a good way to detect regular data mappings
+> easily. Ccing linux-fsdevel. Until that is worked out, you'd need to
+> use the safe pagecache invalidate rather than unsafe truncate.
 
-Yes, I agree about the disorderness. In the Beheer's case there are both 
-RAID and IO reordering caused by IO submission by a pool of SCST IO 
-threads. So, your comment in the patch can well explain why the 
-blk_run_backing_dev() patch recovers read-ahead and, hence, improves 
-performance in this case.
+Maybe just testing S_ISREG would be better. Definitely safer than
+ISBLK.
 
-But I also agree that it would be good to prove that theory by some 
-block/RA/SCST traces, because there might be other similar issues in the 
-RA code, which could be discovered with better understanding of the 
-problem. We can ask Beheer to prepare the necessary traces.
+Note that for !ISREG files, then you can still attempt the
+non-destructive invalidate (after extracting a suitable function
+similarly to the truncate one). Most likely the fs is not using
+the page right now, so it should give bit more coverage.
 
-Vlad
+I still don't exactly know about, say, ext3 journal. Probably
+it doesn't use pagecache anyway. Do any other filesystems do
+crazy things with S_ISREG files? They probably deserve to oops
+if they do ;)
 
