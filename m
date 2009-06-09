@@ -1,96 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760319AbZFIXYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbZFIX1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760319AbZFIXYb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 19:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbZFIXYY
+	id S1759564AbZFIX1p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 19:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbZFIX1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 19:24:24 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59593 "EHLO mx2.mail.elte.hu"
+	Tue, 9 Jun 2009 19:27:35 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47460 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753338AbZFIXYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 19:24:23 -0400
-Date: Wed, 10 Jun 2009 01:23:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [PATCH 0/8] [GIT PULL] simplify the print fmt in the event
-	format files
-Message-ID: <20090609232341.GB23846@elte.hu>
-References: <20090609215211.307980196@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090609215211.307980196@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1753338AbZFIX1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 19:27:35 -0400
+Date: Wed, 10 Jun 2009 09:27:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: kbuild tree build failure
+Message-Id: <20090610092731.1a75f1c7.sfr@canb.auug.org.au>
+In-Reply-To: <20090609210427.GA21727@uranus.ravnborg.org>
+References: <20090609114820.69d23ab3.sfr@canb.auug.org.au>
+	<20090609161512.GB6675@uranus.ravnborg.org>
+	<20090610021959.b7856ea9.sfr@canb.auug.org.au>
+	<20090609210427.GA21727@uranus.ravnborg.org>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__10_Jun_2009_09_27_31_+1000_7TapdnGuiyJZbLI6"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Wed__10_Jun_2009_09_27_31_+1000_7TapdnGuiyJZbLI6
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Hi Sam,
 
-> Ingo,
-> 
-> Changes since my RFC:
-> 
->  - Rebased against my last tip/tracing/ftrace push
->  - Added ifmask and uint (will be adding more tags soon)
->  - Added memory clean up on error
->  - Added locking for module unload
->  - Added memory clean up of formats on module unload
->  - Added lockdep update
->  - Add entry size to iterator (will be used soon)
-> 
-> Please pull the latest tip/tracing/event-print-format tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/event-print-format
-> 
-> 
-> Steven Rostedt (8):
->       tracing: add trace_seq_vprint interface
->       tracing: add protection around module events unload
->       tracing/events: nicer print format for parsing
->       tracing/events: modify irq print to new format
->       tracing/events: modify sched print to new format
->       tracing/events: modify kmem print to new format
->       tracing/events: modify lockdep print to new format
->       tracing: add entry size to iterator
-> 
-> ----
->  include/linux/ftrace_event.h     |   12 +
->  include/linux/trace_seq.h        |    2 +
->  include/trace/events/irq.h       |   38 +-
->  include/trace/events/kmem.h      |   98 +++---
->  include/trace/events/lockdep.h   |   12 +-
->  include/trace/events/sched.h     |   49 +--
->  include/trace/ftrace.h           |   22 +-
->  kernel/trace/Makefile            |    1 +
->  kernel/trace/trace.c             |   39 ++-
->  kernel/trace/trace_events.c      |    5 +-
->  kernel/trace/trace_output.c      |   47 +++-
->  kernel/trace/trace_output.h      |    4 +
->  kernel/trace/trace_read_binary.c |  766 ++++++++++++++++++++++++++++++++++++++
->  13 files changed, 962 insertions(+), 133 deletions(-)
+On Tue, 9 Jun 2009 23:04:27 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
+>
+> Fixed now (and build tested all changes this time).
 
-This looks quite nice - albeit a bit large so late. I've pulled it, 
-hopefully it tests fine :)
+Excellent!
 
-	Ingo
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__10_Jun_2009_09_27_31_+1000_7TapdnGuiyJZbLI6
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkou7+MACgkQjjKRsyhoI8yyxwCdG8MvAOexhE374rmF5DeRT8Zf
+PIMAnRHfeHDRG4KBh1uDwSCbi8sl5Ij+
+=wNzt
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__10_Jun_2009_09_27_31_+1000_7TapdnGuiyJZbLI6--
