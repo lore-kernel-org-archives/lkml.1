@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759023AbZFIUat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759108AbZFIUjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759023AbZFIUat (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 16:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753891AbZFIUal
+	id S1759108AbZFIUjT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 16:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755549AbZFIUjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 16:30:41 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:53471 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752422AbZFIUal (ORCPT
+	Tue, 9 Jun 2009 16:39:12 -0400
+Received: from mail-qy0-f190.google.com ([209.85.221.190]:44640 "EHLO
+	mail-qy0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755421AbZFIUjL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 16:30:41 -0400
-Date: Tue, 9 Jun 2009 13:30:18 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: nico-linuxsetlocalversion@schottelius.org
-Subject: [PATCH] scripts/setlocalversion on readonly source
-Message-ID: <alpine.DEB.2.01.0906091323520.6439@bogon>
-User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
+	Tue, 9 Jun 2009 16:39:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ggDHrXXR+4pB0NQX5aFXwMUqGitgr8QoeRaYFoKPeqeiBeSo2/yGW1szI4rVXypTzY
+         heKLLdmQAk8xzgvN7EpRFPio2JUzQ0mfKgUk/X8TnEE/dcRnMnlAuF9seVn1wl9jsRIh
+         PMdgWJ3i/WNv4VpW2CdW5vGiNftOGAztjNtas=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX19Am6ISJEpbSs+vD5LOdGZ9rvU0LvHBOwyJncE
- hqAF7YYgA1P44B6hpDCXdTppMCSn2n0m391+X1xtyTmyXhx4Cu
- RRct/3dDENKfQdcGEMhbg==
+In-Reply-To: <20090609195100.GY19203@electro-mechanical.com>
+References: <20090609195100.GY19203@electro-mechanical.com>
+Date: Tue, 9 Jun 2009 16:39:12 -0400
+X-Google-Sender-Auth: 8eaf732bdca00144
+Message-ID: <b6c5339f0906091339j3784c36bxe888af16272fbcde@mail.gmail.com>
+Subject: Re: 3com 3crxjk10075 with ath5k driver
+From: Bob Copeland <me@bobcopeland.com>
+To: William Thompson <wt@electro-mechanical.com>
+Cc: linux-kernel@vger.kernel.org, ath5k-devel <ath5k-devel@venema.h4ckr.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+[CCed ath5k-devel]
 
-I'm building kernels with O=/some/dir and at some point 
-scripts/setlocalversion is being called, doing:
+On Tue, Jun 9, 2009 at 3:51 PM, William
+Thompson<wt@electro-mechanical.com> wrote:
+> This card has the "xjack" antennae which is supposed to disable the radio (I
+> thought it was in hardware, but it's not) when it is not extended.  The
+> madwifi driver (Last time I actually used this card with it) did disable the
+> radio (Or refused packets, not sure which).
 
-  + git update-index --refresh --unmerged
-  fatal: Unable to create '.git/index.lock': Read-only file system
+Huh, I wonder how that works.  Is disabling the radio an advertised feature?
+i.e. as opposed to just not working because the antenna is in?
 
-Not only does it throw this error but it takes quite a long time to run, 
-only to fail anyway because the kernel source dir is located on a 
-read-only NFS mount.
+> The kernel ath5k driver (last tested 2.6.29.4) will work regardless if the
+> antannae is in or out.
 
-The following patch makes the error go away:
+I suppose it could be asserting something on rfkill gpios; ath5k hasn't had
+real rfkill support yet.  Anyone else know about these devices?
 
---- linux-2.6-git/scripts/setlocalversion	2009-05-29 07:14:34.746191990 +0200
-+++ /home/dummy/tmp/scripts/setlocalversion.edited	2009-06-09 22:20:29.000000000 +0200
-@@ -39,8 +39,8 @@
- 	        printf -- '-svn%s' "`git svn find-rev $head`"
- 	fi
- 
--	# Are there uncommitted changes?
--	git update-index --refresh --unmerged > /dev/null
-+	# Are there uncommitted changes? (and can we update the repo?)
-+	touch . 2>/dev/null && git update-index --refresh --unmerged > /dev/null
- 	if git diff-index --name-only HEAD | grep -v "^scripts/package" \
- 	    | read dummy; then
- 		printf '%s' -dirty
-
-
-Thanks,
-Christian.
 -- 
-BOFH excuse #426:
-
-internet is needed to catch the etherbunny
+Bob Copeland %% www.bobcopeland.com
