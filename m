@@ -1,81 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759838AbZFIJwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbZFIJwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759838AbZFIJwH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 05:52:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757442AbZFIJvz
+	id S1759896AbZFIJwY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 05:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759832AbZFIJwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 05:51:55 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34734 "EHLO mx2.suse.de"
+	Tue, 9 Jun 2009 05:52:07 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:41724 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753561AbZFIJvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 05:51:54 -0400
-Date: Tue, 9 Jun 2009 11:51:55 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: hugh.dickins@tiscali.co.uk, riel@redhat.com, chris.mason@oracle.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, fengguang.wu@intel.com,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v5
-Message-ID: <20090609095155.GA14820@wotan.suse.de>
-References: <20090603846.816684333@firstfloor.org> <20090603184648.2E2131D028F@basil.firstfloor.org>
+	id S1759487AbZFIJwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 05:52:05 -0400
+Date: Tue, 9 Jun 2009 19:52:00 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Yinghai Lu <yinghai@kernel.org>
+Subject: Re: linux-next: manual merge of the rr tree with the  tree
+Message-Id: <20090609195200.8344c2f0.sfr@canb.auug.org.au>
+In-Reply-To: <20090609135627.944b1851.sfr@canb.auug.org.au>
+References: <20090609135627.944b1851.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090603184648.2E2131D028F@basil.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__9_Jun_2009_19_52_00_+1000_vvLcYji/zJZ0RH1L"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 08:46:47PM +0200, Andi Kleen wrote:
-> +static int me_pagecache_clean(struct page *p, unsigned long pfn)
-> +{
-> +	struct address_space *mapping;
-> +
-> +	if (!isolate_lru_page(p))
-> +		page_cache_release(p);
-> +
-> +	/*
-> +	 * Now truncate the page in the page cache. This is really
-> +	 * more like a "temporary hole punch"
-> +	 * Don't do this for block devices when someone else
-> +	 * has a reference, because it could be file system metadata
-> +	 * and that's not safe to truncate.
-> +	 */
-> +	mapping = page_mapping(p);
-> +	if (mapping && S_ISBLK(mapping->host->i_mode) && page_count(p) > 1) {
-> +		printk(KERN_ERR
-> +			"MCE %#lx: page looks like a unsupported file system metadata page\n",
-> +			pfn);
-> +		return FAILED;
-> +	}
+--Signature=_Tue__9_Jun_2009_19_52_00_+1000_vvLcYji/zJZ0RH1L
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-page_count check is racy. Hmm, S_ISBLK should handle xfs's private mapping.
-AFAIK btrfs has a similar private mapping but a quick grep does not show
-up S_IFBLK anywhere, so I don't know what the situation is there.
+Hi all,
 
-Unfortunately though, the linear mapping is not the only metadata mapping
-a filesystem might have. Many work on directories in seperate mappings
-(ext2, for example, which is where I first looked and will still oops with
-your check).
+On Tue, 9 Jun 2009 13:56:27 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
+rote:
+>
+> Today's linux-next merge of the rr tree got a conflict in
+> arch/x86/kernel/cpu/mcheck/mce{,_64}.c between commit mce_init_device
+> ("x86, mce: Rename sysfs variables") from the  tree and commit
+                                               ^^^
+x86
 
-Also, others may have other interesting inodes they use for metadata. Do
-any of them go through the pagecache? I dont know. The ext3 journal,
-for example? How does that work?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Unfortunately I don't know a good way to detect regular data mappings
-easily. Ccing linux-fsdevel. Until that is worked out, you'd need to
-use the safe pagecache invalidate rather than unsafe truncate.
+--Signature=_Tue__9_Jun_2009_19_52_00_+1000_vvLcYji/zJZ0RH1L
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-> +	if (mapping) {
-> +		truncate_inode_page(mapping, p);
-> +		if (page_has_private(p) && !try_to_release_page(p, GFP_NOIO)) {
-> +			pr_debug(KERN_ERR "MCE %#lx: failed to release buffers\n",
-> +				pfn);
-> +			return FAILED;
-> +		}
-> +	}
-> +	return RECOVERED;
-> +}
+iEYEARECAAYFAkouMMAACgkQjjKRsyhoI8yMOACeKWCwogpMGf5sFwGzCwPCdzUx
+8BEAoKkiMep+mPYTbGFpOKldcx7pXEN4
+=FGml
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__9_Jun_2009_19_52_00_+1000_vvLcYji/zJZ0RH1L--
