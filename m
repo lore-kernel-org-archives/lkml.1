@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbZFIQ1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756536AbZFIQaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757437AbZFIQ1v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 12:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbZFIQ1n
+	id S1756536AbZFIQaW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 12:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZFIQaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 12:27:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36263 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752945AbZFIQ1m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 12:27:42 -0400
-Date: Tue, 9 Jun 2009 09:26:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Nick Piggin <npiggin@suse.de>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
- kernels
-In-Reply-To: <20090609162125.GC9211@wotan.suse.de>
-Message-ID: <alpine.LFD.2.01.0906090924580.6847@localhost.localdomain>
-References: <4A0B62F7.5030802@goop.org> <200906032208.28061.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906030901460.4880@localhost.localdomain> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain>
- <20090609093918.GC16940@wotan.suse.de> <alpine.LFD.2.01.0906090749380.6847@localhost.localdomain> <20090609153847.GB9211@wotan.suse.de> <alpine.LFD.2.01.0906090849080.6847@localhost.localdomain> <20090609162125.GC9211@wotan.suse.de>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 9 Jun 2009 12:30:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34720 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751834AbZFIQaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 12:30:09 -0400
+Date: Tue, 9 Jun 2009 12:29:10 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+To: Harald Welte <HaraldWelte@viatech.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org,
+       Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+Subject: Re: [patch 0/3] crypto: padlock-aes: enable on VIA Nano
+Message-ID: <20090609122910.13972109@dhcp-100-2-144.bos.redhat.com>
+In-Reply-To: <20090609103533.0c334594@dhcp-100-2-144.bos.redhat.com>
+References: <20090609103533.0c334594@dhcp-100-2-144.bos.redhat.com>
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 9 Jun 2009 10:35:33 -0400
+Chuck Ebbert <cebbert@redhat.com> wrote:
 
-
-On Tue, 9 Jun 2009, Nick Piggin wrote:
+> The VIA Nano has a bug that makes the padlock unit fetch extra data
+> during encryption operations. Add workarounds for that, and enable
+> the driver on x86_64.
 > 
-> The idea seems nice but isn't the problem that kmap gives back a
-> basically 1st class kernel virtual memory? (ie. it can then be used
-> by any other CPU at any point without it having to use kmap?).
+> 1/3 Fix ECB encryption mode
+> 2/3 Fix CBC mode, clean up code
+> 3/3 Enable building for 64-bit kernels
 
-No, everybody has to use kmap()/kunmap().
+Forgot to mention, I have 64-bit working on a Samsung NC20 with LVM
+encrypted disks using AES. The cryptomgr self-tests pass too. Before
+the prefetch fixes it was oopsing near page boundaries when trying to
+decrypt disk blocks.
 
-The "problem" is that you could in theory run out of kmap frames, since if 
-everybody does a kmap() in an interruptible context and you have lots and 
-lots of threads doing different pages, you'd run out. But that has nothing 
-to do with kmap_atomic(), which is basically limited to just the number of 
-CPU's and a (very small) level of nesting.
-
-			Linus
