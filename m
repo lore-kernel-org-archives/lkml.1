@@ -1,210 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758122AbZFIHw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758316AbZFIHxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758122AbZFIHw3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 03:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758012AbZFIHwJ
+	id S1758316AbZFIHxc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 03:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbZFIHxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 03:52:09 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:47669 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755628AbZFIHwG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 03:52:06 -0400
-Message-ID: <4A2E1490.7060902@ct.jp.nec.com>
-Date: Tue, 09 Jun 2009 16:51:44 +0900
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 9 Jun 2009 03:53:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56609 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754834AbZFIHxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 03:53:24 -0400
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>, k-ueda@ct.jp.nec.com,
-       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
-Subject: [PATCH block#for-2.6.31] block: add request clone interface
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Petr Tesarik <ptesarik@suse.cz>
+X-Fcc: ~/Mail/linus
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] x86: clean up vdso-layout.lds.S
+In-Reply-To: Petr Tesarik's message of  Tuesday, 9 June 2009 09:26:58 +0200 <1244532418.5199.24.camel@nathan.suse.cz>
+References: <1243865115.24278.8.camel@nathan.suse.cz>
+	<1244215559.1604.12.camel@nathan.suse.cz>
+	<20090605200701.GB23195@uranus.ravnborg.org>
+	<1244532418.5199.24.camel@nathan.suse.cz>
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20090609075247.DA95CFC3B2@magilla.sf.frob.com>
+Date: Tue,  9 Jun 2009 00:52:47 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+> > I am wondering why we need -P -C here - but we do not need it for lds.S files?
+> > Seems like something we could let go.
 
-Recently, I posted an updated version of request-based dm patch-set
-(http://marc.info/?l=dm-devel&m=124392590507004&w=2) which was made
-on top of block#for-2.6.31.
-In block#for-2.6.31, __sector and __data_len of struct request are
-commented as 'internal, NEVER access directly'.
-However, since request-based dm needs to copy the latest status of
-the original request to clone, those fields are still accessed
-directly in the request-based dm patch-set.
+AFAIK these only affect readability of the lds.s output files.
+The difference should be entirely cosmetic.
 
-I'd like to solve this issue without breaking the new block-layer policy.
-If those fields should not be accessed directly, I need a helper
-function to copy the original request.
-What do you think about the following patch which adds request cloning
-interface to the block-layer?
-Please apply if you have no problem.
+> > > >  	.altinstructions	: { *(.altinstructions) }
+> > > > @@ -43,9 +42,49 @@ SECTIONS
+> > > >  	 */
+> > > >  	. = ALIGN(0x100);
+> > 
+> > What is 0x100?
+> 
+> Um. No idea. Roland, you added this line in commit
+> f6b46ebf904f69a73907a5e6b1ed2228e3f03d9e. Can you shed some light on
+> this magic constant?
+
+You mean this one:
+
+	/*
+	 * Align the actual code well away from the non-instruction data.
+	 * This is the best thing for the I-cache.
+	 */
+	. = ALIGN(0x100);
+
+Reading the comment might make it obvious that it's intended for optimal
+code alignment.  I suspect someone at the time told me 256 is as big as an
+I-cache line was ever likely to get.  You could use L1_CACHE_BYTES instead
+I suppose.
+
+> What would you expect? The linker script language is quite limited in
+> its capabilities... Best I could do is split the ".broken" section into
+> several sections and move the descriptions from the individual comments
+> above here. If this muckle of empty ".broken.*" sections gets correctly
+> discarded and triggers no bug in binutils, I can probably do it.
+
+Adding more sections and section names unnecessarily bloats the size of the
+vDSO image.  Keep the set of output sections to the necessary minimum.
 
 
-
-This patch adds the following 2 interfaces for request-stacking drivers:
-
-  - blk_rq_prep_clone(struct request *clone, struct request *orig,
-		      struct bio_set *bs, gfp_t gfp_mask,
-		      int (*bio_ctr)(struct bio *, struct bio*, void *),
-		      void *data)
-      * Clones bios in the original request to the clone request
-        (bio_ctr is called for each cloned bios.)
-      * Copies the clone-related information of the original request
-        to the clone request.
-
-  - blk_rq_unprep_clone(struct request *clone)
-      * Frees cloned bios from the clone request.
-
-Request stacking drivers (e.g. request-based dm) need to make a clone
-request for a submitted request and dispatch it to other devices.
-
-To allocate request for the clone, request stacking drivers may not
-be able to use blk_get_request() because the allocation may be done
-in an irq-disabled context.
-So blk_rq_prep_clone() takes a request allocated by the caller
-as an argument.
-
-For each clone bio in the clone request, request stacking drivers
-should be able to set up their own completion handler.
-So blk_rq_prep_clone() takes a callback function which is called
-for each clone bio, and a pointer for private data which is passed
-to the callback.
-
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
----
- block/blk-core.c       |   98 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/blkdev.h |    5 ++
- 2 files changed, 103 insertions(+)
-
-Index: linux-2.6-block/block/blk-core.c
-===================================================================
---- linux-2.6-block.orig/block/blk-core.c
-+++ linux-2.6-block/block/blk-core.c
-@@ -2295,6 +2295,104 @@ int blk_lld_busy(struct request_queue *q
- }
- EXPORT_SYMBOL_GPL(blk_lld_busy);
- 
-+/**
-+ * blk_rq_unprep_clone - Helper function to free all bios in a cloned request
-+ * @rq: the clone request to be cleaned up
-+ *
-+ * Description:
-+ *     Free all bios in @rq for a cloned request.
-+ */
-+void blk_rq_unprep_clone(struct request *rq)
-+{
-+	struct bio *bio;
-+
-+	while ((bio = rq->bio) != NULL) {
-+		rq->bio = bio->bi_next;
-+
-+		bio_put(bio);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(blk_rq_unprep_clone);
-+
-+/*
-+ * Copy request information of the original request to the clone request.
-+ */
-+static void __blk_rq_prep_clone(struct request *dst, struct request *src)
-+{
-+	dst->cpu = src->cpu;
-+	dst->cmd_flags = (rq_data_dir(src) | REQ_NOMERGE);
-+	dst->cmd_type = src->cmd_type;
-+	dst->__sector = blk_rq_pos(src);
-+	dst->__data_len = blk_rq_bytes(src);
-+	dst->nr_phys_segments = src->nr_phys_segments;
-+	dst->ioprio = src->ioprio;
-+	dst->buffer = src->buffer;
-+	dst->cmd_len = src->cmd_len;
-+	dst->cmd = src->cmd;
-+	dst->extra_len = src->extra_len;
-+	dst->sense = src->sense;
-+}
-+
-+/**
-+ * blk_rq_prep_clone - Helper function to setup clone request
-+ * @rq: the request to be setup
-+ * @rq_src: original request to be cloned
-+ * @bs: bio_set that bios for clone are allocated from
-+ * @gfp_mask: memory allocation mask for bio
-+ * @bio_ctr: setup function to be called for each clone bio.
-+ *           Returns %0 for success, non %0 for failure.
-+ * @data: private data to be passed to @bio_ctr
-+ *
-+ * Description:
-+ *     Clones bios in @rq_src to @rq, and copies clone-related information
-+ *     of @rq_src to @rq.
-+ */
-+int blk_rq_prep_clone(struct request *rq, struct request *rq_src,
-+		      struct bio_set *bs, gfp_t gfp_mask,
-+		      int (*bio_ctr)(struct bio *, struct bio *, void *),
-+		      void *data)
-+{
-+	struct bio *bio, *bio_src;
-+
-+	if (!bs)
-+		bs = fs_bio_set;
-+
-+	blk_rq_init(NULL, rq);
-+
-+	__rq_for_each_bio(bio_src, rq_src) {
-+		bio = bio_alloc_bioset(gfp_mask, bio_src->bi_max_vecs, bs);
-+		if (!bio)
-+			goto free_and_out;
-+
-+		__bio_clone(bio, bio_src);
-+
-+		if (bio_integrity(bio_src) &&
-+		    bio_integrity_clone(bio, bio_src, gfp_mask))
-+			goto free_and_out;
-+
-+		if (bio_ctr && bio_ctr(bio, bio_src, data))
-+			goto free_and_out;
-+
-+		if (rq->bio) {
-+			rq->biotail->bi_next = bio;
-+			rq->biotail = bio;
-+		} else
-+			rq->bio = rq->biotail = bio;
-+	}
-+
-+	__blk_rq_prep_clone(rq, rq_src);
-+
-+	return 0;
-+
-+free_and_out:
-+	if (bio)
-+		bio_free(bio, bs);
-+	blk_rq_unprep_clone(rq);
-+
-+	return -ENOMEM;
-+}
-+EXPORT_SYMBOL_GPL(blk_rq_prep_clone);
-+
- int kblockd_schedule_work(struct request_queue *q, struct work_struct *work)
- {
- 	return queue_work(kblockd_workqueue, work);
-Index: linux-2.6-block/include/linux/blkdev.h
-===================================================================
---- linux-2.6-block.orig/include/linux/blkdev.h
-+++ linux-2.6-block/include/linux/blkdev.h
-@@ -765,6 +765,11 @@ extern void blk_insert_request(struct re
- extern void blk_requeue_request(struct request_queue *, struct request *);
- extern int blk_rq_check_limits(struct request_queue *q, struct request *rq);
- extern int blk_lld_busy(struct request_queue *q);
-+extern int blk_rq_prep_clone(struct request *rq, struct request *rq_src,
-+			     struct bio_set *bs, gfp_t gfp_mask,
-+			     int (*bio_ctr)(struct bio *, struct bio *, void *),
-+			     void *data);
-+extern void blk_rq_unprep_clone(struct request *rq);
- extern int blk_insert_cloned_request(struct request_queue *q,
- 				     struct request *rq);
- extern void blk_plug_device(struct request_queue *);
+Thanks,
+Roland
