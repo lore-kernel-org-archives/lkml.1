@@ -1,211 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758704AbZFIHWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbZFIHYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758704AbZFIHWq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 03:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbZFIHWh
+	id S1757531AbZFIHYk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 03:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbZFIHYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 03:22:37 -0400
-Received: from mga12.intel.com ([143.182.124.36]:42181 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755570AbZFIHWh (ORCPT
+	Tue, 9 Jun 2009 03:24:32 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:42977 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752465AbZFIHYc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 03:22:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,330,1241420400"; 
-   d="scan'208";a="152146120"
-Subject: [PATCH V3: 3/3] pci: Provide Multiple Error Received support on AER
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 09 Jun 2009 15:22:44 +0800
-Message-Id: <1244532164.2560.221.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Tue, 9 Jun 2009 03:24:32 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+Date: Tue, 9 Jun 2009 09:25:18 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org,
+       Alan Stern <stern@rowland.harvard.edu>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0906071651060.25203-100000@netrider.rowland.org> <200906081404.04118.oliver@neukum.org> <200906082034.31091.rjw@sisk.pl>
+In-Reply-To: <200906082034.31091.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906090925.18866.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-﻿﻿﻿﻿When a root port receive the same errors more than once before kernel
- process them, the Multiple Error Messages Received flags are set by
-hardware. Because root port could only save one kind of correctable
-error source id and another uncorrectable error source id at the same
-time, so the second message sender id is lost if the 2 messages are
-sent from 2 different devices. Below patch searches all devices under
-the root port when multiple messages are received.
+Am Montag, 8. Juni 2009 20:34:30 schrieb Rafael J. Wysocki:
+> On Monday 08 June 2009, Oliver Neukum wrote:
+> > Am Montag, 8. Juni 2009 13:29:26 schrieb Rafael J. Wysocki:
 
-﻿﻿﻿﻿Signed-off-by: ﻿Zhang Yanmin <yanmin.zhang@linux.intel.com>
+> > Secondly, you are not using a counter. Therefore only one driver can
+> > control the PM state of a device at a given time. Is that wise?
+>
+> I didn't think about it to be honest.  Obviously this patch doesn't cover
+> all of the possible cases and I'm not even sure it's worth trying to cover
+> them upfront.
 
----
+I am thinking of multimedia cards, which have separate drivers for i2c, tuner
+and so on.
 
---- linux-2.6.30-rc3_aernoeid/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-09 01:36:52.000000000 +0800
-+++ linux-2.6.30-rc3_aermultierror/drivers/pci/pcie/aer/aerdrv_core.c	2009-06-09 02:04:41.000000000 +0800
-@@ -143,13 +143,22 @@ static void set_downstream_devices_error
- 	pci_walk_bus(dev->subordinate, set_device_error_reporting, &enable);
- }
- 
-+static int add_error_device(struct aer_err_info *e_info, struct pci_dev *dev)
-+{
-+	if (e_info->error_dev_num < AER_MAX_MULTI_ERR_DEVICES) {
-+		e_info->dev[e_info->error_dev_num ++] = dev;
-+		return 1;
-+	} else
-+		return 0;
-+}
-+
- static int compare_device_id(struct pci_dev *dev, struct aer_err_info *e_info)
- {
- 	if (e_info->id == ((dev->bus->number << 8) | dev->devfn)) {
- 		/*
- 		 * Device ID match
- 		 */
--		e_info->dev = dev;
-+		add_error_device(e_info, dev);
- 		return 1;
- 	}
- 
-@@ -164,20 +173,38 @@ static int find_device_iter(struct pci_d
- 	u32 status;
- 	u32 mask;
- 	u16 reg16;
-+	int result;
- 	struct aer_err_info *e_info = (struct aer_err_info *)data;
- 
- 	/*
- 	 * When bus id is equal to 0, it might be a bad id
- 	 * reported by root port.
- 	 */
--	if (!nosourceid && (PCI_BUS(e_info->id) != 0))
--		return compare_device_id(dev, e_info);
-+	if (!nosourceid && (PCI_BUS(e_info->id) != 0)) {
-+		result = compare_device_id(dev, e_info);
-+		/*
-+		 * If there is no multiple error, we stop
-+		 * or continue based on the id comparing.
-+		 */
-+		if (!(e_info->flags & AER_MULTI_ERROR_VALID_FLAG))
-+			return result;
-+
-+		/*
-+		 * If there are multiple errors and id does match,
-+		 * We need continue to search other devices under
-+		 * the root port. Return 0 means that.
-+		 */
-+		if (result)
-+			return 0;
-+	}
- 
- 	/*
--	 * Next is to check when bus id is equal to 0 or
--	 * nosourceid==y. Some ports might lose the bus
--	 * id of error source id. We check AER status
--	 * registers to find the initial reporter.
-+	 * When either
-+	 * 	1) nosourceid==y;
-+	 * 	2) bus id is equal to 0. Some ports might lose the bus
-+	 * 		id of error source id;
-+	 * 	3) There are multiple errors and prior id comparing fails;
-+	 * We check AER status registers to find the initial reporter.
- 	 */
- 	if (atomic_read(&dev->enable_cnt) == 0)
- 		return 0;
-@@ -206,8 +233,8 @@ static int find_device_iter(struct pci_d
- 				pos + PCI_ERR_COR_MASK,
- 				&mask);
- 		if (status & ERR_CORRECTABLE_ERROR_MASK & ~mask) {
--			e_info->dev = dev;
--			return 1;
-+			add_error_device(e_info, dev);
-+			goto added;
- 		}
- 	} else {
- 		pci_read_config_dword(dev,
-@@ -217,12 +244,18 @@ static int find_device_iter(struct pci_d
- 				pos + PCI_ERR_UNCOR_MASK,
- 				&mask);
- 		if (status & ERR_UNCORRECTABLE_ERROR_MASK & ~mask) {
--			e_info->dev = dev;
--			return 1;
-+			add_error_device(e_info, dev);
-+			goto added;
- 		}
- 	}
- 
- 	return 0;
-+
-+added:
-+	if (e_info->flags & AER_MULTI_ERROR_VALID_FLAG) {
-+		return 0;
-+	} else
-+		return 1;
- }
- 
- /**
-@@ -703,6 +736,30 @@ static int get_device_error_info(struct 
- 	return AER_SUCCESS;
- }
- 
-+static inline void aer_process_err_devices(struct pcie_device *p_device,
-+			struct aer_err_info *e_info)
-+{
-+	int i;
-+
-+	if (e_info->dev[0] == NULL) {
-+		printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
-+				__func__, e_info->id);
-+	}
-+
-+	for (i = 0; i < e_info->error_dev_num; i ++) {
-+		if (e_info->dev[i] == NULL)
-+			break;
-+
-+		if (get_device_error_info(e_info->dev[i], e_info) ==
-+				AER_SUCCESS) {
-+			aer_print_error(e_info->dev[i], e_info);
-+			handle_error_source(p_device,
-+					e_info->dev[i],
-+					e_info);
-+		}
-+	}
-+}
-+
- /**
-  * aer_isr_one_error - consume an error detected by root port
-  * @p_device: pointer to error root port service device
-@@ -745,18 +802,7 @@ static void aer_isr_one_error(struct pci
- 			e_info->flags |= AER_MULTI_ERROR_VALID_FLAG;
- 
- 		find_source_device(p_device->port, e_info);
--		if (e_info->dev == NULL) {
--			printk(KERN_DEBUG "%s->can't find device of ID%04x\n",
--				__func__, e_info->id);
--			continue;
--		}
--		if (get_device_error_info(e_info->dev, e_info) ==
--				AER_SUCCESS) {
--			aer_print_error(e_info->dev, e_info);
--			handle_error_source(p_device,
--				e_info->dev,
--				e_info);
--		}
-+		aer_process_err_devices(p_device, e_info);
- 	}
- 
- 	kfree(e_info);
---- linux-2.6.30-rc3_aernoeid/drivers/pci/pcie/aer/aerdrv.h	2009-04-29 12:44:36.000000000 +0800
-+++ linux-2.6.30-rc3_aermultierror/drivers/pci/pcie/aer/aerdrv.h	2009-06-09 01:43:20.000000000 +0800
-@@ -56,8 +56,10 @@ struct header_log_regs {
- 	unsigned int dw3;
- };
- 
-+#define AER_MAX_MULTI_ERR_DEVICES	5
- struct aer_err_info {
--	struct pci_dev *dev;
-+	struct pci_dev *dev[AER_MAX_MULTI_ERR_DEVICES];
-+	int error_dev_num;
- 	u16 id;
- 	int severity;			/* 0:NONFATAL | 1:FATAL | 2:COR */
- 	int flags;
+> > Why is this needed?
+>
+> In some subsystems, like PCI, devices will be resumed by the BIOS
+> unconditionally in the majority of cases and then it's not worth trying to
+> complete run-time PM requests from before the suspend.
+
+But why is it worth canceling them? That feature seems to be an unnecessary
+complication. As long as you can safely suspend them, why not do it?
+
+> > > +/**
+> > > + * __pm_schedule_resume - Schedule run-time resume of given device.
+> > > + * @dev: Device to resume.
+> > > + * @autocancel: If set, the request will be cancelled during a resume from a 
+> > > + *	system-wide sleep state if it happens before pm_autoresume() can be run.
+> > > + */
+> >
+> > Eeek! This is a bad idea. You never want to a resume to be cancelled.
+>
+> Sometimes I do (see above).
+
+Well no. A driver requests a resume because it has to.
+This needs a defined call sequence.
+
+Do you guarantee that autoresume follows autosuspend or not?
+If not what sequences can happen? Obviously an autosuspended device
+can be unplugged.
+But the problem here is STR or STD. How do you notify drivers that the BIOS
+has resumed their device instead of autoresume() being called? A driver
+has to know that its device has become active without its knowledge.
+
+> > > +		cancel_delayed_work_sync(&dev->power.suspend_work);
+> >
+> > That is the most glorious abuse of an API I've seen this year :-)
+>
+> Heh.
+>
+> OK, what would you do instead?
+
+A waitqueue.
+
+	Regards
+		Oliver
 
 
