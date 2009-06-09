@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932289AbZFIKiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763132AbZFIKh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932289AbZFIKiy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757023AbZFIKWg
+	id S1763132AbZFIKh7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758493AbZFIKW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:22:36 -0400
-Received: from kroah.org ([198.145.64.141]:32952 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:22:26 -0400
+Received: from kroah.org ([198.145.64.141]:32894 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758001AbZFIKWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:22:35 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:13 2009
-Message-Id: <20090609094112.789197843@blue.kroah.org>
+	id S1757622AbZFIKWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:22:23 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:12 2009
+Message-Id: <20090609094112.103140898@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:40:15 -0700
+Date: Tue, 09 Jun 2009 02:40:12 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,95 +26,68 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 87/87] ext4: Fix race in ext4_inode_info.i_cached_extent
+Subject: [patch 84/87] ext4: Fix sub-block zeroing for writes into preallocated extents
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-fix-race-in-ext4_inode_info.i_cached_extent.patch
+Content-Disposition: inline; filename=ext4-fix-sub-block-zeroing-for-writes-into-preallocated-extents.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: "Theodore Ts'o" <tytso@mit.edu>
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit 2ec0ae3acec47f628179ee95fe2c4da01b5e9fc4)
+(cherry picked from commit 9c1ee184a30394e54165fa4c15923cabd952c106)
 
-If two CPU's simultaneously call ext4_ext_get_blocks() at the same
-time, there is nothing protecting the i_cached_extent structure from
-being used and updated at the same time.  This could potentially cause
-the wrong location on disk to be read or written to, including
-potentially causing the corruption of the block group descriptors
-and/or inode table.
+We need to mark the buffer_head mapping preallocated space as new
+during write_begin. Otherwise we don't zero out the page cache content
+properly for a partial write. This will cause file corruption with
+preallocation.
 
-This bug has been in the ext4 code since almost the very beginning of
-ext4's development.  Fortunately once the data is stored in the page
-cache cache, ext4_get_blocks() doesn't need to be called, so trying to
-replicate this problem to the point where we could identify its root
-cause was *extremely* difficult.  Many thanks to Kevin Shanahan for
-working over several months to be able to reproduce this easily so we
-could finally nail down the cause of the corruption.
+Now that we mark the buffer_head new we also need to have a valid
+buffer_head blocknr so that unmap_underlying_metadata() unmaps the
+correct block.
 
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Reviewed-by: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/extents.c |   17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
+ fs/ext4/extents.c |    2 ++
+ fs/ext4/inode.c   |    7 +++++++
+ 2 files changed, 9 insertions(+)
 
 --- a/fs/ext4/extents.c
 +++ b/fs/ext4/extents.c
-@@ -1740,11 +1740,13 @@ ext4_ext_put_in_cache(struct inode *inod
- {
- 	struct ext4_ext_cache *cex;
- 	BUG_ON(len == 0);
-+	spin_lock(&EXT4_I(inode)->i_block_reservation_lock);
- 	cex = &EXT4_I(inode)->i_cached_extent;
- 	cex->ec_type = type;
- 	cex->ec_block = block;
- 	cex->ec_len = len;
- 	cex->ec_start = start;
-+	spin_unlock(&EXT4_I(inode)->i_block_reservation_lock);
- }
+@@ -2776,6 +2776,8 @@ int ext4_ext_get_blocks(handle_t *handle
+ 				if (allocated > max_blocks)
+ 					allocated = max_blocks;
+ 				set_buffer_unwritten(bh_result);
++				bh_result->b_bdev = inode->i_sb->s_bdev;
++				bh_result->b_blocknr = newblock;
+ 				goto out2;
+ 			}
  
- /*
-@@ -1801,12 +1803,17 @@ ext4_ext_in_cache(struct inode *inode, e
- 			struct ext4_extent *ex)
- {
- 	struct ext4_ext_cache *cex;
-+	int ret = EXT4_EXT_CACHE_NO;
- 
-+	/*
-+	 * We borrow i_block_reservation_lock to protect i_cached_extent
-+	 */
-+	spin_lock(&EXT4_I(inode)->i_block_reservation_lock);
- 	cex = &EXT4_I(inode)->i_cached_extent;
- 
- 	/* has cache valid data? */
- 	if (cex->ec_type == EXT4_EXT_CACHE_NO)
--		return EXT4_EXT_CACHE_NO;
-+		goto errout;
- 
- 	BUG_ON(cex->ec_type != EXT4_EXT_CACHE_GAP &&
- 			cex->ec_type != EXT4_EXT_CACHE_EXTENT);
-@@ -1817,11 +1824,11 @@ ext4_ext_in_cache(struct inode *inode, e
- 		ext_debug("%u cached by %u:%u:%llu\n",
- 				block,
- 				cex->ec_block, cex->ec_len, cex->ec_start);
--		return cex->ec_type;
-+		ret = cex->ec_type;
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -2246,6 +2246,13 @@ static int ext4_da_get_block_prep(struct
+ 		set_buffer_delay(bh_result);
+ 	} else if (ret > 0) {
+ 		bh_result->b_size = (ret << inode->i_blkbits);
++		/*
++		 * With sub-block writes into unwritten extents
++		 * we also need to mark the buffer as new so that
++		 * the unwritten parts of the buffer gets correctly zeroed.
++		 */
++		if (buffer_unwritten(bh_result))
++			set_buffer_new(bh_result);
+ 		ret = 0;
  	}
--
--	/* not in cache */
--	return EXT4_EXT_CACHE_NO;
-+errout:
-+	spin_unlock(&EXT4_I(inode)->i_block_reservation_lock);
-+	return ret;
- }
  
- /*
 
 
