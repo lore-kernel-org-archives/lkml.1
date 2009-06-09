@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbZFINz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbZFINzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754163AbZFINz3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZFINzR
+	id S1752648AbZFINzl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbZFINzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:55:17 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43938 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751042AbZFINzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:55:16 -0400
-Date: Tue, 9 Jun 2009 15:55:14 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [11/16] HWPOISON: check and isolate corrupted free pages v2
-Message-ID: <20090609135514.GD15219@wotan.suse.de>
-References: <20090603846.816684333@firstfloor.org> <20090603184645.68FA21D0286@basil.firstfloor.org> <20090609100229.GE14820@wotan.suse.de> <20090609130304.GF5589@localhost> <20090609132847.GC15219@wotan.suse.de> <20090609134903.GC6583@localhost>
+	Tue, 9 Jun 2009 09:55:22 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:39812 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754473AbZFINzU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 09:55:20 -0400
+Subject: Re: linux-next: net/wireless tree build failure
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "John W. Linville" <linville@tuxdriver.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20090609233357.5d3801a0.sfr@canb.auug.org.au>
+References: <20090609233357.5d3801a0.sfr@canb.auug.org.au>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-SdA5J9/05dd6ih2RCURT"
+Date: Tue, 09 Jun 2009 15:54:42 +0200
+Message-Id: <1244555682.4672.7.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090609134903.GC6583@localhost>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.26.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 09:49:03PM +0800, Wu Fengguang wrote:
-> On Tue, Jun 09, 2009 at 09:28:47PM +0800, Nick Piggin wrote:
-> > And I don't think removing a free page from the page allocator is
-> > too much more complex than removing a live page from the pagecache ;)
-> 
-> There are usable functions for doing pagecache isolations, but no one
-> to isolate one specific page from the buddy system.
 
-But it shouldn't be too hard. Anyway you wanted to reinvent your
-own functions for pagecache isolations ;)
+--=-SdA5J9/05dd6ih2RCURT
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, 2009-06-09 at 23:33 +1000, Stephen Rothwell wrote:
 
-> Plus, if we did present such a function, you'll then ask for it being
-> included in page_alloc.c, injecting a big chunk of dead code into the
-> really hot code blocks and possibly polluting the L2 cache. Will it be
+> Probably caused by commit 19d337dff95cbf76edd3ad95c0cee2732c3e1ec5
+> ("rfkill: rewrite") which added uses of ERR_PTR to inlines in rfkill.h
+> but did not include linux/err.h.
 
-But you would say no because you like it better in your memory
-isolation file ;)
+Indeed. Something must be including linux/err.h for me, I'll send a fix.
 
-> better than just inserting several lines? Hardly. Smaller text itself
-> yields faster speed.
+johannes
 
-Oh speed I'm definitely thinking about, don't worry about that.
+--=-SdA5J9/05dd6ih2RCURT
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Moving hot and cold functions together could become an issue
-indeed. Mostly it probably matters a little less than code
-within a single function due to their size. But I think gcc
-already has options to annotate this kind of thing which we
-could be using.
+-----BEGIN PGP SIGNATURE-----
 
-So it's not such a good argument against moving things out of
-hotpaths, or guiding in which files to place functions.
+iQIcBAABAgAGBQJKLmmeAAoJEODzc/N7+QmaM4MP/3qNo2XML9s6DgxKHDhEKfGn
+8o1fPOp9VOIVfQF97YZNn/3Wf/nomqx0bgXnd4HJoYtBecuAvHX+7n0oBdc6DJMR
+qLCI1i10bjSO6pY+hN3w2brGArnxXuzX1NddFdxYOwRx6bRD0c9CiVPrUvdyXodR
+2BLwdukU+YSClQvV0oAxnJivNSgUNzOgRfePXyae1F9mLOtdSNrZPFfjcfeGtSL7
+8wmuMpw/XVYwgXewSdGyyninyqGQ7dZSv0gzdCowsszh5Jo+F2eD0qebQ/AKRdTq
+ns66NDiJo60a4D+isSI4rbe3behjD8FSKFeJZzOxLZHkE59/wp/C01QaNVsvHeOl
+J4ua4UjWA7ztw2W3TRJWA/ogGsPthyVyTVL0tedvPXMONqD1Swo4YwyyntlckDJt
+JoGD9EhG7ZaR7EMQ2lI9MGLJZ3Pm7F2FbPCLYiqoq0Dk09Io1bl5ohXry+7OV6i0
+L8hkiYzQsCuqeD2ip4BMy59Q/CHxDeEBSTYQDX98WVQK0/JkMgo/U7YUMPpGIACx
+t0CPCdoVIafKJ4e0OMG6FF91KsKFvzNQTXhxk9qXHak40PzF6Ri+x4iq+LCjrd9P
+Up0tTNjRHl6VWuKc/62nrif7iAQcLK3t338TppqpWHZuW2bLyzZBeQ//zlPeOXni
+IgLam7iLkpZIPIXf5JRz
+=n9H0
+-----END PGP SIGNATURE-----
 
-Anyway, in this case it is not a "nack" from me. Just that I
-would like to see the non-fastpath code too or at least if
-it can be thought about.
+--=-SdA5J9/05dd6ih2RCURT--
 
