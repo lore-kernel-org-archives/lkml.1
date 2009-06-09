@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761731AbZFIK3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761954AbZFIKaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761731AbZFIK3T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760786AbZFIKUS
+	id S1761954AbZFIKaR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:30:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760794AbZFIKUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:20:18 -0400
-Received: from cantor.suse.de ([195.135.220.2]:55109 "EHLO mx1.suse.de"
+	Tue, 9 Jun 2009 06:20:32 -0400
+Received: from kroah.org ([198.145.64.141]:55148 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760788AbZFIKUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:20:17 -0400
-Date: Tue, 9 Jun 2009 12:20:14 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, fengguang.wu@intel.com
-Subject: Re: [PATCH] [0/16] HWPOISON: Intro
-Message-ID: <20090609102014.GG14820@wotan.suse.de>
-References: <20090603846.816684333@firstfloor.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090603846.816684333@firstfloor.org>
-User-Agent: Mutt/1.5.9i
+	id S1760785AbZFIKUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:20:31 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:41:04 2009
+Message-Id: <20090609094104.729987455@blue.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Tue, 09 Jun 2009 02:39:42 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Zoltan Karcagi <zkr@freemail.hu>,
+       Jiri Kosina <jkosina@suse.cz>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 54/87] HID: fix dropped device-specific quirks
+References: <20090609093848.204935043@blue.kroah.org>
+Content-Disposition: inline; filename=hid-fix-dropped-device-specific-quirks.patch
+In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 03, 2009 at 08:46:31PM +0200, Andi Kleen wrote:
-> Also I thought a bit about the fsync() error scenario. It's really
-> a problem that can already happen even without hwpoison, e.g.
-> when a page is dropped at the wrong time.
+2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
-No, the page will never be "dropped" like that except with
-this hwpoison. Errors, sure, might get dropped sometimes
-due to implementation bugs, but this is adding semantics that
-basically break fsync by-design.
+------------------
 
-I really want to resolve the EIO issue because as I said, it
-is a user-abi issue and too many of those just get shoved
-through only for someone to care about fundamental breakage
-after some years.
+From: Zoltan Karcagi <zkr@freemail.hu>
 
-You say that SIGKILL is overkill for such pages, but in fact
-this is exactly what you do with mapped pages anyway, so why
-not with other pages as well? I think it is perfectly fine to
-do so (and maybe a new error code can be introduced and that
-can be delivered to processes that can handle it rather than
-SIGKILL).
+commit f5208997087e6eb2096532b5a313eeb236535bdc upstream.
 
-Last request: do you have a panic-on-memory-error option?
-I think HA systems and ones with properly designed data
-integrity at the application layer will much prefer to
-halt the system than attempt ad-hoc recovery that does not
-always work and might screw things up worse.
+Device-specific quirks are set up correctly in their respective vendor-specific
+driver, then get overwritten in usbhid_parse().
+
+This is only issue for device-specific NOGET quirks being set by driver for a
+few devices out there.
+
+Signed-off-by: Zoltan Karcagi <zkr@freemail.hu>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/hid/usbhid/hid-core.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/hid/usbhid/hid-core.c
++++ b/drivers/hid/usbhid/hid-core.c
+@@ -765,7 +765,7 @@ static int usbhid_parse(struct hid_devic
+ 		goto err;
+ 	}
+ 
+-	hid->quirks = quirks;
++	hid->quirks |= quirks;
+ 
+ 	return 0;
+ err:
+
 
