@@ -1,258 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbZFIGtH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758120AbZFIGuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757249AbZFIGtH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 02:49:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbZFIGs5
+	id S1758120AbZFIGuu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 02:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbZFIGum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 02:48:57 -0400
-Received: from mga14.intel.com ([143.182.124.37]:56932 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752719AbZFIGs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 02:48:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,329,1241420400"; 
-   d="scan'208";a="152136502"
-Date: Tue, 9 Jun 2009 14:48:55 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Nai Xia <nai.xia@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Nick Piggin <npiggin@suse.de>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
-	in  the VM v3
-Message-ID: <20090609064855.GB5490@localhost>
-References: <20090528082616.GG6920@wotan.suse.de> <20090528093141.GD1065@one.firstfloor.org> <20090528120854.GJ6920@wotan.suse.de> <20090528134520.GH1065@one.firstfloor.org> <20090528145021.GA5503@localhost> <ab418ea90906032325m302afbb6w6fa68f6b57f53e49@mail.gmail.com> <20090607160225.GA24315@localhost> <ab418ea90906080406y34981329y27d360624aa22f7c@mail.gmail.com> <20090608123133.GA7944@localhost> <ab418ea90906080746m6d1d59d8m395ab76585575db1@mail.gmail.com>
+	Tue, 9 Jun 2009 02:50:42 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:46584 "EHLO
+	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753900AbZFIGul (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 02:50:41 -0400
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ab418ea90906080746m6d1d59d8m395ab76585575db1@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: [PATCH 03/27] score: create head files asmmacro.h atomic.h auxvec.h
+X-Mailer: Lotus Notes Release 6.5 September 26, 2003
+Message-ID: <OF84086610.39FD58B5-ON482575D0.00231C8C-482575D0.00238F4B@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Tue, 9 Jun 2009 14:24:07 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/09 ?? 02:24:07,
+	Serialize complete at 2009/06/09 ?? 02:24:07
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 10:46:53PM +0800, Nai Xia wrote:
-> On Mon, Jun 8, 2009 at 8:31 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> > On Mon, Jun 08, 2009 at 07:06:12PM +0800, Nai Xia wrote:
-> >> On Mon, Jun 8, 2009 at 12:02 AM, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> >> > On Thu, Jun 04, 2009 at 02:25:24PM +0800, Nai Xia wrote:
-> >> >> On Thu, May 28, 2009 at 10:50 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> >> >> > On Thu, May 28, 2009 at 09:45:20PM +0800, Andi Kleen wrote:
-> >> >> >> On Thu, May 28, 2009 at 02:08:54PM +0200, Nick Piggin wrote:
-> >> >> >
-> >> >> > [snip]
-> >> >> >
-> >> >> >> >
-> >> >> >> > BTW. I don't know if you are checking for PG_writeback often enough?
-> >> >> >> > You can't remove a PG_writeback page from pagecache. The normal
-> >> >> >> > pattern is lock_page(page); wait_on_page_writeback(page); which I
-> >> >> >>
-> >> >> >> So pages can be in writeback without being locked? I still
-> >> >> >> wasn't able to find such a case (in fact unless I'm misreading
-> >> >> >> the code badly the writeback bit is only used by NFS and a few
-> >> >> >> obscure cases)
-> >> >> >
-> >> >> > Yes the writeback page is typically not locked. Only read IO requires
-> >> >> > to be exclusive. Read IO is in fact page *writer*, while writeback IO
-> >> >> > is page *reader* :-)
-> >> >>
-> >> >> Sorry for maybe somewhat a little bit off topic,
-> >> >> I am trying to get a good understanding of PG_writeback & PG_locked ;)
-> >> >>
-> >> >> So you are saying PG_writeback & PG_locked are acting like a read/write lock?
-> >> >> I notice wait_on_page_writeback(page) seems always called with page locked --
-> >> >
-> >> > No. Note that pages are not locked in wait_on_page_writeback_range().
-> >>
-> >> I see. This function seems mostly called  on the sync path,
-> >> it just waits for data being synchronized to disk.
-> >> No writers from the pages' POV, so no lock.
-> >> I missed this case, but my argument about the role of read/write lock.
-> >> seems still consistent. :)
-> >
-> > It's more constrained. Normal read/write locks allow concurrent readers,
-> > however fsync() must wait for previous IO to finish before starting
-> > its own IO.
-> 
-> Oh, yes, this is what I called "mixed roles". One for lock, one for
-> status flag, twisted together in the same path, making the read lock
-> semantics totally broken.
-> 
-> >
-> >> >
-> >> >> that is the semantics of a writer waiting to get the lock while it's
-> >> >> acquired by
-> >> >> some reader:The caller(e.g. truncate_inode_pages_range()  and
-> >> >> invalidate_inode_pages2_range()) are the writers waiting for
-> >> >> writeback readers (as you clarified ) to finish their job, right ?
-> >> >
-> >> > Sorry if my metaphor confused you. But they are not typical
-> >> > reader/writer problems, but more about data integrities.
-> >>
-> >> No, you didn't :)
-> >> Actually, you make me clear about the mixed roles for
-> >> those bits.
-> >>
-> >> >
-> >> > Pages have to be "not under writeback" when truncated.
-> >> > Otherwise data lost is possible:
-> >> >
-> >> > 1) create a file with one page (page A)
-> >> > 2) truncate page A that is under writeback
-> >> > 3) write to file, which creates page B
-> >> > 4) sync file, which sends page B to disk quickly
-> >> >
-> >> > Now if page B reaches disk before A, the new data will be overwritten
-> >> > by truncated old data, which corrupts the file.
-> >>
-> >> I fully understand this scenario which you had already clarified in a
-> >> previous message. :)
-> >>
-> >> 1. someone make index1-> page A
-> >> 2. Path P1 is acting as a *reader* to a cache page at index1 by
-> >>     setting PG_writeback on, while at the same time as a *writer* to
-> >>     the corresponding file blocks.
-> >> 3. Another path P2 comes in and  truncate page A, he is the writer
-> >>     to the same cache page.
-> >> 4. Yet another path P3 comes  as the writer to the cache page
-> >>      making it points to page B: index1--> page B.
-> >> 5. Path P4 comes writing back the cache page(and set PG_writeback).
-> >>    He is the reader of the cache page and the writer to the file blocks.
-> >>
-> >> The corrupts occur because P1 & P4 races when writing file blocks.
-> >> But the _root_ of this racing is because nothing is used to serialize
-> >> them on the side of writing the file blocks and above stream reading was
-> >> inconsistent because of the writers(P2 & P3) to cache page at index1.
-> >>
-> >> Note that the "sync file" is somewhat irrelevant, even without "sync file",
-> >> the racing still may exists. I know you must want to show me that this could
-> >> make the corruption more easy to occur.
-> >>
-> >> So I think the simple logic is:
-> >> 1) if you want to truncate/change the mapping from a index to a struct *page,
-> >> test writeback bit because the writebacker to the file blocks is the reader
-> >> of this mapping.
-> >> 2) if a writebacker want to start a read of this mapping with
-> >> test_set_page_writeback()
-> >> or set_page_writeback(), he'd be sure this page is locked to keep out the
-> >> writers to this mapping of index-->struct *page.
-> >>
-> >> This is really behavior of a read/write lock, right ?
-> >
-> > Please, that's a dangerous idea. A page can be written to at any time
-> > when writeback to disk is under way. Does PG_writeback (your reader
-> > lock) prevents page data writers?  NO.
-> 
-> I meant PG_writeback stops writers to index---->struct page mapping.
+>From 026fac90a1eabb39797acb5727b68da78c076c2b Mon Sep 17 00:00:00 2001
+From: Chen Liqin <liqin.chen@sunplusct.com>
+Date: Tue, 9 Jun 2009 13:43:05 +0800
 
-It's protected by the radix tree RCU locks. Period.
 
-If you are referring to the reverse mapping: page->mapping is procted
-by PG_lock. No one should make assumption that it won't change under
-page writeback.
 
-Thanks,
-Fengguang
+Signed-off-by: Chen Liqin <liqin.chen@sunplusct.com>
+---
+ arch/score/include/asm/asmmacro.h |  161 
++++++++++++++++++++++++++++++++++++++
+ arch/score/include/asm/atomic.h   |    6 ++
+ arch/score/include/asm/auxvec.h   |    4 +
+ 3 files changed, 171 insertions(+), 0 deletions(-)
+ create mode 100644 arch/score/include/asm/asmmacro.h
+ create mode 100644 arch/score/include/asm/atomic.h
+ create mode 100644 arch/score/include/asm/auxvec.h
 
-> I think I should make my statements more concise and the "reader/writer"
-> less vague.
-> 
-> Here we care about the write/read operation for index---->struct page mapping.
-> Not for read/write operation for the page content.
-> 
-> Anyone who wants to change this mapping  is a writer, he should take
-> page lock.
-> Anyone who wants to reference this mapping is a reader, writers should
-> wait for him. And when this reader wants to get ref, he should wait for
-> anyone one who is changing this mapping(e.g. page truncater).
-> 
-> When a path sets PG_writeback on a page, it need this index-->struct page
-> mapping be 100% valid right? (otherwise may leads to corruption.)
-> So writeback routines are readers of this index-->struct page mapping.
-> (oh, well if we can put the other role of PG_writeback aside)
-> 
-> Ok,Ok, since PG_locked does mean much more than just protecting
-> the per-page mapping which makes the lock abstraction even less clear.
-> so indeed, forget about it.
-> 
-> >
-> > Thanks,
-> > Fengguang
-> >
-> >> wait_on_page_writeback_range() looks different only because "sync"
-> >> operates on "struct page", it's not sensitive to index-->struct *page mapping.
-> >> It does care about if pages returned by pagevec_lookup_tag() are
-> >> still maintains the mapping when wait_on_page_writeback(page).
-> >> Here, PG_writeback is only a status flag for "struct page" not a lock bit for
-> >> index->struct *page mapping.
-> >>
-> >> >
-> >> >> So do you think the idea is sane to group the two bits together
-> >> >> to form a real read/write lock, which does not care about the _number_
-> >> >> of readers ?
-> >> >
-> >> > We don't care number of readers here. So please forget about it.
-> >> Yeah, I meant number of readers is not important.
-> >>
-> >> I still hold that these two bits in some way act like a _sparse_
-> >> read/write lock.
-> >> But I am going to drop the idea of making them a pure lock, since PG_writeback
-> >> does has other meaning -- the page is being writing back: for sync
-> >> path, it's only
-> >> a status flag.
-> >> Making a pure read/write lock definitely will lose that or at least distort it.
-> >>
-> >>
-> >> Hoping I've made my words understandable, correct me if wrong, and
-> >> many thanks for your time and patience. :-)
-> >>
-> >>
-> >> Nai Xia
-> >>
-> >> >
-> >> > Thanks,
-> >> > Fengguang
-> >> >
-> >> >> > The writeback bit is _widely_ used.  test_set_page_writeback() is
-> >> >> > directly used by NFS/AFS etc. But its main user is in fact
-> >> >> > set_page_writeback(), which is called in 26 places.
-> >> >> >
-> >> >> >> > think would be safest
-> >> >> >>
-> >> >> >> Okay. I'll just add it after the page lock.
-> >> >> >>
-> >> >> >> > (then you never have to bother with the writeback bit again)
-> >> >> >>
-> >> >> >> Until Fengguang does something fancy with it.
-> >> >> >
-> >> >> > Yes I'm going to do it without wait_on_page_writeback().
-> >> >> >
-> >> >> > The reason truncate_inode_pages_range() has to wait on writeback page
-> >> >> > is to ensure data integrity. Otherwise if there comes two events:
-> >> >> >        truncate page A at offset X
-> >> >> >        populate page B at offset X
-> >> >> > If A and B are all writeback pages, then B can hit disk first and then
-> >> >> > be overwritten by A. Which corrupts the data at offset X from user's POV.
-> >> >> >
-> >> >> > But for hwpoison, there are no such worries. If A is poisoned, we do
-> >> >> > our best to isolate it as well as intercepting its IO. If the interception
-> >> >> > fails, it will trigger another machine check before hitting the disk.
-> >> >> >
-> >> >> > After all, poisoned A means the data at offset X is already corrupted.
-> >> >> > It doesn't matter if there comes another B page.
-> >> >> >
-> >> >> > Thanks,
-> >> >> > Fengguang
-> >> >> > --
-> >> >> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> >> >> > the body of a message to majordomo@vger.kernel.org
-> >> >> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >> >> > Please read the FAQ at  http://www.tux.org/lkml/
-> >> >> >
-> >> >
-> >
+diff --git a/arch/score/include/asm/asmmacro.h 
+b/arch/score/include/asm/asmmacro.h
+new file mode 100644
+index 0000000..a04a54c
+--- /dev/null
++++ b/arch/score/include/asm/asmmacro.h
+@@ -0,0 +1,161 @@
++#ifndef _ASM_SCORE_ASMMACRO_H
++#define _ASM_SCORE_ASMMACRO_H
++
++#include <asm/asm-offsets.h>
++
++#ifdef __ASSEMBLY__
++
++.macro SAVE_ALL
++       mfcr    r30, cr0
++       mv      r31, r0
++       nop
++       /* if UMs == 1, change stack. */
++       slli.c  r30, r30, 28
++       bpl     1f
++       la      r31, kernelsp
++       lw      r31, [r31]
++1:
++       mv      r30, r0
++       addri   r0, r31, -PT_SIZE
++
++       sw      r30, [r0, PT_R0]
++       .set    r1
++       sw      r1, [r0, PT_R1]
++       .set    nor1
++       sw      r2, [r0, PT_R2]
++       sw      r3, [r0, PT_R3]
++       sw      r4, [r0, PT_R4]
++       sw      r5, [r0, PT_R5]
++       sw      r6, [r0, PT_R6]
++       sw      r7, [r0, PT_R7]
++
++       sw      r8, [r0, PT_R8]
++       sw      r9, [r0, PT_R9]
++       sw      r10, [r0, PT_R10]
++       sw      r11, [r0, PT_R11]
++       sw      r12, [r0, PT_R12]
++       sw      r13, [r0, PT_R13]
++       sw      r14, [r0, PT_R14]
++       sw      r15, [r0, PT_R15]
++
++       sw      r16, [r0, PT_R16]
++       sw      r17, [r0, PT_R17]
++       sw      r18, [r0, PT_R18]
++       sw      r19, [r0, PT_R19]
++       sw      r20, [r0, PT_R20]
++       sw      r21, [r0, PT_R21]
++       sw      r22, [r0, PT_R22]
++       sw      r23, [r0, PT_R23]
++
++       sw      r24, [r0, PT_R24]
++       sw      r25, [r0, PT_R25]
++       sw      r25, [r0, PT_R25]
++       sw      r26, [r0, PT_R26]
++       sw      r27, [r0, PT_R27]
++
++       sw      r28, [r0, PT_R28]
++       sw      r29, [r0, PT_R29]
++       orri    r28, r0, 0x1fff
++       li      r31, 0x00001fff
++       xor     r28, r28, r31
++
++       mfcehl  r30, r31
++       sw      r30, [r0, PT_CEH]
++       sw      r31, [r0, PT_CEL]
++
++       mfcr    r31, cr0
++       sw      r31, [r0, PT_PSR]
++
++       mfcr    r31, cr1
++       sw      r31, [r0, PT_CONDITION]
++
++       mfcr    r31, cr2
++       sw      r31, [r0, PT_ECR]
++ 
++       mfcr    r31, cr5
++       srli    r31, r31, 1
++       slli    r31, r31, 1
++       sw      r31, [r0, PT_EPC]
++.endm
++
++.macro RESTORE_ALL_AND_RET
++       mfcr    r30, cr0
++       srli    r30, r30, 1
++       slli    r30, r30, 1
++       mtcr    r30, cr0
++       nop
++       nop
++       nop
++       nop
++       nop
++
++       .set    r1
++       ldis    r1, 0x00ff
++       and     r30, r30, r1
++       not     r1, r1
++       lw      r31, [r0, PT_PSR]
++       and     r31, r31, r1
++       .set    nor1
++       or      r31, r31, r30
++       mtcr    r31, cr0
++       nop
++       nop
++       nop
++       nop
++       nop
++
++       lw      r30, [r0, PT_CONDITION]
++       mtcr    r30, cr1
++       nop
++       nop
++       nop
++       nop
++       nop
++
++       lw      r30, [r0, PT_CEH]
++       lw      r31, [r0, PT_CEL]
++       mtcehl  r30, r31
++
++       .set    r1
++       lw      r1, [r0, PT_R1]
++       .set    nor1
++       lw      r2, [r0, PT_R2]
++       lw      r3, [r0, PT_R3]
++       lw      r4, [r0, PT_R4]
++       lw      r5, [r0, PT_R5]
++       lw      r6, [r0, PT_R6]
++       lw      r7, [r0, PT_R7]
++
++       lw      r8, [r0, PT_R8]
++       lw      r9, [r0, PT_R9]
++       lw      r10, [r0, PT_R10]
++       lw      r11, [r0, PT_R11]
++       lw      r12, [r0, PT_R12]
++       lw      r13, [r0, PT_R13]
++       lw      r14, [r0, PT_R14]
++       lw      r15, [r0, PT_R15]
++
++       lw      r16, [r0, PT_R16]
++       lw      r17, [r0, PT_R17]
++       lw      r18, [r0, PT_R18]
++       lw      r19, [r0, PT_R19]
++       lw      r20, [r0, PT_R20]
++       lw      r21, [r0, PT_R21]
++       lw      r22, [r0, PT_R22]
++       lw      r23, [r0, PT_R23]
++
++       lw      r24, [r0, PT_R24]
++       lw      r25, [r0, PT_R25]
++       lw      r26, [r0, PT_R26]
++       lw      r27, [r0, PT_R27]
++       lw      r28, [r0, PT_R28]
++       lw      r29, [r0, PT_R29]
++
++       lw      r30, [r0, PT_EPC]
++       lw      r0, [r0, PT_R0]
++       mtcr    r30, cr5
++       rte
++.endm
++
++#endif /* __ASSEMBLY__ */
++#endif /* _ASM_SCORE_ASMMACRO_H */
+diff --git a/arch/score/include/asm/atomic.h 
+b/arch/score/include/asm/atomic.h
+new file mode 100644
+index 0000000..84eb8dd
+--- /dev/null
++++ b/arch/score/include/asm/atomic.h
+@@ -0,0 +1,6 @@
++#ifndef _ASM_SCORE_ATOMIC_H
++#define _ASM_SCORE_ATOMIC_H
++
++#include <asm-generic/atomic.h>
++
++#endif /* _ASM_SCORE_ATOMIC_H */
+diff --git a/arch/score/include/asm/auxvec.h 
+b/arch/score/include/asm/auxvec.h
+new file mode 100644
+index 0000000..f691515
+--- /dev/null
++++ b/arch/score/include/asm/auxvec.h
+@@ -0,0 +1,4 @@
++#ifndef _ASM_SCORE_AUXVEC_H
++#define _ASM_SCORE_AUXVEC_H
++
++#endif /* _ASM_SCORE_AUXVEC_H */
+-- 
+1.6.2
+
