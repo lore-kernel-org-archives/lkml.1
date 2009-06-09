@@ -1,120 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757026AbZFIBlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbZFIBo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757026AbZFIBlX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 8 Jun 2009 21:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZFIBlN
+	id S1755214AbZFIBo5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 8 Jun 2009 21:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbZFIBot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 8 Jun 2009 21:41:13 -0400
-Received: from dallas.jonmasters.org ([72.29.103.172]:53182 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750794AbZFIBlM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 8 Jun 2009 21:41:12 -0400
-Subject: Re: [patch] r8169: fix crash when large packets are received
-From: Jon Masters <jonathan@jonmasters.org>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Michael Tokarev <mjt@tls.msk.ru>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Francois Romieu <romieu@fr.zoreil.com>, stable@kernel.org
-In-Reply-To: <4A2D8B8B.80905@gmail.com>
-References: <4A2D8B8B.80905@gmail.com>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Mon, 08 Jun 2009 21:40:38 -0400
-Message-Id: <1244511638.30733.41.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Mon, 8 Jun 2009 21:44:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43776 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751562AbZFIBot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 8 Jun 2009 21:44:49 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Q: PTRACE_ATTACH && -EINTR
+In-Reply-To: Oleg Nesterov's message of  Monday, 8 June 2009 20:36:27 +0200 <20090608183627.GA14734@redhat.com>
+References: <20090608161204.GA3986@redhat.com>
+	<20090608173944.B57EBFC3C6@magilla.sf.frob.com>
+	<20090608183627.GA14734@redhat.com>
+X-Zippy-Says: Being a BALD HERO is almost as FESTIVE as a TATTOOED KNOCKWURST.
+Message-Id: <20090609014449.8BE46FC3C6@magilla.sf.frob.com>
+Date: Mon,  8 Jun 2009 18:44:49 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CC -stable team - remote DoS with this hardware present.
+> It was renamed in -next. Should I send these fixes now for 2.6.20, or we can
+								 30
+> wait for 2.6.31 ?
 
-On Tue, 2009-06-09 at 00:07 +0200, Eric Dumazet wrote:
-> Michael Tokarev reported receiving a large packet could crash
-> a machine with RTL8169 NIC.
-> ( original thread at http://lkml.org/lkml/2009/6/8/192 )
-> 
-> Problem is this driver tells that NIC frames up to 16383 bytes
-> can be received but provides skb to rx ring allocated with
-> smaller sizes (1536 bytes in case standard 1500 bytes MTU is used)
-> 
-> When a frame larger than what was allocated by driver is received,
-> dma transfert can occurs past the end of buffer and corrupt
-> kernel memory.
-> 
-> Fix is to tell to NIC what is the maximum size a frame can be.
-> 
-> This bug is very old, (before git introduction, linux-2.6.10), and 
-> should be backported to stable versions.
-> 
-> Reported-by: Michael Tokarev <mjt@tls.msk.ru>
-> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-> Tested-by: Michael Tokarev <mjt@tls.msk.ru>
-> ---
-> diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
-> index 8247a94..3b19e0c 100644
-> --- a/drivers/net/r8169.c
-> +++ b/drivers/net/r8169.c
-> @@ -66,7 +66,6 @@ static const int multicast_filter_limit = 32;
->  #define RX_DMA_BURST	6	/* Maximum PCI burst, '6' is 1024 */
->  #define TX_DMA_BURST	6	/* Maximum PCI burst, '6' is 1024 */
->  #define EarlyTxThld	0x3F	/* 0x3F means NO early transmit */
-> -#define RxPacketMaxSize	0x3FE8	/* 16K - 1 - ETH_HLEN - VLAN - CRC... */
->  #define SafeMtu		0x1c20	/* ... actually life sucks beyond ~7k */
->  #define InterFrameGap	0x03	/* 3 means InterFrameGap = the shortest one */
->  
-> @@ -2357,10 +2356,10 @@ static u16 rtl_rw_cpluscmd(void __iomem *ioaddr)
->  	return cmd;
->  }
->  
-> -static void rtl_set_rx_max_size(void __iomem *ioaddr)
-> +static void rtl_set_rx_max_size(void __iomem *ioaddr, unsigned int rx_buf_sz)
->  {
->  	/* Low hurts. Let's disable the filtering. */
-> -	RTL_W16(RxMaxSize, 16383);
-> +	RTL_W16(RxMaxSize, rx_buf_sz);
->  }
->  
->  static void rtl8169_set_magic_reg(void __iomem *ioaddr, unsigned mac_version)
-> @@ -2407,7 +2406,7 @@ static void rtl_hw_start_8169(struct net_device *dev)
->  
->  	RTL_W8(EarlyTxThres, EarlyTxThld);
->  
-> -	rtl_set_rx_max_size(ioaddr);
-> +	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
->  
->  	if ((tp->mac_version == RTL_GIGA_MAC_VER_01) ||
->  	    (tp->mac_version == RTL_GIGA_MAC_VER_02) ||
-> @@ -2668,7 +2667,7 @@ static void rtl_hw_start_8168(struct net_device *dev)
->  
->  	RTL_W8(EarlyTxThres, EarlyTxThld);
->  
-> -	rtl_set_rx_max_size(ioaddr);
-> +	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
->  
->  	tp->cp_cmd |= RTL_R16(CPlusCmd) | PktCntrDisable | INTT_1;
->  
-> @@ -2846,7 +2845,7 @@ static void rtl_hw_start_8101(struct net_device *dev)
->  
->  	RTL_W8(EarlyTxThres, EarlyTxThld);
->  
-> -	rtl_set_rx_max_size(ioaddr);
-> +	rtl_set_rx_max_size(ioaddr, tp->rx_buf_sz);
->  
->  	tp->cp_cmd |= rtl_rw_cpluscmd(ioaddr) | PCIMulRW;
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+IMHO they should go in ASAP since we know this is a regression just
+introduced in 2.6.29.  To me, the fact that nobody has noticed yet
+makes it more important not to delay--this new problem is so obscure
+that whoever is affected by it is likely to waste a lot of time figuring
+out what has started happening deep down in a huge pile of userland code.
 
+
+Thanks,
+Roland
