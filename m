@@ -1,68 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbZFIPSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZFIPSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756581AbZFIPSm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 11:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbZFIPSe
+	id S1756806AbZFIPSy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 11:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756461AbZFIPSm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 11:18:34 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:44539 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753684AbZFIPSd (ORCPT
+	Tue, 9 Jun 2009 11:18:42 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:44655 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756299AbZFIPSl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 11:18:33 -0400
-Date: Tue, 9 Jun 2009 16:18:34 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: regulator_register() API
-Message-ID: <20090609151834.GA30774@rakim.wolfsonmicro.main>
-References: <20090609135947.GB18591@gundam.enneenne.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090609135947.GB18591@gundam.enneenne.com>
-X-Cookie: Well begun is half done.
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 9 Jun 2009 11:18:41 -0400
+Subject: Re: linux-next: voyager tree build failure
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090609194038.826289f3.sfr@canb.auug.org.au>
+References: <20090609194038.826289f3.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Tue, 09 Jun 2009 10:18:38 -0500
+Message-Id: <1244560718.4137.26.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 03:59:47PM +0200, Rodolfo Giometti wrote:
-
-> Current regulator_register() implementation forces the caller to
-> allocate a proper device for each regulators and also the line:
-
->    struct regulator_init_data *init_data = dev->platform_data;
-
-> forces the user to define the pointer platform_data as a "struct
-> regulator_init_data" only.
-
-That's not the case in current mainline - the init data is passed in as
-an argument to regulator_register().  There should be no requirement
-that the struct device be unique, you should be able to use the same
-struct device for all the regulators on the device.  It's mostly just
-used for printk.
-
-> However if the regulator_register() worked in a similar way to
-> led_classdev_register(), I simply can do something like this:
-
->         for (i = 0; i < regulators_num; i++) {
-> 	       /* init regulators structs */
-> 	       ...
+On Tue, 2009-06-09 at 19:40 +1000, Stephen Rothwell wrote:
+> Hi James,
 > 
->                ret = regulator_register(&client->dev, &reg[i].dev);
->                if (ret < 0)
-> 		       dev_warn(&client->dev, "unable to register\n");
->         }
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
+> 
+> arch/x86/xen/smp.c:478: error: 'apic_safe_smp_processor_id' undeclared here (not in a function)
+> arch/x86/kernel/smp.c:219: error: 'apic_safe_smp_processor_id' undeclared here (not in a function)
+> 
+> Caused by commit 6a6df48477c1959b1baa78ecabba72548d362f60 ("[VOYAGER]
+> x86: add {safe,hard}_smp_processor_id to smp_ops").
+> 
+> I have dropped the voyager tree for today.
 
-You can do exactly this in current mainline.  You do need to supply init
-data for each regulator to make them useful.  The change came in commit
-0527100fd11d9710c7e153d791da78824b7b46fa which was merged during the
-2.6.30 merge window.
+Thanks for finding this.  The fix looks to be a dummy definition of this
+function for x86_64.  The final fix (which has been under discussion)
+will be the elimination of safe_smp_processor_id() altogether.
 
-> This will keep backward compatibility with old drivers and may offer a
-> more versatile way to define a regulator expecially for
-> multifunctional devices.
+I've merged this into the
 
-Most of the regulators currently supported are part of multi-function
-devices so they're not an unusual case here.  
+[VOYAGER] x86: add {safe,hard}_smp_processor_id to smp_ops
+
+patch and respun the tree (and built it with an x86-64 cross compiler),
+so it should be safe to include next time around
+
+Thanks,
+
+James
+
+---
+
+diff -u b/arch/x86/include/asm/smp.h b/arch/x86/include/asm/smp.h
+--- b/arch/x86/include/asm/smp.h
++++ b/arch/x86/include/asm/smp.h
+@@ -177,6 +177,15 @@
+ 	ti->cpu;							\
+ })
+ #define safe_smp_processor_id()		smp_processor_id()
++/*
++ * dummy function for smp_ops.safe_smp_processor_id() which is unused
++ * on x86_64.  This will also break the build if the definition leaks
++ * outside of the guards in kernel/apic/ipi.c on x86_64
++ */
++static inline int apic_safe_smp_processor_id(void)
++{
++	return 0;
++}
+ 
+ #endif
+ 
+
+
