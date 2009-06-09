@@ -1,93 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761634AbZFINuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751467AbZFINu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761634AbZFINuE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 09:50:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761429AbZFINtW
+	id S1751467AbZFINu0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 09:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761545AbZFINtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 09:49:22 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:34269 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761472AbZFINtU (ORCPT
+	Tue, 9 Jun 2009 09:49:41 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:7944
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756954AbZFINtk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 09:49:20 -0400
-Date: Tue, 9 Jun 2009 15:49:22 +0200
-From: Jan Kara <jack@suse.cz>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "axboe@kernel.dk" <axboe@kernel.dk>,
-       "hirofumi@mail.parknet.co.jp" <hirofumi@mail.parknet.co.jp>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>
-Subject: Re: [PATCH 0/4] FS: userspace notification of errors
-Message-ID: <20090609134921.GB13755@atrey.karlin.mff.cuni.cz>
-References: <1244041518-32229-1-git-send-email-ext-denis.2.karpov@nokia.com> <20090603115611.6bbbaf55.akpm@linux-foundation.org> <ac3eb2510906040553j294f1015wfb7deb4b4fc63afc@mail.gmail.com> <4A28FC8F.5020802@nokia.com> <20090605115127.GF28764@smart.research.nokia.com> <ac3eb2510906050606u7527654dv789364549b36f3e7@mail.gmail.com>
+	Tue, 9 Jun 2009 09:49:40 -0400
+Message-ID: <4A2E6872.5080102@panasas.com>
+Date: Tue, 09 Jun 2009 16:49:38 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ac3eb2510906050606u7527654dv789364549b36f3e7@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+CC: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+Subject: Re: [PATCH block#for-2.6.31] block: add request clone interface
+References: <4A2E1490.7060902@ct.jp.nec.com>
+In-Reply-To: <4A2E1490.7060902@ct.jp.nec.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Jun 2009 13:49:40.0147 (UTC) FILETIME=[229D2030:01C9E909]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, Jun 5, 2009 at 13:51, Denis Karpov<ext-denis.2.karpov@nokia.com> wrote:
-> > This is doable, e.g. in the form of optional fields "tag[:value]"
-> > (field 7, Documentation/filesystems/proc.txti for mountinfo).
+On 06/09/2009 10:51 AM, Kiyoshi Ueda wrote:
+> Hi Jens,
 > 
-> > But is using procfs generally a good idea ? Last several years all a lot of
-> > stuff moved out from procfs into sysfs. Not to forget what procfs is
-> > originally meant for: storing the proceses related information.
+> Recently, I posted an updated version of request-based dm patch-set
+> (http://marc.info/?l=dm-devel&m=124392590507004&w=2) which was made
+> on top of block#for-2.6.31.
+> In block#for-2.6.31, __sector and __data_len of struct request are
+> commented as 'internal, NEVER access directly'.
+> However, since request-based dm needs to copy the latest status of
+> the original request to clone, those fields are still accessed
+> directly in the request-based dm patch-set.
 > 
-> Yeah, but mounted volumes are namespace dependent, and namespaces are
-> process dependent. So events for your current namespace wouldn't be
-> too bad here. There might be reasons we don't want the mountinfo file,
-> but the "use sysfs for new stuff" does not count in this case. :)
-  As much as I don't like the using /proc/mountinfo for this, it also
-has the advantage that it nicely solves the problem with a filesystem
-being bind-mounted on several directories...  Otherwise you have to
-solve the problem which mountpoint of the filesystem should be used
-(especially because the real root of the filesystem need not be
-accessible from the namespace of the process).
+> I'd like to solve this issue without breaking the new block-layer policy.
+> If those fields should not be accessed directly, I need a helper
+> function to copy the original request.
+> What do you think about the following patch which adds request cloning
+> interface to the block-layer?
+> Please apply if you have no problem.
+> 
+> 
+> 
+> This patch adds the following 2 interfaces for request-stacking drivers:
+> 
+>   - blk_rq_prep_clone(struct request *clone, struct request *orig,
+> 		      struct bio_set *bs, gfp_t gfp_mask,
+> 		      int (*bio_ctr)(struct bio *, struct bio*, void *),
+> 		      void *data)
+>       * Clones bios in the original request to the clone request
+>         (bio_ctr is called for each cloned bios.)
+>       * Copies the clone-related information of the original request
+>         to the clone request.
+> 
+>   - blk_rq_unprep_clone(struct request *clone)
+>       * Frees cloned bios from the clone request.
+> 
+> Request stacking drivers (e.g. request-based dm) need to make a clone
+> request for a submitted request and dispatch it to other devices.
+> 
+> To allocate request for the clone, request stacking drivers may not
+> be able to use blk_get_request() because the allocation may be done
+> in an irq-disabled context.
+> So blk_rq_prep_clone() takes a request allocated by the caller
+> as an argument.
+> 
+> For each clone bio in the clone request, request stacking drivers
+> should be able to set up their own completion handler.
+> So blk_rq_prep_clone() takes a callback function which is called
+> for each clone bio, and a pointer for private data which is passed
+> to the callback.
+> 
+> Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+> Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
 
-> > - /sys/fs seems to be a perfect fit for the purpose judging by ext4 example
-> > cons:
-> > - uevent interface is unneeded extra(?); can be made optional, per attribute
-> 
-> You can not pass the mount path with the uevent, like you example
-> shows, you just don't know that reliably, and there can be many mount
-> points.
-> 
-> How do you want to name the /sys/fs/ device? By "dev_t st_dev" or the
-> underlying block device name? How do you indentify the mountpoint in
-> your current namespace, of the device that raised the error? The event
-> might be for a filesystem you can not reach at all in your mount tree.
-> 
-> The /sys/fs/ approach sounds very much like an "export known
-> superblocks in /sys/fs/", something like this could be useful, but we
-> need to check carefully with other people what are the issues of such
-> an interface, and if there is something that should not be exported
-> that way.
-> 
-> How are device-less superblocks like btrfs handled in such an
-> interface, how is the device named, if it does not have a direct block
-> device underneath?
-  Generally, it is an unclear question how should kernel identify a
-filesystem where the problem happened. We could have a kobject for
-superblock but it's still unclear how to map this to a device /
-mountpoints because that's what userspace ultimately wants to tell the
-sysadmin and possibly make some automated decision.
-  What currently seems as the cleanest solution to me, is to add some
-"filesystem identifier" field to /proc/self/mountinfo (which could be
-UUID, superblock pointer or whatever) and pass this along with the error
-message to userspace. Passing could be done either via sysfs (but I
-agree it isn't the best fit because a filesystem need not be bound to a
-device) or just via generic netlink (which has the disadvantage that you
-cannot use the udev framework everyone knows)...
+Cc: Boaz Harrosh <bharrosh@panasas.com>
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Please CC me on this patch. I have use of it also for stacking
+block driver. Once/if it hits mainline I would like to use this
+function.
+
+(Have not tested it yet)
+
+Thanks
+
+> ---
+>  block/blk-core.c       |   98 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/blkdev.h |    5 ++
+>  2 files changed, 103 insertions(+)
+> 
+> Index: linux-2.6-block/block/blk-core.c
+> ===================================================================
+> --- linux-2.6-block.orig/block/blk-core.c
+> +++ linux-2.6-block/block/blk-core.c
+> @@ -2295,6 +2295,104 @@ int blk_lld_busy(struct request_queue *q
+>  }
+>  EXPORT_SYMBOL_GPL(blk_lld_busy);
+>  
+> +/**
+> + * blk_rq_unprep_clone - Helper function to free all bios in a cloned request
+> + * @rq: the clone request to be cleaned up
+> + *
+> + * Description:
+> + *     Free all bios in @rq for a cloned request.
+> + */
+> +void blk_rq_unprep_clone(struct request *rq)
+> +{
+> +	struct bio *bio;
+> +
+> +	while ((bio = rq->bio) != NULL) {
+> +		rq->bio = bio->bi_next;
+> +
+> +		bio_put(bio);
+> +	}
+> +}
+> +EXPORT_SYMBOL_GPL(blk_rq_unprep_clone);
+> +
+> +/*
+> + * Copy request information of the original request to the clone request.
+> + */
+> +static void __blk_rq_prep_clone(struct request *dst, struct request *src)
+> +{
+> +	dst->cpu = src->cpu;
+> +	dst->cmd_flags = (rq_data_dir(src) | REQ_NOMERGE);
+> +	dst->cmd_type = src->cmd_type;
+> +	dst->__sector = blk_rq_pos(src);
+> +	dst->__data_len = blk_rq_bytes(src);
+> +	dst->nr_phys_segments = src->nr_phys_segments;
+> +	dst->ioprio = src->ioprio;
+> +	dst->buffer = src->buffer;
+> +	dst->cmd_len = src->cmd_len;
+> +	dst->cmd = src->cmd;
+> +	dst->extra_len = src->extra_len;
+> +	dst->sense = src->sense;
+> +}
+> +
+> +/**
+> + * blk_rq_prep_clone - Helper function to setup clone request
+> + * @rq: the request to be setup
+> + * @rq_src: original request to be cloned
+> + * @bs: bio_set that bios for clone are allocated from
+> + * @gfp_mask: memory allocation mask for bio
+> + * @bio_ctr: setup function to be called for each clone bio.
+> + *           Returns %0 for success, non %0 for failure.
+> + * @data: private data to be passed to @bio_ctr
+> + *
+> + * Description:
+> + *     Clones bios in @rq_src to @rq, and copies clone-related information
+> + *     of @rq_src to @rq.
+> + */
+> +int blk_rq_prep_clone(struct request *rq, struct request *rq_src,
+> +		      struct bio_set *bs, gfp_t gfp_mask,
+> +		      int (*bio_ctr)(struct bio *, struct bio *, void *),
+> +		      void *data)
+> +{
+> +	struct bio *bio, *bio_src;
+> +
+> +	if (!bs)
+> +		bs = fs_bio_set;
+> +
+> +	blk_rq_init(NULL, rq);
+> +
+> +	__rq_for_each_bio(bio_src, rq_src) {
+> +		bio = bio_alloc_bioset(gfp_mask, bio_src->bi_max_vecs, bs);
+> +		if (!bio)
+> +			goto free_and_out;
+> +
+> +		__bio_clone(bio, bio_src);
+> +
+> +		if (bio_integrity(bio_src) &&
+> +		    bio_integrity_clone(bio, bio_src, gfp_mask))
+> +			goto free_and_out;
+> +
+> +		if (bio_ctr && bio_ctr(bio, bio_src, data))
+> +			goto free_and_out;
+> +
+> +		if (rq->bio) {
+> +			rq->biotail->bi_next = bio;
+> +			rq->biotail = bio;
+> +		} else
+> +			rq->bio = rq->biotail = bio;
+> +	}
+> +
+> +	__blk_rq_prep_clone(rq, rq_src);
+> +
+> +	return 0;
+> +
+> +free_and_out:
+> +	if (bio)
+> +		bio_free(bio, bs);
+> +	blk_rq_unprep_clone(rq);
+> +
+> +	return -ENOMEM;
+> +}
+> +EXPORT_SYMBOL_GPL(blk_rq_prep_clone);
+> +
+>  int kblockd_schedule_work(struct request_queue *q, struct work_struct *work)
+>  {
+>  	return queue_work(kblockd_workqueue, work);
+> Index: linux-2.6-block/include/linux/blkdev.h
+> ===================================================================
+> --- linux-2.6-block.orig/include/linux/blkdev.h
+> +++ linux-2.6-block/include/linux/blkdev.h
+> @@ -765,6 +765,11 @@ extern void blk_insert_request(struct re
+>  extern void blk_requeue_request(struct request_queue *, struct request *);
+>  extern int blk_rq_check_limits(struct request_queue *q, struct request *rq);
+>  extern int blk_lld_busy(struct request_queue *q);
+> +extern int blk_rq_prep_clone(struct request *rq, struct request *rq_src,
+> +			     struct bio_set *bs, gfp_t gfp_mask,
+> +			     int (*bio_ctr)(struct bio *, struct bio *, void *),
+> +			     void *data);
+> +extern void blk_rq_unprep_clone(struct request *rq);
+>  extern int blk_insert_cloned_request(struct request_queue *q,
+>  				     struct request *rq);
+>  extern void blk_plug_device(struct request_queue *);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
