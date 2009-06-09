@@ -1,80 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbZFIIPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759205AbZFIIPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758555AbZFIIPZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 04:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbZFIIPI
+	id S1759205AbZFIIPq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 04:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759229AbZFIIP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 04:15:08 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:42208 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754254AbZFIIPD (ORCPT
+	Tue, 9 Jun 2009 04:15:29 -0400
+Received: from viefep13-int.chello.at ([62.179.121.33]:55886 "EHLO
+	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759220AbZFIIPY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 04:15:03 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=g1hk2J1uOiXwxwYjD0kKk1/7OkxZFepqDt88a1OtV6Eiysxt3eRfLPQyYggQ44diF
-	ZC26yOm/pRDyE9J7urEEQ==
-Date: Tue, 9 Jun 2009 01:14:59 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Mel Gorman <mel@csn.ul.ie>, Rik van Riel <riel@redhat.com>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>, npiggin@suse.de
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-In-Reply-To: <1244534315.5024.34.camel@penberg-laptop>
-Message-ID: <alpine.DEB.2.00.0906090105270.28701@chino.kir.corp.google.com>
-References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera> <D9VoutSOyXP.A.hvH.Ha7KKB@chimera> <4A2BBC30.2030300@lwfinger.net> <84144f020906070640rf5ab14nbf66d3ca7c97675f@mail.gmail.com> <4A2BCC6F.8090004@redhat.com> <84144f020906070732l31786156r5d9753a0cabfde79@mail.gmail.com>
- <20090608101739.GA15377@csn.ul.ie> <84144f020906080352k57f12ff9pbd696da5f332ac1a@mail.gmail.com> <20090608110303.GD15377@csn.ul.ie> <Pine.LNX.4.64.0906081657001.7036@melkki.cs.Helsinki.FI> <20090608141212.GE15070@csn.ul.ie> <1244531201.5024.3.camel@penberg-laptop>
- <alpine.DEB.2.00.0906090046000.28701@chino.kir.corp.google.com> <1244534315.5024.34.camel@penberg-laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Tue, 9 Jun 2009 04:15:24 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [tip:perfcounters/core] perf_counter: Implement generalized
+ cache event types
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, efault@gmx.de, mtosatti@redhat.com,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+In-Reply-To: <tip-8326f44da090d6d304d29b9fdc7fb3e20889e329@git.kernel.org>
+References: <new-submission>
+	 <tip-8326f44da090d6d304d29b9fdc7fb3e20889e329@git.kernel.org>
+Content-Type: text/plain
+Date: Tue, 09 Jun 2009 10:15:26 +0200
+Message-Id: <1244535326.13761.10021.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009, Pekka Enberg wrote:
-
-> > To diagnose whether its object size dictates a >0 slab order, you could 
-> > enable CONFIG_SLUB_STATS (it's disabled in his .config) and check which 
-> > /sys/kernel/slab/cache/order_fallback increased.  Once you have identified 
-> > the cache, you can get this information via 
-> > /sys/kernel/slab/cache/{objsize,order,size}.  I think this is what 
-> > Christoph was getting at.
-> > 
-> > You could even boot with `slub_nomerge' to determine whether cache merging 
-> > was the issue where the cache under consideration was unnecessarily merged 
-> > with one that requires larger higher order minimums.
+On Sat, 2009-06-06 at 11:16 +0000, tip-bot for Ingo Molnar wrote:
+> Commit-ID:  8326f44da090d6d304d29b9fdc7fb3e20889e329
+> Gitweb:     http://git.kernel.org/tip/8326f44da090d6d304d29b9fdc7fb3e20889e329
+> Author:     Ingo Molnar <mingo@elte.hu>
+> AuthorDate: Fri, 5 Jun 2009 20:22:46 +0200
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Sat, 6 Jun 2009 13:14:47 +0200
 > 
-> Sure. Applying my diagnostic patch will probably shed some light on the
-> subject too.
+> perf_counter: Implement generalized cache event types
+> 
+> Extend generic event enumeration with the PERF_TYPE_HW_CACHE
+> method.
+> 
+> This is a 3-dimensional space:
+> 
+>        { L1-D, L1-I, L2, ITLB, DTLB, BPU } x
+>        { load, store, prefetch } x
+>        { accesses, misses }
+> 
+> User-space passes in the 3 coordinates and the kernel provides
+> a counter. (if the hardware supports that type and if the
+> combination makes sense.)
+> 
+> Combinations that make no sense produce a -EINVAL.
+> Combinations that are not supported by the hardware produce -ENOTSUP.
+> 
+> Extend the tools to deal with this, and rewrite the event symbol
+> parsing code with various popular aliases for the units and
+> access methods above. So 'l1-cache-miss' and 'l1d-read-ops' are
+> both valid aliases.
+> 
+> ( x86 is supported for now, with the Nehalem event table filled in,
+>   and with Core2 and Atom having placeholder tables. )
 > 
 
-I wasn't sure whether you were proposing the patch as an addition to slub 
-or just to help with this issue.  I agree it would help in a hopefully 
-ratelimited manner for general slab allocation failures and would have 
-avoided some of the confusion for this issue from lack of diagnostics.
+> +++ b/include/linux/perf_counter.h
+> @@ -28,6 +28,7 @@ enum perf_event_types {
+>  	PERF_TYPE_HARDWARE		= 0,
+>  	PERF_TYPE_SOFTWARE		= 1,
+>  	PERF_TYPE_TRACEPOINT		= 2,
+> +	PERF_TYPE_HW_CACHE		= 3,
+>  
+>  	/*
+>  	 * available TYPE space, raw is the max value.
+> @@ -56,6 +57,39 @@ enum attr_ids {
+>  };
+>  
+>  /*
+> + * Generalized hardware cache counters:
+> + *
+> + *       { L1-D, L1-I, L2, LLC, ITLB, DTLB, BPU } x
+> + *       { read, write, prefetch } x
+> + *       { accesses, misses }
+> + */
+> +enum hw_cache_id {
+> +	PERF_COUNT_HW_CACHE_L1D,
+> +	PERF_COUNT_HW_CACHE_L1I,
+> +	PERF_COUNT_HW_CACHE_L2,
+> +	PERF_COUNT_HW_CACHE_DTLB,
+> +	PERF_COUNT_HW_CACHE_ITLB,
+> +	PERF_COUNT_HW_CACHE_BPU,
+> +
+> +	PERF_COUNT_HW_CACHE_MAX,
+> +};
+> +
+> +enum hw_cache_op_id {
+> +	PERF_COUNT_HW_CACHE_OP_READ,
+> +	PERF_COUNT_HW_CACHE_OP_WRITE,
+> +	PERF_COUNT_HW_CACHE_OP_PREFETCH,
+> +
+> +	PERF_COUNT_HW_CACHE_OP_MAX,
+> +};
+> +
+> +enum hw_cache_op_result_id {
+> +	PERF_COUNT_HW_CACHE_RESULT_ACCESS,
+> +	PERF_COUNT_HW_CACHE_RESULT_MISS,
+> +
+> +	PERF_COUNT_HW_CACHE_RESULT_MAX,
+> +};
 
-> > I don't quite understand how its necessary to print the partial lists for 
-> > each node, they should be exhausted if we're allocating a new slab if the 
-> > node doesn't matter (and can't in Larry's case, he only has one).
-> 
-> It doesn't hurt either, does it? Yes, we expect the partial lists to be
-> exhausted but it's better to print that out just in case we have a bug
-> some day somewhere and that condition is not true. This is very
-> infrequent slow patch code here anyway.
-> 
+May I suggest we do the below instead? Some hardware doesn't make the
+read/write distinction and would therefore have an utterly empty table.
 
-It will lead to false postiives since you can get a free to a full slab 
-which moves it back to an allowed node's partial list before count_free() 
-is printed.
+Furthermore, also splitting the hit/miss into a bitfield allows us to
+have hit/miss and the combined value.
+
+---
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 3586df8..1fb72fc 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -64,29 +64,32 @@ enum attr_ids {
+  *       { accesses, misses }
+  */
+ enum hw_cache_id {
+-	PERF_COUNT_HW_CACHE_L1D,
+-	PERF_COUNT_HW_CACHE_L1I,
+-	PERF_COUNT_HW_CACHE_L2,
+-	PERF_COUNT_HW_CACHE_DTLB,
+-	PERF_COUNT_HW_CACHE_ITLB,
+-	PERF_COUNT_HW_CACHE_BPU,
++	PERF_COUNT_HW_CACHE_L1D		= 0,
++	PERF_COUNT_HW_CACHE_L1I		= 1,
++	PERF_COUNT_HW_CACHE_L2		= 2,
++	PERF_COUNT_HW_CACHE_DTLB	= 3,
++	PERF_COUNT_HW_CACHE_ITLB	= 4,
++	PERF_COUNT_HW_CACHE_BPU		= 5,
+ 
+ 	PERF_COUNT_HW_CACHE_MAX,
+ };
+ 
+ enum hw_cache_op_id {
+-	PERF_COUNT_HW_CACHE_OP_READ,
+-	PERF_COUNT_HW_CACHE_OP_WRITE,
+-	PERF_COUNT_HW_CACHE_OP_PREFETCH,
++	PERF_COUNT_HW_CACHE_OP_READ		= 0x1,
++	PERF_COUNT_HW_CACHE_OP_WRITE		= 0x2,
++	PERF_COUNT_HW_CACHE_OP_ACCESS		= 0x3, /* either READ or WRITE */
++	PERF_COUNT_HW_CACHE_OP_PREFETCH		= 0x4, /* XXX should we qualify this with either READ/WRITE? */
+ 
+-	PERF_COUNT_HW_CACHE_OP_MAX,
++
++	PERF_COUNT_HW_CACHE_OP_MAX		= 0x8,
+ };
+ 
+ enum hw_cache_op_result_id {
+-	PERF_COUNT_HW_CACHE_RESULT_ACCESS,
+-	PERF_COUNT_HW_CACHE_RESULT_MISS,
++	PERF_COUNT_HW_CACHE_RESULT_HIT		= 0x1,
++	PERF_COUNT_HW_CACHE_RESULT_MISS		= 0x2,
++	PERF_COUNT_HW_CACHE_RESULT_SUM		= 0x3,
+ 
+-	PERF_COUNT_HW_CACHE_RESULT_MAX,
++	PERF_COUNT_HW_CACHE_RESULT_MAX		= 0x4,
+ };
+ 
+ /*
+
+
