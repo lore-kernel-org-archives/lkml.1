@@ -1,81 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760124AbZFIU66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759825AbZFIVCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760124AbZFIU66 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 16:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbZFIU6u
+	id S1759825AbZFIVCT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 17:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZFIVCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 16:58:50 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:33293 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750885AbZFIU6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 16:58:50 -0400
-Date: Tue, 9 Jun 2009 13:58:46 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Dan Williams <dan.j.williams@intel.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #13116] Can't boot with nosmp
-Message-ID: <20090609135846.43260595@nehalam>
-In-Reply-To: <4A2EAD2F.5010505@redhat.com>
-References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
-	<D9VoutSOyXP.A.xm.Vb7KKB@chimera>
-	<20090608091544.53a94235@nehalam>
-	<e9c3a7c20906080929l1a4ec739t7585f6bba54bf684@mail.gmail.com>
-	<20090608170437.1c2386a5@nehalam>
-	<e9c3a7c20906091020m19abf3b5wbbb7f5364b2d4905@mail.gmail.com>
-	<4A2EAA53.7060006@redhat.com>
-	<20090609113656.46ed6335@nehalam>
-	<4A2EAD2F.5010505@redhat.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	Tue, 9 Jun 2009 17:02:10 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:36451 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751457AbZFIVCJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 17:02:09 -0400
+Date: Tue, 9 Jun 2009 23:04:27 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: kbuild tree build failure
+Message-ID: <20090609210427.GA21727@uranus.ravnborg.org>
+References: <20090609114820.69d23ab3.sfr@canb.auug.org.au> <20090609161512.GB6675@uranus.ravnborg.org> <20090610021959.b7856ea9.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090610021959.b7856ea9.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 09 Jun 2009 21:42:55 +0300
-Avi Kivity <avi@redhat.com> wrote:
-
-> Stephen Hemminger wrote:
+On Wed, Jun 10, 2009 at 02:19:59AM +1000, Stephen Rothwell wrote:
+> Hi Sam,
 > 
->   
-> 
-> >> This only affects reboots.  But yes, the cpumask code has bugs.  Does 
-> >> the .config involved select MAXSMP?
-> >>
-> >>     
+> On Tue, 9 Jun 2009 18:15:12 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
 > >
-> > Patch does not fix the problem. Not sure if it is KVM only problem.
-> > Look like possible cpumask always equals what ACPI / SMP tables report.
-> > So currently looking into alloc_percpu which may not handle the possible
-> > but never used cpus.
-> >
-> >   
+> > I will fix when the kids are sleeping (as in a few hours from now).
 > 
-> Right, it shouldn't have.
-> 
-> > It is x86-64 config and does not have MAXSMP set. It does have NR_CPUS set.
-> >   
-> 
-> So it's not cpumask.  Dare I suggest a bisect?
-> 
+> Thanks.  I won't be needing it for about 7 hours.
 
-I did some testing of different versions.
+Fixed now (and build tested all changes this time).
 
-* Problem does not exist with 2.6.30-rc8 (so regression should be closed).
-
-* Problem does exist with 2.6.29.4
-
-* Happens with both nosmp and maxcpus=1
-
-
-Given that it is fixed in 2.6.30, at this point there really is no urgency
-to spend more time investigating the issue. There are certainly bigger problems
-to deal with.
-
--- 
+Thanks,
+	Sam
