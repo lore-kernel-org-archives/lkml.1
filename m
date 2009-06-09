@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760230AbZFIKRK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759694AbZFIKTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760230AbZFIKRK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 06:17:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759931AbZFIKPy
+	id S1759694AbZFIKTw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 06:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760404AbZFIKRx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 06:15:54 -0400
-Received: from kroah.org ([198.145.64.141]:59761 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 06:17:53 -0400
+Received: from kroah.org ([198.145.64.141]:54470 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759999AbZFIKPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 06:15:53 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:54 2009
-Message-Id: <20090609094053.920368638@blue.kroah.org>
+	id S1760395AbZFIKRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 06:17:52 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 02:40:56 2009
+Message-Id: <20090609094056.238393901@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 02:38:56 -0700
+Date: Tue, 09 Jun 2009 02:39:06 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, linux-mm@kvack.org,
+       Matt Mackall <mpm@selenic.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 08/87] Revert "rose: zero length frame filtering in af_rose.c"
+Subject: [patch 18/87] mm: SLUB fix reclaim_state
 References: <20090609093848.204935043@blue.kroah.org>
-Content-Disposition: inline; filename=revert-rose-zero-length-frame-filtering-in-af_rose.c.patch
+Content-Disposition: inline; filename=mm-slub-fix-reclaim_state.patch
 In-Reply-To: <20090609094451.GA26439@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,49 +42,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David S. Miller <davem@davemloft.net>
+From: Nick Piggin <npiggin@suse.de>
 
-[ Upstream commit 6fd4777a1fec1f7757b5a302ad3fdcc1eae2abba ]
+commit 1eb5ac6466d4be7b15b38ce3ab709600f1bc891f upstream.
 
-This reverts commit 244f46ae6e9e18f6fc0be7d1f49febde4762c34b.
+SLUB does not correctly account reclaim_state.reclaimed_slab, so it will
+break memory reclaim. Account it like SLAB does.
 
-Alan Cox did the research, and just like the other radio protocols
-zero-length frames have meaning because at the top level ROSE is
-X.25 PLP.
-
-So this zero-length filtering is invalid.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: linux-mm@kvack.org
+Cc: Matt Mackall <mpm@selenic.com>
+Acked-by: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- net/rose/af_rose.c |   10 ----------
- 1 file changed, 10 deletions(-)
 
---- a/net/rose/af_rose.c
-+++ b/net/rose/af_rose.c
-@@ -1072,10 +1072,6 @@ static int rose_sendmsg(struct kiocb *io
- 	unsigned char *asmptr;
- 	int n, size, qbit = 0;
+---
+ mm/slub.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -9,6 +9,7 @@
+  */
  
--	/* ROSE empty frame has no meaning : don't send */
--	if (len == 0)
--		return 0;
--
- 	if (msg->msg_flags & ~(MSG_DONTWAIT|MSG_EOR|MSG_CMSG_COMPAT))
- 		return -EINVAL;
+ #include <linux/mm.h>
++#include <linux/swap.h> /* struct reclaim_state */
+ #include <linux/module.h>
+ #include <linux/bit_spinlock.h>
+ #include <linux/interrupt.h>
+@@ -1175,6 +1176,8 @@ static void __free_slab(struct kmem_cach
  
-@@ -1273,12 +1269,6 @@ static int rose_recvmsg(struct kiocb *io
- 	skb_reset_transport_header(skb);
- 	copied     = skb->len;
+ 	__ClearPageSlab(page);
+ 	reset_page_mapcount(page);
++	if (current->reclaim_state)
++		current->reclaim_state->reclaimed_slab += pages;
+ 	__free_pages(page, order);
+ }
  
--	/* ROSE empty frame has no meaning : ignore it */
--	if (copied == 0) {
--		skb_free_datagram(sk, skb);
--		return copied;
--	}
--
- 	if (copied > size) {
- 		copied = size;
- 		msg->msg_flags |= MSG_TRUNC;
 
 
