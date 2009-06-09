@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752497AbZFIEPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbZFIEXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752497AbZFIEPT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 00:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751042AbZFIEPG
+	id S1752392AbZFIEXq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 00:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751158AbZFIEXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 00:15:06 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:42624 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750834AbZFIEPE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 00:15:04 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=LCiY2UQuiTaTiygCP70ByYY2otTx/gwov1EDrt3trXIpSHQl32XVRLpDQE+B1nfs7
-	2FwYLXTEUGvYteoWZZvIw==
+	Tue, 9 Jun 2009 00:23:38 -0400
+Received: from thunk.org ([69.25.196.29]:42712 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750990AbZFIEXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 00:23:37 -0400
+Date: Tue, 9 Jun 2009 00:23:10 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jan Kara <jack@suse.cz>
+Subject: Re: linux-next: ext4 tree build warning
+Message-ID: <20090609042310.GB9299@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>
+References: <20090609105459.b1ae3575.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-In-Reply-To: <6601abe90906051442t294c2e79i3c6dc38c1d53e5e0@mail.gmail.com>
-References: <4A28F83F.4030704@tuffmail.co.uk> <4A292E61.3050204@gmail.com>
-	 <20090605180125.GB6442@mit.edu>
-	 <6601abe90906051442t294c2e79i3c6dc38c1d53e5e0@mail.gmail.com>
-Date: Mon, 8 Jun 2009 21:15:01 -0700
-Message-ID: <532480950906082115u77918911m2d44953014053c9b@mail.gmail.com>
-Subject: Re: Mild filesystem corruption on ext4 (no journal)
-From: Michael Rubin <mrubin@google.com>
-To: Curt Wohlgemuth <curtw@google.com>
-Cc: Theodore Tso <tytso@mit.edu>, Aioanei Rares <krnl.list@gmail.com>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-ext4@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090609105459.b1ae3575.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 5, 2009 at 2:42 PM, Curt Wohlgemuth<curtw@google.com> wrote:
-> Just FYI: Frank Mayhar has recreated this issue in a recent kernel
-> (though we're not seeing it with our 2.6.26 kernel + ext4 patches),
-> and is actively working on it.
+On Tue, Jun 09, 2009 at 10:54:58AM +1000, Stephen Rothwell wrote:
+> Hi Ted,
+> 
+> Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
+> 
+> fs/ext4/inode.c: In function 'ext4_ind_get_blocks':
+> fs/ext4/inode.c:939: warning: unused variable 'disksize'
+> fs/ext4/inode.c:936: warning: unused variable 'ei'
+> 
+> Introduced by commit fb8c2ba20b8530d74239c2420d335df81aa18e13 ("ext4: Get
+> rid of EXTEND_DISKSIZE flag of ext4_get_blocks_handle()").
 
-Sorry about this. We had a bunch of sick engineers in the last week or
-so (including Frank). Hopefully he will be able to devote time to this
-bug as he is getting back. We need it fixed for ourselves so we are
-going to root cause it if no one beats us to it.
+Thanks for pointing that out.  I've fixed that up in my tree.
 
-mrubin
+       	   	    	       	    	       - Ted
