@@ -1,84 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbZFILOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbZFILSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758932AbZFILOn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 07:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753197AbZFILOc
+	id S1755413AbZFILSS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 07:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZFILSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 07:14:32 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56855 "EHLO mx1.suse.de"
+	Tue, 9 Jun 2009 07:18:08 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39434 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751786AbZFILOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 07:14:31 -0400
-Date: Tue, 9 Jun 2009 13:14:32 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: hugh.dickins@tiscali.co.uk, riel@redhat.com, chris.mason@oracle.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, fengguang.wu@intel.com,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v5
-Message-ID: <20090609111432.GL14820@wotan.suse.de>
-References: <20090603846.816684333@firstfloor.org> <20090603184648.2E2131D028F@basil.firstfloor.org> <20090609095155.GA14820@wotan.suse.de>
-Mime-Version: 1.0
+	id S1751688AbZFILSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 07:18:07 -0400
+Date: Tue, 9 Jun 2009 13:17:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Avi Kivity <avi@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [benchmark] 1% performance overhead of paravirt_ops on native
+	kernels
+Message-ID: <20090609111719.GA4463@elte.hu>
+References: <4A0B62F7.5030802@goop.org> <200906032208.28061.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906030901460.4880@localhost.localdomain> <200906041554.37102.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906040736350.4880@localhost.localdomain> <20090609093918.GC16940@wotan.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090609095155.GA14820@wotan.suse.de>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090609093918.GC16940@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 11:51:55AM +0200, Nick Piggin wrote:
-> On Wed, Jun 03, 2009 at 08:46:47PM +0200, Andi Kleen wrote:
-> > +static int me_pagecache_clean(struct page *p, unsigned long pfn)
-> > +{
-> > +	struct address_space *mapping;
-> > +
-> > +	if (!isolate_lru_page(p))
-> > +		page_cache_release(p);
-> > +
-> > +	/*
-> > +	 * Now truncate the page in the page cache. This is really
-> > +	 * more like a "temporary hole punch"
-> > +	 * Don't do this for block devices when someone else
-> > +	 * has a reference, because it could be file system metadata
-> > +	 * and that's not safe to truncate.
-> > +	 */
-> > +	mapping = page_mapping(p);
-> > +	if (mapping && S_ISBLK(mapping->host->i_mode) && page_count(p) > 1) {
-> > +		printk(KERN_ERR
-> > +			"MCE %#lx: page looks like a unsupported file system metadata page\n",
-> > +			pfn);
-> > +		return FAILED;
-> > +	}
-> 
-> page_count check is racy. Hmm, S_ISBLK should handle xfs's private mapping.
-> AFAIK btrfs has a similar private mapping but a quick grep does not show
-> up S_IFBLK anywhere, so I don't know what the situation is there.
-> 
-> Unfortunately though, the linear mapping is not the only metadata mapping
-> a filesystem might have. Many work on directories in seperate mappings
-> (ext2, for example, which is where I first looked and will still oops with
-> your check).
-> 
-> Also, others may have other interesting inodes they use for metadata. Do
-> any of them go through the pagecache? I dont know. The ext3 journal,
-> for example? How does that work?
-> 
-> Unfortunately I don't know a good way to detect regular data mappings
-> easily. Ccing linux-fsdevel. Until that is worked out, you'd need to
-> use the safe pagecache invalidate rather than unsafe truncate.
 
-Maybe just testing S_ISREG would be better. Definitely safer than
-ISBLK.
+* Nick Piggin <npiggin@suse.de> wrote:
 
-Note that for !ISREG files, then you can still attempt the
-non-destructive invalidate (after extracting a suitable function
-similarly to the truncate one). Most likely the fs is not using
-the page right now, so it should give bit more coverage.
+> On Thu, Jun 04, 2009 at 08:02:14AM -0700, Linus Torvalds wrote:
+> > 
+> > 
+> > On Thu, 4 Jun 2009, Rusty Russell wrote:
+> > > >
+> > > > Turn off HIGHMEM64G, please (and HIGHMEM4G too, for that matter - you
+> > > > can't compare it to a no-highmem case).
+> > > 
+> > > Thanks, your point is demonstrated below.  I don't think HIGHMEM4G is 
+> > > unreasonable for a distro tho, so I turned that on instead.
+> > 
+> > Well, I agree that HIGHMEM4G is a _reasonable_ thing to turn on.
+> > 
+> > The thing I disagree with is that it's at all valid to then compare to 
+> > some all-software feature thing. HIGHMEM doesn't expand any esoteric 
+> > capability that some people might use - it's about regular RAM for regular 
+> > users.
+> > 
+> > And don't get me wrong - I don't like HIGHMEM. I detest the damn thing. I 
+> > hated having to merge it, and I still hate it. It's a stupid, ugly, and 
+> > very invasive config option. It's just that it's there to support a 
+> > stupid, ugly and very annoying fundamental hardware problem.
+> 
+> I was looking forward to be able to get rid of it... unfortunately 
+> other 32-bit architectures are starting to use it again :(
+> 
+> I guess it is not incredibly intrusive for generic mm code. A bit 
+> of kmap sprinkled around which is actually quite a useful 
+> delimiter of where pagecache is addressed via its kernel mapping.
+> 
+> Do you hate more the x86 code? Maybe that can be removed?
 
-I still don't exactly know about, say, ext3 journal. Probably
-it doesn't use pagecache anyway. Do any other filesystems do
-crazy things with S_ISREG files? They probably deserve to oops
-if they do ;)
+IMHO what hurts most about highmem isnt even its direct source code 
+overhead, but three factors:
 
+ - The buddy allocator allocates top down, with highmem pages first.
+   So a lot of critical apps (the first ones started) will have 
+   highmem footprint, and that shows up every time they use it for 
+   file IO or other ops. kmap() overhead and more.
+
+ - Highmem is not really a 'solvable' problem in terms of good VM 
+   balancing. It gives conflicting constraints and there's no single 
+   'good VM' that can really work - just a handful of bad solutions 
+   that differ in their level and area of suckiness.
+
+ - The kmap() cache itself can be depleted, and using atomic kmaps 
+   is fragile and error-prone. I think we still have a FIXME of a 
+   possibly triggerable deadlock somewhere in the core MM code ...
+
+OTOH, highmem is clearly a useful hardware enablement feature with a 
+slowly receding upside and a constant downside. The outcome is 
+clear: when a critical threshold is reached distros will stop 
+enabling it. (or more likely, there will be pure 64-bit x86 distros)
+
+Highmem simply enables a sucky piece of hardware so the code itself 
+has an intrinsic level of suckage, so to speak. There's not much to 
+be done about it but it's not a _big_ problem either: this type of 
+hw is moving fast out of the distro attention span.
+
+( What scares/worries me much more than sucky hardware is sucky
+  _software_ ABIs. Those have a half-life measured not in years but 
+  in decades and they get put into new products stubbornly, again
+  and again. There's no Moore's Law getting rid of sucky software
+  really and unlike the present set of sucky highmem hardware 
+  there's no influx of cosmic particles chipping away on their 
+  installed base either. )
+
+	Ingo
