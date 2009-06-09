@@ -1,113 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbZFIVvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbZFIVxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757541AbZFIVvA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 17:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbZFIVuw
+	id S1756949AbZFIVxt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 17:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757385AbZFIVxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 17:50:52 -0400
-Received: from dallas.jonmasters.org ([72.29.103.172]:51501 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754549AbZFIVuv (ORCPT
+	Tue, 9 Jun 2009 17:53:39 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:51173 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755843AbZFIVxi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 17:50:51 -0400
-Subject: Re: [RFC PATCH 1/1] smi_detector: A System Management Interrupt
- detector
-From: Jon Masters <jonathan@jonmasters.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       rostedt@goodmis.org
-In-Reply-To: <20090601205720.825d3048.akpm@linux-foundation.org>
-References: <20090531163117.502167374@jonmasters.org>
-	 <20090531163343.771922592@jonmasters.org>
-	 <20090601205720.825d3048.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: World Organi[sz]ation Of Broken Dreams
-Date: Tue, 09 Jun 2009 17:50:01 -0400
-Message-Id: <1244584201.30733.93.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Tue, 9 Jun 2009 17:53:38 -0400
+Message-Id: <20090609215338.966490493@goodmis.org>
+References: <20090609215211.307980196@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Tue, 09 Jun 2009 17:52:13 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: [PATCH 2/8] tracing: add protection around module events unload
+Content-Disposition: inline; filename=0002-tracing-add-protection-around-module-events-unload.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-06-01 at 20:57 -0700, Andrew Morton wrote:
-> On Sun, 31 May 2009 12:31:18 -0400 Jon Masters <jonathan@jonmasters.org> wrote:
-> 
-> > This patch introduces a new SMI (System Management Interrupt) detector module
-> > that can be used to detect high latencies within the system. It was originally
-> > written for use in the RT kernel, but has wider applications.
-> > 
-> 
-> Neat-looking code.
+From: Steven Rostedt <srostedt@redhat.com>
 
-Thanks. Finally gotten around to cleaning it up, and renamed it. I think
-I should have hwlat_detector out in a few minutes.
+When reading the trace buffer, there is a race that when a module
+is unloaded it removes events that is stilled referenced in the buffers.
+This patch adds the protection around the unloading of the events
+from modules and the reading of the trace buffers.
 
-> AFACIT it can be used on any platform.
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/trace_events.c |    4 +++-
+ kernel/trace/trace_output.c |   15 ++++++++++++---
+ kernel/trace/trace_output.h |    4 ++++
+ 3 files changed, 19 insertions(+), 4 deletions(-)
 
-Agreed. I've added a description that is generic in terms of system
-hardware latencies - nothing specific to SMIs except in a comment.
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 6c81f9c..aa08be6 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -1050,12 +1050,13 @@ static void trace_module_remove_events(struct module *mod)
+ 	struct ftrace_event_call *call, *p;
+ 	bool found = false;
+ 
++	down_write(&trace_event_mutex);
+ 	list_for_each_entry_safe(call, p, &ftrace_events, list) {
+ 		if (call->mod == mod) {
+ 			found = true;
+ 			ftrace_event_enable_disable(call, 0);
+ 			if (call->event)
+-				unregister_ftrace_event(call->event);
++				__unregister_ftrace_event(call->event);
+ 			debugfs_remove_recursive(call->dir);
+ 			list_del(&call->list);
+ 			trace_destroy_fields(call);
+@@ -1079,6 +1080,7 @@ static void trace_module_remove_events(struct module *mod)
+ 	 */
+ 	if (found)
+ 		tracing_reset_current_online_cpus();
++	up_write(&trace_event_mutex);
+ }
+ 
+ static int trace_module_notify(struct notifier_block *self,
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index c05aff4..7938f3a 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -14,7 +14,7 @@
+ /* must be a power of 2 */
+ #define EVENT_HASHSIZE	128
+ 
+-static DECLARE_RWSEM(trace_event_mutex);
++DECLARE_RWSEM(trace_event_mutex);
+ 
+ DEFINE_PER_CPU(struct trace_seq, ftrace_event_seq);
+ EXPORT_PER_CPU_SYMBOL(ftrace_event_seq);
+@@ -702,6 +702,16 @@ int register_ftrace_event(struct trace_event *event)
+ }
+ EXPORT_SYMBOL_GPL(register_ftrace_event);
+ 
++/*
++ * Used by module code with the trace_event_mutex held for write.
++ */
++int __unregister_ftrace_event(struct trace_event *event)
++{
++	hlist_del(&event->node);
++	list_del(&event->list);
++	return 0;
++}
++
+ /**
+  * unregister_ftrace_event - remove a no longer used event
+  * @event: the event to remove
+@@ -709,8 +719,7 @@ EXPORT_SYMBOL_GPL(register_ftrace_event);
+ int unregister_ftrace_event(struct trace_event *event)
+ {
+ 	down_write(&trace_event_mutex);
+-	hlist_del(&event->node);
+-	list_del(&event->list);
++	__unregister_ftrace_event(event);
+ 	up_write(&trace_event_mutex);
+ 
+ 	return 0;
+diff --git a/kernel/trace/trace_output.h b/kernel/trace/trace_output.h
+index ac240e7..d38bec4 100644
+--- a/kernel/trace/trace_output.h
++++ b/kernel/trace/trace_output.h
+@@ -27,6 +27,10 @@ extern struct trace_event *ftrace_find_event(int type);
+ extern enum print_line_t trace_nop_print(struct trace_iterator *iter,
+ 					 int flags);
+ 
++/* used by module unregistering */
++extern int __unregister_ftrace_event(struct trace_event *event);
++extern struct rw_semaphore trace_event_mutex;
++
+ #define MAX_MEMHEX_BYTES	8
+ #define HEX_CHARS		(MAX_MEMHEX_BYTES*2 + 1)
+ 
+-- 
+1.6.3.1
 
-> > +	smi_kthread = kthread_run(smi_kthread_fn, NULL,
-> > +					"smi_detector");
-> > +	if (!smi_kthread) {
-> 
-> You'll need an IS_ERR() test here.
-
-Thanks. I realized later that I did, because there's no reason that the
-value returned couldn't, in theory, change someday (recent zero page
-discussions notwithstanding).
-
-> > +	if (0 != err)
-> 
-> 	if (err != 0)
-> 
-> or
-> 
-> 	if (err)
-> 
-> would be more typical.
-
-The former runs the risk of assignment, whereas <value> != <variable>
-will generate a compiler error if it goes wrong, so I trained myself to
-always do that. The desired value is zero, so I prefer to show that in
-the test, but I have changed it following your advice anyway - it's like
-how I have to force myself not to use '{' '}' on single line
-if-statements despite generally doing so, again for safety :)
-
-> There's a lot of code duplication amongst all these debugfs write()
-> handlers.  Can a common helper be used?
-
-I originally used the generic debugfs _u|s<blah> functions to just
-read/write from the variables directly but then needed some side effects
-- but in any case, the generic functions don't offer any locking AFAIK.
-I'm adding a little helper function instead.
-
-> > +static int smi_debug_sample_fopen(struct inode *inode, struct file *filp)
-> > +{
-> > +	int ret = 0;
-> > +
-> > +	mutex_lock(&smi_data.lock);
-> > +	if (atomic_read(&smi_data.sample_open))
-> > +		ret = -EBUSY;
-> > +	else
-> > +		atomic_inc(&smi_data.sample_open);
-> > +	mutex_unlock(&smi_data.lock);
-> > +
-> > +	return ret;
-> > +}
-> 
-> It's strange to use a lock to protect an atomic_t.  A simple
-> atomic_add_unless() might suffice.
-
-You're right. I was just being pedantic to use the lock every time. I'll
-take that out and wrap it with an _unless, I think.
-
-Jon.
-
-
+-- 
