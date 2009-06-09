@@ -1,98 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760663AbZFIV6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760570AbZFIWAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760663AbZFIV6U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 17:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758729AbZFIV6L
+	id S1760570AbZFIWAu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 18:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756063AbZFIWAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 17:58:11 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:60955 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754511AbZFIV6L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 17:58:11 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Tue, 9 Jun 2009 23:56:55 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [RFC patch] firewire: core: don't update Broadcast_Channel if RFC
- 2734 conditions aren't met
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.32a3633a10aba874@s5r6.in-berlin.de>
+	Tue, 9 Jun 2009 18:00:42 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54478 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755785AbZFIWAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 18:00:41 -0400
+Date: Wed, 10 Jun 2009 00:00:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf_counter: extensible perf_counter_attr
+Message-ID: <20090609220020.GA26526@elte.hu>
+References: <1244490680.6691.1.camel@laptop> <4A2D8011.9050502@linux.vnet.ibm.com> <1244496223.6691.2.camel@laptop> <4A2D82CE.9000206@linux.vnet.ibm.com> <20090608215002.GB22049@elte.hu> <4A2DB1C6.6090209@linux.vnet.ibm.com> <20090609065117.GA16707@elte.hu> <4A2E19A9.3070201@linux.vnet.ibm.com> <20090609115346.GB3062@elte.hu> <4A2E9157.2030108@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A2E9157.2030108@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This extra check will avoid Broadcast_Channel register related traffic
-to many IIDC, SBP-2, and AV/C devices which aren't IRMC or have a
-max_rec < 8 (i.e. support < 512 bytes async payload).  This avoids a
-little bit of traffic after each bus reset and is even more careful
-with devices which don't implement this CSR.
 
-The assumption is that no other protocol than IP over 1394 uses the
-broadcast channel for streams.
+* Corey Ashford <cjashfor@linux.vnet.ibm.com> wrote:
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/core-device.c |   18 +++++++++++++++++-
- include/linux/firewire.h       |    2 ++
- 2 files changed, 19 insertions(+), 1 deletion(-)
+> Thanks for your reply, Ingo.
+>
+> Ingo Molnar wrote:
+>> I think PEBS is best supported by a generic abstraction. Something  
+>> like this: it's basically a special sampling format, that generates a 
+>> record of:
+>>
+>> 	struct pt_regs regs;
+>> 	__u64 insn_latency; /* optional */
+>> 	__u64 data_address; /* optional */
+>>
+>> this is pretty generic.
+>>
+>> The raw CPU records have a CPU specific format, and they have to be  
+>> demultiplexed anyway (on Nehalem, which can have up to four separate  
+>> PEBS counters - but each output into the same DS area), so the  
+>> lowlevel arch code converts the CPU record into the above generic  
+>> sample record when it copies it into the mmap pages. It's a quick copy 
+>> so no big deal performance-wise.
+>>
+>> ( Details:
+>>
+>>    - there might be some additional complications from sampling      
+>> 32-bit contexts, but that too is a mostly low level detail that      
+>> gets hidden.
+>>
+>>    - we might use a tiny bit more compact registers structure than
+>>      struct pt_regs. OTOH it's a well-known structure so it makes      
+>> sense to standardize on it, even if the CPU doesnt sample all      
+>> registers.
+>> )
+>>
+>>   
+> I see, so that's how you'd return the data.  How would a user 
+> specify that they want to use PEBS?
 
-Index: linux/drivers/firewire/core-device.c
-===================================================================
---- linux.orig/drivers/firewire/core-device.c
-+++ linux/drivers/firewire/core-device.c
-@@ -580,7 +580,9 @@ static int read_bus_info_block(struct fw
- 
- 	kfree(old_rom);
- 	ret = 0;
--	device->cmc = rom[2] >> 30 & 1;
-+	device->max_rec	= rom[2] >> 12 & 0xf;
-+	device->cmc	= rom[2] >> 30 & 1;
-+	device->irmc	= rom[2] >> 31 & 1;
-  out:
- 	kfree(rom);
- 
-@@ -841,6 +843,20 @@ static void set_broadcast_channel(struct
- 	if (!card->broadcast_channel_allocated)
- 		return;
- 
-+	/*
-+	 * The Broadcast_Channel Valid bit is required by nodes which want to
-+	 * transmit on this channel.  Such transmissions are practically
-+	 * exclusive to IP over 1394 (RFC 2734).  IP capable nodes are required
-+	 * to be IRM capable and have a max_rec of 8 or more.  We use this fact
-+	 * to narrow down to which nodes we send Broadcast_Channel updates.
-+	 */
-+	if (!device->irmc || device->max_rec < 8)
-+		return;
-+
-+	/*
-+	 * Some 1394-1995 nodes crash if this 1394a-2000 register is written.
-+	 * Perform a read test first.
-+	 */
- 	if (device->bc_implemented == BC_UNKNOWN) {
- 		rcode = fw_run_transaction(card, TCODE_READ_QUADLET_REQUEST,
- 				device->node_id, generation, device->max_speed,
-Index: linux/include/linux/firewire.h
-===================================================================
---- linux.orig/include/linux/firewire.h
-+++ linux/include/linux/firewire.h
-@@ -196,7 +196,9 @@ struct fw_device {
- 	size_t config_rom_length;
- 	int config_rom_retries;
- 	unsigned is_local:1;
-+	unsigned max_rec:4;
- 	unsigned cmc:1;
-+	unsigned irmc:1;
- 	unsigned bc_implemented:2;
- 
- 	struct delayed_work work;
+They wouldnt need to. PEBS would result in more precise samples when 
+certain counters are used - and transparently so.
 
--- 
-Stefan Richter
--=====-==--= -==- -=--=
-http://arcgraph.de/sr/
+The non-PEBS NMI samples are pretty accurate to begin with, so it's 
+not a _major_ difference in quality.
 
+PEBS would also auto-activate when a user wants to sample say the 
+instruction latency as well - and on non-PEBS hardware the platform 
+code would refuse to open the counter.
+
+PEBS could also be used to reduce the number of NMIs needed - so 
+it's a transparent speedup as well.
+
+> Another observation is that you'd need some sort of bit vector, or 
+> at the least a document, that describes which registers are valid 
+> in the pt_regs struct.
+
+Initially i think we should use PEBS to transparently enhance 
+regular IP samples.
+
+What would we use the other registers for? Many registers will have 
+stack context dependencies so the PEBS data cannot really be 
+analyzed in any meaningful way after the fact.
+
+(except perhaps for the narrow purpose of debugging)
+
+>> Can you see desirable PEBS-alike PMU features that cannot be expressed 
+>> via such means?
+>
+> Power PMU's provide some fairly complex features, such as a 
+> thresholding mechanism which is used for marking instructions, and 
+> also there's an Instruction Matching CAM which can be used to mark 
+> only on certain instruction types.  Since these features are 
+> present only on Power, I'm not sure it makes sense to go to the 
+> trouble of abstracting them for use on other arch/chip designs.
+
+Could you please describe the low level semantics more accurately - 
+at least of the ones you find to be the most useful in practice?
+
+	Ingo
