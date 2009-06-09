@@ -1,56 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757534AbZFIGqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbZFIGrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757534AbZFIGqi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 02:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbZFIGq1
+	id S1758087AbZFIGrs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 02:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbZFIGrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 02:46:27 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49662 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754253AbZFIGq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 02:46:26 -0400
-From: Neil Brown <neilb@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 9 Jun 2009 16:46:57 +1000
+	Tue, 9 Jun 2009 02:47:40 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:46389 "EHLO
+	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754155AbZFIGrj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 02:47:39 -0400
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18990.1377.176969.705222@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PULL REQUEST] md: a few more reshape fixes for 2.6.30
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Subject: [PATCH 00/27] score arch files for linux
+X-Mailer: Lotus Notes Release 6.5 September 26, 2003
+Message-ID: <OF54D30DF0.6974DE98-ON482575D0.0021670B-482575D0.00234606@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Tue, 9 Jun 2009 14:20:59 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/06/09 ?? 02:21:25,
+	Serialize complete at 2009/06/09 ?? 02:21:25
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Arnd, Andrew Morton and linus,
 
-Hi Linus,
- more testing, more bugs...
- I'm now in a position to easily test more of the various
- possibilities with the enhances raid5/6 reshape code and consequently
- have found a few bugs.
+According to your comment on score arch code, 
+we update score code base on asm-generic#next repository.
+use arch microblaze and blackfin as reference.
 
- Hopefully these three can still squeeze in to 2.6.30 ??
+Best Regards
+Liqin
 
-Thanks,
-NeilBrown
-
-
-The following changes since commit ccc0d38ec13d4649d4168c1db590137df53ad783:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../jbarnes/pci-2.6
-
-are available in the git repository at:
-
-  git://neil.brown.name/md for-linus
-
-NeilBrown (3):
-      md/raid5: use conf->raid_disks in preference to mddev->raid_disk
-      md/raid5 - avoid deadlocks in get_active_stripe during reshape
-      md/raid5: fix bug in reshape code when chunk_size decreases.
-
- drivers/md/raid5.c |   28 ++++++++++++++--------------
- 1 files changed, 14 insertions(+), 14 deletions(-)
+--
