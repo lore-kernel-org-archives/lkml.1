@@ -1,127 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbZFISkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbZFISma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758833AbZFISkM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 14:40:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbZFISkA
+	id S1756605AbZFISma (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 14:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZFISmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 14:40:00 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:49526 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750725AbZFISj7 (ORCPT
+	Tue, 9 Jun 2009 14:42:23 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:51967 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751997AbZFISmW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 14:39:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=x6gvHuSR7E/4PtKtiv+W90dp0YqrYC3nz272awQHI0ToHqKMWaXcFXUY5HhuwQ2PR2
-         3wOBJ4+2Tri9alVCL/48kV8PNe5NhSv2X3Xovo6KSCjoIg6dDnhcnMqEL6xAJEH+OtWf
-         voOBjWpKi2EVSlnCbzNtQmoll8sm8vHD7ny0Q=
-Date: Tue, 9 Jun 2009 20:39:57 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Jan Kara <jack@suse.cz>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, tytso@mit.edu, david@fromorbit.com,
-       hch@infradead.org, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk, damien.wyart@free.fr
-Subject: Re: [PATCH 0/11] Per-bdi writeback flusher threads v9
-Message-ID: <20090609183954.GB6057@nowhere>
-References: <20090604201012.GD11363@kernel.dk> <20090604223449.GA13780@nowhere> <20090605191528.GV11363@kernel.dk> <20090605211438.GA11650@duck.suse.cz> <20090606001814.GD3824@think> <20090606002339.GH11650@duck.suse.cz> <20090606010629.GC7809@nowhere> <20090608092338.GD11363@kernel.dk> <20090608122302.GA8524@duck.suse.cz> <20090608122834.GH11363@kernel.dk>
+	Tue, 9 Jun 2009 14:42:22 -0400
+Date: Tue, 9 Jun 2009 20:42:03 +0200
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Harald Welte <HaraldWelte@viatech.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [patch 0/3] crypto: padlock-aes: enable on VIA Nano
+Message-ID: <20090609184203.GA22084@Chamillionaire.breakpoint.cc>
+References: <20090609103533.0c334594@dhcp-100-2-144.bos.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090608122834.GH11363@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090609103533.0c334594@dhcp-100-2-144.bos.redhat.com>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 02:28:34PM +0200, Jens Axboe wrote:
-> On Mon, Jun 08 2009, Jan Kara wrote:
-> > On Mon 08-06-09 11:23:38, Jens Axboe wrote:
-> > > On Sat, Jun 06 2009, Frederic Weisbecker wrote:
-> > > > On Sat, Jun 06, 2009 at 02:23:40AM +0200, Jan Kara wrote:
-> > > > > On Fri 05-06-09 20:18:15, Chris Mason wrote:
-> > > > > > On Fri, Jun 05, 2009 at 11:14:38PM +0200, Jan Kara wrote:
-> > > > > > > On Fri 05-06-09 21:15:28, Jens Axboe wrote:
-> > > > > > > > On Fri, Jun 05 2009, Frederic Weisbecker wrote:
-> > > > > > > > > The result with noop is even more impressive.
-> > > > > > > > > 
-> > > > > > > > > See: http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop.pdf
-> > > > > > > > > 
-> > > > > > > > > Also a comparison, noop with pdflush against noop with bdi writeback:
-> > > > > > > > > 
-> > > > > > > > > http://kernel.org/pub/linux/kernel/people/frederic/dbench-noop-cmp.pdf
-> > > > > > > > 
-> > > > > > > > OK, so things aren't exactly peachy here to begin with. It may not
-> > > > > > > > actually BE an issue, or at least now a new one, but that doesn't mean
-> > > > > > > > that we should not attempt to quantify the impact.
-> > > > > > >   What looks interesting is also the overall throughput. With pdflush we
-> > > > > > > get to 2.5 MB/s + 26 MB/s while with per-bdi we get to 2.7 MB/s + 13 MB/s.
-> > > > > > > So per-bdi seems to be *more* fair but throughput suffers a lot (which
-> > > > > > > might be inevitable due to incurred seeks).
-> > > > > > >   Frederic, how much does dbench achieve for you just on one partition
-> > > > > > > (test both consecutively if possible) with as many threads as have those
-> > > > > > > two dbench instances together? Thanks.
-> > > > > > 
-> > > > > > Is the graph showing us dbench tput or disk tput?  I'm assuming it is
-> > > > > > disk tput, so bdi may just be writing less?
-> > > > >   Good, question. I was assuming dbench throughput :).
-> > > > > 
-> > > > > 									Honza
-> > > > 
-> > > > 
-> > > > Yeah it's dbench. May be that's not the right tool to measure the writeback
-> > > > layer, even though dbench results are necessarily influenced by the writeback
-> > > > behaviour.
-> > > > 
-> > > > May be I should use something else?
-> > > > 
-> > > > Note that if you want I can put some surgicals trace_printk()
-> > > > in fs/fs-writeback.c
-> > > 
-> > > FWIW, I ran a similar test here just now. CFQ was used, two partitions
-> > > on an (otherwise) idle drive. I used 30 clients per dbench and 600s
-> > > runtime. Results are nearly identical, both throughout the run and
-> > > total:
-> > > 
-> > > /dev/sdb1
-> > > Throughput 165.738 MB/sec  30 clients  30 procs  max_latency=459.002 ms
-> > > 
-> > > /dev/sdb2
-> > > Throughput 165.773 MB/sec  30 clients  30 procs  max_latency=607.198 ms
-> >   Hmm, interesting. 165 MB/sec (in fact 330 MB/sec for that drive) sounds
-> > like quite a lot ;). This usually happens with dbench when the processes
-> > manage to delete / redirty data before writeback thread gets to them (so
-> > some IO happens in memory only and throughput is bound by the CPU / memory
-> > speed). So I think you are on a different part of the performance curve
-> > than Frederic. Probably you have to run with more threads so that dbench
-> > threads get throttled because of total amount of dirty data generated...
-> 
-> Certainly, the actual disk data rate was consistenctly in the
-> 60-70MB/sec region. The issue is likely that the box has 6GB of RAM, if
-> I boot with less than 30 clients will do.
-> 
-> But unless the situation changes radically with memory pressure, it
-> still shows a fair distribution of IO between the two. Since they have
-> identical results throughout, it should be safe to assume that the have
-> equal bandwidth distribution at the disk end. A fast dbench run is one
-> that doesn't touch the disk at all, once you start touching disk you
-> lose :-)
+* Chuck Ebbert | 2009-06-09 10:35:33 [-0400]:
 
+>The VIA Nano has a bug that makes the padlock unit fetch extra data
+>during encryption operations. Add workarounds for that, and enable
+>the driver on x86_64.
+Nice. The X86_64 padlock will make it mainline in next merge window so
+I'm asking you kindly to rebase it against Herbert's cryptodev tree [0].
 
+I guess the bug can trigger on 32bit if you boot the affected 64bit CPU
+in 32bit mode? I'm not sure if it is better to send this patches via
+stable tree _or_ deactivate the padlock on affected CPUs.
 
-When I ran my tests, I only had 384 MB of memory, 100 threads and
-only one CPU. So I was in a constant writeback, which should
-be smoother with 6 GB of memory and 30 threads.
+[0]
+git://git.kernel.org/pub/scm/linux/kernel/git/herbert/cryptodev-2.6.git
 
-May be that's why you had a so well balanced result... Or may
-be there is too much entropy in my testbox :)
-
-
- 
-> -- 
-> Jens Axboe
-> 
-
+Sebastian
