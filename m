@@ -1,93 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760301AbZFJWWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759650AbZFJWZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760301AbZFJWWd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 18:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754943AbZFJWWY
+	id S1759650AbZFJWZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 18:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbZFJWZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 18:22:24 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:47049 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754781AbZFJWWX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 18:22:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=PHLpwj2cGlKEnO/snEpuzYMVw5Gg24tB5NRkJ3CoBaYG2ChPUgD16VztFapERi+z7s
-         eO4SlAkNapxPvq3qmwGiblXOc4wjXXncMfMwLbtrJh4sf+gQXlMMiJ5I/azOy1G+AawB
-         bS+73t3+lbRi0w1H549ATZuhZspRsw8tNuclU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Jens Axboe <axboe@kernel.dk>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>
-Subject: Re: linux-next: Tree for June 10
-Date: Thu, 11 Jun 2009 00:27:37 +0200
-User-Agent: KMail/1.11.3 (Linux/2.6.30-rc8-next-20090610-08093-g6597e49-dirty; KDE/4.2.3; i686; ; )
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <20090610194309.4f7a0e54.sfr@canb.auug.org.au>
-In-Reply-To: <20090610194309.4f7a0e54.sfr@canb.auug.org.au>
+	Wed, 10 Jun 2009 18:25:17 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51491 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751396AbZFJWZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 18:25:15 -0400
+Date: Thu, 11 Jun 2009 00:25:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] signal code updates for v2.6.31
+Message-ID: <20090610222509.GA5397@elte.hu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906110027.38348.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 June 2009 11:43:09 Stephen Rothwell wrote:
-> Hi all,
-> 
-> Changes since 20090609:
+Linus,
 
-commit 9df1bb9b516daeece159ab7fb262d01a0359247c
-Author: Jens Axboe <jens.axboe@oracle.com>
-Date:   Tue Jun 9 06:22:57 2009 +0200
+Please pull the latest signal-for-linus git tree from:
 
-    Revert "block: Fix bounce limit setting in DM"
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git signal-for-linus
 
-    This reverts commit a05c0205ba031c01bba33a21bf0a35920eb64833.
+Add the new sys_rt_tgsigqueueinfo() syscall and hook it up in x86. 
+Ack by Ulrich, Roland and Oleg.
 
-    DM doesn't need to access the bounce_pfn directly.
+ Thanks,
 
-    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+	Ingo
 
-and the following warning is back:
+------------------>
+Thomas Gleixner (3):
+      signals: split do_tkill
+      signals: implement sys_rt_tgsigqueueinfo
+      x86: hookup sys_rt_tgsigqueueinfo
 
-BUG: sleeping function called from invalid context at mm/page_alloc.c:1493
-in_atomic(): 1, irqs_disabled(): 0, pid: 21882, name: cryptsetup
-INFO: lockdep is turned off.
-Pid: 21882, comm: cryptsetup Tainted: G   M       2.6.30-rc8-next-20090610-08093-g6597e49-dirty #19
-Call Trace:
- [<c0122ca6>] __might_sleep+0xfb/0x102
- [<c0162e4c>] __alloc_pages_internal+0x62/0x388
- [<c014689d>] ? lockdep_init_map+0x8a/0x3fb
- [<c015fced>] mempool_alloc_pages+0x1b/0x21
- [<c0176d47>] mempool_alloc_pages_isa+0xb/0x10
- [<c01600ed>] mempool_create_node+0x92/0xcc
- [<c015fcc8>] ? mempool_free_pages+0x0/0xa
- [<c0176d3c>] ? mempool_alloc_pages_isa+0x0/0x10
- [<c0160134>] mempool_create+0xd/0x11
- [<c0176d1c>] init_emergency_isa_pool+0x22/0x42
- [<c0223749>] blk_queue_bounce_limit+0x2c/0x41
- [<c030b3a7>] dm_table_set_restrictions+0x76/0x9b
- [<c03094b0>] dm_swap_table+0x117/0x132
- [<c030d9ce>] dev_suspend+0xf4/0x16f
- [<c030e246>] dm_ctl_ioctl+0x18e/0x1cc
- [<c030d8da>] ? dev_suspend+0x0/0x16f
- [<c030e0b8>] ? dm_ctl_ioctl+0x0/0x1cc
- [<c018b81f>] vfs_ioctl+0x22/0x69
- [<c018bce9>] do_vfs_ioctl+0x483/0x4bd
- [<c0193606>] ? mntput_no_expire+0x19/0xb4
- [<c0181ee2>] ? __fput+0x185/0x18d
- [<c0181f03>] ? fput+0x19/0x1b
- [<c017f6c2>] ? filp_close+0x51/0x5b
- [<c018bd4f>] sys_ioctl+0x2c/0x45
- [<c0102988>] sysenter_do_call+0x12/0x36
 
-[ The problem is in init_emergency_isa_pool() being called for DM. ]
+ arch/x86/ia32/ia32entry.S          |    1 +
+ arch/x86/include/asm/unistd_32.h   |    1 +
+ arch/x86/include/asm/unistd_64.h   |    2 +
+ arch/x86/kernel/syscall_table_32.S |    1 +
+ include/linux/compat.h             |    2 +
+ include/linux/signal.h             |    2 +
+ kernel/compat.c                    |   11 +++++++
+ kernel/signal.c                    |   56 ++++++++++++++++++++++++++++--------
+ 8 files changed, 64 insertions(+), 12 deletions(-)
 
-The fix was probably lost because the original commit missed information
-about the warning and also cc: to the reporter (me in this particular case).
+diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
+index a505202..dcef387 100644
+--- a/arch/x86/ia32/ia32entry.S
++++ b/arch/x86/ia32/ia32entry.S
+@@ -830,4 +830,5 @@ ia32_sys_call_table:
+ 	.quad sys_inotify_init1
+ 	.quad compat_sys_preadv
+ 	.quad compat_sys_pwritev
++	.quad compat_sys_rt_tgsigqueueinfo	/* 335 */
+ ia32_syscall_end:
+diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
+index 6e72d74..708dae6 100644
+--- a/arch/x86/include/asm/unistd_32.h
++++ b/arch/x86/include/asm/unistd_32.h
+@@ -340,6 +340,7 @@
+ #define __NR_inotify_init1	332
+ #define __NR_preadv		333
+ #define __NR_pwritev		334
++#define __NR_rt_tgsigqueueinfo	335
+ 
+ #ifdef __KERNEL__
+ 
+diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
+index f818294..4e2b054 100644
+--- a/arch/x86/include/asm/unistd_64.h
++++ b/arch/x86/include/asm/unistd_64.h
+@@ -657,6 +657,8 @@ __SYSCALL(__NR_inotify_init1, sys_inotify_init1)
+ __SYSCALL(__NR_preadv, sys_preadv)
+ #define __NR_pwritev				296
+ __SYSCALL(__NR_pwritev, sys_pwritev)
++#define __NR_rt_tgsigqueueinfo			297
++__SYSCALL(__NR_rt_tgsigqueueinfo, sys_rt_tgsigqueueinfo)
+ 
+ 
+ #ifndef __NO_STUBS
+diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
+index ff5c873..734f92c 100644
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -334,3 +334,4 @@ ENTRY(sys_call_table)
+ 	.long sys_inotify_init1
+ 	.long sys_preadv
+ 	.long sys_pwritev
++	.long sys_rt_tgsigqueueinfo	/* 335 */
+diff --git a/include/linux/compat.h b/include/linux/compat.h
+index f2ded21..af931ee 100644
+--- a/include/linux/compat.h
++++ b/include/linux/compat.h
+@@ -222,6 +222,8 @@ int copy_siginfo_from_user32(siginfo_t *to, struct compat_siginfo __user *from);
+ int copy_siginfo_to_user32(struct compat_siginfo __user *to, siginfo_t *from);
+ int get_compat_sigevent(struct sigevent *event,
+ 		const struct compat_sigevent __user *u_event);
++long compat_sys_rt_tgsigqueueinfo(compat_pid_t tgid, compat_pid_t pid, int sig,
++				  struct compat_siginfo __user *uinfo);
+ 
+ static inline int compat_timeval_compare(struct compat_timeval *lhs,
+ 					struct compat_timeval *rhs)
+diff --git a/include/linux/signal.h b/include/linux/signal.h
+index 84f997f..c755283 100644
+--- a/include/linux/signal.h
++++ b/include/linux/signal.h
+@@ -235,6 +235,8 @@ static inline int valid_signal(unsigned long sig)
+ extern int next_signal(struct sigpending *pending, sigset_t *mask);
+ extern int group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p);
+ extern int __group_send_sig_info(int, struct siginfo *, struct task_struct *);
++extern long do_rt_tgsigqueueinfo(pid_t tgid, pid_t pid, int sig,
++				 siginfo_t *info);
+ extern long do_sigpending(void __user *, unsigned long);
+ extern int sigprocmask(int, sigset_t *, sigset_t *);
+ extern int show_unhandled_signals;
+diff --git a/kernel/compat.c b/kernel/compat.c
+index 42d5654..f6c204f 100644
+--- a/kernel/compat.c
++++ b/kernel/compat.c
+@@ -882,6 +882,17 @@ compat_sys_rt_sigtimedwait (compat_sigset_t __user *uthese,
+ 
+ }
+ 
++asmlinkage long
++compat_sys_rt_tgsigqueueinfo(compat_pid_t tgid, compat_pid_t pid, int sig,
++			     struct compat_siginfo __user *uinfo)
++{
++	siginfo_t info;
++
++	if (copy_siginfo_from_user32(&info, uinfo))
++		return -EFAULT;
++	return do_rt_tgsigqueueinfo(tgid, pid, sig, &info);
++}
++
+ #ifdef __ARCH_WANT_COMPAT_SYS_TIME
+ 
+ /* compat_time_t is a 32 bit "long" and needs to get converted. */
+diff --git a/kernel/signal.c b/kernel/signal.c
+index d803473..f79b3b9 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -2278,24 +2278,17 @@ SYSCALL_DEFINE2(kill, pid_t, pid, int, sig)
+ 	return kill_something_info(sig, &info, pid);
+ }
+ 
+-static int do_tkill(pid_t tgid, pid_t pid, int sig)
++static int
++do_send_specific(pid_t tgid, pid_t pid, int sig, struct siginfo *info)
+ {
+-	int error;
+-	struct siginfo info;
+ 	struct task_struct *p;
+ 	unsigned long flags;
+-
+-	error = -ESRCH;
+-	info.si_signo = sig;
+-	info.si_errno = 0;
+-	info.si_code = SI_TKILL;
+-	info.si_pid = task_tgid_vnr(current);
+-	info.si_uid = current_uid();
++	int error = -ESRCH;
+ 
+ 	rcu_read_lock();
+ 	p = find_task_by_vpid(pid);
+ 	if (p && (tgid <= 0 || task_tgid_vnr(p) == tgid)) {
+-		error = check_kill_permission(sig, &info, p);
++		error = check_kill_permission(sig, info, p);
+ 		/*
+ 		 * The null signal is a permissions and process existence
+ 		 * probe.  No signal is actually delivered.
+@@ -2305,7 +2298,7 @@ static int do_tkill(pid_t tgid, pid_t pid, int sig)
+ 		 * signal is private anyway.
+ 		 */
+ 		if (!error && sig && lock_task_sighand(p, &flags)) {
+-			error = specific_send_sig_info(sig, &info, p);
++			error = specific_send_sig_info(sig, info, p);
+ 			unlock_task_sighand(p, &flags);
+ 		}
+ 	}
+@@ -2314,6 +2307,19 @@ static int do_tkill(pid_t tgid, pid_t pid, int sig)
+ 	return error;
+ }
+ 
++static int do_tkill(pid_t tgid, pid_t pid, int sig)
++{
++	struct siginfo info;
++
++	info.si_signo = sig;
++	info.si_errno = 0;
++	info.si_code = SI_TKILL;
++	info.si_pid = task_tgid_vnr(current);
++	info.si_uid = current_uid();
++
++	return do_send_specific(tgid, pid, sig, &info);
++}
++
+ /**
+  *  sys_tgkill - send signal to one specific thread
+  *  @tgid: the thread group ID of the thread
+@@ -2363,6 +2369,32 @@ SYSCALL_DEFINE3(rt_sigqueueinfo, pid_t, pid, int, sig,
+ 	return kill_proc_info(sig, &info, pid);
+ }
+ 
++long do_rt_tgsigqueueinfo(pid_t tgid, pid_t pid, int sig, siginfo_t *info)
++{
++	/* This is only valid for single tasks */
++	if (pid <= 0 || tgid <= 0)
++		return -EINVAL;
++
++	/* Not even root can pretend to send signals from the kernel.
++	   Nor can they impersonate a kill(), which adds source info.  */
++	if (info->si_code >= 0)
++		return -EPERM;
++	info->si_signo = sig;
++
++	return do_send_specific(tgid, pid, sig, info);
++}
++
++SYSCALL_DEFINE4(rt_tgsigqueueinfo, pid_t, tgid, pid_t, pid, int, sig,
++		siginfo_t __user *, uinfo)
++{
++	siginfo_t info;
++
++	if (copy_from_user(&info, uinfo, sizeof(siginfo_t)))
++		return -EFAULT;
++
++	return do_rt_tgsigqueueinfo(tgid, pid, sig, &info);
++}
++
+ int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
+ {
+ 	struct task_struct *t = current;
