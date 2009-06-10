@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761050AbZFJDsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759639AbZFJDsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761050AbZFJDsk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:48:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757933AbZFJDhB
+	id S1759639AbZFJDsy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757952AbZFJDhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:37:01 -0400
-Received: from kroah.org ([198.145.64.141]:57508 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:37:05 -0400
+Received: from kroah.org ([198.145.64.141]:57521 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757992AbZFJDhA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:37:00 -0400
+	id S1757925AbZFJDhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:37:03 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:52 2009
-Message-Id: <20090610002352.372207619@blue.kroah.org>
+Message-Id: <20090610002352.596502059@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:23 -0700
+Date: Tue, 09 Jun 2009 17:14:24 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,9 +27,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 55/60] ext4: Fix softlockup caused by illegal i_file_acl value in on-disk inode
+Subject: [patch 56/60] ext4: Ignore i_file_acl_high unless EXT4_FEATURE_INCOMPAT_64BIT is present
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-fix-softlockup-caused-by-illegal-i_file_acl-value-in-on-disk-inode.patch
+Content-Disposition: inline; filename=ext4-ignore-i_file_acl_high-unless-ext4_feature_incompat_64bit-is-present.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,44 +40,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit 485c26ec70f823f2a9cf45982b724893e53a859e)
+(cherry picked from commit a9e817425dc0baede8ebe5fbc9984a640257432b)
 
-If the block containing external extended attributes (which is stored
-in i_file_acl and i_file_acl_high) is larger than the on-disk
-filesystem, the process which tried to access the extended attributes
-will endlessly issue kernel printks complaining that
-"__find_get_block_slow() failed", locking up that CPU until the system
-is forcibly rebooted.
-
-So when we read in the inode, make sure the i_file_acl value is legal,
-and if not, flag the filesystem as being corrupted.
+Don't try to look at i_file_acl_high unless the INCOMPAT_64BIT feature
+bit is set.  The field is normally zero, but older versions of e2fsck
+didn't automatically check to make sure of this, so in the spirit of
+"be liberal in what you accept", don't look at i_file_acl_high unless
+we are using a 64-bit filesystem.
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- fs/ext4/inode.c |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ fs/ext4/inode.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
 --- a/fs/ext4/inode.c
 +++ b/fs/ext4/inode.c
-@@ -4115,6 +4115,18 @@ struct inode *ext4_iget(struct super_blo
- 			(__u64)(le32_to_cpu(raw_inode->i_version_hi)) << 32;
- 	}
- 
-+	if (ei->i_file_acl &&
-+	    ((ei->i_file_acl <
-+	      (le32_to_cpu(EXT4_SB(sb)->s_es->s_first_data_block) +
-+	       EXT4_SB(sb)->s_gdb_count)) ||
-+	     (ei->i_file_acl >= ext4_blocks_count(EXT4_SB(sb)->s_es)))) {
-+		ext4_error(sb, __func__,
-+			   "bad extended attribute block %llu in inode #%lu",
-+			   ei->i_file_acl, inode->i_ino);
-+		ret = -EIO;
-+		goto bad_inode;
-+	}
-+
- 	if (S_ISREG(inode->i_mode)) {
- 		inode->i_op = &ext4_file_inode_operations;
- 		inode->i_fop = &ext4_file_operations;
+@@ -4064,11 +4064,9 @@ struct inode *ext4_iget(struct super_blo
+ 	ei->i_flags = le32_to_cpu(raw_inode->i_flags);
+ 	inode->i_blocks = ext4_inode_blocks(raw_inode, ei);
+ 	ei->i_file_acl = le32_to_cpu(raw_inode->i_file_acl_lo);
+-	if (EXT4_SB(inode->i_sb)->s_es->s_creator_os !=
+-	    cpu_to_le32(EXT4_OS_HURD)) {
++	if (EXT4_HAS_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_64BIT))
+ 		ei->i_file_acl |=
+ 			((__u64)le16_to_cpu(raw_inode->i_file_acl_high)) << 32;
+-	}
+ 	inode->i_size = ext4_isize(raw_inode);
+ 	ei->i_disksize = inode->i_size;
+ 	inode->i_generation = le32_to_cpu(raw_inode->i_generation);
 
 
