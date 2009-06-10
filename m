@@ -1,224 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759658AbZFJUmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761290AbZFJUnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759658AbZFJUmG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 16:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZFJUly
+	id S1761290AbZFJUnm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 16:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758037AbZFJUnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 16:41:54 -0400
-Received: from mail-bw0-f213.google.com ([209.85.218.213]:34770 "EHLO
-	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752363AbZFJUlw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 16:41:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=hmhHi0k4Yk6YsvIwk49NOo9owsfauj5Xp0hFNcCPkGEKxqlTojadWe7DS/t4+d7DfB
-         LJcpTa2J8yZJ0uswRfPr0hwYfxHZ0VhdIC7JjO+3VsnoFkv312VggDS565gOrhZTa8RC
-         J8alYYaMVHGaLgJJiIC+QlC0Vt5yrFzYGcHSM=
+	Wed, 10 Jun 2009 16:43:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43557 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755440AbZFJUnf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 16:43:35 -0400
+Date: Wed, 10 Jun 2009 22:43:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org, hannes@cmpxchg.org, mpm@selenic.com,
+       npiggin@suse.de, yinghai@kernel.org
+Subject: Re: [GIT PULL] Early boot SLAB for 2.6.31
+Message-ID: <20090610204318.GA8147@elte.hu>
+References: <Pine.LNX.4.64.0906102311230.30444@melkki.cs.Helsinki.FI> <alpine.LFD.2.01.0906101331250.6847@localhost.localdomain> <4A3017D1.5010708@cs.helsinki.fi>
 MIME-Version: 1.0
-In-Reply-To: <20090605104132.GE24836@amd.com>
-References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp>
-	 <20090605104132.GE24836@amd.com>
-Date: Wed, 10 Jun 2009 22:41:53 +0200
-Message-ID: <64bb37e0906101341j341f5179o9abfa888a6b96fc3@mail.gmail.com>
-Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
-From: Torsten Kaiser <just.for.lkml@googlemail.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-       lethal@linux-sh.org, hancockrwd@gmail.com, jens.axboe@oracle.com,
-       bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A3017D1.5010708@cs.helsinki.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jun 5, 2009 at 12:41 PM, Joerg Roedel<joerg.roedel@amd.com> wrote:
-> From c0baa4d43a674c9cc321af3b23a6d5c9b46d65bd Mon Sep 17 00:00:00 2001
-> From: Joerg Roedel <joerg.roedel@amd.com>
-> Date: Fri, 5 Jun 2009 12:01:35 +0200
-> Subject: [PATCH] dma-debug: change hash_bucket_find from first-fit to best-fit
+
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+
+> Linus Torvalds wrote:
+>>
+>> On Wed, 10 Jun 2009, Pekka J Enberg wrote:
 >
-> Some device drivers map the same physical address multiple times to a
-> dma address. Without an IOMMU this results in the same dma address being
-> put into the dma-debug hash multiple times. With a first-fit match in
-> hash_bucket_find() this function may return the wrong dma_debug_entry.
-> This can result in false positive warnings. This patch fixes it by
-> changing the first-fit behavior of hash_bucket_find() into a best-fit
-> algorithm.
+>>> I already have patches for that but they are against the -tip 
+>>> tree so I think we ought to just merge this series to mainline 
+>>> and fix everything up in subsystem trees for 2.6.31 proper.
+>>
+>> Hmm. Are there any reasons why the scheduler fixups can't go in 
+>> this series? Do they depend on other things in -tip?
 >
-> Reported-by: Torsten Kaiser <just.for.lkml@googlemail.com>
-> Reported-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  lib/dma-debug.c |   43 +++++++++++++++++++++++++++++++++++++++----
->  1 files changed, 39 insertions(+), 4 deletions(-)
+> The patches are rebased to -tip, yeah. I can do a version against 
+> your tree if you want but that will mean merge conflicts for Ingo. 
+> Hmm?
 
-I applied this patch to the just released 2.6.30, but it does not fix
-the false warning on my System.
+I'm a tiny bit nervous about the tested-ness of the patches. Such 
+stuff rarely works at first try. But it's obviously nice changes.
 
-Jun 10 21:10:14 treogen [ 2611.715341] ------------[ cut here ]------------
-Jun 10 21:10:14 treogen [ 2611.715359] WARNING: at lib/dma-debug.c:565
-check_unmap+0x536/0x620()
-Jun 10 21:10:14 treogen [ 2611.715363] Hardware name: KFN5-D SLI
-Jun 10 21:10:14 treogen [ 2611.715369] sata_sil24 0000:04:00.0:
-DMA-API: device driver frees DMA sg list with different entry count
-[map count=2] [unmap count=1]
-Jun 10 21:10:14 treogen [ 2611.715374] Modules linked in: msp3400
-tuner tea5767 tda8290 tuner_xc2028 xc5000 tda9887 tuner_simple
-tuner_types mt20xx tea5761 bttv ir_common v4l2_common videodev
-v4l1_compat v4l2_compat_ioctl32 videobuf_dma_sg videobuf_core
-btcx_risc sg pata_amd tveeprom
-Jun 10 21:10:14 treogen [ 2611.715416] Pid: 0, comm: swapper Not
-tainted 2.6.30 #1
-Jun 10 21:10:14 treogen [ 2611.715420] Call Trace:
-Jun 10 21:10:14 treogen [ 2611.715424]  <IRQ>  [<ffffffff804175c6>] ?
-check_unmap+0x536/0x620
-Jun 10 21:10:14 treogen [ 2611.715441]  [<ffffffff80243308>]
-warn_slowpath_common+0x78/0xd0
-Jun 10 21:10:14 treogen [ 2611.715448]  [<ffffffff802433e4>]
-warn_slowpath_fmt+0x64/0x70
-Jun 10 21:10:14 treogen [ 2611.715458]  [<ffffffff8057c5d8>] ?
-dec_pending+0x88/0x170
-Jun 10 21:10:14 treogen [ 2611.715465]  [<ffffffff8057c8bf>] ?
-clone_endio+0x9f/0xd0
-Jun 10 21:10:14 treogen [ 2611.715475]  [<ffffffff8068e52d>] ?
-_spin_lock_irqsave+0x1d/0x40
-Jun 10 21:10:14 treogen [ 2611.715482]  [<ffffffff804175c6>]
-check_unmap+0x536/0x620
-Jun 10 21:10:14 treogen [ 2611.715493]  [<ffffffff8028de5a>] ?
-mempool_free+0x8a/0xa0
-Jun 10 21:10:14 treogen [ 2611.715501]  [<ffffffff804177bd>]
-debug_dma_unmap_sg+0x10d/0x190
-Jun 10 21:10:14 treogen [ 2611.715510]  [<ffffffff802c0e55>] ?
-__slab_free+0x185/0x340
-Jun 10 21:10:14 treogen [ 2611.715519]  [<ffffffff804c1121>] ?
-__scsi_put_command+0x61/0xa0
-Jun 10 21:10:14 treogen [ 2611.715528]  [<ffffffff804d4258>]
-ata_sg_clean+0x78/0xf0
-Jun 10 21:10:14 treogen [ 2611.715535]  [<ffffffff804d4305>]
-__ata_qc_complete+0x35/0x110
-Jun 10 21:10:14 treogen [ 2611.715544]  [<ffffffff804c7b88>] ?
-scsi_io_completion+0x398/0x530
-Jun 10 21:10:14 treogen [ 2611.715551]  [<ffffffff804d449d>]
-ata_qc_complete+0xbd/0x250
-Jun 10 21:10:14 treogen [ 2611.715559]  [<ffffffff804d49db>]
-ata_qc_complete_multiple+0xab/0xf0
-Jun 10 21:10:14 treogen [ 2611.715568]  [<ffffffff804ea289>]
-sil24_interrupt+0xb9/0x5b0
-Jun 10 21:10:14 treogen [ 2611.715576]  [<ffffffff802614cc>] ?
-getnstimeofday+0x5c/0xf0
-Jun 10 21:10:14 treogen [ 2611.715584]  [<ffffffff8025d349>] ?
-ktime_get_ts+0x59/0x60
-Jun 10 21:10:14 treogen [ 2611.715593]  [<ffffffff802730b0>]
-handle_IRQ_event+0x70/0x180
-Jun 10 21:10:14 treogen [ 2611.715601]  [<ffffffff802753bd>]
-handle_fasteoi_irq+0x6d/0xe0
-Jun 10 21:10:14 treogen [ 2611.715609]  [<ffffffff8020e42f>]
-handle_irq+0x1f/0x30
-Jun 10 21:10:14 treogen [ 2611.715614]  [<ffffffff8020db7a>] do_IRQ+0x6a/0xf0
-Jun 10 21:10:14 treogen [ 2611.715623]  [<ffffffff8020be53>]
-ret_from_intr+0x0/0xf
-Jun 10 21:10:14 treogen [ 2611.715627]  <EOI>  [<ffffffff80213657>] ?
-default_idle+0x77/0xe0
-Jun 10 21:10:14 treogen [ 2611.715640]  [<ffffffff80213655>] ?
-default_idle+0x75/0xe0
-Jun 10 21:10:14 treogen [ 2611.715648]  [<ffffffff8025e3bf>] ?
-notifier_call_chain+0x3f/0x80
-Jun 10 21:10:14 treogen [ 2611.715655]  [<ffffffff802136f8>] ?
-c1e_idle+0x38/0x110
-Jun 10 21:10:14 treogen [ 2611.715663]  [<ffffffff8020a71e>] ?
-cpu_idle+0x6e/0xd0
-Jun 10 21:10:14 treogen [ 2611.715672]  [<ffffffff8067bb8d>] ?
-rest_init+0x6d/0x80
-Jun 10 21:10:14 treogen [ 2611.715682]  [<ffffffff80929cc5>] ?
-start_kernel+0x35a/0x422
-Jun 10 21:10:14 treogen [ 2611.715690]  [<ffffffff80929289>] ?
-x86_64_start_reservations+0x99/0xb9
-Jun 10 21:10:14 treogen [ 2611.715697]  [<ffffffff80929389>] ?
-x86_64_start_kernel+0xe0/0xf2
-Jun 10 21:10:14 treogen [ 2611.715702] ---[ end trace db81115dbc8b11c5 ]---
-Jun 10 21:10:14 treogen [ 2611.715706] Mapped at:
-Jun 10 21:10:14 treogen [ 2611.715709]  [<ffffffff80416ef9>]
-debug_dma_map_sg+0x159/0x180
-Jun 10 21:10:14 treogen [ 2611.715717]  [<ffffffff804d47cc>]
-ata_qc_issue+0x19c/0x300
-Jun 10 21:10:14 treogen [ 2611.715724]  [<ffffffff804da6c8>]
-ata_scsi_translate+0xa8/0x180
-Jun 10 21:10:14 treogen [ 2611.715733]  [<ffffffff804dd261>]
-ata_scsi_queuecmd+0xb1/0x2d0
-Jun 10 21:10:14 treogen [ 2611.715739]  [<ffffffff804c0f23>]
-scsi_dispatch_cmd+0xe3/0x220
+What kind of conflicts are there against -tip? The diffstat suggests 
+it's mostly in-SLAB code, right? There shouldnt be much to conflict, 
+except kmemcheck - which has more or less trivial callbacks there. 
 
-So I implemented a check that would turn of the DMA-API debugging, if
-such a double mapping was observed.
-The resulting place where this was triggered also verified that is
-seems to be the RAID1 that is causing these mappings:
-
-Jun 10 21:39:30 treogen [    9.251818] md: Autodetecting RAID arrays.
-Jun 10 21:39:30 treogen [    9.334044] md: Scanned 5 and added 5 devices.
-Jun 10 21:39:30 treogen [    9.334048] md: autorun ...
-Jun 10 21:39:30 treogen [    9.334052] md: considering sdb3 ...
-Jun 10 21:39:30 treogen [    9.334065] md:  adding sdb3 ...
-Jun 10 21:39:30 treogen [    9.334073] md: sdb1 has different UUID to sdb3
-Jun 10 21:39:30 treogen [    9.334081] md: sdc2 has different UUID to sdb3
-Jun 10 21:39:30 treogen [    9.334091] md:  adding sda3 ...
-Jun 10 21:39:30 treogen [    9.334101] md: sda1 has different UUID to sdb3
-Jun 10 21:39:30 treogen [    9.334111] md: created md3
-Jun 10 21:39:30 treogen [    9.334115] md: bind<sda3>
-Jun 10 21:39:30 treogen [    9.334149] md: bind<sdb3>
-Jun 10 21:39:30 treogen [    9.334166] md: running: <sdb3><sda3>
-Jun 10 21:39:30 treogen [    9.346111] raid1: raid set md3 active with
-2 out of 2 mirrors
-Jun 10 21:39:30 treogen [    9.354255] md3: bitmap initialized from
-disk: read 10/10 pages, set 24 bits
-Jun 10 21:39:30 treogen [    9.354260] created bitmap (145 pages) for device md3
-Jun 10 21:39:30 treogen [    9.354399] DMA-API: device mapped same
-address twice, this use case cannot be handled currently - disabling
-debugging
-Jun 10 21:39:30 treogen [    9.359858] md: considering sdb1 ...
-Jun 10 21:39:30 treogen [    9.359874] md:  adding sdb1 ...
-Jun 10 21:39:30 treogen [    9.359882] md: sdc2 has different UUID to sdb1
-
-Here is the patch, I was using. I hope Gmail does mangle it to badly...
-
-From: Torsten Kaiser <just.for.lkml@googlemail.com>
-
-The DMA-API allowes a device to map the same addresse multiple times.
-If this happens (for example with md-raid1) the DMA-API debugging code can no
-longer associate the map and unmap request with 100% confidence, as the keys
-collide.
-If the wrong entry gets returned on unmap, this can trigger bogus warnings about
-mismatching parameters. This was visible on my system.
-As such double mappings seem to be rather uncommon, only disable the DMA-API
-if such a mapping is observed. This way all wrong warnings can be
-prevented without
-removing this debugging tool.
-
-Possible enhancement: If the returned entry is 100% identical to the
-entry that needs
-to be added, it would be irrelevant which entry will be returned on
-unmap. So could
-allow identical entries into the hash list without turning itself off.
-
-Signed-off-by: Torsten Kaiser <just.for.lkml@googlemail.com
----
---- lib/dma-debug.c.orig	2009-06-10 21:22:53.371813622 +0200
-+++ lib/dma-debug.c	2009-06-10 21:26:40.892282983 +0200
-@@ -253,6 +253,12 @@ static void add_dma_entry(struct dma_deb
- 	unsigned long flags;
-
- 	bucket = get_hash_bucket(entry, &flags);
-+	if (hash_bucket_find(bucket, entry)) {
-+		printk(KERN_ERR "DMA-API: device mapped same address twice, "
-+			"this use case cannot be handled currently "
-+			"- disabling debugging\n");
-+		global_disable = true;
-+	}
- 	hash_bucket_add(bucket, entry);
- 	put_hash_bucket(bucket, &flags);
- }
+	Ingo
