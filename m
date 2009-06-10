@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbZFJKg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbZFJKhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754726AbZFJKg2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 06:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758339AbZFJKgY
+	id S1758854AbZFJKhR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 06:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbZFJKhM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 06:36:24 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:34815 "EHLO gir.skynet.ie"
+	Wed, 10 Jun 2009 06:37:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43639 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756073AbZFJKgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 06:36:22 -0400
-Date: Wed, 10 Jun 2009 11:36:22 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
-       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/4] Count the number of times zone_reclaim() scans and
-	fails
-Message-ID: <20090610103622.GI25943@csn.ul.ie>
-References: <1244566904-31470-1-git-send-email-mel@csn.ul.ie> <1244566904-31470-4-git-send-email-mel@csn.ul.ie> <20090610104635.DDA6.A69D9226@jp.fujitsu.com>
+	id S1753699AbZFJKhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 06:37:11 -0400
+Date: Wed, 10 Jun 2009 10:36:34 GMT
+From: tip-bot for Yong Wang <yong.y.wang@linux.intel.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       yong.y.wang@intel.com, yong.y.wang@linux.intel.com, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, yong.y.wang@linux.intel.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, yong.y.wang@intel.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090610090612.GA26580@ywang-moblin2.bj.intel.com>
+References: <20090610090612.GA26580@ywang-moblin2.bj.intel.com>
+Subject: [tip:perfcounters/core] perf_counter/x86: Fix the model number of Intel Core2 processors
+Message-ID: <tip-232f61fa1da4ec7e1aa3d7ca6444f3a436941d36@git.kernel.org>
+Git-Commit-ID: 232f61fa1da4ec7e1aa3d7ca6444f3a436941d36
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090610104635.DDA6.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 10 Jun 2009 10:36:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 10:47:20AM +0900, KOSAKI Motohiro wrote:
-> Hi
-> 
-> I like this patch. thank you mel.
-> 
-> > @@ -2489,6 +2489,10 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> >  	ret = __zone_reclaim(zone, gfp_mask, order);
-> >  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
-> >  
-> > +	if (!ret) {
-> > +		count_vm_events(PGSCAN_ZONERECLAIM_FAILED, 1);
-> > +	}
-> > +
-> >  	return ret;
-> 
-> count_vm_event(PGSCAN_ZONERECLAIM_FAILED)?
-> 
+Commit-ID:  232f61fa1da4ec7e1aa3d7ca6444f3a436941d36
+Gitweb:     http://git.kernel.org/tip/232f61fa1da4ec7e1aa3d7ca6444f3a436941d36
+Author:     Yong Wang <yong.y.wang@linux.intel.com>
+AuthorDate: Wed, 10 Jun 2009 17:06:12 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 10 Jun 2009 12:34:24 +0200
 
-/me slaps self
+perf_counter/x86: Fix the model number of Intel Core2 processors
 
-Yes, that makes more sense.
+Fix the model number of Intel Core2 processors according to the
+documentation: Intel Processor Identification with the CPUID
+Instruction: http://www.intel.com/support/processors/sb/cs-009861.htm
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <20090610090612.GA26580@ywang-moblin2.bj.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/kernel/cpu/perf_counter.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index 40978aa..a49a82c 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -1407,7 +1407,8 @@ static int intel_pmu_init(void)
+ 	 * Install the hw-cache-events table:
+ 	 */
+ 	switch (boot_cpu_data.x86_model) {
+-	case 17:
++	case 15:
++	case 23:
+ 		memcpy(hw_cache_event_ids, core2_hw_cache_event_ids,
+ 		       sizeof(hw_cache_event_ids));
+ 
