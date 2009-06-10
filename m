@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761176AbZFJTzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761495AbZFJTzr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761176AbZFJTzX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 15:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbZFJTzE
+	id S1761495AbZFJTzr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 15:55:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761102AbZFJTzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 15:55:04 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:47295 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754895AbZFJTzD (ORCPT
+	Wed, 10 Jun 2009 15:55:10 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:16012 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759654AbZFJTzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 15:55:03 -0400
-Subject: [PATCH v3 00/12] Dynamic ACPI-PCI binding
+	Wed, 10 Jun 2009 15:55:07 -0400
+Subject: [PATCH v3 01/12] ACPI: make acpi_pci_bind() static
 To: lenb@kernel.org
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-pci@vger.kernel.org
-Date: Wed, 10 Jun 2009 13:55:04 -0600
-Message-ID: <20090610194714.28982.51363.stgit@bob.kio>
+Date: Wed, 10 Jun 2009 13:55:09 -0600
+Message-ID: <20090610195509.28982.9170.stgit@bob.kio>
+In-Reply-To: <20090610194714.28982.51363.stgit@bob.kio>
+References: <20090610194714.28982.51363.stgit@bob.kio>
 User-Agent: StGit/0.14.3.347.g594a
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -25,61 +27,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Len,
+acpi_pci_root_add() explicitly assigns device->ops.bind, and later
+calls acpi_pci_bind_root(), which also does the same thing.
 
-Bjorn suggested I respin this series one more time, so here it is.
+We don't need to repeat ourselves; removing the explicit assignment
+allows us to make acpi_pci_bind() static.
 
-Previous cover patches for rationale:
-
-	v1 - http://lkml.org/lkml/2009/6/2/282
-	v2 - http://lkml.org/lkml/2009/6/4/31
-
-Thanks.
-
-/ac
-
-Changelog:
-v2 -> v3
-	- incorporate Kenji's comment re: acpi_pci_unbind
-	- add an extra code movement patch to make evisceration easier to read
-
-v1 -> v2
-	- rearrange series into a more logical order
-	- much simpler acpi_is_root_bridge() implementation
-	- no longer export acpi_pci_find_root()
-	- no longer leak memory in acpi_get_pci_dev()
-	- no longer leak references in acpi_pci_unbind/acpi_pci_bind
-	- convert video driver to use acpi_get_pci_dev()
-	- kill off acpi_get_physical_pci_device()
-	- incorporate Bjorn's other comments. :)
-
+Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
-Alex Chiang (12):
-      ACPI: kill acpi_get_physical_pci_device()
-      ACPI: video: convert to acpi_get_pci_dev
-      ACPI: kill acpi_get_pci_id
-      PCI Hotplug: acpiphp: convert to acpi_get_pci_dev
-      ACPI: acpi_pci_unbind should clean up properly after acpi_pci_bind
-      ACPI: simplify acpi_pci_irq_del_prt() API
-      ACPI: simplify acpi_pci_irq_add_prt() API
-      ACPI: eviscerate pci_bind.c
-      ACPI: rearrange acpi_pci_bind/acpi_pci_unbind in pci_bind.c
-      ACPI: Introduce acpi_get_pci_dev()
-      ACPI: Introduce acpi_is_root_bridge()
-      ACPI: make acpi_pci_bind() static
+ drivers/acpi/pci_bind.c     |    3 ++-
+ drivers/acpi/pci_root.c     |    2 --
+ include/acpi/acpi_drivers.h |    1 -
+ 3 files changed, 2 insertions(+), 4 deletions(-)
 
-
- drivers/acpi/glue.c                |   40 -----
- drivers/acpi/pci_bind.c            |  313 ++++--------------------------------
- drivers/acpi/pci_irq.c             |   17 +-
- drivers/acpi/pci_root.c            |  112 ++++++++++++-
- drivers/acpi/video.c               |    6 -
- drivers/acpi/video_detect.c        |    9 +
- drivers/pci/hotplug/acpi_pcihp.c   |   40 -----
- drivers/pci/hotplug/acpiphp_glue.c |   27 +--
- include/acpi/acpi_bus.h            |    2 
- include/acpi/acpi_drivers.h        |   10 -
- include/linux/pci_hotplug.h        |    1 
- 11 files changed, 176 insertions(+), 401 deletions(-)
+diff --git a/drivers/acpi/pci_bind.c b/drivers/acpi/pci_bind.c
+index bc46de3..236765c 100644
+--- a/drivers/acpi/pci_bind.c
++++ b/drivers/acpi/pci_bind.c
+@@ -44,6 +44,7 @@ struct acpi_pci_data {
+ 	struct pci_dev *dev;
+ };
+ 
++static int acpi_pci_bind(struct acpi_device *device);
+ static int acpi_pci_unbind(struct acpi_device *device);
+ 
+ static void acpi_pci_data_handler(acpi_handle handle, u32 function,
+@@ -108,7 +109,7 @@ acpi_status acpi_get_pci_id(acpi_handle handle, struct acpi_pci_id *id)
+ 
+ EXPORT_SYMBOL(acpi_get_pci_id);
+ 
+-int acpi_pci_bind(struct acpi_device *device)
++static int acpi_pci_bind(struct acpi_device *device)
+ {
+ 	int result = 0;
+ 	acpi_status status;
+diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+index 196f97d..ca8dba3 100644
+--- a/drivers/acpi/pci_root.c
++++ b/drivers/acpi/pci_root.c
+@@ -386,8 +386,6 @@ static int __devinit acpi_pci_root_add(struct acpi_device *device)
+ 	strcpy(acpi_device_class(device), ACPI_PCI_ROOT_CLASS);
+ 	device->driver_data = root;
+ 
+-	device->ops.bind = acpi_pci_bind;
+-
+ 	/*
+ 	 * All supported architectures that use ACPI have support for
+ 	 * PCI domains, so we indicate this in _OSC support capabilities.
+diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
+index 5e8ed3a..bbe9207 100644
+--- a/include/acpi/acpi_drivers.h
++++ b/include/acpi/acpi_drivers.h
+@@ -98,7 +98,6 @@ void acpi_pci_irq_del_prt(int segment, int bus);
+ struct pci_bus;
+ 
+ acpi_status acpi_get_pci_id(acpi_handle handle, struct acpi_pci_id *id);
+-int acpi_pci_bind(struct acpi_device *device);
+ int acpi_pci_bind_root(struct acpi_device *device, struct acpi_pci_id *id,
+ 		       struct pci_bus *bus);
+ 
 
