@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758207AbZFJLfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758991AbZFJLfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758207AbZFJLfH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 07:35:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbZFJLfA
+	id S1758991AbZFJLfW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 07:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbZFJLfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 07:35:00 -0400
-Received: from www.tglx.de ([62.245.132.106]:38992 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753699AbZFJLfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 07:35:00 -0400
-Date: Wed, 10 Jun 2009 13:34:13 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Rakib Mullick <rakib.mullick@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, yhlu.kernel@gmail.com,
-       "H. Peter Anvin" <hpa@zytor.com>, macro@linux-mips.org,
-       Cyrill Gorcunov <gorcunov@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] v2: x86,APIC: Detect lapic_is_integrated() once - use
- on and on
-In-Reply-To: <b9df5fa10906100424h98862a8l32951906d06454fb@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0906101333350.3351@localhost.localdomain>
-References: <b9df5fa10905251820l3783327ek4f6b7014aa167690@mail.gmail.com>  <86802c440905251911h6f6c146eo4c30d306ac8d17d8@mail.gmail.com>  <b9df5fa10905261949j3eb4dc9ft321dba3c46c335db@mail.gmail.com>
- <b9df5fa10906100424h98862a8l32951906d06454fb@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 10 Jun 2009 07:35:12 -0400
+Received: from mail.deathmatch.net ([72.66.92.28]:4735 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759227AbZFJLfL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 07:35:11 -0400
+Date: Wed, 10 Jun 2009 07:34:06 -0400
+From: Bob Copeland <me@bobcopeland.com>
+To: William Thompson <wt@electro-mechanical.com>
+Cc: linux-kernel@vger.kernel.org, ath5k-devel <ath5k-devel@venema.h4ckr.net>
+Subject: Re: 3com 3crxjk10075 with ath5k driver
+Message-ID: <20090610113406.GE19635@hash.localnet>
+References: <20090609195100.GY19203@electro-mechanical.com> <b6c5339f0906091339j3784c36bxe888af16272fbcde@mail.gmail.com> <20090610112357.GB19203@electro-mechanical.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090610112357.GB19203@electro-mechanical.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Jun 2009, Rakib Mullick wrote:
+On Wed, Jun 10, 2009 at 07:23:57AM -0400, William Thompson wrote:
+> > I suppose it could be asserting something on rfkill gpios; ath5k hasn't had
+> > real rfkill support yet.  Anyone else know about these devices?
+> 
+> It's possible.  The LED on it goes off when it's pushed in.  Which reminds
+> me, I don't think the ath5k driver allows the LED to blink when it's
+> transmitting/receiving, it just stays on.
 
-> Hi Ingo, Thomas and everyone, would you please take a look at this
-> patch and comment ? I think Thomas was agreed with this one. Is there
-> anything that i couldn't deliver? If i'm wrong please notice thus i
-> can fix myself.
+Can you try latest wireless-testing?  There's an rfkill patch for
+ath5k in it.  URL is:
 
-The patch is fine, but it lacks a proper patch description.
+git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-testing.git
 
-Thanks,
+As for LEDs, there's a patch in kernel bugzilla.  I don't have a link handy
+but you can check the ath5k-devel archives from a week or two ago, let
+me know if you can't find it.
 
-	tglx
+-- 
+Bob Copeland %% www.bobcopeland.com
+
