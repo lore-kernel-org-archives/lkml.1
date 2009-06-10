@@ -1,76 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbZFJUrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbZFJUsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760948AbZFJUrV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 16:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753923AbZFJUrI
+	id S1756391AbZFJUsT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 16:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbZFJUsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 16:47:08 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:49430 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752490AbZFJUrH (ORCPT
+	Wed, 10 Jun 2009 16:48:08 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:46501 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755488AbZFJUsH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 16:47:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=LD9AFX28DG4xUwuFaYsMR1ef2NIcdO9Mj3+P3AM+WVMQxJGT+kY+OBMGa5Dh7w0XiR
-         pdeWxDjzWs9A/qFIqF4UOKkYR6UEIn5tNfepnQ7AXvqX1SzSh2QZM/XJQyZC/BEXssiY
-         SCJlqmtZK7ey9KO85SPmckhnTFiJChrzFWjeU=
+	Wed, 10 Jun 2009 16:48:07 -0400
+Date: Wed, 10 Jun 2009 16:48:09 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Oliver Neukum <oliver@neukum.org>, <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM:
+ Rearrange core suspend code)
+In-Reply-To: <200906100057.04473.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0906101636180.2589-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <20090610204318.GA8147@elte.hu>
-References: <Pine.LNX.4.64.0906102311230.30444@melkki.cs.Helsinki.FI>
-	 <alpine.LFD.2.01.0906101331250.6847@localhost.localdomain>
-	 <4A3017D1.5010708@cs.helsinki.fi> <20090610204318.GA8147@elte.hu>
-Date: Wed, 10 Jun 2009 23:47:07 +0300
-X-Google-Sender-Auth: 8ab0ec8924c61039
-Message-ID: <84144f020906101347y3e250f4bme2d1c60dd5993ffc@mail.gmail.com>
-Subject: Re: [GIT PULL] Early boot SLAB for 2.6.31
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, hannes@cmpxchg.org, mpm@selenic.com,
-       npiggin@suse.de, yinghai@kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 11:43 PM, Ingo Molnar<mingo@elte.hu> wrote:
->
-> * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
->
->> Linus Torvalds wrote:
->>>
->>> On Wed, 10 Jun 2009, Pekka J Enberg wrote:
->>
->>>> I already have patches for that but they are against the -tip
->>>> tree so I think we ought to just merge this series to mainline
->>>> and fix everything up in subsystem trees for 2.6.31 proper.
->>>
->>> Hmm. Are there any reasons why the scheduler fixups can't go in
->>> this series? Do they depend on other things in -tip?
->>
->> The patches are rebased to -tip, yeah. I can do a version against
->> your tree if you want but that will mean merge conflicts for Ingo.
->> Hmm?
->
-> I'm a tiny bit nervous about the tested-ness of the patches. Such
-> stuff rarely works at first try. But it's obviously nice changes.
+On Wed, 10 Jun 2009, Rafael J. Wysocki wrote:
 
-Yeah, I was thinking of sitting on them until 2.6.32 and put them into
-linux-next after the merge window closes. But Linus seems to want them
-and with the fallback in place, we can probably fix any fall out quite
-easily.
+> > By the way, a legitimate reason for aborting an autosuspend is if the
+> > device's driver requires remote wakeup to be enabled during suspend but
+> > the user has disabled it.
+> 
+> Do you mean the user has disabled the remote wakeup?
 
-> What kind of conflicts are there against -tip? The diffstat suggests
-> it's mostly in-SLAB code, right? There shouldnt be much to conflict,
-> except kmemcheck - which has more or less trivial callbacks there.
+Yes, by writing to the power/wakeup attribute.
 
-The conflicting bits are the patches that remove bootmem allocator
-uses in arch/x86 and kernel/sched.c.
 
-                        Pekka
+> > > > There should be a sysfs interface (like the one in USB) to allow
+> > > > userspace to prevent a device from being autosuspended -- and perhaps
+> > > > also to force it to be suspended.
+> > > 
+> > > To prevent a device from being suspended - yes.  To force it to stay suspended
+> > > - I'm not sure.
+> > 
+> > I'm not sure either.  Oliver Neukum requested it originally and it has
+> > been useful for debugging, but I haven't seen many places where it
+> > would come in useful in practice.
+
+I did think of one use for this feature.  It's unique to USB,
+however...
+
+In Windows, you're not supposed to unplug a hot-unpluggable device
+without first telling the OS -- there's a "Safely Remove Hardware"  
+applet.  When you tell the applet you want to remove a USB device, the
+system disables the device's port and then says it's okay to unplug the
+device.  Now Linux doesn't have any user API for disabling USB ports,
+but suspending a port has the same effect (the device can't distinguish
+a disable from a suspend).
+
+It turns out that some devices (MP3 players, for instance) have
+incorporated this into their design.  They display a "Safe to unplug"  
+message when their port is disabled or suspended.  People like to see
+this message -- it makes them feel good about unplugging the device --
+and the only way to get it under Linux is by forcing the device to be
+suspended.  :-)
+
+> The problem with it is that the user space may not know if it is safe to keep
+> a device suspended and if it is not, the kernel will have to ignore the setting
+> anyway, so I'm not sure what's the point (except for debugging).
+
+This falls into the category of "The user knows better".  If the user
+specifically tells the kernel to suspend a device (rather than just
+letting it autosuspend), and this causes a problem, then it's the
+user's own fault.
+
+After all, who's really the master?  Us or the kernel?
+
+Alan Stern
+
