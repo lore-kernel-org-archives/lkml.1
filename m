@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbZFJDrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZFJDsC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760876AbZFJDrh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:47:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756909AbZFJDgs
+	id S1755962AbZFJDsC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:48:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757921AbZFJDgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:36:48 -0400
-Received: from kroah.org ([198.145.64.141]:57434 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:36:55 -0400
+Received: from kroah.org ([198.145.64.141]:57476 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757703AbZFJDgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:36:46 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:51 2009
-Message-Id: <20090610002351.456745670@blue.kroah.org>
+	id S1757896AbZFJDgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:36:53 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:52 2009
+Message-Id: <20090610002351.918798530@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:19 -0700
+Date: Tue, 09 Jun 2009 17:14:21 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,83 +25,57 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
-       Jan Kara <jack@suse.cz>, Lin Tan <tammy000@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 51/60] jbd2: Update locking coments
+       alan@lxorguk.ukuu.org.uk, Chris Wright <chrisw@sous-sol.org>,
+       linux-ext4@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 53/60] ext4: fix locking typo in mballoc which could cause soft lockup hangs
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=jbd2-update-locking-coments.patch
+Content-Disposition: inline; filename=ext4-fix-locking-typo-in-mballoc-which-could-cause-soft-lockup-hangs.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jan Kara <jack@suse.cz>
+From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit 86db97c87f744364d5889ca8a4134ca2048b8f83)
+upstream commit: e7c9e3e99adf6c49c5d593a51375916acc039d1e
 
-Update information about locking in JBD2 revoke code. Inconsistency in
-comments found by Lin Tan <tammy000@gmail.com>
+Smatch (http://repo.or.cz/w/smatch.git/) complains about the locking in
+ext4_mb_add_n_trim() from fs/ext4/mballoc.c
 
-CC: Lin Tan <tammy000@gmail.com>
-Signed-off-by: Jan Kara <jack@suse.cz>
+  4438          list_for_each_entry_rcu(tmp_pa, &lg->lg_prealloc_list[order],
+  4439                                                  pa_inode_list) {
+  4440                  spin_lock(&tmp_pa->pa_lock);
+  4441                  if (tmp_pa->pa_deleted) {
+  4442                          spin_unlock(&pa->pa_lock);
+  4443                          continue;
+  4444                  }
+
+Brown paper bag time...
+
+Reported-by: Dan Carpenter <error27@gmail.com>
+Reviewed-by: Eric Sandeen <sandeen@redhat.com>
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@gmail.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Cc: stable@kernel.org
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/jbd2/revoke.c |   24 +++++++++++++++++++-----
- 1 file changed, 19 insertions(+), 5 deletions(-)
+ fs/ext4/mballoc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/jbd2/revoke.c
-+++ b/fs/jbd2/revoke.c
-@@ -55,6 +55,25 @@
-  *			need do nothing.
-  * RevokeValid set, Revoked set:
-  *			buffer has been revoked.
-+ *
-+ * Locking rules:
-+ * We keep two hash tables of revoke records. One hashtable belongs to the
-+ * running transaction (is pointed to by journal->j_revoke), the other one
-+ * belongs to the committing transaction. Accesses to the second hash table
-+ * happen only from the kjournald and no other thread touches this table.  Also
-+ * journal_switch_revoke_table() which switches which hashtable belongs to the
-+ * running and which to the committing transaction is called only from
-+ * kjournald. Therefore we need no locks when accessing the hashtable belonging
-+ * to the committing transaction.
-+ *
-+ * All users operating on the hash table belonging to the running transaction
-+ * have a handle to the transaction. Therefore they are safe from kjournald
-+ * switching hash tables under them. For operations on the lists of entries in
-+ * the hash table j_revoke_lock is used.
-+ *
-+ * Finally, also replay code uses the hash tables but at this moment noone else
-+ * can touch them (filesystem isn't mounted yet) and hence no locking is
-+ * needed.
-  */
- 
- #ifndef __KERNEL__
-@@ -401,8 +420,6 @@ int jbd2_journal_revoke(handle_t *handle
-  * the second time we would still have a pending revoke to cancel.  So,
-  * do not trust the Revoked bit on buffers unless RevokeValid is also
-  * set.
-- *
-- * The caller must have the journal locked.
-  */
- int jbd2_journal_cancel_revoke(handle_t *handle, struct journal_head *jh)
- {
-@@ -480,10 +497,7 @@ void jbd2_journal_switch_revoke_table(jo
- /*
-  * Write revoke records to the journal for all entries in the current
-  * revoke hash, deleting the entries as we go.
-- *
-- * Called with the journal lock held.
-  */
--
- void jbd2_journal_write_revoke_records(journal_t *journal,
- 				  transaction_t *transaction)
- {
+--- a/fs/ext4/mballoc.c
++++ b/fs/ext4/mballoc.c
+@@ -4532,7 +4532,7 @@ static void ext4_mb_add_n_trim(struct ex
+ 						pa_inode_list) {
+ 		spin_lock(&tmp_pa->pa_lock);
+ 		if (tmp_pa->pa_deleted) {
+-			spin_unlock(&pa->pa_lock);
++			spin_unlock(&tmp_pa->pa_lock);
+ 			continue;
+ 		}
+ 		if (!added && pa->pa_free < tmp_pa->pa_free) {
 
 
