@@ -1,85 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760869AbZFJR6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760665AbZFJR7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760869AbZFJR6q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 13:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbZFJR6i
+	id S1760665AbZFJR7o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 13:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbZFJR7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 13:58:38 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:39870 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756545AbZFJR6h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 13:58:37 -0400
-Date: Wed, 10 Jun 2009 20:58:40 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-cc: cl@linux-foundation.com, mingo@elte.hu, hannes@cmpxchg.org,
-       torvalds@linux-foundation.org, mpm@selenic.com, npiggin@suse.de,
-       yinghai@kernel.org
-Subject: [PATCH 3/3] vmalloc: use kzalloc() instead of alloc_bootmem()
-Message-ID: <Pine.LNX.4.64.0906102058060.28361@melkki.cs.Helsinki.FI>
-Mime-Version: 1.0
+	Wed, 10 Jun 2009 13:59:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43188 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755674AbZFJR7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 13:59:35 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Shan Wei <shanwei@cn.fujitsu.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] CFQ:optimize the cfq_should_preempt()
+References: <4A2E4088.1010403@cn.fujitsu.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 10 Jun 2009 13:59:30 -0400
+In-Reply-To: <4A2E4088.1010403@cn.fujitsu.com> (Shan Wei's message of "Tue, 09
+	Jun 2009 18:59:20 +0800")
+Message-ID: <x49iqj4q8al.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+Shan Wei <shanwei@cn.fujitsu.com> writes:
 
-We can call vmalloc_init() after kmem_cache_init() and use kzalloc() instead of
-the bootmem allocator when initializing vmalloc data structures.
+> The patch don't fix bug, just optimizes the cfq_should_preempt()
+> to preempt higher priority queue.
+>
+> Additionally, the comment above cfq_preempt_queue() is outdated.
+>
+>
+> Signed-off-by: Shan Wei <shanwei@cn.fujitsu.com>
+> ---
+>  block/cfq-iosched.c |   17 +++++------------
+>  1 files changed, 5 insertions(+), 12 deletions(-)
+>
+> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+> index a55a9bd..427f522 100644
+> --- a/block/cfq-iosched.c
+> +++ b/block/cfq-iosched.c
+> @@ -1993,10 +1993,10 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
+>  	if (cfq_slice_used(cfqq))
+>  		return 1;
+>  
+> -	if (cfq_class_idle(new_cfqq))
+> -		return 0;
+> -
+> -	if (cfq_class_idle(cfqq))
+> +	/*
+> +	 * if new_cfqq is of higher priority, preempting the active queue.
+> +	 */
+> +	if (new_cfqq->ioprio_class < cfqq->ioprio_class)
+>  		return 1;
 
-Acked-by: Nick Piggin <npiggin@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- init/main.c  |    2 +-
- mm/vmalloc.c |    3 +--
- 2 files changed, 2 insertions(+), 3 deletions(-)
+Prior to this patch, if both queues were idle, the first if statement
+would evaluate to true and we would return 0.  With your patch, we fall
+through to the rest of the logic in the function.  In such a case, I
+don't think this is an optimiation.  I can't say how likely this is to
+happen, though.
 
-diff --git a/init/main.c b/init/main.c
-index 8be5193..0c6f366 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -587,13 +587,13 @@ asmlinkage void __init start_kernel(void)
- 	 * kmem_cache_init()
- 	 */
- 	pidhash_init();
--	vmalloc_init();
- 	vfs_caches_init_early();
- 	/*
- 	 * Set up kernel memory allocators
- 	 */
- 	mem_init();
- 	kmem_cache_init();
-+	vmalloc_init();
- 	/*
- 	 * Set up the scheduler prior starting any interrupts (such as the
- 	 * timer interrupt). Full topology setup happens at smp_init()
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 083716e..3235138 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -23,7 +23,6 @@
- #include <linux/rbtree.h>
- #include <linux/radix-tree.h>
- #include <linux/rcupdate.h>
--#include <linux/bootmem.h>
- #include <linux/pfn.h>
- 
- #include <asm/atomic.h>
-@@ -1032,7 +1031,7 @@ void __init vmalloc_init(void)
- 
- 	/* Import existing vmlist entries. */
- 	for (tmp = vmlist; tmp; tmp = tmp->next) {
--		va = alloc_bootmem(sizeof(struct vmap_area));
-+		va = kzalloc(sizeof(struct vmap_area), GFP_NOWAIT);
- 		va->flags = tmp->flags | VM_VM_AREA;
- 		va->va_start = (unsigned long)tmp->addr;
- 		va->va_end = va->va_start + tmp->size;
--- 
-1.6.0.4
+What other justfication do you have for this change?  Were you able to
+measure a performance difference?
 
+Cheers,
+Jeff
