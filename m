@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbZFJRdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbZFJReL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756226AbZFJRdM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 13:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbZFJRc7
+	id S1757079AbZFJReL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 13:34:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755786AbZFJRd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 13:32:59 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:54672 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753608AbZFJRc6 (ORCPT
+	Wed, 10 Jun 2009 13:33:58 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:38435 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755714AbZFJRd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 13:32:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RRkPfKQLwu0M0lZ1ZSvtJCXt2gmaz4gVHSWasPXonuhLbmQUsWjXkX6CtJsL2VPctt
-         M/Q/PMxDDHeo5XxzTBIAKrjNOqYE5uHAz34PxVVyiuXgy2LOSSKK3bu8oHNFH7EFlLu8
-         m9JjHBu85cvoEPJI98OvoQPlli98Vn/FU6oFU=
-MIME-Version: 1.0
-In-Reply-To: <1244626509.5847.399.camel@localhost.localdomain>
-References: <1244550775.5847.385.camel@localhost.localdomain>
-	 <f5be75d5abc1acd236bedf36c55a860e@localhost>
-	 <1244626509.5847.399.camel@localhost.localdomain>
-Date: Wed, 10 Jun 2009 10:27:00 -0700
-Message-ID: <a95a62fe0906101027y503e49c5r78813b6b802a06b@mail.gmail.com>
-Subject: Re: [PATCHv2] MTD: Add UBI reboot notifier
-From: Kevin Cernekee <kpc.mtd@gmail.com>
-To: dedekind@infradead.org
-Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Wed, 10 Jun 2009 13:33:57 -0400
+Date: Wed, 10 Jun 2009 19:33:12 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, Rob van der Heij <rvdheij@gmail.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       john stultz <johnstul@us.ibm.com>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [patch 0/2] NOHZ vs. profile/oprofile v2
+Message-ID: <20090610193312.37b944f3@skybook>
+In-Reply-To: <alpine.LFD.2.00.0906092252150.3351@localhost.localdomain>
+References: <20090603152223.083010123@de.ibm.com>
+	<alpine.LFD.2.00.0906092252150.3351@localhost.localdomain>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 2:35 AM, Artem Bityutskiy<dedekind@infradead.org> wrote:
-> I've pushed this patch to ubi-2.6.git/master. I've tested it
-> even. And I amended comments a little. Please, check it:
->
-> http://git.infradead.org/ubi-2.6.git?a=commit;h=79c293b2629882a1db3a850ed6b84bd1d8a464a7
->
-> If you are fine with this, I'll put it to ubi-2.6.git/linux-next
-> and merge it this merge window.
+On Tue, 9 Jun 2009 22:52:51 +0200 (CEST)
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-Looks good to me.  Thanks.
+> On Wed, 3 Jun 2009, Martin Schwidefsky wrote:
+> 
+> > Greetings,
+> > version 2 of the profile patches. The only change is the in_interrupt()
+> > fix in tick_nohz_stop_idle(). I would like to know how to proceed with
+> > the issue.
+> > Andy, do you still prefer to handle the old style profiler analog to
+> > the oprofile patch? If yes I would drop patch #1 and extend patch #2
+> > with another tick_nohz_disable().
+> 
+> Any update on this one ?
+
+I haven't heard anything from any Andy in regard to patch #1. We could
+do patch #2 now and decide later what we want to do with the old style
+profiler.
+
+blue skies,
+  Martin.
