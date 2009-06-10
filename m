@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758395AbZFJI6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758520AbZFJI7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758395AbZFJI6g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 04:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbZFJI63
+	id S1758520AbZFJI7q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 04:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756873AbZFJI7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 04:58:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47780 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757315AbZFJI62 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 04:58:28 -0400
-Date: Wed, 10 Jun 2009 01:57:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Richard =?ISO-8859-1?Q?R=F6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>
-Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
-       dbrownell@users.sourceforge.net
-Subject: Re: [PATCH 2/9] SPI: xilinx_spi: Added platform driver and support
- for DS570
-Message-Id: <20090610015710.3afb1a92.akpm@linux-foundation.org>
-In-Reply-To: <4A2F737A.2000407@mocean-labs.com>
-References: <4A292043.70704@mocean-labs.com>
-	<20090609160954.ae0bda8e.akpm@linux-foundation.org>
-	<4A2F737A.2000407@mocean-labs.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 10 Jun 2009 04:59:39 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40652 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756457AbZFJI7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 04:59:38 -0400
+Date: Wed, 10 Jun 2009 10:59:39 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v5
+Message-ID: <20090610085939.GE31155@wotan.suse.de>
+References: <20090603846.816684333@firstfloor.org> <20090603184648.2E2131D028F@basil.firstfloor.org> <20090609100922.GF14820@wotan.suse.de> <Pine.LNX.4.64.0906091637430.13213@sister.anvils> <20090610083803.GE6597@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090610083803.GE6597@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Jun 2009 10:48:58 +0200 Richard R__jfors <richard.rojfors.ext@mocean-labs.com> wrote:
-
-> On 09-06-10 01.09, Andrew Morton wrote:
-> > On Fri, 05 Jun 2009 15:40:19 +0200
-> > Richard R__jfors <richard.rojfors.ext@mocean-labs.com> wrote:
-> > 
-> >> This patch splits xilinx_spi into three parts, an OF and a platform
-> >> driver and generic part.
-> >>
-> >> The generic part now also works on X86 and also supports the Xilinx
-> >> SPI IP DS570
-> > 
-> > Unfortunately we already have two fairly significant
-> > drivers/spi/xilinx_spi.c patches queued in -mm:
-> > spi-move-more-spi_setup-functionality-into-core.patch and
-> > spi-move-common-spi_setup-functionality-into-core.patch.  Applying this
-> > patch on top of those makes rather a mess.
-> > 
-> > Hopefully things will still be OK if I skip this patch.  You didn't
-> > identify the dependencies between those nine patchs.  Can you please
-> > explain that?
+On Wed, Jun 10, 2009 at 04:38:03PM +0800, Wu Fengguang wrote:
+> On Wed, Jun 10, 2009 at 12:05:53AM +0800, Hugh Dickins wrote:
+> > I think a much more sensible approach would be to follow the page
+> > migration technique of replacing the page's ptes by a special swap-like
+> > entry, then do the killing from do_swap_page() if a process actually
+> > tries to access the page.
 > 
-> Actually all patches except for the 7th(of 9), would work without the
-> xilinx_spi-patch.
-> The 7th (Timberdale MFD) would not build. Some of the othe drivers are not
-> possible to select because they depend on the MFD in their Kconfigs,
-> but not the code.
+> We call that "late kill" and will be enabled when
+> sysctl_memory_failure_early_kill=0. Its default value is 1.
 
-Confused.
+What's the use of this? What are the tradeoffs, in what situations
+should an admin set this sysctl one way or the other?
 
-See, my problem is that normally I will hold off on sending a patch to
-its subsystem maintainer until its prerequisite patch(es) are in mainline.
-But for each of these patches, I don't know what the exact prerequisites
-are.  Help?
-
-(The simple alternative is for me to seek acks and merge them all
-myself.  But sometimes getting those acks is hard).
-
-> I would be very happy if you applied all but the 7th (MFD) and 2nd (SPI) anyway.
-> 
-> I will update my SPI-patch to work against the two patches you point out above.
-> And them I will resend the Timberdale MFD and the Xilinx SPI patch.
-> 
-> Would that be OK?
-
-That would be great, thanks.
