@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758228AbZFJFoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbZFJFp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758228AbZFJFoq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 01:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756614AbZFJFm6
+	id S1758608AbZFJFp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 01:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756740AbZFJFm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 01:42:58 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42351 "EHLO
+	Wed, 10 Jun 2009 01:42:59 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51751 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754084AbZFJFmw (ORCPT
+	with ESMTP id S1754203AbZFJFmx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 01:42:52 -0400
-Message-Id: <20090610054254.213236598@goodmis.org>
+	Wed, 10 Jun 2009 01:42:53 -0400
+Message-Id: <20090610054254.405148701@goodmis.org>
 References: <20090610054206.510574695@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 10 Jun 2009 01:42:13 -0400
+Date: Wed, 10 Jun 2009 01:42:14 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -28,136 +28,151 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
        Tom Zanussi <tzanussi@gmail.com>,
        Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: [PATCH 07/11] tracing: add test for strings in event tag format
-Content-Disposition: inline; filename=0007-tracing-add-test-for-strings-in-event-tag-format.patch
+Subject: [PATCH 08/11] tracing: add func and symfunc to tag format
+Content-Disposition: inline; filename=0008-tracing-add-func-and-symfunc-to-tag-format.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-To protect against any disaster if a format uses a string when it
-should have used something else, this code puts in test to make sure
-the output will not cause any harm.
+This adds a way to print out a function name from a pointer the same way
+that the Linux printf "%pF" does. Well the symfunc tag does.
 
-The entry size is passed to the format parser and checks are made
-to ensure that the string read into the trace_seq at least has an
-ending '\0' character within the range of the entry record.
+If we change kmalloc and kfree formats to:
 
-[ Impact: prevent unpredictable results with bad formats ]
+  TP_FORMAT("call_site=<symfunc:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
+
+and
+
+  TP_FORMAT("call_site=<func:call_site> ptr=<ptr:ptr>")
+
+respectively, we would get something like:
+
+   kmalloc: call_site=__alloc_skb+0x70/0x160 ptr=ffff88003d830800 bytes_req=680
+   kfree: call_site=skb_release_data ptr=ffff88003d830800
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/ftrace_event.h     |    3 +-
- include/trace/ftrace.h           |    2 +-
- kernel/trace/trace_read_binary.c |   43 +++++++++++++++++++++++++++++++++----
- 3 files changed, 41 insertions(+), 7 deletions(-)
+ kernel/trace/trace_output.c      |    2 +-
+ kernel/trace/trace_output.h      |    4 ++++
+ kernel/trace/trace_read_binary.c |   27 +++++++++++++++++++++++++--
+ 3 files changed, 30 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index 1802459..26fed99 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -142,7 +142,8 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index 7938f3a..39d5eeb 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -326,7 +326,7 @@ static inline const char *kretprobed(const char *name)
+ }
+ #endif /* CONFIG_KRETPROBES */
  
- extern char *ftrace_read_binary(struct trace_seq *p,
- 				struct ftrace_event_call *event,
--				struct trace_entry *entry);
-+				struct trace_entry *entry,
-+				int entry_size);
- extern int ftrace_initialize_print(struct ftrace_event_call *event,
- 				   const char *fmt, ...)
- 	__attribute__ ((format (printf, 2, 3)));
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index e3370c5..d250cb9 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -126,7 +126,7 @@
+-static int
++int
+ seq_print_sym_short(struct trace_seq *s, const char *fmt, unsigned long address)
+ {
+ #ifdef CONFIG_KALLSYMS
+diff --git a/kernel/trace/trace_output.h b/kernel/trace/trace_output.h
+index d38bec4..412eee8 100644
+--- a/kernel/trace/trace_output.h
++++ b/kernel/trace/trace_output.h
+@@ -47,5 +47,9 @@ do {							\
+ 		return TRACE_TYPE_PARTIAL_LINE;		\
+ } while (0)
  
- #undef TP_FORMAT
- #define TP_FORMAT(fmt, args...) \
--	"%s\n", ftrace_read_binary(p, event_call, entry)
-+	"%s\n", ftrace_read_binary(p, event_call, entry, iter->ent_size)
++/* until we have a way with sprintf to do this */
++int seq_print_sym_short(struct trace_seq *s, const char *fmt,
++			unsigned long address);
++
+ #endif
  
- #undef __get_dynamic_array
- #define __get_dynamic_array(field)	\
 diff --git a/kernel/trace/trace_read_binary.c b/kernel/trace/trace_read_binary.c
-index d005138..f3fdac8 100644
+index f3fdac8..9ff4ed8 100644
 --- a/kernel/trace/trace_read_binary.c
 +++ b/kernel/trace/trace_read_binary.c
-@@ -738,9 +738,22 @@ get_val(void *p, int size, unsigned long long *mask)
- 	return val;
- }
+@@ -10,7 +10,7 @@
+ #include <linux/module.h>
+ #include <linux/ctype.h>
  
-+/* make sure string pointer has an end */
-+static int test_string(const char *str, int size)
-+{
-+	int i;
-+
-+	for (i = 0; i < size; i++) {
-+		if (!str[i])
-+			return 0;
-+	}
-+
-+	return -1;
-+}
-+
- char *
- ftrace_read_binary(struct trace_seq *s, struct ftrace_event_call *event,
--		   struct trace_entry *entry)
-+		   struct trace_entry *entry, int entry_size)
- {
- 	unsigned long long val, mask;
- 	struct print_info *info;
-@@ -748,6 +761,7 @@ ftrace_read_binary(struct trace_seq *s, struct ftrace_event_call *event,
- 	struct ftrace_event_field *field;
- 	unsigned long divisor, rem;
- 	void *p;
-+	int len;
+-#include "trace.h"
++#include "trace_output.h"
  
- 	if (!event->print_text) {
- 		trace_seq_puts(s, "UNDEFINED EVENT\n");
-@@ -834,18 +848,37 @@ ftrace_read_binary(struct trace_seq *s, struct ftrace_event_call *event,
- 			break;
+ static DEFINE_MUTEX(buffer_lock);
+ static struct trace_seq buffer;
+@@ -23,7 +23,8 @@ static struct trace_seq buffer;
+  * COMMAND := <TYPE:FIELD> | <mask:FIELD:DELIM:MASKS> | <sym:FIELD:SYMBOLS> |
+  *            <if:FIELD:TRUE:FALSE> | <ifmask:FIELD:MASK:TRUE:FALSE> |
+  *            <nsec2sec:PRECISION:FIELD> | <nsec2usec:PRECISION:FIELD> |
+- *            <nsec2msec:PRECISION:FIELD> | <major:FIELD> | <minor:FIELD>
++ *            <nsec2msec:PRECISION:FIELD> | <major:FIELD> | <minor:FIELD> |
++ *            <func:FIELD> | <symfunc:FIELD>
+  * TYPE := int | uint | hex | ptr | string | strarray
+  * FIELD := defined by the event structure
+  * MASKS := MASK=NAME,MASKS | MASK=NAME
+@@ -43,6 +44,8 @@ static struct trace_seq buffer;
+  *  uint      : Same as int, but for unsigned.
+  *  hex       : Print the field as a hex (ie. 0x4ab)
+  *  ptr       : Print the field as a hex but without the '0x'.
++ *  symfunc   : Print a ptr like the "%pF" does.
++ *  func      : Like symfunc but without the address.
+  *  string    : Used with dynamic sized strings (__string)
+  *  strarray  : Used with static sized arrays (__array ( char , item, len)).
+  *  if        : If the field is non zero, print the TRUE text,
+@@ -80,6 +83,8 @@ enum field_types {
+ 	FIELD_IS_HEX,
+ 	FIELD_IS_MINOR,
+ 	FIELD_IS_MAJOR,
++	FIELD_IS_FUNC,
++	FIELD_IS_SYMFUNC,
+ 	FIELD_IS_NSEC2SEC,
+ 	FIELD_IS_NSEC2USEC,
+ 	FIELD_IS_NSEC2MSEC,
+@@ -412,6 +417,8 @@ handle_field(struct ftrace_event_call *event,
+ 	case FIELD_IS_HEX:
+ 	case FIELD_IS_MINOR:
+ 	case FIELD_IS_MAJOR:
++	case FIELD_IS_FUNC:
++	case FIELD_IS_SYMFUNC:
+ 	case FIELD_IS_STRING:
+ 	case FIELD_IS_STRARRAY:
+ 		field = find_field(event, fmt, end - fmt);
+@@ -594,6 +601,12 @@ ftrace_initialize_print(struct ftrace_event_call *event, const char *fmt, ...)
+ 		else if (strncmp(fmt, "ifmask:", 7) == 0)
+ 			field_type = FIELD_IS_IFMASK;
  
- 		case FIELD_IS_STRING:
--			p += info->data.field->offset;
-+			field = info->data.field;
-+			p += field->offset;
- 			/* indexes are expected to be unsigned short */
--			if (info->data.field->size != 2) {
--				trace_seq_puts(s, "BAD FIELD SIZE\n");
-+			if (field->size != 2) {
-+				trace_seq_printf(s, "BAD FIELD SIZE %d\n",
-+						 field->size);
- 				return start;
- 			}
-+			if (*(unsigned short *)p > entry_size) {
-+				trace_seq_puts(s, "BAD STRING POINTER\n");
-+				return start;
-+			}
-+			len = entry_size - *(unsigned short *)p;
- 			p = (void *)entry + *(unsigned short *)p;
++		else if (strncmp(fmt, "func:", 5) == 0)
++			field_type = FIELD_IS_FUNC;
 +
-+			/* make sure that the string has an end */
-+			if (test_string(p, len)) {
-+				trace_seq_puts(s, "BAD STRING CONTENT\n");
-+				return start;
-+			}
++		else if (strncmp(fmt, "symfunc:", 8) == 0)
++			field_type = FIELD_IS_SYMFUNC;
 +
- 			trace_seq_puts(s, p);
- 			break;
+ 		else if (strncmp(fmt, "nsec2sec:", 9) == 0)
+ 			field_type = FIELD_IS_NSEC2SEC;
  
- 		case FIELD_IS_STRARRAY:
--			p += info->data.field->offset;
-+			field = info->data.field;
-+			p += field->offset;
-+			if (test_string(p, field->size)) {
-+				trace_seq_puts(s, "BAD STRING CONTENT\n");
-+				return start;
-+			}
- 			trace_seq_puts(s, p);
- 			break;
+@@ -785,6 +798,8 @@ ftrace_read_binary(struct trace_seq *s, struct ftrace_event_call *event,
+ 		case FIELD_IS_UINT:
+ 		case FIELD_IS_HEX:
+ 		case FIELD_IS_PTR:
++		case FIELD_IS_FUNC:
++		case FIELD_IS_SYMFUNC:
+ 		case FIELD_IS_MAJOR:
+ 		case FIELD_IS_MINOR:
+ 			field = info->data.field;
+@@ -837,6 +852,14 @@ ftrace_read_binary(struct trace_seq *s, struct ftrace_event_call *event,
+ 				trace_seq_printf(s, "%u", MINOR(val));
+ 				break;
  
++			case FIELD_IS_SYMFUNC:
++				trace_seq_printf(s, "%pF", (void *)val);
++				break;
++
++			case FIELD_IS_FUNC:
++				seq_print_sym_short(s, "%s", val);
++				break;
++
+ 			default:
+ 				/* hex should only print the size specified */
+ 				if (mask)
 -- 
 1.6.3.1
 
