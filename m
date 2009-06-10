@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759721AbZFJKCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758698AbZFJKEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759721AbZFJKCO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 06:02:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758218AbZFJKB4
+	id S1758698AbZFJKEA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 06:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbZFJKDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 06:01:56 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35132 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754392AbZFJKBz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 06:01:55 -0400
-Date: Wed, 10 Jun 2009 11:02:50 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: oliver@hartkopp.net, hawk@comx.dk, paulmck@linux.vnet.ibm.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       urs.thuermann@volkswagen.de, oliver.hartkopp@volkswagen.de,
-       wg@grandegger.com, vladislav.yasevich@hp.com, sri@us.ibm.com,
-       linux-sctp@vger.kernel.org, Trond.Myklebust@netapp.com,
-       linux-nfs@vger.kernel.org, netfilter-devel@vger.kernel.org
-Subject: Re: [PATCH 3/5] can: af_can.c use rcu_barrier() on module unload.
-Message-ID: <20090610110250.17644ae4@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090610.011027.43904351.davem@davemloft.net>
-References: <20090608130959.10052.54590.stgit@localhost>
-	<20090608131138.10052.5408.stgit@localhost>
-	<4A2D112A.4000308@hartkopp.net>
-	<20090610.011027.43904351.davem@davemloft.net>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Wed, 10 Jun 2009 06:03:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34485 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753180AbZFJKDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 06:03:52 -0400
+Subject: Re: [PATCH 23/24] GFS2: Fix locking issue mounting gfs2meta fs
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
+In-Reply-To: <20090610095319.GC25527@infradead.org>
+References: <1244622665-7470-15-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-16-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-17-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-18-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-19-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-20-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-21-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-22-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-23-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-24-git-send-email-swhiteho@redhat.com>
+	 <20090610095319.GC25527@infradead.org>
+Content-Type: text/plain
+Organization: Red Hat UK Ltd
+Date: Wed, 10 Jun 2009 11:06:06 +0100
+Message-Id: <1244628366.3355.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Jun 2009 01:10:27 -0700 (PDT)
-David Miller <davem@davemloft.net> wrote:
+Hi,
 
-> From: Oliver Hartkopp <oliver@hartkopp.net>
-> Date: Mon, 08 Jun 2009 15:24:58 +0200
+On Wed, 2009-06-10 at 05:53 -0400, Christoph Hellwig wrote:
+> On Wed, Jun 10, 2009 at 09:31:04AM +0100, Steven Whitehouse wrote:
+> >  static struct super_block *get_gfs2_sb(const char *dev_name)
+> >  {
+> > -	struct super_block *sb;
 > 
-> > Acked-By: Oliver Hartkopp <oliver@hartkopp.net>
+> Any reason you don't merge get_gfs2_sb into gfs2_get_sb_meta?  That's
+> how most other get_sb callbacks are structured, and would also get rid
+> of the rather confusing get_gfs2_sb name.
 > 
-> Please don't capitalize the "By" in "Acked-By".  Otherwise
-> patchwork doesn't pick them up automatically.
 
-Dave. We have computers to do all the silly tedious pointless jobs in
-life, please just fix the scripts.
+Well originally I was expecting to share that code with the
+gfs2_get_sb() but since that patch has been dropped now, I guess there
+is no reason not to merge them,
 
-Alan
+Steve.
+
+
