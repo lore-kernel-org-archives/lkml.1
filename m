@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759650AbZFJWZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760022AbZFJW1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759650AbZFJWZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 18:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbZFJWZR
+	id S1760022AbZFJW1S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 18:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756306AbZFJW1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 18:25:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51491 "EHLO mx3.mail.elte.hu"
+	Wed, 10 Jun 2009 18:27:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51742 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751396AbZFJWZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 18:25:15 -0400
-Date: Thu, 11 Jun 2009 00:25:09 +0200
+	id S1755140AbZFJW1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 18:27:07 -0400
+Date: Thu, 11 Jun 2009 00:27:03 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+Cc: linux-kernel@vger.kernel.org, Robert Richter <robert.richter@amd.com>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] signal code updates for v2.6.31
-Message-ID: <20090610222509.GA5397@elte.hu>
+Subject: [GIT PULL] Oprofile updates for v2.6.31
+Message-ID: <20090610222703.GA9929@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,218 +33,104 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest signal-for-linus git tree from:
+Please pull the latest oprofile-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git signal-for-linus
-
-Add the new sys_rt_tgsigqueueinfo() syscall and hook it up in x86. 
-Ack by Ulrich, Roland and Oleg.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git oprofile-for-linus
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Thomas Gleixner (3):
-      signals: split do_tkill
-      signals: implement sys_rt_tgsigqueueinfo
-      x86: hookup sys_rt_tgsigqueueinfo
+Andi Kleen (3):
+      oprofile: re-add force_arch_perfmon option
+      oprofile: remove undocumented oprofile.p4force option
+      oprofile: add support for Core i7 and Atom
+
+Robert Richter (1):
+      oprofile: introduce module_param oprofile.cpu_type
 
 
- arch/x86/ia32/ia32entry.S          |    1 +
- arch/x86/include/asm/unistd_32.h   |    1 +
- arch/x86/include/asm/unistd_64.h   |    2 +
- arch/x86/kernel/syscall_table_32.S |    1 +
- include/linux/compat.h             |    2 +
- include/linux/signal.h             |    2 +
- kernel/compat.c                    |   11 +++++++
- kernel/signal.c                    |   56 ++++++++++++++++++++++++++++--------
- 8 files changed, 64 insertions(+), 12 deletions(-)
+ Documentation/kernel-parameters.txt |    8 ++++++++
+ arch/x86/oprofile/nmi_int.c         |   27 +++++++++++++++++++++++----
+ 2 files changed, 31 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
-index a505202..dcef387 100644
---- a/arch/x86/ia32/ia32entry.S
-+++ b/arch/x86/ia32/ia32entry.S
-@@ -830,4 +830,5 @@ ia32_sys_call_table:
- 	.quad sys_inotify_init1
- 	.quad compat_sys_preadv
- 	.quad compat_sys_pwritev
-+	.quad compat_sys_rt_tgsigqueueinfo	/* 335 */
- ia32_syscall_end:
-diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
-index 6e72d74..708dae6 100644
---- a/arch/x86/include/asm/unistd_32.h
-+++ b/arch/x86/include/asm/unistd_32.h
-@@ -340,6 +340,7 @@
- #define __NR_inotify_init1	332
- #define __NR_preadv		333
- #define __NR_pwritev		334
-+#define __NR_rt_tgsigqueueinfo	335
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 90b3924..6ce5f48 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1650,6 +1650,14 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	oprofile.timer=	[HW]
+ 			Use timer interrupt instead of performance counters
  
- #ifdef __KERNEL__
- 
-diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
-index f818294..4e2b054 100644
---- a/arch/x86/include/asm/unistd_64.h
-+++ b/arch/x86/include/asm/unistd_64.h
-@@ -657,6 +657,8 @@ __SYSCALL(__NR_inotify_init1, sys_inotify_init1)
- __SYSCALL(__NR_preadv, sys_preadv)
- #define __NR_pwritev				296
- __SYSCALL(__NR_pwritev, sys_pwritev)
-+#define __NR_rt_tgsigqueueinfo			297
-+__SYSCALL(__NR_rt_tgsigqueueinfo, sys_rt_tgsigqueueinfo)
- 
- 
- #ifndef __NO_STUBS
-diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
-index ff5c873..734f92c 100644
---- a/arch/x86/kernel/syscall_table_32.S
-+++ b/arch/x86/kernel/syscall_table_32.S
-@@ -334,3 +334,4 @@ ENTRY(sys_call_table)
- 	.long sys_inotify_init1
- 	.long sys_preadv
- 	.long sys_pwritev
-+	.long sys_rt_tgsigqueueinfo	/* 335 */
-diff --git a/include/linux/compat.h b/include/linux/compat.h
-index f2ded21..af931ee 100644
---- a/include/linux/compat.h
-+++ b/include/linux/compat.h
-@@ -222,6 +222,8 @@ int copy_siginfo_from_user32(siginfo_t *to, struct compat_siginfo __user *from);
- int copy_siginfo_to_user32(struct compat_siginfo __user *to, siginfo_t *from);
- int get_compat_sigevent(struct sigevent *event,
- 		const struct compat_sigevent __user *u_event);
-+long compat_sys_rt_tgsigqueueinfo(compat_pid_t tgid, compat_pid_t pid, int sig,
-+				  struct compat_siginfo __user *uinfo);
- 
- static inline int compat_timeval_compare(struct compat_timeval *lhs,
- 					struct compat_timeval *rhs)
-diff --git a/include/linux/signal.h b/include/linux/signal.h
-index 84f997f..c755283 100644
---- a/include/linux/signal.h
-+++ b/include/linux/signal.h
-@@ -235,6 +235,8 @@ static inline int valid_signal(unsigned long sig)
- extern int next_signal(struct sigpending *pending, sigset_t *mask);
- extern int group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p);
- extern int __group_send_sig_info(int, struct siginfo *, struct task_struct *);
-+extern long do_rt_tgsigqueueinfo(pid_t tgid, pid_t pid, int sig,
-+				 siginfo_t *info);
- extern long do_sigpending(void __user *, unsigned long);
- extern int sigprocmask(int, sigset_t *, sigset_t *);
- extern int show_unhandled_signals;
-diff --git a/kernel/compat.c b/kernel/compat.c
-index 42d5654..f6c204f 100644
---- a/kernel/compat.c
-+++ b/kernel/compat.c
-@@ -882,6 +882,17 @@ compat_sys_rt_sigtimedwait (compat_sigset_t __user *uthese,
- 
- }
- 
-+asmlinkage long
-+compat_sys_rt_tgsigqueueinfo(compat_pid_t tgid, compat_pid_t pid, int sig,
-+			     struct compat_siginfo __user *uinfo)
-+{
-+	siginfo_t info;
++	oprofile.cpu_type=	Force an oprofile cpu type
++			This might be useful if you have an older oprofile
++			userland or if you want common events.
++			Format: { archperfmon }
++			archperfmon: [X86] Force use of architectural
++				perfmon on Intel CPUs instead of the
++				CPU specific event set.
 +
-+	if (copy_siginfo_from_user32(&info, uinfo))
-+		return -EFAULT;
-+	return do_rt_tgsigqueueinfo(tgid, pid, sig, &info);
-+}
-+
- #ifdef __ARCH_WANT_COMPAT_SYS_TIME
+ 	osst=		[HW,SCSI] SCSI Tape Driver
+ 			Format: <buffer_size>,<write_threshold>
+ 			See also Documentation/scsi/st.txt.
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index 202864a..3b285e6 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -356,14 +356,11 @@ static void exit_sysfs(void)
+ #define exit_sysfs() do { } while (0)
+ #endif /* CONFIG_PM */
  
- /* compat_time_t is a 32 bit "long" and needs to get converted. */
-diff --git a/kernel/signal.c b/kernel/signal.c
-index d803473..f79b3b9 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -2278,24 +2278,17 @@ SYSCALL_DEFINE2(kill, pid_t, pid, int, sig)
- 	return kill_something_info(sig, &info, pid);
- }
- 
--static int do_tkill(pid_t tgid, pid_t pid, int sig)
-+static int
-+do_send_specific(pid_t tgid, pid_t pid, int sig, struct siginfo *info)
- {
--	int error;
--	struct siginfo info;
- 	struct task_struct *p;
- 	unsigned long flags;
+-static int p4force;
+-module_param(p4force, int, 0);
 -
--	error = -ESRCH;
--	info.si_signo = sig;
--	info.si_errno = 0;
--	info.si_code = SI_TKILL;
--	info.si_pid = task_tgid_vnr(current);
--	info.si_uid = current_uid();
-+	int error = -ESRCH;
- 
- 	rcu_read_lock();
- 	p = find_task_by_vpid(pid);
- 	if (p && (tgid <= 0 || task_tgid_vnr(p) == tgid)) {
--		error = check_kill_permission(sig, &info, p);
-+		error = check_kill_permission(sig, info, p);
- 		/*
- 		 * The null signal is a permissions and process existence
- 		 * probe.  No signal is actually delivered.
-@@ -2305,7 +2298,7 @@ static int do_tkill(pid_t tgid, pid_t pid, int sig)
- 		 * signal is private anyway.
- 		 */
- 		if (!error && sig && lock_task_sighand(p, &flags)) {
--			error = specific_send_sig_info(sig, &info, p);
-+			error = specific_send_sig_info(sig, info, p);
- 			unlock_task_sighand(p, &flags);
- 		}
- 	}
-@@ -2314,6 +2307,19 @@ static int do_tkill(pid_t tgid, pid_t pid, int sig)
- 	return error;
- }
- 
-+static int do_tkill(pid_t tgid, pid_t pid, int sig)
-+{
-+	struct siginfo info;
-+
-+	info.si_signo = sig;
-+	info.si_errno = 0;
-+	info.si_code = SI_TKILL;
-+	info.si_pid = task_tgid_vnr(current);
-+	info.si_uid = current_uid();
-+
-+	return do_send_specific(tgid, pid, sig, &info);
-+}
-+
- /**
-  *  sys_tgkill - send signal to one specific thread
-  *  @tgid: the thread group ID of the thread
-@@ -2363,6 +2369,32 @@ SYSCALL_DEFINE3(rt_sigqueueinfo, pid_t, pid, int, sig,
- 	return kill_proc_info(sig, &info, pid);
- }
- 
-+long do_rt_tgsigqueueinfo(pid_t tgid, pid_t pid, int sig, siginfo_t *info)
-+{
-+	/* This is only valid for single tasks */
-+	if (pid <= 0 || tgid <= 0)
-+		return -EINVAL;
-+
-+	/* Not even root can pretend to send signals from the kernel.
-+	   Nor can they impersonate a kill(), which adds source info.  */
-+	if (info->si_code >= 0)
-+		return -EPERM;
-+	info->si_signo = sig;
-+
-+	return do_send_specific(tgid, pid, sig, info);
-+}
-+
-+SYSCALL_DEFINE4(rt_tgsigqueueinfo, pid_t, tgid, pid_t, pid, int, sig,
-+		siginfo_t __user *, uinfo)
-+{
-+	siginfo_t info;
-+
-+	if (copy_from_user(&info, uinfo, sizeof(siginfo_t)))
-+		return -EFAULT;
-+
-+	return do_rt_tgsigqueueinfo(tgid, pid, sig, &info);
-+}
-+
- int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
+ static int __init p4_init(char **cpu_type)
  {
- 	struct task_struct *t = current;
+ 	__u8 cpu_model = boot_cpu_data.x86_model;
+ 
+-	if (!p4force && (cpu_model > 6 || cpu_model == 5))
++	if (cpu_model > 6 || cpu_model == 5)
+ 		return 0;
+ 
+ #ifndef CONFIG_SMP
+@@ -389,10 +386,25 @@ static int __init p4_init(char **cpu_type)
+ 	return 0;
+ }
+ 
++static int force_arch_perfmon;
++static int force_cpu_type(const char *str, struct kernel_param *kp)
++{
++	if (!strcmp(str, "archperfmon")) {
++		force_arch_perfmon = 1;
++		printk(KERN_INFO "oprofile: forcing architectural perfmon\n");
++	}
++
++	return 0;
++}
++module_param_call(cpu_type, force_cpu_type, NULL, NULL, 0);
++
+ static int __init ppro_init(char **cpu_type)
+ {
+ 	__u8 cpu_model = boot_cpu_data.x86_model;
+ 
++	if (force_arch_perfmon && cpu_has_arch_perfmon)
++		return 0;
++
+ 	switch (cpu_model) {
+ 	case 0 ... 2:
+ 		*cpu_type = "i386/ppro";
+@@ -414,6 +426,13 @@ static int __init ppro_init(char **cpu_type)
+ 	case 15: case 23:
+ 		*cpu_type = "i386/core_2";
+ 		break;
++	case 26:
++		arch_perfmon_setup_counters();
++		*cpu_type = "i386/core_i7";
++		break;
++	case 28:
++		*cpu_type = "i386/atom";
++		break;
+ 	default:
+ 		/* Unknown */
+ 		return 0;
