@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbZFJDqG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760682AbZFJDqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233AbZFJDqG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:46:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbZFJDgW
+	id S1760682AbZFJDqY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbZFJDg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:36:22 -0400
-Received: from kroah.org ([198.145.64.141]:57348 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:36:27 -0400
+Received: from kroah.org ([198.145.64.141]:57361 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757671AbZFJDgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:36:21 -0400
+	id S1756661AbZFJDgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:36:25 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:50 2009
-Message-Id: <20090610002350.304932379@blue.kroah.org>
+Message-Id: <20090610002350.551321942@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:14 -0700
+Date: Tue, 09 Jun 2009 17:14:15 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,9 +27,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 46/60] ext4: add EXT4_IOC_ALLOC_DA_BLKS ioctl
+Subject: [patch 47/60] ext4: Automatically allocate delay allocated blocks on close
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-add-ext4_ioc_alloc_da_blks-ioctl.patch
+Content-Disposition: inline; filename=ext4-automatically-allocate-delay-allocated-blocks-on-close.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,114 +40,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit ccd2506bd43113659aa904d5bea5d1300605e2a6)
+(cherry picked from commit 7d8f9f7d150dded7b68e61ca6403a1f166fb4edf)
 
-Add an ioctl which forces all of the delay allocated blocks to be
-allocated.  This also provides a function ext4_alloc_da_blocks() which
-will be used by the following commits to force files to be fully
-allocated to preserve application-expected ext3 behaviour.
+When closing a file that had been previously truncated, force any
+delay allocated blocks that to be allocated so that if the filesystem
+is mounted with data=ordered, the data blocks will be pushed out to
+disk along with the journal commit.  Many application programs expect
+this, so we do this to avoid zero length files if the system crashes
+unexpectedly.
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ext4.h  |    3 +++
- fs/ext4/inode.c |   42 ++++++++++++++++++++++++++++++++++++++++++
- fs/ext4/ioctl.c |   14 ++++++++++++++
- 3 files changed, 59 insertions(+)
+ fs/ext4/ext4.h  |    1 +
+ fs/ext4/file.c  |    4 ++++
+ fs/ext4/inode.c |    3 +++
+ 3 files changed, 8 insertions(+)
 
 --- a/fs/ext4/ext4.h
 +++ b/fs/ext4/ext4.h
-@@ -326,7 +326,9 @@ struct ext4_new_group_data {
- #define EXT4_IOC_GROUP_EXTEND		_IOW('f', 7, unsigned long)
- #define EXT4_IOC_GROUP_ADD		_IOW('f', 8, struct ext4_new_group_input)
- #define EXT4_IOC_MIGRATE		_IO('f', 9)
-+ /* note ioctl 10 reserved for an early version of the FIEMAP ioctl */
-  /* note ioctl 11 reserved for filesystem-independent FIEMAP ioctl */
-+#define EXT4_IOC_ALLOC_DA_BLKS		_IO('f', 12)
+@@ -279,6 +279,7 @@ static inline __u32 ext4_mask_flags(umod
+ #define EXT4_STATE_NEW			0x00000002 /* inode is newly created */
+ #define EXT4_STATE_XATTR		0x00000004 /* has in-inode xattrs */
+ #define EXT4_STATE_NO_EXPAND		0x00000008 /* No space for expansion */
++#define EXT4_STATE_DA_ALLOC_CLOSE	0x00000010 /* Alloc DA blks on close */
  
- /*
-  * ioctl commands in 32 bit emulation
-@@ -1102,6 +1104,7 @@ extern int ext4_can_truncate(struct inod
- extern void ext4_truncate (struct inode *);
- extern void ext4_set_inode_flags(struct inode *);
- extern void ext4_get_inode_flags(struct ext4_inode_info *);
-+extern int ext4_alloc_da_blocks(struct inode *inode);
- extern void ext4_set_aops(struct inode *inode);
- extern int ext4_writepage_trans_blocks(struct inode *);
- extern int ext4_meta_trans_blocks(struct inode *, int nrblocks, int idxblocks);
+ /* Used to pass group descriptor data when online resize is done */
+ struct ext4_new_group_input {
+--- a/fs/ext4/file.c
++++ b/fs/ext4/file.c
+@@ -33,6 +33,10 @@
+  */
+ static int ext4_release_file (struct inode * inode, struct file * filp)
+ {
++	if (EXT4_I(inode)->i_state & EXT4_STATE_DA_ALLOC_CLOSE) {
++		ext4_alloc_da_blocks(inode);
++		EXT4_I(inode)->i_state &= ~EXT4_STATE_DA_ALLOC_CLOSE;
++	}
+ 	/* if we are the last writer on the inode, drop the block reservation */
+ 	if ((filp->f_mode & FMODE_WRITE) &&
+ 			(atomic_read(&inode->i_writecount) == 1))
 --- a/fs/ext4/inode.c
 +++ b/fs/ext4/inode.c
-@@ -2585,6 +2585,48 @@ out:
- 	return;
- }
+@@ -3636,6 +3636,9 @@ void ext4_truncate(struct inode *inode)
+ 	if (!ext4_can_truncate(inode))
+ 		return;
  
-+/*
-+ * Force all delayed allocation blocks to be allocated for a given inode.
-+ */
-+int ext4_alloc_da_blocks(struct inode *inode)
-+{
-+	if (!EXT4_I(inode)->i_reserved_data_blocks &&
-+	    !EXT4_I(inode)->i_reserved_meta_blocks)
-+		return 0;
++	if (inode->i_size == 0)
++		ei->i_state |= EXT4_STATE_DA_ALLOC_CLOSE;
 +
-+	/*
-+	 * We do something simple for now.  The filemap_flush() will
-+	 * also start triggering a write of the data blocks, which is
-+	 * not strictly speaking necessary (and for users of
-+	 * laptop_mode, not even desirable).  However, to do otherwise
-+	 * would require replicating code paths in:
-+	 *
-+	 * ext4_da_writepages() ->
-+	 *    write_cache_pages() ---> (via passed in callback function)
-+	 *        __mpage_da_writepage() -->
-+	 *           mpage_add_bh_to_extent()
-+	 *           mpage_da_map_blocks()
-+	 *
-+	 * The problem is that write_cache_pages(), located in
-+	 * mm/page-writeback.c, marks pages clean in preparation for
-+	 * doing I/O, which is not desirable if we're not planning on
-+	 * doing I/O at all.
-+	 *
-+	 * We could call write_cache_pages(), and then redirty all of
-+	 * the pages by calling redirty_page_for_writeback() but that
-+	 * would be ugly in the extreme.  So instead we would need to
-+	 * replicate parts of the code in the above functions,
-+	 * simplifying them becuase we wouldn't actually intend to
-+	 * write out the pages, but rather only collect contiguous
-+	 * logical block extents, call the multi-block allocator, and
-+	 * then update the buffer heads with the block allocations.
-+	 *
-+	 * For now, though, we'll cheat by calling filemap_flush(),
-+	 * which will map the blocks, and start the I/O, but not
-+	 * actually wait for the I/O to complete.
-+	 */
-+	return filemap_flush(inode->i_mapping);
-+}
- 
- /*
-  * bmap() is special.  It gets used by applications such as lilo and by
---- a/fs/ext4/ioctl.c
-+++ b/fs/ext4/ioctl.c
-@@ -287,6 +287,20 @@ setversion_out:
- 		return err;
- 	}
- 
-+	case EXT4_IOC_ALLOC_DA_BLKS:
-+	{
-+		int err;
-+		if (!is_owner_or_cap(inode))
-+			return -EACCES;
-+
-+		err = mnt_want_write(filp->f_path.mnt);
-+		if (err)
-+			return err;
-+		err = ext4_alloc_da_blocks(inode);
-+		mnt_drop_write(filp->f_path.mnt);
-+		return err;
-+	}
-+
- 	default:
- 		return -ENOTTY;
- 	}
+ 	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
+ 		ext4_ext_truncate(inode);
+ 		return;
 
 
