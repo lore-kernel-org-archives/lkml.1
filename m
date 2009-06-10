@@ -1,57 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468AbZFJEAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbZFJEDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752468AbZFJEAu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 00:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbZFJEAl
+	id S1754248AbZFJEDS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 00:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbZFJEDI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 00:00:41 -0400
-Received: from bhuna.collabora.co.uk ([93.93.131.97]:42888 "EHLO
-	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750714AbZFJEAk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 00:00:40 -0400
-Date: Wed, 10 Jun 2009 00:00:35 -0400
-From: Andres Salomon <dilinger@collabora.co.uk>
-To: Tobias_Mueller@twam.info
-Cc: Andrew Morton <akpm@linux-foundation.org>, jordan@cosmicpenguin.net,
-       david-b@pacbell.net, gardner.ben@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 001/001] gpio: AMD CS5535/CS5536 GPIO driver
-Message-ID: <20090610000035.62e459ae@mycelium.queued.net>
-In-Reply-To: <17be05570906090527l5861a79dq2ca8e6cf0ba084fe@mail.gmail.com>
-References: <17be05570905230453i591eb83bnb359f6365c109718@mail.gmail.com>
-	<20090526151621.a7446c60.akpm@linux-foundation.org>
-	<17be05570905301105h395689ja33afa96e7751381@mail.gmail.com>
-	<20090601165457.a1cc1025.akpm@linux-foundation.org>
-	<20090601200821.62b04e43@mycelium.queued.net>
-	<4A24965C.2020901@cosmicpenguin.net>
-	<17be05570906020114k7f2a3096h48335d509951cf90@mail.gmail.com>
-	<20090602133312.68158cd5.akpm@linux-foundation.org>
-	<17be05570906090527l5861a79dq2ca8e6cf0ba084fe@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Wed, 10 Jun 2009 00:03:08 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:42782 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750869AbZFJEDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 00:03:07 -0400
+Date: Wed, 10 Jun 2009 14:02:33 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kashyap@vger.kernel.org, Desai <kashyap.desai@lsi.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Tejun Heo <tj@kernel.org>
+Subject: linux-next: manual merge of the block tree with the scsi tree
+Message-Id: <20090610140234.2d008ed1.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009 14:27:30 +0200
-Tobias Müller <Tobias_Mueller@twam.info> wrote:
+Hi Jens,
 
-> >> So maybe we should decide whether we take Andre's or my approach
-> >> and then adjust it.
-> >>
-> >
-> > I think I'll drop gpio-amd-cs5535-cs5536-gpio-driver.patch while you
-> > guys sort all this out, please.
-> 
-> So, how to carry on with this? Shall I adapt Andre's version to mine
-> or will Andre take care of this version?
-> 
-> A comment from Andre would be fine.
+Today's linux-next merge of the block tree got a conflict in
+drivers/message/fusion/mptsas.c between commits
+14d0f0b063f5363984dd305a792854f9c23e9e97 ("[SCSI] mpt fusion: Fixing 1078
+data corruption issue for 36GB memory region") and
+2f187862e579f1f5e883188cab6bd867cb60387f ("[SCSI] mpt fusion: Code
+Cleanup patch") from the scsi tree and commit
+b0790410300abaaf4f25f702803beff701baebf1 ("block: cleanup rq->data_len
+usages") from the block tree.
 
+Just context changes.  I fixed it up (see below) and can carry the fix as
+necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-My preference would be for you to base your work on the patches that
-I'm about to (re)submit.  I now actually have time to get these through
-the queue.
+diff --cc drivers/message/fusion/mptsas.c
+index 14c490a,79f5433..0000000
+--- a/drivers/message/fusion/mptsas.c
++++ b/drivers/message/fusion/mptsas.c
+@@@ -2177,32 -1319,26 +2177,32 @@@ static int mptsas_smp_handler(struct Sc
+  	/* request */
+  	flagsLength = (MPI_SGE_FLAGS_SIMPLE_ELEMENT |
+  		       MPI_SGE_FLAGS_END_OF_BUFFER |
+ -		       MPI_SGE_FLAGS_DIRECTION |
+ -		       mpt_addr_size()) << MPI_SGE_FLAGS_SHIFT;
+ +		       MPI_SGE_FLAGS_DIRECTION)
+ +		       << MPI_SGE_FLAGS_SHIFT;
+- 	flagsLength |= (req->data_len - 4);
++ 	flagsLength |= (blk_rq_bytes(req) - 4);
+  
+  	dma_addr_out = pci_map_single(ioc->pcidev, bio_data(req->bio),
+- 				      req->data_len, PCI_DMA_BIDIRECTIONAL);
++ 				      blk_rq_bytes(req), PCI_DMA_BIDIRECTIONAL);
+  	if (!dma_addr_out)
+  		goto put_mf;
+ -	mpt_add_sge(psge, flagsLength, dma_addr_out);
+ -	psge += (sizeof(u32) + sizeof(dma_addr_t));
+ +	ioc->add_sge(psge, flagsLength, dma_addr_out);
+ +	psge += ioc->SGE_size;
+  
+  	/* response */
+ -	flagsLength = MPT_SGE_FLAGS_SSIMPLE_READ;
+ +	flagsLength = MPI_SGE_FLAGS_SIMPLE_ELEMENT |
+ +		MPI_SGE_FLAGS_SYSTEM_ADDRESS |
+ +		MPI_SGE_FLAGS_IOC_TO_HOST |
+ +		MPI_SGE_FLAGS_END_OF_BUFFER;
+ +
+ +	flagsLength = flagsLength << MPI_SGE_FLAGS_SHIFT;
+- 	flagsLength |= rsp->data_len + 4;
++ 	flagsLength |= blk_rq_bytes(rsp) + 4;
+  	dma_addr_in =  pci_map_single(ioc->pcidev, bio_data(rsp->bio),
+- 				      rsp->data_len, PCI_DMA_BIDIRECTIONAL);
++ 				      blk_rq_bytes(rsp), PCI_DMA_BIDIRECTIONAL);
+  	if (!dma_addr_in)
+  		goto unmap;
+ -	mpt_add_sge(psge, flagsLength, dma_addr_in);
+ +	ioc->add_sge(psge, flagsLength, dma_addr_in);
+  
+ +	INITIALIZE_MGMT_STATUS(ioc->sas_mgmt.status)
+  	mpt_put_msg_frame(mptsasMgmtCtx, ioc, mf);
+  
+  	timeleft = wait_for_completion_timeout(&ioc->sas_mgmt.done, 10 * HZ);
+@@@ -2221,11 -1357,10 +2221,11 @@@
+  		smprep = (SmpPassthroughReply_t *)ioc->sas_mgmt.reply;
+  		memcpy(req->sense, smprep, sizeof(*smprep));
+  		req->sense_len = sizeof(*smprep);
+- 		req->data_len = 0;
+- 		rsp->data_len -= smprep->ResponseDataLength;
++ 		req->resid_len = 0;
++ 		rsp->resid_len -= smprep->ResponseDataLength;
+  	} else {
+ -		printk(MYIOC_s_ERR_FMT "%s: smp passthru reply failed to be returned\n",
+ +		printk(MYIOC_s_ERR_FMT
+ +		    "%s: smp passthru reply failed to be returned\n",
+  		    ioc->name, __func__);
+  		ret = -ENXIO;
+  	}
