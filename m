@@ -1,80 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758043AbZFJBrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758298AbZFJBsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758043AbZFJBrk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 21:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757361AbZFJBra
+	id S1758298AbZFJBsJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 21:48:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756590AbZFJBsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 21:47:30 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:34107 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755441AbZFJBr3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 21:47:29 -0400
-Message-ID: <4A2F10B2.7000003@snapgear.com>
-Date: Wed, 10 Jun 2009 11:47:30 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 9 Jun 2009 21:48:00 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62711 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754893AbZFJBsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 21:48:00 -0400
+Message-ID: <4A2F1126.5010306@cn.fujitsu.com>
+Date: Wed, 10 Jun 2009 09:49:26 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Mike Frysinger <vapier@gentoo.org>
-CC: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       uclinux-dev@uclinux.org, linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 2/3] mtd/maps: uclinux: mark local stuff static
-References: <20090526231902.GA6295@linux-sh.org> <1243380798-10089-2-git-send-email-vapier@gentoo.org>
-In-Reply-To: <1243380798-10089-2-git-send-email-vapier@gentoo.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/2] [GIT PULL] tracing/events/ring-buffer: block trace
+ points and fix
+References: <20090609163657.557589106@goodmis.org> <20090609234655.GA24118@elte.hu> <4A2F0C4A.8020109@cn.fujitsu.com> <alpine.DEB.2.00.0906092131190.30552@gandalf.stny.rr.com> <4A2F0E26.9010203@cn.fujitsu.com> <alpine.DEB.2.00.0906092140350.30552@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0906092140350.30552@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Mike Frysinger wrote:
-> The uclinux_ram_mtdinfo, uclinux_romfs, and uclinux_point symbols do not
-> need to be visible outside of this module, so mark them static.
+Steven Rostedt wrote:
+> On Wed, 10 Jun 2009, Li Zefan wrote:
 > 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> CC: Greg Ungerer <gerg@uclinux.org>
-
-Acked-by: Greg Ungerer <gerg@uclinux.org>
-
-
-> CC: uclinux-dev@uclinux.org
-> CC: linux-mtd@lists.infradead.org
-> ---
->  drivers/mtd/maps/uclinux.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
+>>>>> In file included from mm/highmem.c:30:
+>>>>> include/linux/blktrace_api.h:223: warning: ?struct request? declared inside parameter list
+>>>>> include/linux/blktrace_api.h:223: warning: its scope is only this definition or declaration, which is probably not what you want
+>>>>> include/linux/blktrace_api.h: In function ?blk_cmd_buf_len?:
+>>>>> include/linux/blktrace_api.h:225: error: implicit declaration of function ?blk_pc_request?
+>>>>> include/linux/blktrace_api.h:225: error: dereferencing pointer to incomplete type
+>>>>> include/linux/blktrace_api.h: At top level:
+>>>>> include/linux/blktrace_api.h:228: warning: ?struct request? declared inside parameter list
+>>>>> include/linux/blktrace_api.h:230: warning: ?struct request? declared inside parameter list
+>>>>> distcc[15629] ERROR: compile mm/highmem.c on a/32 failed
+>>>>>
+>>>> I've fixed it. I'll post a new version after I've done some
+>>>> more building tests.
+>>> Ingo,
+>>>
+>>> Should Li post a delta fix, or should we just rebase?
+>>>
+>> I thought we should rebase it, since it causes building failure which
+>> might hurt bisectability.
 > 
-> diff --git a/drivers/mtd/maps/uclinux.c b/drivers/mtd/maps/uclinux.c
-> index 61d4087..d4314fb 100644
-> --- a/drivers/mtd/maps/uclinux.c
-> +++ b/drivers/mtd/maps/uclinux.c
-> @@ -30,11 +30,11 @@ struct map_info uclinux_ram_map = {
->  	.size = 0,
->  };
->  
-> -struct mtd_info *uclinux_ram_mtdinfo;
-> +static struct mtd_info *uclinux_ram_mtdinfo;
->  
->  /****************************************************************************/
->  
-> -struct mtd_partition uclinux_romfs[] = {
-> +static struct mtd_partition uclinux_romfs[] = {
->  	{ .name = "ROMfs" }
->  };
->  
-> @@ -42,7 +42,7 @@ struct mtd_partition uclinux_romfs[] = {
->  
->  /****************************************************************************/
->  
-> -int uclinux_point(struct mtd_info *mtd, loff_t from, size_t len,
-> +static int uclinux_point(struct mtd_info *mtd, loff_t from, size_t len,
->  	size_t *retlen, void **virt, resource_size_t *phys)
->  {
->  	struct map_info *map = mtd->priv;
+> The failure happens when CONFIG_BLOCK is not defined. How many configs 
+> really do that?
+> 
 
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+Ah, I see. I'll post a delta fix.
+
+btw, I found many includes of blktrace_api.h has become unneeded since
+blktrace moved to trace points. I'll post another patch to remove those
+includes later.
+
