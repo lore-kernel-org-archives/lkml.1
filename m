@@ -1,100 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758962AbZFJO1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759273AbZFJO2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758962AbZFJO1X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 10:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757529AbZFJO1Q
+	id S1759273AbZFJO2B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 10:28:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755802AbZFJO1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 10:27:16 -0400
-Received: from stinky.trash.net ([213.144.137.162]:59745 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757214AbZFJO1P (ORCPT
+	Wed, 10 Jun 2009 10:27:54 -0400
+Received: from mail-px0-f200.google.com ([209.85.216.200]:45672 "EHLO
+	mail-px0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754956AbZFJO1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 10:27:15 -0400
-Message-ID: <4A2FC2C2.7090803@trash.net>
-Date: Wed, 10 Jun 2009 16:27:14 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-CC: Eric Leblond <eric@inl.fr>, Maran Pakkirisamy <maranpsamy@in.ibm.com>,
-       Andreas Krebbel <krebbel1@de.ibm.com>, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org
-Subject: Re: netfilter: BUG: sleeping function called from invalid context
-References: <20090610161935.0f8b1949@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20090610161935.0f8b1949@osiris.boeblingen.de.ibm.com>
-Content-Type: multipart/mixed;
- boundary="------------050403020802020104070004"
+	Wed, 10 Jun 2009 10:27:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=pQyaAgVDp7bfzeBaC2/RTPUME+wMmJlGuA6YR91Cien/8fA4ckKFk6K5cnSKN16UGV
+         oe66ffDaCYy5MUuswownHkxorrLeIQMD1wtxbYyhLUmvlqb9DRXzylsS+w8r13gMN3M9
+         a+tmnzpPKpnlJ/wNcNmZ95iyHrqv9ROKmbsO4=
+From: tom.leiming@gmail.com
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org,
+       akpm@linux-foundation.org, Ming Lei <tom.leiming@gmail.com>
+Subject: [PATCH 1/2] driver core: introduce devtmpfs_wait_for_dev()
+Date: Wed, 10 Jun 2009 22:27:44 +0800
+Message-Id: <1244644064-32737-1-git-send-email-tom.leiming@gmail.com>
+X-Mailer: git-send-email 1.6.0.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050403020802020104070004
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+From: Ming Lei <tom.leiming@gmail.com>
 
-Heiko Carstens wrote:
-> Maran reported the bug below (vanilla 2.6.30-rc8):
-> 
-> BUG: sleeping function called from invalid context at /mnt/s390test/linux-2.6-tip/arch/s390/include/asm/uaccess.h:234 
-> in_atomic(): 1, irqs_disabled(): 0, pid: 3245, name: sysctl 
-> CPU: 1 Not tainted 2.6.30-rc8-tipjun10-02053-g39ae214 #1 
-> Process sysctl (pid: 3245, task: 000000007f675da0, ksp: 000000007eb17cf0) 
-> 0000000000000000 000000007eb17be8 0000000000000002 0000000000000000  
->        000000007eb17c88 000000007eb17c00 000000007eb17c00 0000000000048156  
->        00000000003e2de8 000000007f676118 000000007eb17f10 0000000000000000  
->        0000000000000000 000000007eb17be8 000000000000000d 000000007eb17c58  
->        00000000003e2050 000000000001635c 000000007eb17be8 000000007eb17c30  
-> Call Trace: 
-> (Ý<00000000000162e6>¨ show_trace+0x13a/0x148) 
->  Ý<00000000000349ea>¨ __might_sleep+0x13a/0x164 
->  Ý<0000000000050300>¨ proc_dostring+0x134/0x22c 
->  Ý<0000000000312b70>¨ nf_log_proc_dostring+0xfc/0x188 
->  Ý<0000000000136f5e>¨ proc_sys_call_handler+0xf6/0x118 
->  Ý<0000000000136fda>¨ proc_sys_read+0x26/0x34 
->  Ý<00000000000d6e9c>¨ vfs_read+0xac/0x158 
->  Ý<00000000000d703e>¨ SyS_read+0x56/0x88 
->  Ý<0000000000027f42>¨ sysc_noemu+0x10/0x16 
-> 
-> The code that introduces the bug came in with 17625274 "netfilter:
-> sysctl support of logger choice".
-> 
-> There we have this chunk:
-> 
-> +               rcu_read_lock();
-> +               logger = rcu_dereference(nf_loggers[tindex]);
-> +               if (!logger)
-> +                       table->data = "NONE";
-> +               else
-> +                       table->data = logger->name;
-> +               r = proc_dostring(table, write, filp, buffer, lenp, ppos);
-> +               rcu_read_unlock();
-> 
-> proc_dostring() will call copy_from_user() while preemption is disabled
-> because of rcu_read_lock().
-> Looks like somebody needs to fix this ;)
+This patch introduces devtmpfs_wait_for_dev(), which is based on devtmpfs
+and can be used to remove polling for root device before mounting rootfs.
 
-Thanks for the report. This patch should fix it.
+This patch also gives a generic and simple way to wait for a device in
+kernel mode based on devtmpfs.
 
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+---
+ drivers/base/devtmpfs.c |   55 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/device.h  |    7 ++++++
+ 2 files changed, 62 insertions(+), 0 deletions(-)
 
---------------050403020802020104070004
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="x"
+diff --git a/drivers/base/devtmpfs.c b/drivers/base/devtmpfs.c
+index 51c410f..4e20c71 100644
+--- a/drivers/base/devtmpfs.c
++++ b/drivers/base/devtmpfs.c
+@@ -30,6 +30,9 @@ static int dev_mount = 1;
+ static int dev_mount;
+ #endif
+ 
++static DECLARE_WAIT_QUEUE_HEAD(devtmpfs_waitqueue);
++
++
+ static int __init mount_param(char *str)
+ {
+ 	dev_mount = simple_strtoul(str, NULL, 0);
+@@ -178,6 +181,10 @@ int devtmpfs_create_node(struct device *dev)
+ 
+ 	path_put(&nd.path);
+ out:
++	/*notify others that we have created a dev node*/
++	if (!err)
++		wake_up(&devtmpfs_waitqueue);
++
+ 	kfree(tmp);
+ 	revert_creds(curr_cred);
+ 	return err;
+@@ -310,6 +317,54 @@ out:
+ 	return err;
+ }
+ 
++static int devtmpfs_query_dev(const char *dev_path)
++{
++	const char *nodename;
++	const struct cred *curr_cred;
++	struct nameidata nd;
++	struct dentry *dentry;
++	int err;
++
++	if (!dev_mnt)
++		return -ENOENT;
++
++	nodename = dev_path + 5;
++
++	curr_cred = override_creds(&init_cred);
++	err = vfs_path_lookup(dev_mnt->mnt_root, dev_mnt,
++			      nodename, LOOKUP_PARENT, &nd);
++	if (err)
++		goto out;
++
++	mutex_lock_nested(&nd.path.dentry->d_inode->i_mutex, I_MUTEX_PARENT);
++	dentry = lookup_one_len(nd.last.name, nd.path.dentry, nd.last.len);
++	if (!IS_ERR(dentry)) {
++		if (dentry->d_inode)
++			err = 0;
++		else
++			err = -ENOENT;
++		dput(dentry);
++	} else {
++		err = PTR_ERR(dentry);
++	}
++	mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
++
++	path_put(&nd.path);
++out:
++	revert_creds(curr_cred);
++	return err;
++}
++
++int devtmpfs_wait_for_dev(const char *dev_path, unsigned long seconds)
++{
++	if (strncmp(dev_path, "/dev/", 5) != 0)
++		return -1;
++
++	return wait_event_timeout(devtmpfs_waitqueue,
++		devtmpfs_query_dev(dev_path) == 0,
++		seconds*HZ);
++}
++
+ /*
+  * If configured, or requested by the commandline, devtmpfs will be
+  * auto-mounted after the kernel mounted the root filesystem.
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 65f5b5a..1fa1b19 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -557,10 +557,17 @@ extern void wait_for_device_probe(void);
+ extern int devtmpfs_create_node(struct device *dev);
+ extern int devtmpfs_delete_node(struct device *dev);
+ extern int devtmpfs_mount(const char *mountpoint);
++extern int devtmpfs_wait_for_dev(const char *dev_path,
++				unsigned long seconds);
+ #else
+ static inline int devtmpfs_create_node(struct device *dev) { return 0; }
+ static inline int devtmpfs_delete_node(struct device *dev) { return 0; }
+ static inline int devtmpfs_mount(const char *mountpoint) { return 0; }
++static inline int devtmpfs_wait_for_dev(const char *dev_path,
++			unsigned long seconds)
++{
++	return 0;
++}
+ #endif
+ 
+ /* drivers/base/power/shutdown.c */
+-- 
+1.6.0.GIT
 
-ZGlmZiAtLWdpdCBhL25ldC9uZXRmaWx0ZXIvbmZfbG9nLmMgYi9uZXQvbmV0ZmlsdGVyL25m
-X2xvZy5jCmluZGV4IGJlYjM3MzEuLjJmZWZlMTQgMTAwNjQ0Ci0tLSBhL25ldC9uZXRmaWx0
-ZXIvbmZfbG9nLmMKKysrIGIvbmV0L25ldGZpbHRlci9uZl9sb2cuYwpAQCAtMjQ4LDE0ICsy
-NDgsMTQgQEAgc3RhdGljIGludCBuZl9sb2dfcHJvY19kb3N0cmluZyhjdGxfdGFibGUgKnRh
-YmxlLCBpbnQgd3JpdGUsIHN0cnVjdCBmaWxlICpmaWxwLAogCQlyY3VfYXNzaWduX3BvaW50
-ZXIobmZfbG9nZ2Vyc1t0aW5kZXhdLCBsb2dnZXIpOwogCQltdXRleF91bmxvY2soJm5mX2xv
-Z19tdXRleCk7CiAJfSBlbHNlIHsKLQkJcmN1X3JlYWRfbG9jaygpOwotCQlsb2dnZXIgPSBy
-Y3VfZGVyZWZlcmVuY2UobmZfbG9nZ2Vyc1t0aW5kZXhdKTsKKwkJbXV0ZXhfbG9jaygmbmZf
-bG9nX211dGV4KTsKKwkJbG9nZ2VyID0gbmZfbG9nZ2Vyc1t0aW5kZXhdOwogCQlpZiAoIWxv
-Z2dlcikKIAkJCXRhYmxlLT5kYXRhID0gIk5PTkUiOwogCQllbHNlCiAJCQl0YWJsZS0+ZGF0
-YSA9IGxvZ2dlci0+bmFtZTsKIAkJciA9IHByb2NfZG9zdHJpbmcodGFibGUsIHdyaXRlLCBm
-aWxwLCBidWZmZXIsIGxlbnAsIHBwb3MpOwotCQlyY3VfcmVhZF91bmxvY2soKTsKKwkJbXV0
-ZXhfdW5sb2NrKCZuZl9sb2dfbXV0ZXgpOwogCX0KIAogCXJldHVybiByOwo=
---------------050403020802020104070004--
