@@ -1,206 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbZFJHtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbZFJHub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757339AbZFJHtN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 03:49:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbZFJHs7
+	id S1756458AbZFJHub (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 03:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbZFJHuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 03:48:59 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:55514 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753345AbZFJHs6 (ORCPT
+	Wed, 10 Jun 2009 03:50:23 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52345 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752795AbZFJHuW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 03:48:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Bu1iPXmA8A9qo5GrF/uGttZMfJomN8W+0Hr1K+B3qT1H2EFWoY5xLMnmuDRaUoILNX
-         IfJknUu1Ol64Z8CsBBXF+fYTMYMOBvl4hrF6tgccUkCs2ft31mirejF/9PVqdMhvcs4f
-         N5AHI2YZtKEeBR0HRdD1O9RdCo+J/tj2YIAXg=
-Date: Wed, 10 Jun 2009 09:48:56 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: Re: [PATCH 08/11] tracing: add func and symfunc to tag format
-Message-ID: <20090610074855.GB6016@nowhere>
-References: <20090610054206.510574695@goodmis.org> <20090610054254.405148701@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090610054254.405148701@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 10 Jun 2009 03:50:22 -0400
+Date: Wed, 10 Jun 2009 00:50:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Martin Zwickel <martin.zwickel@novabasedigitaltv.de>
+Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
+       linux-usb@vger.kernel.org
+Subject: Re: FDTI-SIO: kernel-oops after resume
+Message-Id: <20090610005018.2c84d229.akpm@linux-foundation.org>
+In-Reply-To: <20090609063948.GA17564@novabasedigitaltv.de>
+References: <20090609063948.GA17564@novabasedigitaltv.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 01:42:14AM -0400, Steven Rostedt wrote:
-> From: Steven Rostedt <srostedt@redhat.com>
+On Tue, 9 Jun 2009 08:39:48 +0200 Martin Zwickel <martin.zwickel@novabasedigitaltv.de> wrote:
+
+> Hi all,
 > 
-> This adds a way to print out a function name from a pointer the same way
-> that the Linux printf "%pF" does. Well the symfunc tag does.
+> I got an oops after resuming from suspend S3 state.
 > 
-> If we change kmalloc and kfree formats to:
+> I had the ttyUSB0 opened with minicom and went to suspend S3.
+> While in suspend I removed the physical serial device converter.
+> While resuming I got this kernel oops:
 > 
->   TP_FORMAT("call_site=<symfunc:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
+> [output]
+> BUG: unable to handle kernel NULL pointer dereference at 00000044
+> IP: [<c012ba40>] del_timer+0xc/0x4c
+> *pde = 00000000 
+> Oops: 0000 [#1] PREEMPT SMP 
+> last sysfs file: /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+> Modules linked in: iptable_filter ip_tables x_tables i915 fb drm
+> i2c_algo_bit cfbcopyarea i2c_core cfbimgblt cfbfillrect ipv6
+> snd_hda_codec_conexant snd_hda_intel ftdi_sio iwlagn usbserial iwlcore
+> snd_hda_codec pcspkr evdev
 > 
-> and
+> Pid: 16129, comm: minicom Not tainted (2.6.29.4 #3) ESPRIMO Mobile V5505           
+>    
+> EIP: 0060:[<c012ba40>] EFLAGS: 00210286 CPU: 0
+> EIP is at del_timer+0xc/0x4c
+> EAX: 00000044 EBX: 00000044 ECX: f2224b00 EDX: 00000044
+> ESI: 00000000 EDI: 00000000 EBP: f6489df0 ESP: f6489de4
+>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process minicom (pid: 16129, ti=f6488000 task=f1b54000 task.ti=f6488000)
+> Stack:
+>  00000000 f1a31c00 00000034 f6489e38 c01311a3 00000044 00200246 f6489e20
+>  00200246 00000000 c0609e00 00000002 00000000 f6489e44 00200246 f6489e30
+>  c014e2a6 c1aa7f80 f1a31c00 00000400 00000000 f6489e40 c01312c3 f6489e58
+> Call Trace:
+>  [<c01311a3>] ? __cancel_work_timer+0x20/0x135
+>  [<c014e2a6>] ? __pagevec_free+0x17/0x1e
+>  [<c01312c3>] ? cancel_delayed_work_sync+0xb/0xd
+>  [<f8103692>] ? ftdi_close+0xc3/0xe2 [ftdi_sio]
+>  [<c0175977>] ? fasync_helper+0xb3/0xbc
+>  [<f820d722>] ? serial_close+0x7b/0x113 [usbserial]
+>  [<c02a165c>] ? tty_release_dev+0x15b/0x392
+>  [<c014e2a6>] ? __pagevec_free+0x17/0x1e
+>  [<c0167c27>] ? add_partial+0x44/0x49
+>  [<c017d860>] ? mntput_no_expire+0x18/0xe7
+>  [<c0178b67>] ? dput+0x1d/0xfc
+>  [<c02a18a5>] ? tty_release+0x12/0x1c
+>  [<c016d193>] ? __fput+0xaf/0x155
+>  [<c016d45d>] ? fput+0x17/0x19
+>  [<c016ae36>] ? filp_close+0x51/0x5b
+>  [<c0125870>] ? put_files_struct+0x68/0xaa
+>  [<c01258e9>] ? exit_files+0x37/0x3c
+>  [<c012681d>] ? do_exit+0x150/0x62e
+>  [<c0126d5a>] ? do_group_exit+0x5f/0x88
+>  [<c0126d92>] ? sys_exit_group+0xf/0x13
+>  [<c0102df1>] ? sysenter_do_call+0x12/0x25
+> Code: 04 0f 0b eb fe 39 50 08 75 0a 83 38 00 b9 01 00 00 00 75 07 e8 10 fe ff ff 89 c1 5d 89 c8 c3 55 89 e5 56 31 f6 53 89 c3 83 ec 04 <83> 38 00 74 34 8d 55 f4 e8 4c fd ff ff 83 3b 00 89 c1 74 1b 8b 
+> EIP: [<c012ba40>] del_timer+0xc/0x4c SS:ESP 0068:f6489de4
+> ---[ end trace 679defbdbe4aa1e4 ]---
+> [/output]
 > 
->   TP_FORMAT("call_site=<func:call_site> ptr=<ptr:ptr>")
+> Minicom said it lost the device, but was unable to close it.
 > 
-> respectively, we would get something like:
+> The attached device:
+> [output]
+> USB Serial support registered for FTDI USB Serial Device
+> ftdi_sio 6-1:1.0: FTDI USB Serial Device converter detected
+> usb 6-1: Detected FT8U232AM
+> usb 6-1: FTDI USB Serial Device converter now attached to ttyUSB0
+> usbcore: registered new interface driver ftdi_sio
+> ftdi_sio: v1.4.3:USB FTDI Serial Converters Driver
+> [/output]
 > 
->    kmalloc: call_site=__alloc_skb+0x70/0x160 ptr=ffff88003d830800 bytes_req=680
->    kfree: call_site=skb_release_data ptr=ffff88003d830800
-
-
-Nice!
-
-I thought about func and func_offset, but symfunc seems enough.
-
-
 > 
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> ---
->  kernel/trace/trace_output.c      |    2 +-
->  kernel/trace/trace_output.h      |    4 ++++
->  kernel/trace/trace_read_binary.c |   27 +++++++++++++++++++++++++--
->  3 files changed, 30 insertions(+), 3 deletions(-)
+> My kernel runs with SMP and HIGHMEM if it matters:
+> Linux tt-business 2.6.29.4 #3 SMP PREEMPT Fri Jun 5 00:03:39 WEST 2009 i686 Intel(R) Core(TM)2 Duo CPU T7300 @ 2.00GHz GenuineIntel GNU/Linux
 > 
-> diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-> index 7938f3a..39d5eeb 100644
-> --- a/kernel/trace/trace_output.c
-> +++ b/kernel/trace/trace_output.c
-> @@ -326,7 +326,7 @@ static inline const char *kretprobed(const char *name)
->  }
->  #endif /* CONFIG_KRETPROBES */
->  
-> -static int
-> +int
->  seq_print_sym_short(struct trace_seq *s, const char *fmt, unsigned long address)
->  {
->  #ifdef CONFIG_KALLSYMS
-> diff --git a/kernel/trace/trace_output.h b/kernel/trace/trace_output.h
-> index d38bec4..412eee8 100644
-> --- a/kernel/trace/trace_output.h
-> +++ b/kernel/trace/trace_output.h
-> @@ -47,5 +47,9 @@ do {							\
->  		return TRACE_TYPE_PARTIAL_LINE;		\
->  } while (0)
->  
-> +/* until we have a way with sprintf to do this */
-> +int seq_print_sym_short(struct trace_seq *s, const char *fmt,
-> +			unsigned long address);
-> +
->  #endif
->  
-> diff --git a/kernel/trace/trace_read_binary.c b/kernel/trace/trace_read_binary.c
-> index f3fdac8..9ff4ed8 100644
-> --- a/kernel/trace/trace_read_binary.c
-> +++ b/kernel/trace/trace_read_binary.c
-> @@ -10,7 +10,7 @@
->  #include <linux/module.h>
->  #include <linux/ctype.h>
->  
-> -#include "trace.h"
-> +#include "trace_output.h"
->  
->  static DEFINE_MUTEX(buffer_lock);
->  static struct trace_seq buffer;
-> @@ -23,7 +23,8 @@ static struct trace_seq buffer;
->   * COMMAND := <TYPE:FIELD> | <mask:FIELD:DELIM:MASKS> | <sym:FIELD:SYMBOLS> |
->   *            <if:FIELD:TRUE:FALSE> | <ifmask:FIELD:MASK:TRUE:FALSE> |
->   *            <nsec2sec:PRECISION:FIELD> | <nsec2usec:PRECISION:FIELD> |
-> - *            <nsec2msec:PRECISION:FIELD> | <major:FIELD> | <minor:FIELD>
-> + *            <nsec2msec:PRECISION:FIELD> | <major:FIELD> | <minor:FIELD> |
-> + *            <func:FIELD> | <symfunc:FIELD>
->   * TYPE := int | uint | hex | ptr | string | strarray
->   * FIELD := defined by the event structure
->   * MASKS := MASK=NAME,MASKS | MASK=NAME
-> @@ -43,6 +44,8 @@ static struct trace_seq buffer;
->   *  uint      : Same as int, but for unsigned.
->   *  hex       : Print the field as a hex (ie. 0x4ab)
->   *  ptr       : Print the field as a hex but without the '0x'.
-> + *  symfunc   : Print a ptr like the "%pF" does.
-> + *  func      : Like symfunc but without the address.
->   *  string    : Used with dynamic sized strings (__string)
->   *  strarray  : Used with static sized arrays (__array ( char , item, len)).
->   *  if        : If the field is non zero, print the TRUE text,
-> @@ -80,6 +83,8 @@ enum field_types {
->  	FIELD_IS_HEX,
->  	FIELD_IS_MINOR,
->  	FIELD_IS_MAJOR,
-> +	FIELD_IS_FUNC,
-> +	FIELD_IS_SYMFUNC,
->  	FIELD_IS_NSEC2SEC,
->  	FIELD_IS_NSEC2USEC,
->  	FIELD_IS_NSEC2MSEC,
-> @@ -412,6 +417,8 @@ handle_field(struct ftrace_event_call *event,
->  	case FIELD_IS_HEX:
->  	case FIELD_IS_MINOR:
->  	case FIELD_IS_MAJOR:
-> +	case FIELD_IS_FUNC:
-> +	case FIELD_IS_SYMFUNC:
->  	case FIELD_IS_STRING:
->  	case FIELD_IS_STRARRAY:
->  		field = find_field(event, fmt, end - fmt);
-> @@ -594,6 +601,12 @@ ftrace_initialize_print(struct ftrace_event_call *event, const char *fmt, ...)
->  		else if (strncmp(fmt, "ifmask:", 7) == 0)
->  			field_type = FIELD_IS_IFMASK;
->  
-> +		else if (strncmp(fmt, "func:", 5) == 0)
-> +			field_type = FIELD_IS_FUNC;
-> +
-> +		else if (strncmp(fmt, "symfunc:", 8) == 0)
-> +			field_type = FIELD_IS_SYMFUNC;
-> +
->  		else if (strncmp(fmt, "nsec2sec:", 9) == 0)
->  			field_type = FIELD_IS_NSEC2SEC;
->  
-> @@ -785,6 +798,8 @@ ftrace_read_binary(struct trace_seq *s, struct ftrace_event_call *event,
->  		case FIELD_IS_UINT:
->  		case FIELD_IS_HEX:
->  		case FIELD_IS_PTR:
-> +		case FIELD_IS_FUNC:
-> +		case FIELD_IS_SYMFUNC:
->  		case FIELD_IS_MAJOR:
->  		case FIELD_IS_MINOR:
->  			field = info->data.field;
-> @@ -837,6 +852,14 @@ ftrace_read_binary(struct trace_seq *s, struct ftrace_event_call *event,
->  				trace_seq_printf(s, "%u", MINOR(val));
->  				break;
->  
-> +			case FIELD_IS_SYMFUNC:
-> +				trace_seq_printf(s, "%pF", (void *)val);
-> +				break;
-> +
-> +			case FIELD_IS_FUNC:
-> +				seq_print_sym_short(s, "%s", val);
 
+The oops is very very similar to the one which Daniel Mack reported,
+and which was fixed by
 
-May be after the merge window it would be nice to start use %pf (for
-now it's on another branch).
-I'll have more time to do such things in about two weeks.
+commit c16199fcd341f10147eb2e29a60aed41ceca55b4
+Author: Alan Stern <stern@rowland.harvard.edu>
+Date:   Thu Apr 30 10:06:19 2009 -0400
 
+    usb-serial: ftdi_sio: fix reference counting of ftdi_private
 
-
-> +				break;
-> +
->  			default:
->  				/* hex should only print the size specified */
->  				if (mask)
-> -- 
-> 1.6.3.1
-> 
-> -- 
-
+but your 2.6.29.4 contained that fix, so it seems that we still have a
+problem here?
