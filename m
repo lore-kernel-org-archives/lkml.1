@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757165AbZFJDhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbZFJDfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757165AbZFJDhp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:37:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755971AbZFJDeG
+	id S1756912AbZFJDfT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436AbZFJDdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:34:06 -0400
-Received: from kroah.org ([198.145.64.141]:56754 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:33:39 -0400
+Received: from kroah.org ([198.145.64.141]:56643 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755668AbZFJDeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:34:05 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:43 2009
-Message-Id: <20090610002343.171466406@blue.kroah.org>
+	id S1755415AbZFJDdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:33:38 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:41 2009
+Message-Id: <20090610002341.717841012@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:13:43 -0700
+Date: Tue, 09 Jun 2009 17:13:37 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Chenault <thomas_chenault@dell.com>,
-       "David S. Miller" <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 15/60] net: fix skb_seq_read returning wrong offset/length for page frag data
+Subject: [patch 09/60] sparc64: Fix lost interrupts on sun4u.
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=net-fix-skb_seq_read-returning-wrong-offset-length-for-page-frag-data.patch
+Content-Disposition: inline; filename=sparc64-fix-lost-interrupts-on-sun4u.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,33 +38,91 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Thomas Chenault <thomas_chenault@dell.com>
+From: David S. Miller <davem@davemloft.net>
 
-[ Upstream commit 995b337952cdf7e05d288eede580257b632a8343 ]
+[ Upstream commit d0cac39e4ec8097e4c7099d291b1fdcc0fe56b58 ]
 
-When called with a consumed value that is less than skb_headlen(skb)
-bytes into a page frag, skb_seq_read() incorrectly returns an
-offset/length relative to skb->data. Ensure that data which should come
-from a page frag does.
+Based upon a report by Meelis Roos.
 
-Signed-off-by: Thomas Chenault <thomas_chenault@dell.com>
-Tested-by: Shyam Iyer <shyam_iyer@dell.com>
+Sparc64 SBUS and PCI controllers use a combination of IMAP and ICLR
+registers to manage device interrupts.
+
+The IMAP register contains the "valid" enable bit as well as CPU
+targetting information.  Whereas the ICLR register is written with
+zero at the end of handling an interrupt to reset the state machine
+for that interrupt to IDLE so it can be sent again.
+
+For PCI slot and SBUS slot devices we can have multiple interrupts
+sharing the same IMAP register.  There are individual ICLR registers
+but only one IMAP register for managing those.
+
+We represent each shared case with individual virtual IRQs so the
+generic IRQ layer thinks there is only one user of the IRQ instance.
+
+In such shared IMAP cases this is wrong, so if there are multiple
+active users then a free_irq() call will prematurely turn off the
+interrupt by clearing the Valid bit in the IMAP register even though
+there are other active users.
+
+Fix this by simply doing nothing in sun4u_disable_irq() and checking
+IRQF_DISABLED during IRQ dispatch.
+
+This situation doesn't exist in the hypervisor sun4v cases, so I left
+those alone.
+
+Tested-by: Meelis Roos <mroos@linux.ee>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/core/skbuff.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/sparc64/kernel/irq.c |   29 +++++++++++++++++++----------
+ 1 file changed, 19 insertions(+), 10 deletions(-)
 
---- a/net/core/skbuff.c
-+++ b/net/core/skbuff.c
-@@ -1992,7 +1992,7 @@ unsigned int skb_seq_read(unsigned int c
- next_skb:
- 	block_limit = skb_headlen(st->cur_skb) + st->stepped_offset;
+--- a/arch/sparc64/kernel/irq.c
++++ b/arch/sparc64/kernel/irq.c
+@@ -318,17 +318,25 @@ static void sun4u_set_affinity(unsigned 
+ 	sun4u_irq_enable(virt_irq);
+ }
  
--	if (abs_offset < block_limit) {
-+	if (abs_offset < block_limit && !st->frag_data) {
- 		*data = st->cur_skb->data + (abs_offset - st->stepped_offset);
- 		return block_limit - abs_offset;
++/* Don't do anything.  The desc->status check for IRQ_DISABLED in
++ * handler_irq() will skip the handler call and that will leave the
++ * interrupt in the sent state.  The next ->enable() call will hit the
++ * ICLR register to reset the state machine.
++ *
++ * This scheme is necessary, instead of clearing the Valid bit in the
++ * IMAP register, to handle the case of IMAP registers being shared by
++ * multiple INOs (and thus ICLR registers).  Since we use a different
++ * virtual IRQ for each shared IMAP instance, the generic code thinks
++ * there is only one user so it prematurely calls ->disable() on
++ * free_irq().
++ *
++ * We have to provide an explicit ->disable() method instead of using
++ * NULL to get the default.  The reason is that if the generic code
++ * sees that, it also hooks up a default ->shutdown method which
++ * invokes ->mask() which we do not want.  See irq_chip_set_defaults().
++ */
+ static void sun4u_irq_disable(unsigned int virt_irq)
+ {
+-	struct irq_handler_data *data = get_irq_chip_data(virt_irq);
+-
+-	if (likely(data)) {
+-		unsigned long imap = data->imap;
+-		unsigned long tmp = upa_readq(imap);
+-
+-		tmp &= ~IMAP_VALID;
+-		upa_writeq(tmp, imap);
+-	}
+ }
+ 
+ static void sun4u_irq_eoi(unsigned int virt_irq)
+@@ -739,7 +747,8 @@ void handler_irq(int irq, struct pt_regs
+ 
+ 		desc = irq_desc + virt_irq;
+ 
+-		desc->handle_irq(virt_irq, desc);
++		if (!(desc->status & IRQ_DISABLED))
++			desc->handle_irq(virt_irq, desc);
+ 
+ 		bucket_pa = next_pa;
  	}
 
 
