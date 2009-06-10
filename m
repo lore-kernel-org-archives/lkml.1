@@ -1,100 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760291AbZFJUsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761203AbZFJUtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760291AbZFJUsz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 16:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbZFJUsr
+	id S1761203AbZFJUtY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 16:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758037AbZFJUtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 16:48:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47281 "EHLO mx2.mail.elte.hu"
+	Wed, 10 Jun 2009 16:49:17 -0400
+Received: from bu3sch.de ([62.75.166.246]:59020 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757327AbZFJUsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 16:48:47 -0400
-Date: Wed, 10 Jun 2009 22:48:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
-Subject: Re: [PATCH][GIT PULL] tracing: do not translate event helper
-	macros in print format
-Message-ID: <20090610204801.GB8147@elte.hu>
-References: <20090609014534.790466803@goodmis.org> <20090609014746.481457542@goodmis.org> <20090609192159.GD6057@nowhere> <20090610094819.GA25527@infradead.org> <20090610101124.GA25042@elte.hu> <alpine.DEB.2.00.0906100812370.30552@gandalf.stny.rr.com> <20090610171648.GD31096@elte.hu> <alpine.DEB.2.00.0906101353200.30552@gandalf.stny.rr.com> <alpine.DEB.2.00.0906101436340.30552@gandalf.stny.rr.com>
+	id S1756134AbZFJUtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 16:49:16 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] Add support for NetMos 9901 Multi-IO card
+Date: Wed, 10 Jun 2009 22:47:19 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0906101436340.30552@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200906102247.19557.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch adds support for the PCI-Express NetMos 9901 Multi-IO card.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+0001:06:00.0 Serial controller [0700]: NetMos Technology Device [9710:9901] (prog-if 02 [16550])
+        Subsystem: Device [a000:1000]
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0, Cache Line Size: 64 bytes
+        Interrupt: pin A routed to IRQ 65
+        Region 0: I/O ports at 0030 [size=8]
+        Region 1: Memory at 80105000 (32-bit, non-prefetchable) [size=4K]
+        Region 4: Memory at 80104000 (32-bit, non-prefetchable) [size=4K]
+        Capabilities: <access denied>
+        Kernel driver in use: serial
+        Kernel modules: 8250_pci
 
-> Ingo,
-> 
-> This looks like it changed more than it really did, I only moved 
-> the one macro above another and added a few lines:
-> 
->  +#undef __print_symbolic
->  +#undef __get_dynamic_array
->  +#undef __get_str
->  +
-> 
-> Please pull the latest tip/tracing/ftrace-1 tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace-1
-> 
-> 
-> Steven Rostedt (1):
->       tracing: do not translate event helper macros in print format
-> 
-> ----
->  include/trace/ftrace.h |  158 ++++++++++++++++++++++++-----------------------
->  1 files changed, 81 insertions(+), 77 deletions(-)
-> ---------------------------
-> commit 6ff9a64d2aaa6eae396adc95e9c91c0cbfa6dbe4
-> Author: Steven Rostedt <srostedt@redhat.com>
-> Date:   Wed Jun 10 14:28:34 2009 -0400
-> 
->     tracing: do not translate event helper macros in print format
->     
->     By moving the macro that creates the print format code above the
->     defining of the event macro helpers (__get_str, __print_symbolic,
->     and __get_dynamic_array), we get a little cleaner print format.
->     
->     Instead of:
->     
->       (char *)((void *)REC + REC->__data_loc_name)
->     
->     we get:
->     
->        __get_str(name)
->     
->     Instead of:
->     
->        ({ static const struct trace_print_flags symbols[] = { { HI_SOFTIRQ, "HI" }, {
->     
->     we get:
->     
->        __print_symbolic(REC->vec, { HI_SOFTIRQ, "HI" }, {
+0001:06:00.1 Serial controller [0700]: NetMos Technology Device [9710:9901] (prog-if 02 [16550])
+        Subsystem: Device [a000:1000]
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0, Cache Line Size: 64 bytes
+        Interrupt: pin B routed to IRQ 65
+        Region 0: I/O ports at 0020 [size=8]
+        Region 1: Memory at 80103000 (32-bit, non-prefetchable) [size=4K]
+        Region 4: Memory at 80102000 (32-bit, non-prefetchable) [size=4K]
+        Capabilities: <access denied>
+        Kernel driver in use: serial
+        Kernel modules: 8250_pci
 
-Yeah, that's really nice! Pulled, thanks Steve!
+0001:06:00.2 Parallel controller [0701]: NetMos Technology Device [9710:9901] (prog-if 03 [IEEE1284])
+        Subsystem: Device [a000:2000]
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0, Cache Line Size: 64 bytes
+        Interrupt: pin C routed to IRQ 65
+        Region 0: I/O ports at 0010 [size=8]
+        Region 1: I/O ports at <unassigned>
+        Region 2: Memory at 80101000 (32-bit, non-prefetchable) [size=4K]
+        Region 4: Memory at 80100000 (32-bit, non-prefetchable) [size=4K]
+        Capabilities: <access denied>
+        Kernel driver in use: parport_pc
+        Kernel modules: parport_pc
 
-	Ingo
+
+[   16.760181] PCI parallel port detected: 416c:0100, I/O at 0x812010(0x0), IRQ 65
+[   16.760225] parport0: PC-style at 0x812010, irq 65 [PCSPP,TRISTATE,EPP]
+[   16.851842] serial 0001:06:00.0: enabling device (0004 -> 0007)
+[   16.883776] 0001:06:00.0: ttyS0 at I/O 0x812030 (irq = 65) is a ST16650V2
+[   16.893832] serial 0001:06:00.1: enabling device (0004 -> 0007)
+[   16.926537] 0001:06:00.1: ttyS1 at I/O 0x812020 (irq = 65) is a ST16650V2
+
+
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+
+---
+ drivers/parport/parport_pc.c |    4 ++++
+ drivers/serial/8250_pci.c    |    6 ++++++
+ include/linux/pci_ids.h      |    1 +
+ 3 files changed, 11 insertions(+)
+
+--- linux-2.6.30.orig/drivers/parport/parport_pc.c
++++ linux-2.6.30/drivers/parport/parport_pc.c
+@@ -2800,6 +2800,7 @@ enum parport_pc_pci_cards {
+ 	netmos_9755,
+ 	netmos_9805,
+ 	netmos_9815,
++	netmos_9901,
+ 	quatech_sppxp100,
+ };
+ 
+@@ -2878,6 +2879,7 @@ static struct parport_pc_pci {
+         /* netmos_9755 */               { 2, { { 0, 1 }, { 2, 3 },} }, /* untested */
+ 	/* netmos_9805 */               { 1, { { 0, -1 }, } }, /* untested */
+ 	/* netmos_9815 */               { 2, { { 0, -1 }, { 2, -1 }, } }, /* untested */
++	/* netmos_9901 */               { 1, { { 0, -1 }, } },
+ 	/* quatech_sppxp100 */		{ 1, { { 0, 1 }, } },
+ };
+ 
+@@ -2978,6 +2980,8 @@ static const struct pci_device_id parpor
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, netmos_9805 },
+ 	{ PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9815,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, netmos_9815 },
++	{ PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9901,
++	  0xA000, 0x2000, 0, 0, netmos_9901 },
+ 	/* Quatech SPPXP-100 Parallel port PCI ExpressCard */
+ 	{ PCI_VENDOR_ID_QUATECH, PCI_DEVICE_ID_QUATECH_SPPXP_100,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, quatech_sppxp100 },
+--- linux-2.6.30.orig/include/linux/pci_ids.h
++++ linux-2.6.30/include/linux/pci_ids.h
+@@ -2659,6 +2659,7 @@
+ #define PCI_DEVICE_ID_NETMOS_9835	0x9835
+ #define PCI_DEVICE_ID_NETMOS_9845	0x9845
+ #define PCI_DEVICE_ID_NETMOS_9855	0x9855
++#define PCI_DEVICE_ID_NETMOS_9901	0x9901
+ 
+ #define PCI_VENDOR_ID_3COM_2		0xa727
+ 
+--- linux-2.6.30.orig/drivers/serial/8250_pci.c
++++ linux-2.6.30/drivers/serial/8250_pci.c
+@@ -761,6 +761,8 @@ static int pci_netmos_init(struct pci_de
+ 	/* subdevice 0x00PS means <P> parallel, <S> serial */
+ 	unsigned int num_serial = dev->subsystem_device & 0xf;
+ 
++	if (dev->device == PCI_DEVICE_ID_NETMOS_9901)
++		return 0;
+ 	if (dev->subsystem_vendor == PCI_VENDOR_ID_IBM &&
+ 			dev->subsystem_device == 0x0299)
+ 		return 0;
+@@ -3556,6 +3558,10 @@ static struct pci_device_id serial_pci_t
+ 		PCI_VENDOR_ID_IBM, 0x0299,
+ 		0, 0, pbn_b0_bt_2_115200 },
+ 
++	{	PCI_VENDOR_ID_NETMOS, PCI_DEVICE_ID_NETMOS_9901,
++		0xA000, 0x1000,
++		0, 0, pbn_b0_1_115200 },
++
+ 	/*
+ 	 * These entries match devices with class COMMUNICATION_SERIAL,
+ 	 * COMMUNICATION_MODEM or COMMUNICATION_MULTISERIAL
+
+-- 
+Greetings, Michael.
