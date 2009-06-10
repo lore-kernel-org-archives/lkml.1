@@ -1,305 +1,326 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbZFJHVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756316AbZFJHXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755825AbZFJHVM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 03:21:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbZFJHU7
+	id S1756316AbZFJHXZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 03:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbZFJHXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 03:20:59 -0400
-Received: from www84.your-server.de ([213.133.104.84]:45848 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753335AbZFJHU6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 03:20:58 -0400
-Subject: [patch 2/2] procfs: provide stack information for threads V0.8
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090401193135.GA12316@elte.hu>
-References: <1238511505.364.61.camel@matrix>
-	 <20090401193135.GA12316@elte.hu>
-Content-Type: text/plain
-Date: Wed, 10 Jun 2009 09:20:41 +0200
-Message-Id: <1244618442.17616.5.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Wed, 10 Jun 2009 03:23:18 -0400
+Received: from tango.tkos.co.il ([62.219.50.35]:54886 "EHLO tango.tkos.co.il"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753352AbZFJHXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 03:23:17 -0400
+Date: Wed, 10 Jun 2009 10:22:31 +0300
+From: Baruch Siach <baruch@tkos.co.il>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux@arm.linux.org.uk
+Subject: Re: [PATCH v4] gpio: driver for PrimeCell PL061 GPIO controller
+Message-ID: <20090610072229.GC10382@tarshish>
+References: <1244399935-23128-1-git-send-email-baruch@tkos.co.il> <20090609140239.260428eb.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090609140239.260428eb.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the newest version of the formaly named "detailed stack info"
-patch which give you a better overview of the userland application stack
-usage, especially for embedded linux.
+Hi Andrew,
 
-Currently you are only able to dump the main process/thread stack usage
-which is showed in /proc/pid/status by the "VmStk" Value. But you get no
-information about the consumed stack memory of the the threads.
+On Tue, Jun 09, 2009 at 02:02:39PM -0700, Andrew Morton wrote:
+> On Sun,  7 Jun 2009 21:38:55 +0300
+> Baruch Siach <baruch@tkos.co.il> wrote:
+> 
+> > This is a driver for the ARM PrimeCell PL061 GPIO AMBA peripheral. The driver
+> > is implemented using the gpiolib framework.
+> > 
+> > This driver also includes support for the use of the PL061 as an interrupt
+> > controller (secondary).
+> > 
+> > Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+> > ---
+> > Changes in v4:
+> > 	- Depend on CONFIG_ARM_AMBA
+> > 	- Do not request the gpio for IRQ automatically, just warn if it's not 
+> > 	  requested
+> > 	- Remove SZ_4K
+> > 	- Iterate through a linked list find the source of interrupt when 
+> > 	  multiple PL061s are connected to the same IRQ trigger
+> > 	- Move hardware register defines into the .c file
+> 
+> I generated an incremental diff so that we can see what you did.
+> 
+> 
+> >  drivers/gpio/Kconfig       |    1 
+> >  drivers/gpio/pl061.c       |   92 ++++++++++++++++-------------------
+> >  include/linux/amba/pl061.h |   19 +++----
+> >  3 files changed, 54 insertions(+), 58 deletions(-)
+> > 
+> > diff -puN drivers/gpio/Kconfig~gpio-driver-for-primecell-pl061-gpio-controller-v4 drivers/gpio/Kconfig
+> > --- a/drivers/gpio/Kconfig~gpio-driver-for-primecell-pl061-gpio-controller-v4
+> > +++ a/drivers/gpio/Kconfig
+> > @@ -69,6 +69,7 @@ comment "Memory mapped GPIO expanders:"
+> >  
+> >  config GPIO_PL061
+> >  	bool "PrimeCell PL061 GPIO support"
+> > +	depends on ARM_AMBA
+> >  	help
+> >  	  Say yes here to support the PrimeCell PL061 GPIO device
+> >  
+> > diff -puN drivers/gpio/pl061.c~gpio-driver-for-primecell-pl061-gpio-controller-v4 drivers/gpio/pl061.c
+> > --- a/drivers/gpio/pl061.c~gpio-driver-for-primecell-pl061-gpio-controller-v4
+> > +++ a/drivers/gpio/pl061.c
+> > @@ -14,6 +14,7 @@
+> >  #include <linux/spinlock.h>
+> >  #include <linux/errno.h>
+> >  #include <linux/module.h>
+> > +#include <linux/list.h>
+> >  #include <linux/io.h>
+> >  #include <linux/ioport.h>
+> >  #include <linux/irq.h>
+> > @@ -24,9 +25,22 @@
+> >  #include <linux/amba/bus.h>
+> >  #include <linux/amba/pl061.h>
+> >  
+> > +#define GPIODIR 0x400
+> > +#define GPIOIS  0x404
+> > +#define GPIOIBE 0x408
+> > +#define GPIOIEV 0x40C
+> > +#define GPIOIE  0x410
+> > +#define GPIORIS 0x414
+> > +#define GPIOMIS 0x418
+> > +#define GPIOIC  0x41C
+> > +
+> >  #define PL061_GPIO_NR	8
+> >  
+> > +#define PL061_REG_SIZE	(4*1024)
+> > +
+> >  struct pl061_gpio {
+> > +	struct list_head	list;
+> 
+> Some commentary which describes this field would be nice.  What lock
+> protects it, what other list_head this list is anchored to, etc
 
-There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which
-marks the vm mapping where the thread stack pointer reside with "[thread
-stack xxxxxxxx]". xxxxxxxx is the maximum size of stack. This is a
-value information, because libpthread doesn't set the start of the stack
-to the top of the mapped area, depending of the pthread usage.
+I'll add a comment.
 
-A sample output of /proc/<pid>/task/<tid>/maps looks like:
+Regarding the lock, the only list_add() is done in the probe method, and this 
+method is serialized, as far as I know.
 
-08048000-08049000 r-xp 00000000 03:00 8312       /opt/z
-08049000-0804a000 rw-p 00001000 03:00 8312       /opt/z
-0804a000-0806b000 rw-p 00000000 00:00 0          [heap]
-a7d12000-a7d13000 ---p 00000000 00:00 0 
-a7d13000-a7f13000 rw-p 00000000 00:00 0          [thread stack: 001ff4b4]
-a7f13000-a7f14000 ---p 00000000 00:00 0 
-a7f14000-a7f36000 rw-p 00000000 00:00 0 
-a7f36000-a8069000 r-xp 00000000 03:00 4222       /lib/libc.so.6
-a8069000-a806b000 r--p 00133000 03:00 4222       /lib/libc.so.6
-a806b000-a806c000 rw-p 00135000 03:00 4222       /lib/libc.so.6
-a806c000-a806f000 rw-p 00000000 00:00 0 
-a806f000-a8083000 r-xp 00000000 03:00 14462      /lib/libpthread.so.0
-a8083000-a8084000 r--p 00013000 03:00 14462      /lib/libpthread.so.0
-a8084000-a8085000 rw-p 00014000 03:00 14462      /lib/libpthread.so.0
-a8085000-a8088000 rw-p 00000000 00:00 0 
-a8088000-a80a4000 r-xp 00000000 03:00 8317       /lib/ld-linux.so.2
-a80a4000-a80a5000 r--p 0001b000 03:00 8317       /lib/ld-linux.so.2
-a80a5000-a80a6000 rw-p 0001c000 03:00 8317       /lib/ld-linux.so.2
-afaf5000-afb0a000 rw-p 00000000 00:00 0          [stack]
-ffffe000-fffff000 r-xp 00000000 00:00 0          [vdso]
+> >  	/* Each of the two spinlocks protects a different set of hardware
+> >  	 * regiters and data structurs. This decouples the code of the IRQ from
+> >  	 * the GPIO code. This also makes the case of a GPIO routine call from
+> > @@ -37,12 +51,8 @@ struct pl061_gpio {
+> >  
+> >  	void __iomem		*base;
+> >  	struct gpio_chip	gc;
+> > -	struct work_struct	gpio_free_work;
+> > -	DECLARE_BITMAP(gpios_to_free, PL061_GPIO_NR);
+> >  };
+> >  
+> > -static u32 (*pl061_pending_irq)(int irq);
+> > -
+> >  static int pl061_direction_input(struct gpio_chip *gc, unsigned offset)
+> >  {
+> >  	struct pl061_gpio *chip = container_of(gc, struct pl061_gpio, gc);
+> > @@ -112,16 +122,6 @@ static void pl061_irq_disable(unsigned i
+> >  	spin_unlock_irqrestore(&chip->irq_lock, flags);
+> >  }
+> >  
+> > -static void pl061_irq_shutdown(unsigned irq)
+> > -{
+> > -	struct pl061_gpio *chip = get_irq_chip_data(irq);
+> > -	int offset = irq_to_gpio(irq) - chip->gc.base;
+> > -
+> > -	pl061_irq_disable(irq);
+> > -	set_bit(offset, chip->gpios_to_free);
+> > -	schedule_work(&chip->gpio_free_work);
+> > -}
+> > -
+> >  static void pl061_irq_enable(unsigned irq)
+> >  {
+> >  	struct pl061_gpio *chip = get_irq_chip_data(irq);
+> > @@ -138,16 +138,10 @@ static void pl061_irq_enable(unsigned ir
+> >  
+> >  static unsigned int pl061_irq_startup(unsigned irq)
+> >  {
+> > -	int ret;
+> > -
+> > -	ret = gpio_request(irq_to_gpio(irq), "IRQ");
+> > -	if (ret < 0) {
+> > -		pr_warning("%s: warning: gpio_request(%d) returned %d\n",
+> > -				__func__, irq_to_gpio(irq), ret);
+> > -		return 0;
+> > -	}
+> > +	if (gpio_request(irq_to_gpio(irq), "IRQ") == 0)
+> > +		pr_warning("%s: warning: GPIO%d has not been requested\n",
+> > +				__func__, irq_to_gpio(irq));
+> 
+> This is wrong, isn't it?  gpio_request() returns 0 on success.
 
- 
-Also there is a new entry "stack usage" in /proc/<pid>/{task/*,}/status
-which will you give the current stack usage in kb.
+Russell said that gpio configuration is the responsibility of the platform 
+code. Here I just warn when the gpio has not been requested, and thus 
+gpio_request() succeeds. I'll add a comment.
 
-A sample output of /proc/self/status looks like:
+> > -	gpio_direction_input(irq_to_gpio(irq));
+> >  	pl061_irq_enable(irq);
+> >  
+> >  	return 0;
+> > @@ -202,45 +196,38 @@ static struct irq_chip pl061_irqchip = {
+> >  	.startup	= pl061_irq_startup,
+> >  	.enable		= pl061_irq_enable,
+> >  	.disable	= pl061_irq_disable,
+> > -	.shutdown	= pl061_irq_shutdown,
+> >  	.set_type	= pl061_irq_type,
+> >  };
+> >  
+> >  static void pl061_irq_handler(unsigned irq, struct irq_desc *desc)
+> >  {
+> > +	struct list_head *chip_list = get_irq_chip_data(irq);
+> > +	struct list_head *ptr;
+> > +	struct pl061_gpio *chip;
+> > +
+> >  	desc->chip->ack(irq);
+> > -	while (1) {
+> > +	list_for_each(ptr, chip_list) {
+> 
+> What locking protects the newly-added list?
 
-Name:	cat
-State:	R (running)
-Tgid:	507
-Pid:	507
-.
-.
-.
-CapBnd:	fffffffffffffeff
-voluntary_ctxt_switches:	0
-nonvoluntary_ctxt_switches:	0
-Stack usage:	12 kB
+Do we need locking even though we list_add() only at probe time? (Compiling as 
+a module is not supported, so this only happens at boot time).
 
-I also fixed stack base address in /proc/<pid>/{task/*,}/stat to the
-base address of the associated thread stack and not the one of the main
-process. This makes more sense.
+> >  		unsigned long pending;
+> >  		int gpio;
+> >  
+> > -		pending = pl061_pending_irq(irq);
+> > +		chip = list_entry(ptr, struct pl061_gpio, list);
+> > +		pending = readb(chip->base + GPIOMIS);
+> > +		writeb(pending, chip->base + GPIOIC);
+> > +
+> >  		if (pending == 0)
+> > -			break;
+> > +			continue;
+> >  
+> > -		for_each_bit(gpio, &pending, BITS_PER_LONG)
+> > +		for_each_bit(gpio, &pending, PL061_GPIO_NR)
+> >  			generic_handle_irq(gpio_to_irq(gpio));
+> >  	}
+> >  	desc->chip->unmask(irq);
+> >  }
+> >  
+> > -static void pl061_gpio_free(struct work_struct *work)
+> > -{
+> > -	struct pl061_gpio *chip = container_of(work, struct pl061_gpio,
+> > -			gpio_free_work);
+> > -	int offset;
+> > -
+> > -	for_each_bit(offset, chip->gpios_to_free, PL061_GPIO_NR) {
+> > -		int gpio = offset + chip->gc.base;
+> > -
+> > -		if (test_and_clear_bit(offset, chip->gpios_to_free))
+> > -			gpio_free(gpio);
+> > -	}
+> > -}
+> > -
+> >  static int __init pl061_probe(struct amba_device *dev, struct amba_id *id)
+> >  {
+> >  	struct pl061_platform_data *pdata;
+> >  	struct pl061_gpio *chip;
+> > +	struct list_head *chip_list;
+> >  	int ret, irq, i;
+> >  
+> >  	pdata = dev->dev.platform_data;
+> > @@ -251,12 +238,12 @@ static int __init pl061_probe(struct amb
+> >  	if (chip == NULL)
+> >  		return -ENOMEM;
+> >  
+> > -	if (request_mem_region(dev->res.start, SZ_4K, "pl061") == NULL) {
+> > +	if (!request_mem_region(dev->res.start, PL061_REG_SIZE, "pl061")) {
+> >  		ret = -EBUSY;
+> >  		goto free_mem;
+> >  	}
+> >  
+> > -	chip->base = ioremap(dev->res.start, SZ_4K);
+> > +	chip->base = ioremap(dev->res.start, PL061_REG_SIZE);
+> >  	if (chip->base == NULL) {
+> >  		ret = -ENOMEM;
+> >  		goto release_region;
+> > @@ -264,8 +251,7 @@ static int __init pl061_probe(struct amb
+> >  
+> >  	spin_lock_init(&chip->lock);
+> >  	spin_lock_init(&chip->irq_lock);
+> > -
+> > -	INIT_WORK(&chip->gpio_free_work, pl061_gpio_free);
+> > +	INIT_LIST_HEAD(&chip->list);
+> >  
+> >  	chip->gc.direction_input = pl061_direction_input;
+> >  	chip->gc.direction_output = pl061_direction_output;
+> > @@ -291,7 +277,17 @@ static int __init pl061_probe(struct amb
+> >  		goto iounmap;
+> >  	}
+> >  	set_irq_chained_handler(irq, pl061_irq_handler);
+> > -	pl061_pending_irq = pdata->pending_irqs;
+> > +	if (!pdata->is_irq_initialized || !pdata->is_irq_initialized(irq)) {
+> > +		chip_list = kmalloc(sizeof(*chip_list), GFP_KERNEL);
+> > +		if (chip_list == NULL) {
+> > +			ret = -ENOMEM;
+> > +			goto iounmap;
+> > +		}
+> > +		INIT_LIST_HEAD(chip_list);
+> > +		set_irq_chip_data(irq, chip_list);
+> > +	} else
+> > +		chip_list = get_irq_chip_data(irq);
+> > +	list_add(&chip->list, chip_list);
+> >  
+> >  	for (i = 0; i < PL061_GPIO_NR; i++) {
+> >  		if (pdata->directions & (1 << i))
+> > @@ -312,7 +308,7 @@ static int __init pl061_probe(struct amb
+> >  iounmap:
+> >  	iounmap(chip->base);
+> >  release_region:
+> > -	release_mem_region(dev->res.start, SZ_4K);
+> > +	release_mem_region(dev->res.start, PL061_REG_SIZE);
+> >  free_mem:
+> >  	kfree(chip);
+> >  
+> > diff -puN include/linux/amba/pl061.h~gpio-driver-for-primecell-pl061-gpio-controller-v4 include/linux/amba/pl061.h
+> > --- a/include/linux/amba/pl061.h~gpio-driver-for-primecell-pl061-gpio-controller-v4
+> > +++ a/include/linux/amba/pl061.h
+> > @@ -1,18 +1,17 @@
+> >  /* platform data for the PL061 GPIO driver */
+> >  
+> > -#define GPIODIR 0x400
+> > -#define GPIOIS  0x404
+> > -#define GPIOIBE 0x408
+> > -#define GPIOIEV 0x40C
+> > -#define GPIOIE  0x410
+> > -#define GPIORIS 0x414
+> > -#define GPIOMIS 0x418
+> > -#define GPIOIC  0x41C
+> > -
+> >  struct pl061_platform_data {
+> >  	/* number of the first GPIO */
+> >  	unsigned	gpio_base;
+> > -	u32		(*pending_irqs)(int irq);
+> > +
+> >  	u8		directions;	/* startup directions, 1: out, 0: in */
+> >  	u8		values;		/* startup values */
+> > +
+> > +	/* This callback may be used when you have more than one PL061
+> > +	 * connected to the same IRQ trigger. This callback must return 0 on
+> > +	 * the first time it is called for each irq, and 1 on any other call.
+> > +	 * In case you are not unfortunate enough to have this setup, this
+> > +	 * pointer must be set to NULL.
+> > +	 */
+> > +	int		(*is_irq_initialized)(int irq);
+> >  };
+> > _
+> > 
+> > 
 
-Changes since last posting:
+baruch
 
- - change maps/smaps output, displays now the max. stack size
-
-The patch is against 2.6.30-rc7 and tested with on intel and ppc
-architectures.
- 
-ChangeLog:
- 20. Jan 2009 V0.1
-  - First Version for Kernel 2.6.28.1
- 31. Mar 2009 V0.2
-  - Ported to Kernel 2.6.29
- 03. Jun 2009 V0.3
-  - Ported to Kernel 2.6.30
-  - Redesigned what was suggested by Ingo Molnar 
-  - the thread watch monitor is gone
-  - the /proc/stackmon entry is also gone
-  - slim down
- 04. Jun 2009 V0.4
-  - Redesigned everything that was suggested by Andrew Morton 
-  - slim down 
- 04. Jun 2009 V0.5
-  - Code cleanup
- 06. Jun 2009 V0.6
-  - Fix missing mm->mmap_sem locking in function task_show_stack_usage()
-  - Code cleanup
- 10. Jun 2009 V0.7
-  - update Documentation/filesystem/proc.txt
- 
- Documentation/filesystems/proc.txt |    5 ++-
- fs/exec.c                          |    2 +
- fs/proc/array.c                    |   51 ++++++++++++++++++++++++++++++++++++-
- fs/proc/task_mmu.c                 |   19 +++++++++++++
- include/linux/sched.h              |    1 
- kernel/fork.c                      |    2 +
- 6 files changed, 78 insertions(+), 2 deletions(-)
-
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
-
-diff -u -N -r linux-2.6.30.orig/Documentation/filesystems/proc.txt linux-2.6.30/Documentation/filesystems/proc.txt
---- linux-2.6.30.orig/Documentation/filesystems/proc.txt	2009-06-10 09:09:27.000000000 +0200
-+++ linux-2.6.30/Documentation/filesystems/proc.txt	2009-06-10 09:07:46.000000000 +0200
-@@ -176,6 +176,7 @@
-   CapBnd: ffffffffffffffff
-   voluntary_ctxt_switches:        0
-   nonvoluntary_ctxt_switches:     1
-+  Stack usage:    12 kB
- 
- This shows you nearly the same information you would get if you viewed it with
- the ps  command.  In  fact,  ps  uses  the  proc  file  system  to  obtain its
-@@ -229,6 +230,7 @@
-  Mems_allowed_list           Same as previous, but in "list format"
-  voluntary_ctxt_switches     number of voluntary context switches
-  nonvoluntary_ctxt_switches  number of non voluntary context switches
-+ Stack usage:                stack usage high water mark (round up to page size)
- ..............................................................................
- 
- Table 1-3: Contents of the statm files (as of 2.6.8-rc3)
-@@ -307,7 +309,7 @@
- 08049000-0804a000 rw-p 00001000 03:00 8312       /opt/test
- 0804a000-0806b000 rw-p 00000000 00:00 0          [heap]
- a7cb1000-a7cb2000 ---p 00000000 00:00 0
--a7cb2000-a7eb2000 rw-p 00000000 00:00 0
-+a7cb2000-a7eb2000 rw-p 00000000 00:00 0          [thread stack: 001ff4b4]
- a7eb2000-a7eb3000 ---p 00000000 00:00 0
- a7eb3000-a7ed5000 rw-p 00000000 00:00 0
- a7ed5000-a8008000 r-xp 00000000 03:00 4222       /lib/libc.so.6
-@@ -343,6 +345,7 @@
-  [stack]                  = the stack of the main process
-  [vdso]                   = the "virtual dynamic shared object",
-                             the kernel system call handler
-+ [thread stack, xxxxxxxx] = the stack of the thread, xxxxxxxx is the stack size
- 
-  or if empty, the mapping is anonymous.
- 
-diff -u -N -r linux-2.6.30.orig/fs/exec.c linux-2.6.30/fs/exec.c
---- linux-2.6.30.orig/fs/exec.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/fs/exec.c	2009-06-04 09:32:35.000000000 +0200
-@@ -1328,6 +1328,8 @@
- 	if (retval < 0)
- 		goto out;
- 
-+	current->stack_start = current->mm->start_stack;
-+
- 	/* execve succeeded */
- 	current->fs->in_exec = 0;
- 	current->in_execve = 0;
-diff -u -N -r linux-2.6.30.orig/fs/proc/array.c linux-2.6.30/fs/proc/array.c
---- linux-2.6.30.orig/fs/proc/array.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/fs/proc/array.c	2009-06-05 21:13:30.000000000 +0200
-@@ -321,6 +321,54 @@
- 			p->nivcsw);
- }
- 
-+static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
-+					struct task_struct *p)
-+{
-+	unsigned long	i;
-+	struct page	*page;
-+	unsigned long	stkpage;
-+
-+	stkpage = KSTK_ESP(p) & PAGE_MASK;
-+
-+#ifdef CONFIG_STACK_GROWSUP
-+	for (i = vma->vm_end; i-PAGE_SIZE > stkpage; i -= PAGE_SIZE) {
-+
-+		page = follow_page(vma, i-PAGE_SIZE, 0);
-+
-+		if (!IS_ERR(page) && page)
-+			break;
-+	}
-+	return i - (p->stack_start & PAGE_MASK);
-+#else
-+	for (i = vma->vm_start; i+PAGE_SIZE <= stkpage; i += PAGE_SIZE) {
-+
-+		page = follow_page(vma, i, 0);
-+
-+		if (!IS_ERR(page) && page)
-+			break;
-+	}
-+	return (p->stack_start & PAGE_MASK) - i + PAGE_SIZE;
-+#endif
-+}
-+
-+static inline void task_show_stack_usage(struct seq_file *m,
-+						struct task_struct *task)
-+{
-+	struct vm_area_struct	*vma;
-+	struct mm_struct	*mm = get_task_mm(task);
-+
-+	if (mm) {
-+		down_read(&mm->mmap_sem);
-+		vma = find_vma(mm, task->stack_start);
-+		if (vma)
-+			seq_printf(m, "Stack usage:\t%lu kB\n",
-+				get_stack_usage_in_bytes(vma, task) >> 10);
-+
-+		up_read(&mm->mmap_sem);
-+		mmput(mm);
-+	}
-+}
-+
- int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
- 			struct pid *pid, struct task_struct *task)
- {
-@@ -340,6 +388,7 @@
- 	task_show_regs(m, task);
- #endif
- 	task_context_switch_counts(m, task);
-+	task_show_stack_usage(m, task);
- 	return 0;
- }
- 
-@@ -481,7 +530,7 @@
- 		rsslim,
- 		mm ? mm->start_code : 0,
- 		mm ? mm->end_code : 0,
--		(permitted && mm) ? mm->start_stack : 0,
-+		(permitted) ? task->stack_start : 0,
- 		esp,
- 		eip,
- 		/* The signal information here is obsolete.
-diff -u -N -r linux-2.6.30.orig/fs/proc/task_mmu.c linux-2.6.30/fs/proc/task_mmu.c
---- linux-2.6.30.orig/fs/proc/task_mmu.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/fs/proc/task_mmu.c	2009-06-10 09:02:40.000000000 +0200
-@@ -242,6 +242,25 @@
- 				} else if (vma->vm_start <= mm->start_stack &&
- 					   vma->vm_end >= mm->start_stack) {
- 					name = "[stack]";
-+				} else {
-+					unsigned long stack_start;
-+					struct proc_maps_private *pmp;
-+
-+					pmp = m->private;
-+					stack_start = pmp->task->stack_start;
-+
-+					if (vma->vm_start <= stack_start &&
-+					    vma->vm_end >= stack_start) {
-+						pad_len_spaces(m, len);
-+						seq_printf(m,
-+						 "[thread stack: %08lx]",
-+#ifdef CONFIG_STACK_GROWSUP
-+						 vma->vm_end - stack_start
-+#else
-+						 stack_start - vma->vm_start
-+#endif
-+						);
-+					}
- 				}
- 			} else {
- 				name = "[vdso]";
-diff -u -N -r linux-2.6.30.orig/include/linux/sched.h linux-2.6.30/include/linux/sched.h
---- linux-2.6.30.orig/include/linux/sched.h	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/include/linux/sched.h	2009-06-04 09:32:35.000000000 +0200
-@@ -1429,6 +1429,7 @@
- 	/* state flags for use by tracers */
- 	unsigned long trace;
- #endif
-+	unsigned long stack_start;
- };
- 
- /* Future-safe accessor for struct task_struct's cpus_allowed. */
-diff -u -N -r linux-2.6.30.orig/kernel/fork.c linux-2.6.30/kernel/fork.c
---- linux-2.6.30.orig/kernel/fork.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/kernel/fork.c	2009-06-04 13:15:35.000000000 +0200
-@@ -1092,6 +1092,8 @@
- 	if (unlikely(current->ptrace))
- 		ptrace_fork(p, clone_flags);
- 
-+	p->stack_start = stack_start;
-+
- 	/* Perform scheduler related setup. Assign this task to a CPU. */
- 	sched_fork(p, clone_flags);
- 
-
-
+-- 
+                                                     ~. .~   Tk Open Systems
+=}------------------------------------------------ooO--U--Ooo------------{=
+   - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
