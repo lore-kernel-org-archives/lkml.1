@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758203AbZFJWHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760490AbZFJWHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758203AbZFJWHP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 18:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbZFJWHE
+	id S1760490AbZFJWHx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 18:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756189AbZFJWHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 18:07:04 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:37685 "EHLO e7.ny.us.ibm.com"
+	Wed, 10 Jun 2009 18:07:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57531 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbZFJWHC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 18:07:02 -0400
-Message-ID: <4A302E83.8060807@linux.vnet.ibm.com>
-Date: Wed, 10 Jun 2009 15:06:59 -0700
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	id S1754799AbZFJWHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 18:07:44 -0400
+Date: Thu, 11 Jun 2009 00:07:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL] x86/cleanups for v2.6.31
+Message-ID: <20090610220737.GA11411@elte.hu>
+References: <20090610211240.GA1425@elte.hu> <alpine.LFD.2.01.0906101500200.6847@localhost.localdomain>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] perf_counter: extensible perf_counter_attr
-References: <1244490680.6691.1.camel@laptop> <4A2D8011.9050502@linux.vnet.ibm.com>	<1244496223.6691.2.camel@laptop> <4A2D82CE.9000206@linux.vnet.ibm.com>	<20090608215002.GB22049@elte.hu> <4A2DB1C6.6090209@linux.vnet.ibm.com>	<20090609065117.GA16707@elte.hu> <4A2E19A9.3070201@linux.vnet.ibm.com>	<20090609115346.GB3062@elte.hu> <4A2E9157.2030108@linux.vnet.ibm.com>	<20090609220020.GA26526@elte.hu> <4A2EED64.9070605@linux.vnet.ibm.com> <18990.64229.961985.491166@cargo.ozlabs.ibm.com>
-In-Reply-To: <18990.64229.961985.491166@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906101500200.6847@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras wrote:
-> Corey Ashford writes:
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> On Wed, 10 Jun 2009, Ingo Molnar wrote:
 > 
->> Ok, some disclosure here: we have not yet supported either of these features in 
->> the Power PMU's in any open source code (and perhaps the proprietary code too, 
->> but I don't know about that).  Since these features are described in an IBM 
->> proprietary document, I can't describe how they work here, except to say that 
->> they are present in the chip.
+> > 
+> > Please pull the latest x86-cleanups-for-linus git tree from:
+> > 
+> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-cleanups-for-linus
 > 
-> Actually, the public PPC970FX user manual has a chapter on the
-> performance monitor unit which describes both thresholding and the
-> instruction matching CAM, among other things.
+> Just checking - these are all independent and it doesn't much 
+> matter which order I pull in, right?
 
-Ah, good point!
+Yes - each is -git based and independent. To make sure i also built 
+each one before sending, and also booted the ones i wanted to 
+double-check (about half of them).
 
-Anyone interested can find the 970FX (G5) manual here: www.cs.lth.se/EDA116/G5.pdf
-It's supposed to be on the IBM web site too, but for some reason, the link is 
-broken (reported!).
+> That way I can go through the easy ones first, which helps me get 
+> around to the ones I decide I want to think about more later.
 
-> 
-> I think we can support thresholding using higher-order bits of the
-> event code when the low bits == PM_THRESH_TIMEO.  We can only have one
-> PM_THRESH_TIMEO event on the PMU at any given time, so there can't be
-> any conflict over the thresholder settings.
-> 
-> The IMC is more problematic, but we can't do much with it on POWER5
-> and later processors anyway, due to various things being accessible
-> only in hypervisor mode, so I have been ignoring it. :)
-> 
-> Paul.
+Yeah. Any order should be fine and if there are conflicts they 
+should be straightforward.
 
-Ug.  Well, there's always bare-metal Linux :)
+Any unreasonably heavy conflict was resolved by merging topics into 
+a single entity. This happened for one of the branches: the IRQ bits 
+i sent started out as x86/apic - the the scope of the changes 
+increased on the way.
 
-- Corey
+No unreasonable mixing of topics happened in this cycle - the topic 
+separation worked out fine, due to increased attention we spent on 
+making it happen and due to the unification activities winding down 
+(finally! :-).
 
+	Ingo
