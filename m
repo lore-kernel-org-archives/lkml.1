@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbZFJFnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbZFJFnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757050AbZFJFnY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 01:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754744AbZFJFmx
+	id S1757293AbZFJFnh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 01:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755843AbZFJFmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 01:42:53 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:51715 "EHLO
+	Wed, 10 Jun 2009 01:42:54 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:51725 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbZFJFmv (ORCPT
+	with ESMTP id S1752517AbZFJFmv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 10 Jun 2009 01:42:51 -0400
-Message-Id: <20090610054252.794233110@goodmis.org>
+Message-Id: <20090610054253.289173082@goodmis.org>
 References: <20090610054206.510574695@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 10 Jun 2009 01:42:07 -0400
+Date: Wed, 10 Jun 2009 01:42:09 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -27,48 +27,50 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
        Tom Zanussi <tzanussi@gmail.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: [PATCH 01/11] tracing/events: convert block trace points to TRACE_EVENT(), fix
-Content-Disposition: inline; filename=0001-tracing-events-convert-block-trace-points-to-TRACE_E.patch
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Subject: [PATCH 03/11] tracing: convert lockdep lock_acquired trace point to use nsec2usec tag
+Content-Disposition: inline; filename=0003-tracing-convert-lockdep-lock_acquired-trace-point-to.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Li Zefan <lizf@cn.fujitsu.com>
+From: Steven Rostedt <srostedt@redhat.com>
 
-Fix building failures when CONFIG_BLOCK == n.
+The current conversion of the nsec value in the lockstat lock event
+is performed in the fast path. Now that there is a tag to do the conversion
+we can move this into the slow path and increase performance while tracing.
 
-[ Impact: build fix ]
+This patch also fixes a typo in the tag name.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4A2F1520.8020003@cn.fujitsu.com>
+[ Impact: increase performance in lockstat tracing and tag typo fix ]
+
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/blktrace_api.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ include/trace/events/lockdep.h |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
-index c7ec31d..7e4350e 100644
---- a/include/linux/blktrace_api.h
-+++ b/include/linux/blktrace_api.h
-@@ -218,7 +218,7 @@ static inline int blk_trace_init_sysfs(struct device *dev)
+diff --git a/include/trace/events/lockdep.h b/include/trace/events/lockdep.h
+index f9d74c8..4251f17 100644
+--- a/include/trace/events/lockdep.h
++++ b/include/trace/events/lockdep.h
+@@ -74,15 +74,13 @@ TRACE_EVENT(lock_acquired,
  
- #endif /* CONFIG_BLK_DEV_IO_TRACE */
+ 	TP_STRUCT__entry(
+ 		__string(name, lock->name)
+-		__field(unsigned long, wait_usec)
+-		__field(unsigned long, wait_nsec_rem)
++		__field(long long, wait_nsec)
+ 	),
+ 	TP_fast_assign(
+ 		__assign_str(name, lock->name);
+-		__entry->wait_nsec_rem = do_div(waittime, NSEC_PER_USEC);
+-		__entry->wait_usec = (unsigned long) waittime;
++		__entry->wait_nsec = waittime;
+ 	),
+-	TP_FORMAT("<sting:name> (<uint:wait_usec>.<printf:wait_nsec_rem:03lu> us)")
++	TP_FORMAT("<string:name> (<nsec2usec:3:wait_nsec> us)")
+ );
  
--#ifdef CONFIG_EVENT_TRACING
-+#if defined(CONFIG_EVENT_TRACING) && defined(CONFIG_BLOCK)
- 
- static inline int blk_cmd_buf_len(struct request *rq)
- {
-@@ -229,7 +229,7 @@ extern void blk_dump_cmd(char *buf, struct request *rq);
- extern void blk_fill_rwbs(char *rwbs, u32 rw, int bytes);
- extern void blk_fill_rwbs_rq(char *rwbs, struct request *rq);
- 
--#endif /* CONFIG_EVENT_TRACING */
-+#endif /* CONFIG_EVENT_TRACING && CONFIG_BLOCK */
- 
- #endif /* __KERNEL__ */
  #endif
 -- 
 1.6.3.1
