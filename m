@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759503AbZFJDll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759506AbZFJDlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759503AbZFJDll (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756908AbZFJDfJ
+	id S1759506AbZFJDlx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbZFJDfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:35:09 -0400
-Received: from kroah.org ([198.145.64.141]:57037 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:35:23 -0400
+Received: from kroah.org ([198.145.64.141]:57054 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757000AbZFJDfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:35:07 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:46 2009
-Message-Id: <20090610002346.623474622@blue.kroah.org>
+	id S1756983AbZFJDfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:35:22 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:47 2009
+Message-Id: <20090610002346.847147311@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:13:58 -0700
+Date: Tue, 09 Jun 2009 17:13:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Clemens Ladisch <clemens@ladisch.de>,
-       Takashi Iwai <tiwai@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 30/60] sound: usb-audio: make the MotU Fastlane work again
+       alan@lxorguk.ukuu.org.uk, Warren Free <wfree@ipmn.com>,
+       Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 31/60] USB: isp1760: urb_dequeue doesnt always find the urbs
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=sound-usb-audio-make-the-motu-fastlane-work-again.patch
+Content-Disposition: inline; filename=usb-isp1760-urb_dequeue-doesn-t-always-find-the-urbs.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,82 +39,100 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Clemens Ladisch <clemens@ladisch.de>
+From: Warren Free <wfree@ipmn.com>
 
-commit 55de5ef970c680d8d75f2a9aa7e4f172140dbd9c upstream.
+commit 0afb20e00b5053170c85298fed842b32d20b4ea9 upstream.
 
-Kernel 2.6.18 broke the MotU Fastlane, which uses duplicate endpoint
-numbers in a manner that is not only illegal but also confuses the
-kernel's endpoint descriptor caching mechanism.  To work around this, we
-have to add a separate usb_set_interface() call to guide the USB core to
-the correct descriptors.
+The option driver (and presumably others) allocates several URBs when it
+opens and tries to free them when it closes. The isp1760_urb_dequeue
+function gets called, but the packet being dequeued is not necessarily at
+the
+front of one of the 32 queues. If not, the isp1760_urb_done function doesn't
+get called for the URB and the process trying to free it hangs forever on a
+wait_queue. This patch does two things. If the URB being dequeued has others
+queued behind it, it re-queues them. And it searches the queues looking for
+the URB being dequeued rather than just looking at the one at the front of
+the queue.
 
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-Reported-and-tested-by: David Fries <david@fries.net>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+[bigeasy@linutronix] whitespace fixes, reformating
+
+Signed-off-by: Warren Free <wfree@ipmn.com>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/usb/usbaudio.c  |    2 +-
- sound/usb/usbaudio.h  |    2 +-
- sound/usb/usbmidi.c   |   12 +++++++++++-
- sound/usb/usbquirks.h |    2 +-
- 4 files changed, 14 insertions(+), 4 deletions(-)
+ drivers/usb/host/isp1760-hcd.c |   24 ++++++++++++++++++++++--
+ 1 file changed, 22 insertions(+), 2 deletions(-)
 
---- a/sound/usb/usbaudio.c
-+++ b/sound/usb/usbaudio.c
-@@ -3367,7 +3367,7 @@ static int snd_usb_create_quirk(struct s
- 		[QUIRK_MIDI_YAMAHA] = snd_usb_create_midi_interface,
- 		[QUIRK_MIDI_MIDIMAN] = snd_usb_create_midi_interface,
- 		[QUIRK_MIDI_NOVATION] = snd_usb_create_midi_interface,
--		[QUIRK_MIDI_RAW] = snd_usb_create_midi_interface,
-+		[QUIRK_MIDI_FASTLANE] = snd_usb_create_midi_interface,
- 		[QUIRK_MIDI_EMAGIC] = snd_usb_create_midi_interface,
- 		[QUIRK_MIDI_CME] = snd_usb_create_midi_interface,
- 		[QUIRK_AUDIO_STANDARD_INTERFACE] = create_standard_audio_quirk,
---- a/sound/usb/usbaudio.h
-+++ b/sound/usb/usbaudio.h
-@@ -153,7 +153,7 @@ enum quirk_type {
- 	QUIRK_MIDI_YAMAHA,
- 	QUIRK_MIDI_MIDIMAN,
- 	QUIRK_MIDI_NOVATION,
--	QUIRK_MIDI_RAW,
-+	QUIRK_MIDI_FASTLANE,
- 	QUIRK_MIDI_EMAGIC,
- 	QUIRK_MIDI_CME,
- 	QUIRK_AUDIO_STANDARD_INTERFACE,
---- a/sound/usb/usbmidi.c
-+++ b/sound/usb/usbmidi.c
-@@ -1733,8 +1733,18 @@ int snd_usb_create_midi_interface(struct
- 		umidi->usb_protocol_ops = &snd_usbmidi_novation_ops;
- 		err = snd_usbmidi_detect_per_port_endpoints(umidi, endpoints);
+--- a/drivers/usb/host/isp1760-hcd.c
++++ b/drivers/usb/host/isp1760-hcd.c
+@@ -1645,6 +1645,7 @@ static int isp1760_urb_dequeue(struct us
+ 	u32 reg_base, or_reg, skip_reg;
+ 	unsigned long flags;
+ 	struct ptd ptd;
++	packet_enqueue *pe;
+ 
+ 	switch (usb_pipetype(urb->pipe)) {
+ 	case PIPE_ISOCHRONOUS:
+@@ -1656,6 +1657,7 @@ static int isp1760_urb_dequeue(struct us
+ 		reg_base = INT_REGS_OFFSET;
+ 		or_reg = HC_INT_IRQ_MASK_OR_REG;
+ 		skip_reg = HC_INT_PTD_SKIPMAP_REG;
++		pe = enqueue_an_INT_packet;
  		break;
--	case QUIRK_MIDI_RAW:
-+	case QUIRK_MIDI_FASTLANE:
- 		umidi->usb_protocol_ops = &snd_usbmidi_raw_ops;
-+		/*
-+		 * Interface 1 contains isochronous endpoints, but with the same
-+		 * numbers as in interface 0.  Since it is interface 1 that the
-+		 * USB core has most recently seen, these descriptors are now
-+		 * associated with the endpoint numbers.  This will foul up our
-+		 * attempts to submit bulk/interrupt URBs to the endpoints in
-+		 * interface 0, so we have to make sure that the USB core looks
-+		 * again at interface 0 by calling usb_set_interface() on it.
-+		 */
-+		usb_set_interface(umidi->chip->dev, 0, 0);
- 		err = snd_usbmidi_detect_per_port_endpoints(umidi, endpoints);
+ 
+ 	default:
+@@ -1663,6 +1665,7 @@ static int isp1760_urb_dequeue(struct us
+ 		reg_base = ATL_REGS_OFFSET;
+ 		or_reg = HC_ATL_IRQ_MASK_OR_REG;
+ 		skip_reg = HC_ATL_PTD_SKIPMAP_REG;
++		pe =  enqueue_an_ATL_packet;
  		break;
- 	case QUIRK_MIDI_EMAGIC:
---- a/sound/usb/usbquirks.h
-+++ b/sound/usb/usbquirks.h
-@@ -1756,7 +1756,7 @@ YAMAHA_DEVICE(0x7010, "UB99"),
- 		.data = & (const struct snd_usb_audio_quirk[]) {
- 			{
- 				.ifnum = 0,
--				.type = QUIRK_MIDI_RAW
-+				.type = QUIRK_MIDI_FASTLANE
- 			},
- 			{
- 				.ifnum = 1,
+ 	}
+ 
+@@ -1674,6 +1677,7 @@ static int isp1760_urb_dequeue(struct us
+ 			u32 skip_map;
+ 			u32 or_map;
+ 			struct isp1760_qtd *qtd;
++			struct isp1760_qh *qh = ints->qh;
+ 
+ 			skip_map = isp1760_readl(hcd->regs + skip_reg);
+ 			skip_map |= 1 << i;
+@@ -1686,8 +1690,7 @@ static int isp1760_urb_dequeue(struct us
+ 			priv_write_copy(priv, (u32 *)&ptd, hcd->regs + reg_base
+ 					+ i * sizeof(ptd), sizeof(ptd));
+ 			qtd = ints->qtd;
+-
+-			clean_up_qtdlist(qtd);
++			qtd = clean_up_qtdlist(qtd);
+ 
+ 			free_mem(priv, ints->payload);
+ 
+@@ -1698,7 +1701,24 @@ static int isp1760_urb_dequeue(struct us
+ 			ints->payload = 0;
+ 
+ 			isp1760_urb_done(priv, urb, status);
++			if (qtd)
++				pe(hcd, qh, qtd);
+ 			break;
++
++		} else if (ints->qtd) {
++			struct isp1760_qtd *qtd, *prev_qtd = ints->qtd;
++
++			for (qtd = ints->qtd->hw_next; qtd; qtd = qtd->hw_next) {
++				if (qtd->urb == urb) {
++					prev_qtd->hw_next = clean_up_qtdlist(qtd);
++					isp1760_urb_done(priv, urb, status);
++					break;
++				}
++				prev_qtd = qtd;
++			}
++			/* we found the urb before the end of the list */
++			if (qtd)
++				break;
+ 		}
+ 		ints++;
+ 	}
 
 
