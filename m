@@ -1,106 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbZFJNaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756329AbZFJNe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757173AbZFJNaq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 09:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbZFJNaj
+	id S1756329AbZFJNe7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 09:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbZFJNew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 09:30:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44363 "EHLO hera.kernel.org"
+	Wed, 10 Jun 2009 09:34:52 -0400
+Received: from mga01.intel.com ([192.55.52.88]:7483 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752941AbZFJNaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 09:30:39 -0400
-Subject: [git-pull -tip] headers_check fix patches 20090610
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Ungerer <gerg@snapgear.com>, David Howells <dhowells@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 10 Jun 2009 19:00:30 +0530
-Message-Id: <1244640630.20890.22.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1752394AbZFJNev convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 09:34:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,341,1241420400"; 
+   d="scan'208";a="698136335"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, "mingo@redhat.com" <mingo@redhat.com>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "linux-tip-commits@vger.kernel.org" 
+	<linux-tip-commits@vger.kernel.org>
+Date: Wed, 10 Jun 2009 14:32:05 +0100
+Subject: RE: [tip:tracing/core] x86, bts: reenable ptrace branch trace
+ support
+Thread-Topic: [tip:tracing/core] x86, bts: reenable ptrace branch trace
+ support
+Thread-Index: Acnpz4N9aPFGWHo+RB6S5Q5FqIcfkQAAA2Vg
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EBBC651F4@irsmsx504.ger.corp.intel.com>
+References: <20090424094448.A30216@sedona.ch.intel.com>
+	 <tip-7e0bfad24d85de7cf2202a7b0ce51de11a077b21@git.kernel.org>
+	 <1244637843.13761.11786.camel@twins> <20090610125108.GA13506@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EBBC651E2@irsmsx504.ger.corp.intel.com>
+ <1244640558.13761.11833.camel@twins>
+In-Reply-To: <1244640558.13761.11833.camel@twins>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit e271e1343a94e081723cb4180af3fdb5fecc1a49:
-  Ingo Molnar (1):
-        Merge branch 'x86/mce4'
+>-----Original Message-----
+>From: Peter Zijlstra [mailto:peterz@infradead.org]
+>Sent: Wednesday, June 10, 2009 3:29 PM
+>To: Metzger, Markus T
+>Cc: Ingo Molnar; mingo@redhat.com; hpa@zytor.com; linux-kernel@vger.kernel.org; tglx@linutronix.de;
+>oleg@redhat.com; linux-tip-commits@vger.kernel.org
+>Subject: RE: [tip:tracing/core] x86, bts: reenable ptrace branch trace support
+>
+>On Wed, 2009-06-10 at 14:22 +0100, Metzger, Markus T wrote:
+>>
+>> The Debug Store interface is completely in-kernel. It does not expose
+>> anything to the outside world.
+>>
+>> What we expose is a ptrace interface for branch tracing.
+>> That this is built on top of Debug Store is completely hidden.
+>> The Debug Store interface may be changed without impacting the
+>> user-visible part at any time.
+>>
+>> I do think that a ptrace interface makes sense since debuggers are the
+>> targeted users for branch tracing.
+>>
+>> I don't see why we should not merge the fixes now and then rework the
+>> in-kernel parts as needed for supporting PEBS.
+>
+>Ok, so what is all that account_locked_memory() for?
 
-are available in the git repository at:
+To allow debuggers (users) to decide how much memory they want to spend
+on branch tracing.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-top.git master
+regards,
+markus.
 
-Jaswinder Singh Rajput (3):
-      headers_check fix: m68k, swab.h
-      headers_check fix: mn10300, ptrace.h
-      headers_check fix: mn10300, setup.h
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
- arch/m68k/include/asm/swab.h      |    2 +-
- arch/mn10300/include/asm/ptrace.h |    5 ++---
- arch/mn10300/include/asm/setup.h  |    3 ++-
- 3 files changed, 5 insertions(+), 5 deletions(-)
-
-Complete diff:
-
-diff --git a/arch/m68k/include/asm/swab.h b/arch/m68k/include/asm/swab.h
-index 9e3054e..5b754aa 100644
---- a/arch/m68k/include/asm/swab.h
-+++ b/arch/m68k/include/asm/swab.h
-@@ -1,7 +1,7 @@
- #ifndef _M68K_SWAB_H
- #define _M68K_SWAB_H
- 
--#include <asm/types.h>
-+#include <linux/types.h>
- #include <linux/compiler.h>
- 
- #define __SWAB_64_THRU_32__
-diff --git a/arch/mn10300/include/asm/ptrace.h b/arch/mn10300/include/asm/ptrace.h
-index 7b06cc6..00aa680 100644
---- a/arch/mn10300/include/asm/ptrace.h
-+++ b/arch/mn10300/include/asm/ptrace.h
-@@ -77,8 +77,6 @@ struct pt_regs {
- };
- #endif
- 
--extern struct pt_regs *__frame; /* current frame pointer */
--
- /* Arbitrarily choose the same ptrace numbers as used by the Sparc code. */
- #define PTRACE_GETREGS            12
- #define PTRACE_SETREGS            13
-@@ -90,6 +88,8 @@ extern struct pt_regs *__frame; /* current frame pointer */
- 
- #if defined(__KERNEL__)
- 
-+extern struct pt_regs *__frame;		/* current frame pointer */
-+
- #if !defined(__ASSEMBLY__)
- #define user_mode(regs)			(((regs)->epsw & EPSW_nSL) == EPSW_nSL)
- #define instruction_pointer(regs)	((regs)->pc)
-@@ -99,5 +99,4 @@ extern void show_regs(struct pt_regs *);
- #define profile_pc(regs) ((regs)->pc)
- 
- #endif  /*  __KERNEL__  */
--
- #endif /* _ASM_PTRACE_H */
-diff --git a/arch/mn10300/include/asm/setup.h b/arch/mn10300/include/asm/setup.h
-index 08356c8..c229d1e 100644
---- a/arch/mn10300/include/asm/setup.h
-+++ b/arch/mn10300/include/asm/setup.h
-@@ -11,7 +11,8 @@
- #ifndef _ASM_SETUP_H
- #define _ASM_SETUP_H
- 
-+#ifdef __KERNEL__
- extern void __init unit_setup(void);
- extern void __init unit_init_IRQ(void);
--
-+#endif
- #endif /* _ASM_SETUP_H */
-
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
