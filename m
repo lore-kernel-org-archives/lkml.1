@@ -1,63 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbZFJQKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760780AbZFJQK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759969AbZFJQKQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 12:10:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757715AbZFJQKF
+	id S1760780AbZFJQK6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 12:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757715AbZFJQKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 12:10:05 -0400
-Received: from thunk.org ([69.25.196.29]:49238 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751697AbZFJQKC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 12:10:02 -0400
-Date: Wed, 10 Jun 2009 12:09:30 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: linux-next: next-20090609 hangs in early user mode
-Message-ID: <20090610160930.GB10240@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Al Viro <viro@ZenIV.linux.org.uk>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <20090610180058.99bd3dda.sfr@canb.auug.org.au> <20090610130054.GR8633@ZenIV.linux.org.uk> <20090610131909.GB6647@mit.edu> <20090610150839.GS8633@ZenIV.linux.org.uk>
+	Wed, 10 Jun 2009 12:10:50 -0400
+Received: from fmailhost05.isp.att.net ([207.115.11.55]:38364 "EHLO
+	fmailhost05.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751329AbZFJQKu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 12:10:50 -0400
+X-Originating-IP: [65.28.94.183]
+Message-ID: <4A2FDB06.8020707@lwfinger.net>
+Date: Wed, 10 Jun 2009 11:10:46 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090610150839.GS8633@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: David Rientjes <rientjes@google.com>, Mel Gorman <mel@csn.ul.ie>,
+       Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>, npiggin@suse.de,
+       yanmin.zhang@linux.intel.com
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>	 <D9VoutSOyXP.A.hvH.Ha7KKB@chimera> <4A2BBC30.2030300@lwfinger.net>	 <84144f020906070640rf5ab14nbf66d3ca7c97675f@mail.gmail.com>	 <4A2BCC6F.8090004@redhat.com>	 <84144f020906070732l31786156r5d9753a0cabfde79@mail.gmail.com>	 <20090608101739.GA15377@csn.ul.ie>	 <84144f020906080352k57f12ff9pbd696da5f332ac1a@mail.gmail.com>	 <20090608110303.GD15377@csn.ul.ie>	 <Pine.LNX.4.64.0906081657001.7036@melkki.cs.Helsinki.FI>	 <20090608141212.GE15070@csn.ul.ie> <1244531201.5024.3.camel@penberg-laptop>	 <alpine.DEB.2.00.0906090046000.28701@chino.kir.corp.google.com>	 <1244534315.5024.34.camel@penberg-laptop>	 <alpine.DEB.2.00.0906090105270.28701@chino.kir.corp.google.com>	 <1244536124.5024.41.camel@penberg-laptop>  <4A2FC62C.6030407@lwfinger.net>	 <1244648659.23799.26.camel@penberg-laptop> <1244648968.23799.27.camel@penberg-laptop>
+In-Reply-To: <1244648968.23799.27.camel@penberg-laptop>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 04:08:39PM +0100, Al Viro wrote:
-> We can, but... it's again a matter of combining things with different
-> locking.  i_flags is protected by i_mutex, so if you put another
-> unsigned short next to it, you'd better make sure that i_mutex
-> is necessary and sufficient for modifying it.
-> 
-> Depending on the target, gcc may turn 16bit read-modify-store into 32bit one,
-> so if you have two 16bit fields next to each other, you can run into
-> 
-> CPU1:                     CPU2:
-> r1 = *(u32 *)p;           r2 = *(u32 *)p;
-> r1 |= 1;                  r2 |= 1 << 16;
-> *(u32 *)p = r1;           *(u32 *)p = r2;
-> 
-> with obvious results.  So we need the same locking for both such fields...
+Pekka Enberg wrote:
 
-Yelch....  good point.  I'll look and see if there's some other 8 or
-16-bit type to combine it with, but we may have started to hit
-diminishing returns with this this approach to sliming the inode slab
-caches.  I'm beginning to think if I want to make the inodes smaller,
-I'm going to have to create a separate substructure for fields only
-used when a file descriptor is opened on that inode, both in struct
-inode and in struct ext4_inode_info.  (Lifetime management of the
-substructure is going to be non-trivial, though.)
+> Argh, that patch has a typo. Please try this one instead.
+> 
+> 			Pekka
 
-					- Ted
+I installed this patch on top of the other one and have started
+testing. It usually takes almost a day for it to occur.
+
+Larry
