@@ -1,106 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761168AbZFJVBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761626AbZFJVBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761168AbZFJVBS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 17:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbZFJVBD
+	id S1761626AbZFJVBz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 17:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760189AbZFJVBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 17:01:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43518 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752416AbZFJVBC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 17:01:02 -0400
-Date: Wed, 10 Jun 2009 23:00:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, cl@linux-foundation.org, hannes@cmpxchg.org,
-       mpm@selenic.com, npiggin@suse.de, yinghai@kernel.org
-Subject: Re: [GIT PULL] Early boot SLAB for 2.6.31
-Message-ID: <20090610210026.GA2346@elte.hu>
-References: <Pine.LNX.4.64.0906102311230.30444@melkki.cs.Helsinki.FI>
+	Wed, 10 Jun 2009 17:01:48 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46151 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758826AbZFJVBs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 17:01:48 -0400
+Date: Wed, 10 Jun 2009 23:01:44 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Denis Karpov <ext-denis.2.karpov@nokia.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/5] FAT errors, userspace notifications
+Message-ID: <20090610210144.GB1381@ucw.cz>
+References: <1243866891-18713-1-git-send-email-ext-denis.2.karpov@nokia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0906102311230.30444@melkki.cs.Helsinki.FI>
+In-Reply-To: <1243866891-18713-1-git-send-email-ext-denis.2.karpov@nokia.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
-
-> Hi Linus,
+> 2. Generic mechanism for notifications of user space about file system's 
+>    errors/inconsistency on a particular partition using:
 > 
-> Here are the core patches for enabling slab before the scheduler initializes
-> itself in the boot sequence. I added slab fallback support to the bootmem
-> allocator so that we don't need a flag day for switching to early slab.
+>      - sysfs entry /sys/block/<bdev>/<part>/fs_unclean
+>      - uevent KOBJ_CHANGE, uevent's environment variable FS_UNCLEAN=[0:1]
 > 
-> I have tested this series on x86-64 with SLAB, SLUB, and SLOB. Note: the
-> following harmless warning appears at boot:
-> 
->   [    0.000000] ------------[ cut here ]------------
->   [    0.000000] WARNING: at mm/bootmem.c:535 alloc_arch_preferred_bootmem+0x31/0x56()
->   [    0.000000] Hardware name: 
->   [    0.000000] Modules linked in:
->   [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.30 #472
->   [    0.000000] Call Trace:
->   [    0.000000]  [<ffffffff809d62c3>] ? alloc_arch_preferred_bootmem+0x31/0x56
->   [    0.000000]  [<ffffffff8025c304>] warn_slowpath_common+0x7c/0xa9
->   [    0.000000]  [<ffffffff8025c345>] warn_slowpath_null+0x14/0x16
->   [    0.000000]  [<ffffffff809d62c3>] alloc_arch_preferred_bootmem+0x31/0x56
->   [    0.000000]  [<ffffffff809d6833>] ___alloc_bootmem_nopanic+0x3f/0xc9
->   [    0.000000]  [<ffffffff809d68ce>] ___alloc_bootmem+0x11/0x3a
->   [    0.000000]  [<ffffffff809d69a0>] __alloc_bootmem+0xb/0xd
->   [    0.000000]  [<ffffffff809d21f9>] sched_init+0x43/0x4ee
->   [    0.000000]  [<ffffffff809c0aae>] start_kernel+0x1cc/0x3aa
->   [    0.000000]  [<ffffffff809c029a>] x86_64_start_reservations+0xaa/0xae
->   [    0.000000]  [<ffffffff809c037f>] x86_64_start_kernel+0xe1/0xe8
->   [    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
+>    Userspace might want to monitor these notifications (poll2() on sysfs file
+>    or udevd's rule for uevent) and fix the fs damage.
+>    Filesystem can be marked clean again by writing '0' to the corresponding 
+>    'fs_unclean' sysfs file.
 
-Yeah, i got this too:
+I see a race between userspace writing 0 and new error being detected.
 
-[    0.004000] spurious 8259A interrupt: IRQ7.
-[    0.004000] ------------[ cut here ]------------
-[    0.004000] WARNING: at mm/bootmem.c:537 alloc_arch_preferred_bootmem+0x40/0x7e()
-[    0.004000] Hardware name: System Product Name
-[    0.004000] Modules linked in:
-[    0.004000] Pid: 0, comm: swapper Not tainted 2.6.30-tip-02102-g994fdea-dirty #52083
-[    0.004000] Call Trace:
-[    0.004000]  [<ffffffff81d699bb>] ? alloc_arch_preferred_bootmem+0x40/0x7e
-[    0.004000]  [<ffffffff81078931>] warn_slowpath_common+0x8d/0xd0
-[    0.004000]  [<ffffffff8107899b>] warn_slowpath_null+0x27/0x3d
-[    0.004000]  [<ffffffff81d699bb>] alloc_arch_preferred_bootmem+0x40/0x7e
-[    0.004000]  [<ffffffff81079992>] ? vprintk+0x2d6/0x31b
-[    0.004000]  [<ffffffff81d6a036>] ___alloc_bootmem_nopanic+0x4e/0xec
-[    0.004000]  [<ffffffff81d6a0f4>] ___alloc_bootmem+0x20/0x61
-[    0.004000]  [<ffffffff81053dc8>] ? default_spin_lock_flags+0x1e/0x36
-[    0.004000]  [<ffffffff81d6a28b>] __alloc_bootmem+0x1e/0x34
-[    0.004000]  [<ffffffff817971cf>] vgacon_scrollback_startup+0x3d/0xa4
-[    0.004000]  [<ffffffff8103ad11>] ? native_io_delay+0xd/0x58
-[    0.004000]  [<ffffffff813d3545>] vgacon_startup+0x38f/0x3be
-[    0.004000]  [<ffffffff81d4e140>] ? early_idt_handler+0x0/0x71
-[    0.004000]  [<ffffffff81d79275>] con_init+0x2e/0x246
-[    0.004000]  [<ffffffff81d4e140>] ? early_idt_handler+0x0/0x71
-[    0.004000]  [<ffffffff81d789aa>] console_init+0x28/0x50
-[    0.004000]  [<ffffffff810530f5>] ? native_irq_enable+0xb/0xc
-[    0.004000]  [<ffffffff81d4eead>] start_kernel+0x20e/0x35b
-[    0.004000]  [<ffffffff81d4e140>] ? early_idt_handler+0x0/0x71
-[    0.004000]  [<ffffffff81d4e140>] ? early_idt_handler+0x0/0x71
-[    0.004000]  [<ffffffff81d4e2b2>] x86_64_start_reservations+0xb9/0xd4
-[    0.004000]  [<ffffffff81d4e000>] ? __init_begin+0x0/0x140
-[    0.004000]  [<ffffffff81d4e3d1>] x86_64_start_kernel+0x104/0x127
-[    0.004000] ---[ end trace a7919e7f17c0a725 ]---
-[    0.004000] Console: colour VGA+ 80x25
-[    0.004000] console handover: boot [earlyser0] -> real [ttyS0]
-
-box booted up fine otherwise.
-
-	Ingo
+Plus I don't think we have support for online fsck, not even on FAT...
+       	     	      	   	       	      	    	     	Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
