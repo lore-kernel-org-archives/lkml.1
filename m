@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757179AbZFJIJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757580AbZFJIKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757179AbZFJIJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 04:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755766AbZFJIJP
+	id S1757580AbZFJIKp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 04:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756888AbZFJIK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 04:09:15 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51050
+	Wed, 10 Jun 2009 04:10:27 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50039
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755511AbZFJIJN (ORCPT
+	by vger.kernel.org with ESMTP id S1755766AbZFJIKZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 04:09:13 -0400
-Date: Wed, 10 Jun 2009 01:09:15 -0700 (PDT)
-Message-Id: <20090610.010915.255287284.davem@davemloft.net>
-To: rusty@rustcorp.com.au
-Cc: amwang@redhat.com, linux-kernel@vger.kernel.org, jdike@addtoit.com,
-       hch@infradead.org, mingo@elte.hu, akpm@linux-foundation.org,
-       sparclinux@vger.kernel.org, linux-alpha@vger.kernel.org,
-       linux-ia64@vger.kernel.org
-Subject: Re: [Patch 4/5] module: trim exception table in module_free()
+	Wed, 10 Jun 2009 04:10:25 -0400
+Date: Wed, 10 Jun 2009 01:10:27 -0700 (PDT)
+Message-Id: <20090610.011027.43904351.davem@davemloft.net>
+To: oliver@hartkopp.net
+Cc: hawk@comx.dk, paulmck@linux.vnet.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, wg@grandegger.com,
+       vladislav.yasevich@hp.com, sri@us.ibm.com, linux-sctp@vger.kernel.org,
+       Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH 3/5] can: af_can.c use rcu_barrier() on module unload.
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <200906060038.03089.rusty@rustcorp.com.au>
-References: <200906041800.54696.rusty@rustcorp.com.au>
-	<4A278C62.8000801@redhat.com>
-	<200906060038.03089.rusty@rustcorp.com.au>
+In-Reply-To: <4A2D112A.4000308@hartkopp.net>
+References: <20090608130959.10052.54590.stgit@localhost>
+	<20090608131138.10052.5408.stgit@localhost>
+	<4A2D112A.4000308@hartkopp.net>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -31,15 +33,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Sat, 6 Jun 2009 00:38:02 +0930
+From: Oliver Hartkopp <oliver@hartkopp.net>
+Date: Mon, 08 Jun 2009 15:24:58 +0200
 
-> Sparc32 is unique; it doesn't seem to define ARCH_HAS_SORT_EXTABLE,
-> yet it defines its own sort_extable() which overrides the one in lib.
-> It doesn't sort, so we have to mark deleted entries instead of
-> actually trimming them.
-> 
-> Inspired-by: Amerigo Wang <amwang@redhat.com>
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Acked-By: Oliver Hartkopp <oliver@hartkopp.net>
 
-Acked-by: David S. Miller <davem@davemloft.net>
+Please don't capitalize the "By" in "Acked-By".  Otherwise
+patchwork doesn't pick them up automatically.
+
+It's just like "Signed-off-by", only the first word is capitalized.
+
+Thank you.
