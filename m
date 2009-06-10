@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756842AbZFJBfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757632AbZFJBff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756842AbZFJBfT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 21:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbZFJBfI
+	id S1757632AbZFJBff (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 21:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbZFJBfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 9 Jun 2009 21:35:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37890 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753127AbZFJBfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 9 Jun 2009 21:35:08 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57613 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752390AbZFJBfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 21:35:07 -0400
-Message-ID: <4A2F0E26.9010203@cn.fujitsu.com>
-Date: Wed, 10 Jun 2009 09:36:38 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+Message-ID: <4A2F0DC2.6070604@kernel.org>
+Date: Wed, 10 Jun 2009 10:34:58 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing/events/ring-buffer: block trace
- points and fix
-References: <20090609163657.557589106@goodmis.org> <20090609234655.GA24118@elte.hu> <4A2F0C4A.8020109@cn.fujitsu.com> <alpine.DEB.2.00.0906092131190.30552@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0906092131190.30552@gandalf.stny.rr.com>
+To: david@lang.hm
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Intel X25E doesn't work with nv sata in current kernels
+References: <alpine.DEB.1.10.0905181041310.15782@asgard> <4A125841.5000608@kernel.org> <alpine.DEB.1.10.0906081912000.9159@asgard>
+In-Reply-To: <alpine.DEB.1.10.0906081912000.9159@asgard>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 10 Jun 2009 01:35:02 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> In file included from mm/highmem.c:30:
->>> include/linux/blktrace_api.h:223: warning: ?struct request? declared inside parameter list
->>> include/linux/blktrace_api.h:223: warning: its scope is only this definition or declaration, which is probably not what you want
->>> include/linux/blktrace_api.h: In function ?blk_cmd_buf_len?:
->>> include/linux/blktrace_api.h:225: error: implicit declaration of function ?blk_pc_request?
->>> include/linux/blktrace_api.h:225: error: dereferencing pointer to incomplete type
->>> include/linux/blktrace_api.h: At top level:
->>> include/linux/blktrace_api.h:228: warning: ?struct request? declared inside parameter list
->>> include/linux/blktrace_api.h:230: warning: ?struct request? declared inside parameter list
->>> distcc[15629] ERROR: compile mm/highmem.c on a/32 failed
->>>
->> I've fixed it. I'll post a new version after I've done some
->> more building tests.
-> 
-> Ingo,
-> 
-> Should Li post a delta fix, or should we just rebase?
-> 
+Hello,
 
-I thought we should rebase it, since it causes building failure which
-might hurt bisectability.
+david@lang.hm wrote:
+> Tejun did come up with a patch that makes this work, I haven't heard
+> from him in a couple of days so I don't know if he considers it good
+> enough to go in or not.
+> 
+> it would be very nice to have this expensive SSD usable without having
+> to patch the kernel or run an old kernel ;-)
+> 
+> I verified that 2.6.18 from centos 5.3 is able to see the SSD on this
+> hardware, but 2.6.28-13 (debian) and 2.6.29-[13] and 2.6.30-rc[67] cannot.
 
+I'll clean it up a bit and push upstream for 2.6.31.  I'm a little bit
+afraid that the behavior change is not minor and has potential of
+breaking other configurations.  So, for the time being, 2.6.30 would
+require libata.force=nohrst as workaround.
+
+Thanks.
+
+-- 
+tejun
