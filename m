@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760664AbZFJTkO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760896AbZFJTlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760664AbZFJTkO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 15:40:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbZFJTkD
+	id S1760896AbZFJTlT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 15:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbZFJTlL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 15:40:03 -0400
-Received: from main.gmane.org ([80.91.229.2]:54808 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752594AbZFJTkC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 15:40:02 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?ISO-8859-1?Q?Sven_K=F6hler?= <sven.koehler@gmail.com>
-Subject: Re: sound skipping regression introduced in 2.6.30-rc8
-Date: Wed, 10 Jun 2009 21:37:41 +0200
-Message-ID: <4A300B85.2010106@gmail.com>
-References: <20090610.112804.193703669.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Jun 2009 15:41:11 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60670 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754750AbZFJTlK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 15:41:10 -0400
+Message-ID: <4A2FFBDB.7070504@zytor.com>
+Date: Wed, 10 Jun 2009 11:30:51 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: tj@kernel.org, JBeulich@novell.com, andi@firstfloor.org, mingo@elte.hu,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org, x86@kernel.org,
+       ink@jurassic.park.msu.ru, rth@twiddle.net, linux@arm.linux.org.uk,
+       hskinnemoen@atmel.com, cooloney@kernel.org, starvik@axis.com,
+       jesper.nilsson@axis.com, dhowells@redhat.com,
+       ysato@users.sourceforge.jp, tony.luck@intel.com, takata@linux-m32r.org,
+       monstr@monstr.eu, ralf@linux-mips.org, kyle@mcmartin.ca,
+       benh@kernel.crashing.org, paulus@samba.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, lethal@linux-sh.org, jdike@addtoit.com,
+       chris@zankel.net, rusty@rustcorp.com.au, jens.axboe@oracle.com,
+       davej@redhat.com, jeremy@xensource.com, linux-mm@kvack.org
+Subject: Re: [PATCH 3/7] percpu: clean up percpu variable definitions
+References: <1243846708-805-1-git-send-email-tj@kernel.org>	<1243846708-805-4-git-send-email-tj@kernel.org> <20090601.024006.98975069.davem@davemloft.net>
+In-Reply-To: <20090601.024006.98975069.davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: tiwai@suse.de, linux-kernel@vger.kernel.org
-X-Gmane-NNTP-Posting-Host: 77-20-200-126-dynip.superkabel.de
-User-Agent: Thunderbird 2.0.0.21 (X11/20090509)
-In-Reply-To: <20090610.112804.193703669.davem@davemloft.net>
-X-Enigmail-Version: 0.95.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller schrieb:
-> This change:
+David Miller wrote:
+> From: Tejun Heo <tj@kernel.org>
+> Date: Mon,  1 Jun 2009 17:58:24 +0900
 > 
-> commit c87d9732004b3f8fd82d729f12ccfb96c0df279e
-> Author: Takashi Iwai <tiwai@suse.de>
-> Date:   Wed May 27 10:53:33 2009 +0200
+>> --- a/arch/cris/include/asm/mmu_context.h
+>> +++ b/arch/cris/include/asm/mmu_context.h
+>> @@ -17,7 +17,7 @@ extern void switch_mm(struct mm_struct *prev, struct mm_struct *next,
+>>   * registers like cr3 on the i386
+>>   */
+>>  
+>> -extern volatile DEFINE_PER_CPU(pgd_t *,current_pgd); /* defined in arch/cris/mm/fault.c */
+>> +DECLARE_PER_CPU(pgd_t *,current_pgd); /* defined in arch/cris/mm/fault.c */
+>>  
+>>  static inline void enter_lazy_tlb(struct mm_struct *mm, struct task_struct *tsk)
+>>  {
 > 
->     ALSA: Enable PCM hw_ptr_jiffies check only in xrun_debug mode
->     
->     The PCM hw_ptr jiffies check results sometimes in problems when a
->     hardware doesn't give smooth hw_ptr updates.  So far, au88x0 and some
->     other drivers appear not working due to this strict check.
->     However, this check is a nice debug tool, and the capability should be
->     still kept.
->     
->     Hence, we disable this check now as default unless the user enables it
->     by setting the xrun_debug mode to the specific stream via a proc file.
->     
->     Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> Yes volatile sucks, but might this break something?
 > 
-> causes sound to skip while listing to MP3s using mplayer on
-> intel8x0 sound cards.
+> Whether the volatile is actually needed or not, it's bad to have this
+> kind of potential behavior changing nugget hidden in this seemingly
+> inocuous change.  Especially if you're the poor soul who ends up
+> having to debug it :-/
 
-I'm also affected by the issue described above.
+Shouldn't the "volatile" go inside the DECLARE_PER_CPU() with the rest
+of the type?  [Disclaimer: I haven't actually looked.]
 
-Can somebody point out, how I can set this xrun_debug thing or can
-somebody provide a patch that reverts the change?
+	-hpa
 
-
-Regards,
-  Sven
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
