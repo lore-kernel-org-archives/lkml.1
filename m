@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758566AbZFJDip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbZFJDid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758566AbZFJDip (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756122AbZFJDeX
+	id S1758304AbZFJDid (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbZFJDeT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:34:23 -0400
-Received: from kroah.org ([198.145.64.141]:56820 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:34:19 -0400
+Received: from kroah.org ([198.145.64.141]:56806 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756040AbZFJDeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:34:20 -0400
+	id S1755962AbZFJDeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:34:17 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:44 2009
-Message-Id: <20090610002344.088865614@blue.kroah.org>
+Message-Id: <20090610002343.849169845@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:13:47 -0700
+Date: Tue, 09 Jun 2009 17:13:46 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Chan <mchan@broadcom.com>,
-       "David S. Miller" <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, Adam Radford <aradford@gmail.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 19/60] bnx2: Fix panic in bnx2_poll_work().
+Subject: [patch 18/60] [SCSI] 3w-xxxx: scsi_dma_unmap fix
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=bnx2-fix-panic-in-bnx2_poll_work.patch
+Content-Disposition: inline; filename=3w-xxxx-scsi_dma_unmap-fix.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,62 +39,60 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Michael Chan <mchan@broadcom.com>
+From: adam radford <aradford@gmail.com>
 
-commit 581daf7e00c5e766f26aff80a61a860a17b0d75a upstream.
+commit 7b14f58ad65f9d74e4273fb45360cfea824495aa upstream.
 
-Add barrier() to bnx2_get_hw_{tx|rx}_cons() to fix this issue:
+This patch fixes the following regression that occurred during the
+scsi_dma_map()/unmap()
+changes when compiling with CONFIG_DMA_API_DEBUG=y :
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12698
+WARNING: at lib/dma-debug.c:496 check_unmap+0x142/0x542()
+Hardware name:
+3w-xxxx 0000:02:02.0: DMA-API: device driver tries to free DMA memory
+it has not allocated [device address=0x0000000000000000] [size=36
+bytes]
 
-This issue was reported by multiple i386 users.  Without barrier(),
-the compiled code looks like the following where %eax contains the
-address of the tx_cons or rx_cons in the DMA status block.  The
-status block contents can change between the cmpb and the movzwl
-instruction.  The driver would crash if the value was not 0xff during
-the cmpb instruction, but changed to 0xff during the movzwl
-instruction.
-
-6828:	80 38 ff             	cmpb   $0xff,(%eax)
-682b:	0f b7 10             	movzwl (%eax),%edx
-
-With the added barrier(), the compiled code now looks correct:
-
-683d:	0f b7 10             	movzwl (%eax),%edx
-6840:	0f b6 c2             	movzbl %dl,%eax
-6843:	3d ff 00 00 00       	cmp    $0xff,%eax
-
-Thanks to Pascal de Bruijn <pmjdebruijn@pcode.nl> for reporting the
-problem and Holger Noefer <hnoefer@pironet-ndh.com> for patiently
-testing test patches for us.
-
-[greg - took out version change]
-
-Signed-off-by: Michael Chan <mchan@broadcom.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Adam Radford <aradford@gmail.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/bnx2.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/scsi/3w-xxxx.c |    5 +++--
+ drivers/scsi/3w-xxxx.h |    2 +-
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
---- a/drivers/net/bnx2.c
-+++ b/drivers/net/bnx2.c
-@@ -2574,6 +2574,7 @@ bnx2_get_hw_tx_cons(struct bnx2_napi *bn
- 	/* Tell compiler that status block fields can change. */
- 	barrier();
- 	cons = *bnapi->hw_tx_cons_ptr;
-+	barrier();
- 	if (unlikely((cons & MAX_TX_DESC_CNT) == MAX_TX_DESC_CNT))
- 		cons++;
- 	return cons;
-@@ -2849,6 +2850,7 @@ bnx2_get_hw_rx_cons(struct bnx2_napi *bn
- 	/* Tell compiler that status block fields can change. */
- 	barrier();
- 	cons = *bnapi->hw_rx_cons_ptr;
-+	barrier();
- 	if (unlikely((cons & MAX_RX_DESC_CNT) == MAX_RX_DESC_CNT))
- 		cons++;
- 	return cons;
+--- a/drivers/scsi/3w-xxxx.c
++++ b/drivers/scsi/3w-xxxx.c
+@@ -6,7 +6,7 @@
+    		     Arnaldo Carvalho de Melo <acme@conectiva.com.br>
+                      Brad Strand <linux@3ware.com>
+ 
+-   Copyright (C) 1999-2007 3ware Inc.
++   Copyright (C) 1999-2009 3ware Inc.
+ 
+    Kernel compatiblity By: 	Andre Hedrick <andre@suse.com>
+    Non-Copyright (C) 2000	Andre Hedrick <andre@suse.com>
+@@ -1294,7 +1294,8 @@ static void tw_unmap_scsi_data(struct pc
+ {
+ 	dprintk(KERN_WARNING "3w-xxxx: tw_unmap_scsi_data()\n");
+ 
+-	scsi_dma_unmap(cmd);
++	if (cmd->SCp.phase == TW_PHASE_SGLIST)
++		scsi_dma_unmap(cmd);
+ } /* End tw_unmap_scsi_data() */
+ 
+ /* This function will reset a device extension */
+--- a/drivers/scsi/3w-xxxx.h
++++ b/drivers/scsi/3w-xxxx.h
+@@ -6,7 +6,7 @@
+    		     Arnaldo Carvalho de Melo <acme@conectiva.com.br>
+                      Brad Strand <linux@3ware.com>
+ 
+-   Copyright (C) 1999-2007 3ware Inc.
++   Copyright (C) 1999-2009 3ware Inc.
+ 
+    Kernel compatiblity By:	Andre Hedrick <andre@suse.com>
+    Non-Copyright (C) 2000	Andre Hedrick <andre@suse.com>
 
 
