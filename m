@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbZFJDgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbZFJDiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbZFJDgb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbZFJDdv
+	id S1758212AbZFJDiU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbZFJDeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:33:51 -0400
-Received: from kroah.org ([198.145.64.141]:56698 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:34:13 -0400
+Received: from kroah.org ([198.145.64.141]:56785 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755880AbZFJDdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:33:50 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:42 2009
-Message-Id: <20090610002342.430456505@blue.kroah.org>
+	id S1755962AbZFJDeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:34:12 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:43 2009
+Message-Id: <20090610002343.623341993@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:13:40 -0700
+Date: Tue, 09 Jun 2009 17:13:45 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,46 +25,62 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Patrick McHardy <kaber@trash.net>,
-       "David S. Miller" <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 12/60] vlan/macvlan: fix NULL pointer dereferences in ethtool handlers
+Subject: [patch 17/60] x86: work around Fedora-11 x86-32 kernel failures on Intel Atom CPUs
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=vlan-macvlan-fix-null-pointer-dereferences-in-ethtool-handlers.patch
+Content-Disposition: inline; filename=x86-work-around-fedora-11-x86-32-kernel-failures-on-intel-atom-cpus.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Patrick McHardy <kaber@trash.net>
+From: Ingo Molnar <mingo@elte.hu>
+commit 211b3d03c7400f48a781977a50104c9d12f4e229 upstream
 
-[ Upstream commit 7816a0a862d851d0b05710e7d94bfe390f3180e2 ]
+[Trivial backport to 2.6.27 by cebbert@redhat.com]
 
-Check whether the underlying device provides a set of ethtool ops before
-checking for individual handlers to avoid NULL pointer dereferences.
+x86: work around Fedora-11 x86-32 kernel failures on Intel Atom CPUs
 
-Reported-by: Art van Breemen <ard@telegraafnet.nl>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Impact: work around boot crash
+
+Work around Intel Atom erratum AAH41 (probabilistically) - it's triggering
+in the field.
+
+Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
+Tested-by: Kyle McMartin <kyle@redhat.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Cc: <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/macvlan.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/net/macvlan.c
-+++ b/drivers/net/macvlan.c
-@@ -328,7 +328,8 @@ static u32 macvlan_ethtool_get_rx_csum(s
- 	const struct macvlan_dev *vlan = netdev_priv(dev);
- 	struct net_device *lowerdev = vlan->lowerdev;
+---
+ arch/x86/mm/pageattr.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -565,6 +565,17 @@ static int split_large_page(pte_t *kpte,
+ 	ref_prot = pte_pgprot(pte_mkexec(pte_clrhuge(*kpte)));
+ 	pgprot_val(ref_prot) |= _PAGE_PRESENT;
+ 	__set_pmd_pte(kpte, address, mk_pte(base, ref_prot));
++
++	/*
++	 * Intel Atom errata AAH41 workaround.
++	 *
++	 * The real fix should be in hw or in a microcode update, but
++	 * we also probabilistically try to reduce the window of having
++	 * a large TLB mixed with 4K TLBs while instruction fetches are
++	 * going on.
++	 */
++	__flush_tlb_all();
++
+ 	base = NULL;
  
--	if (lowerdev->ethtool_ops->get_rx_csum == NULL)
-+	if (lowerdev->ethtool_ops == NULL ||
-+	    lowerdev->ethtool_ops->get_rx_csum == NULL)
- 		return 0;
- 	return lowerdev->ethtool_ops->get_rx_csum(lowerdev);
- }
+ out_unlock:
 
 
