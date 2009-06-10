@@ -1,129 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755644AbZFJAMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760067AbZFJAOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755644AbZFJAMj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 20:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZFJAMb
+	id S1760067AbZFJAOj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 20:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbZFJAOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 20:12:31 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:48128 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751463AbZFJAMa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 20:12:30 -0400
-Date: Wed, 10 Jun 2009 08:58:58 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [PATCH] memcg: fix mem_cgroup_isolate_lru_page to use the same
- rotate logic at busy path
-Message-Id: <20090610085858.fd3a60ed.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090609182253.009c98a3.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090609181505.4083a213.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090609182253.009c98a3.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 9 Jun 2009 20:14:32 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:43278 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752786AbZFJAOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 20:14:32 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18990.64229.961985.491166@cargo.ozlabs.ibm.com>
+Date: Wed, 10 Jun 2009 10:14:29 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf_counter: extensible perf_counter_attr
+In-Reply-To: <4A2EED64.9070605@linux.vnet.ibm.com>
+References: <1244490680.6691.1.camel@laptop>
+	<4A2D8011.9050502@linux.vnet.ibm.com>
+	<1244496223.6691.2.camel@laptop>
+	<4A2D82CE.9000206@linux.vnet.ibm.com>
+	<20090608215002.GB22049@elte.hu>
+	<4A2DB1C6.6090209@linux.vnet.ibm.com>
+	<20090609065117.GA16707@elte.hu>
+	<4A2E19A9.3070201@linux.vnet.ibm.com>
+	<20090609115346.GB3062@elte.hu>
+	<4A2E9157.2030108@linux.vnet.ibm.com>
+	<20090609220020.GA26526@elte.hu>
+	<4A2EED64.9070605@linux.vnet.ibm.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009 18:22:53 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> This patch tries to fix memcg's lru rotation sanity...make memcg use
-> the same logic as global LRU does.
-> 
-> Now, at __isolate_lru_page() retruns -EBUSY, the page is rotated to
-> the tail of LRU in global LRU's isolate LRU pages. But in memcg,
-> it's not handled. This makes memcg do the same behavior as global LRU
-> and rotate LRU in the page is busy.
-> 
-> Note: __isolate_lru_page() is not isolate_lru_page() and it's just used
-> in sc->isolate_pages() logic.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-Looks good to me.
+Corey Ashford writes:
 
-	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> Ok, some disclosure here: we have not yet supported either of these features in 
+> the Power PMU's in any open source code (and perhaps the proprietary code too, 
+> but I don't know about that).  Since these features are described in an IBM 
+> proprietary document, I can't describe how they work here, except to say that 
+> they are present in the chip.
 
-> ---
->  mm/memcontrol.c |   13 ++++++++++++-
->  mm/vmscan.c     |    4 +++-
->  2 files changed, 15 insertions(+), 2 deletions(-)
-> 
-> Index: mmotm-2.6.30-Jun4/mm/vmscan.c
-> ===================================================================
-> --- mmotm-2.6.30-Jun4.orig/mm/vmscan.c
-> +++ mmotm-2.6.30-Jun4/mm/vmscan.c
-> @@ -842,7 +842,6 @@ int __isolate_lru_page(struct page *page
->  		 */
->  		ClearPageLRU(page);
->  		ret = 0;
-> -		mem_cgroup_del_lru(page);
->  	}
->  
->  	return ret;
-> @@ -890,12 +889,14 @@ static unsigned long isolate_lru_pages(u
->  		switch (__isolate_lru_page(page, mode, file)) {
->  		case 0:
->  			list_move(&page->lru, dst);
-> +			mem_cgroup_del_lru(page);
->  			nr_taken++;
->  			break;
->  
->  		case -EBUSY:
->  			/* else it is being freed elsewhere */
->  			list_move(&page->lru, src);
-> +			mem_cgroup_rotate_lru_list(page, page_lru(page));
->  			continue;
->  
->  		default:
-> @@ -937,6 +938,7 @@ static unsigned long isolate_lru_pages(u
->  			switch (__isolate_lru_page(cursor_page, mode, file)) {
->  			case 0:
->  				list_move(&cursor_page->lru, dst);
-> +				mem_cgroup_del_lru(page);
->  				nr_taken++;
->  				scan++;
->  				break;
-> Index: mmotm-2.6.30-Jun4/mm/memcontrol.c
-> ===================================================================
-> --- mmotm-2.6.30-Jun4.orig/mm/memcontrol.c
-> +++ mmotm-2.6.30-Jun4/mm/memcontrol.c
-> @@ -649,6 +649,7 @@ unsigned long mem_cgroup_isolate_pages(u
->  	int zid = zone_idx(z);
->  	struct mem_cgroup_per_zone *mz;
->  	int lru = LRU_FILE * !!file + !!active;
-> +	int ret;
->  
->  	BUG_ON(!mem_cont);
->  	mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
-> @@ -666,9 +667,19 @@ unsigned long mem_cgroup_isolate_pages(u
->  			continue;
->  
->  		scan++;
-> -		if (__isolate_lru_page(page, mode, file) == 0) {
-> +		ret = __isolate_lru_page(page, mode, file);
-> +		switch (ret) {
-> +		case 0:
->  			list_move(&page->lru, dst);
-> +			mem_cgroup_del_lru(page);
->  			nr_taken++;
-> +			break;
-> +		case -EBUSY:
-> +			/* we don't affect global LRU but rotate in our LRU */
-> +			mem_cgroup_rotate_lru_list(page, page_lru(page));
-> +			break;
-> +		default:
-> +			break;
->  		}
->  	}
->  
-> 
+Actually, the public PPC970FX user manual has a chapter on the
+performance monitor unit which describes both thresholding and the
+instruction matching CAM, among other things.
+
+I think we can support thresholding using higher-order bits of the
+event code when the low bits == PM_THRESH_TIMEO.  We can only have one
+PM_THRESH_TIMEO event on the PMU at any given time, so there can't be
+any conflict over the thresholder settings.
+
+The IMC is more problematic, but we can't do much with it on POWER5
+and later processors anyway, due to various things being accessible
+only in hypervisor mode, so I have been ignoring it. :)
+
+Paul.
