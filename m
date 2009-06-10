@@ -1,68 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbZFJJwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbZFJJxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbZFJJwU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 05:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758293AbZFJJwJ
+	id S1755639AbZFJJxZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 05:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZFJJxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 05:52:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46739 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755919AbZFJJwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 05:52:08 -0400
-Date: Wed, 10 Jun 2009 09:51:32 GMT
-From: tip-bot for Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       benh@kernel.crashing.org, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:core/locking] spinlock: Add missing __raw_spin_lock_flags() stub for UP
-Message-ID: <tip-04dce7d9d429ea5ea04e9432d1726c930f4d67da@git.kernel.org>
-Git-Commit-ID: 04dce7d9d429ea5ea04e9432d1726c930f4d67da
-X-Mailer: tip-git-log-daemon
+	Wed, 10 Jun 2009 05:53:18 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:43849 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752367AbZFJJxR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 05:53:17 -0400
+Date: Wed, 10 Jun 2009 05:53:19 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 23/24] GFS2: Fix locking issue mounting gfs2meta fs
+Message-ID: <20090610095319.GC25527@infradead.org>
+References: <1244622665-7470-15-git-send-email-swhiteho@redhat.com> <1244622665-7470-16-git-send-email-swhiteho@redhat.com> <1244622665-7470-17-git-send-email-swhiteho@redhat.com> <1244622665-7470-18-git-send-email-swhiteho@redhat.com> <1244622665-7470-19-git-send-email-swhiteho@redhat.com> <1244622665-7470-20-git-send-email-swhiteho@redhat.com> <1244622665-7470-21-git-send-email-swhiteho@redhat.com> <1244622665-7470-22-git-send-email-swhiteho@redhat.com> <1244622665-7470-23-git-send-email-swhiteho@redhat.com> <1244622665-7470-24-git-send-email-swhiteho@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 10 Jun 2009 09:51:33 +0000 (UTC)
+In-Reply-To: <1244622665-7470-24-git-send-email-swhiteho@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  04dce7d9d429ea5ea04e9432d1726c930f4d67da
-Gitweb:     http://git.kernel.org/tip/04dce7d9d429ea5ea04e9432d1726c930f4d67da
-Author:     Benjamin Herrenschmidt <benh@kernel.crashing.org>
-AuthorDate: Wed, 10 Jun 2009 16:59:46 +1000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 10 Jun 2009 11:48:14 +0200
+On Wed, Jun 10, 2009 at 09:31:04AM +0100, Steven Whitehouse wrote:
+>  static struct super_block *get_gfs2_sb(const char *dev_name)
+>  {
+> -	struct super_block *sb;
 
-spinlock: Add missing __raw_spin_lock_flags() stub for UP
+Any reason you don't merge get_gfs2_sb into gfs2_get_sb_meta?  That's
+how most other get_sb callbacks are structured, and would also get rid
+of the rather confusing get_gfs2_sb name.
 
-This was only defined with CONFIG_DEBUG_SPINLOCK set, but some
-obscure arch/powerpc code wants it always.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/linux/spinlock_up.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/spinlock_up.h b/include/linux/spinlock_up.h
-index 938234c..d4841ed 100644
---- a/include/linux/spinlock_up.h
-+++ b/include/linux/spinlock_up.h
-@@ -60,6 +60,7 @@ static inline void __raw_spin_unlock(raw_spinlock_t *lock)
- #define __raw_spin_is_locked(lock)	((void)(lock), 0)
- /* for sched.c and kernel_lock.c: */
- # define __raw_spin_lock(lock)		do { (void)(lock); } while (0)
-+# define __raw_spin_lock_flags(lock, flags)	do { (void)(lock); } while (0)
- # define __raw_spin_unlock(lock)	do { (void)(lock); } while (0)
- # define __raw_spin_trylock(lock)	({ (void)(lock); 1; })
- #endif /* DEBUG_SPINLOCK */
