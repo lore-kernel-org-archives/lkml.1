@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbZFJEK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbZFJELT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754798AbZFJEK4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 00:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751157AbZFJEKs
+	id S1754518AbZFJELT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 00:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752829AbZFJELF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 00:10:48 -0400
-Received: from bhuna.collabora.co.uk ([93.93.131.97]:49610 "EHLO
+	Wed, 10 Jun 2009 00:11:05 -0400
+Received: from bhuna.collabora.co.uk ([93.93.131.97]:49619 "EHLO
 	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751116AbZFJEKr (ORCPT
+	with ESMTP id S1751491AbZFJELE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 00:10:47 -0400
-Date: Wed, 10 Jun 2009 00:10:33 -0400
+	Wed, 10 Jun 2009 00:11:04 -0400
+Date: Wed, 10 Jun 2009 00:10:53 -0400
 From: Andres Salomon <dilinger@collabora.co.uk>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>, cjb@laptop.org,
        deepak@laptop.org, linux-geode@lists.infradead.org,
        Jordan Crouse <jordan@cosmicpenguin.net>,
        Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH 1/2] cs5535-gpio: add AMD CS5535/CS5536 GPIO driver support
-Message-ID: <20090610001033.27b7f69f@mycelium.queued.net>
+Subject: [PATCH 2/2] ALSA: cs5535audio: free OLPC quirks from reliance on
+ MGEODE_LX cpu optimization
+Message-ID: <20090610001053.4c7d457b@mycelium.queued.net>
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,465 +28,161 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm resubmitting this, as I actually have time to deal w/ any problems
-it might have.  Randy, please do your worst (and send me a .config if
-you find problems!).  Thanks.
 
-Oh, also, I renamed it to cs5535-gpio at the request of q-funk, in
-order to be consistent w/ naming standards for CS5530/CS5535/CS5536.
+Previously, OLPC support for the mic extensions was only enabled in the
+ALSA driver if CONFIG_OLPC and CONFIG_MGEODE_LX were both set.  This was
+because the old geode GPIO code was written in a manner that assumed
+CONFIG_MGEODE_LX.  With the new cs5535-gpio driver, this is no longer
+the case; as such, we can drop the requirement on CONFIG_MGEODE_LX and
+instead include a requirement on GPIOLIB.
 
-
-
-This creates a CS5535/CS5536 GPIO driver which uses a gpio_chip backend
-(allowing GPIO users to use the generic GPIO API if desired) while also
-allowing architecture-specific users directly (via the cs5535_gpio_*
-functions).
-
-Tested on an OLPC machine.  Some Leemotes also use CS5536 (with a mips
-cpu), which is why this is in drivers/gpio rather than arch/x86.
-Currently, it conflicts with older geode GPIO support; once MFGPT support
-is reworked to also be more generic, the older geode code will be removed.
+We use the generic GPIO API rather than the cs5535-specific API.
 
 Signed-off-by: Andres Salomon <dilinger@collabora.co.uk>
 ---
- arch/x86/include/asm/geode.h |   28 +----
- drivers/gpio/Kconfig         |   10 ++
- drivers/gpio/Makefile        |    1 +
- drivers/gpio/cs5535-gpio.c   |  282 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/cs5535.h       |   58 +++++++++
- 5 files changed, 352 insertions(+), 27 deletions(-)
- create mode 100644 drivers/gpio/cs5535-gpio.c
- create mode 100644 include/linux/cs5535.h
+ arch/x86/include/asm/olpc.h              |    2 +-
+ sound/pci/cs5535audio/Makefile           |    2 +-
+ sound/pci/cs5535audio/cs5535audio.c      |    1 +
+ sound/pci/cs5535audio/cs5535audio.h      |    4 +++-
+ sound/pci/cs5535audio/cs5535audio_olpc.c |   26 +++++++++++++++++++-------
+ 5 files changed, 25 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/include/asm/geode.h b/arch/x86/include/asm/geode.h
-index ad3c2ed..5716214 100644
---- a/arch/x86/include/asm/geode.h
-+++ b/arch/x86/include/asm/geode.h
-@@ -12,6 +12,7 @@
+diff --git a/arch/x86/include/asm/olpc.h b/arch/x86/include/asm/olpc.h
+index 834a302..3a57385 100644
+--- a/arch/x86/include/asm/olpc.h
++++ b/arch/x86/include/asm/olpc.h
+@@ -120,7 +120,7 @@ extern int olpc_ec_mask_unset(uint8_t bits);
  
- #include <asm/processor.h>
- #include <linux/io.h>
-+#include <linux/cs5535.h>
+ /* GPIO assignments */
  
- /* Generic southbridge functions */
+-#define OLPC_GPIO_MIC_AC	geode_gpio(1)
++#define OLPC_GPIO_MIC_AC	1
+ #define OLPC_GPIO_DCON_IRQ	geode_gpio(7)
+ #define OLPC_GPIO_THRM_ALRM	geode_gpio(10)
+ #define OLPC_GPIO_SMB_CLK	geode_gpio(14)
+diff --git a/sound/pci/cs5535audio/Makefile b/sound/pci/cs5535audio/Makefile
+index fda7a94..9b5c689 100644
+--- a/sound/pci/cs5535audio/Makefile
++++ b/sound/pci/cs5535audio/Makefile
+@@ -4,7 +4,7 @@
  
-@@ -115,33 +116,6 @@ extern int geode_get_dev_base(unsigned int dev);
- #define VSA_VR_MEM_SIZE		0x0200
- #define AMD_VSA_SIG		0x4132	/* signature is ascii 'VSA2' */
- #define GSW_VSA_SIG		0x534d  /* General Software signature */
--/* GPIO */
--
--#define GPIO_OUTPUT_VAL		0x00
--#define GPIO_OUTPUT_ENABLE	0x04
--#define GPIO_OUTPUT_OPEN_DRAIN	0x08
--#define GPIO_OUTPUT_INVERT	0x0C
--#define GPIO_OUTPUT_AUX1	0x10
--#define GPIO_OUTPUT_AUX2	0x14
--#define GPIO_PULL_UP		0x18
--#define GPIO_PULL_DOWN		0x1C
--#define GPIO_INPUT_ENABLE	0x20
--#define GPIO_INPUT_INVERT	0x24
--#define GPIO_INPUT_FILTER	0x28
--#define GPIO_INPUT_EVENT_COUNT	0x2C
--#define GPIO_READ_BACK		0x30
--#define GPIO_INPUT_AUX1		0x34
--#define GPIO_EVENTS_ENABLE	0x38
--#define GPIO_LOCK_ENABLE	0x3C
--#define GPIO_POSITIVE_EDGE_EN	0x40
--#define GPIO_NEGATIVE_EDGE_EN	0x44
--#define GPIO_POSITIVE_EDGE_STS	0x48
--#define GPIO_NEGATIVE_EDGE_STS	0x4C
--
--#define GPIO_MAP_X		0xE0
--#define GPIO_MAP_Y		0xE4
--#define GPIO_MAP_Z		0xE8
--#define GPIO_MAP_W		0xEC
+ snd-cs5535audio-y := cs5535audio.o cs5535audio_pcm.o
+ snd-cs5535audio-$(CONFIG_PM) += cs5535audio_pm.o
+-ifdef CONFIG_MGEODE_LX
++ifdef CONFIG_GENERIC_GPIO
+ snd-cs5535audio-$(CONFIG_OLPC) += cs5535audio_olpc.o
+ endif
  
- static inline u32 geode_gpio(unsigned int nr)
+diff --git a/sound/pci/cs5535audio/cs5535audio.c b/sound/pci/cs5535audio/cs5535audio.c
+index 05f56e0..91e7faf 100644
+--- a/sound/pci/cs5535audio/cs5535audio.c
++++ b/sound/pci/cs5535audio/cs5535audio.c
+@@ -389,6 +389,7 @@ probefail_out:
+ 
+ static void __devexit snd_cs5535audio_remove(struct pci_dev *pci)
  {
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index edb0253..185a458 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -145,6 +145,16 @@ config GPIO_TWL4030
++	olpc_quirks_cleanup();
+ 	snd_card_free(pci_get_drvdata(pci));
+ 	pci_set_drvdata(pci, NULL);
+ }
+diff --git a/sound/pci/cs5535audio/cs5535audio.h b/sound/pci/cs5535audio/cs5535audio.h
+index 7a298ac..51966d7 100644
+--- a/sound/pci/cs5535audio/cs5535audio.h
++++ b/sound/pci/cs5535audio/cs5535audio.h
+@@ -99,10 +99,11 @@ int snd_cs5535audio_suspend(struct pci_dev *pci, pm_message_t state);
+ int snd_cs5535audio_resume(struct pci_dev *pci);
+ #endif
  
- comment "PCI GPIO expanders:"
+-#if defined(CONFIG_OLPC) && defined(CONFIG_MGEODE_LX)
++#ifdef CONFIG_OLPC
+ void __devinit olpc_prequirks(struct snd_card *card,
+ 		struct snd_ac97_template *ac97);
+ int __devinit olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97);
++void __devexit olpc_quirks_cleanup(void);
+ void olpc_analog_input(struct snd_ac97 *ac97, int on);
+ void olpc_mic_bias(struct snd_ac97 *ac97, int on);
  
-+config GPIO_CS5535
-+	tristate "AMD CS5535/CS5536 GPIO support"
-+	depends on PCI && !CS5535_GPIO && !MGEODE_LX
-+	help
-+	  The AMD CS5535 and CS5536 southbridges support 28 GPIO pins that
-+	  can be used for quite a number of things.  The CS5535/6 is found on
-+	  AMD Geode and Lemote Yeeloong devices.
-+
-+	  If unsure, say N.
-+
- config GPIO_BT8XX
- 	tristate "BT8XX GPIO abuser"
- 	depends on PCI && VIDEO_BT848=n
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index 49ac64e..c7bc4bd 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -11,4 +11,5 @@ obj-$(CONFIG_GPIO_PCA953X)	+= pca953x.o
- obj-$(CONFIG_GPIO_PCF857X)	+= pcf857x.o
- obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
- obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
-+obj-$(CONFIG_GPIO_CS5535)	+= cs5535-gpio.o
- obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
-diff --git a/drivers/gpio/cs5535-gpio.c b/drivers/gpio/cs5535-gpio.c
-new file mode 100644
-index 0000000..5613889
---- /dev/null
-+++ b/drivers/gpio/cs5535-gpio.c
-@@ -0,0 +1,282 @@
-+/*
-+ * AMD CS5535/CS5536 GPIO driver
-+ * Copyright (C) 2006  Advanced Micro Devices, Inc.
-+ * Copyright (C) 2007-2009  Andres Salomon <dilinger@collabora.co.uk>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/spinlock.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
+@@ -128,6 +129,7 @@ static inline int olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97)
+ {
+ 	return 0;
+ }
++static inline void olpc_quirks_cleanup(void) { }
+ static inline void olpc_analog_input(struct snd_ac97 *ac97, int on) { }
+ static inline void olpc_mic_bias(struct snd_ac97 *ac97, int on) { }
+ static inline void olpc_capture_open(struct snd_ac97 *ac97) { }
+diff --git a/sound/pci/cs5535audio/cs5535audio_olpc.c b/sound/pci/cs5535audio/cs5535audio_olpc.c
+index 5c68143..50da49b 100644
+--- a/sound/pci/cs5535audio/cs5535audio_olpc.c
++++ b/sound/pci/cs5535audio/cs5535audio_olpc.c
+@@ -13,10 +13,13 @@
+ #include <sound/info.h>
+ #include <sound/control.h>
+ #include <sound/ac97_codec.h>
 +#include <linux/gpio.h>
-+#include <linux/io.h>
-+#include <linux/cs5535.h>
+ 
+ #include <asm/olpc.h>
+ #include "cs5535audio.h"
+ 
++#define DRV_NAME "cs5535audio-olpc"
 +
-+#define DRV_NAME "cs5535-gpio"
-+#define GPIO_BAR 1
-+
-+static struct cs5535_gpio_chip {
-+	struct gpio_chip chip;
-+	resource_size_t base;
-+
-+	struct pci_dev *pdev;
-+	spinlock_t lock;
-+} cs5535_gpio_chip;
-+
-+/*
-+ * The CS5535/CS5536 GPIOs support a number of extra features not defined
-+ * by the gpio_chip API, so these are exported.  For a full list of the
-+ * registers, see include/linux/cs5535.h.
-+ */
-+
-+static void __cs5535_gpio_set(struct cs5535_gpio_chip *chip, unsigned offset,
-+		unsigned int reg)
-+{
-+	if (offset < 16)
-+		/* low bank register */
-+		outl(1 << offset, chip->base + reg);
-+	else
-+		/* high bank register */
-+		outl(1 << (offset - 16), chip->base + 0x80 + reg);
-+}
-+
-+void cs5535_gpio_set(unsigned offset, unsigned int reg)
-+{
-+	struct cs5535_gpio_chip *chip = &cs5535_gpio_chip;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+	__cs5535_gpio_set(chip, offset, reg);
-+	spin_unlock_irqrestore(&chip->lock, flags);
-+}
-+EXPORT_SYMBOL_GPL(cs5535_gpio_set);
-+
-+static void __cs5535_gpio_clear(struct cs5535_gpio_chip *chip, unsigned offset,
-+		unsigned int reg)
-+{
-+	if (offset < 16)
-+		/* low bank register */
-+		outl(1 << (offset + 16), chip->base + reg);
-+	else
-+		/* high bank register */
-+		outl(1 << offset, chip->base + 0x80 + reg);
-+}
-+
-+void cs5535_gpio_clear(unsigned offset, unsigned int reg)
-+{
-+	struct cs5535_gpio_chip *chip = &cs5535_gpio_chip;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+	__cs5535_gpio_clear(chip, offset, reg);
-+	spin_unlock_irqrestore(&chip->lock, flags);
-+}
-+EXPORT_SYMBOL_GPL(cs5535_gpio_clear);
-+
-+int cs5535_gpio_isset(unsigned offset, unsigned int reg)
-+{
-+	struct cs5535_gpio_chip *chip = &cs5535_gpio_chip;
-+	unsigned long flags;
-+	long val;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+	if (offset < 16)
-+		/* low bank register */
-+		val = inl(chip->base + reg);
-+	else {
-+		/* high bank register */
-+		val = inl(chip->base + 0x80 + reg);
-+		offset -= 16;
+ /*
+  * OLPC has an additional feature on top of the regular AD1888 codec features.
+  * It has an Analog Input mode that is switched into (after disabling the
+@@ -38,10 +41,7 @@ void olpc_analog_input(struct snd_ac97 *ac97, int on)
+ 	}
+ 
+ 	/* set Analog Input through GPIO */
+-	if (on)
+-		geode_gpio_set(OLPC_GPIO_MIC_AC, GPIO_OUTPUT_VAL);
+-	else
+-		geode_gpio_clear(OLPC_GPIO_MIC_AC, GPIO_OUTPUT_VAL);
++	gpio_set_value(OLPC_GPIO_MIC_AC, on);
+ }
+ 
+ /*
+@@ -73,8 +73,7 @@ static int olpc_dc_info(struct snd_kcontrol *kctl,
+ 
+ static int olpc_dc_get(struct snd_kcontrol *kctl, struct snd_ctl_elem_value *v)
+ {
+-	v->value.integer.value[0] = geode_gpio_isset(OLPC_GPIO_MIC_AC,
+-			GPIO_OUTPUT_VAL);
++	v->value.integer.value[0] = gpio_get_value(OLPC_GPIO_MIC_AC);
+ 	return 0;
+ }
+ 
+@@ -153,6 +152,12 @@ int __devinit olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97)
+ 	if (!machine_is_olpc())
+ 		return 0;
+ 
++	if (gpio_request(OLPC_GPIO_MIC_AC, DRV_NAME)) {
++		printk(KERN_ERR DRV_NAME ": unable to allocate MIC GPIO\n");
++		return -EIO;
 +	}
-+	spin_unlock_irqrestore(&chip->lock, flags);
++	gpio_direction_output(OLPC_GPIO_MIC_AC, 0);
 +
-+	return (val & (1 << offset)) ? 1 : 0;
-+}
-+EXPORT_SYMBOL_GPL(cs5535_gpio_isset);
-+
-+/*
-+ * Generic gpio_chip API support.
-+ */
-+
-+static int chip_gpio_get(struct gpio_chip *chip, unsigned offset)
-+{
-+	return cs5535_gpio_isset(offset, GPIO_OUTPUT_VAL);
-+}
-+
-+static void chip_gpio_set(struct gpio_chip *chip, unsigned offset, int val)
-+{
-+	if (val)
-+		cs5535_gpio_set(offset, GPIO_OUTPUT_VAL);
-+	else
-+		cs5535_gpio_clear(offset, GPIO_OUTPUT_VAL);
-+}
-+
-+static int chip_direction_input(struct gpio_chip *c, unsigned offset)
-+{
-+	struct cs5535_gpio_chip *chip = (struct cs5535_gpio_chip *) c;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+	__cs5535_gpio_set(chip, offset, GPIO_INPUT_ENABLE);
-+	spin_unlock_irqrestore(&chip->lock, flags);
-+
-+	return 0;
-+}
-+
-+static int chip_direction_output(struct gpio_chip *c, unsigned offset, int val)
-+{
-+	struct cs5535_gpio_chip *chip = (struct cs5535_gpio_chip *) c;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&chip->lock, flags);
-+
-+	__cs5535_gpio_set(chip, offset, GPIO_OUTPUT_ENABLE);
-+	if (val)
-+		__cs5535_gpio_set(chip, offset, GPIO_OUTPUT_VAL);
-+	else
-+		__cs5535_gpio_clear(chip, offset, GPIO_OUTPUT_VAL);
-+
-+	spin_unlock_irqrestore(&chip->lock, flags);
-+
-+	return 0;
-+}
-+
-+static struct cs5535_gpio_chip cs5535_gpio_chip = {
-+	.chip = {
-+		.owner = THIS_MODULE,
-+		.label = DRV_NAME,
-+
-+		.base = 0,
-+		.ngpio = 28,
-+
-+		.get = chip_gpio_get,
-+		.set = chip_gpio_set,
-+
-+		.direction_input = chip_direction_input,
-+		.direction_output = chip_direction_output,
-+	},
-+};
-+
-+static int __init cs5535_gpio_probe(struct pci_dev *pdev,
-+		const struct pci_device_id *pci_id)
-+{
-+	int err;
-+
-+	/* There are two ways to get the GPIO base address; one is by
-+	 * fetching it from MSR_LBAR_GPIO, the other is by reading the
-+	 * PCI BAR info.  The latter method is easier (especially across
-+	 * different architectures), so we'll stick with that for now.  If
-+	 * it turns out to be unreliable in the face of crappy BIOSes, we
-+	 * can always go back to using MSRs.. */
-+
-+	err = pci_enable_device_io(pdev);
-+	if (err) {
-+		dev_err(&pdev->dev, "can't enable device IO\n");
-+		goto done;
-+	}
-+
-+	err = pci_request_region(pdev, GPIO_BAR, DRV_NAME);
-+	if (err) {
-+		dev_err(&pdev->dev, "can't alloc PCI BAR #%d\n", GPIO_BAR);
-+		goto done;
-+	}
-+
-+	/* set up the driver-specific struct */
-+	cs5535_gpio_chip.base = pci_resource_start(pdev, GPIO_BAR);
-+	cs5535_gpio_chip.pdev = pdev;
-+	spin_lock_init(&cs5535_gpio_chip.lock);
-+
-+	dev_info(&pdev->dev, "allocated PCI BAR #%d: base 0x%llx\n", GPIO_BAR,
-+			(unsigned long long) cs5535_gpio_chip.base);
-+
-+	/* finally, register with the generic GPIO API */
-+	err = gpiochip_add(&cs5535_gpio_chip.chip);
-+	if (err) {
-+		dev_err(&pdev->dev, "failed to register gpio chip\n");
-+		goto release_region;
-+	}
-+
-+	printk(KERN_INFO DRV_NAME ": GPIO support successfully loaded.\n");
-+	return 0;
-+
-+release_region:
-+	pci_release_region(pdev, GPIO_BAR);
-+done:
-+	return err;
-+}
-+
-+static void __exit cs5535_gpio_remove(struct pci_dev *pdev)
-+{
-+	int err;
-+
-+	err = gpiochip_remove(&cs5535_gpio_chip.chip);
-+	if (err) {
-+		/* uhh? */
-+		dev_err(&pdev->dev, "unable to remove gpio_chip?\n");
-+	}
-+	pci_release_region(pdev, GPIO_BAR);
-+}
-+
-+static struct pci_device_id cs5535_gpio_pci_tbl[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_NS, PCI_DEVICE_ID_NS_CS5535_ISA) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_CS5536_ISA) },
-+	{ 0, },
-+};
-+MODULE_DEVICE_TABLE(pci, cs5535_gpio_pci_tbl);
-+
-+/*
-+ * We can't use the standard PCI driver registration stuff here, since
-+ * that allows only one driver to bind to each PCI device (and we want
-+ * multiple drivers to be able to bind to the device).  Instead, manually
-+ * scan for the PCI device, request a single region, and keep track of the
-+ * devices that we're using.
-+ */
-+
-+static int __init cs5535_gpio_scan_pci(void)
-+{
-+	struct pci_dev *pdev;
-+	int err = -ENODEV;
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(cs5535_gpio_pci_tbl); i++) {
-+		pdev = pci_get_device(cs5535_gpio_pci_tbl[i].vendor,
-+				cs5535_gpio_pci_tbl[i].device, NULL);
-+		if (pdev) {
-+			err = cs5535_gpio_probe(pdev, &cs5535_gpio_pci_tbl[i]);
-+			if (err)
-+				pci_dev_put(pdev);
-+
-+			/* we only support a single CS5535/6 southbridge */
-+			break;
+ 	/* drop the original AD1888 HPF control */
+ 	memset(&elem, 0, sizeof(elem));
+ 	elem.iface = SNDRV_CTL_ELEM_IFACE_MIXER;
+@@ -169,11 +174,18 @@ int __devinit olpc_quirks(struct snd_card *card, struct snd_ac97 *ac97)
+ 	for (i = 0; i < ARRAY_SIZE(olpc_cs5535audio_ctls); i++) {
+ 		err = snd_ctl_add(card, snd_ctl_new1(&olpc_cs5535audio_ctls[i],
+ 				ac97->private_data));
+-		if (err < 0)
++		if (err < 0) {
++			gpio_free(OLPC_GPIO_MIC_AC);
+ 			return err;
 +		}
-+	}
+ 	}
+ 
+ 	/* turn off the mic by default */
+ 	olpc_mic_bias(ac97, 0);
+ 	return 0;
+ }
 +
-+	return err;
-+}
-+
-+static void __exit cs5535_gpio_free_pci(void)
++void __devexit olpc_quirks_cleanup(void)
 +{
-+	cs5535_gpio_remove(cs5535_gpio_chip.pdev);
-+	pci_dev_put(cs5535_gpio_chip.pdev);
++	gpio_free(OLPC_GPIO_MIC_AC);
 +}
-+
-+static int __init cs5535_gpio_init(void)
-+{
-+	return cs5535_gpio_scan_pci();
-+}
-+
-+static void __exit cs5535_gpio_exit(void)
-+{
-+	cs5535_gpio_free_pci();
-+}
-+
-+module_init(cs5535_gpio_init);
-+module_exit(cs5535_gpio_exit);
-+
-+MODULE_AUTHOR("Andres Salomon <dilinger@collabora.co.uk>");
-+MODULE_DESCRIPTION("AMD CS5535/CS5536 GPIO driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/cs5535.h b/include/linux/cs5535.h
-new file mode 100644
-index 0000000..cfea689
---- /dev/null
-+++ b/include/linux/cs5535.h
-@@ -0,0 +1,58 @@
-+/*
-+ * AMD CS5535/CS5536 definitions
-+ * Copyright (C) 2006  Advanced Micro Devices, Inc.
-+ * Copyright (C) 2009  Andres Salomon <dilinger@collabora.co.uk>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ */
-+
-+#ifndef _CS5535_H
-+#define _CS5535_H
-+
-+/* MSRs */
-+#define MSR_LBAR_SMB		0x5140000B
-+#define MSR_LBAR_GPIO		0x5140000C
-+#define MSR_LBAR_MFGPT		0x5140000D
-+#define MSR_LBAR_ACPI		0x5140000E
-+#define MSR_LBAR_PMS		0x5140000F
-+
-+/* resource sizes */
-+#define LBAR_GPIO_SIZE		0xFF
-+#define LBAR_MFGPT_SIZE		0x40
-+#define LBAR_ACPI_SIZE		0x40
-+#define LBAR_PMS_SIZE		0x80
-+
-+/* GPIOs */
-+#define GPIO_OUTPUT_VAL		0x00
-+#define GPIO_OUTPUT_ENABLE	0x04
-+#define GPIO_OUTPUT_OPEN_DRAIN	0x08
-+#define GPIO_OUTPUT_INVERT	0x0C
-+#define GPIO_OUTPUT_AUX1	0x10
-+#define GPIO_OUTPUT_AUX2	0x14
-+#define GPIO_PULL_UP		0x18
-+#define GPIO_PULL_DOWN		0x1C
-+#define GPIO_INPUT_ENABLE	0x20
-+#define GPIO_INPUT_INVERT	0x24
-+#define GPIO_INPUT_FILTER	0x28
-+#define GPIO_INPUT_EVENT_COUNT	0x2C
-+#define GPIO_READ_BACK		0x30
-+#define GPIO_INPUT_AUX1		0x34
-+#define GPIO_EVENTS_ENABLE	0x38
-+#define GPIO_LOCK_ENABLE	0x3C
-+#define GPIO_POSITIVE_EDGE_EN	0x40
-+#define GPIO_NEGATIVE_EDGE_EN	0x44
-+#define GPIO_POSITIVE_EDGE_STS	0x48
-+#define GPIO_NEGATIVE_EDGE_STS	0x4C
-+
-+#define GPIO_MAP_X		0xE0
-+#define GPIO_MAP_Y		0xE4
-+#define GPIO_MAP_Z		0xE8
-+#define GPIO_MAP_W		0xEC
-+
-+void cs5535_gpio_set(unsigned offset, unsigned int reg);
-+void cs5535_gpio_clear(unsigned offset, unsigned int reg);
-+int cs5535_gpio_isset(unsigned offset, unsigned int reg);
-+
-+#endif
 -- 
 1.5.6.5
 
