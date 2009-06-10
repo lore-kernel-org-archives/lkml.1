@@ -1,61 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758628AbZFJB4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbZFJB6L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758628AbZFJB4h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 21:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbZFJB4c
+	id S1756590AbZFJB6L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 21:58:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbZFJB56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 21:56:32 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41728 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754459AbZFJB4b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 21:56:31 -0400
-Date: Tue, 9 Jun 2009 21:56:32 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       David Miller <davem@davemloft.net>, Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: [PATCH RESEND] ftrace: change the export format of
- trace_kfree_skb()
-In-Reply-To: <4A2F0F1D.7010101@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0906092156140.30552@gandalf.stny.rr.com>
-References: <4A2DF91F.7030906@cn.fujitsu.com> <20090609182730.GA6057@nowhere> <4A2F0F1D.7010101@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 9 Jun 2009 21:57:58 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63555 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752587AbZFJB56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 21:57:58 -0400
+Message-ID: <4A2F1376.7040500@cn.fujitsu.com>
+Date: Wed, 10 Jun 2009 09:59:18 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
+Subject: Re: [RFC PATCH 2/5] tracing/events: nicer print format for parsing
+References: <20090609014534.790466803@goodmis.org> <20090609014746.481457542@goodmis.org> <20090609192159.GD6057@nowhere> <alpine.DEB.2.00.0906091531090.30552@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0906091531090.30552@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 10 Jun 2009, Xiao Guangrong wrote:
-
+Steven Rostedt wrote:
+> On Tue, 9 Jun 2009, Frederic Weisbecker wrote:
+>>  
+>>> The language that is added by this patch is of the following:
+>>>
+>>>  * FMT :=  constant string FMT | COMMAND FMT | empty
+>>>  * COMMAND := <TYPE:FIELD> | <mask:FIELD:DELIM:MASKS> | <sym:FIELD:SYMBOLS> |
+>>>  *               <if:FIELD:TRUE:FALSE>
+>>>  * TYPE := int | hex | ptr | string | strarray
+>>>  * FIELD := defined by the event structure
+>>>  * MASKS := MASK=NAME,MASKS | MASK=NAME
+>>>  * MASK := the bit mask to match
+>>>  * DELIM := delimiter to separate the fields. None and ':' are both allowed
+>>>  * SYMBOLS := SYM=NAME,SYMBOLS | SYM=NAME
+>>>  * SYM := the symbol value to test against
+>>>  * TRUE := print when field is non zero
+>>>  * FALSE := print when field is zero or NULL
+>>>  * NAME := the name to write when a match is found
+>>>  *
+>>>  * A '\<' would print '<'
+>>
+>> But I wonder if the above new language is not breaking the charm
+>> of the TRACE_EVENT(), which charm is that it's easy to implement (hopefully).
+>>
+>> Everyone knows the printk formats. And I guess this new thing is easy and
+>> quick to learn. But because it's a new unknown language, the TRACE_EVENT
+>> will become less readable, less reachable for newcomers in TRACE_EVENT.
 > 
+> I tried to avoid this too, but when I started writing a tool in C that 
+> would parse the format file, I found that the printf was horrible.
 > 
-> Frederic Weisbecker wrote:
+> Note, I will still keep the TP_printk() macro, that will not change. The 
+> new macro is TP_FORMAT() that preforms the tags. Thus, if you really want 
+> it to print out, you can use TP_printk, but the user space tools that read 
+> the binary will not know how to read it unless the printk is simple.
 > 
-> > 
-> > Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > 
-> > Would you also be interested in adding the conversion from raw numeric protocol
-> > to its name defined in include/linux/if_ether.h
-> > 
-> Hi Frederic:
+> I really want to keep this language simple. If anyone has any better 
+> ideas, I'm all for it.
 > 
-> OK, I'll do it.
+> I barfed when I saw this in irq_handler_entry:
 > 
-> > I guess __print_flags() can be used for that.
-> > 
+>   print fmt: "irq=%d handler=%s", REC->irq, (char *)((void *)REC + REC->__data_loc_name)
 > 
-> Thanks for you suggestion.
-> IMHO, __print_symbolic() is more suitable for this. :-)
 
-BTW, you might want to take a look at what is coming:
+I barfed too when I saw this. Introducing a new format is
+very meaningful. And this print format looks well.
+Good Work!
 
-  http://marc.info/?l=linux-kernel&m=124458472931447&w=2
+I'm trying to write user-space tools. Could you tell me your tools'
+developing status? And the aim of these tools? Will it be public?
 
--- Steve
+I'm wandering whether I should stop this trying.
+
+Lai.
 
