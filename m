@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbZFJLd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758207AbZFJLfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbZFJLd0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 07:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbZFJLdQ
+	id S1758207AbZFJLfH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 07:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbZFJLfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 07:33:16 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:50224 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754539AbZFJLdP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 07:33:15 -0400
-Date: Wed, 10 Jun 2009 13:33:15 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: David Miller <davem@davemloft.net>
-cc: oliver@hartkopp.net, hawk@comx.dk, paulmck@linux.vnet.ibm.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       urs.thuermann@volkswagen.de, oliver.hartkopp@volkswagen.de,
-       wg@grandegger.com, vladislav.yasevich@hp.com, sri@us.ibm.com,
-       linux-sctp@vger.kernel.org, Trond.Myklebust@netapp.com,
-       linux-nfs@vger.kernel.org, netfilter-devel@vger.kernel.org
-Subject: Re: [PATCH 3/5] can: af_can.c use rcu_barrier() on module unload.
-In-Reply-To: <20090610.011027.43904351.davem@davemloft.net>
-Message-ID: <alpine.LSU.2.00.0906101327400.30984@fbirervta.pbzchgretzou.qr>
-References: <20090608130959.10052.54590.stgit@localhost> <20090608131138.10052.5408.stgit@localhost> <4A2D112A.4000308@hartkopp.net> <20090610.011027.43904351.davem@davemloft.net>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Wed, 10 Jun 2009 07:35:00 -0400
+Received: from www.tglx.de ([62.245.132.106]:38992 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753699AbZFJLfA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 07:35:00 -0400
+Date: Wed, 10 Jun 2009 13:34:13 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, yhlu.kernel@gmail.com,
+       "H. Peter Anvin" <hpa@zytor.com>, macro@linux-mips.org,
+       Cyrill Gorcunov <gorcunov@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] v2: x86,APIC: Detect lapic_is_integrated() once - use
+ on and on
+In-Reply-To: <b9df5fa10906100424h98862a8l32951906d06454fb@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0906101333350.3351@localhost.localdomain>
+References: <b9df5fa10905251820l3783327ek4f6b7014aa167690@mail.gmail.com>  <86802c440905251911h6f6c146eo4c30d306ac8d17d8@mail.gmail.com>  <b9df5fa10905261949j3eb4dc9ft321dba3c46c335db@mail.gmail.com>
+ <b9df5fa10906100424h98862a8l32951906d06454fb@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 10 Jun 2009, Rakib Mullick wrote:
 
-On Wednesday 2009-06-10 10:10, David Miller wrote:
->> Acked-By: Oliver Hartkopp <oliver@hartkopp.net>
->
->Please don't capitalize the "By" in "Acked-By".  Otherwise
->patchwork doesn't pick them up automatically.
+> Hi Ingo, Thomas and everyone, would you please take a look at this
+> patch and comment ? I think Thomas was agreed with this one. Is there
+> anything that i couldn't deliver? If i'm wrong please notice thus i
+> can fix myself.
 
-Is not that a patchwork bug then that should be reported? Or a
-missing feature to checkpatch? Do we need a CodingStyle for
-SOBs now too, just for that?
+The patch is fine, but it lacks a proper patch description.
 
-(Personally I prefer lowercase after the dash too, but I wanted to
-illuminate all sides of the box.)
+Thanks,
+
+	tglx
