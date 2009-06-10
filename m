@@ -1,74 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759346AbZFJPVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759715AbZFJPV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759346AbZFJPVS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 11:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756778AbZFJPVJ
+	id S1759715AbZFJPV3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 11:21:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757441AbZFJPVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 11:21:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43287 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754594AbZFJPVI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 11:21:08 -0400
-Date: Wed, 10 Jun 2009 11:21:07 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-cc: Theodore Tso <tytso@mit.edu>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+	Wed, 10 Jun 2009 11:21:19 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56895 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758499AbZFJPVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 11:21:18 -0400
+Subject: Re: [git-pull -tip] headers_check fix patches 20090610
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
+       x86 maintainers <x86@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: Re: [PATCH 00/11] [GIT PULL] more updates for the tag format
-In-Reply-To: <20090610143912.GB23770@Krystal>
-Message-ID: <alpine.DEB.2.00.0906101113170.30552@gandalf.stny.rr.com>
-References: <20090610054206.510574695@goodmis.org> <20090610092644.GA20889@elte.hu> <c62985530906100411o5a178352n53f7d247f6e9dba9@mail.gmail.com> <20090610130127.GA6647@mit.edu> <alpine.DEB.2.00.0906100911190.30552@gandalf.stny.rr.com>
- <20090610143912.GB23770@Krystal>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Greg Ungerer <gerg@snapgear.com>, David Howells <dhowells@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090611001957.61b5530b.sfr@canb.auug.org.au>
+References: <1244640630.20890.22.camel@ht.satnam>
+	 <20090611001957.61b5530b.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Wed, 10 Jun 2009 20:49:36 +0530
+Message-Id: <1244647176.3070.8.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Stephen,
 
-On Wed, 10 Jun 2009, Mathieu Desnoyers wrote:
-> > 
-> > 
-> > And then in the trace format, we could do:
-> > 
-> > 	<data:gfp:field>
-> > 
-> > And the 'data' will flag us to how to print the data.
-> > 
-> > For userland, there could be a file in:
-> > 
-> > 	/debug/tracing/events/data_types/gfp/format
-> > 
-> > That will show that format. Yes we duplicate some of the code, but it 
-> > it would solve these types of issues.
-> > 
+On Thu, 2009-06-11 at 00:19 +1000, Stephen Rothwell wrote:
+> Hi Jaswinder,
 > 
-> It sounds a lot like the type tables LTTng is currently exporting
-> through specific channels. One for the list of IRQ handlers, one listing
-> softirqs, one for syscalls.... etc etc. The nice side of this approach
-> is that it permits to deal with dynamic events that modify the table
-> state while tracing is active, e.g. : loadling a module which adds an
-> IRQ handlers.
+> On Wed, 10 Jun 2009 19:00:30 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> >
+> > The following changes since commit e271e1343a94e081723cb4180af3fdb5fecc1a49:
+> >   Ingo Molnar (1):
+> >         Merge branch 'x86/mce4'
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-top.git master
+> > 
+> > Jaswinder Singh Rajput (3):
+> >       headers_check fix: m68k, swab.h
+> >       headers_check fix: mn10300, ptrace.h
+> >       headers_check fix: mn10300, setup.h
+> > 
+> >  arch/m68k/include/asm/swab.h      |    2 +-
+> >  arch/mn10300/include/asm/ptrace.h |    5 ++---
+> >  arch/mn10300/include/asm/setup.h  |    3 ++-
+> >  3 files changed, 5 insertions(+), 5 deletions(-)
 > 
-> This is planned to be used for enum description eventually.
+> Is there some reason that these fixes are not just sent to the appropriate
+> maintainers?  That way we would avoid unnecessary conflicts cropping up.
+> 
 
-Well, I wouldn't make it dependent on any class, just a generic type to 
-add that any user could do. The types just need to be added before the 
-events are registered.
+Maintainers are also in CC.
+Patches were already sent on :
 
--- Steve
+Subject: [PATCH 0/6] headers_check fix patches 20090604
+
+Interested maintainers already pulled and applied patches. These are
+left-over patches. I am sending to Ingo hoping that he will merge it
+otherwise last option for me will be to prepare headers-check tree and
+send to linux-next ;-)
+
+Thanks,
+--
+JSR
 
