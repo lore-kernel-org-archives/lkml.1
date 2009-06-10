@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbZFJGpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbZFJGqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755618AbZFJGpS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 02:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZFJGpH
+	id S1756777AbZFJGqg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 02:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752413AbZFJGq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 02:45:07 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:44039 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753743AbZFJGpG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 02:45:06 -0400
-Date: Wed, 10 Jun 2009 08:47:23 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
+	Wed, 10 Jun 2009 02:46:29 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51098 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751923AbZFJGq3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 02:46:29 -0400
+Date: Wed, 10 Jun 2009 16:46:13 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
 Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: kbuild tree build warning
-Message-ID: <20090610064723.GA25493@uranus.ravnborg.org>
-References: <20090610115255.035da856.sfr@canb.auug.org.au>
+Subject: Re: linux-next: rr tree build warning
+Message-Id: <20090610164613.090ed0ff.sfr@canb.auug.org.au>
+In-Reply-To: <200906101610.20265.rusty@rustcorp.com.au>
+References: <20090609162636.d2351007.sfr@canb.auug.org.au>
+	<200906101610.20265.rusty@rustcorp.com.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090610115255.035da856.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__10_Jun_2009_16_46_13_+1000_F.crxfqDTIbTbPXb"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 11:52:55AM +1000, Stephen Rothwell wrote:
-> Hi Sam,
-> 
-> Today's linux-next build (x86_64 allmodconfig) produced this warning:
-> 
-> In file included from arch/x86/kernel/vmlinux.lds.S:23:
-> include/asm-generic/vmlinux.lds.h:726:47: warning: backslash-newline at end of file
-> 
-> Caused by commit ef53dae8658cf0e93d380983824a661067948d87 ("Improve
-> vmlinux.lds.h support for arch specific linker scripts").
+--Signature=_Wed__10_Jun_2009_16_46_13_+1000_F.crxfqDTIbTbPXb
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I already fixed this locally but I forgot to do a "git commit --amend" :-)
-Will be fixed in next push of kbuild-next.
+Hi Rusty,
 
-	Sam
+On Wed, 10 Jun 2009 16:10:17 +0930 Rusty Russell <rusty@rustcorp.com.au> wr=
+ote:
+>
+> Thanks, I've revisited this patch and fixed this too.
+
+Thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__10_Jun_2009_16_46_13_+1000_F.crxfqDTIbTbPXb
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkovVrUACgkQjjKRsyhoI8yC0ACfeVsGFMc5/XzAnlEiO7JGRVYI
+aF8AmwfTlnPMzYqjQQSoAbBzFbaGJv08
+=oPF7
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__10_Jun_2009_16_46_13_+1000_F.crxfqDTIbTbPXb--
