@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbZFJMoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbZFJMoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756033AbZFJMoS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 08:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbZFJMoK
+	id S1759449AbZFJMoe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 08:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbZFJMoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 08:44:10 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45337 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755469AbZFJMoJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 08:44:09 -0400
-Subject: Re: [tip:tracing/core] x86, bts: reenable ptrace branch trace
- support
-From: Peter Zijlstra <peterz@infradead.org>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       markus.t.metzger@intel.com, tglx@linutronix.de, oleg@redhat.com,
-       mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-In-Reply-To: <tip-7e0bfad24d85de7cf2202a7b0ce51de11a077b21@git.kernel.org>
-References: <20090424094448.A30216@sedona.ch.intel.com>
-	 <tip-7e0bfad24d85de7cf2202a7b0ce51de11a077b21@git.kernel.org>
-Content-Type: text/plain
+	Wed, 10 Jun 2009 08:44:24 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:59752 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756840AbZFJMoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 08:44:23 -0400
+From: Jeremy Kerr <jk@ozlabs.org>
+To: patchwork@ozlabs.org
+Subject: Re: [PATCH 3/5] can: af_can.c use rcu_barrier() on module unload.
+Date: Wed, 10 Jun 2009 22:41:47 +1000
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: David Miller <davem@davemloft.net>, oliver@hartkopp.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+References: <4A2D112A.4000308@hartkopp.net> <4A2F6D32.8030400@hartkopp.net> <20090610.015245.141342130.davem@davemloft.net>
+In-Reply-To: <20090610.015245.141342130.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Wed, 10 Jun 2009 14:44:03 +0200
-Message-Id: <1244637843.13761.11786.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Disposition: inline
+Message-Id: <200906102241.47823.jk@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-07 at 09:25 +0000, tip-bot for Markus Metzger wrote:
-> Commit-ID:  7e0bfad24d85de7cf2202a7b0ce51de11a077b21
-> Gitweb:     http://git.kernel.org/tip/7e0bfad24d85de7cf2202a7b0ce51de11a077b21
-> Author:     Markus Metzger <markus.t.metzger@intel.com>
-> AuthorDate: Fri, 24 Apr 2009 09:44:48 +0200
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Fri, 24 Apr 2009 10:18:51 +0200
-> 
-> x86, bts: reenable ptrace branch trace support
-> 
-> The races found by Oleg Nesterov have been fixed.
-> 
-> Reenable branch trace support.
-> 
-> Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
-> Acked-by: Oleg Nesterov <oleg@redhat.com>
-> LKML-Reference: <20090424094448.A30216@sedona.ch.intel.com>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+David,
 
-OK, this whole BTS thing worries me because it seems to expose too much
-of the Intel Debug Store thingy to the outside world.
+> We really can't expect patchwork to look for every conceivable
+> malignment of the various reviewer tags.
 
-The thing is, once we do PEBS from inside the kernel, we'll have to
-share the debug store, and the way this thing sets it up isn't really
-going to work.
+No, but we could probably be more tolerant about capitalisation. Any 
+objections about ignoring case completely? I have a patch ready to 
+push...
 
-So what I'd like to see is having this debug store removed from the
-interface and abstracted away as cpu resource -- a single page when in
-use should suffice I think.
+Cheers,
 
-If you want to expose a buffer to userspace, use the regular mmap()
-interface and fill those pages from the DS interrupt handler.
+
+Jeremy
