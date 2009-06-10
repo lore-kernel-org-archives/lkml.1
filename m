@@ -1,118 +1,323 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760980AbZFJWNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbZFJWQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760980AbZFJWNU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 18:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756464AbZFJWNI
+	id S1758497AbZFJWQv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 18:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbZFJWQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 18:13:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34186 "EHLO mx2.redhat.com"
+	Wed, 10 Jun 2009 18:16:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50968 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754222AbZFJWNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 18:13:07 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Chris Mason <chris.mason@oracle.com>, Mike Galbraith <efault@gmx.de>,
-       Diego Calleja <diegocg@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, jens.axboe@oracle.com,
-       linux-ext4@vger.kernel.org
-Subject: Re: Performance regressions in 2.6.30-rc7?
-References: <200905282249.28592.diegocg@gmail.com>
-	<20090529210718.bef7a9c1.akpm@linux-foundation.org>
-	<200905301851.47708.diegocg@gmail.com>
-	<20090603195806.GA9571@atrey.karlin.mff.cuni.cz>
-	<1244100382.7131.12.camel@marge.simson.net>
-	<20090604112109.GC2859@duck.suse.cz>
-	<1244142795.5731.31.camel@marge.simson.net>
-	<20090609103208.GB9235@duck.suse.cz> <20090609184818.GD9556@think>
-	<20090610091211.GA13692@duck.suse.cz>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 10 Jun 2009 18:12:50 -0400
-In-Reply-To: <20090610091211.GA13692@duck.suse.cz> (Jan Kara's message of
-	"Wed, 10 Jun 2009 11:12:11 +0200")
-Message-ID: <x4963f3rb4t.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1751580AbZFJWQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 18:16:43 -0400
+Date: Thu, 11 Jun 2009 00:16:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] core/percpu for v2.6.31
+Message-ID: <20090610221635.GA25816@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara <jack@suse.cz> writes:
+Linus,
 
-> On Tue 09-06-09 14:48:18, Chris Mason wrote:
->> On Tue, Jun 09, 2009 at 12:32:08PM +0200, Jan Kara wrote:
->> > On Thu 04-06-09 21:13:15, Mike Galbraith wrote:
->> > > On Thu, 2009-06-04 at 13:21 +0200, Jan Kara wrote:
->> > > 
->> > > > > Sequential Writes
->> > > > > 2.6.30-smp-ordered            6000  65536  32   50.16 508.9%    31.996    45595.78   0.64965  0.02402    10
->> > > > > 2.6.29.4-smp-ordered          6000  65536  32   52.70 543.2%    33.658    23794.92   0.71754  0.00836    10
->> > > > > 
->> > > > > 2.6.30-smp-writeback          6000  65536  32   47.82 525.4%    35.003    32588.84   0.56192  0.02298     9
->> > > > > 2.6.29.4-smp-writeback        6000  65536  32   52.52 467.6%    32.397    12972.78   0.53580  0.00522    11
->> > > > > 
->> > > > > 2.6.30-smp-ordered            6000  65536  16   56.08 254.9%    15.463    33000.68   0.39687  0.00521    22
->> > > > > 2.6.29.4-smp-ordered          6000  65536  16   62.40 308.4%    14.701    13455.02   0.13125  0.00208    20
->> > > > > 
->> > > > > 2.6.30-smp-writeback          6000  65536  16   51.90 281.4%    17.098    12869.85   0.36771  0.00104    18
->> > > > > 2.6.29.4-smp-writeback        6000  65536  16   60.53 272.6%    14.977     8637.08   0.21146  0.00000    22
->> > > > > 
->> > > > > 2.6.30-smp-ordered            6000  65536   8   51.09 113.4%     8.700    14856.55   0.06771  0.00417    45
->> > > > > 2.6.29.4-smp-ordered          6000  65536   8   56.13 130.6%     8.098     8400.45   0.03958  0.00000    43
->> > > > > 
->> > > > > 2.6.30-smp-writeback          6000  65536   8   50.19 131.7%     8.680    16821.04   0.11979  0.00208    38
->> > > > > 2.6.29.4-smp-writeback        6000  65536   8   54.90 130.7%     8.244     4925.48   0.10000  0.00000    42
->> > > >   It really seems write has some problems... There's consistently lower
->> > > > throughput and it also seems some writes take really long. I'll try to
->> > > > reproduce it here.
->> > > 
->> > > Looked "pretty solid" to me.  I haven't observed enough to ~trust.
->> >   OK, I did a few runs of tiobench here and I can confirm that I see about
->> > 6% performance regression in Sequential Write throughput between 2.6.29
->> > and 2.6.30-rc8. I'll try to find what's causing it.
->> 
->> My first guess would be the WRITE_SYNC style changes.  Is the regression
->> still there with noop?
->   Thanks for the hint. I was guessing that as well. And experiments show
-> it's definitely connected. To be more precise with the data:
-> The test machine is 2 CPU, 2 GB ram, simple lowend SATA disk. Tiobench run
-> with:
-> tiobench/tiobench.pl -b 65536 -t 16 -t 8 -d /local/scratch -s 4096
->   which means 4GB testfile, writes happen in 64k chunks, test done with 16
-> and 8 threads. /local/scratch is a separate partition always cleaned and
-> umounted + mounted before each test. The results are (always 3 runs):
->     2.6.29+CFQ:           Avg    StdDev
-> 8   38.01 40.26 39.69 ->  39.32  0.955092
-> 16  40.09 38.18 40.05 ->  39.44  0.891104
->
->     2.6.30-rc8+CFQ:
-> 8   36.67 36.81 38.20 ->  37.23  0.69062
-> 16  37.45 36.47 37.46 ->  37.13  0.464351
->
->     2.6.29+NOOP:
-> 8   38.67 38.66 37.55 ->  38.29  0.525632
-> 16  39.59 39.15 39.19 ->  39.31  0.198662
->
->     2.6.30-rc8+NOOP:
-> 8   38.31 38.47 38.16 ->  38.31  0.126579
-> 16  39.08 39.25 39.13 ->  39.15  0.0713364
+Please pull the latest percpu-for-linus git tree from:
 
-I ran the same test on a bigger system: 8GB ram (so I used a 16GB size
-for the test) and a 4 disk stripe hanging off of a CCISS controller.
-All the runs used ext3 in data=ordered mode and CFQ as the I/O scheduler.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git percpu-for-linus
 
-     2.6.29.3-140.fc11       Avg       StdDev
- 8   158.72 152.72 148.24    153.227   5.25834
-16   176.06 174.91 176.27    175.747   0.73214
+Two leftover straightforward dynamic percpu allocator changes 
+(cleanup+speedup) affecting x86.
 
-     2.6.30-rc7
- 8   147.89 144.57 144.99    145.817   1.8078
-16   121.37 119.56 111.85    117.593   5.05553
+Tejun is carrying the remaining percpu patches (which affect other 
+architectures).
 
-Jan, let me know if you want any help tracking this down.
+ Thanks,
 
-Cheers,
-Jeff
+	Ingo
+
+------------------>
+Christoph Lameter (1):
+      percpu: remove rbtree and use page->index instead
+
+Tejun Heo (1):
+      percpu: don't put the first chunk in reverse-map rbtree
+
+
+ mm/percpu.c |  141 ++++++++++++++++++----------------------------------------
+ 1 files changed, 44 insertions(+), 97 deletions(-)
+
+diff --git a/mm/percpu.c b/mm/percpu.c
+index 1aa5d8f..c0b2c1a 100644
+--- a/mm/percpu.c
++++ b/mm/percpu.c
+@@ -23,7 +23,7 @@
+  * Allocation is done in offset-size areas of single unit space.  Ie,
+  * an area of 512 bytes at 6k in c1 occupies 512 bytes at 6k of c1:u0,
+  * c1:u1, c1:u2 and c1:u3.  Percpu access can be done by configuring
+- * percpu base registers UNIT_SIZE apart.
++ * percpu base registers pcpu_unit_size apart.
+  *
+  * There are usually many small percpu allocations many of them as
+  * small as 4 bytes.  The allocator organizes chunks into lists
+@@ -38,8 +38,8 @@
+  * region and negative allocated.  Allocation inside a chunk is done
+  * by scanning this map sequentially and serving the first matching
+  * entry.  This is mostly copied from the percpu_modalloc() allocator.
+- * Chunks are also linked into a rb tree to ease address to chunk
+- * mapping during free.
++ * Chunks can be determined from the address using the index field
++ * in the page struct. The index field contains a pointer to the chunk.
+  *
+  * To use this allocator, arch code should do the followings.
+  *
+@@ -61,7 +61,6 @@
+ #include <linux/mutex.h>
+ #include <linux/percpu.h>
+ #include <linux/pfn.h>
+-#include <linux/rbtree.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
+ #include <linux/vmalloc.h>
+@@ -88,7 +87,6 @@
+ 
+ struct pcpu_chunk {
+ 	struct list_head	list;		/* linked to pcpu_slot lists */
+-	struct rb_node		rb_node;	/* key is chunk->vm->addr */
+ 	int			free_size;	/* free bytes in the chunk */
+ 	int			contig_hint;	/* max contiguous size hint */
+ 	struct vm_struct	*vm;		/* mapped vmalloc region */
+@@ -110,9 +108,21 @@ static size_t pcpu_chunk_struct_size __read_mostly;
+ void *pcpu_base_addr __read_mostly;
+ EXPORT_SYMBOL_GPL(pcpu_base_addr);
+ 
+-/* optional reserved chunk, only accessible for reserved allocations */
++/*
++ * The first chunk which always exists.  Note that unlike other
++ * chunks, this one can be allocated and mapped in several different
++ * ways and thus often doesn't live in the vmalloc area.
++ */
++static struct pcpu_chunk *pcpu_first_chunk;
++
++/*
++ * Optional reserved chunk.  This chunk reserves part of the first
++ * chunk and serves it for reserved allocations.  The amount of
++ * reserved offset is in pcpu_reserved_chunk_limit.  When reserved
++ * area doesn't exist, the following variables contain NULL and 0
++ * respectively.
++ */
+ static struct pcpu_chunk *pcpu_reserved_chunk;
+-/* offset limit of the reserved chunk */
+ static int pcpu_reserved_chunk_limit;
+ 
+ /*
+@@ -121,7 +131,7 @@ static int pcpu_reserved_chunk_limit;
+  * There are two locks - pcpu_alloc_mutex and pcpu_lock.  The former
+  * protects allocation/reclaim paths, chunks and chunk->page arrays.
+  * The latter is a spinlock and protects the index data structures -
+- * chunk slots, rbtree, chunks and area maps in chunks.
++ * chunk slots, chunks and area maps in chunks.
+  *
+  * During allocation, pcpu_alloc_mutex is kept locked all the time and
+  * pcpu_lock is grabbed and released as necessary.  All actual memory
+@@ -140,7 +150,6 @@ static DEFINE_MUTEX(pcpu_alloc_mutex);	/* protects whole alloc and reclaim */
+ static DEFINE_SPINLOCK(pcpu_lock);	/* protects index data structures */
+ 
+ static struct list_head *pcpu_slot __read_mostly; /* chunk list slots */
+-static struct rb_root pcpu_addr_root = RB_ROOT;	/* chunks by address */
+ 
+ /* reclaim work to release fully free chunks, scheduled from free path */
+ static void pcpu_reclaim(struct work_struct *work);
+@@ -191,6 +200,18 @@ static bool pcpu_chunk_page_occupied(struct pcpu_chunk *chunk,
+ 	return *pcpu_chunk_pagep(chunk, 0, page_idx) != NULL;
+ }
+ 
++/* set the pointer to a chunk in a page struct */
++static void pcpu_set_page_chunk(struct page *page, struct pcpu_chunk *pcpu)
++{
++	page->index = (unsigned long)pcpu;
++}
++
++/* obtain pointer to a chunk from a page struct */
++static struct pcpu_chunk *pcpu_get_page_chunk(struct page *page)
++{
++	return (struct pcpu_chunk *)page->index;
++}
++
+ /**
+  * pcpu_mem_alloc - allocate memory
+  * @size: bytes to allocate
+@@ -257,93 +278,26 @@ static void pcpu_chunk_relocate(struct pcpu_chunk *chunk, int oslot)
+ 	}
+ }
+ 
+-static struct rb_node **pcpu_chunk_rb_search(void *addr,
+-					     struct rb_node **parentp)
+-{
+-	struct rb_node **p = &pcpu_addr_root.rb_node;
+-	struct rb_node *parent = NULL;
+-	struct pcpu_chunk *chunk;
+-
+-	while (*p) {
+-		parent = *p;
+-		chunk = rb_entry(parent, struct pcpu_chunk, rb_node);
+-
+-		if (addr < chunk->vm->addr)
+-			p = &(*p)->rb_left;
+-		else if (addr > chunk->vm->addr)
+-			p = &(*p)->rb_right;
+-		else
+-			break;
+-	}
+-
+-	if (parentp)
+-		*parentp = parent;
+-	return p;
+-}
+-
+ /**
+- * pcpu_chunk_addr_search - search for chunk containing specified address
+- * @addr: address to search for
+- *
+- * Look for chunk which might contain @addr.  More specifically, it
+- * searchs for the chunk with the highest start address which isn't
+- * beyond @addr.
+- *
+- * CONTEXT:
+- * pcpu_lock.
++ * pcpu_chunk_addr_search - determine chunk containing specified address
++ * @addr: address for which the chunk needs to be determined.
+  *
+  * RETURNS:
+  * The address of the found chunk.
+  */
+ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
+ {
+-	struct rb_node *n, *parent;
+-	struct pcpu_chunk *chunk;
++	void *first_start = pcpu_first_chunk->vm->addr;
+ 
+-	/* is it in the reserved chunk? */
+-	if (pcpu_reserved_chunk) {
+-		void *start = pcpu_reserved_chunk->vm->addr;
+-
+-		if (addr >= start && addr < start + pcpu_reserved_chunk_limit)
++	/* is it in the first chunk? */
++	if (addr >= first_start && addr < first_start + pcpu_chunk_size) {
++		/* is it in the reserved area? */
++		if (addr < first_start + pcpu_reserved_chunk_limit)
+ 			return pcpu_reserved_chunk;
++		return pcpu_first_chunk;
+ 	}
+ 
+-	/* nah... search the regular ones */
+-	n = *pcpu_chunk_rb_search(addr, &parent);
+-	if (!n) {
+-		/* no exactly matching chunk, the parent is the closest */
+-		n = parent;
+-		BUG_ON(!n);
+-	}
+-	chunk = rb_entry(n, struct pcpu_chunk, rb_node);
+-
+-	if (addr < chunk->vm->addr) {
+-		/* the parent was the next one, look for the previous one */
+-		n = rb_prev(n);
+-		BUG_ON(!n);
+-		chunk = rb_entry(n, struct pcpu_chunk, rb_node);
+-	}
+-
+-	return chunk;
+-}
+-
+-/**
+- * pcpu_chunk_addr_insert - insert chunk into address rb tree
+- * @new: chunk to insert
+- *
+- * Insert @new into address rb tree.
+- *
+- * CONTEXT:
+- * pcpu_lock.
+- */
+-static void pcpu_chunk_addr_insert(struct pcpu_chunk *new)
+-{
+-	struct rb_node **p, *parent;
+-
+-	p = pcpu_chunk_rb_search(new->vm->addr, &parent);
+-	BUG_ON(*p);
+-	rb_link_node(&new->rb_node, parent, p);
+-	rb_insert_color(&new->rb_node, &pcpu_addr_root);
++	return pcpu_get_page_chunk(vmalloc_to_page(addr));
+ }
+ 
+ /**
+@@ -755,6 +709,7 @@ static int pcpu_populate_chunk(struct pcpu_chunk *chunk, int off, int size)
+ 						  alloc_mask, 0);
+ 			if (!*pagep)
+ 				goto err;
++			pcpu_set_page_chunk(*pagep, chunk);
+ 		}
+ 	}
+ 
+@@ -879,7 +834,6 @@ restart:
+ 
+ 	spin_lock_irq(&pcpu_lock);
+ 	pcpu_chunk_relocate(chunk, -1);
+-	pcpu_chunk_addr_insert(chunk);
+ 	goto restart;
+ 
+ area_found:
+@@ -968,7 +922,6 @@ static void pcpu_reclaim(struct work_struct *work)
+ 		if (chunk == list_first_entry(head, struct pcpu_chunk, list))
+ 			continue;
+ 
+-		rb_erase(&chunk->rb_node, &pcpu_addr_root);
+ 		list_move(&chunk->list, &todo);
+ 	}
+ 
+@@ -1147,7 +1100,8 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 
+ 	if (reserved_size) {
+ 		schunk->free_size = reserved_size;
+-		pcpu_reserved_chunk = schunk;	/* not for dynamic alloc */
++		pcpu_reserved_chunk = schunk;
++		pcpu_reserved_chunk_limit = static_size + reserved_size;
+ 	} else {
+ 		schunk->free_size = dyn_size;
+ 		dyn_size = 0;			/* dynamic area covered */
+@@ -1158,8 +1112,6 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 	if (schunk->free_size)
+ 		schunk->map[schunk->map_used++] = schunk->free_size;
+ 
+-	pcpu_reserved_chunk_limit = static_size + schunk->free_size;
+-
+ 	/* init dynamic chunk if necessary */
+ 	if (dyn_size) {
+ 		dchunk = alloc_bootmem(sizeof(struct pcpu_chunk));
+@@ -1226,13 +1178,8 @@ size_t __init pcpu_setup_first_chunk(pcpu_get_page_fn_t get_page_fn,
+ 	}
+ 
+ 	/* link the first chunk in */
+-	if (!dchunk) {
+-		pcpu_chunk_relocate(schunk, -1);
+-		pcpu_chunk_addr_insert(schunk);
+-	} else {
+-		pcpu_chunk_relocate(dchunk, -1);
+-		pcpu_chunk_addr_insert(dchunk);
+-	}
++	pcpu_first_chunk = dchunk ?: schunk;
++	pcpu_chunk_relocate(pcpu_first_chunk, -1);
+ 
+ 	/* we're done */
+ 	pcpu_base_addr = (void *)pcpu_chunk_addr(schunk, 0, 0);
