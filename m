@@ -1,384 +1,429 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbZFJGW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbZFJG0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755949AbZFJGW7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 02:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZFJGWc
+	id S1755880AbZFJG0a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 02:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbZFJG0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 02:22:32 -0400
-Received: from ozlabs.org ([203.10.76.45]:41198 "EHLO ozlabs.org"
+	Wed, 10 Jun 2009 02:26:22 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60788 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752105AbZFJGWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 02:22:30 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 4/6] x86/cpufreq: use cpumask_copy instead of =
-Date: Wed, 10 Jun 2009 15:52:15 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Yinghai Lu <yinghai@kernel.org>, Avi Kivity <avi@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
-       mark.langsdorf@amd.com
-References: <4A2835D8.6040903@kernel.org> <200906091627.45411.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906090842120.6847@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0906090842120.6847@localhost.localdomain>
+	id S1751603AbZFJG0V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 02:26:21 -0400
+Date: Wed, 10 Jun 2009 08:26:22 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: What's in the block git tree for 2.6.31
+Message-ID: <20090610062622.GZ11363@kernel.dk>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906101552.17397.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Jun 2009 01:16:44 am Linus Torvalds wrote:
-> On Tue, 9 Jun 2009, Rusty Russell wrote:
-> >  	for_each_online_cpu(i) {
-> > -		if (check_supported_cpu(i))
-> > +		if (work_on_cpu(i, check_supported_cpu, NULL) == 0)
-> >  			supported_cpus++;
->
-> Please STOP USING THAT HORRIBLE "work_on_cpu()" crap.
->
-> Is there any reason you do that? We've had to fix up the fallout from that
-> kind of crazy crap several times.
+Hi,
 
-Simplicity of translation, laziness, and reluctance to break stuff.  And a
-nicer API.
+So 2.6.30 is released and I have a pile of stuff pending for 2.6.31 in
+the block git tree.
 
-It's called here on cpu bringup, but I'll change it (the code doesn't sleep).  
-I've a couple of others in my queue I'll look at similarly.
+- The major bit is the request peek/retrieval interface got a long
+  overdue overhaul. This will require changes to block drivers, but they
+  are fairly trivial and should result in simpler code. Drivers used to
+  call elv_next_request() to get the next request for service, and then
+  blkdev_dequeue_request() to remove the request from the internal
+  queues. Some drivers deferred the removal to end IO time, while others
+  dequeued immediately after elv_next_request(). This has now been
+  replaced with blk_fetch_request(), which retrieves and removes the
+  next request for service. There's also a peek operation,
+  blk_peek_request(), which can then be paired with blk_start_request()
+  for a functional equivalent to blk_fetch_request(). Requests must now
+  be dequeued for end IO processing. Thanks to Tejun Heo for all his
+  great work here.
 
-powernow_k8_target is problematic: it grabs a mutex.  cpufreq people, is this 
-called often?
+- Cleanup of the bi-directional command io completion from FUJITA
+  Tomonori.
 
-Thanks,
-Rusty.
+- Support for passing in a list of linked bio's for IO submission from
+  Boaz Harrosh. This gets rid of blk_rq_append_bio outside of the block
+  core and provides functionality to OSD.
 
-Subject: cpumask: avoid playing with cpus_allowed in powernow-k8.c
-From: Rusty Russell <rusty@rustcorp.com.au>
+- Tweak to the block layer tagging that only allows async requests to
+  consume part of the tag space. This should help with devices that have
+  tag starvation issues.
 
-It's generally a very bad idea to mug some process's cpumask: it could
-legitimately and reasonably be changed by root, which could break us
-(if done before our code) or them (if we restore the wrong value).
+- Some splice updates from Miklos. We now support pipe to pipe splicing
+  and have fallback support for copy splice on read and write.
 
-I use work_on_cpu, which is slightly less efficient than the old code,
-but the code is complex enough that using smp_call_function_single()
-is not trivial.
+- Export of IO topology through sysfs from Martin Petersen.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-To: davej@redhat.com
-To: cpufreq@vger.kernel.org
-Cc: mark.langsdorf@amd.com
----
- arch/x86/kernel/cpu/cpufreq/powernow-k8.c |  128 +++++++++++++++---------------
- 1 file changed, 64 insertions(+), 64 deletions(-)
+- A bunch of fixes and cleanups to the cciss driver.
 
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -510,41 +510,34 @@ static int core_voltage_post_transition(
- 	return 0;
- }
- 
--static int check_supported_cpu(unsigned int cpu)
-+static void check_supported_cpu(void *_rc)
- {
--	cpumask_t oldmask;
- 	u32 eax, ebx, ecx, edx;
--	unsigned int rc = 0;
-+	int *rc = _rc;
- 
--	oldmask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
--
--	if (smp_processor_id() != cpu) {
--		printk(KERN_ERR PFX "limiting to cpu %u failed\n", cpu);
--		goto out;
--	}
-+	*rc = -ENODEV;
- 
- 	if (current_cpu_data.x86_vendor != X86_VENDOR_AMD)
--		goto out;
-+		return;
- 
- 	eax = cpuid_eax(CPUID_PROCESSOR_SIGNATURE);
- 	if (((eax & CPUID_XFAM) != CPUID_XFAM_K8) &&
- 	    ((eax & CPUID_XFAM) < CPUID_XFAM_10H))
--		goto out;
-+		return;
- 
- 	if ((eax & CPUID_XFAM) == CPUID_XFAM_K8) {
- 		if (((eax & CPUID_USE_XFAM_XMOD) != CPUID_USE_XFAM_XMOD) ||
- 		    ((eax & CPUID_XMOD) > CPUID_XMOD_REV_MASK)) {
- 			printk(KERN_INFO PFX
- 				"Processor cpuid %x not supported\n", eax);
--			goto out;
-+			return;
- 		}
- 
- 		eax = cpuid_eax(CPUID_GET_MAX_CAPABILITIES);
- 		if (eax < CPUID_FREQ_VOLT_CAPABILITIES) {
- 			printk(KERN_INFO PFX
- 			       "No frequency change capabilities detected\n");
--			goto out;
-+			return;
- 		}
- 
- 		cpuid(CPUID_FREQ_VOLT_CAPABILITIES, &eax, &ebx, &ecx, &edx);
-@@ -552,21 +545,17 @@ static int check_supported_cpu(unsigned 
- 			!= P_STATE_TRANSITION_CAPABLE) {
- 			printk(KERN_INFO PFX
- 				"Power state transitions not supported\n");
--			goto out;
-+			return;
- 		}
- 	} else { /* must be a HW Pstate capable processor */
- 		cpuid(CPUID_FREQ_VOLT_CAPABILITIES, &eax, &ebx, &ecx, &edx);
- 		if ((edx & USE_HW_PSTATE) == USE_HW_PSTATE)
- 			cpu_family = CPU_HW_PSTATE;
- 		else
--			goto out;
-+			return;
- 	}
- 
--	rc = 1;
--
--out:
--	set_cpus_allowed_ptr(current, &oldmask);
--	return rc;
-+	*rc = 0;
- }
- 
- static int check_pst_table(struct powernow_k8_data *data, struct pst_s *pst,
-@@ -1141,11 +1130,16 @@ static int transition_frequency_pstate(s
- 	return res;
- }
- 
--/* Driver entry point to switch to the target frequency */
--static int powernowk8_target(struct cpufreq_policy *pol,
--		unsigned targfreq, unsigned relation)
-+struct target_data {
-+	struct cpufreq_policy *pol;
-+	unsigned targfreq;
-+	unsigned relation;
-+};
-+
-+static long powernowk8_target_on_cpu(void *_tdata)
- {
--	cpumask_t oldmask;
-+	struct target_data *tdata = _tdata;
-+	struct cpufreq_policy *pol = tdata->pol;
- 	struct powernow_k8_data *data = per_cpu(powernow_data, pol->cpu);
- 	u32 checkfid;
- 	u32 checkvid;
-@@ -1158,22 +1152,13 @@ static int powernowk8_target(struct cpuf
- 	checkfid = data->currfid;
- 	checkvid = data->currvid;
- 
--	/* only run on specific CPU from here on */
--	oldmask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pol->cpu));
--
--	if (smp_processor_id() != pol->cpu) {
--		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
--		goto err_out;
--	}
--
- 	if (pending_bit_stuck()) {
- 		printk(KERN_ERR PFX "failing targ, change pending bit set\n");
- 		goto err_out;
- 	}
- 
- 	dprintk("targ: cpu %d, %d kHz, min %d, max %d, relation %d\n",
--		pol->cpu, targfreq, pol->min, pol->max, relation);
-+		pol->cpu, tdata->targfreq, pol->min, pol->max, tdata->relation);
- 
- 	if (query_current_values_with_pending_wait(data))
- 		goto err_out;
-@@ -1193,7 +1178,8 @@ static int powernowk8_target(struct cpuf
- 	}
- 
- 	if (cpufreq_frequency_table_target(pol, data->powernow_table,
--				targfreq, relation, &newstate))
-+					   tdata->targfreq, tdata->relation,
-+					   &newstate))
- 		goto err_out;
- 
- 	mutex_lock(&fidvid_mutex);
-@@ -1220,10 +1206,19 @@ static int powernowk8_target(struct cpuf
- 	ret = 0;
- 
- err_out:
--	set_cpus_allowed_ptr(current, &oldmask);
- 	return ret;
- }
- 
-+/* Driver entry point to switch to the target frequency */
-+static int powernowk8_target(struct cpufreq_policy *pol,
-+			     unsigned targfreq, unsigned relation)
-+{
-+	struct target_data tdata = { .pol = pol,
-+				     .targfreq = targfreq,
-+				     .relation = relation };
-+	return work_on_cpu(pol->cpu, powernowk8_target_on_cpu, &tdata);
-+}
-+
- /* Driver entry point to verify the policy and range of frequencies */
- static int powernowk8_verify(struct cpufreq_policy *pol)
- {
-@@ -1235,6 +1230,32 @@ static int powernowk8_verify(struct cpuf
- 	return cpufreq_frequency_table_verify(pol, data->powernow_table);
- }
- 
-+struct init_on_cpu {
-+	struct powernow_k8_data *data;
-+	int rc;
-+};
-+
-+static void __cpuinit powernowk8_cpu_init_on_cpu(void *_init_on_cpu)
-+{
-+	struct init_on_cpu *init_on_cpu = _init_on_cpu;
-+
-+	if (pending_bit_stuck()) {
-+		printk(KERN_ERR PFX "failing init, change pending bit set\n");
-+		init_on_cpu->rc = -ENODEV;
-+		return;
-+	}
-+
-+	if (query_current_values_with_pending_wait(init_on_cpu->data)) {
-+		init_on_cpu->rc = -ENODEV;
-+		return;
-+	}
-+
-+	if (cpu_family == CPU_OPTERON)
-+		fidvid_msr_init();
-+
-+	init_on_cpu->rc = 0;
-+}
-+
- static const char ACPI_PSS_BIOS_BUG_MSG[] =
- 	KERN_ERR FW_BUG PFX "No compatible ACPI _PSS objects found.\n"
- 	KERN_ERR FW_BUG PFX "Try again with latest BIOS.\n";
-@@ -1243,13 +1264,14 @@ static const char ACPI_PSS_BIOS_BUG_MSG[
- static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
- {
- 	struct powernow_k8_data *data;
--	cpumask_t oldmask;
-+	struct init_on_cpu init_on_cpu;
- 	int rc;
- 
- 	if (!cpu_online(pol->cpu))
- 		return -ENODEV;
- 
--	if (!check_supported_cpu(pol->cpu))
-+	smp_call_function_single(pol->cpu, check_supported_cpu, &rc, 1);
-+	if (rc)
- 		return -ENODEV;
- 
- 	data = kzalloc(sizeof(struct powernow_k8_data), GFP_KERNEL);
-@@ -1289,27 +1311,12 @@ static int __cpuinit powernowk8_cpu_init
- 		pol->cpuinfo.transition_latency = get_transition_latency(data);
- 
- 	/* only run on specific CPU from here on */
--	oldmask = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pol->cpu));
--
--	if (smp_processor_id() != pol->cpu) {
--		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
--		goto err_out_unmask;
--	}
--
--	if (pending_bit_stuck()) {
--		printk(KERN_ERR PFX "failing init, change pending bit set\n");
--		goto err_out_unmask;
--	}
--
--	if (query_current_values_with_pending_wait(data))
--		goto err_out_unmask;
--
--	if (cpu_family == CPU_OPTERON)
--		fidvid_msr_init();
--
--	/* run on any CPU again */
--	set_cpus_allowed_ptr(current, &oldmask);
-+	init_on_cpu.data = data;
-+	smp_call_function_single(data->cpu, powernowk8_cpu_init_on_cpu,
-+				 &init_on_cpu, 1);
-+	rc = init_on_cpu.rc;
-+	if (rc != 0)
-+		goto err_out_exit_acpi;
- 
- 	if (cpu_family == CPU_HW_PSTATE)
- 		cpumask_copy(pol->cpus, cpumask_of(pol->cpu));
-@@ -1346,8 +1353,7 @@ static int __cpuinit powernowk8_cpu_init
- 
- 	return 0;
- 
--err_out_unmask:
--	set_cpus_allowed_ptr(current, &oldmask);
-+err_out_exit_acpi:
- 	powernow_k8_cpu_exit_acpi(data);
- 
- err_out:
-@@ -1372,12 +1378,20 @@ static int __devexit powernowk8_cpu_exit
- 	return 0;
- }
- 
-+static void query_values_on_cpu(void *_err)
-+{
-+	int *err = _err;
-+	struct powernow_k8_data *data = __get_cpu_var(powernow_data);
-+
-+	*err = query_current_values_with_pending_wait(data);
-+}
-+
- static unsigned int powernowk8_get(unsigned int cpu)
- {
- 	struct powernow_k8_data *data;
--	cpumask_t oldmask = current->cpus_allowed;
- 	unsigned int khz = 0;
- 	unsigned int first;
-+	int err;
- 
- 	first = cpumask_first(cpu_core_mask(cpu));
- 	data = per_cpu(powernow_data, first);
-@@ -1385,15 +1399,8 @@ static unsigned int powernowk8_get(unsig
- 	if (!data)
- 		return -EINVAL;
- 
--	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
--	if (smp_processor_id() != cpu) {
--		printk(KERN_ERR PFX
--			"limiting to CPU %d failed in powernowk8_get\n", cpu);
--		set_cpus_allowed_ptr(current, &oldmask);
--		return 0;
--	}
--
--	if (query_current_values_with_pending_wait(data))
-+	smp_call_function_single(first, query_values_on_cpu, &err, true);
-+	if (err)
- 		goto out;
- 
- 	if (cpu_family == CPU_HW_PSTATE)
-@@ -1404,7 +1411,6 @@ static unsigned int powernowk8_get(unsig
- 
- 
- out:
--	set_cpus_allowed_ptr(current, &oldmask);
- 	return khz;
- }
- 
-@@ -1430,7 +1436,9 @@ static int __cpuinit powernowk8_init(voi
- 	unsigned int i, supported_cpus = 0;
- 
- 	for_each_online_cpu(i) {
--		if (check_supported_cpu(i))
-+		int rc;
-+		smp_call_function_single(i, check_supported_cpu, &rc, 1);
-+		if (rc == 0)
- 			supported_cpus++;
- 	}
- 
+- Various other little driver changes and bug fixes.
+
+Find the list of changes below, with an git url to pull from. This code
+has been in -next for the past month or so.
+
+  git://git.kernel.dk/linux-2.6-block.git for-2.6.31
+
+Akinobu Mita (1):
+      loop: use BIO list management functions
+
+Andrew Morton (2):
+      splice: fix error return code
+      cciss: use schedule_timeout_interruptible()
+
+Andrew Patterson (1):
+      cciss: add cciss driver sysfs entries
+
+Bartlomiej Zolnierkiewicz (4):
+      mg_disk: fix CONFIG_LBD=y warning
+      block: enable by default support for large devices and files on 32-bit archs
+      mg_disk: fix dependency on libata
+      mg_disk: use defines from <linux/ata.h>
+
+Boaz Harrosh (5):
+      libosd: Use new blk_rq_map_kern
+      block: Add blk_make_request(), takes bio, returns a request
+      libosd: Use of new blk_make_request
+      block: Un-export blk_rq_append_bio
+      scsi_lib: remove unused variable
+
+Borislav Petkov (3):
+      ide: add helpers for preparing sense requests
+      ide-cd: convert to using generic sense request
+      ide-atapi: convert ide-{floppy,tape} to using preallocated sense buffer
+
+Christoph Hellwig (1):
+      virtio_blk: don't blindly derefence req->rq_disk
+
+FUJITA Tomonori (4):
+      block: let blk_end_request_all handle bidi requests
+      scsi: simplify the bidi completion
+      block: move completion related functions back to blk-core.c
+      block: needs to set the residual length of a bidi request
+
+Hannes Reinecke (1):
+      virtio_blk: SG_IO passthru support
+
+James Bottomley (3):
+      block: allow blk_rq_map_kern to append to requests
+      block: fix oops with block tag queueing
+      block: fix an oops on BLKPREP_KILL
+
+Jeff Moyer (1):
+      block: implement blkdev_readpages
+
+Jens Axboe (11):
+      block: make blk_do_io_stat() do the full "is this rq accountable" checks
+      block: include discard requests in IO accounting
+      splice: fix misleading comment
+      splice: fix repeated kmap()'s in default_file_splice_read()
+      virtio_blk: get rid of unused variable
+      block: add warning to blk_make_request()
+      block: change the tag sync vs async restriction logic
+      Merge branch 'master' into for-2.6.31
+      Merge branch 'master' into for-2.6.31
+      Revert "block: implement blkdev_readpages"
+      Revert "block: Fix bounce limit setting in DM"
+
+Kiyoshi Ueda (2):
+      block: fix no diskstat problem
+      block: fix a possible oops on elv_abort_queue()
+
+Martin K. Petersen (8):
+      block: Do away with the notion of hardsect_size
+      block: Use accessor functions for queue limits
+      block: Move queue limits to an embedded struct
+      block: Expose stacked device queues in sysfs
+      block: Export I/O topology for block devices and partitions
+      ide-disk: fix missing max_sectors accessor function
+      block: Fix bounce limit setting in DM
+      block: Add missing bounce_pfn stacking and fix comments
+
+Mike Snitzer (1):
+      block: export blk_stack_limits()
+
+Miklos Szeredi (4):
+      splice: implement pipe to pipe splicing
+      splice: implement default splice_read method
+      splice: implement default splice_write method
+      splice: fix kmaps in default_file_splice_write()
+
+Nikanth Karthikesan (1):
+      block: catch trying to use more bits than request->cmd_flags has
+
+Roel Kluin (1):
+      xen-blkfront: beyond ARRAY_SIZE of info->shadow
+
+Stephen M. Cameron (2):
+      cciss: factor out core of sendcmd() for a more sane interface
+      cciss: fix SCSI device reset handler
+
+Tejun Heo (84):
+      mg_disk: fix locking
+      hd: fix locking
+      block: clear req->errors on bio completion only for fs requests
+      ide-tape: remove back-to-back REQUEST_SENSE detection
+      ide: use blk_run_queue() instead of blk_start_queueing()
+      ide: don't set REQ_SOFTBARRIER
+      ide kill unused ide_cmd->special
+      ide-cd: clear sense buffer before issuing request sense
+      ide-floppy: block pc always uses bio
+      ide-taskfile: don't abuse rq->buffer
+      ide-atapi: don't abuse rq->buffer
+      ide-cd: don't abuse rq->buffer
+      ide-cd,atapi: use bio for internal commands
+      ide-pm: don't abuse rq->data
+      ide-tape,floppy: fix failed command completion after request sense
+      ide-atapi,tape,floppy: allow ->pc_callback() to change rq->data_len
+      ide-tape: use single continuous buffer
+      ide-tape: use standard data transfer mechanism
+      ide-tape: kill idetape_bh
+      ide-tape: unify r/w init paths
+      ide-tape: use byte size instead of sectors on rw issue functions
+      ide-tape: simplify read/write functions
+      ide-atapi: kill unused fields and callbacks
+      ide: drop rq->data handling from ide_map_sg()
+      ide-dma: don't reset request fields on dma_timeout_retry()
+      block: merge blk_invoke_request_fn() into __blk_run_queue()
+      block: kill blk_start_queueing()
+      block: don't set REQ_NOMERGE unnecessarily
+      block: cleanup REQ_SOFTBARRIER usages
+      block: clean up misc stuff after block layer timeout conversion
+      block: reorder request completion functions
+      block: reorganize request fetching functions
+      block: kill blk_end_request_callback()
+      block: clean up request completion API
+      block: move rq->start_time initialization to blk_rq_init()
+      block: implement and use [__]blk_end_request_all()
+      block: replace end_request() with [__]blk_end_request_cur()
+      arm-omap: don't abuse rq->data
+      block: kill rq->data
+      block: make blk_end_request_cur() return bool
+      block: don't init rq fields unnecessarily
+      amiflop,ataflop,xd,mg_disk: clean up unnecessary stuff from block drivers
+      ps3disk: simplify request completion
+      sunvdc: kill vdc_end_request()
+      ubd: cleanup completion path
+      ubd: drop unnecessary rq->sector manipulation
+      hd: clean up request completion paths
+      swim3: clean up request completion paths
+      swim: clean up request completion paths
+      mg_disk: fold mg_disk.h into mg_disk.c
+      mg_disk: clean up request completion paths
+      nbd: don't clear rq->sector and nr_sectors unnecessarily
+      ide-tape: don't initialize rq->sector for rw requests
+      block: add rq->resid_len
+      block: implement blk_rq_pos/[cur_]sectors() and convert obvious ones
+      block: convert to pos and nr_sectors accessors
+      ide: convert to rq pos and nr_sectors accessors
+      block: drop request->hard_* and *nr_sectors
+      block: cleanup rq->data_len usages
+      ide: cleanup rq->data_len usages
+      block: hide request sector and data_len
+      block: blk_rq_[cur_]_{sectors|bytes}() usage cleanup
+      ide: dequeue in-flight request
+      mg_disk: fix queue hang / infinite retry on !fs requests
+      mg_disk: dequeue and track in-flight request
+      hd: dequeue and track in-flight request
+      ataflop: dequeue and track in-flight request
+      swim3: dequeue in-flight request
+      xsysace: dequeue in-flight request
+      paride: dequeue in-flight request
+      ps3disk: dequeue in-flight request
+      amiflop: dequeue in-flight request
+      swim: dequeue in-flight request
+      xd: dequeue in-flight request
+      mtd_blkdevs: dequeue in-flight request
+      jsflash: dequeue in-flight request
+      z2ram: dequeue in-flight request
+      block: convert to dequeueing model (easy ones)
+      gdrom: dequeue in-flight request
+      block: implement and enforce request peek/start/fetch
+      scsi: fix resid_len mis-conversion in scsi_end_request()
+      ub: use __blk_end_request_all()
+      block: set rq->resid_len to blk_rq_bytes() on issue
+      bio: always copy back data for copied kernel requests
+
+john cooper (1):
+      Add serial number support for virtio_blk, V4a
+
+scameron@beardog.cca.cpqcorp.net (8):
+      cciss: Use schedule_timeout_uninterruptible in SCSI error handling code
+      cciss: factor out core of sendcmd_withirq() for use by SCSI error handling code
+      cciss: simplify interface of sendcmd() and sendcmd_withirq()
+      cciss: factor out fix target status processing code from sendcmd functions
+      cciss: separate error processing and command retrying code in sendcmd_withirq_core()
+      cciss: change SCSI error handling routines to work with interrupts enabled.
+      cciss: Remove no longer needed sendcmd reject processing code
+      cciss: decode unit attention in SCSI error handling code
+
+vibi sreenivasan (1):
+      Removed reference to non-existing file Documentation/PCI/PCI-DMA-mapping.txt
+
+ Documentation/ABI/testing/sysfs-block              |   59 ++
+ .../ABI/testing/sysfs-bus-pci-devices-cciss        |   33 +
+ Documentation/block/biodoc.txt                     |    2 +-
+ arch/arm/plat-omap/mailbox.c                       |   63 +-
+ arch/powerpc/sysdev/axonram.c                      |    2 +-
+ arch/um/drivers/ubd_kern.c                         |   36 +-
+ block/Kconfig                                      |   11 +-
+ block/as-iosched.c                                 |   24 +-
+ block/blk-barrier.c                                |   27 +-
+ block/blk-core.c                                   |  758 ++++++++++-------
+ block/blk-exec.c                                   |    1 -
+ block/blk-integrity.c                              |    2 +-
+ block/blk-map.c                                    |   25 +-
+ block/blk-merge.c                                  |   71 +-
+ block/blk-settings.c                               |  269 +++++-
+ block/blk-sysfs.c                                  |   59 +-
+ block/blk-tag.c                                    |   17 +-
+ block/blk-timeout.c                                |   22 +-
+ block/blk.h                                        |   51 +-
+ block/bsg.c                                        |    8 +-
+ block/cfq-iosched.c                                |   36 +-
+ block/compat_ioctl.c                               |    4 +-
+ block/deadline-iosched.c                           |    2 +-
+ block/elevator.c                                   |  185 +----
+ block/genhd.c                                      |   11 +
+ block/ioctl.c                                      |   12 +-
+ block/scsi_ioctl.c                                 |   13 +-
+ drivers/ata/libata-scsi.c                          |    2 +-
+ drivers/block/DAC960.c                             |   10 +-
+ drivers/block/Kconfig                              |    2 +-
+ drivers/block/amiflop.c                            |   54 +-
+ drivers/block/ataflop.c                            |   66 +-
+ drivers/block/cciss.c                              |  927 ++++++++++++--------
+ drivers/block/cciss.h                              |   34 +-
+ drivers/block/cciss_cmd.h                          |    2 +
+ drivers/block/cciss_scsi.c                         |  109 ++-
+ drivers/block/cpqarray.c                           |   20 +-
+ drivers/block/floppy.c                             |   58 +-
+ drivers/block/hd.c                                 |  106 ++--
+ drivers/block/loop.c                               |   37 +-
+ drivers/block/mg_disk.c                            |  537 +++++++-----
+ drivers/block/nbd.c                                |   23 +-
+ drivers/block/paride/pcd.c                         |   29 +-
+ drivers/block/paride/pd.c                          |   22 +-
+ drivers/block/paride/pf.c                          |   47 +-
+ drivers/block/pktcdvd.c                            |    8 +-
+ drivers/block/ps3disk.c                            |   24 +-
+ drivers/block/sunvdc.c                             |   14 +-
+ drivers/block/swim.c                               |   48 +-
+ drivers/block/swim3.c                              |  107 ++--
+ drivers/block/sx8.c                                |   17 +-
+ drivers/block/ub.c                                 |   54 +-
+ drivers/block/viodasd.c                            |   12 +-
+ drivers/block/virtio_blk.c                         |  110 ++-
+ drivers/block/xd.c                                 |   41 +-
+ drivers/block/xen-blkfront.c                       |   34 +-
+ drivers/block/xsysace.c                            |   46 +-
+ drivers/block/z2ram.c                              |   19 +-
+ drivers/cdrom/cdrom.c                              |    4 +-
+ drivers/cdrom/gdrom.c                              |   36 +-
+ drivers/cdrom/viocd.c                              |   33 +-
+ drivers/char/raw.c                                 |    2 +-
+ drivers/ide/ide-atapi.c                            |  177 +++--
+ drivers/ide/ide-cd.c                               |  152 +---
+ drivers/ide/ide-cd.h                               |    4 -
+ drivers/ide/ide-disk.c                             |   11 +-
+ drivers/ide/ide-dma.c                              |   22 +-
+ drivers/ide/ide-floppy.c                           |   32 +-
+ drivers/ide/ide-io.c                               |   57 +-
+ drivers/ide/ide-ioctls.c                           |    1 -
+ drivers/ide/ide-lib.c                              |    2 +-
+ drivers/ide/ide-park.c                             |    7 +-
+ drivers/ide/ide-pm.c                               |   38 +-
+ drivers/ide/ide-tape.c                             |  735 ++++------------
+ drivers/ide/ide-taskfile.c                         |   20 +-
+ drivers/ide/pdc202xx_old.c                         |    2 +-
+ drivers/ide/tc86c001.c                             |    2 +-
+ drivers/ide/tx4939ide.c                            |    2 +-
+ drivers/md/bitmap.c                                |    4 +-
+ drivers/md/dm-exception-store.c                    |    2 +-
+ drivers/md/dm-log.c                                |    3 +-
+ drivers/md/dm-snap-persistent.c                    |    2 +-
+ drivers/md/dm-table.c                              |   38 +-
+ drivers/md/linear.c                                |    2 +-
+ drivers/md/md.c                                    |    2 +-
+ drivers/md/multipath.c                             |    4 +-
+ drivers/md/raid0.c                                 |    2 +-
+ drivers/md/raid1.c                                 |    4 +-
+ drivers/md/raid10.c                                |    8 +-
+ drivers/md/raid5.c                                 |    4 +-
+ drivers/memstick/core/mspro_block.c                |   19 +-
+ drivers/message/fusion/mptsas.c                    |   22 +-
+ drivers/message/i2o/i2o_block.c                    |   43 +-
+ drivers/mmc/card/block.c                           |   12 +-
+ drivers/mmc/card/queue.c                           |   11 +-
+ drivers/mtd/mtd_blkdevs.c                          |   43 +-
+ drivers/s390/block/dasd.c                          |   37 +-
+ drivers/s390/block/dasd_diag.c                     |    5 +-
+ drivers/s390/block/dasd_eckd.c                     |    6 +-
+ drivers/s390/block/dasd_fba.c                      |    7 +-
+ drivers/s390/block/dcssblk.c                       |    2 +-
+ drivers/s390/block/xpram.c                         |    2 +-
+ drivers/s390/char/tape_34xx.c                      |    2 +-
+ drivers/s390/char/tape_3590.c                      |    2 +-
+ drivers/s390/char/tape_block.c                     |   26 +-
+ drivers/sbus/char/jsflash.c                        |   26 +-
+ drivers/scsi/eata.c                                |   24 +-
+ drivers/scsi/libsas/sas_expander.c                 |   16 +-
+ drivers/scsi/libsas/sas_host_smp.c                 |   49 +-
+ drivers/scsi/lpfc/lpfc_scsi.c                      |   22 +-
+ drivers/scsi/mpt2sas/mpt2sas_transport.c           |   23 +-
+ drivers/scsi/osd/osd_initiator.c                   |   72 +-
+ drivers/scsi/scsi_lib.c                            |   87 +--
+ drivers/scsi/scsi_tgt_lib.c                        |    2 +-
+ drivers/scsi/scsi_transport_sas.c                  |    4 +-
+ drivers/scsi/sd.c                                  |   26 +-
+ drivers/scsi/sd_dif.c                              |    2 +-
+ drivers/scsi/sg.c                                  |   17 +-
+ drivers/scsi/sr.c                                  |   17 +-
+ drivers/scsi/st.c                                  |    6 +-
+ drivers/scsi/u14-34f.c                             |   22 +-
+ drivers/usb/storage/scsiglue.c                     |    4 +-
+ fs/bio.c                                           |   24 +-
+ fs/block_dev.c                                     |    6 +-
+ fs/buffer.c                                        |    6 +-
+ fs/coda/file.c                                     |    9 +-
+ fs/direct-io.c                                     |    2 +-
+ fs/exofs/osd.c                                     |    4 +-
+ fs/ext3/super.c                                    |    4 +-
+ fs/ext4/super.c                                    |    2 +-
+ fs/gfs2/ops_fstype.c                               |    4 +-
+ fs/gfs2/rgrp.c                                     |    2 +-
+ fs/nilfs2/the_nilfs.c                              |    2 +-
+ fs/ntfs/super.c                                    |    6 +-
+ fs/ocfs2/cluster/heartbeat.c                       |    2 +-
+ fs/ocfs2/super.c                                   |    2 +-
+ fs/partitions/check.c                              |   10 +
+ fs/partitions/ibm.c                                |    2 +-
+ fs/partitions/msdos.c                              |    4 +-
+ fs/pipe.c                                          |   14 +
+ fs/read_write.c                                    |    7 +-
+ fs/splice.c                                        |  338 +++++++-
+ fs/udf/super.c                                     |    2 +-
+ fs/xfs/linux-2.6/xfs_buf.c                         |    2 +-
+ include/linux/bio.h                                |   10 +-
+ include/linux/blkdev.h                             |  240 ++++--
+ include/linux/device-mapper.h                      |    2 +-
+ include/linux/elevator.h                           |    4 +-
+ include/linux/fs.h                                 |    2 +
+ include/linux/genhd.h                              |    1 +
+ include/linux/ide.h                                |   27 +-
+ include/linux/loop.h                               |    3 +-
+ include/linux/mg_disk.h                            |  206 -----
+ include/linux/pipe_fs_i.h                          |    1 +
+ include/linux/splice.h                             |    3 +-
+ include/linux/virtio_blk.h                         |   12 +
+ include/scsi/scsi_cmnd.h                           |    2 +-
+ kernel/trace/blktrace.c                            |   16 +-
+ mm/bounce.c                                        |    4 +-
+ 159 files changed, 3983 insertions(+), 3498 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-bus-pci-devices-cciss
+ delete mode 100644 include/linux/mg_disk.h
+
+-- 
+Jens Axboe
 
