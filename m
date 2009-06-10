@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760763AbZFJDqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbZFJDqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760763AbZFJDqh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbZFJDg3
+	id S1757082AbZFJDqu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:46:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756444AbZFJDgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:36:29 -0400
-Received: from kroah.org ([198.145.64.141]:57377 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:36:32 -0400
+Received: from kroah.org ([198.145.64.141]:57397 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754050AbZFJDg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:36:28 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:50 2009
-Message-Id: <20090610002350.775890911@blue.kroah.org>
+	id S1757600AbZFJDgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:36:31 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:51 2009
+Message-Id: <20090610002351.008415019@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:16 -0700
+Date: Tue, 09 Jun 2009 17:14:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,62 +26,66 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 48/60] ext4: Automatically allocate delay allocated blocks on rename
+Subject: [patch 49/60] ext4: Fix discard of inode prealloc space with delayed allocation.
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-automatically-allocate-delay-allocated-blocks-on-rename.patch
+Content-Disposition: inline; filename=ext4-fix-discard-of-inode-prealloc-space-with-delayed-allocation.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: "Theodore Ts'o" <tytso@mit.edu>
+From: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-(cherry picked from commit 8750c6d5fcbd3342b3d908d157f81d345c5325a7)
+(cherry picked from commit d6014301b5599fba395c42a1e96a7fe86f7d0b2d)
 
-When renaming a file such that a link to another inode is overwritten,
-force any delay allocated blocks that to be allocated so that if the
-filesystem is mounted with data=ordered, the data blocks will be
-pushed out to disk along with the journal commit.  Many application
-programs expect this, so we do this to avoid zero length files if the
-system crashes unexpectedly.
+With delayed allocation we should not/cannot discard inode prealloc
+space during file close. We would still have dirty pages for which we
+haven't allocated blocks yet. With this fix after each get_blocks
+request we check whether we have zero reserved blocks and if yes and
+we don't have any writers on the file we discard inode prealloc space.
 
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/namei.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ fs/ext4/file.c  |    3 ++-
+ fs/ext4/inode.c |    8 ++++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
 
---- a/fs/ext4/namei.c
-+++ b/fs/ext4/namei.c
-@@ -2314,7 +2314,7 @@ static int ext4_rename (struct inode * o
- 	struct inode * old_inode, * new_inode;
- 	struct buffer_head * old_bh, * new_bh, * dir_bh;
- 	struct ext4_dir_entry_2 * old_de, * new_de;
--	int retval;
-+	int retval, force_da_alloc = 0;
- 
- 	old_bh = new_bh = dir_bh = NULL;
- 
-@@ -2452,6 +2452,7 @@ static int ext4_rename (struct inode * o
- 		ext4_mark_inode_dirty(handle, new_inode);
- 		if (!new_inode->i_nlink)
- 			ext4_orphan_add(handle, new_inode);
-+		force_da_alloc = 1;
+--- a/fs/ext4/file.c
++++ b/fs/ext4/file.c
+@@ -39,7 +39,8 @@ static int ext4_release_file (struct ino
  	}
- 	retval = 0;
- 
-@@ -2460,6 +2461,8 @@ end_rename:
- 	brelse (old_bh);
- 	brelse (new_bh);
- 	ext4_journal_stop(handle);
-+	if (retval == 0 && force_da_alloc)
-+		ext4_alloc_da_blocks(old_inode);
- 	return retval;
+ 	/* if we are the last writer on the inode, drop the block reservation */
+ 	if ((filp->f_mode & FMODE_WRITE) &&
+-			(atomic_read(&inode->i_writecount) == 1))
++			(atomic_read(&inode->i_writecount) == 1) &&
++		        !EXT4_I(inode)->i_reserved_data_blocks)
+ 	{
+ 		down_write(&EXT4_I(inode)->i_data_sem);
+ 		ext4_discard_reservation(inode);
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -1046,6 +1046,14 @@ static void ext4_da_update_reserve_space
+ 	EXT4_I(inode)->i_reserved_meta_blocks = mdb;
+ 	EXT4_I(inode)->i_allocated_meta_blocks = 0;
+ 	spin_unlock(&EXT4_I(inode)->i_block_reservation_lock);
++
++	/*
++	 * If we have done all the pending block allocations and if
++	 * there aren't any writers on the inode, we can discard the
++	 * inode's preallocations.
++	 */
++	if (!total && (atomic_read(&inode->i_writecount) == 0))
++		ext4_discard_reservation(inode);
  }
  
+ /*
 
 
