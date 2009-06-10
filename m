@@ -1,72 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759945AbZFJMrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760132AbZFJMrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759945AbZFJMrY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 08:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999AbZFJMrQ
+	id S1760132AbZFJMrg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 08:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759242AbZFJMr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 08:47:16 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:55421 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755742AbZFJMrP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 08:47:15 -0400
-Date: Wed, 10 Jun 2009 08:47:16 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Christoph Hellwig <hch@infradead.org>
-cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
-Subject: Re: [RFC PATCH 2/5] tracing/events: nicer print format for parsing
-In-Reply-To: <20090610094819.GA25527@infradead.org>
-Message-ID: <alpine.DEB.2.00.0906100840410.30552@gandalf.stny.rr.com>
-References: <20090609014534.790466803@goodmis.org> <20090609014746.481457542@goodmis.org> <20090609192159.GD6057@nowhere> <20090610094819.GA25527@infradead.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 10 Jun 2009 08:47:27 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46544 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757080AbZFJMr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 08:47:27 -0400
+Date: Wed, 10 Jun 2009 14:47:27 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [0/16] HWPOISON: Intro
+Message-ID: <20090610124727.GB22161@wotan.suse.de>
+References: <20090603846.816684333@firstfloor.org> <20090609102014.GG14820@wotan.suse.de> <20090610090703.GF6597@localhost> <20090610091807.GA18582@wotan.suse.de> <20090610094526.GB32584@localhost> <20090610111541.GC3876@wotan.suse.de> <20090610123600.GD5657@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090610123600.GD5657@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 10 Jun 2009, Christoph Hellwig wrote:
-
-> On Tue, Jun 09, 2009 at 09:22:01PM +0200, Frederic Weisbecker wrote:
-> > But I wonder if the above new language is not breaking the charm
-> > of the TRACE_EVENT(), which charm is that it's easy to implement (hopefully).
+On Wed, Jun 10, 2009 at 08:36:00PM +0800, Wu Fengguang wrote:
+> On Wed, Jun 10, 2009 at 07:15:41PM +0800, Nick Piggin wrote:
+> > > We can make read() IO succeed even if the relevant pages are corrupted
+> > > - they can be isolated transparent to user space readers :-)
 > > 
-> > Everyone knows the printk formats. And I guess this new thing is easy and
-> > quick to learn. But because it's a new unknown language, the TRACE_EVENT
-> > will become less readable, less reachable for newcomers in TRACE_EVENT.
+> > But if the page was dirty and you throw out the dirty data,
+> > then next read will give inconsistent data.
 > 
-> I must also say I don't particularly like it.  printk is nice and easy
-> an everybody knows it, but it's not quite flexible enough as we might
-> have to do all kinds of conversions on the reader side.  What might be
-> a better idea is to just have C function pointer for output conversions
-> that could be put into the a file in debugfs and used by the binary
-> trace buffer reader.  Or maybe not as we would pull in too many
-> depenencies.
+> Yup. That's a big problem - the application won't get any error
+> feedback here if it doesn't call fsync() to commit IO.
 
-Yeah, having a printk function in debugfs that is controlled by the kernel
-sounds wrong on so many levels ;-)
+Right.
 
+
+> > > > So even if we did change existing EIO semantics then the
+> > > > memory corruption case of throwing away dirty data is still
+> > > > going to be "different" (wrong, I would say).
+> > > 
+> > > Oh well.
+> > 
+> > Well I just think SIGKILL is the much safer behaviour to
+> > start with (and matches behaviour with mmapped pagecache
+> > and anon), and does not introduce these different semantics.
 > 
-> I think we should go with the printk solution for 2.6.31 and use the
-> full development cycle for 2.6.32 to come up with something better.
+> So what?  SIGKILL any future processes visiting the corrupted file?
+> Or better to return EIO to them? Either way we'll be maintaining
+> a consistent AS_EIO_HWPOISON bit.
+
+If you don't throw the page out of the pagecache, it could
+be left in there as a marker to SIGKILL anybody who tries to
+access that page. OTOH this might present some other
+difficulties regarding supression of writeback etc. Not
+quite sure.
+
+Of course the safest mode, IMO, is to panic the kernel in
+situations like this (eg. corruption in dirty pagecache). I
+would almost like to see that made as the default mode. That
+avoids all questions of how exactly to handle these things.
+Then if you can subsequently justify what kind of application
+or case would work better with a particular behaviour (such
+as throw away the data) then we can discuss and merge that.
+
+
+> > > 1) under read IO hwpoison pages can be hidden to user space
+> > 
+> > I mean for cases where the recovery cannot be transparent
+> > (ie. error in dirty page).
 > 
-> As soon as a couple of large subsystems use the even tracer we also
-> have a broader base examples to see how new syntax works on them.
+> OK. That's a good point.
+> 
+> > > 2) under write IO hwpoison pages are normally committed by pdflush,
+> > >    so cannot find the impacted application to kill at all.
+> > 
+> > Correct.
+> > 
+> > > 3) fsync() users can be caught though. But then the application
+> > >    have the option to check its return code. If it doesn't do it,
+> > >    it may well don't care. So why kill it?
+> > 
+> > Well if it does not check, then we cannot find it to kill
+> > it anyway. If it does care (and hence check with fsync),
+> > then we could kill it.
+> 
+> If it really care, it will check EIO after fsync ;)
+> But yes, if it moderately care, it may ignore the return value.
+> 
+> So SIGKILL on fsync() seems to be a good option.
+> 
+> > > Think about a multimedia server. Shall we kill the daemon if some IO
+> > > page in the movie get corrupted?
+> > 
+> > My multimedia server is using mmap for data...
+> > 
+> > > And a mission critical server? 
+> > 
+> > Mission critical server should be killed too because it
+> > likely does not understand this semantic of throwing out
+> > dirty data page. It should be detected and restarted and
+> > should recover or fail over to another server.
+> 
+> Sorry for the confusion. I meant one server may want to survive,
+> while another want to kill (and restart service).
 
-Fair enough. I'm just worried that we'll start to get users that depend on 
-the printk format. Perhaps the better idea is to remove the printk format 
-from the debugfs format file, and force all tools to add their own for 
-every event? At least until we can come up with a solution to dynamically do this?
+Yes I just don't think even a really good admin will know
+what to choose. At which point might as well remove the option
+and just try to implement something sane...
 
--- Steve
+But maybe you can write some good documentation for it, I will
+stand corrected ;) 
 
+> > > Obviously the admin will want the right to choose.
+> > 
+> > I don't know if they are equipped to really know. Do they
+> > know that their application will correctly handle these
+> > semantics of throwing out dirty data? It is potentially
+> > much more dangerous to do this exactly because it can confuse
+> > the case where it matters most (ie. ones that care about
+> > data integrity).
+> > 
+> > It just seems like killing is far less controversial and
+> > simpler. Start with that and it should do the right thing
+> > for most people anyway. We could discuss possible ways
+> > to recover in another patch if you want to do this
+> > EIO thing.
+> 
+> OK, we can
+>         - kill fsync() users
+>         - and then return EIO for later read()/write()s
+>         - forget about the EIO condition on last file close()
+> Do you agree?
+
+I really don't know ;) Anything I can think could be wrong
+for a given situation. panic seems like the best default
+option to me.
+
+I don't want to sound like I'm quibbling. I don't actually
+care too much what options are implemented so long as each
+is justified and documented, and so long as the default is a
+sane one.
+
+Thanks,
+Nick
