@@ -1,298 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbZFJGrB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbZFJGxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756352AbZFJGrB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 02:47:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757338AbZFJGqv
+	id S1756748AbZFJGxv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 02:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbZFJGxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 02:46:51 -0400
-Received: from www84.your-server.de ([213.133.104.84]:40476 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757079AbZFJGqt (ORCPT
+	Wed, 10 Jun 2009 02:53:43 -0400
+Received: from wsip-70-184-212-11.om.om.cox.net ([70.184.212.11]:59579 "EHLO
+	hachi.dashjr.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752618AbZFJGxm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 02:46:49 -0400
-Subject: [patch 2/2] procfs: provide stack information for threads V0.7
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090401193135.GA12316@elte.hu>
-References: <1238511505.364.61.camel@matrix>
-	 <20090401193135.GA12316@elte.hu>
-Content-Type: text/plain
-Date: Wed, 10 Jun 2009 08:46:27 +0200
-Message-Id: <1244616387.1196.45.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+	Wed, 10 Jun 2009 02:53:42 -0400
+From: "Luke-Jr" <luke@dashjr.org>
+To: Mike Galbraith <gleep@gmx.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: pty tcdrain() bug in 2.6.27 to 2.6.30/current
+Date: Wed, 10 Jun 2009 01:53:20 -0500
+User-Agent: KMail/1.11.3 (Linux/2.6.27-gentoo-r7; KDE/4.2.3; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200906092338.42368.luke@dashjr.org> <1244615954.19735.42.camel@marge.simson.net>
+In-Reply-To: <1244615954.19735.42.camel@marge.simson.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Content-Disposition: inline
+Message-Id: <200906100153.38925.luke@dashjr.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the newest version of the formaly named "detailed stack info"
-patch which give you a better overview of the userland application stack
-usage, especially for embedded linux.
+On Wednesday 10 June 2009 01:39:14 am Mike Galbraith wrote:
+> On Tue, 2009-06-09 at 23:38 -0500, Luke-Jr wrote:
+> > tcdrain blocks on ptys since 2.6.27; at least 2.6.26 returns in a timely
+> > manner. The following test case reproduces the bug, and hangs only on
+> > affected kernels. Examination of 2.6.26 and 2.6.27 suggests the ioctl
+> > used by tcdrain underwent a rewrite for 2.6.27, and thus fixing this bug
+> > is beyond my capabilities at this time.
+>
+> It looks to me like it's doing what it should do, and any bug would be
+> in kernels before the break handling (by Alan Cox, CC'd) rework.
+>
+> Disclaimer:  My knowledge wrt tty IO approaches 0, but since I burned a
+> bit of time rummaging, you get one absolutely free reply.
 
-Currently you are only able to dump the main process/thread stack usage
-which is showed in /proc/pid/status by the "VmStk" Value. But you get no
-information about the consumed stack memory of the the threads.
+My knowledge on how it *should* work also approaches 0, but I am unfortunately 
+faced with a proprietary (user-space) blob GPS driver (which never reads its 
+NMEA-providing pty) that relies on this behaviour (or gpsd not doing the 
+tcdrain). However, the manual page for tcdrain says it waits until data is 
+*trasmitted*, not necessarily received... Not sure if that makes a difference 
+for this scenario?
 
-There is an enhancement in the /proc/<pid>/{task/*,}/*maps and which
-marks the vm mapping where the thread stack pointer reside with "[thread
-stack xxxxxxxx]". xxxxxxxx is the start address of the stack. This is a
-value information, because libpthread doesn't set the start of the stack
-to the top of the mapped area, depending of the pthread usage.
-
-A sample output of /proc/<pid>/task/<tid>/maps looks like:
-
-08048000-08049000 r-xp 00000000 03:00 8312       /opt/z
-08049000-0804a000 rw-p 00001000 03:00 8312       /opt/z
-0804a000-0806b000 rw-p 00000000 00:00 0          [heap]
-a7d12000-a7d13000 ---p 00000000 00:00 0 
-a7d13000-a7f13000 rw-p 00000000 00:00 0          [thread stack: a7f124b4]
-a7f13000-a7f14000 ---p 00000000 00:00 0 
-a7f14000-a7f36000 rw-p 00000000 00:00 0 
-a7f36000-a8069000 r-xp 00000000 03:00 4222       /lib/libc.so.6
-a8069000-a806b000 r--p 00133000 03:00 4222       /lib/libc.so.6
-a806b000-a806c000 rw-p 00135000 03:00 4222       /lib/libc.so.6
-a806c000-a806f000 rw-p 00000000 00:00 0 
-a806f000-a8083000 r-xp 00000000 03:00 14462      /lib/libpthread.so.0
-a8083000-a8084000 r--p 00013000 03:00 14462      /lib/libpthread.so.0
-a8084000-a8085000 rw-p 00014000 03:00 14462      /lib/libpthread.so.0
-a8085000-a8088000 rw-p 00000000 00:00 0 
-a8088000-a80a4000 r-xp 00000000 03:00 8317       /lib/ld-linux.so.2
-a80a4000-a80a5000 r--p 0001b000 03:00 8317       /lib/ld-linux.so.2
-a80a5000-a80a6000 rw-p 0001c000 03:00 8317       /lib/ld-linux.so.2
-afaf5000-afb0a000 rw-p 00000000 00:00 0          [stack]
-ffffe000-fffff000 r-xp 00000000 00:00 0          [vdso]
-
- 
-Also there is a new entry "stack usage" in /proc/<pid>/{task/*,}/status
-which will you give the current stack usage in kb.
-
-A sample output of /proc/self/status looks like:
-
-Name:	cat
-State:	R (running)
-Tgid:	507
-Pid:	507
-.
-.
-.
-CapBnd:	fffffffffffffeff
-voluntary_ctxt_switches:	0
-nonvoluntary_ctxt_switches:	0
-Stack usage:	12 kB
-
-I also fixed stack base address in /proc/<pid>/{task/*,}/stat to the
-base address of the associated thread stack and not the one of the main
-process. This makes more sense.
-
-Changes since last posting:
-
- - update Documentation/filesystem/proc.txt
-
-The patch is against 2.6.30-rc7 and tested with on intel and ppc
-architectures.
- 
-ChangeLog:
- 20. Jan 2009 V0.1
-  - First Version for Kernel 2.6.28.1
- 31. Mar 2009 V0.2
-  - Ported to Kernel 2.6.29
- 03. Jun 2009 V0.3
-  - Ported to Kernel 2.6.30
-  - Redesigned what was suggested by Ingo Molnar 
-  - the thread watch monitor is gone
-  - the /proc/stackmon entry is also gone
-  - slim down
- 04. Jun 2009 V0.4
-  - Redesigned everything that was suggested by Andrew Morton 
-  - slim down 
- 04. Jun 2009 V0.5
-  - Code cleanup
- 06. Jun 2009 V0.g
-  - Fix missing mm->mmap_sem locking in function task_show_stack_usage()
-  - Code cleanup
- 
- Documentation/filesystems/proc.txt |    6 +++-
- linux-2.6.30/fs/exec.c             |    2 +
- linux-2.6.30/fs/proc/array.c       |   51 ++++++++++++++++++++++++++++++++++++-
- linux-2.6.30/fs/proc/task_mmu.c    |   14 ++++++++++
- linux-2.6.30/include/linux/sched.h |    1 
- linux-2.6.30/kernel/fork.c         |    2 +
- 6 files changed, 74 insertions(+), 2 deletions(-)
-
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
-
-diff -u -N -r linux-2.6.30.orig/fs/exec.c linux-2.6.30/fs/exec.c
---- linux-2.6.30.orig/fs/exec.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/fs/exec.c	2009-06-04 09:32:35.000000000 +0200
-@@ -1328,6 +1328,8 @@
- 	if (retval < 0)
- 		goto out;
- 
-+	current->stack_start = current->mm->start_stack;
-+
- 	/* execve succeeded */
- 	current->fs->in_exec = 0;
- 	current->in_execve = 0;
-diff -u -N -r linux-2.6.30.orig/fs/proc/array.c linux-2.6.30/fs/proc/array.c
---- linux-2.6.30.orig/fs/proc/array.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/fs/proc/array.c	2009-06-05 21:13:30.000000000 +0200
-@@ -321,6 +321,54 @@
- 			p->nivcsw);
- }
- 
-+static inline unsigned long get_stack_usage_in_bytes(struct vm_area_struct *vma,
-+					struct task_struct *p)
-+{
-+	unsigned long	i;
-+	struct page	*page;
-+	unsigned long	stkpage;
-+
-+	stkpage = KSTK_ESP(p) & PAGE_MASK;
-+
-+#ifdef CONFIG_STACK_GROWSUP
-+	for (i = vma->vm_end; i-PAGE_SIZE > stkpage; i -= PAGE_SIZE) {
-+
-+		page = follow_page(vma, i-PAGE_SIZE, 0);
-+
-+		if (!IS_ERR(page) && page)
-+			break;
-+	}
-+	return i - (p->stack_start & PAGE_MASK);
-+#else
-+	for (i = vma->vm_start; i+PAGE_SIZE <= stkpage; i += PAGE_SIZE) {
-+
-+		page = follow_page(vma, i, 0);
-+
-+		if (!IS_ERR(page) && page)
-+			break;
-+	}
-+	return (p->stack_start & PAGE_MASK) - i + PAGE_SIZE;
-+#endif
-+}
-+
-+static inline void task_show_stack_usage(struct seq_file *m,
-+						struct task_struct *task)
-+{
-+	struct vm_area_struct	*vma;
-+	struct mm_struct	*mm = get_task_mm(task);
-+
-+	if (mm) {
-+		down_read(&mm->mmap_sem);
-+		vma = find_vma(mm, task->stack_start);
-+		if (vma)
-+			seq_printf(m, "Stack usage:\t%lu kB\n",
-+				get_stack_usage_in_bytes(vma, task) >> 10);
-+
-+		up_read(&mm->mmap_sem);
-+		mmput(mm);
-+	}
-+}
-+
- int proc_pid_status(struct seq_file *m, struct pid_namespace *ns,
- 			struct pid *pid, struct task_struct *task)
- {
-@@ -340,6 +388,7 @@
- 	task_show_regs(m, task);
- #endif
- 	task_context_switch_counts(m, task);
-+	task_show_stack_usage(m, task);
- 	return 0;
- }
- 
-@@ -481,7 +530,7 @@
- 		rsslim,
- 		mm ? mm->start_code : 0,
- 		mm ? mm->end_code : 0,
--		(permitted && mm) ? mm->start_stack : 0,
-+		(permitted) ? task->stack_start : 0,
- 		esp,
- 		eip,
- 		/* The signal information here is obsolete.
-diff -u -N -r linux-2.6.30.orig/fs/proc/task_mmu.c linux-2.6.30/fs/proc/task_mmu.c
---- linux-2.6.30.orig/fs/proc/task_mmu.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/fs/proc/task_mmu.c	2009-06-04 22:10:47.000000000 +0200
-@@ -242,6 +242,20 @@
- 				} else if (vma->vm_start <= mm->start_stack &&
- 					   vma->vm_end >= mm->start_stack) {
- 					name = "[stack]";
-+				} else {
-+					unsigned long stack_start;
-+					struct proc_maps_private *pmp;
-+
-+					pmp = m->private;
-+					stack_start = pmp->task->stack_start;
-+
-+					if (vma->vm_start <= stack_start &&
-+					    vma->vm_end >= stack_start) {
-+						pad_len_spaces(m, len);
-+						seq_printf(m,
-+						 "[thread stack: %08lx]",
-+						 stack_start);
-+					}
- 				}
- 			} else {
- 				name = "[vdso]";
-diff -u -N -r linux-2.6.30.orig/include/linux/sched.h linux-2.6.30/include/linux/sched.h
---- linux-2.6.30.orig/include/linux/sched.h	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/include/linux/sched.h	2009-06-04 09:32:35.000000000 +0200
-@@ -1429,6 +1429,7 @@
- 	/* state flags for use by tracers */
- 	unsigned long trace;
- #endif
-+	unsigned long stack_start;
- };
- 
- /* Future-safe accessor for struct task_struct's cpus_allowed. */
-diff -u -N -r linux-2.6.30.orig/kernel/fork.c linux-2.6.30/kernel/fork.c
---- linux-2.6.30.orig/kernel/fork.c	2009-06-04 09:29:47.000000000 +0200
-+++ linux-2.6.30/kernel/fork.c	2009-06-04 13:15:35.000000000 +0200
-@@ -1092,6 +1092,8 @@
- 	if (unlikely(current->ptrace))
- 		ptrace_fork(p, clone_flags);
- 
-+	p->stack_start = stack_start;
-+
- 	/* Perform scheduler related setup. Assign this task to a CPU. */
- 	sched_fork(p, clone_flags);
- 
---- linux-2.6.30.patch/Documentation/filesystems/proc.txt	2009-06-10 08:18:35.000000000 +0200
-+++ linux-2.6.30/Documentation/filesystems/proc.txt	2009-06-10 08:19:08.000000000 +0200
-@@ -176,6 +176,7 @@
-   CapBnd: ffffffffffffffff
-   voluntary_ctxt_switches:        0
-   nonvoluntary_ctxt_switches:     1
-+  Stack usage:    12 kB
- 
- This shows you nearly the same information you would get if you viewed it with
- the ps  command.  In  fact,  ps  uses  the  proc  file  system  to  obtain its
-@@ -229,6 +230,7 @@
-  Mems_allowed_list           Same as previous, but in "list format"
-  voluntary_ctxt_switches     number of voluntary context switches
-  nonvoluntary_ctxt_switches  number of non voluntary context switches
-+ Stack usage:                stack usage high water mark (round up to page size)
- ..............................................................................
- 
- Table 1-3: Contents of the statm files (as of 2.6.8-rc3)
-@@ -307,7 +309,7 @@
- 08049000-0804a000 rw-p 00001000 03:00 8312       /opt/test
- 0804a000-0806b000 rw-p 00000000 00:00 0          [heap]
- a7cb1000-a7cb2000 ---p 00000000 00:00 0
--a7cb2000-a7eb2000 rw-p 00000000 00:00 0
-+a7cb2000-a7eb2000 rw-p 00000000 00:00 0          [thread stack: a7eb14b4]
- a7eb2000-a7eb3000 ---p 00000000 00:00 0
- a7eb3000-a7ed5000 rw-p 00000000 00:00 0
- a7ed5000-a8008000 r-xp 00000000 03:00 4222       /lib/libc.so.6
-@@ -343,6 +345,8 @@
-  [stack]                  = the stack of the main process
-  [vdso]                   = the "virtual dynamic shared object",
-                             the kernel system call handler
-+ [thread stack, xxxxxxxx] = the stack of the thread, xxxxxxxx is the starting
-+                            address of the stack
- 
-  or if empty, the mapping is anonymous.
- 
-
-
+Luke
