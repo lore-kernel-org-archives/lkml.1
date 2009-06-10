@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759790AbZFJWzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbZFJXAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759790AbZFJWzE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 18:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756814AbZFJWyz
+	id S1759281AbZFJXAS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 19:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757231AbZFJXAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 18:54:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56646 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756620AbZFJWyy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 18:54:54 -0400
-Date: Wed, 10 Jun 2009 15:54:41 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL] x86/cpufeature for v2.6.31
-In-Reply-To: <20090610211629.GA11105@elte.hu>
-Message-ID: <alpine.LFD.2.01.0906101554320.6847@localhost.localdomain>
-References: <20090610211629.GA11105@elte.hu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 10 Jun 2009 19:00:07 -0400
+Received: from kroah.org ([198.145.64.141]:35326 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757025AbZFJXAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 19:00:06 -0400
+Date: Wed, 10 Jun 2009 15:49:34 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>, tom.leiming@gmail.com,
+       linux-kernel@vger.kernel.org, kay.sievers@vrfy.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 2/2] init/do_mounts.c: replace polling for root device
+	with devtmpfs_wait_for_dev
+Message-ID: <20090610224934.GA29847@kroah.com>
+References: <1244644097-305-1-git-send-email-tom.leiming@gmail.com> <20090610152811.GA21888@infradead.org> <20090610163712.3b5297d7@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090610163712.3b5297d7@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 10 Jun 2009, Ingo Molnar wrote:
+On Wed, Jun 10, 2009 at 04:37:12PM +0100, Alan Cox wrote:
+> > What tree did you find with devtmpfs in it?  It was pretty clearly
+> > rejected when it came up.
 > 
-> Please pull the latest x86-cpufeature-for-linus git tree from:
-> 
->    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-cpufeature-for-linus
+> For some reason its still in -next
 
-Hmm. This was already part of the irq-tree.
+Yes, it's still in -next, sorry, I just realized this, as it's in my
+driver-core tree.  We will be resubmitting it for .32 later on.
+Discussion will happen after the .31 merge window is over.
 
-(But at least so far, this merge window looks much cleaner wrt x86 merges. 
-I'm hoping there are no nasty surprises down the line ;)
+thanks,
 
-		Linus
+greg k-h
