@@ -1,125 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757723AbZFJRZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZFJRa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757723AbZFJRZm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 13:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbZFJRZd
+	id S1754689AbZFJRa4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 13:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbZFJRat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 13:25:33 -0400
-Received: from mga11.intel.com ([192.55.52.93]:39314 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751284AbZFJRZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 13:25:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,342,1241420400"; 
-   d="scan'208";a="698208539"
-Date: Wed, 10 Jun 2009 10:25:16 -0700
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: "Wu, Fengguang" <fengguang.wu@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Minchan Kim <minchan.kim@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch v3] swap: virtual swap readahead
-Message-ID: <20090610102516.08f7300f@jbarnes-x200>
-In-Reply-To: <20090610113214.GA5657@localhost>
-References: <20090609190128.GA1785@cmpxchg.org>
-	<20090609193702.GA2017@cmpxchg.org>
-	<20090610050342.GA8867@localhost>
-	<20090610074508.GA1960@cmpxchg.org>
-	<20090610081132.GA27519@localhost>
-	<20090610173249.50e19966.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090610085638.GA32511@localhost>
-	<1244626976.13761.11593.camel@twins>
-	<20090610095950.GA514@localhost>
-	<1244628314.13761.11617.camel@twins>
-	<20090610113214.GA5657@localhost>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.17.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Jun 2009 13:30:49 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:46011 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751989AbZFJRas (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 13:30:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=Sabj2uleZsLRVqmnYrM5TMgXbUJxYR+iufatPT7vf5s2CBdFGBvHVweBPDIUUbWPuA
+         u9jLDYIVzkFzF9TLcWpHryTbzIFU0G+1o+oFZ+0/8L7OoqeSkIzOTLt3ecFqCHyL1wJG
+         lCV7E8tyx4MhhvGzEYMxJXNBhBIweJM4Sxhcg=
+Date: Wed, 10 Jun 2009 19:30:46 +0200
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] kmemcheck doc update for -tip
+Message-ID: <20090610173045.GA24105@damson.getinternet.no>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Jun 2009 04:32:14 -0700
-"Wu, Fengguang" <fengguang.wu@intel.com> wrote:
+Hi,
 
-> On Wed, Jun 10, 2009 at 06:05:14PM +0800, Peter Zijlstra wrote:
-> > On Wed, 2009-06-10 at 17:59 +0800, Wu Fengguang wrote:
-> > > On Wed, Jun 10, 2009 at 05:42:56PM +0800, Peter Zijlstra wrote:
-> > > > On Wed, 2009-06-10 at 16:56 +0800, Wu Fengguang wrote:
-> > > > > 
-> > > > > Yes it worked!  But then I run into page allocation failures:
-> > > > > 
-> > > > > [  340.639803] Xorg: page allocation failure. order:4,
-> > > > > mode:0x40d0 [  340.645744] Pid: 3258, comm: Xorg Not tainted
-> > > > > 2.6.30-rc8-mm1 #303 [  340.651839] Call Trace:
-> > > > > [  340.654289]  [<ffffffff810c8204>]
-> > > > > __alloc_pages_nodemask+0x344/0x6c0 [  340.660645]
-> > > > > [<ffffffff810f7489>] __slab_alloc_page+0xb9/0x3b0
-> > > > > [  340.666472]  [<ffffffff810f8608>] __kmalloc+0x198/0x250
-> > > > > [  340.671786]  [<ffffffffa014bf9f>] ?
-> > > > > i915_gem_execbuffer+0x17f/0x11e0 [i915] [  340.678746]
-> > > > > [<ffffffffa014bf9f>] i915_gem_execbuffer+0x17f/0x11e0 [i915]
-> > > > 
-> > > > Jesse Barnes had a patch to add a vmalloc fallback to those
-> > > > largish kms allocs.
-> > > > 
-> > > > But order-4 allocs failing isn't really strange, but it might
-> > > > indicate this patch fragments stuff sooner, although I've seen
-> > > > these particular failues before.
-> > > 
-> > > Thanks for the tip. Where is it? I'd like to try it out :)
-> > 
-> > commit 8e7d2b2c6ecd3c21a54b877eae3d5be48292e6b5
-> > Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-> > Date:   Fri May 8 16:13:25 2009 -0700
-> > 
-> >     drm/i915: allocate large pointer arrays with vmalloc
-> 
-> Thanks! It is already in the -mm tree, but it missed on conversion :)
-> 
-> I'll retry with this patch tomorrow.
-> 
-> Thanks,
-> Fengguang
-> ---
-> 
-> diff --git a/drivers/gpu/drm/i915/i915_gem.c
-> b/drivers/gpu/drm/i915/i915_gem.c index 39f5c65..7132dbe 100644
-> --- a/drivers/gpu/drm/i915/i915_gem.c
-> +++ b/drivers/gpu/drm/i915/i915_gem.c
-> @@ -3230,8 +3230,8 @@ i915_gem_execbuffer(struct drm_device *dev,
-> void *data, }
->  
->  	if (args->num_cliprects != 0) {
-> -		cliprects = drm_calloc(args->num_cliprects,
-> sizeof(*cliprects),
-> -				       DRM_MEM_DRIVER);
-> +		cliprects = drm_calloc_large(args->num_cliprects,
-> +					     sizeof(*cliprects));
->  		if (cliprects == NULL)
->  			goto pre_mutex_err;
->  
-> @@ -3474,8 +3474,7 @@ err:
->  pre_mutex_err:
->  	drm_free_large(object_list);
->  	drm_free_large(exec_list);
-> -	drm_free(cliprects, sizeof(*cliprects) * args->num_cliprects,
-> -		 DRM_MEM_DRIVER);
-> +	drm_free_large(cliprects);
->  
->  	return ret;
->  }
+The following change since commit 14019ad5ea213c20b13b6f14ce5b7483196a709d:
+  Vegard Nossum (1):
+        kmemcheck: update documentation
 
-Kristian posted a fix to my drm_calloc_large function as well; one of
-the size checks in drm_calloc_large (the one which decides whether to
-use kmalloc or vmalloc) was just checking size instead of size * num,
-so you may be hitting that.
+is available in the git repository at:
 
-Jesse
+  git://git.kernel.org/pub/scm/linux/kernel/git/vegard/kmemcheck.git for-tip
+
+
+Vegard
