@@ -1,47 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbZFJMgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbZFJMoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758224AbZFJMgx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 08:36:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757150AbZFJMgo
+	id S1756033AbZFJMoS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 08:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbZFJMoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 08:36:44 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:46192 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755090AbZFJMgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 08:36:44 -0400
-Date: Wed, 10 Jun 2009 14:36:43 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v5
-Message-ID: <20090610123643.GA22161@wotan.suse.de>
-References: <20090603846.816684333@firstfloor.org> <20090603184648.2E2131D028F@basil.firstfloor.org> <20090609100922.GF14820@wotan.suse.de> <Pine.LNX.4.64.0906091637430.13213@sister.anvils> <20090610083803.GE6597@localhost> <20090610085939.GE31155@wotan.suse.de> <20090610092010.GA32584@localhost> <20090610110305.GB3876@wotan.suse.de> <20090610121645.GC5657@localhost>
+	Wed, 10 Jun 2009 08:44:10 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45337 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755469AbZFJMoJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 08:44:09 -0400
+Subject: Re: [tip:tracing/core] x86, bts: reenable ptrace branch trace
+ support
+From: Peter Zijlstra <peterz@infradead.org>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       markus.t.metzger@intel.com, tglx@linutronix.de, oleg@redhat.com,
+       mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+In-Reply-To: <tip-7e0bfad24d85de7cf2202a7b0ce51de11a077b21@git.kernel.org>
+References: <20090424094448.A30216@sedona.ch.intel.com>
+	 <tip-7e0bfad24d85de7cf2202a7b0ce51de11a077b21@git.kernel.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 10 Jun 2009 14:44:03 +0200
+Message-Id: <1244637843.13761.11786.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090610121645.GC5657@localhost>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 08:16:45PM +0800, Wu Fengguang wrote:
-> On Wed, Jun 10, 2009 at 07:03:05PM +0800, Nick Piggin wrote:
-> > The application equally may not need to touch the data again, so
-> > killing it might cause some inconsistency in whatever it is currently
-> > doing.
+On Thu, 2009-05-07 at 09:25 +0000, tip-bot for Markus Metzger wrote:
+> Commit-ID:  7e0bfad24d85de7cf2202a7b0ce51de11a077b21
+> Gitweb:     http://git.kernel.org/tip/7e0bfad24d85de7cf2202a7b0ce51de11a077b21
+> Author:     Markus Metzger <markus.t.metzger@intel.com>
+> AuthorDate: Fri, 24 Apr 2009 09:44:48 +0200
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Fri, 24 Apr 2009 10:18:51 +0200
 > 
-> Yes, early kill can also be evil. What I can do now is to document the
-> early kill parameter more carefully.
+> x86, bts: reenable ptrace branch trace support
+> 
+> The races found by Oleg Nesterov have been fixed.
+> 
+> Reenable branch trace support.
+> 
+> Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+> Acked-by: Oleg Nesterov <oleg@redhat.com>
+> LKML-Reference: <20090424094448.A30216@sedona.ch.intel.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-That would be good. I would also strongly consider removing
-options if possible to make things simpler and if there
-is not a really compelling reason to have it.
+OK, this whole BTS thing worries me because it seems to expose too much
+of the Intel Debug Store thingy to the outside world.
 
-Thanks,
-Nick
+The thing is, once we do PEBS from inside the kernel, we'll have to
+share the debug store, and the way this thing sets it up isn't really
+going to work.
+
+So what I'd like to see is having this debug store removed from the
+interface and abstracted away as cpu resource -- a single page when in
+use should suffice I think.
+
+If you want to expose a buffer to userspace, use the regular mmap()
+interface and fill those pages from the DS interrupt handler.
