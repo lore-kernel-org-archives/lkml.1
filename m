@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbZFJLBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbZFJLDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757462AbZFJLBm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 07:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbZFJLBi
+	id S1758117AbZFJLDA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 07:03:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbZFJLCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 07:01:38 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:57113 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752105AbZFJLBh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 07:01:37 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Yong Wang <yong.y.wang@linux.intel.com>
-Subject: Re: [PATCH -tip] perf_counter/x86: Fix the model number of Intel Core2 processors
-Date: Wed, 10 Jun 2009 13:01:08 +0200
-User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-References: <20090610090612.GA26580@ywang-moblin2.bj.intel.com>
-In-Reply-To: <20090610090612.GA26580@ywang-moblin2.bj.intel.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 10 Jun 2009 07:02:53 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60785 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753071AbZFJLCx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 07:02:53 -0400
+Date: Wed, 10 Jun 2009 13:02:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@kernel.org>
+Cc: Harald Welte <HaraldWelte@viatech.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: Re: [PATCH] X86: cpu_debug support for VIA / Centaur CPU's
+Message-ID: <20090610110244.GE27724@elte.hu>
+References: <20090609082931.GD25316@prithivi.gnumonks.org> <1244537598.2558.9.camel@ht.satnam> <20090609145305.GD3986@prithivi.gnumonks.org> <20090609151557.GA9362@elte.hu> <4A2F353A.9040007@kernel.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200906101301.08483.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18bOr/b9nmWG07VS6BbqmwbG7+TaD+G4Mr/zQY
- 7ZXkAEzw9VHA1hFcnp0auIVNS3CuU3kI6giOU898ix05YyC6lf
- ngMEqz2rtiyNz+I61sXNA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A2F353A.9040007@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0004]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 June 2009, Yong Wang wrote:
-> diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-> index 40978aa..a49a82c 100644
-> --- a/arch/x86/kernel/cpu/perf_counter.c
-> +++ b/arch/x86/kernel/cpu/perf_counter.c
-> @@ -1407,7 +1407,8 @@ static int intel_pmu_init(void)
->          * Install the hw-cache-events table:
->          */
->         switch (boot_cpu_data.x86_model) {
-> -       case 17:
-> +       case 15:
-> +       case 23:
->                 memcpy(hw_cache_event_ids, core2_hw_cache_event_ids,
->                        sizeof(hw_cache_event_ids));
 
-There are actually four model numbers that refer to the same
-core microarchitecture:
+* H. Peter Anvin <hpa@kernel.org> wrote:
 
-model 15: original 65 nm celeron/pentium/core2/xeon, "Merom"/"Conroe"
-model 22: single-core 65 nm celeron/core2solo "Merom-L"/"Conroe-L"
-model 23: current 45 nm celeron/core2/xeon "Penryn"/"Wolfdale"
-model 29: six-core 45 nm xeon "Dunnington"
+> Ingo Molnar wrote:
+> > 
+> > MSRs should really be enumerated along CPU features. They will be 
+> > accessed if a CPU offers that CPU feature.
+> > 
+> 
+> Nice in theory, but so many MSRs have to be enumerated with obscure test
+> combinations, that it really isn't practical in the general case.  That
+> is why we have the safe MSR variants.
+> 
+> > 
+> > Yeah, the safe read should never fault - there should be all 
+> > zeroes or an error return.
+> > 
+> 
+> Error return, MSRs #GP if not present.  All zero means a present 
+> MSR (which is zero.)
 
-You should probably list all of them here.
+yes, of course - i meant the /debug/x86/cpu/* behavior: it should 
+either result zeroes, or should return -EINVAL. (probably the 
+latter)
 
-	Arnd <><
+	Ingo
