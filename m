@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759350AbZFJDkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbZFJDjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759350AbZFJDkx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756743AbZFJDey
+	id S1758946AbZFJDjr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559AbZFJDeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:34:54 -0400
-Received: from kroah.org ([198.145.64.141]:56977 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:34:37 -0400
+Received: from kroah.org ([198.145.64.141]:56889 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756807AbZFJDew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:34:52 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:46 2009
-Message-Id: <20090610002345.946131404@blue.kroah.org>
+	id S1756490AbZFJDeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:34:36 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:45 2009
+Message-Id: <20090610002345.037242079@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:13:55 -0700
+Date: Tue, 09 Jun 2009 17:13:51 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
+       alan@lxorguk.ukuu.org.uk, Neil Horman <nhorman@tuxdriver.com>,
+       "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 27/60] random: make get_random_int() more random
+Subject: [patch 23/60] e1000: add missing length check to e1000 receive routine
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=random-make-get_random_int-more-random.patch
+Content-Disposition: inline; filename=e1000-add-missing-length-check-to-e1000-receive-routine.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,72 +39,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Neil Horman <nhorman@tuxdriver.com>
 
-commit 8a0a9bd4db63bc45e3017bedeafbd88d0eb84d02 upstream.
+commit ea30e11970a96cfe5e32c03a29332554573b4a10 upstream.
 
-It's a really simple patch that basically just open-codes the current
-"secure_ip_id()" call, but when open-coding it we now use a _static_
-hashing area, so that it gets updated every time.
+	Patch to fix bad length checking in e1000.  E1000 by default does two
+things:
 
-And to make sure somebody can't just start from the same original seed of
-all-zeroes, and then do the "half_md4_transform()" over and over until
-they get the same sequence as the kernel has, each iteration also mixes in
-the same old "current->pid + jiffies" we used - so we should now have a
-regular strong pseudo-number generator, but we also have one that doesn't
-have a single seed.
+1) Spans rx descriptors for packets that don't fit into 1 skb on recieve
+2) Strips the crc from a frame by subtracting 4 bytes from the length prior to
+doing an skb_put
 
-Note: the "pid + jiffies" is just meant to be a tiny tiny bit of noise. It
-has no real meaning. It could be anything. I just picked the previous
-seed, it's just that now we keep the state in between calls and that will
-feed into the next result, and that should make all the difference.
+Since the e1000 driver isn't written to support receiving packets that span
+multiple rx buffers, it checks the End of Packet bit of every frame, and
+discards it if its not set.  This places us in a situation where, if we have a
+spanning packet, the first part is discarded, but the second part is not (since
+it is the end of packet, and it passes the EOP bit test).  If the second part of
+the frame is small (4 bytes or less), we subtract 4 from it to remove its crc,
+underflow the length, and wind up in skb_over_panic, when we try to skb_put a
+huge number of bytes into the skb.  This amounts to a remote DOS attack through
+careful selection of frame size in relation to interface MTU.  The fix for this
+is already in the e1000e driver, as well as the e1000 sourceforge driver, but no
+one ever pushed it to e1000.  This is lifted straight from e1000e, and prevents
+small frames from causing the underflow described above
 
-I made that hash be a per-cpu data just to avoid cache-line ping-pong:
-having multiple CPU's write to the same data would be fine for randomness,
-and add yet another layer of chaos to it, but since get_random_int() is
-supposed to be a fast interface I did it that way instead. I considered
-using "__raw_get_cpu_var()" to avoid any preemption overhead while still
-getting the hash be _mostly_ ping-pong free, but in the end good taste won
-out.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jake Edge <jake@lwn.net>
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Tested-by: Andy Gospodarek <andy@greyhouse.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/random.c |   19 ++++++++++++-------
- 1 file changed, 12 insertions(+), 7 deletions(-)
+ drivers/net/e1000/e1000_main.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---- a/drivers/char/random.c
-+++ b/drivers/char/random.c
-@@ -1626,15 +1626,20 @@ EXPORT_SYMBOL(secure_dccp_sequence_numbe
-  * value is not cryptographically secure but for several uses the cost of
-  * depleting entropy is too high
-  */
-+DEFINE_PER_CPU(__u32 [4], get_random_int_hash);
- unsigned int get_random_int(void)
- {
--	/*
--	 * Use IP's RNG. It suits our purpose perfectly: it re-keys itself
--	 * every second, from the entropy pool (and thus creates a limited
--	 * drain on it), and uses halfMD4Transform within the second. We
--	 * also mix it with jiffies and the PID:
--	 */
--	return secure_ip_id((__force __be32)(current->pid + jiffies));
-+	struct keydata *keyptr;
-+	__u32 *hash = get_cpu_var(get_random_int_hash);
-+	int ret;
-+
-+	keyptr = get_keyptr();
-+	hash[0] += current->pid + jiffies + get_cycles() + (int)(long)&ret;
-+
-+	ret = half_md4_transform(hash, keyptr->secret);
-+	put_cpu_var(get_random_int_hash);
-+
-+	return ret;
- }
+--- a/drivers/net/e1000/e1000_main.c
++++ b/drivers/net/e1000/e1000_main.c
+@@ -4133,8 +4133,9 @@ static bool e1000_clean_rx_irq(struct e1
+ 		                 PCI_DMA_FROMDEVICE);
  
- /*
+ 		length = le16_to_cpu(rx_desc->length);
+-
+-		if (unlikely(!(status & E1000_RXD_STAT_EOP))) {
++		/* !EOP means multiple descriptors were used to store a single
++		 * packet, also make sure the frame isn't just CRC only */
++		if (unlikely(!(status & E1000_RXD_STAT_EOP) || (length <= 4))) {
+ 			/* All receives must fit into a single buffer */
+ 			E1000_DBG("%s: Receive packet consumed multiple"
+ 				  " buffers\n", netdev->name);
 
 
