@@ -1,80 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbZFJNno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbZFJNoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757803AbZFJNno (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 09:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbZFJNng
+	id S1757243AbZFJNoR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 09:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756381AbZFJNoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 09:43:36 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56788 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754330AbZFJNnf (ORCPT
+	Wed, 10 Jun 2009 09:44:03 -0400
+Received: from server3.xboxworld.nl ([80.247.163.60]:40436 "EHLO
+	server3.xboxworld.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754397AbZFJNoC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 09:43:35 -0400
-Subject: RE: [tip:tracing/core] x86, bts: reenable ptrace branch trace
- support
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "mingo@redhat.com" <mingo@redhat.com>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "linux-tip-commits@vger.kernel.org" 
-	<linux-tip-commits@vger.kernel.org>
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EBBC651F4@irsmsx504.ger.corp.intel.com>
-References: <20090424094448.A30216@sedona.ch.intel.com>
-	 <tip-7e0bfad24d85de7cf2202a7b0ce51de11a077b21@git.kernel.org>
-	 <1244637843.13761.11786.camel@twins> <20090610125108.GA13506@elte.hu>
-	 <928CFBE8E7CB0040959E56B4EA41A77EBBC651E2@irsmsx504.ger.corp.intel.com>
-	 <1244640558.13761.11833.camel@twins>
-	 <928CFBE8E7CB0040959E56B4EA41A77EBBC651F4@irsmsx504.ger.corp.intel.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 10 Jun 2009 15:43:31 +0200
-Message-Id: <1244641411.13761.11850.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 10 Jun 2009 09:44:02 -0400
+X-Greylist: delayed 577 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Jun 2009 09:44:02 EDT
+From: Jorrit Schippers <jorrit@ncode.nl>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, Jorrit Schippers <jorrit@ncode.nl>
+Subject: [PATCH 1/1] rt2870: Add USB ID for Sitecom WL-608
+Date: Wed, 10 Jun 2009 15:34:26 +0200
+Message-Id: <1244640866-21385-1-git-send-email-jorrit@ncode.nl>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-10 at 14:32 +0100, Metzger, Markus T wrote:
-> >-----Original Message-----
-> >From: Peter Zijlstra [mailto:peterz@infradead.org]
-> >Sent: Wednesday, June 10, 2009 3:29 PM
-> >To: Metzger, Markus T
-> >Cc: Ingo Molnar; mingo@redhat.com; hpa@zytor.com; linux-kernel@vger.kernel..org; tglx@linutronix.de;
-> >oleg@redhat.com; linux-tip-commits@vger.kernel.org
-> >Subject: RE: [tip:tracing/core] x86, bts: reenable ptrace branch trace support
-> >
-> >On Wed, 2009-06-10 at 14:22 +0100, Metzger, Markus T wrote:
-> >>
-> >> The Debug Store interface is completely in-kernel. It does not expose
-> >> anything to the outside world.
-> >>
-> >> What we expose is a ptrace interface for branch tracing.
-> >> That this is built on top of Debug Store is completely hidden.
-> >> The Debug Store interface may be changed without impacting the
-> >> user-visible part at any time.
-> >>
-> >> I do think that a ptrace interface makes sense since debuggers are the
-> >> targeted users for branch tracing.
-> >>
-> >> I don't see why we should not merge the fixes now and then rework the
-> >> in-kernel parts as needed for supporting PEBS.
-> >
-> >Ok, so what is all that account_locked_memory() for?
-> 
-> To allow debuggers (users) to decide how much memory they want to spend
-> on branch tracing.
+Add the USB id 0x0DF6,0x003F to the rt2870.h file such that the
+Sitecom WL-608 device will be recognized by this driver.
 
-But that is the debug store, right? User visible through some mlock
-accounting and limit.
+Signed-off-by: Jorrit Schippers <jorrit@ncode.nl>
+---
+ drivers/staging/rt2870/rt2870.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Furthermore, it appears there is an interface for setting the size,
-that's also user visible and not fixable after the fact.
+diff --git a/drivers/staging/rt2870/rt2870.h b/drivers/staging/rt2870/rt2870.h
+index a69cf33..fef14a4 100644
+--- a/drivers/staging/rt2870/rt2870.h
++++ b/drivers/staging/rt2870/rt2870.h
+@@ -97,6 +97,7 @@
+ 	{USB_DEVICE(0x0DF6,0x002C)}, /* Sitecom */		\
+ 	{USB_DEVICE(0x0DF6,0x002D)}, /* Sitecom */		\
+ 	{USB_DEVICE(0x0DF6,0x0039)}, /* Sitecom */		\
++	{USB_DEVICE(0x0DF6,0x003F)}, /* Sitecom WL-608 */	\
+ 	{USB_DEVICE(0x14B2,0x3C06)}, /* Conceptronic */		\
+ 	{USB_DEVICE(0x14B2,0x3C28)}, /* Conceptronic */		\
+ 	{USB_DEVICE(0x2019,0xED06)}, /* Planex Communications, Inc. */		\
+-- 
+1.6.0.4
 
-Once you want to multiplex cpu-wide and per task BTS/PEBS contexts,
-there is no choice but to view the DS as a cpu resource, not a task
-resource, therefore you cannot specify a size, nor attribute it to
-specific tasks mm accounting.
