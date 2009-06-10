@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbZFJJXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758568AbZFJJXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758555AbZFJJXA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 05:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757654AbZFJJWs
+	id S1758568AbZFJJXV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 05:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758577AbZFJJXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 05:22:48 -0400
-Received: from mga09.intel.com ([134.134.136.24]:39877 "EHLO mga09.intel.com"
+	Wed, 10 Jun 2009 05:23:01 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:57327 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758515AbZFJJWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 05:22:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,339,1241420400"; 
-   d="scan'208";a="523226902"
-Date: Wed, 10 Jun 2009 17:06:12 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH -tip] perf_counter/x86: Fix the model number of Intel Core2
-	processors
-Message-ID: <20090610090612.GA26580@ywang-moblin2.bj.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1758573AbZFJJW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 05:22:59 -0400
+Date: Wed, 10 Jun 2009 19:22:55 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: kbuild tree build warning
+Message-Id: <20090610192255.b0dc29e8.sfr@canb.auug.org.au>
+In-Reply-To: <20090610165504.3047be39.sfr@canb.auug.org.au>
+References: <20090610115255.035da856.sfr@canb.auug.org.au>
+	<20090610064723.GA25493@uranus.ravnborg.org>
+	<20090610165504.3047be39.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__10_Jun_2009_19_22_55_+1000_U41cm6Z_cSNDoW.P"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the model number of Intel Core2 processors according to the documentation
-Intel Processor Identification with the CPUID Instruction
-http://www.intel.com/support/processors/sb/cs-009861.htm
+--Signature=_Wed__10_Jun_2009_19_22_55_+1000_U41cm6Z_cSNDoW.P
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
+Hi Sam,
 
----
- arch/x86/kernel/cpu/perf_counter.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+On Wed, 10 Jun 2009 16:55:04 +1000 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> On Wed, 10 Jun 2009 08:47:23 +0200 Sam Ravnborg <sam@ravnborg.org> wrote:
+> >
+> > I already fixed this locally but I forgot to do a "git commit --amend" =
+:-)
+> > Will be fixed in next push of kbuild-next.
+>=20
+> Ah, well.  At least it was only a warning :-)
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 40978aa..a49a82c 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -1407,7 +1407,8 @@ static int intel_pmu_init(void)
- 	 * Install the hw-cache-events table:
- 	 */
- 	switch (boot_cpu_data.x86_model) {
--	case 17:
-+	case 15:
-+	case 23:
- 		memcpy(hw_cache_event_ids, core2_hw_cache_event_ids,
- 		       sizeof(hw_cache_event_ids));
- 
+One more:
+
+include/asm-generic/vmlinux.lds.h:695:1: warning: "/*" within comment
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__10_Jun_2009_19_22_55_+1000_U41cm6Z_cSNDoW.P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkove28ACgkQjjKRsyhoI8xP1QCeKjb+IACP+Sn2TCzVa9LDRuS1
+m7IAn39TIgQ3ppgAdQ7tctdFNRh7U+RH
+=FARO
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__10_Jun_2009_19_22_55_+1000_U41cm6Z_cSNDoW.P--
