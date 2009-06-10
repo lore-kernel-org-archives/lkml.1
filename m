@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760109AbZFJKBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759721AbZFJKCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760109AbZFJKBU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 06:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbZFJKBM
+	id S1759721AbZFJKCO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 06:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758218AbZFJKB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 06:01:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54149 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751250AbZFJKBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 06:01:11 -0400
-Subject: Re: [PATCH 10/24] GFS2: Don't warn when delete inode fails on ro
- filesystem
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-In-Reply-To: <20090610094942.GB25527@infradead.org>
-References: <1244622665-7470-2-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-3-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-4-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-5-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-6-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-7-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-8-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-9-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-10-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-11-git-send-email-swhiteho@redhat.com>
-	 <20090610094942.GB25527@infradead.org>
-Content-Type: text/plain
-Organization: Red Hat UK Ltd
-Date: Wed, 10 Jun 2009 11:03:17 +0100
-Message-Id: <1244628197.3355.7.camel@localhost.localdomain>
+	Wed, 10 Jun 2009 06:01:56 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35132 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754392AbZFJKBz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 06:01:55 -0400
+Date: Wed, 10 Jun 2009 11:02:50 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: oliver@hartkopp.net, hawk@comx.dk, paulmck@linux.vnet.ibm.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       urs.thuermann@volkswagen.de, oliver.hartkopp@volkswagen.de,
+       wg@grandegger.com, vladislav.yasevich@hp.com, sri@us.ibm.com,
+       linux-sctp@vger.kernel.org, Trond.Myklebust@netapp.com,
+       linux-nfs@vger.kernel.org, netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH 3/5] can: af_can.c use rcu_barrier() on module unload.
+Message-ID: <20090610110250.17644ae4@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090610.011027.43904351.davem@davemloft.net>
+References: <20090608130959.10052.54590.stgit@localhost>
+	<20090608131138.10052.5408.stgit@localhost>
+	<4A2D112A.4000308@hartkopp.net>
+	<20090610.011027.43904351.davem@davemloft.net>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 10 Jun 2009 01:10:27 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-On Wed, 2009-06-10 at 05:49 -0400, Christoph Hellwig wrote:
-> On Wed, Jun 10, 2009 at 09:30:51AM +0100, Steven Whitehouse wrote:
-> > If the filesystem is read-only, then we expect that delete inode
-> > will fail, so there is no need to warn about it.
+> From: Oliver Hartkopp <oliver@hartkopp.net>
+> Date: Mon, 08 Jun 2009 15:24:58 +0200
 > 
-> Umm, ->delete_inode should never be called on a read-only filesystem
-> by the VFS.
+> > Acked-By: Oliver Hartkopp <oliver@hartkopp.net>
 > 
+> Please don't capitalize the "By" in "Acked-By".  Otherwise
+> patchwork doesn't pick them up automatically.
 
-On a single node, thats true. With multiple nodes, some mounted ro and
-some mounted rw, sometimes the ro node gets the baton passed to it, if
-it happens to have a process holding open an inode thats been unlinked
-on the rw node. In that case it has to ignore it and one of the rw nodes
-will deal with the deallocation later,
+Dave. We have computers to do all the silly tedious pointless jobs in
+life, please just fix the scripts.
 
-Steve.
-
-
+Alan
