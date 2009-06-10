@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756417AbZFJRCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761117AbZFJRDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756417AbZFJRCK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 13:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758171AbZFJRAJ
+	id S1761117AbZFJRDI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 13:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760381AbZFJRAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 13:00:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:52876 "EHLO
+	Wed, 10 Jun 2009 13:00:16 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59585 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754705AbZFJQ76 (ORCPT
+	with ESMTP id S1756488AbZFJQ77 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 12:59:58 -0400
-Message-Id: <20090610165958.899832711@goodmis.org>
+	Wed, 10 Jun 2009 12:59:59 -0400
+Message-Id: <20090610170000.965684702@goodmis.org>
 References: <20090610165306.794813861@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 10 Jun 2009 12:53:08 -0400
+Date: Wed, 10 Jun 2009 12:53:17 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -24,1074 +24,246 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
        Peter Zijlstra <peterz@infradead.org>, Mel Gorman <mel@csn.ul.ie>,
        Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: [PATCH 02/11] tracing/events: nicer print format for parsing
-Content-Disposition: inline; filename=0002-tracing-events-nicer-print-format-for-parsing.patch
+Subject: [PATCH 11/11] tracing: convert the block trace points to use the new tag format
+Content-Disposition: inline; filename=0011-tracing-convert-the-block-trace-points-to-use-the-ne.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The current print format that is exported to userspace is simply a
-copy of the printk format used to output the data. It would take a
-full C parser to parse it. But as more tools are made to read the
-binary data from ftrace, the larger the need for a nice parsing
-format to facilitate tools in reading the binary buffer.
-
-For example we currently have:
-
-irq_handler_entry:
- print fmt: "irq=%d handler=%s", REC->irq, (char *)((void *)REC + REC->__data_loc
-_name)
-
-softirq_entry:
- print fmt: "softirq=%d action=%s", REC->vec, ({ static const struct trace_print_
-flags symbols[] = { { HI_SOFTIRQ, "HI" }, { TIMER_SOFTIRQ, "TIMER" }, { NET_TX_S
-OFTIRQ, "NET_TX" }, { NET_RX_SOFTIRQ, "NET_RX" }, { BLOCK_SOFTIRQ, "BLOCK" }, {
-TASKLET_SOFTIRQ, "TASKLET" }, { SCHED_SOFTIRQ, "SCHED" }, { HRTIMER_SOFTIRQ, "HR
-TIMER" }, { RCU_SOFTIRQ, "RCU" }, { -1, ((void *)0) }}; ftrace_print_symbols_seq
-(p, REC->vec, symbols); })
-
-kmalloc:
- print fmt: "call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s", RE
-C->call_site, REC->ptr, REC->bytes_req, REC->bytes_alloc, (REC->gfp_flags) ? ({
-static const struct trace_print_flags flags[] = { {(unsigned long)(((gfp_t)0x10u
-) | ((gfp_t)0x40u) | ((gfp_t)0x80u) | ((gfp_t)0x20000u) | ((gfp_t)0x02u) | ((gfp
-_t)0x100000u)), "GFP_HIGHUSER_MOVABLE"}, {(unsigned long)(((gfp_t)0x10u) | ((gfp
-_t)0x40u) | ((gfp_t)0x80u) | ((gfp_t)0x20000u) | ((gfp_t)0x02u)), "GFP_HIGHUSER"
-}, {(unsigned long)(((gfp_t)0x10u) | ((gfp_t)0x40u) | ((gfp_t)0x80u) | ((gfp_t)0
-x20000u)), "GFP_USER"}, {(unsigned long)(((gfp_t)0x10u) | ((gfp_t)0x40u) | ((gfp
-_t)0x80u) | ((gfp_t)0x80000u)), "GFP_TEMPORARY"}, {(unsigned long)(((gfp_t)0x10u
-) | ((gfp_t)0x40u) | ((gfp_t)0x80u)), "GFP_KERNEL"}, {(unsigned long)(((gfp_t)0x
-10u) | ((gfp_t)0x40u)), "GFP_NOFS"}, {(unsigned long)(((gfp_t)0x20u)), "GFP_ATOM
-IC"}, {(unsigned long)(((gfp_t)0x10u)), "GFP_NOIO"}, {(unsigned long)((gfp_t)0x2
-0u), "GFP_HIGH"}, {(unsigned long)((gfp_t)0x10u), "GFP_WAIT"}, {(unsigned long)(
-(gfp_t)0x40u), "GFP_IO"}, {(unsigned long)((gfp_t)0x100u), "GFP_COLD"}, {(unsign
-ed long)((gfp_t)0x200u), "GFP_NOWARN"}, {(unsigned long)((gfp_t)0x400u), "GFP_RE
-PEAT"}, {(unsigned long)((gfp_t)0x800u), "GFP_NOFAIL"}, {(unsigned long)((gfp_t)
-0x1000u), "GFP_NORETRY"}, {(unsigned long)((gfp_t)0x4000u), "GFP_COMP"}, {(unsig
-ned long)((gfp_t)0x8000u), "GFP_ZERO"}, {(unsigned long)((gfp_t)0x10000u), "GFP_
-NOMEMALLOC"}, {(unsigned long)((gfp_t)0x20000u), "GFP_HARDWALL"}, {(unsigned lon
-g)((gfp_t)0x40000u), "GFP_THISNODE"}, {(unsigned long)((gfp_t)0x80000u), "GFP_RE
-CLAIMABLE"}, {(unsigned long)((gfp_t)0x100000u), "GFP_MOVABLE"}, { -1, ((void *)
-0) }}; ftrace_print_flags_seq(p, "|", REC->gfp_flags, flags); }) : "GFP_NOWAIT"
-
-The language that is added by this patch is of the following:
-
- * FMT :=  constant string FMT | COMMAND FMT | empty
- * COMMAND := <TYPE:FIELD> | <mask:FIELD:DELIM:MASKS> | <sym:FIELD:SYMBOLS> |
- *               <if:FIELD:TRUE:FALSE> | <ifmask:FIELD:MASK:TRUE:FALSE>
- * TYPE := int | uint | hex | ptr | string | strarray
- * FIELD := defined by the event structure
- * MASKS := MASK=NAME,MASKS | MASK=NAME
- * MASK := the bit mask to match
- * DELIM := delimiter to separate the fields. None and ':' are both allowed
- * SYMBOLS := SYM=NAME,SYMBOLS | SYM=NAME
- * SYM := the symbol value to test against
- * TRUE := print when field is non zero
- * FALSE := print when field is zero or NULL
- * NAME := the name to write when a match is found
- *
- * A '\<' would print '<'
-
-The above examples would then look like:
-
-irq_handler_entry:
- format: irq=<int:irq> handler=<string:name>
-
-softirq_entry:
- format: softirq=<int:vec> action=<sym:vec:0=HI,1=TIMER,2=NET_TX,3=NET_RX,4=BLOCK,5=TASKLET,6=SCHED,7=HRTIMER,8=RCU
-
-kmalloc:
- format: call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:0=GFP_NOWAIT,0x1200d2=GFP_HIGHUSER_MOVABLE,0x200d2=GFP_HIGHUSER,0x200d0=GFP_USER,0x800d0=GFP_TEMPORARY,0xd0=GFP_KERNEL,0x50=GFP_NOFS,0x20=GFP_ATOMIC,0x10=GFP_NOIO,0x20=GFP_HIGH,0x10=GFP_WAIT,0x40=GFP_IO,0x100=GFP_COLD,0x200=GFP_NOWARN,0x400=GFP_REPEAT,0x800=GFP_NOFAIL,0x1000=GFP_NORETRY,0x4000=GFP_COMP,0x8000=GFP_ZERO,0x10000=GFP_NOMEMALLOC,0x20000=GFP_HARDWALL,0x40000=GFP_THISNODE,0x80000=GFP_RECLAIMABLE,0x100000=GFP_MOVABLE
-
-The above "mask" command takes '0' as a special mask that should be done only in the beginning. It will write that symbol out when the mask is zero.
-
-Another nice thing about this change set is that it can live together with
-the current print format. The old version will show "print fmt:" in
-the output file, where as the new version will use "format:" as shown
-in the above examples.
-
-Both may be used, but it would be preferable to use the new language.
-If the new language is not adequate for a new trace point we can always
-add new types. Userspace tools should just ignore types it does not
-understand.
+Convert the block trace points to use the new tag format for easier parsing
+by userspace tools.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/ftrace_event.h     |   12 +
- include/trace/ftrace.h           |   22 +-
- kernel/trace/Makefile            |    1 +
- kernel/trace/trace_events.c      |    1 +
- kernel/trace/trace_read_binary.c |  831 ++++++++++++++++++++++++++++++++++++++
- 5 files changed, 865 insertions(+), 2 deletions(-)
- create mode 100644 kernel/trace/trace_read_binary.c
+ include/trace/events/block.h |  101 ++++++++++++++----------------------------
+ 1 files changed, 34 insertions(+), 67 deletions(-)
 
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index c03befb..26fed99 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -120,6 +120,9 @@ struct ftrace_event_call {
- 	void			*filter;
- 	void			*mod;
+diff --git a/include/trace/events/block.h b/include/trace/events/block.h
+index 53effd4..f12cee3 100644
+--- a/include/trace/events/block.h
++++ b/include/trace/events/block.h
+@@ -34,11 +34,8 @@ TRACE_EVENT(block_rq_abort,
+ 		blk_dump_cmd(__get_str(cmd), rq);
+ 	),
  
-+	struct list_head	print_info;
-+	const char		*print_text;
-+
- #ifdef CONFIG_EVENT_PROFILE
- 	atomic_t	profile_count;
- 	int		(*profile_enable)(struct ftrace_event_call *);
-@@ -137,6 +140,15 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
- 					void *rec,
- 					struct ring_buffer_event *event);
+-	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev),
+-		  __entry->rwbs, __get_str(cmd),
+-		  (unsigned long long)__entry->sector,
+-		  __entry->nr_sector, __entry->errors)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> (<string:cmd>) "
++		  "<uint:sector> + <uint:nr_sector> [<int:errors>]")
+ );
  
-+extern char *ftrace_read_binary(struct trace_seq *p,
-+				struct ftrace_event_call *event,
-+				struct trace_entry *entry,
-+				int entry_size);
-+extern int ftrace_initialize_print(struct ftrace_event_call *event,
-+				   const char *fmt, ...)
-+	__attribute__ ((format (printf, 2, 3)));
-+extern void ftrace_destroy_print(struct ftrace_event_call *event);
-+
- extern int trace_define_field(struct ftrace_event_call *call, char *type,
- 			      char *name, int offset, int size, int is_signed);
+ TRACE_EVENT(block_rq_insert,
+@@ -69,11 +66,9 @@ TRACE_EVENT(block_rq_insert,
+ 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+ 	),
  
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 40ede4d..d250cb9 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -124,6 +124,10 @@
- #undef TP_printk
- #define TP_printk(fmt, args...) fmt "\n", args
+-	TP_printk("%d,%d %s %u (%s) %llu + %u [%s]",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev),
+-		  __entry->rwbs, __entry->bytes, __get_str(cmd),
+-		  (unsigned long long)__entry->sector,
+-		  __entry->nr_sector, __entry->comm)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> <uint:bytes>"
++		  " (<string:cmd>) <uint:sector> + <uint:nr_sector>"
++		  " [<strarray:comm>]")
+ );
  
-+#undef TP_FORMAT
-+#define TP_FORMAT(fmt, args...) \
-+	"%s\n", ftrace_read_binary(p, event_call, entry, iter->ent_size)
-+
- #undef __get_dynamic_array
- #define __get_dynamic_array(field)	\
- 		((void *)__entry + __entry->__data_loc_##field)
-@@ -152,6 +156,7 @@
- enum print_line_t							\
- ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
- {									\
-+	struct ftrace_event_call *event_call __maybe_unused = &event_##call; \
- 	struct trace_seq *s = &iter->seq;				\
- 	struct ftrace_raw_##call *field;				\
- 	struct trace_entry *entry;					\
-@@ -234,7 +239,10 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
- #define __entry REC
+ TRACE_EVENT(block_rq_issue,
+@@ -104,11 +99,9 @@ TRACE_EVENT(block_rq_issue,
+ 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+ 	),
  
- #undef TP_printk
--#define TP_printk(fmt, args...) "%s, %s\n", #fmt, __stringify(args)
-+#define TP_printk(fmt, args...) "print fmt: %s, %s\n", #fmt, __stringify(args)
-+
-+#undef TP_FORMAT
-+#define TP_FORMAT(fmt, args...) "format: " fmt "\n",  ##args
+-	TP_printk("%d,%d %s %u (%s) %llu + %u [%s]",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev),
+-		  __entry->rwbs, __entry->bytes, __get_str(cmd),
+-		  (unsigned long long)__entry->sector,
+-		  __entry->nr_sector, __entry->comm)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> <uint:bytes>"
++		  " (<string:cmd>) <uint:sector> + <uint:nr_sector>"
++		  " [<strarray:comm>]")
+ );
  
- #undef TP_fast_assign
- #define TP_fast_assign(args...) args
-@@ -249,7 +257,7 @@ ftrace_format_##call(struct trace_seq *s)				\
- 									\
- 	tstruct;							\
- 									\
--	trace_seq_printf(s, "\nprint fmt: " print);			\
-+	trace_seq_printf(s, "\n" print);				\
- 									\
- 	return ret;							\
- }
-@@ -279,6 +287,13 @@ ftrace_format_##call(struct trace_seq *s)				\
- 				offsetof(typeof(field), __data_loc_##item),    \
- 				 sizeof(field.__data_loc_##item), 0);
+ TRACE_EVENT(block_rq_requeue,
+@@ -137,11 +130,8 @@ TRACE_EVENT(block_rq_requeue,
+ 		blk_dump_cmd(__get_str(cmd), rq);
+ 	),
  
-+#undef TP_printk
-+#define TP_printk(fmt, args...)
-+
-+#undef TP_FORMAT
-+#define TP_FORMAT(fmt, args...) \
-+	ftrace_initialize_print(event_call, fmt, ##args)
-+
- #undef __string
- #define __string(item, src) __dynamic_array(char, item, -1)
+-	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev),
+-		  __entry->rwbs, __get_str(cmd),
+-		  (unsigned long long)__entry->sector,
+-		  __entry->nr_sector, __entry->errors)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> (<string:cmd>)"
++		  " <uint:sector> + <uint:nr_sector> [<int:errors>]")
+ );
  
-@@ -299,6 +314,8 @@ ftrace_define_fields_##call(void)					\
- 									\
- 	tstruct;							\
- 									\
-+	print;								\
-+									\
- 	return ret;							\
- }
+ TRACE_EVENT(block_rq_complete,
+@@ -170,11 +160,8 @@ TRACE_EVENT(block_rq_complete,
+ 		blk_dump_cmd(__get_str(cmd), rq);
+ 	),
  
-@@ -563,6 +580,7 @@ static int ftrace_raw_init_event_##call(void)				\
- 	event_##call.id = id;						\
- 	INIT_LIST_HEAD(&event_##call.fields);				\
- 	init_preds(&event_##call);					\
-+	INIT_LIST_HEAD(&event_##call.print_info);			\
- 	return 0;							\
- }									\
- 									\
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index 844164d..9b112e2 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -54,5 +54,6 @@ obj-$(CONFIG_EVENT_TRACING) += trace_export.o
- obj-$(CONFIG_FTRACE_SYSCALLS) += trace_syscalls.o
- obj-$(CONFIG_EVENT_PROFILE) += trace_event_profile.o
- obj-$(CONFIG_EVENT_TRACING) += trace_events_filter.o
-+obj-$(CONFIG_EVENT_TRACING) += trace_read_binary.o
+-	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev),
+-		  __entry->rwbs, __get_str(cmd),
+-		  (unsigned long long)__entry->sector,
+-		  __entry->nr_sector, __entry->errors)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> (<string:cmd>) "
++		  "<uint:sector> + <uint:nr_sector> [<int:errors>]")
+ );
+ TRACE_EVENT(block_bio_bounce,
  
- libftrace-y := ftrace.o
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index aa08be6..eb917b8 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -1061,6 +1061,7 @@ static void trace_module_remove_events(struct module *mod)
- 			list_del(&call->list);
- 			trace_destroy_fields(call);
- 			destroy_preds(call);
-+			ftrace_destroy_print(call);
- 		}
- 	}
+@@ -198,10 +185,8 @@ TRACE_EVENT(block_bio_bounce,
+ 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+ 	),
  
-diff --git a/kernel/trace/trace_read_binary.c b/kernel/trace/trace_read_binary.c
-new file mode 100644
-index 0000000..0ed7a1f
---- /dev/null
-+++ b/kernel/trace/trace_read_binary.c
-@@ -0,0 +1,831 @@
-+/*
-+ * trace_read_binary.c
-+ *
-+ * Copyright (C) 2009 Red Hat Inc, Steven Rostedt <srostedt@redhat.com>
-+ *
-+ */
-+
-+#include <linux/ftrace_event.h>
-+#include <linux/hardirq.h>
-+#include <linux/module.h>
-+#include <linux/ctype.h>
-+
-+#include "trace_output.h"
-+
-+static DEFINE_MUTEX(buffer_lock);
-+static struct trace_seq buffer;
-+
-+/*
-+ * Binary string parser. The print format uses a special language to explain
-+ * the format to print the entry out. The language is as follows:
-+ *
-+ * FMT :=  constant string FMT | COMMAND FMT | empty
-+ * COMMAND := <TYPE:FIELD> | <mask:FIELD:DELIM:MASKS> | <sym:FIELD:SYMBOLS> |
-+ *               <if:FIELD:TRUE:FALSE> | <ifmask:FIELD:MASK:TRUE:FALSE>
-+ * TYPE := int | uint | hex | ptr | string | strarray
-+ * FIELD := defined by the event structure
-+ * MASKS := MASK=NAME,MASKS | MASK=NAME
-+ * MASK := the bit mask to match
-+ * DELIM := delimiter to separate the fields. None and ':' are both allowed
-+ * SYMBOLS := SYM=NAME,SYMBOLS | SYM=NAME
-+ * SYM := the symbol value to test against
-+ * TRUE := print when field is non zero
-+ * FALSE := print when field is zero or NULL
-+ * NAME := the name to write when a match is found
-+ *
-+ * A '<<' would print '<'
-+ *
-+ * Commands:
-+ *  int       : Print the field out as an signed integer. The size of the field
-+ *              determines if it is a char, short, long, or long long.
-+ *  uint      : Same as int, but for unsigned.
-+ *  hex       : Print the field as a hex (ie. 0x4ab)
-+ *  ptr       : Print the field as a hex but without the '0x'.
-+ *  string    : Used with dynamic sized strings (__string)
-+ *  strarray  : Used with static sized arrays (__array ( char , item, len)).
-+ *  if        : If the field is non zero, print the TRUE text,
-+ *              otherwise print FALSE text.
-+ *  ifmask    : If the bit in MASK in the field is set,
-+ *              then print the TRUE text, otherwise print FALSE text.
-+ *  mask      : Print out the values of a bit mask. Each matching mask will
-+ *              print its name. The order does matter. Mask of '0' is special
-+ *              for it will print only if the value matches zero. The given
-+ *              DELIM will separate the different masks.
-+ *  sym       : Print out the name of a matching value. This is similar to
-+ *              mask, but only one value may print.
-+ */
-+
-+#define TOK_SIZE 32
-+
-+enum field_types {
-+	FIELD_IS_TEXT,
-+	FIELD_IS_INT,
-+	FIELD_IS_UINT,
-+	FIELD_IS_PTR,
-+	FIELD_IS_LT,
-+	FIELD_IS_IF,
-+	FIELD_IS_IFMASK,
-+	FIELD_IS_STRING,
-+	FIELD_IS_STRARRAY,
-+	FIELD_IS_HEX,
-+	FIELD_IS_MASK,
-+	FIELD_IS_SYMBOL,
-+};
-+
-+struct sym_mask {
-+	struct list_head			list;
-+	unsigned long long			val;
-+	unsigned short				start;
-+	unsigned short				len;
-+};
-+
-+struct print_info {
-+	struct list_head				list;
-+	enum field_types				type;
-+	union {
-+		struct {
-+			unsigned short			start;
-+			unsigned short			len;
-+		} text;
-+		struct {
-+			struct ftrace_event_field	*field;
-+		} data;
-+		struct {
-+			struct ftrace_event_field	*field;
-+			unsigned long long		mask;
-+			unsigned short			true_text;
-+			unsigned short			true_len;
-+			unsigned short			false_text;
-+			unsigned short			false_len;
-+		} cond;
-+		struct {
-+			struct ftrace_event_field	*field;
-+			struct list_head		masks;
-+			unsigned short			delim;
-+			unsigned short			len;
-+		} sym_mask;
-+	};
-+};
-+
-+static void free_sym_masks(struct list_head *list)
-+{
-+	struct sym_mask *sm, *n;
-+
-+	list_for_each_entry_safe(sm, n, list, list) {
-+		list_del(&sm->list);
-+		kfree(sm);
-+	}
-+}
-+
-+void ftrace_destroy_print(struct ftrace_event_call *event)
-+{
-+	struct print_info *info, *n;
-+
-+	if (!event->print_text)
-+		return;
-+
-+	kfree(event->print_text);
-+	event->print_text = NULL;
-+
-+	list_for_each_entry_safe(info, n, &event->print_info, list) {
-+		switch (info->type) {
-+		case FIELD_IS_SYMBOL:
-+		case FIELD_IS_MASK:
-+			free_sym_masks(&info->sym_mask.masks);
-+			break;
-+		default:
-+			/* nothing special for the rest */
-+			break;
-+		}
-+		list_del(&info->list);
-+		kfree(info);
-+	}
-+}
-+
-+static struct print_info *
-+alloc_print_info(struct ftrace_event_call *call, enum field_types type)
-+{
-+	struct print_info *info;
-+
-+	info = kmalloc(sizeof(*info), GFP_KERNEL);
-+	if (WARN_ON(!info))
-+		return NULL;
-+
-+	info->type = type;
-+
-+	list_add_tail(&info->list, &call->print_info);
-+
-+	return info;
-+}
-+
-+static int
-+add_text(struct ftrace_event_call *call, const char *start, const char *end)
-+{
-+	struct print_info *info;
-+
-+	info = alloc_print_info(call, FIELD_IS_TEXT);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	info->text.start = start - call->print_text;
-+	if (!end)
-+		end = call->print_text + strlen(call->print_text);
-+	info->text.len = end - start;
-+
-+	return 0;
-+}
-+
-+static int
-+add_less_than(struct ftrace_event_call *call,
-+	      const char *start, const char *end)
-+{
-+	struct print_info *info;
-+
-+	info = alloc_print_info(call, FIELD_IS_LT);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	info->text.start = start - call->print_text;
-+	info->text.len = end - start;
-+
-+	return 0;
-+}
-+
-+static int
-+add_data(struct ftrace_event_call *call, enum field_types type,
-+	 struct ftrace_event_field *field)
-+{
-+	struct print_info *info;
-+
-+	info = alloc_print_info(call, type);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	info->data.field = field;
-+
-+	return 0;
-+}
-+
-+static int
-+add_if(struct ftrace_event_call *call, enum field_types type,
-+       struct ftrace_event_field *field, unsigned long long mask,
-+       const char *fmt, const char *end)
-+{
-+	struct print_info *info;
-+	const char *tok;
-+
-+	info = alloc_print_info(call, type);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	info->cond.field = field;
-+	info->cond.mask = mask;
-+
-+	tok = strchr(fmt, ':');
-+	if (WARN(!tok || tok > end, "error in format: %s\n", fmt))
-+		return -EINVAL;
-+
-+	info->cond.true_text = fmt - call->print_text;
-+	info->cond.true_len = tok - fmt;
-+
-+	fmt = tok + 1;
-+
-+	info->cond.false_text = fmt - call->print_text;
-+	info->cond.false_len = end - fmt;
-+
-+	return 0;
-+}
-+
-+static int add_sym_mask(struct ftrace_event_call *call, struct list_head *list,
-+			unsigned long long val,
-+			const char *start, const char *end)
-+{
-+	struct sym_mask *sm;
-+
-+	sm = kmalloc(sizeof(*sm), GFP_KERNEL);
-+	if (WARN_ON(!sm))
-+		return -ENOMEM;
-+
-+	list_add_tail(&sm->list, list);
-+	sm->val = val;
-+	sm->start = start - call->print_text;
-+	sm->len = end - start;
-+
-+	return 0;
-+}
-+
-+static const char *
-+add_mask(struct ftrace_event_call *call, struct ftrace_event_field *field,
-+	 const char *delim, unsigned int delim_len,
-+	 const char *fmt, const char *end)
-+{
-+	struct print_info *info;
-+	unsigned long long mask;
-+	const char *tok;
-+	int ret;
-+
-+	info = alloc_print_info(call, FIELD_IS_MASK);
-+	if (!info)
-+		return NULL;
-+
-+	info->sym_mask.field = field;
-+
-+	INIT_LIST_HEAD(&info->sym_mask.masks);
-+	info->sym_mask.len = delim_len;
-+	if (delim_len)
-+		info->sym_mask.delim = delim - call->print_text;
-+
-+	do {
-+		while (isspace(*fmt))
-+			fmt++;
-+
-+		tok = strchr(fmt, '=');
-+		if (WARN(!tok || tok > end, "error in format '%s'\n", fmt))
-+			return NULL;
-+
-+		mask = simple_strtoull(fmt, NULL, 0);
-+		fmt = tok + 1;
-+
-+		tok = strchr(fmt, ',');
-+		if (!tok || tok > end)
-+			tok = end;
-+
-+		ret = add_sym_mask(call, &info->sym_mask.masks, mask, fmt, tok);
-+		if (ret)
-+			return NULL;
-+
-+		fmt = tok + 1;
-+	} while (fmt < end);
-+
-+	return end;
-+}
-+
-+static const char *
-+add_symbol(struct ftrace_event_call *call, struct ftrace_event_field *field,
-+	   const char *fmt, const char *end)
-+{
-+	struct print_info *info;
-+	unsigned long long sym;
-+	const char *tok;
-+	int ret;
-+
-+	info = alloc_print_info(call, FIELD_IS_SYMBOL);
-+	if (!info)
-+		return NULL;
-+
-+	info->sym_mask.field = field;
-+
-+	INIT_LIST_HEAD(&info->sym_mask.masks);
-+
-+	do {
-+		while (isspace(*fmt))
-+			fmt++;
-+
-+		tok = strchr(fmt, '=');
-+		if (WARN(!tok || tok > end, "error in format '%s'\n", fmt))
-+			return NULL;
-+
-+		sym = simple_strtoull(fmt, NULL, 0);
-+		fmt = tok + 1;
-+
-+		tok = strchr(fmt, ',');
-+		if (!tok || tok > end)
-+			tok = end;
-+
-+		ret = add_sym_mask(call, &info->sym_mask.masks, sym, fmt, tok);
-+		if (ret)
-+			return NULL;
-+
-+		fmt = tok + 1;
-+	} while (fmt < end);
-+
-+	return end;
-+}
-+
-+static struct ftrace_event_field *
-+find_field(struct ftrace_event_call *call, const char *name, int len)
-+{
-+	struct ftrace_event_field *field;
-+
-+	list_for_each_entry(field, &call->fields, link) {
-+		if (!strncmp(field->name, name, len) &&
-+		    !field->name[len])
-+			return field;
-+	}
-+
-+	return NULL;
-+}
-+
-+static const char *
-+handle_field(struct ftrace_event_call *event,
-+	     const char *fmt, enum field_types field_type)
-+{
-+	struct ftrace_event_field *field;
-+	const char *end, *tok, *delim;
-+	unsigned long long mask;
-+	unsigned int delim_len;
-+	int ret;
-+
-+	end = strchr(fmt, '>');
-+	if (!end)
-+		goto out_err;
-+
-+	switch (field_type) {
-+	case FIELD_IS_INT:
-+	case FIELD_IS_UINT:
-+	case FIELD_IS_PTR:
-+	case FIELD_IS_HEX:
-+	case FIELD_IS_STRING:
-+	case FIELD_IS_STRARRAY:
-+		field = find_field(event, fmt, end - fmt);
-+		if (!field)
-+			goto out_err;
-+
-+		ret = add_data(event, field_type, field);
-+		if (ret)
-+			return NULL;
-+		break;
-+
-+	case FIELD_IS_IF:
-+	case FIELD_IS_IFMASK:
-+		tok = strchr(fmt, ':');
-+		if (!tok || tok > end)
-+			goto out_err;
-+
-+		field = find_field(event, fmt, tok - fmt);
-+		if (!field)
-+			goto out_err;
-+
-+		fmt = tok + 1;
-+
-+		if (field_type == FIELD_IS_IFMASK) {
-+			tok = strchr(fmt, ':');
-+			if (!tok || tok > end)
-+				goto out_err;
-+			mask = simple_strtoull(fmt, NULL, 0);
-+			fmt = tok + 1;
-+		} else
-+			mask = 0;
-+
-+		ret = add_if(event, field_type, field, mask, fmt, end);
-+		if (ret)
-+			return NULL;
-+		break;
-+
-+	case FIELD_IS_MASK:
-+	case FIELD_IS_SYMBOL:
-+		tok = strchr(fmt, ':');
-+		if (!tok || tok > end)
-+			goto out_err;
-+
-+		field = find_field(event, fmt, tok - fmt);
-+		if (!field)
-+			goto out_err;
-+
-+		fmt = tok + 1;
-+
-+		if (field_type == FIELD_IS_MASK) {
-+			tok = strchr(fmt, ':');
-+			if (!tok || tok > end)
-+				goto out_err;
-+
-+			delim = fmt;
-+			delim_len = tok - fmt;
-+
-+			/* we allow ':' as a delimiter */
-+			if (!delim_len && tok[1] == ':') {
-+				tok++;
-+				delim_len++;
-+			}
-+
-+			fmt = tok+1;
-+
-+			end = add_mask(event, field, delim, delim_len,
-+				       fmt, end);
-+		} else
-+			end = add_symbol(event, field, fmt, end);
-+
-+		if (!end)
-+			return NULL;
-+		break;
-+	default:
-+		WARN(1, "unknown field: %s\n", fmt);
-+	}
-+
-+	end++;
-+	return end;
-+
-+ out_err:
-+	WARN(1, "error in format field: '%s'\n", fmt);
-+	return NULL;
-+}
-+
-+int
-+ftrace_initialize_print(struct ftrace_event_call *event, const char *fmt, ...)
-+{
-+	const char *tok;
-+	va_list ap;
-+	int ret;
-+
-+	mutex_lock(&buffer_lock);
-+	trace_seq_init(&buffer);
-+
-+	va_start(ap, fmt);
-+	ret = trace_seq_vprintf(&buffer, fmt, ap);
-+	va_end(ap);
-+	if (!ret)
-+		goto err_unlock;
-+
-+	ret = trace_seq_putc(&buffer, 0);
-+	if (!ret)
-+		goto err_unlock;
-+
-+	event->print_text = kstrdup(buffer.buffer, GFP_KERNEL);
-+	if (!event->print_text)
-+		goto err_unlock;
-+
-+	mutex_unlock(&buffer_lock);
-+
-+	fmt = event->print_text;
-+
-+	do {
-+		enum field_types field_type;
-+
-+		tok = strchr(fmt, '<');
-+		if (!tok) {
-+			ret = add_text(event, fmt, tok);
-+			if (ret)
-+				goto err_free;
-+			break;
-+		}
-+		if (*(tok + 1) == '<') {
-+			ret = add_less_than(event, fmt, tok);
-+			if (ret)
-+				goto err_free;
-+			fmt = tok + 2;
-+			continue;
-+		}
-+
-+		ret = add_text(event, fmt, tok);
-+		if (ret)
-+			goto err_free;
-+
-+		fmt = tok + 1;
-+
-+		tok = strchr(fmt, ':');
-+		if (!tok)
-+			goto err_format;
-+
-+		if (strncmp(fmt, "int:", 4) == 0)
-+			field_type = FIELD_IS_INT;
-+
-+		else if (strncmp(fmt, "uint:", 5) == 0)
-+			field_type = FIELD_IS_UINT;
-+
-+		else if (strncmp(fmt, "ptr:", 4) == 0)
-+			field_type = FIELD_IS_PTR;
-+
-+		else if (strncmp(fmt, "string:", 7) == 0)
-+			field_type = FIELD_IS_STRING;
-+
-+		else if (strncmp(fmt, "hex:", 4) == 0)
-+			field_type = FIELD_IS_HEX;
-+
-+		else if (strncmp(fmt, "if:", 3) == 0)
-+			field_type = FIELD_IS_IF;
-+
-+		else if (strncmp(fmt, "ifmask:", 7) == 0)
-+			field_type = FIELD_IS_IFMASK;
-+
-+		else if (strncmp(fmt, "mask:", 5) == 0)
-+			field_type = FIELD_IS_MASK;
-+
-+		else if (strncmp(fmt, "sym:", 4) == 0)
-+			field_type = FIELD_IS_SYMBOL;
-+
-+		else if (strncmp(fmt, "strarray:", 9) == 0)
-+			field_type = FIELD_IS_STRARRAY;
-+
-+		else
-+			goto err_format;
-+
-+		tok++;
-+		fmt = handle_field(event, tok, field_type);
-+		if (!fmt)
-+			goto err_free;
-+
-+	} while (fmt);
-+
-+	return 0;
-+
-+ err_unlock:
-+	WARN(1, "Can not allocate event print format data\n");
-+	mutex_unlock(&buffer_lock);
-+	return -1;
-+
-+ err_format:
-+	WARN(1, "error in format type: '%s'\n", fmt);
-+ err_free:
-+	ftrace_destroy_print(event);
-+	return -1;
-+}
-+EXPORT_SYMBOL_GPL(ftrace_initialize_print);
-+
-+
-+static void
-+trace_read_mask(struct trace_seq *s, unsigned long long val,
-+		struct print_info *info, struct ftrace_event_call *event)
-+{
-+	unsigned long long mask;
-+	struct sym_mask *sm;
-+	int first = 1;
-+
-+	list_for_each_entry(sm, &info->sym_mask.masks, list) {
-+		mask = sm->val;
-+
-+		if (first && !mask && !val) {
-+			trace_seq_putmem(s, event->print_text + sm->start,
-+					 sm->len);
-+			return;
-+		}
-+
-+		if (mask && (mask & val) == mask) {
-+			if (first)
-+				first = 0;
-+			else if (info->sym_mask.len)
-+				trace_seq_putmem(s, event->print_text +
-+						 info->sym_mask.delim,
-+						 info->sym_mask.len);
-+			val &= ~mask;
-+
-+			trace_seq_putmem(s, event->print_text + sm->start,
-+					 sm->len);
-+		}
-+	}
-+
-+	if (val)
-+		trace_seq_printf(s, "(%llx)", val);
-+
-+	return;
-+}
-+
-+static void
-+trace_read_symbol(struct trace_seq *s, unsigned long long val,
-+		  struct print_info *info, struct ftrace_event_call *event)
-+{
-+	unsigned long long sym;
-+	struct sym_mask *sm;
-+	int found = 0;
-+
-+	list_for_each_entry(sm, &info->sym_mask.masks, list) {
-+		sym = sm->val;
-+
-+		if (sym == val) {
-+			found = 1;
-+			trace_seq_putmem(s, event->print_text + sm->start,
-+					 sm->len);
-+			break;
-+		}
-+	}
-+
-+	if (!found)
-+		trace_seq_printf(s, "(%llx)", val);
-+
-+}
-+
-+#define BAD_SIZE	0xdeadbeaf
-+
-+static unsigned long long
-+get_val(void *p, int size, unsigned long long *mask)
-+{
-+	unsigned long long val;
-+
-+	switch (size) {
-+	case 1:
-+		val = *(char *)p;
-+		*mask =  0xffULL;
-+		break;
-+	case 2:
-+		val = *(short *)p;
-+		*mask =  0xffffULL;
-+		break;
-+	case 4:
-+		val = *(int *)p;
-+		*mask =  0xffffffffULL;
-+		break;
-+	case 8:
-+		val = *(long long *)p;
-+		*mask = 0;
-+		break;
-+	default:
-+		/* pass back a bad mask on error */
-+		*mask = BAD_SIZE;
-+		return 0;
-+	}
-+
-+	return val;
-+}
-+
-+/* make sure string pointer has an end */
-+static int test_string(const char *str, int size)
-+{
-+	int i;
-+
-+	for (i = 0; i < size; i++) {
-+		if (!str[i])
-+			return 0;
-+	}
-+
-+	return -1;
-+}
-+
-+char *
-+ftrace_read_binary(struct trace_seq *s, struct ftrace_event_call *event,
-+		   struct trace_entry *entry, int entry_size)
-+{
-+	unsigned long long val, mask;
-+	struct print_info *info;
-+	char *start = s->buffer + s->len;
-+	struct ftrace_event_field *field;
-+	void *p;
-+	int len;
-+
-+	if (!event->print_text) {
-+		trace_seq_puts(s, "UNDEFINED EVENT\n");
-+		return start;
-+	}
-+
-+	list_for_each_entry(info, &event->print_info, list) {
-+
-+		p = entry;
-+
-+		switch (info->type) {
-+		case FIELD_IS_LT:
-+		case FIELD_IS_TEXT:
-+			trace_seq_putmem(s, event->print_text +
-+					 info->text.start,
-+					 info->text.len);
-+			if (info->type == FIELD_IS_LT)
-+				trace_seq_putc(s, '<');
-+			break;
-+		case FIELD_IS_INT:
-+		case FIELD_IS_UINT:
-+		case FIELD_IS_HEX:
-+		case FIELD_IS_PTR:
-+			field = info->data.field;
-+			goto skip_if;
-+
-+		case FIELD_IS_IF:
-+		case FIELD_IS_IFMASK:
-+			field = info->cond.field;
-+ skip_if:
-+			p += field->offset;
-+
-+			val = get_val(p, field->size, &mask);
-+
-+			if (mask == BAD_SIZE) {
-+				trace_seq_printf(s,
-+					"<error: bad field size %d?>\n",
-+					field->size);
-+				return start;
-+			}
-+
-+			switch (info->type) {
-+			case FIELD_IS_IF:
-+			case FIELD_IS_IFMASK:
-+
-+				if (info->type == FIELD_IS_IFMASK)
-+					val &= info->cond.mask;
-+
-+				if (val)
-+					trace_seq_putmem(s, event->print_text +
-+							 info->cond.true_text,
-+							 info->cond.true_len);
-+				else
-+					trace_seq_putmem(s, event->print_text +
-+							 info->cond.false_text,
-+							 info->cond.false_len);
-+				break;
-+
-+			case FIELD_IS_INT:
-+				trace_seq_printf(s, "%lld", val);
-+				break;
-+
-+			case FIELD_IS_UINT:
-+				trace_seq_printf(s, "%llu", val);
-+			default:
-+				/* hex should only print the size specified */
-+				if (mask)
-+					val &= mask;
-+
-+				trace_seq_printf(s, "%llx", val);
-+			}
-+
-+			break;
-+
-+		case FIELD_IS_STRING:
-+			field = info->data.field;
-+			p += field->offset;
-+			/* indexes are expected to be unsigned short */
-+			if (field->size != 2) {
-+				trace_seq_printf(s, "BAD FIELD SIZE %d\n",
-+						 field->size);
-+				return start;
-+			}
-+			if (*(unsigned short *)p > entry_size) {
-+				trace_seq_puts(s, "BAD STRING POINTER\n");
-+				return start;
-+			}
-+			len = entry_size - *(unsigned short *)p;
-+			p = (void *)entry + *(unsigned short *)p;
-+
-+			/* make sure that the string has an end */
-+			if (test_string(p, len)) {
-+				trace_seq_puts(s, "BAD STRING CONTENT\n");
-+				return start;
-+			}
-+
-+			trace_seq_puts(s, p);
-+			break;
-+
-+		case FIELD_IS_STRARRAY:
-+			field = info->data.field;
-+			p += field->offset;
-+			if (test_string(p, field->size)) {
-+				trace_seq_puts(s, "BAD STRING CONTENT\n");
-+				return start;
-+			}
-+			trace_seq_puts(s, p);
-+			break;
-+
-+		case FIELD_IS_MASK:
-+		case FIELD_IS_SYMBOL:
-+			field = info->sym_mask.field;
-+			p += field->offset;
-+
-+			val = get_val(p, field->size, &mask);
-+
-+			if (mask == BAD_SIZE) {
-+				trace_seq_printf(s,
-+					 "<error: bad field size %d?>\n",
-+					 field->size);
-+				return start;
-+			}
-+
-+			val &= mask;
-+
-+			if (info->type == FIELD_IS_MASK)
-+				trace_read_mask(s, val, info, event);
-+			else
-+				trace_read_symbol(s, val, info, event);
-+			break;
-+		default:
-+			trace_seq_printf(s, "UNKNOWN TYPE %d\n", info->type);
-+		}
-+	}
-+
-+	trace_seq_putc(s, 0);
-+
-+	return start;
-+}
-+EXPORT_SYMBOL_GPL(ftrace_read_binary);
+-	TP_printk("%d,%d %s %llu + %u [%s]",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  (unsigned long long)__entry->sector,
+-		  __entry->nr_sector, __entry->comm)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> "
++		  "<uint:sector> + <uint:nr_sector> [<strarray:comm>]")
+ );
+ 
+ TRACE_EVENT(block_bio_complete,
+@@ -225,10 +210,8 @@ TRACE_EVENT(block_bio_complete,
+ 		blk_fill_rwbs(__entry->rwbs, bio->bi_rw, bio->bi_size);
+ 	),
+ 
+-	TP_printk("%d,%d %s %llu + %u [%d]",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  (unsigned long long)__entry->sector,
+-		  __entry->nr_sector, __entry->error)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> <uint:sector>"
++		  " + <uint:nr_sector> [<int:error>]")
+ );
+ 
+ TRACE_EVENT(block_bio_backmerge,
+@@ -253,10 +236,8 @@ TRACE_EVENT(block_bio_backmerge,
+ 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+ 	),
+ 
+-	TP_printk("%d,%d %s %llu + %u [%s]",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  (unsigned long long)__entry->sector,
+-		  __entry->nr_sector, __entry->comm)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> "
++		  "<uint:sector> + <uint:nr_sector> [<strarray:comm>]")
+ );
+ 
+ TRACE_EVENT(block_bio_frontmerge,
+@@ -281,10 +262,8 @@ TRACE_EVENT(block_bio_frontmerge,
+ 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+ 	),
+ 
+-	TP_printk("%d,%d %s %llu + %u [%s]",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  (unsigned long long)__entry->sector,
+-		  __entry->nr_sector, __entry->comm)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> "
++		  "<uint:sector> + <uint:nr_sector> [<strarray:comm>]")
+ );
+ 
+ TRACE_EVENT(block_bio_queue,
+@@ -309,10 +288,8 @@ TRACE_EVENT(block_bio_queue,
+ 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+ 	),
+ 
+-	TP_printk("%d,%d %s %llu + %u [%s]",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  (unsigned long long)__entry->sector,
+-		  __entry->nr_sector, __entry->comm)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> "
++		  "<uint:sector> + <uint:nr_sector> [<strarray:comm>]")
+ );
+ 
+ TRACE_EVENT(block_getrq,
+@@ -338,10 +315,8 @@ TRACE_EVENT(block_getrq,
+ 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+         ),
+ 
+-	TP_printk("%d,%d %s %llu + %u [%s]",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  (unsigned long long)__entry->sector,
+-		  __entry->nr_sector, __entry->comm)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> "
++		  "<uint:sector> + <uint:nr_sector> [<strarray:comm>]")
+ );
+ 
+ TRACE_EVENT(block_sleeprq,
+@@ -367,10 +342,8 @@ TRACE_EVENT(block_sleeprq,
+ 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+ 	),
+ 
+-	TP_printk("%d,%d %s %llu + %u [%s]",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  (unsigned long long)__entry->sector,
+-		  __entry->nr_sector, __entry->comm)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> "
++		  "<uint:sector> + <uint:nr_sector> [<strarray:comm>]")
+ );
+ 
+ TRACE_EVENT(block_plug,
+@@ -387,7 +360,7 @@ TRACE_EVENT(block_plug,
+ 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+ 	),
+ 
+-	TP_printk("[%s]", __entry->comm)
++	TP_FORMAT("[<strarray:comm>]")
+ );
+ 
+ TRACE_EVENT(block_unplug_timer,
+@@ -406,7 +379,7 @@ TRACE_EVENT(block_unplug_timer,
+ 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+ 	),
+ 
+-	TP_printk("[%s] %d", __entry->comm, __entry->nr_rq)
++	TP_FORMAT("[<strarray:comm>] <int:nr_rq>")
+ );
+ 
+ TRACE_EVENT(block_unplug_io,
+@@ -425,7 +398,7 @@ TRACE_EVENT(block_unplug_io,
+ 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+ 	),
+ 
+-	TP_printk("[%s] %d", __entry->comm, __entry->nr_rq)
++	TP_FORMAT("[<strarray:comm>] <int:nr_rq>")
+ );
+ 
+ TRACE_EVENT(block_split,
+@@ -451,11 +424,8 @@ TRACE_EVENT(block_split,
+ 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
+ 	),
+ 
+-	TP_printk("%d,%d %s %llu / %llu [%s]",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  (unsigned long long)__entry->sector,
+-		  (unsigned long long)__entry->new_sector,
+-		  __entry->comm)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> <uint:sector> / "
++		  "<uint:new_sector> [<strarray:comm>]")
+ );
+ 
+ TRACE_EVENT(block_remap,
+@@ -483,12 +453,9 @@ TRACE_EVENT(block_remap,
+ 		blk_fill_rwbs(__entry->rwbs, bio->bi_rw, bio->bi_size);
+ 	),
+ 
+-	TP_printk("%d,%d %s %llu + %u <- (%d,%d) %llu",
+-		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
+-		  (unsigned long long)__entry->sector,
+-		  __entry->nr_sector,
+-		  MAJOR(__entry->old_dev), MINOR(__entry->old_dev),
+-		  (unsigned long long)__entry->old_sector)
++	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> <uint:sector> + "
++		  "<uint:nr_sector> <<- (<major:old_dev>,<minor:old_dev>) "
++		  "<uint:old_sector>")
+ );
+ 
+ #endif /* _TRACE_BLOCK_H */
 -- 
 1.6.3.1
 
