@@ -1,47 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759157AbZFJOXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbZFJOZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759157AbZFJOXT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 10:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbZFJOXM
+	id S1758854AbZFJOZM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 10:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757528AbZFJOY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 10:23:12 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:24441 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755485AbZFJOXL (ORCPT
+	Wed, 10 Jun 2009 10:24:59 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:18062 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757450AbZFJOY6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 10:23:11 -0400
+	Wed, 10 Jun 2009 10:24:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=psJCqz3t7U0Yheq/yPtfJ9IuZeDELtYulMGqCLmj9gqm1cQPQF5P/W5qeLQt3452dI
-         PTgt5pd9xM7o1yMBZjiBdE4vuRlx7ijoK9Y4EPjZkSvZdzJq3CMwEsBpgrwzYx0/PXD/
-         U9SjSLj5n/t9DKBAfcXUhaDhrl8yNTWqQipHU=
-Subject: Re: [PATCH v2]X86:microcode: fix vfree()
-From: "Figo.zhang" <figo1802@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1244385036.3402.11.camel@myhost>
-References: <1244351929.3355.13.camel@myhost>
-	 <20090607140113.GI12088@elte.hu> <1244384315.3402.5.camel@myhost>
-	 <20090607142118.GB21340@elte.hu>  <1244385036.3402.11.camel@myhost>
-Content-Type: text/plain
-Date: Wed, 10 Jun 2009 22:23:08 +0800
-Message-Id: <1244643789.3422.9.camel@myhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 7bit
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Ti1gfZAgLPX7D3mcYf0rgIYQiM4R8LhFAvlOds0CGRmGRjyl0/Bkeq56ms0y0Uy53y
+         VX2NcXvBajVCfjuAFjWeR8Wpe/bbgPOIS0aGYP6ARpa3j/swJpWj46SOz96dDMD161Xd
+         aBff4Z1v/3GfzaNxktkPvqsywcEk3UiRD5d1U=
+MIME-Version: 1.0
+In-Reply-To: <200906091430.32294.bcook@bpointsys.com>
+References: <91ac27070906081105x30171bedra10d244d382a6934@mail.gmail.com>
+	 <4A2E4A32.1060705@trash.net>
+	 <91ac27070906090608me50af3bv23b150d8d0cd0080@mail.gmail.com>
+	 <200906091430.32294.bcook@bpointsys.com>
+Date: Wed, 10 Jun 2009 17:24:58 +0300
+Message-ID: <91ac27070906100724v25c2328x6b343315358c8e12@mail.gmail.com>
+Subject: Re: SOCK_RAW does not receive broadcast (with VLAN unless PROMISC)
+From: Gil Beniamini <gil.beniamini@gmail.com>
+To: Brent Cook <bcook@bpointsys.com>
+Cc: Patrick McHardy <kaber@trash.net>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-06-07 at 22:30 +0800, Figo.zhang wrote:
-> Ingo
+Patrick,
+My application is a "proxy" and need to support few VLANs (for example vlan 24).
+I define all vlans on interface 'eth0' which is my "out i/f", while
+the other interface 'eth1' (used as "in i/f") I use with PF_PACKET /
+SOCK_RAW in order to handle VLANs by my application (starting with
+"arp broadcast").
+When I try to define the same (relevant VLAN) on eth1 (inorder to
+check your suggestion), I get "Error: trying to add VLAN #24 to IF
+-:eth1:- error: file exist".
+It seems that linux does not allow to define the same VLAN # on more
+than a single i/f?!
+Thanks Gil
 
-hi, Ingo,
-    is it ok for v2?
+Brent,
+Thanks I am aware of BPF and if I don't find a better solution, this
+will be my filter.
+Thanks Gil
 
-Best Regards,
-
-Figo.zhang
-
+On Tue, Jun 9, 2009 at 10:30 PM, Brent Cook<bcook@bpointsys.com> wrote:
+> On Tuesday 09 June 2009 08:08:01 am Gil Beniamini wrote:
+>> Patrick,
+>> On the specific NIC (eth1) no vlan is defined, and in the new Linux
+>> the application receive NOTHING at all. In order to debug, I start
+>> "wireshark as root" and "wireshark" set PROMISC on, and the
+>> application start receive the raw packets as expected. Later I started
+>> setting PROMISC by my application, and it can receive the packets even
+>> when "wireshark" is not running.
+>> The problem that I have with PROMISC mode, is that I need to do the
+>> irelevant  unicast filtering in software rather than get it from the
+>> hardware (as it works in old kernel 2.6.20).
+>> Thanks a lot, Gil
+>
+> One solution is to attach a BPF filter to the socket. Then you will only
+> receive packets for whatever you are filtering. This is still in software, but
+> it is higher up in the abstraction, and undoubtedly more efficient than doing
+> it at the app level.
+>
+> Simply compile the BPF program you wish to filter, e.g:
+>
+> # tcpdump -dd vlan 4
+> { 0x28, 0, 0, 0x0000000c },
+> { 0x15, 0, 4, 0x00008100 },
+> { 0x28, 0, 0, 0x0000000e },
+> { 0x54, 0, 0, 0x00000fff },
+> { 0x15, 0, 1, 0x00000004 },
+> { 0x6, 0, 0, 0x00000060 },
+> { 0x6, 0, 0, 0x00000000 },
+>
+> Then attach it to your socket:
+>
+>    struct sock_filter filter[] = {
+>      { 0x28, 0, 0, 0x0000000c },
+>      { 0x15, 0, 4, 0x00008100 },
+>      { 0x28, 0, 0, 0x0000000e },
+>      { 0x54, 0, 0, 0x00000fff },
+>      { 0x15, 0, 1, 0x00000004 },
+>      { 0x6, 0, 0, 0x00000060 },
+>      { 0x6, 0, 0, 0x00000000 },
+>    };
+>
+>    struct sock_fprog inbound_filter = {
+>        .len = 7, .filter = filter
+>    };
+>
+>    if (setsockopt(fd, SOL_SOCKET, SO_ATTACH_FILTER,
+>        &inbound_filter, sizeof(inbound_filter)) < 0) {
+>        return -1;
+>    }
+>
+> Also, note, you can easily set promiscuous mode directly with socket opts too.
+> If you're more curious, just look at libpcap source.
+>
+>  - Brent
+>
