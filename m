@@ -1,88 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbZFJBcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZFJBc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756117AbZFJBcM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 21:32:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZFJBcA
+	id S1757184AbZFJBc1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 21:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756103AbZFJBcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 21:32:00 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:59662 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbZFJBb7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 21:31:59 -0400
-Date: Tue, 9 Jun 2009 21:31:59 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Li Zefan <lizf@cn.fujitsu.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing/events/ring-buffer: block trace
- points and fix
-In-Reply-To: <4A2F0C4A.8020109@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0906092131190.30552@gandalf.stny.rr.com>
-References: <20090609163657.557589106@goodmis.org> <20090609234655.GA24118@elte.hu> <4A2F0C4A.8020109@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 9 Jun 2009 21:32:10 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61369 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756125AbZFJBcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 21:32:08 -0400
+Message-ID: <4A2F0CBE.8030208@cn.fujitsu.com>
+Date: Wed, 10 Jun 2009 09:30:38 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 08/18] io-controller: idle for sometime on sync queue
+ before expiring it
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-9-git-send-email-vgoyal@redhat.com> <4A2E15B6.8030001@cn.fujitsu.com> <20090609175131.GB13476@redhat.com>
+In-Reply-To: <20090609175131.GB13476@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 10 Jun 2009, Li Zefan wrote:
-
-> Ingo Molnar wrote:
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> >> Ingo,
-> >>
-> >> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> >>
-> >>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> >> tip/tracing/ftrace
-> >>
-> >>
-> >> Li Zefan (1):
-> >>       tracing/events: convert block trace points to TRACE_EVENT()
-> >>
-> >> Steven Rostedt (1):
-> >>       ring-buffer: fix ret in rb_add_time_stamp
-> >>
-> >> ----
-> >>  block/blk-core.c             |   16 +-
-> >>  block/elevator.c             |    8 +-
-> >>  drivers/md/dm.c              |    5 +-
-> >>  fs/bio.c                     |    3 +-
-> >>  include/linux/blktrace_api.h |   13 ++
-> >>  include/trace/block.h        |   76 -------
-> >>  include/trace/events/block.h |  483 ++++++++++++++++++++++++++++++++++++++++++
-> >>  kernel/trace/Makefile        |    5 +-
-> >>  kernel/trace/blktrace.c      |   78 +++++++-
-> >>  kernel/trace/ring_buffer.c   |    2 +-
-> >>  mm/bounce.c                  |    5 +-
-> >>  11 files changed, 589 insertions(+), 105 deletions(-)
-> > 
-> > I'm getting some build failures here:
-> > 
-> > In file included from mm/highmem.c:30:
-> > include/linux/blktrace_api.h:223: warning: ?struct request? declared inside parameter list
-> > include/linux/blktrace_api.h:223: warning: its scope is only this definition or declaration, which is probably not what you want
-> > include/linux/blktrace_api.h: In function ?blk_cmd_buf_len?:
-> > include/linux/blktrace_api.h:225: error: implicit declaration of function ?blk_pc_request?
-> > include/linux/blktrace_api.h:225: error: dereferencing pointer to incomplete type
-> > include/linux/blktrace_api.h: At top level:
-> > include/linux/blktrace_api.h:228: warning: ?struct request? declared inside parameter list
-> > include/linux/blktrace_api.h:230: warning: ?struct request? declared inside parameter list
-> > distcc[15629] ERROR: compile mm/highmem.c on a/32 failed
-> > 
+Vivek Goyal wrote:
+> On Tue, Jun 09, 2009 at 03:56:38PM +0800, Gui Jianfeng wrote:
+>> Vivek Goyal wrote:
+>> ...
+>>> +ssize_t elv_fairness_store(struct request_queue *q, const char *name,
+>>> +			  size_t count)
+>>> +{
+>>> +	struct elv_fq_data *efqd;
+>>> +	unsigned int data;
+>>> +	unsigned long flags;
+>>> +
+>>> +	char *p = (char *)name;
+>>> +
+>>> +	data = simple_strtoul(p, &p, 10);
+>>> +
+>>> +	if (data < 0)
+>>> +		data = 0;
+>>> +	else if (data > INT_MAX)
+>>> +		data = INT_MAX;
+>>   Hi Vivek,
+>>
+>>   data might overflow on 64 bit systems. In addition, since "fairness" is nothing 
+>>   more than a switch, just let it be.
+>>
+>> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+>> ---
 > 
-> I've fixed it. I'll post a new version after I've done some
-> more building tests.
+> Hi Gui,
+> 
+> How about following patch? Currently this should apply at the end of the
+> patch series. If it looks good, I will merge the changes in higher level
+> patches.
 
-Ingo,
+  This patch seems good to me. Some trivial issues comment below.
 
-Should Li post a delta fix, or should we just rebase?
+> 
+> Thanks
+> Vivek
+> 
+> o Previously common layer elevator parameters were appearing as request
+>   queue parameters in sysfs. But actually these are io scheduler parameters
+>   in hiearchical mode. Fix it.
+> 
+> o Use macros to define multiple sysfs C functions doing the same thing. Code
+>   borrowed from CFQ. Helps reduce the number of lines of by 140.
+> 
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+...	\
+> +}
+> +SHOW_FUNCTION(elv_fairness_show, efqd->fairness, 0);
+> +EXPORT_SYMBOL(elv_fairness_show);
+> +SHOW_FUNCTION(elv_slice_idle_show, efqd->elv_slice_idle, 1);
+> +EXPORT_SYMBOL(elv_slice_idle_show);
+> +SHOW_FUNCTION(elv_async_slice_idle_show, efqd->elv_async_slice_idle, 1);
+> +EXPORT_SYMBOL(elv_async_slice_idle_show);
+> +SHOW_FUNCTION(elv_slice_sync_show, efqd->elv_slice[1], 1);
+> +EXPORT_SYMBOL(elv_slice_sync_show);
+> +SHOW_FUNCTION(elv_slice_async_show, efqd->elv_slice[0], 1);
+> +EXPORT_SYMBOL(elv_slice_async_show);
+> +#undef SHOW_FUNCTION
+> +
+> +#define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
+> +ssize_t __FUNC(struct elevator_queue *e, const char *page, size_t count)	\
+> +{									\
+> +	struct elv_fq_data *efqd = &e->efqd;				\
+> +	unsigned int __data;						\
+> +	int ret = elv_var_store(&__data, (page), count);		\
 
--- Steve
+  Since simple_strtoul returns unsigned long, it's better to make __data 
+  be that type.
+
+> +	if (__data < (MIN))						\
+> +		__data = (MIN);						\
+> +	else if (__data > (MAX))					\
+> +		__data = (MAX);						\
+> +	if (__CONV)							\
+> +		*(__PTR) = msecs_to_jiffies(__data);			\
+> +	else								\
+> +		*(__PTR) = __data;					\
+> +	return ret;							\
+> +}
+> +STORE_FUNCTION(elv_fairness_store, &efqd->fairness, 0, 1, 0);
+> +EXPORT_SYMBOL(elv_fairness_store);
+> +STORE_FUNCTION(elv_slice_idle_store, &efqd->elv_slice_idle, 0, UINT_MAX, 1);
+
+  Do we need to set an actual max limitation rather than UINT_MAX for these entries?
+
+> +EXPORT_SYMBOL(elv_slice_idle_store);
+> +STORE_FUNCTION(elv_async_slice_idle_store, &efqd->elv_async_slice_idle, 0, UINT_MAX, 1);
+> +EXPORT_SYMBOL(elv_async_slice_idle_store);
+> +STORE_FUNCTION(elv_slice_sync_store, &efqd->elv_slice[1], 1, UINT_MAX, 1);
+> +EXPORT_SYMBOL(elv_slice_sync_store);
+> +STORE_FUNCTION(elv_slice_async_store, &efqd->elv_slice[0], 1, UINT_MAX, 1);
+> +EXPORT_SYMBOL(elv_slice_async_store);
+> +#undef STORE_FUNCTION
+>  
+>  void elv_schedule_dispatch(struct request_queue *q)
+>  {
+> Index: linux18/block/blk-sysfs.c
+> ===================================================================
+> --- linux18.orig/block/blk-sysfs.c	2009-06-09 10:34:59.000000000 -0400
+> +++ linux18/block/blk-sysfs.c	2009-06-09 13:24:42.000000000 -0400
+> @@ -307,38 +307,6 @@ static struct queue_sysfs_entry queue_io
+>  	.store = queue_iostats_store,
+>  };
+>  
+> -#ifdef CONFIG_ELV_FAIR_QUEUING
+> -static struct queue_sysfs_entry queue_slice_idle_entry = {
+> -	.attr = {.name = "slice_idle", .mode = S_IRUGO | S_IWUSR },
+> -	.show = elv_slice_idle_show,
+> -	.store = elv_slice_idle_store,
+> -};
+> -
+> -static struct queue_sysfs_entry queue_async_slice_idle_entry = {
+> -	.attr = {.name = "async_slice_idle", .mode = S_IRUGO | S_IWUSR },
+> -	.show = elv_async_slice_idle_show,
+> -	.store = elv_async_slice_idle_store,
+> -};
+> -
+> -static struct queue_sysfs_entry queue_slice_sync_entry = {
+> -	.attr = {.name = "slice_sync", .mode = S_IRUGO | S_IWUSR },
+> -	.show = elv_slice_sync_show,
+> -	.store = elv_slice_sync_store,
+> -};
+> -
+> -static struct queue_sysfs_entry queue_slice_async_entry = {
+> -	.attr = {.name = "slice_async", .mode = S_IRUGO | S_IWUSR },
+> -	.show = elv_slice_async_show,
+> -	.store = elv_slice_async_store,
+> -};
+> -
+> -static struct queue_sysfs_entry queue_fairness_entry = {
+> -	.attr = {.name = "fairness", .mode = S_IRUGO | S_IWUSR },
+> -	.show = elv_fairness_show,
+> -	.store = elv_fairness_store,
+> -};
+> -#endif
+> -
+>  static struct attribute *default_attrs[] = {
+>  	&queue_requests_entry.attr,
+>  #ifdef CONFIG_GROUP_IOSCHED
+> @@ -353,13 +321,6 @@ static struct attribute *default_attrs[]
+>  	&queue_nomerges_entry.attr,
+>  	&queue_rq_affinity_entry.attr,
+>  	&queue_iostats_entry.attr,
+> -#ifdef CONFIG_ELV_FAIR_QUEUING
+> -	&queue_slice_idle_entry.attr,
+> -	&queue_async_slice_idle_entry.attr,
+> -	&queue_slice_sync_entry.attr,
+> -	&queue_slice_async_entry.attr,
+> -	&queue_fairness_entry.attr,
+> -#endif
+>  	NULL,
+>  };
+>  
+> Index: linux18/block/cfq-iosched.c
+> ===================================================================
+> --- linux18.orig/block/cfq-iosched.c	2009-06-09 10:34:55.000000000 -0400
+> +++ linux18/block/cfq-iosched.c	2009-06-09 13:25:42.000000000 -0400
+> @@ -2095,6 +2095,11 @@ static struct elv_fs_entry cfq_attrs[] =
+>  	CFQ_ATTR(back_seek_max),
+>  	CFQ_ATTR(back_seek_penalty),
+>  	CFQ_ATTR(slice_async_rq),
+> +	ELV_ATTR(fairness),
+> +	ELV_ATTR(slice_idle),
+> +	ELV_ATTR(async_slice_idle),
+> +	ELV_ATTR(slice_sync),
+> +	ELV_ATTR(slice_async),
+>  	__ATTR_NULL
+>  };
+>  
+> Index: linux18/block/as-iosched.c
+> ===================================================================
+> --- linux18.orig/block/as-iosched.c	2009-06-09 10:34:58.000000000 -0400
+> +++ linux18/block/as-iosched.c	2009-06-09 13:27:38.000000000 -0400
+> @@ -1766,6 +1766,11 @@ static struct elv_fs_entry as_attrs[] = 
+>  	AS_ATTR(antic_expire),
+>  	AS_ATTR(read_batch_expire),
+>  	AS_ATTR(write_batch_expire),
+> +#ifdef CONFIG_IOSCHED_AS_HIER
+> +	ELV_ATTR(fairness),
+> +	ELV_ATTR(slice_idle),
+> +	ELV_ATTR(slice_sync),
+> +#endif
+>  	__ATTR_NULL
+>  };
+>  
+> Index: linux18/block/deadline-iosched.c
+> ===================================================================
+> --- linux18.orig/block/deadline-iosched.c	2009-06-09 10:34:55.000000000 -0400
+> +++ linux18/block/deadline-iosched.c	2009-06-09 13:28:51.000000000 -0400
+> @@ -460,6 +460,11 @@ static struct elv_fs_entry deadline_attr
+>  	DD_ATTR(writes_starved),
+>  	DD_ATTR(front_merges),
+>  	DD_ATTR(fifo_batch),
+> +#ifdef CONFIG_IOSCHED_DEADLINE_HIER
+> +	ELV_ATTR(fairness),
+> +	ELV_ATTR(slice_idle),
+> +	ELV_ATTR(slice_sync),
+> +#endif
+>  	__ATTR_NULL
+>  };
+>  
+> Index: linux18/block/noop-iosched.c
+> ===================================================================
+> --- linux18.orig/block/noop-iosched.c	2009-06-09 10:34:52.000000000 -0400
+> +++ linux18/block/noop-iosched.c	2009-06-09 13:31:48.000000000 -0400
+> @@ -82,6 +82,15 @@ static void noop_free_noop_queue(struct 
+>  	kfree(nq);
+>  }
+>  
+> +#ifdef CONFIG_IOSCHED_NOOP_HIER
+> +static struct elv_fs_entry noop_attrs[] = {
+> +	ELV_ATTR(fairness),
+> +	ELV_ATTR(slice_idle),
+> +	ELV_ATTR(slice_sync),
+> +	__ATTR_NULL
+> +};
+> +#endif
+> +
+>  static struct elevator_type elevator_noop = {
+>  	.ops = {
+>  		.elevator_merge_req_fn		= noop_merged_requests,
+> @@ -94,6 +103,7 @@ static struct elevator_type elevator_noo
+>  	},
+>  #ifdef CONFIG_IOSCHED_NOOP_HIER
+>  	.elevator_features = ELV_IOSCHED_NEED_FQ | ELV_IOSCHED_SINGLE_IOQ,
+> +	.elevator_attrs = noop_attrs,
+>  #endif
+>  	.elevator_name = "noop",
+>  	.elevator_owner = THIS_MODULE,
+> 
+> 
+> 
+
+-- 
+Regards
+Gui Jianfeng
 
