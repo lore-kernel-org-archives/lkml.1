@@ -1,36 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758571AbZFJTBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760123AbZFJTGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758571AbZFJTBf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 15:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756917AbZFJTB1
+	id S1760123AbZFJTGQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 15:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbZFJTGC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 15:01:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45103 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753157AbZFJTB0 (ORCPT
+	Wed, 10 Jun 2009 15:06:02 -0400
+Received: from mailrelay009.isp.belgacom.be ([195.238.6.176]:29383 "EHLO
+	mailrelay009.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755470AbZFJTGB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 15:01:26 -0400
-Date: Wed, 10 Jun 2009 11:59:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, cl@linux-foundation.com,
-       mingo@elte.hu, hannes@cmpxchg.org, mpm@selenic.com, npiggin@suse.de,
-       yinghai@kernel.org
-Subject: Re: [PATCH 3/3] vmalloc: use kzalloc() instead of alloc_bootmem()
-In-Reply-To: <Pine.LNX.4.64.0906102058060.28361@melkki.cs.Helsinki.FI>
-Message-ID: <alpine.LFD.2.01.0906101158440.6847@localhost.localdomain>
-References: <Pine.LNX.4.64.0906102058060.28361@melkki.cs.Helsinki.FI>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 10 Jun 2009 15:06:01 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAAegL0pR9cDZ/2dsb2JhbADRJQiEBQU
+Date: Wed, 10 Jun 2009 21:06:02 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: matthieu castet <castet.matthieu@free.fr>
+Cc: Florian Fainelli <florian@openwrt.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org, biblbroks@sezampro.rs
+Subject: Re: add bcm47xx watchdog driver
+Message-ID: <20090610190602.GL16090@infomag.iguana.be>
+References: <4A282D98.6020004@free.fr> <20090605124813.d7666ed0.akpm@linux-foundation.org> <4A29805D.60205@free.fr> <200906081615.45889.florian@openwrt.org> <20090610171732.GI16090@infomag.iguana.be> <4A2FFFDA.6010807@free.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A2FFFDA.6010807@free.fr>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Matthieu,
 
+>> +
+>> +#define WDT_DEFAULT_TIME	30	/* seconds */
+>> +#define WDT_MAX_TIME		255	/* seconds */
+> Why have changed this from 256 to 255 ?
 
-ACK on the whole series. Feel free to push it to me asap, so that we can 
-get any potential issues found and sorted out early.
+Since you use a timer to control the real watchdog, the wdt_time function is arbitraty anyway.
+Most watchdog drivers use 0xFFFF. Since you only went to 256 it made more sense to have it as 0xFF which is 255.
+We can make it 65535 also. 
 
-		Linus
+>> +}
+>> +
+>> +static int bcm47xx_wdt_notify_sys(struct notifier_block *this,
+>> +	nsigned long code, void *unused)
+>        ^^^^
+> Does this build ?
+
+Nope. should be unsigned.
+
+Kind regards,
+Wim.
+
