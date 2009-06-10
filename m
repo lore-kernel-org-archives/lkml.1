@@ -1,77 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbZFJWKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759966AbZFJWMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760032AbZFJWKy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 18:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758269AbZFJWKp
+	id S1759966AbZFJWMi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 18:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756464AbZFJWMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 18:10:45 -0400
-Received: from sirius.lasnet.de ([78.47.116.19]:55639 "EHLO sirius.lasnet.de"
+	Wed, 10 Jun 2009 18:12:30 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42986 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754211AbZFJWKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 18:10:44 -0400
-Date: Thu, 11 Jun 2009 00:10:54 +0200
-From: Stefan Schmidt <stefan@datenfreihafen.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Marek Vasut <marek.vasut@gmail.com>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Brian Swetland <swetland@google.com>,
-       Stefan Schmidt <stefan@datenfreihafen.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       kernel list <linux-kernel@vger.kernel.org>, san@android.com,
-       rlove@google.com
-Message-ID: <20090610221054.GF6251@dodger.lab.datenfreihafen.org>
-References: <20090610103131.GB13885@elf.ucw.cz> <20090610204708.GD6251@dodger.lab.datenfreihafen.org> <a55d774e0906101408t75e507f5s8064796b080828c2@mail.gmail.com> <200906102328.40140.marek.vasut@gmail.com> <20090610213259.GA8224@elf.ucw.cz>
+	id S1754222AbZFJWMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 18:12:30 -0400
+Date: Thu, 11 Jun 2009 00:12:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] core/locking for v2.6.31
+Message-ID: <20090610221224.GA22952@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090610213259.GA8224@elf.ucw.cz>
-X-Mailer: Mutt http://www.mutt.org/
-X-KeyID: 0xDDF51665
-X-Website: http://www.datenfreihafen.org/
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Subject: Re: MSM6281 support was: HTC Dream aka. t-mobile g1 support
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Linus,
 
-On Wed, 2009-06-10 at 23:33, Pavel Machek wrote:
-> On Wed 2009-06-10 23:28:39, Marek Vasut wrote:
-> > On Wednesday 10 of June 2009 23:08:36 Brian Swetland wrote:
-> > > On Wed, Jun 10, 2009 at 1:47 PM, Stefan
-> > >
-> > > Schmidt<stefan@datenfreihafen.org> wrote:
-> > > > Hello.
-> > > >
-> > > > On Wed, 2009-06-10 at 13:24, Brian Swetland wrote:
-> > > >> We have full support for MSM7201A, including fully functional power
-> > > >> management, working on a number of commercially shipping devices that
-> > > >> we'd absolutely love to get into mainline.
-> > > >
-> > > > A bit offtopic here. (subject change). Is it expected that the android
-> > > > kernel team will also work on systems that use the MSM6K modems with
-> > > > different SoC's? I have soem systems here that use an msm6281 on a dual
-> > > > port ram chip with non msm SoC's. I wonder how difficult it would be to
-> > > > adaept the existing msm smd driver to such a setup.
-> > >
-> > > We only have documentation, support, and permission to do work on 7k
-> > > and 8k family devices at this point.  I don't know anything about the
-> > > 6k family, and how similar (or not) the shared memory interface would
-> > > be, so unfortunately I can't provide much help there.
-> > 
-> > Palm Pre apparently uses MSM68xx as a baseband chip, otherwise is omap3 based.
-> > The device is out, selling, but I haven't seen any kernel patches from them 
-> > yet. I hope they release them in a few weeks (even though they should have 
-> > been out already).
-> 
-> If you can get your hands on Palm Pre, it should come with
-> GPL-required sources or offer for source code... if it does not, talk
-> to Harald Welte (gpl-violations.org)....
+Please pull the latest locking-for-linus git tree from:
 
-They have the licence inside and offer source on request on the letter. I wrote
-them a mail some hours ago and they state that all source will be on
-http://opensource.palm.com/ within two weeks.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git locking-for-linus
 
-regards
-Stefan Schmidt
+ Thanks,
+
+	Ingo
+
+------------------>
+Andrew Morton (1):
+      mutex: add atomic_dec_and_mutex_lock(), fix
+
+Benjamin Herrenschmidt (1):
+      spinlock: Add missing __raw_spin_lock_flags() stub for UP
+
+Eric Paris (1):
+      mutex: add atomic_dec_and_mutex_lock()
+
+Luis Henriques (1):
+      locking, rtmutex.c: Documentation cleanup
+
+
+ include/linux/mutex.h       |    1 +
+ include/linux/spinlock_up.h |    1 +
+ kernel/mutex.c              |   25 ++++++++++++++++++++++++-
+ kernel/rtmutex.c            |    8 ++++----
+ 4 files changed, 30 insertions(+), 5 deletions(-)
+
+diff --git a/include/linux/mutex.h b/include/linux/mutex.h
+index 3069ec7..878cab4 100644
+--- a/include/linux/mutex.h
++++ b/include/linux/mutex.h
+@@ -150,5 +150,6 @@ extern int __must_check mutex_lock_killable(struct mutex *lock);
+  */
+ extern int mutex_trylock(struct mutex *lock);
+ extern void mutex_unlock(struct mutex *lock);
++extern int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock);
+ 
+ #endif
+diff --git a/include/linux/spinlock_up.h b/include/linux/spinlock_up.h
+index 938234c..d4841ed 100644
+--- a/include/linux/spinlock_up.h
++++ b/include/linux/spinlock_up.h
+@@ -60,6 +60,7 @@ static inline void __raw_spin_unlock(raw_spinlock_t *lock)
+ #define __raw_spin_is_locked(lock)	((void)(lock), 0)
+ /* for sched.c and kernel_lock.c: */
+ # define __raw_spin_lock(lock)		do { (void)(lock); } while (0)
++# define __raw_spin_lock_flags(lock, flags)	do { (void)(lock); } while (0)
+ # define __raw_spin_unlock(lock)	do { (void)(lock); } while (0)
+ # define __raw_spin_trylock(lock)	({ (void)(lock); 1; })
+ #endif /* DEBUG_SPINLOCK */
+diff --git a/kernel/mutex.c b/kernel/mutex.c
+index 507cf2b..e2d25e9 100644
+--- a/kernel/mutex.c
++++ b/kernel/mutex.c
+@@ -471,5 +471,28 @@ int __sched mutex_trylock(struct mutex *lock)
+ 
+ 	return ret;
+ }
+-
+ EXPORT_SYMBOL(mutex_trylock);
++
++/**
++ * atomic_dec_and_mutex_lock - return holding mutex if we dec to 0
++ * @cnt: the atomic which we are to dec
++ * @lock: the mutex to return holding if we dec to 0
++ *
++ * return true and hold lock if we dec to 0, return false otherwise
++ */
++int atomic_dec_and_mutex_lock(atomic_t *cnt, struct mutex *lock)
++{
++	/* dec if we can't possibly hit 0 */
++	if (atomic_add_unless(cnt, -1, 1))
++		return 0;
++	/* we might hit 0, so take the lock */
++	mutex_lock(lock);
++	if (!atomic_dec_and_test(cnt)) {
++		/* when we actually did the dec, we didn't hit 0 */
++		mutex_unlock(lock);
++		return 0;
++	}
++	/* we hit 0, and we hold the lock */
++	return 1;
++}
++EXPORT_SYMBOL(atomic_dec_and_mutex_lock);
+diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
+index 69d9cb9..013882e 100644
+--- a/kernel/rtmutex.c
++++ b/kernel/rtmutex.c
+@@ -864,9 +864,9 @@ int __sched rt_mutex_lock_interruptible(struct rt_mutex *lock,
+ EXPORT_SYMBOL_GPL(rt_mutex_lock_interruptible);
+ 
+ /**
+- * rt_mutex_lock_interruptible_ktime - lock a rt_mutex interruptible
+- *				       the timeout structure is provided
+- *				       by the caller
++ * rt_mutex_timed_lock - lock a rt_mutex interruptible
++ *			the timeout structure is provided
++ *			by the caller
+  *
+  * @lock: 		the rt_mutex to be locked
+  * @timeout:		timeout structure or NULL (no timeout)
+@@ -913,7 +913,7 @@ void __sched rt_mutex_unlock(struct rt_mutex *lock)
+ }
+ EXPORT_SYMBOL_GPL(rt_mutex_unlock);
+ 
+-/***
++/**
+  * rt_mutex_destroy - mark a mutex unusable
+  * @lock: the mutex to be destroyed
+  *
