@@ -1,130 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbZFJS4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758453AbZFJTAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757706AbZFJS4i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 14:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756063AbZFJS43
+	id S1758453AbZFJTAm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 15:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078AbZFJTAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 14:56:29 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37449 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755862AbZFJS43 (ORCPT
+	Wed, 10 Jun 2009 15:00:30 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:44935 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753906AbZFJTA2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 14:56:29 -0400
-Date: Wed, 10 Jun 2009 14:56:30 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mike Frysinger <vapier@gentoo.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] ftrace: document basic ftracer/ftracer graph needs
-In-Reply-To: <1244623722-6325-2-git-send-email-vapier@gentoo.org>
-Message-ID: <alpine.DEB.2.00.0906101449320.30552@gandalf.stny.rr.com>
-References: <1244623722-6325-1-git-send-email-vapier@gentoo.org> <1244623722-6325-2-git-send-email-vapier@gentoo.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 10 Jun 2009 15:00:28 -0400
+Date: Wed, 10 Jun 2009 14:56:39 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: pull request: wireless-next-2.6 2009-06-10
+Message-ID: <20090610185639.GC3892@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dave,
 
+Despite my previous optimistic prediction, I need to ask for one more
+2.6.31 pull before/during the merge window... :-)
 
-On Wed, 10 Jun 2009, Mike Frysinger wrote:
->  The File System
->  ---------------
->  
-> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-> index 417d198..be936c9 100644
-> --- a/kernel/trace/Kconfig
-> +++ b/kernel/trace/Kconfig
-> @@ -14,9 +14,46 @@ config HAVE_FTRACE_NMI_ENTER
->  
->  config HAVE_FUNCTION_TRACER
->  	bool
-> +	help
-> +	  Implement support for the _mcount() function (or whatever your
-> +	  toolchain names it), and the ftrace_stub function (which only
-> +	  does a return).
-> +
-> +	  The _mcount() function should check the function pointer
-> +	  ftrace_trace_function to see if it is set to ftrace_stub.  If
-> +	  it is, there is nothing for you to do -- return.  If it isn't,
-> +	  then call it the same way the _mcount() function normally calls
-> +	  __mcount_internal() -- the first argument is the "frompc" while
-> +	  the second argument is the "selfpc" (adjusted to remove the size
-> +	  of the embedded _mcount() call).
-> +
-> +	  For example, if the function foo() calls bar(), when the bar()
-> +	  function calls _mcount(), the arguments to the tracer are:
-> +	    "frompc" - the address bar() will use to return to foo()
-> +	    "selfpc" - the address bar() (with _mcount() size adjustment)
+This one actually does have a number of bug fixes embedded within, as
+well as some further fleshing-out and usage of the new rfkill
+infrastructure changes that are already queued for 2.6.31.  The other
+bits are more minor, but they have already spent at least a few days in
+-next and I believe they are safe for 2.6.31.
 
-This is too much for Kconfig.
+Please let me know if there are problems!
 
->  
->  config HAVE_FUNCTION_GRAPH_TRACER
->  	bool
-> +	help
-> +	  Update your _mcount() function to check the function pointers
-> +	  ftrace_graph_return (compare to ftrace_stub) and ftrace_graph_entry
-> +	  (compare to ftrace_graph_entry_stub).  If either of those are not
-> +	  set to the relevant stub function, call the arch-specific function
-> +	  ftrace_graph_caller which in turn calls the arch-specific function
-> +	  prepare_ftrace_return.
-> +
-> +	  The arguments to prepare_ftrace_return() are slightly different.
-> +	  The first argument will instead be a pointer to the "frompc" --
-> +	  typically located in the stack.  This allows the function to
-> +	  hijack the return address temporarily to have it point to the
-> +	  arch-specific function return_to_handler().  For exact details of
-> +	  how to implement prepare_ftrace_return(), consult an existing port.
-> +	  It is fairly straight forward C code.
-> +
-> +	  The return_to_handler() function is simple as well.  Have it call
-> +	  the common ftrace_return_to_handler() function.  The return value
-> +	  is the original return address, so restore this to the right place
-> +	  and return.
+Thanks,
 
-This is also too much for Kconfig.
+John
 
->  
->  config HAVE_FUNCTION_TRACE_MCOUNT_TEST
->  	bool
-> @@ -25,11 +62,17 @@ config HAVE_FUNCTION_TRACE_MCOUNT_TEST
->  	 variable at the mcount call site. Otherwise, this variable
->  	 is tested by the called function.
->  
-> +	 It is of course optional for arches, but does improve performance
-> +	 a bit as it prevents constant state saving and call overhead when
-> +	 the function tracer is actually disabled.
-> +
+P.S.  For some reason (probably the 2.6.30 release) the public push on
+kernel.org seems to be taking a lot longer than usual.  So you probably
+want to ensure that the wireless-next-2.6 head matches 2f0accc13520 or
+just pull using ssh (or direct file access).
 
-The above would be fine, although I would reword it a little:
+---
 
- This is optional for archs, but will improve performance, as it
- prevents constant state saving and call overhead when the function tracer
- tracer is active, but has been disabled.
+Individual patches are available here:
 
-I put in 'is active' because with dynamic function tracing it has no more 
-overhead when disabled. We can enable function tracing, but soft disable 
-it with a check of a bit.
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-next-2.6/
+	
+---
 
+The following changes since commit 1506e30b5f25f6c3357167a18f0e4ae6f5662a28:
+  Johannes Berg (1):
+        rfkill: include err.h
 
->  config HAVE_DYNAMIC_FTRACE
->  	bool
->  
->  config HAVE_FTRACE_MCOUNT_RECORD
->  	bool
-> +	help
-> +	  See scripts/recordmcount.pl for more info.
+are available in the git repository at:
 
-This is fine.
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-next-2.6.git
 
--- Steve
+Alan Jenkins (3):
+      rfkill: remove set_global_sw_state
+      sony-laptop: no need to unblock rfkill on load
+      rfkill: don't impose global states on resume (just restore the previous states)
 
->  
->  config HAVE_HW_BRANCH_TRACER
->  	bool
-> -- 
-> 1.6.3.1
-> 
-> 
+Bob Copeland (2):
+      mac80211: fix minstrel single-rate memory corruption
+      ath5k: minor rfkill cleanup
+
+Christian Lamparter (1):
+      ar9170: xmit code revamp
+
+Johannes Berg (11):
+      iwlwifi: port to cfg80211 rfkill
+      ar9170: interpret firmware debug commands
+      rfkill: print events when input handler is disabled/enabled
+      b43/legacy: port to cfg80211 rfkill
+      rfkill: remove input Kconfig
+      sony: fix rfkill code
+      mac80211: do not pass PS frames out of mac80211 again
+      mac80211: don't use master netdev name
+      mac80211: clean up return value of __ieee80211_parse_tx_radiotap
+      mac80211: disable PS while probing AP
+      cfg80211: fix rfkill locking problem
+
+Jussi Kivilinna (2):
+      rndis_wlan: cleanup: capitalize enum labels
+      rndis_wlan: cleanup: rename all rndis_wext* objects to rndis_wlan*
+
+Luis R. Rodriguez (2):
+      cfg80211: fix for duplicate response for driver reg request
+      mac80211: disable moving between PS modes during scan
+
+Matthieu CASTET (2):
+      b43: Fix possible unaligned u32 access
+      mac80211 : fix unaligned rx skb
+
+Michael Buesch (1):
+      b43: Add fw capabilities
+
+Sebastian Andrzej Siewior (1):
+      net/libertas: remove GPIO-CS handling in SPI interface code
+
+Tobias Doerffel (1):
+      ath5k: added cfg80211 based rfkill support
+
+Vasanthakumar Thiagarajan (2):
+      mac80211: Fix the way ADDBA request count being modified
+      ath9k: Fix tx stuck when connected to aggr disabled HT AP
+
+ drivers/net/wireless/Kconfig                |    2 +-
+ drivers/net/wireless/ath/ar9170/ar9170.h    |   34 +-
+ drivers/net/wireless/ath/ar9170/hw.h        |    3 +
+ drivers/net/wireless/ath/ar9170/main.c      |  676 ++++++++++++++++++---------
+ drivers/net/wireless/ath/ar9170/usb.c       |  122 ++++-
+ drivers/net/wireless/ath/ar9170/usb.h       |    7 +-
+ drivers/net/wireless/ath/ath5k/Makefile     |    1 +
+ drivers/net/wireless/ath/ath5k/ath5k.h      |    4 +
+ drivers/net/wireless/ath/ath5k/base.c       |    7 +
+ drivers/net/wireless/ath/ath5k/base.h       |   12 +
+ drivers/net/wireless/ath/ath5k/reset.c      |   17 -
+ drivers/net/wireless/ath/ath5k/rfkill.c     |  121 +++++
+ drivers/net/wireless/ath/ath9k/xmit.c       |    1 +
+ drivers/net/wireless/b43/Kconfig            |    7 -
+ drivers/net/wireless/b43/Makefile           |    2 +-
+ drivers/net/wireless/b43/b43.h              |   17 +-
+ drivers/net/wireless/b43/dma.c              |    2 +-
+ drivers/net/wireless/b43/leds.c             |    7 +-
+ drivers/net/wireless/b43/main.c             |   83 +++--
+ drivers/net/wireless/b43/main.h             |    1 -
+ drivers/net/wireless/b43/phy_common.h       |    2 +-
+ drivers/net/wireless/b43/pio.c              |    2 +-
+ drivers/net/wireless/b43/rfkill.c           |  113 +----
+ drivers/net/wireless/b43/rfkill.h           |   44 +--
+ drivers/net/wireless/b43/xmit.c             |    5 +-
+ drivers/net/wireless/b43legacy/Kconfig      |    8 -
+ drivers/net/wireless/b43legacy/Makefile     |    2 +-
+ drivers/net/wireless/b43legacy/b43legacy.h  |    3 -
+ drivers/net/wireless/b43legacy/leds.c       |    7 +-
+ drivers/net/wireless/b43legacy/main.c       |   17 +-
+ drivers/net/wireless/b43legacy/rfkill.c     |  115 +----
+ drivers/net/wireless/b43legacy/rfkill.h     |   50 +--
+ drivers/net/wireless/iwlwifi/Kconfig        |    4 -
+ drivers/net/wireless/iwlwifi/Makefile       |    1 -
+ drivers/net/wireless/iwlwifi/iwl-3945.h     |    5 -
+ drivers/net/wireless/iwlwifi/iwl-agn.c      |   42 +--
+ drivers/net/wireless/iwlwifi/iwl-core.c     |  138 ------
+ drivers/net/wireless/iwlwifi/iwl-core.h     |   16 +-
+ drivers/net/wireless/iwlwifi/iwl-debugfs.c  |    2 -
+ drivers/net/wireless/iwlwifi/iwl-dev.h      |    5 -
+ drivers/net/wireless/iwlwifi/iwl-rfkill.c   |  131 ------
+ drivers/net/wireless/iwlwifi/iwl-rfkill.h   |   48 --
+ drivers/net/wireless/iwlwifi/iwl3945-base.c |   41 +--
+ drivers/net/wireless/libertas/if_spi.c      |   92 ++--
+ drivers/net/wireless/rndis_wlan.c           |  292 ++++++------
+ drivers/platform/x86/acer-wmi.c             |    3 -
+ drivers/platform/x86/eeepc-laptop.c         |    8 +-
+ drivers/platform/x86/hp-wmi.c               |    4 -
+ drivers/platform/x86/sony-laptop.c          |    4 +-
+ drivers/platform/x86/thinkpad_acpi.c        |   31 +-
+ include/linux/rfkill.h                      |   35 +-
+ include/linux/skbuff.h                      |    4 -
+ include/linux/spi/libertas_spi.h            |    3 -
+ include/net/mac80211.h                      |    3 +
+ net/core/skbuff.c                           |    1 -
+ net/mac80211/agg-tx.c                       |    6 +-
+ net/mac80211/cfg.c                          |    4 +-
+ net/mac80211/ieee80211_i.h                  |    5 +
+ net/mac80211/main.c                         |   61 +---
+ net/mac80211/mlme.c                         |   57 ++-
+ net/mac80211/rc80211_minstrel.c             |    2 +-
+ net/mac80211/rx.c                           |   27 +-
+ net/mac80211/tx.c                           |   19 +-
+ net/mac80211/util.c                         |   46 ++
+ net/mac80211/wme.c                          |    2 +-
+ net/rfkill/Kconfig                          |    2 +-
+ net/rfkill/core.c                           |   93 ++---
+ net/wireless/core.c                         |   19 +-
+ net/wireless/reg.c                          |    7 +-
+ 69 files changed, 1275 insertions(+), 1482 deletions(-)
+ create mode 100644 drivers/net/wireless/ath/ath5k/rfkill.c
+ delete mode 100644 drivers/net/wireless/iwlwifi/iwl-rfkill.c
+ delete mode 100644 drivers/net/wireless/iwlwifi/iwl-rfkill.h
+
+Omnibus patch is available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-next-2.6-2009-06-10.patch.bz2
+
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
