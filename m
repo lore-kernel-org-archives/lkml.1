@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbZFJLDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758824AbZFJLDQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758117AbZFJLDA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 07:03:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754826AbZFJLCx
+	id S1758824AbZFJLDQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 07:03:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757341AbZFJLDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 07:02:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60785 "EHLO mx3.mail.elte.hu"
+	Wed, 10 Jun 2009 07:03:09 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35556 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753071AbZFJLCx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 07:02:53 -0400
-Date: Wed, 10 Jun 2009 13:02:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@kernel.org>
-Cc: Harald Welte <HaraldWelte@viatech.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-Subject: Re: [PATCH] X86: cpu_debug support for VIA / Centaur CPU's
-Message-ID: <20090610110244.GE27724@elte.hu>
-References: <20090609082931.GD25316@prithivi.gnumonks.org> <1244537598.2558.9.camel@ht.satnam> <20090609145305.GD3986@prithivi.gnumonks.org> <20090609151557.GA9362@elte.hu> <4A2F353A.9040007@kernel.org>
-MIME-Version: 1.0
+	id S1757048AbZFJLDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 07:03:08 -0400
+Date: Wed, 10 Jun 2009 13:03:05 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler in the VM v5
+Message-ID: <20090610110305.GB3876@wotan.suse.de>
+References: <20090603846.816684333@firstfloor.org> <20090603184648.2E2131D028F@basil.firstfloor.org> <20090609100922.GF14820@wotan.suse.de> <Pine.LNX.4.64.0906091637430.13213@sister.anvils> <20090610083803.GE6597@localhost> <20090610085939.GE31155@wotan.suse.de> <20090610092010.GA32584@localhost>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A2F353A.9040007@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0004]
+In-Reply-To: <20090610092010.GA32584@localhost>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* H. Peter Anvin <hpa@kernel.org> wrote:
-
-> Ingo Molnar wrote:
+On Wed, Jun 10, 2009 at 05:20:11PM +0800, Wu Fengguang wrote:
+> On Wed, Jun 10, 2009 at 04:59:39PM +0800, Nick Piggin wrote:
+> > On Wed, Jun 10, 2009 at 04:38:03PM +0800, Wu Fengguang wrote:
+> > > On Wed, Jun 10, 2009 at 12:05:53AM +0800, Hugh Dickins wrote:
+> > > > I think a much more sensible approach would be to follow the page
+> > > > migration technique of replacing the page's ptes by a special swap-like
+> > > > entry, then do the killing from do_swap_page() if a process actually
+> > > > tries to access the page.
+> > > 
+> > > We call that "late kill" and will be enabled when
+> > > sysctl_memory_failure_early_kill=0. Its default value is 1.
 > > 
-> > MSRs should really be enumerated along CPU features. They will be 
-> > accessed if a CPU offers that CPU feature.
-> > 
+> > What's the use of this? What are the tradeoffs, in what situations
+> > should an admin set this sysctl one way or the other?
 > 
-> Nice in theory, but so many MSRs have to be enumerated with obscure test
-> combinations, that it really isn't practical in the general case.  That
-> is why we have the safe MSR variants.
+> Good questions.
 > 
-> > 
-> > Yeah, the safe read should never fault - there should be all 
-> > zeroes or an error return.
-> > 
+> My understanding is, when an application is generating data A, B, C in
+> sequence, and A is found to be corrupted by the kernel. Does it make
+> sense for the application to continue generate B and C? Or, are there
+> data dependencies between them? With late kill, it becomes more likely
+> that the disk contain new versions of B/C and old version of A, so
+> will more likely create data inconsistency.
 > 
-> Error return, MSRs #GP if not present.  All zero means a present 
-> MSR (which is zero.)
+> So early kill is more safe.
 
-yes, of course - i meant the /debug/x86/cpu/* behavior: it should 
-either result zeroes, or should return -EINVAL. (probably the 
-latter)
+Hmm, I think that's pretty speculative, and doesn't seem possible for
+an admin (or even kernel programmer) to choose the "right" value.
 
-	Ingo
+The application equally may not need to touch the data again, so
+killing it might cause some inconsistency in whatever it is currently
+doing.
+
