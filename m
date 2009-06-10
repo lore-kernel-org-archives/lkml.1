@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbZFJK7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbZFJLBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755333AbZFJK7L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 06:59:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbZFJK67
+	id S1757462AbZFJLBm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 07:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbZFJLBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 06:58:59 -0400
-Received: from www.tglx.de ([62.245.132.106]:40386 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754710AbZFJK66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 06:58:58 -0400
-Date: Wed, 10 Jun 2009 12:58:38 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-cc: Zhaolei <zhaolei@cn.fujitsu.com>, mingo@elte.hu,
-       LKML <linux-kernel@vger.kernel.org>, kosaki.motohiro@jp.fujitsu.com,
-       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
-Subject: Re: [PATCH 1/3] ftrace: add tracepoint for timer
-In-Reply-To: <4A2F8006.506@cn.fujitsu.com>
-Message-ID: <alpine.LFD.2.00.0906101225280.3351@localhost.localdomain>
-References: <4A167615.7050208@cn.fujitsu.com> <alpine.LFD.2.00.0905262334030.1762@localhost.localdomain> <4A1CED66.7030805@cn.fujitsu.com> <alpine.LFD.2.00.0905271202260.3397@localhost.localdomain> <4A1F41C5.7000803@cn.fujitsu.com>
- <alpine.LFD.2.00.0905290935030.3397@localhost.localdomain> <4A25E575.5000601@cn.fujitsu.com> <alpine.LFD.2.00.0906031756590.3419@localhost.localdomain> <4A275DDC.6020507@cn.fujitsu.com> <alpine.LFD.2.00.0906041017220.3419@localhost.localdomain>
- <4A2F8006.506@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 10 Jun 2009 07:01:38 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:57113 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752105AbZFJLBh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 07:01:37 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Yong Wang <yong.y.wang@linux.intel.com>
+Subject: Re: [PATCH -tip] perf_counter/x86: Fix the model number of Intel Core2 processors
+Date: Wed, 10 Jun 2009 13:01:08 +0200
+User-Agent: KMail/1.11.90 (Linux/2.6.30-8-generic; KDE/4.2.85; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+References: <20090610090612.GA26580@ywang-moblin2.bj.intel.com>
+In-Reply-To: <20090610090612.GA26580@ywang-moblin2.bj.intel.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906101301.08483.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18bOr/b9nmWG07VS6BbqmwbG7+TaD+G4Mr/zQY
+ 7ZXkAEzw9VHA1hFcnp0auIVNS3CuU3kI6giOU898ix05YyC6lf
+ ngMEqz2rtiyNz+I61sXNA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xiao,
+On Wednesday 10 June 2009, Yong Wang wrote:
+> diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+> index 40978aa..a49a82c 100644
+> --- a/arch/x86/kernel/cpu/perf_counter.c
+> +++ b/arch/x86/kernel/cpu/perf_counter.c
+> @@ -1407,7 +1407,8 @@ static int intel_pmu_init(void)
+>          * Install the hw-cache-events table:
+>          */
+>         switch (boot_cpu_data.x86_model) {
+> -       case 17:
+> +       case 15:
+> +       case 23:
+>                 memcpy(hw_cache_event_ids, core2_hw_cache_event_ids,
+>                        sizeof(hw_cache_event_ids));
 
-On Wed, 10 Jun 2009, Xiao Guangrong wrote:
-> Those tracepoints are wanted and useful:
-> 1) We can detect a timer's delay if jiffies info is added, like this:
-> 
-> 	XXX: timer_start: timer=e0b374e0 func=test_timerfuc expires=4294941565
-> 	XXX: timer_expire: timer=e0b374e0 func=test_timerfuc jiffies=4294941567
->    We expect the timer expires at 4294941565, actually the timer expires at
->    4294941567, so it is delayed by 2 jiffies.
+There are actually four model numbers that refer to the same
+core microarchitecture:
 
-You can achive the same thing by storing (expires - jiffies) when you
-trace the timer start. Then you can calc the delta from the trace
-timestamps, but I have no strong opinion about that.
+model 15: original 65 nm celeron/pentium/core2/xeon, "Merom"/"Conroe"
+model 22: single-core 65 nm celeron/core2solo "Merom-L"/"Conroe-L"
+model 23: current 45 nm celeron/core2/xeon "Penryn"/"Wolfdale"
+model 29: six-core 45 nm xeon "Dunnington"
 
-> 2) We can monitor the lifecycle and behaviors of a timer, for
->    example, when monitoring dirty writeback timer, I found reading
->    /proc/sys/vm/dirty_writeback_centisecs will reset the timer:
+You should probably list all of them here.
 
- 
-> 3) We are developing "flight-record" using crash. It can read out the ring
->    buffer from the dump file, and let us know what was happening before
->    kernel panic, so we may find the cause of the panic. This requires
->    well-defined tracepoints in different kernel subsystems, especially some
->    core subsystems, timer is surely one of them.
-
-I'm not arguing that tracepoints are not useful, but you can achieve
-all the things above by combining them in an unintrusive way to the
-existing debug points.
-
-This results in the minimum noise of debug/trace insertions into the
-code, which keeps it readable and maintainable. That's all I want.
-
-Thanks,
-
-	tglx
+	Arnd <><
