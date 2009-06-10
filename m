@@ -1,92 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbZFJKlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbZFJKnE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755333AbZFJKlz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 06:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbZFJKls
+	id S1755422AbZFJKnE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 06:43:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbZFJKmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 06:41:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44752 "EHLO mx2.redhat.com"
+	Wed, 10 Jun 2009 06:42:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36428 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751621AbZFJKlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 06:41:47 -0400
-Subject: GFS2: Merge gfs2_get_sb into gfs2_get_sb_meta
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-In-Reply-To: <20090610095319.GC25527@infradead.org>
-References: <1244622665-7470-15-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-16-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-17-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-18-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-19-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-20-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-21-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-22-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-23-git-send-email-swhiteho@redhat.com>
-	 <1244622665-7470-24-git-send-email-swhiteho@redhat.com>
-	 <20090610095319.GC25527@infradead.org>
-Content-Type: text/plain
-Organization: Red Hat UK Ltd
-Date: Wed, 10 Jun 2009 11:43:59 +0100
-Message-Id: <1244630639.3355.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1751000AbZFJKmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 06:42:55 -0400
+Date: Wed, 10 Jun 2009 12:42:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yong Wang <yong.y.wang@linux.intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH -tip] perf_counter/x86: Correct some event and umask
+	values for Intel processors
+Message-ID: <20090610104242.GB27724@elte.hu>
+References: <20090609131553.GA12489@ywang-moblin2.bj.intel.com> <20090609141621.GA32703@elte.hu> <20090610053623.GC30923@ywang-moblin2.bj.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090610053623.GC30923@ywang-moblin2.bj.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 003dec8913d6bebb4ecc989ec04a235cf38f5ea9 Mon Sep 17 00:00:00 2001
-From: Steven Whitehouse <swhiteho@redhat.com>
-Date: Wed, 10 Jun 2009 10:31:45 +0100
-Subject: [PATCH] GFS2: Merge gfs2_get_sb into gfs2_get_sb_meta
 
-These don't need to be separate functions.
+* Yong Wang <yong.y.wang@linux.intel.com> wrote:
 
-Reported-by: Christoph Hellwig <hch@infradead.org>
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+> On Tue, Jun 09, 2009 at 04:16:21PM +0200, Ingo Molnar wrote:
+> > 
+> > * Yong Wang <yong.y.wang@linux.intel.com> wrote:
+> > 
+> > > Correct some event and UMASK values according to Intel SDM.
+> > 
+> > Very nice, thanks!
+> > 
+> > were you able to test the Atom ones by any chance?
+> > 
+> 
+> You bet I was as I'm working on Moblin ;-) [...]
 
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index 9da161c..f234aba 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -1284,9 +1284,11 @@ static int set_meta_super(struct super_block *s, void *ptr)
- 	return -EINVAL;
- }
- 
--static struct super_block *get_gfs2_sb(const char *dev_name)
-+static int gfs2_get_sb_meta(struct file_system_type *fs_type, int flags,
-+			    const char *dev_name, void *data, struct vfsmount *mnt)
- {
- 	struct super_block *s;
-+	struct gfs2_sbd *sdp;
- 	struct path path;
- 	int error;
- 
-@@ -1294,21 +1296,11 @@ static struct super_block *get_gfs2_sb(const char *dev_name)
- 	if (error) {
- 		printk(KERN_WARNING "GFS2: path_lookup on %s returned error %d\n",
- 		       dev_name, error);
--		return ERR_PTR(-ENOENT);
-+		return error;
- 	}
- 	s = sget(&gfs2_fs_type, test_meta_super, set_meta_super,
- 		 path.dentry->d_inode->i_sb->s_bdev);
- 	path_put(&path);
--	return s;
--}
--
--static int gfs2_get_sb_meta(struct file_system_type *fs_type, int flags,
--			    const char *dev_name, void *data, struct vfsmount *mnt)
--{
--	struct super_block *s;
--	struct gfs2_sbd *sdp;
--
--	s = get_gfs2_sb(dev_name);
- 	if (IS_ERR(s)) {
- 		printk(KERN_WARNING "GFS2: gfs2 mount does not exist\n");
- 		return PTR_ERR(s);
--- 
-1.6.0.6
+Heh :-)
 
+> [...] However, some work while some do not. I'll take a look at 
+> the problematic ones. With the previous event and umask values, 
+> the pmc does not count at all for some events, like l1d-write-ops.
 
+Interesting. I had a good look at the Atom details in the docs but 
+couldnt find anything suspicious. There's various umask level 
+extensions (sometimes cflags level ones) like whether to measure the 
+core or the thread, but the defaults (zero) seem to have OK 
+semantics for most of the events.
 
+Btw., when mapping out event tables there's one little trick i used 
+to 'scan' an event, using 'perf stat' and raw event numbers:
+
+  for ((i=0;i<256;i++)); do                                    \
+    perf stat -e $(printf "r%02x%02x\n" $i 0xc0) true 2>&1 |   \
+      grep -w raw | grep -vw 0;                                \
+  done
+
+This scans all 256 umask values for the main event code of 0xc0, and 
+displays the umask values where the counter show some activity.
+
+( if it's some rare event then you might want to run something else 
+  that excercises that event, not /bin/true. )
+
+> Btw, one thing I don't quite understand is why you aliased 
+> dtlb-write-ops to l1d-write-ops when setting event and umask 
+> values. Are they the same event?
+
+No, they are indeed different events - that's a bug in the table, 
+good spotting. Mind sending a (tested) patch for it?
+
+Thanks,
+
+	Ingo
