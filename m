@@ -1,2054 +1,2245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbZFJVa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932106AbZFJVbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759493AbZFJVa4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 17:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZFJVap
+	id S932106AbZFJVbY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 17:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZFJVbC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 17:30:45 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:40141 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753470AbZFJVal (ORCPT
+	Wed, 10 Jun 2009 17:31:02 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:36233 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932117AbZFJVa4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 17:30:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:user-agent:cc:mime-version:content-disposition:date
-         :message-id:content-type:content-transfer-encoding;
-        b=jjJq7VqQ6QrwflMriwGIllDb8LHTXppUI/gyZIFTWhRFcmVQwog6ZjKmCEbGj/O6ab
-         hm/ep+bJQYGr9L7NnGFPdFbMUOX87T9heiOcSUbNOYFYH6a5GxuvoFzAPzZ0Ae8Duf1w
-         SfFTHiRzRHEY+zn3ZSWR+fItNdOzZQ/MBfTUY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] IDE updates part 1
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+	Wed, 10 Jun 2009 17:30:56 -0400
+Message-ID: <4A30250D.4000806@oracle.com>
+Date: Wed, 10 Jun 2009 14:26:37 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Disposition: inline
-Date: Wed, 10 Jun 2009 23:35:14 +0200
-Message-Id: <200906102335.14917.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Subject: Re: mmotm 2009-06-09-17-52 uploaded (kvm)
+References: <200906100112.n5A1Cx55003675@imap1.linux-foundation.org>
+In-Reply-To: <200906100112.n5A1Cx55003675@imap1.linux-foundation.org>
+Content-Type: multipart/mixed;
+ boundary="------------030907050903060404000501"
+X-Source-IP: abhmt008.oracle.com [141.146.116.17]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4A3025E9.019B:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------030907050903060404000501
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Hi,
+akpm@linux-foundation.org wrote:
+> The mm-of-the-moment snapshot 2009-06-09-17-52 has been uploaded to
+> 
+>    http://userweb.kernel.org/~akpm/mmotm/
+> 
+> and will soon be available at
+> 
+>    git://git.zen-sources.org/zen/mmotm.git
+> 
+> It contains the following patches against 2.6.30-rc8:
 
-Mostly fixes/cleanups for ATAPI support from Tejun and Borislav
-(block layer change has been acked by Jens).
+build-r5731.out:ERROR: "do_machine_check" [arch/x86/kvm/kvm-intel.ko] undefined!
 
-
-Linus, please pull from 'for-2.6.31' branch of:
-
-master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6.git for-2.6.31
-
-to receive the following updates:
-
- block/blk-core.c           |   10 +-
- drivers/ide/alim15x3.c     |   10 +-
- drivers/ide/ide-atapi.c    |  168 +++++++----
- drivers/ide/ide-cd.c       |   88 ++----
- drivers/ide/ide-cd.h       |    4 -
- drivers/ide/ide-disk.c     |    1 -
- drivers/ide/ide-dma.c      |   20 +-
- drivers/ide/ide-floppy.c   |   24 +-
- drivers/ide/ide-io.c       |   14 +-
- drivers/ide/ide-ioctls.c   |    1 -
- drivers/ide/ide-park.c     |    7 +-
- drivers/ide/ide-pm.c       |   38 +--
- drivers/ide/ide-tape.c     |  734 ++++++++++----------------------------------
- drivers/ide/ide-taskfile.c |   18 +-
- include/linux/ide.h        |   27 +-
- 15 files changed, 369 insertions(+), 795 deletions(-)
+config attached.
 
 
-Anton Vorontsov (1):
-      alim15x3: Remove historical hacks, re-enable init_hwif for PowerPC
+-- 
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
 
-Bartlomiej Zolnierkiewicz (5):
-      Merge branch 'for-linus' into for-next
-      Merge branch 'for-linus' into for-next
-      Merge branch 'for-linus' into for-next
-      Merge branch 'for-linus' into for-next
-      Merge branch 'for-2.6.31' into 2.6.30
+--------------030907050903060404000501
+Content-Type: text/plain;
+ name="config-r5731"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="config-r5731"
 
-Borislav Petkov (3):
-      ide: add helpers for preparing sense requests
-      ide-cd: convert to using generic sense request
-      ide-atapi: convert ide-{floppy,tape} to using preallocated sense buffer
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.30-rc8-mm1
+# Wed Jun 10 10:18:34 2009
+#
+# CONFIG_64BIT is not set
+CONFIG_X86_32=y
+# CONFIG_X86_64 is not set
+CONFIG_X86=y
+CONFIG_OUTPUT_FORMAT="elf32-i386"
+CONFIG_ARCH_DEFCONFIG="arch/x86/configs/i386_defconfig"
+CONFIG_GENERIC_TIME=y
+CONFIG_GENERIC_CMOS_UPDATE=y
+CONFIG_CLOCKSOURCE_WATCHDOG=y
+CONFIG_GENERIC_CLOCKEVENTS=y
+CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
+CONFIG_LOCKDEP_SUPPORT=y
+CONFIG_STACKTRACE_SUPPORT=y
+CONFIG_HAVE_LATENCYTOP_SUPPORT=y
+CONFIG_FAST_CMPXCHG_LOCAL=y
+CONFIG_MMU=y
+CONFIG_ZONE_DMA=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_GENERIC_IOMAP=y
+CONFIG_GENERIC_BUG=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_GPIO=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+# CONFIG_RWSEM_GENERIC_SPINLOCK is not set
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_ARCH_HAS_CPU_IDLE_WAIT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+# CONFIG_GENERIC_TIME_VSYSCALL is not set
+CONFIG_ARCH_HAS_CPU_RELAX=y
+CONFIG_ARCH_HAS_DEFAULT_IDLE=y
+CONFIG_ARCH_HAS_CACHE_LINE_SIZE=y
+CONFIG_HAVE_SETUP_PER_CPU_AREA=y
+CONFIG_HAVE_DYNAMIC_PER_CPU_AREA=y
+# CONFIG_HAVE_CPUMASK_OF_CPU_MAP is not set
+CONFIG_ARCH_HIBERNATION_POSSIBLE=y
+CONFIG_ARCH_SUSPEND_POSSIBLE=y
+# CONFIG_ZONE_DMA32 is not set
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+# CONFIG_AUDIT_ARCH is not set
+CONFIG_ARCH_SUPPORTS_OPTIMIZED_INLINING=y
+CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ=y
+CONFIG_GENERIC_IRQ_PROBE=y
+CONFIG_GENERIC_PENDING_IRQ=y
+CONFIG_USE_GENERIC_SMP_HELPERS=y
+CONFIG_X86_32_SMP=y
+CONFIG_X86_HT=y
+CONFIG_X86_TRAMPOLINE=y
+CONFIG_X86_32_LAZY_GS=y
+CONFIG_KTIME_SCALAR=y
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
+CONFIG_CONSTRUCTORS=y
 
-Mark de Wever (1):
-      ide-tape: fix debug call
+#
+# General setup
+#
+# CONFIG_EXPERIMENTAL is not set
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
+CONFIG_LOCALVERSION=""
+CONFIG_LOCALVERSION_AUTO=y
+CONFIG_HAVE_KERNEL_GZIP=y
+CONFIG_HAVE_KERNEL_BZIP2=y
+CONFIG_HAVE_KERNEL_LZMA=y
+# CONFIG_KERNEL_GZIP is not set
+CONFIG_KERNEL_BZIP2=y
+# CONFIG_KERNEL_LZMA is not set
+CONFIG_SWAP=y
+# CONFIG_SYSVIPC is not set
+# CONFIG_BSD_PROCESS_ACCT is not set
+# CONFIG_TASKSTATS is not set
+# CONFIG_AUDIT is not set
 
-Tejun Heo (23):
-      block: clear req->errors on bio completion only for fs requests
-      ide-tape: remove back-to-back REQUEST_SENSE detection
-      ide: use blk_run_queue() instead of blk_start_queueing()
-      ide: don't set REQ_SOFTBARRIER
-      ide kill unused ide_cmd->special
-      ide-cd: clear sense buffer before issuing request sense
-      ide-floppy: block pc always uses bio
-      ide-taskfile: don't abuse rq->buffer
-      ide-atapi: don't abuse rq->buffer
-      ide-cd: don't abuse rq->buffer
-      ide-cd,atapi: use bio for internal commands
-      ide-pm: don't abuse rq->data
-      ide-tape,floppy: fix failed command completion after request sense
-      ide-atapi,tape,floppy: allow ->pc_callback() to change rq->data_len
-      ide-tape: use single continuous buffer
-      ide-tape: use standard data transfer mechanism
-      ide-tape: kill idetape_bh
-      ide-tape: unify r/w init paths
-      ide-tape: use byte size instead of sectors on rw issue functions
-      ide-tape: simplify read/write functions
-      ide-atapi: kill unused fields and callbacks
-      ide: drop rq->data handling from ide_map_sg()
-      ide-dma: don't reset request fields on dma_timeout_retry()
+#
+# RCU Subsystem
+#
+CONFIG_CLASSIC_RCU=y
+# CONFIG_TREE_RCU is not set
+# CONFIG_PREEMPT_RCU is not set
+# CONFIG_TREE_RCU_TRACE is not set
+# CONFIG_PREEMPT_RCU_TRACE is not set
+CONFIG_IKCONFIG=m
+# CONFIG_IKCONFIG_PROC is not set
+CONFIG_LOG_BUF_SHIFT=17
+CONFIG_HAVE_UNSTABLE_SCHED_CLOCK=y
+# CONFIG_CGROUPS is not set
+# CONFIG_SYSFS_DEPRECATED_V2 is not set
+CONFIG_RELAY=y
+CONFIG_NAMESPACES=y
+CONFIG_UTS_NS=y
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+CONFIG_RD_GZIP=y
+CONFIG_RD_BZIP2=y
+CONFIG_RD_LZMA=y
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+CONFIG_SYSCTL=y
+CONFIG_ANON_INODES=y
+# CONFIG_EMBEDDED is not set
+CONFIG_UID16=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+CONFIG_KALLSYMS_ALL=y
+# CONFIG_KALLSYMS_EXTRA_PASS is not set
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_PCSPKR_PLATFORM=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_TIMERFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_AIO=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_PCI_QUIRKS=y
+CONFIG_STRIP_ASM_SYMS=y
+CONFIG_COMPAT_BRK=y
+# CONFIG_SLAB_ALLOCATOR is not set
+# CONFIG_SLUB_ALLOCATOR is not set
+CONFIG_SLQB_ALLOCATOR=y
+CONFIG_SLQB=y
+# CONFIG_SLOB is not set
+CONFIG_PROFILING=y
+CONFIG_TRACEPOINTS=y
+CONFIG_MARKERS=y
+CONFIG_OPROFILE=y
+CONFIG_OPROFILE_IBS=y
+CONFIG_HAVE_OPROFILE=y
+# CONFIG_KPROBES is not set
+CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS=y
+CONFIG_HAVE_IOREMAP_PROT=y
+CONFIG_HAVE_KPROBES=y
+CONFIG_HAVE_KRETPROBES=y
+CONFIG_HAVE_ARCH_TRACEHOOK=y
+CONFIG_HAVE_DMA_ATTRS=y
+CONFIG_HAVE_DMA_API_DEBUG=y
 
+#
+# GCOV-based kernel profiling
+#
+# CONFIG_GCOV_KERNEL is not set
+# CONFIG_SLOW_WORK is not set
+CONFIG_HAVE_GENERIC_DMA_COHERENT=y
+CONFIG_SLABINFO=y
+CONFIG_RT_MUTEXES=y
+CONFIG_BASE_SMALL=0
+CONFIG_MODULES=y
+# CONFIG_MODULE_FORCE_LOAD is not set
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODVERSIONS=y
+CONFIG_MODULE_SRCVERSION_ALL=y
+CONFIG_STOP_MACHINE=y
+CONFIG_BLOCK=y
+CONFIG_LBD=y
+# CONFIG_BLK_DEV_INTEGRITY is not set
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index c89883b..4bc34b6 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -1741,10 +1741,14 @@ static int __end_that_request_first(struct request *req, int error,
- 	trace_block_rq_complete(req->q, req);
- 
- 	/*
--	 * for a REQ_TYPE_BLOCK_PC request, we want to carry any eventual
--	 * sense key with us all the way through
-+	 * For fs requests, rq is just carrier of independent bio's
-+	 * and each partial completion should be handled separately.
-+	 * Reset per-request error on each partial completion.
-+	 *
-+	 * TODO: tj: This is too subtle.  It would be better to let
-+	 * low level drivers do what they see fit.
- 	 */
--	if (!blk_pc_request(req))
-+	if (blk_fs_request(req))
- 		req->errors = 0;
- 
- 	if (error && (blk_fs_request(req) && !(req->cmd_flags & REQ_QUIET))) {
-diff --git a/drivers/ide/alim15x3.c b/drivers/ide/alim15x3.c
-index 537da1c..e59b6de 100644
---- a/drivers/ide/alim15x3.c
-+++ b/drivers/ide/alim15x3.c
-@@ -402,27 +402,23 @@ static u8 ali_cable_detect(ide_hwif_t *hwif)
- 	return cbl;
- }
- 
--#if !defined(CONFIG_SPARC64) && !defined(CONFIG_PPC)
-+#ifndef CONFIG_SPARC64
- /**
-  *	init_hwif_ali15x3	-	Initialize the ALI IDE x86 stuff
-  *	@hwif: interface to configure
-  *
-  *	Obtain the IRQ tables for an ALi based IDE solution on the PC
-  *	class platforms. This part of the code isn't applicable to the
-- *	Sparc and PowerPC systems.
-+ *	Sparc systems.
-  */
- 
- static void __devinit init_hwif_ali15x3 (ide_hwif_t *hwif)
- {
--	struct pci_dev *dev = to_pci_dev(hwif->dev);
- 	u8 ideic, inmir;
- 	s8 irq_routing_table[] = { -1,  9, 3, 10, 4,  5, 7,  6,
- 				      1, 11, 0, 12, 0, 14, 0, 15 };
- 	int irq = -1;
- 
--	if (dev->device == PCI_DEVICE_ID_AL_M5229)
--		hwif->irq = hwif->channel ? 15 : 14;
--
- 	if (isa_dev) {
- 		/*
- 		 * read IDE interface control
-@@ -455,7 +451,7 @@ static void __devinit init_hwif_ali15x3 (ide_hwif_t *hwif)
- }
- #else
- #define init_hwif_ali15x3 NULL
--#endif /* !defined(CONFIG_SPARC64) && !defined(CONFIG_PPC) */
-+#endif /* CONFIG_SPARC64 */
- 
- /**
-  *	init_dma_ali15x3	-	set up DMA on ALi15x3
-diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index 7201b17..afe5a43 100644
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -80,34 +80,6 @@ void ide_init_pc(struct ide_atapi_pc *pc)
- EXPORT_SYMBOL_GPL(ide_init_pc);
- 
- /*
-- * Generate a new packet command request in front of the request queue, before
-- * the current request, so that it will be processed immediately, on the next
-- * pass through the driver.
-- */
--static void ide_queue_pc_head(ide_drive_t *drive, struct gendisk *disk,
--			      struct ide_atapi_pc *pc, struct request *rq)
--{
--	blk_rq_init(NULL, rq);
--	rq->cmd_type = REQ_TYPE_SPECIAL;
--	rq->cmd_flags |= REQ_PREEMPT;
--	rq->buffer = (char *)pc;
--	rq->rq_disk = disk;
--
--	if (pc->req_xfer) {
--		rq->data = pc->buf;
--		rq->data_len = pc->req_xfer;
--	}
--
--	memcpy(rq->cmd, pc->c, 12);
--	if (drive->media == ide_tape)
--		rq->cmd[13] = REQ_IDETAPE_PC1;
--
--	drive->hwif->rq = NULL;
--
--	elv_add_request(drive->queue, rq, ELEVATOR_INSERT_FRONT, 0);
--}
--
--/*
-  * Add a special packet command request to the tail of the request queue,
-  * and wait for it to be serviced.
-  */
-@@ -119,19 +91,21 @@ int ide_queue_pc_tail(ide_drive_t *drive, struct gendisk *disk,
- 
- 	rq = blk_get_request(drive->queue, READ, __GFP_WAIT);
- 	rq->cmd_type = REQ_TYPE_SPECIAL;
--	rq->buffer = (char *)pc;
-+	rq->special = (char *)pc;
- 
- 	if (pc->req_xfer) {
--		rq->data = pc->buf;
--		rq->data_len = pc->req_xfer;
-+		error = blk_rq_map_kern(drive->queue, rq, pc->buf, pc->req_xfer,
-+					GFP_NOIO);
-+		if (error)
-+			goto put_req;
- 	}
- 
- 	memcpy(rq->cmd, pc->c, 12);
- 	if (drive->media == ide_tape)
- 		rq->cmd[13] = REQ_IDETAPE_PC1;
- 	error = blk_execute_rq(drive->queue, disk, rq, 0);
-+put_req:
- 	blk_put_request(rq);
--
- 	return error;
- }
- EXPORT_SYMBOL_GPL(ide_queue_pc_tail);
-@@ -191,20 +165,103 @@ void ide_create_request_sense_cmd(ide_drive_t *drive, struct ide_atapi_pc *pc)
- }
- EXPORT_SYMBOL_GPL(ide_create_request_sense_cmd);
- 
-+void ide_prep_sense(ide_drive_t *drive, struct request *rq)
-+{
-+	struct request_sense *sense = &drive->sense_data;
-+	struct request *sense_rq = &drive->sense_rq;
-+	unsigned int cmd_len, sense_len;
-+	int err;
-+
-+	debug_log("%s: enter\n", __func__);
-+
-+	switch (drive->media) {
-+	case ide_floppy:
-+		cmd_len = 255;
-+		sense_len = 18;
-+		break;
-+	case ide_tape:
-+		cmd_len = 20;
-+		sense_len = 20;
-+		break;
-+	default:
-+		cmd_len = 18;
-+		sense_len = 18;
-+	}
-+
-+	BUG_ON(sense_len > sizeof(*sense));
-+
-+	if (blk_sense_request(rq) || drive->sense_rq_armed)
-+		return;
-+
-+	memset(sense, 0, sizeof(*sense));
-+
-+	blk_rq_init(rq->q, sense_rq);
-+
-+	err = blk_rq_map_kern(drive->queue, sense_rq, sense, sense_len,
-+			      GFP_NOIO);
-+	if (unlikely(err)) {
-+		if (printk_ratelimit())
-+			printk(KERN_WARNING "%s: failed to map sense buffer\n",
-+			       drive->name);
-+		return;
-+	}
-+
-+	sense_rq->rq_disk = rq->rq_disk;
-+	sense_rq->cmd[0] = GPCMD_REQUEST_SENSE;
-+	sense_rq->cmd[4] = cmd_len;
-+	sense_rq->cmd_type = REQ_TYPE_SENSE;
-+	sense_rq->cmd_flags |= REQ_PREEMPT;
-+
-+	if (drive->media == ide_tape)
-+		sense_rq->cmd[13] = REQ_IDETAPE_PC1;
-+
-+	drive->sense_rq_armed = true;
-+}
-+EXPORT_SYMBOL_GPL(ide_prep_sense);
-+
-+int ide_queue_sense_rq(ide_drive_t *drive, void *special)
-+{
-+	/* deferred failure from ide_prep_sense() */
-+	if (!drive->sense_rq_armed) {
-+		printk(KERN_WARNING "%s: failed queue sense request\n",
-+		       drive->name);
-+		return -ENOMEM;
-+	}
-+
-+	drive->sense_rq.special = special;
-+	drive->sense_rq_armed = false;
-+
-+	drive->hwif->rq = NULL;
-+
-+	elv_add_request(drive->queue, &drive->sense_rq,
-+			ELEVATOR_INSERT_FRONT, 0);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ide_queue_sense_rq);
-+
- /*
-  * Called when an error was detected during the last packet command.
-- * We queue a request sense packet command in the head of the request list.
-+ * We queue a request sense packet command at the head of the request
-+ * queue.
-  */
--void ide_retry_pc(ide_drive_t *drive, struct gendisk *disk)
-+void ide_retry_pc(ide_drive_t *drive)
- {
--	struct request *rq = &drive->request_sense_rq;
-+	struct request *sense_rq = &drive->sense_rq;
- 	struct ide_atapi_pc *pc = &drive->request_sense_pc;
- 
- 	(void)ide_read_error(drive);
--	ide_create_request_sense_cmd(drive, pc);
-+
-+	/* init pc from sense_rq */
-+	ide_init_pc(pc);
-+	memcpy(pc->c, sense_rq->cmd, 12);
-+	pc->buf = bio_data(sense_rq->bio);	/* pointer to mapped address */
-+	pc->req_xfer = sense_rq->data_len;
-+
- 	if (drive->media == ide_tape)
- 		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
--	ide_queue_pc_head(drive, disk, pc, rq);
-+
-+	if (ide_queue_sense_rq(drive, pc))
-+		ide_complete_rq(drive, -EIO, blk_rq_bytes(drive->hwif->rq));
- }
- EXPORT_SYMBOL_GPL(ide_retry_pc);
- 
-@@ -276,7 +333,6 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 	struct ide_cmd *cmd = &hwif->cmd;
- 	struct request *rq = hwif->rq;
- 	const struct ide_tp_ops *tp_ops = hwif->tp_ops;
--	xfer_func_t *xferfunc;
- 	unsigned int timeout, done;
- 	u16 bcount;
- 	u8 stat, ireason, dsc = 0;
-@@ -303,11 +359,8 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 					drive->name, rq_data_dir(pc->rq)
- 						     ? "write" : "read");
- 			pc->flags |= PC_FLAG_DMA_ERROR;
--		} else {
-+		} else
- 			pc->xferred = pc->req_xfer;
--			if (drive->pc_update_buffers)
--				drive->pc_update_buffers(drive, pc);
--		}
- 		debug_log("%s: DMA finished\n", drive->name);
- 	}
- 
-@@ -343,7 +396,7 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 			debug_log("[cmd %x]: check condition\n", rq->cmd[0]);
- 
- 			/* Retry operation */
--			ide_retry_pc(drive, rq->rq_disk);
-+			ide_retry_pc(drive);
- 
- 			/* queued, but not started */
- 			return ide_stopped;
-@@ -353,6 +406,12 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 		if ((pc->flags & PC_FLAG_WAIT_FOR_DSC) && (stat & ATA_DSC) == 0)
- 			dsc = 1;
- 
-+		/*
-+		 * ->pc_callback() might change rq->data_len for
-+		 * residual count, cache total length.
-+		 */
-+		done = blk_rq_bytes(rq);
-+
- 		/* Command finished - Call the callback function */
- 		uptodate = drive->pc_callback(drive, dsc);
- 
-@@ -361,7 +420,6 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 
- 		if (blk_special_request(rq)) {
- 			rq->errors = 0;
--			done = blk_rq_bytes(rq);
- 			error = 0;
- 		} else {
- 
-@@ -370,11 +428,6 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 					rq->errors = -EIO;
- 			}
- 
--			if (drive->media == ide_tape)
--				done = ide_rq_bytes(rq); /* FIXME */
--			else
--				done = blk_rq_bytes(rq);
--
- 			error = uptodate ? 0 : -EIO;
- 		}
- 
-@@ -407,21 +460,11 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 		return ide_do_reset(drive);
- 	}
- 
--	xferfunc = write ? tp_ops->output_data : tp_ops->input_data;
--
--	if (drive->media == ide_floppy && pc->buf == NULL) {
--		done = min_t(unsigned int, bcount, cmd->nleft);
--		ide_pio_bytes(drive, cmd, write, done);
--	} else if (drive->media == ide_tape && pc->bh) {
--		done = drive->pc_io_buffers(drive, pc, bcount, write);
--	} else {
--		done = min_t(unsigned int, bcount, pc->req_xfer - pc->xferred);
--		xferfunc(drive, NULL, pc->cur_pos, done);
--	}
-+	done = min_t(unsigned int, bcount, cmd->nleft);
-+	ide_pio_bytes(drive, cmd, write, done);
- 
--	/* Update the current position */
-+	/* Update transferred byte count */
- 	pc->xferred += done;
--	pc->cur_pos += done;
- 
- 	bcount -= done;
- 
-@@ -599,7 +642,6 @@ ide_startstop_t ide_issue_pc(ide_drive_t *drive, struct ide_cmd *cmd)
- 
- 		/* We haven't transferred any data yet */
- 		pc->xferred = 0;
--		pc->cur_pos = pc->buf;
- 
- 		valid_tf = IDE_VALID_DEVICE;
- 		bcount = ((drive->media == ide_tape) ?
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index 925eb9e..a75e4ee 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -206,54 +206,25 @@ static void cdrom_analyze_sense_data(ide_drive_t *drive,
- 	ide_cd_log_error(drive->name, failed_command, sense);
- }
- 
--static void cdrom_queue_request_sense(ide_drive_t *drive, void *sense,
--				      struct request *failed_command)
--{
--	struct cdrom_info *info		= drive->driver_data;
--	struct request *rq		= &drive->request_sense_rq;
--
--	ide_debug_log(IDE_DBG_SENSE, "enter");
--
--	if (sense == NULL)
--		sense = &info->sense_data;
--
--	/* stuff the sense request in front of our current request */
--	blk_rq_init(NULL, rq);
--	rq->cmd_type = REQ_TYPE_ATA_PC;
--	rq->rq_disk = info->disk;
--
--	rq->data = sense;
--	rq->cmd[0] = GPCMD_REQUEST_SENSE;
--	rq->cmd[4] = 18;
--	rq->data_len = 18;
--
--	rq->cmd_type = REQ_TYPE_SENSE;
--	rq->cmd_flags |= REQ_PREEMPT;
--
--	/* NOTE! Save the failed command in "rq->buffer" */
--	rq->buffer = (void *) failed_command;
--
--	if (failed_command)
--		ide_debug_log(IDE_DBG_SENSE, "failed_cmd: 0x%x",
--					     failed_command->cmd[0]);
--
--	drive->hwif->rq = NULL;
--
--	elv_add_request(drive->queue, rq, ELEVATOR_INSERT_FRONT, 0);
--}
--
- static void ide_cd_complete_failed_rq(ide_drive_t *drive, struct request *rq)
- {
- 	/*
--	 * For REQ_TYPE_SENSE, "rq->buffer" points to the original
--	 * failed request
-+	 * For REQ_TYPE_SENSE, "rq->special" points to the original
-+	 * failed request.  Also, the sense data should be read
-+	 * directly from rq which might be different from the original
-+	 * sense buffer if it got copied during mapping.
- 	 */
--	struct request *failed = (struct request *)rq->buffer;
--	struct cdrom_info *info = drive->driver_data;
--	void *sense = &info->sense_data;
-+	struct request *failed = (struct request *)rq->special;
-+	void *sense = bio_data(rq->bio);
- 
- 	if (failed) {
- 		if (failed->sense) {
-+			/*
-+			 * Sense is always read into drive->sense_data.
-+			 * Copy back if the failed request has its
-+			 * sense pointer set.
-+			 */
-+			memcpy(failed->sense, sense, 18);
- 			sense = failed->sense;
- 			failed->sense_len = rq->sense_len;
- 		}
-@@ -428,7 +399,7 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
- 
- 	/* if we got a CHECK_CONDITION status, queue a request sense command */
- 	if (stat & ATA_ERR)
--		cdrom_queue_request_sense(drive, NULL, NULL);
-+		return ide_queue_sense_rq(drive, NULL) ? 2 : 1;
- 	return 1;
- 
- end_request:
-@@ -442,8 +413,7 @@ end_request:
- 
- 		hwif->rq = NULL;
- 
--		cdrom_queue_request_sense(drive, rq->sense, rq);
--		return 1;
-+		return ide_queue_sense_rq(drive, rq) ? 2 : 1;
- 	} else
- 		return 2;
- }
-@@ -503,14 +473,8 @@ static void ide_cd_request_sense_fixup(ide_drive_t *drive, struct ide_cmd *cmd)
- 	 * and some drives don't send them.  Sigh.
- 	 */
- 	if (rq->cmd[0] == GPCMD_REQUEST_SENSE &&
--	    cmd->nleft > 0 && cmd->nleft <= 5) {
--		unsigned int ofs = cmd->nbytes - cmd->nleft;
--
--		while (cmd->nleft > 0) {
--			*((u8 *)rq->data + ofs++) = 0;
--			cmd->nleft--;
--		}
--	}
-+	    cmd->nleft > 0 && cmd->nleft <= 5)
-+		cmd->nleft = 0;
- }
- 
- int ide_cd_queue_pc(ide_drive_t *drive, const unsigned char *cmd,
-@@ -543,8 +507,12 @@ int ide_cd_queue_pc(ide_drive_t *drive, const unsigned char *cmd,
- 		rq->cmd_flags |= cmd_flags;
- 		rq->timeout = timeout;
- 		if (buffer) {
--			rq->data = buffer;
--			rq->data_len = *bufflen;
-+			error = blk_rq_map_kern(drive->queue, rq, buffer,
-+						*bufflen, GFP_NOIO);
-+			if (error) {
-+				blk_put_request(rq);
-+				return error;
-+			}
- 		}
- 
- 		error = blk_execute_rq(drive->queue, info->disk, rq, 0);
-@@ -838,15 +806,10 @@ static void cdrom_do_block_pc(ide_drive_t *drive, struct request *rq)
- 	drive->dma = 0;
- 
- 	/* sg request */
--	if (rq->bio || ((rq->cmd_type == REQ_TYPE_ATA_PC) && rq->data_len)) {
-+	if (rq->bio) {
- 		struct request_queue *q = drive->queue;
-+		char *buf = bio_data(rq->bio);
- 		unsigned int alignment;
--		char *buf;
--
--		if (rq->bio)
--			buf = bio_data(rq->bio);
--		else
--			buf = rq->data;
- 
- 		drive->dma = !!(drive->dev_flags & IDE_DFLAG_USING_DMA);
- 
-@@ -896,6 +859,9 @@ static ide_startstop_t ide_cd_do_request(ide_drive_t *drive, struct request *rq,
- 		goto out_end;
- 	}
- 
-+	/* prepare sense request for this command */
-+	ide_prep_sense(drive, rq);
-+
- 	memset(&cmd, 0, sizeof(cmd));
- 
- 	if (rq_data_dir(rq))
-diff --git a/drivers/ide/ide-cd.h b/drivers/ide/ide-cd.h
-index 1d97101..93a3cf1 100644
---- a/drivers/ide/ide-cd.h
-+++ b/drivers/ide/ide-cd.h
-@@ -87,10 +87,6 @@ struct cdrom_info {
- 
- 	struct atapi_toc *toc;
- 
--	/* The result of the last successful request sense command
--	   on this device. */
--	struct request_sense sense_data;
--
- 	u8 max_speed;		/* Max speed of the drive. */
- 	u8 current_speed;	/* Current speed of the drive. */
- 
-diff --git a/drivers/ide/ide-disk.c b/drivers/ide/ide-disk.c
-index a9fbe2c..c243880 100644
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -411,7 +411,6 @@ static void idedisk_prepare_flush(struct request_queue *q, struct request *rq)
- 	cmd->protocol = ATA_PROT_NODATA;
- 
- 	rq->cmd_type = REQ_TYPE_ATA_TASKFILE;
--	rq->cmd_flags |= REQ_SOFTBARRIER;
- 	rq->special = cmd;
- }
- 
-diff --git a/drivers/ide/ide-dma.c b/drivers/ide/ide-dma.c
-index a0b8cab..d9123ec 100644
---- a/drivers/ide/ide-dma.c
-+++ b/drivers/ide/ide-dma.c
-@@ -510,23 +510,11 @@ ide_startstop_t ide_dma_timeout_retry(ide_drive_t *drive, int error)
- 	/*
- 	 * un-busy drive etc and make sure request is sane
- 	 */
--
- 	rq = hwif->rq;
--	if (!rq)
--		goto out;
--
--	hwif->rq = NULL;
--
--	rq->errors = 0;
--
--	if (!rq->bio)
--		goto out;
--
--	rq->sector = rq->bio->bi_sector;
--	rq->current_nr_sectors = bio_iovec(rq->bio)->bv_len >> 9;
--	rq->hard_cur_sectors = rq->current_nr_sectors;
--	rq->buffer = bio_data(rq->bio);
--out:
-+	if (rq) {
-+		hwif->rq = NULL;
-+		rq->errors = 0;
-+	}
- 	return ret;
- }
- 
-diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
-index 2b4868d..537b7c5 100644
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -134,13 +134,17 @@ static ide_startstop_t ide_floppy_issue_pc(ide_drive_t *drive,
- 	drive->pc = pc;
- 
- 	if (pc->retries > IDEFLOPPY_MAX_PC_RETRIES) {
-+		unsigned int done = blk_rq_bytes(drive->hwif->rq);
-+
- 		if (!(pc->flags & PC_FLAG_SUPPRESS_ERROR))
- 			ide_floppy_report_error(floppy, pc);
-+
- 		/* Giving up */
- 		pc->error = IDE_DRV_ERROR_GENERAL;
- 
- 		drive->failed_pc = NULL;
- 		drive->pc_callback(drive, 0);
-+		ide_complete_rq(drive, -EIO, done);
- 		return ide_stopped;
- 	}
- 
-@@ -216,15 +220,13 @@ static void idefloppy_blockpc_cmd(struct ide_disk_obj *floppy,
- 	ide_init_pc(pc);
- 	memcpy(pc->c, rq->cmd, sizeof(pc->c));
- 	pc->rq = rq;
--	if (rq->data_len && rq_data_dir(rq) == WRITE)
--		pc->flags |= PC_FLAG_WRITING;
--	pc->buf = rq->data;
--	if (rq->bio)
-+	if (rq->data_len) {
- 		pc->flags |= PC_FLAG_DMA_OK;
--	/*
--	 * possibly problematic, doesn't look like ide-floppy correctly
--	 * handled scattered requests if dma fails...
--	 */
-+		if (rq_data_dir(rq) == WRITE)
-+			pc->flags |= PC_FLAG_WRITING;
-+	}
-+	/* pio will be performed by ide_pio_bytes() which handles sg fine */
-+	pc->buf = NULL;
- 	pc->req_xfer = pc->buf_size = rq->data_len;
- }
- 
-@@ -265,8 +267,8 @@ static ide_startstop_t ide_floppy_do_request(ide_drive_t *drive,
- 		}
- 		pc = &floppy->queued_pc;
- 		idefloppy_create_rw_cmd(drive, pc, rq, (unsigned long)block);
--	} else if (blk_special_request(rq)) {
--		pc = (struct ide_atapi_pc *) rq->buffer;
-+	} else if (blk_special_request(rq) || blk_sense_request(rq)) {
-+		pc = (struct ide_atapi_pc *)rq->special;
- 	} else if (blk_pc_request(rq)) {
- 		pc = &floppy->queued_pc;
- 		idefloppy_blockpc_cmd(floppy, pc, rq);
-@@ -275,6 +277,8 @@ static ide_startstop_t ide_floppy_do_request(ide_drive_t *drive,
- 		goto out_end;
- 	}
- 
-+	ide_prep_sense(drive, rq);
-+
- 	memset(&cmd, 0, sizeof(cmd));
- 
- 	if (rq_data_dir(rq))
-diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index 6415a2e..41d8040 100644
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -248,14 +248,7 @@ void ide_map_sg(ide_drive_t *drive, struct ide_cmd *cmd)
- 	struct scatterlist *sg = hwif->sg_table;
- 	struct request *rq = cmd->rq;
- 
--	if (rq->cmd_type == REQ_TYPE_ATA_TASKFILE) {
--		sg_init_one(sg, rq->buffer, rq->nr_sectors * SECTOR_SIZE);
--		cmd->sg_nents = 1;
--	} else if (!rq->bio) {
--		sg_init_one(sg, rq->data, rq->data_len);
--		cmd->sg_nents = 1;
--	} else
--		cmd->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
-+	cmd->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
- }
- EXPORT_SYMBOL_GPL(ide_map_sg);
- 
-@@ -371,7 +364,7 @@ static ide_startstop_t start_request (ide_drive_t *drive, struct request *rq)
- 		if (rq->cmd_type == REQ_TYPE_ATA_TASKFILE)
- 			return execute_drive_cmd(drive, rq);
- 		else if (blk_pm_request(rq)) {
--			struct request_pm_state *pm = rq->data;
-+			struct request_pm_state *pm = rq->special;
- #ifdef DEBUG_PM
- 			printk("%s: start_power_step(step: %d)\n",
- 				drive->name, pm->pm_step);
-@@ -484,6 +477,9 @@ void do_ide_request(struct request_queue *q)
- 
- 	spin_unlock_irq(q->queue_lock);
- 
-+	/* HLD do_request() callback might sleep, make sure it's okay */
-+	might_sleep();
-+
- 	if (ide_lock_host(host, hwif))
- 		goto plug_device_2;
- 
-diff --git a/drivers/ide/ide-ioctls.c b/drivers/ide/ide-ioctls.c
-index c1c25eb..5991b23 100644
---- a/drivers/ide/ide-ioctls.c
-+++ b/drivers/ide/ide-ioctls.c
-@@ -231,7 +231,6 @@ static int generic_drive_reset(ide_drive_t *drive)
- 	rq->cmd_type = REQ_TYPE_SPECIAL;
- 	rq->cmd_len = 1;
- 	rq->cmd[0] = REQ_DRIVE_RESET;
--	rq->cmd_flags |= REQ_SOFTBARRIER;
- 	if (blk_execute_rq(drive->queue, NULL, rq, 1))
- 		ret = rq->errors;
- 	blk_put_request(rq);
-diff --git a/drivers/ide/ide-park.c b/drivers/ide/ide-park.c
-index 310d03f..a914023 100644
---- a/drivers/ide/ide-park.c
-+++ b/drivers/ide/ide-park.c
-@@ -24,11 +24,8 @@ static void issue_park_cmd(ide_drive_t *drive, unsigned long timeout)
- 			start_queue = 1;
- 		spin_unlock_irq(&hwif->lock);
- 
--		if (start_queue) {
--			spin_lock_irq(q->queue_lock);
--			blk_start_queueing(q);
--			spin_unlock_irq(q->queue_lock);
--		}
-+		if (start_queue)
-+			blk_run_queue(q);
- 		return;
- 	}
- 	spin_unlock_irq(&hwif->lock);
-diff --git a/drivers/ide/ide-pm.c b/drivers/ide/ide-pm.c
-index 0d8a151..ba1488b 100644
---- a/drivers/ide/ide-pm.c
-+++ b/drivers/ide/ide-pm.c
-@@ -7,7 +7,6 @@ int generic_ide_suspend(struct device *dev, pm_message_t mesg)
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct request *rq;
- 	struct request_pm_state rqpm;
--	struct ide_cmd cmd;
- 	int ret;
- 
- 	/* call ACPI _GTM only once */
-@@ -15,11 +14,9 @@ int generic_ide_suspend(struct device *dev, pm_message_t mesg)
- 		ide_acpi_get_timing(hwif);
- 
- 	memset(&rqpm, 0, sizeof(rqpm));
--	memset(&cmd, 0, sizeof(cmd));
- 	rq = blk_get_request(drive->queue, READ, __GFP_WAIT);
- 	rq->cmd_type = REQ_TYPE_PM_SUSPEND;
--	rq->special = &cmd;
--	rq->data = &rqpm;
-+	rq->special = &rqpm;
- 	rqpm.pm_step = IDE_PM_START_SUSPEND;
- 	if (mesg.event == PM_EVENT_PRETHAW)
- 		mesg.event = PM_EVENT_FREEZE;
-@@ -41,7 +38,6 @@ int generic_ide_resume(struct device *dev)
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct request *rq;
- 	struct request_pm_state rqpm;
--	struct ide_cmd cmd;
- 	int err;
- 
- 	/* call ACPI _PS0 / _STM only once */
-@@ -53,12 +49,10 @@ int generic_ide_resume(struct device *dev)
- 	ide_acpi_exec_tfs(drive);
- 
- 	memset(&rqpm, 0, sizeof(rqpm));
--	memset(&cmd, 0, sizeof(cmd));
- 	rq = blk_get_request(drive->queue, READ, __GFP_WAIT);
- 	rq->cmd_type = REQ_TYPE_PM_RESUME;
- 	rq->cmd_flags |= REQ_PREEMPT;
--	rq->special = &cmd;
--	rq->data = &rqpm;
-+	rq->special = &rqpm;
- 	rqpm.pm_step = IDE_PM_START_RESUME;
- 	rqpm.pm_state = PM_EVENT_ON;
- 
-@@ -77,7 +71,7 @@ int generic_ide_resume(struct device *dev)
- 
- void ide_complete_power_step(ide_drive_t *drive, struct request *rq)
- {
--	struct request_pm_state *pm = rq->data;
-+	struct request_pm_state *pm = rq->special;
- 
- #ifdef DEBUG_PM
- 	printk(KERN_INFO "%s: complete_power_step(step: %d)\n",
-@@ -107,10 +101,8 @@ void ide_complete_power_step(ide_drive_t *drive, struct request *rq)
- 
- ide_startstop_t ide_start_power_step(ide_drive_t *drive, struct request *rq)
- {
--	struct request_pm_state *pm = rq->data;
--	struct ide_cmd *cmd = rq->special;
--
--	memset(cmd, 0, sizeof(*cmd));
-+	struct request_pm_state *pm = rq->special;
-+	struct ide_cmd cmd = { };
- 
- 	switch (pm->pm_step) {
- 	case IDE_PM_FLUSH_CACHE:	/* Suspend step 1 (flush cache) */
-@@ -123,12 +115,12 @@ ide_startstop_t ide_start_power_step(ide_drive_t *drive, struct request *rq)
- 			return ide_stopped;
- 		}
- 		if (ata_id_flush_ext_enabled(drive->id))
--			cmd->tf.command = ATA_CMD_FLUSH_EXT;
-+			cmd.tf.command = ATA_CMD_FLUSH_EXT;
- 		else
--			cmd->tf.command = ATA_CMD_FLUSH;
-+			cmd.tf.command = ATA_CMD_FLUSH;
- 		goto out_do_tf;
- 	case IDE_PM_STANDBY:		/* Suspend step 2 (standby) */
--		cmd->tf.command = ATA_CMD_STANDBYNOW1;
-+		cmd.tf.command = ATA_CMD_STANDBYNOW1;
- 		goto out_do_tf;
- 	case IDE_PM_RESTORE_PIO:	/* Resume step 1 (restore PIO) */
- 		ide_set_max_pio(drive);
-@@ -141,7 +133,7 @@ ide_startstop_t ide_start_power_step(ide_drive_t *drive, struct request *rq)
- 			ide_complete_power_step(drive, rq);
- 		return ide_stopped;
- 	case IDE_PM_IDLE:		/* Resume step 2 (idle) */
--		cmd->tf.command = ATA_CMD_IDLEIMMEDIATE;
-+		cmd.tf.command = ATA_CMD_IDLEIMMEDIATE;
- 		goto out_do_tf;
- 	case IDE_PM_RESTORE_DMA:	/* Resume step 3 (restore DMA) */
- 		/*
-@@ -163,11 +155,11 @@ ide_startstop_t ide_start_power_step(ide_drive_t *drive, struct request *rq)
- 	return ide_stopped;
- 
- out_do_tf:
--	cmd->valid.out.tf = IDE_VALID_OUT_TF | IDE_VALID_DEVICE;
--	cmd->valid.in.tf  = IDE_VALID_IN_TF  | IDE_VALID_DEVICE;
--	cmd->protocol = ATA_PROT_NODATA;
-+	cmd.valid.out.tf = IDE_VALID_OUT_TF | IDE_VALID_DEVICE;
-+	cmd.valid.in.tf  = IDE_VALID_IN_TF  | IDE_VALID_DEVICE;
-+	cmd.protocol = ATA_PROT_NODATA;
- 
--	return do_rw_taskfile(drive, cmd);
-+	return do_rw_taskfile(drive, &cmd);
- }
- 
- /**
-@@ -181,7 +173,7 @@ out_do_tf:
- void ide_complete_pm_rq(ide_drive_t *drive, struct request *rq)
- {
- 	struct request_queue *q = drive->queue;
--	struct request_pm_state *pm = rq->data;
-+	struct request_pm_state *pm = rq->special;
- 	unsigned long flags;
- 
- 	ide_complete_power_step(drive, rq);
-@@ -207,7 +199,7 @@ void ide_complete_pm_rq(ide_drive_t *drive, struct request *rq)
- 
- void ide_check_pm_state(ide_drive_t *drive, struct request *rq)
- {
--	struct request_pm_state *pm = rq->data;
-+	struct request_pm_state *pm = rq->special;
- 
- 	if (blk_pm_suspend_request(rq) &&
- 	    pm->pm_step == IDE_PM_START_SUSPEND)
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index 3a53e08..203bbea 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -131,13 +131,6 @@ enum {
- 	IDETAPE_DIR_WRITE = (1 << 2),
- };
- 
--struct idetape_bh {
--	u32 b_size;
--	atomic_t b_count;
--	struct idetape_bh *b_reqnext;
--	char *b_data;
--};
--
- /* Tape door status */
- #define DOOR_UNLOCKED			0
- #define DOOR_LOCKED			1
-@@ -219,18 +212,12 @@ typedef struct ide_tape_obj {
- 
- 	/* Data buffer size chosen based on the tape's recommendation */
- 	int buffer_size;
--	/* merge buffer */
--	struct idetape_bh *merge_bh;
--	/* size of the merge buffer */
--	int merge_bh_size;
--	/* pointer to current buffer head within the merge buffer */
--	struct idetape_bh *bh;
--	char *b_data;
--	int b_count;
--
--	int pages_per_buffer;
--	/* Wasted space in each stage */
--	int excess_bh_size;
-+	/* Staging buffer of buffer_size bytes */
-+	void *buf;
-+	/* The read/write cursor */
-+	void *cur;
-+	/* The number of valid bytes in buf */
-+	size_t valid;
- 
- 	/* Measures average tape speed */
- 	unsigned long avg_time;
-@@ -297,84 +284,6 @@ static struct ide_tape_obj *ide_tape_chrdev_get(unsigned int i)
- 	return tape;
- }
- 
--static int idetape_input_buffers(ide_drive_t *drive, struct ide_atapi_pc *pc,
--				  unsigned int bcount)
--{
--	struct idetape_bh *bh = pc->bh;
--	int count;
--
--	while (bcount) {
--		if (bh == NULL)
--			break;
--		count = min(
--			(unsigned int)(bh->b_size - atomic_read(&bh->b_count)),
--			bcount);
--		drive->hwif->tp_ops->input_data(drive, NULL, bh->b_data +
--					atomic_read(&bh->b_count), count);
--		bcount -= count;
--		atomic_add(count, &bh->b_count);
--		if (atomic_read(&bh->b_count) == bh->b_size) {
--			bh = bh->b_reqnext;
--			if (bh)
--				atomic_set(&bh->b_count, 0);
--		}
--	}
--
--	pc->bh = bh;
--
--	return bcount;
--}
--
--static int idetape_output_buffers(ide_drive_t *drive, struct ide_atapi_pc *pc,
--				   unsigned int bcount)
--{
--	struct idetape_bh *bh = pc->bh;
--	int count;
--
--	while (bcount) {
--		if (bh == NULL)
--			break;
--		count = min((unsigned int)pc->b_count, (unsigned int)bcount);
--		drive->hwif->tp_ops->output_data(drive, NULL, pc->b_data, count);
--		bcount -= count;
--		pc->b_data += count;
--		pc->b_count -= count;
--		if (!pc->b_count) {
--			bh = bh->b_reqnext;
--			pc->bh = bh;
--			if (bh) {
--				pc->b_data = bh->b_data;
--				pc->b_count = atomic_read(&bh->b_count);
--			}
--		}
--	}
--
--	return bcount;
--}
--
--static void idetape_update_buffers(ide_drive_t *drive, struct ide_atapi_pc *pc)
--{
--	struct idetape_bh *bh = pc->bh;
--	int count;
--	unsigned int bcount = pc->xferred;
--
--	if (pc->flags & PC_FLAG_WRITING)
--		return;
--	while (bcount) {
--		if (bh == NULL) {
--			printk(KERN_ERR "ide-tape: bh == NULL in %s\n",
--					__func__);
--			return;
--		}
--		count = min((unsigned int)bh->b_size, (unsigned int)bcount);
--		atomic_set(&bh->b_count, count);
--		if (atomic_read(&bh->b_count) == bh->b_size)
--			bh = bh->b_reqnext;
--		bcount -= count;
--	}
--	pc->bh = bh;
--}
--
- /*
-  * called on each failed packet command retry to analyze the request sense. We
-  * currently do not utilize this information.
-@@ -392,12 +301,10 @@ static void idetape_analyze_error(ide_drive_t *drive, u8 *sense)
- 		 pc->c[0], tape->sense_key, tape->asc, tape->ascq);
- 
- 	/* Correct pc->xferred by asking the tape.	 */
--	if (pc->flags & PC_FLAG_DMA_ERROR) {
-+	if (pc->flags & PC_FLAG_DMA_ERROR)
- 		pc->xferred = pc->req_xfer -
- 			tape->blk_size *
- 			get_unaligned_be32(&sense[3]);
--		idetape_update_buffers(drive, pc);
--	}
- 
- 	/*
- 	 * If error was the result of a zero-length read or write command,
-@@ -436,29 +343,6 @@ static void idetape_analyze_error(ide_drive_t *drive, u8 *sense)
- 	}
- }
- 
--/* Free data buffers completely. */
--static void ide_tape_kfree_buffer(idetape_tape_t *tape)
--{
--	struct idetape_bh *prev_bh, *bh = tape->merge_bh;
--
--	while (bh) {
--		u32 size = bh->b_size;
--
--		while (size) {
--			unsigned int order = fls(size >> PAGE_SHIFT)-1;
--
--			if (bh->b_data)
--				free_pages((unsigned long)bh->b_data, order);
--
--			size &= (order-1);
--			bh->b_data += (1 << order) * PAGE_SIZE;
--		}
--		prev_bh = bh;
--		bh = bh->b_reqnext;
--		kfree(prev_bh);
--	}
--}
--
- static void ide_tape_handle_dsc(ide_drive_t *);
- 
- static int ide_tape_callback(ide_drive_t *drive, int dsc)
-@@ -496,7 +380,7 @@ static int ide_tape_callback(ide_drive_t *drive, int dsc)
- 		}
- 
- 		tape->first_frame += blocks;
--		rq->current_nr_sectors -= blocks;
-+		rq->data_len -= blocks * tape->blk_size;
- 
- 		if (pc->error) {
- 			uptodate = 0;
-@@ -558,19 +442,6 @@ static void ide_tape_handle_dsc(ide_drive_t *drive)
- 	idetape_postpone_request(drive);
- }
- 
--static int ide_tape_io_buffers(ide_drive_t *drive, struct ide_atapi_pc *pc,
--				unsigned int bcount, int write)
--{
--	unsigned int bleft;
--
--	if (write)
--		bleft = idetape_output_buffers(drive, pc, bcount);
--	else
--		bleft = idetape_input_buffers(drive, pc, bcount);
--
--	return bcount - bleft;
--}
--
- /*
-  * Packet Command Interface
-  *
-@@ -622,6 +493,8 @@ static ide_startstop_t ide_tape_issue_pc(ide_drive_t *drive,
- 
- 	if (pc->retries > IDETAPE_MAX_PC_RETRIES ||
- 		(pc->flags & PC_FLAG_ABORT)) {
-+		unsigned int done = blk_rq_bytes(drive->hwif->rq);
-+
- 		/*
- 		 * We will "abort" retrying a packet command in case legitimate
- 		 * error code was received (crossing a filemark, or end of the
-@@ -641,8 +514,10 @@ static ide_startstop_t ide_tape_issue_pc(ide_drive_t *drive,
- 			/* Giving up */
- 			pc->error = IDE_DRV_ERROR_GENERAL;
- 		}
-+
- 		drive->failed_pc = NULL;
- 		drive->pc_callback(drive, 0);
-+		ide_complete_rq(drive, -EIO, done);
- 		return ide_stopped;
- 	}
- 	debug_log(DBG_SENSE, "Retry #%d, cmd = %02X\n", pc->retries, pc->c[0]);
-@@ -695,7 +570,7 @@ static ide_startstop_t idetape_media_access_finished(ide_drive_t *drive)
- 				printk(KERN_ERR "ide-tape: %s: I/O error, ",
- 						tape->name);
- 			/* Retry operation */
--			ide_retry_pc(drive, tape->disk);
-+			ide_retry_pc(drive);
- 			return ide_stopped;
- 		}
- 		pc->error = 0;
-@@ -711,27 +586,22 @@ static void ide_tape_create_rw_cmd(idetape_tape_t *tape,
- 				   struct ide_atapi_pc *pc, struct request *rq,
- 				   u8 opcode)
- {
--	struct idetape_bh *bh = (struct idetape_bh *)rq->special;
--	unsigned int length = rq->current_nr_sectors;
-+	unsigned int length = rq->nr_sectors;
- 
- 	ide_init_pc(pc);
- 	put_unaligned(cpu_to_be32(length), (unsigned int *) &pc->c[1]);
- 	pc->c[1] = 1;
--	pc->bh = bh;
- 	pc->buf = NULL;
- 	pc->buf_size = length * tape->blk_size;
- 	pc->req_xfer = pc->buf_size;
- 	if (pc->req_xfer == tape->buffer_size)
- 		pc->flags |= PC_FLAG_DMA_OK;
- 
--	if (opcode == READ_6) {
-+	if (opcode == READ_6)
- 		pc->c[0] = READ_6;
--		atomic_set(&bh->b_count, 0);
--	} else if (opcode == WRITE_6) {
-+	else if (opcode == WRITE_6) {
- 		pc->c[0] = WRITE_6;
- 		pc->flags |= PC_FLAG_WRITING;
--		pc->b_data = bh->b_data;
--		pc->b_count = atomic_read(&bh->b_count);
- 	}
- 
- 	memcpy(rq->cmd, pc->c, 12);
-@@ -747,12 +617,10 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
- 	struct ide_cmd cmd;
- 	u8 stat;
- 
--	debug_log(DBG_SENSE, "sector: %llu, nr_sectors: %lu,"
--			" current_nr_sectors: %u\n",
--			(unsigned long long)rq->sector, rq->nr_sectors,
--			rq->current_nr_sectors);
-+	debug_log(DBG_SENSE, "sector: %llu, nr_sectors: %lu\n",
-+		  (unsigned long long)rq->sector, rq->nr_sectors);
- 
--	if (!blk_special_request(rq)) {
-+	if (!(blk_special_request(rq) || blk_sense_request(rq))) {
- 		/* We do not support buffer cache originated requests. */
- 		printk(KERN_NOTICE "ide-tape: %s: Unsupported request in "
- 			"request queue (%d)\n", drive->name, rq->cmd_type);
-@@ -828,7 +696,7 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
- 		goto out;
- 	}
- 	if (rq->cmd[13] & REQ_IDETAPE_PC1) {
--		pc = (struct ide_atapi_pc *) rq->buffer;
-+		pc = (struct ide_atapi_pc *)rq->special;
- 		rq->cmd[13] &= ~(REQ_IDETAPE_PC1);
- 		rq->cmd[13] |= REQ_IDETAPE_PC2;
- 		goto out;
-@@ -840,6 +708,9 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
- 	BUG();
- 
- out:
-+	/* prepare sense request for this command */
-+	ide_prep_sense(drive, rq);
-+
- 	memset(&cmd, 0, sizeof(cmd));
- 
- 	if (rq_data_dir(rq))
-@@ -847,167 +718,10 @@ out:
- 
- 	cmd.rq = rq;
- 
--	return ide_tape_issue_pc(drive, &cmd, pc);
--}
--
--/*
-- * The function below uses __get_free_pages to allocate a data buffer of size
-- * tape->buffer_size (or a bit more). We attempt to combine sequential pages as
-- * much as possible.
-- *
-- * It returns a pointer to the newly allocated buffer, or NULL in case of
-- * failure.
-- */
--static struct idetape_bh *ide_tape_kmalloc_buffer(idetape_tape_t *tape,
--						  int full, int clear)
--{
--	struct idetape_bh *prev_bh, *bh, *merge_bh;
--	int pages = tape->pages_per_buffer;
--	unsigned int order, b_allocd;
--	char *b_data = NULL;
--
--	merge_bh = kmalloc(sizeof(struct idetape_bh), GFP_KERNEL);
--	bh = merge_bh;
--	if (bh == NULL)
--		goto abort;
--
--	order = fls(pages) - 1;
--	bh->b_data = (char *) __get_free_pages(GFP_KERNEL, order);
--	if (!bh->b_data)
--		goto abort;
--	b_allocd = (1 << order) * PAGE_SIZE;
--	pages &= (order-1);
--
--	if (clear)
--		memset(bh->b_data, 0, b_allocd);
--	bh->b_reqnext = NULL;
--	bh->b_size = b_allocd;
--	atomic_set(&bh->b_count, full ? bh->b_size : 0);
--
--	while (pages) {
--		order = fls(pages) - 1;
--		b_data = (char *) __get_free_pages(GFP_KERNEL, order);
--		if (!b_data)
--			goto abort;
--		b_allocd = (1 << order) * PAGE_SIZE;
--
--		if (clear)
--			memset(b_data, 0, b_allocd);
--
--		/* newly allocated page frames below buffer header or ...*/
--		if (bh->b_data == b_data + b_allocd) {
--			bh->b_size += b_allocd;
--			bh->b_data -= b_allocd;
--			if (full)
--				atomic_add(b_allocd, &bh->b_count);
--			continue;
--		}
--		/* they are above the header */
--		if (b_data == bh->b_data + bh->b_size) {
--			bh->b_size += b_allocd;
--			if (full)
--				atomic_add(b_allocd, &bh->b_count);
--			continue;
--		}
--		prev_bh = bh;
--		bh = kmalloc(sizeof(struct idetape_bh), GFP_KERNEL);
--		if (!bh) {
--			free_pages((unsigned long) b_data, order);
--			goto abort;
--		}
--		bh->b_reqnext = NULL;
--		bh->b_data = b_data;
--		bh->b_size = b_allocd;
--		atomic_set(&bh->b_count, full ? bh->b_size : 0);
--		prev_bh->b_reqnext = bh;
--
--		pages &= (order-1);
--	}
--
--	bh->b_size -= tape->excess_bh_size;
--	if (full)
--		atomic_sub(tape->excess_bh_size, &bh->b_count);
--	return merge_bh;
--abort:
--	ide_tape_kfree_buffer(tape);
--	return NULL;
--}
-+	ide_init_sg_cmd(&cmd, pc->req_xfer);
-+	ide_map_sg(drive, &cmd);
- 
--static int idetape_copy_stage_from_user(idetape_tape_t *tape,
--					const char __user *buf, int n)
--{
--	struct idetape_bh *bh = tape->bh;
--	int count;
--	int ret = 0;
--
--	while (n) {
--		if (bh == NULL) {
--			printk(KERN_ERR "ide-tape: bh == NULL in %s\n",
--					__func__);
--			return 1;
--		}
--		count = min((unsigned int)
--				(bh->b_size - atomic_read(&bh->b_count)),
--				(unsigned int)n);
--		if (copy_from_user(bh->b_data + atomic_read(&bh->b_count), buf,
--				count))
--			ret = 1;
--		n -= count;
--		atomic_add(count, &bh->b_count);
--		buf += count;
--		if (atomic_read(&bh->b_count) == bh->b_size) {
--			bh = bh->b_reqnext;
--			if (bh)
--				atomic_set(&bh->b_count, 0);
--		}
--	}
--	tape->bh = bh;
--	return ret;
--}
--
--static int idetape_copy_stage_to_user(idetape_tape_t *tape, char __user *buf,
--				      int n)
--{
--	struct idetape_bh *bh = tape->bh;
--	int count;
--	int ret = 0;
--
--	while (n) {
--		if (bh == NULL) {
--			printk(KERN_ERR "ide-tape: bh == NULL in %s\n",
--					__func__);
--			return 1;
--		}
--		count = min(tape->b_count, n);
--		if  (copy_to_user(buf, tape->b_data, count))
--			ret = 1;
--		n -= count;
--		tape->b_data += count;
--		tape->b_count -= count;
--		buf += count;
--		if (!tape->b_count) {
--			bh = bh->b_reqnext;
--			tape->bh = bh;
--			if (bh) {
--				tape->b_data = bh->b_data;
--				tape->b_count = atomic_read(&bh->b_count);
--			}
--		}
--	}
--	return ret;
--}
--
--static void idetape_init_merge_buffer(idetape_tape_t *tape)
--{
--	struct idetape_bh *bh = tape->merge_bh;
--	tape->bh = tape->merge_bh;
--
--	if (tape->chrdev_dir == IDETAPE_DIR_WRITE)
--		atomic_set(&bh->b_count, 0);
--	else {
--		tape->b_data = bh->b_data;
--		tape->b_count = atomic_read(&bh->b_count);
--	}
-+	return ide_tape_issue_pc(drive, &cmd, pc);
- }
- 
- /*
-@@ -1107,10 +821,10 @@ static void __ide_tape_discard_merge_buffer(ide_drive_t *drive)
- 		return;
- 
- 	clear_bit(IDE_AFLAG_FILEMARK, &drive->atapi_flags);
--	tape->merge_bh_size = 0;
--	if (tape->merge_bh != NULL) {
--		ide_tape_kfree_buffer(tape);
--		tape->merge_bh = NULL;
-+	tape->valid = 0;
-+	if (tape->buf != NULL) {
-+		kfree(tape->buf);
-+		tape->buf = NULL;
- 	}
- 
- 	tape->chrdev_dir = IDETAPE_DIR_NONE;
-@@ -1164,36 +878,44 @@ static void ide_tape_discard_merge_buffer(ide_drive_t *drive,
-  * Generate a read/write request for the block device interface and wait for it
-  * to be serviced.
-  */
--static int idetape_queue_rw_tail(ide_drive_t *drive, int cmd, int blocks,
--				 struct idetape_bh *bh)
-+static int idetape_queue_rw_tail(ide_drive_t *drive, int cmd, int size)
- {
- 	idetape_tape_t *tape = drive->driver_data;
- 	struct request *rq;
--	int ret, errors;
-+	int ret;
- 
- 	debug_log(DBG_SENSE, "%s: cmd=%d\n", __func__, cmd);
-+	BUG_ON(cmd != REQ_IDETAPE_READ && cmd != REQ_IDETAPE_WRITE);
-+	BUG_ON(size < 0 || size % tape->blk_size);
- 
- 	rq = blk_get_request(drive->queue, READ, __GFP_WAIT);
- 	rq->cmd_type = REQ_TYPE_SPECIAL;
- 	rq->cmd[13] = cmd;
- 	rq->rq_disk = tape->disk;
--	rq->special = (void *)bh;
- 	rq->sector = tape->first_frame;
--	rq->nr_sectors = blocks;
--	rq->current_nr_sectors = blocks;
--	blk_execute_rq(drive->queue, tape->disk, rq, 0);
- 
--	errors = rq->errors;
--	ret = tape->blk_size * (blocks - rq->current_nr_sectors);
--	blk_put_request(rq);
-+	if (size) {
-+		ret = blk_rq_map_kern(drive->queue, rq, tape->buf, size,
-+				      __GFP_WAIT);
-+		if (ret)
-+			goto out_put;
-+	}
- 
--	if ((cmd & (REQ_IDETAPE_READ | REQ_IDETAPE_WRITE)) == 0)
--		return 0;
-+	blk_execute_rq(drive->queue, tape->disk, rq, 0);
- 
--	if (tape->merge_bh)
--		idetape_init_merge_buffer(tape);
--	if (errors == IDE_DRV_ERROR_GENERAL)
--		return -EIO;
-+	/* calculate the number of transferred bytes and update buffer state */
-+	size -= rq->data_len;
-+	tape->cur = tape->buf;
-+	if (cmd == REQ_IDETAPE_READ)
-+		tape->valid = size;
-+	else
-+		tape->valid = 0;
-+
-+	ret = size;
-+	if (rq->errors == IDE_DRV_ERROR_GENERAL)
-+		ret = -EIO;
-+out_put:
-+	blk_put_request(rq);
- 	return ret;
- }
- 
-@@ -1230,153 +952,87 @@ static void idetape_create_space_cmd(struct ide_atapi_pc *pc, int count, u8 cmd)
- 	pc->flags |= PC_FLAG_WAIT_FOR_DSC;
- }
- 
--/* Queue up a character device originated write request. */
--static int idetape_add_chrdev_write_request(ide_drive_t *drive, int blocks)
--{
--	idetape_tape_t *tape = drive->driver_data;
--
--	debug_log(DBG_CHRDEV, "Enter %s\n", __func__);
--
--	return idetape_queue_rw_tail(drive, REQ_IDETAPE_WRITE,
--				     blocks, tape->merge_bh);
--}
--
- static void ide_tape_flush_merge_buffer(ide_drive_t *drive)
- {
- 	idetape_tape_t *tape = drive->driver_data;
--	int blocks, min;
--	struct idetape_bh *bh;
- 
- 	if (tape->chrdev_dir != IDETAPE_DIR_WRITE) {
- 		printk(KERN_ERR "ide-tape: bug: Trying to empty merge buffer"
- 				" but we are not writing.\n");
- 		return;
- 	}
--	if (tape->merge_bh_size > tape->buffer_size) {
--		printk(KERN_ERR "ide-tape: bug: merge_buffer too big\n");
--		tape->merge_bh_size = tape->buffer_size;
--	}
--	if (tape->merge_bh_size) {
--		blocks = tape->merge_bh_size / tape->blk_size;
--		if (tape->merge_bh_size % tape->blk_size) {
--			unsigned int i;
--
--			blocks++;
--			i = tape->blk_size - tape->merge_bh_size %
--				tape->blk_size;
--			bh = tape->bh->b_reqnext;
--			while (bh) {
--				atomic_set(&bh->b_count, 0);
--				bh = bh->b_reqnext;
--			}
--			bh = tape->bh;
--			while (i) {
--				if (bh == NULL) {
--					printk(KERN_INFO "ide-tape: bug,"
--							 " bh NULL\n");
--					break;
--				}
--				min = min(i, (unsigned int)(bh->b_size -
--						atomic_read(&bh->b_count)));
--				memset(bh->b_data + atomic_read(&bh->b_count),
--						0, min);
--				atomic_add(min, &bh->b_count);
--				i -= min;
--				bh = bh->b_reqnext;
--			}
--		}
--		(void) idetape_add_chrdev_write_request(drive, blocks);
--		tape->merge_bh_size = 0;
--	}
--	if (tape->merge_bh != NULL) {
--		ide_tape_kfree_buffer(tape);
--		tape->merge_bh = NULL;
-+	if (tape->buf) {
-+		size_t aligned = roundup(tape->valid, tape->blk_size);
-+
-+		memset(tape->cur, 0, aligned - tape->valid);
-+		idetape_queue_rw_tail(drive, REQ_IDETAPE_WRITE, aligned);
-+		kfree(tape->buf);
-+		tape->buf = NULL;
- 	}
- 	tape->chrdev_dir = IDETAPE_DIR_NONE;
- }
- 
--static int idetape_init_read(ide_drive_t *drive)
-+static int idetape_init_rw(ide_drive_t *drive, int dir)
- {
- 	idetape_tape_t *tape = drive->driver_data;
--	int bytes_read;
-+	int rc;
- 
--	/* Initialize read operation */
--	if (tape->chrdev_dir != IDETAPE_DIR_READ) {
--		if (tape->chrdev_dir == IDETAPE_DIR_WRITE) {
--			ide_tape_flush_merge_buffer(drive);
--			idetape_flush_tape_buffers(drive);
--		}
--		if (tape->merge_bh || tape->merge_bh_size) {
--			printk(KERN_ERR "ide-tape: merge_bh_size should be"
--					 " 0 now\n");
--			tape->merge_bh_size = 0;
--		}
--		tape->merge_bh = ide_tape_kmalloc_buffer(tape, 0, 0);
--		if (!tape->merge_bh)
--			return -ENOMEM;
--		tape->chrdev_dir = IDETAPE_DIR_READ;
-+	BUG_ON(dir != IDETAPE_DIR_READ && dir != IDETAPE_DIR_WRITE);
- 
--		/*
--		 * Issue a read 0 command to ensure that DSC handshake is
--		 * switched from completion mode to buffer available mode.
--		 * No point in issuing this if DSC overlap isn't supported, some
--		 * drives (Seagate STT3401A) will return an error.
--		 */
--		if (drive->dev_flags & IDE_DFLAG_DSC_OVERLAP) {
--			bytes_read = idetape_queue_rw_tail(drive,
--							REQ_IDETAPE_READ, 0,
--							tape->merge_bh);
--			if (bytes_read < 0) {
--				ide_tape_kfree_buffer(tape);
--				tape->merge_bh = NULL;
--				tape->chrdev_dir = IDETAPE_DIR_NONE;
--				return bytes_read;
--			}
--		}
--	}
-+	if (tape->chrdev_dir == dir)
-+		return 0;
- 
--	return 0;
--}
-+	if (tape->chrdev_dir == IDETAPE_DIR_READ)
-+		ide_tape_discard_merge_buffer(drive, 1);
-+	else if (tape->chrdev_dir == IDETAPE_DIR_WRITE) {
-+		ide_tape_flush_merge_buffer(drive);
-+		idetape_flush_tape_buffers(drive);
-+	}
- 
--/* called from idetape_chrdev_read() to service a chrdev read request. */
--static int idetape_add_chrdev_read_request(ide_drive_t *drive, int blocks)
--{
--	idetape_tape_t *tape = drive->driver_data;
-+	if (tape->buf || tape->valid) {
-+		printk(KERN_ERR "ide-tape: valid should be 0 now\n");
-+		tape->valid = 0;
-+	}
- 
--	debug_log(DBG_PROCS, "Enter %s, %d blocks\n", __func__, blocks);
-+	tape->buf = kmalloc(tape->buffer_size, GFP_KERNEL);
-+	if (!tape->buf)
-+		return -ENOMEM;
-+	tape->chrdev_dir = dir;
-+	tape->cur = tape->buf;
- 
--	/* If we are at a filemark, return a read length of 0 */
--	if (test_bit(IDE_AFLAG_FILEMARK, &drive->atapi_flags))
--		return 0;
--
--	idetape_init_read(drive);
-+	/*
-+	 * Issue a 0 rw command to ensure that DSC handshake is
-+	 * switched from completion mode to buffer available mode.  No
-+	 * point in issuing this if DSC overlap isn't supported, some
-+	 * drives (Seagate STT3401A) will return an error.
-+	 */
-+	if (drive->dev_flags & IDE_DFLAG_DSC_OVERLAP) {
-+		int cmd = dir == IDETAPE_DIR_READ ? REQ_IDETAPE_READ
-+						  : REQ_IDETAPE_WRITE;
-+
-+		rc = idetape_queue_rw_tail(drive, cmd, 0);
-+		if (rc < 0) {
-+			kfree(tape->buf);
-+			tape->buf = NULL;
-+			tape->chrdev_dir = IDETAPE_DIR_NONE;
-+			return rc;
-+		}
-+	}
- 
--	return idetape_queue_rw_tail(drive, REQ_IDETAPE_READ, blocks,
--				     tape->merge_bh);
-+	return 0;
- }
- 
- static void idetape_pad_zeros(ide_drive_t *drive, int bcount)
- {
- 	idetape_tape_t *tape = drive->driver_data;
--	struct idetape_bh *bh;
--	int blocks;
-+
-+	memset(tape->buf, 0, tape->buffer_size);
- 
- 	while (bcount) {
--		unsigned int count;
-+		unsigned int count = min(tape->buffer_size, bcount);
- 
--		bh = tape->merge_bh;
--		count = min(tape->buffer_size, bcount);
-+		idetape_queue_rw_tail(drive, REQ_IDETAPE_WRITE, count);
- 		bcount -= count;
--		blocks = count / tape->blk_size;
--		while (count) {
--			atomic_set(&bh->b_count,
--				   min(count, (unsigned int)bh->b_size));
--			memset(bh->b_data, 0, atomic_read(&bh->b_count));
--			count -= atomic_read(&bh->b_count);
--			bh = bh->b_reqnext;
--		}
--		idetape_queue_rw_tail(drive, REQ_IDETAPE_WRITE, blocks,
--				      tape->merge_bh);
- 	}
- }
- 
-@@ -1456,7 +1112,7 @@ static int idetape_space_over_filemarks(ide_drive_t *drive, short mt_op,
- 	}
- 
- 	if (tape->chrdev_dir == IDETAPE_DIR_READ) {
--		tape->merge_bh_size = 0;
-+		tape->valid = 0;
- 		if (test_and_clear_bit(IDE_AFLAG_FILEMARK, &drive->atapi_flags))
- 			++count;
- 		ide_tape_discard_merge_buffer(drive, 0);
-@@ -1505,9 +1161,9 @@ static ssize_t idetape_chrdev_read(struct file *file, char __user *buf,
- {
- 	struct ide_tape_obj *tape = file->private_data;
- 	ide_drive_t *drive = tape->drive;
--	ssize_t bytes_read, temp, actually_read = 0, rc;
-+	size_t done = 0;
- 	ssize_t ret = 0;
--	u16 ctl = *(u16 *)&tape->caps[12];
-+	int rc;
- 
- 	debug_log(DBG_CHRDEV, "Enter %s, count %Zd\n", __func__, count);
- 
-@@ -1517,49 +1173,43 @@ static ssize_t idetape_chrdev_read(struct file *file, char __user *buf,
- 			    (count % tape->blk_size) == 0)
- 				tape->user_bs_factor = count / tape->blk_size;
- 	}
--	rc = idetape_init_read(drive);
-+
-+	rc = idetape_init_rw(drive, IDETAPE_DIR_READ);
- 	if (rc < 0)
- 		return rc;
--	if (count == 0)
--		return (0);
--	if (tape->merge_bh_size) {
--		actually_read = min((unsigned int)(tape->merge_bh_size),
--				    (unsigned int)count);
--		if (idetape_copy_stage_to_user(tape, buf, actually_read))
--			ret = -EFAULT;
--		buf += actually_read;
--		tape->merge_bh_size -= actually_read;
--		count -= actually_read;
--	}
--	while (count >= tape->buffer_size) {
--		bytes_read = idetape_add_chrdev_read_request(drive, ctl);
--		if (bytes_read <= 0)
--			goto finish;
--		if (idetape_copy_stage_to_user(tape, buf, bytes_read))
--			ret = -EFAULT;
--		buf += bytes_read;
--		count -= bytes_read;
--		actually_read += bytes_read;
--	}
--	if (count) {
--		bytes_read = idetape_add_chrdev_read_request(drive, ctl);
--		if (bytes_read <= 0)
--			goto finish;
--		temp = min((unsigned long)count, (unsigned long)bytes_read);
--		if (idetape_copy_stage_to_user(tape, buf, temp))
-+
-+	while (done < count) {
-+		size_t todo;
-+
-+		/* refill if staging buffer is empty */
-+		if (!tape->valid) {
-+			/* If we are at a filemark, nothing more to read */
-+			if (test_bit(IDE_AFLAG_FILEMARK, &drive->atapi_flags))
-+				break;
-+			/* read */
-+			if (idetape_queue_rw_tail(drive, REQ_IDETAPE_READ,
-+						  tape->buffer_size) <= 0)
-+				break;
-+		}
-+
-+		/* copy out */
-+		todo = min_t(size_t, count - done, tape->valid);
-+		if (copy_to_user(buf + done, tape->cur, todo))
- 			ret = -EFAULT;
--		actually_read += temp;
--		tape->merge_bh_size = bytes_read-temp;
-+
-+		tape->cur += todo;
-+		tape->valid -= todo;
-+		done += todo;
- 	}
--finish:
--	if (!actually_read && test_bit(IDE_AFLAG_FILEMARK, &drive->atapi_flags)) {
-+
-+	if (!done && test_bit(IDE_AFLAG_FILEMARK, &drive->atapi_flags)) {
- 		debug_log(DBG_SENSE, "%s: spacing over filemark\n", tape->name);
- 
- 		idetape_space_over_filemarks(drive, MTFSF, 1);
- 		return 0;
- 	}
- 
--	return ret ? ret : actually_read;
-+	return ret ? ret : done;
- }
- 
- static ssize_t idetape_chrdev_write(struct file *file, const char __user *buf,
-@@ -1567,9 +1217,9 @@ static ssize_t idetape_chrdev_write(struct file *file, const char __user *buf,
- {
- 	struct ide_tape_obj *tape = file->private_data;
- 	ide_drive_t *drive = tape->drive;
--	ssize_t actually_written = 0;
-+	size_t done = 0;
- 	ssize_t ret = 0;
--	u16 ctl = *(u16 *)&tape->caps[12];
-+	int rc;
- 
- 	/* The drive is write protected. */
- 	if (tape->write_prot)
-@@ -1578,80 +1228,31 @@ static ssize_t idetape_chrdev_write(struct file *file, const char __user *buf,
- 	debug_log(DBG_CHRDEV, "Enter %s, count %Zd\n", __func__, count);
- 
- 	/* Initialize write operation */
--	if (tape->chrdev_dir != IDETAPE_DIR_WRITE) {
--		if (tape->chrdev_dir == IDETAPE_DIR_READ)
--			ide_tape_discard_merge_buffer(drive, 1);
--		if (tape->merge_bh || tape->merge_bh_size) {
--			printk(KERN_ERR "ide-tape: merge_bh_size "
--				"should be 0 now\n");
--			tape->merge_bh_size = 0;
--		}
--		tape->merge_bh = ide_tape_kmalloc_buffer(tape, 0, 0);
--		if (!tape->merge_bh)
--			return -ENOMEM;
--		tape->chrdev_dir = IDETAPE_DIR_WRITE;
--		idetape_init_merge_buffer(tape);
-+	rc = idetape_init_rw(drive, IDETAPE_DIR_WRITE);
-+	if (rc < 0)
-+		return rc;
- 
--		/*
--		 * Issue a write 0 command to ensure that DSC handshake is
--		 * switched from completion mode to buffer available mode. No
--		 * point in issuing this if DSC overlap isn't supported, some
--		 * drives (Seagate STT3401A) will return an error.
--		 */
--		if (drive->dev_flags & IDE_DFLAG_DSC_OVERLAP) {
--			ssize_t retval = idetape_queue_rw_tail(drive,
--							REQ_IDETAPE_WRITE, 0,
--							tape->merge_bh);
--			if (retval < 0) {
--				ide_tape_kfree_buffer(tape);
--				tape->merge_bh = NULL;
--				tape->chrdev_dir = IDETAPE_DIR_NONE;
--				return retval;
--			}
--		}
--	}
--	if (count == 0)
--		return (0);
--	if (tape->merge_bh_size) {
--		if (tape->merge_bh_size >= tape->buffer_size) {
--			printk(KERN_ERR "ide-tape: bug: merge buf too big\n");
--			tape->merge_bh_size = 0;
--		}
--		actually_written = min((unsigned int)
--				(tape->buffer_size - tape->merge_bh_size),
--				(unsigned int)count);
--		if (idetape_copy_stage_from_user(tape, buf, actually_written))
--				ret = -EFAULT;
--		buf += actually_written;
--		tape->merge_bh_size += actually_written;
--		count -= actually_written;
--
--		if (tape->merge_bh_size == tape->buffer_size) {
--			ssize_t retval;
--			tape->merge_bh_size = 0;
--			retval = idetape_add_chrdev_write_request(drive, ctl);
--			if (retval <= 0)
--				return (retval);
--		}
--	}
--	while (count >= tape->buffer_size) {
--		ssize_t retval;
--		if (idetape_copy_stage_from_user(tape, buf, tape->buffer_size))
--			ret = -EFAULT;
--		buf += tape->buffer_size;
--		count -= tape->buffer_size;
--		retval = idetape_add_chrdev_write_request(drive, ctl);
--		actually_written += tape->buffer_size;
--		if (retval <= 0)
--			return (retval);
--	}
--	if (count) {
--		actually_written += count;
--		if (idetape_copy_stage_from_user(tape, buf, count))
-+	while (done < count) {
-+		size_t todo;
-+
-+		/* flush if staging buffer is full */
-+		if (tape->valid == tape->buffer_size &&
-+		    idetape_queue_rw_tail(drive, REQ_IDETAPE_WRITE,
-+					  tape->buffer_size) <= 0)
-+			return rc;
-+
-+		/* copy in */
-+		todo = min_t(size_t, count - done,
-+			     tape->buffer_size - tape->valid);
-+		if (copy_from_user(tape->cur, buf + done, todo))
- 			ret = -EFAULT;
--		tape->merge_bh_size += count;
-+
-+		tape->cur += todo;
-+		tape->valid += todo;
-+		done += todo;
- 	}
--	return ret ? ret : actually_written;
-+
-+	return ret ? ret : done;
- }
- 
- static int idetape_write_filemark(ide_drive_t *drive)
-@@ -1812,7 +1413,7 @@ static int idetape_chrdev_ioctl(struct inode *inode, struct file *file,
- 		idetape_flush_tape_buffers(drive);
- 	}
- 	if (cmd == MTIOCGET || cmd == MTIOCPOS) {
--		block_offset = tape->merge_bh_size /
-+		block_offset = tape->valid /
- 			(tape->blk_size * tape->user_bs_factor);
- 		position = idetape_read_position(drive);
- 		if (position < 0)
-@@ -1960,12 +1561,12 @@ static void idetape_write_release(ide_drive_t *drive, unsigned int minor)
- 	idetape_tape_t *tape = drive->driver_data;
- 
- 	ide_tape_flush_merge_buffer(drive);
--	tape->merge_bh = ide_tape_kmalloc_buffer(tape, 1, 0);
--	if (tape->merge_bh != NULL) {
-+	tape->buf = kmalloc(tape->buffer_size, GFP_KERNEL);
-+	if (tape->buf != NULL) {
- 		idetape_pad_zeros(drive, tape->blk_size *
- 				(tape->user_bs_factor - 1));
--		ide_tape_kfree_buffer(tape);
--		tape->merge_bh = NULL;
-+		kfree(tape->buf);
-+		tape->buf = NULL;
- 	}
- 	idetape_write_filemark(drive);
- 	idetape_flush_tape_buffers(drive);
-@@ -2159,8 +1760,6 @@ static void idetape_setup(ide_drive_t *drive, idetape_tape_t *tape, int minor)
- 	u16 *ctl = (u16 *)&tape->caps[12];
- 
- 	drive->pc_callback	 = ide_tape_callback;
--	drive->pc_update_buffers = idetape_update_buffers;
--	drive->pc_io_buffers	 = ide_tape_io_buffers;
- 
- 	drive->dev_flags |= IDE_DFLAG_DSC_OVERLAP;
- 
-@@ -2191,11 +1790,6 @@ static void idetape_setup(ide_drive_t *drive, idetape_tape_t *tape, int minor)
- 		tape->buffer_size = *ctl * tape->blk_size;
- 	}
- 	buffer_size = tape->buffer_size;
--	tape->pages_per_buffer = buffer_size / PAGE_SIZE;
--	if (buffer_size % PAGE_SIZE) {
--		tape->pages_per_buffer++;
--		tape->excess_bh_size = PAGE_SIZE - buffer_size % PAGE_SIZE;
--	}
- 
- 	/* select the "best" DSC read/write polling freq */
- 	speed = max(*(u16 *)&tape->caps[14], *(u16 *)&tape->caps[8]);
-@@ -2238,7 +1832,7 @@ static void ide_tape_release(struct device *dev)
- 	ide_drive_t *drive = tape->drive;
- 	struct gendisk *g = tape->disk;
- 
--	BUG_ON(tape->merge_bh_size);
-+	BUG_ON(tape->valid);
- 
- 	drive->dev_flags &= ~IDE_DFLAG_DSC_OVERLAP;
- 	drive->driver_data = NULL;
-diff --git a/drivers/ide/ide-taskfile.c b/drivers/ide/ide-taskfile.c
-index 4aa6223..f400eb4 100644
---- a/drivers/ide/ide-taskfile.c
-+++ b/drivers/ide/ide-taskfile.c
-@@ -424,7 +424,9 @@ int ide_raw_taskfile(ide_drive_t *drive, struct ide_cmd *cmd, u8 *buf,
- 
- 	rq = blk_get_request(drive->queue, READ, __GFP_WAIT);
- 	rq->cmd_type = REQ_TYPE_ATA_TASKFILE;
--	rq->buffer = buf;
-+
-+	if (cmd->tf_flags & IDE_TFLAG_WRITE)
-+		rq->cmd_flags |= REQ_RW;
- 
- 	/*
- 	 * (ks) We transfer currently only whole sectors.
-@@ -432,18 +434,20 @@ int ide_raw_taskfile(ide_drive_t *drive, struct ide_cmd *cmd, u8 *buf,
- 	 * if we would find a solution to transfer any size.
- 	 * To support special commands like READ LONG.
- 	 */
--	rq->hard_nr_sectors = rq->nr_sectors = nsect;
--	rq->hard_cur_sectors = rq->current_nr_sectors = nsect;
--
--	if (cmd->tf_flags & IDE_TFLAG_WRITE)
--		rq->cmd_flags |= REQ_RW;
-+	if (nsect) {
-+		error = blk_rq_map_kern(drive->queue, rq, buf,
-+					nsect * SECTOR_SIZE, __GFP_WAIT);
-+		if (error)
-+			goto put_req;
-+	}
- 
- 	rq->special = cmd;
- 	cmd->rq = rq;
- 
- 	error = blk_execute_rq(drive->queue, NULL, rq, 0);
--	blk_put_request(rq);
- 
-+put_req:
-+	blk_put_request(rq);
- 	return error;
- }
- 
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index 9fed365..867cb68 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -26,6 +26,9 @@
- #include <asm/io.h>
- #include <asm/mutex.h>
- 
-+/* for request_sense */
-+#include <linux/cdrom.h>
-+
- #if defined(CONFIG_CRIS) || defined(CONFIG_FRV) || defined(CONFIG_MN10300)
- # define SUPPORT_VLB_SYNC 0
- #else
-@@ -324,7 +327,6 @@ struct ide_cmd {
- 	unsigned int		cursg_ofs;
- 
- 	struct request		*rq;		/* copy of request */
--	void			*special;	/* valid_t generally */
- };
- 
- /* ATAPI packet command flags */
-@@ -360,11 +362,7 @@ struct ide_atapi_pc {
- 
- 	/* data buffer */
- 	u8 *buf;
--	/* current buffer position */
--	u8 *cur_pos;
- 	int buf_size;
--	/* missing/available data on the current buffer */
--	int b_count;
- 
- 	/* the corresponding request */
- 	struct request *rq;
-@@ -377,10 +375,6 @@ struct ide_atapi_pc {
- 	 */
- 	u8 pc_buf[IDE_PC_BUFFER_SIZE];
- 
--	/* idetape only */
--	struct idetape_bh *bh;
--	char *b_data;
--
- 	unsigned long timeout;
- };
- 
-@@ -593,16 +587,16 @@ struct ide_drive_s {
- 	/* callback for packet commands */
- 	int  (*pc_callback)(struct ide_drive_s *, int);
- 
--	void (*pc_update_buffers)(struct ide_drive_s *, struct ide_atapi_pc *);
--	int  (*pc_io_buffers)(struct ide_drive_s *, struct ide_atapi_pc *,
--			      unsigned int, int);
--
- 	ide_startstop_t (*irq_handler)(struct ide_drive_s *);
- 
- 	unsigned long atapi_flags;
- 
- 	struct ide_atapi_pc request_sense_pc;
--	struct request request_sense_rq;
-+
-+	/* current sense rq and buffer */
-+	bool sense_rq_armed;
-+	struct request sense_rq;
-+	struct request_sense sense_data;
- };
- 
- typedef struct ide_drive_s ide_drive_t;
-@@ -1174,7 +1168,10 @@ int ide_do_test_unit_ready(ide_drive_t *, struct gendisk *);
- int ide_do_start_stop(ide_drive_t *, struct gendisk *, int);
- int ide_set_media_lock(ide_drive_t *, struct gendisk *, int);
- void ide_create_request_sense_cmd(ide_drive_t *, struct ide_atapi_pc *);
--void ide_retry_pc(ide_drive_t *, struct gendisk *);
-+void ide_retry_pc(ide_drive_t *drive);
-+
-+void ide_prep_sense(ide_drive_t *drive, struct request *rq);
-+int ide_queue_sense_rq(ide_drive_t *drive, void *special);
- 
- int ide_cd_expiry(ide_drive_t *);
- 
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+# CONFIG_IOSCHED_AS is not set
+CONFIG_IOSCHED_DEADLINE=m
+CONFIG_IOSCHED_CFQ=y
+# CONFIG_DEFAULT_AS is not set
+# CONFIG_DEFAULT_DEADLINE is not set
+CONFIG_DEFAULT_CFQ=y
+# CONFIG_DEFAULT_NOOP is not set
+CONFIG_DEFAULT_IOSCHED="cfq"
+CONFIG_PREEMPT_NOTIFIERS=y
+# CONFIG_FREEZER is not set
+
+#
+# Processor type and features
+#
+CONFIG_TICK_ONESHOT=y
+CONFIG_NO_HZ=y
+CONFIG_HIGH_RES_TIMERS=y
+CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
+CONFIG_SMP=y
+CONFIG_X86_MPPARSE=y
+CONFIG_X86_BIGSMP=y
+# CONFIG_X86_EXTENDED_PLATFORM is not set
+CONFIG_SCHED_OMIT_FRAME_POINTER=y
+# CONFIG_PARAVIRT_GUEST is not set
+CONFIG_MEMTEST=y
+# CONFIG_M386 is not set
+# CONFIG_M486 is not set
+# CONFIG_M586 is not set
+# CONFIG_M586TSC is not set
+# CONFIG_M586MMX is not set
+# CONFIG_M686 is not set
+# CONFIG_MPENTIUMII is not set
+# CONFIG_MPENTIUMIII is not set
+# CONFIG_MPENTIUMM is not set
+# CONFIG_MPENTIUM4 is not set
+# CONFIG_MK6 is not set
+# CONFIG_MK7 is not set
+# CONFIG_MK8 is not set
+# CONFIG_MCRUSOE is not set
+# CONFIG_MEFFICEON is not set
+# CONFIG_MWINCHIPC6 is not set
+CONFIG_MWINCHIP3D=y
+# CONFIG_MGEODEGX1 is not set
+# CONFIG_MGEODE_LX is not set
+# CONFIG_MCYRIXIII is not set
+# CONFIG_MVIAC3_2 is not set
+# CONFIG_MVIAC7 is not set
+# CONFIG_MPSC is not set
+# CONFIG_MCORE2 is not set
+# CONFIG_GENERIC_CPU is not set
+# CONFIG_X86_GENERIC is not set
+CONFIG_X86_CPU=y
+CONFIG_X86_L1_CACHE_BYTES=64
+CONFIG_X86_INTERNODE_CACHE_BYTES=64
+CONFIG_X86_CMPXCHG=y
+CONFIG_X86_L1_CACHE_SHIFT=5
+CONFIG_X86_XADD=y
+CONFIG_X86_WP_WORKS_OK=y
+CONFIG_X86_INVLPG=y
+CONFIG_X86_BSWAP=y
+CONFIG_X86_POPAD_OK=y
+CONFIG_X86_ALIGNMENT_16=y
+CONFIG_X86_USE_PPRO_CHECKSUM=y
+CONFIG_X86_OOSTORE=y
+CONFIG_X86_TSC=y
+CONFIG_X86_MINIMUM_CPU_FAMILY=4
+CONFIG_CPU_SUP_INTEL=y
+CONFIG_CPU_SUP_CYRIX_32=y
+CONFIG_CPU_SUP_AMD=y
+CONFIG_CPU_SUP_CENTAUR=y
+CONFIG_CPU_SUP_TRANSMETA_32=y
+CONFIG_CPU_SUP_UMC_32=y
+# CONFIG_HPET_TIMER is not set
+CONFIG_DMI=y
+# CONFIG_IOMMU_HELPER is not set
+# CONFIG_IOMMU_API is not set
+CONFIG_NR_CPUS=32
+CONFIG_SCHED_SMT=y
+# CONFIG_SCHED_MC is not set
+# CONFIG_PREEMPT_NONE is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+CONFIG_PREEMPT=y
+CONFIG_X86_LOCAL_APIC=y
+CONFIG_X86_IO_APIC=y
+# CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS is not set
+CONFIG_X86_MCE=y
+CONFIG_X86_OLD_MCE=y
+CONFIG_X86_ANCIENT_MCE=y
+CONFIG_X86_MCE_NONFATAL=y
+CONFIG_X86_MCE_P4THERMAL=y
+CONFIG_X86_THERMAL_VECTOR=y
+CONFIG_VM86=y
+CONFIG_TOSHIBA=m
+# CONFIG_I8K is not set
+# CONFIG_X86_REBOOTFIXUPS is not set
+# CONFIG_MICROCODE is not set
+# CONFIG_X86_MSR is not set
+CONFIG_X86_CPUID=m
+CONFIG_X86_CPU_DEBUG=m
+# CONFIG_NOHIGHMEM is not set
+CONFIG_HIGHMEM4G=y
+# CONFIG_HIGHMEM64G is not set
+CONFIG_PAGE_OFFSET=0xC0000000
+CONFIG_HIGHMEM=y
+# CONFIG_ARCH_PHYS_ADDR_T_64BIT is not set
+CONFIG_ILLEGAL_POINTER_VALUE=0
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_PAGEFLAGS_EXTENDED=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+# CONFIG_PHYS_ADDR_T_64BIT is not set
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_BOUNCE=y
+CONFIG_VIRT_TO_BUS=y
+CONFIG_HAVE_MLOCK=y
+CONFIG_HAVE_MLOCKED_PAGE_BIT=y
+CONFIG_MMU_NOTIFIER=y
+CONFIG_KSM=m
+# CONFIG_HIGHPTE is not set
+# CONFIG_X86_CHECK_BIOS_CORRUPTION is not set
+CONFIG_X86_RESERVE_LOW_64K=y
+# CONFIG_MATH_EMULATION is not set
+CONFIG_MTRR=y
+# CONFIG_MTRR_SANITIZER is not set
+# CONFIG_X86_PAT is not set
+CONFIG_SECCOMP=y
+# CONFIG_CC_STACKPROTECTOR is not set
+CONFIG_HZ_100=y
+# CONFIG_HZ_250 is not set
+# CONFIG_HZ_300 is not set
+# CONFIG_HZ_1000 is not set
+CONFIG_HZ=100
+CONFIG_SCHED_HRTICK=y
+# CONFIG_KEXEC is not set
+# CONFIG_CRASH_DUMP is not set
+CONFIG_PHYSICAL_START=0x1000000
+CONFIG_RELOCATABLE=y
+CONFIG_X86_NEED_RELOCS=y
+CONFIG_PHYSICAL_ALIGN=0x1000000
+CONFIG_HOTPLUG_CPU=y
+# CONFIG_COMPAT_VDSO is not set
+CONFIG_CMDLINE_BOOL=y
+CONFIG_CMDLINE=""
+CONFIG_CMDLINE_OVERRIDE=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+
+#
+# Power management and ACPI options
+#
+# CONFIG_PM is not set
+
+#
+# CPU Frequency scaling
+#
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+CONFIG_CPU_FREQ_DEBUG=y
+CONFIG_CPU_FREQ_STAT=m
+CONFIG_CPU_FREQ_STAT_DETAILS=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
+# CONFIG_CPU_FREQ_GOV_PERFORMANCE is not set
+# CONFIG_CPU_FREQ_GOV_POWERSAVE is not set
+CONFIG_CPU_FREQ_GOV_USERSPACE=y
+# CONFIG_CPU_FREQ_GOV_ONDEMAND is not set
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+
+#
+# CPUFreq processor drivers
+#
+CONFIG_X86_POWERNOW_K6=y
+CONFIG_X86_POWERNOW_K7=y
+CONFIG_X86_GX_SUSPMOD=y
+CONFIG_X86_SPEEDSTEP_CENTRINO=m
+CONFIG_X86_SPEEDSTEP_CENTRINO_TABLE=y
+CONFIG_X86_SPEEDSTEP_ICH=m
+# CONFIG_X86_P4_CLOCKMOD is not set
+CONFIG_X86_LONGRUN=m
+CONFIG_X86_E_POWERSAVER=y
+
+#
+# shared options
+#
+CONFIG_X86_SPEEDSTEP_LIB=m
+# CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK is not set
+CONFIG_CPU_IDLE=y
+CONFIG_CPU_IDLE_GOV_LADDER=y
+CONFIG_CPU_IDLE_GOV_MENU=y
+
+#
+# Bus options (PCI etc.)
+#
+CONFIG_PCI=y
+CONFIG_PCI_GOBIOS=y
+# CONFIG_PCI_GOMMCONFIG is not set
+# CONFIG_PCI_GODIRECT is not set
+# CONFIG_PCI_GOOLPC is not set
+# CONFIG_PCI_GOANY is not set
+CONFIG_PCI_BIOS=y
+CONFIG_PCI_DOMAINS=y
+# CONFIG_PCIEPORTBUS is not set
+CONFIG_ARCH_SUPPORTS_MSI=y
+# CONFIG_PCI_MSI is not set
+# CONFIG_PCI_LEGACY is not set
+# CONFIG_PCI_DEBUG is not set
+CONFIG_PCI_STUB=y
+# CONFIG_HT_IRQ is not set
+# CONFIG_PCI_IOV is not set
+CONFIG_ISA_DMA_API=y
+# CONFIG_ISA is not set
+# CONFIG_MCA is not set
+# CONFIG_SCx200 is not set
+# CONFIG_OLPC is not set
+CONFIG_K8_NB=y
+# CONFIG_PCCARD is not set
+# CONFIG_HOTPLUG_PCI is not set
+
+#
+# Executable file formats / Emulations
+#
+CONFIG_BINFMT_ELF=y
+CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS=y
+CONFIG_HAVE_AOUT=y
+# CONFIG_BINFMT_AOUT is not set
+CONFIG_BINFMT_MISC=y
+CONFIG_HAVE_ATOMIC_IOMAP=y
+CONFIG_NET=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=m
+CONFIG_PACKET_MMAP=y
+# CONFIG_UNIX is not set
+CONFIG_XFRM=y
+CONFIG_NET_KEY=m
+# CONFIG_INET is not set
+CONFIG_NETWORK_SECMARK=y
+CONFIG_NETFILTER=y
+# CONFIG_NETFILTER_DEBUG is not set
+CONFIG_NETFILTER_ADVANCED=y
+CONFIG_ATM=m
+# CONFIG_ATM_LANE is not set
+# CONFIG_BRIDGE is not set
+CONFIG_VLAN_8021Q=y
+# CONFIG_VLAN_8021Q_GVRP is not set
+CONFIG_DECNET=m
+CONFIG_LLC=y
+CONFIG_LLC2=m
+# CONFIG_IPX is not set
+CONFIG_ATALK=y
+CONFIG_DEV_APPLETALK=m
+CONFIG_IPDDP=m
+CONFIG_IPDDP_ENCAP=y
+# CONFIG_IPDDP_DECAP is not set
+CONFIG_PHONET=y
+CONFIG_NET_SCHED=y
+
+#
+# Queueing/Scheduling
+#
+CONFIG_NET_SCH_CBQ=m
+CONFIG_NET_SCH_HTB=y
+# CONFIG_NET_SCH_HFSC is not set
+CONFIG_NET_SCH_ATM=m
+# CONFIG_NET_SCH_PRIO is not set
+CONFIG_NET_SCH_MULTIQ=m
+# CONFIG_NET_SCH_RED is not set
+# CONFIG_NET_SCH_SFQ is not set
+CONFIG_NET_SCH_TEQL=m
+CONFIG_NET_SCH_TBF=m
+CONFIG_NET_SCH_GRED=m
+CONFIG_NET_SCH_DSMARK=y
+CONFIG_NET_SCH_NETEM=y
+CONFIG_NET_SCH_DRR=m
+CONFIG_NET_SCH_INGRESS=m
+
+#
+# Classification
+#
+CONFIG_NET_CLS=y
+CONFIG_NET_CLS_BASIC=m
+CONFIG_NET_CLS_TCINDEX=m
+# CONFIG_NET_CLS_ROUTE4 is not set
+CONFIG_NET_CLS_FW=y
+CONFIG_NET_CLS_U32=y
+CONFIG_CLS_U32_PERF=y
+CONFIG_CLS_U32_MARK=y
+CONFIG_NET_CLS_RSVP=y
+CONFIG_NET_CLS_RSVP6=y
+# CONFIG_NET_CLS_FLOW is not set
+# CONFIG_NET_EMATCH is not set
+CONFIG_NET_CLS_ACT=y
+CONFIG_NET_ACT_POLICE=y
+# CONFIG_NET_ACT_GACT is not set
+# CONFIG_NET_ACT_MIRRED is not set
+# CONFIG_NET_ACT_NAT is not set
+# CONFIG_NET_ACT_PEDIT is not set
+CONFIG_NET_ACT_SIMP=m
+CONFIG_NET_ACT_SKBEDIT=y
+CONFIG_NET_CLS_IND=y
+CONFIG_NET_SCH_FIFO=y
+# CONFIG_DCB is not set
+
+#
+# Network testing
+#
+CONFIG_NET_PKTGEN=y
+CONFIG_HAMRADIO=y
+
+#
+# Packet Radio protocols
+#
+# CONFIG_AX25 is not set
+CONFIG_CAN=m
+CONFIG_CAN_RAW=m
+CONFIG_CAN_BCM=m
+
+#
+# CAN Device Drivers
+#
+CONFIG_CAN_VCAN=m
+CONFIG_CAN_DEV=m
+CONFIG_CAN_CALC_BITTIMING=y
+# CONFIG_CAN_SJA1000 is not set
+CONFIG_CAN_DEBUG_DEVICES=y
+CONFIG_IRDA=m
+
+#
+# IrDA protocols
+#
+CONFIG_IRLAN=m
+CONFIG_IRCOMM=m
+CONFIG_IRDA_ULTRA=y
+
+#
+# IrDA options
+#
+CONFIG_IRDA_CACHE_LAST_LSAP=y
+CONFIG_IRDA_FAST_RR=y
+# CONFIG_IRDA_DEBUG is not set
+
+#
+# Infrared-port device drivers
+#
+
+#
+# SIR device drivers
+#
+# CONFIG_IRTTY_SIR is not set
+
+#
+# Dongle support
+#
+
+#
+# FIR device drivers
+#
+CONFIG_USB_IRDA=m
+# CONFIG_NSC_FIR is not set
+CONFIG_WINBOND_FIR=m
+CONFIG_TOSHIBA_FIR=m
+CONFIG_VIA_FIR=m
+CONFIG_BT=m
+CONFIG_BT_L2CAP=m
+CONFIG_BT_SCO=m
+CONFIG_BT_RFCOMM=m
+# CONFIG_BT_RFCOMM_TTY is not set
+# CONFIG_BT_BNEP is not set
+CONFIG_BT_HIDP=m
+
+#
+# Bluetooth device drivers
+#
+CONFIG_BT_HCIBTUSB=m
+# CONFIG_BT_HCIBTSDIO is not set
+# CONFIG_BT_HCIUART is not set
+# CONFIG_BT_HCIBCM203X is not set
+CONFIG_BT_HCIBPA10X=m
+CONFIG_BT_HCIBFUSB=m
+# CONFIG_BT_HCIVHCI is not set
+# CONFIG_WIRELESS is not set
+CONFIG_WIMAX=y
+CONFIG_WIMAX_DEBUG_LEVEL=8
+CONFIG_RFKILL=y
+# CONFIG_RFKILL_INPUT is not set
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+# CONFIG_DEVTMPFS is not set
+CONFIG_STANDALONE=y
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+CONFIG_FIRMWARE_IN_KERNEL=y
+CONFIG_EXTRA_FIRMWARE=""
+CONFIG_DEBUG_DRIVER=y
+CONFIG_DEBUG_DEVRES=y
+# CONFIG_SYS_HYPERVISOR is not set
+CONFIG_CONNECTOR=m
+# CONFIG_MTD is not set
+CONFIG_PARPORT=m
+CONFIG_PARPORT_PC=m
+# CONFIG_PARPORT_SERIAL is not set
+# CONFIG_PARPORT_GSC is not set
+CONFIG_PARPORT_AX88796=m
+CONFIG_PARPORT_1284=y
+CONFIG_PARPORT_NOT_PC=y
+CONFIG_BLK_DEV=y
+CONFIG_BLK_DEV_FD=y
+CONFIG_PARIDE=m
+
+#
+# Parallel IDE high-level drivers
+#
+CONFIG_PARIDE_PD=m
+CONFIG_PARIDE_PCD=m
+CONFIG_PARIDE_PF=m
+CONFIG_PARIDE_PT=m
+# CONFIG_PARIDE_PG is not set
+
+#
+# Parallel IDE protocol modules
+#
+CONFIG_PARIDE_ATEN=m
+# CONFIG_PARIDE_BPCK is not set
+# CONFIG_PARIDE_BPCK6 is not set
+CONFIG_PARIDE_COMM=m
+# CONFIG_PARIDE_DSTR is not set
+CONFIG_PARIDE_FIT2=m
+# CONFIG_PARIDE_FIT3 is not set
+# CONFIG_PARIDE_EPAT is not set
+# CONFIG_PARIDE_EPIA is not set
+CONFIG_PARIDE_FRIQ=m
+CONFIG_PARIDE_FRPW=m
+CONFIG_PARIDE_KBIC=m
+CONFIG_PARIDE_KTTI=m
+CONFIG_PARIDE_ON20=m
+CONFIG_PARIDE_ON26=m
+CONFIG_BLK_CPQ_DA=y
+CONFIG_BLK_CPQ_CISS_DA=y
+CONFIG_CISS_SCSI_TAPE=y
+# CONFIG_BLK_DEV_DAC960 is not set
+# CONFIG_BLK_DEV_COW_COMMON is not set
+CONFIG_BLK_DEV_LOOP=m
+CONFIG_BLK_DEV_CRYPTOLOOP=m
+CONFIG_BLK_DEV_NBD=y
+CONFIG_BLK_DEV_SX8=y
+CONFIG_BLK_DEV_UB=y
+# CONFIG_BLK_DEV_RAM is not set
+# CONFIG_CDROM_PKTCDVD is not set
+# CONFIG_ATA_OVER_ETH is not set
+CONFIG_BLK_DEV_HD=y
+CONFIG_MISC_DEVICES=y
+CONFIG_PHANTOM=m
+CONFIG_SGI_IOC4=m
+CONFIG_ENCLOSURE_SERVICES=y
+CONFIG_HP_ILO=m
+# CONFIG_ISL29003 is not set
+
+#
+# EEPROM support
+#
+CONFIG_EEPROM_AT24=m
+# CONFIG_EEPROM_AT25 is not set
+CONFIG_EEPROM_LEGACY=m
+CONFIG_EEPROM_93CX6=m
+# CONFIG_CB710_CORE is not set
+CONFIG_HAVE_IDE=y
+CONFIG_IDE=y
+
+#
+# Please see Documentation/ide/ide.txt for help/info on IDE drives
+#
+CONFIG_IDE_XFER_MODE=y
+CONFIG_IDE_TIMINGS=y
+CONFIG_IDE_ATAPI=y
+CONFIG_BLK_DEV_IDE_SATA=y
+CONFIG_IDE_GD=y
+# CONFIG_IDE_GD_ATA is not set
+CONFIG_IDE_GD_ATAPI=y
+CONFIG_BLK_DEV_IDECD=y
+CONFIG_BLK_DEV_IDECD_VERBOSE_ERRORS=y
+# CONFIG_BLK_DEV_IDETAPE is not set
+# CONFIG_IDE_TASK_IOCTL is not set
+CONFIG_IDE_PROC_FS=y
+
+#
+# IDE chipset support/bugfixes
+#
+# CONFIG_IDE_GENERIC is not set
+# CONFIG_BLK_DEV_PLATFORM is not set
+CONFIG_BLK_DEV_CMD640=y
+CONFIG_BLK_DEV_CMD640_ENHANCED=y
+CONFIG_BLK_DEV_IDEDMA_SFF=y
+
+#
+# PCI IDE chipsets support
+#
+CONFIG_BLK_DEV_IDEPCI=y
+# CONFIG_IDEPCI_PCIBUS_ORDER is not set
+CONFIG_BLK_DEV_OFFBOARD=y
+CONFIG_BLK_DEV_GENERIC=y
+CONFIG_BLK_DEV_RZ1000=m
+CONFIG_BLK_DEV_IDEDMA_PCI=y
+CONFIG_BLK_DEV_AEC62XX=y
+CONFIG_BLK_DEV_ALI15X3=y
+CONFIG_BLK_DEV_AMD74XX=m
+CONFIG_BLK_DEV_ATIIXP=y
+# CONFIG_BLK_DEV_CMD64X is not set
+CONFIG_BLK_DEV_TRIFLEX=y
+# CONFIG_BLK_DEV_CS5530 is not set
+# CONFIG_BLK_DEV_CS5535 is not set
+CONFIG_BLK_DEV_CS5536=y
+CONFIG_BLK_DEV_HPT366=y
+# CONFIG_BLK_DEV_JMICRON is not set
+# CONFIG_BLK_DEV_SC1200 is not set
+CONFIG_BLK_DEV_PIIX=m
+CONFIG_BLK_DEV_IT8172=m
+# CONFIG_BLK_DEV_IT8213 is not set
+# CONFIG_BLK_DEV_IT821X is not set
+CONFIG_BLK_DEV_NS87415=m
+CONFIG_BLK_DEV_PDC202XX_OLD=m
+# CONFIG_BLK_DEV_PDC202XX_NEW is not set
+CONFIG_BLK_DEV_SVWKS=m
+CONFIG_BLK_DEV_SIIMAGE=m
+CONFIG_BLK_DEV_SIS5513=y
+CONFIG_BLK_DEV_SLC90E66=m
+CONFIG_BLK_DEV_TRM290=y
+# CONFIG_BLK_DEV_VIA82CXXX is not set
+CONFIG_BLK_DEV_TC86C001=y
+CONFIG_BLK_DEV_IDEDMA=y
+
+#
+# SCSI device support
+#
+CONFIG_RAID_ATTRS=y
+CONFIG_SCSI=y
+CONFIG_SCSI_DMA=y
+CONFIG_SCSI_NETLINK=y
+CONFIG_SCSI_PROC_FS=y
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+CONFIG_BLK_DEV_SD=m
+CONFIG_CHR_DEV_ST=m
+# CONFIG_CHR_DEV_OSST is not set
+# CONFIG_BLK_DEV_SR is not set
+# CONFIG_CHR_DEV_SG is not set
+CONFIG_CHR_DEV_SCH=y
+CONFIG_SCSI_ENCLOSURE=m
+CONFIG_SCSI_MULTI_LUN=y
+# CONFIG_SCSI_CONSTANTS is not set
+CONFIG_SCSI_LOGGING=y
+# CONFIG_SCSI_SCAN_ASYNC is not set
+CONFIG_SCSI_WAIT_SCAN=m
+
+#
+# SCSI Transports
+#
+CONFIG_SCSI_SPI_ATTRS=y
+CONFIG_SCSI_FC_ATTRS=m
+CONFIG_SCSI_ISCSI_ATTRS=y
+CONFIG_SCSI_SAS_ATTRS=y
+CONFIG_SCSI_SAS_LIBSAS=y
+CONFIG_SCSI_SAS_HOST_SMP=y
+# CONFIG_SCSI_SAS_LIBSAS_DEBUG is not set
+# CONFIG_SCSI_SRP_ATTRS is not set
+# CONFIG_SCSI_LOWLEVEL is not set
+CONFIG_SCSI_DH=y
+CONFIG_SCSI_DH_RDAC=m
+CONFIG_SCSI_DH_HP_SW=m
+CONFIG_SCSI_DH_EMC=y
+CONFIG_SCSI_OSD_INITIATOR=m
+CONFIG_SCSI_OSD_ULD=m
+CONFIG_SCSI_OSD_DPRINT_SENSE=1
+CONFIG_SCSI_OSD_DEBUG=y
+CONFIG_ATA=m
+# CONFIG_ATA_NONSTANDARD is not set
+CONFIG_SATA_PMP=y
+# CONFIG_SATA_AHCI is not set
+# CONFIG_SATA_SIL24 is not set
+CONFIG_ATA_SFF=y
+# CONFIG_SATA_SVW is not set
+CONFIG_ATA_PIIX=m
+CONFIG_SATA_MV=m
+CONFIG_SATA_NV=m
+CONFIG_PDC_ADMA=m
+CONFIG_SATA_QSTOR=m
+# CONFIG_SATA_PROMISE is not set
+# CONFIG_SATA_SIL is not set
+CONFIG_SATA_SIS=m
+CONFIG_SATA_ULI=m
+CONFIG_SATA_VIA=m
+CONFIG_SATA_VITESSE=m
+CONFIG_SATA_INIC162X=m
+CONFIG_PATA_ALI=m
+# CONFIG_PATA_AMD is not set
+# CONFIG_PATA_ARTOP is not set
+# CONFIG_PATA_ATIIXP is not set
+# CONFIG_PATA_CMD64X is not set
+CONFIG_PATA_CS5520=m
+# CONFIG_PATA_CS5530 is not set
+CONFIG_PATA_CS5536=m
+# CONFIG_PATA_EFAR is not set
+CONFIG_ATA_GENERIC=m
+CONFIG_PATA_HPT366=m
+# CONFIG_PATA_HPT3X3 is not set
+# CONFIG_PATA_IT821X is not set
+CONFIG_PATA_JMICRON=m
+# CONFIG_PATA_TRIFLEX is not set
+CONFIG_PATA_MARVELL=m
+# CONFIG_PATA_MPIIX is not set
+# CONFIG_PATA_OLDPIIX is not set
+CONFIG_PATA_NETCELL=m
+CONFIG_PATA_NS87410=m
+# CONFIG_PATA_NS87415 is not set
+CONFIG_PATA_PDC_OLD=m
+CONFIG_PATA_RZ1000=m
+CONFIG_PATA_SC1200=m
+CONFIG_PATA_SERVERWORKS=m
+CONFIG_PATA_PDC2027X=m
+CONFIG_PATA_SIL680=m
+CONFIG_PATA_SIS=m
+CONFIG_PATA_VIA=m
+CONFIG_PATA_WINBOND=m
+CONFIG_PATA_SCH=m
+CONFIG_MD=y
+CONFIG_BLK_DEV_MD=y
+CONFIG_MD_AUTODETECT=y
+# CONFIG_MD_LINEAR is not set
+CONFIG_MD_RAID0=y
+CONFIG_MD_RAID1=m
+# CONFIG_MD_RAID456 is not set
+CONFIG_MD_MULTIPATH=y
+CONFIG_MD_FAULTY=m
+CONFIG_BLK_DEV_DM=y
+CONFIG_DM_DEBUG=y
+CONFIG_DM_CRYPT=y
+CONFIG_DM_SNAPSHOT=m
+CONFIG_DM_MIRROR=m
+CONFIG_DM_ZERO=m
+CONFIG_DM_MULTIPATH=y
+CONFIG_DM_MULTIPATH_QL=y
+CONFIG_FUSION=y
+CONFIG_FUSION_SPI=y
+# CONFIG_FUSION_FC is not set
+CONFIG_FUSION_SAS=y
+CONFIG_FUSION_MAX_SGE=128
+# CONFIG_FUSION_CTL is not set
+# CONFIG_FUSION_LOGGING is not set
+
+#
+# IEEE 1394 (FireWire) support
+#
+
+#
+# A new alternative FireWire stack is available with EXPERIMENTAL=y
+#
+CONFIG_IEEE1394=m
+CONFIG_IEEE1394_OHCI1394=m
+CONFIG_IEEE1394_PCILYNX=m
+# CONFIG_IEEE1394_SBP2 is not set
+# CONFIG_IEEE1394_ETH1394_ROM_ENTRY is not set
+# CONFIG_IEEE1394_RAWIO is not set
+CONFIG_IEEE1394_VIDEO1394=m
+CONFIG_IEEE1394_DV1394=m
+CONFIG_IEEE1394_VERBOSEDEBUG=y
+# CONFIG_I2O is not set
+# CONFIG_MACINTOSH_DRIVERS is not set
+# CONFIG_NETDEVICES is not set
+# CONFIG_ISDN is not set
+CONFIG_PHONE=m
+CONFIG_PHONE_IXJ=m
+
+#
+# Input device support
+#
+CONFIG_INPUT=y
+CONFIG_INPUT_FF_MEMLESS=m
+CONFIG_INPUT_POLLDEV=m
+
+#
+# Userland interfaces
+#
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_PSAUX=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+# CONFIG_INPUT_JOYDEV is not set
+CONFIG_INPUT_EVDEV=y
+# CONFIG_INPUT_EVBUG is not set
+
+#
+# Input Device Drivers
+#
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_KEYBOARD_ATKBD=y
+# CONFIG_KEYBOARD_SUNKBD is not set
+CONFIG_KEYBOARD_LKKBD=m
+# CONFIG_KEYBOARD_XTKBD is not set
+CONFIG_KEYBOARD_NEWTON=m
+# CONFIG_KEYBOARD_STOWAWAY is not set
+# CONFIG_KEYBOARD_GPIO is not set
+CONFIG_INPUT_MOUSE=y
+CONFIG_MOUSE_PS2=m
+CONFIG_MOUSE_PS2_ALPS=y
+CONFIG_MOUSE_PS2_LOGIPS2PP=y
+CONFIG_MOUSE_PS2_SYNAPTICS=y
+CONFIG_MOUSE_PS2_LIFEBOOK=y
+CONFIG_MOUSE_PS2_TRACKPOINT=y
+CONFIG_MOUSE_PS2_ELANTECH=y
+CONFIG_MOUSE_PS2_TOUCHKIT=y
+CONFIG_MOUSE_SERIAL=m
+CONFIG_MOUSE_APPLETOUCH=m
+CONFIG_MOUSE_BCM5974=y
+CONFIG_MOUSE_VSXXXAA=m
+# CONFIG_MOUSE_GPIO is not set
+# CONFIG_INPUT_JOYSTICK is not set
+CONFIG_INPUT_TABLET=y
+CONFIG_TABLET_USB_ACECAD=y
+# CONFIG_TABLET_USB_AIPTEK is not set
+CONFIG_TABLET_USB_GTCO=y
+CONFIG_TABLET_USB_KBTAB=y
+# CONFIG_TABLET_USB_WACOM is not set
+# CONFIG_INPUT_TOUCHSCREEN is not set
+CONFIG_INPUT_MISC=y
+# CONFIG_INPUT_PCSPKR is not set
+# CONFIG_INPUT_WISTRON_BTNS is not set
+# CONFIG_INPUT_ATI_REMOTE is not set
+CONFIG_INPUT_ATI_REMOTE2=m
+CONFIG_INPUT_POWERMATE=m
+# CONFIG_INPUT_UINPUT is not set
+# CONFIG_INPUT_GPIO_ROTARY_ENCODER is not set
+
+#
+# Hardware I/O ports
+#
+CONFIG_SERIO=y
+CONFIG_SERIO_I8042=y
+CONFIG_SERIO_SERPORT=m
+# CONFIG_SERIO_CT82C710 is not set
+CONFIG_SERIO_PARKBD=m
+CONFIG_SERIO_PCIPS2=y
+CONFIG_SERIO_LIBPS2=y
+CONFIG_SERIO_RAW=m
+CONFIG_GAMEPORT=m
+CONFIG_GAMEPORT_NS558=m
+CONFIG_GAMEPORT_L4=m
+# CONFIG_GAMEPORT_EMU10K1 is not set
+# CONFIG_GAMEPORT_FM801 is not set
+
+#
+# Character devices
+#
+CONFIG_VT=y
+CONFIG_CONSOLE_TRANSLATIONS=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+CONFIG_DEVKMEM=y
+CONFIG_SERIAL_NONSTANDARD=y
+CONFIG_COMPUTONE=m
+CONFIG_ROCKETPORT=y
+# CONFIG_CYCLADES is not set
+CONFIG_DIGIEPCA=m
+CONFIG_MOXA_INTELLIO=y
+# CONFIG_MOXA_SMARTIO is not set
+# CONFIG_ISI is not set
+CONFIG_SYNCLINK=y
+# CONFIG_SYNCLINKMP is not set
+# CONFIG_SYNCLINK_GT is not set
+CONFIG_N_HDLC=m
+CONFIG_RISCOM8=m
+CONFIG_SPECIALIX=y
+CONFIG_SX=y
+# CONFIG_RIO is not set
+# CONFIG_STALDRV is not set
+
+#
+# Serial drivers
+#
+CONFIG_SERIAL_8250=y
+CONFIG_SERIAL_8250_CONSOLE=y
+CONFIG_FIX_EARLYCON_MEM=y
+CONFIG_SERIAL_8250_PCI=y
+CONFIG_SERIAL_8250_NR_UARTS=4
+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+CONFIG_SERIAL_8250_EXTENDED=y
+CONFIG_SERIAL_8250_MANY_PORTS=y
+CONFIG_SERIAL_8250_SHARE_IRQ=y
+CONFIG_SERIAL_8250_DETECT_IRQ=y
+# CONFIG_SERIAL_8250_RSA is not set
+
+#
+# Non-8250 serial port support
+#
+# CONFIG_SERIAL_MAX3100 is not set
+CONFIG_SERIAL_CORE=y
+CONFIG_SERIAL_CORE_CONSOLE=y
+CONFIG_SERIAL_JSM=y
+CONFIG_UNIX98_PTYS=y
+# CONFIG_DEVPTS_MULTIPLE_INSTANCES is not set
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=256
+CONFIG_PRINTER=m
+# CONFIG_LP_CONSOLE is not set
+CONFIG_PPDEV=m
+# CONFIG_VIRTIO_CONSOLE is not set
+# CONFIG_IPMI_HANDLER is not set
+# CONFIG_HW_RANDOM is not set
+CONFIG_NVRAM=m
+# CONFIG_R3964 is not set
+CONFIG_APPLICOM=m
+CONFIG_MWAVE=y
+CONFIG_PC8736x_GPIO=m
+CONFIG_NSC_GPIO=y
+# CONFIG_CS5535_GPIO is not set
+CONFIG_RAW_DRIVER=m
+CONFIG_MAX_RAW_DEVS=256
+CONFIG_HANGCHECK_TIMER=y
+CONFIG_DEVPORT=y
+CONFIG_I2C=m
+CONFIG_I2C_BOARDINFO=y
+CONFIG_I2C_CHARDEV=m
+CONFIG_I2C_HELPER_AUTO=y
+CONFIG_I2C_ALGOBIT=m
+CONFIG_I2C_ALGOPCA=m
+
+#
+# I2C Hardware Bus support
+#
+
+#
+# PC SMBus host controller drivers
+#
+# CONFIG_I2C_ALI1535 is not set
+CONFIG_I2C_ALI15X3=m
+# CONFIG_I2C_AMD756 is not set
+CONFIG_I2C_AMD8111=m
+CONFIG_I2C_I801=m
+# CONFIG_I2C_ISCH is not set
+CONFIG_I2C_PIIX4=m
+CONFIG_I2C_NFORCE2=m
+CONFIG_I2C_SIS5595=m
+CONFIG_I2C_SIS630=m
+CONFIG_I2C_SIS96X=m
+CONFIG_I2C_VIAPRO=m
+
+#
+# I2C system bus drivers (mostly embedded / system-on-chip)
+#
+CONFIG_I2C_GPIO=m
+CONFIG_I2C_SIMTEC=m
+
+#
+# External I2C/SMBus adapter drivers
+#
+CONFIG_I2C_PARPORT=m
+# CONFIG_I2C_PARPORT_LIGHT is not set
+CONFIG_I2C_TINY_USB=m
+
+#
+# Graphics adapter I2C/DDC channel drivers
+#
+CONFIG_I2C_VOODOO3=m
+
+#
+# Other I2C/SMBus bus drivers
+#
+CONFIG_I2C_PCA_PLATFORM=m
+# CONFIG_SCx200_ACB is not set
+
+#
+# Miscellaneous I2C Chip support
+#
+# CONFIG_I2C_DEBUG_CORE is not set
+# CONFIG_I2C_DEBUG_ALGO is not set
+CONFIG_I2C_DEBUG_BUS=y
+# CONFIG_I2C_DEBUG_CHIP is not set
+CONFIG_SPI=y
+CONFIG_SPI_DEBUG=y
+CONFIG_SPI_MASTER=y
+
+#
+# SPI Master Controller Drivers
+#
+CONFIG_SPI_BITBANG=y
+CONFIG_SPI_BUTTERFLY=m
+CONFIG_SPI_GPIO=y
+
+#
+# SPI Protocol Masters
+#
+CONFIG_SPI_TLE62X0=m
+
+#
+# PPS support
+#
+CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
+CONFIG_GPIOLIB=y
+CONFIG_DEBUG_GPIO=y
+
+#
+# Memory mapped GPIO expanders:
+#
+
+#
+# I2C GPIO expanders:
+#
+# CONFIG_GPIO_MAX732X is not set
+CONFIG_GPIO_PCA953X=m
+CONFIG_GPIO_PCF857X=m
+
+#
+# PCI GPIO expanders:
+#
+# CONFIG_GPIO_BT8XX is not set
+
+#
+# SPI GPIO expanders:
+#
+CONFIG_GPIO_MAX7301=y
+CONFIG_GPIO_MCP23S08=m
+CONFIG_W1=m
+# CONFIG_W1_CON is not set
+
+#
+# 1-wire Bus Masters
+#
+CONFIG_W1_MASTER_MATROX=m
+CONFIG_W1_MASTER_DS2490=m
+# CONFIG_W1_MASTER_GPIO is not set
+
+#
+# 1-wire Slaves
+#
+# CONFIG_W1_SLAVE_THERM is not set
+# CONFIG_W1_SLAVE_SMEM is not set
+# CONFIG_W1_SLAVE_DS2431 is not set
+CONFIG_W1_SLAVE_DS2433=m
+CONFIG_W1_SLAVE_DS2433_CRC=y
+CONFIG_W1_SLAVE_DS2760=m
+CONFIG_W1_SLAVE_BQ27000=m
+CONFIG_POWER_SUPPLY=m
+# CONFIG_POWER_SUPPLY_DEBUG is not set
+# CONFIG_PDA_POWER is not set
+CONFIG_BATTERY_DS2760=m
+CONFIG_BATTERY_BQ27x00=m
+CONFIG_BATTERY_MAX17040=m
+# CONFIG_HWMON is not set
+CONFIG_THERMAL=y
+# CONFIG_WATCHDOG is not set
+CONFIG_SSB_POSSIBLE=y
+
+#
+# Sonics Silicon Backplane
+#
+# CONFIG_SSB is not set
+
+#
+# Multifunction device drivers
+#
+CONFIG_MFD_CORE=y
+CONFIG_MFD_SM501=m
+CONFIG_MFD_SM501_GPIO=y
+CONFIG_HTC_PASIC3=y
+CONFIG_TPS65010=m
+# CONFIG_MFD_TMIO is not set
+CONFIG_MFD_WM8400=m
+# CONFIG_MFD_WM8350_I2C is not set
+# CONFIG_MFD_PCF50633 is not set
+CONFIG_AB3100_CORE=m
+# CONFIG_EZX_PCAP is not set
+# CONFIG_REGULATOR is not set
+
+#
+# Multimedia devices
+#
+
+#
+# Multimedia core support
+#
+CONFIG_VIDEO_DEV=m
+CONFIG_VIDEO_V4L2_COMMON=m
+CONFIG_VIDEO_ALLOW_V4L1=y
+CONFIG_VIDEO_V4L1_COMPAT=y
+CONFIG_VIDEO_MEDIA=m
+
+#
+# Multimedia drivers
+#
+# CONFIG_MEDIA_ATTACH is not set
+CONFIG_MEDIA_TUNER=m
+# CONFIG_MEDIA_TUNER_CUSTOMISE is not set
+CONFIG_MEDIA_TUNER_SIMPLE=m
+CONFIG_MEDIA_TUNER_TDA8290=m
+CONFIG_MEDIA_TUNER_TDA9887=m
+CONFIG_MEDIA_TUNER_TEA5761=m
+CONFIG_MEDIA_TUNER_TEA5767=m
+CONFIG_MEDIA_TUNER_MT20XX=m
+CONFIG_MEDIA_TUNER_XC2028=m
+CONFIG_MEDIA_TUNER_XC5000=m
+CONFIG_MEDIA_TUNER_MC44S803=m
+CONFIG_VIDEO_V4L2=m
+CONFIG_VIDEO_V4L1=m
+# CONFIG_VIDEO_CAPTURE_DRIVERS is not set
+# CONFIG_RADIO_ADAPTERS is not set
+# CONFIG_DAB is not set
+
+#
+# Graphics support
+#
+CONFIG_AGP=m
+# CONFIG_AGP_ALI is not set
+CONFIG_AGP_ATI=m
+CONFIG_AGP_AMD=m
+CONFIG_AGP_AMD64=m
+CONFIG_AGP_INTEL=m
+# CONFIG_AGP_NVIDIA is not set
+CONFIG_AGP_SIS=m
+# CONFIG_AGP_SWORKS is not set
+# CONFIG_AGP_VIA is not set
+CONFIG_AGP_EFFICEON=m
+# CONFIG_DRM is not set
+CONFIG_VGASTATE=y
+CONFIG_VIDEO_OUTPUT_CONTROL=m
+CONFIG_FB=y
+CONFIG_FIRMWARE_EDID=y
+# CONFIG_FB_DDC is not set
+CONFIG_FB_BOOT_VESA_SUPPORT=y
+CONFIG_FB_CFB_FILLRECT=y
+CONFIG_FB_CFB_COPYAREA=y
+CONFIG_FB_CFB_IMAGEBLIT=y
+# CONFIG_FB_CFB_REV_PIXELS_IN_BYTE is not set
+CONFIG_FB_SYS_FILLRECT=y
+CONFIG_FB_SYS_COPYAREA=y
+CONFIG_FB_SYS_IMAGEBLIT=y
+CONFIG_FB_FOREIGN_ENDIAN=y
+# CONFIG_FB_BOTH_ENDIAN is not set
+# CONFIG_FB_BIG_ENDIAN is not set
+CONFIG_FB_LITTLE_ENDIAN=y
+CONFIG_FB_SYS_FOPS=y
+CONFIG_FB_DEFERRED_IO=y
+CONFIG_FB_HECUBA=y
+CONFIG_FB_SVGALIB=y
+# CONFIG_FB_MACMODES is not set
+CONFIG_FB_BACKLIGHT=y
+CONFIG_FB_MODE_HELPERS=y
+CONFIG_FB_TILEBLITTING=y
+
+#
+# Frame buffer hardware drivers
+#
+CONFIG_FB_CIRRUS=m
+CONFIG_FB_PM2=y
+CONFIG_FB_PM2_FIFO_DISCONNECT=y
+CONFIG_FB_CYBER2000=m
+CONFIG_FB_ARC=m
+# CONFIG_FB_ASILIANT is not set
+# CONFIG_FB_IMSTT is not set
+CONFIG_FB_VGA16=y
+CONFIG_FB_UVESA=m
+CONFIG_FB_VESA=y
+CONFIG_FB_N411=y
+CONFIG_FB_HGA=y
+CONFIG_FB_S1D13XXX=m
+# CONFIG_FB_NVIDIA is not set
+CONFIG_FB_RIVA=y
+# CONFIG_FB_RIVA_I2C is not set
+# CONFIG_FB_RIVA_DEBUG is not set
+# CONFIG_FB_RIVA_BACKLIGHT is not set
+CONFIG_FB_LE80578=y
+CONFIG_FB_CARILLO_RANCH=y
+CONFIG_FB_MATROX=m
+CONFIG_FB_MATROX_MILLENIUM=y
+# CONFIG_FB_MATROX_MYSTIQUE is not set
+CONFIG_FB_MATROX_G=y
+# CONFIG_FB_MATROX_I2C is not set
+CONFIG_FB_MATROX_MULTIHEAD=y
+# CONFIG_FB_RADEON is not set
+CONFIG_FB_ATY128=y
+CONFIG_FB_ATY128_BACKLIGHT=y
+CONFIG_FB_ATY=m
+CONFIG_FB_ATY_CT=y
+CONFIG_FB_ATY_GENERIC_LCD=y
+CONFIG_FB_ATY_GX=y
+# CONFIG_FB_ATY_BACKLIGHT is not set
+# CONFIG_FB_S3 is not set
+CONFIG_FB_SIS=m
+CONFIG_FB_SIS_300=y
+# CONFIG_FB_SIS_315 is not set
+CONFIG_FB_VIA=m
+CONFIG_FB_NEOMAGIC=y
+CONFIG_FB_KYRO=y
+# CONFIG_FB_3DFX is not set
+CONFIG_FB_VOODOO1=y
+CONFIG_FB_VT8623=y
+CONFIG_FB_TRIDENT=y
+CONFIG_FB_ARK=m
+CONFIG_FB_CARMINE=y
+CONFIG_FB_CARMINE_DRAM_EVAL=y
+# CONFIG_CARMINE_DRAM_CUSTOM is not set
+# CONFIG_FB_TMIO is not set
+CONFIG_FB_SM501=m
+CONFIG_FB_VIRTUAL=y
+CONFIG_FB_METRONOME=m
+# CONFIG_FB_MB862XX is not set
+# CONFIG_FB_BROADSHEET is not set
+CONFIG_BACKLIGHT_LCD_SUPPORT=y
+CONFIG_LCD_CLASS_DEVICE=m
+CONFIG_LCD_LTV350QV=m
+CONFIG_LCD_ILI9320=m
+CONFIG_LCD_TDO24M=m
+CONFIG_LCD_VGG2432A4=m
+CONFIG_LCD_PLATFORM=m
+CONFIG_BACKLIGHT_CLASS_DEVICE=y
+CONFIG_BACKLIGHT_GENERIC=y
+# CONFIG_BACKLIGHT_PROGEAR is not set
+# CONFIG_BACKLIGHT_CARILLO_RANCH is not set
+CONFIG_BACKLIGHT_MBP_NVIDIA=y
+CONFIG_BACKLIGHT_SAHARA=m
+
+#
+# Display device support
+#
+CONFIG_DISPLAY_SUPPORT=m
+
+#
+# Display hardware drivers
+#
+
+#
+# Console display driver support
+#
+CONFIG_VGA_CONSOLE=y
+# CONFIG_VGACON_SOFT_SCROLLBACK is not set
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_FRAMEBUFFER_CONSOLE=y
+CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY=y
+# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
+CONFIG_FONTS=y
+# CONFIG_FONT_8x8 is not set
+CONFIG_FONT_8x16=y
+CONFIG_FONT_6x11=y
+# CONFIG_FONT_7x14 is not set
+# CONFIG_FONT_PEARL_8x8 is not set
+# CONFIG_FONT_ACORN_8x8 is not set
+CONFIG_FONT_MINI_4x6=y
+CONFIG_FONT_SUN8x16=y
+CONFIG_FONT_SUN12x22=y
+CONFIG_FONT_10x18=y
+CONFIG_LOGO=y
+CONFIG_LOGO_LINUX_MONO=y
+CONFIG_LOGO_LINUX_VGA16=y
+# CONFIG_LOGO_LINUX_CLUT224 is not set
+CONFIG_SOUND=y
+CONFIG_SOUND_OSS_CORE=y
+CONFIG_SND=y
+CONFIG_SND_TIMER=y
+CONFIG_SND_PCM=y
+CONFIG_SND_RAWMIDI=y
+CONFIG_SND_SEQUENCER=y
+CONFIG_SND_SEQ_DUMMY=m
+CONFIG_SND_OSSEMUL=y
+CONFIG_SND_MIXER_OSS=y
+CONFIG_SND_PCM_OSS=m
+CONFIG_SND_PCM_OSS_PLUGINS=y
+CONFIG_SND_SEQUENCER_OSS=y
+CONFIG_SND_HRTIMER=y
+# CONFIG_SND_SEQ_HRTIMER_DEFAULT is not set
+CONFIG_SND_DYNAMIC_MINORS=y
+CONFIG_SND_SUPPORT_OLD_API=y
+CONFIG_SND_VERBOSE_PROCFS=y
+CONFIG_SND_VERBOSE_PRINTK=y
+CONFIG_SND_DEBUG=y
+CONFIG_SND_DEBUG_VERBOSE=y
+# CONFIG_SND_PCM_XRUN_DEBUG is not set
+CONFIG_SND_RAWMIDI_SEQ=y
+# CONFIG_SND_OPL3_LIB_SEQ is not set
+# CONFIG_SND_OPL4_LIB_SEQ is not set
+# CONFIG_SND_SBAWE_SEQ is not set
+# CONFIG_SND_EMU10K1_SEQ is not set
+CONFIG_SND_DRIVERS=y
+CONFIG_SND_DUMMY=y
+CONFIG_SND_VIRMIDI=y
+CONFIG_SND_MTPAV=m
+# CONFIG_SND_MTS64 is not set
+# CONFIG_SND_SERIAL_U16550 is not set
+# CONFIG_SND_MPU401 is not set
+# CONFIG_SND_PORTMAN2X4 is not set
+# CONFIG_SND_PCI is not set
+CONFIG_SND_SPI=y
+# CONFIG_SND_USB is not set
+# CONFIG_SND_SOC is not set
+# CONFIG_SOUND_PRIME is not set
+CONFIG_HID_SUPPORT=y
+CONFIG_HID=m
+# CONFIG_HID_DEBUG is not set
+CONFIG_HIDRAW=y
+
+#
+# USB Input Devices
+#
+CONFIG_USB_HID=m
+CONFIG_HID_PID=y
+# CONFIG_USB_HIDDEV is not set
+
+#
+# Special HID drivers
+#
+CONFIG_HID_A4TECH=m
+CONFIG_HID_APPLE=m
+CONFIG_HID_BELKIN=m
+CONFIG_HID_CHERRY=m
+CONFIG_HID_CHICONY=m
+CONFIG_HID_CYPRESS=m
+CONFIG_HID_DRAGONRISE=m
+# CONFIG_DRAGONRISE_FF is not set
+CONFIG_HID_EZKEY=m
+CONFIG_HID_KYE=m
+CONFIG_HID_GYRATION=m
+CONFIG_HID_KENSINGTON=m
+CONFIG_HID_LOGITECH=m
+# CONFIG_LOGITECH_FF is not set
+# CONFIG_LOGIRUMBLEPAD2_FF is not set
+CONFIG_HID_MICROSOFT=m
+CONFIG_HID_MONTEREY=m
+CONFIG_HID_NTRIG=m
+CONFIG_HID_PANTHERLORD=m
+CONFIG_PANTHERLORD_FF=y
+CONFIG_HID_PETALYNX=m
+CONFIG_HID_SAMSUNG=m
+CONFIG_HID_SONY=m
+CONFIG_HID_SUNPLUS=m
+CONFIG_HID_GREENASIA=m
+CONFIG_GREENASIA_FF=y
+CONFIG_HID_SMARTJOYPLUS=m
+CONFIG_SMARTJOYPLUS_FF=y
+CONFIG_HID_TOPSEED=m
+CONFIG_HID_THRUSTMASTER=m
+CONFIG_THRUSTMASTER_FF=y
+CONFIG_HID_WACOM=m
+CONFIG_HID_ZEROPLUS=m
+CONFIG_ZEROPLUS_FF=y
+CONFIG_USB_SUPPORT=y
+CONFIG_USB_ARCH_HAS_HCD=y
+CONFIG_USB_ARCH_HAS_OHCI=y
+CONFIG_USB_ARCH_HAS_EHCI=y
+CONFIG_USB=y
+CONFIG_USB_DEBUG=y
+CONFIG_USB_ANNOUNCE_NEW_DEVICES=y
+
+#
+# Miscellaneous USB options
+#
+CONFIG_USB_DEVICE_CLASS=y
+CONFIG_USB_DYNAMIC_MINORS=y
+CONFIG_USB_MON=m
+CONFIG_USB_WUSB_CBAF=y
+CONFIG_USB_WUSB_CBAF_DEBUG=y
+
+#
+# USB Host Controller Drivers
+#
+CONFIG_USB_C67X00_HCD=y
+CONFIG_USB_EHCI_HCD=y
+# CONFIG_USB_EHCI_ROOT_HUB_TT is not set
+CONFIG_USB_OXU210HP_HCD=m
+# CONFIG_USB_ISP116X_HCD is not set
+CONFIG_USB_OHCI_HCD=m
+# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
+# CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
+CONFIG_USB_OHCI_LITTLE_ENDIAN=y
+# CONFIG_USB_UHCI_HCD is not set
+# CONFIG_USB_U132_HCD is not set
+# CONFIG_USB_SL811_HCD is not set
+CONFIG_USB_R8A66597_HCD=m
+# CONFIG_USB_GADGET_MUSB_HDRC is not set
+
+#
+# USB Device Class drivers
+#
+CONFIG_USB_ACM=y
+CONFIG_USB_PRINTER=m
+CONFIG_USB_WDM=m
+CONFIG_USB_TMC=y
+
+#
+# NOTE: USB_STORAGE depends on SCSI but BLK_DEV_SD may
+#
+
+#
+# also be needed; see USB_STORAGE Help for more info
+#
+CONFIG_USB_STORAGE=y
+# CONFIG_USB_STORAGE_DEBUG is not set
+CONFIG_USB_STORAGE_DATAFAB=y
+CONFIG_USB_STORAGE_FREECOM=y
+CONFIG_USB_STORAGE_ISD200=m
+CONFIG_USB_STORAGE_USBAT=y
+CONFIG_USB_STORAGE_SDDR09=y
+CONFIG_USB_STORAGE_SDDR55=y
+# CONFIG_USB_STORAGE_JUMPSHOT is not set
+# CONFIG_USB_STORAGE_ALAUDA is not set
+CONFIG_USB_STORAGE_ONETOUCH=y
+# CONFIG_USB_STORAGE_KARMA is not set
+# CONFIG_USB_STORAGE_CYPRESS_ATACB is not set
+# CONFIG_USB_LIBUSUAL is not set
+
+#
+# USB Imaging devices
+#
+CONFIG_USB_MDC800=y
+CONFIG_USB_MICROTEK=m
+
+#
+# USB port drivers
+#
+CONFIG_USB_USS720=m
+# CONFIG_USB_SERIAL is not set
+
+#
+# USB Miscellaneous drivers
+#
+CONFIG_USB_EMI62=y
+# CONFIG_USB_EMI26 is not set
+# CONFIG_USB_ADUTUX is not set
+CONFIG_USB_SEVSEG=m
+CONFIG_USB_RIO500=m
+CONFIG_USB_LEGOTOWER=m
+# CONFIG_USB_LCD is not set
+# CONFIG_USB_BERRY_CHARGE is not set
+CONFIG_USB_LED=y
+# CONFIG_USB_CYPRESS_CY7C63 is not set
+# CONFIG_USB_CYTHERM is not set
+# CONFIG_USB_IDMOUSE is not set
+CONFIG_USB_FTDI_ELAN=y
+CONFIG_USB_APPLEDISPLAY=m
+CONFIG_USB_SISUSBVGA=m
+CONFIG_USB_SISUSBVGA_CON=y
+CONFIG_USB_LD=y
+CONFIG_USB_TRANCEVIBRATOR=y
+# CONFIG_USB_IOWARRIOR is not set
+CONFIG_USB_ISIGHTFW=y
+CONFIG_USB_VST=y
+# CONFIG_USB_ATM is not set
+CONFIG_USB_GADGET=m
+CONFIG_USB_GADGET_DEBUG=y
+CONFIG_USB_GADGET_DEBUG_FILES=y
+# CONFIG_USB_GADGET_DEBUG_FS is not set
+CONFIG_USB_GADGET_VBUS_DRAW=2
+CONFIG_USB_GADGET_SELECTED=y
+# CONFIG_USB_GADGET_AT91 is not set
+# CONFIG_USB_GADGET_ATMEL_USBA is not set
+# CONFIG_USB_GADGET_FSL_USB2 is not set
+# CONFIG_USB_GADGET_LH7A40X is not set
+# CONFIG_USB_GADGET_OMAP is not set
+# CONFIG_USB_GADGET_PXA25X is not set
+# CONFIG_USB_GADGET_PXA27X is not set
+# CONFIG_USB_GADGET_S3C_HSOTG is not set
+# CONFIG_USB_GADGET_S3C2410 is not set
+# CONFIG_USB_GADGET_IMX is not set
+CONFIG_USB_GADGET_M66592=y
+CONFIG_USB_M66592=m
+# CONFIG_USB_GADGET_AMD5536UDC is not set
+# CONFIG_USB_GADGET_FSL_QE is not set
+# CONFIG_USB_GADGET_CI13XXX is not set
+# CONFIG_USB_GADGET_NET2280 is not set
+# CONFIG_USB_GADGET_GOKU is not set
+# CONFIG_USB_GADGET_LANGWELL is not set
+# CONFIG_USB_GADGET_DUMMY_HCD is not set
+CONFIG_USB_GADGET_DUALSPEED=y
+CONFIG_USB_ZERO=m
+# CONFIG_USB_AUDIO is not set
+CONFIG_USB_ETH=m
+CONFIG_USB_ETH_RNDIS=y
+# CONFIG_USB_GADGETFS is not set
+# CONFIG_USB_FILE_STORAGE is not set
+CONFIG_USB_G_SERIAL=m
+# CONFIG_USB_MIDI_GADGET is not set
+CONFIG_USB_G_PRINTER=m
+CONFIG_USB_CDC_COMPOSITE=m
+
+#
+# OTG and related infrastructure
+#
+CONFIG_USB_OTG_UTILS=y
+CONFIG_USB_GPIO_VBUS=y
+CONFIG_NOP_USB_XCEIV=m
+CONFIG_MMC=y
+CONFIG_MMC_DEBUG=y
+CONFIG_MMC_UNSAFE_RESUME=y
+
+#
+# MMC/SD/SDIO Card Drivers
+#
+CONFIG_MMC_BLOCK=m
+CONFIG_MMC_BLOCK_BOUNCE=y
+CONFIG_SDIO_UART=m
+# CONFIG_MMC_TEST is not set
+
+#
+# MMC/SD/SDIO Host Controller Drivers
+#
+CONFIG_MMC_SDHCI=y
+# CONFIG_MMC_SDHCI_PCI is not set
+CONFIG_MMC_WBSD=y
+# CONFIG_MMC_CB710 is not set
+CONFIG_MEMSTICK=m
+CONFIG_MEMSTICK_DEBUG=y
+
+#
+# MemoryStick drivers
+#
+CONFIG_MEMSTICK_UNSAFE_RESUME=y
+CONFIG_MSPRO_BLOCK=m
+
+#
+# MemoryStick Host Controller Drivers
+#
+CONFIG_NEW_LEDS=y
+# CONFIG_LEDS_CLASS is not set
+
+#
+# LED drivers
+#
+
+#
+# LED Triggers
+#
+# CONFIG_LEDS_TRIGGERS is not set
+CONFIG_ACCESSIBILITY=y
+CONFIG_A11Y_BRAILLE_CONSOLE=y
+# CONFIG_INFINIBAND is not set
+# CONFIG_EDAC is not set
+CONFIG_RTC_LIB=y
+CONFIG_RTC_CLASS=y
+CONFIG_RTC_HCTOSYS=y
+CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
+# CONFIG_RTC_DEBUG is not set
+
+#
+# RTC interfaces
+#
+CONFIG_RTC_INTF_SYSFS=y
+CONFIG_RTC_INTF_PROC=y
+CONFIG_RTC_INTF_DEV=y
+# CONFIG_RTC_INTF_DEV_UIE_EMUL is not set
+# CONFIG_RTC_DRV_TEST is not set
+
+#
+# I2C RTC drivers
+#
+CONFIG_RTC_DRV_DS1307=m
+CONFIG_RTC_DRV_DS1374=m
+CONFIG_RTC_DRV_DS1672=m
+CONFIG_RTC_DRV_DS1685=m
+# CONFIG_RTC_DRV_MAX6900 is not set
+# CONFIG_RTC_DRV_RS5C372 is not set
+CONFIG_RTC_DRV_ISL1208=m
+# CONFIG_RTC_DRV_X1205 is not set
+# CONFIG_RTC_DRV_PCF8563 is not set
+CONFIG_RTC_DRV_PCF8583=m
+# CONFIG_RTC_DRV_M41T80 is not set
+CONFIG_RTC_DRV_S35390A=m
+CONFIG_RTC_DRV_FM3130=m
+CONFIG_RTC_DRV_RX8581=m
+CONFIG_RTC_DRV_RX8025=m
+
+#
+# SPI RTC drivers
+#
+CONFIG_RTC_DRV_M41T94=y
+CONFIG_RTC_DRV_DS1305=y
+CONFIG_RTC_DRV_DS1390=m
+# CONFIG_RTC_DRV_MAX6902 is not set
+# CONFIG_RTC_DRV_R9701 is not set
+CONFIG_RTC_DRV_RS5C348=m
+CONFIG_RTC_DRV_DS3234=m
+
+#
+# Platform RTC drivers
+#
+CONFIG_RTC_DRV_CMOS=y
+# CONFIG_RTC_DRV_DS1286 is not set
+CONFIG_RTC_DRV_DS1511=m
+CONFIG_RTC_DRV_DS1553=m
+# CONFIG_RTC_DRV_DS1742 is not set
+CONFIG_RTC_DRV_STK17TA8=y
+CONFIG_RTC_DRV_M48T86=m
+# CONFIG_RTC_DRV_M48T35 is not set
+CONFIG_RTC_DRV_M48T59=y
+CONFIG_RTC_DRV_MSM6242=y
+CONFIG_RTC_DRV_BQ4802=m
+CONFIG_RTC_DRV_RP5C01=m
+CONFIG_RTC_DRV_V3020=m
+
+#
+# on-CPU RTC drivers
+#
+CONFIG_DMADEVICES=y
+
+#
+# DMA Devices
+#
+CONFIG_INTEL_IOATDMA=y
+CONFIG_DMA_ENGINE=y
+
+#
+# DMA Clients
+#
+# CONFIG_NET_DMA is not set
+# CONFIG_ASYNC_TX_DMA is not set
+CONFIG_DMATEST=y
+CONFIG_DCA=y
+# CONFIG_AUXDISPLAY is not set
+CONFIG_UIO=m
+# CONFIG_UIO_CIF is not set
+CONFIG_UIO_PDRV=m
+# CONFIG_UIO_PDRV_GENIRQ is not set
+CONFIG_UIO_SMX=m
+CONFIG_UIO_AEC=m
+CONFIG_UIO_SERCOS3=m
+
+#
+# TI VLYNQ
+#
+# CONFIG_STAGING is not set
+# CONFIG_X86_PLATFORM_DEVICES is not set
+
+#
+# Firmware Drivers
+#
+CONFIG_EDD=y
+CONFIG_EDD_OFF=y
+CONFIG_FIRMWARE_MEMMAP=y
+CONFIG_DELL_RBU=y
+# CONFIG_DCDBAS is not set
+CONFIG_DMIID=y
+CONFIG_ISCSI_IBFT_FIND=y
+CONFIG_ISCSI_IBFT=y
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=y
+# CONFIG_EXT2_FS_XATTR is not set
+# CONFIG_EXT2_FS_XIP is not set
+CONFIG_EXT3_FS=y
+CONFIG_EXT3_DEFAULTS_TO_ORDERED=y
+CONFIG_EXT3_FS_XATTR=y
+# CONFIG_EXT3_FS_POSIX_ACL is not set
+# CONFIG_EXT3_FS_SECURITY is not set
+# CONFIG_EXT4_FS is not set
+CONFIG_JBD=y
+# CONFIG_JBD_DEBUG is not set
+CONFIG_JBD2=m
+CONFIG_JBD2_DEBUG=y
+CONFIG_FS_MBCACHE=y
+CONFIG_REISERFS_FS=y
+CONFIG_REISERFS_CHECK=y
+CONFIG_REISERFS_PROC_INFO=y
+CONFIG_REISERFS_FS_XATTR=y
+CONFIG_REISERFS_FS_POSIX_ACL=y
+CONFIG_REISERFS_FS_SECURITY=y
+CONFIG_JFS_FS=m
+CONFIG_JFS_POSIX_ACL=y
+# CONFIG_JFS_SECURITY is not set
+CONFIG_JFS_DEBUG=y
+CONFIG_JFS_STATISTICS=y
+CONFIG_FS_POSIX_ACL=y
+CONFIG_FILE_LOCKING=y
+CONFIG_XFS_FS=m
+# CONFIG_XFS_QUOTA is not set
+CONFIG_XFS_POSIX_ACL=y
+# CONFIG_XFS_RT is not set
+CONFIG_OCFS2_FS=m
+CONFIG_OCFS2_FS_O2CB=m
+CONFIG_OCFS2_FS_STATS=y
+CONFIG_OCFS2_DEBUG_MASKLOG=y
+CONFIG_OCFS2_DEBUG_FS=y
+CONFIG_OCFS2_FS_POSIX_ACL=y
+CONFIG_FSNOTIFY=y
+CONFIG_DNOTIFY=y
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+CONFIG_QUOTA=y
+CONFIG_QUOTA_NETLINK_INTERFACE=y
+# CONFIG_PRINT_QUOTA_WARNING is not set
+CONFIG_QUOTA_TREE=m
+CONFIG_QFMT_V1=m
+CONFIG_QFMT_V2=m
+CONFIG_QUOTACTL=y
+# CONFIG_AUTOFS_FS is not set
+CONFIG_AUTOFS4_FS=m
+CONFIG_FUSE_FS=y
+# CONFIG_CUSE is not set
+CONFIG_GENERIC_ACL=y
+
+#
+# Caches
+#
+
+#
+# CD-ROM/DVD Filesystems
+#
+# CONFIG_ISO9660_FS is not set
+# CONFIG_UDF_FS is not set
+
+#
+# DOS/FAT/NT Filesystems
+#
+# CONFIG_MSDOS_FS is not set
+# CONFIG_VFAT_FS is not set
+# CONFIG_NTFS_FS is not set
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_PROC_PAGE_MONITOR=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+CONFIG_TMPFS_POSIX_ACL=y
+# CONFIG_HUGETLBFS is not set
+# CONFIG_HUGETLB_PAGE is not set
+CONFIG_CONFIGFS_FS=m
+CONFIG_MISC_FILESYSTEMS=y
+CONFIG_HFSPLUS_FS=y
+# CONFIG_CRAMFS is not set
+CONFIG_SQUASHFS=m
+# CONFIG_SQUASHFS_EMBEDDED is not set
+CONFIG_SQUASHFS_FRAGMENT_CACHE_SIZE=3
+CONFIG_VXFS_FS=m
+CONFIG_MINIX_FS=y
+CONFIG_OMFS_FS=y
+# CONFIG_HPFS_FS is not set
+CONFIG_QNX4FS_FS=y
+CONFIG_ROMFS_FS=y
+CONFIG_ROMFS_BACKED_BY_BLOCK=y
+# CONFIG_ROMFS_BACKED_BY_MTD is not set
+# CONFIG_ROMFS_BACKED_BY_BOTH is not set
+CONFIG_ROMFS_ON_BLOCK=y
+# CONFIG_SYSV_FS is not set
+# CONFIG_UFS_FS is not set
+# CONFIG_EXOFS_FS is not set
+CONFIG_NETWORK_FILESYSTEMS=y
+CONFIG_EXPORTFS=m
+
+#
+# Partition Types
+#
+CONFIG_PARTITION_ADVANCED=y
+CONFIG_ACORN_PARTITION=y
+# CONFIG_ACORN_PARTITION_CUMANA is not set
+CONFIG_ACORN_PARTITION_EESOX=y
+CONFIG_ACORN_PARTITION_ICS=y
+# CONFIG_ACORN_PARTITION_ADFS is not set
+# CONFIG_ACORN_PARTITION_POWERTEC is not set
+CONFIG_ACORN_PARTITION_RISCIX=y
+# CONFIG_OSF_PARTITION is not set
+CONFIG_AMIGA_PARTITION=y
+CONFIG_ATARI_PARTITION=y
+CONFIG_MAC_PARTITION=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_BSD_DISKLABEL=y
+# CONFIG_MINIX_SUBPARTITION is not set
+CONFIG_SOLARIS_X86_PARTITION=y
+# CONFIG_UNIXWARE_DISKLABEL is not set
+CONFIG_LDM_PARTITION=y
+CONFIG_LDM_DEBUG=y
+CONFIG_SGI_PARTITION=y
+CONFIG_ULTRIX_PARTITION=y
+# CONFIG_SUN_PARTITION is not set
+# CONFIG_KARMA_PARTITION is not set
+CONFIG_EFI_PARTITION=y
+CONFIG_SYSV68_PARTITION=y
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+# CONFIG_NLS_CODEPAGE_437 is not set
+# CONFIG_NLS_CODEPAGE_737 is not set
+# CONFIG_NLS_CODEPAGE_775 is not set
+CONFIG_NLS_CODEPAGE_850=y
+CONFIG_NLS_CODEPAGE_852=y
+# CONFIG_NLS_CODEPAGE_855 is not set
+CONFIG_NLS_CODEPAGE_857=m
+CONFIG_NLS_CODEPAGE_860=m
+CONFIG_NLS_CODEPAGE_861=m
+CONFIG_NLS_CODEPAGE_862=m
+CONFIG_NLS_CODEPAGE_863=y
+CONFIG_NLS_CODEPAGE_864=y
+CONFIG_NLS_CODEPAGE_865=m
+CONFIG_NLS_CODEPAGE_866=m
+CONFIG_NLS_CODEPAGE_869=y
+CONFIG_NLS_CODEPAGE_936=y
+CONFIG_NLS_CODEPAGE_950=y
+CONFIG_NLS_CODEPAGE_932=m
+CONFIG_NLS_CODEPAGE_949=m
+CONFIG_NLS_CODEPAGE_874=y
+CONFIG_NLS_ISO8859_8=m
+# CONFIG_NLS_CODEPAGE_1250 is not set
+# CONFIG_NLS_CODEPAGE_1251 is not set
+CONFIG_NLS_ASCII=m
+# CONFIG_NLS_ISO8859_1 is not set
+CONFIG_NLS_ISO8859_2=m
+# CONFIG_NLS_ISO8859_3 is not set
+CONFIG_NLS_ISO8859_4=y
+# CONFIG_NLS_ISO8859_5 is not set
+CONFIG_NLS_ISO8859_6=y
+CONFIG_NLS_ISO8859_7=y
+CONFIG_NLS_ISO8859_9=y
+CONFIG_NLS_ISO8859_13=m
+CONFIG_NLS_ISO8859_14=m
+CONFIG_NLS_ISO8859_15=m
+# CONFIG_NLS_KOI8_R is not set
+CONFIG_NLS_KOI8_U=m
+CONFIG_NLS_UTF8=y
+
+#
+# Kernel hacking
+#
+CONFIG_TRACE_IRQFLAGS_SUPPORT=y
+CONFIG_PRINTK_TIME=y
+CONFIG_ENABLE_WARN_DEPRECATED=y
+# CONFIG_ENABLE_MUST_CHECK is not set
+CONFIG_FRAME_WARN=1024
+# CONFIG_MAGIC_SYSRQ is not set
+# CONFIG_UNUSED_SYMBOLS is not set
+CONFIG_DEBUG_FS=y
+CONFIG_HEADERS_CHECK=y
+CONFIG_DEBUG_KERNEL=y
+CONFIG_DEBUG_SHIRQ=y
+# CONFIG_DETECT_SOFTLOCKUP is not set
+CONFIG_DETECT_HUNG_TASK=y
+CONFIG_BOOTPARAM_HUNG_TASK_PANIC=y
+CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE=1
+CONFIG_SCHED_DEBUG=y
+CONFIG_SCHEDSTATS=y
+CONFIG_TIMER_STATS=y
+CONFIG_DEBUG_OBJECTS=y
+CONFIG_DEBUG_OBJECTS_SELFTEST=y
+CONFIG_DEBUG_OBJECTS_FREE=y
+CONFIG_DEBUG_OBJECTS_TIMERS=y
+CONFIG_DEBUG_OBJECTS_ENABLE_DEFAULT=1
+CONFIG_SLQB_DEBUG=y
+CONFIG_SLQB_DEBUG_ON=y
+CONFIG_SLQB_SYSFS=y
+# CONFIG_SLQB_STATS is not set
+CONFIG_DEBUG_PREEMPT=y
+CONFIG_DEBUG_RT_MUTEXES=y
+CONFIG_DEBUG_PI_LIST=y
+CONFIG_RT_MUTEX_TESTER=y
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_MUTEXES=y
+CONFIG_DEBUG_LOCK_ALLOC=y
+CONFIG_PROVE_LOCKING=y
+CONFIG_LOCKDEP=y
+CONFIG_LOCK_STAT=y
+CONFIG_DEBUG_LOCKDEP=y
+CONFIG_TRACE_IRQFLAGS=y
+CONFIG_DEBUG_SPINLOCK_SLEEP=y
+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+CONFIG_STACKTRACE=y
+CONFIG_DEBUG_KOBJECT=y
+CONFIG_DEBUG_HIGHMEM=y
+CONFIG_DEBUG_BUGVERBOSE=y
+# CONFIG_DEBUG_INFO is not set
+CONFIG_DEBUG_VM=y
+CONFIG_DEBUG_VIRTUAL=y
+CONFIG_DEBUG_WRITECOUNT=y
+CONFIG_DEBUG_MEMORY_INIT=y
+CONFIG_DEBUG_LIST=y
+CONFIG_DEBUG_SG=y
+# CONFIG_DEBUG_NOTIFIERS is not set
+CONFIG_ARCH_WANT_FRAME_POINTERS=y
+CONFIG_FRAME_POINTER=y
+CONFIG_DEBUG_SYNCHRO_TEST=m
+CONFIG_BOOT_PRINTK_DELAY=y
+CONFIG_RCU_TORTURE_TEST=y
+# CONFIG_RCU_TORTURE_TEST_RUNNABLE is not set
+CONFIG_RCU_CPU_STALL_DETECTOR=y
+# CONFIG_BACKTRACE_SELF_TEST is not set
+CONFIG_DEBUG_BLOCK_EXT_DEVT=y
+CONFIG_FAULT_INJECTION=y
+CONFIG_FAIL_PAGE_ALLOC=y
+CONFIG_FAIL_MAKE_REQUEST=y
+CONFIG_FAIL_IO_TIMEOUT=y
+CONFIG_FAULT_INJECTION_DEBUG_FS=y
+# CONFIG_FAULT_INJECTION_STACKTRACE_FILTER is not set
+CONFIG_LATENCYTOP=y
+CONFIG_SYSCTL_SYSCALL_CHECK=y
+CONFIG_DEBUG_PAGEALLOC=y
+CONFIG_USER_STACKTRACE_SUPPORT=y
+CONFIG_NOP_TRACER=y
+CONFIG_HAVE_FUNCTION_TRACER=y
+CONFIG_HAVE_FUNCTION_GRAPH_TRACER=y
+CONFIG_HAVE_FUNCTION_TRACE_MCOUNT_TEST=y
+CONFIG_HAVE_DYNAMIC_FTRACE=y
+CONFIG_HAVE_FTRACE_MCOUNT_RECORD=y
+CONFIG_HAVE_FTRACE_SYSCALLS=y
+CONFIG_RING_BUFFER=y
+CONFIG_EVENT_TRACING=y
+CONFIG_CONTEXT_SWITCH_TRACER=y
+CONFIG_TRACING=y
+CONFIG_TRACING_SUPPORT=y
+# CONFIG_FTRACE is not set
+# CONFIG_PROVIDE_OHCI1394_DMA_INIT is not set
+CONFIG_BUILD_DOCSRC=y
+CONFIG_DYNAMIC_DEBUG=y
+CONFIG_DMA_API_DEBUG=y
+CONFIG_SAMPLES=y
+CONFIG_SAMPLE_MARKERS=m
+CONFIG_SAMPLE_TRACEPOINTS=m
+# CONFIG_SAMPLE_TRACE_EVENTS is not set
+# CONFIG_SAMPLE_KOBJECT is not set
+CONFIG_HAVE_ARCH_KGDB=y
+CONFIG_HAVE_ARCH_KMEMCHECK=y
+# CONFIG_STRICT_DEVMEM is not set
+CONFIG_X86_VERBOSE_BOOTUP=y
+CONFIG_EARLY_PRINTK=y
+CONFIG_EARLY_PRINTK_DBGP=y
+CONFIG_DEBUG_STACKOVERFLOW=y
+# CONFIG_DEBUG_STACK_USAGE is not set
+# CONFIG_DEBUG_PER_CPU_MAPS is not set
+CONFIG_X86_PTDUMP=y
+CONFIG_DEBUG_RODATA=y
+CONFIG_DEBUG_RODATA_TEST=y
+CONFIG_DEBUG_NX_TEST=m
+CONFIG_4KSTACKS=y
+CONFIG_DOUBLEFAULT=y
+CONFIG_IOMMU_STRESS=y
+CONFIG_HAVE_MMIOTRACE_SUPPORT=y
+CONFIG_IO_DELAY_TYPE_0X80=0
+CONFIG_IO_DELAY_TYPE_0XED=1
+CONFIG_IO_DELAY_TYPE_UDELAY=2
+CONFIG_IO_DELAY_TYPE_NONE=3
+# CONFIG_IO_DELAY_0X80 is not set
+CONFIG_IO_DELAY_0XED=y
+# CONFIG_IO_DELAY_UDELAY is not set
+# CONFIG_IO_DELAY_NONE is not set
+CONFIG_DEFAULT_IO_DELAY_TYPE=1
+# CONFIG_DEBUG_BOOT_PARAMS is not set
+CONFIG_CPA_DEBUG=y
+# CONFIG_OPTIMIZE_INLINING is not set
+
+#
+# Security options
+#
+CONFIG_KEYS=y
+CONFIG_KEYS_DEBUG_PROC_KEYS=y
+CONFIG_SECURITY=y
+CONFIG_SECURITYFS=y
+CONFIG_SECURITY_NETWORK=y
+# CONFIG_SECURITY_NETWORK_XFRM is not set
+CONFIG_SECURITY_PATH=y
+CONFIG_SECURITY_FILE_CAPABILITIES=y
+CONFIG_SECURITY_ROOTPLUG=y
+CONFIG_SECURITY_DEFAULT_MMAP_MIN_ADDR=0
+CONFIG_SECURITY_TOMOYO=y
+CONFIG_CRYPTO=y
+
+#
+# Crypto core or helper
+#
+CONFIG_CRYPTO_FIPS=y
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_ALGAPI2=y
+CONFIG_CRYPTO_AEAD=y
+CONFIG_CRYPTO_AEAD2=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_BLKCIPHER2=y
+CONFIG_CRYPTO_HASH=y
+CONFIG_CRYPTO_HASH2=y
+CONFIG_CRYPTO_RNG=y
+CONFIG_CRYPTO_RNG2=y
+CONFIG_CRYPTO_PCOMP=y
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_MANAGER2=y
+CONFIG_CRYPTO_GF128MUL=m
+CONFIG_CRYPTO_NULL=y
+CONFIG_CRYPTO_WORKQUEUE=y
+CONFIG_CRYPTO_CRYPTD=y
+CONFIG_CRYPTO_AUTHENC=y
+CONFIG_CRYPTO_TEST=m
+
+#
+# Authenticated Encryption with Associated Data
+#
+CONFIG_CRYPTO_CCM=m
+CONFIG_CRYPTO_GCM=m
+CONFIG_CRYPTO_SEQIV=y
+
+#
+# Block modes
+#
+CONFIG_CRYPTO_CBC=y
+CONFIG_CRYPTO_CTR=y
+# CONFIG_CRYPTO_CTS is not set
+# CONFIG_CRYPTO_ECB is not set
+CONFIG_CRYPTO_PCBC=y
+
+#
+# Hash modes
+#
+CONFIG_CRYPTO_HMAC=m
+
+#
+# Digest
+#
+# CONFIG_CRYPTO_CRC32C is not set
+CONFIG_CRYPTO_CRC32C_INTEL=m
+CONFIG_CRYPTO_MD4=y
+CONFIG_CRYPTO_MD5=m
+# CONFIG_CRYPTO_MICHAEL_MIC is not set
+CONFIG_CRYPTO_RMD128=y
+CONFIG_CRYPTO_RMD160=y
+# CONFIG_CRYPTO_RMD256 is not set
+CONFIG_CRYPTO_RMD320=y
+CONFIG_CRYPTO_SHA1=m
+CONFIG_CRYPTO_SHA256=y
+CONFIG_CRYPTO_SHA512=m
+CONFIG_CRYPTO_TGR192=y
+# CONFIG_CRYPTO_WP512 is not set
+
+#
+# Ciphers
+#
+CONFIG_CRYPTO_AES=m
+CONFIG_CRYPTO_AES_586=m
+# CONFIG_CRYPTO_ANUBIS is not set
+CONFIG_CRYPTO_ARC4=y
+CONFIG_CRYPTO_BLOWFISH=m
+CONFIG_CRYPTO_CAMELLIA=m
+CONFIG_CRYPTO_CAST5=m
+# CONFIG_CRYPTO_CAST6 is not set
+CONFIG_CRYPTO_DES=m
+# CONFIG_CRYPTO_FCRYPT is not set
+CONFIG_CRYPTO_KHAZAD=m
+CONFIG_CRYPTO_SEED=m
+# CONFIG_CRYPTO_SERPENT is not set
+CONFIG_CRYPTO_TEA=y
+CONFIG_CRYPTO_TWOFISH=m
+CONFIG_CRYPTO_TWOFISH_COMMON=m
+CONFIG_CRYPTO_TWOFISH_586=m
+
+#
+# Compression
+#
+# CONFIG_CRYPTO_DEFLATE is not set
+CONFIG_CRYPTO_ZLIB=y
+CONFIG_CRYPTO_LZO=m
+
+#
+# Random Number Generation
+#
+CONFIG_CRYPTO_ANSI_CPRNG=m
+# CONFIG_CRYPTO_HW is not set
+CONFIG_HAVE_KVM=y
+CONFIG_HAVE_KVM_IRQCHIP=y
+CONFIG_HAVE_KVM_EVENTFD=y
+CONFIG_VIRTUALIZATION=y
+CONFIG_KVM=m
+CONFIG_KVM_INTEL=m
+CONFIG_KVM_AMD=m
+# CONFIG_KVM_TRACE is not set
+CONFIG_VIRTIO=m
+CONFIG_VIRTIO_RING=m
+CONFIG_VIRTIO_BALLOON=m
+CONFIG_BINARY_PRINTF=y
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+CONFIG_GENERIC_FIND_FIRST_BIT=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_GENERIC_FIND_LAST_BIT=y
+CONFIG_CRC_CCITT=m
+CONFIG_CRC16=m
+# CONFIG_CRC_T10DIF is not set
+CONFIG_CRC_ITU_T=y
+CONFIG_CRC32=y
+# CONFIG_CRC7 is not set
+# CONFIG_LIBCRC32C is not set
+CONFIG_ZLIB_INFLATE=y
+CONFIG_ZLIB_DEFLATE=y
+CONFIG_LZO_COMPRESS=m
+CONFIG_LZO_DECOMPRESS=m
+CONFIG_DECOMPRESS_GZIP=y
+CONFIG_DECOMPRESS_BZIP2=y
+CONFIG_DECOMPRESS_LZMA=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+CONFIG_NLATTR=y
+
+--------------030907050903060404000501--
