@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759239AbZFJDkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbZFJDlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759239AbZFJDkk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbZFJDeu
+	id S1758046AbZFJDlR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756836AbZFJDe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:34:50 -0400
-Received: from kroah.org ([198.145.64.141]:56958 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:34:59 -0400
+Received: from kroah.org ([198.145.64.141]:57003 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756719AbZFJDes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:34:48 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:45 2009
-Message-Id: <20090610002345.709805913@blue.kroah.org>
+	id S1756897AbZFJDe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:34:58 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:46 2009
+Message-Id: <20090610002346.175106184@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:13:54 -0700
+Date: Tue, 09 Jun 2009 17:13:56 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,16 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mel Gorman <mel@csn.ul.ie>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Ingo Molnar <mingo@elte.hu>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       <starlight@binnacle.cx>, Eric B Munson <ebmunson@us.ibm.com>,
-       Adam Litke <agl@us.ibm.com>, Andy Whitcroft <apw@canonical.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 26/60] mm: account for MAP_SHARED mappings using VM_MAYSHARE and not VM_SHARED in hugetlbfs
+       alan@lxorguk.ukuu.org.uk, Matt Mackall <mpm@selenic.com>,
+       Ingo Molnar <mingo@elte.hu>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 28/60] Avoid ICE in get_random_int() with gcc-3.4.5
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=mm-account-for-map_shared-mappings-using-vm_mayshare-and-not-vm_shared-in-hugetlbfs.patch
+Content-Disposition: inline; filename=avoid-ice-in-get_random_int-with-gcc-3.4.5.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -43,169 +38,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Mel Gorman <mel@csn.ul.ie>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-commit f83a275dbc5ca1721143698e844243fcadfabf6a upstream.
+commit 26a9a418237c0b06528941bca693c49c8d97edbe upstream.
 
-Addresses http://bugzilla.kernel.org/show_bug.cgi?id=13302
+Martin Knoblauch reports that trying to build 2.6.30-rc6-git3 with
+RHEL4.3 userspace (gcc (GCC) 3.4.5 20051201 (Red Hat 3.4.5-2)) causes an
+internal compiler error (ICE):
 
-hugetlbfs reserves huge pages but does not fault them at mmap() time to
-ensure that future faults succeed.  The reservation behaviour differs
-depending on whether the mapping was mapped MAP_SHARED or MAP_PRIVATE.
-For MAP_SHARED mappings, hugepages are reserved when mmap() is first
-called and are tracked based on information associated with the inode.
-Other processes mapping MAP_SHARED use the same reservation.  MAP_PRIVATE
-track the reservations based on the VMA created as part of the mmap()
-operation.  Each process mapping MAP_PRIVATE must make its own
-reservation.
+    drivers/char/random.c: In function `get_random_int':
+    drivers/char/random.c:1672: error: unrecognizable insn:
+    (insn 202 148 150 0 /scratch/build/linux-2.6.30-rc6-git3/arch/x86/include/asm/tsc.h:23 (set (reg:SI 0 ax [91])
+            (subreg:SI (plus:DI (plus:DI (reg:DI 0 ax [88])
+                        (subreg:DI (reg:SI 6 bp) 0))
+                    (const_int -4 [0xfffffffffffffffc])) 0)) -1 (nil)
+        (nil))
+    drivers/char/random.c:1672: internal compiler error: in extract_insn, at recog.c:2083
 
-hugetlbfs currently checks if a VMA is MAP_SHARED with the VM_SHARED flag
-and not VM_MAYSHARE.  For file-backed mappings, such as hugetlbfs,
-VM_SHARED is set only if the mapping is MAP_SHARED and the file was opened
-read-write.  If a shared memory mapping was mapped shared-read-write for
-populating of data and mapped shared-read-only by other processes, then
-hugetlbfs would account for the mapping as if it was MAP_PRIVATE.  This
-causes processes to fail to map the file MAP_SHARED even though it should
-succeed as the reservation is there.
+and after some debugging it turns out that it's due to the code trying
+to figure out the rough value of the current stack pointer by taking an
+address of an uninitialized variable and casting that to an integer.
 
-This patch alters mm/hugetlb.c and replaces VM_SHARED with VM_MAYSHARE
-when the intent of the code was to check whether the VMA was mapped
-MAP_SHARED or MAP_PRIVATE.
+This is clearly a compiler bug, but it's not worth fighting - while the
+current stack kernel pointer might be somewhat hard to predict in user
+space, it's also not generally going to change for a lot of the call
+chains for a particular process.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+So just drop it, and mumble some incoherent curses at the compiler.
+
+Tested-by: Martin Knoblauch <spamtrap@knobisoft.de>
+Cc: Matt Mackall <mpm@selenic.com>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: <starlight@binnacle.cx>
-Cc: Eric B Munson <ebmunson@us.ibm.com>
-Cc: Adam Litke <agl@us.ibm.com>
-Cc: Andy Whitcroft <apw@canonical.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/hugetlb.c |   26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ drivers/char/random.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -286,7 +286,7 @@ void resv_map_release(struct kref *ref)
- static struct resv_map *vma_resv_map(struct vm_area_struct *vma)
- {
- 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
--	if (!(vma->vm_flags & VM_SHARED))
-+	if (!(vma->vm_flags & VM_MAYSHARE))
- 		return (struct resv_map *)(get_vma_private_data(vma) &
- 							~HPAGE_RESV_MASK);
- 	return 0;
-@@ -295,7 +295,7 @@ static struct resv_map *vma_resv_map(str
- static void set_vma_resv_map(struct vm_area_struct *vma, struct resv_map *map)
- {
- 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
--	VM_BUG_ON(vma->vm_flags & VM_SHARED);
-+	VM_BUG_ON(vma->vm_flags & VM_MAYSHARE);
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -1634,7 +1634,7 @@ unsigned int get_random_int(void)
+ 	int ret;
  
- 	set_vma_private_data(vma, (get_vma_private_data(vma) &
- 				HPAGE_RESV_MASK) | (unsigned long)map);
-@@ -304,7 +304,7 @@ static void set_vma_resv_map(struct vm_a
- static void set_vma_resv_flags(struct vm_area_struct *vma, unsigned long flags)
- {
- 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
--	VM_BUG_ON(vma->vm_flags & VM_SHARED);
-+	VM_BUG_ON(vma->vm_flags & VM_MAYSHARE);
+ 	keyptr = get_keyptr();
+-	hash[0] += current->pid + jiffies + get_cycles() + (int)(long)&ret;
++	hash[0] += current->pid + jiffies + get_cycles();
  
- 	set_vma_private_data(vma, get_vma_private_data(vma) | flags);
- }
-@@ -323,7 +323,7 @@ static void decrement_hugepage_resv_vma(
- 	if (vma->vm_flags & VM_NORESERVE)
- 		return;
- 
--	if (vma->vm_flags & VM_SHARED) {
-+	if (vma->vm_flags & VM_MAYSHARE) {
- 		/* Shared mappings always use reserves */
- 		h->resv_huge_pages--;
- 	} else if (is_vma_resv_set(vma, HPAGE_RESV_OWNER)) {
-@@ -339,14 +339,14 @@ static void decrement_hugepage_resv_vma(
- void reset_vma_resv_huge_pages(struct vm_area_struct *vma)
- {
- 	VM_BUG_ON(!is_vm_hugetlb_page(vma));
--	if (!(vma->vm_flags & VM_SHARED))
-+	if (!(vma->vm_flags & VM_MAYSHARE))
- 		vma->vm_private_data = (void *)0;
- }
- 
- /* Returns true if the VMA has associated reserve pages */
- static int vma_has_reserves(struct vm_area_struct *vma)
- {
--	if (vma->vm_flags & VM_SHARED)
-+	if (vma->vm_flags & VM_MAYSHARE)
- 		return 1;
- 	if (is_vma_resv_set(vma, HPAGE_RESV_OWNER))
- 		return 1;
-@@ -890,7 +890,7 @@ static int vma_needs_reservation(struct 
- 	struct address_space *mapping = vma->vm_file->f_mapping;
- 	struct inode *inode = mapping->host;
- 
--	if (vma->vm_flags & VM_SHARED) {
-+	if (vma->vm_flags & VM_MAYSHARE) {
- 		pgoff_t idx = vma_hugecache_offset(h, vma, addr);
- 		return region_chg(&inode->i_mapping->private_list,
- 							idx, idx + 1);
-@@ -915,7 +915,7 @@ static void vma_commit_reservation(struc
- 	struct address_space *mapping = vma->vm_file->f_mapping;
- 	struct inode *inode = mapping->host;
- 
--	if (vma->vm_flags & VM_SHARED) {
-+	if (vma->vm_flags & VM_MAYSHARE) {
- 		pgoff_t idx = vma_hugecache_offset(h, vma, addr);
- 		region_add(&inode->i_mapping->private_list, idx, idx + 1);
- 
-@@ -1862,7 +1862,7 @@ retry_avoidcopy:
- 	 * at the time of fork() could consume its reserves on COW instead
- 	 * of the full address range.
- 	 */
--	if (!(vma->vm_flags & VM_SHARED) &&
-+	if (!(vma->vm_flags & VM_MAYSHARE) &&
- 			is_vma_resv_set(vma, HPAGE_RESV_OWNER) &&
- 			old_page != pagecache_page)
- 		outside_reserve = 1;
-@@ -1969,7 +1969,7 @@ retry:
- 		clear_huge_page(page, address, huge_page_size(h));
- 		__SetPageUptodate(page);
- 
--		if (vma->vm_flags & VM_SHARED) {
-+		if (vma->vm_flags & VM_MAYSHARE) {
- 			int err;
- 			struct inode *inode = mapping->host;
- 
-@@ -2073,7 +2073,7 @@ int hugetlb_fault(struct mm_struct *mm, 
- 			goto out_unlock;
- 		}
- 
--		if (!(vma->vm_flags & VM_SHARED))
-+		if (!(vma->vm_flags & VM_MAYSHARE))
- 			pagecache_page = hugetlbfs_pagecache_page(h,
- 								vma, address);
- 	}
-@@ -2223,7 +2223,7 @@ int hugetlb_reserve_pages(struct inode *
- 	 * to reserve the full area even if read-only as mprotect() may be
- 	 * called to make the mapping read-write. Assume !vma is a shm mapping
- 	 */
--	if (!vma || vma->vm_flags & VM_SHARED)
-+	if (!vma || vma->vm_flags & VM_MAYSHARE)
- 		chg = region_chg(&inode->i_mapping->private_list, from, to);
- 	else {
- 		struct resv_map *resv_map = resv_map_alloc();
-@@ -2246,7 +2246,7 @@ int hugetlb_reserve_pages(struct inode *
- 		hugetlb_put_quota(inode->i_mapping, chg);
- 		return ret;
- 	}
--	if (!vma || vma->vm_flags & VM_SHARED)
-+	if (!vma || vma->vm_flags & VM_MAYSHARE)
- 		region_add(&inode->i_mapping->private_list, from, to);
- 	return 0;
- }
+ 	ret = half_md4_transform(hash, keyptr->secret);
+ 	put_cpu_var(get_random_int_hash);
 
 
