@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760156AbZFJDoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758743AbZFJDoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760156AbZFJDoS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757476AbZFJDgB
+	id S1758743AbZFJDoe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756442AbZFJDgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:36:01 -0400
-Received: from kroah.org ([198.145.64.141]:57240 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:36:07 -0400
+Received: from kroah.org ([198.145.64.141]:57253 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757452AbZFJDf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:35:59 -0400
+	id S1757428AbZFJDgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:36:02 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:49 2009
-Message-Id: <20090610002348.904322248@blue.kroah.org>
+Message-Id: <20090610002349.130372706@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:08 -0700
+Date: Tue, 09 Jun 2009 17:14:09 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,9 +27,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Eric Sandeen <sandeen@redhat.com>,
        linux-ext4@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 40/60] ext4: fix bogus BUG_ONs in in mballoc code
+Subject: [patch 41/60] ext4: fix bb_prealloc_list corruption due to wrong group locking
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-fix-bogus-bug_ons-in-in-mballoc-code.patch
+Content-Disposition: inline; filename=ext4-fix-bb_prealloc_list-corruption-due-to-wrong-group-locking.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,52 +41,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Eric Sandeen <sandeen@redhat.com>
 
-(cherry picked from commit 8d03c7a0c550e7ab24cadcef5e66656bfadec8b9)
+(cherry-picked from commit d33a1976fbee1ee321d6f014333d8f03a39d526c)
 
-Thiemo Nagel reported that:
+This is for Red Hat bug 490026: EXT4 panic, list corruption in
+ext4_mb_new_inode_pa
 
-# dd if=/dev/zero of=image.ext4 bs=1M count=2
-# mkfs.ext4 -v -F -b 1024 -m 0 -g 512 -G 4 -I 128 -N 1 \
-  -O large_file,dir_index,flex_bg,extent,sparse_super image.ext4
-# mount -o loop image.ext4 mnt/
-# dd if=/dev/zero of=mnt/file
+ext4_lock_group(sb, group) is supposed to protect this list for
+each group, and a common code flow to remove an album is like
+this:
 
-oopsed, with a BUG_ON in ext4_mb_normalize_request because
-size == EXT4_BLOCKS_PER_GROUP
+    ext4_get_group_no_and_offset(sb, pa->pa_pstart, &grp, NULL);
+    ext4_lock_group(sb, grp);
+    list_del(&pa->pa_group_list);
+    ext4_unlock_group(sb, grp);
 
-It appears to me (esp. after talking to Andreas) that the BUG_ON
-is bogus; a request of exactly EXT4_BLOCKS_PER_GROUP should
-be allowed, though larger sizes do indicate a problem.
+so it's critical that we get the right group number back for
+this prealloc context, to lock the right group (the one
+associated with this pa) and prevent concurrent list manipulation.
 
-Fix that an another (apparently rare) codepath with a similar check.
+however, ext4_mb_put_pa() passes in (pa->pa_pstart - 1) with a
+comment, "-1 is to protect from crossing allocation group".
 
-Reported-by: Thiemo Nagel <thiemo.nagel@ph.tum.de>
+This makes sense for the group_pa, where pa_pstart is advanced
+by the length which has been used (in ext4_mb_release_context()),
+and when the entire length has been used, pa_pstart has been
+advanced to the first block of the next group.
+
+However, for inode_pa, pa_pstart is never advanced; it's just
+set once to the first block in the group and not moved after
+that.  So in this case, if we subtract one in ext4_mb_put_pa(),
+we are actually locking the *previous* group, and opening the
+race with the other threads which do not subtract off the extra
+block.
+
 Signed-off-by: Eric Sandeen <sandeen@redhat.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/mballoc.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ fs/ext4/mballoc.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
 --- a/fs/ext4/mballoc.c
 +++ b/fs/ext4/mballoc.c
-@@ -1450,7 +1450,7 @@ static void ext4_mb_measure_extent(struc
- 	struct ext4_free_extent *gex = &ac->ac_g_ex;
+@@ -3698,6 +3698,7 @@ static void ext4_mb_put_pa(struct ext4_a
+ 			struct super_block *sb, struct ext4_prealloc_space *pa)
+ {
+ 	unsigned long grp;
++	ext4_fsblk_t grp_blk;
  
- 	BUG_ON(ex->fe_len <= 0);
--	BUG_ON(ex->fe_len >= EXT4_BLOCKS_PER_GROUP(ac->ac_sb));
-+	BUG_ON(ex->fe_len > EXT4_BLOCKS_PER_GROUP(ac->ac_sb));
- 	BUG_ON(ex->fe_start >= EXT4_BLOCKS_PER_GROUP(ac->ac_sb));
- 	BUG_ON(ac->ac_status != AC_STATUS_CONTINUE);
+ 	if (!atomic_dec_and_test(&pa->pa_count) || pa->pa_free != 0)
+ 		return;
+@@ -3712,8 +3713,12 @@ static void ext4_mb_put_pa(struct ext4_a
+ 	pa->pa_deleted = 1;
+ 	spin_unlock(&pa->pa_lock);
  
-@@ -3400,7 +3400,7 @@ ext4_mb_normalize_request(struct ext4_al
- 	}
- 	BUG_ON(start + size <= ac->ac_o_ex.fe_logical &&
- 			start > ac->ac_o_ex.fe_logical);
--	BUG_ON(size <= 0 || size >= EXT4_BLOCKS_PER_GROUP(ac->ac_sb));
-+	BUG_ON(size <= 0 || size > EXT4_BLOCKS_PER_GROUP(ac->ac_sb));
+-	/* -1 is to protect from crossing allocation group */
+-	ext4_get_group_no_and_offset(sb, pa->pa_pstart - 1, &grp, NULL);
++	grp_blk = pa->pa_pstart;
++	/* If linear, pa_pstart may be in the next group when pa is used up */
++	if (pa->pa_linear)
++		grp_blk--;
++
++	ext4_get_group_no_and_offset(sb, grp_blk, &grp, NULL);
  
- 	/* now prepare goal request */
- 
+ 	/*
+ 	 * possible race:
 
 
