@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbZFJOLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbZFJOTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757411AbZFJOLl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 10:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbZFJOLe
+	id S1756983AbZFJOTu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 10:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756735AbZFJOTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 10:11:34 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:51333 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753219AbZFJOLe (ORCPT
+	Wed, 10 Jun 2009 10:19:40 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:38119 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756146AbZFJOTj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 10:11:34 -0400
-Date: Wed, 10 Jun 2009 10:11:36 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Francis Moreau <francis.moro@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Daniel Mack <daniel@caiaq.de>
-Subject: Re: BUG: unable to handle kernel NULL pointer dereference at NULL
- while  resuming
-In-Reply-To: <20090609221157.921c014d.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.44L0.0906101010260.3210-100000@iolanthe.rowland.org>
+	Wed, 10 Jun 2009 10:19:39 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+Date: Wed, 10 Jun 2009 16:20:26 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       linux-pm@lists.linux-foundation.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0906082233490.19072-100000@netrider.rowland.org> <200906100057.04473.rjw@sisk.pl> <200906101029.27529.rjw@sisk.pl>
+In-Reply-To: <200906101029.27529.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906101620.26559.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009, Andrew Morton wrote:
+Am Mittwoch, 10. Juni 2009 10:29:26 schrieb Rafael J. Wysocki:
+> Argh, I forgot about some important things.
+>
+> First, there are devices with no parent (actually, it would be much easier
+> if they had a default dummy parent, but that's a separate issue).
+>
+> Second, the parent has to be taken into account in the asynchronous resume
+> path too (which BTW is more complicated).
 
-> On Mon, 8 Jun 2009 09:28:18 +0200 Francis Moreau <francis.moro@gmail.com> wrote:
-> 
-> > Hello
-> > 
-> > I've been hit by this bug while resuming my system (after a suspend to
-> > disk), see the trace below.
+What happens if the parent's parent is also suspended? It seems to me that
+you must code this recursively.
 
-> The trace is the same as the one reported by Daniel in the thread
-> titled "BUG: NULL pointer dereference in try_to_del_timer_sync()",
-> started April 28.
-> 
-> Alan's patch (below) is in mainline and appears to be lined up for the
-> next 2.5.29.x release.
-
-It turns out that David Woodhouse's "Fix oops on close of hot-unplugged 
-FTDI serial converter" patch is also needed (it's in 2.6.30).
-
-Alan Stern
+	Regards
+		Oliver
 
