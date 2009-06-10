@@ -1,100 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760585AbZFJPxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760153AbZFJP4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760585AbZFJPxl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 11:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759179AbZFJPxd
+	id S1760153AbZFJP4f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 11:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbZFJP42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 11:53:33 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:42242 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758499AbZFJPxd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 11:53:33 -0400
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-From: Johannes Berg <johannes@sipsolutions.net>
+	Wed, 10 Jun 2009 11:56:28 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:33652 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756115AbZFJP41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 11:56:27 -0400
+Date: Wed, 10 Jun 2009 16:56:26 +0100
+From: Mel Gorman <mel@csn.ul.ie>
 To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       David Rientjes <rientjes@google.com>, Mel Gorman <mel@csn.ul.ie>,
-       Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+Cc: Rik van Riel <riel@redhat.com>, Larry Finger <Larry.Finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
        Andrew Morton <akpm@linux-foundation.org>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>, npiggin@suse.de,
-       yanmin.zhang@linux.intel.com
-In-Reply-To: <1244648968.23799.27.camel@penberg-laptop>
-References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
-	 <D9VoutSOyXP.A.hvH.Ha7KKB@chimera> <4A2BBC30.2030300@lwfinger.net>
-	 <84144f020906070640rf5ab14nbf66d3ca7c97675f@mail.gmail.com>
-	 <4A2BCC6F.8090004@redhat.com>
-	 <84144f020906070732l31786156r5d9753a0cabfde79@mail.gmail.com>
-	 <20090608101739.GA15377@csn.ul.ie>
-	 <84144f020906080352k57f12ff9pbd696da5f332ac1a@mail.gmail.com>
-	 <20090608110303.GD15377@csn.ul.ie>
-	 <Pine.LNX.4.64.0906081657001.7036@melkki.cs.Helsinki.FI>
-	 <20090608141212.GE15070@csn.ul.ie> <1244531201.5024.3.camel@penberg-laptop>
-	 <alpine.DEB.2.00.0906090046000.28701@chino.kir.corp.google.com>
-	 <1244534315.5024.34.camel@penberg-laptop>
-	 <alpine.DEB.2.00.0906090105270.28701@chino.kir.corp.google.com>
-	 <1244536124.5024.41.camel@penberg-laptop>  <4A2FC62C.6030407@lwfinger.net>
-	 <1244648659.23799.26.camel@penberg-laptop>
-	 <1244648968.23799.27.camel@penberg-laptop>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-OUQE1xCLzNko16mZ0aZq"
-Date: Wed, 10 Jun 2009 17:52:54 +0200
-Message-Id: <1244649174.6165.0.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+       Christoph Lameter <cl@linux-foundation.org>, npiggin@suse.de
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+Message-ID: <20090610155626.GA7951@csn.ul.ie>
+References: <4A2BBC30.2030300@lwfinger.net> <84144f020906070640rf5ab14nbf66d3ca7c97675f@mail.gmail.com> <4A2BCC6F.8090004@redhat.com> <84144f020906070732l31786156r5d9753a0cabfde79@mail.gmail.com> <20090608101739.GA15377@csn.ul.ie> <84144f020906080352k57f12ff9pbd696da5f332ac1a@mail.gmail.com> <20090608110303.GD15377@csn.ul.ie> <Pine.LNX.4.64.0906081657001.7036@melkki.cs.Helsinki.FI> <20090608141212.GE15070@csn.ul.ie> <1244531201.5024.3.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1244531201.5024.3.camel@penberg-laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-OUQE1xCLzNko16mZ0aZq
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, 2009-06-10 at 18:49 +0300, Pekka Enberg wrote:
-> On Wed, 2009-06-10 at 18:44 +0300, Pekka Enberg wrote:
->=20
-> > Aha, SLUB thinks the minimum order for 4096 is 1. I guess you have
-> > CONFIG_SLUB_DEBUG enabled? If yes, something like to following should
-> > help. Christoph, are you okay with this patch?
-
-
-> +	if ((size + MAX_DEBUG_SIZE) >=3D PAGE_SIZE)
-
-&& size <=3D PAGE_SIZE
-
-? Or is this a path that only happens for small allocations?
-
-> +		s->flags &=3D ~(SLAB_POISON|SLAB_RED_ZONE|SLAB_STORE_USER);
+On Tue, Jun 09, 2009 at 10:06:41AM +0300, Pekka Enberg wrote:
+> Hi Mel,
+> 
+> On Mon, 2009-06-08 at 15:12 +0100, Mel Gorman wrote:
+> > > diff --git a/mm/slub.c b/mm/slub.c
+> > > index 65ffda5..b5acf18 100644
+> > > --- a/mm/slub.c
+> > > +++ b/mm/slub.c
+> > > @@ -1565,6 +1565,8 @@ new_slab:
+> > >  		c->page = new;
+> > >  		goto load_freelist;
+> > >  	}
+> > > +	printk(KERN_WARNING "SLUB: unable to satisfy allocation for cache %s (size=%d, node=%d, gfp=%x)\n",
+> > > +		s->name, s->size, node, gfpflags);
+> > 
+> > size could be almost anything here for a casual reader. You are
+> > outputting the size of the object plus its metadata so the name should
+> > reflect that. I think it would be better to output objsize= and the
+> > object size without the metadata overhead. What do you think?
+> > 
+> > In addition, include how many objects there are per-slab and include what
+> > the order is being passed to the page allocator when allocating new slabs.
+> > Would that be enough to determine if fallback-to-smaller orders occured?
+> 
+> So how about something like this then?
+> 
+> 			Pekka
+> 
+> diff --git a/mm/slub.c b/mm/slub.c
+> index 65ffda5..a03dbe8 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -1484,6 +1484,58 @@ static inline int node_match(struct kmem_cache_cpu *c, int node)
+>  	return 1;
+>  }
+>  
+> +static int count_free(struct page *page)
+> +{
+> +	return page->objects - page->inuse;
+> +}
 > +
->  	if (!calculate_sizes(s, -1))
->  		goto error;
+> +static unsigned long count_partial(struct kmem_cache_node *n,
+> +					int (*get_count)(struct page *))
+> +{
+> +	unsigned long flags;
+> +	unsigned long x = 0;
+> +	struct page *page;
+> +
+> +	spin_lock_irqsave(&n->list_lock, flags);
+> +	list_for_each_entry(page, &n->partial, lru)
+> +		x += get_count(page);
+> +	spin_unlock_irqrestore(&n->list_lock, flags);
+> +	return x;
+> +}
+> +
+> +static noinline void
+> +slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags, int nid)
+> +{
+> +	int node;
+> +
+> +	printk(KERN_WARNING
+> +		"SLUB: Unable to allocate memory on node %d (gfp=%x)\n",
+> +		nid, gfpflags);
+> +	printk(KERN_WARNING "  cache: %s, object size: %d, buffer size: %d, "
+> +		"default order: %d, min order: %d\n", s->name, s->objsize,
+> +		s->size, oo_order(s->oo), oo_order(s->min));
+> +
 
-johannes
+Much nicer. There is a clear division between the object size and the
+size including the metadata. There is also now a good idea of what sort
+of request it was, we know what cache it was so we can guess the size
+passed to kmalloc() with reasonable accuracy.
 
---=-OUQE1xCLzNko16mZ0aZq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+> +	for_each_online_node(node) {
+> +		struct kmem_cache_node *n = get_node(s, node);
+> +		unsigned long nr_partials;
+> +		unsigned long nr_slabs;
+> +		unsigned long nr_objs;
+> +		unsigned long nr_free;
+> +
+> +		if (!n)
+> +			continue;
+> +
+> +		nr_partials = n->nr_partial;
+> +		nr_slabs = atomic_long_read(&n->nr_slabs);
+> +		nr_objs = atomic_long_read(&n->total_objects);
+> +		nr_free = count_partial(n, count_free);
+> +
+> +		printk(KERN_WARNING
+> +			"  node %d: partials: %ld, slabs: %ld, objs: %ld, free: %ld\n",
+> +			node, nr_partials, nr_slabs, nr_objs, nr_free);
+> +	}
+> +}
 
------BEGIN PGP SIGNATURE-----
+That looks like it would generate easier-to-debug-with messages and to
+not-expert-at-slub eye, it looks correct. Slap a changelog on it with an
+example message and go with it.  It should make page allocation failures
+messages that go through SLUB a lot easier to figure out.
 
-iQIcBAABAgAGBQJKL9bSAAoJEODzc/N7+QmaUSQP/iPIAH3qI2Mv7iEt5wO3GlfK
-sZOcaO6g61qnyAXJEMabza0GV07Dzcs95iUHlNP8tBGzrgKCL5zoDxNxgWXSqOfg
-XcHV7l1VFW9GKd8CtSyS+AufiOOA8HOF7r6dJj4A7622+TBlyly9Jx9SCZHKLkEo
-D/0TDTlKcFD0bzn6eMatkm+B/J+CV8TsaLtDa7kLo9ZyHOLwgTl2fUiFKBova855
-mo+c7x5K7UnqHv/8mGCcxzggV7xAcj7j+w/2sNBamvJ2M0DWKfkx3zqFuYpyAitr
-UT4Q47v9NBZbfO1vft6tgZDUHEL3wanb+Cq6Pem7NJDWVbSc7dll623vBzUaleFq
-9+qlKtw6Sl6OqVs3VOsEZBi4NpvcfqsCWUBKpyvI8dtKz9pncQl/7Ej3h2o33zjs
-utRiq25uW81qO3yJwf9flDJHkzJXLFhe5zkroX+kTBc3DFfGihSjOEx/OsPvvXRQ
-M8TXgLLOJ4RK3fz+mkqbZipKH6pdxTP3n97S1N7G99B49dJZNGuU6E/Kg3U514q7
-kG3iEnhZPMPPMilOaXk2MdEy0xxti0JFmOOEtCFv2bFFpbeOMWR4jmFJssuL76Qh
-VVrpKB7rMC5/2X6xzEv3ZfowZcM3/a1Xvc8JcjhmPP+FBqPcVsUIMCACpxeHirOU
-od+BHNgN1cwu9wLZHCKx
-=aWcn
------END PGP SIGNATURE-----
+Thanks
 
---=-OUQE1xCLzNko16mZ0aZq--
+> +
+>  /*
+>   * Slow path. The lockless freelist is empty or we need to perform
+>   * debugging duties.
+> @@ -1565,6 +1617,7 @@ new_slab:
+>  		c->page = new;
+>  		goto load_freelist;
+>  	}
+> +	slab_out_of_memory(s, gfpflags, node);
+>  	return NULL;
+>  debug:
+>  	if (!alloc_debug_processing(s, c->page, object, addr))
+> @@ -3318,20 +3371,6 @@ void *__kmalloc_node_track_caller(size_t size, gfp_t gfpflags,
+>  }
+>  
+>  #ifdef CONFIG_SLUB_DEBUG
+> -static unsigned long count_partial(struct kmem_cache_node *n,
+> -					int (*get_count)(struct page *))
+> -{
+> -	unsigned long flags;
+> -	unsigned long x = 0;
+> -	struct page *page;
+> -
+> -	spin_lock_irqsave(&n->list_lock, flags);
+> -	list_for_each_entry(page, &n->partial, lru)
+> -		x += get_count(page);
+> -	spin_unlock_irqrestore(&n->list_lock, flags);
+> -	return x;
+> -}
+> -
+>  static int count_inuse(struct page *page)
+>  {
+>  	return page->inuse;
+> @@ -3342,11 +3381,6 @@ static int count_total(struct page *page)
+>  	return page->objects;
+>  }
+>  
+> -static int count_free(struct page *page)
+> -{
+> -	return page->objects - page->inuse;
+> -}
+> -
+>  static int validate_slab(struct kmem_cache *s, struct page *page,
+>  						unsigned long *map)
+>  {
+> 
+> 
 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
