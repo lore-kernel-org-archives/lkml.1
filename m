@@ -1,24 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760447AbZFJQEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760711AbZFJQF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760447AbZFJQEc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 12:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756663AbZFJQEY
+	id S1760711AbZFJQF6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 12:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760196AbZFJQFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 12:04:24 -0400
-Received: from nox.protox.org ([88.191.38.29]:42925 "EHLO nox.protox.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755887AbZFJQEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 12:04:23 -0400
-X-Greylist: delayed 543 seconds by postgrey-1.27 at vger.kernel.org; Wed, 10 Jun 2009 12:04:23 EDT
-Subject: Radeon kernel modesetting patch (as staging) please review
-From: Jerome Glisse <glisse@freedesktop.org>
-To: linux-kernel@vger.kernel.org
-Cc: dri-devel@lists.sf.net
-Content-Type: text/plain
-Date: Wed, 10 Jun 2009 17:55:18 +0200
-Message-Id: <1244649318.9942.33.camel@earl.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
+	Wed, 10 Jun 2009 12:05:47 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:29295 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757782AbZFJQFq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 12:05:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:content-type:content-transfer-encoding;
+        b=W7F3ieBH5+5+L1/YvYdGQG9pjiP0czq/x4NvIVoG8dDCrZI0Mh4xfd9rvndPu9aEMn
+         F/ySRJEinw4EARLmvdF8jo/p/Kf8UzDd889zXzn/g25w7P2TotbDtxmuxgAuzGnq1Z5U
+         oBnG76n0z8u7/OqFj1waHv1EYrb3tirsaqMIw=
+MIME-Version: 1.0
+Date: Thu, 11 Jun 2009 00:05:48 +0800
+X-Google-Sender-Auth: 4dc81869558212ba
+Message-ID: <3d0408630906100905l5750a20aq781780fe38fccf6e@mail.gmail.com>
+Subject: [BUG] fib_tries related Oops in 2.6.30
+From: Yan Zheng <zheng.yan@oracle.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -26,122 +32,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hello,
 
-For size reason (~1.2M) the patch can be found here (along with others
-needed patches):
-http://people.freedesktop.org/~glisse/kms/0006-radeon-introduce-kernel-modesetting-for-radeon-hard.patch
+I pull linux-2.6.30 from linus-2.6 git tree. I got following oops
+immediately after boot.
 
-This work depends on Thomas TTM memory manager posted earlier and was
-written by Dave Airlie, Alex Deucher and myself. We would like to get
-radeon kernel modesetting in 2.6.31 as a staging driver but given the
-layout of drm/radeon we have the code source is in
-drivers/gpu/drm/radeon and not in subfolder of drivers/staging. Is this
-an issue ?
+# uname -a
+Linux zhyan-cn 2.6.30 #1 SMP PREEMPT Wed Jun 10 23:37:22 CST 2009 i686
+i686 i386 GNU/Linux
 
-The main reason, i think of, for considering radeon/KMS as staging
-driver is security. With current patch you can (with some difficulties)
-theoretically write or read GPU object of other process, i am pretty
-confident that you cannot access system ram beside one allocated for
-GPU object. Also we might need to change a little bit the ABI (there is
-no yet userspace release of code supporting this ABI it's all in various
-branch ddx/mesa/libdrm).
-
-Meanwhile we would still like to give the opportunity to people to test
-this code and thus helps us find bugs or design errors. I would like to
-thank all people who have done early testing on this code.
-
-
-Here is a brief description of code layout for people courageous enough
-to review the patch:
-atom* files hold atom helper & interpreter, atombios is a kind of script
-language used by AMD to provide a set of functions that driver can use,
-this is mostly useful for low level GPU initialization (setting up
-video ram frequency, gpu frequency, video ram refresh timing, ... which
-are board specific and can vary from one vendor to the other for the
-same asic). atombios also provide an API to perform mode setting and
-thus helps in abstracting changes in mode setting part of the GPU.
-
-radeon_kms.c have code for wrapping around old ioctl and return invalid
-anytime userspace try to call them if mode setting is enabled.
-
-radeon_device.c is where the initialization and resume/suspend path
-starts.
-
-radeon_object.c/radeon_ttm.c are a thin layer for abstracting the
-underlying memory manager used. Motivation is to allow to easily
-modify/improve the underlying memory manager while not having to
-update various files in the gpu driver. It also provide helper
-functions to simplify common task often done by different component
-of the code.
-
-radeon_display.c is the core of mode setting functionality
-
-radeon_legacy* holds code for doing mode setting on non atombios
-hw (r1xx/r2xx/r3xx/r4xx).
-
-radeon_gem.c holds the userspace api of the memory manager
-
-radeon_cs.c holds the new userspace api for submitting command
-to the GPU. This API is designed with memory management in mind
-and is closer to what GPU can understand.
-
-radeon_asic.h holds the various asic specific functions callback
-structure, if you want to know which functions is called on a given
-asic for a given task it's where you should look.
-
-r100.c/r300.c/rs400.c/rv515.c/r520.c/rs600.c/rs690.c/... are files
-holding asic specific functions, note that new asic often reuse some
-part of older asic, for instance the r100 cp is the same up to r5xx
-hw so you will see that r100_cp_* functions are used by large range
-of hw. Idea here is to avoid duplication while allowing to clearly
-spot differences btw asics.
-
-Jerome Glisse
-
-
-Below is commit message :
-
-    radeon: introduce kernel modesetting for radeon hardware
-    
-    Add kernel modesetting support to radeon driver, use the ttm memory
-    manager to manage memory and DRM/GEM to provide userspace API.
-    In order to avoid backward compatibility issue and to allow clean
-    design and code the radeon kernel modesetting use different code
-path
-    than old radeon/drm driver.
-    
-    When kernel modesetting is enabled the IOCTL of radeon/drm
-    driver are considered as invalid and an error message is printed
-    in the log and they return failure.
-    
-    KMS enabled userspace will use new API to talk with the radeon/drm
-    driver. The new API provide functions to create/destroy/share/mmap
-    buffer object which are then managed by the kernel memory manager
-    (here TTM). In order to submit command to the GPU the userspace
-    provide a buffer holding the command stream, along this buffer
-    userspace have to provide a list of buffer object used by the
-    command stream. The kernel radeon driver will then place buffer
-    in GPU accessible memory and will update command stream to reflect
-    the position of the different buffers.
-    
-    The kernel will also perform security check on command stream
-    provided by the user, we want to catch and forbid any illegal use
-    of the GPU such as DMA into random system memory or into memory
-    not owned by the process supplying the command stream. This part
-    of the code is still incomplete and this why we propose that patch
-    as a staging driver addition, future security might forbid current
-    experimental userspace to run.
-    
-    This code support the following hardware : R1XX,R2XX,R3XX,R4XX,R5XX
-    (radeon up to X1950). Works is underway to provide support for R6XX,
-    R7XX and newer hardware (radeon from HD2XXX to HD4XXX).
-    
-    Authors:
-        Jerome Glisse <jglisse@redhat.com>
-        Dave Airlie <airlied@redhat.com>
-        Alex Deucher <alexdeucher@gmail.com>
-    
-    Signed-off-by: Jerome Glisse <jglisse@redhat.com>
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-    Signed-off-by: Alex Deucher <alexdeucher@gmail.com>
-
-
+---
+BUG: sleeping function called from invalid context at
+/mnt/sda7/linux-2.6/mm/slub.c:1598
+in_atomic(): 1, irqs_disabled(): 0, pid: 2286, name: NetworkManager
+Pid: 2286, comm: NetworkManager Not tainted 2.6.30 #1
+Call Trace:
+ [<c042568c>] __might_sleep+0xfc/0x103
+ [<c049bb79>] __kmalloc+0x7c/0x132
+ [<c0697be5>] ? tnode_new+0x27/0x69
+ [<c0697be5>] tnode_new+0x27/0x69
+ [<c0697d36>] resize+0x94/0x666
+ [<c049ac13>] ? __slab_alloc+0xc2/0x4b3
+ [<c0697be5>] ? tnode_new+0x27/0x69
+ [<c049bc23>] ? __kmalloc+0x126/0x132
+ [<c0698384>] trie_rebalance+0x7c/0xde
+ [<c0698d77>] fn_trie_insert+0x644/0x6d6
+ [<c0427da7>] ? try_to_wake_up+0x2c4/0x2ce
+ [<c0427dbc>] ? default_wake_function+0xb/0xd
+ [<c069402e>] fib_magic+0x99/0xa8
+ [<c069412c>] fib_add_ifaddr+0xef/0x111
+ [<c0694178>] fib_inetaddr_event+0x2a/0x1a9
+ [<c06cd5a9>] notifier_call_chain+0x2b/0x4a
+ [<c0444189>] __blocking_notifier_call_chain+0x37/0x4c
+ [<c04441aa>] blocking_notifier_call_chain+0xc/0xe
+ [<c068d8f4>] __inet_insert_ifa+0xf9/0x104
+ [<c068eb28>] inet_rtm_newaddr+0x16f/0x177
+ [<c068e9b9>] ? inet_rtm_newaddr+0x0/0x177
+ [<c065218c>] rtnetlink_rcv_msg+0x196/0x1b0
+ [<c0651ff6>] ? rtnetlink_rcv_msg+0x0/0x1b0
+ [<c065fbac>] netlink_rcv_skb+0x30/0x78
+ [<c0651fee>] rtnetlink_rcv+0x1c/0x24
+ [<c065f78e>] netlink_unicast+0xee/0x144
+ [<c065fa27>] netlink_sendmsg+0x243/0x250
+ [<c063d1f4>] __sock_sendmsg+0x45/0x4e
+ [<c063d978>] sock_sendmsg+0xb8/0xce
+ [<c044072b>] ? autoremove_wake_function+0x0/0x33
+ [<c044072b>] ? autoremove_wake_function+0x0/0x33
+ [<c044072b>] ? autoremove_wake_function+0x0/0x33
+ [<c0523aa7>] ? copy_from_user+0x34/0x11b
+ [<c0644ba4>] ? verify_iovec+0x40/0x70
+ [<c063dacd>] sys_sendmsg+0x13f/0x192
+ [<c063e67a>] ? sys_recvmsg+0x16d/0x17a
+ [<c041f6b4>] ? kunmap_atomic+0x8b/0xa3
+ [<c0489a88>] ? do_wp_page+0x515/0x5ac
+ [<c044072b>] ? autoremove_wake_function+0x0/0x33
+ [<c041af58>] ? paravirt_get_lazy_mode+0xe/0x1b
+ [<c041b128>] ? arch_flush_lazy_mmu_mode+0x47/0x5b
+ [<c041f799>] ? kmap_atomic_prot+0xcd/0xeb
+ [<c048af8c>] ? handle_mm_fault+0x58d/0x5e8
+ [<c063eb09>] sys_socketcall+0x153/0x183
+ [<c0403298>] sysenter_do_call+0x12/0x2d
