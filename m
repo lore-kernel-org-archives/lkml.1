@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756441AbZFJGhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbZFJGka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756441AbZFJGhz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 02:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbZFJGhr
+	id S1754500AbZFJGka (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 02:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbZFJGkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 02:37:47 -0400
-Received: from mga14.intel.com ([143.182.124.37]:42458 "EHLO mga14.intel.com"
+	Wed, 10 Jun 2009 02:40:22 -0400
+Received: from ozlabs.org ([203.10.76.45]:60187 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750783AbZFJGhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 02:37:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,338,1241420400"; 
-   d="scan'208";a="152604811"
-Date: Wed, 10 Jun 2009 14:37:46 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jake <ellowitz@uchicago.edu>, tj@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bug #13463] Poor SSD performance
-Message-ID: <20090610063746.GA26773@localhost>
-References: <sIiXQlfwS3D.A.81.dj7KKB@chimera> <AN6kEAA5GQ.A.23.sj7KKB@chimera>
+	id S1752595AbZFJGkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 02:40:21 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: rr tree build warning
+Date: Wed, 10 Jun 2009 16:10:17 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090609162636.d2351007.sfr@canb.auug.org.au>
+In-Reply-To: <20090609162636.d2351007.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <AN6kEAA5GQ.A.23.sj7KKB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200906101610.20265.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13463
-> Subject		: Poor SSD performance
-> Submitter	: Jake <ellowitz@uchicago.edu>
-> Date		: 2009-06-05 17:37 (3 days old)
+On Tue, 9 Jun 2009 03:56:36 pm Stephen Rothwell wrote:
+> Hi Rusty,
+>
+> Today's linux-next build (x86_64 allmodconfig) produced this warning:
+>
+> arch/x86/kernel/cpu/cpufreq/powernow-k8.c:1287: warning: passing argument 1
+> of 'check_supported_cpu' makes pointer from integer without a cast
+> arch/x86/kernel/cpu/cpufreq/powernow-k8.c:514: note: expected 'void *' but
+> argument is of type 'unsigned int'
+>
+> Introduced by commit b3594a9ce5fb32533084ec75f1954c93f461591d ("cpumask:
+> avoid playing with cpus_allowed in powernow-k8.c").
 
-Hi Jake,
-
-Could you collect some blktrace data for the dd commands on new/old
-kernels?
-
-dd if=/dev/sda of=/dev/null bs=1M count=1024 iflag=direct
-dd if=/dev/sda of=/dev/null bs=1M count=1024
-
-
-You need to install the blktrace tool and run these commands:
-
-        cd /dev/shm
-        blktrace /dev/sda # do this while dd is running
-        # ^C to interrupt
-        blkparse sda
-
-
-Package: blktrace
-Description: utilities for block layer IO tracing
- blktrace is a block layer IO tracing mechanism which provides detailed
- information about request queue operations up to user space. There are
+Thanks, I've revisited this patch and fixed this too.
 
 Thanks,
-Fengguang
-
+Rusty.
