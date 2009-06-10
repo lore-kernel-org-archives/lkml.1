@@ -1,97 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760694AbZFJRH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbZFJRI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760694AbZFJRH1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 13:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756702AbZFJRHO
+	id S1761370AbZFJRI2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 13:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbZFJRIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 13:07:14 -0400
-Received: from exprod6og112.obsmtp.com ([64.18.1.29]:42591 "HELO
-	exprod6og112.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754998AbZFJRHN convert rfc822-to-8bit (ORCPT
+	Wed, 10 Jun 2009 13:08:21 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:62292 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752640AbZFJRIU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 13:07:13 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 10 Jun 2009 13:08:20 -0400
+Date: Wed, 10 Jun 2009 13:08:22 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Mike Frysinger <vapier@gentoo.org>
+Subject: [PATCH][GIT PULL] ftrace/documentation: fix typo in function grapher
+ name
+In-Reply-To: <1244623722-6325-1-git-send-email-vapier@gentoo.org>
+Message-ID: <alpine.DEB.2.00.0906101307100.30552@gandalf.stny.rr.com>
+References: <1244623722-6325-1-git-send-email-vapier@gentoo.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] gpiolib: add gpio_request/free_irq
-Date: Wed, 10 Jun 2009 13:07:12 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901917356@mi8nycmail19.Mi8.com>
-In-Reply-To: <200906091756.11839.david-b@pacbell.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] gpiolib: add gpio_request/free_irq
-Thread-Index: AcnpZkgHPaDE2V9rT1GFKGuDE0tGzAAg/iEg
-References: <200906051151.05779.hartleys@visionengravers.com> <200906052219.47888.david-b@pacbell.net> <BD79186B4FD85F4B8E60E381CAEE19090191701F@mi8nycmail19.Mi8.com> <200906091756.11839.david-b@pacbell.net>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "David Brownell" <david-b@pacbell.net>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 10 Jun 2009 17:07:13.0668 (UTC) FILETIME=[E646A440:01C9E9ED]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, June 09, 2009 5:56 PM, David Brownell wrote:
-> On Tuesday 09 June 2009, H Hartley Sweeten wrote:
-> > On Friday, June 05, 2009 10:20 PM, David Brownell wrote:
-> > > On Friday 05 June 2009, H Hartley Sweeten wrote:
-> > > Add support functions to gpiolib to request/free gpio irqs.
-> > > 
-> > > I'm not keen on this.
-> > > 
-> > >  - At best it's a convenience layer ... for something that's
-> > >    not the least bit awkward to do otherwise.
-> > 
-> > 		... deletia ...
-> > 
-> > >  - Coupling it to gpiolib sort of defeats the point of saying
-> > >    that gpiolib is just an *implementation* of the interface.
-> > >    Where's the code to run for non-gpiolib platforms?
-> > > 
-> 
-> There are three kinds of config to be concerned with:
-> 
->  - Platform doesn't support the GPIO calls at all.  In those
->    cases, drivers using <linux/gpio.h> get NOP stubs; you have
->    this case covered.
-> 
->  - Platforms supporting the calls but not using gpiolib.
->    That's the case I pointed out -- you don't handle it.
-> 
 
-Ah.. Missed that point. I assume this is when GENERIC_GPIO=y
-but GPIOLIB (ARCH_REQUIRE_GPIOLIB?) is not defined. Correct?
+Ingo,
 
-I'll continue looking it over to see if there is clean way to handle
-that case.
+Please pull the latest tip/tracing/ftrace tree, which can be found at:
 
->  - Platforms supporting the calls with gpiolib.  This is the
->    other case you handle.
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/ftrace
 
 
-> > >  - Since it implicitly couples gpio_request() to a flavor of
-> > >    request_irq(), it precludes sharing those IRQs.
-> > > 
-> > 
-> > Can't the IRQ be shared by passing IRQF_SHARED as one of the flags?
-> 
-> Only one of them will be able to gpio_request(), so it
-> doesn't matter at all what you say to request_irq().
+Mike Frysinger (1):
+      ftrace/documentation: fix typo in function grapher name
 
-But the gpio_request() is for a given gpio, which can only be requested
-once.  The request_irq() call is using the irq value returned by
-gpio_to_irq() which could return the same irq number for multiple irq's,
-wouldn't these then get shared as long as the IRQF_SHARED flag is set?
+----
+ Documentation/trace/ftrace.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+---------------------------
+commit bc5c6c043d8381676339fb3da59cc4cc5921d368
+Author: Mike Frysinger <vapier@gentoo.org>
+Date:   Wed Jun 10 04:48:41 2009 -0400
 
-> > > Basically, board setup can know that the GPIO is being used
-> > > as an IRQ, and do the request()/direction_input() before it
-> > > passes gpio_to_irq() to the driver. That's worked in every
-> > > case I've happened across so far...
-> > 
-> > I agree it works as-is right now.  I just thought this would be a
-> > convenient wrapper to handle a common setup step.  If it's overkill
-> > or not appropriate to add to gpiolib please disregard the patch.
+    ftrace/documentation: fix typo in function grapher name
+    
+    The function graph tracer is called just "function_graph" (no trailing
+    "_tracer" needed).
+    
+    Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+    LKML-Reference: <1244623722-6325-1-git-send-email-vapier@gentoo.org>
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-Thanks for your comments,
-Hartley
+diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
+index fd9a3e6..5ad2ded 100644
+--- a/Documentation/trace/ftrace.txt
++++ b/Documentation/trace/ftrace.txt
+@@ -179,7 +179,7 @@ Here is the list of current tracers that may be configured.
+ 
+ 	Function call tracer to trace all kernel functions.
+ 
+-  "function_graph_tracer"
++  "function_graph"
+ 
+ 	Similar to the function tracer except that the
+ 	function tracer probes the functions on their entry
+
+
