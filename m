@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755422AbZFJKnE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbZFJKoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755422AbZFJKnE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 06:43:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbZFJKmz
+	id S1756893AbZFJKoX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 06:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZFJKoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 06:42:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36428 "EHLO mx2.mail.elte.hu"
+	Wed, 10 Jun 2009 06:44:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36709 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751000AbZFJKmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 06:42:55 -0400
-Date: Wed, 10 Jun 2009 12:42:42 +0200
+	id S1751208AbZFJKoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 06:44:15 -0400
+Date: Wed, 10 Jun 2009 12:44:09 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Yong Wang <yong.y.wang@linux.intel.com>
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH -tip] perf_counter/x86: Correct some event and umask
-	values for Intel processors
-Message-ID: <20090610104242.GB27724@elte.hu>
-References: <20090609131553.GA12489@ywang-moblin2.bj.intel.com> <20090609141621.GA32703@elte.hu> <20090610053623.GC30923@ywang-moblin2.bj.intel.com>
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip] perf_counter/x86: Fix incorrect default branch
+Message-ID: <20090610104409.GC27724@elte.hu>
+References: <20090609074621.GA19290@ywang-moblin2.bj.intel.com> <20090609132313.GE25586@elte.hu> <20090609133232.GA14642@ywang-moblin2.bj.intel.com> <20090609142506.GD32703@elte.hu> <20090610051521.GB30923@ywang-moblin2.bj.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090610053623.GC30923@ywang-moblin2.bj.intel.com>
+In-Reply-To: <20090610051521.GB30923@ywang-moblin2.bj.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -38,52 +36,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Yong Wang <yong.y.wang@linux.intel.com> wrote:
 
-> On Tue, Jun 09, 2009 at 04:16:21PM +0200, Ingo Molnar wrote:
+> On Tue, Jun 09, 2009 at 04:25:06PM +0200, Ingo Molnar wrote:
 > > 
-> > * Yong Wang <yong.y.wang@linux.intel.com> wrote:
+> > They dont have X86_FEATURE_ARCH_PERFMON set, right?
 > > 
-> > > Correct some event and UMASK values according to Intel SDM.
-> > 
-> > Very nice, thanks!
-> > 
-> > were you able to test the Atom ones by any chance?
+> > I made the switch statement under the assumption that it covers all 
+> > existing arch-perfmon CPU models. If not, the 'default:' placement 
+> > would indeed be buggy.
 > > 
 > 
-> You bet I was as I'm working on Moblin ;-) [...]
+> OK, you are right. X86_FEATURE_ARCH_PERFMON eliminates all the old CPUs.
+> However, the logic still seems not correct. Both the Core2 CPUs I'm
+> using are recognized as Nehalem/Corei7. /proc/cpuinfo and cpuid outputs
+> are given below.
+> 
+> The first one:
+> vendor_id       : GenuineIntel
+> cpu family      : 6
+> model           : 23
+> model name      : Intel(R) Core(TM)2 Duo CPU     P8400  @ 2.26GHz
+> stepping        : 6
+> 
+> CPUID.0x00000001: eax=0x00010676
+> 
+> The second one:
+> vendor_id       : GenuineIntel
+> cpu family      : 6
+> model           : 15
+> model name      : Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz
+> stepping        : 6
+> 
+> CPUID.0x00000001: eax=0x000006f6
+> 
+> Looks like it's not enough to just look at boot_cpu_data.x86_model.
 
-Heh :-)
-
-> [...] However, some work while some do not. I'll take a look at 
-> the problematic ones. With the previous event and umask values, 
-> the pmc does not count at all for some events, like l1d-write-ops.
-
-Interesting. I had a good look at the Atom details in the docs but 
-couldnt find anything suspicious. There's various umask level 
-extensions (sometimes cflags level ones) like whether to measure the 
-core or the thread, but the defaults (zero) seem to have OK 
-semantics for most of the events.
-
-Btw., when mapping out event tables there's one little trick i used 
-to 'scan' an event, using 'perf stat' and raw event numbers:
-
-  for ((i=0;i<256;i++)); do                                    \
-    perf stat -e $(printf "r%02x%02x\n" $i 0xc0) true 2>&1 |   \
-      grep -w raw | grep -vw 0;                                \
-  done
-
-This scans all 256 umask values for the main event code of 0xc0, and 
-displays the umask values where the counter show some activity.
-
-( if it's some rare event then you might want to run something else 
-  that excercises that event, not /bin/true. )
-
-> Btw, one thing I don't quite understand is why you aliased 
-> dtlb-write-ops to l1d-write-ops when setting event and umask 
-> values. Are they the same event?
-
-No, they are indeed different events - that's a bug in the table, 
-good spotting. Mind sending a (tested) patch for it?
-
-Thanks,
+Yeah - i've applied the patch you sent, thanks. I'm mostly working 
+on NHM so i didnt notice.
 
 	Ingo
