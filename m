@@ -1,107 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbZFJJ1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbZFJJcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757803AbZFJJ1o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 05:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756445AbZFJJ1f
+	id S1758546AbZFJJcl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 05:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757137AbZFJJcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 05:27:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48719 "EHLO mx3.mail.elte.hu"
+	Wed, 10 Jun 2009 05:32:33 -0400
+Received: from cmpxchg.org ([85.214.51.133]:47488 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751979AbZFJJ1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 05:27:34 -0400
-Date: Wed, 10 Jun 2009 11:26:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: Re: [PATCH 00/11] [GIT PULL] more updates for the tag format
-Message-ID: <20090610092644.GA20889@elte.hu>
-References: <20090610054206.510574695@goodmis.org>
-MIME-Version: 1.0
+	id S1756661AbZFJJcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 05:32:33 -0400
+Date: Wed, 10 Jun 2009 11:30:07 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Minchan Kim <minchan.kim@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch v3] swap: virtual swap readahead
+Message-ID: <20090610093007.GA3019@cmpxchg.org>
+References: <20090609190128.GA1785@cmpxchg.org> <20090609193702.GA2017@cmpxchg.org> <20090610050342.GA8867@localhost> <20090610074508.GA1960@cmpxchg.org> <20090610081132.GA27519@localhost> <20090610173249.50e19966.kamezawa.hiroyu@jp.fujitsu.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090610054206.510574695@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090610173249.50e19966.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
+On Wed, Jun 10, 2009 at 05:32:49PM +0900, KAMEZAWA Hiroyuki wrote:
+> On Wed, 10 Jun 2009 16:11:32 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
 > 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/event-print-format tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/event-print-format
-> 
-> 
-> Li Zefan (1):
->       tracing/events: convert block trace points to TRACE_EVENT(), fix
-> 
-> Steven Rostedt (10):
->       tracing: add nsec2sec print formats
->       tracing: convert lockdep lock_acquired trace point to use nsec2usec tag
->       tracing: add major and minor tags for print format
->       tracing: use << to print < instead of \<
->       tracing: convert the block trace points to use the new tag format
->       tracing: add test for strings in event tag format
->       tracing: add func and symfunc to tag format
->       tracing: check full name for field
->       tracing: update sample code with new tag format
->       tracing: move '>' to out of macros and into print statement
-> 
-> ----
->  include/linux/blktrace_api.h               |    4 +-
->  include/linux/ftrace_event.h               |    3 +-
->  include/trace/events/block.h               |  101 +++------
->  include/trace/events/irq.h                 |    8 +-
->  include/trace/events/kmem.h                |   12 +-
->  include/trace/events/lockdep.h             |    8 +-
->  include/trace/ftrace.h                     |    2 +-
->  kernel/trace/trace_output.c                |    2 +-
->  kernel/trace/trace_output.h                |    4 +
->  kernel/trace/trace_read_binary.c           |  304 +++++++++++++++++++++++-----
->  samples/trace_events/trace-events-sample.c |   21 ++-
->  samples/trace_events/trace-events-sample.h |   66 ++++++
->  12 files changed, 399 insertions(+), 136 deletions(-)
+> > On Wed, Jun 10, 2009 at 03:45:08PM +0800, Johannes Weiner wrote:
+> > > Hi Fengguang,
+> > > 
+> > > On Wed, Jun 10, 2009 at 01:03:42PM +0800, Wu Fengguang wrote:
+> > > > On Wed, Jun 10, 2009 at 03:37:02AM +0800, Johannes Weiner wrote:
+> > > > > On Tue, Jun 09, 2009 at 09:01:28PM +0200, Johannes Weiner wrote:
+> > > > > > [resend with lists cc'd, sorry]
+> > > > > 
+> > > > > [and fixed Hugh's email.  crap]
+> > > > > 
+> > > > > > Hi,
+> > > > > > 
+> > > > > > here is a new iteration of the virtual swap readahead.  Per Hugh's
+> > > > > > suggestion, I moved the pte collecting to the callsite and thus out
+> > > > > > ouf swap code.  Unfortunately, I had to bound page_cluster due to an
+> > > > > > array of that many swap entries on the stack, but I think it is better
+> > > > > > to limit the cluster size to a sane maximum than using dynamic
+> > > > > > allocation for this purpose.
+> > > > 
+> > > > Hi Johannes,
+> > > > 
+> > > > When stress testing your patch, I found it triggered many OOM kills.
+> > > > Around the time of last OOMs, the memory usage is:
+> > > > 
+> > > >              total       used       free     shared    buffers     cached
+> > > > Mem:           474        468          5          0          0        239
+> > > > -/+ buffers/cache:        229        244
+> > > > Swap:         1023        221        802
+> > > 
+> > > Wow, that really confused me for a second as we shouldn't read more
+> > > pages ahead than without the patch, probably even less under stress.
+> > 
+> > Yup - swap readahead is much more challenging than sequential readahead,
+> > in that it must be accurate enough given some really obscure patterns.
+> > 
+> > > So the problem has to be a runaway reading.  And indeed, severe
+> > > stupidity here:
+> > > 
+> > > +       window = cluster << PAGE_SHIFT;
+> > > +       min = addr & ~(window - 1);
+> > > +       max = min + cluster;
+> > > +       /*
+> > > +        * To keep the locking/highpte mapping simple, stay
+> > > +        * within the PTE range of one PMD entry.
+> > > +        */
+> > > +       limit = addr & PMD_MASK;
+> > > +       if (limit > min)
+> > > +               min = limit;
+> > > +       limit = pmd_addr_end(addr, max);
+> > > +       if (limit < max)
+> > > +               max = limit;
+> > > +       limit = max - min;
+> > > 
+> > > The mistake is at the initial calculation of max.  It should be
+> > > 
+> > > 	max = min + window;
+> > > 
+> > > The resulting problem is that min could get bigger than max when
+> > > cluster is bigger than PMD_SHIFT.  Did you use page_cluster == 5?
+> > 
+> > No I use the default 3.
+> > 
+> > btw, the mistake reflects bad named variables. How about rename
+> >         cluster => pages
+> >         window  => bytes
+> > ?
 
-Hm, that's way too much back and forth really - trivial typo fixes, 
-build failure, etc. This is really a 'oh, the merge window is 
-coming' last minute scrambling and we dont want to mess up the 
-squeaky-clean tracing tree history be messed up with this.
+Proven twice, fixed in v4.
 
-Frederic also expressed worries about the tag format. Could we have 
-a wider buy-in for this format?
+> > > The initial min is aligned to a value below the PMD boundary and max
+> > > based on it with a too small offset, staying below the PMD boundary as
+> > > well.  When min is rounded up, this becomes a bit large:
+> > > 
+> > > 	limit = max - min;
+> > > 
+> > > So if my brain is already functioning, fixing the initial max should
+> > > be enough because either
+> > > 
+> > > 	o window is smaller than PMD_SIZE, than we won't round down
+> > > 	below a PMD boundary in the first place or
+> > > 
+> > > 	o window is bigger than PMD_SIZE, than we can round down below
+> > > 	a PMD boundary but adding window to that is garuanteed to
+> > > 	cross the boundary again
+> > > 
+> > > and thus max is always bigger than min.
+> > > 
+> > > Fengguang, does this make sense?  If so, the patch below should fix
+> > > it.
+> > 
+> > Too bad, a quick test of the below patch freezes the box..
+> > 
+> 
+> +	window = cluster << PAGE_SHIFT;
+> +	min = addr & ~(window - 1);
+> +	max = min + cluster;
+> 
+> max = min + window; # this is fixed. then,
+> 
+> +	/*
+> +	 * To keep the locking/highpte mapping simple, stay
+> +	 * within the PTE range of one PMD entry.
+> +	 */
+> +	limit = addr & PMD_MASK;
+> +	if (limit > min)
+> +		min = limit;
+> +	limit = pmd_addr_end(addr, max);
+> +	if (limit < max)
+> +		max = limit;
+> +	limit = max - min;
+> 
+> limit = (max - min) >> PAGE_SHIFT;
 
-I've separated these bits into tip:tracing/ftrace, and kept 
-tip:tracing/core on a pre-print-formats state (going back 8 
-commits), so that upstream merging of the other bits does not get 
-held up.
+Head -> desk.
 
-Could we try a cleaner, bisectable, consiously built up version of 
-these final tracing/core..tracing/ftrace please? I think we can - 
-the rest of the tree is clean. Please do a exact-same-content rebase 
-so that the merge back gets obvious and that the testing we've 
-injected does not get invalidated?
+Fixed in v4, thank you.
 
-	Ingo
+	Hannes
