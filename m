@@ -1,272 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761785AbZFJVIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762242AbZFJVIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761785AbZFJVIE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 17:08:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757739AbZFJVHy
+	id S1762242AbZFJVIp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 17:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757935AbZFJVIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 17:07:54 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54703 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756374AbZFJVHx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 17:07:53 -0400
-Date: Wed, 10 Jun 2009 23:07:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] sched/docs for v2.6.31
-Message-ID: <20090610210747.GA24805@elte.hu>
+	Wed, 10 Jun 2009 17:08:38 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:61128 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756374AbZFJVIh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 17:08:37 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=w88S8aTfJl7WGz1Y/FDCJTFgQPGOLGur/v9+8zo6D4CH5F2RmMqgsxaz0zlkmfHva
+	6/U7+oB3UjvIiBnVwW5KQ==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090610204708.GD6251@dodger.lab.datenfreihafen.org>
+References: <20090610103131.GB13885@elf.ucw.cz>
+	 <20090610194852.GA28787@n2100.arm.linux.org.uk>
+	 <a55d774e0906101324i7acf23b0qf42b6c2798a3eff4@mail.gmail.com>
+	 <20090610204708.GD6251@dodger.lab.datenfreihafen.org>
+Date: Wed, 10 Jun 2009 14:08:36 -0700
+Message-ID: <a55d774e0906101408t75e507f5s8064796b080828c2@mail.gmail.com>
+Subject: Re: MSM6281 support was: HTC Dream aka. t-mobile g1 support
+From: Brian Swetland <swetland@google.com>
+To: Stefan Schmidt <stefan@datenfreihafen.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       san@android.com, rlove@google.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Wed, Jun 10, 2009 at 1:47 PM, Stefan
+Schmidt<stefan@datenfreihafen.org> wrote:
+> Hello.
+>
+> On Wed, 2009-06-10 at 13:24, Brian Swetland wrote:
+>>
+>> We have full support for MSM7201A, including fully functional power
+>> management, working on a number of commercially shipping devices that
+>> we'd absolutely love to get into mainline.
+>
+> A bit offtopic here. (subject change). Is it expected that the android kernel
+> team will also work on systems that use the MSM6K modems with different SoC's? I
+> have soem systems here that use an msm6281 on a dual port ram chip with non msm
+> SoC's. I wonder how difficult it would be to adaept the existing msm smd driver
+> to such a setup.
 
-Please pull the latest sched-docs-for-linus git tree from:
+We only have documentation, support, and permission to do work on 7k
+and 8k family devices at this point.  I don't know anything about the
+6k family, and how similar (or not) the shared memory interface would
+be, so unfortunately I can't provide much help there.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-docs-for-linus
-
-( Note: this is an older commit with an impact line that i wont add 
-  with the new impact line policies. Can rebase it if overly 
-  annoying. )
-
- Thanks,
-
-	Ingo
-
------------------->
-David Howells (1):
-      sched: Document memory barriers implied by sleep/wake-up primitives
-
-
- Documentation/memory-barriers.txt |  129 ++++++++++++++++++++++++++++++++++++-
- kernel/sched.c                    |   23 +++++++
- 2 files changed, 151 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/memory-barriers.txt b/Documentation/memory-barriers.txt
-index f5b7127..7f5809e 100644
---- a/Documentation/memory-barriers.txt
-+++ b/Documentation/memory-barriers.txt
-@@ -31,6 +31,7 @@ Contents:
- 
-      - Locking functions.
-      - Interrupt disabling functions.
-+     - Sleep and wake-up functions.
-      - Miscellaneous functions.
- 
-  (*) Inter-CPU locking barrier effects.
-@@ -1217,6 +1218,132 @@ barriers are required in such a situation, they must be provided from some
- other means.
- 
- 
-+SLEEP AND WAKE-UP FUNCTIONS
-+---------------------------
-+
-+Sleeping and waking on an event flagged in global data can be viewed as an
-+interaction between two pieces of data: the task state of the task waiting for
-+the event and the global data used to indicate the event.  To make sure that
-+these appear to happen in the right order, the primitives to begin the process
-+of going to sleep, and the primitives to initiate a wake up imply certain
-+barriers.
-+
-+Firstly, the sleeper normally follows something like this sequence of events:
-+
-+	for (;;) {
-+		set_current_state(TASK_UNINTERRUPTIBLE);
-+		if (event_indicated)
-+			break;
-+		schedule();
-+	}
-+
-+A general memory barrier is interpolated automatically by set_current_state()
-+after it has altered the task state:
-+
-+	CPU 1
-+	===============================
-+	set_current_state();
-+	  set_mb();
-+	    STORE current->state
-+	    <general barrier>
-+	LOAD event_indicated
-+
-+set_current_state() may be wrapped by:
-+
-+	prepare_to_wait();
-+	prepare_to_wait_exclusive();
-+
-+which therefore also imply a general memory barrier after setting the state.
-+The whole sequence above is available in various canned forms, all of which
-+interpolate the memory barrier in the right place:
-+
-+	wait_event();
-+	wait_event_interruptible();
-+	wait_event_interruptible_exclusive();
-+	wait_event_interruptible_timeout();
-+	wait_event_killable();
-+	wait_event_timeout();
-+	wait_on_bit();
-+	wait_on_bit_lock();
-+
-+
-+Secondly, code that performs a wake up normally follows something like this:
-+
-+	event_indicated = 1;
-+	wake_up(&event_wait_queue);
-+
-+or:
-+
-+	event_indicated = 1;
-+	wake_up_process(event_daemon);
-+
-+A write memory barrier is implied by wake_up() and co. if and only if they wake
-+something up.  The barrier occurs before the task state is cleared, and so sits
-+between the STORE to indicate the event and the STORE to set TASK_RUNNING:
-+
-+	CPU 1				CPU 2
-+	===============================	===============================
-+	set_current_state();		STORE event_indicated
-+	  set_mb();			wake_up();
-+	    STORE current->state	  <write barrier>
-+	    <general barrier>		  STORE current->state
-+	LOAD event_indicated
-+
-+The available waker functions include:
-+
-+	complete();
-+	wake_up();
-+	wake_up_all();
-+	wake_up_bit();
-+	wake_up_interruptible();
-+	wake_up_interruptible_all();
-+	wake_up_interruptible_nr();
-+	wake_up_interruptible_poll();
-+	wake_up_interruptible_sync();
-+	wake_up_interruptible_sync_poll();
-+	wake_up_locked();
-+	wake_up_locked_poll();
-+	wake_up_nr();
-+	wake_up_poll();
-+	wake_up_process();
-+
-+
-+[!] Note that the memory barriers implied by the sleeper and the waker do _not_
-+order multiple stores before the wake-up with respect to loads of those stored
-+values after the sleeper has called set_current_state().  For instance, if the
-+sleeper does:
-+
-+	set_current_state(TASK_INTERRUPTIBLE);
-+	if (event_indicated)
-+		break;
-+	__set_current_state(TASK_RUNNING);
-+	do_something(my_data);
-+
-+and the waker does:
-+
-+	my_data = value;
-+	event_indicated = 1;
-+	wake_up(&event_wait_queue);
-+
-+there's no guarantee that the change to event_indicated will be perceived by
-+the sleeper as coming after the change to my_data.  In such a circumstance, the
-+code on both sides must interpolate its own memory barriers between the
-+separate data accesses.  Thus the above sleeper ought to do:
-+
-+	set_current_state(TASK_INTERRUPTIBLE);
-+	if (event_indicated) {
-+		smp_rmb();
-+		do_something(my_data);
-+	}
-+
-+and the waker should do:
-+
-+	my_data = value;
-+	smp_wmb();
-+	event_indicated = 1;
-+	wake_up(&event_wait_queue);
-+
-+
- MISCELLANEOUS FUNCTIONS
- -----------------------
- 
-@@ -1366,7 +1493,7 @@ WHERE ARE MEMORY BARRIERS NEEDED?
- 
- Under normal operation, memory operation reordering is generally not going to
- be a problem as a single-threaded linear piece of code will still appear to
--work correctly, even if it's in an SMP kernel.  There are, however, three
-+work correctly, even if it's in an SMP kernel.  There are, however, four
- circumstances in which reordering definitely _could_ be a problem:
- 
-  (*) Interprocessor interaction.
-diff --git a/kernel/sched.c b/kernel/sched.c
-index b902e58..fd0c2ce 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2458,6 +2458,17 @@ out:
- 	return success;
- }
- 
-+/**
-+ * wake_up_process - Wake up a specific process
-+ * @p: The process to be woken up.
-+ *
-+ * Attempt to wake up the nominated process and move it to the set of runnable
-+ * processes.  Returns 1 if the process was woken up, 0 if it was already
-+ * running.
-+ *
-+ * It may be assumed that this function implies a write memory barrier before
-+ * changing the task state if and only if any tasks are woken up.
-+ */
- int wake_up_process(struct task_struct *p)
- {
- 	return try_to_wake_up(p, TASK_ALL, 0);
-@@ -5241,6 +5252,9 @@ void __wake_up_common(wait_queue_head_t *q, unsigned int mode,
-  * @mode: which threads
-  * @nr_exclusive: how many wake-one or wake-many threads to wake up
-  * @key: is directly passed to the wakeup function
-+ *
-+ * It may be assumed that this function implies a write memory barrier before
-+ * changing the task state if and only if any tasks are woken up.
-  */
- void __wake_up(wait_queue_head_t *q, unsigned int mode,
- 			int nr_exclusive, void *key)
-@@ -5279,6 +5293,9 @@ void __wake_up_locked_key(wait_queue_head_t *q, unsigned int mode, void *key)
-  * with each other. This can prevent needless bouncing between CPUs.
-  *
-  * On UP it can prevent extra preemption.
-+ *
-+ * It may be assumed that this function implies a write memory barrier before
-+ * changing the task state if and only if any tasks are woken up.
-  */
- void __wake_up_sync_key(wait_queue_head_t *q, unsigned int mode,
- 			int nr_exclusive, void *key)
-@@ -5315,6 +5332,9 @@ EXPORT_SYMBOL_GPL(__wake_up_sync);	/* For internal use only */
-  * awakened in the same order in which they were queued.
-  *
-  * See also complete_all(), wait_for_completion() and related routines.
-+ *
-+ * It may be assumed that this function implies a write memory barrier before
-+ * changing the task state if and only if any tasks are woken up.
-  */
- void complete(struct completion *x)
- {
-@@ -5332,6 +5352,9 @@ EXPORT_SYMBOL(complete);
-  * @x:  holds the state of this particular completion
-  *
-  * This will wake up all threads waiting on this particular completion event.
-+ *
-+ * It may be assumed that this function implies a write memory barrier before
-+ * changing the task state if and only if any tasks are woken up.
-  */
- void complete_all(struct completion *x)
- {
+Brian
