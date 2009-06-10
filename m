@@ -1,80 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758771AbZFJLH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759208AbZFJLJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758771AbZFJLH0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 07:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbZFJLHQ
+	id S1759208AbZFJLJh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 07:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbZFJLJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 07:07:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56340 "EHLO hera.kernel.org"
+	Wed, 10 Jun 2009 07:09:34 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:48925 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751346AbZFJLHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 07:07:14 -0400
-Date: Wed, 10 Jun 2009 11:06:34 GMT
-From: tip-bot for Yong Wang <yong.y.wang@linux.intel.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       yong.y.wang@intel.com, arnd@arndb.de, yong.y.wang@linux.intel.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       yong.y.wang@intel.com, arnd@arndb.de, yong.y.wang@linux.intel.com,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090610090612.GA26580@ywang-moblin2.bj.intel.com>
-References: <20090610090612.GA26580@ywang-moblin2.bj.intel.com>
-Subject: [tip:perfcounters/core] perf_counter/x86: Fix the model number of Intel Core2 processors
-Message-ID: <tip-dc81081b2d9a6a9d64dad1bef1e5fc9fb660e53e@git.kernel.org>
-Git-Commit-ID: dc81081b2d9a6a9d64dad1bef1e5fc9fb660e53e
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 10 Jun 2009 11:06:36 +0000 (UTC)
+	id S1755186AbZFJLJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 07:09:33 -0400
+Date: Wed, 10 Jun 2009 21:09:26 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Greg KH <greg@kroah.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Elina Pasheva <epasheva@sierrawireless.com>
+Subject: Re: linux-next: manual merge of the usb tree with the ttydev tree
+Message-Id: <20090610210926.42314498.sfr@canb.auug.org.au>
+In-Reply-To: <20090610110617.58e73a37@lxorguk.ukuu.org.uk>
+References: <20090610184114.fe8a849e.sfr@canb.auug.org.au>
+	<20090610110617.58e73a37@lxorguk.ukuu.org.uk>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__10_Jun_2009_21_09_26_+1000_3WnDEpqusJBSrBXj"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  dc81081b2d9a6a9d64dad1bef1e5fc9fb660e53e
-Gitweb:     http://git.kernel.org/tip/dc81081b2d9a6a9d64dad1bef1e5fc9fb660e53e
-Author:     Yong Wang <yong.y.wang@linux.intel.com>
-AuthorDate: Wed, 10 Jun 2009 17:06:12 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 10 Jun 2009 13:04:43 +0200
+--Signature=_Wed__10_Jun_2009_21_09_26_+1000_3WnDEpqusJBSrBXj
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-perf_counter/x86: Fix the model number of Intel Core2 processors
+Hi Alan,
 
-Fix the model number of Intel Core2 processors according to the
-documentation: Intel Processor Identification with the CPUID
-Instruction: http://www.intel.com/support/processors/sb/cs-009861.htm
+On Wed, 10 Jun 2009 11:06:17 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrot=
+e:
+>
+> On Wed, 10 Jun 2009 18:41:14 +1000
+> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>=20
+> > Today's linux-next merge of the usb tree got a conflict in
+> > drivers/usb/serial/sierra.c between commit
+> > 968b6bc702be2b0953212f1ca56b1dc889c1c72d ("tty-usb-sierra-add-urb-funcs=
+")
+> > from the ttydev tree and various commits from the usb tree.
+> >=20
+> > There is some overlap between the ttydev patch and the usb patches.  I
+> > have just used the version of this file from USB tree (since it seems
+> > that there are many more changes there).
+> >=20
+> > Please sort this out ...
+>=20
+> Already working on this and getting all the patches into the ttydev tree.
+> Sierra are also now checking over my merge to check its ok.
 
-Signed-off-by: Yong Wang <yong.y.wang@intel.com>
-Also-Reported-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <20090610090612.GA26580@ywang-moblin2.bj.intel.com>
-[ Added two more model numbers suggested by Arnd Bergmann ]
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Excellent, thanks.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
----
- arch/x86/kernel/cpu/perf_counter.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+--Signature=_Wed__10_Jun_2009_21_09_26_+1000_3WnDEpqusJBSrBXj
+Content-Type: application/pgp-signature
 
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 40978aa..49f2585 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -1407,7 +1407,10 @@ static int intel_pmu_init(void)
- 	 * Install the hw-cache-events table:
- 	 */
- 	switch (boot_cpu_data.x86_model) {
--	case 17:
-+	case 15: /* original 65 nm celeron/pentium/core2/xeon, "Merom"/"Conroe" */
-+	case 22: /* single-core 65 nm celeron/core2solo "Merom-L"/"Conroe-L" */
-+	case 23: /* current 45 nm celeron/core2/xeon "Penryn"/"Wolfdale" */
-+	case 29: /* six-core 45 nm xeon "Dunnington" */
- 		memcpy(hw_cache_event_ids, core2_hw_cache_event_ids,
- 		       sizeof(hw_cache_event_ids));
- 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkovlGYACgkQjjKRsyhoI8zCjwCgsqlpoPXh7rRxAbtnYwTzZUaB
++MwAn1TpCvIKxOPj5j8resiIaVGdWGn4
+=ndyg
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__10_Jun_2009_21_09_26_+1000_3WnDEpqusJBSrBXj--
