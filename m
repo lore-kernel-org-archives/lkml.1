@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758571AbZFJRAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbZFJRAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758571AbZFJRAN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 13:00:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755640AbZFJQ76
+	id S1756453AbZFJRAg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 13:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756693AbZFJQ77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 12:59:58 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:59496 "EHLO
+	Wed, 10 Jun 2009 12:59:59 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59494 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752958AbZFJQ75 (ORCPT
+	with ESMTP id S1753315AbZFJQ75 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 10 Jun 2009 12:59:57 -0400
-Message-Id: <20090610165958.668708357@goodmis.org>
-References: <20090610165306.794813861@goodmis.org>
+Message-Id: <20090610165306.794813861@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 10 Jun 2009 12:53:07 -0400
+Date: Wed, 10 Jun 2009 12:53:06 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -24,141 +23,65 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
        Peter Zijlstra <peterz@infradead.org>, Mel Gorman <mel@csn.ul.ie>,
        Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: [PATCH 01/11] tracing: add entry size to iterator
-Content-Disposition: inline; filename=0001-tracing-add-entry-size-to-iterator.patch
+Subject: [PATCH 00/11] [GIT PULL][for 2.6.32] new event print tag language
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+[
+  Note, this work is aimed at 2.6.32 and not this merge window,
+    except for maybe the first patch.
+]
 
-In order to test against corruption of records, the size of the entry
-needs to be passed to callbacks. This patch places the entry size
-into a new field of the iterator "ent_size", that print call backs
-can access.
+Ingo,
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- include/linux/ftrace_event.h |    1 +
- kernel/trace/trace.c         |   39 ++++++++++++++++++++++++---------------
- 2 files changed, 25 insertions(+), 15 deletions(-)
+I rebased against tip/tracing/core and folded a lot of the fix ups into
+their corresponding patches. I still kept some of the tags out of
+the main patch since they explain those changes nicely and also
+demonstrates how to add new tags.
 
-diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-index 5c093ff..c03befb 100644
---- a/include/linux/ftrace_event.h
-+++ b/include/linux/ftrace_event.h
-@@ -56,6 +56,7 @@ struct trace_iterator {
- 	/* The below is zeroed out in pipe_read */
- 	struct trace_seq	seq;
- 	struct trace_entry	*ent;
-+	unsigned int		ent_size;
- 	int			cpu;
- 	u64			ts;
- 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index cae34c6..d83036d 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1398,7 +1398,7 @@ static void trace_iterator_increment(struct trace_iterator *iter)
- 	ftrace_enable_cpu();
- }
- 
--static struct trace_entry *
-+static struct ring_buffer_event *
- peek_next_entry(struct trace_iterator *iter, int cpu, u64 *ts)
- {
- 	struct ring_buffer_event *event;
-@@ -1414,15 +1414,17 @@ peek_next_entry(struct trace_iterator *iter, int cpu, u64 *ts)
- 
- 	ftrace_enable_cpu();
- 
--	return event ? ring_buffer_event_data(event) : NULL;
-+	return event;
- }
- 
- static struct trace_entry *
--__find_next_entry(struct trace_iterator *iter, int *ent_cpu, u64 *ent_ts)
-+__find_next_entry(struct trace_iterator *iter, int *ent_cpu, u64 *ent_ts,
-+		  unsigned int *ent_size)
- {
- 	struct ring_buffer *buffer = iter->tr->buffer;
--	struct trace_entry *ent, *next = NULL;
-+	struct ring_buffer_event *event, *next = NULL;
- 	int cpu_file = iter->cpu_file;
-+	struct trace_entry *ent;
- 	u64 next_ts = 0, ts;
- 	int next_cpu = -1;
- 	int cpu;
-@@ -1434,11 +1436,9 @@ __find_next_entry(struct trace_iterator *iter, int *ent_cpu, u64 *ent_ts)
- 	if (cpu_file > TRACE_PIPE_ALL_CPU) {
- 		if (ring_buffer_empty_cpu(buffer, cpu_file))
- 			return NULL;
--		ent = peek_next_entry(iter, cpu_file, ent_ts);
--		if (ent_cpu)
--			*ent_cpu = cpu_file;
--
--		return ent;
-+		next_cpu = cpu_file;
-+		next = peek_next_entry(iter, cpu_file, &next_ts);
-+		goto out;
- 	}
- 
- 	for_each_tracing_cpu(cpu) {
-@@ -1446,38 +1446,47 @@ __find_next_entry(struct trace_iterator *iter, int *ent_cpu, u64 *ent_ts)
- 		if (ring_buffer_empty_cpu(buffer, cpu))
- 			continue;
- 
--		ent = peek_next_entry(iter, cpu, &ts);
-+		event = peek_next_entry(iter, cpu, &ts);
- 
- 		/*
- 		 * Pick the entry with the smallest timestamp:
- 		 */
--		if (ent && (!next || ts < next_ts)) {
--			next = ent;
-+		if (event && (!next || ts < next_ts)) {
-+			next = event;
- 			next_cpu = cpu;
- 			next_ts = ts;
- 		}
- 	}
- 
-+ out:
- 	if (ent_cpu)
- 		*ent_cpu = next_cpu;
- 
- 	if (ent_ts)
- 		*ent_ts = next_ts;
- 
--	return next;
-+	if (!next)
-+		return NULL;
-+
-+	ent = ring_buffer_event_data(next);
-+	if (ent_size)
-+		*ent_size = ring_buffer_event_length(next);
-+
-+	return ent;
- }
- 
- /* Find the next real entry, without updating the iterator itself */
- struct trace_entry *trace_find_next_entry(struct trace_iterator *iter,
- 					  int *ent_cpu, u64 *ent_ts)
- {
--	return __find_next_entry(iter, ent_cpu, ent_ts);
-+	return __find_next_entry(iter, ent_cpu, ent_ts, NULL);
- }
- 
- /* Find the next real entry, and increment the iterator to the next entry */
- static void *find_next_entry_inc(struct trace_iterator *iter)
- {
--	iter->ent = __find_next_entry(iter, &iter->cpu, &iter->ts);
-+	iter->ent = __find_next_entry(iter, &iter->cpu, &iter->ts,
-+				      &iter->ent_size);
- 
- 	if (iter->ent)
- 		trace_iterator_increment(iter);
--- 
-1.6.3.1
+The first patch "tracing: add entry size to iterator" is something that
+was lacking in the trace output, and I would recommend for this
+merge window. Just because it is low impact and it would be a nice thing
+to have for those that are working on enhancing ftrace.
 
+The rest, could you make a separate branch for, so we can experiment
+with. I'll keep the event-print-format* branches around too.
+
+Please pull the latest tip/tracing/event-print-format-1 tree, which can be found at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/event-print-format-1
+
+
+Steven Rostedt (11):
+      tracing: add entry size to iterator
+      tracing/events: nicer print format for parsing
+      tracing: add nsec2sec print formats
+      tracing: add major and minor tags for print format
+      tracing: add func and symfunc to tag format
+      tracing: update sample code with new tag format
+      tracing/events: modify irq print to new format
+      tracing/events: modify sched print to new format
+      tracing/events: modify kmem print to new format
+      tracing/events: modify lockdep print to new format
+      tracing: convert the block trace points to use the new tag format
+
+----
+ include/linux/ftrace_event.h               |   13 +
+ include/trace/events/block.h               |  101 +--
+ include/trace/events/irq.h                 |   40 +-
+ include/trace/events/kmem.h                |  100 ++--
+ include/trace/events/lockdep.h             |   18 +-
+ include/trace/events/sched.h               |   49 +-
+ include/trace/ftrace.h                     |   22 +-
+ kernel/trace/Makefile                      |    1 +
+ kernel/trace/trace.c                       |   39 +-
+ kernel/trace/trace_events.c                |    1 +
+ kernel/trace/trace_output.c                |    2 +-
+ kernel/trace/trace_output.h                |    4 +
+ kernel/trace/trace_read_binary.c           |  973 ++++++++++++++++++++++++++++
+ samples/trace_events/trace-events-sample.c |   21 +-
+ samples/trace_events/trace-events-sample.h |   66 ++
+ 15 files changed, 1247 insertions(+), 203 deletions(-)
 -- 
