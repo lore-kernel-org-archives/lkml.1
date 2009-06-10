@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760296AbZFJTNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbZFJTQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760296AbZFJTNu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 15:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755078AbZFJTNn
+	id S1760954AbZFJTQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 15:16:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbZFJTQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 15:13:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59706 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753924AbZFJTNn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 15:13:43 -0400
-Date: Wed, 10 Jun 2009 15:12:49 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Harald Welte <HaraldWelte@viatech.com>, linux-kernel@vger.kernel.org,
-       Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-Subject: [patch 2/2] crypto: padlock-aes: work around Nano CPU errata in CBC
- mode
-Message-ID: <20090610151249.2fd51615@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <20090610151122.2fcac7d9@dhcp-100-2-144.bos.redhat.com>
-References: <20090610151122.2fcac7d9@dhcp-100-2-144.bos.redhat.com>
-Organization: Red Hat, Inc.
+	Wed, 10 Jun 2009 15:16:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48470 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752698AbZFJTQt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 15:16:49 -0400
+Date: Wed, 10 Jun 2009 12:16:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, WANG Cong <amwang@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: 2.6.31 -mm merge plans
+Message-Id: <20090610121633.d678fc8b.akpm@linux-foundation.org>
+In-Reply-To: <20090610190841.GT8633@ZenIV.linux.org.uk>
+References: <20090610115140.09c9f4cb.akpm@linux-foundation.org>
+	<20090610190841.GT8633@ZenIV.linux.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,178 +28,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chuck Ebbert <cebbert@redhat.com>
-crypto: padlock-aes: work around Nano CPU errata in CBC mode
+(cc's added)
 
-Extend previous workarounds for the prefetch bug to cover CBC mode,
-clean up the code a bit.
+On Wed, 10 Jun 2009 20:08:41 +0100
+Al Viro <viro@ZenIV.linux.org.uk> wrote:
 
-Acked-by: HaraldWelte <HaraldWelte@viatech.com>
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
----
-Against cryptodev.git
+> On Wed, Jun 10, 2009 at 11:51:40AM -0700, Andrew Morton wrote:
+> 
+> > proc-merge-arrayc-into-basec.patch
+> > proc-merge-arrayc-into-basec-checkpatch-fixes.patch
+> 
+> I'm not sure that there's any point in that.  Sure, we can slap two
+> files together; what the hell for?  Both are quite large, there's
+> a (relatively) sane separation of code between them (misc. files
+> contents in /proc/<pid>/ vs. directory structure and symlinks in
+> there, more or less) and I don't see any benefit in mashing them
+> together.  Up to Alexey, but IMO that's pointless.
 
---- work-2.6.29.4.orig/drivers/crypto/padlock-aes.c
-+++ work-2.6.29.4/drivers/crypto/padlock-aes.c
-@@ -22,11 +22,16 @@
- #include <asm/i387.h>
- #include "padlock.h"
- 
--/* number of data blocks actually fetched for each xcrypt insn */
-+/*
-+ * Number of data blocks actually fetched for each xcrypt insn.
-+ * Processors with prefetch errata will fetch extra blocks.
-+ */
- static unsigned int ecb_fetch_blocks = 2;
--static unsigned int cbc_fetch_blocks = 1;
--
-+#define MAX_ECB_FETCH_BLOCKS (8)
- #define ecb_fetch_bytes (ecb_fetch_blocks * AES_BLOCK_SIZE)
-+
-+static unsigned int cbc_fetch_blocks = 1;
-+#define MAX_CBC_FETCH_BLOCKS (4)
- #define cbc_fetch_bytes (cbc_fetch_blocks * AES_BLOCK_SIZE)
- 
- /* Control word. */
-@@ -176,7 +181,7 @@ static inline void padlock_store_cword(s
-  * should be used only inside the irq_ts_save/restore() context
-  */
- 
--static inline void padlock_xcrypt(const u8 *input, u8 *output, void *key,
-+static inline void rep_xcrypt_ecb(const u8 *input, u8 *output, void *key,
- 				  struct cword *control_word, int count)
- {
- 	asm volatile (".byte 0xf3,0x0f,0xa7,0xc8"	/* rep xcryptecb */
-@@ -184,32 +189,65 @@ static inline void padlock_xcrypt(const 
- 		      : "d"(control_word), "b"(key), "c"(count));
- }
- 
--static void aes_crypt_copy(const u8 *in, u8 *out, u32 *key,
-+static inline u8 *rep_xcrypt_cbc(const u8 *input, u8 *output, void *key,
-+				 u8 *iv, struct cword *control_word, int count)
-+{
-+	asm volatile (".byte 0xf3,0x0f,0xa7,0xd0"	/* rep xcryptcbc */
-+		      : "+S" (input), "+D" (output), "+a" (iv)
-+		      : "d" (control_word), "b" (key), "c" (count));
-+	return iv;
-+}
-+
-+static void ecb_crypt_copy(const u8 *in, u8 *out, u32 *key,
- 			   struct cword *cword, int count)
- {
- 	/*
- 	 * Padlock prefetches extra data so we must provide mapped input buffers.
- 	 * Assume there are at least 16 bytes of stack already in use.
- 	 */
--	u8 buf[AES_BLOCK_SIZE * 7 + PADLOCK_ALIGNMENT - 1];
-+	u8 buf[AES_BLOCK_SIZE * (MAX_ECB_FETCH_BLOCKS - 1) + PADLOCK_ALIGNMENT - 1];
- 	u8 *tmp = PTR_ALIGN(&buf[0], PADLOCK_ALIGNMENT);
- 
- 	memcpy(tmp, in, count * AES_BLOCK_SIZE);
--	padlock_xcrypt(tmp, out, key, cword, count);
-+	rep_xcrypt_ecb(tmp, out, key, cword, count);
- }
- 
--static inline void aes_crypt(const u8 *in, u8 *out, u32 *key,
-+static u8 *cbc_crypt_copy(const u8 *in, u8 *out, u32 *key,
-+			   u8 *iv, struct cword *cword, int count)
-+{
-+	/*
-+	 * Padlock prefetches extra data so we must provide mapped input buffers.
-+	 * Assume there are at least 16 bytes of stack already in use.
-+	 */
-+	u8 buf[AES_BLOCK_SIZE * (MAX_CBC_FETCH_BLOCKS - 1) + PADLOCK_ALIGNMENT - 1];
-+	u8 *tmp = PTR_ALIGN(&buf[0], PADLOCK_ALIGNMENT);
-+
-+	memcpy(tmp, in, count * AES_BLOCK_SIZE);
-+	return rep_xcrypt_cbc(tmp, out, key, iv, cword, count);
-+}
-+
-+static inline void ecb_crypt(const u8 *in, u8 *out, u32 *key,
- 			     struct cword *cword, int count)
- {
- 	/* Padlock in ECB mode fetches at least ecb_fetch_bytes of data.
- 	 * We could avoid some copying here but it's probably not worth it.
- 	 */
- 	if (unlikely(((unsigned long)in & PAGE_SIZE) + ecb_fetch_bytes > PAGE_SIZE)) {
--		aes_crypt_copy(in, out, key, cword, count);
-+		ecb_crypt_copy(in, out, key, cword, count);
- 		return;
- 	}
- 
--	padlock_xcrypt(in, out, key, cword, count);
-+	rep_xcrypt_ecb(in, out, key, cword, count);
-+}
-+
-+static inline u8 *cbc_crypt(const u8 *in, u8 *out, u32 *key,
-+			    u8 *iv, struct cword *cword, int count)
-+{
-+	/* Padlock in CBC mode fetches at least cbc_fetch_bytes of data. */
-+	if (unlikely(((unsigned long)in & PAGE_SIZE) + cbc_fetch_bytes > PAGE_SIZE))
-+		return cbc_crypt_copy(in, out, key, iv, cword, count);
-+
-+	return rep_xcrypt_cbc(in, out, key, iv, cword, count);
- }
- 
- static inline void padlock_xcrypt_ecb(const u8 *input, u8 *output, void *key,
-@@ -218,7 +256,7 @@ static inline void padlock_xcrypt_ecb(co
- 	u32 initial = count & (ecb_fetch_blocks - 1);
- 
- 	if (count < ecb_fetch_blocks) {
--		aes_crypt(input, output, key, control_word, count);
-+		ecb_crypt(input, output, key, control_word, count);
- 		return;
- 	}
- 
-@@ -235,10 +273,19 @@ static inline void padlock_xcrypt_ecb(co
- static inline u8 *padlock_xcrypt_cbc(const u8 *input, u8 *output, void *key,
- 				     u8 *iv, void *control_word, u32 count)
- {
--	/* rep xcryptcbc */
--	asm volatile (".byte 0xf3,0x0f,0xa7,0xd0"
-+	u32 initial = count & (cbc_fetch_blocks - 1);
-+
-+	if (count < cbc_fetch_blocks)
-+		return cbc_crypt(input, output, key, iv, control_word, count);
-+
-+	if (initial)
-+		asm volatile (".byte 0xf3,0x0f,0xa7,0xd0"	/* rep xcryptcbc */
-+			      : "+S" (input), "+D" (output), "+a" (iv)
-+			      : "d" (control_word), "b" (key), "c" (count));
-+
-+	asm volatile (".byte 0xf3,0x0f,0xa7,0xd0"	/* rep xcryptcbc */
- 		      : "+S" (input), "+D" (output), "+a" (iv)
--		      : "d" (control_word), "b" (key), "c" (count));
-+		      : "d" (control_word), "b" (key), "c" (count-initial));
- 	return iv;
- }
- 
-@@ -249,7 +296,7 @@ static void aes_encrypt(struct crypto_tf
- 
- 	padlock_reset_key(&ctx->cword.encrypt);
- 	ts_state = irq_ts_save();
--	aes_crypt(in, out, ctx->E, &ctx->cword.encrypt, 1);
-+	ecb_crypt(in, out, ctx->E, &ctx->cword.encrypt, 1);
- 	irq_ts_restore(ts_state);
- 	padlock_store_cword(&ctx->cword.encrypt);
- }
-@@ -261,7 +308,7 @@ static void aes_decrypt(struct crypto_tf
- 
- 	padlock_reset_key(&ctx->cword.encrypt);
- 	ts_state = irq_ts_save();
--	aes_crypt(in, out, ctx->D, &ctx->cword.decrypt, 1);
-+	ecb_crypt(in, out, ctx->D, &ctx->cword.decrypt, 1);
- 	irq_ts_restore(ts_state);
- 	padlock_store_cword(&ctx->cword.encrypt);
- }
-@@ -478,8 +525,8 @@ static int __init padlock_init(void)
- 	printk(KERN_NOTICE PFX "Using VIA PadLock ACE for AES algorithm.\n");
- 
- 	if (c->x86 == 6 && c->x86_model == 15 && c->x86_mask == 2) {
--		ecb_fetch_blocks = 8;
--		cbc_fetch_blocks = 4; /* NOTE: notused */
-+		ecb_fetch_blocks = MAX_ECB_FETCH_BLOCKS;
-+		cbc_fetch_blocks = MAX_CBC_FETCH_BLOCKS;
- 		printk(KERN_NOTICE PFX "VIA Nano stepping 2 detected: enabling workaround.\n");
- 	}
- 
+No strong opinions here.
+
+AFAIK Alexey isn't doing procfs any more?
