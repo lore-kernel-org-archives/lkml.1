@@ -1,101 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759836AbZFJP3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbZFJPbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759836AbZFJP3o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 11:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758263AbZFJP3f
+	id S1760096AbZFJPbz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 11:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759903AbZFJPbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 11:29:35 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:63946 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757808AbZFJP3e convert rfc822-to-8bit (ORCPT
+	Wed, 10 Jun 2009 11:31:48 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:42946 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757006AbZFJPbr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 11:29:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=PVRoF5A70hRq9epgdAQ1fAe0hLmGqQaW8mzVqkoJ/JEmQYVC9jom0fuRZs5i/nB0EN
-         Kb1pey0Q3SfcGgpzBcnOZIwxR8b1Z2H7uxrIuORvIBMfMxSG+nRoAA1DotXRwofYfdzc
-         sW1EsUdeGFmWzfVyEzc9ISy+zl6D/FVHCz00M=
-MIME-Version: 1.0
-In-Reply-To: <20090610170108.7710c64b@tux.DEF.witbe.net>
-References: <91ac27070906081105x30171bedra10d244d382a6934@mail.gmail.com>
-	 <4A2E4A32.1060705@trash.net>
-	 <91ac27070906090608me50af3bv23b150d8d0cd0080@mail.gmail.com>
-	 <200906091430.32294.bcook@bpointsys.com>
-	 <91ac27070906100724v25c2328x6b343315358c8e12@mail.gmail.com>
-	 <4A2FC40E.4040106@trash.net>
-	 <91ac27070906100748p1b2cb6bax56ecc230e556ae96@mail.gmail.com>
-	 <20090610170108.7710c64b@tux.DEF.witbe.net>
-Date: Wed, 10 Jun 2009 18:29:34 +0300
-Message-ID: <91ac27070906100829l683c69fbw93bb78813ee97ced@mail.gmail.com>
-Subject: Re: SOCK_RAW does not receive broadcast (with VLAN unless PROMISC)
-From: Gil Beniamini <gil.beniamini@gmail.com>
-To: Paul Rolland <rol@witbe.net>
-Cc: Patrick McHardy <kaber@trash.net>, Brent Cook <bcook@bpointsys.com>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 10 Jun 2009 11:31:47 -0400
+Subject: Re: [Bug #13306] hibernate slow on _second_ run
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <200906082254.30138.rjw@sisk.pl>
+References: <4to6E2myxvG.A.muC.aIbIKB@chimera>
+	 <200906032351.01900.rjw@sisk.pl> <1244125570.22576.78.camel@johannes.local>
+	 <200906082254.30138.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-TC/v+ydbMYWJzJoMOGHW"
+Date: Wed, 10 Jun 2009 16:24:42 +0200
+Message-Id: <1244643882.18481.62.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul, Patrick,
 
-THANKS!
-using "vconfig set_name_type" DEV_PLUS_VID_NO_PAD" enable successful
-"vconfig add eth1 <same-id as on eth0>". And now finally without
-PROMISC the application receive BROADCASTs on this VLAN.
+--=-TC/v+ydbMYWJzJoMOGHW
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Many Thanks, Gil
+On Mon, 2009-06-08 at 22:54 +0200, Rafael J. Wysocki wrote:
+> On Thursday 04 June 2009, Johannes Berg wrote:
+> > Alright, I have managed to trace this.
+> >=20
+> > http://johannes.sipsolutions.net/files/hibernate-delay-dmesg.txt
+> >=20
+> > has the dmesg, you can clearly see the delay:
+> > [50265.143330] ACPI: Waking up from system sleep state S4
+> > [50265.679141] HDA Intel 0000:00:08.0: restoring config space at offset=
+ 0x1 (was 0xb00006, writing 0xb00002)
+> > [50265.689525] forcedeth 0000:00:0a.0: restoring config space at offset=
+ 0x1 (was 0xb00003, writing 0xb00007)
+> > [50265.699775] ahci 0000:00:0b.0: restoring config space at offset 0x1 =
+(was 0xb00403, writing 0xb00407)
+> > [50286.294910] pci 0000:00:03.2: PME# disabled
+>=20
+> Quite frankly, it looks like resume_device_irqs() itself causes the delay=
+ to happen.
+>=20
+> The next step would be to put a couple of printk()s in there and see whic=
+h part
+> of it triggers the delay.
 
-2009/6/10 Paul Rolland <rol@witbe.net>:
-> Hello,
->
-> On Wed, 10 Jun 2009 17:48:40 +0300
-> Gil Beniamini <gil.beniamini@gmail.com> wrote:
->
->> Dear Patrick,
->> Below is my try to add vlan-id 24 on eth1, followed by "ip -d link list":
->> root@StudentsHPA:/home/hpa# vconfig add eth1 24
->> ERROR: trying to add VLAN #24 to IF -:eth1:-  error: File exists
->
-> Here is an output from my vconfig :
-> bash-2.05$ /usr/local/witbe/sbin/vconfig
-> Expecting argc to be 3-5, inclusive.  Was: 1
->
-> Usage: add             [interface-name] [vlan_id]
->       rem             [vlan-name]
->       set_flag        [interface-name] [flag-num]       [0 | 1]
->       set_egress_map  [vlan-name]      [skb_priority]   [vlan_qos]
->       set_ingress_map [vlan-name]      [skb_priority]   [vlan_qos]
->       set_name_type   [name-type]
->
-> ...
-> * bind-type:  PER_DEVICE  # Allows vlan 5 on eth0 and eth1 to be unique.
->              PER_KERNEL  # Forces vlan 5 to be unique across all devices.
->
-> But the documentation is lacking information on how to set this :(
->
-> Have a look at the source of vconfig should help...
->
-> Paul
->
-> --
-> Paul Rolland                                E-Mail : rol(at)witbe.net
-> CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
-> Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
-> F-92057 Paris La Defense                    RIPE : PR12-RIPE
->
-> This is dedicated to all the ones who want to control Internet, its
-> content or its usage :
->
-> "I worry about my child and the Internet all the time, even though she's
-> too young to have logged on yet. Here's what I worry about. I worry that 10
-> or 15 years from now, she will come to me and say 'Daddy, where were you
-> when they took freedom of the press away from the Internet?'"
-> --Mike Godwin, Electronic Frontier Foundation
->
->
->
+--- a/kernel/irq/pm.c
++++ b/kernel/irq/pm.c
+@@ -56,8 +56,11 @@ void resume_device_irqs(void)
+                if (!(desc->status & IRQ_SUSPENDED))
+                        continue;
+=20
++               printk(KERN_DEBUG "lock irq %d\n", irq);
+                spin_lock_irqsave(&desc->lock, flags);
++               printk(KERN_DEBUG "locked\n");
+                __enable_irq(desc, irq, true);
++               printk(KERN_DEBUG "enabled\n");
+                spin_unlock_irqrestore(&desc->lock, flags);
+        }
+ }
+
+
+and I get:
+[63702.285944] ACPI: Waking up from system sleep state S4
+[63702.811457] HDA Intel 0000:00:08.0: restoring config space at offset 0x1=
+ (was 0xb00006, writing 0xb00002)
+[63702.819369] pci 0000:00:09.0: restoring config space at offset 0x7 (was =
+0x228000f0, writing 0x428000f0)
+[63702.827574] forcedeth 0000:00:0a.0: restoring config space at offset 0x1=
+ (was 0xb00003, writing 0xb00007)
+[63702.836052] ahci 0000:00:0b.0: restoring config space at offset 0x1 (was=
+ 0xb00403, writing 0xb00407)
+[63702.845288] lock irq 9
+[63702.853902] locked
+[63702.862433] enabled
+[63702.870967] lock irq 17
+[63702.879377] locked
+[63702.880964] enabled
+[63702.895811] lock irq 18
+[63702.903919] locked
+[63702.911879] enabled
+[63702.919781] lock irq 19
+[63702.927595] locked
+[63702.935260] enabled
+[63702.942989] lock irq 20
+[63702.950764] locked
+[63702.958425] enabled
+[63702.966061] lock irq 25
+[63702.973641] locked
+[63702.981102] enabled
+[63722.620744] pci 0000:00:03.2: PME# disabled
+[63722.628069] ohci_hcd 0000:00:04.0: PME# disabled
+
+so it doesn't look like the delay is there.
+
+johannes
+
+--=-TC/v+ydbMYWJzJoMOGHW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKL8ImAAoJEODzc/N7+Qmas+oP/iBhkcFXMzMXp3cbZV/bF74q
+PlzbQ+QIg7Nizf0MdQRvhh6D3IfyZpWaqhXQU2KkNs+F85X2qg+mLzDcXAwej4yY
+Hxbc2M6MVkaE/wcRUNEgvhQVc9HvdfYmaBU0/nrtsLi2gjuxHI2J0N8FaWOyjl16
+DcB0tl77qSbHQPRcRCVyxGib+rNz1+JiyylGv65oQWZuTtquYbalMThIOU6eya7z
+Z6O1EfVfidW9MdUMdHFLQ1MR+0C/KRQ40EWJDCTLODO/mmQ2ptKU1j6cNdriHFhR
+o3fDVY29p8FbBbYQOM+MKWq7K1MqsxLcjok/NjEbL9xupCg/sJ64C01Ai7AoSPzM
+lD+5XOLukoRpX1R1jn3OfDNvXGF4TCIbhMxMn8u/KlnNlhAP+vJgQf2PSeNfPsg2
+Qw5GtapVId1gcgTlB2Ih1D+GzAx5vCnmygfmjvaEa31Ll2OeyeDtbC5oIAnAvNAC
+9iFl4excOsapLHfebhiNJoYeQQgsEUQGHJ+VJg0yn247P8J+QTS4ZB5VVbtXeLkF
+fMiXLDF4oJNwOMMYtwMmbwTHeouVAoiUHVMETwm232444KduAoLNf2eVQqqG+xrN
+iKl6Q07jw0+X9qOSm7s6atmGuPk8kcEuOiUnhs7cleOaHMtPnCGY4RZh/f9zBV62
+bgaI3sk/g+23UMoLpXkC
+=rVUv
+-----END PGP SIGNATURE-----
+
+--=-TC/v+ydbMYWJzJoMOGHW--
+
