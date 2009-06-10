@@ -1,83 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758453AbZFJOUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759157AbZFJOXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758453AbZFJOUZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 10:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757782AbZFJOUF
+	id S1759157AbZFJOXT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 10:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbZFJOXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 10:20:05 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36135 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757621AbZFJOUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 10:20:04 -0400
-Date: Thu, 11 Jun 2009 00:19:57 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
-       x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Greg Ungerer <gerg@snapgear.com>, David Howells <dhowells@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip] headers_check fix patches 20090610
-Message-Id: <20090611001957.61b5530b.sfr@canb.auug.org.au>
-In-Reply-To: <1244640630.20890.22.camel@ht.satnam>
-References: <1244640630.20890.22.camel@ht.satnam>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Wed, 10 Jun 2009 10:23:12 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:24441 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755485AbZFJOXL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 10:23:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=psJCqz3t7U0Yheq/yPtfJ9IuZeDELtYulMGqCLmj9gqm1cQPQF5P/W5qeLQt3452dI
+         PTgt5pd9xM7o1yMBZjiBdE4vuRlx7ijoK9Y4EPjZkSvZdzJq3CMwEsBpgrwzYx0/PXD/
+         U9SjSLj5n/t9DKBAfcXUhaDhrl8yNTWqQipHU=
+Subject: Re: [PATCH v2]X86:microcode: fix vfree()
+From: "Figo.zhang" <figo1802@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1244385036.3402.11.camel@myhost>
+References: <1244351929.3355.13.camel@myhost>
+	 <20090607140113.GI12088@elte.hu> <1244384315.3402.5.camel@myhost>
+	 <20090607142118.GB21340@elte.hu>  <1244385036.3402.11.camel@myhost>
+Content-Type: text/plain
+Date: Wed, 10 Jun 2009 22:23:08 +0800
+Message-Id: <1244643789.3422.9.camel@myhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__11_Jun_2009_00_19_57_+1000_XeJdwgQlO9QkDWq2"
+X-Mailer: Evolution 2.26.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__11_Jun_2009_00_19_57_+1000_XeJdwgQlO9QkDWq2
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, 2009-06-07 at 22:30 +0800, Figo.zhang wrote:
+> Ingo
 
-Hi Jaswinder,
+hi, Ingo,
+    is it ok for v2?
 
-On Wed, 10 Jun 2009 19:00:30 +0530 Jaswinder Singh Rajput <jaswinder@kernel=
-.org> wrote:
->
-> The following changes since commit e271e1343a94e081723cb4180af3fdb5fecc1a=
-49:
->   Ingo Molnar (1):
->         Merge branch 'x86/mce4'
->=20
-> are available in the git repository at:
->=20
->   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-top.g=
-it master
->=20
-> Jaswinder Singh Rajput (3):
->       headers_check fix: m68k, swab.h
->       headers_check fix: mn10300, ptrace.h
->       headers_check fix: mn10300, setup.h
->=20
->  arch/m68k/include/asm/swab.h      |    2 +-
->  arch/mn10300/include/asm/ptrace.h |    5 ++---
->  arch/mn10300/include/asm/setup.h  |    3 ++-
->  3 files changed, 5 insertions(+), 5 deletions(-)
+Best Regards,
 
-Is there some reason that these fixes are not just sent to the appropriate
-maintainers?  That way we would avoid unnecessary conflicts cropping up.
+Figo.zhang
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__11_Jun_2009_00_19_57_+1000_XeJdwgQlO9QkDWq2
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkovwQ0ACgkQjjKRsyhoI8z7agCbBlrqBQ7yXW+SriLIrHblrs/U
-F9EAn0yuZizH6Kt4csoN2uU5Z3CFvIPx
-=1CrF
------END PGP SIGNATURE-----
-
---Signature=_Thu__11_Jun_2009_00_19_57_+1000_XeJdwgQlO9QkDWq2--
