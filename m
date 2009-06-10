@@ -1,76 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbZFJKoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZFJKtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756893AbZFJKoX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 06:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZFJKoQ
+	id S1756775AbZFJKtG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 06:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbZFJKsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 06:44:16 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36709 "EHLO mx2.mail.elte.hu"
+	Wed, 10 Jun 2009 06:48:55 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:36983 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751208AbZFJKoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 06:44:15 -0400
-Date: Wed, 10 Jun 2009 12:44:09 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yong Wang <yong.y.wang@linux.intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] perf_counter/x86: Fix incorrect default branch
-Message-ID: <20090610104409.GC27724@elte.hu>
-References: <20090609074621.GA19290@ywang-moblin2.bj.intel.com> <20090609132313.GE25586@elte.hu> <20090609133232.GA14642@ywang-moblin2.bj.intel.com> <20090609142506.GD32703@elte.hu> <20090610051521.GB30923@ywang-moblin2.bj.intel.com>
+	id S1751809AbZFJKsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 06:48:55 -0400
+Date: Wed, 10 Jun 2009 11:48:54 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
+       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/4] Reintroduce zone_reclaim_interval for when
+	zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
+Message-ID: <20090610104854.GL25943@csn.ul.ie>
+References: <1244566904-31470-1-git-send-email-mel@csn.ul.ie> <1244566904-31470-5-git-send-email-mel@csn.ul.ie> <20090609225425.b0820ce5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090610051521.GB30923@ywang-moblin2.bj.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090609225425.b0820ce5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yong Wang <yong.y.wang@linux.intel.com> wrote:
-
-> On Tue, Jun 09, 2009 at 04:25:06PM +0200, Ingo Molnar wrote:
+On Tue, Jun 09, 2009 at 10:54:25PM -0700, Andrew Morton wrote:
+> On Tue,  9 Jun 2009 18:01:44 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > On NUMA machines, the administrator can configure zone_reclaim_mode that is a
+> > more targetted form of direct reclaim. On machines with large NUMA distances,
+> > zone_reclaim_mode defaults to 1 meaning that clean unmapped pages will be
+> > reclaimed if the zone watermarks are not being met. The problem is that
+> > zone_reclaim() may get into a situation where it scans excessively without
+> > making progress.
 > > 
-> > They dont have X86_FEATURE_ARCH_PERFMON set, right?
+> > One such situation occured where a large tmpfs mount occupied a
+> > large percentage of memory overall. The pages did not get reclaimed by
+> > zone_reclaim(), but the lists are uselessly scanned frequencly making the
+> > CPU spin at 100%. The observation in the field was that malloc() stalled
+> > for a long time (minutes in some cases) when this situation occurs. This
+> > situation should be resolved now and there are counters in place that
+> > detect when the scan-avoidance heuristics break but the heuristics might
+> > still not be bullet proof. If they fail again, the kernel should respond
+> > in some fashion other than scanning uselessly chewing up CPU time.
 > > 
-> > I made the switch statement under the assumption that it covers all 
-> > existing arch-perfmon CPU models. If not, the 'default:' placement 
-> > would indeed be buggy.
-> > 
+> > This patch reintroduces zone_reclaim_interval which was removed by commit
+> > 34aa1330f9b3c5783d269851d467326525207422 [zoned vm counters: zone_reclaim:
+> > remove /proc/sys/vm/zone_reclaim_interval. In the event the scan-avoidance
+> > heuristics fail, the event is counted and zone_reclaim_interval avoids
+> > excessive scanning.
 > 
-> OK, you are right. X86_FEATURE_ARCH_PERFMON eliminates all the old CPUs.
-> However, the logic still seems not correct. Both the Core2 CPUs I'm
-> using are recognized as Nehalem/Corei7. /proc/cpuinfo and cpuid outputs
-> are given below.
+> More distressed fretting!
 > 
-> The first one:
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 23
-> model name      : Intel(R) Core(TM)2 Duo CPU     P8400  @ 2.26GHz
-> stepping        : 6
-> 
-> CPUID.0x00000001: eax=0x00010676
-> 
-> The second one:
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 15
-> model name      : Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz
-> stepping        : 6
-> 
-> CPUID.0x00000001: eax=0x000006f6
-> 
-> Looks like it's not enough to just look at boot_cpu_data.x86_model.
 
-Yeah - i've applied the patch you sent, thanks. I'm mostly working 
-on NHM so i didnt notice.
+Not at all. One day I'll get a significant patch completed without any
+eyebrows raised and the world will end :). 
 
-	Ingo
+> Pages can be allocated and freed and reclaimed at rates anywhere
+> between zero per second to one million per second or more.  So what
+> sense does it make to pace MM activity by wall-time??
+> 
+
+None - this is a brute force workaround if the scan heuristic breaks and
+was lifted directly from an old patch by Christoph. It could be much
+better.
+
+> A better clock for pacing MM activity is page-allocation-attempts, or
+> pages-scanned, etc.
+> 
+
+Agreed. Wu convinced me of that and had some good suggestions. I'm waiting
+to hear back from the testers on the new scan heuristics to see if they
+are working or not. If they are working now, I'll drop this patch. If we
+decide we need it, I'll update with Wu's work. I need to send the tests a
+new version now though because of the underflow problem.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
