@@ -1,342 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760328AbZFJUwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbZFJU5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760328AbZFJUwc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 16:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761446AbZFJUwT
+	id S1758139AbZFJU5Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 16:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755488AbZFJU5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 16:52:19 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:40488 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761316AbZFJUwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 16:52:17 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2 v2] ftrace: document basic ftracer/ftracer graph needs
-Date: Wed, 10 Jun 2009 16:52:09 -0400
-Message-Id: <1244667129-27630-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.3.1
-In-Reply-To: <1244623722-6325-2-git-send-email-vapier@gentoo.org>
-References: <1244623722-6325-2-git-send-email-vapier@gentoo.org>
+	Wed, 10 Jun 2009 16:57:17 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33529 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754774AbZFJU5R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 16:57:17 -0400
+Date: Wed, 10 Jun 2009 23:57:17 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org, hannes@cmpxchg.org, mingo@elte.hu,
+       mpm@selenic.com, npiggin@suse.de, yinghai@kernel.org
+Subject: Re: [GIT PULL] Early boot SLAB for 2.6.31
+In-Reply-To: <alpine.LFD.2.01.0906101332440.6847@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0906102356030.30927@melkki.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0906102311230.30444@melkki.cs.Helsinki.FI>
+ <alpine.LFD.2.01.0906101331250.6847@localhost.localdomain>
+ <alpine.LFD.2.01.0906101332440.6847@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While implementing ftracer and ftracer graph support, I found the exact
-arch implementation details to be a bit lacking (and my x86 foo ain't
-great).  So after pounding out support for the Blackfin arch, start
-documenting the requirements/details.
+Hi Linus,
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+On Wed, 10 Jun 2009, Linus Torvalds wrote:
+> > Hmm. Are there any reasons why the scheduler fixups can't go in this 
+> > series? Do they depend on other things in -tip?
+> 
+> [ .. because otherwise we'll inevitably just get unnecessary bug-reports 
+>   about this all - harmless or not, that message would be annoying and 
+>   certainly cause people to panic. ]
+
+OK, so I merged and pushed these two patches to 'for-linus' branch of my 
+tree and I don't see any more warnings on boot.
+
+			Pekka
+
+>From b38af0a398ec80c04769eb322dc92e1833481483 Mon Sep 17 00:00:00 2001
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+Date: Wed, 10 Jun 2009 23:42:36 +0300
+Subject: [PATCH] sched: use kzalloc() instead of the bootmem allocator
+
+Now that kmem_cache_init() happens before sched_init(), we should use kzalloc()
+and not the bootmem allocator.
+
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
-v2
-	- move to Documentation/ and add a lot more details
+ kernel/sched.c |   20 ++++++++------------
+ 1 files changed, 8 insertions(+), 12 deletions(-)
 
-note: yes, i think every kconfig option that is documented should point to
-the relevant text file as this helps in the case of people who use kconfig's
-search function to look for things
-
- Documentation/trace/ftrace-implementation.txt |  223 +++++++++++++++++++++++++
- Documentation/trace/ftrace.txt                |    6 +
- kernel/trace/Kconfig                          |   16 ++-
- 3 files changed, 242 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/trace/ftrace-implementation.txt
-
-diff --git a/Documentation/trace/ftrace-implementation.txt b/Documentation/trace/ftrace-implementation.txt
-new file mode 100644
-index 0000000..cba63b9
---- /dev/null
-+++ b/Documentation/trace/ftrace-implementation.txt
-@@ -0,0 +1,223 @@
-+		ftrace guts
-+		===========
-+
-+Introduction
-+------------
-+
-+Here we will cover the architecture pieces that the common ftrace code relies
-+on for proper functioning.  Things are broken down into increasing complexity
-+so that you can start at the top and get at least basic functionality.
-+
-+Note that this focuses on architecture implementation details only.  If you
-+want more explanation of a feature in terms of common code, review the common
-+ftrace.txt file.
-+
-+
-+Prerequisites
-+-------------
-+
-+Ftrace relies on these features being implemented:
-+ STACKTRACE_SUPPORT - implement save_stack_trace()
-+ TRACE_IRQFLAGS_SUPPORT - implement include/asm/irqflags.h
-+
-+
-+HAVE_FUNCTION_GRAPH_TRACER
-+--------------------------
-+
-+You will need to implement the mcount and the ftrace_stub functions.
-+
-+The exact mcount symbol name will depend on your toolchain.  Some call it
-+"mcount", "_mcount", or even "__mcount".  You can probably figure it out by
-+running something like:
-+	$ echo 'm(){}' | gcc -x c -S -o - - -pg | grep mcount
-+	        call    mcount
-+
-+Keep in mind that the ABI that is in effect inside of the mcount function is
-+*highly* architecture/toolchain specific.  We cannot help you in this regard,
-+sorry.  Dig up some old documentation and/or find someone more familiar than
-+you to bang ideas off of.  Typically, register usage/clobbering is a major
-+problem here.  You might also want to look at how glibc has implemented the
-+mcount function for your architecture.  It might be (semi-)relevant.
-+
-+The mcount function should check the function pointer ftrace_trace_function
-+to see if it is set to ftrace_stub.  If it is, there is nothing for you to do,
-+so return immediately.  If it isn't, then call that function in the same way
-+the mcount function normally calls __mcount_internal -- the first argument is
-+the "frompc" while the second argument is the "selfpc" (adjusted to remove the
-+size of the mcount call that is embedded in the function).
-+
-+For example, if the function foo() calls bar(), when the bar() function calls
-+mcount(), the arguments mcount() will pass to the tracer are:
-+	"frompc" - the address bar() will use to return to foo()
-+	"selfpc" - the address bar() (with _mcount() size adjustment)
-+
-+Also keep in mind that this mcount function will be called *a lot*, so
-+optimizing for the default case of no tracer will help the smooth running of
-+your system when tracing is disabled.  So the start of the mcount function is
-+typically the bare min with checking things before returning.  That also means
-+the code flow should usually kept linear (i.e. no branching in the nop case).
-+This is of course an optimization and not a hard requirement.
-+
-+Here is some pseudo code that should help (these functions should actually be
-+implemented in assembly):
-+
-+void ftrace_stub(void)
-+{
-+	return;
-+}
-+
-+void mcount(void)
-+{
-+	/* save any bare state needed in order to do initial checking */
-+
-+	extern void (*ftrace_trace_function)(unsigned long, unsigned long);
-+	if (ftrace_trace_function != ftrace_stub)
-+		goto do_trace;
-+
-+	/* restore any bare state */
-+
-+	return;
-+
-+do_trace:
-+
-+	/* save all state needed by the ABI */
-+
-+	unsigned long frompc = ...;
-+	unsigned long selfpc = <return address> - MCOUNT_INSN_SIZE;
-+	ftrace_trace_function(frompc, selfpc);
-+
-+	/* restore all state needed by the ABI */
-+}
-+
-+
-+HAVE_FUNCTION_TRACE_MCOUNT_TEST
-+-------------------------------
-+
-+This is an optional optimization for the normal case when tracing is turned off
-+in the system.  If you do not enable this Kconfig option, the common ftrace
-+code will take care of doing the checking for you.
-+
-+To support this feature, you only need to check the function_trace_stop
-+variable in the mcount function.  If it is non-zero, there is no tracing to be
-+done at all, so you can return.
-+
-+This additional pseudo code would simply be:
-+void mcount(void)
-+{
-+	/* save any bare state needed in order to do initial checking */
-+
-++	if (function_trace_stop)
-++		return;
-+
-+	extern void (*ftrace_trace_function)(unsigned long, unsigned long);
-+	if (ftrace_trace_function != ftrace_stub)
-+...
-+
-+
-+HAVE_FUNCTION_GRAPH_TRACER
-+--------------------------
-+
-+Deep breath ... time to do some real work.  Here you will need to update the
-+mcount function to check ftrace graph function pointers, as well as implement
-+some functions to save (hijack) and restore the return address.
-+
-+The mcount function should check the function pointers ftrace_graph_return
-+(compare to ftrace_stub) and ftrace_graph_entry (compare to
-+ftrace_graph_entry_stub).  If either of those are not set to the relevant stub
-+function, call the arch-specific function ftrace_graph_caller which in turn
-+calls the arch-specific function prepare_ftrace_return.  Neither of these
-+function names are strictly required, but you should use them anyways to stay
-+consistent across the architecture ports -- easier to compare & contrast
-+things.
-+
-+The arguments to prepare_ftrace_return are slightly different than what are
-+passed to ftrace_trace_function.  The second argument "selfpc" is the same,
-+but the first argument should be a pointer to the "frompc".  Typically this is
-+located on the stack.  This allows the function to hijack the return address
-+temporarily to have it point to the arch-specific function return_to_handler.
-+That function will simply call the common ftrace_return_to_handler function and
-+that will return the original return address with which, you can return to the
-+original call site.
-+
-+Here is the updated mcount pseudo code:
-+void mcount(void)
-+{
-+...
-+	if (ftrace_trace_function != ftrace_stub)
-+		goto do_trace;
-+
-++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-++	extern void (*ftrace_graph_return)(...);
-++	extern void (*ftrace_graph_entry)(...);
-++	if (ftrace_graph_return != ftrace_stub ||
-++	    ftrace_graph_entry != ftrace_graph_entry_stub)
-++		ftrace_graph_caller();
-++#endif
-+
-+	/* restore any bare state */
-+...
-+
-+Here is the pseudo code for the new ftrace_graph_caller assembly function:
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+void ftrace_graph_caller(void)
-+{
-+	/* save all state needed by the ABI */
-+
-+	unsigned long *frompc = &...;
-+	unsigned long selfpc = <return address> - MCOUNT_INSN_SIZE;
-+	prepare_ftrace_return(frompc, selfpc);
-+
-+	/* restore all state needed by the ABI */
-+}
-+#endif
-+
-+For information on how to implement prepare_ftrace_return(), simply look at
-+the x86 version.  The only architecture-specific piece in it is the setup of
-+the fault recovery table (the asm(...) code).  The rest should be the same
-+across architectures.
-+
-+Here is the pseudo code for the new return_to_handler assembly function.  Note
-+that the ABI that applies here is different from what applies to the mcount
-+code.  Here you are returning from a function, so you might be able to skimp
-+on things saved/restored.
-+#ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+void return_to_handler(void)
-+{
-+	/* save all state needed by the ABI */
-+
-+	void (*original_return_point)(void) = ftrace_return_to_handler();
-+
-+	/* restore all state needed by the ABI */
-+
-+	/* this is usually either a return or a jump */
-+	original_return_point();
-+}
-+#endif
-+
-+
-+HAVE_FTRACE_NMI_ENTER
-+---------------------
-+
-+If you can't trace NMI functions, then skip this option.
-+
-+<details to be filled>
-+
-+
-+HAVE_FTRACE_SYSCALLS
-+---------------------
-+
-+<details to be filled>
-+
-+
-+HAVE_FTRACE_MCOUNT_RECORD
-+-------------------------
-+
-+See scripts/recordmcount.pl for more info.
-+
-+<details to be filled>
-+
-+
-+HAVE_DYNAMIC_FTRACE
-+---------------------
-+
-+<details to be filled>
-diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
-index 5ad2ded..b0f948f 100644
---- a/Documentation/trace/ftrace.txt
-+++ b/Documentation/trace/ftrace.txt
-@@ -27,6 +27,12 @@ disabled, and more (ftrace allows for tracer plugins, which
- means that the list of tracers can always grow).
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 26efa47..cb01c5c 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -68,7 +68,6 @@
+ #include <linux/pagemap.h>
+ #include <linux/hrtimer.h>
+ #include <linux/tick.h>
+-#include <linux/bootmem.h>
+ #include <linux/debugfs.h>
+ #include <linux/ctype.h>
+ #include <linux/ftrace.h>
+@@ -7525,21 +7524,18 @@ static void rq_attach_root(struct rq *rq, struct root_domain *rd)
  
- 
-+Implementation Details
-+----------------------
+ static int __init_refok init_rootdomain(struct root_domain *rd, bool bootmem)
+ {
++	gfp_t gfp = GFP_KERNEL;
 +
-+See ftrace-implementation.txt for details for arch porters and such.
-+
-+
- The File System
- ---------------
+ 	memset(rd, 0, sizeof(*rd));
  
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 417d198..8cbff89 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -11,31 +11,41 @@ config NOP_TRACER
+-	if (bootmem) {
+-		alloc_bootmem_cpumask_var(&def_root_domain.span);
+-		alloc_bootmem_cpumask_var(&def_root_domain.online);
+-		alloc_bootmem_cpumask_var(&def_root_domain.rto_mask);
+-		cpupri_init(&rd->cpupri, true);
+-		return 0;
+-	}
++	if (bootmem)
++		gfp = GFP_NOWAIT;
  
- config HAVE_FTRACE_NMI_ENTER
- 	bool
-+	help
-+	  See Documentation/trace/ftrace-implementation.txt
+-	if (!alloc_cpumask_var(&rd->span, GFP_KERNEL))
++	if (!alloc_cpumask_var(&rd->span, gfp))
+ 		goto out;
+-	if (!alloc_cpumask_var(&rd->online, GFP_KERNEL))
++	if (!alloc_cpumask_var(&rd->online, gfp))
+ 		goto free_span;
+-	if (!alloc_cpumask_var(&rd->rto_mask, GFP_KERNEL))
++	if (!alloc_cpumask_var(&rd->rto_mask, gfp))
+ 		goto free_online;
  
- config HAVE_FUNCTION_TRACER
- 	bool
-+	help
-+	  See Documentation/trace/ftrace-implementation.txt
+ 	if (cpupri_init(&rd->cpupri, false) != 0)
+@@ -8865,7 +8861,7 @@ void __init sched_init(void)
+ 	 * we use alloc_bootmem().
+ 	 */
+ 	if (alloc_size) {
+-		ptr = (unsigned long)alloc_bootmem(alloc_size);
++		ptr = (unsigned long)kzalloc(alloc_size, GFP_NOWAIT);
  
- config HAVE_FUNCTION_GRAPH_TRACER
- 	bool
-+	help
-+	  See Documentation/trace/ftrace-implementation.txt
- 
- config HAVE_FUNCTION_TRACE_MCOUNT_TEST
- 	bool
- 	help
--	 This gets selected when the arch tests the function_trace_stop
--	 variable at the mcount call site. Otherwise, this variable
--	 is tested by the called function.
-+	  See Documentation/trace/ftrace-implementation.txt
- 
- config HAVE_DYNAMIC_FTRACE
- 	bool
-+	help
-+	  See Documentation/trace/ftrace-implementation.txt
- 
- config HAVE_FTRACE_MCOUNT_RECORD
- 	bool
-+	help
-+	  See Documentation/trace/ftrace-implementation.txt
- 
- config HAVE_HW_BRANCH_TRACER
- 	bool
- 
- config HAVE_FTRACE_SYSCALLS
- 	bool
-+	help
-+	  See Documentation/trace/ftrace-implementation.txt
- 
- config TRACER_MAX_TRACE
- 	bool
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 		init_task_group.se = (struct sched_entity **)ptr;
 -- 
-1.6.3.1
+1.6.0.4
+
+>From dbf86f2ba459e3b070c6d74aad1e6b115171dd47 Mon Sep 17 00:00:00 2001
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+Date: Wed, 10 Jun 2009 23:53:37 +0300
+Subject: [PATCH] vt: use kzalloc() instead of the bootmem allocator
+
+Now that kmem_cache_init() happens before console_init(), we should use
+kzalloc() and not the bootmem allocator.
+
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ drivers/char/vt.c |    8 ++------
+ 1 files changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index 08151d4..c796a86 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -95,7 +95,6 @@
+ #include <linux/timer.h>
+ #include <linux/interrupt.h>
+ #include <linux/workqueue.h>
+-#include <linux/bootmem.h>
+ #include <linux/pm.h>
+ #include <linux/font.h>
+ #include <linux/bitops.h>
+@@ -2875,14 +2874,11 @@ static int __init con_init(void)
+ 		mod_timer(&console_timer, jiffies + blankinterval);
+ 	}
+ 
+-	/*
+-	 * kmalloc is not running yet - we use the bootmem allocator.
+-	 */
+ 	for (currcons = 0; currcons < MIN_NR_CONSOLES; currcons++) {
+-		vc_cons[currcons].d = vc = alloc_bootmem(sizeof(struct vc_data));
++		vc_cons[currcons].d = vc = kzalloc(sizeof(struct vc_data), GFP_NOWAIT);
+ 		INIT_WORK(&vc_cons[currcons].SAK_work, vc_SAK);
+ 		visual_init(vc, currcons, 1);
+-		vc->vc_screenbuf = (unsigned short *)alloc_bootmem(vc->vc_screenbuf_size);
++		vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_NOWAIT);
+ 		vc->vc_kmalloced = 0;
+ 		vc_init(vc, vc->vc_rows, vc->vc_cols,
+ 			currcons || !vc->vc_sw->con_save_screen);
+-- 
+1.6.0.4
 
