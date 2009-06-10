@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758385AbZFJU6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758372AbZFJVAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758385AbZFJU6S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 16:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756546AbZFJU6G
+	id S1758372AbZFJVAV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 17:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756697AbZFJVAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 16:58:06 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53424 "EHLO mx2.mail.elte.hu"
+	Wed, 10 Jun 2009 17:00:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57901 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756277AbZFJU6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 16:58:04 -0400
-Date: Wed, 10 Jun 2009 22:57:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, hannes@cmpxchg.org, mpm@selenic.com,
-       npiggin@suse.de, yinghai@kernel.org
-Subject: Re: [GIT PULL] Early boot SLAB for 2.6.31
-Message-ID: <20090610205749.GA9321@elte.hu>
-References: <Pine.LNX.4.64.0906102311230.30444@melkki.cs.Helsinki.FI> <alpine.LFD.2.01.0906101331250.6847@localhost.localdomain> <4A3017D1.5010708@cs.helsinki.fi> <20090610204318.GA8147@elte.hu> <84144f020906101347y3e250f4bme2d1c60dd5993ffc@mail.gmail.com> <20090610205026.GC8147@elte.hu>
+	id S1755281AbZFJVAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 17:00:08 -0400
+Date: Wed, 10 Jun 2009 16:58:48 -0400
+From: Dave Jones <davej@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>, Avi Kivity <avi@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       cpufreq@vger.kernel.org, mark.langsdorf@amd.com
+Subject: Re: S06cpuspeed/2637 is trying to acquire lock
+	(&(&dbs_info->work)->work (was: Re: [PATCH 4/6] x86/cpufreq: use
+	cpumask_copy instead of =)
+Message-ID: <20090610205848.GA1445@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Yinghai Lu <yinghai@kernel.org>, Avi Kivity <avi@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	cpufreq@vger.kernel.org, mark.langsdorf@amd.com
+References: <4A2835D8.6040903@kernel.org> <200906091627.45411.rusty@rustcorp.com.au> <alpine.LFD.2.01.0906090842120.6847@localhost.localdomain> <200906101552.17397.rusty@rustcorp.com.au> <20090610111035.GG27724@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090610205026.GC8147@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090610111035.GG27724@elte.hu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jun 10, 2009 at 01:10:35PM +0200, Ingo Molnar wrote:
+ > 
+ > With a v2.6.30 based kernel i'm still getting a cpufreq lockdep 
+ > warning:
+ > 
+ >  =======================================================
+ >  [ INFO: possible circular locking dependency detected ]
+ >  2.6.30-tip #10420
+ >  -------------------------------------------------------
+ >  S06cpuspeed/2637 is trying to acquire lock:
+ >   (&(&dbs_info->work)->work){+.+...}, at: [<ffffffff8106553d>] __cancel_work_timer+0xd6/0x22a
+ > 
+ >  but task is already holding lock:
+ >   (dbs_mutex){+.+.+.}, at: [<ffffffff8193d630>] cpufreq_governor_dbs+0x28f/0x335
+ > 
+ > This bug got introduced somewhere late in the .30-rc cycle, this box 
+ > was fine before.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+See the thread " [PATCH] remove rwsem lock from CPUFREQ_GOV_STOP call (second call site)" 
+Though there's a report that the last patch posted still doesn't fix the problem,
+so we still don't have a quick fix suitable for -stable.
 
-> > > What kind of conflicts are there against -tip? The diffstat 
-> > > suggests it's mostly in-SLAB code, right? There shouldnt be 
-> > > much to conflict, except kmemcheck - which has more or less 
-> > > trivial callbacks there.
-> > 
-> > The conflicting bits are the patches that remove bootmem 
-> > allocator uses in arch/x86 and kernel/sched.c.
-> 
-> Give me an hour and i'll get some minimal testing done.
+It's this .. http://bugzilla.kernel.org/show_bug.cgi?id=13493
+b14893a62c73af0eca414cfed505b8c09efc613c fixed one locking problem, but
+introduced this as a side-effect.  The whole thing is a mess really.
 
-This tree doesnt conflict (not even with kmecheck) - and the older 
-bits you sent against the scheduler and against x86 doesnt apply 
-anymore - but they do look scary.
+	Dave
 
-How about this: i can send the scheduler and x86 bits to Linus right 
-now, that should make it possible to have a clean base for you and 
-no interactions with anything pending?
-
-	Ingo
