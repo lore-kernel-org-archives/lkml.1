@@ -1,298 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbZFJJZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbZFJJ1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528AbZFJJZk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 05:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbZFJJZ3
+	id S1757803AbZFJJ1o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 05:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756445AbZFJJ1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 05:25:29 -0400
-Received: from stargate.chelsio.com ([67.207.112.58]:24293 "EHLO
-	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751979AbZFJJZ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 05:25:28 -0400
-From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH net-next] cxgb3: remove __GFP_NOFAIL usage
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com, akpm@odsl.org
-Date: Wed, 10 Jun 2009 02:25:21 -0700
-Message-ID: <20090610092521.8871.39255.stgit@speedy5>
-User-Agent: StGIT/0.14.2
+	Wed, 10 Jun 2009 05:27:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48719 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751979AbZFJJ1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 05:27:34 -0400
+Date: Wed, 10 Jun 2009 11:26:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Subject: Re: [PATCH 00/11] [GIT PULL] more updates for the tag format
+Message-ID: <20090610092644.GA20889@elte.hu>
+References: <20090610054206.510574695@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090610054206.510574695@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
 
-Pre-allocate a skb at init time to be used for control messages to the HW
-if skb allocation fails.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Tolerate failures to send messages initializing some memories at the cost of
-parity error detection for these memories.
-Retry sending connection id release messages if both alloc_skb(GFP_ATOMIC)
-and alloc_skb(GFP_KERNEL) fail.
-Do not bring the interface up if messages binding queue set to port fail to
-be sent.
+> 
+> Ingo,
+> 
+> Please pull the latest tip/tracing/event-print-format tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/event-print-format
+> 
+> 
+> Li Zefan (1):
+>       tracing/events: convert block trace points to TRACE_EVENT(), fix
+> 
+> Steven Rostedt (10):
+>       tracing: add nsec2sec print formats
+>       tracing: convert lockdep lock_acquired trace point to use nsec2usec tag
+>       tracing: add major and minor tags for print format
+>       tracing: use << to print < instead of \<
+>       tracing: convert the block trace points to use the new tag format
+>       tracing: add test for strings in event tag format
+>       tracing: add func and symfunc to tag format
+>       tracing: check full name for field
+>       tracing: update sample code with new tag format
+>       tracing: move '>' to out of macros and into print statement
+> 
+> ----
+>  include/linux/blktrace_api.h               |    4 +-
+>  include/linux/ftrace_event.h               |    3 +-
+>  include/trace/events/block.h               |  101 +++------
+>  include/trace/events/irq.h                 |    8 +-
+>  include/trace/events/kmem.h                |   12 +-
+>  include/trace/events/lockdep.h             |    8 +-
+>  include/trace/ftrace.h                     |    2 +-
+>  kernel/trace/trace_output.c                |    2 +-
+>  kernel/trace/trace_output.h                |    4 +
+>  kernel/trace/trace_read_binary.c           |  304 +++++++++++++++++++++++-----
+>  samples/trace_events/trace-events-sample.c |   21 ++-
+>  samples/trace_events/trace-events-sample.h |   66 ++++++
+>  12 files changed, 399 insertions(+), 136 deletions(-)
 
-Signed-off-by: Divy Le Ray <divy@chelsio.com>
----
+Hm, that's way too much back and forth really - trivial typo fixes, 
+build failure, etc. This is really a 'oh, the merge window is 
+coming' last minute scrambling and we dont want to mess up the 
+squeaky-clean tracing tree history be messed up with this.
 
- drivers/net/cxgb3/adapter.h       |    2 +
- drivers/net/cxgb3/cxgb3_main.c    |   78 +++++++++++++++++++++++++++++++++++--
- drivers/net/cxgb3/cxgb3_offload.c |   27 ++++++++++++-
- drivers/net/cxgb3/cxgb3_offload.h |    3 +
- 4 files changed, 103 insertions(+), 7 deletions(-)
+Frederic also expressed worries about the tag format. Could we have 
+a wider buy-in for this format?
 
+I've separated these bits into tip:tracing/ftrace, and kept 
+tip:tracing/core on a pre-print-formats state (going back 8 
+commits), so that upstream merging of the other bits does not get 
+held up.
 
-diff --git a/drivers/net/cxgb3/adapter.h b/drivers/net/cxgb3/adapter.h
-index e48e508..1694fad 100644
---- a/drivers/net/cxgb3/adapter.h
-+++ b/drivers/net/cxgb3/adapter.h
-@@ -253,6 +253,8 @@ struct adapter {
- 	struct mutex mdio_lock;
- 	spinlock_t stats_lock;
- 	spinlock_t work_lock;
-+
-+	struct sk_buff *nofail_skb;
- };
- 
- static inline u32 t3_read_reg(struct adapter *adapter, u32 reg_addr)
-diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-index aef3ab2..538dda4 100644
---- a/drivers/net/cxgb3/cxgb3_main.c
-+++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -433,40 +433,78 @@ static int init_tp_parity(struct adapter *adap)
- 	for (i = 0; i < 16; i++) {
- 		struct cpl_smt_write_req *req;
- 
--		skb = alloc_skb(sizeof(*req), GFP_KERNEL | __GFP_NOFAIL);
-+		skb = alloc_skb(sizeof(*req), GFP_KERNEL);
-+		if (!skb)
-+			skb = adap->nofail_skb;
-+		if (!skb)
-+			goto alloc_skb_fail;
-+
- 		req = (struct cpl_smt_write_req *)__skb_put(skb, sizeof(*req));
- 		memset(req, 0, sizeof(*req));
- 		req->wr.wr_hi = htonl(V_WR_OP(FW_WROPCODE_FORWARD));
- 		OPCODE_TID(req) = htonl(MK_OPCODE_TID(CPL_SMT_WRITE_REQ, i));
- 		req->iff = i;
- 		t3_mgmt_tx(adap, skb);
-+		if (skb == adap->nofail_skb) {
-+			await_mgmt_replies(adap, cnt, i + 1);
-+			adap->nofail_skb = alloc_skb(sizeof(*greq), GFP_KERNEL);
-+			if (!adap->nofail_skb)
-+				goto alloc_skb_fail;
-+		}
- 	}
- 
- 	for (i = 0; i < 2048; i++) {
- 		struct cpl_l2t_write_req *req;
- 
--		skb = alloc_skb(sizeof(*req), GFP_KERNEL | __GFP_NOFAIL);
-+		skb = alloc_skb(sizeof(*req), GFP_KERNEL);
-+		if (!skb)
-+			skb = adap->nofail_skb;
-+		if (!skb)
-+			goto alloc_skb_fail;
-+
- 		req = (struct cpl_l2t_write_req *)__skb_put(skb, sizeof(*req));
- 		memset(req, 0, sizeof(*req));
- 		req->wr.wr_hi = htonl(V_WR_OP(FW_WROPCODE_FORWARD));
- 		OPCODE_TID(req) = htonl(MK_OPCODE_TID(CPL_L2T_WRITE_REQ, i));
- 		req->params = htonl(V_L2T_W_IDX(i));
- 		t3_mgmt_tx(adap, skb);
-+		if (skb == adap->nofail_skb) {
-+			await_mgmt_replies(adap, cnt, 16 + i + 1);
-+			adap->nofail_skb = alloc_skb(sizeof(*greq), GFP_KERNEL);
-+			if (!adap->nofail_skb)
-+				goto alloc_skb_fail;
-+		}
- 	}
- 
- 	for (i = 0; i < 2048; i++) {
- 		struct cpl_rte_write_req *req;
- 
--		skb = alloc_skb(sizeof(*req), GFP_KERNEL | __GFP_NOFAIL);
-+		skb = alloc_skb(sizeof(*req), GFP_KERNEL);
-+		if (!skb)
-+			skb = adap->nofail_skb;
-+		if (!skb)
-+			goto alloc_skb_fail;
-+
- 		req = (struct cpl_rte_write_req *)__skb_put(skb, sizeof(*req));
- 		memset(req, 0, sizeof(*req));
- 		req->wr.wr_hi = htonl(V_WR_OP(FW_WROPCODE_FORWARD));
- 		OPCODE_TID(req) = htonl(MK_OPCODE_TID(CPL_RTE_WRITE_REQ, i));
- 		req->l2t_idx = htonl(V_L2T_W_IDX(i));
- 		t3_mgmt_tx(adap, skb);
-+		if (skb == adap->nofail_skb) {
-+			await_mgmt_replies(adap, cnt, 16 + 2048 + i + 1);
-+			adap->nofail_skb = alloc_skb(sizeof(*greq), GFP_KERNEL);
-+			if (!adap->nofail_skb)
-+				goto alloc_skb_fail;
-+		}
- 	}
- 
--	skb = alloc_skb(sizeof(*greq), GFP_KERNEL | __GFP_NOFAIL);
-+	skb = alloc_skb(sizeof(*greq), GFP_KERNEL);
-+	if (!skb)
-+		skb = adap->nofail_skb;
-+	if (!skb)
-+		goto alloc_skb_fail;
-+
- 	greq = (struct cpl_set_tcb_field *)__skb_put(skb, sizeof(*greq));
- 	memset(greq, 0, sizeof(*greq));
- 	greq->wr.wr_hi = htonl(V_WR_OP(FW_WROPCODE_FORWARD));
-@@ -475,8 +513,17 @@ static int init_tp_parity(struct adapter *adap)
- 	t3_mgmt_tx(adap, skb);
- 
- 	i = await_mgmt_replies(adap, cnt, 16 + 2048 + 2048 + 1);
-+	if (skb == adap->nofail_skb) {
-+		i = await_mgmt_replies(adap, cnt, 16 + 2048 + 2048 + 1);
-+		adap->nofail_skb = alloc_skb(sizeof(*greq), GFP_KERNEL);
-+	}
-+
- 	t3_tp_set_offload_mode(adap, 0);
- 	return i;
-+
-+alloc_skb_fail:
-+	t3_tp_set_offload_mode(adap, 0);
-+	return -ENOMEM;
- }
- 
- /**
-@@ -871,7 +918,12 @@ static int send_pktsched_cmd(struct adapter *adap, int sched, int qidx, int lo,
- 	struct mngt_pktsched_wr *req;
- 	int ret;
- 
--	skb = alloc_skb(sizeof(*req), GFP_KERNEL | __GFP_NOFAIL);
-+	skb = alloc_skb(sizeof(*req), GFP_KERNEL);
-+	if (!skb)
-+		skb = adap->nofail_skb;
-+	if (!skb)
-+		return -ENOMEM;
-+
- 	req = (struct mngt_pktsched_wr *)skb_put(skb, sizeof(*req));
- 	req->wr_hi = htonl(V_WR_OP(FW_WROPCODE_MNGT));
- 	req->mngt_opcode = FW_MNGTOPCODE_PKTSCHED_SET;
-@@ -881,6 +933,12 @@ static int send_pktsched_cmd(struct adapter *adap, int sched, int qidx, int lo,
- 	req->max = hi;
- 	req->binding = port;
- 	ret = t3_mgmt_tx(adap, skb);
-+	if (skb == adap->nofail_skb) {
-+		adap->nofail_skb = alloc_skb(sizeof(struct cpl_set_tcb_field),
-+					     GFP_KERNEL);
-+		if (!adap->nofail_skb)
-+			ret = -ENOMEM;
-+	}
- 
- 	return ret;
- }
-@@ -3020,6 +3078,14 @@ static int __devinit init_one(struct pci_dev *pdev,
- 		goto out_disable_device;
- 	}
- 
-+	adapter->nofail_skb =
-+		alloc_skb(sizeof(struct cpl_set_tcb_field), GFP_KERNEL);
-+	if (!adapter->nofail_skb) {
-+		dev_err(&pdev->dev, "cannot allocate nofail buffer\n");
-+		err = -ENOMEM;
-+		goto out_free_adapter;
-+	}
-+
- 	adapter->regs = ioremap_nocache(mmio_start, mmio_len);
- 	if (!adapter->regs) {
- 		dev_err(&pdev->dev, "cannot map device registers\n");
-@@ -3176,6 +3242,8 @@ static void __devexit remove_one(struct pci_dev *pdev)
- 				free_netdev(adapter->port[i]);
- 
- 		iounmap(adapter->regs);
-+		if (adapter->nofail_skb)
-+			kfree_skb(adapter->nofail_skb);
- 		kfree(adapter);
- 		pci_release_regions(pdev);
- 		pci_disable_device(pdev);
-diff --git a/drivers/net/cxgb3/cxgb3_offload.c b/drivers/net/cxgb3/cxgb3_offload.c
-index 620d80b..f9f54b5 100644
---- a/drivers/net/cxgb3/cxgb3_offload.c
-+++ b/drivers/net/cxgb3/cxgb3_offload.c
-@@ -566,13 +566,31 @@ static void t3_process_tid_release_list(struct work_struct *work)
- 		spin_unlock_bh(&td->tid_release_lock);
- 
- 		skb = alloc_skb(sizeof(struct cpl_tid_release),
--				GFP_KERNEL | __GFP_NOFAIL);
-+				GFP_KERNEL);
-+		if (!skb)
-+			skb = td->nofail_skb;
-+		if (!skb) {
-+			spin_lock_bh(&td->tid_release_lock);
-+			p->ctx = (void *)td->tid_release_list;
-+			td->tid_release_list = (struct t3c_tid_entry *)p;
-+			break;
-+		}
- 		mk_tid_release(skb, p - td->tid_maps.tid_tab);
- 		cxgb3_ofld_send(tdev, skb);
- 		p->ctx = NULL;
-+		if (skb == td->nofail_skb)
-+			td->nofail_skb =
-+				alloc_skb(sizeof(struct cpl_tid_release),
-+					GFP_KERNEL);
- 		spin_lock_bh(&td->tid_release_lock);
- 	}
-+	td->release_list_incomplete = (td->tid_release_list == NULL) ? 0 : 1;
- 	spin_unlock_bh(&td->tid_release_lock);
-+
-+	if (!td->nofail_skb)
-+		td->nofail_skb =
-+			alloc_skb(sizeof(struct cpl_tid_release),
-+				GFP_KERNEL);
- }
- 
- /* use ctx as a next pointer in the tid release list */
-@@ -585,7 +603,7 @@ void cxgb3_queue_tid_release(struct t3cdev *tdev, unsigned int tid)
- 	p->ctx = (void *)td->tid_release_list;
- 	p->client = NULL;
- 	td->tid_release_list = p;
--	if (!p->ctx)
-+	if (!p->ctx || td->release_list_incomplete)
- 		schedule_work(&td->tid_release_task);
- 	spin_unlock_bh(&td->tid_release_lock);
- }
-@@ -1274,6 +1292,9 @@ int cxgb3_offload_activate(struct adapter *adapter)
- 	if (list_empty(&adapter_list))
- 		register_netevent_notifier(&nb);
- 
-+	t->nofail_skb = alloc_skb(sizeof(struct cpl_tid_release), GFP_KERNEL);
-+	t->release_list_incomplete = 0;
-+
- 	add_adapter(adapter);
- 	return 0;
- 
-@@ -1298,6 +1319,8 @@ void cxgb3_offload_deactivate(struct adapter *adapter)
- 	T3C_DATA(tdev) = NULL;
- 	t3_free_l2t(L2DATA(tdev));
- 	L2DATA(tdev) = NULL;
-+	if (t->nofail_skb)
-+		kfree_skb(t->nofail_skb);
- 	kfree(t);
- }
- 
-diff --git a/drivers/net/cxgb3/cxgb3_offload.h b/drivers/net/cxgb3/cxgb3_offload.h
-index a8e8e5f..55945f4 100644
---- a/drivers/net/cxgb3/cxgb3_offload.h
-+++ b/drivers/net/cxgb3/cxgb3_offload.h
-@@ -191,6 +191,9 @@ struct t3c_data {
- 	struct t3c_tid_entry *tid_release_list;
- 	spinlock_t tid_release_lock;
- 	struct work_struct tid_release_task;
-+
-+	struct sk_buff *nofail_skb;
-+	unsigned int release_list_incomplete;
- };
- 
- /*
+Could we try a cleaner, bisectable, consiously built up version of 
+these final tracing/core..tracing/ftrace please? I think we can - 
+the rest of the tree is clean. Please do a exact-same-content rebase 
+so that the merge back gets obvious and that the testing we've 
+injected does not get invalidated?
 
+	Ingo
