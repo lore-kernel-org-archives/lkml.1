@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbZFJDh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbZFJDgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758109AbZFJDh7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755823AbZFJDeK
+	id S1756777AbZFJDgb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbZFJDdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:34:10 -0400
-Received: from kroah.org ([198.145.64.141]:56772 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:33:51 -0400
+Received: from kroah.org ([198.145.64.141]:56698 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753396AbZFJDeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:34:08 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:43 2009
-Message-Id: <20090610002343.394722213@blue.kroah.org>
+	id S1755880AbZFJDdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:33:50 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:42 2009
+Message-Id: <20090610002342.430456505@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:13:44 -0700
+Date: Tue, 09 Jun 2009 17:13:40 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       alan@lxorguk.ukuu.org.uk, Patrick McHardy <kaber@trash.net>,
        "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 16/60] tcp: fix >2 iw selection
+Subject: [patch 12/60] vlan/macvlan: fix NULL pointer dereferences in ethtool handlers
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=tcp-fix-2-iw-selection.patch
+Content-Disposition: inline; filename=vlan-macvlan-fix-null-pointer-dereferences-in-ethtool-handlers.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,38 +39,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>
+From: Patrick McHardy <kaber@trash.net>
 
-[ Upstream commit 86bcebafc5e7f5163ccf828792fe694b112ed6fa ]
+[ Upstream commit 7816a0a862d851d0b05710e7d94bfe390f3180e2 ]
 
-A long-standing feature in tcp_init_metrics() is such that
-any of its goto reset prevents call to tcp_init_cwnd().
+Check whether the underlying device provides a set of ethtool ops before
+checking for individual handlers to avoid NULL pointer dereferences.
 
-Signed-off-by: Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>
+Reported-by: Art van Breemen <ard@telegraafnet.nl>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- net/ipv4/tcp_input.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/net/macvlan.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -931,6 +931,8 @@ static void tcp_init_metrics(struct sock
- 	tcp_bound_rto(sk);
- 	if (inet_csk(sk)->icsk_rto < TCP_TIMEOUT_INIT && !tp->rx_opt.saw_tstamp)
- 		goto reset;
-+
-+cwnd:
- 	tp->snd_cwnd = tcp_init_cwnd(tp, dst);
- 	tp->snd_cwnd_stamp = tcp_time_stamp;
- 	return;
-@@ -945,6 +947,7 @@ reset:
- 		tp->mdev = tp->mdev_max = tp->rttvar = TCP_TIMEOUT_INIT;
- 		inet_csk(sk)->icsk_rto = TCP_TIMEOUT_INIT;
- 	}
-+	goto cwnd;
- }
+--- a/drivers/net/macvlan.c
++++ b/drivers/net/macvlan.c
+@@ -328,7 +328,8 @@ static u32 macvlan_ethtool_get_rx_csum(s
+ 	const struct macvlan_dev *vlan = netdev_priv(dev);
+ 	struct net_device *lowerdev = vlan->lowerdev;
  
- static void tcp_update_reordering(struct sock *sk, const int metric,
+-	if (lowerdev->ethtool_ops->get_rx_csum == NULL)
++	if (lowerdev->ethtool_ops == NULL ||
++	    lowerdev->ethtool_ops->get_rx_csum == NULL)
+ 		return 0;
+ 	return lowerdev->ethtool_ops->get_rx_csum(lowerdev);
+ }
 
 
