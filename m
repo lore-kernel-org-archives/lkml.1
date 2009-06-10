@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760682AbZFJDqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760763AbZFJDqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760682AbZFJDqY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbZFJDg1
+	id S1760763AbZFJDqh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbZFJDg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:36:27 -0400
-Received: from kroah.org ([198.145.64.141]:57361 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:36:29 -0400
+Received: from kroah.org ([198.145.64.141]:57377 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756661AbZFJDgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:36:25 -0400
+	id S1754050AbZFJDg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:36:28 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:50 2009
-Message-Id: <20090610002350.551321942@blue.kroah.org>
+Message-Id: <20090610002350.775890911@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:15 -0700
+Date: Tue, 09 Jun 2009 17:14:16 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,9 +27,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 47/60] ext4: Automatically allocate delay allocated blocks on close
+Subject: [patch 48/60] ext4: Automatically allocate delay allocated blocks on rename
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-automatically-allocate-delay-allocated-blocks-on-close.patch
+Content-Disposition: inline; filename=ext4-automatically-allocate-delay-allocated-blocks-on-rename.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,57 +40,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit 7d8f9f7d150dded7b68e61ca6403a1f166fb4edf)
+(cherry picked from commit 8750c6d5fcbd3342b3d908d157f81d345c5325a7)
 
-When closing a file that had been previously truncated, force any
-delay allocated blocks that to be allocated so that if the filesystem
-is mounted with data=ordered, the data blocks will be pushed out to
-disk along with the journal commit.  Many application programs expect
-this, so we do this to avoid zero length files if the system crashes
-unexpectedly.
+When renaming a file such that a link to another inode is overwritten,
+force any delay allocated blocks that to be allocated so that if the
+filesystem is mounted with data=ordered, the data blocks will be
+pushed out to disk along with the journal commit.  Many application
+programs expect this, so we do this to avoid zero length files if the
+system crashes unexpectedly.
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ext4.h  |    1 +
- fs/ext4/file.c  |    4 ++++
- fs/ext4/inode.c |    3 +++
- 3 files changed, 8 insertions(+)
+ fs/ext4/namei.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/fs/ext4/ext4.h
-+++ b/fs/ext4/ext4.h
-@@ -279,6 +279,7 @@ static inline __u32 ext4_mask_flags(umod
- #define EXT4_STATE_NEW			0x00000002 /* inode is newly created */
- #define EXT4_STATE_XATTR		0x00000004 /* has in-inode xattrs */
- #define EXT4_STATE_NO_EXPAND		0x00000008 /* No space for expansion */
-+#define EXT4_STATE_DA_ALLOC_CLOSE	0x00000010 /* Alloc DA blks on close */
+--- a/fs/ext4/namei.c
++++ b/fs/ext4/namei.c
+@@ -2314,7 +2314,7 @@ static int ext4_rename (struct inode * o
+ 	struct inode * old_inode, * new_inode;
+ 	struct buffer_head * old_bh, * new_bh, * dir_bh;
+ 	struct ext4_dir_entry_2 * old_de, * new_de;
+-	int retval;
++	int retval, force_da_alloc = 0;
  
- /* Used to pass group descriptor data when online resize is done */
- struct ext4_new_group_input {
---- a/fs/ext4/file.c
-+++ b/fs/ext4/file.c
-@@ -33,6 +33,10 @@
-  */
- static int ext4_release_file (struct inode * inode, struct file * filp)
- {
-+	if (EXT4_I(inode)->i_state & EXT4_STATE_DA_ALLOC_CLOSE) {
-+		ext4_alloc_da_blocks(inode);
-+		EXT4_I(inode)->i_state &= ~EXT4_STATE_DA_ALLOC_CLOSE;
-+	}
- 	/* if we are the last writer on the inode, drop the block reservation */
- 	if ((filp->f_mode & FMODE_WRITE) &&
- 			(atomic_read(&inode->i_writecount) == 1))
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -3636,6 +3636,9 @@ void ext4_truncate(struct inode *inode)
- 	if (!ext4_can_truncate(inode))
- 		return;
+ 	old_bh = new_bh = dir_bh = NULL;
  
-+	if (inode->i_size == 0)
-+		ei->i_state |= EXT4_STATE_DA_ALLOC_CLOSE;
-+
- 	if (EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL) {
- 		ext4_ext_truncate(inode);
- 		return;
+@@ -2452,6 +2452,7 @@ static int ext4_rename (struct inode * o
+ 		ext4_mark_inode_dirty(handle, new_inode);
+ 		if (!new_inode->i_nlink)
+ 			ext4_orphan_add(handle, new_inode);
++		force_da_alloc = 1;
+ 	}
+ 	retval = 0;
+ 
+@@ -2460,6 +2461,8 @@ end_rename:
+ 	brelse (old_bh);
+ 	brelse (new_bh);
+ 	ext4_journal_stop(handle);
++	if (retval == 0 && force_da_alloc)
++		ext4_alloc_da_blocks(old_inode);
+ 	return retval;
+ }
+ 
 
 
