@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbZFJN16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759808AbZFJN3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbZFJN16 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 09:27:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756397AbZFJN1s
+	id S1759808AbZFJN3a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 09:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755918AbZFJN3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 09:27:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47436 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751654AbZFJN1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 09:27:47 -0400
-Date: Wed, 10 Jun 2009 15:27:45 +0200
-From: Karel Zak <kzak@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng v2.15.1
-Message-ID: <20090610132745.GA12034@nb.net.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 10 Jun 2009 09:29:23 -0400
+Received: from casper.infradead.org ([85.118.1.10]:53964 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755812AbZFJN3W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 09:29:22 -0400
+Subject: RE: [tip:tracing/core] x86, bts: reenable ptrace branch trace
+ support
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "mingo@redhat.com" <mingo@redhat.com>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "oleg@redhat.com" <oleg@redhat.com>,
+       "linux-tip-commits@vger.kernel.org" 
+	<linux-tip-commits@vger.kernel.org>
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EBBC651E2@irsmsx504.ger.corp.intel.com>
+References: <20090424094448.A30216@sedona.ch.intel.com>
+	 <tip-7e0bfad24d85de7cf2202a7b0ce51de11a077b21@git.kernel.org>
+	 <1244637843.13761.11786.camel@twins> <20090610125108.GA13506@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EBBC651E2@irsmsx504.ger.corp.intel.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 10 Jun 2009 15:29:18 +0200
+Message-Id: <1244640558.13761.11833.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-06-10 at 14:22 +0100, Metzger, Markus T wrote:
+> 
+> The Debug Store interface is completely in-kernel. It does not expose
+> anything to the outside world.
+> 
+> What we expose is a ptrace interface for branch tracing.
+> That this is built on top of Debug Store is completely hidden.
+> The Debug Store interface may be changed without impacting the
+> user-visible part at any time.
+> 
+> I do think that a ptrace interface makes sense since debuggers are the
+> targeted users for branch tracing.
+> 
+> I don't see why we should not merge the fixes now and then rework the
+> in-kernel parts as needed for supporting PEBS.
 
-
-The stable util-linux-ng 2.15.1 release is available at
-
-   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.15/
-
-Feedback and bug reports, as always, are welcomed.
-
-	Karel
-
-
-Util-linux-ng 2.15.1 Release Notes
-==================================
-
-Changes since v2.15
--------------------
-
- For more details see ChangeLog files at:
- ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.15/
-
-build-sys:
-   - add UTIL_{SET,RESTORE}_FLAGS  [Karel Zak]
-   - fix "make -C" bug  [Karel Zak]
-   - fix blkid detection in configure.ac  [Karel Zak]
-   - fix blkid.h include for old e2fsprogs  [Karel Zak]
-cal:
-   - Highlight today even when month or year specified  [Rajeev V. Pillai]
-   - uClibc has langinfo.h but not _NL_TIME_WEEK_1STDAY.  [Tom Prince]
-chrt:
-   - don't assume SCHED_BATCH and SCHED_IDLE exist  [Aurelien Jarno]
-docs:
-   - update AUTHORS file  [Karel Zak]
-fdisk:
-   - (and cfdisk) fix to be consistent about maximum heads  [Chris Webb]
-libblkid:
-   - fix reiserfs name  [Karel Zak]
-   - update man page  [Karel Zak]
-   - blkid_do_safeprobe() has to be tolerant to RAIDs  [Karel Zak]
-   - cleanup debug messages and return codes in blkid_do_probe()  [Karel Zak]
-   - fix "hangs forever with partition type mdraid"  [Karel Zak]
-   - make libuuid optional  [Karel Zak]
-losetup:
-   - handle symlinks in /dev/loop/  [Mike Frysinger]
-lscpu:
-   - fix cpuid code on x86/PIC  [Mike Frysinger]
-mount:
-   - fix undefined reference to `security_get_initial_context'  [Karel Zak]
-   - move MS_{PROPAGATION,BIND,MOVE} detection  [Karel Zak]
-   - use "none" fstype for MS_PROPAGATION mounts  [Karel Zak]
-po:
-   - merge changes  [Karel Zak]
-   - update vi.po (from translationproject.org)  [Clytie Siddall]
-tests:
-   - add mdraid libblkid test  [Karel Zak]
-   - don't run some mount tests for non-root users  [Karel Zak]
-   - fix reiserfs test  [Karel Zak]
-   - fix script that creates lscpu dumps  [Karel Zak]
-   - move lscpu /proc and /sys dumps to tarballs  [Karel Zak]
-   - remove broken Xen dumps for lscpu  [Karel Zak]
-
--- 
- Karel Zak  <kzak@redhat.com>
+Ok, so what is all that account_locked_memory() for?
