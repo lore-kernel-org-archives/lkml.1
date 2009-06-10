@@ -1,79 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbZFJMRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbZFJMSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757589AbZFJMRD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 08:17:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbZFJMQz
+	id S1758585AbZFJMSY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 08:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZFJMSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 08:16:55 -0400
-Received: from mga03.intel.com ([143.182.124.21]:30632 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753197AbZFJMQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 08:16:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,341,1241420400"; 
-   d="scan'208";a="152689760"
-Date: Wed, 10 Jun 2009 20:16:45 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [13/16] HWPOISON: The high level memory error handler
-	in the VM v5
-Message-ID: <20090610121645.GC5657@localhost>
-References: <20090603846.816684333@firstfloor.org> <20090603184648.2E2131D028F@basil.firstfloor.org> <20090609100922.GF14820@wotan.suse.de> <Pine.LNX.4.64.0906091637430.13213@sister.anvils> <20090610083803.GE6597@localhost> <20090610085939.GE31155@wotan.suse.de> <20090610092010.GA32584@localhost> <20090610110305.GB3876@wotan.suse.de>
+	Wed, 10 Jun 2009 08:18:16 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:65061 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753138AbZFJMSP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 08:18:15 -0400
+Date: Wed, 10 Jun 2009 08:18:15 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Christoph Hellwig <hch@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
+Subject: Re: [RFC PATCH 2/5] tracing/events: nicer print format for parsing
+In-Reply-To: <20090610101124.GA25042@elte.hu>
+Message-ID: <alpine.DEB.2.00.0906100812370.30552@gandalf.stny.rr.com>
+References: <20090609014534.790466803@goodmis.org> <20090609014746.481457542@goodmis.org> <20090609192159.GD6057@nowhere> <20090610094819.GA25527@infradead.org> <20090610101124.GA25042@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090610110305.GB3876@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 07:03:05PM +0800, Nick Piggin wrote:
-> On Wed, Jun 10, 2009 at 05:20:11PM +0800, Wu Fengguang wrote:
-> > On Wed, Jun 10, 2009 at 04:59:39PM +0800, Nick Piggin wrote:
-> > > On Wed, Jun 10, 2009 at 04:38:03PM +0800, Wu Fengguang wrote:
-> > > > On Wed, Jun 10, 2009 at 12:05:53AM +0800, Hugh Dickins wrote:
-> > > > > I think a much more sensible approach would be to follow the page
-> > > > > migration technique of replacing the page's ptes by a special swap-like
-> > > > > entry, then do the killing from do_swap_page() if a process actually
-> > > > > tries to access the page.
-> > > > 
-> > > > We call that "late kill" and will be enabled when
-> > > > sysctl_memory_failure_early_kill=0. Its default value is 1.
-> > > 
-> > > What's the use of this? What are the tradeoffs, in what situations
-> > > should an admin set this sysctl one way or the other?
-> > 
-> > Good questions.
-> > 
-> > My understanding is, when an application is generating data A, B, C in
-> > sequence, and A is found to be corrupted by the kernel. Does it make
-> > sense for the application to continue generate B and C? Or, are there
-> > data dependencies between them? With late kill, it becomes more likely
-> > that the disk contain new versions of B/C and old version of A, so
-> > will more likely create data inconsistency.
-> > 
-> > So early kill is more safe.
+
+On Wed, 10 Jun 2009, Ingo Molnar wrote:
 > 
-> Hmm, I think that's pretty speculative, and doesn't seem possible for
-> an admin (or even kernel programmer) to choose the "right" value.
+> And i kind of like the whole notion on a design level as weell: the 
+> kernel exporting C source code for tools :-)
 > 
+> 	Ingo
+> 
+> ------------------>
+> 
+> struct record {
+> 	unsigned short common_type;
+> 	unsigned char common_flags;
+> 	unsigned char common_preempt;
+> 	int common_pid;
+> 	int common_tgid;
+> 	int dev;
+> 	unsigned long long sector;
+> 	unsigned int nr_sector;
+> 	char rwbs[6];
+> 	char comm[16];
+> } this_record = { 1, 2, 3, 4, 5, 6, 7, 8, { 'a', }, "abc" };
+> 
+> void main(void)
+> {
+> 	struct record *REC = &this_record;
+> 
+> 	printf("%d,%d %s %llu + %u [%s]", ((unsigned int) ((REC->dev) >> 20)), ((unsigned int) ((REC->dev) & ((1U << 20) - 1))), REC->rwbs, (unsigned long long)REC->sector, REC->nr_sector, REC->comm);
+> }
 
-Agreed. It's not easy to choose if I'm myself an admin ;)
+I actually tried this first. But it breaks once we start getting types 
+into the code:
 
-> The application equally may not need to touch the data again, so
-> killing it might cause some inconsistency in whatever it is currently
-> doing.
+print fmt: "call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s",
+          REC->call_site, REC->ptr, REC->bytes_req, REC->bytes_alloc, 
+          (REC->gfp_flags) ? ({ static const struct trace_print_flags 
+          flags[] = { {(unsigned long)(((gfp_t)0x10u) | ((gfp_t)0x40u) |
+                      ((gfp_t)0x80u) | ((gfp_t)0x20000u) | ((gfp_t)0x02u) | 
+                       ((gfp_t)0x100000u)), "GFP_HIGHUSER_MOVABLE"}, [...]
 
-Yes, early kill can also be evil. What I can do now is to document the
-early kill parameter more carefully.
+Will break on gfp_t. We also have cases where the enum name slips in too:
 
-Thanks,
-Fengguang
+print fmt: "softirq=%d action=%s", REC->vec, ({ static const struct trace_print_flags symbols[] =
+            { { HI_SOFTIRQ, "HI" }, { TIMER_SOFTIRQ, "TIMER" }, { NET_TX_SOFTIRQ, "NET_TX" },
+              { NET_RX_SOFTIRQ, "NET_RX" }, { BLOCK_SOFTIRQ, "BLOCK" },
+              { TASKLET_SOFTIRQ, "TASKLET" }, { SCHED_SOFTIRQ, "SCHED" },
+              { HRTIMER_SOFTIRQ, "HRTIMER" }, { RCU_SOFTIRQ, "RCU" },
+              { -1, ((void *)0) }}; ftrace_print_symbols_seq(p, REC->vec, symbols); })
+
+Yes we can add special types for things like gfp_t, but as we get more and 
+more users of TRACE_EVENT, the tools will never be able to keep up.
+
+-- Steve
 
