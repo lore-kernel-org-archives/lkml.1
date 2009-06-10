@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760560AbZFJDpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760630AbZFJDpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760560AbZFJDpd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757561AbZFJDgP
+	id S1760630AbZFJDpu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757664AbZFJDgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:36:15 -0400
-Received: from kroah.org ([198.145.64.141]:57307 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:36:18 -0400
+Received: from kroah.org ([198.145.64.141]:57332 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757601AbZFJDgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:36:13 -0400
+	id S1757607AbZFJDgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:36:17 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:50 2009
-Message-Id: <20090610002349.812972018@blue.kroah.org>
+Message-Id: <20090610002350.058045424@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:12 -0700
+Date: Tue, 09 Jun 2009 17:14:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,68 +26,53 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
-       Bryan Donlan <bdonlan@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 44/60] ext4: return -EIO not -ESTALE on directory traversal through deleted inode
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 45/60] ext4: Add fine print for the 32000 subdirectory limit
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-return-eio-not-estale-on-directory-traversal-through-deleted-inode.patch
+Content-Disposition: inline; filename=ext4-add-fine-print-for-the-32000-subdirectory-limit.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Bryan Donlan <bdonlan@gmail.com>
+From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit e6f009b0b45220c004672d41a58865e94946104d)
+(cherry picked from commit 722bde6875bfb49a0c84e5601eb82dd7ac02d27c)
 
-ext4_iget() returns -ESTALE if invoked on a deleted inode, in order to
-report errors to NFS properly.  However, in ext4_lookup(), this
--ESTALE can be propagated to userspace if the filesystem is corrupted
-such that a directory entry references a deleted inode.  This leads to
-a misleading error message - "Stale NFS file handle" - and confusion
-on the part of the admin.
+Some poeple are reading the ext4 feature list too literally and create
+dubious test cases involving very long filenames and 1k blocksize and
+then complain when they run into an htree-imposed limit.  So add fine
+print to the "fix 32000 subdirectory limit" ext4 feature.
 
-The bug can be easily reproduced by creating a new filesystem, making
-a link to an unused inode using debugfs, then mounting and attempting
-to ls -l said link.
-
-This patch thus changes ext4_lookup to return -EIO if it receives
--ESTALE from ext4_iget(), as ext4 does for other filesystem metadata
-corruption; and also invokes the appropriate ext*_error functions when
-this case is detected.
-
-Signed-off-by: Bryan Donlan <bdonlan@gmail.com>
-Cc: <linux-ext4@vger.kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/namei.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ Documentation/filesystems/ext4.txt |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/fs/ext4/namei.c
-+++ b/fs/ext4/namei.c
-@@ -1055,8 +1055,16 @@ static struct dentry *ext4_lookup(struct
- 			return ERR_PTR(-EIO);
- 		}
- 		inode = ext4_iget(dir->i_sb, ino);
--		if (IS_ERR(inode))
--			return ERR_CAST(inode);
-+		if (unlikely(IS_ERR(inode))) {
-+			if (PTR_ERR(inode) == -ESTALE) {
-+				ext4_error(dir->i_sb, __func__,
-+						"deleted inode referenced: %u",
-+						ino);
-+				return ERR_PTR(-EIO);
-+			} else {
-+				return ERR_CAST(inode);
-+			}
-+		}
- 	}
- 	return d_splice_alias(inode, dentry);
- }
+--- a/Documentation/filesystems/ext4.txt
++++ b/Documentation/filesystems/ext4.txt
+@@ -73,7 +73,7 @@ Mailing list: linux-ext4@vger.kernel.org
+ * extent format more robust in face of on-disk corruption due to magics,
+ * internal redunancy in tree
+ * improved file allocation (multi-block alloc)
+-* fix 32000 subdirectory limit
++* lift 32000 subdirectory limit imposed by i_links_count[1]
+ * nsec timestamps for mtime, atime, ctime, create time
+ * inode version field on disk (NFSv4, Lustre)
+ * reduced e2fsck time via uninit_bg feature
+@@ -88,6 +88,9 @@ Mailing list: linux-ext4@vger.kernel.org
+ * efficent new ordered mode in JBD2 and ext4(avoid using buffer head to force
+   the ordering)
+ 
++[1] Filesystems with a block size of 1k may see a limit imposed by the
++directory hash tree having a maximum depth of two.
++
+ 2.2 Candidate features for future inclusion
+ 
+ * Online defrag (patches available but not well tested)
 
 
