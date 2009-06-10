@@ -1,46 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758963AbZFJJi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759055AbZFJJjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758963AbZFJJi7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 05:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756654AbZFJJiC
+	id S1759055AbZFJJjT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 05:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757245AbZFJJiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 05:38:02 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40271 "EHLO mx2.redhat.com"
+	Wed, 10 Jun 2009 05:38:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40275 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751752AbZFJJh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 05:37:58 -0400
+	id S1754123AbZFJJiA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 05:38:00 -0400
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Subject: GFS2: Pre-pull patch posting
-Date: Wed, 10 Jun 2009 09:30:41 +0100
-Message-Id: <1244622665-7470-1-git-send-email-swhiteho@redhat.com>
+Cc: Abhijith Das <adas@redhat.com>, Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 04/24] GFS2: Fix timestamps on write
+Date: Wed, 10 Jun 2009 09:30:45 +0100
+Message-Id: <1244622665-7470-5-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1244622665-7470-4-git-send-email-swhiteho@redhat.com>
+References: <1244622665-7470-1-git-send-email-swhiteho@redhat.com>
+ <1244622665-7470-2-git-send-email-swhiteho@redhat.com>
+ <1244622665-7470-3-git-send-email-swhiteho@redhat.com>
+ <1244622665-7470-4-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Abhijith Das <adas@redhat.com>
 
-As the merge window is more or less upon us, here is the content
-of the GFS2 -nmw tree. There is nothing too startling this time
-as the focus has very much been bug fixes and clean up.
+This patch copies the timestamps from the vfs inode into gfs2 and syncs
+it to the disk inode during writes.
 
-We have a new mount option, commit= which does exactly the same
-thing as the ext3 equivalent option. We have a long term plan to
-make all the tunable parameters available as mount options and
-thus to be able to eventually drop the sysfs interface to these
-parameters.
+Signed-off-by: Abhijith Das <adas@redhat.com>
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-Another long term plan is to get rid of the files named
-ops_somethingorother and to either merge them into other
-files, or rename them to not have the ops_ prefix. This
-patch series makes a start on that, and does all the easy
-ones. As a result some functions with only one caller are
-moved to the same file as their caller and made static.
-
-The docs are also updated to reflect the fact that the
-lock_dlm interface module no longer exists and that interface is
-now built into GFS2.
-
-Steve.
-
+diff --git a/fs/gfs2/ops_address.c b/fs/gfs2/ops_address.c
+index a6dde17..e566421 100644
+--- a/fs/gfs2/ops_address.c
++++ b/fs/gfs2/ops_address.c
+@@ -781,10 +781,12 @@ static int gfs2_stuffed_write_end(struct inode *inode, struct buffer_head *dibh,
+ 	unlock_page(page);
+ 	page_cache_release(page);
+ 
+-	if (inode->i_size < to) {
+-		i_size_write(inode, to);
+-		ip->i_disksize = inode->i_size;
+-		di->di_size = cpu_to_be64(inode->i_size);
++	if (copied) {
++		if (inode->i_size < to) {
++			i_size_write(inode, to);
++			ip->i_disksize = inode->i_size;
++		}
++		gfs2_dinode_out(ip, di);
+ 		mark_inode_dirty(inode);
+ 	}
+ 
+@@ -824,7 +826,6 @@ static int gfs2_write_end(struct file *file, struct address_space *mapping,
+ 	struct gfs2_sbd *sdp = GFS2_SB(inode);
+ 	struct buffer_head *dibh;
+ 	struct gfs2_alloc *al = ip->i_alloc;
+-	struct gfs2_dinode *di;
+ 	unsigned int from = pos & (PAGE_CACHE_SIZE - 1);
+ 	unsigned int to = from + len;
+ 	int ret;
+@@ -847,11 +848,10 @@ static int gfs2_write_end(struct file *file, struct address_space *mapping,
+ 		gfs2_page_add_databufs(ip, page, from, to);
+ 
+ 	ret = generic_write_end(file, mapping, pos, len, copied, page, fsdata);
+-
+-	if (likely(ret >= 0) && (inode->i_size > ip->i_disksize)) {
+-		di = (struct gfs2_dinode *)dibh->b_data;
+-		ip->i_disksize = inode->i_size;
+-		di->di_size = cpu_to_be64(inode->i_size);
++	if (ret > 0) {
++		if (inode->i_size > ip->i_disksize)
++			ip->i_disksize = inode->i_size;
++		gfs2_dinode_out(ip, dibh->b_data);
+ 		mark_inode_dirty(inode);
+ 	}
+ 
+-- 
+1.6.0.6
 
