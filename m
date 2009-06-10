@@ -1,92 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759466AbZFJMXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759678AbZFJM1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759466AbZFJMXd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 08:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbZFJMXZ
+	id S1759678AbZFJM1V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 08:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755757AbZFJM1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 08:23:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:52285 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751605AbZFJMXZ (ORCPT
+	Wed, 10 Jun 2009 08:27:14 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:56309 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755714AbZFJM1N convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 08:23:25 -0400
-Date: Wed, 10 Jun 2009 08:23:26 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Christoph Hellwig <hch@infradead.org>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
-Subject: Re: [RFC PATCH 3/5] tracing/events: modify irq print to new format
-In-Reply-To: <20090610094218.GB14860@infradead.org>
-Message-ID: <alpine.DEB.2.00.0906100819500.30552@gandalf.stny.rr.com>
-References: <20090609014534.790466803@goodmis.org> <20090609014746.709245674@goodmis.org> <20090610094218.GB14860@infradead.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 10 Jun 2009 08:27:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Mn8eiRqrBfAtKpD3uod5BrV+GNjK0k2xh+7hy/b5/UAAtKXCCXIJK7HjHVxbNmaMvY
+         DxRckE9O0osxBM3C96lR8L0l+QxAKUFL2GmjXosIKYn2Ma4ZgirZ294qtLtjFeYRvujI
+         +uZ29VB9ruGdMbgBy+MxWScRvgzIa81SUOR2g=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <200906021611.35649.rgetz@blackfin.uclinux.org>
+References: <200906011526.01108.rgetz@blackfin.uclinux.org>
+	 <200906011657.20251.rgetz@blackfin.uclinux.org>
+	 <20090602130720.GA6259@mx.loc>
+	 <200906021611.35649.rgetz@blackfin.uclinux.org>
+Date: Wed, 10 Jun 2009 14:27:14 +0200
+Message-ID: <1158166a0906100527k5ca5d538i9c441934ed8db238@mail.gmail.com>
+Subject: Re: [PATCH] update kernel's scripts/bloat-o-meter from busybox
+From: Denys Vlasenko <vda.linux@googlemail.com>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>,
+       Matt Mackall <mpm@selenic.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Rob Landley <rob@landley.net>, linux-kernel@vger.kernel.org,
+       Mike Frysinger <vapier@gentoo.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jun 2, 2009 at 10:11 PM, Robin Getz<rgetz@blackfin.uclinux.org> wrote:
+> On Tue 2 Jun 2009 09:07, Bernhard Reutner-Fischer pondered:
+>> Fine with me either way, sure. All parts i ever touched in bloat-o-meter
+>> (and kbuild, kconfig) are:
+>> Signed-off-by: Bernhard Reutner-Fischer <rep.dot.nop@gmail.com>
+>
+> On Tue 2 Jun 2009 01:59, Rob Landley pondered:
+>>
+>> Nah, the patches I sent got applied, I just haven't messed with it in
+>> the past couple years.  So you don't need my signed-off-by, but I'm happy
+>> to give you an:
+>>
+>> Acked-by: Rob Landley <rob@landley.net>
+>
+> So - that is Bernhard & Rob --
+>
+> Denis you there?
 
-On Wed, 10 Jun 2009, Christoph Hellwig wrote:
+No internet at home at the moment. Sorry for the delay.
 
-> On Mon, Jun 08, 2009 at 09:45:37PM -0400, Steven Rostedt wrote:
-> > -#define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
-> > -#define show_softirq_name(val)			\
-> > -	__print_symbolic(val,			\
-> > -			 softirq_name(HI),	\
-> > -			 softirq_name(TIMER),	\
-> > -			 softirq_name(NET_TX),	\
-> > -			 softirq_name(NET_RX),	\
-> > -			 softirq_name(BLOCK),	\
-> > -			 softirq_name(TASKLET),	\
-> > -			 softirq_name(SCHED),	\
-> > -			 softirq_name(HRTIMER),	\
-> > -			 softirq_name(RCU))
-> > +#define softirq_name(sirq) sirq##_SOFTIRQ, #sirq
-> > +#define show_softirq_name(val)						\
-> > +	"%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s>",	\
-> > +		softirq_name(HI),					\
-> > +		softirq_name(TIMER),					\
-> > +		softirq_name(NET_TX),					\
-> > +		softirq_name(NET_RX),					\
-> > +		softirq_name(BLOCK),					\
-> > +		softirq_name(TASKLET),					\
-> > +		softirq_name(SCHED),					\
-> > +		softirq_name(HRTIMER),					\
-> > +		softirq_name(RCU)
-> 
-> This is a massive readability and maintainabilit  regression over the
-> old code.  I now need to add a useless and counter-intuitive %d=%s,
-> boilerplate for every new flag I add instead ofa simple line-line
-> array entry.
-> 
-> Also why does show_softirq_name get a val argument passed that's never
-> used?  And no, I don't think
+> Sam/Matt - assuming that Denis sends his
 
-That was from the original, I forgot to remove it.
+Sure,
 
-> %d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s is an intuitive
-> way to print an enum.
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
 
-This is a helper macro and has nothing to do with the new format. In fact, 
-I'd do something similar with the old format because currently without 
-that "%d=%s,..." helper we get in the print format:
-
-	HRTIMER_SOFTIRQ = "HRTIMER"
-
-How is a user tool going to know what value HRTIMER_SOFTIRQ is?
-
-This was a trick I used to evaluate the HRTIMER_SOFTIRQ to an actual 
-number that might actually be useful for userland readers.
-
--- Steve
-
+--
+vda
