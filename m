@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756453AbZFJRAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759094AbZFJRAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756453AbZFJRAg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 13:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756693AbZFJQ77
+	id S1759094AbZFJRAx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 13:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757708AbZFJRAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 12:59:59 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59494 "EHLO
+	Wed, 10 Jun 2009 13:00:00 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:59530 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753315AbZFJQ75 (ORCPT
+	with ESMTP id S1753876AbZFJQ76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 12:59:57 -0400
-Message-Id: <20090610165306.794813861@goodmis.org>
+	Wed, 10 Jun 2009 12:59:58 -0400
+Message-Id: <20090610165959.360669328@goodmis.org>
+References: <20090610165306.794813861@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 10 Jun 2009 12:53:06 -0400
+Date: Wed, 10 Jun 2009 12:53:10 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -23,65 +24,106 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
        Peter Zijlstra <peterz@infradead.org>, Mel Gorman <mel@csn.ul.ie>,
        Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: [PATCH 00/11] [GIT PULL][for 2.6.32] new event print tag language
+Subject: [PATCH 04/11] tracing: add major and minor tags for print format
+Content-Disposition: inline; filename=0004-tracing-add-major-and-minor-tags-for-print-format.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[
-  Note, this work is aimed at 2.6.32 and not this merge window,
-    except for maybe the first patch.
-]
+From: Steven Rostedt <srostedt@redhat.com>
 
-Ingo,
+Create the tags <major:field> and <minor:field> for trace format prints.
 
-I rebased against tip/tracing/core and folded a lot of the fix ups into
-their corresponding patches. I still kept some of the tags out of
-the main patch since they explain those changes nicely and also
-demonstrates how to add new tags.
+Given a field (should be of type dev_t) these tags will extract the
+major or minor number from the field.
 
-The first patch "tracing: add entry size to iterator" is something that
-was lacking in the trace output, and I would recommend for this
-merge window. Just because it is low impact and it would be a nice thing
-to have for those that are working on enhancing ftrace.
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/trace_read_binary.c |   28 +++++++++++++++++++++++++++-
+ 1 files changed, 27 insertions(+), 1 deletions(-)
 
-The rest, could you make a separate branch for, so we can experiment
-with. I'll keep the event-print-format* branches around too.
+diff --git a/kernel/trace/trace_read_binary.c b/kernel/trace/trace_read_binary.c
+index 4ac31f5..4378350 100644
+--- a/kernel/trace/trace_read_binary.c
++++ b/kernel/trace/trace_read_binary.c
+@@ -23,7 +23,7 @@ static struct trace_seq buffer;
+  * COMMAND := <TYPE:FIELD> | <mask:FIELD:DELIM:MASKS> | <sym:FIELD:SYMBOLS> |
+  *            <if:FIELD:TRUE:FALSE> | <ifmask:FIELD:MASK:TRUE:FALSE> |
+  *            <nsec2sec:PRECISION:FIELD> | <nsec2usec:PRECISION:FIELD> |
+- *            <nsec2msec:PRECISION:FIELD>
++ *            <nsec2msec:PRECISION:FIELD> | <major:FIELD> | <minor:FIELD>
+  * TYPE := int | uint | hex | ptr | string | strarray
+  * FIELD := defined by the event structure
+  * MASKS := MASK=NAME,MASKS | MASK=NAME
+@@ -59,6 +59,10 @@ static struct trace_seq buffer;
+  *              DELIM will separate the different masks.
+  *  sym       : Print out the name of a matching value. This is similar to
+  *              mask, but only one value may print.
++ *  major     : Given a 'device number' value, this will convert it to its
++ *              major number.
++ *  minor     : Given a 'device number' value, this will convert it to its
++ *              minor number.
+  */
+ 
+ #define TOK_SIZE 32
+@@ -74,6 +78,8 @@ enum field_types {
+ 	FIELD_IS_STRING,
+ 	FIELD_IS_STRARRAY,
+ 	FIELD_IS_HEX,
++	FIELD_IS_MINOR,
++	FIELD_IS_MAJOR,
+ 	FIELD_IS_NSEC2SEC,
+ 	FIELD_IS_NSEC2USEC,
+ 	FIELD_IS_NSEC2MSEC,
+@@ -405,6 +411,8 @@ handle_field(struct ftrace_event_call *event,
+ 	case FIELD_IS_UINT:
+ 	case FIELD_IS_PTR:
+ 	case FIELD_IS_HEX:
++	case FIELD_IS_MINOR:
++	case FIELD_IS_MAJOR:
+ 	case FIELD_IS_STRING:
+ 	case FIELD_IS_STRARRAY:
+ 		field = find_field(event, fmt, end - fmt);
+@@ -605,6 +613,12 @@ ftrace_initialize_print(struct ftrace_event_call *event, const char *fmt, ...)
+ 		else if (strncmp(fmt, "strarray:", 9) == 0)
+ 			field_type = FIELD_IS_STRARRAY;
+ 
++		else if (strncmp(fmt, "major:", 6) == 0)
++			field_type = FIELD_IS_MAJOR;
++
++		else if (strncmp(fmt, "minor:", 6) == 0)
++			field_type = FIELD_IS_MINOR;
++
+ 		else
+ 			goto err_format;
+ 
+@@ -772,6 +786,8 @@ ftrace_read_binary(struct trace_seq *s, struct ftrace_event_call *event,
+ 		case FIELD_IS_UINT:
+ 		case FIELD_IS_HEX:
+ 		case FIELD_IS_PTR:
++		case FIELD_IS_MAJOR:
++		case FIELD_IS_MINOR:
+ 			field = info->data.field;
+ 			goto skip_if;
+ 
+@@ -813,6 +829,16 @@ ftrace_read_binary(struct trace_seq *s, struct ftrace_event_call *event,
+ 
+ 			case FIELD_IS_UINT:
+ 				trace_seq_printf(s, "%llu", val);
++				break;
++
++			case FIELD_IS_MAJOR:
++				trace_seq_printf(s, "%u", MAJOR(val));
++				break;
++
++			case FIELD_IS_MINOR:
++				trace_seq_printf(s, "%u", MINOR(val));
++				break;
++
+ 			default:
+ 				/* hex should only print the size specified */
+ 				if (mask)
+-- 
+1.6.3.1
 
-Please pull the latest tip/tracing/event-print-format-1 tree, which can be found at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/event-print-format-1
-
-
-Steven Rostedt (11):
-      tracing: add entry size to iterator
-      tracing/events: nicer print format for parsing
-      tracing: add nsec2sec print formats
-      tracing: add major and minor tags for print format
-      tracing: add func and symfunc to tag format
-      tracing: update sample code with new tag format
-      tracing/events: modify irq print to new format
-      tracing/events: modify sched print to new format
-      tracing/events: modify kmem print to new format
-      tracing/events: modify lockdep print to new format
-      tracing: convert the block trace points to use the new tag format
-
-----
- include/linux/ftrace_event.h               |   13 +
- include/trace/events/block.h               |  101 +--
- include/trace/events/irq.h                 |   40 +-
- include/trace/events/kmem.h                |  100 ++--
- include/trace/events/lockdep.h             |   18 +-
- include/trace/events/sched.h               |   49 +-
- include/trace/ftrace.h                     |   22 +-
- kernel/trace/Makefile                      |    1 +
- kernel/trace/trace.c                       |   39 +-
- kernel/trace/trace_events.c                |    1 +
- kernel/trace/trace_output.c                |    2 +-
- kernel/trace/trace_output.h                |    4 +
- kernel/trace/trace_read_binary.c           |  973 ++++++++++++++++++++++++++++
- samples/trace_events/trace-events-sample.c |   21 +-
- samples/trace_events/trace-events-sample.h |   66 ++
- 15 files changed, 1247 insertions(+), 203 deletions(-)
 -- 
