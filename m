@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757675AbZFJQpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760471AbZFJQuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757675AbZFJQpZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 12:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbZFJQpL
+	id S1760471AbZFJQuX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 12:50:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755690AbZFJQuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 12:45:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52961
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751524AbZFJQpK (ORCPT
+	Wed, 10 Jun 2009 12:50:16 -0400
+Received: from ganesha.gnumonks.org ([213.95.27.120]:35323 "EHLO
+	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754320AbZFJQuP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 12:45:10 -0400
-Date: Wed, 10 Jun 2009 09:45:12 -0700 (PDT)
-Message-Id: <20090610.094512.90091251.davem@davemloft.net>
-To: jk@ozlabs.org
-Cc: patchwork@ozlabs.org, oliver@hartkopp.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 3/5] can: af_can.c use rcu_barrier() on module unload.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200906102241.47823.jk@ozlabs.org>
-References: <4A2F6D32.8030400@hartkopp.net>
-	<20090610.015245.141342130.davem@davemloft.net>
-	<200906102241.47823.jk@ozlabs.org>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Jun 2009 12:50:15 -0400
+Date: Thu, 11 Jun 2009 00:48:53 +0800
+From: Harald Welte <HaraldWelte@viatech.com>
+To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+Cc: Chuck Ebbert <cebbert@redhat.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org
+Subject: Re: [patch 0/3] crypto: padlock-aes: enable on VIA Nano
+Message-ID: <20090610164853.GI4131@prithivi.gnumonks.org>
+References: <20090609103533.0c334594@dhcp-100-2-144.bos.redhat.com> <20090609184203.GA22084@Chamillionaire.breakpoint.cc>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090609184203.GA22084@Chamillionaire.breakpoint.cc>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Wed, 10 Jun 2009 22:41:47 +1000
+Hi all,
 
-> David,
+On Tue, Jun 09, 2009 at 08:42:03PM +0200, Sebastian Andrzej Siewior wrote:
+> * Chuck Ebbert | 2009-06-09 10:35:33 [-0400]:
 > 
->> We really can't expect patchwork to look for every conceivable
->> malignment of the various reviewer tags.
+> >The VIA Nano has a bug that makes the padlock unit fetch extra data
+> >during encryption operations. Add workarounds for that, and enable
+> >the driver on x86_64.
+> Nice. The X86_64 padlock will make it mainline in next merge window so
+> I'm asking you kindly to rebase it against Herbert's cryptodev tree [0].
 > 
-> No, but we could probably be more tolerant about capitalisation. Any 
-> objections about ignoring case completely? I have a patch ready to 
-> push...
+> I guess the bug can trigger on 32bit if you boot the affected 64bit CPU
+> in 32bit mode? I'm not sure if it is better to send this patches via
+> stable tree _or_ deactivate the padlock on affected CPUs.
 
-Sure, sounds fine to me.
+I have now re-confirmed the errata with VIA/Centaur guys, and it seems correct.
+Also, reviewing [but not testing] the patch, it looks correct to me.
+
+The check for stepping '2' is also correct, as stepping 3 no longer has this
+issue.
+
+Chuck, I'd be more than thankful if you could rebase and resubmit as requested.
+If not, please drop me a not so i can put it on my todo list.
+
+Acked-by: HaraldWelte <HaraldWelte@viatech.com>
+-- 
+- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
+============================================================================
+VIA Free and Open Source Software Liaison
