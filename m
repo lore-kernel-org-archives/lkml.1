@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759682AbZFJDm3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756304AbZFJDmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759682AbZFJDm3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:42:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbZFJDfb
+	id S1756304AbZFJDmm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:42:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756847AbZFJDfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:35:31 -0400
-Received: from kroah.org ([198.145.64.141]:57107 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:35:36 -0400
+Received: from kroah.org ([198.145.64.141]:57120 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756336AbZFJDf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:35:29 -0400
+	id S1757306AbZFJDfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:35:34 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:47 2009
-Message-Id: <20090610002347.308215897@blue.kroah.org>
+Message-Id: <20090610002347.533470858@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:01 -0700
+Date: Tue, 09 Jun 2009 17:14:02 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,82 +25,95 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 33/60] x86/pci: fix mmconfig detection with 32bit near 4g
+Subject: [patch 34/60] V4L/DVB (10943): cx88: Prevent general protection fault on rmmod
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=x86-pci-fix-mmconfig-detection-with-32bit-near-4g.patch
+Content-Disposition: inline; filename=v4l-dvb-cx88-prevent-general-protection-fault-on-rmmod.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Yinghai Lu <yinghai@kernel.org>
+From: Jean Delvare <khali@linux-fr.org>
 
-commit 75e613cdc7bb2ba3795b1bc3ddf19476c767ba68 upstream.
+commit 569b7ec73abf576f9a9e4070d213aadf2cce73cb upstream.
 
-Pascal reported and bisected a commit:
-|	x86/PCI: don't call e820_all_mapped with -1 in the mmconfig case
+V4L/DVB (10943): cx88: Prevent general protection fault on rmmod
 
-which broke one system system.
+When unloading the cx8800 driver I sometimes get a general protection
+fault. Analysis revealed a race in cx88_ir_stop(). It can be solved by
+using a delayed work instead of a timer for infrared input polling.
 
-ACPI: Using IOAPIC for interrupt routing
-PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 255
-PCI: MCFG area at f0000000 reserved in ACPI motherboard resources
-PCI: Using MMCONFIG for extended config space
-
-it didn't have
-PCI: updated MCFG configuration 0: base f0000000 segment 0 buses 0 - 63
-anymore, and try to use 0xf000000 - 0xffffffff for mmconfig
-
-For 32bit, mcfg_res->end could be 32bit only (if 64 resources aren't used)
-So use end - 1 to pass the value in mcfg->end to avoid overflow.
-
-We don't need to worry about the e820 path, they are always 64 bit.
-
-Reported-by: Pascal Terjan <pterjan@mandriva.com>
-Bisected-by: Pascal Terjan <pterjan@mandriva.com>
-Tested-by: Pascal Terjan <pterjan@mandriva.com>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/pci/mmconfig-shared.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/media/video/cx88/cx88-input.c |   25 +++++++------------------
+ 1 file changed, 7 insertions(+), 18 deletions(-)
 
---- a/arch/x86/pci/mmconfig-shared.c
-+++ b/arch/x86/pci/mmconfig-shared.c
-@@ -255,7 +255,7 @@ static acpi_status __init check_mcfg_res
- 		if (!fixmem32)
- 			return AE_OK;
- 		if ((mcfg_res->start >= fixmem32->address) &&
--		    (mcfg_res->end <= (fixmem32->address +
-+		    (mcfg_res->end < (fixmem32->address +
- 				      fixmem32->address_length))) {
- 			mcfg_res->flags = 1;
- 			return AE_CTRL_TERMINATE;
-@@ -272,7 +272,7 @@ static acpi_status __init check_mcfg_res
- 		return AE_OK;
+--- a/drivers/media/video/cx88/cx88-input.c
++++ b/drivers/media/video/cx88/cx88-input.c
+@@ -48,8 +48,7 @@ struct cx88_IR {
  
- 	if ((mcfg_res->start >= address.minimum) &&
--	    (mcfg_res->end <= (address.minimum + address.address_length))) {
-+	    (mcfg_res->end < (address.minimum + address.address_length))) {
- 		mcfg_res->flags = 1;
- 		return AE_CTRL_TERMINATE;
+ 	/* poll external decoder */
+ 	int polling;
+-	struct work_struct work;
+-	struct timer_list timer;
++	struct delayed_work work;
+ 	u32 gpio_addr;
+ 	u32 last_gpio;
+ 	u32 mask_keycode;
+@@ -143,27 +142,19 @@ static void cx88_ir_handle_key(struct cx
  	}
-@@ -298,7 +298,7 @@ static int __init is_acpi_reserved(u64 s
- 	struct resource mcfg_res;
+ }
  
- 	mcfg_res.start = start;
--	mcfg_res.end = end;
-+	mcfg_res.end = end - 1;
- 	mcfg_res.flags = 0;
+-static void ir_timer(unsigned long data)
+-{
+-	struct cx88_IR *ir = (struct cx88_IR *)data;
+-
+-	schedule_work(&ir->work);
+-}
+-
+ static void cx88_ir_work(struct work_struct *work)
+ {
+-	struct cx88_IR *ir = container_of(work, struct cx88_IR, work);
++	struct cx88_IR *ir = container_of(work, struct cx88_IR, work.work);
  
- 	acpi_get_devices("PNP0C01", find_mboard_resource, &mcfg_res, NULL);
+ 	cx88_ir_handle_key(ir);
+-	mod_timer(&ir->timer, jiffies + msecs_to_jiffies(ir->polling));
++	schedule_delayed_work(&ir->work, msecs_to_jiffies(ir->polling));
+ }
+ 
+ void cx88_ir_start(struct cx88_core *core, struct cx88_IR *ir)
+ {
+ 	if (ir->polling) {
+-		setup_timer(&ir->timer, ir_timer, (unsigned long)ir);
+-		INIT_WORK(&ir->work, cx88_ir_work);
+-		schedule_work(&ir->work);
++		INIT_DELAYED_WORK(&ir->work, cx88_ir_work);
++		schedule_delayed_work(&ir->work, 0);
+ 	}
+ 	if (ir->sampling) {
+ 		core->pci_irqmask |= PCI_INT_IR_SMPINT;
+@@ -179,10 +170,8 @@ void cx88_ir_stop(struct cx88_core *core
+ 		core->pci_irqmask &= ~PCI_INT_IR_SMPINT;
+ 	}
+ 
+-	if (ir->polling) {
+-		del_timer_sync(&ir->timer);
+-		flush_scheduled_work();
+-	}
++	if (ir->polling)
++		cancel_delayed_work_sync(&ir->work);
+ }
+ 
+ /* ---------------------------------------------------------------------- */
 
 
