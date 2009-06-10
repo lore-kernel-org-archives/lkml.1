@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbZFJLzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbZFJMAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758590AbZFJLzo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 07:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758293AbZFJLza
+	id S1756110AbZFJMAL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 08:00:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbZFJMAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 07:55:30 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:46550 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757273AbZFJLz3 (ORCPT
+	Wed, 10 Jun 2009 08:00:00 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:48598 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755445AbZFJL77 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 07:55:29 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] X86: cpu_debug support for VIA / Centaur CPU's
-Date: Wed, 10 Jun 2009 06:55:27 -0500
-User-Agent: KMail/1.9.9
-Cc: "H. Peter Anvin" <hpa@kernel.org>, Harald Welte <HaraldWelte@viatech.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-References: <20090609082931.GD25316@prithivi.gnumonks.org> <200906100611.14941.lkml@morethan.org> <20090610111352.GA4482@elte.hu>
-In-Reply-To: <20090610111352.GA4482@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906100655.29833.lkml@morethan.org>
+	Wed, 10 Jun 2009 07:59:59 -0400
+Subject: Re: [PATCHv2] MTD: Add UBI reboot notifier
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Kevin Cernekee <kpc.mtd@gmail.com>
+Cc: linux-mtd@lists.infradead.org, dwmw2@infradead.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1244626509.5847.399.camel@localhost.localdomain>
+References: <1244550775.5847.385.camel@localhost.localdomain>
+	 <f5be75d5abc1acd236bedf36c55a860e@localhost>
+	 <1244626509.5847.399.camel@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 10 Jun 2009 14:59:42 +0300
+Message-Id: <1244635182.5847.402.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 10 Jun 2009 11:59:43.0243 (UTC) FILETIME=[F0F735B0:01C9E9C2]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed June 10 2009, Ingo Molnar wrote:
-> 
-> * Michael S. Zick <lkml@morethan.org> wrote:
-> 
-> > On Wed June 10 2009, Ingo Molnar wrote:
-> > > 
-> > > * H. Peter Anvin <hpa@kernel.org> wrote:
-> > > 
-> > > > Ingo Molnar wrote:
-> > > > > 
-> > > > > MSRs should really be enumerated along CPU features. They will be 
-> > > > > accessed if a CPU offers that CPU feature.
-> > > > > 
-> > > > 
-> > > > Nice in theory, but so many MSRs have to be enumerated with obscure test
-> > > > combinations, that it really isn't practical in the general case.  That
-> > > > is why we have the safe MSR variants.
-> > > > 
-> > > > > 
-> > > > > Yeah, the safe read should never fault - there should be all 
-> > > > > zeroes or an error return.
-> > > > > 
-> > > > 
-> > > > Error return, MSRs #GP if not present.  All zero means a present 
-> > > > MSR (which is zero.)
-> > > 
-> > > yes, of course - i meant the /debug/x86/cpu/* behavior: it should 
-> > > either result zeroes, or should return -EINVAL. (probably the 
-> > > latter)
-> > > 
+On Wed, 2009-06-10 at 12:35 +0300, Artem Bityutskiy wrote:
+> On Tue, 2009-06-09 at 10:59 -0700, Kevin Cernekee wrote:
+> > Terminate the UBI background thread prior to restarting the system.
 > > 
-> > Return zeroes - same as hardware case for bits which can't be set. 
-> > Returning -EINVAL might match a specific bit pattern caller is 
-> > looking for.
+> > Changes from v1:
+> > 
+> > Add ubi_sync() at the end, to make sure the underlying MTD device has
+> > synchronized its buffers.
+> > 
+> > Clean up comments and formatting.
+> > 
+> > Signed-off-by: Kevin Cernekee <kpc.mtd@gmail.com>
 > 
-> these files are accessed via read(). The -EINVAL is the syscall 
-> return value. The value (if any) goes into the buffer that is being 
-> read into. So there's no way to 'match a specific bit pattern' - 
-> it's two separate spaces.
+> I've pushed this patch to ubi-2.6.git/master. I've tested it
+> even. And I amended comments a little. Please, check it:
 > 
+> http://git.infradead.org/ubi-2.6.git?a=commit;h=79c293b2629882a1db3a850ed6b84bd1d8a464a7
+> 
+> If you are fine with this, I'll put it to ubi-2.6.git/linux-next
+> and merge it this merge window.
 
-Right.  Prior post was just a bad case of nerves.  ;)
+Ok, I've actually pushed this to ubi-2.6.git/linux-next, I just
+assume you should not have issues with my tweaks.
 
-Mike
-> 	Ingo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
-
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
