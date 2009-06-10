@@ -1,40 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761906AbZFJVDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761962AbZFJVDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761906AbZFJVDb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 17:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758300AbZFJVDV
+	id S1761962AbZFJVDp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 17:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761752AbZFJVDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 17:03:21 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:53204 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757198AbZFJVDU (ORCPT
+	Wed, 10 Jun 2009 17:03:23 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46352 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757859AbZFJVDV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 17:03:20 -0400
-Message-ID: <4A301E8C.8070602@cs.helsinki.fi>
-Date: Wed, 10 Jun 2009 23:58:52 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Wed, 10 Jun 2009 17:03:21 -0400
+Date: Wed, 10 Jun 2009 23:03:13 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Denis Karpov <ext-denis.2.karpov@nokia.com>
+Cc: axboe@kernel.dk, akpm@linux-foundation.org, hirofumi@mail.parknet.co.jp,
+       linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, adrian.hunter@nokia.com,
+       artem.bityutskiy@nokia.com, tytso@mit.edu
+Subject: Re: [PATCH 4/4] EXT2: add 'notify' mount option
+Message-ID: <20090610210313.GD1381@ucw.cz>
+References: <e7005f79dd6b8f25fef78ddbfedcef54f6b40bd5.1244049680.git.ext-denis.2.karpov@nokia.com> <60607de38c1ebbd1ba1cb33d85f1dcdec77f3c61.1244049681.git.ext-denis.2.karpov@nokia.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, hannes@cmpxchg.org, mpm@selenic.com,
-       npiggin@suse.de, yinghai@kernel.org
-Subject: Re: [GIT PULL] Early boot SLAB for 2.6.31
-References: <Pine.LNX.4.64.0906102311230.30444@melkki.cs.Helsinki.FI> <alpine.LFD.2.01.0906101331250.6847@localhost.localdomain> <4A3017D1.5010708@cs.helsinki.fi> <20090610204318.GA8147@elte.hu> <84144f020906101347y3e250f4bme2d1c60dd5993ffc@mail.gmail.com> <20090610205026.GC8147@elte.hu> <20090610205749.GA9321@elte.hu>
-In-Reply-To: <20090610205749.GA9321@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <60607de38c1ebbd1ba1cb33d85f1dcdec77f3c61.1244049681.git.ext-denis.2.karpov@nokia.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> How about this: i can send the scheduler and x86 bits to Linus right 
-> now, that should make it possible to have a clean base for you and 
-> no interactions with anything pending?
+On Wed 2009-06-03 18:05:18, Denis Karpov wrote:
+> Implement EXT2 fs mount option 'notify'. The effect of this option
+> is that a notification is sent to userspace on errors that indicate
+> filesystem damage/inconsistency. Generic filesystem corruption
+> notification mechnism is used.
 
-Sure, we can do that too. Whatever works for you guys, it's not a huge 
-deal for me to rebase the series.
+By the time you start checking volume, you may have already damaged
+data, right?
 
-			Pekka
+(Imagine two inodes pointing to same block, lets say /etc/shadow and
+/tmp/foo. Writes to /tmp/foo will now kill your passwords. fsck would
+duplicate the blocks, but I do not think internal checking in ext2
+would catch it soon enough).
+
+> Signed-off-by: Denis Karpov <ext-denis.2.karpov@nokia.com>
+> ---
+>  fs/ext2/super.c         |   15 ++++++++++++++-
+>  include/linux/ext2_fs.h |    2 +-
+>  2 files changed, 15 insertions(+), 2 deletions(-)
+> 
+> diff --git a/fs/ext2/super.c b/fs/ext2/super.c
+> index 5c4afe6..04802cd 100644
+> --- a/fs/ext2/super.c
+> +++ b/fs/ext2/super.c
+> @@ -32,6 +32,7 @@
+>  #include <linux/mount.h>
+>  #include <linux/log2.h>
+>  #include <linux/quotaops.h>
+> +#include <linux/genhd.h>
+>  #include <asm/uaccess.h>
+>  #include "ext2.h"
+>  #include "xattr.h"
+> @@ -68,6 +69,8 @@ void ext2_error (struct super_block * sb, const char * function,
+>  		printk("Remounting filesystem read-only\n");
+>  		sb->s_flags |= MS_RDONLY;
+>  	}
+> +	if (test_opt(sb, ERR_NOTIFY))
+> +		notify_part_fs_unclean(part_to_dev(sb->s_bdev->bd_part), 1);
+>  }
+>  
+>  void ext2_warning (struct super_block * sb, const char * function,
+> @@ -81,6 +84,8 @@ void ext2_warning (struct super_block * sb, const char * function,
+>  	vprintk(fmt, args);
+>  	printk("\n");
+>  	va_end(args);
+> +	if (test_opt(sb, ERR_NOTIFY))
+> +		notify_part_fs_unclean(part_to_dev(sb->s_bdev->bd_part), 1);
+>  }
+>  
+>  void ext2_update_dynamic_rev(struct super_block *sb)
+> @@ -289,6 +294,9 @@ static int ext2_show_options(struct seq_file *seq, struct vfsmount *vfs)
+>  	if (!test_opt(sb, RESERVATION))
+>  		seq_puts(seq, ",noreservation");
+>  
+> +	if (!test_opt(sb, ERR_NOTIFY))
+> +		seq_puts(seq, ",notify");
+> +
+>  	return 0;
+>  }
+>  
+> @@ -391,7 +399,8 @@ enum {
+>  	Opt_err_ro, Opt_nouid32, Opt_nocheck, Opt_debug,
+>  	Opt_oldalloc, Opt_orlov, Opt_nobh, Opt_user_xattr, Opt_nouser_xattr,
+>  	Opt_acl, Opt_noacl, Opt_xip, Opt_ignore, Opt_err, Opt_quota,
+> -	Opt_usrquota, Opt_grpquota, Opt_reservation, Opt_noreservation
+> +	Opt_usrquota, Opt_grpquota, Opt_reservation, Opt_noreservation,
+> +	Opt_err_notify,
+>  };
+>  
+>  static const match_table_t tokens = {
+> @@ -425,6 +434,7 @@ static const match_table_t tokens = {
+>  	{Opt_usrquota, "usrquota"},
+>  	{Opt_reservation, "reservation"},
+>  	{Opt_noreservation, "noreservation"},
+> +	{Opt_err_notify, "notify"},
+>  	{Opt_err, NULL}
+>  };
+>  
+> @@ -565,6 +575,9 @@ static int parse_options (char * options,
+>  			clear_opt(sbi->s_mount_opt, RESERVATION);
+>  			printk("reservations OFF\n");
+>  			break;
+> +		case Opt_err_notify:
+> +			set_opt(sbi->s_mount_opt, ERR_NOTIFY);
+> +			break;
+>  		case Opt_ignore:
+>  			break;
+>  		default:
+> diff --git a/include/linux/ext2_fs.h b/include/linux/ext2_fs.h
+> index 121720d..ecec20b 100644
+> --- a/include/linux/ext2_fs.h
+> +++ b/include/linux/ext2_fs.h
+> @@ -347,7 +347,7 @@ struct ext2_inode {
+>  #define EXT2_MOUNT_USRQUOTA		0x020000  /* user quota */
+>  #define EXT2_MOUNT_GRPQUOTA		0x040000  /* group quota */
+>  #define EXT2_MOUNT_RESERVATION		0x080000  /* Preallocation */
+> -
+> +#define EXT2_MOUNT_ERR_NOTIFY		0x100000  /* Error notifications */
+>  
+>  #define clear_opt(o, opt)		o &= ~EXT2_MOUNT_##opt
+>  #define set_opt(o, opt)			o |= EXT2_MOUNT_##opt
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
