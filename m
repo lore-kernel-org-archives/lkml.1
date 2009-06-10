@@ -1,72 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759241AbZFJKFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758888AbZFJKMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759241AbZFJKFp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 06:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZFJKFf
+	id S1758888AbZFJKMV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 06:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbZFJKMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 06:05:35 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60374 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756101AbZFJKFf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 06:05:35 -0400
-Subject: Re: [patch v3] swap: virtual swap readahead
-From: Peter Zijlstra <peterz@infradead.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
+	Wed, 10 Jun 2009 06:12:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49855 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752103AbZFJKMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 06:12:09 -0400
+Date: Wed, 10 Jun 2009 12:11:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Minchan Kim <minchan.kim@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>
-In-Reply-To: <20090610095950.GA514@localhost>
-References: <20090609190128.GA1785@cmpxchg.org>
-	 <20090609193702.GA2017@cmpxchg.org> <20090610050342.GA8867@localhost>
-	 <20090610074508.GA1960@cmpxchg.org> <20090610081132.GA27519@localhost>
-	 <20090610173249.50e19966.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090610085638.GA32511@localhost> <1244626976.13761.11593.camel@twins>
-	 <20090610095950.GA514@localhost>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 10 Jun 2009 12:05:14 +0200
-Message-Id: <1244628314.13761.11617.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
+Subject: Re: [RFC PATCH 2/5] tracing/events: nicer print format for parsing
+Message-ID: <20090610101124.GA25042@elte.hu>
+References: <20090609014534.790466803@goodmis.org> <20090609014746.481457542@goodmis.org> <20090609192159.GD6057@nowhere> <20090610094819.GA25527@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090610094819.GA25527@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-10 at 17:59 +0800, Wu Fengguang wrote:
-> On Wed, Jun 10, 2009 at 05:42:56PM +0800, Peter Zijlstra wrote:
-> > On Wed, 2009-06-10 at 16:56 +0800, Wu Fengguang wrote:
-> > > 
-> > > Yes it worked!  But then I run into page allocation failures:
-> > > 
-> > > [  340.639803] Xorg: page allocation failure. order:4, mode:0x40d0
-> > > [  340.645744] Pid: 3258, comm: Xorg Not tainted 2.6.30-rc8-mm1 #303
-> > > [  340.651839] Call Trace:
-> > > [  340.654289]  [<ffffffff810c8204>] __alloc_pages_nodemask+0x344/0x6c0
-> > > [  340.660645]  [<ffffffff810f7489>] __slab_alloc_page+0xb9/0x3b0
-> > > [  340.666472]  [<ffffffff810f8608>] __kmalloc+0x198/0x250
-> > > [  340.671786]  [<ffffffffa014bf9f>] ? i915_gem_execbuffer+0x17f/0x11e0 [i915]
-> > > [  340.678746]  [<ffffffffa014bf9f>] i915_gem_execbuffer+0x17f/0x11e0 [i915]
+
+* Christoph Hellwig <hch@infradead.org> wrote:
+
+> On Tue, Jun 09, 2009 at 09:22:01PM +0200, Frederic Weisbecker wrote:
+> > But I wonder if the above new language is not breaking the charm
+> > of the TRACE_EVENT(), which charm is that it's easy to implement (hopefully).
 > > 
-> > Jesse Barnes had a patch to add a vmalloc fallback to those largish kms
-> > allocs.
-> > 
-> > But order-4 allocs failing isn't really strange, but it might indicate
-> > this patch fragments stuff sooner, although I've seen these particular
-> > failues before.
+> > Everyone knows the printk formats. And I guess this new thing is 
+> > easy and quick to learn. But because it's a new unknown 
+> > language, the TRACE_EVENT will become less readable, less 
+> > reachable for newcomers in TRACE_EVENT.
 > 
-> Thanks for the tip. Where is it? I'd like to try it out :)
+> I must also say I don't particularly like it.  printk is nice and 
+> easy an everybody knows it, but it's not quite flexible enough as 
+> we might have to do all kinds of conversions on the reader side.  
+> What might be a better idea is to just have C function pointer for 
+> output conversions that could be put into the a file in debugfs 
+> and used by the binary trace buffer reader.  Or maybe not as we 
+> would pull in too many depenencies.
 
-commit 8e7d2b2c6ecd3c21a54b877eae3d5be48292e6b5
-Author: Jesse Barnes <jbarnes@virtuousgeek.org>
-Date:   Fri May 8 16:13:25 2009 -0700
+Another bigger problem with the new tag format, beyond introducing 
+an arbitrary descriptor language (which is easy to mess up) is the 
+loss of type checking.
 
-    drm/i915: allocate large pointer arrays with vmalloc
+With the tags the field printouts can go stray easily - while with 
+TP_printk() we had printf type checking. (which, as imperfect as it 
+may be to specify a format, does create a real connection between 
+the record and the output format specification.)
 
+> I think we should go with the printk solution for 2.6.31 and use 
+> the full development cycle for 2.6.32 to come up with something 
+> better.
+>
+> As soon as a couple of large subsystems use the even tracer we 
+> also have a broader base examples to see how new syntax works on 
+> them.
+
+I think much of the tooling problem could be solved with a little 
+trick: the format string can be injected into an artificial .c file 
+(runtime), and the tool could compile that .c file (in user-space) 
+and get access to the result.
+
+For example, one of the more complex block tracepoints, 
+/debug/tracing/events/block/block_bio_backmerge:
+
+print fmt: "%d,%d %s %llu + %u [%s]", ((unsigned int) ((REC->dev) >> 
+20)), ((unsigned int) ((REC->dev) & ((1U << 20) - 1))), REC->rwbs, 
+(unsigned long long)REC->sector, REC->nr_sector, REC->comm
+
+when pasted verbatim into the stub below, produces:
+
+   0,6 a 7 + 8 [abc]
+
+Note that i pasted the format string into the code below unchanged, 
+and i used the format descriptor to create the record type. (this 
+too is easy to automate).
+
+If this is generated into the following function:
+
+ format_block_bio_backmerge(struct record *rec);
+
+and a small dynamic library is built out of it, tooling can use 
+dlopen() to load those format printing stubs.
+
+It's all pretty straightforward and can be used for arbitrarily 
+complex formats.
+
+And i kind of like the whole notion on a design level as weell: the 
+kernel exporting C source code for tools :-)
+
+	Ingo
+
+------------------>
+
+struct record {
+	unsigned short common_type;
+	unsigned char common_flags;
+	unsigned char common_preempt;
+	int common_pid;
+	int common_tgid;
+	int dev;
+	unsigned long long sector;
+	unsigned int nr_sector;
+	char rwbs[6];
+	char comm[16];
+} this_record = { 1, 2, 3, 4, 5, 6, 7, 8, { 'a', }, "abc" };
+
+void main(void)
+{
+	struct record *REC = &this_record;
+
+	printf("%d,%d %s %llu + %u [%s]", ((unsigned int) ((REC->dev) >> 20)), ((unsigned int) ((REC->dev) & ((1U << 20) - 1))), REC->rwbs, (unsigned long long)REC->sector, REC->nr_sector, REC->comm);
+}
 
