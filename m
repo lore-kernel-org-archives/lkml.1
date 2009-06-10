@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbZFJFoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758457AbZFJFo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758055AbZFJFoe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 01:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbZFJFm5
+	id S1758457AbZFJFo6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 01:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756315AbZFJFm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 01:42:57 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:42333 "EHLO
+	Wed, 10 Jun 2009 01:42:58 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:45676 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753375AbZFJFmw (ORCPT
+	with ESMTP id S1754322AbZFJFmx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 01:42:52 -0400
-Message-Id: <20090610054254.000869193@goodmis.org>
+	Wed, 10 Jun 2009 01:42:53 -0400
+Message-Id: <20090610054254.618822592@goodmis.org>
 References: <20090610054206.510574695@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 10 Jun 2009 01:42:12 -0400
+Date: Wed, 10 Jun 2009 01:42:15 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -28,246 +28,42 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
        Tom Zanussi <tzanussi@gmail.com>,
        Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: [PATCH 06/11] tracing: convert the block trace points to use the new tag format
-Content-Disposition: inline; filename=0006-tracing-convert-the-block-trace-points-to-use-the-ne.patch
+Subject: [PATCH 09/11] tracing: check full name for field
+Content-Disposition: inline; filename=0009-tracing-check-full-name-for-field.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Convert the block trace points to use the new tag format for easier parsing
-by userspace tools.
+The check for print format fields only compared the name of the field
+up to the length of the field to look for. But it did not test if the
+field name itself matched but was larger. The wrong field could be
+found as a match.
+
+ ie. str could match str_arr.
+
+[ Impact: fix the matching of fields ]
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/trace/events/block.h |  101 ++++++++++++++----------------------------
- 1 files changed, 34 insertions(+), 67 deletions(-)
+ kernel/trace/trace_read_binary.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/include/trace/events/block.h b/include/trace/events/block.h
-index 53effd4..f12cee3 100644
---- a/include/trace/events/block.h
-+++ b/include/trace/events/block.h
-@@ -34,11 +34,8 @@ TRACE_EVENT(block_rq_abort,
- 		blk_dump_cmd(__get_str(cmd), rq);
- 	),
+diff --git a/kernel/trace/trace_read_binary.c b/kernel/trace/trace_read_binary.c
+index 9ff4ed8..779de20 100644
+--- a/kernel/trace/trace_read_binary.c
++++ b/kernel/trace/trace_read_binary.c
+@@ -388,7 +388,8 @@ find_field(struct ftrace_event_call *call, const char *name, int len)
+ 	struct ftrace_event_field *field;
  
--	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev),
--		  __entry->rwbs, __get_str(cmd),
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->errors)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> (<string:cmd>) "
-+		  "<uint:sector> + <uint:nr_sector> [<int:errors>]")
- );
+ 	list_for_each_entry(field, &call->fields, link) {
+-		if (!strncmp(field->name, name, len))
++		if (!strncmp(field->name, name, len) &&
++		    !field->name[len])
+ 			return field;
+ 	}
  
- TRACE_EVENT(block_rq_insert,
-@@ -69,11 +66,9 @@ TRACE_EVENT(block_rq_insert,
- 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
- 	),
- 
--	TP_printk("%d,%d %s %u (%s) %llu + %u [%s]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev),
--		  __entry->rwbs, __entry->bytes, __get_str(cmd),
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->comm)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> <uint:bytes>"
-+		  " (<string:cmd>) <uint:sector> + <uint:nr_sector>"
-+		  " [<strarray:comm>]")
- );
- 
- TRACE_EVENT(block_rq_issue,
-@@ -104,11 +99,9 @@ TRACE_EVENT(block_rq_issue,
- 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
- 	),
- 
--	TP_printk("%d,%d %s %u (%s) %llu + %u [%s]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev),
--		  __entry->rwbs, __entry->bytes, __get_str(cmd),
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->comm)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> <uint:bytes>"
-+		  " (<string:cmd>) <uint:sector> + <uint:nr_sector>"
-+		  " [<strarray:comm>]")
- );
- 
- TRACE_EVENT(block_rq_requeue,
-@@ -137,11 +130,8 @@ TRACE_EVENT(block_rq_requeue,
- 		blk_dump_cmd(__get_str(cmd), rq);
- 	),
- 
--	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev),
--		  __entry->rwbs, __get_str(cmd),
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->errors)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> (<string:cmd>)"
-+		  " <uint:sector> + <uint:nr_sector> [<int:errors>]")
- );
- 
- TRACE_EVENT(block_rq_complete,
-@@ -170,11 +160,8 @@ TRACE_EVENT(block_rq_complete,
- 		blk_dump_cmd(__get_str(cmd), rq);
- 	),
- 
--	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev),
--		  __entry->rwbs, __get_str(cmd),
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->errors)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> (<string:cmd>) "
-+		  "<uint:sector> + <uint:nr_sector> [<int:errors>]")
- );
- TRACE_EVENT(block_bio_bounce,
- 
-@@ -198,10 +185,8 @@ TRACE_EVENT(block_bio_bounce,
- 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
- 	),
- 
--	TP_printk("%d,%d %s %llu + %u [%s]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->comm)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> "
-+		  "<uint:sector> + <uint:nr_sector> [<strarray:comm>]")
- );
- 
- TRACE_EVENT(block_bio_complete,
-@@ -225,10 +210,8 @@ TRACE_EVENT(block_bio_complete,
- 		blk_fill_rwbs(__entry->rwbs, bio->bi_rw, bio->bi_size);
- 	),
- 
--	TP_printk("%d,%d %s %llu + %u [%d]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->error)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> <uint:sector>"
-+		  " + <uint:nr_sector> [<int:error>]")
- );
- 
- TRACE_EVENT(block_bio_backmerge,
-@@ -253,10 +236,8 @@ TRACE_EVENT(block_bio_backmerge,
- 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
- 	),
- 
--	TP_printk("%d,%d %s %llu + %u [%s]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->comm)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> "
-+		  "<uint:sector> + <uint:nr_sector> [<strarray:comm>]")
- );
- 
- TRACE_EVENT(block_bio_frontmerge,
-@@ -281,10 +262,8 @@ TRACE_EVENT(block_bio_frontmerge,
- 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
- 	),
- 
--	TP_printk("%d,%d %s %llu + %u [%s]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->comm)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> "
-+		  "<uint:sector> + <uint:nr_sector> [<strarray:comm>]")
- );
- 
- TRACE_EVENT(block_bio_queue,
-@@ -309,10 +288,8 @@ TRACE_EVENT(block_bio_queue,
- 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
- 	),
- 
--	TP_printk("%d,%d %s %llu + %u [%s]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->comm)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> "
-+		  "<uint:sector> + <uint:nr_sector> [<strarray:comm>]")
- );
- 
- TRACE_EVENT(block_getrq,
-@@ -338,10 +315,8 @@ TRACE_EVENT(block_getrq,
- 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
-         ),
- 
--	TP_printk("%d,%d %s %llu + %u [%s]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->comm)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> "
-+		  "<uint:sector> + <uint:nr_sector> [<strarray:comm>]")
- );
- 
- TRACE_EVENT(block_sleeprq,
-@@ -367,10 +342,8 @@ TRACE_EVENT(block_sleeprq,
- 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
- 	),
- 
--	TP_printk("%d,%d %s %llu + %u [%s]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector, __entry->comm)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> "
-+		  "<uint:sector> + <uint:nr_sector> [<strarray:comm>]")
- );
- 
- TRACE_EVENT(block_plug,
-@@ -387,7 +360,7 @@ TRACE_EVENT(block_plug,
- 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
- 	),
- 
--	TP_printk("[%s]", __entry->comm)
-+	TP_FORMAT("[<strarray:comm>]")
- );
- 
- TRACE_EVENT(block_unplug_timer,
-@@ -406,7 +379,7 @@ TRACE_EVENT(block_unplug_timer,
- 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
- 	),
- 
--	TP_printk("[%s] %d", __entry->comm, __entry->nr_rq)
-+	TP_FORMAT("[<strarray:comm>] <int:nr_rq>")
- );
- 
- TRACE_EVENT(block_unplug_io,
-@@ -425,7 +398,7 @@ TRACE_EVENT(block_unplug_io,
- 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
- 	),
- 
--	TP_printk("[%s] %d", __entry->comm, __entry->nr_rq)
-+	TP_FORMAT("[<strarray:comm>] <int:nr_rq>")
- );
- 
- TRACE_EVENT(block_split,
-@@ -451,11 +424,8 @@ TRACE_EVENT(block_split,
- 		memcpy(__entry->comm, current->comm, TASK_COMM_LEN);
- 	),
- 
--	TP_printk("%d,%d %s %llu / %llu [%s]",
--		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
--		  (unsigned long long)__entry->sector,
--		  (unsigned long long)__entry->new_sector,
--		  __entry->comm)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> <uint:sector> / "
-+		  "<uint:new_sector> [<strarray:comm>]")
- );
- 
- TRACE_EVENT(block_remap,
-@@ -483,12 +453,9 @@ TRACE_EVENT(block_remap,
- 		blk_fill_rwbs(__entry->rwbs, bio->bi_rw, bio->bi_size);
- 	),
- 
--	TP_printk("%d,%d %s %llu + %u <- (%d,%d) %llu",
--		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
--		  (unsigned long long)__entry->sector,
--		  __entry->nr_sector,
--		  MAJOR(__entry->old_dev), MINOR(__entry->old_dev),
--		  (unsigned long long)__entry->old_sector)
-+	TP_FORMAT("<major:dev>,<minor:dev> <strarray:rwbs> <uint:sector> + "
-+		  "<uint:nr_sector> <<- (<major:old_dev>,<minor:old_dev>) "
-+		  "<uint:old_sector>")
- );
- 
- #endif /* _TRACE_BLOCK_H */
 -- 
 1.6.3.1
 
