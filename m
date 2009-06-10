@@ -1,212 +1,336 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbZFJMgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbZFJMgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759382AbZFJMgS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 08:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbZFJMgJ
+	id S1759537AbZFJMgc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 08:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755095AbZFJMgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 08:36:09 -0400
-Received: from mga14.intel.com ([143.182.124.37]:35562 "EHLO mga14.intel.com"
+	Wed, 10 Jun 2009 08:36:24 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:43589 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754773AbZFJMgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 08:36:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,341,1241420400"; 
-   d="scan'208";a="152695783"
-Date: Wed, 10 Jun 2009 20:36:00 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [0/16] HWPOISON: Intro
-Message-ID: <20090610123600.GD5657@localhost>
-References: <20090603846.816684333@firstfloor.org> <20090609102014.GG14820@wotan.suse.de> <20090610090703.GF6597@localhost> <20090610091807.GA18582@wotan.suse.de> <20090610094526.GB32584@localhost> <20090610111541.GC3876@wotan.suse.de>
+	id S1758763AbZFJMgW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 08:36:22 -0400
+From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+To: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Ben Nizette <bn@niasdigital.com>, linux-kernel@vger.kernel.org,
+       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+Subject: [PATCH v2] gpiolib: allow poll(2) on gpio value
+Date: Wed, 10 Jun 2009 14:36:16 +0200
+Message-Id: <1244637376-24666-1-git-send-email-dg@emlix.com>
+In-Reply-To: <1244212590-15620-1-git-send-email-dg@emlix.com>
+References: <1244212590-15620-1-git-send-email-dg@emlix.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090610111541.GC3876@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 07:15:41PM +0800, Nick Piggin wrote:
-> On Wed, Jun 10, 2009 at 05:45:26PM +0800, Wu Fengguang wrote:
-> > On Wed, Jun 10, 2009 at 05:18:07PM +0800, Nick Piggin wrote:
-> > > On Wed, Jun 10, 2009 at 05:07:03PM +0800, Wu Fengguang wrote:
-> > > > On Tue, Jun 09, 2009 at 06:20:14PM +0800, Nick Piggin wrote:
-> > > > > On Wed, Jun 03, 2009 at 08:46:31PM +0200, Andi Kleen wrote:
-> > > > > > Also I thought a bit about the fsync() error scenario. It's really
-> > > > > > a problem that can already happen even without hwpoison, e.g.
-> > > > > > when a page is dropped at the wrong time.
-> > > > > 
-> > > > > No, the page will never be "dropped" like that except with
-> > > > > this hwpoison. Errors, sure, might get dropped sometimes
-> > > > > due to implementation bugs, but this is adding semantics that
-> > > > > basically break fsync by-design.
-> > > > 
-> > > > You mean the non persistent EIO is undesirable?
-> > > > 
-> > > > In the other hand, sticky EIO that can only be explicitly cleared by
-> > > > user can also be annoying. How about auto clearing the EIO bit when
-> > > > the last active user closes the file?
-> > > 
-> > > Well the existing EIO semantics IMO are not great, but that
-> > > does not have a big bearing on this new situation. What you
-> > 
-> > Nod.
-> > 
-> > > are doing is deliberately throwing away the dirty data, and
-> > > giving EIO back in some cases. (but perhaps not others, a
-> > > subsequent read or write syscall is not going to get EIO is
-> > > it? only fsync).
-> > 
-> > Right, only fsync/msync and close on nfs will report the error.
-> > 
-> > write() is normally cached, so obviously it cannot report the later IO
-> > error.
-> > 
-> > We can make read() IO succeed even if the relevant pages are corrupted
-> > - they can be isolated transparent to user space readers :-)
-> 
-> But if the page was dirty and you throw out the dirty data,
-> then next read will give inconsistent data.
+Many gpio chips allow to generate interrupts when the value of a pin
+changes. This patch gives usermode application the opportunity to make
+use of this feature by calling poll(2) on the /sys/class/gpio/gpioN/value
+sysfs file. The edge to trigger can be set in the edge file in the same
+directory. Possible values are "none", "rising", "falling", and "both".
 
-Yup. That's a big problem - the application won't get any error
-feedback here if it doesn't call fsync() to commit IO.
+Using level triggers is not possible with current sysfs as poll will
+not return if the value did not change. On the other hand edge triggers
+are relative to the last read by the application and not to the start
+of poll. So if there was an event between read and poll, poll will
+return immediately.
 
->  
-> > > So even if we did change existing EIO semantics then the
-> > > memory corruption case of throwing away dirty data is still
-> > > going to be "different" (wrong, I would say).
-> > 
-> > Oh well.
-> 
-> Well I just think SIGKILL is the much safer behaviour to
-> start with (and matches behaviour with mmapped pagecache
-> and anon), and does not introduce these different semantics.
+Changes compared to v1:
+- use workqueue to call sysfs_notify_dirent as it takes a spinlock
+- move reconfiguration into separate function
+- allocate work_struct & co. as needed
+- wrap additional element in gpio_desc in #ifdef CONFIG_GPIO_SYSFS
+- rename poll_edge to edge
+- update Documentation/ABI/testing/sysfs-gpio as well
+- refer to poll syscall as "poll(2)"
+- use BIT() and define trigger mask for more readable expressions
+- whitespace changes
 
-So what?  SIGKILL any future processes visiting the corrupted file?
-Or better to return EIO to them? Either way we'll be maintaining
-a consistent AS_EIO_HWPOISON bit.
+Signed-off-by: Daniel Glöckner <dg@emlix.com>
+---
+ Documentation/ABI/testing/sysfs-gpio |    1 +
+ Documentation/gpio.txt               |    7 ++
+ drivers/gpio/gpiolib.c               |  176 +++++++++++++++++++++++++++++++++-
+ 3 files changed, 180 insertions(+), 4 deletions(-)
 
->  
-> > > > > I really want to resolve the EIO issue because as I said, it
-> > > > > is a user-abi issue and too many of those just get shoved
-> > > > > through only for someone to care about fundamental breakage
-> > > > > after some years.
-> > > > 
-> > > > Yup.
-> > > > 
-> > > > > You say that SIGKILL is overkill for such pages, but in fact
-> > > > > this is exactly what you do with mapped pages anyway, so why
-> > > > > not with other pages as well? I think it is perfectly fine to
-> > > > > do so (and maybe a new error code can be introduced and that
-> > > > > can be delivered to processes that can handle it rather than
-> > > > > SIGKILL).
-> > > > 
-> > > > We can make it a user selectable policy.
-> > >  
-> > > Really? Does it need to be? Can the admin sanely make that
-> > > choice?
-> > 
-> > I just recalled another fact. See below.
-> > 
-> > > > They are different in that, mapped dirty pages are normally more vital
-> > > > (data structures etc.) for correct execution, while write() operates
-> > > > more often on normal data.
-> > > 
-> > > read and write, remember. That might be somewhat true, but
-> > > definitely there are exceptions both ways. How do you
-> > > quantify that or justify it? Just handwaving? Why not make
-> > > it more consistent overall and just do SIGKILL for everyone?
-> > 
-> > 1) under read IO hwpoison pages can be hidden to user space
-> 
-> I mean for cases where the recovery cannot be transparent
-> (ie. error in dirty page).
 
-OK. That's a good point.
+Due to the need for a work_struct (16 bytes) per polled pin I created a
+poll_desc structure which also keeps the sysfs_dirent pointer. The memory
+requirement in gpio_desc is still 4 bytes. Is this acceptable?
+I have looked into IDRs to store the pointer to the poll_desc structure.
+It appears the interface is not designed to allow allocation of specific
+numbers. One would have to rely on idr_get_new_above to return the number
+passed in. Another possibility would be to use some of the 25 unused bits
+of the flags variable to store the ID.
 
-> > 2) under write IO hwpoison pages are normally committed by pdflush,
-> >    so cannot find the impacted application to kill at all.
-> 
-> Correct.
-> 
-> > 3) fsync() users can be caught though. But then the application
-> >    have the option to check its return code. If it doesn't do it,
-> >    it may well don't care. So why kill it?
-> 
-> Well if it does not check, then we cannot find it to kill
-> it anyway. If it does care (and hence check with fsync),
-> then we could kill it.
+  Daniel
 
-If it really care, it will check EIO after fsync ;)
-But yes, if it moderately care, it may ignore the return value.
+diff --git a/Documentation/ABI/testing/sysfs-gpio b/Documentation/ABI/testing/sysfs-gpio
+index 8aab809..80f4c94 100644
+--- a/Documentation/ABI/testing/sysfs-gpio
++++ b/Documentation/ABI/testing/sysfs-gpio
+@@ -19,6 +19,7 @@ Description:
+ 	/gpioN ... for each exported GPIO #N
+ 	    /value ... always readable, writes fail for input GPIOs
+ 	    /direction ... r/w as: in, out (default low); write: high, low
++	    /edge ... r/w as: none, falling, rising, both
+ 	/gpiochipN ... for each gpiochip; #N is its first GPIO
+ 	    /base ... (r/o) same as N
+ 	    /label ... (r/o) descriptive, not necessarily unique
+diff --git a/Documentation/gpio.txt b/Documentation/gpio.txt
+index 145c25a..68848b5 100644
+--- a/Documentation/gpio.txt
++++ b/Documentation/gpio.txt
+@@ -524,6 +524,13 @@ and have the following read/write attributes:
+ 		is configured as an output, this value may be written;
+ 		any nonzero value is treated as high.
+ 
++	"edge" ... reads as either "none", "rising", "falling", or
++		"both". Write these strings to select the signal edge(s)
++		that will make poll(2) on the "value" file return.
++
++		This file exists only if the pin can be configured as an
++		interrupt generating input pin.
++
+ GPIO controllers have paths like /sys/class/gpio/chipchip42/ (for the
+ controller implementing GPIOs starting at #42) and have the following
+ read-only attributes:
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 51a8d41..e239975 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -1,5 +1,6 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/interrupt.h>
+ #include <linux/irq.h>
+ #include <linux/spinlock.h>
+ #include <linux/device.h>
+@@ -40,6 +41,11 @@
+  */
+ static DEFINE_SPINLOCK(gpio_lock);
+ 
++struct poll_desc {
++	struct work_struct	work;
++	struct sysfs_dirent	*value_sd;
++};
++
+ struct gpio_desc {
+ 	struct gpio_chip	*chip;
+ 	unsigned long		flags;
+@@ -49,10 +55,18 @@ struct gpio_desc {
+ #define FLAG_RESERVED	2
+ #define FLAG_EXPORT	3	/* protected by sysfs_lock */
+ #define FLAG_SYSFS	4	/* exported via /sys/class/gpio/control */
++#define FLAG_TRIG_FALL	5	/* trigger on falling edge */
++#define FLAG_TRIG_RISE	6	/* trigger on rising edge */
++
++#define GPIO_TRIGGER_MASK (BIT(FLAG_TRIG_FALL) | BIT(FLAG_TRIG_RISE))
+ 
+ #ifdef CONFIG_DEBUG_FS
+ 	const char		*label;
+ #endif
++
++#ifdef CONFIG_GPIO_SYSFS
++	struct poll_desc	*pdesc;
++#endif
+ };
+ static struct gpio_desc gpio_desc[ARCH_NR_GPIOS];
+ 
+@@ -188,10 +202,10 @@ static DEFINE_MUTEX(sysfs_lock);
+  *   /value
+  *      * always readable, subject to hardware behavior
+  *      * may be writable, as zero/nonzero
+- *
+- * REVISIT there will likely be an attribute for configuring async
+- * notifications, e.g. to specify polling interval or IRQ trigger type
+- * that would for example trigger a poll() on the "value".
++ *   /edge
++ *      * configures behavior of poll(2) on /value
++ *      * available only if pin can generate IRQs on input
++ *      * is read/write as "none", "falling", "rising", or "both"
+  */
+ 
+ static ssize_t gpio_direction_show(struct device *dev,
+@@ -288,6 +302,151 @@ static ssize_t gpio_value_store(struct device *dev,
+ static /*const*/ DEVICE_ATTR(value, 0644,
+ 		gpio_value_show, gpio_value_store);
+ 
++static irqreturn_t gpio_sysfs_irq(int irq, void *priv)
++{
++	struct work_struct	*work = priv;
++
++	schedule_work(work);
++	return IRQ_HANDLED;
++}
++
++static void gpio_notify_sysfs(struct work_struct *work)
++{
++	struct poll_desc	*pdesc;
++
++	pdesc = container_of(work, struct poll_desc, work);
++	sysfs_notify_dirent(pdesc->value_sd);
++}
++
++static int gpio_setup_irq(struct gpio_desc *desc, struct device *dev,
++		unsigned long gpio_flags)
++{
++	unsigned long	irq_flags;
++	int		ret, irq;
++
++	if ((desc->flags & GPIO_TRIGGER_MASK) == gpio_flags)
++		return 0;
++
++	irq = gpio_to_irq(desc - gpio_desc);
++	if (irq < 0)
++		return -EIO;
++
++	if (desc->flags & GPIO_TRIGGER_MASK) {
++		free_irq(irq, &desc->pdesc->work);
++		cancel_work_sync(&desc->pdesc->work);
++	}
++
++	desc->flags &= ~GPIO_TRIGGER_MASK;
++
++	if (!gpio_flags) {
++		ret = 0;
++		goto free_sd;
++	}
++
++	irq_flags = IRQF_SHARED;
++	if (test_bit(FLAG_TRIG_FALL, &gpio_flags))
++		irq_flags |= IRQF_TRIGGER_FALLING;
++	if (test_bit(FLAG_TRIG_RISE, &gpio_flags))
++		irq_flags |= IRQF_TRIGGER_RISING;
++	if (!desc->pdesc) {
++		desc->pdesc = kmalloc(sizeof(struct poll_desc), GFP_KERNEL);
++		if (!desc->pdesc) {
++			ret = -ENOMEM;
++			goto err_out;
++		}
++		desc->pdesc->value_sd = sysfs_get_dirent(dev->kobj.sd,
++							 "value");
++		if (!desc->pdesc->value_sd) {
++			ret = -ENODEV;
++			goto free_mem;
++		}
++		INIT_WORK(&desc->pdesc->work, gpio_notify_sysfs);
++	}
++
++	ret = request_irq(irq, gpio_sysfs_irq, irq_flags,
++			  "gpiolib", &desc->pdesc->work);
++	if (ret)
++		goto free_sd;
++
++	desc->flags |= gpio_flags;
++	return 0;
++
++free_sd:
++	sysfs_put(desc->pdesc->value_sd);
++free_mem:
++	kfree(desc->pdesc);
++	desc->pdesc = NULL;
++err_out:
++	return ret;
++}
++
++static const struct {
++	const char *name;
++	unsigned long flags;
++} trigger_types[] = {
++	{ "none",    0 },
++	{ "falling", BIT(FLAG_TRIG_FALL) },
++	{ "rising",  BIT(FLAG_TRIG_RISE) },
++	{ "both",    BIT(FLAG_TRIG_FALL) | BIT(FLAG_TRIG_RISE) },
++};
++
++static ssize_t gpio_edge_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	const struct gpio_desc	*desc = dev_get_drvdata(dev);
++	ssize_t			status;
++
++	mutex_lock(&sysfs_lock);
++
++	if (!test_bit(FLAG_EXPORT, &desc->flags))
++		status = -EIO;
++	else {
++		int i;
++
++		status = 0;
++		for (i = 0; i < ARRAY_SIZE(trigger_types); i++)
++			if ((desc->flags & GPIO_TRIGGER_MASK)
++					== trigger_types[i].flags) {
++				status = sprintf(buf, "%s\n",
++						 trigger_types[i].name);
++				break;
++			}
++	}
++
++	mutex_unlock(&sysfs_lock);
++	return status;
++}
++
++static ssize_t gpio_edge_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t size)
++{
++	struct gpio_desc	*desc = dev_get_drvdata(dev);
++	ssize_t			status;
++	int			i;
++
++	for (i = 0; i < ARRAY_SIZE(trigger_types); i++)
++		if (sysfs_streq(trigger_types[i].name, buf))
++			break;
++
++	mutex_lock(&sysfs_lock);
++
++	if (!test_bit(FLAG_EXPORT, &desc->flags))
++		status = -EIO;
++	else if (i == ARRAY_SIZE(trigger_types))
++		status = -EINVAL;
++	else {
++		status = gpio_setup_irq(desc, dev, trigger_types[i].flags);
++		if (!status)
++			status = size;
++	}
++
++	mutex_unlock(&sysfs_lock);
++
++	return status;
++}
++
++static DEVICE_ATTR(edge, 0644, gpio_edge_show, gpio_edge_store);
++
+ static const struct attribute *gpio_attrs[] = {
+ 	&dev_attr_direction.attr,
+ 	&dev_attr_value.attr,
+@@ -481,6 +640,14 @@ int gpio_export(unsigned gpio, bool direction_may_change)
+ 			else
+ 				status = device_create_file(dev,
+ 						&dev_attr_value);
++
++			if (!status
++			    && gpio_to_irq(gpio) >= 0
++			    && (direction_may_change
++				|| !test_bit(FLAG_IS_OUT, &desc->flags)))
++				status = device_create_file(dev,
++						&dev_attr_edge);
++
+ 			if (status != 0)
+ 				device_unregister(dev);
+ 		} else
+@@ -527,6 +694,7 @@ void gpio_unexport(unsigned gpio)
+ 
+ 		dev = class_find_device(&gpio_class, NULL, desc, match_export);
+ 		if (dev) {
++			gpio_setup_irq(desc, dev, 0);
+ 			clear_bit(FLAG_EXPORT, &desc->flags);
+ 			put_device(dev);
+ 			device_unregister(dev);
+-- 
+1.6.1.3
 
-So SIGKILL on fsync() seems to be a good option.
-
-> > Think about a multimedia server. Shall we kill the daemon if some IO
-> > page in the movie get corrupted?
-> 
-> My multimedia server is using mmap for data...
-> 
-> > And a mission critical server? 
-> 
-> Mission critical server should be killed too because it
-> likely does not understand this semantic of throwing out
-> dirty data page. It should be detected and restarted and
-> should recover or fail over to another server.
-
-Sorry for the confusion. I meant one server may want to survive,
-while another want to kill (and restart service).
-
-> > Obviously the admin will want the right to choose.
-> 
-> I don't know if they are equipped to really know. Do they
-> know that their application will correctly handle these
-> semantics of throwing out dirty data? It is potentially
-> much more dangerous to do this exactly because it can confuse
-> the case where it matters most (ie. ones that care about
-> data integrity).
-> 
-> It just seems like killing is far less controversial and
-> simpler. Start with that and it should do the right thing
-> for most people anyway. We could discuss possible ways
-> to recover in another patch if you want to do this
-> EIO thing.
-
-OK, we can
-        - kill fsync() users
-        - and then return EIO for later read()/write()s
-        - forget about the EIO condition on last file close()
-Do you agree?
-
-> > > > > Last request: do you have a panic-on-memory-error option?
-> > > > > I think HA systems and ones with properly designed data
-> > > > > integrity at the application layer will much prefer to
-> > > > > halt the system than attempt ad-hoc recovery that does not
-> > > > > always work and might screw things up worse.
-> > > > 
-> > > > Good suggestion. We'll consider such an option. But unconditionally
-> > > > panic may be undesirable. For example, a corrupted free page or a
-> > > > clean unmapped file page can be simply isolated - they won't impact
-> > > > anything.
-> > > 
-> > > I thought you were worried about introducing races where the
-> > > data can be consumed when doing things such as lock_page and
-> > > wait_on_page_writeback. But if things can definitely be
-> > > discarded with no references or chances of being consumed, yes
-> > > you would not panic for that. But panic for dirty data or
-> > > corrupted kernel memory etc. makes a lot of sense.
-> > 
-> > OK. We can panic on dirty/writeback pages, and do try_lock to check
-> > for active users :)
-> 
-> That would be good. IMO panic should be the safest and sanest
-> option (admin knows exactly what it is and has very simple and
-> clear semantics).
-
-Thanks,
-Fengguang
