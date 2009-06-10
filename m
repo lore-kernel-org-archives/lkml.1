@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbZFJFhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbZFJFip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753491AbZFJFhX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 01:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbZFJFhL
+	id S1756661AbZFJFip (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 01:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbZFJFie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 01:37:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:44558 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752769AbZFJFhK (ORCPT
+	Wed, 10 Jun 2009 01:38:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60458 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751448AbZFJFic (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 01:37:10 -0400
-Date: Wed, 10 Jun 2009 01:37:10 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
-Subject: Re: [RFC PATCH 2/5] tracing/events: nicer print format for parsing
-In-Reply-To: <4A2F1376.7040500@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0906100135520.30552@gandalf.stny.rr.com>
-References: <20090609014534.790466803@goodmis.org> <20090609014746.481457542@goodmis.org> <20090609192159.GD6057@nowhere> <alpine.DEB.2.00.0906091531090.30552@gandalf.stny.rr.com> <4A2F1376.7040500@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 10 Jun 2009 01:38:32 -0400
+Date: Tue, 9 Jun 2009 22:38:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesper Dangaard Brouer <hawk@comx.dk>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, wg@grandegger.com,
+       vladislav.yasevich@hp.com, sri@us.ibm.com, linux-sctp@vger.kernel.org,
+       Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org,
+       netfilter-devel@vger.kernel.org
+Subject: Re: [PATCH 2/5] nfnetlink_queue: Use rcu_barrier() on module
+ unload.
+Message-Id: <20090609223816.af9b1bf9.akpm@linux-foundation.org>
+In-Reply-To: <20090608131133.10052.40836.stgit@localhost>
+References: <20090608130959.10052.54590.stgit@localhost>
+	<20090608131133.10052.40836.stgit@localhost>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 08 Jun 2009 15:11:33 +0200 Jesper Dangaard Brouer <hawk@comx.dk> wrote:
 
-On Wed, 10 Jun 2009, Lai Jiangshan wrote:
+> This module uses rcu_call() thus it should use rcu_barrier() on module unload.
 > 
-> I'm trying to write user-space tools. Could you tell me your tools'
-> developing status? And the aim of these tools? Will it be public?
-
-I'm toying with a command line parser, and something to hook with Ingo's 
-perf.
-
+> Also fixed a trivial typo 'nfetlink' -> 'nfnetlink' in comment.
 > 
-> I'm wandering whether I should stop this trying.
+> Signed-off-by: Jesper Dangaard Brouer <hawk@comx.dk>
+> ---
+> 
+>  net/netfilter/nfnetlink_queue.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/net/netfilter/nfnetlink_queue.c b/net/netfilter/nfnetlink_queue.c
+> index 8c86011..71daa09 100644
+> --- a/net/netfilter/nfnetlink_queue.c
+> +++ b/net/netfilter/nfnetlink_queue.c
+> @@ -1,6 +1,6 @@
+>  /*
+>   * This is a module which is used for queueing packets and communicating with
+> - * userspace via nfetlink.
+> + * userspace via nfnetlink.
+>   *
+>   * (C) 2005 by Harald Welte <laforge@netfilter.org>
+>   * (C) 2007 by Patrick McHardy <kaber@trash.net>
+> @@ -932,6 +932,8 @@ static void __exit nfnetlink_queue_fini(void)
+>  #endif
+>  	nfnetlink_subsys_unregister(&nfqnl_subsys);
+>  	netlink_unregister_notifier(&nfqnl_rtnl_notifier);
+> +
+> +	rcu_barrier(); /* Wait for completion of call_rcu()'s */
+>  }
+>  
+>  MODULE_DESCRIPTION("netfilter packet queue handler");
 
-Well, more ideas the better, anything that is done can probably be used 
-;-)
+Possibly you've fixed the bug which the module_put(THIS_MODULE) in
+instance_destroy_rcu() is addressing.
 
--- Steve
+Do we still need to take a ref against the module for each instance
+once the above fix is in place?
+
+<goes git mining>
+
+Nope, the THIS_MODULE games have been there since day one, and I can't
+work out why they're there.  net/netfilter/nfnetlink_log.c has them
+too.
 
