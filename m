@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756016AbZFJDeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZFJDfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756016AbZFJDeR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbZFJDdR
+	id S1757275AbZFJDfm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbZFJDdn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:33:17 -0400
-Received: from kroah.org ([198.145.64.141]:56566 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:33:43 -0400
+Received: from kroah.org ([198.145.64.141]:56651 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752994AbZFJDdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:33:15 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:41 2009
-Message-Id: <20090610002340.795051025@blue.kroah.org>
+	id S1755477AbZFJDdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:33:42 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:42 2009
+Message-Id: <20090610002341.950940186@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:13:33 -0700
+Date: Tue, 09 Jun 2009 17:13:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,9 +27,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 05/60] sparc: Fix bus type probing for ESP and LE devices.
+Subject: [patch 10/60] sparc64: Reschedule KGDB capture to a software interrupt.
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=sparc-fix-bus-type-probing-for-esp-and-le-devices.patch
+Content-Disposition: inline; filename=sparc64-reschedule-kgdb-capture-to-a-software-interrupt.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,89 +40,90 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: David S. Miller <davem@davemloft.net>
 
-If there is a dummy "espdma" or "ledma" parent device above ESP scsi
-or LE ethernet device nodes, we have to match the bus as SBUS.
+[ Upstream commit 42cc77c861e8e850e86252bb5b1e12e006261973 ]
 
-Otherwise the address and size cell counts are wrong and we don't
-calculate the final physical device resource values correctly at all.
+Otherwise it might interrupt switch_to() midstream and use
+half-cooked register window state.
 
-Commit 5280267c1dddb8d413595b87dc406624bb497946 ("sparc: Fix handling
-of LANCE and ESP parent nodes in of_device.c") was meant to fix this
-problem, but that only influences the inner loop of
-build_device_resources().  We need this logic to also kick in at the
-beginning of build_device_resources() as well, when we make the first
-attempt to determine the device's immediate parent bus type for 'reg'
-property element extraction.
-
-Based almost entirely upon a patch by Friedrich Oslage.
-
-Tested-by: Meelis Roos <mroos@linux.ee>
+Reported-by: Chris Torek <chris.torek@windriver.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/sparc/kernel/of_device.c   |   21 +++++++++++++++++++--
- arch/sparc64/kernel/of_device.c |   21 +++++++++++++++++++--
- 2 files changed, 38 insertions(+), 4 deletions(-)
+ arch/sparc/include/asm/pil.h |    1 +
+ arch/sparc64/kernel/kgdb.c   |    2 +-
+ arch/sparc64/kernel/ttable.S |    8 +++++++-
+ arch/sparc64/mm/ultra.S      |   24 ++----------------------
+ 4 files changed, 11 insertions(+), 24 deletions(-)
 
---- a/arch/sparc64/kernel/of_device.c
-+++ b/arch/sparc64/kernel/of_device.c
-@@ -278,8 +278,25 @@ static unsigned long of_bus_pci_get_flag
- 
- static int of_bus_sbus_match(struct device_node *np)
- {
--	return !strcmp(np->name, "sbus") ||
--		!strcmp(np->name, "sbi");
-+	struct device_node *dp = np;
-+
-+	while (dp) {
-+		if (!strcmp(dp->name, "sbus") ||
-+		    !strcmp(dp->name, "sbi"))
-+			return 1;
-+
-+		/* Have a look at use_1to1_mapping().  We're trying
-+		 * to match SBUS if that's the top-level bus and we
-+		 * don't have some intervening real bus that provides
-+		 * ranges based translations.
-+		 */
-+		if (of_find_property(dp, "ranges", NULL) != NULL)
-+			break;
-+
-+		dp = dp->parent;
-+	}
-+
-+	return 0;
+--- a/arch/sparc64/kernel/kgdb.c
++++ b/arch/sparc64/kernel/kgdb.c
+@@ -108,7 +108,7 @@ void gdb_regs_to_pt_regs(unsigned long *
  }
  
- static void of_bus_sbus_count_cells(struct device_node *child,
---- a/arch/sparc/kernel/of_device.c
-+++ b/arch/sparc/kernel/of_device.c
-@@ -223,8 +223,25 @@ static unsigned long of_bus_pci_get_flag
- 
- static int of_bus_sbus_match(struct device_node *np)
+ #ifdef CONFIG_SMP
+-void smp_kgdb_capture_client(struct pt_regs *regs)
++void smp_kgdb_capture_client(int irq, struct pt_regs *regs)
  {
--	return !strcmp(np->name, "sbus") ||
--		!strcmp(np->name, "sbi");
-+	struct device_node *dp = np;
-+
-+	while (dp) {
-+		if (!strcmp(dp->name, "sbus") ||
-+		    !strcmp(dp->name, "sbi"))
-+			return 1;
-+
-+		/* Have a look at use_1to1_mapping().  We're trying
-+		 * to match SBUS if that's the top-level bus and we
-+		 * don't have some intervening real bus that provides
-+		 * ranges based translations.
-+		 */
-+		if (of_find_property(dp, "ranges", NULL) != NULL)
-+			break;
-+
-+		dp = dp->parent;
-+	}
-+
-+	return 0;
- }
+ 	unsigned long flags;
  
- static void of_bus_sbus_count_cells(struct device_node *child,
+--- a/arch/sparc64/kernel/ttable.S
++++ b/arch/sparc64/kernel/ttable.S
+@@ -63,7 +63,13 @@ tl0_irq6:	TRAP_IRQ(smp_call_function_sin
+ #else
+ tl0_irq6:	BTRAP(0x46)
+ #endif
+-tl0_irq7:	BTRAP(0x47) BTRAP(0x48) BTRAP(0x49)
++tl0_irq7:	BTRAP(0x47)
++#ifdef CONFIG_KGDB
++tl0_irq8:	TRAP_IRQ(smp_kgdb_capture_client, 8)
++#else
++tl0_irq8:	BTRAP(0x48)
++#endif
++tl0_irq9:	BTRAP(0x49)
+ tl0_irq10:	BTRAP(0x4a) BTRAP(0x4b) BTRAP(0x4c) BTRAP(0x4d)
+ tl0_irq14:	TRAP_IRQ(timer_interrupt, 14)
+ tl0_irq15:	TRAP_IRQ(handler_irq, 15)
+--- a/arch/sparc64/mm/ultra.S
++++ b/arch/sparc64/mm/ultra.S
+@@ -681,28 +681,8 @@ xcall_new_mmu_context_version:
+ #ifdef CONFIG_KGDB
+ 	.globl		xcall_kgdb_capture
+ xcall_kgdb_capture:
+-661:	rdpr		%pstate, %g2
+-	wrpr		%g2, PSTATE_IG | PSTATE_AG, %pstate
+-	.section	.sun4v_2insn_patch, "ax"
+-	.word		661b
+-	nop
+-	nop
+-	.previous
+-
+-	rdpr		%pil, %g2
+-	wrpr		%g0, 15, %pil
+-	sethi		%hi(109f), %g7
+-	ba,pt		%xcc, etrap_irq
+-109:	 or		%g7, %lo(109b), %g7
+-#ifdef CONFIG_TRACE_IRQFLAGS
+-	call		trace_hardirqs_off
+-	 nop
+-#endif
+-	call		smp_kgdb_capture_client
+-	 add		%sp, PTREGS_OFF, %o0
+-	/* Has to be a non-v9 branch due to the large distance. */
+-	ba		rtrap_xcall
+-	 ldx		[%sp + PTREGS_OFF + PT_V9_TSTATE], %l1
++	wr		%g0, (1 << PIL_KGDB_CAPTURE), %set_softint
++	retry
+ #endif
+ 
+ #endif /* CONFIG_SMP */
+--- a/arch/sparc/include/asm/pil.h
++++ b/arch/sparc/include/asm/pil.h
+@@ -18,5 +18,6 @@
+ #define PIL_SMP_CTX_NEW_VERSION	4
+ #define PIL_DEVICE_IRQ		5
+ #define PIL_SMP_CALL_FUNC_SNGL	6
++#define PIL_KGDB_CAPTURE	8
+ 
+ #endif /* !(_SPARC64_PIL_H) */
 
 
