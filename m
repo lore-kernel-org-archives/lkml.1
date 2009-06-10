@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbZFKR2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbZFKR3d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752812AbZFKR2z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 13:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbZFKR2c
+	id S1755768AbZFKR3d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 13:29:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbZFKR2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 13:28:32 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:33209 "EHLO
+	Thu, 11 Jun 2009 13:28:52 -0400
+Received: from d112a2.x-mailer.de ([212.162.53.4]:48061 "EHLO
 	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755312AbZFKR2b (ORCPT
+	with ESMTP id S1753273AbZFKR2v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 13:28:31 -0400
-Message-Id: <1ce1513f48e3bc4d55ee672f0e39f5063a02ab7a.1244739994.git.keil@b1-systems.de>
+	Thu, 11 Jun 2009 13:28:51 -0400
+Message-Id: <395df11f5fa7fe852be28ccec8aaa15634386ad1.1244739994.git.keil@b1-systems.de>
 In-Reply-To: <cover.1244739994.git.keil@b1-systems.de>
 References: <cover.1244739994.git.keil@b1-systems.de>
-Date: Tue, 2 Jun 2009 15:37:37 +0200
-Subject: [PATCH 2/6] mISDN: Fix overlapping data access
+Date: Wed, 10 Jun 2009 12:52:44 -0700
+Subject: [PATCH 4/6] drivers/isdn/i4l/isdn_tty.c: fix check for array overindexing
 From: Karsten Keil <keil@b1-systems.de>
 To: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
@@ -25,44 +25,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove code rewriting a buffer by itself.
-This fix bug 12970 on bugzilla.kernel.org.
+From: Roel Kluin <roel.kluin@gmail.com>
 
-Signed-off-by: Karsten Keil <keil@b1-systems.de>
+The check for overindexing of dev->mdm.info[] has an off-by-one.
+
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Acked-by: Karsten Keil <keil@b1-systems.de>
 ---
- drivers/isdn/mISDN/dsp_pipeline.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+ drivers/isdn/i4l/isdn_tty.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/isdn/mISDN/dsp_pipeline.c b/drivers/isdn/mISDN/dsp_pipeline.c
-index ac61f19..e994167 100644
---- a/drivers/isdn/mISDN/dsp_pipeline.c
-+++ b/drivers/isdn/mISDN/dsp_pipeline.c
-@@ -55,20 +55,19 @@ static ssize_t
- attr_show_args(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	struct mISDN_dsp_element *elem = dev_get_drvdata(dev);
--	ssize_t len = 0;
--	int i = 0;
-+	int i;
-+	char *p = buf;
+diff --git a/drivers/isdn/i4l/isdn_tty.c b/drivers/isdn/i4l/isdn_tty.c
+index 1a2222c..b4d4522 100644
+--- a/drivers/isdn/i4l/isdn_tty.c
++++ b/drivers/isdn/i4l/isdn_tty.c
+@@ -1592,7 +1592,7 @@ isdn_tty_open(struct tty_struct *tty, struct file *filp)
+ 	int retval, line;
  
- 	*buf = 0;
--	for (; i < elem->num_args; ++i)
--		len = sprintf(buf, "%sName:        %s\n%s%s%sDescription: %s\n"
--			"\n", buf,
-+	for (i = 0; i < elem->num_args; i++)
-+		p += sprintf(p, "Name:        %s\n%s%s%sDescription: %s\n\n",
- 			  elem->args[i].name,
- 			  elem->args[i].def ? "Default:     " : "",
- 			  elem->args[i].def ? elem->args[i].def : "",
- 			  elem->args[i].def ? "\n" : "",
- 			  elem->args[i].desc);
- 
--	return len;
-+	return p - buf;
- }
- 
- static struct device_attribute element_attributes[] = {
+ 	line = tty->index;
+-	if (line < 0 || line > ISDN_MAX_CHANNELS)
++	if (line < 0 || line >= ISDN_MAX_CHANNELS)
+ 		return -ENODEV;
+ 	info = &dev->mdm.info[line];
+ 	if (isdn_tty_paranoia_check(info, tty->name, "isdn_tty_open"))
 -- 
 1.6.0.2
 
