@@ -1,160 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932240AbZFJVbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758516AbZFJVdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932240AbZFJVbh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 17:31:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932107AbZFJVbF
+	id S1758516AbZFJVdS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 17:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZFJVdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 17:31:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50055 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759021AbZFJVbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 17:31:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Wed, 10 Jun 2009 23:31:13 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Oliver Neukum <oliver@neukum.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0906101656100.2589-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906101656100.2589-100000@iolanthe.rowland.org>
+	Wed, 10 Jun 2009 17:33:07 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50782 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753453AbZFJVdF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 17:33:05 -0400
+Date: Wed, 10 Jun 2009 23:33:00 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Marek Vasut <marek.vasut@gmail.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       Brian Swetland <swetland@google.com>,
+       Stefan Schmidt <stefan@datenfreihafen.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       kernel list <linux-kernel@vger.kernel.org>, san@android.com,
+       rlove@google.com
+Subject: Re: MSM6281 support was: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090610213259.GA8224@elf.ucw.cz>
+References: <20090610103131.GB13885@elf.ucw.cz> <20090610204708.GD6251@dodger.lab.datenfreihafen.org> <a55d774e0906101408t75e507f5s8064796b080828c2@mail.gmail.com> <200906102328.40140.marek.vasut@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200906102331.14267.rjw@sisk.pl>
+In-Reply-To: <200906102328.40140.marek.vasut@gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 10 June 2009, Alan Stern wrote:
-> On Wed, 10 Jun 2009, Rafael J. Wysocki wrote:
+On Wed 2009-06-10 23:28:39, Marek Vasut wrote:
+> On Wednesday 10 of June 2009 23:08:36 Brian Swetland wrote:
+> > On Wed, Jun 10, 2009 at 1:47 PM, Stefan
+> >
+> > Schmidt<stefan@datenfreihafen.org> wrote:
+> > > Hello.
+> > >
+> > > On Wed, 2009-06-10 at 13:24, Brian Swetland wrote:
+> > >> We have full support for MSM7201A, including fully functional power
+> > >> management, working on a number of commercially shipping devices that
+> > >> we'd absolutely love to get into mainline.
+> > >
+> > > A bit offtopic here. (subject change). Is it expected that the android
+> > > kernel team will also work on systems that use the MSM6K modems with
+> > > different SoC's? I have soem systems here that use an msm6281 on a dual
+> > > port ram chip with non msm SoC's. I wonder how difficult it would be to
+> > > adaept the existing msm smd driver to such a setup.
+> >
+> > We only have documentation, support, and permission to do work on 7k
+> > and 8k family devices at this point.  I don't know anything about the
+> > 6k family, and how similar (or not) the shared memory interface would
+> > be, so unfortunately I can't provide much help there.
 > 
-> > > The idea is that if ->autosuspend() or ->autoresume() returns an error code,
-> > > this is a situation the PM core cannot recover from by itself, so it shouldn't
-> > > pretend it knows what's happened.  Instead, it marks the device as "I don't
-> > > know if it is safe to touch this" and won't handle it until the device driver
-> > > or bus type clears the status.
-> 
-> I'm still not sure this is a good idea.  When would the device driver 
-> clear the status?  The autosuspend and autoresume methods run 
-> asynchronously, so after they're done the driver doesn't get a chance 
-> to do anything.
-> 
-> It might be best just to set the status to RPM_ACTIVE if a runtime 
-> suspend fails and RPM_SUSPENDED if a runtime resume fails.
-> 
-> > Finally, I decided to follow the Oliver's suggestion that some error codes returned
-> > by ->autosuspend() and ->autoresume() may be regarded as "go back to the
-> > previous state" information.  I chose to use -EAGAIN and -EBUSY for this
-> > purpose.
-> 
-> Maybe...
-> 
-> 
-> >  struct dev_pm_info {
-> >  	pm_message_t		power_state;
-> > -	unsigned		can_wakeup:1;
-> > -	unsigned		should_wakeup:1;
-> > +	unsigned int		can_wakeup:1;
-> > +	unsigned int		should_wakeup:1;
-> >  	enum dpm_state		status;		/* Owned by the PM core */
-> >  #ifdef	CONFIG_PM_SLEEP
-> >  	struct list_head	entry;
-> >  #endif
-> > +#ifdef	CONFIG_PM_RUNTIME
-> > +	struct delayed_work	suspend_work;
-> > +	unsigned int		suspend_aborted:1;
-> > +	struct work_struct	resume_work;
-> > +	struct completion	work_done;
-> > +	enum rpm_state		runtime_status;
-> > +	spinlock_t		lock;
-> > +#endif
-> >  };
-> 
-> You know, it doesn't make any sense to have a suspend and a resume 
-> both pending at the same time.
->
-> So you could add only a delayed_work structure and use its embedded
-> work_struct for resume requests.
+> Palm Pre apparently uses MSM68xx as a baseband chip, otherwise is omap3 based. 
+> The device is out, selling, but I haven't seen any kernel patches from them 
+> yet. I hope they release them in a few weeks (even though they should have 
+> been out already).
 
-I thought so too, but I was wrong. ;-)
+If you can get your hands on Palm Pre, it should come with
+GPL-required sources or offer for source code... if it does not, talk
+to Harald Welte (gpl-violations.org)....
 
-If resume is requested while the suspend hasn't completed yet, we should
-queue it (it's totally valid to request a suspending device to resume IMO), but
-the delayed work is still being used by the workqueue code, so we can't modify
-it.
-
-> Also, you might borrow a trick from Dave Brownell.  Define the RPM_*
-> values so that the individual bits have meanings.  Then instead of
-> testing for multiple possible values of runtime_status, you could do a
-> simple bit test.
-
-Yes, I'm seriously considering using this approach.
-
-> > +/**
-> > + * pm_device_suspended - Check if given device has been suspended at run time.
-> > + * @dev: Device to check.
-> > + * @data: Ignored.
-> > + *
-> > + * Returns 0 if the device has been suspended or -EBUSY otherwise.
-> > + */
-> > +static int pm_device_suspended(struct device *dev, void *data)
-> > +{
-> > +	int ret;
-> > +
-> > +	spin_lock(&dev->power.lock);
-> > +
-> > +	ret = dev->power.runtime_status == RPM_SUSPENDED ? 0 : -EBUSY;
-> > +
-> > +	spin_unlock(&dev->power.lock);
-> 
-> How does acquiring the lock help here?
-
-OK, it doesn't.
-
-> > +/**
-> > + * pm_check_children - Check if all children of a device have been suspended.
-> > + * @dev: Device to check.
-> > + *
-> > + * Returns 0 if all children of the device have been suspended or -EBUSY
-> > + * otherwise.
-> > + */
-> 
-> We might want to do a runtime suspend even if the device's children
-> aren't already suspended.  For example, you could suspend a link while
-> leaving the device on the other end of the link at full power --
-> especially if powering down the device is slow but changing the link's
-> power level is fast.
-
-Well, this means that the dependencies between devices in the device tree are
-pretty much useless for the run-time PM as far as the core is concerned.  In
-which case, why did you mention them at all?
-
-> > +/**
-> > + * pm_autosuspend - Run autosuspend callback of given device object's bus type.
-> > + * @work: Work structure used for scheduling the execution of this function.
-> > + *
-> > + * Use @work to get the device object the suspend has been scheduled for,
-> > + * check if the suspend request hasn't been cancelled and run the
-> > + * ->autosuspend() callback from the device's bus type driver.  Update the
-> > + * run-time PM flags in the device object to reflect the current status of the
-> > + * device.
-> > + */
-> > +static void pm_autosuspend(struct work_struct *work)
-> 
-> Can we call this something else?  "Autosuspend" implies that the 
-> suspend originated from within the kernel.  How about "pm_suspend_work" 
-> or "pm_runtime_suspend"?  Likewise for the resume routines.
-
-OK
-
-> I haven't checked the details of the code yet.  More later...
-
-OK, thanks.
-
-Best,
-Rafael
+(If you _do_ get your hands on Palm Pre, tell me, I'd like to see the
+device :-), can show you some androids/openmokos :-).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
