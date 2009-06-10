@@ -1,82 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbZFJUsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760291AbZFJUsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756391AbZFJUsT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 16:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbZFJUsI
+	id S1760291AbZFJUsz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 16:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbZFJUsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 16:48:08 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:46501 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755488AbZFJUsH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 16:48:07 -0400
-Date: Wed, 10 Jun 2009 16:48:09 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Oliver Neukum <oliver@neukum.org>, <linux-pm@lists.linux-foundation.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM:
- Rearrange core suspend code)
-In-Reply-To: <200906100057.04473.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0906101636180.2589-100000@iolanthe.rowland.org>
+	Wed, 10 Jun 2009 16:48:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47281 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757327AbZFJUsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 16:48:47 -0400
+Date: Wed, 10 Jun 2009 22:48:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
+Subject: Re: [PATCH][GIT PULL] tracing: do not translate event helper
+	macros in print format
+Message-ID: <20090610204801.GB8147@elte.hu>
+References: <20090609014534.790466803@goodmis.org> <20090609014746.481457542@goodmis.org> <20090609192159.GD6057@nowhere> <20090610094819.GA25527@infradead.org> <20090610101124.GA25042@elte.hu> <alpine.DEB.2.00.0906100812370.30552@gandalf.stny.rr.com> <20090610171648.GD31096@elte.hu> <alpine.DEB.2.00.0906101353200.30552@gandalf.stny.rr.com> <alpine.DEB.2.00.0906101436340.30552@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0906101436340.30552@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Jun 2009, Rafael J. Wysocki wrote:
 
-> > By the way, a legitimate reason for aborting an autosuspend is if the
-> > device's driver requires remote wakeup to be enabled during suspend but
-> > the user has disabled it.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> Ingo,
 > 
-> Do you mean the user has disabled the remote wakeup?
+> This looks like it changed more than it really did, I only moved 
+> the one macro above another and added a few lines:
+> 
+>  +#undef __print_symbolic
+>  +#undef __get_dynamic_array
+>  +#undef __get_str
+>  +
+> 
+> Please pull the latest tip/tracing/ftrace-1 tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/ftrace-1
+> 
+> 
+> Steven Rostedt (1):
+>       tracing: do not translate event helper macros in print format
+> 
+> ----
+>  include/trace/ftrace.h |  158 ++++++++++++++++++++++++-----------------------
+>  1 files changed, 81 insertions(+), 77 deletions(-)
+> ---------------------------
+> commit 6ff9a64d2aaa6eae396adc95e9c91c0cbfa6dbe4
+> Author: Steven Rostedt <srostedt@redhat.com>
+> Date:   Wed Jun 10 14:28:34 2009 -0400
+> 
+>     tracing: do not translate event helper macros in print format
+>     
+>     By moving the macro that creates the print format code above the
+>     defining of the event macro helpers (__get_str, __print_symbolic,
+>     and __get_dynamic_array), we get a little cleaner print format.
+>     
+>     Instead of:
+>     
+>       (char *)((void *)REC + REC->__data_loc_name)
+>     
+>     we get:
+>     
+>        __get_str(name)
+>     
+>     Instead of:
+>     
+>        ({ static const struct trace_print_flags symbols[] = { { HI_SOFTIRQ, "HI" }, {
+>     
+>     we get:
+>     
+>        __print_symbolic(REC->vec, { HI_SOFTIRQ, "HI" }, {
 
-Yes, by writing to the power/wakeup attribute.
+Yeah, that's really nice! Pulled, thanks Steve!
 
-
-> > > > There should be a sysfs interface (like the one in USB) to allow
-> > > > userspace to prevent a device from being autosuspended -- and perhaps
-> > > > also to force it to be suspended.
-> > > 
-> > > To prevent a device from being suspended - yes.  To force it to stay suspended
-> > > - I'm not sure.
-> > 
-> > I'm not sure either.  Oliver Neukum requested it originally and it has
-> > been useful for debugging, but I haven't seen many places where it
-> > would come in useful in practice.
-
-I did think of one use for this feature.  It's unique to USB,
-however...
-
-In Windows, you're not supposed to unplug a hot-unpluggable device
-without first telling the OS -- there's a "Safely Remove Hardware"  
-applet.  When you tell the applet you want to remove a USB device, the
-system disables the device's port and then says it's okay to unplug the
-device.  Now Linux doesn't have any user API for disabling USB ports,
-but suspending a port has the same effect (the device can't distinguish
-a disable from a suspend).
-
-It turns out that some devices (MP3 players, for instance) have
-incorporated this into their design.  They display a "Safe to unplug"  
-message when their port is disabled or suspended.  People like to see
-this message -- it makes them feel good about unplugging the device --
-and the only way to get it under Linux is by forcing the device to be
-suspended.  :-)
-
-> The problem with it is that the user space may not know if it is safe to keep
-> a device suspended and if it is not, the kernel will have to ignore the setting
-> anyway, so I'm not sure what's the point (except for debugging).
-
-This falls into the category of "The user knows better".  If the user
-specifically tells the kernel to suspend a device (rather than just
-letting it autosuspend), and this causes a problem, then it's the
-user's own fault.
-
-After all, who's really the master?  Us or the kernel?
-
-Alan Stern
-
+	Ingo
