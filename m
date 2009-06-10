@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbZFJDna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759983AbZFJDno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756967AbZFJDna (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757436AbZFJDfu
+	id S1759983AbZFJDno (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757486AbZFJDfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:35:50 -0400
-Received: from kroah.org ([198.145.64.141]:57178 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:35:54 -0400
+Received: from kroah.org ([198.145.64.141]:57204 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757466AbZFJDfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:35:48 -0400
+	id S1757456AbZFJDfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:35:53 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:48 2009
-Message-Id: <20090610002348.220859343@blue.kroah.org>
+Message-Id: <20090610002348.446310545@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:05 -0700
+Date: Tue, 09 Jun 2009 17:14:06 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,9 +27,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Eric Sandeen <sandeen@redhat.com>,
        linux-ext4@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 37/60] ext4: fix ext4_free_inode() vs.  ext4_claim_inode() race
+Subject: [patch 38/60] ext4: fix header check in ext4_ext_search_right() for deep extent trees.
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-fix-ext4_free_inode-vs.-ext4_claim_inode-race.patch
+Content-Disposition: inline; filename=ext4-fix-header-check-in-ext4_ext_search_right-for-deep-extent-trees.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,62 +41,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Eric Sandeen <sandeen@redhat.com>
 
-(cherry picked from commit 7ce9d5d1f3c8736511daa413c64985a05b2feee3)
+(cherry picked from commit 395a87bfefbc400011417e9eaae33169f9f036c0)
 
-I was seeing fsck errors on inode bitmaps after a 4 thread
-dbench run on a 4 cpu machine:
+The ext4_ext_search_right() function is confusing; it uses a
+"depth" variable which is 0 at the root and maximum at the leaves,
+but the on-disk metadata uses a "depth" (actually eh_depth) which
+is opposite: maximum at the root, and 0 at the leaves.
 
-Inode bitmap differences: -50736 -(50752--50753) etc...
+The ext4_ext_check_header() function is given a depth and checks
+the header agaisnt that depth; it expects the on-disk semantics,
+but we are giving it the opposite in the while loop in this
+function.  We should be giving it the on-disk notion of "depth"
+which we can get from (p_depth - depth) - and if you look, the last
+(more commonly hit) call to ext4_ext_check_header() does just this.
 
-I believe that this is because ext4_free_inode() uses atomic
-bitops, and although ext4_new_inode() *used* to also use atomic
-bitops for synchronization, commit
-393418676a7602e1d7d3f6e560159c65c8cbd50e changed this to use
-the sb_bgl_lock, so that we could also synchronize against
-read_inode_bitmap and initialization of uninit inode tables.
+Sending in the wrong depth results in (incorrect) messages
+about corruption:
 
-However, that change left ext4_free_inode using atomic bitops,
-which I think leaves no synchronization between setting &
-unsetting bits in the inode table.
+EXT4-fs error (device sdb1): ext4_ext_search_right: bad header
+in inode #2621457: unexpected eh_depth - magic f30a, entries 340,
+max 340(0), depth 1(2)
 
-The below patch fixes it for me, although I wonder if we're
-getting at all heavy-handed with this spinlock...
+http://bugzilla.kernel.org/show_bug.cgi?id=12821
 
+Reported-by: David Dindorp <ddi@dubex.dk>
 Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ialloc.c |   12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ fs/ext4/extents.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -188,7 +188,7 @@ void ext4_free_inode (handle_t *handle, 
- 	struct ext4_group_desc * gdp;
- 	struct ext4_super_block * es;
- 	struct ext4_sb_info *sbi;
--	int fatal = 0, err;
-+	int fatal = 0, err, cleared;
- 	ext4_group_t flex_group;
+--- a/fs/ext4/extents.c
++++ b/fs/ext4/extents.c
+@@ -1118,7 +1118,8 @@ ext4_ext_search_right(struct inode *inod
+ 	struct ext4_extent_idx *ix;
+ 	struct ext4_extent *ex;
+ 	ext4_fsblk_t block;
+-	int depth, ee_len;
++	int depth;	/* Note, NOT eh_depth; depth from top of tree */
++	int ee_len;
  
- 	if (atomic_read(&inode->i_count) > 1) {
-@@ -242,10 +242,12 @@ void ext4_free_inode (handle_t *handle, 
- 		goto error_return;
- 
- 	/* Ok, now we can actually update the inode bitmaps.. */
--	if (!ext4_clear_bit_atomic(sb_bgl_lock(sbi, block_group),
--					bit, bitmap_bh->b_data))
--		ext4_error (sb, "ext4_free_inode",
--			      "bit already cleared for inode %lu", ino);
-+	spin_lock(sb_bgl_lock(sbi, block_group));
-+	cleared = ext4_clear_bit(bit, bitmap_bh->b_data);
-+	spin_unlock(sb_bgl_lock(sbi, block_group));
-+	if (!cleared)
-+		ext4_error(sb, "ext4_free_inode",
-+			   "bit already cleared for inode %lu", ino);
- 	else {
- 		gdp = ext4_get_group_desc (sb, block_group, &bh2);
- 
+ 	BUG_ON(path == NULL);
+ 	depth = path->p_depth;
+@@ -1177,7 +1178,8 @@ ext4_ext_search_right(struct inode *inod
+ 		if (bh == NULL)
+ 			return -EIO;
+ 		eh = ext_block_hdr(bh);
+-		if (ext4_ext_check_header(inode, eh, depth)) {
++		/* subtract from p_depth to get proper eh_depth */
++		if (ext4_ext_check_header(inode, eh, path->p_depth - depth)) {
+ 			put_bh(bh);
+ 			return -EIO;
+ 		}
 
 
