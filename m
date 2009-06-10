@@ -1,188 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760153AbZFJP4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760494AbZFJP4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760153AbZFJP4f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 11:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbZFJP42
+	id S1760494AbZFJP4x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 11:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbZFJP4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 11:56:28 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:33652 "EHLO gir.skynet.ie"
+	Wed, 10 Jun 2009 11:56:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55300 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756115AbZFJP41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 11:56:27 -0400
-Date: Wed, 10 Jun 2009 16:56:26 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Rik van Riel <riel@redhat.com>, Larry Finger <Larry.Finger@lwfinger.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>, npiggin@suse.de
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-Message-ID: <20090610155626.GA7951@csn.ul.ie>
-References: <4A2BBC30.2030300@lwfinger.net> <84144f020906070640rf5ab14nbf66d3ca7c97675f@mail.gmail.com> <4A2BCC6F.8090004@redhat.com> <84144f020906070732l31786156r5d9753a0cabfde79@mail.gmail.com> <20090608101739.GA15377@csn.ul.ie> <84144f020906080352k57f12ff9pbd696da5f332ac1a@mail.gmail.com> <20090608110303.GD15377@csn.ul.ie> <Pine.LNX.4.64.0906081657001.7036@melkki.cs.Helsinki.FI> <20090608141212.GE15070@csn.ul.ie> <1244531201.5024.3.camel@penberg-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1244531201.5024.3.camel@penberg-laptop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1758709AbZFJP4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 11:56:45 -0400
+Subject: Re: [GIT-PULL -tip] x86: xpu_debug patches
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090608083947.GC6372@elte.hu>
+References: <1244447882.6943.2.camel@ht.satnam>
+	 <20090608083947.GC6372@elte.hu>
+Content-Type: text/plain
+Date: Wed, 10 Jun 2009 21:27:31 +0530
+Message-Id: <1244649451.3295.5.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 10:06:41AM +0300, Pekka Enberg wrote:
-> Hi Mel,
+Hello Ingo,
+
+On Mon, 2009-06-08 at 10:39 +0200, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > 
-> On Mon, 2009-06-08 at 15:12 +0100, Mel Gorman wrote:
-> > > diff --git a/mm/slub.c b/mm/slub.c
-> > > index 65ffda5..b5acf18 100644
-> > > --- a/mm/slub.c
-> > > +++ b/mm/slub.c
-> > > @@ -1565,6 +1565,8 @@ new_slab:
-> > >  		c->page = new;
-> > >  		goto load_freelist;
-> > >  	}
-> > > +	printk(KERN_WARNING "SLUB: unable to satisfy allocation for cache %s (size=%d, node=%d, gfp=%x)\n",
-> > > +		s->name, s->size, node, gfpflags);
+> > Ingo,
 > > 
-> > size could be almost anything here for a casual reader. You are
-> > outputting the size of the object plus its metadata so the name should
-> > reflect that. I think it would be better to output objsize= and the
-> > object size without the metadata overhead. What do you think?
+> > Please pull cpu_debug patches :
 > > 
-> > In addition, include how many objects there are per-slab and include what
-> > the order is being passed to the page allocator when allocating new slabs.
-> > Would that be enough to determine if fallback-to-smaller orders occured?
+> > The following changes since commit 5095f59bda6793a7b8f0856096d6893fe98e0e51:
+> >   Jaswinder Singh Rajput (1):
+> >         x86: cpu_debug: Remove model information to reduce encoding-decoding
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-cpu.git x86/cpu
+> > 
+> > Jaswinder Singh Rajput (5):
+> >       x86: cpu_debug update Kconfig entry
+> >       x86: cpu_debug.c remove some not required header files
+> >       x86: cpu_debug.c use a WARN_ONCE() instead of a pr_err()
+> >       x86: cpu_debug make room to support more categories
+> >       x86: cpu_debug update MSR list to support new architectures
+> > 
+> >  arch/x86/Kconfig                 |   12 ++++-
+> >  arch/x86/include/asm/cpu_debug.h |  102 +++++++++++++-------------------------
+> >  arch/x86/kernel/cpu/cpu_debug.c  |   45 +++++++++-------
+> >  3 files changed, 70 insertions(+), 89 deletions(-)
+> > 
+> > Complete diff:
+> > 
+> > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> > index a6efe0a..cd2debd 100644
+> > --- a/arch/x86/Kconfig
+> > +++ b/arch/x86/Kconfig
+> > @@ -955,9 +955,19 @@ config X86_CPUID
+> >  
+> >  config X86_CPU_DEBUG
+> >  	tristate "/sys/kernel/debug/x86/cpu/* - CPU Debug support"
+> > +	select DEBUG_FS
+> >  	---help---
+> >  	  If you select this option, this will provide various x86 CPUs
+> > -	  information through debugfs.
+> > +	  information through debugfs. Any user can read these file but writing
+> > +	  needs root privilege.
+> > +
+> > +	  Note: 1. If you compile cpu_debug as a module, it will _not_ be loaded
+> > +	  automatically (like usual drivers). You will need to load it manually
+> > +	  (or add it to list of modules loaded during boot).
+> > +
+> > +	  2. You need debugfs, if you want to mount debugfs automatically
+> > +	  append this line in /etc/fstab:
+> > +	  debugfs	/sys/kernel/debug	debugfs	defaults	0 0
 > 
-> So how about something like this then?
+> Those look like good fixes - but before we start extending on all 
+> this - a more general question has to be raised: do people find this 
+> useful?
 > 
-> 			Pekka
+> I had a look at the current /debug/x86/cpu*/ layout, and a fair 
+> portion of it looks completely meaningless at the moment: there's a 
+> lot of hexa fields with absolutely zero symbolic information about 
+> what the fields actually mean.
 > 
-> diff --git a/mm/slub.c b/mm/slub.c
-> index 65ffda5..a03dbe8 100644
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -1484,6 +1484,58 @@ static inline int node_match(struct kmem_cache_cpu *c, int node)
->  	return 1;
->  }
->  
-> +static int count_free(struct page *page)
-> +{
-> +	return page->objects - page->inuse;
-> +}
-> +
-> +static unsigned long count_partial(struct kmem_cache_node *n,
-> +					int (*get_count)(struct page *))
-> +{
-> +	unsigned long flags;
-> +	unsigned long x = 0;
-> +	struct page *page;
-> +
-> +	spin_lock_irqsave(&n->list_lock, flags);
-> +	list_for_each_entry(page, &n->partial, lru)
-> +		x += get_count(page);
-> +	spin_unlock_irqrestore(&n->list_lock, flags);
-> +	return x;
-> +}
-> +
-> +static noinline void
-> +slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags, int nid)
-> +{
-> +	int node;
-> +
-> +	printk(KERN_WARNING
-> +		"SLUB: Unable to allocate memory on node %d (gfp=%x)\n",
-> +		nid, gfpflags);
-> +	printk(KERN_WARNING "  cache: %s, object size: %d, buffer size: %d, "
-> +		"default order: %d, min order: %d\n", s->name, s->objsize,
-> +		s->size, oo_order(s->oo), oo_order(s->min));
-> +
-
-Much nicer. There is a clear division between the object size and the
-size including the metadata. There is also now a good idea of what sort
-of request it was, we know what cache it was so we can guess the size
-passed to kmalloc() with reasonable accuracy.
-
-> +	for_each_online_node(node) {
-> +		struct kmem_cache_node *n = get_node(s, node);
-> +		unsigned long nr_partials;
-> +		unsigned long nr_slabs;
-> +		unsigned long nr_objs;
-> +		unsigned long nr_free;
-> +
-> +		if (!n)
-> +			continue;
-> +
-> +		nr_partials = n->nr_partial;
-> +		nr_slabs = atomic_long_read(&n->nr_slabs);
-> +		nr_objs = atomic_long_read(&n->total_objects);
-> +		nr_free = count_partial(n, count_free);
-> +
-> +		printk(KERN_WARNING
-> +			"  node %d: partials: %ld, slabs: %ld, objs: %ld, free: %ld\n",
-> +			node, nr_partials, nr_slabs, nr_objs, nr_free);
-> +	}
-> +}
-
-That looks like it would generate easier-to-debug-with messages and to
-not-expert-at-slub eye, it looks correct. Slap a changelog on it with an
-example message and go with it.  It should make page allocation failures
-messages that go through SLUB a lot easier to figure out.
-
-Thanks
-
-> +
->  /*
->   * Slow path. The lockless freelist is empty or we need to perform
->   * debugging duties.
-> @@ -1565,6 +1617,7 @@ new_slab:
->  		c->page = new;
->  		goto load_freelist;
->  	}
-> +	slab_out_of_memory(s, gfpflags, node);
->  	return NULL;
->  debug:
->  	if (!alloc_debug_processing(s, c->page, object, addr))
-> @@ -3318,20 +3371,6 @@ void *__kmalloc_node_track_caller(size_t size, gfp_t gfpflags,
->  }
->  
->  #ifdef CONFIG_SLUB_DEBUG
-> -static unsigned long count_partial(struct kmem_cache_node *n,
-> -					int (*get_count)(struct page *))
-> -{
-> -	unsigned long flags;
-> -	unsigned long x = 0;
-> -	struct page *page;
-> -
-> -	spin_lock_irqsave(&n->list_lock, flags);
-> -	list_for_each_entry(page, &n->partial, lru)
-> -		x += get_count(page);
-> -	spin_unlock_irqrestore(&n->list_lock, flags);
-> -	return x;
-> -}
-> -
->  static int count_inuse(struct page *page)
->  {
->  	return page->inuse;
-> @@ -3342,11 +3381,6 @@ static int count_total(struct page *page)
->  	return page->objects;
->  }
->  
-> -static int count_free(struct page *page)
-> -{
-> -	return page->objects - page->inuse;
-> -}
-> -
->  static int validate_slab(struct kmem_cache *s, struct page *page,
->  						unsigned long *map)
->  {
+> There's a few good exceptions like /debug/x86/cpu/cpu0/apic/apic or 
+> /debug/x86/cpu/cpu0/cr/cr, although even those should probably be 
+> renamed to:
 > 
+>   /debug/x86/cpu/cpu0/apic/state
+>   /debug/x86/cpu/cpu0/cr/state
+> 
+> as 'apic/apic' and 'cr/cr' is meaningless.
+> 
+> Or better yet, why isnt there a directory structure to known values:
+> 
+>   /debug/x86/cpu/cpu0/apic/LVTERR/value
+> 
+> ?
+> 
+> This would allow the changing/reading of all known values.
+> 
+> The 'total state' could still be accessed easily as well, via:
+> 
+>   cat /debug/x86/cpu/cpu0/apic/*/value
+> 
+> Paradoxically, all the _unknown_ values have a split out per 
+> register layout. I.e. the namespace is bloated with a lot of 
+> 'unknown' state - while the 'known' (and printed/interpreted) 
+> registers are hidden and collected into meaninglessly named files. 
+> It should be exactly the other way around.
 > 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+I tried to fix few of the issues you pointed and send new pull request,
+Can you please pull it :
+
+[git-pull -tip] cpu_debug patches 20090610
+
+> All in one, this code either needs to become useful in practice, 
+> needs to provide a nice, structured, intuitive 'view' of the CPU's 
+> current state (as known to the kernel) - or it should not be done at 
+> all.
+> 
+> If we want a quirky interface we can use msr-tools and /sbin/rdmsr 
+> just fine. So /debug/x86/cpu/ really has to become a strikingly 
+> intuitive big step forward in terms of CPU state enumeration and 
+> visualization, for it to make sense to be carried in the kernel.
+> 
+
+I am adding more features in cpu_debug to make it more useful.
+
+Thanks,
+--
+JSR
+
