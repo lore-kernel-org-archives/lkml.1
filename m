@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbZFJDf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbZFJDfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756689AbZFJDf7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbZFJDdr
+	id S1756510AbZFJDfA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbZFJDdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:33:47 -0400
-Received: from kroah.org ([198.145.64.141]:56667 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:33:35 -0400
+Received: from kroah.org ([198.145.64.141]:56620 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755506AbZFJDdq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:33:46 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:42 2009
-Message-Id: <20090610002342.202940167@blue.kroah.org>
+	id S1755239AbZFJDdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:33:35 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:41 2009
+Message-Id: <20090610002341.473758727@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:13:39 -0700
+Date: Tue, 09 Jun 2009 17:13:36 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jay Vosburgh <fubar@us.ibm.com>,
+       alan@lxorguk.ukuu.org.uk, Mikulas Patocka <mpatocka@redhat.com>,
        "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 11/60] bonding: fix alb mode locking regression
+Subject: [patch 08/60] sparc64: Fix crash with /proc/iomem
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=bonding-fix-alb-mode-locking-regression.patch
+Content-Disposition: inline; filename=sparc64-fix-crash-with-proc-iomem.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,55 +39,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jay Vosburgh <fubar@us.ibm.com>
+From: Mikulas Patocka <mpatocka@redhat.com>
 
-[ Upstream commit 815bcc2719c12b6f5b511706e2d19728e07f0b02 ]
 
-Fix locking issue in alb MAC address management; removed
-incorrect locking and replaced with correct locking.  This bug was
-introduced in commit 059fe7a578fba5bbb0fdc0365bfcf6218fa25eb0
-("bonding: Convert locks to _bh, rework alb locking for new locking")
+[ Upstream commit 192d7a4667c6d11d1a174ec4cad9a3c5d5f9043c ]
 
-	Bug reported by Paul Smith <paul@mad-scientist.net>, who also
-tested the fix.
+When you compile kernel on Sparc64 with heap memory checking and type
+"cat /proc/iomem", you get a crash, because pointers in struct
+resource are uninitialized.
 
-Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
+Most code fills struct resource with zeros, so I assume that it is
+responsibility of the caller of request_resource to initialized it,
+not the responsibility of request_resource functuion.
+
+After 2.6.29 is out, there could be a check for uninitialized fields
+added to request_resource to avoid crashes like this.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/bonding/bond_alb.c |    8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ arch/sparc64/kernel/pci_common.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/bonding/bond_alb.c
-+++ b/drivers/net/bonding/bond_alb.c
-@@ -1716,9 +1716,6 @@ int bond_alb_set_mac_address(struct net_
- 		}
- 	}
+--- a/arch/sparc64/kernel/pci_common.c
++++ b/arch/sparc64/kernel/pci_common.c
+@@ -368,7 +368,7 @@ static void pci_register_iommu_region(st
+ 	const u32 *vdma = of_get_property(pbm->prom_node, "virtual-dma", NULL);
  
--	write_unlock_bh(&bond->curr_slave_lock);
--	read_unlock(&bond->lock);
--
- 	if (swap_slave) {
- 		alb_swap_mac_addr(bond, swap_slave, bond->curr_active_slave);
- 		alb_fasten_mac_swap(bond, swap_slave, bond->curr_active_slave);
-@@ -1726,16 +1723,15 @@ int bond_alb_set_mac_address(struct net_
- 		alb_set_slave_mac_addr(bond->curr_active_slave, bond_dev->dev_addr,
- 				       bond->alb_info.rlb_enabled);
+ 	if (vdma) {
+-		struct resource *rp = kmalloc(sizeof(*rp), GFP_KERNEL);
++		struct resource *rp = kzalloc(sizeof(*rp), GFP_KERNEL);
  
-+		read_lock(&bond->lock);
- 		alb_send_learning_packets(bond->curr_active_slave, bond_dev->dev_addr);
- 		if (bond->alb_info.rlb_enabled) {
- 			/* inform clients mac address has changed */
- 			rlb_req_update_slave_clients(bond, bond->curr_active_slave);
- 		}
-+		read_unlock(&bond->lock);
- 	}
- 
--	read_lock(&bond->lock);
--	write_lock_bh(&bond->curr_slave_lock);
--
- 	return 0;
- }
- 
+ 		if (!rp) {
+ 			prom_printf("Cannot allocate IOMMU resource.\n");
 
 
