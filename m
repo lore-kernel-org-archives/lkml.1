@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761464AbZFJT4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761561AbZFJT4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761464AbZFJT4S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 15:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761460AbZFJTzb
+	id S1761561AbZFJT4b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 15:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761470AbZFJTzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 15:55:31 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:38951 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761427AbZFJTzR (ORCPT
+	Wed, 10 Jun 2009 15:55:35 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:7669 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761091AbZFJTzW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 15:55:17 -0400
-Subject: [PATCH v3 03/12] ACPI: Introduce acpi_get_pci_dev()
+	Wed, 10 Jun 2009 15:55:22 -0400
+Subject: [PATCH v3 04/12] ACPI: rearrange acpi_pci_bind/acpi_pci_unbind in
+	pci_bind.c
 To: lenb@kernel.org
 From: Alex Chiang <achiang@hp.com>
-Cc: linux-acpi@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Date: Wed, 10 Jun 2009 13:55:20 -0600
-Message-ID: <20090610195519.28982.72969.stgit@bob.kio>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Date: Wed, 10 Jun 2009 13:55:25 -0600
+Message-ID: <20090610195525.28982.43678.stgit@bob.kio>
 In-Reply-To: <20090610194714.28982.51363.stgit@bob.kio>
 References: <20090610194714.28982.51363.stgit@bob.kio>
 User-Agent: StGit/0.14.3.347.g594a
@@ -27,131 +28,123 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert an ACPI CA handle to a struct pci_dev.
+This is a pure code movement patch that does $subject in order
+to make the following patch easier to read and review.
 
-Performing this lookup dynamically allows us to get rid of the
-ACPI-PCI binding code, which:
+No functional change.
 
-	- eliminates struct acpi_device vs struct pci_dev lifetime issues
-	- lays more groundwork for eliminating .start from acpi_device_ops
-	  and thus simplifying ACPI drivers
-	- whacks out a lot of code
-
-This change lays the groundwork for eliminating much of pci_bind.c.
-
-Although pci_root.c may not be the most logical place for this
-change, putting it here saves us from having to export acpi_pci_find_root.
-
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/acpi/pci_root.c     |   81 +++++++++++++++++++++++++++++++++++++++++++
- include/acpi/acpi_drivers.h |    1 +
- 2 files changed, 82 insertions(+), 0 deletions(-)
+ drivers/acpi/pci_bind.c |   90 ++++++++++++++++++++++++-----------------------
+ 1 files changed, 45 insertions(+), 45 deletions(-)
 
-diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-index 888cb9f..e509991 100644
---- a/drivers/acpi/pci_root.c
-+++ b/drivers/acpi/pci_root.c
-@@ -329,6 +329,87 @@ static struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle)
- 	return NULL;
+diff --git a/drivers/acpi/pci_bind.c b/drivers/acpi/pci_bind.c
+index 236765c..c283c29 100644
+--- a/drivers/acpi/pci_bind.c
++++ b/drivers/acpi/pci_bind.c
+@@ -109,6 +109,51 @@ acpi_status acpi_get_pci_id(acpi_handle handle, struct acpi_pci_id *id)
+ 
+ EXPORT_SYMBOL(acpi_get_pci_id);
+ 
++static int acpi_pci_unbind(struct acpi_device *device)
++{
++	int result = 0;
++	acpi_status status;
++	struct acpi_pci_data *data;
++	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
++
++
++	if (!device || !device->parent)
++		return -EINVAL;
++
++	status = acpi_get_name(device->handle, ACPI_FULL_PATHNAME, &buffer);
++	if (ACPI_FAILURE(status))
++		return -ENODEV;
++
++	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Unbinding PCI device [%s]...\n",
++			  (char *) buffer.pointer));
++	kfree(buffer.pointer);
++
++	status =
++	    acpi_get_data(device->handle, acpi_pci_data_handler,
++			  (void **)&data);
++	if (ACPI_FAILURE(status)) {
++		result = -ENODEV;
++		goto end;
++	}
++
++	status = acpi_detach_data(device->handle, acpi_pci_data_handler);
++	if (ACPI_FAILURE(status)) {
++		ACPI_EXCEPTION((AE_INFO, status,
++				"Unable to detach data from device %s",
++				acpi_device_bid(device)));
++		result = -ENODEV;
++		goto end;
++	}
++	if (data->dev->subordinate) {
++		acpi_pci_irq_del_prt(data->id.segment, data->bus->number);
++	}
++	pci_dev_put(data->dev);
++	kfree(data);
++
++      end:
++	return result;
++}
++
+ static int acpi_pci_bind(struct acpi_device *device)
+ {
+ 	int result = 0;
+@@ -253,51 +298,6 @@ static int acpi_pci_bind(struct acpi_device *device)
+ 	return result;
  }
  
-+struct acpi_handle_node {
-+	struct list_head node;
-+	acpi_handle handle;
-+};
-+
-+/**
-+ * acpi_get_pci_dev - convert ACPI CA handle to struct pci_dev
-+ * @handle: the handle in question
-+ *
-+ * Given an ACPI CA handle, the desired PCI device is located in the
-+ * list of PCI devices.
-+ *
-+ * If the device is found, its reference count is increased and this
-+ * function returns a pointer to its data structure.  The caller must
-+ * decrement the reference count by calling pci_dev_put().
-+ * If no device is found, %NULL is returned.
-+ */
-+struct pci_dev *acpi_get_pci_dev(acpi_handle handle)
-+{
-+	int dev, fn;
-+	unsigned long long adr;
-+	acpi_status status;
-+	acpi_handle phandle;
-+	struct pci_bus *pbus;
-+	struct pci_dev *pdev = NULL;
-+	struct acpi_handle_node *node, *tmp;
-+	struct acpi_pci_root *root;
-+	LIST_HEAD(device_list);
-+
-+	/*
-+	 * Walk up the ACPI CA namespace until we reach a PCI root bridge.
-+	 */
-+	phandle = handle;
-+	while (!acpi_is_root_bridge(phandle)) {
-+		node = kzalloc(sizeof(struct acpi_handle_node), GFP_KERNEL);
-+		if (!node)
-+			goto out;
-+
-+		INIT_LIST_HEAD(&node->node);
-+		node->handle = phandle;
-+		list_add(&node->node, &device_list);
-+
-+		status = acpi_get_parent(phandle, &phandle);
-+		if (ACPI_FAILURE(status))
-+			goto out;
-+	}
-+
-+	root = acpi_pci_find_root(phandle);
-+	if (!root)
-+		goto out;
-+
-+	pbus = root->bus;
-+
-+	/*
-+	 * Now, walk back down the PCI device tree until we return to our
-+	 * original handle. Assumes that everything between the PCI root
-+	 * bridge and the device we're looking for must be a P2P bridge.
-+	 */
-+	list_for_each_entry(node, &device_list, node) {
-+		acpi_handle hnd = node->handle;
-+		status = acpi_evaluate_integer(hnd, "_ADR", NULL, &adr);
-+		if (ACPI_FAILURE(status))
-+			goto out;
-+		dev = (adr >> 16) & 0xffff;
-+		fn  = adr & 0xffff;
-+
-+		pdev = pci_get_slot(pbus, PCI_DEVFN(dev, fn));
-+		if (hnd == handle)
-+			break;
-+
-+		pbus = pdev->subordinate;
-+		pci_dev_put(pdev);
-+	}
-+out:
-+	list_for_each_entry_safe(node, tmp, &device_list, node)
-+		kfree(node);
-+
-+	return pdev;
-+}
-+EXPORT_SYMBOL_GPL(acpi_get_pci_dev);
-+
- /**
-  * acpi_pci_osc_control_set - commit requested control to Firmware
-  * @handle: acpi_handle for the target ACPI object
-diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
-index bbe9207..1ef529b 100644
---- a/include/acpi/acpi_drivers.h
-+++ b/include/acpi/acpi_drivers.h
-@@ -97,6 +97,7 @@ void acpi_pci_irq_del_prt(int segment, int bus);
- 
- struct pci_bus;
- 
-+struct pci_dev *acpi_get_pci_dev(acpi_handle);
- acpi_status acpi_get_pci_id(acpi_handle handle, struct acpi_pci_id *id);
- int acpi_pci_bind_root(struct acpi_device *device, struct acpi_pci_id *id,
- 		       struct pci_bus *bus);
+-static int acpi_pci_unbind(struct acpi_device *device)
+-{
+-	int result = 0;
+-	acpi_status status;
+-	struct acpi_pci_data *data;
+-	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
+-
+-
+-	if (!device || !device->parent)
+-		return -EINVAL;
+-
+-	status = acpi_get_name(device->handle, ACPI_FULL_PATHNAME, &buffer);
+-	if (ACPI_FAILURE(status))
+-		return -ENODEV;
+-
+-	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Unbinding PCI device [%s]...\n",
+-			  (char *) buffer.pointer));
+-	kfree(buffer.pointer);
+-
+-	status =
+-	    acpi_get_data(device->handle, acpi_pci_data_handler,
+-			  (void **)&data);
+-	if (ACPI_FAILURE(status)) {
+-		result = -ENODEV;
+-		goto end;
+-	}
+-
+-	status = acpi_detach_data(device->handle, acpi_pci_data_handler);
+-	if (ACPI_FAILURE(status)) {
+-		ACPI_EXCEPTION((AE_INFO, status,
+-				"Unable to detach data from device %s",
+-				acpi_device_bid(device)));
+-		result = -ENODEV;
+-		goto end;
+-	}
+-	if (data->dev->subordinate) {
+-		acpi_pci_irq_del_prt(data->id.segment, data->bus->number);
+-	}
+-	pci_dev_put(data->dev);
+-	kfree(data);
+-
+-      end:
+-	return result;
+-}
+-
+ int
+ acpi_pci_bind_root(struct acpi_device *device,
+ 		   struct acpi_pci_id *id, struct pci_bus *bus)
 
