@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761832AbZFJT7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762261AbZFJUAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761832AbZFJT7d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 15:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761199AbZFJT4J
+	id S1762261AbZFJUAQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 16:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761538AbZFJT4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 15:56:09 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:7920 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761493AbZFJTzs (ORCPT
+	Wed, 10 Jun 2009 15:56:13 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:37853 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761510AbZFJT4D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 15:55:48 -0400
-Subject: [PATCH v3 09/12] PCI Hotplug: acpiphp: convert to acpi_get_pci_dev
+	Wed, 10 Jun 2009 15:56:03 -0400
+Subject: [PATCH v3 12/12] ACPI: kill acpi_get_physical_pci_device()
 To: lenb@kernel.org
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org
-Date: Wed, 10 Jun 2009 13:55:50 -0600
-Message-ID: <20090610195550.28982.48803.stgit@bob.kio>
+       Thomas Renninger <trenn@suse.de>, linux-pci@vger.kernel.org
+Date: Wed, 10 Jun 2009 13:56:05 -0600
+Message-ID: <20090610195605.28982.44680.stgit@bob.kio>
 In-Reply-To: <20090610194714.28982.51363.stgit@bob.kio>
 References: <20090610194714.28982.51363.stgit@bob.kio>
 User-Agent: StGit/0.14.3.347.g594a
@@ -27,71 +27,78 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that acpi_get_pci_dev is available, let's use it instead of
-acpi_get_pci_id.
+acpi_get_pci_dev() is (hopefully) better, and all callers have been
+converted, so let's get rid of this duplicated functionality.
 
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/pci/hotplug/acpiphp_glue.c |   25 +++++++------------------
- 1 files changed, 7 insertions(+), 18 deletions(-)
+ drivers/acpi/glue.c     |   40 ----------------------------------------
+ include/acpi/acpi_bus.h |    1 -
+ 2 files changed, 0 insertions(+), 41 deletions(-)
 
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index fc6636e..0cb0f83 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -678,18 +678,9 @@ static void remove_bridge(acpi_handle handle)
+diff --git a/drivers/acpi/glue.c b/drivers/acpi/glue.c
+index 8bd2c2a..a8a5c29 100644
+--- a/drivers/acpi/glue.c
++++ b/drivers/acpi/glue.c
+@@ -140,46 +140,6 @@ struct device *acpi_get_physical_device(acpi_handle handle)
  
- static struct pci_dev * get_apic_pci_info(acpi_handle handle)
- {
--	struct acpi_pci_id id;
--	struct pci_bus *bus;
- 	struct pci_dev *dev;
+ EXPORT_SYMBOL(acpi_get_physical_device);
  
--	if (ACPI_FAILURE(acpi_get_pci_id(handle, &id)))
+-/* ToDo: When a PCI bridge is found, return the PCI device behind the bridge
+- *       This should work in general, but did not on a Lenovo T61 for the
+- *	 graphics card. But this must be fixed when the PCI device is
+- *       bound and the kernel device struct is attached to the acpi device
+- * Note: A success call will increase reference count by one
+- *       Do call put_device(dev) on the returned device then
+- */
+-struct device *acpi_get_physical_pci_device(acpi_handle handle)
+-{
+-	struct device *dev;
+-	long long device_id;
+-	acpi_status status;
+-
+-	status =
+-		acpi_evaluate_integer(handle, "_ADR", NULL, &device_id);
+-
+-	if (ACPI_FAILURE(status))
 -		return NULL;
 -
--	bus = pci_find_bus(id.segment, id.bus);
--	if (!bus)
--		return NULL;
--
--	dev = pci_get_slot(bus, PCI_DEVFN(id.device, id.function));
-+	dev = acpi_get_pci_dev(handle);
- 	if (!dev)
- 		return NULL;
- 
-@@ -1396,19 +1387,16 @@ static void acpiphp_sanitize_bus(struct pci_bus *bus)
- /* Program resources in newly inserted bridge */
- static int acpiphp_configure_bridge (acpi_handle handle)
- {
--	struct acpi_pci_id pci_id;
-+	struct pci_dev *dev;
- 	struct pci_bus *bus;
- 
--	if (ACPI_FAILURE(acpi_get_pci_id(handle, &pci_id))) {
-+	dev = acpi_get_pci_dev(handle);
-+	if (!dev) {
- 		err("cannot get PCI domain and bus number for bridge\n");
- 		return -EINVAL;
- 	}
--	bus = pci_find_bus(pci_id.segment, pci_id.bus);
--	if (!bus) {
--		err("cannot find bus %d:%d\n",
--				pci_id.segment, pci_id.bus);
--		return -EINVAL;
+-	/* We need to attempt to determine whether the _ADR refers to a
+-	   PCI device or not. There's no terribly good way to do this,
+-	   so the best we can hope for is to assume that there'll never
+-	   be a device in the host bridge */
+-	if (device_id >= 0x10000) {
+-		/* It looks like a PCI device. Does it exist? */
+-		dev = acpi_get_physical_device(handle);
+-	} else {
+-		/* It doesn't look like a PCI device. Does its parent
+-		   exist? */
+-		acpi_handle phandle;
+-		if (acpi_get_parent(handle, &phandle))
+-			return NULL;
+-		dev = acpi_get_physical_device(phandle);
 -	}
-+
-+	bus = dev->bus;
+-	if (!dev)
+-		return NULL;
+-	return dev;
+-}
+-EXPORT_SYMBOL(acpi_get_physical_pci_device);
+-
+ static int acpi_bind_one(struct device *dev, acpi_handle handle)
+ {
+ 	struct acpi_device *acpi_dev;
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+index 494088b..c65e4ce 100644
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -368,7 +368,6 @@ struct acpi_bus_type {
+ int register_acpi_bus_type(struct acpi_bus_type *);
+ int unregister_acpi_bus_type(struct acpi_bus_type *);
+ struct device *acpi_get_physical_device(acpi_handle);
+-struct device *acpi_get_physical_pci_device(acpi_handle);
  
- 	pci_bus_size_bridges(bus);
- 	pci_bus_assign_resources(bus);
-@@ -1416,6 +1404,7 @@ static int acpiphp_configure_bridge (acpi_handle handle)
- 	acpiphp_set_hpp_values(handle, bus);
- 	pci_enable_bridges(bus);
- 	acpiphp_configure_ioapics(handle);
-+	pci_dev_put(dev);
- 	return 0;
- }
- 
+ /* helper */
+ acpi_handle acpi_get_child(acpi_handle, acpi_integer);
 
