@@ -1,117 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbZFJHub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbZFJHxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756458AbZFJHub (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 03:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbZFJHuX
+	id S1757583AbZFJHxb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 03:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZFJHxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 03:50:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52345 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752795AbZFJHuW (ORCPT
+	Wed, 10 Jun 2009 03:53:24 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:51983 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752638AbZFJHxX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 03:50:22 -0400
-Date: Wed, 10 Jun 2009 00:50:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Martin Zwickel <martin.zwickel@novabasedigitaltv.de>
-Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       linux-usb@vger.kernel.org
-Subject: Re: FDTI-SIO: kernel-oops after resume
-Message-Id: <20090610005018.2c84d229.akpm@linux-foundation.org>
-In-Reply-To: <20090609063948.GA17564@novabasedigitaltv.de>
-References: <20090609063948.GA17564@novabasedigitaltv.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Jun 2009 03:53:23 -0400
+Date: Wed, 10 Jun 2009 10:48:39 +0300
+From: Felipe Balbi <felipe.balbi@nokia.com>
+To: ext Andrew Morton <akpm@linux-foundation.org>
+Cc: Baruch Siach <baruch@tkos.co.il>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "dbrownell@users.sourceforge.net" <dbrownell@users.sourceforge.net>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v4] gpio: driver for PrimeCell PL061 GPIO controller
+Message-ID: <20090610074839.GB27385@nokia.com>
+Reply-To: felipe.balbi@nokia.com
+References: <1244399935-23128-1-git-send-email-baruch@tkos.co.il> <20090609140239.260428eb.akpm@linux-foundation.org> <20090610072229.GC10382@tarshish> <20090610004447.78b84cd5.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090610004447.78b84cd5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-OriginalArrivalTime: 10 Jun 2009 07:51:20.0743 (UTC) FILETIME=[3E622B70:01C9E9A0]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009 08:39:48 +0200 Martin Zwickel <martin.zwickel@novabasedigitaltv.de> wrote:
+Hi,
 
-> Hi all,
+On Wed, Jun 10, 2009 at 09:44:47AM +0200, ext Andrew Morton wrote:
+> On Wed, 10 Jun 2009 10:22:31 +0300 Baruch Siach <baruch@tkos.co.il> wrote:
 > 
-> I got an oops after resuming from suspend S3 state.
+> > Hi Andrew,
+> > 
+> > > >  static unsigned int pl061_irq_startup(unsigned irq)
+> > > >  {
+> > > > -	int ret;
+> > > > -
+> > > > -	ret = gpio_request(irq_to_gpio(irq), "IRQ");
+> > > > -	if (ret < 0) {
+> > > > -		pr_warning("%s: warning: gpio_request(%d) returned %d\n",
+> > > > -				__func__, irq_to_gpio(irq), ret);
+> > > > -		return 0;
+> > > > -	}
+> > > > +	if (gpio_request(irq_to_gpio(irq), "IRQ") == 0)
+> > > > +		pr_warning("%s: warning: GPIO%d has not been requested\n",
+> > > > +				__func__, irq_to_gpio(irq));
+> > > 
+> > > This is wrong, isn't it?  gpio_request() returns 0 on success.
+> > 
+> > Russell said that gpio configuration is the responsibility of the platform 
+> > code. Here I just warn when the gpio has not been requested, and thus 
+> > gpio_request() succeeds. I'll add a comment.
 > 
-> I had the ttyUSB0 opened with minicom and went to suspend S3.
-> While in suspend I removed the physical serial device converter.
-> While resuming I got this kernel oops:
+> OK.
 > 
-> [output]
-> BUG: unable to handle kernel NULL pointer dereference at 00000044
-> IP: [<c012ba40>] del_timer+0xc/0x4c
-> *pde = 00000000 
-> Oops: 0000 [#1] PREEMPT SMP 
-> last sysfs file: /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-> Modules linked in: iptable_filter ip_tables x_tables i915 fb drm
-> i2c_algo_bit cfbcopyarea i2c_core cfbimgblt cfbfillrect ipv6
-> snd_hda_codec_conexant snd_hda_intel ftdi_sio iwlagn usbserial iwlcore
-> snd_hda_codec pcspkr evdev
+> If the gpio_request() accidentally succeeded, should we gpio_free() the
+> result here?
 > 
-> Pid: 16129, comm: minicom Not tainted (2.6.29.4 #3) ESPRIMO Mobile V5505           
->    
-> EIP: 0060:[<c012ba40>] EFLAGS: 00210286 CPU: 0
-> EIP is at del_timer+0xc/0x4c
-> EAX: 00000044 EBX: 00000044 ECX: f2224b00 EDX: 00000044
-> ESI: 00000000 EDI: 00000000 EBP: f6489df0 ESP: f6489de4
->  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> Process minicom (pid: 16129, ti=f6488000 task=f1b54000 task.ti=f6488000)
-> Stack:
->  00000000 f1a31c00 00000034 f6489e38 c01311a3 00000044 00200246 f6489e20
->  00200246 00000000 c0609e00 00000002 00000000 f6489e44 00200246 f6489e30
->  c014e2a6 c1aa7f80 f1a31c00 00000400 00000000 f6489e40 c01312c3 f6489e58
-> Call Trace:
->  [<c01311a3>] ? __cancel_work_timer+0x20/0x135
->  [<c014e2a6>] ? __pagevec_free+0x17/0x1e
->  [<c01312c3>] ? cancel_delayed_work_sync+0xb/0xd
->  [<f8103692>] ? ftdi_close+0xc3/0xe2 [ftdi_sio]
->  [<c0175977>] ? fasync_helper+0xb3/0xbc
->  [<f820d722>] ? serial_close+0x7b/0x113 [usbserial]
->  [<c02a165c>] ? tty_release_dev+0x15b/0x392
->  [<c014e2a6>] ? __pagevec_free+0x17/0x1e
->  [<c0167c27>] ? add_partial+0x44/0x49
->  [<c017d860>] ? mntput_no_expire+0x18/0xe7
->  [<c0178b67>] ? dput+0x1d/0xfc
->  [<c02a18a5>] ? tty_release+0x12/0x1c
->  [<c016d193>] ? __fput+0xaf/0x155
->  [<c016d45d>] ? fput+0x17/0x19
->  [<c016ae36>] ? filp_close+0x51/0x5b
->  [<c0125870>] ? put_files_struct+0x68/0xaa
->  [<c01258e9>] ? exit_files+0x37/0x3c
->  [<c012681d>] ? do_exit+0x150/0x62e
->  [<c0126d5a>] ? do_group_exit+0x5f/0x88
->  [<c0126d92>] ? sys_exit_group+0xf/0x13
->  [<c0102df1>] ? sysenter_do_call+0x12/0x25
-> Code: 04 0f 0b eb fe 39 50 08 75 0a 83 38 00 b9 01 00 00 00 75 07 e8 10 fe ff ff 89 c1 5d 89 c8 c3 55 89 e5 56 31 f6 53 89 c3 83 ec 04 <83> 38 00 74 34 8d 55 f4 e8 4c fd ff ff 83 3b 00 89 c1 74 1b 8b 
-> EIP: [<c012ba40>] del_timer+0xc/0x4c SS:ESP 0068:f6489de4
-> ---[ end trace 679defbdbe4aa1e4 ]---
-> [/output]
-> 
-> Minicom said it lost the device, but was unable to close it.
-> 
-> The attached device:
-> [output]
-> USB Serial support registered for FTDI USB Serial Device
-> ftdi_sio 6-1:1.0: FTDI USB Serial Device converter detected
-> usb 6-1: Detected FT8U232AM
-> usb 6-1: FTDI USB Serial Device converter now attached to ttyUSB0
-> usbcore: registered new interface driver ftdi_sio
-> ftdi_sio: v1.4.3:USB FTDI Serial Converters Driver
-> [/output]
-> 
-> 
-> My kernel runs with SMP and HIGHMEM if it matters:
-> Linux tt-business 2.6.29.4 #3 SMP PREEMPT Fri Jun 5 00:03:39 WEST 2009 i686 Intel(R) Core(TM)2 Duo CPU T7300 @ 2.00GHz GenuineIntel GNU/Linux
-> 
+> Should the gpio core provide a primitive to check that a gpio has been
+> properly requested rathe rthan open-coding it here?
 
-The oops is very very similar to the one which Daniel Mack reported,
-and which was fixed by
+how about passing a setup() and cleanup() pointers via platform_data to the driver ?
 
-commit c16199fcd341f10147eb2e29a60aed41ceca55b4
-Author: Alan Stern <stern@rowland.harvard.edu>
-Date:   Thu Apr 30 10:06:19 2009 -0400
+Then, during probe(), the driver calls setup() which would
+gpio_request() and during remove() it calls cleanup() to gpio_free();
 
-    usb-serial: ftdi_sio: fix reference counting of ftdi_private
+would that be ok ?
 
-but your 2.6.29.4 contained that fix, so it seems that we still have a
-problem here?
+-- 
+balbi
