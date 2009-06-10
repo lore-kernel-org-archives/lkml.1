@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZFJDed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753146AbZFJDd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756192AbZFJDed (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbZFJDdZ
+	id S1753146AbZFJDd3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbZFJDdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:33:25 -0400
-Received: from kroah.org ([198.145.64.141]:56594 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:33:04 -0400
+Received: from kroah.org ([198.145.64.141]:56510 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754650AbZFJDdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:33:24 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:41 2009
-Message-Id: <20090610002341.027813925@blue.kroah.org>
+	id S1753288AbZFJDdC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:33:02 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:40 2009
+Message-Id: <20090610002340.084093628@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:13:34 -0700
+Date: Tue, 09 Jun 2009 17:13:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, Frank Filz <ffilzlnx@us.ibm.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 06/60] sparc64: Fix MM refcount check in smp_flush_tlb_pending().
+Subject: [patch 02/60] nfs: Fix NFS v4 client handling of MAY_EXEC in nfs_permission.
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=sparc64-fix-mm-refcount-check-in-smp_flush_tlb_pending.patch
+Content-Disposition: inline; filename=nfs-fix-nfs-v4-client-handling-of-may_exec-in-nfs_permission.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,70 +39,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: David S. Miller <davem@davemloft.net>
+From: Frank Filz <ffilzlnx@us.ibm.com>
 
-[ Upstream commit f9384d41c02408dd404aa64d66d0ef38adcf6479 ]
+commit 7ee2cb7f32b299c2b06a31fde155457203e4b7dd upstream.
 
-As explained by Benjamin Herrenschmidt:
+The problem is that permission checking is skipped if atomic open is
+possible, but when exec opens a file, it just opens it O_READONLY which
+means EXEC permission will not be checked at that time.
 
-> CPU 0 is running the context, task->mm == task->active_mm == your
-> context. The CPU is in userspace happily churning things.
->
-> CPU 1 used to run it, not anymore, it's now running fancyfsd which
-> is a kernel thread, but current->active_mm still points to that
-> same context.
->
-> Because there's only one "real" user, mm_users is 1 (but mm_count is
-> elevated, it's just that the presence on CPU 1 as active_mm has no
-> effect on mm_count().
->
-> At this point, fancyfsd decides to invalidate a mapping currently mapped
-> by that context, for example because a networked file has changed
-> remotely or something like that, using unmap_mapping_ranges().
->
-> So CPU 1 goes into the zapping code, which eventually ends up calling
-> flush_tlb_pending(). Your test will succeed, as current->active_mm is
-> indeed the target mm for the flush, and mm_users is indeed 1. So you
-> will -not- send an IPI to the other CPU, and CPU 0 will continue happily
-> accessing the pages that should have been unmapped.
+This problem is observed by the following sequence (executed as root):
 
-To fix this problem, check ->mm instead of ->active_mm, and this
-means:
+  mount -t nfs4 server:/ /mnt4
+  echo "ls" >/mnt4/foo
+  chmod 744 /mnt4/foo
+  su guest -c "mnt4/foo"
 
-> So if you test current->mm, you effectively account for mm_users == 1,
-> so the only way the mm can be active on another processor is as a lazy
-> mm for a kernel thread. So your test should work properly as long
-> as you don't have a HW that will do speculative TLB reloads into the
-> TLB on that other CPU (and even if you do, you flush-on-switch-in should
-> get rid of any crap here).
-
-And therefore we should be OK.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Frank Filz <ffilzlnx@us.ibm.com>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Tested-by: Eugene Teo <eugeneteo@kernel.sg>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- arch/sparc64/kernel/smp.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/sparc64/kernel/smp.c
-+++ b/arch/sparc64/kernel/smp.c
-@@ -1031,7 +1031,7 @@ void smp_fetch_global_regs(void)
-  *    If the address space is non-shared (ie. mm->count == 1) we avoid
-  *    cross calls when we want to flush the currently running process's
-  *    tlb state.  This is done by clearing all cpu bits except the current
-- *    processor's in current->active_mm->cpu_vm_mask and performing the
-+ *    processor's in current->mm->cpu_vm_mask and performing the
-  *    flush locally only.  This will force any subsequent cpus which run
-  *    this task to flush the context from the local tlb if the process
-  *    migrates to another cpu (again).
-@@ -1074,7 +1074,7 @@ void smp_flush_tlb_pending(struct mm_str
- 	u32 ctx = CTX_HWBITS(mm->context);
- 	int cpu = get_cpu();
- 
--	if (mm == current->active_mm && atomic_read(&mm->mm_users) == 1)
-+	if (mm == current->mm && atomic_read(&mm->mm_users) == 1)
- 		mm->cpu_vm_mask = cpumask_of_cpu(cpu);
- 	else
- 		smp_cross_call_masked(&xcall_flush_tlb_pending,
+---
+ fs/nfs/dir.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- a/fs/nfs/dir.c
++++ b/fs/nfs/dir.c
+@@ -1925,7 +1925,8 @@ int nfs_permission(struct inode *inode, 
+ 		case S_IFREG:
+ 			/* NFSv4 has atomic_open... */
+ 			if (nfs_server_capable(inode, NFS_CAP_ATOMIC_OPEN)
+-					&& (mask & MAY_OPEN))
++					&& (mask & MAY_OPEN)
++					&& !(mask & MAY_EXEC))
+ 				goto out;
+ 			break;
+ 		case S_IFDIR:
 
 
