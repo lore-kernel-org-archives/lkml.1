@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760630AbZFJDpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbZFJDqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760630AbZFJDpu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757664AbZFJDgS
+	id S1757233AbZFJDqG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbZFJDgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:36:18 -0400
-Received: from kroah.org ([198.145.64.141]:57332 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:36:22 -0400
+Received: from kroah.org ([198.145.64.141]:57348 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757607AbZFJDgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:36:17 -0400
+	id S1757671AbZFJDgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:36:21 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:50 2009
-Message-Id: <20090610002350.058045424@blue.kroah.org>
+Message-Id: <20090610002350.304932379@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:13 -0700
+Date: Tue, 09 Jun 2009 17:14:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,9 +27,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 45/60] ext4: Add fine print for the 32000 subdirectory limit
+Subject: [patch 46/60] ext4: add EXT4_IOC_ALLOC_DA_BLKS ioctl
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-add-fine-print-for-the-32000-subdirectory-limit.patch
+Content-Disposition: inline; filename=ext4-add-ext4_ioc_alloc_da_blks-ioctl.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,39 +40,114 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit 722bde6875bfb49a0c84e5601eb82dd7ac02d27c)
+(cherry picked from commit ccd2506bd43113659aa904d5bea5d1300605e2a6)
 
-Some poeple are reading the ext4 feature list too literally and create
-dubious test cases involving very long filenames and 1k blocksize and
-then complain when they run into an htree-imposed limit.  So add fine
-print to the "fix 32000 subdirectory limit" ext4 feature.
+Add an ioctl which forces all of the delay allocated blocks to be
+allocated.  This also provides a function ext4_alloc_da_blocks() which
+will be used by the following commits to force files to be fully
+allocated to preserve application-expected ext3 behaviour.
 
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/filesystems/ext4.txt |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ fs/ext4/ext4.h  |    3 +++
+ fs/ext4/inode.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+ fs/ext4/ioctl.c |   14 ++++++++++++++
+ 3 files changed, 59 insertions(+)
 
---- a/Documentation/filesystems/ext4.txt
-+++ b/Documentation/filesystems/ext4.txt
-@@ -73,7 +73,7 @@ Mailing list: linux-ext4@vger.kernel.org
- * extent format more robust in face of on-disk corruption due to magics,
- * internal redunancy in tree
- * improved file allocation (multi-block alloc)
--* fix 32000 subdirectory limit
-+* lift 32000 subdirectory limit imposed by i_links_count[1]
- * nsec timestamps for mtime, atime, ctime, create time
- * inode version field on disk (NFSv4, Lustre)
- * reduced e2fsck time via uninit_bg feature
-@@ -88,6 +88,9 @@ Mailing list: linux-ext4@vger.kernel.org
- * efficent new ordered mode in JBD2 and ext4(avoid using buffer head to force
-   the ordering)
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -326,7 +326,9 @@ struct ext4_new_group_data {
+ #define EXT4_IOC_GROUP_EXTEND		_IOW('f', 7, unsigned long)
+ #define EXT4_IOC_GROUP_ADD		_IOW('f', 8, struct ext4_new_group_input)
+ #define EXT4_IOC_MIGRATE		_IO('f', 9)
++ /* note ioctl 10 reserved for an early version of the FIEMAP ioctl */
+  /* note ioctl 11 reserved for filesystem-independent FIEMAP ioctl */
++#define EXT4_IOC_ALLOC_DA_BLKS		_IO('f', 12)
  
-+[1] Filesystems with a block size of 1k may see a limit imposed by the
-+directory hash tree having a maximum depth of two.
+ /*
+  * ioctl commands in 32 bit emulation
+@@ -1102,6 +1104,7 @@ extern int ext4_can_truncate(struct inod
+ extern void ext4_truncate (struct inode *);
+ extern void ext4_set_inode_flags(struct inode *);
+ extern void ext4_get_inode_flags(struct ext4_inode_info *);
++extern int ext4_alloc_da_blocks(struct inode *inode);
+ extern void ext4_set_aops(struct inode *inode);
+ extern int ext4_writepage_trans_blocks(struct inode *);
+ extern int ext4_meta_trans_blocks(struct inode *, int nrblocks, int idxblocks);
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -2585,6 +2585,48 @@ out:
+ 	return;
+ }
+ 
++/*
++ * Force all delayed allocation blocks to be allocated for a given inode.
++ */
++int ext4_alloc_da_blocks(struct inode *inode)
++{
++	if (!EXT4_I(inode)->i_reserved_data_blocks &&
++	    !EXT4_I(inode)->i_reserved_meta_blocks)
++		return 0;
 +
- 2.2 Candidate features for future inclusion
++	/*
++	 * We do something simple for now.  The filemap_flush() will
++	 * also start triggering a write of the data blocks, which is
++	 * not strictly speaking necessary (and for users of
++	 * laptop_mode, not even desirable).  However, to do otherwise
++	 * would require replicating code paths in:
++	 *
++	 * ext4_da_writepages() ->
++	 *    write_cache_pages() ---> (via passed in callback function)
++	 *        __mpage_da_writepage() -->
++	 *           mpage_add_bh_to_extent()
++	 *           mpage_da_map_blocks()
++	 *
++	 * The problem is that write_cache_pages(), located in
++	 * mm/page-writeback.c, marks pages clean in preparation for
++	 * doing I/O, which is not desirable if we're not planning on
++	 * doing I/O at all.
++	 *
++	 * We could call write_cache_pages(), and then redirty all of
++	 * the pages by calling redirty_page_for_writeback() but that
++	 * would be ugly in the extreme.  So instead we would need to
++	 * replicate parts of the code in the above functions,
++	 * simplifying them becuase we wouldn't actually intend to
++	 * write out the pages, but rather only collect contiguous
++	 * logical block extents, call the multi-block allocator, and
++	 * then update the buffer heads with the block allocations.
++	 *
++	 * For now, though, we'll cheat by calling filemap_flush(),
++	 * which will map the blocks, and start the I/O, but not
++	 * actually wait for the I/O to complete.
++	 */
++	return filemap_flush(inode->i_mapping);
++}
  
- * Online defrag (patches available but not well tested)
+ /*
+  * bmap() is special.  It gets used by applications such as lilo and by
+--- a/fs/ext4/ioctl.c
++++ b/fs/ext4/ioctl.c
+@@ -287,6 +287,20 @@ setversion_out:
+ 		return err;
+ 	}
+ 
++	case EXT4_IOC_ALLOC_DA_BLKS:
++	{
++		int err;
++		if (!is_owner_or_cap(inode))
++			return -EACCES;
++
++		err = mnt_want_write(filp->f_path.mnt);
++		if (err)
++			return err;
++		err = ext4_alloc_da_blocks(inode);
++		mnt_drop_write(filp->f_path.mnt);
++		return err;
++	}
++
+ 	default:
+ 		return -ENOTTY;
+ 	}
 
 
