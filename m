@@ -1,137 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758888AbZFJKMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756427AbZFJKZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758888AbZFJKMV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 06:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbZFJKMK
+	id S1756427AbZFJKZm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 06:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbZFJKZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 06:12:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49855 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752103AbZFJKMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 06:12:09 -0400
-Date: Wed, 10 Jun 2009 12:11:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
-Subject: Re: [RFC PATCH 2/5] tracing/events: nicer print format for parsing
-Message-ID: <20090610101124.GA25042@elte.hu>
-References: <20090609014534.790466803@goodmis.org> <20090609014746.481457542@goodmis.org> <20090609192159.GD6057@nowhere> <20090610094819.GA25527@infradead.org>
+	Wed, 10 Jun 2009 06:25:34 -0400
+Received: from mail-fx0-f213.google.com ([209.85.220.213]:37892 "EHLO
+	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751235AbZFJKZd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 06:25:33 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090610094819.GA25527@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Date: Wed, 10 Jun 2009 13:25:34 +0300
+Message-ID: <cc557aab0906100325o4fd55e0eveb958915214809e3@mail.gmail.com>
+Subject: ERESTART_RESTARTBLOCK and ptrace()
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: Nicolas Pitre <nico@cam.org>, linux-kernel@vger.kernel.org,
+       linux@arm.linux.org.uk
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I've got bug in handling ERESTART_RESTARTBLOCK. Kernel version is 2.6.28.
 
-* Christoph Hellwig <hch@infradead.org> wrote:
+Steps to reproduce:
+1. Attach using ptrace() to process while it's in a syscall which use
+ERESTART_RESTARTBLOCK
+on interrupt. The easiest way is to attach to process which is in nanosleep().
+2. Run a syscall in context of the process like it does gdb.
+3. Continue the process.
 
-> On Tue, Jun 09, 2009 at 09:22:01PM +0200, Frederic Weisbecker wrote:
-> > But I wonder if the above new language is not breaking the charm
-> > of the TRACE_EVENT(), which charm is that it's easy to implement (hopefully).
-> > 
-> > Everyone knows the printk formats. And I guess this new thing is 
-> > easy and quick to learn. But because it's a new unknown 
-> > language, the TRACE_EVENT will become less readable, less 
-> > reachable for newcomers in TRACE_EVENT.
-> 
-> I must also say I don't particularly like it.  printk is nice and 
-> easy an everybody knows it, but it's not quite flexible enough as 
-> we might have to do all kinds of conversions on the reader side.  
-> What might be a better idea is to just have C function pointer for 
-> output conversions that could be put into the a file in debugfs 
-> and used by the binary trace buffer reader.  Or maybe not as we 
-> would pull in too many depenencies.
+Results:
+Syscall(nanosleep) return error code 516(ERESTART_RESTARTBLOCK). It's
+kernel's internal error
+code and should never appear at userspace.
 
-Another bigger problem with the new tag format, beyond introducing 
-an arbitrary descriptor language (which is easy to mess up) is the 
-loss of type checking.
+It seems ARM-related since I can't reproduce it on x86.
 
-With the tags the field printouts can go stray easily - while with 
-TP_printk() we had printf type checking. (which, as imperfect as it 
-may be to specify a format, does create a real connection between 
-the record and the output format specification.)
+Example:
+$ cat test.c
+#include <errno.h>
+#include <stdio.h>
+#include <time.h>
 
-> I think we should go with the printk solution for 2.6.31 and use 
-> the full development cycle for 2.6.32 to come up with something 
-> better.
->
-> As soon as a couple of large subsystems use the even tracer we 
-> also have a broader base examples to see how new syntax works on 
-> them.
-
-I think much of the tooling problem could be solved with a little 
-trick: the format string can be injected into an artificial .c file 
-(runtime), and the tool could compile that .c file (in user-space) 
-and get access to the result.
-
-For example, one of the more complex block tracepoints, 
-/debug/tracing/events/block/block_bio_backmerge:
-
-print fmt: "%d,%d %s %llu + %u [%s]", ((unsigned int) ((REC->dev) >> 
-20)), ((unsigned int) ((REC->dev) & ((1U << 20) - 1))), REC->rwbs, 
-(unsigned long long)REC->sector, REC->nr_sector, REC->comm
-
-when pasted verbatim into the stub below, produces:
-
-   0,6 a 7 + 8 [abc]
-
-Note that i pasted the format string into the code below unchanged, 
-and i used the format descriptor to create the record type. (this 
-too is easy to automate).
-
-If this is generated into the following function:
-
- format_block_bio_backmerge(struct record *rec);
-
-and a small dynamic library is built out of it, tooling can use 
-dlopen() to load those format printing stubs.
-
-It's all pretty straightforward and can be used for arbitrarily 
-complex formats.
-
-And i kind of like the whole notion on a design level as weell: the 
-kernel exporting C source code for tools :-)
-
-	Ingo
-
------------------->
-
-struct record {
-	unsigned short common_type;
-	unsigned char common_flags;
-	unsigned char common_preempt;
-	int common_pid;
-	int common_tgid;
-	int dev;
-	unsigned long long sector;
-	unsigned int nr_sector;
-	char rwbs[6];
-	char comm[16];
-} this_record = { 1, 2, 3, 4, 5, 6, 7, 8, { 'a', }, "abc" };
-
-void main(void)
+int main()
 {
-	struct record *REC = &this_record;
+        struct timespec ts;
+        int ret;
 
-	printf("%d,%d %s %llu + %u [%s]", ((unsigned int) ((REC->dev) >> 20)), ((unsigned int) ((REC->dev) & ((1U << 20) - 1))), REC->rwbs, (unsigned long long)REC->sector, REC->nr_sector, REC->comm);
+        ts.tv_sec = 100;
+        ts.tv_nsec = 0;
+
+        errno = 0;
+        ret = nanosleep(&ts, NULL);
+        printf("ret: %d, errno: %d\n", ret, errno);
+
+        return 0;
 }
+$ gcc test.c
+$ ./a.out &
+$ gdb -p "$(pidof a.out)" -ex 'call getuid()' -ex 'c' -ex 'quit'
+GNU gdb (GDB) 6.8.50.20090417-debian
+Copyright (C) 2009 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "arm-linux-gnueabi".
+For bug reporting instructions, please see:
+<http://www.gnu.org/software/gdb/bugs/>.
+Attaching to process 6136
+Reading symbols from /root/a.out...(no debugging symbols found)...done.
+Reading symbols from /lib/libc.so.6...Reading symbols from
+/usr/lib/debug/lib/libc-2.5.so...(no debugging symbols found)...done.
+(no debugging symbols found)...done.
+Loaded symbols for /lib/libc.so.6
+Reading symbols from /lib/ld-linux.so.3...Reading symbols from
+/usr/lib/debug/lib/ld-2.5.so...(no debugging symbols found)...done.
+(no debugging symbols found)...done.
+Loaded symbols for /lib/ld-linux.so.3
+0x400bf97c in nanosleep () from /lib/libc.so.6
+0x400bf97c <nanosleep+28>:      mov     r7, r12
+$1 = 0
+Continuing.
+ret: -1, errno: 516
 
+Program exited normally.
+[1] + Done                       ./a.out
