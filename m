@@ -1,51 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbZFJEYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbZFJEal@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752308AbZFJEYo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 00:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbZFJEYh
+	id S1752135AbZFJEal (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 00:30:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbZFJEad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 00:24:37 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42946 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750808AbZFJEYg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 00:24:36 -0400
-Message-ID: <4A2F353A.9040007@kernel.org>
-Date: Tue, 09 Jun 2009 21:23:22 -0700
-From: "H. Peter Anvin" <hpa@kernel.org>
-Organization: Linux Kernel Organization, Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 10 Jun 2009 00:30:33 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:46785 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750832AbZFJEad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 00:30:33 -0400
+Date: Wed, 10 Jun 2009 06:30:34 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>,
+       Boaz Harrosh <bharrosh@panasas.com>
+Subject: Re: [PATCH block#for-2.6.31] block: add request clone interface
+Message-ID: <20090610043034.GW11363@kernel.dk>
+References: <4A2E1490.7060902@ct.jp.nec.com> <20090609180344.GQ11363@kernel.dk> <4A2F1741.8090100@ct.jp.nec.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Harald Welte <HaraldWelte@viatech.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-Subject: Re: [PATCH] X86: cpu_debug support for VIA / Centaur CPU's
-References: <20090609082931.GD25316@prithivi.gnumonks.org> <1244537598.2558.9.camel@ht.satnam> <20090609145305.GD3986@prithivi.gnumonks.org> <20090609151557.GA9362@elte.hu>
-In-Reply-To: <20090609151557.GA9362@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A2F1741.8090100@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+On Wed, Jun 10 2009, Kiyoshi Ueda wrote:
+> Hi Jens,
 > 
-> MSRs should really be enumerated along CPU features. They will be 
-> accessed if a CPU offers that CPU feature.
+> On 06/10/2009 03:03 AM +0900, Jens Axboe wrote:
+> > On Tue, Jun 09 2009, Kiyoshi Ueda wrote:
+> >> Hi Jens,
+> >>
+> >> +/*
+> >> + * Copy request information of the original request to the clone request.
+> >> + */
+> >> +static void __blk_rq_prep_clone(struct request *dst, struct request *src)
+> >> +{
+> >> +	dst->cpu = src->cpu;
+> >> +	dst->cmd_flags = (rq_data_dir(src) | REQ_NOMERGE);
+> >> +	dst->cmd_type = src->cmd_type;
+> >> +	dst->__sector = blk_rq_pos(src);
+> >> +	dst->__data_len = blk_rq_bytes(src);
+> >> +	dst->nr_phys_segments = src->nr_phys_segments;
+> >> +	dst->ioprio = src->ioprio;
+> >> +	dst->buffer = src->buffer;
+> >> +	dst->cmd_len = src->cmd_len;
+> >> +	dst->cmd = src->cmd;
+> > 
+> > Are you making sure that 'src' always exists while 'dst' is alive?
 > 
-
-Nice in theory, but so many MSRs have to be enumerated with obscure test
-combinations, that it really isn't practical in the general case.  That
-is why we have the safe MSR variants.
-
+> Yes.
+> Request-based dm is the owner of 'src' (original) and
+> it never frees 'src' until the 'dst' (clone) are completed.
 > 
-> Yeah, the safe read should never fault - there should be all zeroes 
-> or an error return.
-> 
+> I avoided deep-copying __cmd/buffer/sense as it's costly
+> (additional allocation and memcpy).
+> And I don't think there are any needs for that.
+> But if anyone really wants that even with the copying cost,
+> please speak up.
 
-Error return, MSRs #GP if not present.  All zero means a present MSR
-(which is zero.)
+I just worry that the interface is easy to misuse. You don't document
+the requirement that the src request may not go away while dst is used,
+yet it's an important fact. The function advertises itself as a copy,
+you would not normally expect any such restrictions.
 
-	-hpa
+-- 
+Jens Axboe
 
