@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZFJF0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbZFJF2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881AbZFJF0W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 01:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZFJF0P
+	id S1756873AbZFJF2z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 01:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZFJF2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 01:26:15 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34093 "EHLO
+	Wed, 10 Jun 2009 01:28:47 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34208 "EHLO
 	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751810AbZFJF0O (ORCPT
+	with ESMTP id S1751930AbZFJF2r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 01:26:14 -0400
-Date: Wed, 10 Jun 2009 14:24:43 +0900
+	Wed, 10 Jun 2009 01:28:47 -0400
+Date: Wed, 10 Jun 2009 14:27:17 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-mm@kvack.org" <linux-mm@kvack.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
        apw@canonical.com, riel@redhat.com, minchan.kim@gmail.com,
        mel@csn.ul.ie
-Subject: [PATCH 1/2] lumpy reclaim: clean up and write lumpy reclaim
-Message-Id: <20090610142443.9370aff8.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH 2/2] memcg: fix LRU rotation at __isolate_page
+Message-Id: <20090610142717.09286cd2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090610142443.9370aff8.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090610142443.9370aff8.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -28,177 +31,93 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think lumpy reclaim should be updated to meet to current split-lru.
-This patch includes bugfix and cleanup. How do you think ?
+Depends on fix to lumpy reclaim, so, updated.
 
 ==
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-In lumpty reclaim, "cursor_page" is found just by pfn. Then, we don't know
-where "cursor" page came from. Then, putback it to "src" list is BUG.
-And as pointed out, current lumpy reclaim doens't seem to
-work as originally designed and a bit complicated. This patch adds a
-function try_lumpy_reclaim() and rewrite the logic.
+This patch tries to fix memcg's lru rotation sanity...make memcg use
+the same logic as global LRU does.
 
-The major changes from current lumpy reclaim is
-  - check migratetype before aggressive retry at failure.
-  - check PG_unevictable at failure.
-  - scan is done in buddy system order. This is a help for creating
-    a lump around targeted page. We'll create a continuous pages for buddy
-    allocator as far as we can _around_ reclaim target page.
+Now, at __isolate_lru_page() retruns -EBUSY, the page is rotated to
+the tail of LRU in global LRU's isolate LRU pages. But in memcg,
+it's not handled. This makes memcg do the same behavior as global LRU
+and rotate LRU in the page is busy.
 
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
 ---
- mm/vmscan.c |  120 +++++++++++++++++++++++++++++++++++-------------------------
- 1 file changed, 71 insertions(+), 49 deletions(-)
+ mm/memcontrol.c |   13 ++++++++++++-
+ mm/vmscan.c     |    4 +++-
+ 2 files changed, 15 insertions(+), 2 deletions(-)
 
 Index: mmotm-2.6.30-Jun10/mm/vmscan.c
 ===================================================================
 --- mmotm-2.6.30-Jun10.orig/mm/vmscan.c
 +++ mmotm-2.6.30-Jun10/mm/vmscan.c
-@@ -850,6 +850,69 @@ int __isolate_lru_page(struct page *page
- 	return ret;
- }
- 
-+static int
-+try_lumpy_reclaim(struct page *page, struct list_head *dst, int request_order)
-+{
-+	unsigned long buddy_base, buddy_idx, buddy_start_pfn, buddy_end_pfn;
-+	unsigned long pfn, page_pfn, page_idx;
-+	int zone_id, order, type;
-+	int do_aggressive = 0;
-+	int nr = 0;
-+	/*
-+	 * Lumpy reqraim. Try to take near pages in requested order to
-+	 * create free continous pages. This algorithm tries to start
-+	 * from order 0 and scan buddy pages up to request_order.
-+	 * If you are unsure about buddy position calclation, please see
-+	 * mm/page_alloc.c
-+	 */
-+	zone_id = page_zone_id(page);
-+	page_pfn = page_to_pfn(page);
-+	buddy_base = page_pfn & ~((1 << MAX_ORDER) - 1);
-+
-+	/* Can we expect succesful reclaim ? */
-+	type = get_pageblock_migratetype(page);
-+	if ((type == MIGRATE_MOVABLE) || (type == MIGRATE_RECLAIMABLE))
-+		do_aggressive = 1;
-+
-+	for (order = 0; order < request_order; ++order) {
-+		/* offset in this buddy region */
-+		page_idx = page_pfn & ~buddy_base;
-+		/* offset of buddy can be calculated by xor */
-+		buddy_idx = page_idx ^ (1 << order);
-+		buddy_start_pfn = buddy_base + buddy_idx;
-+		buddy_end_pfn = buddy_start_pfn + (1 << order);
-+
-+		/* scan range [buddy_start_pfn...buddy_end_pfn) */
-+		for (pfn = buddy_start_pfn; pfn < buddy_end_pfn; ++pfn) {
-+			/* Avoid holes within the zone. */
-+			if (unlikely(!pfn_valid_within(pfn)))
-+				break;
-+			page = pfn_to_page(pfn);
-+			/*
-+			 * Check that we have not crossed a zone boundary.
-+			 * Some arch have zones not aligned to MAX_ORDER.
-+			 */
-+			if (unlikely(page_zone_id(page) != zone_id))
-+				break;
-+
-+			/* we are always under ISOLATE_BOTH */
-+			if (__isolate_lru_page(page, ISOLATE_BOTH, 0) == 0) {
-+				list_move(&page->lru, dst);
-+				nr++;
-+			} else if (do_aggressive && !PageUnevictable(page))
-+					continue;
-+			else
-+				break;
-+		}
-+		/* we can't refill this order */
-+		if (pfn != buddy_end_pfn)
-+			break;
-+		if (buddy_start_pfn < page_pfn)
-+			page_pfn = buddy_start_pfn;
-+	}
-+	return nr;
-+}
-+
- /*
-  * zone->lru_lock is heavily contended.  Some of the functions that
-  * shrink the lists perform better by taking out a batch of pages
-@@ -875,14 +938,10 @@ static unsigned long isolate_lru_pages(u
- 		unsigned long *scanned, int order, int mode, int file)
- {
- 	unsigned long nr_taken = 0;
--	unsigned long scan;
-+	unsigned long scan, nr;
- 
- 	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
- 		struct page *page;
--		unsigned long pfn;
--		unsigned long end_pfn;
--		unsigned long page_pfn;
--		int zone_id;
- 
- 		page = lru_to_page(src);
- 		prefetchw_prev_lru_page(page, src, flags);
-@@ -903,52 +962,15 @@ static unsigned long isolate_lru_pages(u
- 		default:
- 			BUG();
- 		}
--
--		if (!order)
--			continue;
--
- 		/*
--		 * Attempt to take all pages in the order aligned region
--		 * surrounding the tag page.  Only take those pages of
--		 * the same active state as that tag page.  We may safely
--		 * round the target page pfn down to the requested order
--		 * as the mem_map is guarenteed valid out to MAX_ORDER,
--		 * where that page is in a different zone we will detect
--		 * it from its zone id and abort this block scan.
-+		 * Lumpy reclaim tries to free nearby pages regardless of
-+		 * their lru attributes(file, active, etc..)
+@@ -844,7 +844,6 @@ int __isolate_lru_page(struct page *page
  		 */
--		zone_id = page_zone_id(page);
--		page_pfn = page_to_pfn(page);
--		pfn = page_pfn & ~((1 << order) - 1);
--		end_pfn = pfn + (1 << order);
--		for (; pfn < end_pfn; pfn++) {
--			struct page *cursor_page;
--
--			/* The target page is in the block, ignore it. */
--			if (unlikely(pfn == page_pfn))
--				continue;
--
--			/* Avoid holes within the zone. */
--			if (unlikely(!pfn_valid_within(pfn)))
--				break;
--
--			cursor_page = pfn_to_page(pfn);
--
--			/* Check that we have not crossed a zone boundary. */
--			if (unlikely(page_zone_id(cursor_page) != zone_id))
--				continue;
--			switch (__isolate_lru_page(cursor_page, mode, file)) {
--			case 0:
--				list_move(&cursor_page->lru, dst);
--				nr_taken++;
--				scan++;
--				break;
--
--			case -EBUSY:
--				/* else it is being freed elsewhere */
--				list_move(&cursor_page->lru, src);
--			default:
--				break;	/* ! on LRU or wrong list */
--			}
-+		if (order && mode == ISOLATE_BOTH) {
-+			/* try to reclaim pages nearby this */
-+			nr = try_lumpy_reclaim(page, dst, order);
-+			nr_taken += nr;
-+			scan += nr;
+ 		ClearPageLRU(page);
+ 		ret = 0;
+-		mem_cgroup_del_lru(page);
+ 	}
+ 
+ 	return ret;
+@@ -898,6 +897,7 @@ try_lumpy_reclaim(struct page *page, str
+ 			/* we are always under ISOLATE_BOTH */
+ 			if (__isolate_lru_page(page, ISOLATE_BOTH, 0) == 0) {
+ 				list_move(&page->lru, dst);
++				mem_cgroup_del_lru(page);
+ 				nr++;
+ 			} else if (do_aggressive && !PageUnevictable(page))
+ 					continue;
+@@ -951,12 +951,14 @@ static unsigned long isolate_lru_pages(u
+ 		switch (__isolate_lru_page(page, mode, file)) {
+ 		case 0:
+ 			list_move(&page->lru, dst);
++			mem_cgroup_del_lru(page);
+ 			nr_taken++;
+ 			break;
+ 
+ 		case -EBUSY:
+ 			/* else it is being freed elsewhere */
+ 			list_move(&page->lru, src);
++			mem_cgroup_rotate_lru_list(page, page_lru(page));
+ 			continue;
+ 
+ 		default:
+Index: mmotm-2.6.30-Jun10/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.30-Jun10.orig/mm/memcontrol.c
++++ mmotm-2.6.30-Jun10/mm/memcontrol.c
+@@ -649,6 +649,7 @@ unsigned long mem_cgroup_isolate_pages(u
+ 	int zid = zone_idx(z);
+ 	struct mem_cgroup_per_zone *mz;
+ 	int lru = LRU_FILE * !!file + !!active;
++	int ret;
+ 
+ 	BUG_ON(!mem_cont);
+ 	mz = mem_cgroup_zoneinfo(mem_cont, nid, zid);
+@@ -666,9 +667,19 @@ unsigned long mem_cgroup_isolate_pages(u
+ 			continue;
+ 
+ 		scan++;
+-		if (__isolate_lru_page(page, mode, file) == 0) {
++		ret = __isolate_lru_page(page, mode, file);
++		switch (ret) {
++		case 0:
+ 			list_move(&page->lru, dst);
++			mem_cgroup_del_lru(page);
+ 			nr_taken++;
++			break;
++		case -EBUSY:
++			/* we don't affect global LRU but rotate in our LRU */
++			mem_cgroup_rotate_lru_list(page, page_lru(page));
++			break;
++		default:
++			break;
  		}
  	}
  
