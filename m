@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbZFJDfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbZFJDgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756510AbZFJDfA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbZFJDdf
+	id S1757820AbZFJDgt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755506AbZFJDd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:33:35 -0400
-Received: from kroah.org ([198.145.64.141]:56620 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:33:59 -0400
+Received: from kroah.org ([198.145.64.141]:56710 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755239AbZFJDdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:33:35 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:41 2009
-Message-Id: <20090610002341.473758727@blue.kroah.org>
+	id S1755932AbZFJDd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:33:58 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:42 2009
+Message-Id: <20090610002342.656864829@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:13:36 -0700
+Date: Tue, 09 Jun 2009 17:13:41 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mikulas Patocka <mpatocka@redhat.com>,
+       alan@lxorguk.ukuu.org.uk, Stanislaw Gruszka <sgruszka@redhat.com>,
        "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 08/60] sparc64: Fix crash with /proc/iomem
+Subject: [patch 13/60] myr10ge: again fix lro_gen_skb() alignment
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=sparc64-fix-crash-with-proc-iomem.patch
+Content-Disposition: inline; filename=myr10ge-again-fix-lro_gen_skb-alignment.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,39 +39,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Mikulas Patocka <mpatocka@redhat.com>
+From: Stanislaw Gruszka <sgruszka@redhat.com>
 
+[ Upstream commit 636d2f68a0814d84de26c021b2c15e3b4ffa29de ]
 
-[ Upstream commit 192d7a4667c6d11d1a174ec4cad9a3c5d5f9043c ]
+Add LRO alignment initially committed in
+621544eb8c3beaa859c75850f816dd9b056a00a3 ("[LRO]: fix lro_gen_skb()
+alignment") and removed in 0dcffac1a329be69bab0ac604bf7283737108e68
+("myri10ge: add multislices support") during conversion to
+multi-slice.
 
-When you compile kernel on Sparc64 with heap memory checking and type
-"cat /proc/iomem", you get a crash, because pointers in struct
-resource are uninitialized.
-
-Most code fills struct resource with zeros, so I assume that it is
-responsibility of the caller of request_resource to initialized it,
-not the responsibility of request_resource functuion.
-
-After 2.6.29 is out, there could be a check for uninitialized fields
-added to request_resource to avoid crashes like this.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/sparc64/kernel/pci_common.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/myri10ge/myri10ge.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/arch/sparc64/kernel/pci_common.c
-+++ b/arch/sparc64/kernel/pci_common.c
-@@ -368,7 +368,7 @@ static void pci_register_iommu_region(st
- 	const u32 *vdma = of_get_property(pbm->prom_node, "virtual-dma", NULL);
+--- a/drivers/net/myri10ge/myri10ge.c
++++ b/drivers/net/myri10ge/myri10ge.c
+@@ -2379,6 +2379,7 @@ static int myri10ge_open(struct net_devi
+ 		lro_mgr->lro_arr = ss->rx_done.lro_desc;
+ 		lro_mgr->get_frag_header = myri10ge_get_frag_header;
+ 		lro_mgr->max_aggr = myri10ge_lro_max_pkts;
++		lro_mgr->frag_align_pad = 2;
+ 		if (lro_mgr->max_aggr > MAX_SKB_FRAGS)
+ 			lro_mgr->max_aggr = MAX_SKB_FRAGS;
  
- 	if (vdma) {
--		struct resource *rp = kmalloc(sizeof(*rp), GFP_KERNEL);
-+		struct resource *rp = kzalloc(sizeof(*rp), GFP_KERNEL);
- 
- 		if (!rp) {
- 			prom_printf("Cannot allocate IOMMU resource.\n");
 
 
