@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760428AbZFJRPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbZFJRQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760428AbZFJRPr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 13:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753315AbZFJRPj
+	id S1758227AbZFJRQm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 13:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZFJRQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 13:15:39 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:41722 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751636AbZFJRPj (ORCPT
+	Wed, 10 Jun 2009 13:16:35 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:34467 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751889AbZFJRQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 13:15:39 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AroEADODL0pMQW1W/2dsb2JhbACBT89PhA0F
-Date: Wed, 10 Jun 2009 13:12:03 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: LTTng 0.140 for Linux 2.6.30
-Message-ID: <20090610171203.GA29555@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 10 Jun 2009 13:16:35 -0400
+Message-ID: <4A2FE9E1.3020705@zytor.com>
+Date: Wed, 10 Jun 2009 10:14:09 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] x86: cpu/proc.c adding extended_cpuid_level for
+ /proc/cpuinfo
+References: <1242112482.3283.1.camel@localhost.localdomain>	 <20090512232122.61f2d7c5.akpm@linux-foundation.org>	 <1244227115.2507.3.camel@ht.satnam>  <4A29862D.6030601@zytor.com>	 <1244262225.2449.22.camel@ht.satnam> <1244652044.3295.10.camel@ht.satnam>
+In-Reply-To: <1244652044.3295.10.camel@ht.satnam>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:06:30 up 102 days, 13:32,  6 users,  load average: 1.32, 2.02,
-	1.38
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>>>>
+>>> The more I'm thinking about this I think it was a mistake to put cpuid
+>>> level: there in the first place, too.  My opinion is increasingly to
+>>> leave this to x86info or other user-space tools.
+>>>
+>> cpuid level is as important as cpu family, model and stepping.
+>>
+>> For Intel, in some cases cpuid level is more important then cpu family,
+>> model and stepping. Like you cannot tell by looking at cpu family, model
+>> and stepping which model is new and which is old like 05_01 or 06_1A or
+>> 0F_03H ?
+>>
+>> But by looking at cpuid level and extended cpuid level you can tell
+>> which is new and which is old and which supports more features.
+>>
+>> So cpuid level and extended cpuid level is better scale than cpu family,
+>> model and stepping. So I think hiding this valuable information is a
+>> crime.
+> 
+> cpuid level and extended cpuid level tells the information about Intel
+> processor model.  Do you still think it is useless and should not be present
+> in /proc/cpuinfo .
+> 
 
-I just released LTTng 0.140 for the new kernel of the day. There were
-very few conflicts to resolve since the 2.6.30-rc5 version. None in the
-tracer "driver" part, only few in the overall kernel instrumentation.
+I think it's pointless, because if you're doing this kind of stuff you
+might as well talk to CPUID directly.  We have a CPUID interface
+already.  The kernel isn't meant to replicate x86info or any of those
+tools -- it really can't, and at that point why stop at x86info... we
+could replicate arbitrary applications at that point.
 
-Provided as-is, given my main test machine is currently busy running
-some formal verification. It builds fine though.
+As far as extended CPUID, why only the 0x0000 and 0x8000 ranges?
+Transmeta used 0x8086 and VIA uses 0xC000, but we don't even cache those
+internally, nevermind display them.
 
-As always, available on the kernel.org lttng tree and as a patchset. See
-http://www.lttng.org for details.
+I'm not really all that doctrinal about this, but I'd like to get a
+decent answer to the question "where does it stop, *and why*".  It's a
+slippery slope, and without a target, it goes on forever.
 
-Mathieu
-
+	-hpa
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
