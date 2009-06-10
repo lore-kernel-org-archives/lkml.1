@@ -1,1085 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbZFJWj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758864AbZFJWkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759622AbZFJWj3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 18:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbZFJWjU
+	id S1758864AbZFJWkS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 18:40:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756777AbZFJWkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 18:39:20 -0400
-Received: from tomts16-srv.bellnexxia.net ([209.226.175.4]:35771 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754951AbZFJWjS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 18:39:18 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqoEAIPJL0pMQW1W/2dsb2JhbACBT75oCJAagjIBHgiBNAU
-Date: Wed, 10 Jun 2009 18:13:04 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>, ltt-dev@lists.casi.polymtl.ca,
-       Robert Wisniewski <bob@watson.ibm.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] ring-buffer: add design document
-Message-ID: <20090610221304.GA3240@Krystal>
-References: <20090610195311.767699959@goodmis.org> <20090610195525.429316815@goodmis.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090610195525.429316815@goodmis.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 16:49:40 up 102 days, 17:15,  4 users,  load average: 0.65, 0.49,
-	0.75
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 10 Jun 2009 18:40:04 -0400
+Received: from thunk.org ([69.25.196.29]:35320 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755850AbZFJWkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 18:40:01 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] ext4 updates for 2.6.31
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1MEWSb-00072m-I1@closure.thunk.org>
+Date: Wed, 10 Jun 2009 18:39:57 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> This adds the design document for the ring buffer and also
-> explains how it is designed to have lockless writes.
-> 
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> ---
->  Documentation/trace/ring-buffer-design.txt |  949 ++++++++++++++++++++++++++++
->  1 files changed, 949 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/trace/ring-buffer-design.txt
-> 
-> diff --git a/Documentation/trace/ring-buffer-design.txt b/Documentation/trace/ring-buffer-design.txt
-> new file mode 100644
-> index 0000000..cca290b
-> --- /dev/null
-> +++ b/Documentation/trace/ring-buffer-design.txt
-> @@ -0,0 +1,949 @@
-> +		Lockless Ring Buffer Design
-> +		===========================
-> +
-> +Copyright 2009 Red Hat Inc.
-> +   Author:   Steven Rostedt <srostedt@redhat.com>
-> +  License:   The GNU Free Documentation License, Version 1.2
-> +               (dual licensed under the GPL v2)
-> +
-> +Written for: 2.6.31
-> +
-> +Terminology used in this Document
-> +---------------------------------
-> +
-> +tail - where new writes happen in the ring buffer.
-> +
-> +head - where new reads happen in the ring buffer.
-> +
-> +producer - the task that writes into the ring buffer (same as writer)
-> +
-> +writer - same as producer
-> +
-> +consumer - the task that reads from the buffer (same as reader)
-> +
-> +reader - same as consumer.
-> +
-> +reader_page - A page outside the ring buffer used solely (for the most part)
-> +    by the reader.
-> +
-> +head_page - a pointer to the page that the reader will use next
-> +
-> +tail_page - a pointer to the page that will be written to next
-> +
-> +commit_page - a pointer to the page with the last finished non nested write.
-> +
-> +cmpxchg - hardware assisted atomic transaction that performs the following:
-> +
-> +   A = B iff previous A == C
-> +
-> +   R = cmpxchg(A, C, B) is saying that we replace A with B if and only if
-> +      current A is equal to C, and we put the old (current) A into R
-> +
-> +   R gets the previous A regardless if A is updated with B or not.
-> +
-> +   To see if the update was successful a compare of R == C may be used.
-> +
-> +The Generic Ring Buffer
-> +-----------------------
-> +
-> +The ring buffer can be used in either an overwrite mode or in
-> +producer/consumer mode.
-> +
-> +Producer/consumer mode is where the producer were to fill up the
-> +buffer before the consumer could free up anything, the producer
-> +will stop writing to the buffer. This will lose most recent events.
-> +
-> +Overwrite mode is where the produce were to fill up the buffer
-> +before the consumer could free up anything, the producer will
-> +overwrite the older data. This will lose the oldest events.
-> +
-> +No two writers can write at the same time (on the same per cpu buffer),
-> +but a writer may preempt another writer, but it must finish writing
+Hi Linus,
 
-Hi Steven,
+Please pull from:
 
-I would use "interrupt" instead of "preempt" here, given that preemption
-implies scheduler activity which is specifically forbidden here.
+        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
 
-> +before the previous writer may continue. This is very important to the
-> +algorithm. The writers act like a "stack".
-> +
-> +
-> +  writer1 start
-> +     <preempted> writer2 start
-> +         <preempted> writer3 start
-> +                     writer3 finishes
-> +                 writer2 finishes
-> +  writer1 finishes
-> +
-> +This is very much like a writer being preempted by an interrupt and
-> +the interrupt doing a write as well.
-> +
-> +Readers can happen at any time. But no two readers may run at the
-> +same time, nor can a reader preempt another reader. A reader can not preempt
-> +a writer, but it may read/consume from the buffer at the same time as
-> +a writer is writing, but the reader must be on another processor.
-> +
-> +A writer can preempt a reader, but a reader can not preempt a writer.
-> +But a reader can read the buffer at the same time (on another processor)
-> +as a writer.
-> +
+to get the patches that have been queued for 2.6.31 (based off of
+2.6.28-rc8, although most have been in testing for quite longer than
+that -rc8).
 
-This comment is inconsistent with the following code comment :
+                                                - Ted
 
-"* Reads can happen on any CPU."
+Alberto Bertogli (1):
+      jbd2: Fix minor typos in comments in fs/jbd2/journal.c
 
-Readers should be allowed to read from their own cpu's buffers too, and
-support being interrupted by an incoming interrupt writer, but this
-design document does not discuss this case. Is it at all supported ? If
-not, then this algorithm would not work on uniprocessor.
+Andreas Dilger (1):
+      ext4: super.c whitespace cleanup
 
-> +The ring buffer is made up of a list of pages held together by a link list.
-> +
-> +At initialization a reader page is allocated for the reader that is not
-> +part of the ring buffer.
-> +
-> +The head_page, tail_page and commit_page are all initialized to point
-> +to the same page.
-> +
-> +The reader page is initialized to have its next pointer pointing to
-> +the head page, and its previous pointer pointing to a page before
-> +the head page.
-> +
-> +The reader has its own page to use. At start up time, this page is
-> +allocated but is not attached to the list. When the reader wants
-> +to read from the buffer, if its page is empty (like it is on start up)
-> +it will swap its page with the head_page. The old reader page will
-> +become part of the ring buffer and the head_page will be removed.
-> +A new head page goes to the page after the old head page (but not
-> +the page that was swapped in).
-> +
-> +Once the new page is given to the reader, the reader could do what
-> +it wants with it, as long as a writer has left that page.
-> +
-> +A sample of how the reader page is swapped: Note this does not
-> +show the head page in the buffer, it is for demonstrating a swap
-> +only.
-> +
-> +  +------+
-> +  |reader|          RING BUFFER
-> +  |page  |
-> +  +------+
-> +                  +---+   +---+   +---+
-> +                  |   |-->|   |-->|   |
-> +                  |   |<--|   |<--|   |
-> +                  +---+   +---+   +---+
-> +                   ^ |             ^ |
-> +                   | +-------------+ |
-> +                   +-----------------+
-> +
-> +
-> +  +------+
-> +  |reader|          RING BUFFER
-> +  |page  |-------------------+
-> +  +------+                   v
-> +    |             +---+   +---+   +---+
-> +    |             |   |-->|   |-->|   |
-> +    |             |   |<--|   |<--|   |<-+
-> +    |             +---+   +---+   +---+  |
-> +    |              ^ |             ^ |   |
-> +    |              | +-------------+ |   |
-> +    |              +-----------------+   |
-> +    +------------------------------------+
-> +
-> +  +------+
-> +  |reader|          RING BUFFER
-> +  |page  |-------------------+
-> +  +------+ <---------------+ v
-> +    |  ^          +---+   +---+   +---+
-> +    |  |          |   |-->|   |-->|   |
-> +    |  |          |   |<--|   |<--|   |<-+
-> +    |  |          +---+   +---+   +---+  |
-> +    |  |             |             ^ |   |
-> +    |  |             +-------------+ |   |
-> +    |  +-----------------------------+   |
-> +    +------------------------------------+
-> +
-> +  +------+
-> +  |buffer|          RING BUFFER
-> +  |page  |-------------------+
-> +  +------+ <---------------+ v
-> +    |  ^          +---+   +---+   +---+
-> +    |  |          |   |   |   |-->|   |
-> +    |  |  New     |   |   |   |<--|   |<-+
-> +    |  | Reader   +---+   +---+   +---+  |
-> +    |  |  page ----^                 |   |
-> +    |  |                             |   |
-> +    |  +-----------------------------+   |
-> +    +------------------------------------+
-> +
+Aneesh Kumar K.V (9):
+      ext4: Properly initialize the buffer_head state
+      vfs: Add BUG_ON for delayed and unwritten flags in submit_bh()
+      ext4: Mark the unwritten buffer_head as mapped during write_begin
+      ext4: hook fiemap operation for directories
+      vfs: Enable FS_IOC_FIEMAP and FIGETBSZ for all filetypes
+      ext4: Convert ext4_lock_group to use sb_bgl_lock
+      ext4: Avoid leaking blocks after a block allocation failure
+      ext4: truncate the file properly if we fail to copy data from userspace
+      ext4: Avoid corrupting the uninitialized bit in the extent during truncate
 
-Nice ascii art ;)
+Curt Wohlgemuth (1):
+      ext4: Make the length of the mb_history file tunable
 
-Some important comments below,
+Eric Sandeen (2):
+      ext4: fix for fiemap last-block test
+      ext4: Change all super.c messages to print the device
 
-> +
-> +
-> +It is possible that the page swapped is the commit page and the tail page,
-> +if what is in the ring buffer is less than what is held in a buffer page.
-> +
-> +
-> +          reader page    commit page   tail page
-> +              |              |             |
-> +              v              |             |
-> +             +---+           |             |
-> +             |   |<----------+             |
-> +             |   |<------------------------+
-> +             |   |------+
-> +             +---+      |
-> +                        |
-> +                        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |--->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +This case is still legal for this algorithm.
-> +When the writer leaves the page, it simply goes into the ring buffer
-> +since the reader page still points to the next location in the ring
-> +buffer.
-> +
-> +
-> +The main pointers:
-> +
-> +  reader page - The page used solely by the reader and is not part
-> +                of the ring buffer (may be swapped in)
-> +
-> +  head page - the next page in the ring buffer that will be swapped
-> +              with the reader page.
-> +
-> +  tail page - the page where the next write will take place.
-> +
-> +  commit page - the page that last finished a write.
-> +
-> +The commit page only is updated by the outer most writer in the
-> +writer stack. A writer that preempts another writer will not move the
-> +commit page.
-> +
-> +When data is written into the ring buffer, a position is reserved
-> +in the ring buffer and passed back to the writer. When the writer
-> +is finished writing data into that position, it commits the write.
-> +
-> +Another write (or a read) may take place at anytime during this
-> +transaction. If another write happens it must finish before continuing
-> +with the previous write.
-> +
-> +
-> +   Write reserve:
-> +
-> +       Buffer page
-> +      +---------+
-> +      |written  |
-> +      +---------+  <--- given back to writer (current commit)
-> +      |reserved |
-> +      +---------+ <--- tail pointer
-> +      | empty   |
-> +      +---------+
-> +
-> +   Write commit:
-> +
-> +       Buffer page
-> +      +---------+
-> +      |written  |
-> +      +---------+
-> +      |written  |
-> +      +---------+  <--- next positon for write (current commit)
-> +      | empty   |
-> +      +---------+
-> +
-> +
-> + If a write happens after the first reserve:
-> +
-> +       Buffer page
-> +      +---------+
-> +      |written  |
-> +      +---------+  <-- current commit
-> +      |reserved |
-> +      +---------+  <--- given back to second writer
-> +      |reserved |
-> +      +---------+ <--- tail pointer
-> +
-> +  After second writer commits:
-> +
-> +
-> +       Buffer page
-> +      +---------+
-> +      |written  |
-> +      +---------+  <--(last full commit)
-> +      |reserved |
-> +      +---------+
-> +      |pending  |
-> +      |commit   |
-> +      +---------+ <--- tail pointer
-> +
-> +  When the first writer commits:
-> +
-> +       Buffer page
-> +      +---------+
-> +      |written  |
-> +      +---------+
-> +      |written  |
-> +      +---------+
-> +      |written  |
-> +      +---------+  <--(last full commit and tail pointer)
-> +
-> +
-> +The commit pointer points to the last write location that was
-> +committed without preempting another write. When a write that
-> +preempted another write is committed, it only becomes a pending commit
-> +and will not be a full commit till all writes have been committed.
-> +
-> +The commit page points to the page that has the last full commit.
-> +The tail page points to the page with the last write (before
-> +committing).
-> +
-> +The tail page is always equal to or after the commit page. It may
-> +be several pages ahead. If the tail page catches up to the commit
-> +page then no more writes may take place (regardless of the mode
-> +of the ring buffer: overwrite and produce/consumer).
-> +
-> +The order of pages are:
-> +
-> + head page
-> + commit page
-> + tail page
-> +
-> +Possible scenario:
-> +                             tail page
-> +  head page         commit page  |
-> +      |                 |        |
-> +      v                 v        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |--->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +There is a special case that the head page is after either the commit page
-> +and possibly the tail page. That is when the commit (and tail) page has been
-> +swapped with the reader page. This is because the head page is always
-> +part of the ring buffer, but the reader page is not. When ever there
-> +has been less than a full page that has been committed inside the ring buffer,
-> +and a reader swaps out a page, it will be swapping out the commit page.
-> +
-> +
-> +          reader page    commit page   tail page
-> +              |              |             |
-> +              v              |             |
-> +             +---+           |             |
-> +             |   |<----------+             |
-> +             |   |<------------------------+
-> +             |   |------+
-> +             +---+      |
-> +                        |
-> +                        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |--->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +                        ^
-> +                        |
-> +                    head page
-> +
-> +
-> +In this case, the head page will not move when the tail and commit
-> +move back into the ring buffer.
-> +
-> +The reader can not swap a page into the ring buffer if the commit page
-> +is still on that page. If the read meets the last commit (real commit
-> +not pending or reserved), then there is nothing more to read.
-> +The buffer is considered empty until another full commit finishes.
-> +
-> +When the tail meets the head page, if the buffer is in overwrite mode,
-> +the head page will be pushed ahead one. If the buffer is in producer/consumer
-> +mode, the write will fail.
-> +
-> +Overwrite mode:
-> +
-> +            tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |--->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +                        ^
-> +                        |
-> +                    head page
-> +
-> +
-> +            tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |--->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +                                 ^
-> +                                 |
-> +                             head page
-> +
-> +
-> +                    tail page
-> +                        |
-> +                        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |--->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +                                 ^
-> +                                 |
-> +                             head page
-> +
-> +Note, the reader page will still point to the previous head page.
-> +But when a swap takes place, it will use the most recent head page.
-> +
-> +
-> +Making the Ring Buffer Lockless:
-> +--------------------------------
-> +
-> +The main idea behind the lockless algorithm is to combine the moving
-> +of the head_page pointer with the swapping of pages with the reader.
-> +State flags are placed inside the pointer to the page. To do this,
-> +each page must be aligned in memory by 4 bytes. This will allow the 2
-> +least significant bits of the address to be used as flags. Since
-> +they will always be zero for the address. To get the address,
-> +simply mask out the flags.
-> +
-> +  MASK = ~3
-> +
-> +  address & MASK
-> +
-> +Two flags will be kept by these two bits:
-> +
-> +   HEADER - the page being pointed to is a head page
-> +
-> +   UPDATE - the page being pointed to is being updated by a writer
-> +          and was or is about to be a head page.
-> +
-> +
-> +          reader page
-> +              |
-> +              v
-> +             +---+
-> +             |   |------+
-> +             +---+      |
-> +                        |
-> +                        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-H->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +
-> +The above pointer "-H->" would have the HEADER flag set. That is
-> +the next page is the next page to be swapped out by the reader.
-> +This pointer means the next page is the head page.
-> +
-> +When the tail page meets the head pointer, it will use cmpxchg to
-> +change the pointer to the UPDATE state:
-> +
-> +
-> +            tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-H->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +            tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +"-U->" represents a pointer in the UPDATE state.
-> +
-> +Any access to the reader will need to take some sort of lock to serialize
-> +the readers. But the writers will never take a lock to write to the
-> +ring buffer. This means we only need to worry about a single reader,
-> +and writes only preempt in "stack" formation.
-> +
-> +When the reader tries to swap the page with the ring buffer, it
-> +will also use cmpxchg. If the flag bit in the pointer to the
-> +head page does not have the HEADER flag set, the compare will fail
-> +and the reader will need to look for the new head page and try again.
-> +Note, the flag UPDATE and HEADER are never set at the same time.
-> +
-> +The reader swaps the reader page as follows:
-> +
-> +  +------+
-> +  |reader|          RING BUFFER
-> +  |page  |
-> +  +------+
-> +                  +---+    +---+    +---+
-> +                  |   |--->|   |--->|   |
-> +                  |   |<---|   |<---|   |
-> +                  +---+    +---+    +---+
-> +                   ^ |               ^ |
-> +                   | +---------------+ |
-> +                   +-----H-------------+
-> +
-> +The reader sets the reader page next pointer as HEADER to the page after
-> +the head page.
-> +
-> +
-> +  +------+
-> +  |reader|          RING BUFFER
-> +  |page  |-------H-----------+
-> +  +------+                   v
-> +    |             +---+    +---+    +---+
-> +    |             |   |--->|   |--->|   |
-> +    |             |   |<---|   |<---|   |<-+
-> +    |             +---+    +---+    +---+  |
-> +    |              ^ |               ^ |   |
-> +    |              | +---------------+ |   |
-> +    |              +-----H-------------+   |
-> +    +--------------------------------------+
-> +
-> +It does a cmpxchg with the pointer to the previous head page to make it
-> +point to the reader page. Note that the new pointer does not have the HEADER
-> +flag set.  This action atomically moves the head page forward.
-> +
-> +  +------+
-> +  |reader|          RING BUFFER
-> +  |page  |-------H-----------+
-> +  +------+ <---------------+ v
-> +    |  ^          +---+   +---+   +---+
-> +    |  |          |   |-->|   |-->|   |
-> +    |  |          |   |<--|   |<--|   |<-+
-> +    |  |          +---+   +---+   +---+  |
-> +    |  |             |             ^ |   |
-> +    |  |             +-------------+ |   |
-> +    |  +-----------------------------+   |
-> +    +------------------------------------+
-> +
-> +After the new head page is set, the previous pointer of the head page is
-> +updated to the reader page.
-> +
-> +  +------+
-> +  |reader|          RING BUFFER
-> +  |page  |-------H-----------+
-> +  +------+                   v
-> +    |  ^          +---+   +---+   +---+
-> +    |  |          |   |-->|   |-->|   |
-> +    |  |          |   |<--|   |<--|   |<-+
-> +    |  |          +---+   +---+   +---+  |
-> +    |  |             |             ^ |   |
-> +    |  |             +-------------+ |   |
-> +    |  +-----------------------------+   |
-> +    +------------------------------------+
-> +
-> +  +------+
-> +  |buffer|          RING BUFFER
-> +  |page  |-------H-----------+  <--- New head page
-> +  +------+ <---------------+ v
-> +    |  ^          +---+   +---+   +---+
-> +    |  |          |   |   |   |-->|   |
-> +    |  |  New     |   |   |   |<--|   |<-+
-> +    |  | Reader   +---+   +---+   +---+  |
-> +    |  |  page ----^                 |   |
-> +    |  |                             |   |
-> +    |  +-----------------------------+   |
-> +    +------------------------------------+
-> +
-> +Another important point. The page that the reader page points back to
-> +by its previous pointer (the one that now points to the new head page)
-> +never points back to the reader page. That is because the reader page is
-> +not part of the ring buffer. Traversing the ring buffer via the next pointers
-> +will always stay in the ring buffer. Traversing the ring buffer via the
-> +prev pointers may not.
-> +
-> +Note, the way to determine a reader page is simply by examining the previous
-> +pointer of the page. If the next pointer of the previous page does not
-> +point back to the original page, then the original page is a reader page:
-> +
-> +                                  
-> +             +--------+
-> +             | reader |  next   +----+
-> +             |  page  |-------->|    |<====== (buffer page)
-> +             +--------+         +----+
-> +                 |                | ^
-> +                 |                v | next
-> +            prev |              +----+
-> +                 +------------->|    |
-> +                                +----+
-> +
-> +The way the head page moves forward:
-> +
-> +When the tail page meets the head page and the buffer is in overwrite mode
-> +and more writes take place, the head page must be moved forward before the
-> +writer may move the tail page. The way this is done is that the writer
-> +performs a cmpxchg to convert the pointer to the head page from the HEADER
-> +flag to have the UPDATE flag set. Once this is done, the reader will
-> +not be able to swap the head page from the buffer, nor will it be able to
-> +move the head page, until the writer is finished with the move.
-> +
-> +This eliminates any races that the reader can have on the writer. The reader
-> +must spin, and this is why the reader can not preempt the writer.
-> +
-> +            tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-H->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +            tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +The following page will be made into the new head page.
-> +
-> +           tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |-H->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +After the new head page has been set, we can set the old head page
-> +pointer back to NORMAL.
-> +
-> +           tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |--->|   |-H->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +After the head page has been moved, the tail page may now move forward.
-> +
-> +                    tail page
-> +                        |
-> +                        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |--->|   |-H->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +
-> +The above are the trivial updates. Now for the more complex scenarios.
-> +
-> +
-> +As stated before, if enough writes preempt the first write, the
-> +tail page may make it all the way around the buffer and meet the commit
-> +page. At this time, we must start dropping writes (usually with some kind
-> +of warning to the user). But what happens if the commit was still on the
-> +reader page? The commit page is not part of the ring buffer. The tail page
-> +must account for this.
-> +
-> +
-> +          reader page    commit page
-> +              |              |
-> +              v              |
-> +             +---+           |
-> +             |   |<----------+
-> +             |   |
-> +             |   |------+
-> +             +---+      |
-> +                        |
-> +                        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-H->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +               ^
-> +               |
-> +           tail page
-> +
-> +If the tail page were to simply push the head page forward, the commit when
-> +leaving the reader page would not be pointing to the correct page.
-> +
-> +The solution to this is to test if the commit page is on the reader page
-> +before pushing the head page. If it is, then it can be assumed that the
-> +tail page wrapped the buffer, and we must drop new writes.
-> +
-> +This is not a race condition, because the commit page can only be moved
-> +by the outter most writer (the writer that was preempted).
-> +This means that the commit will not move while a writer is moving the
-> +tail page. The reader can not swap the reader page if it is also being
-> +used as the commit page. The reader can simply check that the commit
-> +is off the reader page. Once the commit page leaves the reader page
-> +it will never go back on it unless a reader does another swap with the
-> +buffer page that is also the commit page.
-> +
-> +
-> +Nested writes
-> +-------------
-> +
-> +In the pushing forward of the tail page we must first push forward
-> +the head page if the head page is the next page. If the head page
-> +is not the next page, the tail page is simply updated with a cmpxchg.
-> +
-> +Only writers move the tail page. This must be done atomically to protect
-> +against nested writers.
-> +
-> +  temp_page = tail_page
-> +  next_page = temp_page->next
-> +  cmpxchg(tail_page, temp_page, next_page)
-> +
+Jan Kara (1):
+      ext4: Get rid of EXTEND_DISKSIZE flag of ext4_get_blocks_handle()
 
-OK, I'll bite :
+Manish Katiyar (3):
+      ext4: Fix memory leak in ext4_fill_super() in case of a failed mount
+      ext3: Fix memory leak in ext3_fill_super() in case of a failed mount
+      ext2: Fix memory leak in ext2_fill_super() in case of a failed mount
 
-What happens if :
+Theodore Ts'o (29):
+      ext4: Fallback to vmalloc if kmalloc can't allocate s_flex_groups array
+      ext4: Use is_power_of_2() for clarity
+      ext4: Simplify ext4_commit_super()'s function signature
+      ext4: Fix and simplify s_dirt handling
+      ext4: Use separate super_operations structure for no_journal filesystems
+      ext4: Avoid races caused by on-line resizing and SMP memory reordering
+      ext4: Remove outdated comment about lock_super()
+      ext4: ext4_mark_recovery_complete() doesn't need to use lock_super
+      ext4: Replace lock/unlock_super() with an explicit lock for the orphan list
+      ext4: Replace lock/unlock_super() with an explicit lock for resizing
+      ext4: Don't avoid using BLOCK_UNINIT block groups in mballoc
+      ext4: Move the ext4_i.h header file into ext4.h
+      ext4: Move the ext4_sb.h header file into ext4.h
+      ext4: Move fs/ext4/namei.h into ext4.h
+      ext4: Move fs/ext4/group.h into ext4.h
+      ext4: fix the length returned by fiemap for an unallocated extent
+      ext4: Simplify function signature for ext4_da_get_block_write()
+      ext4: Rename ext4_get_blocks_handle() to be ext4_ind_get_blocks()
+      ext4: Rename ext4_get_blocks_wrap() to be ext4_get_blocks()
+      ext4: Define a new set of flags for ext4_get_blocks()
+      ext4: Add documentation to the ext4_*get_block* functions
+      ext4: Add BUG_ON debugging checks to noalloc_get_block_write()
+      ext4: Merge ext4_da_get_block_write() into mpage_da_map_blocks()
+      ext4: Clean up ext4_get_blocks() so it does not depend on bh_result->b_state
+      ext4: Add a comprehensive block validity check to ext4_get_blocks()
+      ext4: down i_data_sem only for read when walking tree for fiemap
+      ext4: remove unused function __ext4_write_dirty_metadata
+      ext4: Clean up calls to ext4_get_group_desc()
+      ext4: Don't treat a truncation of a zero-length file as replace-via-truncate
 
-- a writer is at the end of a page, 
-- needs to push the tail_page pointer
-- reads tail_page
-  - interrupted.
-  - nested writers come, successfully updates the tail_page, write
-    enough data to fill the whole buffer
-  - concurrently (on another CPU), a reader is consuming all the data
-  - This brings the tail_page pointer back to its original value
-  - iret
-- here, the writer will successfully perform the tail_page cmpxchg,
-  because the value match. However, the page currently being written to
-  could be only partially reserved; the writer will not re-check if the
-  page is really full.
+Toshiyuki Okajima (1):
+      ext4: fix dx_map_entry to support 256k directory blocks
 
-That's actually one of my main concerns with an approach where two
-separate "pointers" are used to keep track of reserved space within a
-buffer.
+Vincent Minet (1):
+      ext4: Fix spinlock assertions on UP systems
 
-The same concern applies to moving the head page when concurrent writers
-are nesting.
+ fs/buffer.c              |    2 +
+ fs/ext2/super.c          |    1 +
+ fs/ext3/super.c          |    1 +
+ fs/ext4/Makefile         |    4 +-
+ fs/ext4/balloc.c         |   28 +-
+ fs/ext4/block_validity.c |  244 ++++++++++++++
+ fs/ext4/dir.c            |    3 +-
+ fs/ext4/ext4.h           |  354 ++++++++++++++++++--
+ fs/ext4/ext4_i.h         |  140 --------
+ fs/ext4/ext4_sb.h        |  161 ---------
+ fs/ext4/extents.c        |   85 ++---
+ fs/ext4/group.h          |   29 --
+ fs/ext4/ialloc.c         |   73 ++---
+ fs/ext4/inode.c          |  593 ++++++++++++++++++++-------------
+ fs/ext4/mballoc.c        |  166 ++++------
+ fs/ext4/mballoc.h        |    1 -
+ fs/ext4/namei.c          |   27 +-
+ fs/ext4/namei.h          |    8 -
+ fs/ext4/resize.c         |   36 +-
+ fs/ext4/super.c          |  831 ++++++++++++++++++++++++----------------------
+ fs/ioctl.c               |   14 +-
+ fs/jbd2/journal.c        |    8 +-
+ fs/mpage.c               |    6 +-
+ 23 files changed, 1582 insertions(+), 1233 deletions(-)
 
-More generally, I'm also concerned about the lack of memory barriers
-around some non-cmpxchg tail/head page set operations in your code, and
-the lack of proper rcu_dereference-style primitive for list iteration.
 
-For those I've added to CC, I'm referring to the patch at :
-
-http://patchwork.kernel.org/patch/29395/
-
-The great news to me is that no one can say LTTng's lockless buffering
-algorithm is complex compared to this. ;)
-
-Mathieu
-
-> +The above will update the tail page if it is still pointing to the expected
-> +page. If this fails, a nested write pushed it forward, the the current write
-> +does not need to push it.
-> +
-> +
-> +           temp page
-> +               |
-> +               v
-> +            tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |--->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +Nested write comes in and moves the tail page forward:
-> +
-> +                    tail page (moved by nested writer)
-> +            temp page   |
-> +               |        |
-> +               v        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |--->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +The above would fail the cmpxchg, but since the tail page has already
-> +been moved forward, the writer will just try again to reserve storage
-> +on the new tail page.
-> +
-> +But the moving of the head page is a bit more complex.
-> +
-> +            tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-H->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +The write converts the head page pointer to UPDATE.
-> +
-> +            tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +But if a nested writer preempts here. It will see that the next
-> +page is a head page, but it is also nested. It will detect that
-> +it is nested and will save that information. The detection is the
-> +fact that it sees the UPDATE flag instead of a HEADER or NORMAL
-> +pointer.
-> +
-> +The nested writer will set the new head page pointer.
-> +
-> +           tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |-H->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +But it will not reset the update back to normal. Only the writer
-> +that converted a pointer from HEAD to UPDATE will convert it back
-> +to NORMAL.
-> +
-> +                    tail page
-> +                        |
-> +                        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |-H->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +After the nested writer finishes, the outer most writer will convert
-> +the UPDATE pointer to NORMAL.
-> +
-> +
-> +                    tail page
-> +                        |
-> +                        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |--->|   |-H->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +
-> +It can be even more complex if several nested writes came in and moved
-> +the tail page ahead several pages:
-> +
-> +
-> +(first writer)
-> +
-> +            tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-H->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +The write converts the head page pointer to UPDATE.
-> +
-> +            tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |--->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +Next writer comes in, and sees the update and sets up the new
-> +head page.
-> +
-> +(second writer)
-> +
-> +           tail page
-> +               |
-> +               v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |-H->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +The nested writer moves the tail page forward. But does not set the old
-> +update page to NORMAL because it is not the outer most writer.
-> +
-> +                    tail page
-> +                        |
-> +                        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |-H->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +Another writer preempts and sees the page after the tail page is a head page.
-> +It changes it from HEAD to UPDATE.
-> +
-> +(third writer)
-> +
-> +                    tail page
-> +                        |
-> +                        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |-U->|   |--->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +The writer will move the head page forward:
-> +
-> +
-> +(third writer)
-> +
-> +                    tail page
-> +                        |
-> +                        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |-U->|   |-H->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +But now that the third writer did change the HEAD flag to UPDATE it
-> +will convert it to normal:
-> +
-> +
-> +(third writer)
-> +
-> +                    tail page
-> +                        |
-> +                        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |--->|   |-H->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +
-> +Then it will move the tail page, and return back to the second writer.
-> +
-> +
-> +(second writer)
-> +
-> +                             tail page
-> +                                 |
-> +                                 v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |--->|   |-H->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +
-> +The second writer will fail to move the tail page because it was already
-> +moved, so it will try again and add its data to the new tail page.
-> +It will return to the first writer.
-> +
-> +
-> +(first writer)
-> +
-> +                             tail page
-> +                                 |
-> +                                 v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |--->|   |-H->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +The first writer can not know atomically test if the tail page moved
-> +while it updates the HEAD page. It will then update the head page to
-> +what it thinks is the new head page.
-> +
-> +
-> +(first writer)
-> +
-> +                             tail page
-> +                                 |
-> +                                 v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |-H->|   |-H->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +Since the cmpxchg returns the old value of the pointer the first writer
-> +will see it succeeded in updating the pointer from NORMAL to HEAD.
-> +But as we can see, this is not good enough. It must also check to see
-> +if the tail page is either where it use to be or on the next page:
-> +
-> +
-> +(first writer)
-> +
-> +               A        B    tail page
-> +               |        |        |
-> +               v        v        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |-H->|   |-H->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +If tail page != A and tail page does not equal B, then it must reset the
-> +pointer back to NORMAL. The fact that it only needs to worry about
-> +nested writers, it only needs to check this after setting the HEAD page.
-> +
-> +
-> +(first writer)
-> +
-> +               A        B    tail page
-> +               |        |        |
-> +               v        v        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |-U->|   |--->|   |-H->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> +Now the writer can update the head page. This is also why the head page must
-> +remain in UPDATE and only reset by the outer most writer. This prevents
-> +the reader from seeing the incorrect head page.
-> +
-> +
-> +(first writer)
-> +
-> +               A        B    tail page
-> +               |        |        |
-> +               v        v        v
-> +    +---+    +---+    +---+    +---+
-> +<---|   |--->|   |--->|   |--->|   |-H->
-> +--->|   |<---|   |<---|   |<---|   |<---
-> +    +---+    +---+    +---+    +---+
-> +
-> -- 
-> 1.6.3.1
-> 
-> -- 
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
