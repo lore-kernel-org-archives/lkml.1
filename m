@@ -1,131 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbZFJGL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbZFJGWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbZFJGL2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 02:11:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbZFJGLV
+	id S1754193AbZFJGWf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 02:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbZFJGWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 02:11:21 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36009 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751878AbZFJGLV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 02:11:21 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/2] lumpy reclaim: clean up and write lumpy reclaim
-Cc: kosaki.motohiro@jp.fujitsu.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+	Wed, 10 Jun 2009 02:22:24 -0400
+Received: from ozlabs.org ([203.10.76.45]:41191 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751916AbZFJGWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 02:22:24 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH 4/6] x86/cpufreq: use cpumask_copy instead of =
+Date: Wed, 10 Jun 2009 13:50:22 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       apw@canonical.com, riel@redhat.com, minchan.kim@gmail.com,
-       mel@csn.ul.ie
-In-Reply-To: <20090610142443.9370aff8.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090610142443.9370aff8.kamezawa.hiroyu@jp.fujitsu.com>
-Message-Id: <20090610151027.DDBA.A69D9226@jp.fujitsu.com>
+       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org
+References: <4A2835D8.6040903@kernel.org> <200906091627.45411.rusty@rustcorp.com.au> <4A2E19A7.1000302@kernel.org>
+In-Reply-To: <4A2E19A7.1000302@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 10 Jun 2009 15:11:21 +0900 (JST)
+Content-Disposition: inline
+Message-Id: <200906101350.23594.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I think lumpy reclaim should be updated to meet to current split-lru.
-> This patch includes bugfix and cleanup. How do you think ?
-> 
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
-> In lumpty reclaim, "cursor_page" is found just by pfn. Then, we don't know
-> where "cursor" page came from. Then, putback it to "src" list is BUG.
-> And as pointed out, current lumpy reclaim doens't seem to
-> work as originally designed and a bit complicated. This patch adds a
-> function try_lumpy_reclaim() and rewrite the logic.
-> 
-> The major changes from current lumpy reclaim is
->   - check migratetype before aggressive retry at failure.
->   - check PG_unevictable at failure.
->   - scan is done in buddy system order. This is a help for creating
->     a lump around targeted page. We'll create a continuous pages for buddy
->     allocator as far as we can _around_ reclaim target page.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  mm/vmscan.c |  120 +++++++++++++++++++++++++++++++++++-------------------------
->  1 file changed, 71 insertions(+), 49 deletions(-)
-> 
-> Index: mmotm-2.6.30-Jun10/mm/vmscan.c
-> ===================================================================
-> --- mmotm-2.6.30-Jun10.orig/mm/vmscan.c
-> +++ mmotm-2.6.30-Jun10/mm/vmscan.c
-> @@ -850,6 +850,69 @@ int __isolate_lru_page(struct page *page
->  	return ret;
->  }
->  
-> +static int
-> +try_lumpy_reclaim(struct page *page, struct list_head *dst, int request_order)
-> +{
-> +	unsigned long buddy_base, buddy_idx, buddy_start_pfn, buddy_end_pfn;
-> +	unsigned long pfn, page_pfn, page_idx;
-> +	int zone_id, order, type;
-> +	int do_aggressive = 0;
-> +	int nr = 0;
-> +	/*
-> +	 * Lumpy reqraim. Try to take near pages in requested order to
-> +	 * create free continous pages. This algorithm tries to start
-> +	 * from order 0 and scan buddy pages up to request_order.
-> +	 * If you are unsure about buddy position calclation, please see
-> +	 * mm/page_alloc.c
-> +	 */
-> +	zone_id = page_zone_id(page);
-> +	page_pfn = page_to_pfn(page);
-> +	buddy_base = page_pfn & ~((1 << MAX_ORDER) - 1);
-> +
-> +	/* Can we expect succesful reclaim ? */
-> +	type = get_pageblock_migratetype(page);
-> +	if ((type == MIGRATE_MOVABLE) || (type == MIGRATE_RECLAIMABLE))
-> +		do_aggressive = 1;
-> +
-> +	for (order = 0; order < request_order; ++order) {
-> +		/* offset in this buddy region */
-> +		page_idx = page_pfn & ~buddy_base;
-> +		/* offset of buddy can be calculated by xor */
-> +		buddy_idx = page_idx ^ (1 << order);
-> +		buddy_start_pfn = buddy_base + buddy_idx;
-> +		buddy_end_pfn = buddy_start_pfn + (1 << order);
-> +
-> +		/* scan range [buddy_start_pfn...buddy_end_pfn) */
-> +		for (pfn = buddy_start_pfn; pfn < buddy_end_pfn; ++pfn) {
-> +			/* Avoid holes within the zone. */
-> +			if (unlikely(!pfn_valid_within(pfn)))
-> +				break;
-> +			page = pfn_to_page(pfn);
-> +			/*
-> +			 * Check that we have not crossed a zone boundary.
-> +			 * Some arch have zones not aligned to MAX_ORDER.
-> +			 */
-> +			if (unlikely(page_zone_id(page) != zone_id))
-> +				break;
-> +
-> +			/* we are always under ISOLATE_BOTH */
-> +			if (__isolate_lru_page(page, ISOLATE_BOTH, 0) == 0) {
-> +				list_move(&page->lru, dst);
-> +				nr++;
-> +			} else if (do_aggressive && !PageUnevictable(page))
+On Tue, 9 Jun 2009 05:43:27 pm Yinghai Lu wrote:
+> Rusty Russell wrote:
+> > On Sun, 7 Jun 2009 07:23:52 am Yinghai Lu wrote:
+> >> so later could use nr_cpumask_bits in cpumask_size when MAXSMP is used
+> >
+> > I have a (more ambitious) patch for this in my queue, which weans it off
+> > this entirely:
+> >
+> > Subject: cpumask: avoid playing with cpus_allowed in powernow-k8.c
+...
+> will be in .31?
 
-Could you explain this branch intention more?
+Hope so, it's been in linux-next for ages.  The cpufreq maintainers seem to 
+take a relaxed approach to patches, FWIW.
 
-
-
-> +					continue;
-> +			else
-> +				break;
-> +		}
-> +		/* we can't refill this order */
-> +		if (pfn != buddy_end_pfn)
-> +			break;
-> +		if (buddy_start_pfn < page_pfn)
-> +			page_pfn = buddy_start_pfn;
-> +	}
-> +	return nr;
-
-
+Thanks,
+Rusty.
