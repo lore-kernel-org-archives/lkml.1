@@ -1,218 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761675AbZFJT47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762004AbZFJT6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761675AbZFJT47 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 15:56:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761496AbZFJTzl
+	id S1762004AbZFJT6k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 15:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758004AbZFJT4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 15:55:41 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:36753 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761281AbZFJTzY (ORCPT
+	Wed, 10 Jun 2009 15:56:03 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:16149 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760454AbZFJTzh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 15:55:24 -0400
-Message-Id: <20090610195524.945549278@goodmis.org>
-References: <20090610195311.767699959@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 10 Jun 2009 15:53:12 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/3] ring-buffer: make the buffer a true circular link list
-Content-Disposition: inline; filename=0001-ring-buffer-make-the-buffer-a-true-circular-link-lis.patch
+	Wed, 10 Jun 2009 15:55:37 -0400
+Subject: [PATCH v3 07/12] ACPI: simplify acpi_pci_irq_del_prt() API
+To: lenb@kernel.org
+From: Alex Chiang <achiang@hp.com>
+Cc: linux-acpi@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Date: Wed, 10 Jun 2009 13:55:40 -0600
+Message-ID: <20090610195540.28982.98463.stgit@bob.kio>
+In-Reply-To: <20090610194714.28982.51363.stgit@bob.kio>
+References: <20090610194714.28982.51363.stgit@bob.kio>
+User-Agent: StGit/0.14.3.347.g594a
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+There is no need to pass a segment/bus tuple to this API, as the callsite
+always has a struct pci_bus. We can derive segment/bus from the
+struct pci_bus, so let's take this opportunit to simplify the API and
+make life easier for the callers.
 
-This patch changes the ring buffer data pages from using a link list
-head pointer, to making each buffer page point to another buffer page
-and never back to a "head".
-
-This makes the handling of the ring buffer less complex, since the
-traversing of the ring buffer pages no longer needs to account for the
-head pointer.
-
-This change also is needed to make the ring buffer lockless.
-
-[ Impact: simplify the ring buffer to help make it lockless ]
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
- kernel/trace/ring_buffer.c |   54 ++++++++++++++++++++++++++++++-------------
- 1 files changed, 37 insertions(+), 17 deletions(-)
 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 2e642b2..d1edd63 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -404,7 +404,7 @@ struct ring_buffer_per_cpu {
- 	spinlock_t			reader_lock; /* serialize readers */
- 	raw_spinlock_t			lock;
- 	struct lock_class_key		lock_key;
--	struct list_head		pages;
-+	struct list_head		*pages;
- 	struct buffer_page		*head_page;	/* read from head */
- 	struct buffer_page		*tail_page;	/* write to tail */
- 	struct buffer_page		*commit_page;	/* committed pages */
-@@ -494,7 +494,7 @@ EXPORT_SYMBOL_GPL(ring_buffer_normalize_time_stamp);
-  */
- static int rb_check_pages(struct ring_buffer_per_cpu *cpu_buffer)
- {
--	struct list_head *head = &cpu_buffer->pages;
-+	struct list_head *head = cpu_buffer->pages;
- 	struct buffer_page *bpage, *tmp;
+ drivers/acpi/pci_bind.c     |    3 +--
+ drivers/acpi/pci_irq.c      |    7 ++++---
+ include/acpi/acpi_drivers.h |    2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/acpi/pci_bind.c b/drivers/acpi/pci_bind.c
+index 6eb58ef..62cb383 100644
+--- a/drivers/acpi/pci_bind.c
++++ b/drivers/acpi/pci_bind.c
+@@ -113,8 +113,7 @@ static int acpi_pci_unbind(struct acpi_device *device)
+ 		return 0;
  
- 	if (RB_WARN_ON(cpu_buffer, head->next->prev != head))
-@@ -517,12 +517,13 @@ static int rb_check_pages(struct ring_buffer_per_cpu *cpu_buffer)
- static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
- 			     unsigned nr_pages)
- {
--	struct list_head *head = &cpu_buffer->pages;
- 	struct buffer_page *bpage, *tmp;
- 	unsigned long addr;
- 	LIST_HEAD(pages);
- 	unsigned i;
+ 	if (dev->subordinate)
+-		acpi_pci_irq_del_prt(pci_domain_nr(dev->bus),
+-				     dev->subordinate->number);
++		acpi_pci_irq_del_prt(dev->subordinate);
  
-+	WARN_ON(!nr_pages);
-+
- 	for (i = 0; i < nr_pages; i++) {
- 		bpage = kzalloc_node(ALIGN(sizeof(*bpage), cache_line_size()),
- 				    GFP_KERNEL, cpu_to_node(cpu_buffer->cpu));
-@@ -537,7 +538,18 @@ static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
- 		rb_init_page(bpage->page);
- 	}
- 
--	list_splice(&pages, head);
-+	/*
-+	 * The ring buffer page list is a circular list that does not
-+	 * start and end with a list head. All page list items point to
-+	 * other pages. Remove one of the pages, init its list head,
-+	 * and use list splice to move the rest of the pages to it.
-+	 */
-+	bpage = list_entry(pages.next, struct buffer_page, list);
-+	list_del_init(&bpage->list);
-+	cpu_buffer->pages = &bpage->list;
-+
-+	list_splice(&pages, cpu_buffer->pages);
-+
- 
- 	rb_check_pages(cpu_buffer);
- 
-@@ -569,7 +581,6 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
- 	spin_lock_init(&cpu_buffer->reader_lock);
- 	lockdep_set_class(&cpu_buffer->reader_lock, buffer->reader_lock_key);
- 	cpu_buffer->lock = (raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
--	INIT_LIST_HEAD(&cpu_buffer->pages);
- 
- 	bpage = kzalloc_node(ALIGN(sizeof(*bpage), cache_line_size()),
- 			    GFP_KERNEL, cpu_to_node(cpu));
-@@ -590,7 +601,7 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
- 		goto fail_free_reader;
- 
- 	cpu_buffer->head_page
--		= list_entry(cpu_buffer->pages.next, struct buffer_page, list);
-+		= list_entry(cpu_buffer->pages, struct buffer_page, list);
- 	cpu_buffer->tail_page = cpu_buffer->commit_page = cpu_buffer->head_page;
- 
- 	return cpu_buffer;
-@@ -605,15 +616,20 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
- 
- static void rb_free_cpu_buffer(struct ring_buffer_per_cpu *cpu_buffer)
- {
--	struct list_head *head = &cpu_buffer->pages;
-+	struct list_head *head = cpu_buffer->pages;
- 	struct buffer_page *bpage, *tmp;
- 
- 	free_buffer_page(cpu_buffer->reader_page);
- 
--	list_for_each_entry_safe(bpage, tmp, head, list) {
--		list_del_init(&bpage->list);
-+	if (head) {
-+		list_for_each_entry_safe(bpage, tmp, head, list) {
-+			list_del_init(&bpage->list);
-+			free_buffer_page(bpage);
-+		}
-+		bpage = list_entry(head, struct buffer_page, list);
- 		free_buffer_page(bpage);
- 	}
-+
- 	kfree(cpu_buffer);
+ 	pci_dev_put(dev);
+ 	return 0;
+diff --git a/drivers/acpi/pci_irq.c b/drivers/acpi/pci_irq.c
+index 3ed944c..ef9509e 100644
+--- a/drivers/acpi/pci_irq.c
++++ b/drivers/acpi/pci_irq.c
+@@ -280,16 +280,17 @@ int acpi_pci_irq_add_prt(acpi_handle handle, struct pci_bus *bus)
+ 	return 0;
  }
  
-@@ -767,14 +783,14 @@ rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned nr_pages)
- 	synchronize_sched();
- 
- 	for (i = 0; i < nr_pages; i++) {
--		if (RB_WARN_ON(cpu_buffer, list_empty(&cpu_buffer->pages)))
-+		if (RB_WARN_ON(cpu_buffer, list_empty(cpu_buffer->pages)))
- 			return;
--		p = cpu_buffer->pages.next;
-+		p = cpu_buffer->pages->next;
- 		bpage = list_entry(p, struct buffer_page, list);
- 		list_del_init(&bpage->list);
- 		free_buffer_page(bpage);
- 	}
--	if (RB_WARN_ON(cpu_buffer, list_empty(&cpu_buffer->pages)))
-+	if (RB_WARN_ON(cpu_buffer, list_empty(cpu_buffer->pages)))
- 		return;
- 
- 	rb_reset_cpu(cpu_buffer);
-@@ -802,7 +818,7 @@ rb_insert_pages(struct ring_buffer_per_cpu *cpu_buffer,
- 		p = pages->next;
- 		bpage = list_entry(p, struct buffer_page, list);
- 		list_del_init(&bpage->list);
--		list_add_tail(&bpage->list, &cpu_buffer->pages);
-+		list_add_tail(&bpage->list, cpu_buffer->pages);
- 	}
- 	rb_reset_cpu(cpu_buffer);
- 
-@@ -999,9 +1015,6 @@ static inline void rb_inc_page(struct ring_buffer_per_cpu *cpu_buffer,
+-void acpi_pci_irq_del_prt(int segment, int bus)
++void acpi_pci_irq_del_prt(struct pci_bus *bus)
  {
- 	struct list_head *p = (*bpage)->list.next;
+ 	struct acpi_prt_entry *entry, *tmp;
  
--	if (p == &cpu_buffer->pages)
--		p = p->next;
--
- 	*bpage = list_entry(p, struct buffer_page, list);
- }
+ 	printk(KERN_DEBUG
+ 	       "ACPI: Delete PCI Interrupt Routing Table for %04x:%02x\n",
+-	       segment, bus);
++	       pci_domain_nr(bus), bus->number);
+ 	spin_lock(&acpi_prt_lock);
+ 	list_for_each_entry_safe(entry, tmp, &acpi_prt_list, list) {
+-		if (segment == entry->id.segment && bus == entry->id.bus) {
++		if (pci_domain_nr(bus) == entry->id.segment
++			&& bus->number == entry->id.bus) {
+ 			list_del(&entry->list);
+ 			kfree(entry);
+ 		}
+diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
+index 702b12e..12e99c3 100644
+--- a/include/acpi/acpi_drivers.h
++++ b/include/acpi/acpi_drivers.h
+@@ -91,7 +91,7 @@ int acpi_pci_link_free_irq(acpi_handle handle);
+ /* ACPI PCI Interrupt Routing (pci_irq.c) */
  
-@@ -2212,6 +2225,13 @@ rb_get_reader_page(struct ring_buffer_per_cpu *cpu_buffer)
- 	cpu_buffer->reader_page->list.next = reader->list.next;
- 	cpu_buffer->reader_page->list.prev = reader->list.prev;
+ int acpi_pci_irq_add_prt(acpi_handle handle, struct pci_bus *bus);
+-void acpi_pci_irq_del_prt(int segment, int bus);
++void acpi_pci_irq_del_prt(struct pci_bus *bus);
  
-+	/*
-+	 * cpu_buffer->pages just needs to point to the buffer, it
-+	 *  has no specific buffer page to point to. Lets move it out
-+	 *  of our way so we don't accidently swap it.
-+	 */
-+	cpu_buffer->pages = reader->list.prev;
-+
- 	local_set(&cpu_buffer->reader_page->write, 0);
- 	local_set(&cpu_buffer->reader_page->entries, 0);
- 	local_set(&cpu_buffer->reader_page->page->commit, 0);
-@@ -2656,7 +2676,7 @@ static void
- rb_reset_cpu(struct ring_buffer_per_cpu *cpu_buffer)
- {
- 	cpu_buffer->head_page
--		= list_entry(cpu_buffer->pages.next, struct buffer_page, list);
-+		= list_entry(cpu_buffer->pages, struct buffer_page, list);
- 	local_set(&cpu_buffer->head_page->write, 0);
- 	local_set(&cpu_buffer->head_page->entries, 0);
- 	local_set(&cpu_buffer->head_page->page->commit, 0);
--- 
-1.6.3.1
+ /* ACPI PCI Device Binding (pci_bind.c) */
+ 
 
--- 
