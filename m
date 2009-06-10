@@ -1,67 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbZFIXxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678AbZFJACo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756668AbZFIXxt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 19:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbZFIXxm
+	id S1755678AbZFJACo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 20:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbZFJACg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 19:53:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55864 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753039AbZFIXxl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 19:53:41 -0400
-Date: Tue, 9 Jun 2009 16:53:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: hpa@zytor.com, renton@renton.name, linux-kernel@vger.kernel.org
-Subject: Re: devpts mounts too slowly
-Message-Id: <20090609165304.add1a872.akpm@linux-foundation.org>
-In-Reply-To: <2c0942db0906091630l1cc79647h8689e9e929ed1bba@mail.gmail.com>
-References: <20090603142801.GC21646@beaver.vrungel.ru>
-	<4A26EB18.6060907@zytor.com>
-	<20090609161945.811cc01f.akpm@linux-foundation.org>
-	<2c0942db0906091630l1cc79647h8689e9e929ed1bba@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 9 Jun 2009 20:02:36 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:48477 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751688AbZFJACf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 20:02:35 -0400
+Subject: Re: [PATCH 2.6.31] ehca: Tolerate dynamic memory operations and
+ huge pages
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
+Cc: rdreier@cisco.com, alexs@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       ewg@lists.openfabrics.org, linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
+       ossrosch@linux.vnet.ibm.com
+In-Reply-To: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
+References: <200906091559.24661.hannes.hering@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-S9Rw98E4WhQMC5FbJiRl"
+Date: Wed, 10 Jun 2009 10:02:36 +1000
+Message-Id: <1244592156.4680.5.camel@concordia>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009 16:30:31 -0700
-Ray Lee <ray-lk@madrabbit.org> wrote:
 
-> On Tue, Jun 9, 2009 at 4:19 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
-> > On Wed, 03 Jun 2009 14:28:56 -0700
-> > "H. Peter Anvin" <hpa@zytor.com> wrote:
-> >
-> >> Alexey Vlasov wrote:
-> >> > Hi.
-> >> >
-> >> > In comparison with bind/proc mounting it takes a lot more time mounting
-> >> > devpts. Is it possible to somehow accelerate the process? Now there are
-> >> > about 5k devpts mounting, it already took 20 minutes, further will take
-> >> > even more time.
-> >> >
-> >> > # time mount -n -i -t devpts none /home/staff/.server-1/dev/pts
-> >> > real __ __0m0.295s
-> >> > user __ __0m0.000s
-> >> > sys __ __ 0m0.288s
-> >> >
-> >>
-> >> A profile would be handy here. __There is no sensible reason for this to
-> >> that 0.3 seconds. __This might be RCU-epoch related?
-> >>
-> >
-> > It seems OK here.
-> >
-> > akpm2:/home/akpm/xx# time mount -n -i -t devpts none /tmp/pts
-> > mount -n -i -t devpts none /tmp/pts __0.00s user 0.00s system 0% cpu 0.002 total
-> 
-> I read the Original Post as that test being performed with 5k /dev/pts
-> already mounted.
+--=-S9Rw98E4WhQMC5FbJiRl
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-hm, OK.
+On Tue, 2009-06-09 at 15:59 +0200, Hannes Hering wrote:
+> This patch implements toleration of dynamic memory operations and 16 GB
+> gigantic pages. On module load the driver walks through available system
+> memory, checks for available memory ranges and then registers the kernel
+> internal memory region accordingly. The translation of address ranges is
+> implemented via a 3-level busmap.
 
-I've now mounted 15000 devpts's and still no slowdown is evident.
+Hi Hannes,
+
+For those of us who haven't read the HEA spec lately, can you give us
+some more detail on that? :)
+
+How does it interact with kexec/kdump?
+
+> +static int ehca_update_busmap(unsigned long pfn, unsigned long nr_pages)
+> +{
+> +	unsigned long i, start_section, end_section;
+> +	int top, dir, idx;
+> +
+> +	if (!nr_pages)
+> +		return 0;
+> +
+> +	if (!ehca_bmap) {
+> +		ehca_bmap =3D kmalloc(sizeof(struct ehca_bmap), GFP_KERNEL);
+> +		if (!ehca_bmap)
+> +			return -ENOMEM;
+> +		/* Set map block to 0xFF according to EHCA_INVAL_ADDR */
+> +		memset(ehca_bmap, 0xFF, EHCA_TOP_MAP_SIZE);
+> +	}
+> +
+> +	start_section =3D phys_to_abs(pfn * PAGE_SIZE) / EHCA_SECTSIZE;
+> +	end_section =3D phys_to_abs((pfn + nr_pages) * PAGE_SIZE) / EHCA_SECTSI=
+ZE;
+
+
+phys_to_abs() ? As below, or does it come from somewhere else?
+
+ arch/powerpc/include/asm/abs_addr.h:
+ 47 static inline unsigned long phys_to_abs(unsigned long pa)              =
+    =20
+ 48 {
+ 49         unsigned long chunk;
+ 50=20
+ 51         /* This is a no-op on non-iSeries */
+ 52         if (!firmware_has_feature(FW_FEATURE_ISERIES))
+ 53                 return pa;
+ 54=20
+ 55         chunk =3D addr_to_chunk(pa);
+ 56=20
+ 57         if (chunk < mschunks_map.num_chunks)
+ 58                 chunk =3D mschunks_map.mapping[chunk];
+ 59=20
+ 60         return chunk_to_addr(chunk) + (pa & MSCHUNKS_OFFSET_MASK);
+ 61 }
+
+
+cheers
+
+--=-S9Rw98E4WhQMC5FbJiRl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkou+A0ACgkQdSjSd0sB4dLuewCfSpTFRmT6ie66HWeYI0citu+h
+DRkAniClvuCqubfuz2smbsIRsx0ee0FU
+=S1Hv
+-----END PGP SIGNATURE-----
+
+--=-S9Rw98E4WhQMC5FbJiRl--
+
