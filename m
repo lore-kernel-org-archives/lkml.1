@@ -1,86 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbZFJHqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbZFJHqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757105AbZFJHqP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 03:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbZFJHqH
+	id S1756857AbZFJHqb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 03:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755753AbZFJHqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 03:46:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43150 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754714AbZFJHqG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 03:46:06 -0400
-Date: Wed, 10 Jun 2009 00:44:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Baruch Siach <baruch@tkos.co.il>
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux@arm.linux.org.uk
-Subject: Re: [PATCH v4] gpio: driver for PrimeCell PL061 GPIO controller
-Message-Id: <20090610004447.78b84cd5.akpm@linux-foundation.org>
-In-Reply-To: <20090610072229.GC10382@tarshish>
-References: <1244399935-23128-1-git-send-email-baruch@tkos.co.il>
-	<20090609140239.260428eb.akpm@linux-foundation.org>
-	<20090610072229.GC10382@tarshish>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 10 Jun 2009 03:46:22 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60307 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754867AbZFJHqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 03:46:22 -0400
+Message-ID: <4A2F646A.8070403@cn.fujitsu.com>
+Date: Wed, 10 Jun 2009 15:44:42 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 17/19] io-controller: Support per cgroup per device weights
+ and io class
+References: <1244513342-11758-1-git-send-email-vgoyal@redhat.com> <1244513342-11758-18-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1244513342-11758-18-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Jun 2009 10:22:31 +0300 Baruch Siach <baruch@tkos.co.il> wrote:
+Vivek Goyal wrote:
+...
+>  
+> @@ -1233,6 +1254,8 @@ struct io_group *io_group_chain_alloc(struct request_queue *q, void *key,
+>  		elv_get_iog(iog);
+>  
+>  		iog->iocg_id = css_id(&iocg->css);
+> +		io_group_init_entity(iocg, iog, iog->dev);
 
-> Hi Andrew,
-> 
-> > >  static unsigned int pl061_irq_startup(unsigned irq)
-> > >  {
-> > > -	int ret;
-> > > -
-> > > -	ret = gpio_request(irq_to_gpio(irq), "IRQ");
-> > > -	if (ret < 0) {
-> > > -		pr_warning("%s: warning: gpio_request(%d) returned %d\n",
-> > > -				__func__, irq_to_gpio(irq), ret);
-> > > -		return 0;
-> > > -	}
-> > > +	if (gpio_request(irq_to_gpio(irq), "IRQ") == 0)
-> > > +		pr_warning("%s: warning: GPIO%d has not been requested\n",
-> > > +				__func__, irq_to_gpio(irq));
-> > 
-> > This is wrong, isn't it?  gpio_request() returns 0 on success.
-> 
-> Russell said that gpio configuration is the responsibility of the platform 
-> code. Here I just warn when the gpio has not been requested, and thus 
-> gpio_request() succeeds. I'll add a comment.
+Hi Vivek,
 
-OK.
+A regression occurs in io.policy handling. IO Controller completely stops working when i use 
+this interface. 
+Make sure that we initialize entity after iog->dev is setting up properly.
 
-If the gpio_request() accidentally succeeded, should we gpio_free() the
-result here?
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+---
+ block/elevator-fq.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Should the gpio core provide a primitive to check that a gpio has been
-properly requested rathe rthan open-coding it here?
-
-> > >  static void pl061_irq_handler(unsigned irq, struct irq_desc *desc)
-> > >  {
-> > > +	struct list_head *chip_list = get_irq_chip_data(irq);
-> > > +	struct list_head *ptr;
-> > > +	struct pl061_gpio *chip;
-> > > +
-> > >  	desc->chip->ack(irq);
-> > > -	while (1) {
-> > > +	list_for_each(ptr, chip_list) {
-> > 
-> > What locking protects the newly-added list?
-> 
-> Do we need locking even though we list_add() only at probe time?
-
-Nope.  I guess.  It depends on the driver.  hotplug/hot-remove needs to
-beconsidered often.
-
-> (Compiling as 
-> a module is not supported, so this only happens at boot time).
-
-The probe handler is probably serialised against everything else even if
-the driver _is_ a module.
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index 6b30c36..a516dce 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -1451,7 +1451,6 @@ struct io_group *io_group_chain_alloc(struct request_queue *q, void *key,
+ 		elv_get_iog(iog);
+ 
+ 		iog->iocg_id = css_id(&iocg->css);
+-		io_group_init_entity(iocg, iog, iog->dev);
+ 		iog->my_entity = &iog->entity;
+ 
+ 		if (bio) {
+@@ -1459,6 +1458,8 @@ struct io_group *io_group_chain_alloc(struct request_queue *q, void *key,
+ 			iog->dev = MKDEV(disk->major, disk->first_minor);
+ 		}
+ 
++		io_group_init_entity(iocg, iog, iog->dev);
++
+ 		blk_init_request_list(&iog->rl);
+ #ifdef CONFIG_DEBUG_GROUP_IOSCHED
+ 		io_group_path(iog, iog->path, sizeof(iog->path));
+-- 
+1.5.4.rc3
 
