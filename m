@@ -1,203 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbZFJKbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbZFJKcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbZFJKbt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 06:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbZFJKbl
+	id S1758699AbZFJKcA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 06:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbZFJKby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 06:31:41 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59228 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388AbZFJKbk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 06:31:40 -0400
-Date: Wed, 10 Jun 2009 12:31:31 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       ibm@android.com, swetland@google.com, san@android.com, rlove@google.com
-Subject: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090610103131.GB13885@elf.ucw.cz>
+	Wed, 10 Jun 2009 06:31:54 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:34603 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754920AbZFJKbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 06:31:53 -0400
+Date: Wed, 10 Jun 2009 11:31:53 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/4] Properly account for the number of page cache
+	pages zone_reclaim() can reclaim
+Message-ID: <20090610103152.GG25943@csn.ul.ie>
+References: <1244566904-31470-1-git-send-email-mel@csn.ul.ie> <1244566904-31470-2-git-send-email-mel@csn.ul.ie> <20090610011939.GA5603@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090610011939.GA5603@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, Jun 10, 2009 at 09:19:39AM +0800, Wu Fengguang wrote:
+> On Wed, Jun 10, 2009 at 01:01:41AM +0800, Mel Gorman wrote:
+> > On NUMA machines, the administrator can configure zone_reclaim_mode that
+> > is a more targetted form of direct reclaim. On machines with large NUMA
+> > distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
+> > unmapped pages will be reclaimed if the zone watermarks are not being met.
+> > 
+> > There is a heuristic that determines if the scan is worthwhile but the
+> > problem is that the heuristic is not being properly applied and is basically
+> > assuming zone_reclaim_mode is 1 if it is enabled.
+> > 
+> > Historically, once enabled it was depending on NR_FILE_PAGES which may
+> > include swapcache pages that the reclaim_mode cannot deal with.  Patch
+> > vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch by
+> > Kosaki Motohiro noted that zone_page_state(zone, NR_FILE_PAGES) included
+> > pages that were not file-backed such as swapcache and made a calculation
+> > based on the inactive, active and mapped files. This is far superior
+> > when zone_reclaim==1 but if RECLAIM_SWAP is set, then NR_FILE_PAGES is a
+> > reasonable starting figure.
+> > 
+> > This patch alters how zone_reclaim() works out how many pages it might be
+> > able to reclaim given the current reclaim_mode. If RECLAIM_SWAP is set
+> > in the reclaim_mode it will either consider NR_FILE_PAGES as potential
+> > candidates or else use NR_{IN}ACTIVE}_PAGES-NR_FILE_MAPPED to discount
+> > swapcache and other non-file-backed pages.  If RECLAIM_WRITE is not set,
+> > then NR_FILE_DIRTY number of pages are not candidates. If RECLAIM_SWAP is
+> > not set, then NR_FILE_MAPPED are not.
+> > 
+> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > Acked-by: Christoph Lameter <cl@linux-foundation.org>
+> > ---
+> >  mm/vmscan.c |   52 ++++++++++++++++++++++++++++++++++++++--------------
+> >  1 files changed, 38 insertions(+), 14 deletions(-)
+> > 
+> > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > index 2ddcfc8..2bfc76e 100644
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -2333,6 +2333,41 @@ int sysctl_min_unmapped_ratio = 1;
+> >   */
+> >  int sysctl_min_slab_ratio = 5;
+> >  
+> > +static inline unsigned long zone_unmapped_file_pages(struct zone *zone)
+> > +{
+> > +	return zone_page_state(zone, NR_INACTIVE_FILE) +
+> > +		zone_page_state(zone, NR_ACTIVE_FILE) -
+> > +		zone_page_state(zone, NR_FILE_MAPPED);
+> 
+> This may underflow if too many tmpfs pages are mapped.
+> 
 
-Is there patch for Dream support for 2.6.30 somewhere? The best I
-could find is linux-msm tree, which is ... quite a big diff against
-2.6.24:
+You're right. This is also a bug now in mmotm for patch
+vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch which
+is where I took this code out of and didn't think deeply enough about.
+Well spotted.
 
-Is all of it neccessary for dream or are parts such as board-halibut
-parts of some other support? Do I have wrong tree entirely?
-								Pavel
+Should this be something like?
 
- arch/arm/Kconfig                              |   15 
- arch/arm/Makefile                             |    1 
- arch/arm/configs/msm_defconfig                | 1129 +++++++++++++++++++
- arch/arm/mach-msm/Kconfig                     |  238 ++++
- arch/arm/mach-msm/Makefile                    |   21 
- arch/arm/mach-msm/Makefile.boot               |    3 
- arch/arm/mach-msm/adsp.c                      |  870 ++++++++++++++
- arch/arm/mach-msm/adsp.h                      |  246 ++++
- arch/arm/mach-msm/adsp_6210.c                 |  282 ++++
- arch/arm/mach-msm/adsp_6220.c                 |  282 ++++
- arch/arm/mach-msm/adsp_driver.c               |  495 ++++++++
- arch/arm/mach-msm/board-halibut-keypad.c      |  180 +++
- arch/arm/mach-msm/board-halibut.c             |  358 ++++++
- arch/arm/mach-msm/clock-7x00a.c               |  127 ++
- arch/arm/mach-msm/clock.c                     |  573 +++++++++
- arch/arm/mach-msm/clock.h                     |  120 ++
- arch/arm/mach-msm/common.c                    |  227 +++
- arch/arm/mach-msm/dma.c                       |  246 ++++
- arch/arm/mach-msm/fiq_glue.S                  |   64 +
- arch/arm/mach-msm/generic_gpio.c              |  274 ++++
- arch/arm/mach-msm/gpio.c                      |  527 ++++++++
- arch/arm/mach-msm/gpio_chip.h                 |   38 
- arch/arm/mach-msm/gpio_hw.h                   |  100 +
- arch/arm/mach-msm/hw3d.c                      |  186 +++
- arch/arm/mach-msm/idle.S                      |   89 +
- arch/arm/mach-msm/io.c                        |   90 +
- arch/arm/mach-msm/irq.c                       |  514 ++++++++
- arch/arm/mach-msm/nand_partitions.c           |   87 +
- arch/arm/mach-msm/perf.c                      |  184 +++
- arch/arm/mach-msm/pm.c                        |  520 ++++++++
- arch/arm/mach-msm/pm.h                        |   31 
- arch/arm/mach-msm/proc_comm.h                 |  106 +
- arch/arm/mach-msm/rpc_server_dog_keepalive.c  |   62 +
- arch/arm/mach-msm/rpc_server_time_remote.c    |   75 +
- arch/arm/mach-msm/smd.c                       | 1326 ++++++++++++++++++++++
- arch/arm/mach-msm/smd_private.h               |  159 ++
- arch/arm/mach-msm/smd_qmi.c                   |  865 ++++++++++++++
- arch/arm/mach-msm/smd_rpcrouter.c             | 1165 +++++++++++++++++++
- arch/arm/mach-msm/smd_rpcrouter.h             |  190 +++
- arch/arm/mach-msm/smd_rpcrouter_device.c      |  339 +++++
- arch/arm/mach-msm/smd_rpcrouter_servers.c     |  214 +++
- arch/arm/mach-msm/smd_tty.c                   |  202 +++
- arch/arm/mach-msm/timer.c                     |  431 +++++++
- arch/arm/mach-msm/vreg.c                      |  143 ++
- arch/arm/mm/Kconfig                           |    3 
- arch/arm/mm/proc-v6.S                         |   27 
- arch/arm/tools/mach-types                     |  220 +++
- drivers/Makefile                              |    2 
- drivers/android/Kconfig                       |    9 
- drivers/android/Makefile                      |    1 
- drivers/android/pmem.c                        | 1314 ++++++++++++++++++++++
- drivers/char/Kconfig                          |    4 
- drivers/char/Makefile                         |    1 
- drivers/char/dcc_tty.c                        |  331 +++++
- drivers/i2c/busses/Kconfig                    |    7 
- drivers/i2c/busses/Makefile                   |    1 
- drivers/i2c/busses/i2c-msm.c                  |  514 ++++++++
- drivers/input/misc/Kconfig                    |    5 
- drivers/input/misc/Makefile                   |    1 
- drivers/input/misc/gpio_axis.c                |  190 +++
- drivers/input/misc/gpio_event.c               |  224 +++
- drivers/input/misc/gpio_input.c               |  303 +++++
- drivers/input/misc/gpio_matrix.c              |  397 ++++++
- drivers/input/misc/gpio_output.c              |   76 +
- drivers/input/touchscreen/Kconfig             |    6 
- drivers/input/touchscreen/Makefile            |    1 
- drivers/input/touchscreen/synaptics_i2c_rmi.c |  565 +++++++++
- drivers/misc/Kconfig                          |    7 
- drivers/misc/Makefile                         |    1 
- drivers/misc/kernel_debugger.c                |   80 +
- drivers/mmc/card/block.c                      |  216 +++
- drivers/mmc/card/queue.c                      |    6 
- drivers/mmc/core/Kconfig                      |    7 
- drivers/mmc/core/core.c                       |   16 
- drivers/mmc/core/sd.c                         |   38 
- drivers/mmc/core/sdio.c                       |   68 -
- drivers/mmc/host/Kconfig                      |    5 
- drivers/mmc/host/Makefile                     |    1 
- drivers/mmc/host/msm_sdcc.c                   | 1341 ++++++++++++++++++++++
- drivers/mmc/host/msm_sdcc.h                   |  253 ++++
- drivers/mtd/devices/Kconfig                   |    7 
- drivers/mtd/devices/Makefile                  |    1 
- drivers/mtd/devices/msm_nand.c                | 1272 +++++++++++++++++++++
- drivers/mtd/devices/msm_nand.h                |   74 +
- drivers/net/Kconfig                           |    6 
- drivers/net/Makefile                          |    2 
- drivers/net/msm_rmnet.c                       |  203 +++
- drivers/net/smc91x.h                          |   14 
- drivers/rtc/Kconfig                           |    6 
- drivers/rtc/Makefile                          |    1 
- drivers/rtc/rtc-msm7x00a.c                    |  251 ++++
- drivers/serial/Kconfig                        |   14 
- drivers/serial/Makefile                       |    2 
- drivers/serial/msm_serial.c                   |  760 ++++++++++++
- drivers/serial/msm_serial.h                   |  119 ++
- drivers/serial/msm_serial_debugger.c          |  359 ++++++
- drivers/usb/Kconfig                           |    2 
- drivers/usb/function/Kconfig                  |   49 
- drivers/usb/function/Makefile                 |    9 
- drivers/usb/function/adb.c                    |  463 +++++++
- drivers/usb/function/diag.c                   |  263 ++++
- drivers/usb/function/ether.c                  |  327 +++++
- drivers/usb/function/loopback.c               |  128 ++
- drivers/usb/function/msm_hsusb.c              | 1528 ++++++++++++++++++++++++++
- drivers/usb/function/msm_hsusb_hw.h           |  157 ++
- drivers/usb/function/null.c                   |  118 ++
- drivers/usb/function/ums.c                    |  469 +++++++
- drivers/usb/function/usb_function.h           |  117 +
- drivers/usb/function/zero.c                   |  120 ++
- drivers/video/Kconfig                         |    9 
- drivers/video/Makefile                        |    1 
- drivers/video/msm/Makefile                    |   18 
- drivers/video/msm/mddi.c                      |  872 ++++++++++++++
- drivers/video/msm/mddi_client_dummy.c         |   57 
- drivers/video/msm/mddi_client_toshiba.c       |  183 +++
- drivers/video/msm/mddi_hw.h                   |  303 +++++
- drivers/video/msm/mdp.c                       |  302 +++++
- drivers/video/msm/mdp_csc_table.h             |  582 +++++++++
- drivers/video/msm/mdp_hw.h                    |  598 ++++++++++
- drivers/video/msm/mdp_ppp.c                   |  825 ++++++++++++++
- drivers/video/msm/mdp_scale_tables.c          |  634 ++++++++++
- drivers/video/msm/mdp_scale_tables.h          |   37 
- drivers/video/msm/msm_fb.c                    |  560 +++++++++
- drivers/video/msm/msm_fb.txt                  |   53 
- include/asm-arm/arch-msm/board.h              |   87 +
- include/asm-arm/arch-msm/clock.h              |   35 
- include/asm-arm/arch-msm/debug-macro.S        |   46 
- include/asm-arm/arch-msm/dma.h                |  165 ++
- include/asm-arm/arch-msm/entry-macro.S        |   38 
- include/asm-arm/arch-msm/fiq.h                |   32 
- include/asm-arm/arch-msm/gpio.h               |   48 
- include/asm-arm/arch-msm/hardware.h           |   18 
- include/asm-arm/arch-msm/io.h                 |   33 
- include/asm-arm/arch-msm/irqs.h               |   89 +
- include/asm-arm/arch-msm/memory.h             |   27 
- include/asm-arm/arch-msm/msm_adsp.h           |   48 
- include/asm-arm/arch-msm/msm_fb.h             |   65 +
- include/asm-arm/arch-msm/msm_iomap.h          |  140 ++
- include/asm-arm/arch-msm/msm_rpcrouter.h      |  145 ++
- include/asm-arm/arch-msm/msm_smd.h            |  107 +
- include/asm-arm/arch-msm/rpc_clkctl.h         |   36 
- include/asm-arm/arch-msm/rpc_pm.h             |  100 +
- include/asm-arm/arch-msm/system.h             |   26 
- include/asm-arm/arch-msm/timex.h              |   20 
- include/asm-arm/arch-msm/uncompress.h         |   44 
- include/asm-arm/arch-msm/vmalloc.h            |   22 
- include/asm-arm/arch-msm/vreg.h               |   29 
- include/asm-arm/mach/mmc.h                    |   12 
- include/linux/android_pmem.h                  |   64 +
- include/linux/gpio_event.h                    |  143 ++
- include/linux/kernel_debugger.h               |   41 
- include/linux/mmc/core.h                      |    8 
- include/linux/mmc/host.h                      |   17 
- include/linux/mmc/sdio_func.h                 |    7 
- include/linux/msm_adsp.h                      |   74 +
- include/linux/msm_mdp.h                       |   84 +
- include/linux/msm_perf.h                      |   89 +
- include/linux/msm_rpcrouter.h                 |   44 
- include/linux/serial_core.h                   |    3 
- include/linux/synaptics_i2c_rmi.h             |   42 
- 160 files changed, 33494 insertions(+), 44 deletions(-)
+static unsigned long zone_unmapped_file_pages(struct zone *zone)
+{
+	unsigned long file_mapped = zone_page_state(zone, NR_FILE_MAPPED);
+	unsigned long file_lru = zone_page_state(zone, NR_INACTIVE_FILE)
+			zone_page_state(zone, NR_ACTIVE_FILE);
+
+	return (file_lru > file_mapped) ? (file_lru - file_mapped) : 0;
+}
+
+?
+
+If that returns 0, it does mean that there are very few pages that the
+current reclaim_mode is going to be able to deal with so even if the
+count is not perfect, it should be good enough for what we need it for.
+
+> > +}
+> > +
+> > +/* Work out how many page cache pages we can reclaim in this reclaim_mode */
+> > +static inline long zone_pagecache_reclaimable(struct zone *zone)
+> > +{
+> > +	long nr_pagecache_reclaimable;
+> > +	long delta = 0;
+> > +
+> > +	/*
+> > +	 * If RECLAIM_SWAP is set, then all file pages are considered
+> > +	 * potentially reclaimable. Otherwise, we have to worry about
+> > +	 * pages like swapcache and zone_unmapped_file_pages() provides
+> > +	 * a better estimate
+> > +	 */
+> > +	if (zone_reclaim_mode & RECLAIM_SWAP)
+> > +		nr_pagecache_reclaimable = zone_page_state(zone, NR_FILE_PAGES);
+> > +	else
+> > +		nr_pagecache_reclaimable = zone_unmapped_file_pages(zone);
+> > +
+> > +	/* If we can't clean pages, remove dirty pages from consideration */
+> > +	if (!(zone_reclaim_mode & RECLAIM_WRITE))
+> > +		delta += zone_page_state(zone, NR_FILE_DIRTY);
+> > +
+> > +	/* Beware of double accounting */
+> 
+> The double accounting happens for NR_FILE_MAPPED but not
+> NR_FILE_DIRTY(dirty tmpfs pages won't be accounted),
+
+I should have taken that out. In an interim version, delta was altered
+more than once in a way that could have caused underflow.
+
+> so this comment
+> is more suitable for zone_unmapped_file_pages(). But the double
+> accounting does affects this abstraction. So a more reasonable
+> sequence could be to first substract NR_FILE_DIRTY and then
+> conditionally substract NR_FILE_MAPPED?
+
+The end result is the same I believe and I prefer having the
+zone_unmapped_file_pages() doing just that and nothing else because it's
+in line with what zone_lru_pages() does.
+
+> 
+> Or better to introduce a new counter NR_TMPFS_MAPPED to fix this mess?
+> 
+
+I considered such a counter and dismissed it but maybe it merits wider discussion.
+
+My problem with it is that it would affect the pagecache add/remove hot paths
+and a few other sites and increase the amount of accouting we do within a
+zone. It seemed unjustified to help a seldom executed slow path that only
+runs on NUMA.
+
+> > +	if (delta < nr_pagecache_reclaimable)
+> > +		nr_pagecache_reclaimable -= delta;
+> > +
+> > +	return nr_pagecache_reclaimable;
+> > +}
+> > +
+> >  /*
+> >   * Try to free up some pages from this zone through reclaim.
+> >   */
+> > @@ -2355,7 +2390,6 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+> >  		.isolate_pages = isolate_pages_global,
+> >  	};
+> >  	unsigned long slab_reclaimable;
+> > -	long nr_unmapped_file_pages;
+> >  
+> >  	disable_swap_token();
+> >  	cond_resched();
+> > @@ -2368,11 +2402,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+> >  	reclaim_state.reclaimed_slab = 0;
+> >  	p->reclaim_state = &reclaim_state;
+> >  
+> > -	nr_unmapped_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +
+> > -				 zone_page_state(zone, NR_ACTIVE_FILE) -
+> > -				 zone_page_state(zone, NR_FILE_MAPPED);
+> > -
+> > -	if (nr_unmapped_file_pages > zone->min_unmapped_pages) {
+> > +	if (zone_pagecache_reclaimable(zone) > zone->min_unmapped_pages) {
+> >  		/*
+> >  		 * Free memory by calling shrink zone with increasing
+> >  		 * priorities until we have enough memory freed.
+> > @@ -2419,8 +2449,6 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+> >  {
+> >  	int node_id;
+> >  	int ret;
+> > -	long nr_unmapped_file_pages;
+> > -	long nr_slab_reclaimable;
+> >  
+> >  	/*
+> >  	 * Zone reclaim reclaims unmapped file backed pages and
+> > @@ -2432,12 +2460,8 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+> >  	 * if less than a specified percentage of the zone is used by
+> >  	 * unmapped file backed pages.
+> >  	 */
+> > -	nr_unmapped_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +
+> > -				 zone_page_state(zone, NR_ACTIVE_FILE) -
+> > -				 zone_page_state(zone, NR_FILE_MAPPED);
+> > -	nr_slab_reclaimable = zone_page_state(zone, NR_SLAB_RECLAIMABLE);
+> > -	if (nr_unmapped_file_pages <= zone->min_unmapped_pages &&
+> > -	    nr_slab_reclaimable <= zone->min_slab_pages)
+> > +	if (zone_pagecache_reclaimable(zone) <= zone->min_unmapped_pages &&
+> > +	    zone_page_state(zone, NR_SLAB_RECLAIMABLE) <= zone->min_slab_pages)
+> >  		return 0;
+> >  
+> >  	if (zone_is_all_unreclaimable(zone))
+> > -- 
+> > 1.5.6.5
+> 
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
