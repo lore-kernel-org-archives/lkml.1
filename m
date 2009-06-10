@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760013AbZFJJmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759032AbZFJJl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760013AbZFJJmR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 05:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758797AbZFJJic
+	id S1759032AbZFJJl2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 05:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756732AbZFJJiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 05:38:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40320 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758320AbZFJJiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 10 Jun 2009 05:38:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40304 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756149AbZFJJiK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 05:38:10 -0400
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
 Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 16/24] GFS2: Move gfs2_rmdiri into ops_inode.c
-Date: Wed, 10 Jun 2009 09:30:57 +0100
-Message-Id: <1244622665-7470-17-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1244622665-7470-16-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 13/24] GFS2: Be more aggressive in reclaiming unlinked inodes
+Date: Wed, 10 Jun 2009 09:30:54 +0100
+Message-Id: <1244622665-7470-14-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1244622665-7470-13-git-send-email-swhiteho@redhat.com>
 References: <1244622665-7470-1-git-send-email-swhiteho@redhat.com>
  <1244622665-7470-2-git-send-email-swhiteho@redhat.com>
  <1244622665-7470-3-git-send-email-swhiteho@redhat.com>
@@ -29,157 +29,62 @@ References: <1244622665-7470-1-git-send-email-swhiteho@redhat.com>
  <1244622665-7470-11-git-send-email-swhiteho@redhat.com>
  <1244622665-7470-12-git-send-email-swhiteho@redhat.com>
  <1244622665-7470-13-git-send-email-swhiteho@redhat.com>
- <1244622665-7470-14-git-send-email-swhiteho@redhat.com>
- <1244622665-7470-15-git-send-email-swhiteho@redhat.com>
- <1244622665-7470-16-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move gfs2_rmdiri() into ops_inode.c and make it static.
+This patch increases the frequency with which gfs2 looks
+for unlinked, but still allocated inodes. Its the equivalent
+operation to ext3's orphan list, but done with bitmaps in
+the resource groups.
+
+This also fixes a bug where a field in the rgrp was too small.
 
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/inode.c b/fs/gfs2/inode.c
-index c03a1a3..9b17447 100644
---- a/fs/gfs2/inode.c
-+++ b/fs/gfs2/inode.c
-@@ -1046,58 +1046,6 @@ fail:
- 	return ERR_PTR(error);
+diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
+index dd87379..225347f 100644
+--- a/fs/gfs2/incore.h
++++ b/fs/gfs2/incore.h
+@@ -94,7 +94,7 @@ struct gfs2_rgrpd {
+ 	struct gfs2_sbd *rd_sbd;
+ 	unsigned int rd_bh_count;
+ 	u32 rd_last_alloc;
+-	unsigned char rd_flags;
++	u32 rd_flags;
+ #define GFS2_RDF_CHECK		0x10000000 /* check for unlinked inodes */
+ #define GFS2_RDF_UPTODATE	0x20000000 /* rg is up to date */
+ #define GFS2_RDF_ERROR		0x40000000 /* error in rg */
+diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
+index 23637b9..ee3d5c1 100644
+--- a/fs/gfs2/rgrp.c
++++ b/fs/gfs2/rgrp.c
+@@ -581,7 +581,6 @@ static int read_rindex_entry(struct gfs2_inode *ip,
+ 
+ 	rgd->rd_gl->gl_object = rgd;
+ 	rgd->rd_flags &= ~GFS2_RDF_UPTODATE;
+-	rgd->rd_flags |= GFS2_RDF_CHECK;
+ 	return error;
  }
  
--/**
-- * gfs2_rmdiri - Remove a directory
-- * @dip: The parent directory of the directory to be removed
-- * @name: The name of the directory to be removed
-- * @ip: The GFS2 inode of the directory to be removed
-- *
-- * Assumes Glocks on dip and ip are held
-- *
-- * Returns: errno
-- */
--
--int gfs2_rmdiri(struct gfs2_inode *dip, const struct qstr *name,
--		struct gfs2_inode *ip)
--{
--	struct qstr dotname;
--	int error;
--
--	if (ip->i_entries != 2) {
--		if (gfs2_consist_inode(ip))
--			gfs2_dinode_print(ip);
--		return -EIO;
--	}
--
--	error = gfs2_dir_del(dip, name);
--	if (error)
--		return error;
--
--	error = gfs2_change_nlink(dip, -1);
--	if (error)
--		return error;
--
--	gfs2_str2qstr(&dotname, ".");
--	error = gfs2_dir_del(ip, &dotname);
--	if (error)
--		return error;
--
--	gfs2_str2qstr(&dotname, "..");
--	error = gfs2_dir_del(ip, &dotname);
--	if (error)
--		return error;
--
--	/* It looks odd, but it really should be done twice */
--	error = gfs2_change_nlink(ip, -1);
--	if (error)
--		return error;
--
--	error = gfs2_change_nlink(ip, -1);
--	if (error)
--		return error;
--
--	return error;
--}
+@@ -703,6 +702,8 @@ static void gfs2_rgrp_in(struct gfs2_rgrpd *rgd, const void *buf)
  
- /*
-  * gfs2_unlink_ok - check to see that a inode is still in a directory
-diff --git a/fs/gfs2/inode.h b/fs/gfs2/inode.h
-index 2c3ec07..6cd3928 100644
---- a/fs/gfs2/inode.h
-+++ b/fs/gfs2/inode.h
-@@ -96,8 +96,6 @@ extern struct inode *gfs2_lookupi(struct inode *dir, const struct qstr *name,
- extern struct inode *gfs2_createi(struct gfs2_holder *ghs,
- 				  const struct qstr *name,
- 				  unsigned int mode, dev_t dev);
--extern int gfs2_rmdiri(struct gfs2_inode *dip, const struct qstr *name,
--		       struct gfs2_inode *ip);
- extern int gfs2_unlink_ok(struct gfs2_inode *dip, const struct qstr *name,
- 			  const struct gfs2_inode *ip);
- extern int gfs2_permission(struct inode *inode, int mask);
-diff --git a/fs/gfs2/ops_inode.c b/fs/gfs2/ops_inode.c
-index 1c70fa5..5dacd64 100644
---- a/fs/gfs2/ops_inode.c
-+++ b/fs/gfs2/ops_inode.c
-@@ -473,6 +473,59 @@ static int gfs2_mkdir(struct inode *dir, struct dentry *dentry, int mode)
- }
+ 	rg_flags = be32_to_cpu(str->rg_flags);
+ 	rg_flags &= ~GFS2_RDF_MASK;
++	rgd->rd_flags &= GFS2_RDF_MASK;
++	rgd->rd_flags |= rg_flags;
+ 	rgd->rd_free = be32_to_cpu(str->rg_free);
+ 	rgd->rd_dinodes = be32_to_cpu(str->rg_dinodes);
+ 	rgd->rd_igeneration = be64_to_cpu(str->rg_igeneration);
+@@ -773,7 +774,7 @@ int gfs2_rgrp_bh_get(struct gfs2_rgrpd *rgd)
+ 		for (x = 0; x < length; x++)
+ 			clear_bit(GBF_FULL, &rgd->rd_bits[x].bi_flags);
+ 		gfs2_rgrp_in(rgd, (rgd->rd_bits[0].bi_bh)->b_data);
+-		rgd->rd_flags |= GFS2_RDF_UPTODATE;
++		rgd->rd_flags |= (GFS2_RDF_UPTODATE | GFS2_RDF_CHECK);
+ 	}
  
- /**
-+ * gfs2_rmdiri - Remove a directory
-+ * @dip: The parent directory of the directory to be removed
-+ * @name: The name of the directory to be removed
-+ * @ip: The GFS2 inode of the directory to be removed
-+ *
-+ * Assumes Glocks on dip and ip are held
-+ *
-+ * Returns: errno
-+ */
-+
-+static int gfs2_rmdiri(struct gfs2_inode *dip, const struct qstr *name,
-+		       struct gfs2_inode *ip)
-+{
-+	struct qstr dotname;
-+	int error;
-+
-+	if (ip->i_entries != 2) {
-+		if (gfs2_consist_inode(ip))
-+			gfs2_dinode_print(ip);
-+		return -EIO;
-+	}
-+
-+	error = gfs2_dir_del(dip, name);
-+	if (error)
-+		return error;
-+
-+	error = gfs2_change_nlink(dip, -1);
-+	if (error)
-+		return error;
-+
-+	gfs2_str2qstr(&dotname, ".");
-+	error = gfs2_dir_del(ip, &dotname);
-+	if (error)
-+		return error;
-+
-+	gfs2_str2qstr(&dotname, "..");
-+	error = gfs2_dir_del(ip, &dotname);
-+	if (error)
-+		return error;
-+
-+	/* It looks odd, but it really should be done twice */
-+	error = gfs2_change_nlink(ip, -1);
-+	if (error)
-+		return error;
-+
-+	error = gfs2_change_nlink(ip, -1);
-+	if (error)
-+		return error;
-+
-+	return error;
-+}
-+
-+/**
-  * gfs2_rmdir - Remove a directory
-  * @dir: The parent directory of the directory to be removed
-  * @dentry: The dentry of the directory to remove
+ 	spin_lock(&sdp->sd_rindex_spin);
 -- 
 1.6.0.6
 
