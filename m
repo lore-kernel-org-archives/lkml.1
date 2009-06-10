@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760676AbZFJTpj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761355AbZFJTrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760676AbZFJTpj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 15:45:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758757AbZFJTpc
+	id S1761355AbZFJTrc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 15:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761254AbZFJTrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 15:45:32 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:45213 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753330AbZFJTpb (ORCPT
+	Wed, 10 Jun 2009 15:47:09 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:53534 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760899AbZFJTrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 15:45:31 -0400
+	Wed, 10 Jun 2009 15:47:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=mnGgbwE/FJYXyiH23w4sgPN+RWPZM9dDjir+68T40b6zo+87rde+RH7HxUIl+U20yT
-         SX0yWSbfXNn+IArwN45s6bc0+49FgRU2cvdz3B0Kc8S79u6MJeIbv5ON/Nq7CfIzJWbe
-         yG8azwW9CD2KeHmiljncIXNNjYHChj0u+LbYY=
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=sVzjnUPXyiQ21IWJGeLdGbd2SFP9Y3kkD21hZr94HV2n3EJ8pcT58ujKrfbt4f/7Ut
+         ldpexI4Ypb9BN2ZTPwGg1je7jeT8YIWC5D+vMJLKmUA20cfepK5oPDtO+gHt+xh1/9HB
+         a6r5Ib3Aeejmkc9DTCf0r9Ofw+8x87LY74sWU=
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0906101523140.30552@gandalf.stny.rr.com>
-References: <1244623722-6325-1-git-send-email-vapier@gentoo.org> 
-	<1244623722-6325-2-git-send-email-vapier@gentoo.org> <alpine.DEB.2.00.0906101303560.30552@gandalf.stny.rr.com> 
-	<8bd0f97a0906101131m2fc21f75uc174631150897e5e@mail.gmail.com> 
-	<alpine.DEB.2.00.0906101441410.30552@gandalf.stny.rr.com> 
-	<8bd0f97a0906101207s3eb36ccbp7baa631a941b9b0f@mail.gmail.com> 
-	<alpine.DEB.2.00.0906101511070.30552@gandalf.stny.rr.com> 
-	<8bd0f97a0906101219r7a7fcbdfqc0c45c9c97210d1a@mail.gmail.com> 
-	<alpine.DEB.2.00.0906101523140.30552@gandalf.stny.rr.com>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Wed, 10 Jun 2009 15:45:13 -0400
-Message-ID: <8bd0f97a0906101245h100e1c13v5f1b189995d6464d@mail.gmail.com>
-Subject: Re: [PATCH 2/2] ftrace: document basic ftracer/ftracer graph needs
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <a55d774e0906101043q580fc5e5iad25a79203dc52c@mail.gmail.com>
+References: <20090610103131.GB13885@elf.ucw.cz>
+	 <a55d774e0906101043q580fc5e5iad25a79203dc52c@mail.gmail.com>
+Date: Wed, 10 Jun 2009 15:47:03 -0400
+X-Google-Sender-Auth: 773b513c52283bce
+Message-ID: <b6c5339f0906101247jff9297ehbf26a6c2dd6e2d87@mail.gmail.com>
+Subject: Re: HTC Dream aka. t-mobile g1 support
+From: Bob Copeland <me@bobcopeland.com>
+To: Brian Swetland <swetland@google.com>
+Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       ibm@android.com, san@android.com, rlove@google.com,
+       Kalle Valo <kalle.valo@iki.fi>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 15:34, Steven Rostedt wrote:
->> ones, as is the core ftrace code wrt the arch pieces it relies on.
->> the absolute dearth of ftrace documentation for arch porters is
->> ridiculous.
->
-> Yes, we can always document more. But you are the first to complain to me
-> about lack of documentation for porting. I get complaints all the time
-> about lack of documentation for using it, and I'm working on that.
+On Wed, Jun 10, 2009 at 1:43 PM, Brian Swetland<swetland@google.com> wrote:
+> The ti wifi driver is enormous and in its own repository:
+> http://android.git.kernel.org/?p=platform/system/wlan/ti.git;a=shortlog;h=refs/heads/cupcake
 
-imo, it should be a given that when a framework or common feature is
-added which requires some kind of arch support, what exactly is
-required of the arch should be clearly spelled out.  having an arch or
-two implement said feature is useful sometimes as an example, but it
-is rarely (if ever) a good place to find out details.  more time is
-spent basically reverse engineering the (unfamiliar) arch details.
+For wifi, there's a patch to add sdio support to the soon-to-be-upstream
+wl12xx.  It works, but that's about all for now.  Patch is at
+http://bobcopeland.com/android_wifi.html, though the linux-wireless list
+is the official location for any future discussion / updates.
 
-this isnt a complaint specific to ftrace btw, so it's more of a
-general hair pulling mini rant.
-
-> When I get time, I would love to write up a "how to port ftrace" doc.
->
-> I would also love to review one ;-)
-
-well ive already done the footwork for the basic options, so i'm
-starting the documentation now by moving the Kconfig stuff i posted
-there.  but it'll be missing info on:
-HAVE_FTRACE_NMI_ENTER
-HAVE_FTRACE_SYSCALLS
-HAVE_FTRACE_MCOUNT_RECORD
-HAVE_DYNAMIC_FTRACE
-
-personally i dont care about NMI as the Blackfin arch's handling of
-NMI is pretty much useless to Linux, but i would be interested in the
-other three
--mike
+-- 
+Bob Copeland %% www.bobcopeland.com
