@@ -1,119 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752065AbZFJCKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZFJCNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752065AbZFJCKg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 22:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbZFJCK3
+	id S1756039AbZFJCNi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 22:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZFJCNb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 22:10:29 -0400
-Received: from mga14.intel.com ([143.182.124.37]:3718 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751534AbZFJCK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 22:10:28 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,337,1241420400"; 
-   d="scan'208";a="152540140"
-Date: Wed, 10 Jun 2009 10:10:28 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/4] Count the number of times zone_reclaim() scans and
-	fails
-Message-ID: <20090610021028.GA6597@localhost>
-References: <1244566904-31470-1-git-send-email-mel@csn.ul.ie> <1244566904-31470-4-git-send-email-mel@csn.ul.ie>
+	Tue, 9 Jun 2009 22:13:31 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:64854 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751099AbZFJCNa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 22:13:30 -0400
+Date: Tue, 9 Jun 2009 19:13:25 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: "harald.dunkel@t-online.de" <harald.dunkel@t-online.de>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: how to stop kernel nfsd?
+In-Reply-To: <1MDcTI-1elcES0@fwd00.aul.t-online.de>
+Message-ID: <alpine.DEB.2.01.0906091907340.6439@bogon>
+References: <1MDcTI-1elcES0@fwd00.aul.t-online.de>
+User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244566904-31470-4-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1/YHi12rtMtjDLGe4ez1Mzsej4lJF0Byoz0Cnr
+ 8iNyQ1coEq0sGzbymrkhp/S+idUHJR0yFs1ApRiwwXGOdF9mX9
+ GHbap9lG+YoHWP7sV7+SA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 01:01:43AM +0800, Mel Gorman wrote:
-> On NUMA machines, the administrator can configure zone_reclaim_mode that
-> is a more targetted form of direct reclaim. On machines with large NUMA
-> distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
-> unmapped pages will be reclaimed if the zone watermarks are not being met.
-> 
-> There is a heuristic that determines if the scan is worthwhile but it is
-> possible that the heuristic will fail and the CPU gets tied up scanning
-> uselessly. Detecting the situation requires some guesswork and experimentation
-> so this patch adds a counter "zreclaim_failed" to /proc/vmstat. If during
-> high CPU utilisation this counter is increasing rapidly, then the resolution
-> to the problem may be to set /proc/sys/vm/zone_reclaim_mode to 0.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> ---
->  include/linux/vmstat.h |    3 +++
->  mm/vmscan.c            |    4 ++++
->  mm/vmstat.c            |    3 +++
->  3 files changed, 10 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
-> index ff4696c..416f748 100644
-> --- a/include/linux/vmstat.h
-> +++ b/include/linux/vmstat.h
-> @@ -36,6 +36,9 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
->  		FOR_ALL_ZONES(PGSTEAL),
->  		FOR_ALL_ZONES(PGSCAN_KSWAPD),
->  		FOR_ALL_ZONES(PGSCAN_DIRECT),
-> +#ifdef CONFIG_NUMA
-> +		PGSCAN_ZONERECLAIM_FAILED,
-> +#endif
+On Mon, 8 Jun 2009, harald.dunkel@t-online.de wrote:
+> Which signal would be correct to gracefully kill the kernel nfs daemons?
 
-I'd rather to refine the zone accounting (ie. mapped tmpfs pages)
-so that we know whether a zone scan is going to be fruitless.  Then
-we can get rid of the remedy patches 3 and 4.
+What are you trying to achieve? "killing", "terminating" or "graceful 
+reloading", as in "re-exporting the shares", which can be done with 
+exportfs(8).
 
-We don't have to worry about swap cache pages accounted as file pages.
-Since there are no double accounting in NR_FILE_PAGES for tmpfs pages.
+> Debian's runlevel script (just for example) tries SIGINT, but this
+> doesn't work, as it seems.
 
-We don't have to worry about MLOCKED pages, because they may defeat
-the estimation temporarily, but after one or several more zone scans,
-MLOCKED pages will go to the unevictable list, hence this cause of
-zone reclaim failure won't be persistent.
+Which version of Debian? 5.0 over here just terminates the processes to 
+stop nfs-kernel-server.
 
-Any more known accounting holes?
+Christian.
+-- 
+BOFH excuse #438:
 
-Thanks,
-Fengguang
-
->  		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
->  		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
->  #ifdef CONFIG_HUGETLB_PAGE
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index e862fc9..8be4582 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -2489,6 +2489,10 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
->  	ret = __zone_reclaim(zone, gfp_mask, order);
->  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
->  
-> +	if (!ret) {
-> +		count_vm_events(PGSCAN_ZONERECLAIM_FAILED, 1);
-> +	}
-> +
->  	return ret;
->  }
->  #endif
-> diff --git a/mm/vmstat.c b/mm/vmstat.c
-> index 1e3aa81..02677d1 100644
-> --- a/mm/vmstat.c
-> +++ b/mm/vmstat.c
-> @@ -673,6 +673,9 @@ static const char * const vmstat_text[] = {
->  	TEXTS_FOR_ZONES("pgscan_kswapd")
->  	TEXTS_FOR_ZONES("pgscan_direct")
->  
-> +#ifdef CONFIG_NUMA
-> +	"zreclaim_failed",
-> +#endif
->  	"pginodesteal",
->  	"slabs_scanned",
->  	"kswapd_steal",
-> -- 
-> 1.5.6.5
+sticky bit has come loose
