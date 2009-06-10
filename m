@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755962AbZFJDsC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761052AbZFJDs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755962AbZFJDsC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:48:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757921AbZFJDgz
+	id S1761052AbZFJDs0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbZFJDg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:36:55 -0400
-Received: from kroah.org ([198.145.64.141]:57476 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:36:58 -0400
+Received: from kroah.org ([198.145.64.141]:57489 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757896AbZFJDgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:36:53 -0400
+	id S1757945AbZFJDg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:36:56 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:52 2009
-Message-Id: <20090610002351.918798530@blue.kroah.org>
+Message-Id: <20090610002352.147316200@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:21 -0700
+Date: Tue, 09 Jun 2009 17:14:22 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,57 +25,48 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Chris Wright <chrisw@sous-sol.org>,
-       linux-ext4@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 53/60] ext4: fix locking typo in mballoc which could cause soft lockup hangs
+       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 54/60] ext4: really print the find_group_flex fallback warning only once
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-fix-locking-typo-in-mballoc-which-could-cause-soft-lockup-hangs.patch
+Content-Disposition: inline; filename=ext4-really-print-the-find_group_flex-fallback-warning-only-once.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: "Theodore Ts'o" <tytso@mit.edu>
+From: Chuck Ebbert <cebbert@redhat.com>
 
-upstream commit: e7c9e3e99adf6c49c5d593a51375916acc039d1e
+(cherry picked from commit 6b82f3cb2d480b7714eb0ff61aee99c22160389e)
 
-Smatch (http://repo.or.cz/w/smatch.git/) complains about the locking in
-ext4_mb_add_n_trim() from fs/ext4/mballoc.c
+Missing braces caused the warning to print more than once.
 
-  4438          list_for_each_entry_rcu(tmp_pa, &lg->lg_prealloc_list[order],
-  4439                                                  pa_inode_list) {
-  4440                  spin_lock(&tmp_pa->pa_lock);
-  4441                  if (tmp_pa->pa_deleted) {
-  4442                          spin_unlock(&pa->pa_lock);
-  4443                          continue;
-  4444                  }
-
-Brown paper bag time...
-
-Reported-by: Dan Carpenter <error27@gmail.com>
-Reviewed-by: Eric Sandeen <sandeen@redhat.com>
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@gmail.com>
+Signed-Off-By: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Cc: stable@kernel.org
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/mballoc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/ext4/ialloc.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -4532,7 +4532,7 @@ static void ext4_mb_add_n_trim(struct ex
- 						pa_inode_list) {
- 		spin_lock(&tmp_pa->pa_lock);
- 		if (tmp_pa->pa_deleted) {
--			spin_unlock(&pa->pa_lock);
-+			spin_unlock(&tmp_pa->pa_lock);
- 			continue;
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -707,11 +707,12 @@ struct inode *ext4_new_inode(handle_t *h
+ 		ret2 = find_group_flex(sb, dir, &group);
+ 		if (ret2 == -1) {
+ 			ret2 = find_group_other(sb, dir, &group);
+-			if (ret2 == 0 && once)
++			if (ret2 == 0 && once) {
+ 				once = 0;
+ 				printk(KERN_NOTICE "ext4: find_group_flex "
+ 				       "failed, fallback succeeded dir %lu\n",
+ 				       dir->i_ino);
++			}
  		}
- 		if (!added && pa->pa_free < tmp_pa->pa_free) {
+ 		goto got_group;
+ 	}
 
 
