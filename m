@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761052AbZFJDs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761050AbZFJDsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761052AbZFJDs0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757929AbZFJDg6
+	id S1761050AbZFJDsk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757933AbZFJDhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:36:58 -0400
-Received: from kroah.org ([198.145.64.141]:57489 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:37:01 -0400
+Received: from kroah.org ([198.145.64.141]:57508 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757945AbZFJDg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:36:56 -0400
+	id S1757992AbZFJDhA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:37:00 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:52 2009
-Message-Id: <20090610002352.147316200@blue.kroah.org>
+Message-Id: <20090610002352.372207619@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:22 -0700
+Date: Tue, 09 Jun 2009 17:14:23 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,46 +27,57 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 54/60] ext4: really print the find_group_flex fallback warning only once
+Subject: [patch 55/60] ext4: Fix softlockup caused by illegal i_file_acl value in on-disk inode
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-really-print-the-find_group_flex-fallback-warning-only-once.patch
+Content-Disposition: inline; filename=ext4-fix-softlockup-caused-by-illegal-i_file_acl-value-in-on-disk-inode.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Chuck Ebbert <cebbert@redhat.com>
+From: "Theodore Ts'o" <tytso@mit.edu>
 
-(cherry picked from commit 6b82f3cb2d480b7714eb0ff61aee99c22160389e)
+(cherry picked from commit 485c26ec70f823f2a9cf45982b724893e53a859e)
 
-Missing braces caused the warning to print more than once.
+If the block containing external extended attributes (which is stored
+in i_file_acl and i_file_acl_high) is larger than the on-disk
+filesystem, the process which tried to access the extended attributes
+will endlessly issue kernel printks complaining that
+"__find_get_block_slow() failed", locking up that CPU until the system
+is forcibly rebooted.
 
-Signed-Off-By: Chuck Ebbert <cebbert@redhat.com>
+So when we read in the inode, make sure the i_file_acl value is legal,
+and if not, flag the filesystem as being corrupted.
+
 Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/ext4/ialloc.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ fs/ext4/inode.c |   12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -707,11 +707,12 @@ struct inode *ext4_new_inode(handle_t *h
- 		ret2 = find_group_flex(sb, dir, &group);
- 		if (ret2 == -1) {
- 			ret2 = find_group_other(sb, dir, &group);
--			if (ret2 == 0 && once)
-+			if (ret2 == 0 && once) {
- 				once = 0;
- 				printk(KERN_NOTICE "ext4: find_group_flex "
- 				       "failed, fallback succeeded dir %lu\n",
- 				       dir->i_ino);
-+			}
- 		}
- 		goto got_group;
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -4115,6 +4115,18 @@ struct inode *ext4_iget(struct super_blo
+ 			(__u64)(le32_to_cpu(raw_inode->i_version_hi)) << 32;
  	}
+ 
++	if (ei->i_file_acl &&
++	    ((ei->i_file_acl <
++	      (le32_to_cpu(EXT4_SB(sb)->s_es->s_first_data_block) +
++	       EXT4_SB(sb)->s_gdb_count)) ||
++	     (ei->i_file_acl >= ext4_blocks_count(EXT4_SB(sb)->s_es)))) {
++		ext4_error(sb, __func__,
++			   "bad extended attribute block %llu in inode #%lu",
++			   ei->i_file_acl, inode->i_ino);
++		ret = -EIO;
++		goto bad_inode;
++	}
++
+ 	if (S_ISREG(inode->i_mode)) {
+ 		inode->i_op = &ext4_file_inode_operations;
+ 		inode->i_fop = &ext4_file_operations;
 
 
