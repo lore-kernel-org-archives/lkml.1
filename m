@@ -1,119 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758013AbZFJDt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468AbZFJEAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758013AbZFJDt5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758028AbZFJDhV
+	id S1752468AbZFJEAu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 00:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbZFJEAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:37:21 -0400
-Received: from kroah.org ([198.145.64.141]:32979 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757905AbZFJDhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:37:17 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:53 2009
-Message-Id: <20090610002353.503772667@blue.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:28 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-ext4@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 60/60] ext4: Fix race in ext4_inode_info.i_cached_extent
-References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=ext4-fix-race-in-ext4_inode_info.i_cached_extent.patch
-In-Reply-To: <20090610032135.GA19346@kroah.com>
+	Wed, 10 Jun 2009 00:00:41 -0400
+Received: from bhuna.collabora.co.uk ([93.93.131.97]:42888 "EHLO
+	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750714AbZFJEAk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 00:00:40 -0400
+Date: Wed, 10 Jun 2009 00:00:35 -0400
+From: Andres Salomon <dilinger@collabora.co.uk>
+To: Tobias_Mueller@twam.info
+Cc: Andrew Morton <akpm@linux-foundation.org>, jordan@cosmicpenguin.net,
+       david-b@pacbell.net, gardner.ben@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 001/001] gpio: AMD CS5535/CS5536 GPIO driver
+Message-ID: <20090610000035.62e459ae@mycelium.queued.net>
+In-Reply-To: <17be05570906090527l5861a79dq2ca8e6cf0ba084fe@mail.gmail.com>
+References: <17be05570905230453i591eb83bnb359f6365c109718@mail.gmail.com>
+	<20090526151621.a7446c60.akpm@linux-foundation.org>
+	<17be05570905301105h395689ja33afa96e7751381@mail.gmail.com>
+	<20090601165457.a1cc1025.akpm@linux-foundation.org>
+	<20090601200821.62b04e43@mycelium.queued.net>
+	<4A24965C.2020901@cosmicpenguin.net>
+	<17be05570906020114k7f2a3096h48335d509951cf90@mail.gmail.com>
+	<20090602133312.68158cd5.akpm@linux-foundation.org>
+	<17be05570906090527l5861a79dq2ca8e6cf0ba084fe@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
+On Tue, 9 Jun 2009 14:27:30 +0200
+Tobias Müller <Tobias_Mueller@twam.info> wrote:
 
-------------------
-From: "Theodore Ts'o" <tytso@mit.edu>
-
-(cherry picked from commit 2ec0ae3acec47f628179ee95fe2c4da01b5e9fc4)
-
-If two CPU's simultaneously call ext4_ext_get_blocks() at the same
-time, there is nothing protecting the i_cached_extent structure from
-being used and updated at the same time.  This could potentially cause
-the wrong location on disk to be read or written to, including
-potentially causing the corruption of the block group descriptors
-and/or inode table.
-
-This bug has been in the ext4 code since almost the very beginning of
-ext4's development.  Fortunately once the data is stored in the page
-cache cache, ext4_get_blocks() doesn't need to be called, so trying to
-replicate this problem to the point where we could identify its root
-cause was *extremely* difficult.  Many thanks to Kevin Shanahan for
-working over several months to be able to reproduce this easily so we
-could finally nail down the cause of the corruption.
-
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Reviewed-by: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- fs/ext4/extents.c |   17 ++++++++++++-----
- 1 file changed, 12 insertions(+), 5 deletions(-)
-
---- a/fs/ext4/extents.c
-+++ b/fs/ext4/extents.c
-@@ -1633,11 +1633,13 @@ ext4_ext_put_in_cache(struct inode *inod
- {
- 	struct ext4_ext_cache *cex;
- 	BUG_ON(len == 0);
-+	spin_lock(&EXT4_I(inode)->i_block_reservation_lock);
- 	cex = &EXT4_I(inode)->i_cached_extent;
- 	cex->ec_type = type;
- 	cex->ec_block = block;
- 	cex->ec_len = len;
- 	cex->ec_start = start;
-+	spin_unlock(&EXT4_I(inode)->i_block_reservation_lock);
- }
- 
- /*
-@@ -1694,12 +1696,17 @@ ext4_ext_in_cache(struct inode *inode, e
- 			struct ext4_extent *ex)
- {
- 	struct ext4_ext_cache *cex;
-+	int ret = EXT4_EXT_CACHE_NO;
- 
-+	/*
-+	 * We borrow i_block_reservation_lock to protect i_cached_extent
-+	 */
-+	spin_lock(&EXT4_I(inode)->i_block_reservation_lock);
- 	cex = &EXT4_I(inode)->i_cached_extent;
- 
- 	/* has cache valid data? */
- 	if (cex->ec_type == EXT4_EXT_CACHE_NO)
--		return EXT4_EXT_CACHE_NO;
-+		goto errout;
- 
- 	BUG_ON(cex->ec_type != EXT4_EXT_CACHE_GAP &&
- 			cex->ec_type != EXT4_EXT_CACHE_EXTENT);
-@@ -1710,11 +1717,11 @@ ext4_ext_in_cache(struct inode *inode, e
- 		ext_debug("%u cached by %u:%u:%llu\n",
- 				block,
- 				cex->ec_block, cex->ec_len, cex->ec_start);
--		return cex->ec_type;
-+		ret = cex->ec_type;
- 	}
--
--	/* not in cache */
--	return EXT4_EXT_CACHE_NO;
-+errout:
-+	spin_unlock(&EXT4_I(inode)->i_block_reservation_lock);
-+	return ret;
- }
- 
- /*
+> >> So maybe we should decide whether we take Andre's or my approach
+> >> and then adjust it.
+> >>
+> >
+> > I think I'll drop gpio-amd-cs5535-cs5536-gpio-driver.patch while you
+> > guys sort all this out, please.
+> 
+> So, how to carry on with this? Shall I adapt Andre's version to mine
+> or will Andre take care of this version?
+> 
+> A comment from Andre would be fine.
 
 
+My preference would be for you to base your work on the patches that
+I'm about to (re)submit.  I now actually have time to get these through
+the queue.
