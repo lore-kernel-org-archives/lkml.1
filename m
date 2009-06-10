@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759820AbZFJDm4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759860AbZFJDnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759820AbZFJDm4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:42:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757227AbZFJDfl
+	id S1759860AbZFJDnS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757405AbZFJDfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:35:41 -0400
-Received: from kroah.org ([198.145.64.141]:57147 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:35:45 -0400
+Received: from kroah.org ([198.145.64.141]:57158 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756104AbZFJDfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:35:38 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:47 2009
-Message-Id: <20090610002347.756939203@blue.kroah.org>
+	id S1757361AbZFJDfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:35:43 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:48 2009
+Message-Id: <20090610002347.991977455@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:03 -0700
+Date: Tue, 09 Jun 2009 17:14:04 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Brian Maly <bmaly@redhat>,
-       Yinghai Lu <yinghai@kernel.org>, ying.huang@intel.com,
-       Ingo Molnar <mingo@elte.hu>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 35/60] x86: fix DMI on EFI
+       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 36/60] mac80211: pid, fix memory corruption
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=x86-fix-dmi-on-efi.patch
+Content-Disposition: inline; filename=mac80211-pid-fix-memory-corruption.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,53 +39,141 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Brian Maly <bmaly@redhat.com>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-commit ff0c0874905fb312ca1491bbdac2653b0b48c20b upstream.
+commit a8659597bf744b0f8d2560e2a734b5c941569e0e upstream
 
-Impact: reactivate DMI quirks on EFI hardware
+pid doesn't count with some band having more bitrates than the one
+associated the first time.
+Fix that by counting the maximal available bitrate count and allocate
+big enough space.
 
-DMI tables are loaded by EFI, so the dmi calls must happen after
-efi_init() and not before.
+Secondly, fix touching uninitialized memory which causes panics.
+Index sucked from this random memory points to the hell.
+The fix is to sort the rates on each band change.
 
-Currently Apple hardware uses DMI to determine the framebuffer mappings
-for efifb. Without DMI working you also have no video on MacBook Pro.
+Also remove a comment which is wrong now.
 
-This patch resolves the DMI issue for EFI hardware (DMI is now properly
-detected at boot), and additionally efifb now loads on Apple hardware
-(i.e. video works).
+This version also contains half of
+mac80211: avoid NULL ptr deref when finding max_rates in PID and minstrel
+patch by John W. Linville, which is namely:
+-               if (sband->n_bitrates > max_rates)
++               if (sband && sband->n_bitrates > max_rates)
+to fix oopses on one band devices.
 
-Signed-off-by: Brian Maly <bmaly@redhat>
-Acked-by: Yinghai Lu <yinghai@kernel.org>
-Cc: ying.huang@intel.com
-LKML-Reference: <49ADEDA3.1030406@redhat.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/setup.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ net/mac80211/rc80211_pid_algo.c |   71 +++++++++++++++++++++-------------------
+ 1 file changed, 39 insertions(+), 32 deletions(-)
 
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -730,6 +730,9 @@ void __init setup_arch(char **cmdline_p)
+--- a/net/mac80211/rc80211_pid_algo.c
++++ b/net/mac80211/rc80211_pid_algo.c
+@@ -367,8 +367,40 @@ static void rate_control_pid_rate_init(v
+ 	 * Until that method is implemented, we will use the lowest supported
+ 	 * rate as a workaround. */
+ 	struct ieee80211_supported_band *sband;
++	struct rc_pid_info *pinfo = priv;
++	struct rc_pid_rateinfo *rinfo = pinfo->rinfo;
++	int i, j, tmp;
++	bool s;
  
- 	finish_e820_parsing();
- 
-+	if (efi_enabled)
-+		efi_init();
+ 	sband = local->hw.wiphy->bands[local->hw.conf.channel->band];
 +
- 	dmi_scan_machine();
++	/* Sort the rates. This is optimized for the most common case (i.e.
++	 * almost-sorted CCK+OFDM rates). Kind of bubble-sort with reversed
++	 * mapping too. */
++	for (i = 0; i < sband->n_bitrates; i++) {
++		rinfo[i].index = i;
++		rinfo[i].rev_index = i;
++		if (RC_PID_FAST_START)
++			rinfo[i].diff = 0;
++		else
++			rinfo[i].diff = i * pinfo->norm_offset;
++	}
++	for (i = 1; i < sband->n_bitrates; i++) {
++		s = 0;
++		for (j = 0; j < sband->n_bitrates - i; j++)
++			if (unlikely(sband->bitrates[rinfo[j].index].bitrate >
++				     sband->bitrates[rinfo[j + 1].index].bitrate)) {
++				tmp = rinfo[j].index;
++				rinfo[j].index = rinfo[j + 1].index;
++				rinfo[j + 1].index = tmp;
++				rinfo[rinfo[j].index].rev_index = j;
++				rinfo[rinfo[j + 1].index].rev_index = j + 1;
++				s = 1;
++			}
++		if (!s)
++			break;
++	}
++
+ 	sta->txrate_idx = rate_lowest_index(local, sband, sta);
+ 	sta->fail_avg = 0;
+ }
+@@ -378,21 +410,23 @@ static void *rate_control_pid_alloc(stru
+ 	struct rc_pid_info *pinfo;
+ 	struct rc_pid_rateinfo *rinfo;
+ 	struct ieee80211_supported_band *sband;
+-	int i, j, tmp;
+-	bool s;
++	int i, max_rates = 0;
+ #ifdef CONFIG_MAC80211_DEBUGFS
+ 	struct rc_pid_debugfs_entries *de;
+ #endif
  
- 	dmi_check_system(bad_bios_dmi_table);
-@@ -743,8 +746,6 @@ void __init setup_arch(char **cmdline_p)
- 	insert_resource(&iomem_resource, &data_resource);
- 	insert_resource(&iomem_resource, &bss_resource);
+-	sband = local->hw.wiphy->bands[local->hw.conf.channel->band];
+-
+ 	pinfo = kmalloc(sizeof(*pinfo), GFP_ATOMIC);
+ 	if (!pinfo)
+ 		return NULL;
  
--	if (efi_enabled)
--		efi_init();
++	for (i = 0; i < IEEE80211_NUM_BANDS; i++) {
++		sband = local->hw.wiphy->bands[i];
++		if (sband && sband->n_bitrates > max_rates)
++			max_rates = sband->n_bitrates;
++	}
+ 	/* We can safely assume that sband won't change unless we get
+ 	 * reinitialized. */
+-	rinfo = kmalloc(sizeof(*rinfo) * sband->n_bitrates, GFP_ATOMIC);
++	rinfo = kmalloc(sizeof(*rinfo) * max_rates, GFP_ATOMIC);
+ 	if (!rinfo) {
+ 		kfree(pinfo);
+ 		return NULL;
+@@ -410,33 +444,6 @@ static void *rate_control_pid_alloc(stru
+ 	pinfo->rinfo = rinfo;
+ 	pinfo->oldrate = 0;
  
- #ifdef CONFIG_X86_32
- 	if (ppro_with_ram_bug()) {
+-	/* Sort the rates. This is optimized for the most common case (i.e.
+-	 * almost-sorted CCK+OFDM rates). Kind of bubble-sort with reversed
+-	 * mapping too. */
+-	for (i = 0; i < sband->n_bitrates; i++) {
+-		rinfo[i].index = i;
+-		rinfo[i].rev_index = i;
+-		if (RC_PID_FAST_START)
+-			rinfo[i].diff = 0;
+-		else
+-			rinfo[i].diff = i * pinfo->norm_offset;
+-	}
+-	for (i = 1; i < sband->n_bitrates; i++) {
+-		s = 0;
+-		for (j = 0; j < sband->n_bitrates - i; j++)
+-			if (unlikely(sband->bitrates[rinfo[j].index].bitrate >
+-				     sband->bitrates[rinfo[j + 1].index].bitrate)) {
+-				tmp = rinfo[j].index;
+-				rinfo[j].index = rinfo[j + 1].index;
+-				rinfo[j + 1].index = tmp;
+-				rinfo[rinfo[j].index].rev_index = j;
+-				rinfo[rinfo[j + 1].index].rev_index = j + 1;
+-				s = 1;
+-			}
+-		if (!s)
+-			break;
+-	}
+-
+ #ifdef CONFIG_MAC80211_DEBUGFS
+ 	de = &pinfo->dentries;
+ 	de->dir = debugfs_create_dir("rc80211_pid",
 
 
