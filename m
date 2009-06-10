@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZFJDfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbZFJDf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757275AbZFJDfm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbZFJDdn
+	id S1756689AbZFJDf7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbZFJDdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:33:43 -0400
-Received: from kroah.org ([198.145.64.141]:56651 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:33:47 -0400
+Received: from kroah.org ([198.145.64.141]:56667 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755477AbZFJDdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:33:42 -0400
+	id S1755506AbZFJDdq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:33:46 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:42 2009
-Message-Id: <20090610002341.950940186@blue.kroah.org>
+Message-Id: <20090610002342.202940167@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:13:38 -0700
+Date: Tue, 09 Jun 2009 17:13:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, Jay Vosburgh <fubar@us.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 10/60] sparc64: Reschedule KGDB capture to a software interrupt.
+Subject: [patch 11/60] bonding: fix alb mode locking regression
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=sparc64-reschedule-kgdb-capture-to-a-software-interrupt.patch
+Content-Disposition: inline; filename=bonding-fix-alb-mode-locking-regression.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,92 +39,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: David S. Miller <davem@davemloft.net>
+From: Jay Vosburgh <fubar@us.ibm.com>
 
-[ Upstream commit 42cc77c861e8e850e86252bb5b1e12e006261973 ]
+[ Upstream commit 815bcc2719c12b6f5b511706e2d19728e07f0b02 ]
 
-Otherwise it might interrupt switch_to() midstream and use
-half-cooked register window state.
+Fix locking issue in alb MAC address management; removed
+incorrect locking and replaced with correct locking.  This bug was
+introduced in commit 059fe7a578fba5bbb0fdc0365bfcf6218fa25eb0
+("bonding: Convert locks to _bh, rework alb locking for new locking")
 
-Reported-by: Chris Torek <chris.torek@windriver.com>
+	Bug reported by Paul Smith <paul@mad-scientist.net>, who also
+tested the fix.
+
+Signed-off-by: Jay Vosburgh <fubar@us.ibm.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/sparc/include/asm/pil.h |    1 +
- arch/sparc64/kernel/kgdb.c   |    2 +-
- arch/sparc64/kernel/ttable.S |    8 +++++++-
- arch/sparc64/mm/ultra.S      |   24 ++----------------------
- 4 files changed, 11 insertions(+), 24 deletions(-)
+ drivers/net/bonding/bond_alb.c |    8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
---- a/arch/sparc64/kernel/kgdb.c
-+++ b/arch/sparc64/kernel/kgdb.c
-@@ -108,7 +108,7 @@ void gdb_regs_to_pt_regs(unsigned long *
+--- a/drivers/net/bonding/bond_alb.c
++++ b/drivers/net/bonding/bond_alb.c
+@@ -1716,9 +1716,6 @@ int bond_alb_set_mac_address(struct net_
+ 		}
+ 	}
+ 
+-	write_unlock_bh(&bond->curr_slave_lock);
+-	read_unlock(&bond->lock);
+-
+ 	if (swap_slave) {
+ 		alb_swap_mac_addr(bond, swap_slave, bond->curr_active_slave);
+ 		alb_fasten_mac_swap(bond, swap_slave, bond->curr_active_slave);
+@@ -1726,16 +1723,15 @@ int bond_alb_set_mac_address(struct net_
+ 		alb_set_slave_mac_addr(bond->curr_active_slave, bond_dev->dev_addr,
+ 				       bond->alb_info.rlb_enabled);
+ 
++		read_lock(&bond->lock);
+ 		alb_send_learning_packets(bond->curr_active_slave, bond_dev->dev_addr);
+ 		if (bond->alb_info.rlb_enabled) {
+ 			/* inform clients mac address has changed */
+ 			rlb_req_update_slave_clients(bond, bond->curr_active_slave);
+ 		}
++		read_unlock(&bond->lock);
+ 	}
+ 
+-	read_lock(&bond->lock);
+-	write_lock_bh(&bond->curr_slave_lock);
+-
+ 	return 0;
  }
  
- #ifdef CONFIG_SMP
--void smp_kgdb_capture_client(struct pt_regs *regs)
-+void smp_kgdb_capture_client(int irq, struct pt_regs *regs)
- {
- 	unsigned long flags;
- 
---- a/arch/sparc64/kernel/ttable.S
-+++ b/arch/sparc64/kernel/ttable.S
-@@ -63,7 +63,13 @@ tl0_irq6:	TRAP_IRQ(smp_call_function_sin
- #else
- tl0_irq6:	BTRAP(0x46)
- #endif
--tl0_irq7:	BTRAP(0x47) BTRAP(0x48) BTRAP(0x49)
-+tl0_irq7:	BTRAP(0x47)
-+#ifdef CONFIG_KGDB
-+tl0_irq8:	TRAP_IRQ(smp_kgdb_capture_client, 8)
-+#else
-+tl0_irq8:	BTRAP(0x48)
-+#endif
-+tl0_irq9:	BTRAP(0x49)
- tl0_irq10:	BTRAP(0x4a) BTRAP(0x4b) BTRAP(0x4c) BTRAP(0x4d)
- tl0_irq14:	TRAP_IRQ(timer_interrupt, 14)
- tl0_irq15:	TRAP_IRQ(handler_irq, 15)
---- a/arch/sparc64/mm/ultra.S
-+++ b/arch/sparc64/mm/ultra.S
-@@ -681,28 +681,8 @@ xcall_new_mmu_context_version:
- #ifdef CONFIG_KGDB
- 	.globl		xcall_kgdb_capture
- xcall_kgdb_capture:
--661:	rdpr		%pstate, %g2
--	wrpr		%g2, PSTATE_IG | PSTATE_AG, %pstate
--	.section	.sun4v_2insn_patch, "ax"
--	.word		661b
--	nop
--	nop
--	.previous
--
--	rdpr		%pil, %g2
--	wrpr		%g0, 15, %pil
--	sethi		%hi(109f), %g7
--	ba,pt		%xcc, etrap_irq
--109:	 or		%g7, %lo(109b), %g7
--#ifdef CONFIG_TRACE_IRQFLAGS
--	call		trace_hardirqs_off
--	 nop
--#endif
--	call		smp_kgdb_capture_client
--	 add		%sp, PTREGS_OFF, %o0
--	/* Has to be a non-v9 branch due to the large distance. */
--	ba		rtrap_xcall
--	 ldx		[%sp + PTREGS_OFF + PT_V9_TSTATE], %l1
-+	wr		%g0, (1 << PIL_KGDB_CAPTURE), %set_softint
-+	retry
- #endif
- 
- #endif /* CONFIG_SMP */
---- a/arch/sparc/include/asm/pil.h
-+++ b/arch/sparc/include/asm/pil.h
-@@ -18,5 +18,6 @@
- #define PIL_SMP_CTX_NEW_VERSION	4
- #define PIL_DEVICE_IRQ		5
- #define PIL_SMP_CALL_FUNC_SNGL	6
-+#define PIL_KGDB_CAPTURE	8
- 
- #endif /* !(_SPARC64_PIL_H) */
 
 
