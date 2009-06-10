@@ -1,220 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbZFJKcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758040AbZFJKgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758699AbZFJKcA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 06:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755105AbZFJKby
+	id S1758040AbZFJKgG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 06:36:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754387AbZFJKf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 06:31:54 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:34603 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754920AbZFJKbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 06:31:53 -0400
-Date: Wed, 10 Jun 2009 11:31:53 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/4] Properly account for the number of page cache
-	pages zone_reclaim() can reclaim
-Message-ID: <20090610103152.GG25943@csn.ul.ie>
-References: <1244566904-31470-1-git-send-email-mel@csn.ul.ie> <1244566904-31470-2-git-send-email-mel@csn.ul.ie> <20090610011939.GA5603@localhost>
+	Wed, 10 Jun 2009 06:35:56 -0400
+Received: from miranda.se.axis.com ([193.13.178.8]:50657 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754375AbZFJKfz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 06:35:55 -0400
+Date: Wed, 10 Jun 2009 12:35:42 +0200
+From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mikael Starvik <mikael.starvik@axis.com>, Martin Ettl <ettl.martin@gmx.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Fw: [Bugme-new] [Bug 13476] New: wrong #endif
+Message-ID: <20090610103541.GL20504@axis.com>
+References: <20090609141739.c922705e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090610011939.GA5603@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090609141739.c922705e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 09:19:39AM +0800, Wu Fengguang wrote:
-> On Wed, Jun 10, 2009 at 01:01:41AM +0800, Mel Gorman wrote:
-> > On NUMA machines, the administrator can configure zone_reclaim_mode that
-> > is a more targetted form of direct reclaim. On machines with large NUMA
-> > distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
-> > unmapped pages will be reclaimed if the zone watermarks are not being met.
-> > 
-> > There is a heuristic that determines if the scan is worthwhile but the
-> > problem is that the heuristic is not being properly applied and is basically
-> > assuming zone_reclaim_mode is 1 if it is enabled.
-> > 
-> > Historically, once enabled it was depending on NR_FILE_PAGES which may
-> > include swapcache pages that the reclaim_mode cannot deal with.  Patch
-> > vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch by
-> > Kosaki Motohiro noted that zone_page_state(zone, NR_FILE_PAGES) included
-> > pages that were not file-backed such as swapcache and made a calculation
-> > based on the inactive, active and mapped files. This is far superior
-> > when zone_reclaim==1 but if RECLAIM_SWAP is set, then NR_FILE_PAGES is a
-> > reasonable starting figure.
-> > 
-> > This patch alters how zone_reclaim() works out how many pages it might be
-> > able to reclaim given the current reclaim_mode. If RECLAIM_SWAP is set
-> > in the reclaim_mode it will either consider NR_FILE_PAGES as potential
-> > candidates or else use NR_{IN}ACTIVE}_PAGES-NR_FILE_MAPPED to discount
-> > swapcache and other non-file-backed pages.  If RECLAIM_WRITE is not set,
-> > then NR_FILE_DIRTY number of pages are not candidates. If RECLAIM_SWAP is
-> > not set, then NR_FILE_MAPPED are not.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > Acked-by: Christoph Lameter <cl@linux-foundation.org>
-> > ---
-> >  mm/vmscan.c |   52 ++++++++++++++++++++++++++++++++++++++--------------
-> >  1 files changed, 38 insertions(+), 14 deletions(-)
-> > 
-> > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > index 2ddcfc8..2bfc76e 100644
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -2333,6 +2333,41 @@ int sysctl_min_unmapped_ratio = 1;
-> >   */
-> >  int sysctl_min_slab_ratio = 5;
-> >  
-> > +static inline unsigned long zone_unmapped_file_pages(struct zone *zone)
-> > +{
-> > +	return zone_page_state(zone, NR_INACTIVE_FILE) +
-> > +		zone_page_state(zone, NR_ACTIVE_FILE) -
-> > +		zone_page_state(zone, NR_FILE_MAPPED);
+On Tue, Jun 09, 2009 at 11:17:39PM +0200, Andrew Morton wrote:
+> Begin forwarded message:
 > 
-> This may underflow if too many tmpfs pages are mapped.
+> Date: Sun, 7 Jun 2009 14:02:50 GMT
+> From: bugzilla-daemon@bugzilla.kernel.org
+> To: bugme-new@lists.osdl.org
+> Subject: [Bugme-new] [Bug 13476] New: wrong #endif
 > 
-
-You're right. This is also a bug now in mmotm for patch
-vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch which
-is where I took this code out of and didn't think deeply enough about.
-Well spotted.
-
-Should this be something like?
-
-static unsigned long zone_unmapped_file_pages(struct zone *zone)
-{
-	unsigned long file_mapped = zone_page_state(zone, NR_FILE_MAPPED);
-	unsigned long file_lru = zone_page_state(zone, NR_INACTIVE_FILE)
-			zone_page_state(zone, NR_ACTIVE_FILE);
-
-	return (file_lru > file_mapped) ? (file_lru - file_mapped) : 0;
-}
-
-?
-
-If that returns 0, it does mean that there are very few pages that the
-current reclaim_mode is going to be able to deal with so even if the
-count is not perfect, it should be good enough for what we need it for.
-
-> > +}
-> > +
-> > +/* Work out how many page cache pages we can reclaim in this reclaim_mode */
-> > +static inline long zone_pagecache_reclaimable(struct zone *zone)
-> > +{
-> > +	long nr_pagecache_reclaimable;
-> > +	long delta = 0;
-> > +
-> > +	/*
-> > +	 * If RECLAIM_SWAP is set, then all file pages are considered
-> > +	 * potentially reclaimable. Otherwise, we have to worry about
-> > +	 * pages like swapcache and zone_unmapped_file_pages() provides
-> > +	 * a better estimate
-> > +	 */
-> > +	if (zone_reclaim_mode & RECLAIM_SWAP)
-> > +		nr_pagecache_reclaimable = zone_page_state(zone, NR_FILE_PAGES);
-> > +	else
-> > +		nr_pagecache_reclaimable = zone_unmapped_file_pages(zone);
-> > +
-> > +	/* If we can't clean pages, remove dirty pages from consideration */
-> > +	if (!(zone_reclaim_mode & RECLAIM_WRITE))
-> > +		delta += zone_page_state(zone, NR_FILE_DIRTY);
-> > +
-> > +	/* Beware of double accounting */
 > 
-> The double accounting happens for NR_FILE_MAPPED but not
-> NR_FILE_DIRTY(dirty tmpfs pages won't be accounted),
-
-I should have taken that out. In an interim version, delta was altered
-more than once in a way that could have caused underflow.
-
-> so this comment
-> is more suitable for zone_unmapped_file_pages(). But the double
-> accounting does affects this abstraction. So a more reasonable
-> sequence could be to first substract NR_FILE_DIRTY and then
-> conditionally substract NR_FILE_MAPPED?
-
-The end result is the same I believe and I prefer having the
-zone_unmapped_file_pages() doing just that and nothing else because it's
-in line with what zone_lru_pages() does.
-
+> http://bugzilla.kernel.org/show_bug.cgi?id=13476
 > 
-> Or better to introduce a new counter NR_TMPFS_MAPPED to fix this mess?
+>            Summary: wrong #endif
+>            Product: Other
+>            Version: 2.5
+>     Kernel Version: 2.6.29.4
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Other
+>         AssignedTo: other_other@kernel-bugs.osdl.org
+>         ReportedBy: ettl.martin@gmx.de
+>         Regression: No
 > 
-
-I considered such a counter and dismissed it but maybe it merits wider discussion.
-
-My problem with it is that it would affect the pagecache add/remove hot paths
-and a few other sites and increase the amount of accouting we do within a
-zone. It seemed unjustified to help a seldom executed slow path that only
-runs on NUMA.
-
-> > +	if (delta < nr_pagecache_reclaimable)
-> > +		nr_pagecache_reclaimable -= delta;
-> > +
-> > +	return nr_pagecache_reclaimable;
-> > +}
-> > +
-> >  /*
-> >   * Try to free up some pages from this zone through reclaim.
-> >   */
-> > @@ -2355,7 +2390,6 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> >  		.isolate_pages = isolate_pages_global,
-> >  	};
-> >  	unsigned long slab_reclaimable;
-> > -	long nr_unmapped_file_pages;
-> >  
-> >  	disable_swap_token();
-> >  	cond_resched();
-> > @@ -2368,11 +2402,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> >  	reclaim_state.reclaimed_slab = 0;
-> >  	p->reclaim_state = &reclaim_state;
-> >  
-> > -	nr_unmapped_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +
-> > -				 zone_page_state(zone, NR_ACTIVE_FILE) -
-> > -				 zone_page_state(zone, NR_FILE_MAPPED);
-> > -
-> > -	if (nr_unmapped_file_pages > zone->min_unmapped_pages) {
-> > +	if (zone_pagecache_reclaimable(zone) > zone->min_unmapped_pages) {
-> >  		/*
-> >  		 * Free memory by calling shrink zone with increasing
-> >  		 * priorities until we have enough memory freed.
-> > @@ -2419,8 +2449,6 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> >  {
-> >  	int node_id;
-> >  	int ret;
-> > -	long nr_unmapped_file_pages;
-> > -	long nr_slab_reclaimable;
-> >  
-> >  	/*
-> >  	 * Zone reclaim reclaims unmapped file backed pages and
-> > @@ -2432,12 +2460,8 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> >  	 * if less than a specified percentage of the zone is used by
-> >  	 * unmapped file backed pages.
-> >  	 */
-> > -	nr_unmapped_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +
-> > -				 zone_page_state(zone, NR_ACTIVE_FILE) -
-> > -				 zone_page_state(zone, NR_FILE_MAPPED);
-> > -	nr_slab_reclaimable = zone_page_state(zone, NR_SLAB_RECLAIMABLE);
-> > -	if (nr_unmapped_file_pages <= zone->min_unmapped_pages &&
-> > -	    nr_slab_reclaimable <= zone->min_slab_pages)
-> > +	if (zone_pagecache_reclaimable(zone) <= zone->min_unmapped_pages &&
-> > +	    zone_page_state(zone, NR_SLAB_RECLAIMABLE) <= zone->min_slab_pages)
-> >  		return 0;
-> >  
-> >  	if (zone_is_all_unreclaimable(zone))
-> > -- 
-> > 1.5.6.5
 > 
+> Hello,
+> 
+> i've detected a wrong #ifdef ...#endif sequence. This was detected by cppcheck,
+> a static code analysis tool.
+> 
+> At file :
+> linux-2.6.29.4/arch/cris/arch-v32/kernel/irq.c
+> 
+> Take a look at the code, to function 
+> void crisv32_do_multiple(struct pt_regs* regs)
+> {
+>     int cpu;
+>     int mask;
+>     int masked[NBR_REGS];
+>     int bit;
+>     int i;
+> 
+>     cpu = smp_processor_id();
+> 
+>     /* An extra irq_enter here to prevent softIRQs to run after
+>          * each do_IRQ. This will decrease the interrupt latency.
+>      */
+>     irq_enter();
+> 
+>     for (i = 0; i < NBR_REGS; i++) {
+>         /* Get which IRQs that happend. */
+>         masked[i] = REG_RD_INT_VECT(intr_vect, irq_regs[cpu],
+>             r_masked_vect, i);
+> 
+>         /* Calculate new IRQ mask with these IRQs disabled. */
+>         mask = REG_RD_INT_VECT(intr_vect, irq_regs[cpu], rw_mask, i);
+>         mask &= ~masked[i];
+> 
+>     /* Timer IRQ is never masked */
+> #ifdef TIMER_VECT1
+>         if ((i == 1) && (masked[0] & TIMER_MASK))
+>             mask |= TIMER_MASK;
+> #else
+>         if ((i == 0) && (masked[0] & TIMER_MASK))
+>             mask |= TIMER_MASK;
+> #endif
+>         /* Block all the IRQs */
+>         REG_WR_INT_VECT(intr_vect, irq_regs[cpu], rw_mask, i, mask);
+> 
+>     /* Check for timer IRQ and handle it special. */
+> #ifdef TIMER_VECT1
+>         if ((i == 1) && (masked[i] & TIMER_MASK)) {
+>             masked[i] &= ~TIMER_MASK;
+>             do_IRQ(TIMER0_INTR_VECT, regs);
+>         }
+> #else
+>         if ((i == 0) && (masked[i] & TIMER_MASK)) {
+>              masked[i] &= ~TIMER_MASK;
+>              do_IRQ(TIMER0_INTR_VECT, regs);
+>         }
+>     }
+> #endif
+> 
+> .....
+> 
+> Here, the last #endif is at the wrong place. It has to be before the bracket is
+> closed. This is the corrected version:
+> 
+> #ifdef TIMER_VECT1
+>         if ((i == 1) && (masked[i] & TIMER_MASK)) {
+>             masked[i] &= ~TIMER_MASK;
+>             do_IRQ(TIMER0_INTR_VECT, regs);
+>         }
+> #else
+>         if ((i == 0) && (masked[i] & TIMER_MASK)) {
+>              masked[i] &= ~TIMER_MASK;
+>              do_IRQ(TIMER0_INTR_VECT, regs);
+>         }
+> #endif
+>     }
+> 
+> 
+> Best regards
+> 
+> Martin Ettl
+> 
+> -- 
+> Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
+> ------- You are receiving this mail because: -------
+> You are on the CC list for the bug.
 
+I'm unsure how to handle sign-off-by in this case, but I've queued the
+following for the CRIS tree:
+
+Subject: [PATCH] CRISv32: irq.c - Move end brace outside #endif
+
+The end brace for a larger for statement was placed inside the #else
+part of #ifdef TIMER_VECT1. However, for all current chips, the
+define TIMER_VECT1 is always unset, and the error was never triggered.
+
+Move the brace down below the #endif.
+
+Fixes:
+http://bugzilla.kernel.org/show_bug.cgi?id=13476
+
+Reported-by: Martin Ettl <ettl.martin@gmx.de>
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+Acked-by: Mikael Starvik <mikael.starvik@axis.com>
+---
+ arch/cris/arch-v32/kernel/irq.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/cris/arch-v32/kernel/irq.c b/arch/cris/arch-v32/kernel/irq.c
+index df3925c..9c9eb5b 100644
+--- a/arch/cris/arch-v32/kernel/irq.c
++++ b/arch/cris/arch-v32/kernel/irq.c
+@@ -428,8 +428,8 @@ crisv32_do_multiple(struct pt_regs* regs)
+ 			 masked[i] &= ~TIMER_MASK;
+ 			 do_IRQ(TIMER0_INTR_VECT, regs);
+ 		}
+-	}
+ #endif
++	}
+ 
+ #ifdef IGNORE_MASK
+ 	/* Remove IRQs that can't be handled as multiple. */
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.6.1
+
+
+Unless anyone have objections I'll push this to the cris for-next branch
+in a day or two.
+
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
