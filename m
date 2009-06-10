@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757705AbZFJRjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758802AbZFJRlL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757705AbZFJRjF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 13:39:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbZFJRix
+	id S1758802AbZFJRlL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 13:41:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753375AbZFJRk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 13:38:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51830 "EHLO mx2.mail.elte.hu"
+	Wed, 10 Jun 2009 13:40:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59357 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754437AbZFJRix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 13:38:53 -0400
-Date: Wed, 10 Jun 2009 19:38:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] kmemcheck doc update for -tip
-Message-ID: <20090610173847.GA17617@elte.hu>
-References: <20090610173045.GA24105@damson.getinternet.no>
+	id S1753437AbZFJRk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 13:40:58 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090610173045.GA24105@damson.getinternet.no>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.5
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0893]
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Q: PTRACE_ATTACH && -EINTR
+In-Reply-To: Oleg Nesterov's message of  Wednesday, 10 June 2009 15:11:16 +0200 <20090610131116.GA10406@redhat.com>
+References: <20090608161204.GA3986@redhat.com>
+	<20090608173944.B57EBFC3C6@magilla.sf.frob.com>
+	<20090608183627.GA14734@redhat.com>
+	<20090609014449.8BE46FC3C6@magilla.sf.frob.com>
+	<20090610131116.GA10406@redhat.com>
+X-Zippy-Says: I'm changing the CHANNEL..  But all I get is commercials for
+    ``RONCO MIRACLE BAMBOO STEAMERS''!
+Message-Id: <20090610174058.6F48CFC3D3@magilla.sf.frob.com>
+Date: Wed, 10 Jun 2009 10:40:58 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I'll wait until rename or -mm bits will be applied, then send this patch.
 
-* Vegard Nossum <vegard.nossum@gmail.com> wrote:
+Or you could send it to stable@ for 2.6.29/2.6.30 and let akpm figure out
+the order for merging with the rest.
 
-> Hi,
-> 
-> The following change since commit 14019ad5ea213c20b13b6f14ce5b7483196a709d:
->   Vegard Nossum (1):
->         kmemcheck: update documentation
-> 
-> is available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/vegard/kmemcheck.git for-tip
+> Fortunately the problem is not serious, ->cred_exec_mutex should be mostly
+> free.
 
-Pulled, thanks Vegard!
+Agreed.
 
-	Ingo
+
+Thanks,
+Roland
