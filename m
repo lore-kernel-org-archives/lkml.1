@@ -1,62 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbZFJCFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752065AbZFJCKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755415AbZFJCFL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 22:05:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753747AbZFJCE7
+	id S1752065AbZFJCKg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 22:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbZFJCK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 22:04:59 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62677 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753742AbZFJCE7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 22:04:59 -0400
-Message-ID: <4A2F1520.8020003@cn.fujitsu.com>
-Date: Wed, 10 Jun 2009 10:06:24 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 9 Jun 2009 22:10:29 -0400
+Received: from mga14.intel.com ([143.182.124.37]:3718 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751534AbZFJCK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 22:10:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,337,1241420400"; 
+   d="scan'208";a="152540140"
+Date: Wed, 10 Jun 2009 10:10:28 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/4] Count the number of times zone_reclaim() scans and
+	fails
+Message-ID: <20090610021028.GA6597@localhost>
+References: <1244566904-31470-1-git-send-email-mel@csn.ul.ie> <1244566904-31470-4-git-send-email-mel@csn.ul.ie>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH] tracing/events: convert block trace points to TRACE_EVENT(),
- fix
-References: <20090609163657.557589106@goodmis.org> <20090609234655.GA24118@elte.hu> <4A2F0C4A.8020109@cn.fujitsu.com> <alpine.DEB.2.00.0906092131190.30552@gandalf.stny.rr.com> <4A2F0E26.9010203@cn.fujitsu.com> <alpine.DEB.2.00.0906092140350.30552@gandalf.stny.rr.com> <4A2F1126.5010306@cn.fujitsu.com>
-In-Reply-To: <4A2F1126.5010306@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1244566904-31470-4-git-send-email-mel@csn.ul.ie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix building failures when CONFIG_BLOCK == n.
+On Wed, Jun 10, 2009 at 01:01:43AM +0800, Mel Gorman wrote:
+> On NUMA machines, the administrator can configure zone_reclaim_mode that
+> is a more targetted form of direct reclaim. On machines with large NUMA
+> distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
+> unmapped pages will be reclaimed if the zone watermarks are not being met.
+> 
+> There is a heuristic that determines if the scan is worthwhile but it is
+> possible that the heuristic will fail and the CPU gets tied up scanning
+> uselessly. Detecting the situation requires some guesswork and experimentation
+> so this patch adds a counter "zreclaim_failed" to /proc/vmstat. If during
+> high CPU utilisation this counter is increasing rapidly, then the resolution
+> to the problem may be to set /proc/sys/vm/zone_reclaim_mode to 0.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> ---
+>  include/linux/vmstat.h |    3 +++
+>  mm/vmscan.c            |    4 ++++
+>  mm/vmstat.c            |    3 +++
+>  3 files changed, 10 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
+> index ff4696c..416f748 100644
+> --- a/include/linux/vmstat.h
+> +++ b/include/linux/vmstat.h
+> @@ -36,6 +36,9 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
+>  		FOR_ALL_ZONES(PGSTEAL),
+>  		FOR_ALL_ZONES(PGSCAN_KSWAPD),
+>  		FOR_ALL_ZONES(PGSCAN_DIRECT),
+> +#ifdef CONFIG_NUMA
+> +		PGSCAN_ZONERECLAIM_FAILED,
+> +#endif
 
-[ Impact: build fix ]
+I'd rather to refine the zone accounting (ie. mapped tmpfs pages)
+so that we know whether a zone scan is going to be fruitless.  Then
+we can get rid of the remedy patches 3 and 4.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/linux/blktrace_api.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+We don't have to worry about swap cache pages accounted as file pages.
+Since there are no double accounting in NR_FILE_PAGES for tmpfs pages.
 
-diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
-index c7ec31d..7e4350e 100644
---- a/include/linux/blktrace_api.h
-+++ b/include/linux/blktrace_api.h
-@@ -218,7 +218,7 @@ static inline int blk_trace_init_sysfs(struct device *dev)
- 
- #endif /* CONFIG_BLK_DEV_IO_TRACE */
- 
--#ifdef CONFIG_EVENT_TRACING
-+#if defined(CONFIG_EVENT_TRACING) && defined(CONFIG_BLOCK)
- 
- static inline int blk_cmd_buf_len(struct request *rq)
- {
-@@ -229,7 +229,7 @@ extern void blk_dump_cmd(char *buf, struct request *rq);
- extern void blk_fill_rwbs(char *rwbs, u32 rw, int bytes);
- extern void blk_fill_rwbs_rq(char *rwbs, struct request *rq);
- 
--#endif /* CONFIG_EVENT_TRACING */
-+#endif /* CONFIG_EVENT_TRACING && CONFIG_BLOCK */
- 
- #endif /* __KERNEL__ */
- #endif
--- 
-1.5.4.rc3
+We don't have to worry about MLOCKED pages, because they may defeat
+the estimation temporarily, but after one or several more zone scans,
+MLOCKED pages will go to the unevictable list, hence this cause of
+zone reclaim failure won't be persistent.
+
+Any more known accounting holes?
+
+Thanks,
+Fengguang
+
+>  		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
+>  		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
+>  #ifdef CONFIG_HUGETLB_PAGE
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index e862fc9..8be4582 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2489,6 +2489,10 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  	ret = __zone_reclaim(zone, gfp_mask, order);
+>  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
+>  
+> +	if (!ret) {
+> +		count_vm_events(PGSCAN_ZONERECLAIM_FAILED, 1);
+> +	}
+> +
+>  	return ret;
+>  }
+>  #endif
+> diff --git a/mm/vmstat.c b/mm/vmstat.c
+> index 1e3aa81..02677d1 100644
+> --- a/mm/vmstat.c
+> +++ b/mm/vmstat.c
+> @@ -673,6 +673,9 @@ static const char * const vmstat_text[] = {
+>  	TEXTS_FOR_ZONES("pgscan_kswapd")
+>  	TEXTS_FOR_ZONES("pgscan_direct")
+>  
+> +#ifdef CONFIG_NUMA
+> +	"zreclaim_failed",
+> +#endif
+>  	"pginodesteal",
+>  	"slabs_scanned",
+>  	"kswapd_steal",
+> -- 
+> 1.5.6.5
