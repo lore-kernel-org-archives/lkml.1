@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760214AbZFJPne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760299AbZFJPnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760214AbZFJPne (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 11:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755947AbZFJPnX
+	id S1760299AbZFJPnq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 11:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760047AbZFJPnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 11:43:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52825 "EHLO hera.kernel.org"
+	Wed, 10 Jun 2009 11:43:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52829 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760172AbZFJPnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 11:43:22 -0400
-Date: Wed, 10 Jun 2009 15:42:46 GMT
+	id S1760188AbZFJPna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 11:43:30 -0400
+Date: Wed, 10 Jun 2009 15:42:57 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
@@ -20,32 +20,34 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
        tglx@linutronix.de, mingo@elte.hu
 In-Reply-To: <new-submission>
 References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter tools: Small frequency related fixes
-Message-ID: <tip-4502d77c1d8f15f20c04b92cb96c12d4e465de29@git.kernel.org>
-Git-Commit-ID: 4502d77c1d8f15f20c04b92cb96c12d4e465de29
+Subject: [tip:perfcounters/core] perf_counter tools: Propagate signals properly
+Message-ID: <tip-f7b7c26e01e51fe46097e11f179dc71ce7950084@git.kernel.org>
+Git-Commit-ID: f7b7c26e01e51fe46097e11f179dc71ce7950084
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 10 Jun 2009 15:42:46 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 10 Jun 2009 15:42:58 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4502d77c1d8f15f20c04b92cb96c12d4e465de29
-Gitweb:     http://git.kernel.org/tip/4502d77c1d8f15f20c04b92cb96c12d4e465de29
+Commit-ID:  f7b7c26e01e51fe46097e11f179dc71ce7950084
+Gitweb:     http://git.kernel.org/tip/f7b7c26e01e51fe46097e11f179dc71ce7950084
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Wed, 10 Jun 2009 15:03:06 +0200
+AuthorDate: Wed, 10 Jun 2009 15:55:59 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 10 Jun 2009 16:55:26 +0200
+CommitDate: Wed, 10 Jun 2009 16:55:27 +0200
 
-perf_counter tools: Small frequency related fixes
+perf_counter tools: Propagate signals properly
 
-Create the counter in a disabled state and only enable it after we
-mmap() the buffer, this allows us to see the first few samples (and
-observe the frequency ramp).
+Currently report and stat catch SIGINT (and others) without altering
+their exit state. This means that things like:
 
-Furthermore, print the period in the verbose report.
+   while :; do perf stat ./foo ; done
+
+Loops become hard-to-interrupt, because bash never sees perf terminate
+due to interruption. Fix this.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
@@ -56,56 +58,74 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-record.c |    3 +++
- tools/perf/builtin-report.c |    6 ++++--
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ tools/perf/builtin-record.c |   12 ++++++++++++
+ tools/perf/builtin-stat.c   |   13 +++++++++++++
+ 2 files changed, 25 insertions(+), 0 deletions(-)
 
 diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-index deaee42..a5698ad 100644
+index a5698ad..c10553c 100644
 --- a/tools/perf/builtin-record.c
 +++ b/tools/perf/builtin-record.c
-@@ -347,6 +347,7 @@ static void create_counter(int counter, int cpu, pid_t pid)
- 	attr->mmap		= track;
- 	attr->comm		= track;
- 	attr->inherit		= (cpu < 0) && inherit;
-+	attr->disabled		= 1;
- 
- 	track = 0; /* only the first counter needs these */
- 
-@@ -402,6 +403,8 @@ try_again:
- 		error("failed to mmap with %d (%s)\n", errno, strerror(errno));
- 		exit(-1);
- 	}
-+
-+	ioctl(fd[nr_cpu][counter], PERF_COUNTER_IOC_ENABLE);
+@@ -169,10 +169,21 @@ static void mmap_read(struct mmap_data *md)
  }
  
- static void open_counters(int cpu, pid_t pid)
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 0b18cb9..9a0e31e 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -47,6 +47,7 @@ struct ip_event {
- 	struct perf_event_header header;
- 	__u64 ip;
- 	__u32 pid, tid;
-+	__u64 period;
- };
+ static volatile int done = 0;
++static volatile int signr = -1;
  
- struct mmap_event {
-@@ -943,12 +944,13 @@ process_overflow_event(event_t *event, unsigned long offset, unsigned long head)
- 	uint64_t ip = event->ip.ip;
- 	struct map *map = NULL;
+ static void sig_handler(int sig)
+ {
+ 	done = 1;
++	signr = sig;
++}
++
++static void sig_atexit(void)
++{
++	if (signr == -1)
++		return;
++
++	signal(signr, SIG_DFL);
++	kill(getpid(), signr);
+ }
  
--	dprintf("%p [%p]: PERF_EVENT (IP, %d): %d: %p\n",
-+	dprintf("%p [%p]: PERF_EVENT (IP, %d): %d: %p period: %Ld\n",
- 		(void *)(offset + head),
- 		(void *)(long)(event->header.size),
- 		event->header.misc,
- 		event->ip.pid,
--		(void *)(long)ip);
-+		(void *)(long)ip,
-+		(long long)event->ip.period);
+ static void pid_synthesize_comm_event(pid_t pid, int full)
+@@ -459,6 +470,7 @@ static int __cmd_record(int argc, const char **argv)
+ 	} else for (i = 0; i < nr_cpus; i++)
+ 		open_counters(i, target_pid);
  
- 	dprintf(" ... thread: %s:%d\n", thread->comm, thread->pid);
++	atexit(sig_atexit);
+ 	signal(SIGCHLD, sig_handler);
+ 	signal(SIGINT, sig_handler);
  
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index 8085509..6404906 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -296,8 +296,20 @@ static int do_perf_stat(int argc, const char **argv)
+ 	return 0;
+ }
+ 
++static volatile int signr = -1;
++
+ static void skip_signal(int signo)
+ {
++	signr = signo;
++}
++
++static void sig_atexit(void)
++{
++	if (signr == -1)
++		return;
++
++	signal(signr, SIG_DFL);
++	kill(getpid(), signr);
+ }
+ 
+ static const char * const stat_usage[] = {
+@@ -345,6 +357,7 @@ int cmd_stat(int argc, const char **argv, const char *prefix)
+ 	 * What we want is for Ctrl-C to work in the exec()-ed
+ 	 * task, but being ignored by perf stat itself:
+ 	 */
++	atexit(sig_atexit);
+ 	signal(SIGINT,  skip_signal);
+ 	signal(SIGALRM, skip_signal);
+ 	signal(SIGABRT, skip_signal);
