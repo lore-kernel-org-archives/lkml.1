@@ -1,139 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbZFJKkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbZFJKlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbZFJKkf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 06:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbZFJKk1
+	id S1755333AbZFJKlz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 06:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbZFJKls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 06:40:27 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:43520 "EHLO gir.skynet.ie"
+	Wed, 10 Jun 2009 06:41:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44752 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753224AbZFJKk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 06:40:26 -0400
-Date: Wed, 10 Jun 2009 11:40:26 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/4] Count the number of times zone_reclaim() scans and
-	fails
-Message-ID: <20090610104025.GJ25943@csn.ul.ie>
-References: <1244566904-31470-1-git-send-email-mel@csn.ul.ie> <1244566904-31470-4-git-send-email-mel@csn.ul.ie> <20090610021028.GA6597@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090610021028.GA6597@localhost>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1751621AbZFJKlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 06:41:47 -0400
+Subject: GFS2: Merge gfs2_get_sb into gfs2_get_sb_meta
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
+In-Reply-To: <20090610095319.GC25527@infradead.org>
+References: <1244622665-7470-15-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-16-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-17-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-18-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-19-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-20-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-21-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-22-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-23-git-send-email-swhiteho@redhat.com>
+	 <1244622665-7470-24-git-send-email-swhiteho@redhat.com>
+	 <20090610095319.GC25527@infradead.org>
+Content-Type: text/plain
+Organization: Red Hat UK Ltd
+Date: Wed, 10 Jun 2009 11:43:59 +0100
+Message-Id: <1244630639.3355.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 10:10:28AM +0800, Wu Fengguang wrote:
-> On Wed, Jun 10, 2009 at 01:01:43AM +0800, Mel Gorman wrote:
-> > On NUMA machines, the administrator can configure zone_reclaim_mode that
-> > is a more targetted form of direct reclaim. On machines with large NUMA
-> > distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
-> > unmapped pages will be reclaimed if the zone watermarks are not being met.
-> > 
-> > There is a heuristic that determines if the scan is worthwhile but it is
-> > possible that the heuristic will fail and the CPU gets tied up scanning
-> > uselessly. Detecting the situation requires some guesswork and experimentation
-> > so this patch adds a counter "zreclaim_failed" to /proc/vmstat. If during
-> > high CPU utilisation this counter is increasing rapidly, then the resolution
-> > to the problem may be to set /proc/sys/vm/zone_reclaim_mode to 0.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > ---
-> >  include/linux/vmstat.h |    3 +++
-> >  mm/vmscan.c            |    4 ++++
-> >  mm/vmstat.c            |    3 +++
-> >  3 files changed, 10 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
-> > index ff4696c..416f748 100644
-> > --- a/include/linux/vmstat.h
-> > +++ b/include/linux/vmstat.h
-> > @@ -36,6 +36,9 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
-> >  		FOR_ALL_ZONES(PGSTEAL),
-> >  		FOR_ALL_ZONES(PGSCAN_KSWAPD),
-> >  		FOR_ALL_ZONES(PGSCAN_DIRECT),
-> > +#ifdef CONFIG_NUMA
-> > +		PGSCAN_ZONERECLAIM_FAILED,
-> > +#endif
-> 
-> I'd rather to refine the zone accounting (ie. mapped tmpfs pages)
-> so that we know whether a zone scan is going to be fruitless.  Then
-> we can get rid of the remedy patches 3 and 4.
-> 
+>From 003dec8913d6bebb4ecc989ec04a235cf38f5ea9 Mon Sep 17 00:00:00 2001
+From: Steven Whitehouse <swhiteho@redhat.com>
+Date: Wed, 10 Jun 2009 10:31:45 +0100
+Subject: [PATCH] GFS2: Merge gfs2_get_sb into gfs2_get_sb_meta
 
-This patch is not a remedy patch as such. tmpfs might not be the only
-trigger case for thie zone_reclaim() excessive scan problem. In the
-event it's occuring, we want to be able to pinpoint better why we are
-spinning at 100% CPU. It's to reduce the debug time if/when this problem
-is encountered.
+These don't need to be separate functions.
 
-On the mapped tmpfs page accounting, I mentioned the problems I see with
-this in another mail. It would alter a number of paths, particularly the
-page cache add/remove paths to maintain the counters we need to avoid
-tmpfs in this slow NUMA-specific path. I'm hoping that can be avoided.
+Reported-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-> We don't have to worry about swap cache pages accounted as file pages.
-> Since there are no double accounting in NR_FILE_PAGES for tmpfs pages.
-> 
-> We don't have to worry about MLOCKED pages, because they may defeat
-> the estimation temporarily, but after one or several more zone scans,
-> MLOCKED pages will go to the unevictable list, hence this cause of
-> zone reclaim failure won't be persistent.
-> 
-> Any more known accounting holes?
-> 
-
-Not that I'm aware of but if/when they show up, I'd like to be able to
-detect the situation easily, hence this patch.
-
-> Thanks,
-> Fengguang
-> 
-> >  		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
-> >  		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
-> >  #ifdef CONFIG_HUGETLB_PAGE
-> > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > index e862fc9..8be4582 100644
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -2489,6 +2489,10 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> >  	ret = __zone_reclaim(zone, gfp_mask, order);
-> >  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
-> >  
-> > +	if (!ret) {
-> > +		count_vm_events(PGSCAN_ZONERECLAIM_FAILED, 1);
-> > +	}
-> > +
-> >  	return ret;
-> >  }
-> >  #endif
-> > diff --git a/mm/vmstat.c b/mm/vmstat.c
-> > index 1e3aa81..02677d1 100644
-> > --- a/mm/vmstat.c
-> > +++ b/mm/vmstat.c
-> > @@ -673,6 +673,9 @@ static const char * const vmstat_text[] = {
-> >  	TEXTS_FOR_ZONES("pgscan_kswapd")
-> >  	TEXTS_FOR_ZONES("pgscan_direct")
-> >  
-> > +#ifdef CONFIG_NUMA
-> > +	"zreclaim_failed",
-> > +#endif
-> >  	"pginodesteal",
-> >  	"slabs_scanned",
-> >  	"kswapd_steal",
-> > -- 
-> > 1.5.6.5
-> 
-
+diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
+index 9da161c..f234aba 100644
+--- a/fs/gfs2/ops_fstype.c
++++ b/fs/gfs2/ops_fstype.c
+@@ -1284,9 +1284,11 @@ static int set_meta_super(struct super_block *s, void *ptr)
+ 	return -EINVAL;
+ }
+ 
+-static struct super_block *get_gfs2_sb(const char *dev_name)
++static int gfs2_get_sb_meta(struct file_system_type *fs_type, int flags,
++			    const char *dev_name, void *data, struct vfsmount *mnt)
+ {
+ 	struct super_block *s;
++	struct gfs2_sbd *sdp;
+ 	struct path path;
+ 	int error;
+ 
+@@ -1294,21 +1296,11 @@ static struct super_block *get_gfs2_sb(const char *dev_name)
+ 	if (error) {
+ 		printk(KERN_WARNING "GFS2: path_lookup on %s returned error %d\n",
+ 		       dev_name, error);
+-		return ERR_PTR(-ENOENT);
++		return error;
+ 	}
+ 	s = sget(&gfs2_fs_type, test_meta_super, set_meta_super,
+ 		 path.dentry->d_inode->i_sb->s_bdev);
+ 	path_put(&path);
+-	return s;
+-}
+-
+-static int gfs2_get_sb_meta(struct file_system_type *fs_type, int flags,
+-			    const char *dev_name, void *data, struct vfsmount *mnt)
+-{
+-	struct super_block *s;
+-	struct gfs2_sbd *sdp;
+-
+-	s = get_gfs2_sb(dev_name);
+ 	if (IS_ERR(s)) {
+ 		printk(KERN_WARNING "GFS2: gfs2 mount does not exist\n");
+ 		return PTR_ERR(s);
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.6.0.6
+
+
+
