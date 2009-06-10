@@ -1,102 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762156AbZFJVFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762185AbZFJVF6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762156AbZFJVFp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 17:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762065AbZFJVFS
+	id S1762185AbZFJVF6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 17:05:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762109AbZFJVFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 17:05:18 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:45034 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758941AbZFJVFO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 17:05:14 -0400
-Subject: Re: [PATCH] clocksource: setup mult_orig in clocksource_enable()
-From: john stultz <johnstul@us.ibm.com>
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, lethal@linux-sh.org,
-       tglx@linutronix.de, akpm@linux-foundation.org
-In-Reply-To: <20090501054546.8193.10688.sendpatchset@rx1.opensource.se>
-References: <20090501054546.8193.10688.sendpatchset@rx1.opensource.se>
+	Wed, 10 Jun 2009 17:05:34 -0400
+Received: from fifo99.com ([67.223.236.141]:33607 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762102AbZFJVFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 17:05:33 -0400
+Subject: Re: HTC Dream aka. t-mobile g1 support
+From: Daniel Walker <dwalker@fifo99.com>
+To: Brian Swetland <swetland@google.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       san@android.com, rlove@google.com
+In-Reply-To: <a55d774e0906101324i7acf23b0qf42b6c2798a3eff4@mail.gmail.com>
+References: <20090610103131.GB13885@elf.ucw.cz>
+	 <20090610194852.GA28787@n2100.arm.linux.org.uk>
+	 <a55d774e0906101324i7acf23b0qf42b6c2798a3eff4@mail.gmail.com>
 Content-Type: text/plain
-Date: Wed, 10 Jun 2009 14:04:55 -0700
-Message-Id: <1244667895.8085.20.camel@localhost.localdomain>
+Date: Wed, 10 Jun 2009 14:05:34 -0700
+Message-Id: <1244667934.5982.90.camel@desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-01 at 14:45 +0900, Magnus Damm wrote:
-> From: Magnus Damm <damm@igel.co.jp>
+On Wed, 2009-06-10 at 13:24 -0700, Brian Swetland wrote:
+> On Wed, Jun 10, 2009 at 12:48 PM, Russell King - ARM
+> Linux<linux@arm.linux.org.uk> wrote:
+> > On Wed, Jun 10, 2009 at 12:31:31PM +0200, Pavel Machek wrote:
+> >> Is there patch for Dream support for 2.6.30 somewhere? The best I
+> >> could find is linux-msm tree, which is ... quite a big diff against
+> >> 2.6.24:
+> >
+> > In short not as far as I know, and I'm very disappointed with the state
+> > of affairs with google.
+> >
+> > Basically, the situation surrounding msm can be described as severely
+> > wanting - bear in mind that it's been over a year since we last heard
+> > anything from the msm guys as far as code submissions go.
+> >
+> > Personally, I think we should delete the entire codeset which was
+> > submitted into mainline - it's next to useless and all the time that
+> > folk sit on their hands not maintaining it, it's just not worth having
+> > it anywhere near mainline.
 > 
-> Setup clocksource mult_orig in clocksource_enable().
+> I'd love to find an effective way to get more of the msm support
+> cleaned up (as necessary) and into the mainline.  We're bringing our
+> work forward and rebasing to keep tracking the latest released kernel,
+> and working on getting core bits we need that other stuff depends on
+> in -- look at the thread on linux-pm where the wakelock/suspendblocker
+> framework has been reviewed, revised, resent repeatedly, etc.
 
-Hey Magnus,
-Sorry I missed this earlier, I just noticed it in the -tip tree.
+I assume you guys would accept community submitted clean up patches
+right? Is there someone maintaining the MSM changes, you maybe?
 
-I've some concerns below.
+> The msm7k unfortunately requires a lot of infrastructure to work given
+> that the baseband (a black box to us) controls much of the world.
+> Last time around when I tried submitting some of the core ipc support
+> to talk to it on the lakml, there seemed to be uncertainty about who
+> even would review that.
 
-> Clocksource drivers can save power by using keeping the
-> device clock disabled while the clocksource is unused.
-> 
-> In practice this means that the enable() and disable()
-> callbacks perform clk_enable() and clk_disable().
-> 
-> The enable() callback may also use clk_get_rate() to get
-> the clock rate from the clock framework. This information
-> can then be used to calculate the shift and mult variables.
+Typically you send stuff to LKML (or other mailing list) for review,
+it's not like only one person would be reviewing the code.
 
-Hrmmm.. So when the clocksource code was designed, it was expected that
-the clocksource mult value would be set prior to registration, and then
-would not be modified by any user other then the timekeeping core. As
-changing the mult value directly (on a clocksource thats being used)
-could cause time inconsistencies.
-
-
-> Currently the mult_orig variable is setup from mult at
-> registration time only. This is conflicting with the above
-> case since the clock is disabled and the mult variable is
-> not yet calculated at the time of registration.
-
-Is there really no way to calculate the mult value prior to
-registration? Maybe quickly enabling, getting the freq, and then
-disabling?
-
-> Moving the mult_orig setup code to clocksource_enable()
-> allows us to both handle the common case with no enable()
-> callback and the mult-changed-after-enable() case.
-> 
-> Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> ---
-> 
->  include/linux/clocksource.h |   10 +++++++++-
->  kernel/time/clocksource.c   |    3 ---
->  2 files changed, 9 insertions(+), 4 deletions(-)
-> 
-> --- 0001/include/linux/clocksource.h
-> +++ work/include/linux/clocksource.h	2009-05-01 12:59:27.000000000 +0900
-> @@ -288,7 +288,15 @@ static inline cycle_t clocksource_read(s
->   */
->  static inline int clocksource_enable(struct clocksource *cs)
->  {
-> -	return cs->enable ? cs->enable(cs) : 0;
-> +	int ret = 0;
-> +
-> +	if (cs->enable)
-> +		ret = cs->enable(cs);
-> +
-> +	/* save mult_orig on enable */
-> +	cs->mult_orig = cs->mult;
-> +
-> +	return ret;
->  }
-
-So this seems like it will break if a clocksource is switched away from
-and then back to (the reason we added mult_orig in the first place).
-Since the re-enabled clocksource would then save off its modified mult
-value into mult_orig.
-
-thanks
--john
+Daniel
 
