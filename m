@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbZFJMFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758528AbZFJMIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758202AbZFJMFP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 08:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753564AbZFJMFJ
+	id S1758528AbZFJMIs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 08:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbZFJMIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 08:05:09 -0400
-Received: from mail.mnementh.co.uk ([173.45.232.4]:35307 "EHLO mnementh.co.uk"
+	Wed, 10 Jun 2009 08:08:38 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:38108 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751672AbZFJMFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 08:05:08 -0400
-Message-ID: <4A2FA16B.9080402@mnementh.co.uk>
-Date: Wed, 10 Jun 2009 13:04:59 +0100
-From: Ian Molton <ian@mnementh.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       ibm@android.com, swetland@google.com, san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-References: <20090610103131.GB13885@elf.ucw.cz> <4A2F9546.3050901@mnementh.co.uk> <20090610114929.GB23183@elf.ucw.cz>
-In-Reply-To: <20090610114929.GB23183@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1750869AbZFJMIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 08:08:37 -0400
+From: "Oskar Schirmer" <os@emlix.com>
+To: Sascha Hauer <kernel@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Oskar Schirmer <os@emlix.com>,
+       Fabian Godehardt <fg@emlix.com>
+Subject: [PATCH 4/9 -v2] imx: serial: be sure to stop xmit upon shutdown
+Date: Wed, 10 Jun 2009 14:08:31 +0200
+Message-Id: <1244635716-23315-5-git-send-email-os@emlix.com>
+In-Reply-To: <1244635716-23315-1-git-send-email-os@emlix.com>
+References: <1244635716-23315-1-git-send-email-os@emlix.com>
+Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Wed 2009-06-10 12:13:10, Ian Molton wrote:
+From: Fabian Godehardt <fg@emlix.com>
 
-> I know about his blog, but can't see any patches. Should I look
-> harder? (Any urls?) 
+needed to avoid continued transmission by hardware
+while software already shuts down, which might
+cause dangling characters to show up in hardware
+queues when restarting the device.
 
-I think I have the 2.6.27 (IIRC) sources from JF. I got them from his 
-blog - they were buried inside an archive.
+Signed-off-by: Fabian Godehardt <fg@emlix.com>
+Signed-off-by: Oskar Schirmer <os@emlix.com>
+---
+ drivers/serial/imx.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-JF is on #android on freenode (or was recently)
+diff --git a/drivers/serial/imx.c b/drivers/serial/imx.c
+index afcec9e..3fa07a9 100644
+--- a/drivers/serial/imx.c
++++ b/drivers/serial/imx.c
+@@ -634,6 +634,10 @@ static void imx_shutdown(struct uart_port *port)
+ 	struct imx_port *sport = (struct imx_port *)port;
+ 	unsigned long temp;
+ 
++	temp = readl(sport->port.membase + UCR2);
++	temp &= ~(UCR2_TXEN);
++	writel(temp, sport->port.membase + UCR2);
++
+ 	/*
+ 	 * Stop our timer.
+ 	 */
+-- 
+1.5.3.7
 
-Imm running a JF kernel on mine right now - seems to have full sensor 
-support. Everything works.
-
->> Keep me updated on this as I have a Dream and will definately be wanting  
->> to 'roll my own' (debian userspace on SD, chroot android)
-> 
-> If you get that to work, do tell me. I'd like to run debian on root,
-> too.
-
-Will do :)
