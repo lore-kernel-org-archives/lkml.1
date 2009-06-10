@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbZFJT64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762230AbZFJT76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762063AbZFJT64 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 15:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761503AbZFJT4F
+	id S1762230AbZFJT76 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 15:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761534AbZFJT4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 15:56:05 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:7863 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761458AbZFJTzc (ORCPT
+	Wed, 10 Jun 2009 15:56:12 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:27806 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761161AbZFJTz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 15:55:32 -0400
-Subject: [PATCH v3 06/12] ACPI: simplify acpi_pci_irq_add_prt() API
+	Wed, 10 Jun 2009 15:55:59 -0400
+Subject: [PATCH v3 11/12] ACPI: video: convert to acpi_get_pci_dev
 To: lenb@kernel.org
 From: Alex Chiang <achiang@hp.com>
-Cc: linux-acpi@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
-Date: Wed, 10 Jun 2009 13:55:35 -0600
-Message-ID: <20090610195535.28982.57219.stgit@bob.kio>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Thomas Renninger <trenn@suse.de>, linux-pci@vger.kernel.org
+Date: Wed, 10 Jun 2009 13:56:00 -0600
+Message-ID: <20090610195600.28982.3404.stgit@bob.kio>
 In-Reply-To: <20090610194714.28982.51363.stgit@bob.kio>
 References: <20090610194714.28982.51363.stgit@bob.kio>
 User-Agent: StGit/0.14.3.347.g594a
@@ -27,118 +27,81 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A PCI domain cannot change as you descend down subordinate buses, which
-makes the 'segment' argument to acpi_pci_irq_add_prt() useless.
+Now that acpi_get_pci_dev is available, let's use it instead of
+acpi_get_physical_pci_device()
 
-Change the interface to take a struct pci_bus *, from whence we can derive
-the bus number and segment. Reducing the number of arguments makes life
-simpler for callers.
-
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/acpi/pci_bind.c     |    8 ++++----
- drivers/acpi/pci_irq.c      |   10 +++++-----
- drivers/acpi/pci_root.c     |    3 +--
- include/acpi/acpi_drivers.h |    2 +-
- 4 files changed, 11 insertions(+), 12 deletions(-)
+ drivers/acpi/video.c        |    6 +++---
+ drivers/acpi/video_detect.c |    9 +++++----
+ 2 files changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/acpi/pci_bind.c b/drivers/acpi/pci_bind.c
-index 703d2a3..6eb58ef 100644
---- a/drivers/acpi/pci_bind.c
-+++ b/drivers/acpi/pci_bind.c
-@@ -124,7 +124,7 @@ static int acpi_pci_bind(struct acpi_device *device)
+diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+index 1bdfb37..5adbf93 100644
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -1054,15 +1054,15 @@ static void acpi_video_bus_find_cap(struct acpi_video_bus *video)
+ static int acpi_video_bus_check(struct acpi_video_bus *video)
  {
- 	acpi_status status;
- 	acpi_handle handle;
--	unsigned char bus;
-+	struct pci_bus *bus;
- 	struct pci_dev *dev;
+ 	acpi_status status = -ENOENT;
+-	struct device *dev;
++	struct pci_dev *dev;
  
- 	dev = acpi_get_pci_dev(device->handle);
-@@ -157,11 +157,11 @@ static int acpi_pci_bind(struct acpi_device *device)
- 		goto out;
+ 	if (!video)
+ 		return -EINVAL;
  
- 	if (dev->subordinate)
--		bus = dev->subordinate->number;
-+		bus = dev->subordinate;
- 	else
--		bus = dev->bus->number;
-+		bus = dev->bus;
+-	dev = acpi_get_physical_pci_device(video->device->handle);
++	dev = acpi_get_pci_dev(video->device->handle);
+ 	if (!dev)
+ 		return -ENODEV;
+-	put_device(dev);
++	pci_dev_put(dev);
  
--	acpi_pci_irq_add_prt(device->handle, pci_domain_nr(dev->bus), bus);
-+	acpi_pci_irq_add_prt(device->handle, bus);
+ 	/* Since there is no HID, CID and so on for VGA driver, we have
+ 	 * to check well known required nodes.
+diff --git a/drivers/acpi/video_detect.c b/drivers/acpi/video_detect.c
+index 0973727..7cd2b63 100644
+--- a/drivers/acpi/video_detect.c
++++ b/drivers/acpi/video_detect.c
+@@ -10,7 +10,7 @@
+  * assinged
+  *
+  * After PCI devices are glued with ACPI devices
+- * acpi_get_physical_pci_device() can be called to identify ACPI graphics
++ * acpi_get_pci_dev() can be called to identify ACPI graphics
+  * devices for which a real graphics card is plugged in
+  *
+  * Now acpi_video_get_capabilities() can be called to check which
+@@ -36,6 +36,7 @@
  
- out:
- 	pci_dev_put(dev);
-diff --git a/drivers/acpi/pci_irq.c b/drivers/acpi/pci_irq.c
-index 51b9f82..3ed944c 100644
---- a/drivers/acpi/pci_irq.c
-+++ b/drivers/acpi/pci_irq.c
-@@ -182,7 +182,7 @@ static void do_prt_fixups(struct acpi_prt_entry *entry,
+ #include <linux/acpi.h>
+ #include <linux/dmi.h>
++#include <linux/pci.h>
+ 
+ ACPI_MODULE_NAME("video");
+ #define _COMPONENT		ACPI_VIDEO_COMPONENT
+@@ -109,7 +110,7 @@ static acpi_status
+ find_video(acpi_handle handle, u32 lvl, void *context, void **rv)
+ {
+ 	long *cap = context;
+-	struct device *dev;
++	struct pci_dev *dev;
+ 	struct acpi_device *acpi_dev;
+ 
+ 	const struct acpi_device_id video_ids[] = {
+@@ -120,10 +121,10 @@ find_video(acpi_handle handle, u32 lvl, void *context, void **rv)
+ 		return AE_OK;
+ 
+ 	if (!acpi_match_device_ids(acpi_dev, video_ids)) {
+-		dev = acpi_get_physical_pci_device(handle);
++		dev = acpi_get_pci_dev(handle);
+ 		if (!dev)
+ 			return AE_OK;
+-		put_device(dev);
++		pci_dev_put(dev);
+ 		*cap |= acpi_is_video_device(acpi_dev);
  	}
- }
- 
--static int acpi_pci_irq_add_entry(acpi_handle handle, int segment, int bus,
-+static int acpi_pci_irq_add_entry(acpi_handle handle, struct pci_bus *bus,
- 				  struct acpi_pci_routing_table *prt)
- {
- 	struct acpi_prt_entry *entry;
-@@ -196,8 +196,8 @@ static int acpi_pci_irq_add_entry(acpi_handle handle, int segment, int bus,
- 	 * 1=INTA, 2=INTB.  We use the PCI encoding throughout, so convert
- 	 * it here.
- 	 */
--	entry->id.segment = segment;
--	entry->id.bus = bus;
-+	entry->id.segment = pci_domain_nr(bus);
-+	entry->id.bus = bus->number;
- 	entry->id.device = (prt->address >> 16) & 0xFFFF;
- 	entry->pin = prt->pin + 1;
- 
-@@ -242,7 +242,7 @@ static int acpi_pci_irq_add_entry(acpi_handle handle, int segment, int bus,
- 	return 0;
- }
- 
--int acpi_pci_irq_add_prt(acpi_handle handle, int segment, int bus)
-+int acpi_pci_irq_add_prt(acpi_handle handle, struct pci_bus *bus)
- {
- 	acpi_status status;
- 	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-@@ -271,7 +271,7 @@ int acpi_pci_irq_add_prt(acpi_handle handle, int segment, int bus)
- 
- 	entry = buffer.pointer;
- 	while (entry && (entry->length > 0)) {
--		acpi_pci_irq_add_entry(handle, segment, bus, entry);
-+		acpi_pci_irq_add_entry(handle, bus, entry);
- 		entry = (struct acpi_pci_routing_table *)
- 		    ((unsigned long)entry + entry->length);
- 	}
-diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-index f23fcc5..f341b07 100644
---- a/drivers/acpi/pci_root.c
-+++ b/drivers/acpi/pci_root.c
-@@ -614,8 +614,7 @@ static int __devinit acpi_pci_root_add(struct acpi_device *device)
- 	 */
- 	status = acpi_get_handle(device->handle, METHOD_NAME__PRT, &handle);
- 	if (ACPI_SUCCESS(status))
--		result = acpi_pci_irq_add_prt(device->handle, root->id.segment,
--					      root->id.bus);
-+		result = acpi_pci_irq_add_prt(device->handle, root->bus);
- 
- 	/*
- 	 * Scan and bind all _ADR-Based Devices
-diff --git a/include/acpi/acpi_drivers.h b/include/acpi/acpi_drivers.h
-index 01d9ce4..702b12e 100644
---- a/include/acpi/acpi_drivers.h
-+++ b/include/acpi/acpi_drivers.h
-@@ -90,7 +90,7 @@ int acpi_pci_link_free_irq(acpi_handle handle);
- 
- /* ACPI PCI Interrupt Routing (pci_irq.c) */
- 
--int acpi_pci_irq_add_prt(acpi_handle handle, int segment, int bus);
-+int acpi_pci_irq_add_prt(acpi_handle handle, struct pci_bus *bus);
- void acpi_pci_irq_del_prt(int segment, int bus);
- 
- /* ACPI PCI Device Binding (pci_bind.c) */
+ 	return AE_OK;
 
