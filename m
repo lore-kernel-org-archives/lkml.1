@@ -1,45 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbZFJP2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759836AbZFJP3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757820AbZFJP2V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 11:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755976AbZFJP2M
+	id S1759836AbZFJP3o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 11:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758263AbZFJP3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 11:28:12 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38778 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755728AbZFJP2K (ORCPT
+	Wed, 10 Jun 2009 11:29:35 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:63946 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757808AbZFJP3e convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 11:28:10 -0400
-Date: Wed, 10 Jun 2009 11:28:11 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: tom.leiming@gmail.com
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org, kay.sievers@vrfy.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 2/2] init/do_mounts.c: replace polling for root device
-	with devtmpfs_wait_for_dev
-Message-ID: <20090610152811.GA21888@infradead.org>
-References: <1244644097-305-1-git-send-email-tom.leiming@gmail.com>
+	Wed, 10 Jun 2009 11:29:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=PVRoF5A70hRq9epgdAQ1fAe0hLmGqQaW8mzVqkoJ/JEmQYVC9jom0fuRZs5i/nB0EN
+         Kb1pey0Q3SfcGgpzBcnOZIwxR8b1Z2H7uxrIuORvIBMfMxSG+nRoAA1DotXRwofYfdzc
+         sW1EsUdeGFmWzfVyEzc9ISy+zl6D/FVHCz00M=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244644097-305-1-git-send-email-tom.leiming@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20090610170108.7710c64b@tux.DEF.witbe.net>
+References: <91ac27070906081105x30171bedra10d244d382a6934@mail.gmail.com>
+	 <4A2E4A32.1060705@trash.net>
+	 <91ac27070906090608me50af3bv23b150d8d0cd0080@mail.gmail.com>
+	 <200906091430.32294.bcook@bpointsys.com>
+	 <91ac27070906100724v25c2328x6b343315358c8e12@mail.gmail.com>
+	 <4A2FC40E.4040106@trash.net>
+	 <91ac27070906100748p1b2cb6bax56ecc230e556ae96@mail.gmail.com>
+	 <20090610170108.7710c64b@tux.DEF.witbe.net>
+Date: Wed, 10 Jun 2009 18:29:34 +0300
+Message-ID: <91ac27070906100829l683c69fbw93bb78813ee97ced@mail.gmail.com>
+Subject: Re: SOCK_RAW does not receive broadcast (with VLAN unless PROMISC)
+From: Gil Beniamini <gil.beniamini@gmail.com>
+To: Paul Rolland <rol@witbe.net>
+Cc: Patrick McHardy <kaber@trash.net>, Brent Cook <bcook@bpointsys.com>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 10:28:17PM +0800, tom.leiming@gmail.com wrote:
-> From: Ming Lei <tom.leiming@gmail.com>
-> 
-> This patch removes the polling for root device if rootwait parameter is
-> passed to kernel and CONFIG_DEVTMPFS is enabled. This way can lead to
-> a faster boot, especially booting from some asynchronous block device
-> (such as usb mass storage, mmc card, ...)
-> 
-> The patch has been verified in beagle board(mmc card as root device).
+Paul, Patrick,
 
-What tree did you find with devtmpfs in it?  It was pretty clearly
-rejected when it came up.
+THANKS!
+using "vconfig set_name_type" DEV_PLUS_VID_NO_PAD" enable successful
+"vconfig add eth1 <same-id as on eth0>". And now finally without
+PROMISC the application receive BROADCASTs on this VLAN.
 
+Many Thanks, Gil
+
+2009/6/10 Paul Rolland <rol@witbe.net>:
+> Hello,
+>
+> On Wed, 10 Jun 2009 17:48:40 +0300
+> Gil Beniamini <gil.beniamini@gmail.com> wrote:
+>
+>> Dear Patrick,
+>> Below is my try to add vlan-id 24 on eth1, followed by "ip -d link list":
+>> root@StudentsHPA:/home/hpa# vconfig add eth1 24
+>> ERROR: trying to add VLAN #24 to IF -:eth1:-  error: File exists
+>
+> Here is an output from my vconfig :
+> bash-2.05$ /usr/local/witbe/sbin/vconfig
+> Expecting argc to be 3-5, inclusive.  Was: 1
+>
+> Usage: add             [interface-name] [vlan_id]
+>       rem             [vlan-name]
+>       set_flag        [interface-name] [flag-num]       [0 | 1]
+>       set_egress_map  [vlan-name]      [skb_priority]   [vlan_qos]
+>       set_ingress_map [vlan-name]      [skb_priority]   [vlan_qos]
+>       set_name_type   [name-type]
+>
+> ...
+> * bind-type:  PER_DEVICE  # Allows vlan 5 on eth0 and eth1 to be unique.
+>              PER_KERNEL  # Forces vlan 5 to be unique across all devices.
+>
+> But the documentation is lacking information on how to set this :(
+>
+> Have a look at the source of vconfig should help...
+>
+> Paul
+>
+> --
+> Paul Rolland                                E-Mail : rol(at)witbe.net
+> CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
+> Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
+> F-92057 Paris La Defense                    RIPE : PR12-RIPE
+>
+> This is dedicated to all the ones who want to control Internet, its
+> content or its usage :
+>
+> "I worry about my child and the Internet all the time, even though she's
+> too young to have logged on yet. Here's what I worry about. I worry that 10
+> or 15 years from now, she will come to me and say 'Daddy, where were you
+> when they took freedom of the press away from the Internet?'"
+> --Mike Godwin, Electronic Frontier Foundation
+>
+>
+>
