@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758101AbZFJVkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbZFJVmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758101AbZFJVkg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 17:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbZFJVk3
+	id S1757910AbZFJVmw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 17:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbZFJVmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 17:40:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43637 "EHLO mx3.mail.elte.hu"
+	Wed, 10 Jun 2009 17:42:43 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50109 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752493AbZFJVk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 17:40:27 -0400
-Date: Wed, 10 Jun 2009 23:40:18 +0200
+	id S1751960AbZFJVml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 17:42:41 -0400
+Date: Wed, 10 Jun 2009 23:42:28 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] x86/microcode changes for v2.6.31
-Message-ID: <20090610214018.GA29510@elte.hu>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: [GIT PULL] x86/mm for v2.6.31
+Message-ID: <20090610214228.GA3979@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -34,1012 +35,1303 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest x86-microcode-for-linus git tree from:
+Please pull the latest x86-mm-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-microcode-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-mm-for-linus
+
+The mm.h and page_alloc.c change was OK-ed by Andrew.
+
+out-of-topic modifications in x86-mm-for-linus:
+-----------------------------------------------
+include/linux/mm.h                 # 888a589: mm, x86: remove MEMORY_HOTPLUG_RE
+mm/page_alloc.c                    # 888a589: mm, x86: remove MEMORY_HOTPLUG_RE
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Dmitry Adamushko (1):
-      x86: microcode: use smp_call_function_single instead of set_cpus_allowed, cleanup of synchronization logic
+Amerigo Wang (2):
+      x86: merge process.c a bit
+      x86: process.c, remove useless headers
 
-Figo.zhang (1):
-      x86, microcode: Simplify vfree() use
+H. Peter Anvin (1):
+      x86: fix typo in address space documentation
+
+Ingo Molnar (2):
+      x86/mm: further cleanups of fault.c's include file section
+      x86, mm: fault.c, use printk_once() in is_errata93()
+
+Jaswinder Singh Rajput (1):
+      x86: page_types.h unification of declarations
+
+Linus Torvalds (1):
+      x86, e820, pci: reserve extra free space near end of RAM
+
+Pekka Enberg (5):
+      x86: unify noexec handling
+      x86: move max_pfn_mapped and max_low_pfn_mapped to setup.c
+      x86: move per-cpu mmu_gathers to mm/init.c
+      x86: unify 64-bit UMA and NUMA paging_init()
+      x86: use sparse_memory_present_with_active_regions() on UMA
+
+Rik van Riel (1):
+      x86: 46 bit physical address support on 64 bits
+
+Shaohua Li (1):
+      x86: make sparse mem work in non-NUMA mode
+
+Yinghai Lu (8):
+      x86: remove (null) in /sys kernel_page_tables
+      x86/pci: remove rounding quirk from e820_setup_gap()
+      x86: clean up and and print out initial max_pfn_mapped
+      x86: Sanity check the e820 against the SRAT table using e820 map only
+      x86: Allow 1MB of slack between the e820 map and SRAT, not 4GB
+      mm, x86: remove MEMORY_HOTPLUG_RESERVE related code
+      x86, mm: Fix node_possible_map logic
+      x86: fix system without memory on node0
 
 
- arch/x86/include/asm/microcode.h  |   25 ++-
- arch/x86/kernel/microcode_amd.c   |   70 +++-----
- arch/x86/kernel/microcode_core.c  |  329 +++++++++++++++++++++----------------
- arch/x86/kernel/microcode_intel.c |   90 ++++-------
- 4 files changed, 266 insertions(+), 248 deletions(-)
+ Documentation/x86/x86_64/boot-options.txt |    5 --
+ Documentation/x86/x86_64/mm.txt           |    9 ++-
+ arch/x86/include/asm/numa_64.h            |   10 ++-
+ arch/x86/include/asm/page_32_types.h      |    4 -
+ arch/x86/include/asm/page_64_types.h      |    8 +--
+ arch/x86/include/asm/page_types.h         |    6 ++
+ arch/x86/include/asm/pgtable_64_types.h   |    8 +-
+ arch/x86/include/asm/pgtable_types.h      |    1 -
+ arch/x86/include/asm/sparsemem.h          |    2 +-
+ arch/x86/include/asm/traps.h              |    1 +
+ arch/x86/kernel/e820.c                    |   46 +++++++++++---
+ arch/x86/kernel/process.c                 |   14 ++++
+ arch/x86/kernel/process_32.c              |   15 -----
+ arch/x86/kernel/process_64.c              |   15 -----
+ arch/x86/kernel/setup.c                   |   12 ++++
+ arch/x86/kernel/setup_percpu.c            |    8 +++
+ arch/x86/mm/dump_pagetables.c             |    7 +-
+ arch/x86/mm/fault.c                       |   51 +++------------
+ arch/x86/mm/init.c                        |   77 ++++++++++++++++++++---
+ arch/x86/mm/init_32.c                     |   61 +-----------------
+ arch/x86/mm/init_64.c                     |   47 +-------------
+ arch/x86/mm/numa_64.c                     |   33 +++-------
+ arch/x86/mm/srat_64.c                     |   98 +++++------------------------
+ include/linux/mm.h                        |    2 -
+ mm/page_alloc.c                           |   69 --------------------
+ 25 files changed, 213 insertions(+), 396 deletions(-)
 
-diff --git a/arch/x86/include/asm/microcode.h b/arch/x86/include/asm/microcode.h
-index c882664..ef51b50 100644
---- a/arch/x86/include/asm/microcode.h
-+++ b/arch/x86/include/asm/microcode.h
-@@ -9,20 +9,31 @@ struct cpu_signature {
+diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
+index 34c1304..2db5893 100644
+--- a/Documentation/x86/x86_64/boot-options.txt
++++ b/Documentation/x86/x86_64/boot-options.txt
+@@ -150,11 +150,6 @@ NUMA
+ 		Otherwise, the remaining system RAM is allocated to an
+ 		additional node.
  
- struct device;
+-  numa=hotadd=percent
+-		Only allow hotadd memory to preallocate page structures upto
+-		percent of already available memory.
+-		numa=hotadd=0 will disable hotadd memory.
+-
+ ACPI
  
-+enum ucode_state { UCODE_ERROR, UCODE_OK, UCODE_NFOUND };
+   acpi=off	Don't enable ACPI
+diff --git a/Documentation/x86/x86_64/mm.txt b/Documentation/x86/x86_64/mm.txt
+index 29b52b1..d6498e3 100644
+--- a/Documentation/x86/x86_64/mm.txt
++++ b/Documentation/x86/x86_64/mm.txt
+@@ -6,10 +6,11 @@ Virtual memory map with 4 level page tables:
+ 0000000000000000 - 00007fffffffffff (=47 bits) user space, different per mm
+ hole caused by [48:63] sign extension
+ ffff800000000000 - ffff80ffffffffff (=40 bits) guard hole
+-ffff880000000000 - ffffc0ffffffffff (=57 TB) direct mapping of all phys. memory
+-ffffc10000000000 - ffffc1ffffffffff (=40 bits) hole
+-ffffc20000000000 - ffffe1ffffffffff (=45 bits) vmalloc/ioremap space
+-ffffe20000000000 - ffffe2ffffffffff (=40 bits) virtual memory map (1TB)
++ffff880000000000 - ffffc7ffffffffff (=64 TB) direct mapping of all phys. memory
++ffffc80000000000 - ffffc8ffffffffff (=40 bits) hole
++ffffc90000000000 - ffffe8ffffffffff (=45 bits) vmalloc/ioremap space
++ffffe90000000000 - ffffe9ffffffffff (=40 bits) hole
++ffffea0000000000 - ffffeaffffffffff (=40 bits) virtual memory map (1TB)
+ ... unused hole ...
+ ffffffff80000000 - ffffffffa0000000 (=512 MB)  kernel text mapping, from phys 0
+ ffffffffa0000000 - fffffffffff00000 (=1536 MB) module mapping space
+diff --git a/arch/x86/include/asm/numa_64.h b/arch/x86/include/asm/numa_64.h
+index 064ed6d..c4ae822 100644
+--- a/arch/x86/include/asm/numa_64.h
++++ b/arch/x86/include/asm/numa_64.h
+@@ -17,9 +17,6 @@ extern int compute_hash_shift(struct bootnode *nodes, int numblks,
+ extern void numa_init_array(void);
+ extern int numa_off;
+ 
+-extern void srat_reserve_add_area(int nodeid);
+-extern int hotadd_percent;
+-
+ extern s16 apicid_to_node[MAX_LOCAL_APIC];
+ 
+ extern unsigned long numa_free_all_bootmem(void);
+@@ -27,6 +24,13 @@ extern void setup_node_bootmem(int nodeid, unsigned long start,
+ 			       unsigned long end);
+ 
+ #ifdef CONFIG_NUMA
++/*
++ * Too small node sizes may confuse the VM badly. Usually they
++ * result from BIOS bugs. So dont recognize nodes as standalone
++ * NUMA entities that have less than this amount of RAM listed:
++ */
++#define NODE_MIN_SIZE (4*1024*1024)
 +
- struct microcode_ops {
--	int  (*request_microcode_user) (int cpu, const void __user *buf, size_t size);
--	int  (*request_microcode_fw) (int cpu, struct device *device);
-+	enum ucode_state (*request_microcode_user) (int cpu,
-+				const void __user *buf, size_t size);
+ extern void __init init_cpu_to_node(void);
+ extern void __cpuinit numa_set_node(int cpu, int node);
+ extern void __cpuinit numa_clear_node(int cpu);
+diff --git a/arch/x86/include/asm/page_32_types.h b/arch/x86/include/asm/page_32_types.h
+index 0f915ae..6f1b733 100644
+--- a/arch/x86/include/asm/page_32_types.h
++++ b/arch/x86/include/asm/page_32_types.h
+@@ -54,10 +54,6 @@ extern unsigned int __VMALLOC_RESERVE;
+ extern int sysctl_legacy_va_layout;
  
--	void (*apply_microcode) (int cpu);
-+	enum ucode_state (*request_microcode_fw) (int cpu,
-+				struct device *device);
+ extern void find_low_pfn_range(void);
+-extern unsigned long init_memory_mapping(unsigned long start,
+-					 unsigned long end);
+-extern void initmem_init(unsigned long, unsigned long);
+-extern void free_initmem(void);
+ extern void setup_bootmem_allocator(void);
  
--	int  (*collect_cpu_info) (int cpu, struct cpu_signature *csig);
- 	void (*microcode_fini_cpu) (int cpu);
+ #endif	/* !__ASSEMBLY__ */
+diff --git a/arch/x86/include/asm/page_64_types.h b/arch/x86/include/asm/page_64_types.h
+index d38c91b..6fadb02 100644
+--- a/arch/x86/include/asm/page_64_types.h
++++ b/arch/x86/include/asm/page_64_types.h
+@@ -47,7 +47,7 @@
+ #define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
+ #define __START_KERNEL_map	_AC(0xffffffff80000000, UL)
+ 
+-/* See Documentation/x86_64/mm.txt for a description of the memory map. */
++/* See Documentation/x86/x86_64/mm.txt for a description of the memory map. */
+ #define __PHYSICAL_MASK_SHIFT	46
+ #define __VIRTUAL_MASK_SHIFT	48
+ 
+@@ -71,12 +71,6 @@ extern unsigned long __phys_addr(unsigned long);
+ 
+ #define vmemmap ((struct page *)VMEMMAP_START)
+ 
+-extern unsigned long init_memory_mapping(unsigned long start,
+-					 unsigned long end);
+-
+-extern void initmem_init(unsigned long start_pfn, unsigned long end_pfn);
+-extern void free_initmem(void);
+-
+ extern void init_extra_mapping_uc(unsigned long phys, unsigned long size);
+ extern void init_extra_mapping_wb(unsigned long phys, unsigned long size);
+ 
+diff --git a/arch/x86/include/asm/page_types.h b/arch/x86/include/asm/page_types.h
+index 826ad37..6473f5c 100644
+--- a/arch/x86/include/asm/page_types.h
++++ b/arch/x86/include/asm/page_types.h
+@@ -46,6 +46,12 @@ extern int devmem_is_allowed(unsigned long pagenr);
+ extern unsigned long max_low_pfn_mapped;
+ extern unsigned long max_pfn_mapped;
+ 
++extern unsigned long init_memory_mapping(unsigned long start,
++					 unsigned long end);
++
++extern void initmem_init(unsigned long start_pfn, unsigned long end_pfn);
++extern void free_initmem(void);
++
+ #endif	/* !__ASSEMBLY__ */
+ 
+ #endif	/* _ASM_X86_PAGE_DEFS_H */
+diff --git a/arch/x86/include/asm/pgtable_64_types.h b/arch/x86/include/asm/pgtable_64_types.h
+index fbf42b8..766ea16 100644
+--- a/arch/x86/include/asm/pgtable_64_types.h
++++ b/arch/x86/include/asm/pgtable_64_types.h
+@@ -51,11 +51,11 @@ typedef struct { pteval_t pte; } pte_t;
+ #define PGDIR_SIZE	(_AC(1, UL) << PGDIR_SHIFT)
+ #define PGDIR_MASK	(~(PGDIR_SIZE - 1))
+ 
+-
++/* See Documentation/x86/x86_64/mm.txt for a description of the memory map. */
+ #define MAXMEM		 _AC(__AC(1, UL) << MAX_PHYSMEM_BITS, UL)
+-#define VMALLOC_START    _AC(0xffffc20000000000, UL)
+-#define VMALLOC_END      _AC(0xffffe1ffffffffff, UL)
+-#define VMEMMAP_START	 _AC(0xffffe20000000000, UL)
++#define VMALLOC_START    _AC(0xffffc90000000000, UL)
++#define VMALLOC_END      _AC(0xffffe8ffffffffff, UL)
++#define VMEMMAP_START	 _AC(0xffffea0000000000, UL)
+ #define MODULES_VADDR    _AC(0xffffffffa0000000, UL)
+ #define MODULES_END      _AC(0xffffffffff000000, UL)
+ #define MODULES_LEN   (MODULES_END - MODULES_VADDR)
+diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
+index b8238dc..4d258ad 100644
+--- a/arch/x86/include/asm/pgtable_types.h
++++ b/arch/x86/include/asm/pgtable_types.h
+@@ -273,7 +273,6 @@ typedef struct page *pgtable_t;
+ 
+ extern pteval_t __supported_pte_mask;
+ extern int nx_enabled;
+-extern void set_nx(void);
+ 
+ #define pgprot_writecombine	pgprot_writecombine
+ extern pgprot_t pgprot_writecombine(pgprot_t prot);
+diff --git a/arch/x86/include/asm/sparsemem.h b/arch/x86/include/asm/sparsemem.h
+index e3cc3c0..4517d6b 100644
+--- a/arch/x86/include/asm/sparsemem.h
++++ b/arch/x86/include/asm/sparsemem.h
+@@ -27,7 +27,7 @@
+ #else /* CONFIG_X86_32 */
+ # define SECTION_SIZE_BITS	27 /* matt - 128 is convenient right now */
+ # define MAX_PHYSADDR_BITS	44
+-# define MAX_PHYSMEM_BITS	44 /* Can be max 45 bits */
++# define MAX_PHYSMEM_BITS	46
+ #endif
+ 
+ #endif /* CONFIG_SPARSEMEM */
+diff --git a/arch/x86/include/asm/traps.h b/arch/x86/include/asm/traps.h
+index 0d53425..37fb07a 100644
+--- a/arch/x86/include/asm/traps.h
++++ b/arch/x86/include/asm/traps.h
+@@ -2,6 +2,7 @@
+ #define _ASM_X86_TRAPS_H
+ 
+ #include <asm/debugreg.h>
++#include <asm/siginfo.h>			/* TRAP_TRACE, ... */
+ 
+ #ifdef CONFIG_X86_32
+ #define dotraplinkage
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index 0062813..7271fa3 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -617,7 +617,7 @@ __init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
+  */
+ __init void e820_setup_gap(void)
+ {
+-	unsigned long gapstart, gapsize, round;
++	unsigned long gapstart, gapsize;
+ 	int found;
+ 
+ 	gapstart = 0x10000000;
+@@ -635,14 +635,9 @@ __init void e820_setup_gap(void)
+ #endif
+ 
+ 	/*
+-	 * See how much we want to round up: start off with
+-	 * rounding to the next 1MB area.
++	 * e820_reserve_resources_late protect stolen RAM already
+ 	 */
+-	round = 0x100000;
+-	while ((gapsize >> 4) > round)
+-		round += round;
+-	/* Fun with two's complement */
+-	pci_mem_start = (gapstart + round) & -round;
++	pci_mem_start = gapstart;
+ 
+ 	printk(KERN_INFO
+ 	       "Allocating PCI resources starting at %lx (gap: %lx:%lx)\n",
+@@ -1371,6 +1366,23 @@ void __init e820_reserve_resources(void)
+ 	}
+ }
+ 
++/* How much should we pad RAM ending depending on where it is? */
++static unsigned long ram_alignment(resource_size_t pos)
++{
++	unsigned long mb = pos >> 20;
++
++	/* To 64kB in the first megabyte */
++	if (!mb)
++		return 64*1024;
++
++	/* To 1MB in the first 16MB */
++	if (mb < 16)
++		return 1024*1024;
++
++	/* To 32MB for anything above that */
++	return 32*1024*1024;
++}
++
+ void __init e820_reserve_resources_late(void)
+ {
+ 	int i;
+@@ -1382,6 +1394,24 @@ void __init e820_reserve_resources_late(void)
+ 			insert_resource_expand_to_fit(&iomem_resource, res);
+ 		res++;
+ 	}
 +
 +	/*
-+	 * The generic 'microcode_core' part guarantees that
-+	 * the callbacks below run on a target cpu when they
-+	 * are being called.
-+	 * See also the "Synchronization" section in microcode_core.c.
++	 * Try to bump up RAM regions to reasonable boundaries to
++	 * avoid stolen RAM:
 +	 */
-+	int (*apply_microcode) (int cpu);
-+	int (*collect_cpu_info) (int cpu, struct cpu_signature *csig);
- };
++	for (i = 0; i < e820.nr_map; i++) {
++		struct e820entry *entry = &e820_saved.map[i];
++		resource_size_t start, end;
++
++		if (entry->type != E820_RAM)
++			continue;
++		start = entry->addr + entry->size;
++		end = round_up(start, ram_alignment(start));
++		if (start == end)
++			continue;
++		reserve_region_with_split(&iomem_resource, start,
++						  end - 1, "RAM buffer");
++	}
+ }
  
- struct ucode_cpu_info {
--	struct cpu_signature cpu_sig;
--	int valid;
--	void *mc;
-+	struct cpu_signature	cpu_sig;
-+	int			valid;
-+	void			*mc;
- };
- extern struct ucode_cpu_info ucode_cpu_info[];
- 
-diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
-index 453b579..366baa1 100644
---- a/arch/x86/kernel/microcode_amd.c
-+++ b/arch/x86/kernel/microcode_amd.c
-@@ -13,25 +13,13 @@
-  *  Licensed under the terms of the GNU General Public
-  *  License version 2. See file COPYING for details.
-  */
--#include <linux/platform_device.h>
--#include <linux/capability.h>
--#include <linux/miscdevice.h>
- #include <linux/firmware.h>
--#include <linux/spinlock.h>
--#include <linux/cpumask.h>
- #include <linux/pci_ids.h>
- #include <linux/uaccess.h>
- #include <linux/vmalloc.h>
- #include <linux/kernel.h>
+ char *__init default_machine_specific_memory_setup(void)
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index ca98915..2b9a8d0 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -8,6 +8,7 @@
  #include <linux/module.h>
--#include <linux/mutex.h>
--#include <linux/sched.h>
--#include <linux/init.h>
--#include <linux/slab.h>
--#include <linux/cpu.h>
- #include <linux/pci.h>
--#include <linux/fs.h>
--#include <linux/mm.h>
+ #include <linux/pm.h>
+ #include <linux/clockchips.h>
++#include <linux/random.h>
+ #include <trace/power.h>
+ #include <asm/system.h>
+ #include <asm/apic.h>
+@@ -613,3 +614,16 @@ static int __init idle_setup(char *str)
+ }
+ early_param("idle", idle_setup);
  
- #include <asm/microcode.h>
- #include <asm/processor.h>
-@@ -79,9 +67,6 @@ struct microcode_amd {
- #define UCODE_CONTAINER_SECTION_HDR	8
- #define UCODE_CONTAINER_HEADER_SIZE	12
++unsigned long arch_align_stack(unsigned long sp)
++{
++	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
++		sp -= get_random_int() % 8192;
++	return sp & ~0xf;
++}
++
++unsigned long arch_randomize_brk(struct mm_struct *mm)
++{
++	unsigned long range_end = mm->brk + 0x02000000;
++	return randomize_range(mm->brk, range_end, 0) ? : mm->brk;
++}
++
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 76f8f84..56d50b7 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -9,8 +9,6 @@
+  * This file handles the architecture-dependent parts of process handling..
+  */
  
--/* serialize access to the physical write */
--static DEFINE_SPINLOCK(microcode_update_lock);
+-#include <stdarg.h>
 -
- static struct equiv_cpu_entry *equiv_cpu_table;
+ #include <linux/stackprotector.h>
+ #include <linux/cpu.h>
+ #include <linux/errno.h>
+@@ -33,7 +31,6 @@
+ #include <linux/module.h>
+ #include <linux/kallsyms.h>
+ #include <linux/ptrace.h>
+-#include <linux/random.h>
+ #include <linux/personality.h>
+ #include <linux/tick.h>
+ #include <linux/percpu.h>
+@@ -497,15 +494,3 @@ unsigned long get_wchan(struct task_struct *p)
+ 	return 0;
+ }
  
- static int collect_cpu_info_amd(int cpu, struct cpu_signature *csig)
-@@ -144,9 +129,8 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
+-unsigned long arch_align_stack(unsigned long sp)
+-{
+-	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
+-		sp -= get_random_int() % 8192;
+-	return sp & ~0xf;
+-}
+-
+-unsigned long arch_randomize_brk(struct mm_struct *mm)
+-{
+-	unsigned long range_end = mm->brk + 0x02000000;
+-	return randomize_range(mm->brk, range_end, 0) ? : mm->brk;
+-}
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index b751a41..9d6b20e 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -14,8 +14,6 @@
+  * This file handles the architecture-dependent parts of process handling..
+  */
+ 
+-#include <stdarg.h>
+-
+ #include <linux/stackprotector.h>
+ #include <linux/cpu.h>
+ #include <linux/errno.h>
+@@ -32,7 +30,6 @@
+ #include <linux/delay.h>
+ #include <linux/module.h>
+ #include <linux/ptrace.h>
+-#include <linux/random.h>
+ #include <linux/notifier.h>
+ #include <linux/kprobes.h>
+ #include <linux/kdebug.h>
+@@ -660,15 +657,3 @@ long sys_arch_prctl(int code, unsigned long addr)
+ 	return do_arch_prctl(current, code, addr);
+ }
+ 
+-unsigned long arch_align_stack(unsigned long sp)
+-{
+-	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
+-		sp -= get_random_int() % 8192;
+-	return sp & ~0xf;
+-}
+-
+-unsigned long arch_randomize_brk(struct mm_struct *mm)
+-{
+-	unsigned long range_end = mm->brk + 0x02000000;
+-	return randomize_range(mm->brk, range_end, 0) ? : mm->brk;
+-}
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index b415843..4031d6c 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -112,6 +112,14 @@
+ #define ARCH_SETUP
+ #endif
+ 
++/*
++ * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
++ * The direct mapping extends to max_pfn_mapped, so that we can directly access
++ * apertures, ACPI and other tables without having to play with fixmaps.
++ */
++unsigned long max_low_pfn_mapped;
++unsigned long max_pfn_mapped;
++
+ RESERVE_BRK(dmi_alloc, 65536);
+ 
+ unsigned int boot_cpu_id __read_mostly;
+@@ -854,12 +862,16 @@ void __init setup_arch(char **cmdline_p)
+ 		max_low_pfn = max_pfn;
+ 
+ 	high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
++	max_pfn_mapped = KERNEL_IMAGE_SIZE >> PAGE_SHIFT;
+ #endif
+ 
+ #ifdef CONFIG_X86_CHECK_BIOS_CORRUPTION
+ 	setup_bios_corruption_check();
+ #endif
+ 
++	printk(KERN_DEBUG "initial memory mapped : 0 - %08lx\n",
++			max_pfn_mapped<<PAGE_SHIFT);
++
+ 	reserve_brk();
+ 
+ 	/* max_pfn_mapped is updated here */
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index 3a97a4c..3b5f327 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -423,6 +423,14 @@ void __init setup_per_cpu_areas(void)
+ 	early_per_cpu_ptr(x86_cpu_to_node_map) = NULL;
+ #endif
+ 
++#if defined(CONFIG_X86_64) && defined(CONFIG_NUMA)
++	/*
++	 * make sure boot cpu node_number is right, when boot cpu is on the
++	 * node that doesn't have mem installed
++	 */
++	per_cpu(node_number, boot_cpu_id) = cpu_to_node(boot_cpu_id);
++#endif
++
+ 	/* Setup node to cpumask map */
+ 	setup_node_to_cpumask_map();
+ 
+diff --git a/arch/x86/mm/dump_pagetables.c b/arch/x86/mm/dump_pagetables.c
+index e7277cb..a725b7f 100644
+--- a/arch/x86/mm/dump_pagetables.c
++++ b/arch/x86/mm/dump_pagetables.c
+@@ -161,13 +161,14 @@ static void note_page(struct seq_file *m, struct pg_state *st,
+ 		   st->current_address >= st->marker[1].start_address) {
+ 		const char *unit = units;
+ 		unsigned long delta;
++		int width = sizeof(unsigned long) * 2;
+ 
+ 		/*
+ 		 * Now print the actual finished series
+ 		 */
+-		seq_printf(m, "0x%p-0x%p   ",
+-			   (void *)st->start_address,
+-			   (void *)st->current_address);
++		seq_printf(m, "0x%0*lx-0x%0*lx   ",
++			   width, st->start_address,
++			   width, st->current_address);
+ 
+ 		delta = (st->current_address - st->start_address) >> 10;
+ 		while (!(delta & 1023) && unit[1]) {
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index a03b727..b9ca6d7 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -3,40 +3,16 @@
+  *  Copyright (C) 2001, 2002 Andi Kleen, SuSE Labs.
+  *  Copyright (C) 2008-2009, Red Hat Inc., Ingo Molnar
+  */
+-#include <linux/interrupt.h>
+-#include <linux/mmiotrace.h>
+-#include <linux/bootmem.h>
+-#include <linux/compiler.h>
+-#include <linux/highmem.h>
+-#include <linux/kprobes.h>
+-#include <linux/uaccess.h>
+-#include <linux/vmalloc.h>
+-#include <linux/vt_kern.h>
+-#include <linux/signal.h>
+-#include <linux/kernel.h>
+-#include <linux/ptrace.h>
+-#include <linux/string.h>
+-#include <linux/module.h>
+-#include <linux/kdebug.h>
+-#include <linux/errno.h>
+-#include <linux/magic.h>
+-#include <linux/sched.h>
+-#include <linux/types.h>
+-#include <linux/init.h>
+-#include <linux/mman.h>
+-#include <linux/tty.h>
+-#include <linux/smp.h>
+-#include <linux/mm.h>
+-
+-#include <asm-generic/sections.h>
+-
+-#include <asm/tlbflush.h>
+-#include <asm/pgalloc.h>
+-#include <asm/segment.h>
+-#include <asm/system.h>
+-#include <asm/proto.h>
+-#include <asm/traps.h>
+-#include <asm/desc.h>
++#include <linux/magic.h>		/* STACK_END_MAGIC		*/
++#include <linux/sched.h>		/* test_thread_flag(), ...	*/
++#include <linux/kdebug.h>		/* oops_begin/end, ...		*/
++#include <linux/module.h>		/* search_exception_table	*/
++#include <linux/bootmem.h>		/* max_low_pfn			*/
++#include <linux/kprobes.h>		/* __kprobes, ...		*/
++#include <linux/mmiotrace.h>		/* kmmio_handler, ...		*/
++
++#include <asm/traps.h>			/* dotraplinkage, ...		*/
++#include <asm/pgalloc.h>		/* pgd_*(), ...			*/
+ 
+ /*
+  * Page fault error code bits:
+@@ -538,8 +514,6 @@ bad:
+ static int is_errata93(struct pt_regs *regs, unsigned long address)
+ {
+ #ifdef CONFIG_X86_64
+-	static int once;
+-
+ 	if (address != regs->ip)
+ 		return 0;
+ 
+@@ -549,10 +523,7 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
+ 	address |= 0xffffffffUL << 32;
+ 	if ((address >= (u64)_stext && address <= (u64)_etext) ||
+ 	    (address >= MODULES_VADDR && address <= MODULES_END)) {
+-		if (!once) {
+-			printk(errata93_warning);
+-			once = 1;
+-		}
++		printk_once(errata93_warning);
+ 		regs->ip = address;
+ 		return 1;
+ 	}
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index ae4f7b5..92d2108 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -10,6 +10,9 @@
+ #include <asm/setup.h>
+ #include <asm/system.h>
+ #include <asm/tlbflush.h>
++#include <asm/tlb.h>
++
++DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+ 
+ unsigned long __initdata e820_table_start;
+ unsigned long __meminitdata e820_table_end;
+@@ -23,6 +26,69 @@ int direct_gbpages
+ #endif
+ ;
+ 
++int nx_enabled;
++
++#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
++static int disable_nx __cpuinitdata;
++
++/*
++ * noexec = on|off
++ *
++ * Control non-executable mappings for processes.
++ *
++ * on      Enable
++ * off     Disable
++ */
++static int __init noexec_setup(char *str)
++{
++	if (!str)
++		return -EINVAL;
++	if (!strncmp(str, "on", 2)) {
++		__supported_pte_mask |= _PAGE_NX;
++		disable_nx = 0;
++	} else if (!strncmp(str, "off", 3)) {
++		disable_nx = 1;
++		__supported_pte_mask &= ~_PAGE_NX;
++	}
++	return 0;
++}
++early_param("noexec", noexec_setup);
++#endif
++
++#ifdef CONFIG_X86_PAE
++static void __init set_nx(void)
++{
++	unsigned int v[4], l, h;
++
++	if (cpu_has_pae && (cpuid_eax(0x80000000) > 0x80000001)) {
++		cpuid(0x80000001, &v[0], &v[1], &v[2], &v[3]);
++
++		if ((v[3] & (1 << 20)) && !disable_nx) {
++			rdmsr(MSR_EFER, l, h);
++			l |= EFER_NX;
++			wrmsr(MSR_EFER, l, h);
++			nx_enabled = 1;
++			__supported_pte_mask |= _PAGE_NX;
++		}
++	}
++}
++#else
++static inline void set_nx(void)
++{
++}
++#endif
++
++#ifdef CONFIG_X86_64
++void __cpuinit check_efer(void)
++{
++	unsigned long efer;
++
++	rdmsrl(MSR_EFER, efer);
++	if (!(efer & EFER_NX) || disable_nx)
++		__supported_pte_mask &= ~_PAGE_NX;
++}
++#endif
++
+ static void __init find_early_table_space(unsigned long end, int use_pse,
+ 					  int use_gbpages)
+ {
+@@ -66,12 +132,11 @@ static void __init find_early_table_space(unsigned long end, int use_pse,
+ 	 */
+ #ifdef CONFIG_X86_32
+ 	start = 0x7000;
+-	e820_table_start = find_e820_area(start, max_pfn_mapped<<PAGE_SHIFT,
+-					tables, PAGE_SIZE);
+-#else /* CONFIG_X86_64 */
++#else
+ 	start = 0x8000;
+-	e820_table_start = find_e820_area(start, end, tables, PAGE_SIZE);
+ #endif
++	e820_table_start = find_e820_area(start, max_pfn_mapped<<PAGE_SHIFT,
++					tables, PAGE_SIZE);
+ 	if (e820_table_start == -1UL)
+ 		panic("Cannot find space for the kernel page tables");
+ 
+@@ -159,12 +224,9 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 	use_gbpages = direct_gbpages;
+ #endif
+ 
+-#ifdef CONFIG_X86_32
+-#ifdef CONFIG_X86_PAE
+ 	set_nx();
+ 	if (nx_enabled)
+ 		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
+-#endif
+ 
+ 	/* Enable PSE if available */
+ 	if (cpu_has_pse)
+@@ -175,7 +237,6 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
+ 		set_in_cr4(X86_CR4_PGE);
+ 		__supported_pte_mask |= _PAGE_GLOBAL;
+ 	}
+-#endif
+ 
+ 	if (use_gbpages)
+ 		page_size_mask |= 1 << PG_LEVEL_1G;
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 749559e..949708d 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -49,12 +49,9 @@
+ #include <asm/paravirt.h>
+ #include <asm/setup.h>
+ #include <asm/cacheflush.h>
++#include <asm/page_types.h>
+ #include <asm/init.h>
+ 
+-unsigned long max_low_pfn_mapped;
+-unsigned long max_pfn_mapped;
+-
+-DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+ unsigned long highstart_pfn, highend_pfn;
+ 
+ static noinline int do_test_wp_bit(void);
+@@ -587,61 +584,9 @@ void zap_low_mappings(void)
+ 	flush_tlb_all();
+ }
+ 
+-int nx_enabled;
+-
+ pteval_t __supported_pte_mask __read_mostly = ~(_PAGE_NX | _PAGE_GLOBAL | _PAGE_IOMAP);
+ EXPORT_SYMBOL_GPL(__supported_pte_mask);
+ 
+-#ifdef CONFIG_X86_PAE
+-
+-static int disable_nx __initdata;
+-
+-/*
+- * noexec = on|off
+- *
+- * Control non executable mappings.
+- *
+- * on      Enable
+- * off     Disable
+- */
+-static int __init noexec_setup(char *str)
+-{
+-	if (!str || !strcmp(str, "on")) {
+-		if (cpu_has_nx) {
+-			__supported_pte_mask |= _PAGE_NX;
+-			disable_nx = 0;
+-		}
+-	} else {
+-		if (!strcmp(str, "off")) {
+-			disable_nx = 1;
+-			__supported_pte_mask &= ~_PAGE_NX;
+-		} else {
+-			return -EINVAL;
+-		}
+-	}
+-
+-	return 0;
+-}
+-early_param("noexec", noexec_setup);
+-
+-void __init set_nx(void)
+-{
+-	unsigned int v[4], l, h;
+-
+-	if (cpu_has_pae && (cpuid_eax(0x80000000) > 0x80000001)) {
+-		cpuid(0x80000001, &v[0], &v[1], &v[2], &v[3]);
+-
+-		if ((v[3] & (1 << 20)) && !disable_nx) {
+-			rdmsr(MSR_EFER, l, h);
+-			l |= EFER_NX;
+-			wrmsr(MSR_EFER, l, h);
+-			nx_enabled = 1;
+-			__supported_pte_mask |= _PAGE_NX;
+-		}
+-	}
+-}
+-#endif
+-
+ /* user-defined highmem size */
+ static unsigned int highmem_pages = -1;
+ 
+@@ -761,15 +706,15 @@ void __init initmem_init(unsigned long start_pfn,
+ 	highstart_pfn = highend_pfn = max_pfn;
+ 	if (max_pfn > max_low_pfn)
+ 		highstart_pfn = max_low_pfn;
+-	memory_present(0, 0, highend_pfn);
+ 	e820_register_active_regions(0, 0, highend_pfn);
++	sparse_memory_present_with_active_regions(0);
+ 	printk(KERN_NOTICE "%ldMB HIGHMEM available.\n",
+ 		pages_to_mb(highend_pfn - highstart_pfn));
+ 	num_physpages = highend_pfn;
+ 	high_memory = (void *) __va(highstart_pfn * PAGE_SIZE - 1) + 1;
+ #else
+-	memory_present(0, 0, max_low_pfn);
+ 	e820_register_active_regions(0, 0, max_low_pfn);
++	sparse_memory_present_with_active_regions(0);
+ 	num_physpages = max_low_pfn;
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE - 1) + 1;
+ #endif
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 1753e80..52bb951 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -50,18 +50,8 @@
+ #include <asm/cacheflush.h>
+ #include <asm/init.h>
+ 
+-/*
+- * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
+- * The direct mapping extends to max_pfn_mapped, so that we can directly access
+- * apertures, ACPI and other tables without having to play with fixmaps.
+- */
+-unsigned long max_low_pfn_mapped;
+-unsigned long max_pfn_mapped;
+-
+ static unsigned long dma_reserve __initdata;
+ 
+-DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+-
+ static int __init parse_direct_gbpages_off(char *arg)
+ {
+ 	direct_gbpages = 0;
+@@ -85,39 +75,6 @@ early_param("gbpages", parse_direct_gbpages_on);
+ pteval_t __supported_pte_mask __read_mostly = ~_PAGE_IOMAP;
+ EXPORT_SYMBOL_GPL(__supported_pte_mask);
+ 
+-static int disable_nx __cpuinitdata;
+-
+-/*
+- * noexec=on|off
+- * Control non-executable mappings for 64-bit processes.
+- *
+- * on	Enable (default)
+- * off	Disable
+- */
+-static int __init nonx_setup(char *str)
+-{
+-	if (!str)
+-		return -EINVAL;
+-	if (!strncmp(str, "on", 2)) {
+-		__supported_pte_mask |= _PAGE_NX;
+-		disable_nx = 0;
+-	} else if (!strncmp(str, "off", 3)) {
+-		disable_nx = 1;
+-		__supported_pte_mask &= ~_PAGE_NX;
+-	}
+-	return 0;
+-}
+-early_param("noexec", nonx_setup);
+-
+-void __cpuinit check_efer(void)
+-{
+-	unsigned long efer;
+-
+-	rdmsrl(MSR_EFER, efer);
+-	if (!(efer & EFER_NX) || disable_nx)
+-		__supported_pte_mask &= ~_PAGE_NX;
+-}
+-
+ int force_personality32;
+ 
+ /*
+@@ -628,6 +585,7 @@ void __init initmem_init(unsigned long start_pfn, unsigned long end_pfn)
+ 	early_res_to_bootmem(0, end_pfn<<PAGE_SHIFT);
+ 	reserve_bootmem(bootmap, bootmap_size, BOOTMEM_DEFAULT);
+ }
++#endif
+ 
+ void __init paging_init(void)
+ {
+@@ -638,11 +596,10 @@ void __init paging_init(void)
+ 	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
+ 	max_zone_pfns[ZONE_NORMAL] = max_pfn;
+ 
+-	memory_present(0, 0, max_pfn);
++	sparse_memory_present_with_active_regions(MAX_NUMNODES);
+ 	sparse_init();
+ 	free_area_init_nodes(max_zone_pfns);
+ }
+-#endif
+ 
+ /*
+  * Memory hotplug specific functions
+diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
+index 2d05a12..459913b 100644
+--- a/arch/x86/mm/numa_64.c
++++ b/arch/x86/mm/numa_64.c
+@@ -179,18 +179,25 @@ static void * __init early_node_mem(int nodeid, unsigned long start,
+ }
+ 
+ /* Initialize bootmem allocator for a node */
+-void __init setup_node_bootmem(int nodeid, unsigned long start,
+-			       unsigned long end)
++void __init
++setup_node_bootmem(int nodeid, unsigned long start, unsigned long end)
+ {
+ 	unsigned long start_pfn, last_pfn, bootmap_pages, bootmap_size;
++	const int pgdat_size = roundup(sizeof(pg_data_t), PAGE_SIZE);
+ 	unsigned long bootmap_start, nodedata_phys;
+ 	void *bootmap;
+-	const int pgdat_size = roundup(sizeof(pg_data_t), PAGE_SIZE);
+ 	int nid;
+ 
+ 	if (!end)
+ 		return;
+ 
++	/*
++	 * Don't confuse VM with a node that doesn't have the
++	 * minimum amount of memory:
++	 */
++	if (end && (end - start) < NODE_MIN_SIZE)
++		return;
++
+ 	start = roundup(start, ZONE_ALIGN);
+ 
+ 	printk(KERN_INFO "Bootmem setup node %d %016lx-%016lx\n", nodeid,
+@@ -272,9 +279,6 @@ void __init setup_node_bootmem(int nodeid, unsigned long start,
+ 		reserve_bootmem_node(NODE_DATA(nodeid), bootmap_start,
+ 				 bootmap_pages<<PAGE_SHIFT, BOOTMEM_DEFAULT);
+ 
+-#ifdef CONFIG_ACPI_NUMA
+-	srat_reserve_add_area(nodeid);
+-#endif
+ 	node_set_online(nodeid);
+ }
+ 
+@@ -578,21 +582,6 @@ unsigned long __init numa_free_all_bootmem(void)
+ 	return pages;
+ }
+ 
+-void __init paging_init(void)
+-{
+-	unsigned long max_zone_pfns[MAX_NR_ZONES];
+-
+-	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+-	max_zone_pfns[ZONE_DMA] = MAX_DMA_PFN;
+-	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
+-	max_zone_pfns[ZONE_NORMAL] = max_pfn;
+-
+-	sparse_memory_present_with_active_regions(MAX_NUMNODES);
+-	sparse_init();
+-
+-	free_area_init_nodes(max_zone_pfns);
+-}
+-
+ static __init int numa_setup(char *opt)
+ {
+ 	if (!opt)
+@@ -606,8 +595,6 @@ static __init int numa_setup(char *opt)
+ #ifdef CONFIG_ACPI_NUMA
+ 	if (!strncmp(opt, "noacpi", 6))
+ 		acpi_numa = -1;
+-	if (!strncmp(opt, "hotadd=", 7))
+-		hotadd_percent = simple_strtoul(opt+7, NULL, 10);
+ #endif
+ 	return 0;
+ }
+diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
+index 0176595..2dfcbf9 100644
+--- a/arch/x86/mm/srat_64.c
++++ b/arch/x86/mm/srat_64.c
+@@ -31,17 +31,11 @@ static nodemask_t nodes_parsed __initdata;
+ static nodemask_t cpu_nodes_parsed __initdata;
+ static struct bootnode nodes[MAX_NUMNODES] __initdata;
+ static struct bootnode nodes_add[MAX_NUMNODES];
+-static int found_add_area __initdata;
+-int hotadd_percent __initdata = 0;
+ 
+ static int num_node_memblks __initdata;
+ static struct bootnode node_memblk_range[NR_NODE_MEMBLKS] __initdata;
+ static int memblk_nodeid[NR_NODE_MEMBLKS] __initdata;
+ 
+-/* Too small nodes confuse the VM badly. Usually they result
+-   from BIOS bugs. */
+-#define NODE_MIN_SIZE (4*1024*1024)
+-
+ static __init int setup_node(int pxm)
+ {
+ 	return acpi_map_pxm_to_node(pxm);
+@@ -66,9 +60,6 @@ static __init void cutoff_node(int i, unsigned long start, unsigned long end)
+ {
+ 	struct bootnode *nd = &nodes[i];
+ 
+-	if (found_add_area)
+-		return;
+-
+ 	if (nd->start < start) {
+ 		nd->start = start;
+ 		if (nd->end < nd->start)
+@@ -86,7 +77,6 @@ static __init void bad_srat(void)
+ 	int i;
+ 	printk(KERN_ERR "SRAT: SRAT not used.\n");
+ 	acpi_numa = -1;
+-	found_add_area = 0;
+ 	for (i = 0; i < MAX_LOCAL_APIC; i++)
+ 		apicid_to_node[i] = NUMA_NO_NODE;
+ 	for (i = 0; i < MAX_NUMNODES; i++)
+@@ -182,24 +172,21 @@ acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
+ 	       pxm, apic_id, node);
+ }
+ 
+-static int update_end_of_memory(unsigned long end) {return -1;}
+-static int hotadd_enough_memory(struct bootnode *nd) {return 1;}
+ #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+ static inline int save_add_info(void) {return 1;}
+ #else
+ static inline int save_add_info(void) {return 0;}
+ #endif
+ /*
+- * Update nodes_add and decide if to include add are in the zone.
+- * Both SPARSE and RESERVE need nodes_add information.
+- * This code supports one contiguous hot add area per node.
++ * Update nodes_add[]
++ * This code supports one contiguous hot add area per node
+  */
+-static int __init
+-reserve_hotadd(int node, unsigned long start, unsigned long end)
++static void __init
++update_nodes_add(int node, unsigned long start, unsigned long end)
+ {
+ 	unsigned long s_pfn = start >> PAGE_SHIFT;
+ 	unsigned long e_pfn = end >> PAGE_SHIFT;
+-	int ret = 0, changed = 0;
++	int changed = 0;
+ 	struct bootnode *nd = &nodes_add[node];
+ 
+ 	/* I had some trouble with strange memory hotadd regions breaking
+@@ -210,7 +197,7 @@ reserve_hotadd(int node, unsigned long start, unsigned long end)
+ 	   mistakes */
+ 	if ((signed long)(end - start) < NODE_MIN_SIZE) {
+ 		printk(KERN_ERR "SRAT: Hotplug area too small\n");
+-		return -1;
++		return;
+ 	}
+ 
+ 	/* This check might be a bit too strict, but I'm keeping it for now. */
+@@ -218,12 +205,7 @@ reserve_hotadd(int node, unsigned long start, unsigned long end)
+ 		printk(KERN_ERR
+ 			"SRAT: Hotplug area %lu -> %lu has existing memory\n",
+ 			s_pfn, e_pfn);
+-		return -1;
+-	}
+-
+-	if (!hotadd_enough_memory(&nodes_add[node]))  {
+-		printk(KERN_ERR "SRAT: Hotplug area too large\n");
+-		return -1;
++		return;
+ 	}
+ 
+ 	/* Looks good */
+@@ -245,11 +227,9 @@ reserve_hotadd(int node, unsigned long start, unsigned long end)
+ 			printk(KERN_ERR "SRAT: Hotplug zone not continuous. Partly ignored\n");
+ 	}
+ 
+-	ret = update_end_of_memory(nd->end);
+-
+ 	if (changed)
+-	 	printk(KERN_INFO "SRAT: hot plug zone found %Lx - %Lx\n", nd->start, nd->end);
+-	return ret;
++		printk(KERN_INFO "SRAT: hot plug zone found %Lx - %Lx\n",
++				 nd->start, nd->end);
+ }
+ 
+ /* Callback for parsing of the Proximity Domain <-> Memory Area mappings */
+@@ -310,13 +290,10 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
+ 	       start, end);
+ 	e820_register_active_regions(node, start >> PAGE_SHIFT,
+ 				     end >> PAGE_SHIFT);
+-	push_node_boundaries(node, nd->start >> PAGE_SHIFT,
+-						nd->end >> PAGE_SHIFT);
+ 
+-	if ((ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) &&
+-	    (reserve_hotadd(node, start, end) < 0)) {
+-		/* Ignore hotadd region. Undo damage */
+-		printk(KERN_NOTICE "SRAT: Hotplug region ignored\n");
++	if (ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) {
++		update_nodes_add(node, start, end);
++		/* restore nodes[node] */
+ 		*nd = oldnode;
+ 		if ((nd->start | nd->end) == 0)
+ 			node_clear(node, nodes_parsed);
+@@ -345,9 +322,9 @@ static int __init nodes_cover_memory(const struct bootnode *nodes)
+ 			pxmram = 0;
+ 	}
+ 
+-	e820ram = max_pfn - absent_pages_in_range(0, max_pfn);
+-	/* We seem to lose 3 pages somewhere. Allow a bit of slack. */
+-	if ((long)(e820ram - pxmram) >= 1*1024*1024) {
++	e820ram = max_pfn - (e820_hole_size(0, max_pfn<<PAGE_SHIFT)>>PAGE_SHIFT);
++	/* We seem to lose 3 pages somewhere. Allow 1M of slack. */
++	if ((long)(e820ram - pxmram) >= (1<<(20 - PAGE_SHIFT))) {
+ 		printk(KERN_ERR
+ 	"SRAT: PXMs only cover %luMB of your %luMB e820 RAM. Not used.\n",
+ 			(pxmram << PAGE_SHIFT) >> 20,
+@@ -357,17 +334,6 @@ static int __init nodes_cover_memory(const struct bootnode *nodes)
  	return 1;
  }
  
--static void apply_microcode_amd(int cpu)
-+static int apply_microcode_amd(int cpu)
- {
--	unsigned long flags;
- 	u32 rev, dummy;
- 	int cpu_num = raw_smp_processor_id();
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu_num;
-@@ -156,25 +140,25 @@ static void apply_microcode_amd(int cpu)
- 	BUG_ON(cpu_num != cpu);
- 
- 	if (mc_amd == NULL)
--		return;
-+		return 0;
- 
--	spin_lock_irqsave(&microcode_update_lock, flags);
- 	wrmsrl(MSR_AMD64_PATCH_LOADER, (u64)(long)&mc_amd->hdr.data_code);
- 	/* get patch id after patching */
- 	rdmsr(MSR_AMD64_PATCH_LEVEL, rev, dummy);
--	spin_unlock_irqrestore(&microcode_update_lock, flags);
- 
- 	/* check current patch id and patch's id for match */
- 	if (rev != mc_amd->hdr.patch_id) {
- 		printk(KERN_ERR "microcode: CPU%d: update failed "
- 		       "(for patch_level=0x%x)\n", cpu, mc_amd->hdr.patch_id);
--		return;
-+		return -1;
- 	}
- 
- 	printk(KERN_INFO "microcode: CPU%d: updated (new patch_level=0x%x)\n",
- 	       cpu, rev);
- 
- 	uci->cpu_sig.rev = rev;
-+
-+	return 0;
- }
- 
- static int get_ucode_data(void *to, const u8 *from, size_t n)
-@@ -257,13 +241,12 @@ static int install_equiv_cpu_table(const u8 *buf)
- 
- static void free_equiv_cpu_table(void)
- {
--	if (equiv_cpu_table) {
--		vfree(equiv_cpu_table);
--		equiv_cpu_table = NULL;
+-static void __init unparse_node(int node)
+-{
+-	int i;
+-	node_clear(node, nodes_parsed);
+-	node_clear(node, cpu_nodes_parsed);
+-	for (i = 0; i < MAX_LOCAL_APIC; i++) {
+-		if (apicid_to_node[i] == node)
+-			apicid_to_node[i] = NUMA_NO_NODE;
 -	}
-+	vfree(equiv_cpu_table);
-+	equiv_cpu_table = NULL;
- }
+-}
+-
+ void __init acpi_numa_arch_fixup(void) {}
  
--static int generic_load_microcode(int cpu, const u8 *data, size_t size)
-+static enum ucode_state
-+generic_load_microcode(int cpu, const u8 *data, size_t size)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 	const u8 *ucode_ptr = data;
-@@ -272,12 +255,13 @@ static int generic_load_microcode(int cpu, const u8 *data, size_t size)
- 	int new_rev = uci->cpu_sig.rev;
- 	unsigned int leftover;
- 	unsigned long offset;
-+	enum ucode_state state = UCODE_OK;
+ /* Use the information discovered above to actually set up the nodes. */
+@@ -379,18 +345,8 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
+ 		return -1;
  
- 	offset = install_equiv_cpu_table(ucode_ptr);
- 	if (!offset) {
- 		printk(KERN_ERR "microcode: failed to create "
- 		       "equivalent cpu table\n");
--		return -EINVAL;
-+		return UCODE_ERROR;
- 	}
- 
- 	ucode_ptr += offset;
-@@ -293,8 +277,7 @@ static int generic_load_microcode(int cpu, const u8 *data, size_t size)
- 
- 		mc_header = (struct microcode_header_amd *)mc;
- 		if (get_matching_microcode(cpu, mc, new_rev)) {
--			if (new_mc)
--				vfree(new_mc);
-+			vfree(new_mc);
- 			new_rev = mc_header->patch_id;
- 			new_mc  = mc;
- 		} else
-@@ -306,34 +289,32 @@ static int generic_load_microcode(int cpu, const u8 *data, size_t size)
- 
- 	if (new_mc) {
- 		if (!leftover) {
--			if (uci->mc)
--				vfree(uci->mc);
-+			vfree(uci->mc);
- 			uci->mc = new_mc;
- 			pr_debug("microcode: CPU%d found a matching microcode "
- 				 "update with version 0x%x (current=0x%x)\n",
- 				 cpu, new_rev, uci->cpu_sig.rev);
--		} else
-+		} else {
- 			vfree(new_mc);
+ 	/* First clean up the node list */
+-	for (i = 0; i < MAX_NUMNODES; i++) {
++	for (i = 0; i < MAX_NUMNODES; i++)
+ 		cutoff_node(i, start, end);
+-		/*
+-		 * don't confuse VM with a node that doesn't have the
+-		 * minimum memory.
+-		 */
+-		if (nodes[i].end &&
+-			(nodes[i].end - nodes[i].start) < NODE_MIN_SIZE) {
+-			unparse_node(i);
+-			node_set_offline(i);
+-		}
 -	}
-+			state = UCODE_ERROR;
-+		}
-+	} else
-+		state = UCODE_NFOUND;
  
- 	free_equiv_cpu_table();
+ 	if (!nodes_cover_memory(nodes)) {
+ 		bad_srat();
+@@ -423,7 +379,7 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
  
--	return (int)leftover;
-+	return state;
- }
- 
--static int request_microcode_fw(int cpu, struct device *device)
-+static enum ucode_state request_microcode_fw(int cpu, struct device *device)
- {
- 	const char *fw_name = "amd-ucode/microcode_amd.bin";
- 	const struct firmware *firmware;
--	int ret;
--
--	/* We should bind the task to the CPU */
--	BUG_ON(cpu != raw_smp_processor_id());
-+	enum ucode_state ret;
- 
--	ret = request_firmware(&firmware, fw_name, device);
--	if (ret) {
-+	if (request_firmware(&firmware, fw_name, device)) {
- 		printk(KERN_ERR "microcode: failed to load file %s\n", fw_name);
--		return ret;
-+		return UCODE_NFOUND;
- 	}
- 
- 	ret = generic_load_microcode(cpu, firmware->data, firmware->size);
-@@ -343,11 +324,12 @@ static int request_microcode_fw(int cpu, struct device *device)
- 	return ret;
- }
- 
--static int request_microcode_user(int cpu, const void __user *buf, size_t size)
-+static enum ucode_state
-+request_microcode_user(int cpu, const void __user *buf, size_t size)
- {
- 	printk(KERN_INFO "microcode: AMD microcode update via "
- 	       "/dev/cpu/microcode not supported\n");
--	return -1;
-+	return UCODE_ERROR;
- }
- 
- static void microcode_fini_cpu_amd(int cpu)
-diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
-index 98c470c..9c44615 100644
---- a/arch/x86/kernel/microcode_core.c
-+++ b/arch/x86/kernel/microcode_core.c
-@@ -71,27 +71,18 @@
-  *		Thanks to Stuart Swales for pointing out this bug.
-  */
- #include <linux/platform_device.h>
--#include <linux/capability.h>
- #include <linux/miscdevice.h>
--#include <linux/firmware.h>
-+#include <linux/capability.h>
- #include <linux/smp_lock.h>
--#include <linux/spinlock.h>
--#include <linux/cpumask.h>
--#include <linux/uaccess.h>
--#include <linux/vmalloc.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
--#include <linux/sched.h>
--#include <linux/init.h>
--#include <linux/slab.h>
- #include <linux/cpu.h>
- #include <linux/fs.h>
- #include <linux/mm.h>
- 
- #include <asm/microcode.h>
- #include <asm/processor.h>
--#include <asm/msr.h>
- 
- MODULE_DESCRIPTION("Microcode Update Driver");
- MODULE_AUTHOR("Tigran Aivazian <tigran@aivazian.fsnet.co.uk>");
-@@ -101,36 +92,110 @@ MODULE_LICENSE("GPL");
- 
- static struct microcode_ops	*microcode_ops;
- 
--/* no concurrent ->write()s are allowed on /dev/cpu/microcode */
-+/*
-+ * Synchronization.
-+ *
-+ * All non cpu-hotplug-callback call sites use:
-+ *
-+ * - microcode_mutex to synchronize with each other;
-+ * - get/put_online_cpus() to synchronize with
-+ *   the cpu-hotplug-callback call sites.
-+ *
-+ * We guarantee that only a single cpu is being
-+ * updated at any particular moment of time.
-+ */
- static DEFINE_MUTEX(microcode_mutex);
- 
- struct ucode_cpu_info		ucode_cpu_info[NR_CPUS];
- EXPORT_SYMBOL_GPL(ucode_cpu_info);
- 
-+/*
-+ * Operations that are run on a target cpu:
-+ */
-+
-+struct cpu_info_ctx {
-+	struct cpu_signature	*cpu_sig;
-+	int			err;
-+};
-+
-+static void collect_cpu_info_local(void *arg)
-+{
-+	struct cpu_info_ctx *ctx = arg;
-+
-+	ctx->err = microcode_ops->collect_cpu_info(smp_processor_id(),
-+						   ctx->cpu_sig);
-+}
-+
-+static int collect_cpu_info_on_target(int cpu, struct cpu_signature *cpu_sig)
-+{
-+	struct cpu_info_ctx ctx = { .cpu_sig = cpu_sig, .err = 0 };
-+	int ret;
-+
-+	ret = smp_call_function_single(cpu, collect_cpu_info_local, &ctx, 1);
-+	if (!ret)
-+		ret = ctx.err;
-+
-+	return ret;
-+}
-+
-+static int collect_cpu_info(int cpu)
-+{
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
-+	int ret;
-+
-+	memset(uci, 0, sizeof(*uci));
-+
-+	ret = collect_cpu_info_on_target(cpu, &uci->cpu_sig);
-+	if (!ret)
-+		uci->valid = 1;
-+
-+	return ret;
-+}
-+
-+struct apply_microcode_ctx {
-+	int err;
-+};
-+
-+static void apply_microcode_local(void *arg)
-+{
-+	struct apply_microcode_ctx *ctx = arg;
-+
-+	ctx->err = microcode_ops->apply_microcode(smp_processor_id());
-+}
-+
-+static int apply_microcode_on_target(int cpu)
-+{
-+	struct apply_microcode_ctx ctx = { .err = 0 };
-+	int ret;
-+
-+	ret = smp_call_function_single(cpu, apply_microcode_local, &ctx, 1);
-+	if (!ret)
-+		ret = ctx.err;
-+
-+	return ret;
-+}
-+
- #ifdef CONFIG_MICROCODE_OLD_INTERFACE
- static int do_microcode_update(const void __user *buf, size_t size)
- {
--	cpumask_t old;
- 	int error = 0;
- 	int cpu;
- 
--	old = current->cpus_allowed;
--
- 	for_each_online_cpu(cpu) {
- 		struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
-+		enum ucode_state ustate;
- 
- 		if (!uci->valid)
+ 		if (node == NUMA_NO_NODE)
  			continue;
- 
--		set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
--		error = microcode_ops->request_microcode_user(cpu, buf, size);
--		if (error < 0)
--			goto out;
--		if (!error)
--			microcode_ops->apply_microcode(cpu);
-+		ustate = microcode_ops->request_microcode_user(cpu, buf, size);
-+		if (ustate == UCODE_ERROR) {
-+			error = -1;
-+			break;
-+		} else if (ustate == UCODE_OK)
-+			apply_microcode_on_target(cpu);
+-		if (!node_isset(node, node_possible_map))
++		if (!node_online(node))
+ 			numa_clear_node(i);
  	}
--out:
--	set_cpus_allowed_ptr(current, &old);
-+
- 	return error;
+ 	numa_init_array();
+@@ -510,26 +466,6 @@ static int null_slit_node_compare(int a, int b)
  }
+ #endif /* CONFIG_NUMA_EMU */
  
-@@ -143,19 +208,17 @@ static int microcode_open(struct inode *unused1, struct file *unused2)
- static ssize_t microcode_write(struct file *file, const char __user *buf,
- 			       size_t len, loff_t *ppos)
- {
--	ssize_t ret;
-+	ssize_t ret = -EINVAL;
- 
- 	if ((len >> PAGE_SHIFT) > num_physpages) {
--		printk(KERN_ERR "microcode: too much data (max %ld pages)\n",
--		       num_physpages);
--		return -EINVAL;
-+		pr_err("microcode: too much data (max %ld pages)\n", num_physpages);
-+		return ret;
- 	}
- 
- 	get_online_cpus();
- 	mutex_lock(&microcode_mutex);
- 
--	ret = do_microcode_update(buf, len);
--	if (!ret)
-+	if (do_microcode_update(buf, len) == 0)
- 		ret = (ssize_t)len;
- 
- 	mutex_unlock(&microcode_mutex);
-@@ -165,15 +228,15 @@ static ssize_t microcode_write(struct file *file, const char __user *buf,
- }
- 
- static const struct file_operations microcode_fops = {
--	.owner		= THIS_MODULE,
--	.write		= microcode_write,
--	.open		= microcode_open,
-+	.owner			= THIS_MODULE,
-+	.write			= microcode_write,
-+	.open			= microcode_open,
- };
- 
- static struct miscdevice microcode_dev = {
--	.minor		= MICROCODE_MINOR,
--	.name		= "microcode",
--	.fops		= &microcode_fops,
-+	.minor			= MICROCODE_MINOR,
-+	.name			= "microcode",
-+	.fops			= &microcode_fops,
- };
- 
- static int __init microcode_dev_init(void)
-@@ -182,9 +245,7 @@ static int __init microcode_dev_init(void)
- 
- 	error = misc_register(&microcode_dev);
- 	if (error) {
--		printk(KERN_ERR
--			"microcode: can't misc_register on minor=%d\n",
--			MICROCODE_MINOR);
-+		pr_err("microcode: can't misc_register on minor=%d\n", MICROCODE_MINOR);
- 		return error;
- 	}
- 
-@@ -205,42 +266,51 @@ MODULE_ALIAS_MISCDEV(MICROCODE_MINOR);
- /* fake device for request_firmware */
- static struct platform_device	*microcode_pdev;
- 
--static long reload_for_cpu(void *unused)
-+static int reload_for_cpu(int cpu)
- {
--	struct ucode_cpu_info *uci = ucode_cpu_info + smp_processor_id();
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 	int err = 0;
- 
- 	mutex_lock(&microcode_mutex);
- 	if (uci->valid) {
--		err = microcode_ops->request_microcode_fw(smp_processor_id(),
--							  &microcode_pdev->dev);
--		if (!err)
--			microcode_ops->apply_microcode(smp_processor_id());
-+		enum ucode_state ustate;
-+
-+		ustate = microcode_ops->request_microcode_fw(cpu, &microcode_pdev->dev);
-+		if (ustate == UCODE_OK)
-+			apply_microcode_on_target(cpu);
-+		else
-+			if (ustate == UCODE_ERROR)
-+				err = -EINVAL;
- 	}
- 	mutex_unlock(&microcode_mutex);
-+
- 	return err;
- }
- 
- static ssize_t reload_store(struct sys_device *dev,
- 			    struct sysdev_attribute *attr,
--			    const char *buf, size_t sz)
-+			    const char *buf, size_t size)
- {
--	char *end;
--	unsigned long val = simple_strtoul(buf, &end, 0);
--	int err = 0;
-+	unsigned long val;
- 	int cpu = dev->id;
-+	int ret = 0;
-+	char *end;
- 
-+	val = simple_strtoul(buf, &end, 0);
- 	if (end == buf)
- 		return -EINVAL;
-+
- 	if (val == 1) {
- 		get_online_cpus();
- 		if (cpu_online(cpu))
--			err = work_on_cpu(cpu, reload_for_cpu, NULL);
-+			ret = reload_for_cpu(cpu);
- 		put_online_cpus();
- 	}
--	if (err)
--		return err;
--	return sz;
-+
-+	if (!ret)
-+		ret = size;
-+
-+	return ret;
- }
- 
- static ssize_t version_show(struct sys_device *dev,
-@@ -271,11 +341,11 @@ static struct attribute *mc_default_attrs[] = {
- };
- 
- static struct attribute_group mc_attr_group = {
--	.attrs		= mc_default_attrs,
--	.name		= "microcode",
-+	.attrs			= mc_default_attrs,
-+	.name			= "microcode",
- };
- 
--static void __microcode_fini_cpu(int cpu)
-+static void microcode_fini_cpu(int cpu)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
-@@ -283,103 +353,68 @@ static void __microcode_fini_cpu(int cpu)
- 	uci->valid = 0;
- }
- 
--static void microcode_fini_cpu(int cpu)
+-void __init srat_reserve_add_area(int nodeid)
 -{
--	mutex_lock(&microcode_mutex);
--	__microcode_fini_cpu(cpu);
--	mutex_unlock(&microcode_mutex);
+-	if (found_add_area && nodes_add[nodeid].end) {
+-		u64 total_mb;
+-
+-		printk(KERN_INFO "SRAT: Reserving hot-add memory space "
+-				"for node %d at %Lx-%Lx\n",
+-			nodeid, nodes_add[nodeid].start, nodes_add[nodeid].end);
+-		total_mb = (nodes_add[nodeid].end - nodes_add[nodeid].start)
+-					>> PAGE_SHIFT;
+-		total_mb *= sizeof(struct page);
+-		total_mb >>= 20;
+-		printk(KERN_INFO "SRAT: This will cost you %Lu MB of "
+-				"pre-allocated memory.\n", (unsigned long long)total_mb);
+-		reserve_bootmem_node(NODE_DATA(nodeid), nodes_add[nodeid].start,
+-			       nodes_add[nodeid].end - nodes_add[nodeid].start,
+-			       BOOTMEM_DEFAULT);
+-	}
 -}
 -
--static void collect_cpu_info(int cpu)
-+static enum ucode_state microcode_resume_cpu(int cpu)
+ int __node_distance(int a, int b)
  {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
--	memset(uci, 0, sizeof(*uci));
--	if (!microcode_ops->collect_cpu_info(cpu, &uci->cpu_sig))
--		uci->valid = 1;
-+	if (!uci->mc)
-+		return UCODE_NFOUND;
-+
-+	pr_debug("microcode: CPU%d updated upon resume\n", cpu);
-+	apply_microcode_on_target(cpu);
-+
-+	return UCODE_OK;
+ 	int index;
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index bff1f0d..511b098 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1031,8 +1031,6 @@ extern void add_active_range(unsigned int nid, unsigned long start_pfn,
+ 					unsigned long end_pfn);
+ extern void remove_active_range(unsigned int nid, unsigned long start_pfn,
+ 					unsigned long end_pfn);
+-extern void push_node_boundaries(unsigned int nid, unsigned long start_pfn,
+-					unsigned long end_pfn);
+ extern void remove_all_active_ranges(void);
+ extern unsigned long absent_pages_in_range(unsigned long start_pfn,
+ 						unsigned long end_pfn);
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index fe753ec..474c7e9 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -149,10 +149,6 @@ static unsigned long __meminitdata dma_reserve;
+   static int __meminitdata nr_nodemap_entries;
+   static unsigned long __meminitdata arch_zone_lowest_possible_pfn[MAX_NR_ZONES];
+   static unsigned long __meminitdata arch_zone_highest_possible_pfn[MAX_NR_ZONES];
+-#ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
+-  static unsigned long __meminitdata node_boundary_start_pfn[MAX_NUMNODES];
+-  static unsigned long __meminitdata node_boundary_end_pfn[MAX_NUMNODES];
+-#endif /* CONFIG_MEMORY_HOTPLUG_RESERVE */
+   static unsigned long __initdata required_kernelcore;
+   static unsigned long __initdata required_movablecore;
+   static unsigned long __meminitdata zone_movable_pfn[MAX_NUMNODES];
+@@ -3103,64 +3099,6 @@ void __init sparse_memory_present_with_active_regions(int nid)
  }
  
--static int microcode_resume_cpu(int cpu)
-+static enum ucode_state microcode_init_cpu(int cpu)
- {
--	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
--	struct cpu_signature nsig;
-+	enum ucode_state ustate;
- 
--	pr_debug("microcode: CPU%d resumed\n", cpu);
-+	if (collect_cpu_info(cpu))
-+		return UCODE_ERROR;
- 
--	if (!uci->mc)
--		return 1;
-+	/* --dimm. Trigger a delayed update? */
-+	if (system_state != SYSTEM_RUNNING)
-+		return UCODE_NFOUND;
- 
--	/*
--	 * Let's verify that the 'cached' ucode does belong
--	 * to this cpu (a bit of paranoia):
--	 */
--	if (microcode_ops->collect_cpu_info(cpu, &nsig)) {
--		__microcode_fini_cpu(cpu);
--		printk(KERN_ERR "failed to collect_cpu_info for resuming cpu #%d\n",
--				cpu);
--		return -1;
--	}
-+	ustate = microcode_ops->request_microcode_fw(cpu, &microcode_pdev->dev);
- 
--	if ((nsig.sig != uci->cpu_sig.sig) || (nsig.pf != uci->cpu_sig.pf)) {
--		__microcode_fini_cpu(cpu);
--		printk(KERN_ERR "cached ucode doesn't match the resuming cpu #%d\n",
--				cpu);
--		/* Should we look for a new ucode here? */
--		return 1;
-+	if (ustate == UCODE_OK) {
-+		pr_debug("microcode: CPU%d updated upon init\n", cpu);
-+		apply_microcode_on_target(cpu);
- 	}
- 
--	return 0;
-+	return ustate;
- }
- 
--static long microcode_update_cpu(void *unused)
-+static enum ucode_state microcode_update_cpu(int cpu)
- {
--	struct ucode_cpu_info *uci = ucode_cpu_info + smp_processor_id();
--	int err = 0;
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
-+	enum ucode_state ustate;
- 
--	/*
--	 * Check if the system resume is in progress (uci->valid != NULL),
--	 * otherwise just request a firmware:
--	 */
--	if (uci->valid) {
--		err = microcode_resume_cpu(smp_processor_id());
--	} else {
--		collect_cpu_info(smp_processor_id());
--		if (uci->valid && system_state == SYSTEM_RUNNING)
--			err = microcode_ops->request_microcode_fw(
--					smp_processor_id(),
--					&microcode_pdev->dev);
--	}
--	if (!err)
--		microcode_ops->apply_microcode(smp_processor_id());
--	return err;
--}
-+	if (uci->valid)
-+		ustate = microcode_resume_cpu(cpu);
-+	else
-+		ustate = microcode_init_cpu(cpu);
- 
--static int microcode_init_cpu(int cpu)
+ /**
+- * push_node_boundaries - Push node boundaries to at least the requested boundary
+- * @nid: The nid of the node to push the boundary for
+- * @start_pfn: The start pfn of the node
+- * @end_pfn: The end pfn of the node
+- *
+- * In reserve-based hot-add, mem_map is allocated that is unused until hotadd
+- * time. Specifically, on x86_64, SRAT will report ranges that can potentially
+- * be hotplugged even though no physical memory exists. This function allows
+- * an arch to push out the node boundaries so mem_map is allocated that can
+- * be used later.
+- */
+-#ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
+-void __init push_node_boundaries(unsigned int nid,
+-		unsigned long start_pfn, unsigned long end_pfn)
 -{
--	int err;
--	mutex_lock(&microcode_mutex);
--	err = work_on_cpu(cpu, microcode_update_cpu, NULL);
--	mutex_unlock(&microcode_mutex);
+-	mminit_dprintk(MMINIT_TRACE, "zoneboundary",
+-			"Entering push_node_boundaries(%u, %lu, %lu)\n",
+-			nid, start_pfn, end_pfn);
 -
--	return err;
-+	return ustate;
- }
- 
- static int mc_sysdev_add(struct sys_device *sys_dev)
- {
- 	int err, cpu = sys_dev->id;
--	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
- 	if (!cpu_online(cpu))
- 		return 0;
- 
- 	pr_debug("microcode: CPU%d added\n", cpu);
--	memset(uci, 0, sizeof(*uci));
- 
- 	err = sysfs_create_group(&sys_dev->kobj, &mc_attr_group);
- 	if (err)
- 		return err;
- 
--	err = microcode_init_cpu(cpu);
-+	if (microcode_init_cpu(cpu) == UCODE_ERROR)
-+		err = -EINVAL;
- 
- 	return err;
- }
-@@ -400,19 +435,30 @@ static int mc_sysdev_remove(struct sys_device *sys_dev)
- static int mc_sysdev_resume(struct sys_device *dev)
- {
- 	int cpu = dev->id;
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
- 	if (!cpu_online(cpu))
- 		return 0;
- 
--	/* only CPU 0 will apply ucode here */
--	microcode_update_cpu(NULL);
-+	/*
-+	 * All non-bootup cpus are still disabled,
-+	 * so only CPU 0 will apply ucode here.
-+	 *
-+	 * Moreover, there can be no concurrent
-+	 * updates from any other places at this point.
-+	 */
-+	WARN_ON(cpu != 0);
-+
-+	if (uci->valid && uci->mc)
-+		microcode_ops->apply_microcode(cpu);
-+
- 	return 0;
- }
- 
- static struct sysdev_driver mc_sysdev_driver = {
--	.add		= mc_sysdev_add,
--	.remove		= mc_sysdev_remove,
--	.resume		= mc_sysdev_resume,
-+	.add			= mc_sysdev_add,
-+	.remove			= mc_sysdev_remove,
-+	.resume			= mc_sysdev_resume,
- };
- 
- static __cpuinit int
-@@ -425,15 +471,12 @@ mc_cpu_callback(struct notifier_block *nb, unsigned long action, void *hcpu)
- 	switch (action) {
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
--		if (microcode_init_cpu(cpu))
--			printk(KERN_ERR "microcode: failed to init CPU%d\n",
--			       cpu);
-+		microcode_update_cpu(cpu);
- 	case CPU_DOWN_FAILED:
- 	case CPU_DOWN_FAILED_FROZEN:
- 		pr_debug("microcode: CPU%d added\n", cpu);
- 		if (sysfs_create_group(&sys_dev->kobj, &mc_attr_group))
--			printk(KERN_ERR "microcode: Failed to create the sysfs "
--				"group for CPU%d\n", cpu);
-+			pr_err("microcode: Failed to create group for CPU%d\n", cpu);
- 		break;
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
-@@ -465,13 +508,10 @@ static int __init microcode_init(void)
- 		microcode_ops = init_amd_microcode();
- 
- 	if (!microcode_ops) {
--		printk(KERN_ERR "microcode: no support for this CPU vendor\n");
-+		pr_err("microcode: no support for this CPU vendor\n");
- 		return -ENODEV;
- 	}
- 
--	error = microcode_dev_init();
--	if (error)
--		return error;
- 	microcode_pdev = platform_device_register_simple("microcode", -1,
- 							 NULL, 0);
- 	if (IS_ERR(microcode_pdev)) {
-@@ -480,23 +520,31 @@ static int __init microcode_init(void)
- 	}
- 
- 	get_online_cpus();
-+	mutex_lock(&microcode_mutex);
-+
- 	error = sysdev_driver_register(&cpu_sysdev_class, &mc_sysdev_driver);
-+
-+	mutex_unlock(&microcode_mutex);
- 	put_online_cpus();
-+
- 	if (error) {
--		microcode_dev_exit();
- 		platform_device_unregister(microcode_pdev);
- 		return error;
- 	}
- 
-+	error = microcode_dev_init();
-+	if (error)
-+		return error;
-+
- 	register_hotcpu_notifier(&mc_cpu_notifier);
- 
--	printk(KERN_INFO
--	       "Microcode Update Driver: v" MICROCODE_VERSION
-+	pr_info("Microcode Update Driver: v" MICROCODE_VERSION
- 	       " <tigran@aivazian.fsnet.co.uk>,"
- 	       " Peter Oruba\n");
- 
- 	return 0;
- }
-+module_init(microcode_init);
- 
- static void __exit microcode_exit(void)
- {
-@@ -505,16 +553,17 @@ static void __exit microcode_exit(void)
- 	unregister_hotcpu_notifier(&mc_cpu_notifier);
- 
- 	get_online_cpus();
-+	mutex_lock(&microcode_mutex);
-+
- 	sysdev_driver_unregister(&cpu_sysdev_class, &mc_sysdev_driver);
-+
-+	mutex_unlock(&microcode_mutex);
- 	put_online_cpus();
- 
- 	platform_device_unregister(microcode_pdev);
- 
- 	microcode_ops = NULL;
- 
--	printk(KERN_INFO
--	       "Microcode Update Driver: v" MICROCODE_VERSION " removed.\n");
-+	pr_info("Microcode Update Driver: v" MICROCODE_VERSION " removed.\n");
- }
+-	/* Initialise the boundary for this node if necessary */
+-	if (node_boundary_end_pfn[nid] == 0)
+-		node_boundary_start_pfn[nid] = -1UL;
 -
--module_init(microcode_init);
- module_exit(microcode_exit);
-diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
-index 149b9ec..0d334dd 100644
---- a/arch/x86/kernel/microcode_intel.c
-+++ b/arch/x86/kernel/microcode_intel.c
-@@ -70,24 +70,11 @@
-  *		Fix sigmatch() macro to handle old CPUs with pf == 0.
-  *		Thanks to Stuart Swales for pointing out this bug.
-  */
--#include <linux/platform_device.h>
--#include <linux/capability.h>
--#include <linux/miscdevice.h>
- #include <linux/firmware.h>
--#include <linux/smp_lock.h>
--#include <linux/spinlock.h>
--#include <linux/cpumask.h>
- #include <linux/uaccess.h>
--#include <linux/vmalloc.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/mutex.h>
--#include <linux/sched.h>
--#include <linux/init.h>
--#include <linux/slab.h>
--#include <linux/cpu.h>
--#include <linux/fs.h>
--#include <linux/mm.h>
-+#include <linux/vmalloc.h>
- 
- #include <asm/microcode.h>
- #include <asm/processor.h>
-@@ -150,13 +137,9 @@ struct extended_sigtable {
- 
- #define exttable_size(et) ((et)->count * EXT_SIGNATURE_SIZE + EXT_HEADER_SIZE)
- 
--/* serialize access to the physical write to MSR 0x79 */
--static DEFINE_SPINLOCK(microcode_update_lock);
+-	/* Update the boundaries */
+-	if (node_boundary_start_pfn[nid] > start_pfn)
+-		node_boundary_start_pfn[nid] = start_pfn;
+-	if (node_boundary_end_pfn[nid] < end_pfn)
+-		node_boundary_end_pfn[nid] = end_pfn;
+-}
 -
- static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
- {
- 	struct cpuinfo_x86 *c = &cpu_data(cpu_num);
--	unsigned long flags;
- 	unsigned int val[2];
- 
- 	memset(csig, 0, sizeof(*csig));
-@@ -176,18 +159,14 @@ static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
- 		csig->pf = 1 << ((val[1] >> 18) & 7);
- 	}
- 
--	/* serialize access to the physical write to MSR 0x79 */
--	spin_lock_irqsave(&microcode_update_lock, flags);
+-/* If necessary, push the node boundary out for reserve hotadd */
+-static void __meminit account_node_boundary(unsigned int nid,
+-		unsigned long *start_pfn, unsigned long *end_pfn)
+-{
+-	mminit_dprintk(MMINIT_TRACE, "zoneboundary",
+-			"Entering account_node_boundary(%u, %lu, %lu)\n",
+-			nid, *start_pfn, *end_pfn);
 -
- 	wrmsr(MSR_IA32_UCODE_REV, 0, 0);
- 	/* see notes above for revision 1.07.  Apparent chip bug */
- 	sync_core();
- 	/* get the current revision from MSR 0x8B */
- 	rdmsr(MSR_IA32_UCODE_REV, val[0], csig->rev);
--	spin_unlock_irqrestore(&microcode_update_lock, flags);
- 
--	pr_debug("microcode: collect_cpu_info : sig=0x%x, pf=0x%x, rev=0x%x\n",
--			csig->sig, csig->pf, csig->rev);
-+	printk(KERN_INFO "microcode: CPU%d sig=0x%x, pf=0x%x, revision=0x%x\n",
-+			cpu_num, csig->sig, csig->pf, csig->rev);
- 
- 	return 0;
- }
-@@ -318,11 +297,10 @@ get_matching_microcode(struct cpu_signature *cpu_sig, void *mc, int rev)
- 	return 0;
- }
- 
--static void apply_microcode(int cpu)
-+static int apply_microcode(int cpu)
- {
- 	struct microcode_intel *mc_intel;
- 	struct ucode_cpu_info *uci;
--	unsigned long flags;
- 	unsigned int val[2];
- 	int cpu_num;
- 
-@@ -334,10 +312,7 @@ static void apply_microcode(int cpu)
- 	BUG_ON(cpu_num != cpu);
- 
- 	if (mc_intel == NULL)
+-	/* Return if boundary information has not been provided */
+-	if (node_boundary_end_pfn[nid] == 0)
 -		return;
 -
--	/* serialize access to the physical write to MSR 0x79 */
--	spin_lock_irqsave(&microcode_update_lock, flags);
-+		return 0;
- 
- 	/* write microcode via MSR 0x79 */
- 	wrmsr(MSR_IA32_UCODE_WRITE,
-@@ -351,30 +326,32 @@ static void apply_microcode(int cpu)
- 	/* get the current revision from MSR 0x8B */
- 	rdmsr(MSR_IA32_UCODE_REV, val[0], val[1]);
- 
--	spin_unlock_irqrestore(&microcode_update_lock, flags);
- 	if (val[1] != mc_intel->hdr.rev) {
--		printk(KERN_ERR "microcode: CPU%d update from revision "
--				"0x%x to 0x%x failed\n",
--			cpu_num, uci->cpu_sig.rev, val[1]);
--		return;
-+		printk(KERN_ERR "microcode: CPU%d update "
-+				"to revision 0x%x failed\n",
-+			cpu_num, mc_intel->hdr.rev);
-+		return -1;
- 	}
--	printk(KERN_INFO "microcode: CPU%d updated from revision "
--			 "0x%x to 0x%x, date = %04x-%02x-%02x \n",
--		cpu_num, uci->cpu_sig.rev, val[1],
-+	printk(KERN_INFO "microcode: CPU%d updated to revision "
-+			 "0x%x, date = %04x-%02x-%02x \n",
-+		cpu_num, val[1],
- 		mc_intel->hdr.date & 0xffff,
- 		mc_intel->hdr.date >> 24,
- 		(mc_intel->hdr.date >> 16) & 0xff);
- 
- 	uci->cpu_sig.rev = val[1];
-+
-+	return 0;
- }
- 
--static int generic_load_microcode(int cpu, void *data, size_t size,
--		int (*get_ucode_data)(void *, const void *, size_t))
-+static enum ucode_state generic_load_microcode(int cpu, void *data, size_t size,
-+				int (*get_ucode_data)(void *, const void *, size_t))
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 	u8 *ucode_ptr = data, *new_mc = NULL, *mc;
- 	int new_rev = uci->cpu_sig.rev;
- 	unsigned int leftover = size;
-+	enum ucode_state state = UCODE_OK;
- 
- 	while (leftover) {
- 		struct microcode_header_intel mc_header;
-@@ -412,11 +389,15 @@ static int generic_load_microcode(int cpu, void *data, size_t size,
- 		leftover  -= mc_size;
- 	}
- 
--	if (!new_mc)
-+	if (leftover) {
-+		if (new_mc)
-+			vfree(new_mc);
-+		state = UCODE_ERROR;
- 		goto out;
-+	}
- 
--	if (leftover) {
--		vfree(new_mc);
-+	if (!new_mc) {
-+		state = UCODE_NFOUND;
- 		goto out;
- 	}
- 
-@@ -427,9 +408,8 @@ static int generic_load_microcode(int cpu, void *data, size_t size,
- 	pr_debug("microcode: CPU%d found a matching microcode update with"
- 		 " version 0x%x (current=0x%x)\n",
- 			cpu, new_rev, uci->cpu_sig.rev);
+-	/* Check the boundaries and update if necessary */
+-	if (node_boundary_start_pfn[nid] < *start_pfn)
+-		*start_pfn = node_boundary_start_pfn[nid];
+-	if (node_boundary_end_pfn[nid] > *end_pfn)
+-		*end_pfn = node_boundary_end_pfn[nid];
+-}
+-#else
+-void __init push_node_boundaries(unsigned int nid,
+-		unsigned long start_pfn, unsigned long end_pfn) {}
 -
-- out:
--	return (int)leftover;
-+out:
-+	return state;
- }
- 
- static int get_ucode_fw(void *to, const void *from, size_t n)
-@@ -438,21 +418,19 @@ static int get_ucode_fw(void *to, const void *from, size_t n)
- 	return 0;
- }
- 
--static int request_microcode_fw(int cpu, struct device *device)
-+static enum ucode_state request_microcode_fw(int cpu, struct device *device)
- {
- 	char name[30];
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
- 	const struct firmware *firmware;
--	int ret;
-+	enum ucode_state ret;
- 
--	/* We should bind the task to the CPU */
--	BUG_ON(cpu != raw_smp_processor_id());
- 	sprintf(name, "intel-ucode/%02x-%02x-%02x",
- 		c->x86, c->x86_model, c->x86_mask);
--	ret = request_firmware(&firmware, name, device);
--	if (ret) {
-+
-+	if (request_firmware(&firmware, name, device)) {
- 		pr_debug("microcode: data file %s load failed\n", name);
--		return ret;
-+		return UCODE_NFOUND;
- 	}
- 
- 	ret = generic_load_microcode(cpu, (void *)firmware->data,
-@@ -468,11 +446,9 @@ static int get_ucode_user(void *to, const void *from, size_t n)
- 	return copy_from_user(to, from, n);
- }
- 
--static int request_microcode_user(int cpu, const void __user *buf, size_t size)
-+static enum ucode_state
-+request_microcode_user(int cpu, const void __user *buf, size_t size)
- {
--	/* We should bind the task to the CPU */
--	BUG_ON(cpu != raw_smp_processor_id());
+-static void __meminit account_node_boundary(unsigned int nid,
+-		unsigned long *start_pfn, unsigned long *end_pfn) {}
+-#endif
 -
- 	return generic_load_microcode(cpu, (void *)buf, size, &get_ucode_user);
+-
+-/**
+  * get_pfn_range_for_nid - Return the start and end page frames for a node
+  * @nid: The nid to return the range for. If MAX_NUMNODES, the min and max PFN are returned.
+  * @start_pfn: Passed by reference. On return, it will have the node start_pfn.
+@@ -3185,9 +3123,6 @@ void __meminit get_pfn_range_for_nid(unsigned int nid,
+ 
+ 	if (*start_pfn == -1UL)
+ 		*start_pfn = 0;
+-
+-	/* Push the node boundaries out if requested */
+-	account_node_boundary(nid, start_pfn, end_pfn);
  }
  
+ /*
+@@ -3793,10 +3728,6 @@ void __init remove_all_active_ranges(void)
+ {
+ 	memset(early_node_map, 0, sizeof(early_node_map));
+ 	nr_nodemap_entries = 0;
+-#ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
+-	memset(node_boundary_start_pfn, 0, sizeof(node_boundary_start_pfn));
+-	memset(node_boundary_end_pfn, 0, sizeof(node_boundary_end_pfn));
+-#endif /* CONFIG_MEMORY_HOTPLUG_RESERVE */
+ }
+ 
+ /* Compare two active node_active_regions */
