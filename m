@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbZFJVmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbZFJVqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757910AbZFJVmw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 17:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbZFJVmn
+	id S1758149AbZFJVqS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 17:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZFJVqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 17:42:43 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50109 "EHLO mx2.mail.elte.hu"
+	Wed, 10 Jun 2009 17:46:06 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50715 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751960AbZFJVml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 17:42:41 -0400
-Date: Wed, 10 Jun 2009 23:42:28 +0200
+	id S1752484AbZFJVqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 17:46:03 -0400
+Date: Wed, 10 Jun 2009 23:45:50 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
        "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [GIT PULL] x86/mm for v2.6.31
-Message-ID: <20090610214228.GA3979@elte.hu>
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [GIT PULL] x86/setup for v2.6.31
+Message-ID: <20090610214550.GA10524@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -35,1303 +34,1559 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest x86-mm-for-linus git tree from:
+Please pull the latest x86-setup-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-mm-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-setup-for-linus
 
-The mm.h and page_alloc.c change was OK-ed by Andrew.
-
-out-of-topic modifications in x86-mm-for-linus:
------------------------------------------------
-include/linux/mm.h                 # 888a589: mm, x86: remove MEMORY_HOTPLUG_RE
-mm/page_alloc.c                    # 888a589: mm, x86: remove MEMORY_HOTPLUG_RE
+These are the BIOS-call sandboxing patches. This has the chance to 
+fix a couple of long-lived Linux boot problems on various weird 
+boxes that were too finetuned to the Windows BIOS call environment.
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Amerigo Wang (2):
-      x86: merge process.c a bit
-      x86: process.c, remove useless headers
-
-H. Peter Anvin (1):
-      x86: fix typo in address space documentation
-
-Ingo Molnar (2):
-      x86/mm: further cleanups of fault.c's include file section
-      x86, mm: fault.c, use printk_once() in is_errata93()
-
-Jaswinder Singh Rajput (1):
-      x86: page_types.h unification of declarations
-
-Linus Torvalds (1):
-      x86, e820, pci: reserve extra free space near end of RAM
-
-Pekka Enberg (5):
-      x86: unify noexec handling
-      x86: move max_pfn_mapped and max_low_pfn_mapped to setup.c
-      x86: move per-cpu mmu_gathers to mm/init.c
-      x86: unify 64-bit UMA and NUMA paging_init()
-      x86: use sparse_memory_present_with_active_regions() on UMA
-
-Rik van Riel (1):
-      x86: 46 bit physical address support on 64 bits
-
-Shaohua Li (1):
-      x86: make sparse mem work in non-NUMA mode
-
-Yinghai Lu (8):
-      x86: remove (null) in /sys kernel_page_tables
-      x86/pci: remove rounding quirk from e820_setup_gap()
-      x86: clean up and and print out initial max_pfn_mapped
-      x86: Sanity check the e820 against the SRAT table using e820 map only
-      x86: Allow 1MB of slack between the e820 map and SRAT, not 4GB
-      mm, x86: remove MEMORY_HOTPLUG_RESERVE related code
-      x86, mm: Fix node_possible_map logic
-      x86: fix system without memory on node0
+H. Peter Anvin (7):
+      x86, setup: "glove box" BIOS calls -- infrastructure
+      x86, setup: "glove box" BIOS interrupts in the core boot code
+      x86, setup: "glove box" BIOS interrupts in the APM code
+      x86, setup: "glove box" BIOS interrupts in the EDD code
+      x86, setup: "glove box" BIOS interrupts in the MCA code
+      x86, setup: "glove box" BIOS interrupts in the video code
+      x86, setup: fix comment in the "glove box" code
 
 
- Documentation/x86/x86_64/boot-options.txt |    5 --
- Documentation/x86/x86_64/mm.txt           |    9 ++-
- arch/x86/include/asm/numa_64.h            |   10 ++-
- arch/x86/include/asm/page_32_types.h      |    4 -
- arch/x86/include/asm/page_64_types.h      |    8 +--
- arch/x86/include/asm/page_types.h         |    6 ++
- arch/x86/include/asm/pgtable_64_types.h   |    8 +-
- arch/x86/include/asm/pgtable_types.h      |    1 -
- arch/x86/include/asm/sparsemem.h          |    2 +-
- arch/x86/include/asm/traps.h              |    1 +
- arch/x86/kernel/e820.c                    |   46 +++++++++++---
- arch/x86/kernel/process.c                 |   14 ++++
- arch/x86/kernel/process_32.c              |   15 -----
- arch/x86/kernel/process_64.c              |   15 -----
- arch/x86/kernel/setup.c                   |   12 ++++
- arch/x86/kernel/setup_percpu.c            |    8 +++
- arch/x86/mm/dump_pagetables.c             |    7 +-
- arch/x86/mm/fault.c                       |   51 +++------------
- arch/x86/mm/init.c                        |   77 ++++++++++++++++++++---
- arch/x86/mm/init_32.c                     |   61 +-----------------
- arch/x86/mm/init_64.c                     |   47 +-------------
- arch/x86/mm/numa_64.c                     |   33 +++-------
- arch/x86/mm/srat_64.c                     |   98 +++++------------------------
- include/linux/mm.h                        |    2 -
- mm/page_alloc.c                           |   69 --------------------
- 25 files changed, 213 insertions(+), 396 deletions(-)
+ arch/x86/boot/Makefile                   |    5 +-
+ arch/x86/boot/a20.c                      |    9 ++-
+ arch/x86/boot/apm.c                      |   76 ++++++----------
+ arch/x86/boot/bioscall.S                 |   82 ++++++++++++++++++
+ arch/x86/boot/boot.h                     |   48 +++++++++++
+ arch/x86/boot/edd.c                      |   71 +++++++---------
+ arch/x86/boot/header.S                   |    2 +-
+ arch/x86/boot/main.c                     |   39 +++++----
+ arch/x86/boot/mca.c                      |   27 +++---
+ arch/x86/boot/memory.c                   |   79 +++++++++---------
+ arch/x86/boot/regs.c                     |   29 ++++++
+ arch/x86/boot/setup.ld                   |    6 ++
+ arch/x86/boot/tty.c                      |   52 ++++++-----
+ arch/x86/boot/video-bios.c               |   27 +++---
+ arch/x86/boot/video-vesa.c               |  137 +++++++++++++-----------------
+ arch/x86/boot/video-vga.c                |   95 +++++++++++++--------
+ arch/x86/boot/video.c                    |   42 ++++-----
+ arch/x86/boot/video.h                    |   14 ---
+ arch/x86/kernel/acpi/realmode/Makefile   |    2 +-
+ arch/x86/kernel/acpi/realmode/bioscall.S |    1 +
+ arch/x86/kernel/acpi/realmode/regs.c     |    1 +
+ 21 files changed, 489 insertions(+), 355 deletions(-)
+ create mode 100644 arch/x86/boot/bioscall.S
+ create mode 100644 arch/x86/boot/regs.c
+ create mode 100644 arch/x86/kernel/acpi/realmode/bioscall.S
+ create mode 100644 arch/x86/kernel/acpi/realmode/regs.c
 
-diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
-index 34c1304..2db5893 100644
---- a/Documentation/x86/x86_64/boot-options.txt
-+++ b/Documentation/x86/x86_64/boot-options.txt
-@@ -150,11 +150,6 @@ NUMA
- 		Otherwise, the remaining system RAM is allocated to an
- 		additional node.
+diff --git a/arch/x86/boot/Makefile b/arch/x86/boot/Makefile
+index 6633b6e..658bc52 100644
+--- a/arch/x86/boot/Makefile
++++ b/arch/x86/boot/Makefile
+@@ -26,9 +26,10 @@ targets		:= vmlinux.bin setup.bin setup.elf bzImage
+ targets		+= fdimage fdimage144 fdimage288 image.iso mtools.conf
+ subdir-		:= compressed
  
--  numa=hotadd=percent
--		Only allow hotadd memory to preallocate page structures upto
--		percent of already available memory.
--		numa=hotadd=0 will disable hotadd memory.
--
- ACPI
+-setup-y		+= a20.o cmdline.o copy.o cpu.o cpucheck.o edd.o
++setup-y		+= a20.o bioscall.o cmdline.o copy.o cpu.o cpucheck.o edd.o
+ setup-y		+= header.o main.o mca.o memory.o pm.o pmjump.o
+-setup-y		+= printf.o string.o tty.o video.o video-mode.o version.o
++setup-y		+= printf.o regs.o string.o tty.o video.o video-mode.o
++setup-y		+= version.o
+ setup-$(CONFIG_X86_APM_BOOT) += apm.o
  
-   acpi=off	Don't enable ACPI
-diff --git a/Documentation/x86/x86_64/mm.txt b/Documentation/x86/x86_64/mm.txt
-index 29b52b1..d6498e3 100644
---- a/Documentation/x86/x86_64/mm.txt
-+++ b/Documentation/x86/x86_64/mm.txt
-@@ -6,10 +6,11 @@ Virtual memory map with 4 level page tables:
- 0000000000000000 - 00007fffffffffff (=47 bits) user space, different per mm
- hole caused by [48:63] sign extension
- ffff800000000000 - ffff80ffffffffff (=40 bits) guard hole
--ffff880000000000 - ffffc0ffffffffff (=57 TB) direct mapping of all phys. memory
--ffffc10000000000 - ffffc1ffffffffff (=40 bits) hole
--ffffc20000000000 - ffffe1ffffffffff (=45 bits) vmalloc/ioremap space
--ffffe20000000000 - ffffe2ffffffffff (=40 bits) virtual memory map (1TB)
-+ffff880000000000 - ffffc7ffffffffff (=64 TB) direct mapping of all phys. memory
-+ffffc80000000000 - ffffc8ffffffffff (=40 bits) hole
-+ffffc90000000000 - ffffe8ffffffffff (=45 bits) vmalloc/ioremap space
-+ffffe90000000000 - ffffe9ffffffffff (=40 bits) hole
-+ffffea0000000000 - ffffeaffffffffff (=40 bits) virtual memory map (1TB)
- ... unused hole ...
- ffffffff80000000 - ffffffffa0000000 (=512 MB)  kernel text mapping, from phys 0
- ffffffffa0000000 - fffffffffff00000 (=1536 MB) module mapping space
-diff --git a/arch/x86/include/asm/numa_64.h b/arch/x86/include/asm/numa_64.h
-index 064ed6d..c4ae822 100644
---- a/arch/x86/include/asm/numa_64.h
-+++ b/arch/x86/include/asm/numa_64.h
-@@ -17,9 +17,6 @@ extern int compute_hash_shift(struct bootnode *nodes, int numblks,
- extern void numa_init_array(void);
- extern int numa_off;
+ # The link order of the video-*.o modules can matter.  In particular,
+diff --git a/arch/x86/boot/a20.c b/arch/x86/boot/a20.c
+index 7c19ce8..64a31a6 100644
+--- a/arch/x86/boot/a20.c
++++ b/arch/x86/boot/a20.c
+@@ -2,7 +2,7 @@
+  *
+  *   Copyright (C) 1991, 1992 Linus Torvalds
+  *   Copyright 2007-2008 rPath, Inc. - All Rights Reserved
+- *   Copyright 2009 Intel Corporation
++ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+  *
+  *   This file is part of the Linux kernel, and is made available under
+  *   the terms of the GNU General Public License version 2.
+@@ -90,8 +90,11 @@ static int a20_test_long(void)
  
--extern void srat_reserve_add_area(int nodeid);
--extern int hotadd_percent;
--
- extern s16 apicid_to_node[MAX_LOCAL_APIC];
- 
- extern unsigned long numa_free_all_bootmem(void);
-@@ -27,6 +24,13 @@ extern void setup_node_bootmem(int nodeid, unsigned long start,
- 			       unsigned long end);
- 
- #ifdef CONFIG_NUMA
-+/*
-+ * Too small node sizes may confuse the VM badly. Usually they
-+ * result from BIOS bugs. So dont recognize nodes as standalone
-+ * NUMA entities that have less than this amount of RAM listed:
-+ */
-+#define NODE_MIN_SIZE (4*1024*1024)
+ static void enable_a20_bios(void)
+ {
+-	asm volatile("pushfl; int $0x15; popfl"
+-		     : : "a" ((u16)0x2401));
++	struct biosregs ireg;
 +
- extern void __init init_cpu_to_node(void);
- extern void __cpuinit numa_set_node(int cpu, int node);
- extern void __cpuinit numa_clear_node(int cpu);
-diff --git a/arch/x86/include/asm/page_32_types.h b/arch/x86/include/asm/page_32_types.h
-index 0f915ae..6f1b733 100644
---- a/arch/x86/include/asm/page_32_types.h
-+++ b/arch/x86/include/asm/page_32_types.h
-@@ -54,10 +54,6 @@ extern unsigned int __VMALLOC_RESERVE;
- extern int sysctl_legacy_va_layout;
++	initregs(&ireg);
++	ireg.ax = 0x2401;
++	intcall(0x15, &ireg, NULL);
+ }
  
- extern void find_low_pfn_range(void);
--extern unsigned long init_memory_mapping(unsigned long start,
--					 unsigned long end);
--extern void initmem_init(unsigned long, unsigned long);
--extern void free_initmem(void);
- extern void setup_bootmem_allocator(void);
- 
- #endif	/* !__ASSEMBLY__ */
-diff --git a/arch/x86/include/asm/page_64_types.h b/arch/x86/include/asm/page_64_types.h
-index d38c91b..6fadb02 100644
---- a/arch/x86/include/asm/page_64_types.h
-+++ b/arch/x86/include/asm/page_64_types.h
-@@ -47,7 +47,7 @@
- #define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
- #define __START_KERNEL_map	_AC(0xffffffff80000000, UL)
- 
--/* See Documentation/x86_64/mm.txt for a description of the memory map. */
-+/* See Documentation/x86/x86_64/mm.txt for a description of the memory map. */
- #define __PHYSICAL_MASK_SHIFT	46
- #define __VIRTUAL_MASK_SHIFT	48
- 
-@@ -71,12 +71,6 @@ extern unsigned long __phys_addr(unsigned long);
- 
- #define vmemmap ((struct page *)VMEMMAP_START)
- 
--extern unsigned long init_memory_mapping(unsigned long start,
--					 unsigned long end);
--
--extern void initmem_init(unsigned long start_pfn, unsigned long end_pfn);
--extern void free_initmem(void);
--
- extern void init_extra_mapping_uc(unsigned long phys, unsigned long size);
- extern void init_extra_mapping_wb(unsigned long phys, unsigned long size);
- 
-diff --git a/arch/x86/include/asm/page_types.h b/arch/x86/include/asm/page_types.h
-index 826ad37..6473f5c 100644
---- a/arch/x86/include/asm/page_types.h
-+++ b/arch/x86/include/asm/page_types.h
-@@ -46,6 +46,12 @@ extern int devmem_is_allowed(unsigned long pagenr);
- extern unsigned long max_low_pfn_mapped;
- extern unsigned long max_pfn_mapped;
- 
-+extern unsigned long init_memory_mapping(unsigned long start,
-+					 unsigned long end);
-+
-+extern void initmem_init(unsigned long start_pfn, unsigned long end_pfn);
-+extern void free_initmem(void);
-+
- #endif	/* !__ASSEMBLY__ */
- 
- #endif	/* _ASM_X86_PAGE_DEFS_H */
-diff --git a/arch/x86/include/asm/pgtable_64_types.h b/arch/x86/include/asm/pgtable_64_types.h
-index fbf42b8..766ea16 100644
---- a/arch/x86/include/asm/pgtable_64_types.h
-+++ b/arch/x86/include/asm/pgtable_64_types.h
-@@ -51,11 +51,11 @@ typedef struct { pteval_t pte; } pte_t;
- #define PGDIR_SIZE	(_AC(1, UL) << PGDIR_SHIFT)
- #define PGDIR_MASK	(~(PGDIR_SIZE - 1))
- 
--
-+/* See Documentation/x86/x86_64/mm.txt for a description of the memory map. */
- #define MAXMEM		 _AC(__AC(1, UL) << MAX_PHYSMEM_BITS, UL)
--#define VMALLOC_START    _AC(0xffffc20000000000, UL)
--#define VMALLOC_END      _AC(0xffffe1ffffffffff, UL)
--#define VMEMMAP_START	 _AC(0xffffe20000000000, UL)
-+#define VMALLOC_START    _AC(0xffffc90000000000, UL)
-+#define VMALLOC_END      _AC(0xffffe8ffffffffff, UL)
-+#define VMEMMAP_START	 _AC(0xffffea0000000000, UL)
- #define MODULES_VADDR    _AC(0xffffffffa0000000, UL)
- #define MODULES_END      _AC(0xffffffffff000000, UL)
- #define MODULES_LEN   (MODULES_END - MODULES_VADDR)
-diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
-index b8238dc..4d258ad 100644
---- a/arch/x86/include/asm/pgtable_types.h
-+++ b/arch/x86/include/asm/pgtable_types.h
-@@ -273,7 +273,6 @@ typedef struct page *pgtable_t;
- 
- extern pteval_t __supported_pte_mask;
- extern int nx_enabled;
--extern void set_nx(void);
- 
- #define pgprot_writecombine	pgprot_writecombine
- extern pgprot_t pgprot_writecombine(pgprot_t prot);
-diff --git a/arch/x86/include/asm/sparsemem.h b/arch/x86/include/asm/sparsemem.h
-index e3cc3c0..4517d6b 100644
---- a/arch/x86/include/asm/sparsemem.h
-+++ b/arch/x86/include/asm/sparsemem.h
-@@ -27,7 +27,7 @@
- #else /* CONFIG_X86_32 */
- # define SECTION_SIZE_BITS	27 /* matt - 128 is convenient right now */
- # define MAX_PHYSADDR_BITS	44
--# define MAX_PHYSMEM_BITS	44 /* Can be max 45 bits */
-+# define MAX_PHYSMEM_BITS	46
- #endif
- 
- #endif /* CONFIG_SPARSEMEM */
-diff --git a/arch/x86/include/asm/traps.h b/arch/x86/include/asm/traps.h
-index 0d53425..37fb07a 100644
---- a/arch/x86/include/asm/traps.h
-+++ b/arch/x86/include/asm/traps.h
+ static void enable_a20_kbc(void)
+diff --git a/arch/x86/boot/apm.c b/arch/x86/boot/apm.c
+index 7aa6033..ee27483 100644
+--- a/arch/x86/boot/apm.c
++++ b/arch/x86/boot/apm.c
 @@ -2,6 +2,7 @@
- #define _ASM_X86_TRAPS_H
+  *
+  *   Copyright (C) 1991, 1992 Linus Torvalds
+  *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+  *
+  *   Original APM BIOS checking by Stephen Rothwell, May 1994
+  *   (sfr@canb.auug.org.au)
+@@ -19,75 +20,56 @@
  
- #include <asm/debugreg.h>
-+#include <asm/siginfo.h>			/* TRAP_TRACE, ... */
- 
- #ifdef CONFIG_X86_32
- #define dotraplinkage
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index 0062813..7271fa3 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -617,7 +617,7 @@ __init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
-  */
- __init void e820_setup_gap(void)
+ int query_apm_bios(void)
  {
--	unsigned long gapstart, gapsize, round;
-+	unsigned long gapstart, gapsize;
- 	int found;
+-	u16 ax, bx, cx, dx, di;
+-	u32 ebx, esi;
+-	u8 err;
++	struct biosregs ireg, oreg;
  
- 	gapstart = 0x10000000;
-@@ -635,14 +635,9 @@ __init void e820_setup_gap(void)
- #endif
+ 	/* APM BIOS installation check */
+-	ax = 0x5300;
+-	bx = cx = 0;
+-	asm volatile("pushl %%ebp ; int $0x15 ; popl %%ebp ; setc %0"
+-		     : "=d" (err), "+a" (ax), "+b" (bx), "+c" (cx)
+-		     : : "esi", "edi");
++	initregs(&ireg);
++	ireg.ah = 0x53;
++	intcall(0x15, &ireg, &oreg);
  
- 	/*
--	 * See how much we want to round up: start off with
--	 * rounding to the next 1MB area.
-+	 * e820_reserve_resources_late protect stolen RAM already
- 	 */
--	round = 0x100000;
--	while ((gapsize >> 4) > round)
--		round += round;
--	/* Fun with two's complement */
--	pci_mem_start = (gapstart + round) & -round;
-+	pci_mem_start = gapstart;
+-	if (err)
++	if (oreg.flags & X86_EFLAGS_CF)
+ 		return -1;		/* No APM BIOS */
  
- 	printk(KERN_INFO
- 	       "Allocating PCI resources starting at %lx (gap: %lx:%lx)\n",
-@@ -1371,6 +1366,23 @@ void __init e820_reserve_resources(void)
- 	}
- }
- 
-+/* How much should we pad RAM ending depending on where it is? */
-+static unsigned long ram_alignment(resource_size_t pos)
-+{
-+	unsigned long mb = pos >> 20;
-+
-+	/* To 64kB in the first megabyte */
-+	if (!mb)
-+		return 64*1024;
-+
-+	/* To 1MB in the first 16MB */
-+	if (mb < 16)
-+		return 1024*1024;
-+
-+	/* To 32MB for anything above that */
-+	return 32*1024*1024;
-+}
-+
- void __init e820_reserve_resources_late(void)
- {
- 	int i;
-@@ -1382,6 +1394,24 @@ void __init e820_reserve_resources_late(void)
- 			insert_resource_expand_to_fit(&iomem_resource, res);
- 		res++;
- 	}
-+
-+	/*
-+	 * Try to bump up RAM regions to reasonable boundaries to
-+	 * avoid stolen RAM:
-+	 */
-+	for (i = 0; i < e820.nr_map; i++) {
-+		struct e820entry *entry = &e820_saved.map[i];
-+		resource_size_t start, end;
-+
-+		if (entry->type != E820_RAM)
-+			continue;
-+		start = entry->addr + entry->size;
-+		end = round_up(start, ram_alignment(start));
-+		if (start == end)
-+			continue;
-+		reserve_region_with_split(&iomem_resource, start,
-+						  end - 1, "RAM buffer");
-+	}
- }
- 
- char *__init default_machine_specific_memory_setup(void)
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index ca98915..2b9a8d0 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -8,6 +8,7 @@
- #include <linux/module.h>
- #include <linux/pm.h>
- #include <linux/clockchips.h>
-+#include <linux/random.h>
- #include <trace/power.h>
- #include <asm/system.h>
- #include <asm/apic.h>
-@@ -613,3 +614,16 @@ static int __init idle_setup(char *str)
- }
- early_param("idle", idle_setup);
- 
-+unsigned long arch_align_stack(unsigned long sp)
-+{
-+	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
-+		sp -= get_random_int() % 8192;
-+	return sp & ~0xf;
-+}
-+
-+unsigned long arch_randomize_brk(struct mm_struct *mm)
-+{
-+	unsigned long range_end = mm->brk + 0x02000000;
-+	return randomize_range(mm->brk, range_end, 0) ? : mm->brk;
-+}
-+
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 76f8f84..56d50b7 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -9,8 +9,6 @@
-  * This file handles the architecture-dependent parts of process handling..
-  */
- 
--#include <stdarg.h>
--
- #include <linux/stackprotector.h>
- #include <linux/cpu.h>
- #include <linux/errno.h>
-@@ -33,7 +31,6 @@
- #include <linux/module.h>
- #include <linux/kallsyms.h>
- #include <linux/ptrace.h>
--#include <linux/random.h>
- #include <linux/personality.h>
- #include <linux/tick.h>
- #include <linux/percpu.h>
-@@ -497,15 +494,3 @@ unsigned long get_wchan(struct task_struct *p)
- 	return 0;
- }
- 
--unsigned long arch_align_stack(unsigned long sp)
--{
--	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
--		sp -= get_random_int() % 8192;
--	return sp & ~0xf;
--}
--
--unsigned long arch_randomize_brk(struct mm_struct *mm)
--{
--	unsigned long range_end = mm->brk + 0x02000000;
--	return randomize_range(mm->brk, range_end, 0) ? : mm->brk;
--}
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index b751a41..9d6b20e 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -14,8 +14,6 @@
-  * This file handles the architecture-dependent parts of process handling..
-  */
- 
--#include <stdarg.h>
--
- #include <linux/stackprotector.h>
- #include <linux/cpu.h>
- #include <linux/errno.h>
-@@ -32,7 +30,6 @@
- #include <linux/delay.h>
- #include <linux/module.h>
- #include <linux/ptrace.h>
--#include <linux/random.h>
- #include <linux/notifier.h>
- #include <linux/kprobes.h>
- #include <linux/kdebug.h>
-@@ -660,15 +657,3 @@ long sys_arch_prctl(int code, unsigned long addr)
- 	return do_arch_prctl(current, code, addr);
- }
- 
--unsigned long arch_align_stack(unsigned long sp)
--{
--	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
--		sp -= get_random_int() % 8192;
--	return sp & ~0xf;
--}
--
--unsigned long arch_randomize_brk(struct mm_struct *mm)
--{
--	unsigned long range_end = mm->brk + 0x02000000;
--	return randomize_range(mm->brk, range_end, 0) ? : mm->brk;
--}
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index b415843..4031d6c 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -112,6 +112,14 @@
- #define ARCH_SETUP
- #endif
- 
-+/*
-+ * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
-+ * The direct mapping extends to max_pfn_mapped, so that we can directly access
-+ * apertures, ACPI and other tables without having to play with fixmaps.
-+ */
-+unsigned long max_low_pfn_mapped;
-+unsigned long max_pfn_mapped;
-+
- RESERVE_BRK(dmi_alloc, 65536);
- 
- unsigned int boot_cpu_id __read_mostly;
-@@ -854,12 +862,16 @@ void __init setup_arch(char **cmdline_p)
- 		max_low_pfn = max_pfn;
- 
- 	high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
-+	max_pfn_mapped = KERNEL_IMAGE_SIZE >> PAGE_SHIFT;
- #endif
- 
- #ifdef CONFIG_X86_CHECK_BIOS_CORRUPTION
- 	setup_bios_corruption_check();
- #endif
- 
-+	printk(KERN_DEBUG "initial memory mapped : 0 - %08lx\n",
-+			max_pfn_mapped<<PAGE_SHIFT);
-+
- 	reserve_brk();
- 
- 	/* max_pfn_mapped is updated here */
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 3a97a4c..3b5f327 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -423,6 +423,14 @@ void __init setup_per_cpu_areas(void)
- 	early_per_cpu_ptr(x86_cpu_to_node_map) = NULL;
- #endif
- 
-+#if defined(CONFIG_X86_64) && defined(CONFIG_NUMA)
-+	/*
-+	 * make sure boot cpu node_number is right, when boot cpu is on the
-+	 * node that doesn't have mem installed
-+	 */
-+	per_cpu(node_number, boot_cpu_id) = cpu_to_node(boot_cpu_id);
-+#endif
-+
- 	/* Setup node to cpumask map */
- 	setup_node_to_cpumask_map();
- 
-diff --git a/arch/x86/mm/dump_pagetables.c b/arch/x86/mm/dump_pagetables.c
-index e7277cb..a725b7f 100644
---- a/arch/x86/mm/dump_pagetables.c
-+++ b/arch/x86/mm/dump_pagetables.c
-@@ -161,13 +161,14 @@ static void note_page(struct seq_file *m, struct pg_state *st,
- 		   st->current_address >= st->marker[1].start_address) {
- 		const char *unit = units;
- 		unsigned long delta;
-+		int width = sizeof(unsigned long) * 2;
- 
- 		/*
- 		 * Now print the actual finished series
- 		 */
--		seq_printf(m, "0x%p-0x%p   ",
--			   (void *)st->start_address,
--			   (void *)st->current_address);
-+		seq_printf(m, "0x%0*lx-0x%0*lx   ",
-+			   width, st->start_address,
-+			   width, st->current_address);
- 
- 		delta = (st->current_address - st->start_address) >> 10;
- 		while (!(delta & 1023) && unit[1]) {
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index a03b727..b9ca6d7 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -3,40 +3,16 @@
-  *  Copyright (C) 2001, 2002 Andi Kleen, SuSE Labs.
-  *  Copyright (C) 2008-2009, Red Hat Inc., Ingo Molnar
-  */
--#include <linux/interrupt.h>
--#include <linux/mmiotrace.h>
--#include <linux/bootmem.h>
--#include <linux/compiler.h>
--#include <linux/highmem.h>
--#include <linux/kprobes.h>
--#include <linux/uaccess.h>
--#include <linux/vmalloc.h>
--#include <linux/vt_kern.h>
--#include <linux/signal.h>
--#include <linux/kernel.h>
--#include <linux/ptrace.h>
--#include <linux/string.h>
--#include <linux/module.h>
--#include <linux/kdebug.h>
--#include <linux/errno.h>
--#include <linux/magic.h>
--#include <linux/sched.h>
--#include <linux/types.h>
--#include <linux/init.h>
--#include <linux/mman.h>
--#include <linux/tty.h>
--#include <linux/smp.h>
--#include <linux/mm.h>
--
--#include <asm-generic/sections.h>
--
--#include <asm/tlbflush.h>
--#include <asm/pgalloc.h>
--#include <asm/segment.h>
--#include <asm/system.h>
--#include <asm/proto.h>
--#include <asm/traps.h>
--#include <asm/desc.h>
-+#include <linux/magic.h>		/* STACK_END_MAGIC		*/
-+#include <linux/sched.h>		/* test_thread_flag(), ...	*/
-+#include <linux/kdebug.h>		/* oops_begin/end, ...		*/
-+#include <linux/module.h>		/* search_exception_table	*/
-+#include <linux/bootmem.h>		/* max_low_pfn			*/
-+#include <linux/kprobes.h>		/* __kprobes, ...		*/
-+#include <linux/mmiotrace.h>		/* kmmio_handler, ...		*/
-+
-+#include <asm/traps.h>			/* dotraplinkage, ...		*/
-+#include <asm/pgalloc.h>		/* pgd_*(), ...			*/
- 
- /*
-  * Page fault error code bits:
-@@ -538,8 +514,6 @@ bad:
- static int is_errata93(struct pt_regs *regs, unsigned long address)
- {
- #ifdef CONFIG_X86_64
--	static int once;
--
- 	if (address != regs->ip)
- 		return 0;
- 
-@@ -549,10 +523,7 @@ static int is_errata93(struct pt_regs *regs, unsigned long address)
- 	address |= 0xffffffffUL << 32;
- 	if ((address >= (u64)_stext && address <= (u64)_etext) ||
- 	    (address >= MODULES_VADDR && address <= MODULES_END)) {
--		if (!once) {
--			printk(errata93_warning);
--			once = 1;
--		}
-+		printk_once(errata93_warning);
- 		regs->ip = address;
- 		return 1;
- 	}
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index ae4f7b5..92d2108 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -10,6 +10,9 @@
- #include <asm/setup.h>
- #include <asm/system.h>
- #include <asm/tlbflush.h>
-+#include <asm/tlb.h>
-+
-+DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- 
- unsigned long __initdata e820_table_start;
- unsigned long __meminitdata e820_table_end;
-@@ -23,6 +26,69 @@ int direct_gbpages
- #endif
- ;
- 
-+int nx_enabled;
-+
-+#if defined(CONFIG_X86_64) || defined(CONFIG_X86_PAE)
-+static int disable_nx __cpuinitdata;
-+
-+/*
-+ * noexec = on|off
-+ *
-+ * Control non-executable mappings for processes.
-+ *
-+ * on      Enable
-+ * off     Disable
-+ */
-+static int __init noexec_setup(char *str)
-+{
-+	if (!str)
-+		return -EINVAL;
-+	if (!strncmp(str, "on", 2)) {
-+		__supported_pte_mask |= _PAGE_NX;
-+		disable_nx = 0;
-+	} else if (!strncmp(str, "off", 3)) {
-+		disable_nx = 1;
-+		__supported_pte_mask &= ~_PAGE_NX;
-+	}
-+	return 0;
-+}
-+early_param("noexec", noexec_setup);
-+#endif
-+
-+#ifdef CONFIG_X86_PAE
-+static void __init set_nx(void)
-+{
-+	unsigned int v[4], l, h;
-+
-+	if (cpu_has_pae && (cpuid_eax(0x80000000) > 0x80000001)) {
-+		cpuid(0x80000001, &v[0], &v[1], &v[2], &v[3]);
-+
-+		if ((v[3] & (1 << 20)) && !disable_nx) {
-+			rdmsr(MSR_EFER, l, h);
-+			l |= EFER_NX;
-+			wrmsr(MSR_EFER, l, h);
-+			nx_enabled = 1;
-+			__supported_pte_mask |= _PAGE_NX;
-+		}
-+	}
-+}
-+#else
-+static inline void set_nx(void)
-+{
-+}
-+#endif
-+
-+#ifdef CONFIG_X86_64
-+void __cpuinit check_efer(void)
-+{
-+	unsigned long efer;
-+
-+	rdmsrl(MSR_EFER, efer);
-+	if (!(efer & EFER_NX) || disable_nx)
-+		__supported_pte_mask &= ~_PAGE_NX;
-+}
-+#endif
-+
- static void __init find_early_table_space(unsigned long end, int use_pse,
- 					  int use_gbpages)
- {
-@@ -66,12 +132,11 @@ static void __init find_early_table_space(unsigned long end, int use_pse,
- 	 */
- #ifdef CONFIG_X86_32
- 	start = 0x7000;
--	e820_table_start = find_e820_area(start, max_pfn_mapped<<PAGE_SHIFT,
--					tables, PAGE_SIZE);
--#else /* CONFIG_X86_64 */
-+#else
- 	start = 0x8000;
--	e820_table_start = find_e820_area(start, end, tables, PAGE_SIZE);
- #endif
-+	e820_table_start = find_e820_area(start, max_pfn_mapped<<PAGE_SHIFT,
-+					tables, PAGE_SIZE);
- 	if (e820_table_start == -1UL)
- 		panic("Cannot find space for the kernel page tables");
- 
-@@ -159,12 +224,9 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 	use_gbpages = direct_gbpages;
- #endif
- 
--#ifdef CONFIG_X86_32
--#ifdef CONFIG_X86_PAE
- 	set_nx();
- 	if (nx_enabled)
- 		printk(KERN_INFO "NX (Execute Disable) protection: active\n");
--#endif
- 
- 	/* Enable PSE if available */
- 	if (cpu_has_pse)
-@@ -175,7 +237,6 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- 		set_in_cr4(X86_CR4_PGE);
- 		__supported_pte_mask |= _PAGE_GLOBAL;
- 	}
--#endif
- 
- 	if (use_gbpages)
- 		page_size_mask |= 1 << PG_LEVEL_1G;
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 749559e..949708d 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -49,12 +49,9 @@
- #include <asm/paravirt.h>
- #include <asm/setup.h>
- #include <asm/cacheflush.h>
-+#include <asm/page_types.h>
- #include <asm/init.h>
- 
--unsigned long max_low_pfn_mapped;
--unsigned long max_pfn_mapped;
--
--DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- unsigned long highstart_pfn, highend_pfn;
- 
- static noinline int do_test_wp_bit(void);
-@@ -587,61 +584,9 @@ void zap_low_mappings(void)
- 	flush_tlb_all();
- }
- 
--int nx_enabled;
--
- pteval_t __supported_pte_mask __read_mostly = ~(_PAGE_NX | _PAGE_GLOBAL | _PAGE_IOMAP);
- EXPORT_SYMBOL_GPL(__supported_pte_mask);
- 
--#ifdef CONFIG_X86_PAE
--
--static int disable_nx __initdata;
--
--/*
-- * noexec = on|off
-- *
-- * Control non executable mappings.
-- *
-- * on      Enable
-- * off     Disable
-- */
--static int __init noexec_setup(char *str)
--{
--	if (!str || !strcmp(str, "on")) {
--		if (cpu_has_nx) {
--			__supported_pte_mask |= _PAGE_NX;
--			disable_nx = 0;
--		}
--	} else {
--		if (!strcmp(str, "off")) {
--			disable_nx = 1;
--			__supported_pte_mask &= ~_PAGE_NX;
--		} else {
--			return -EINVAL;
--		}
--	}
--
--	return 0;
--}
--early_param("noexec", noexec_setup);
--
--void __init set_nx(void)
--{
--	unsigned int v[4], l, h;
--
--	if (cpu_has_pae && (cpuid_eax(0x80000000) > 0x80000001)) {
--		cpuid(0x80000001, &v[0], &v[1], &v[2], &v[3]);
--
--		if ((v[3] & (1 << 20)) && !disable_nx) {
--			rdmsr(MSR_EFER, l, h);
--			l |= EFER_NX;
--			wrmsr(MSR_EFER, l, h);
--			nx_enabled = 1;
--			__supported_pte_mask |= _PAGE_NX;
--		}
--	}
--}
--#endif
--
- /* user-defined highmem size */
- static unsigned int highmem_pages = -1;
- 
-@@ -761,15 +706,15 @@ void __init initmem_init(unsigned long start_pfn,
- 	highstart_pfn = highend_pfn = max_pfn;
- 	if (max_pfn > max_low_pfn)
- 		highstart_pfn = max_low_pfn;
--	memory_present(0, 0, highend_pfn);
- 	e820_register_active_regions(0, 0, highend_pfn);
-+	sparse_memory_present_with_active_regions(0);
- 	printk(KERN_NOTICE "%ldMB HIGHMEM available.\n",
- 		pages_to_mb(highend_pfn - highstart_pfn));
- 	num_physpages = highend_pfn;
- 	high_memory = (void *) __va(highstart_pfn * PAGE_SIZE - 1) + 1;
- #else
--	memory_present(0, 0, max_low_pfn);
- 	e820_register_active_regions(0, 0, max_low_pfn);
-+	sparse_memory_present_with_active_regions(0);
- 	num_physpages = max_low_pfn;
- 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE - 1) + 1;
- #endif
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 1753e80..52bb951 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -50,18 +50,8 @@
- #include <asm/cacheflush.h>
- #include <asm/init.h>
- 
--/*
-- * end_pfn only includes RAM, while max_pfn_mapped includes all e820 entries.
-- * The direct mapping extends to max_pfn_mapped, so that we can directly access
-- * apertures, ACPI and other tables without having to play with fixmaps.
-- */
--unsigned long max_low_pfn_mapped;
--unsigned long max_pfn_mapped;
--
- static unsigned long dma_reserve __initdata;
- 
--DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
--
- static int __init parse_direct_gbpages_off(char *arg)
- {
- 	direct_gbpages = 0;
-@@ -85,39 +75,6 @@ early_param("gbpages", parse_direct_gbpages_on);
- pteval_t __supported_pte_mask __read_mostly = ~_PAGE_IOMAP;
- EXPORT_SYMBOL_GPL(__supported_pte_mask);
- 
--static int disable_nx __cpuinitdata;
--
--/*
-- * noexec=on|off
-- * Control non-executable mappings for 64-bit processes.
-- *
-- * on	Enable (default)
-- * off	Disable
-- */
--static int __init nonx_setup(char *str)
--{
--	if (!str)
--		return -EINVAL;
--	if (!strncmp(str, "on", 2)) {
--		__supported_pte_mask |= _PAGE_NX;
--		disable_nx = 0;
--	} else if (!strncmp(str, "off", 3)) {
--		disable_nx = 1;
--		__supported_pte_mask &= ~_PAGE_NX;
--	}
--	return 0;
--}
--early_param("noexec", nonx_setup);
--
--void __cpuinit check_efer(void)
--{
--	unsigned long efer;
--
--	rdmsrl(MSR_EFER, efer);
--	if (!(efer & EFER_NX) || disable_nx)
--		__supported_pte_mask &= ~_PAGE_NX;
--}
--
- int force_personality32;
- 
- /*
-@@ -628,6 +585,7 @@ void __init initmem_init(unsigned long start_pfn, unsigned long end_pfn)
- 	early_res_to_bootmem(0, end_pfn<<PAGE_SHIFT);
- 	reserve_bootmem(bootmap, bootmap_size, BOOTMEM_DEFAULT);
- }
-+#endif
- 
- void __init paging_init(void)
- {
-@@ -638,11 +596,10 @@ void __init paging_init(void)
- 	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
- 	max_zone_pfns[ZONE_NORMAL] = max_pfn;
- 
--	memory_present(0, 0, max_pfn);
-+	sparse_memory_present_with_active_regions(MAX_NUMNODES);
- 	sparse_init();
- 	free_area_init_nodes(max_zone_pfns);
- }
--#endif
- 
- /*
-  * Memory hotplug specific functions
-diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
-index 2d05a12..459913b 100644
---- a/arch/x86/mm/numa_64.c
-+++ b/arch/x86/mm/numa_64.c
-@@ -179,18 +179,25 @@ static void * __init early_node_mem(int nodeid, unsigned long start,
- }
- 
- /* Initialize bootmem allocator for a node */
--void __init setup_node_bootmem(int nodeid, unsigned long start,
--			       unsigned long end)
-+void __init
-+setup_node_bootmem(int nodeid, unsigned long start, unsigned long end)
- {
- 	unsigned long start_pfn, last_pfn, bootmap_pages, bootmap_size;
-+	const int pgdat_size = roundup(sizeof(pg_data_t), PAGE_SIZE);
- 	unsigned long bootmap_start, nodedata_phys;
- 	void *bootmap;
--	const int pgdat_size = roundup(sizeof(pg_data_t), PAGE_SIZE);
- 	int nid;
- 
- 	if (!end)
- 		return;
- 
-+	/*
-+	 * Don't confuse VM with a node that doesn't have the
-+	 * minimum amount of memory:
-+	 */
-+	if (end && (end - start) < NODE_MIN_SIZE)
-+		return;
-+
- 	start = roundup(start, ZONE_ALIGN);
- 
- 	printk(KERN_INFO "Bootmem setup node %d %016lx-%016lx\n", nodeid,
-@@ -272,9 +279,6 @@ void __init setup_node_bootmem(int nodeid, unsigned long start,
- 		reserve_bootmem_node(NODE_DATA(nodeid), bootmap_start,
- 				 bootmap_pages<<PAGE_SHIFT, BOOTMEM_DEFAULT);
- 
--#ifdef CONFIG_ACPI_NUMA
--	srat_reserve_add_area(nodeid);
--#endif
- 	node_set_online(nodeid);
- }
- 
-@@ -578,21 +582,6 @@ unsigned long __init numa_free_all_bootmem(void)
- 	return pages;
- }
- 
--void __init paging_init(void)
--{
--	unsigned long max_zone_pfns[MAX_NR_ZONES];
--
--	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
--	max_zone_pfns[ZONE_DMA] = MAX_DMA_PFN;
--	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
--	max_zone_pfns[ZONE_NORMAL] = max_pfn;
--
--	sparse_memory_present_with_active_regions(MAX_NUMNODES);
--	sparse_init();
--
--	free_area_init_nodes(max_zone_pfns);
--}
--
- static __init int numa_setup(char *opt)
- {
- 	if (!opt)
-@@ -606,8 +595,6 @@ static __init int numa_setup(char *opt)
- #ifdef CONFIG_ACPI_NUMA
- 	if (!strncmp(opt, "noacpi", 6))
- 		acpi_numa = -1;
--	if (!strncmp(opt, "hotadd=", 7))
--		hotadd_percent = simple_strtoul(opt+7, NULL, 10);
- #endif
- 	return 0;
- }
-diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
-index 0176595..2dfcbf9 100644
---- a/arch/x86/mm/srat_64.c
-+++ b/arch/x86/mm/srat_64.c
-@@ -31,17 +31,11 @@ static nodemask_t nodes_parsed __initdata;
- static nodemask_t cpu_nodes_parsed __initdata;
- static struct bootnode nodes[MAX_NUMNODES] __initdata;
- static struct bootnode nodes_add[MAX_NUMNODES];
--static int found_add_area __initdata;
--int hotadd_percent __initdata = 0;
- 
- static int num_node_memblks __initdata;
- static struct bootnode node_memblk_range[NR_NODE_MEMBLKS] __initdata;
- static int memblk_nodeid[NR_NODE_MEMBLKS] __initdata;
- 
--/* Too small nodes confuse the VM badly. Usually they result
--   from BIOS bugs. */
--#define NODE_MIN_SIZE (4*1024*1024)
--
- static __init int setup_node(int pxm)
- {
- 	return acpi_map_pxm_to_node(pxm);
-@@ -66,9 +60,6 @@ static __init void cutoff_node(int i, unsigned long start, unsigned long end)
- {
- 	struct bootnode *nd = &nodes[i];
- 
--	if (found_add_area)
--		return;
--
- 	if (nd->start < start) {
- 		nd->start = start;
- 		if (nd->end < nd->start)
-@@ -86,7 +77,6 @@ static __init void bad_srat(void)
- 	int i;
- 	printk(KERN_ERR "SRAT: SRAT not used.\n");
- 	acpi_numa = -1;
--	found_add_area = 0;
- 	for (i = 0; i < MAX_LOCAL_APIC; i++)
- 		apicid_to_node[i] = NUMA_NO_NODE;
- 	for (i = 0; i < MAX_NUMNODES; i++)
-@@ -182,24 +172,21 @@ acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
- 	       pxm, apic_id, node);
- }
- 
--static int update_end_of_memory(unsigned long end) {return -1;}
--static int hotadd_enough_memory(struct bootnode *nd) {return 1;}
- #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
- static inline int save_add_info(void) {return 1;}
- #else
- static inline int save_add_info(void) {return 0;}
- #endif
- /*
-- * Update nodes_add and decide if to include add are in the zone.
-- * Both SPARSE and RESERVE need nodes_add information.
-- * This code supports one contiguous hot add area per node.
-+ * Update nodes_add[]
-+ * This code supports one contiguous hot add area per node
-  */
--static int __init
--reserve_hotadd(int node, unsigned long start, unsigned long end)
-+static void __init
-+update_nodes_add(int node, unsigned long start, unsigned long end)
- {
- 	unsigned long s_pfn = start >> PAGE_SHIFT;
- 	unsigned long e_pfn = end >> PAGE_SHIFT;
--	int ret = 0, changed = 0;
-+	int changed = 0;
- 	struct bootnode *nd = &nodes_add[node];
- 
- 	/* I had some trouble with strange memory hotadd regions breaking
-@@ -210,7 +197,7 @@ reserve_hotadd(int node, unsigned long start, unsigned long end)
- 	   mistakes */
- 	if ((signed long)(end - start) < NODE_MIN_SIZE) {
- 		printk(KERN_ERR "SRAT: Hotplug area too small\n");
--		return -1;
-+		return;
- 	}
- 
- 	/* This check might be a bit too strict, but I'm keeping it for now. */
-@@ -218,12 +205,7 @@ reserve_hotadd(int node, unsigned long start, unsigned long end)
- 		printk(KERN_ERR
- 			"SRAT: Hotplug area %lu -> %lu has existing memory\n",
- 			s_pfn, e_pfn);
--		return -1;
--	}
--
--	if (!hotadd_enough_memory(&nodes_add[node]))  {
--		printk(KERN_ERR "SRAT: Hotplug area too large\n");
--		return -1;
-+		return;
- 	}
- 
- 	/* Looks good */
-@@ -245,11 +227,9 @@ reserve_hotadd(int node, unsigned long start, unsigned long end)
- 			printk(KERN_ERR "SRAT: Hotplug zone not continuous. Partly ignored\n");
- 	}
- 
--	ret = update_end_of_memory(nd->end);
--
- 	if (changed)
--	 	printk(KERN_INFO "SRAT: hot plug zone found %Lx - %Lx\n", nd->start, nd->end);
--	return ret;
-+		printk(KERN_INFO "SRAT: hot plug zone found %Lx - %Lx\n",
-+				 nd->start, nd->end);
- }
- 
- /* Callback for parsing of the Proximity Domain <-> Memory Area mappings */
-@@ -310,13 +290,10 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
- 	       start, end);
- 	e820_register_active_regions(node, start >> PAGE_SHIFT,
- 				     end >> PAGE_SHIFT);
--	push_node_boundaries(node, nd->start >> PAGE_SHIFT,
--						nd->end >> PAGE_SHIFT);
- 
--	if ((ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) &&
--	    (reserve_hotadd(node, start, end) < 0)) {
--		/* Ignore hotadd region. Undo damage */
--		printk(KERN_NOTICE "SRAT: Hotplug region ignored\n");
-+	if (ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) {
-+		update_nodes_add(node, start, end);
-+		/* restore nodes[node] */
- 		*nd = oldnode;
- 		if ((nd->start | nd->end) == 0)
- 			node_clear(node, nodes_parsed);
-@@ -345,9 +322,9 @@ static int __init nodes_cover_memory(const struct bootnode *nodes)
- 			pxmram = 0;
- 	}
- 
--	e820ram = max_pfn - absent_pages_in_range(0, max_pfn);
--	/* We seem to lose 3 pages somewhere. Allow a bit of slack. */
--	if ((long)(e820ram - pxmram) >= 1*1024*1024) {
-+	e820ram = max_pfn - (e820_hole_size(0, max_pfn<<PAGE_SHIFT)>>PAGE_SHIFT);
-+	/* We seem to lose 3 pages somewhere. Allow 1M of slack. */
-+	if ((long)(e820ram - pxmram) >= (1<<(20 - PAGE_SHIFT))) {
- 		printk(KERN_ERR
- 	"SRAT: PXMs only cover %luMB of your %luMB e820 RAM. Not used.\n",
- 			(pxmram << PAGE_SHIFT) >> 20,
-@@ -357,17 +334,6 @@ static int __init nodes_cover_memory(const struct bootnode *nodes)
- 	return 1;
- }
- 
--static void __init unparse_node(int node)
--{
--	int i;
--	node_clear(node, nodes_parsed);
--	node_clear(node, cpu_nodes_parsed);
--	for (i = 0; i < MAX_LOCAL_APIC; i++) {
--		if (apicid_to_node[i] == node)
--			apicid_to_node[i] = NUMA_NO_NODE;
--	}
--}
--
- void __init acpi_numa_arch_fixup(void) {}
- 
- /* Use the information discovered above to actually set up the nodes. */
-@@ -379,18 +345,8 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
+-	if (bx != 0x504d)	/* "PM" signature */
++	if (oreg.bx != 0x504d)		/* "PM" signature */
  		return -1;
  
- 	/* First clean up the node list */
--	for (i = 0; i < MAX_NUMNODES; i++) {
-+	for (i = 0; i < MAX_NUMNODES; i++)
- 		cutoff_node(i, start, end);
--		/*
--		 * don't confuse VM with a node that doesn't have the
--		 * minimum memory.
--		 */
--		if (nodes[i].end &&
--			(nodes[i].end - nodes[i].start) < NODE_MIN_SIZE) {
--			unparse_node(i);
--			node_set_offline(i);
--		}
--	}
+-	if (!(cx & 0x02))		/* 32 bits supported? */
++	if (!(oreg.cx & 0x02))		/* 32 bits supported? */
+ 		return -1;
  
- 	if (!nodes_cover_memory(nodes)) {
- 		bad_srat();
-@@ -423,7 +379,7 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
+ 	/* Disconnect first, just in case */
+-	ax = 0x5304;
+-	bx = 0;
+-	asm volatile("pushl %%ebp ; int $0x15 ; popl %%ebp"
+-		     : "+a" (ax), "+b" (bx)
+-		     : : "ecx", "edx", "esi", "edi");
+-
+-	/* Paranoia */
+-	ebx = esi = 0;
+-	cx = dx = di = 0;
++	ireg.al = 0x04;
++	intcall(0x15, &ireg, NULL);
  
- 		if (node == NUMA_NO_NODE)
- 			continue;
--		if (!node_isset(node, node_possible_map))
-+		if (!node_online(node))
- 			numa_clear_node(i);
+ 	/* 32-bit connect */
+-	asm volatile("pushl %%ebp ; int $0x15 ; popl %%ebp ; setc %6"
+-		     : "=a" (ax), "+b" (ebx), "+c" (cx), "+d" (dx),
+-		       "+S" (esi), "+D" (di), "=m" (err)
+-		     : "a" (0x5303));
+-
+-	boot_params.apm_bios_info.cseg = ax;
+-	boot_params.apm_bios_info.offset = ebx;
+-	boot_params.apm_bios_info.cseg_16 = cx;
+-	boot_params.apm_bios_info.dseg = dx;
+-	boot_params.apm_bios_info.cseg_len = (u16)esi;
+-	boot_params.apm_bios_info.cseg_16_len = esi >> 16;
+-	boot_params.apm_bios_info.dseg_len = di;
+-
+-	if (err)
++	ireg.al = 0x03;
++	intcall(0x15, &ireg, &oreg);
++
++	boot_params.apm_bios_info.cseg        = oreg.ax;
++	boot_params.apm_bios_info.offset      = oreg.ebx;
++	boot_params.apm_bios_info.cseg_16     = oreg.cx;
++	boot_params.apm_bios_info.dseg        = oreg.dx;
++	boot_params.apm_bios_info.cseg_len    = oreg.si;
++	boot_params.apm_bios_info.cseg_16_len = oreg.hsi;
++	boot_params.apm_bios_info.dseg_len    = oreg.di;
++
++	if (oreg.flags & X86_EFLAGS_CF)
+ 		return -1;
+ 
+ 	/* Redo the installation check as the 32-bit connect;
+ 	   some BIOSes return different flags this way... */
+ 
+-	ax = 0x5300;
+-	bx = cx = 0;
+-	asm volatile("pushl %%ebp ; int $0x15 ; popl %%ebp ; setc %0"
+-		     : "=d" (err), "+a" (ax), "+b" (bx), "+c" (cx)
+-		     : : "esi", "edi");
++	ireg.al = 0x00;
++	intcall(0x15, &ireg, &oreg);
+ 
+-	if (err || bx != 0x504d) {
++	if ((oreg.eflags & X86_EFLAGS_CF) || oreg.bx != 0x504d) {
+ 		/* Failure with 32-bit connect, try to disconect and ignore */
+-		ax = 0x5304;
+-		bx = 0;
+-		asm volatile("pushl %%ebp ; int $0x15 ; popl %%ebp"
+-			     : "+a" (ax), "+b" (bx)
+-			     : : "ecx", "edx", "esi", "edi");
++		ireg.al = 0x04;
++		intcall(0x15, &ireg, NULL);
+ 		return -1;
  	}
- 	numa_init_array();
-@@ -510,26 +466,6 @@ static int null_slit_node_compare(int a, int b)
- }
- #endif /* CONFIG_NUMA_EMU */
  
--void __init srat_reserve_add_area(int nodeid)
--{
--	if (found_add_area && nodes_add[nodeid].end) {
--		u64 total_mb;
--
--		printk(KERN_INFO "SRAT: Reserving hot-add memory space "
--				"for node %d at %Lx-%Lx\n",
--			nodeid, nodes_add[nodeid].start, nodes_add[nodeid].end);
--		total_mb = (nodes_add[nodeid].end - nodes_add[nodeid].start)
--					>> PAGE_SHIFT;
--		total_mb *= sizeof(struct page);
--		total_mb >>= 20;
--		printk(KERN_INFO "SRAT: This will cost you %Lu MB of "
--				"pre-allocated memory.\n", (unsigned long long)total_mb);
--		reserve_bootmem_node(NODE_DATA(nodeid), nodes_add[nodeid].start,
--			       nodes_add[nodeid].end - nodes_add[nodeid].start,
--			       BOOTMEM_DEFAULT);
--	}
--}
--
- int __node_distance(int a, int b)
+-	boot_params.apm_bios_info.version = ax;
+-	boot_params.apm_bios_info.flags = cx;
++	boot_params.apm_bios_info.version = oreg.ax;
++	boot_params.apm_bios_info.flags   = oreg.cx;
+ 	return 0;
+ }
+ 
+diff --git a/arch/x86/boot/bioscall.S b/arch/x86/boot/bioscall.S
+new file mode 100644
+index 0000000..5077937
+--- /dev/null
++++ b/arch/x86/boot/bioscall.S
+@@ -0,0 +1,82 @@
++/* -----------------------------------------------------------------------
++ *
++ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
++ *
++ *   This file is part of the Linux kernel, and is made available under
++ *   the terms of the GNU General Public License version 2 or (at your
++ *   option) any later version; incorporated herein by reference.
++ *
++ * ----------------------------------------------------------------------- */
++
++/*
++ * "Glove box" for BIOS calls.  Avoids the constant problems with BIOSes
++ * touching registers they shouldn't be.
++ */
++
++	.code16
++	.text
++	.globl	intcall
++	.type	intcall, @function
++intcall:
++	/* Self-modify the INT instruction.  Ugly, but works. */
++	cmpb	%al, 3f
++	je	1f
++	movb	%al, 3f
++	jmp	1f		/* Synchronize pipeline */
++1:
++	/* Save state */
++	pushfl
++	pushw	%fs
++	pushw	%gs
++	pushal
++
++	/* Copy input state to stack frame */
++	subw	$44, %sp
++	movw	%dx, %si
++	movw	%sp, %di
++	movw	$11, %cx
++	rep; movsd
++
++	/* Pop full state from the stack */
++	popal
++	popw	%gs
++	popw	%fs
++	popw	%es
++	popw	%ds
++	popfl
++
++	/* Actual INT */
++	.byte	0xcd		/* INT opcode */
++3:	.byte	0
++
++	/* Push full state to the stack */
++	pushfl
++	pushw	%ds
++	pushw	%es
++	pushw	%fs
++	pushw	%gs
++	pushal
++
++	/* Re-establish C environment invariants */
++	cld
++	movzwl	%sp, %esp
++	movw	%cs, %ax
++	movw	%ax, %ds
++	movw	%ax, %es
++
++	/* Copy output state from stack frame */
++	movw	68(%esp), %di	/* Original %cx == 3rd argument */
++	andw	%di, %di
++	jz	4f
++	movw	%sp, %si
++	movw	$11, %cx
++	rep; movsd
++4:	addw	$44, %sp
++
++	/* Restore state and return */
++	popal
++	popw	%gs
++	popw	%fs
++	popfl
++	retl
++	.size	intcall, .-intcall
+diff --git a/arch/x86/boot/boot.h b/arch/x86/boot/boot.h
+index 7b2692e..98239d2 100644
+--- a/arch/x86/boot/boot.h
++++ b/arch/x86/boot/boot.h
+@@ -2,6 +2,7 @@
+  *
+  *   Copyright (C) 1991, 1992 Linus Torvalds
+  *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+  *
+  *   This file is part of the Linux kernel, and is made available under
+  *   the terms of the GNU General Public License version 2.
+@@ -26,6 +27,7 @@
+ #include <asm/setup.h>
+ #include "bitops.h"
+ #include <asm/cpufeature.h>
++#include <asm/processor-flags.h>
+ 
+ /* Useful macros */
+ #define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
+@@ -241,6 +243,49 @@ int enable_a20(void);
+ /* apm.c */
+ int query_apm_bios(void);
+ 
++/* bioscall.c */
++struct biosregs {
++	union {
++		struct {
++			u32 edi;
++			u32 esi;
++			u32 ebp;
++			u32 _esp;
++			u32 ebx;
++			u32 edx;
++			u32 ecx;
++			u32 eax;
++			u32 _fsgs;
++			u32 _dses;
++			u32 eflags;
++		};
++		struct {
++			u16 di, hdi;
++			u16 si, hsi;
++			u16 bp, hbp;
++			u16 _sp, _hsp;
++			u16 bx, hbx;
++			u16 dx, hdx;
++			u16 cx, hcx;
++			u16 ax, hax;
++			u16 gs, fs;
++			u16 es, ds;
++			u16 flags, hflags;
++		};
++		struct {
++			u8 dil, dih, edi2, edi3;
++			u8 sil, sih, esi2, esi3;
++			u8 bpl, bph, ebp2, ebp3;
++			u8 _spl, _sph, _esp2, _esp3;
++			u8 bl, bh, ebx2, ebx3;
++			u8 dl, dh, edx2, edx3;
++			u8 cl, ch, ecx2, ecx3;
++			u8 al, ah, eax2, eax3;
++		};
++	};
++};
++void intcall(u8 int_no, const struct biosregs *ireg, struct biosregs *oreg);
++
+ /* cmdline.c */
+ int cmdline_find_option(const char *option, char *buffer, int bufsize);
+ int cmdline_find_option_bool(const char *option);
+@@ -279,6 +324,9 @@ int sprintf(char *buf, const char *fmt, ...);
+ int vsprintf(char *buf, const char *fmt, va_list args);
+ int printf(const char *fmt, ...);
+ 
++/* regs.c */
++void initregs(struct biosregs *regs);
++
+ /* string.c */
+ int strcmp(const char *str1, const char *str2);
+ size_t strnlen(const char *s, size_t maxlen);
+diff --git a/arch/x86/boot/edd.c b/arch/x86/boot/edd.c
+index 1aae8f3..c501a5b 100644
+--- a/arch/x86/boot/edd.c
++++ b/arch/x86/boot/edd.c
+@@ -2,6 +2,7 @@
+  *
+  *   Copyright (C) 1991, 1992 Linus Torvalds
+  *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+  *
+  *   This file is part of the Linux kernel, and is made available under
+  *   the terms of the GNU General Public License version 2.
+@@ -22,17 +23,17 @@
+  */
+ static int read_mbr(u8 devno, void *buf)
  {
- 	int index;
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index bff1f0d..511b098 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1031,8 +1031,6 @@ extern void add_active_range(unsigned int nid, unsigned long start_pfn,
- 					unsigned long end_pfn);
- extern void remove_active_range(unsigned int nid, unsigned long start_pfn,
- 					unsigned long end_pfn);
--extern void push_node_boundaries(unsigned int nid, unsigned long start_pfn,
--					unsigned long end_pfn);
- extern void remove_all_active_ranges(void);
- extern unsigned long absent_pages_in_range(unsigned long start_pfn,
- 						unsigned long end_pfn);
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index fe753ec..474c7e9 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -149,10 +149,6 @@ static unsigned long __meminitdata dma_reserve;
-   static int __meminitdata nr_nodemap_entries;
-   static unsigned long __meminitdata arch_zone_lowest_possible_pfn[MAX_NR_ZONES];
-   static unsigned long __meminitdata arch_zone_highest_possible_pfn[MAX_NR_ZONES];
--#ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
--  static unsigned long __meminitdata node_boundary_start_pfn[MAX_NUMNODES];
--  static unsigned long __meminitdata node_boundary_end_pfn[MAX_NUMNODES];
--#endif /* CONFIG_MEMORY_HOTPLUG_RESERVE */
-   static unsigned long __initdata required_kernelcore;
-   static unsigned long __initdata required_movablecore;
-   static unsigned long __meminitdata zone_movable_pfn[MAX_NUMNODES];
-@@ -3103,64 +3099,6 @@ void __init sparse_memory_present_with_active_regions(int nid)
+-	u16 ax, bx, cx, dx;
++	struct biosregs ireg, oreg;
+ 
+-	ax = 0x0201;		/* Legacy Read, one sector */
+-	cx = 0x0001;		/* Sector 0-0-1 */
+-	dx = devno;
+-	bx = (size_t)buf;
+-	asm volatile("pushfl; stc; int $0x13; setc %%al; popfl"
+-		     : "+a" (ax), "+c" (cx), "+d" (dx), "+b" (bx)
+-		     : : "esi", "edi", "memory");
++	initregs(&ireg);
++	ireg.ax = 0x0201;		/* Legacy Read, one sector */
++	ireg.cx = 0x0001;		/* Sector 0-0-1 */
++	ireg.dl = devno;
++	ireg.bx = (size_t)buf;
+ 
+-	return -(u8)ax;		/* 0 or -1 */
++	intcall(0x13, &ireg, &oreg);
++
++	return -(oreg.eflags & X86_EFLAGS_CF); /* 0 or -1 */
  }
  
- /**
-- * push_node_boundaries - Push node boundaries to at least the requested boundary
-- * @nid: The nid of the node to push the boundary for
-- * @start_pfn: The start pfn of the node
-- * @end_pfn: The end pfn of the node
-- *
-- * In reserve-based hot-add, mem_map is allocated that is unused until hotadd
-- * time. Specifically, on x86_64, SRAT will report ranges that can potentially
-- * be hotplugged even though no physical memory exists. This function allows
-- * an arch to push out the node boundaries so mem_map is allocated that can
-- * be used later.
-- */
--#ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
--void __init push_node_boundaries(unsigned int nid,
--		unsigned long start_pfn, unsigned long end_pfn)
--{
--	mminit_dprintk(MMINIT_TRACE, "zoneboundary",
--			"Entering push_node_boundaries(%u, %lu, %lu)\n",
--			nid, start_pfn, end_pfn);
--
--	/* Initialise the boundary for this node if necessary */
--	if (node_boundary_end_pfn[nid] == 0)
--		node_boundary_start_pfn[nid] = -1UL;
--
--	/* Update the boundaries */
--	if (node_boundary_start_pfn[nid] > start_pfn)
--		node_boundary_start_pfn[nid] = start_pfn;
--	if (node_boundary_end_pfn[nid] < end_pfn)
--		node_boundary_end_pfn[nid] = end_pfn;
--}
--
--/* If necessary, push the node boundary out for reserve hotadd */
--static void __meminit account_node_boundary(unsigned int nid,
--		unsigned long *start_pfn, unsigned long *end_pfn)
--{
--	mminit_dprintk(MMINIT_TRACE, "zoneboundary",
--			"Entering account_node_boundary(%u, %lu, %lu)\n",
--			nid, *start_pfn, *end_pfn);
--
--	/* Return if boundary information has not been provided */
--	if (node_boundary_end_pfn[nid] == 0)
--		return;
--
--	/* Check the boundaries and update if necessary */
--	if (node_boundary_start_pfn[nid] < *start_pfn)
--		*start_pfn = node_boundary_start_pfn[nid];
--	if (node_boundary_end_pfn[nid] > *end_pfn)
--		*end_pfn = node_boundary_end_pfn[nid];
--}
--#else
--void __init push_node_boundaries(unsigned int nid,
--		unsigned long start_pfn, unsigned long end_pfn) {}
--
--static void __meminit account_node_boundary(unsigned int nid,
--		unsigned long *start_pfn, unsigned long *end_pfn) {}
--#endif
--
--
--/**
-  * get_pfn_range_for_nid - Return the start and end page frames for a node
-  * @nid: The nid to return the range for. If MAX_NUMNODES, the min and max PFN are returned.
-  * @start_pfn: Passed by reference. On return, it will have the node start_pfn.
-@@ -3185,9 +3123,6 @@ void __meminit get_pfn_range_for_nid(unsigned int nid,
+ static u32 read_mbr_sig(u8 devno, struct edd_info *ei, u32 *mbrsig)
+@@ -72,56 +73,46 @@ static u32 read_mbr_sig(u8 devno, struct edd_info *ei, u32 *mbrsig)
  
- 	if (*start_pfn == -1UL)
- 		*start_pfn = 0;
+ static int get_edd_info(u8 devno, struct edd_info *ei)
+ {
+-	u16 ax, bx, cx, dx, di;
++	struct biosregs ireg, oreg;
+ 
+ 	memset(ei, 0, sizeof *ei);
+ 
+ 	/* Check Extensions Present */
+ 
+-	ax = 0x4100;
+-	bx = EDDMAGIC1;
+-	dx = devno;
+-	asm("pushfl; stc; int $0x13; setc %%al; popfl"
+-	    : "+a" (ax), "+b" (bx), "=c" (cx), "+d" (dx)
+-	    : : "esi", "edi");
++	initregs(&ireg);
++	ireg.ah = 0x41;
++	ireg.bx = EDDMAGIC1;
++	ireg.dl = devno;
++	intcall(0x13, &ireg, &oreg);
+ 
+-	if ((u8)ax)
++	if (oreg.eflags & X86_EFLAGS_CF)
+ 		return -1;	/* No extended information */
+ 
+-	if (bx != EDDMAGIC2)
++	if (oreg.bx != EDDMAGIC2)
+ 		return -1;
+ 
+ 	ei->device  = devno;
+-	ei->version = ax >> 8;	/* EDD version number */
+-	ei->interface_support = cx; /* EDD functionality subsets */
++	ei->version = oreg.ah;		 /* EDD version number */
++	ei->interface_support = oreg.cx; /* EDD functionality subsets */
+ 
+ 	/* Extended Get Device Parameters */
+ 
+ 	ei->params.length = sizeof(ei->params);
+-	ax = 0x4800;
+-	dx = devno;
+-	asm("pushfl; int $0x13; popfl"
+-	    : "+a" (ax), "+d" (dx), "=m" (ei->params)
+-	    : "S" (&ei->params)
+-	    : "ebx", "ecx", "edi");
++	ireg.ah = 0x48;
++	ireg.si = (size_t)&ei->params;
++	intcall(0x13, &ireg, &oreg);
+ 
+ 	/* Get legacy CHS parameters */
+ 
+ 	/* Ralf Brown recommends setting ES:DI to 0:0 */
+-	ax = 0x0800;
+-	dx = devno;
+-	di = 0;
+-	asm("pushw %%es; "
+-	    "movw %%di,%%es; "
+-	    "pushfl; stc; int $0x13; setc %%al; popfl; "
+-	    "popw %%es"
+-	    : "+a" (ax), "=b" (bx), "=c" (cx), "+d" (dx), "+D" (di)
+-	    : : "esi");
 -
--	/* Push the node boundaries out if requested */
--	account_node_boundary(nid, start_pfn, end_pfn);
+-	if ((u8)ax == 0) {
+-		ei->legacy_max_cylinder = (cx >> 8) + ((cx & 0xc0) << 2);
+-		ei->legacy_max_head = dx >> 8;
+-		ei->legacy_sectors_per_track = cx & 0x3f;
++	ireg.ah = 0x08;
++	ireg.es = 0;
++	intcall(0x13, &ireg, &oreg);
++
++	if (!(oreg.eflags & X86_EFLAGS_CF)) {
++		ei->legacy_max_cylinder = oreg.ch + ((oreg.cl & 0xc0) << 2);
++		ei->legacy_max_head = oreg.dh;
++		ei->legacy_sectors_per_track = oreg.cl & 0x3f;
+ 	}
+ 
+ 	return 0;
+diff --git a/arch/x86/boot/header.S b/arch/x86/boot/header.S
+index 5d84d1c..486d97f 100644
+--- a/arch/x86/boot/header.S
++++ b/arch/x86/boot/header.S
+@@ -221,7 +221,7 @@ setup_data:		.quad 0			# 64-bit physical pointer to
+ 
+ # End of setup header #####################################################
+ 
+-	.section ".inittext", "ax"
++	.section ".entrytext", "ax"
+ start_of_setup:
+ #ifdef SAFE_RESET_DISK_CONTROLLER
+ # Reset the disk controller.
+diff --git a/arch/x86/boot/main.c b/arch/x86/boot/main.c
+index 58f0415..140172b 100644
+--- a/arch/x86/boot/main.c
++++ b/arch/x86/boot/main.c
+@@ -2,6 +2,7 @@
+  *
+  *   Copyright (C) 1991, 1992 Linus Torvalds
+  *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+  *
+  *   This file is part of the Linux kernel, and is made available under
+  *   the terms of the GNU General Public License version 2.
+@@ -61,11 +62,10 @@ static void copy_boot_params(void)
+  */
+ static void keyboard_set_repeat(void)
+ {
+-	u16 ax = 0x0305;
+-	u16 bx = 0;
+-	asm volatile("int $0x16"
+-		     : "+a" (ax), "+b" (bx)
+-		     : : "ecx", "edx", "esi", "edi");
++	struct biosregs ireg;
++	initregs(&ireg);
++	ireg.ax = 0x0305;
++	intcall(0x16, &ireg, NULL);
  }
  
  /*
-@@ -3793,10 +3728,6 @@ void __init remove_all_active_ranges(void)
+@@ -73,18 +73,22 @@ static void keyboard_set_repeat(void)
+  */
+ static void query_ist(void)
  {
- 	memset(early_node_map, 0, sizeof(early_node_map));
- 	nr_nodemap_entries = 0;
--#ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
--	memset(node_boundary_start_pfn, 0, sizeof(node_boundary_start_pfn));
--	memset(node_boundary_end_pfn, 0, sizeof(node_boundary_end_pfn));
--#endif /* CONFIG_MEMORY_HOTPLUG_RESERVE */
++	struct biosregs ireg, oreg;
++
+ 	/* Some older BIOSes apparently crash on this call, so filter
+ 	   it from machines too old to have SpeedStep at all. */
+ 	if (cpu.level < 6)
+ 		return;
+ 
+-	asm("int $0x15"
+-	    : "=a" (boot_params.ist_info.signature),
+-	      "=b" (boot_params.ist_info.command),
+-	      "=c" (boot_params.ist_info.event),
+-	      "=d" (boot_params.ist_info.perf_level)
+-	    : "a" (0x0000e980),	 /* IST Support */
+-	      "d" (0x47534943)); /* Request value */
++	initregs(&ireg);
++	ireg.ax  = 0xe980;	 /* IST Support */
++	ireg.edx = 0x47534943;	 /* Request value */
++	intcall(0x15, &ireg, &oreg);
++
++	boot_params.ist_info.signature  = oreg.eax;
++	boot_params.ist_info.command    = oreg.ebx;
++	boot_params.ist_info.event      = oreg.ecx;
++	boot_params.ist_info.perf_level = oreg.edx;
  }
  
- /* Compare two active node_active_regions */
+ /*
+@@ -93,13 +97,12 @@ static void query_ist(void)
+ static void set_bios_mode(void)
+ {
+ #ifdef CONFIG_X86_64
+-	u32 eax, ebx;
++	struct biosregs ireg;
+ 
+-	eax = 0xec00;
+-	ebx = 2;
+-	asm volatile("int $0x15"
+-		     : "+a" (eax), "+b" (ebx)
+-		     : : "ecx", "edx", "esi", "edi");
++	initregs(&ireg);
++	ireg.ax = 0xec00;
++	ireg.bx = 2;
++	intcall(0x15, &ireg, NULL);
+ #endif
+ }
+ 
+diff --git a/arch/x86/boot/mca.c b/arch/x86/boot/mca.c
+index 911eaae..a95a531 100644
+--- a/arch/x86/boot/mca.c
++++ b/arch/x86/boot/mca.c
+@@ -2,6 +2,7 @@
+  *
+  *   Copyright (C) 1991, 1992 Linus Torvalds
+  *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+  *
+  *   This file is part of the Linux kernel, and is made available under
+  *   the terms of the GNU General Public License version 2.
+@@ -16,26 +17,22 @@
+ 
+ int query_mca(void)
+ {
+-	u8 err;
+-	u16 es, bx, len;
+-
+-	asm("pushw %%es ; "
+-	    "int $0x15 ; "
+-	    "setc %0 ; "
+-	    "movw %%es, %1 ; "
+-	    "popw %%es"
+-	    : "=acd" (err), "=acdSD" (es), "=b" (bx)
+-	    : "a" (0xc000));
+-
+-	if (err)
++	struct biosregs ireg, oreg;
++	u16 len;
++
++	initregs(&ireg);
++	ireg.ah = 0xc0;
++	intcall(0x15, &ireg, &oreg);
++
++	if (oreg.eflags & X86_EFLAGS_CF)
+ 		return -1;	/* No MCA present */
+ 
+-	set_fs(es);
+-	len = rdfs16(bx);
++	set_fs(oreg.es);
++	len = rdfs16(oreg.bx);
+ 
+ 	if (len > sizeof(boot_params.sys_desc_table))
+ 		len = sizeof(boot_params.sys_desc_table);
+ 
+-	copy_from_fs(&boot_params.sys_desc_table, bx, len);
++	copy_from_fs(&boot_params.sys_desc_table, oreg.bx, len);
+ 	return 0;
+ }
+diff --git a/arch/x86/boot/memory.c b/arch/x86/boot/memory.c
+index 74b3d2b..cae3feb 100644
+--- a/arch/x86/boot/memory.c
++++ b/arch/x86/boot/memory.c
+@@ -20,12 +20,16 @@
+ static int detect_memory_e820(void)
+ {
+ 	int count = 0;
+-	u32 next = 0;
+-	u32 size, id, edi;
+-	u8 err;
++	struct biosregs ireg, oreg;
+ 	struct e820entry *desc = boot_params.e820_map;
+ 	static struct e820entry buf; /* static so it is zeroed */
+ 
++	initregs(&ireg);
++	ireg.ax  = 0xe820;
++	ireg.cx  = sizeof buf;
++	ireg.edx = SMAP;
++	ireg.di  = (size_t)&buf;
++
+ 	/*
+ 	 * Note: at least one BIOS is known which assumes that the
+ 	 * buffer pointed to by one e820 call is the same one as
+@@ -41,22 +45,13 @@ static int detect_memory_e820(void)
+ 	 */
+ 
+ 	do {
+-		size = sizeof buf;
+-
+-		/* Important: %edx and %esi are clobbered by some BIOSes,
+-		   so they must be either used for the error output
+-		   or explicitly marked clobbered.  Given that, assume there
+-		   is something out there clobbering %ebp and %edi, too. */
+-		asm("pushl %%ebp; int $0x15; popl %%ebp; setc %0"
+-		    : "=d" (err), "+b" (next), "=a" (id), "+c" (size),
+-		      "=D" (edi), "+m" (buf)
+-		    : "D" (&buf), "d" (SMAP), "a" (0xe820)
+-		    : "esi");
++		intcall(0x15, &ireg, &oreg);
++		ireg.ebx = oreg.ebx; /* for next iteration... */
+ 
+ 		/* BIOSes which terminate the chain with CF = 1 as opposed
+ 		   to %ebx = 0 don't always report the SMAP signature on
+ 		   the final, failing, probe. */
+-		if (err)
++		if (oreg.eflags & X86_EFLAGS_CF)
+ 			break;
+ 
+ 		/* Some BIOSes stop returning SMAP in the middle of
+@@ -64,60 +59,64 @@ static int detect_memory_e820(void)
+ 		   screwed up the map at that point, we might have a
+ 		   partial map, the full map, or complete garbage, so
+ 		   just return failure. */
+-		if (id != SMAP) {
++		if (oreg.eax != SMAP) {
+ 			count = 0;
+ 			break;
+ 		}
+ 
+ 		*desc++ = buf;
+ 		count++;
+-	} while (next && count < ARRAY_SIZE(boot_params.e820_map));
++	} while (ireg.ebx && count < ARRAY_SIZE(boot_params.e820_map));
+ 
+ 	return boot_params.e820_entries = count;
+ }
+ 
+ static int detect_memory_e801(void)
+ {
+-	u16 ax, bx, cx, dx;
+-	u8 err;
++	struct biosregs ireg, oreg;
+ 
+-	bx = cx = dx = 0;
+-	ax = 0xe801;
+-	asm("stc; int $0x15; setc %0"
+-	    : "=m" (err), "+a" (ax), "+b" (bx), "+c" (cx), "+d" (dx));
++	initregs(&ireg);
++	ireg.ax = 0xe801;
++	intcall(0x15, &ireg, &oreg);
+ 
+-	if (err)
++	if (oreg.eflags & X86_EFLAGS_CF)
+ 		return -1;
+ 
+ 	/* Do we really need to do this? */
+-	if (cx || dx) {
+-		ax = cx;
+-		bx = dx;
++	if (oreg.cx || oreg.dx) {
++		oreg.ax = oreg.cx;
++		oreg.bx = oreg.dx;
+ 	}
+ 
+-	if (ax > 15*1024)
++	if (oreg.ax > 15*1024) {
+ 		return -1;	/* Bogus! */
+-
+-	/* This ignores memory above 16MB if we have a memory hole
+-	   there.  If someone actually finds a machine with a memory
+-	   hole at 16MB and no support for 0E820h they should probably
+-	   generate a fake e820 map. */
+-	boot_params.alt_mem_k = (ax == 15*1024) ? (dx << 6)+ax : ax;
++	} else if (oreg.ax == 15*1024) {
++		boot_params.alt_mem_k = (oreg.dx << 6) + oreg.ax;
++	} else {
++		/*
++		 * This ignores memory above 16MB if we have a memory
++		 * hole there.  If someone actually finds a machine
++		 * with a memory hole at 16MB and no support for
++		 * 0E820h they should probably generate a fake e820
++		 * map.
++		 */
++		boot_params.alt_mem_k = oreg.ax;
++	}
+ 
+ 	return 0;
+ }
+ 
+ static int detect_memory_88(void)
+ {
+-	u16 ax;
+-	u8 err;
++	struct biosregs ireg, oreg;
+ 
+-	ax = 0x8800;
+-	asm("stc; int $0x15; setc %0" : "=bcdm" (err), "+a" (ax));
++	initregs(&ireg);
++	ireg.ah = 0x88;
++	intcall(0x15, &ireg, &oreg);
+ 
+-	boot_params.screen_info.ext_mem_k = ax;
++	boot_params.screen_info.ext_mem_k = oreg.ax;
+ 
+-	return -err;
++	return -(oreg.eflags & X86_EFLAGS_CF); /* 0 or -1 */
+ }
+ 
+ int detect_memory(void)
+diff --git a/arch/x86/boot/regs.c b/arch/x86/boot/regs.c
+new file mode 100644
+index 0000000..958019b
+--- /dev/null
++++ b/arch/x86/boot/regs.c
+@@ -0,0 +1,29 @@
++/* -----------------------------------------------------------------------
++ *
++ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
++ *
++ *   This file is part of the Linux kernel, and is made available under
++ *   the terms of the GNU General Public License version 2 or (at your
++ *   option) any later version; incorporated herein by reference.
++ *
++ * ----------------------------------------------------------------------- */
++
++/*
++ * Simple helper function for initializing a register set.
++ *
++ * Note that this sets EFLAGS_CF in the input register set; this
++ * makes it easier to catch functions which do nothing but don't
++ * explicitly set CF.
++ */
++
++#include "boot.h"
++
++void initregs(struct biosregs *reg)
++{
++	memset(reg, 0, sizeof *reg);
++	reg->eflags |= X86_EFLAGS_CF;
++	reg->ds = ds();
++	reg->es = ds();
++	reg->fs = fs();
++	reg->gs = gs();
++}
+diff --git a/arch/x86/boot/setup.ld b/arch/x86/boot/setup.ld
+index bb8dc2d..0f6ec45 100644
+--- a/arch/x86/boot/setup.ld
++++ b/arch/x86/boot/setup.ld
+@@ -15,8 +15,11 @@ SECTIONS
+ 
+ 	. = 497;
+ 	.header		: { *(.header) }
++	.entrytext	: { *(.entrytext) }
+ 	.inittext	: { *(.inittext) }
+ 	.initdata	: { *(.initdata) }
++	__end_init = .;
++
+ 	.text		: { *(.text) }
+ 	.text32		: { *(.text32) }
+ 
+@@ -52,4 +55,7 @@ SECTIONS
+ 
+ 	. = ASSERT(_end <= 0x8000, "Setup too big!");
+ 	. = ASSERT(hdr == 0x1f1, "The setup header has the wrong offset!");
++	/* Necessary for the very-old-loader check to work... */
++	. = ASSERT(__end_init <= 5*512, "init sections too big!");
++
+ }
+diff --git a/arch/x86/boot/tty.c b/arch/x86/boot/tty.c
+index 7e8e8b2..01ec69c 100644
+--- a/arch/x86/boot/tty.c
++++ b/arch/x86/boot/tty.c
+@@ -2,6 +2,7 @@
+  *
+  *   Copyright (C) 1991, 1992 Linus Torvalds
+  *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+  *
+  *   This file is part of the Linux kernel, and is made available under
+  *   the terms of the GNU General Public License version 2.
+@@ -22,24 +23,23 @@
+ 
+ void __attribute__((section(".inittext"))) putchar(int ch)
+ {
+-	unsigned char c = ch;
++	struct biosregs ireg;
+ 
+-	if (c == '\n')
++	if (ch == '\n')
+ 		putchar('\r');	/* \n -> \r\n */
+ 
+-	/* int $0x10 is known to have bugs involving touching registers
+-	   it shouldn't.  Be extra conservative... */
+-	asm volatile("pushal; pushw %%ds; int $0x10; popw %%ds; popal"
+-		     : : "b" (0x0007), "c" (0x0001), "a" (0x0e00|ch));
++	initregs(&ireg);
++	ireg.bx = 0x0007;
++	ireg.cx = 0x0001;
++	ireg.ah = 0x0e;
++	ireg.al = ch;
++	intcall(0x10, &ireg, NULL);
+ }
+ 
+ void __attribute__((section(".inittext"))) puts(const char *str)
+ {
+-	int n = 0;
+-	while (*str) {
++	while (*str)
+ 		putchar(*str++);
+-		n++;
+-	}
+ }
+ 
+ /*
+@@ -49,14 +49,13 @@ void __attribute__((section(".inittext"))) puts(const char *str)
+ 
+ static u8 gettime(void)
+ {
+-	u16 ax = 0x0200;
+-	u16 cx, dx;
++	struct biosregs ireg, oreg;
+ 
+-	asm volatile("int $0x1a"
+-		     : "+a" (ax), "=c" (cx), "=d" (dx)
+-		     : : "ebx", "esi", "edi");
++	initregs(&ireg);
++	ireg.ah = 0x02;
++	intcall(0x1a, &ireg, &oreg);
+ 
+-	return dx >> 8;
++	return oreg.dh;
+ }
+ 
+ /*
+@@ -64,19 +63,24 @@ static u8 gettime(void)
+  */
+ int getchar(void)
+ {
+-	u16 ax = 0;
+-	asm volatile("int $0x16" : "+a" (ax));
++	struct biosregs ireg, oreg;
++
++	initregs(&ireg);
++	/* ireg.ah = 0x00; */
++	intcall(0x16, &ireg, &oreg);
+ 
+-	return ax & 0xff;
++	return oreg.al;
+ }
+ 
+ static int kbd_pending(void)
+ {
+-	u8 pending;
+-	asm volatile("int $0x16; setnz %0"
+-		     : "=qm" (pending)
+-		     : "a" (0x0100));
+-	return pending;
++	struct biosregs ireg, oreg;
++
++	initregs(&ireg);
++	ireg.ah = 0x01;
++	intcall(0x16, &ireg, &oreg);
++
++	return !(oreg.eflags & X86_EFLAGS_ZF);
+ }
+ 
+ void kbd_flush(void)
+diff --git a/arch/x86/boot/video-bios.c b/arch/x86/boot/video-bios.c
+index 3fa979c..d660be4 100644
+--- a/arch/x86/boot/video-bios.c
++++ b/arch/x86/boot/video-bios.c
+@@ -2,6 +2,7 @@
+  *
+  *   Copyright (C) 1991, 1992 Linus Torvalds
+  *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+  *
+  *   This file is part of the Linux kernel, and is made available under
+  *   the terms of the GNU General Public License version 2.
+@@ -29,21 +30,21 @@ static int bios_set_mode(struct mode_info *mi)
+ 
+ static int set_bios_mode(u8 mode)
+ {
+-	u16 ax;
++	struct biosregs ireg, oreg;
+ 	u8 new_mode;
+ 
+-	ax = mode;		/* AH=0x00 Set Video Mode */
+-	asm volatile(INT10
+-		     : "+a" (ax)
+-		     : : "ebx", "ecx", "edx", "esi", "edi");
++	initregs(&ireg);
++	ireg.al = mode;		/* AH=0x00 Set Video Mode */
++	intcall(0x10, &ireg, NULL);
+ 
+-	ax = 0x0f00;		/* Get Current Video Mode */
+-	asm volatile(INT10
+-		     : "+a" (ax)
+-		     : : "ebx", "ecx", "edx", "esi", "edi");
++
++	ireg.ah = 0x0f;		/* Get Current Video Mode */
++	intcall(0x10, &ireg, &oreg);
+ 
+ 	do_restore = 1;		/* Assume video contents were lost */
+-	new_mode = ax & 0x7f;	/* Not all BIOSes are clean with the top bit */
++
++	/* Not all BIOSes are clean with the top bit */
++	new_mode = ireg.al & 0x7f;
+ 
+ 	if (new_mode == mode)
+ 		return 0;	/* Mode change OK */
+@@ -53,10 +54,8 @@ static int set_bios_mode(u8 mode)
+ 		/* Mode setting failed, but we didn't end up where we
+ 		   started.  That's bad.  Try to revert to the original
+ 		   video mode. */
+-		ax = boot_params.screen_info.orig_video_mode;
+-		asm volatile(INT10
+-			     : "+a" (ax)
+-			     : : "ebx", "ecx", "edx", "esi", "edi");
++		ireg.ax = boot_params.screen_info.orig_video_mode;
++		intcall(0x10, &ireg, NULL);
+ 	}
+ #endif
+ 	return -1;
+diff --git a/arch/x86/boot/video-vesa.c b/arch/x86/boot/video-vesa.c
+index 4a58c8c..c700147 100644
+--- a/arch/x86/boot/video-vesa.c
++++ b/arch/x86/boot/video-vesa.c
+@@ -2,6 +2,7 @@
+  *
+  *   Copyright (C) 1991, 1992 Linus Torvalds
+  *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+  *
+  *   This file is part of the Linux kernel, and is made available under
+  *   the terms of the GNU General Public License version 2.
+@@ -31,7 +32,7 @@ static inline void vesa_store_mode_params_graphics(void) {}
+ static int vesa_probe(void)
+ {
+ #if defined(CONFIG_VIDEO_VESA) || defined(CONFIG_FIRMWARE_EDID)
+-	u16 ax, cx, di;
++	struct biosregs ireg, oreg;
+ 	u16 mode;
+ 	addr_t mode_ptr;
+ 	struct mode_info *mi;
+@@ -39,13 +40,12 @@ static int vesa_probe(void)
+ 
+ 	video_vesa.modes = GET_HEAP(struct mode_info, 0);
+ 
+-	ax = 0x4f00;
+-	di = (size_t)&vginfo;
+-	asm(INT10
+-	    : "+a" (ax), "+D" (di), "=m" (vginfo)
+-	    : : "ebx", "ecx", "edx", "esi");
++	initregs(&ireg);
++	ireg.ax = 0x4f00;
++	ireg.di = (size_t)&vginfo;
++	intcall(0x10, &ireg, &oreg);
+ 
+-	if (ax != 0x004f ||
++	if (ireg.ax != 0x004f ||
+ 	    vginfo.signature != VESA_MAGIC ||
+ 	    vginfo.version < 0x0102)
+ 		return 0;	/* Not present */
+@@ -65,14 +65,12 @@ static int vesa_probe(void)
+ 
+ 		memset(&vminfo, 0, sizeof vminfo); /* Just in case... */
+ 
+-		ax = 0x4f01;
+-		cx = mode;
+-		di = (size_t)&vminfo;
+-		asm(INT10
+-		    : "+a" (ax), "+c" (cx), "+D" (di), "=m" (vminfo)
+-		    : : "ebx", "edx", "esi");
++		ireg.ax = 0x4f01;
++		ireg.cx = mode;
++		ireg.di = (size_t)&vminfo;
++		intcall(0x10, &ireg, &oreg);
+ 
+-		if (ax != 0x004f)
++		if (ireg.ax != 0x004f)
+ 			continue;
+ 
+ 		if ((vminfo.mode_attr & 0x15) == 0x05) {
+@@ -111,20 +109,19 @@ static int vesa_probe(void)
+ 
+ static int vesa_set_mode(struct mode_info *mode)
+ {
+-	u16 ax, bx, cx, di;
++	struct biosregs ireg, oreg;
+ 	int is_graphic;
+ 	u16 vesa_mode = mode->mode - VIDEO_FIRST_VESA;
+ 
+ 	memset(&vminfo, 0, sizeof vminfo); /* Just in case... */
+ 
+-	ax = 0x4f01;
+-	cx = vesa_mode;
+-	di = (size_t)&vminfo;
+-	asm(INT10
+-	    : "+a" (ax), "+c" (cx), "+D" (di), "=m" (vminfo)
+-	    : : "ebx", "edx", "esi");
++	initregs(&ireg);
++	ireg.ax = 0x4f01;
++	ireg.cx = vesa_mode;
++	ireg.di = (size_t)&vminfo;
++	intcall(0x10, &ireg, &oreg);
+ 
+-	if (ax != 0x004f)
++	if (oreg.ax != 0x004f)
+ 		return -1;
+ 
+ 	if ((vminfo.mode_attr & 0x15) == 0x05) {
+@@ -141,14 +138,12 @@ static int vesa_set_mode(struct mode_info *mode)
+ 	}
+ 
+ 
+-	ax = 0x4f02;
+-	bx = vesa_mode;
+-	di = 0;
+-	asm volatile(INT10
+-		     : "+a" (ax), "+b" (bx), "+D" (di)
+-		     : : "ecx", "edx", "esi");
++	initregs(&ireg);
++	ireg.ax = 0x4f02;
++	ireg.bx = vesa_mode;
++	intcall(0x10, &ireg, &oreg);
+ 
+-	if (ax != 0x004f)
++	if (oreg.ax != 0x004f)
+ 		return -1;
+ 
+ 	graphic_mode = is_graphic;
+@@ -171,50 +166,45 @@ static int vesa_set_mode(struct mode_info *mode)
+ /* Switch DAC to 8-bit mode */
+ static void vesa_dac_set_8bits(void)
+ {
++	struct biosregs ireg, oreg;
+ 	u8 dac_size = 6;
+ 
+ 	/* If possible, switch the DAC to 8-bit mode */
+ 	if (vginfo.capabilities & 1) {
+-		u16 ax, bx;
+-
+-		ax = 0x4f08;
+-		bx = 0x0800;
+-		asm volatile(INT10
+-			     : "+a" (ax), "+b" (bx)
+-			     : : "ecx", "edx", "esi", "edi");
+-
+-		if (ax == 0x004f)
+-			dac_size = bx >> 8;
++		initregs(&ireg);
++		ireg.ax = 0x4f08;
++		ireg.bh = 0x08;
++		intcall(0x10, &ireg, &oreg);
++		if (oreg.ax == 0x004f)
++			dac_size = oreg.bh;
+ 	}
+ 
+ 	/* Set the color sizes to the DAC size, and offsets to 0 */
+-	boot_params.screen_info.red_size = dac_size;
++	boot_params.screen_info.red_size   = dac_size;
+ 	boot_params.screen_info.green_size = dac_size;
+-	boot_params.screen_info.blue_size = dac_size;
+-	boot_params.screen_info.rsvd_size = dac_size;
++	boot_params.screen_info.blue_size  = dac_size;
++	boot_params.screen_info.rsvd_size  = dac_size;
+ 
+-	boot_params.screen_info.red_pos = 0;
+-	boot_params.screen_info.green_pos = 0;
+-	boot_params.screen_info.blue_pos = 0;
+-	boot_params.screen_info.rsvd_pos = 0;
++	boot_params.screen_info.red_pos    = 0;
++	boot_params.screen_info.green_pos  = 0;
++	boot_params.screen_info.blue_pos   = 0;
++	boot_params.screen_info.rsvd_pos   = 0;
+ }
+ 
+ /* Save the VESA protected mode info */
+ static void vesa_store_pm_info(void)
+ {
+-	u16 ax, bx, di, es;
++	struct biosregs ireg, oreg;
+ 
+-	ax = 0x4f0a;
+-	bx = di = 0;
+-	asm("pushw %%es; "INT10"; movw %%es,%0; popw %%es"
+-	    : "=d" (es), "+a" (ax), "+b" (bx), "+D" (di)
+-	    : : "ecx", "esi");
++	initregs(&ireg);
++	ireg.ax = 0x4f0a;
++	intcall(0x10, &ireg, &oreg);
+ 
+-	if (ax != 0x004f)
++	if (oreg.ax != 0x004f)
+ 		return;
+ 
+-	boot_params.screen_info.vesapm_seg = es;
+-	boot_params.screen_info.vesapm_off = di;
++	boot_params.screen_info.vesapm_seg = oreg.es;
++	boot_params.screen_info.vesapm_off = oreg.di;
+ }
+ 
+ /*
+@@ -252,7 +242,7 @@ static void vesa_store_mode_params_graphics(void)
+ void vesa_store_edid(void)
+ {
+ #ifdef CONFIG_FIRMWARE_EDID
+-	u16 ax, bx, cx, dx, di;
++	struct biosregs ireg, oreg;
+ 
+ 	/* Apparently used as a nonsense token... */
+ 	memset(&boot_params.edid_info, 0x13, sizeof boot_params.edid_info);
+@@ -260,33 +250,26 @@ void vesa_store_edid(void)
+ 	if (vginfo.version < 0x0200)
+ 		return;		/* EDID requires VBE 2.0+ */
+ 
+-	ax = 0x4f15;		/* VBE DDC */
+-	bx = 0x0000;		/* Report DDC capabilities */
+-	cx = 0;			/* Controller 0 */
+-	di = 0;			/* ES:DI must be 0 by spec */
+-
+-	/* Note: The VBE DDC spec is different from the main VESA spec;
+-	   we genuinely have to assume all registers are destroyed here. */
+-
+-	asm("pushw %%es; movw %2,%%es; "INT10"; popw %%es"
+-	    : "+a" (ax), "+b" (bx), "+c" (cx), "+D" (di)
+-	    : : "esi", "edx");
++	initregs(&ireg);
++	ireg.ax = 0x4f15;		/* VBE DDC */
++	/* ireg.bx = 0x0000; */		/* Report DDC capabilities */
++	/* ireg.cx = 0;	*/		/* Controller 0 */
++	ireg.es = 0;			/* ES:DI must be 0 by spec */
++	intcall(0x10, &ireg, &oreg);
+ 
+-	if (ax != 0x004f)
++	if (oreg.ax != 0x004f)
+ 		return;		/* No EDID */
+ 
+ 	/* BH = time in seconds to transfer EDD information */
+ 	/* BL = DDC level supported */
+ 
+-	ax = 0x4f15;		/* VBE DDC */
+-	bx = 0x0001;		/* Read EDID */
+-	cx = 0;			/* Controller 0 */
+-	dx = 0;			/* EDID block number */
+-	di =(size_t) &boot_params.edid_info; /* (ES:)Pointer to block */
+-	asm(INT10
+-	    : "+a" (ax), "+b" (bx), "+d" (dx), "=m" (boot_params.edid_info),
+-	      "+c" (cx), "+D" (di)
+-	    : : "esi");
++	ireg.ax = 0x4f15;		/* VBE DDC */
++	ireg.bx = 0x0001;		/* Read EDID */
++	/* ireg.cx = 0; */		/* Controller 0 */
++	/* ireg.dx = 0;	*/		/* EDID block number */
++	ireg.es = ds();
++	ireg.di =(size_t)&boot_params.edid_info; /* (ES:)Pointer to block */
++	intcall(0x10, &ireg, &oreg);
+ #endif /* CONFIG_FIRMWARE_EDID */
+ }
+ 
+diff --git a/arch/x86/boot/video-vga.c b/arch/x86/boot/video-vga.c
+index 9e0587a..8f8d827 100644
+--- a/arch/x86/boot/video-vga.c
++++ b/arch/x86/boot/video-vga.c
+@@ -2,6 +2,7 @@
+  *
+  *   Copyright (C) 1991, 1992 Linus Torvalds
+  *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+  *
+  *   This file is part of the Linux kernel, and is made available under
+  *   the terms of the GNU General Public License version 2.
+@@ -39,30 +40,30 @@ static __videocard video_vga;
+ /* Set basic 80x25 mode */
+ static u8 vga_set_basic_mode(void)
+ {
++	struct biosregs ireg, oreg;
+ 	u16 ax;
+ 	u8 rows;
+ 	u8 mode;
+ 
++	initregs(&ireg);
++
+ #ifdef CONFIG_VIDEO_400_HACK
+ 	if (adapter >= ADAPTER_VGA) {
+-		asm volatile(INT10
+-			     : : "a" (0x1202), "b" (0x0030)
+-			     : "ecx", "edx", "esi", "edi");
++		ireg.ax = 0x1202;
++		ireg.bx = 0x0030;
++		intcall(0x10, &ireg, NULL);
+ 	}
+ #endif
+ 
+ 	ax = 0x0f00;
+-	asm volatile(INT10
+-		     : "+a" (ax)
+-		     : : "ebx", "ecx", "edx", "esi", "edi");
+-
+-	mode = (u8)ax;
++	intcall(0x10, &ireg, &oreg);
++	mode = oreg.al;
+ 
+ 	set_fs(0);
+ 	rows = rdfs8(0x484);	/* rows minus one */
+ 
+ #ifndef CONFIG_VIDEO_400_HACK
+-	if ((ax == 0x5003 || ax == 0x5007) &&
++	if ((oreg.ax == 0x5003 || oreg.ax == 0x5007) &&
+ 	    (rows == 0 || rows == 24))
+ 		return mode;
+ #endif
+@@ -71,10 +72,8 @@ static u8 vga_set_basic_mode(void)
+ 		mode = 3;
+ 
+ 	/* Set the mode */
+-	ax = mode;
+-	asm volatile(INT10
+-		     : "+a" (ax)
+-		     : : "ebx", "ecx", "edx", "esi", "edi");
++	ireg.ax = mode;		/* AH=0: set mode */
++	intcall(0x10, &ireg, NULL);
+ 	do_restore = 1;
+ 	return mode;
+ }
+@@ -82,43 +81,69 @@ static u8 vga_set_basic_mode(void)
+ static void vga_set_8font(void)
+ {
+ 	/* Set 8x8 font - 80x43 on EGA, 80x50 on VGA */
++	struct biosregs ireg;
++
++	initregs(&ireg);
+ 
+ 	/* Set 8x8 font */
+-	asm volatile(INT10 : : "a" (0x1112), "b" (0));
++	ireg.ax = 0x1112;
++	/* ireg.bl = 0; */
++	intcall(0x10, &ireg, NULL);
+ 
+ 	/* Use alternate print screen */
+-	asm volatile(INT10 : : "a" (0x1200), "b" (0x20));
++	ireg.ax = 0x1200;
++	ireg.bl = 0x20;
++	intcall(0x10, &ireg, NULL);
+ 
+ 	/* Turn off cursor emulation */
+-	asm volatile(INT10 : : "a" (0x1201), "b" (0x34));
++	ireg.ax = 0x1201;
++	ireg.bl = 0x34;
++	intcall(0x10, &ireg, NULL);
+ 
+ 	/* Cursor is scan lines 6-7 */
+-	asm volatile(INT10 : : "a" (0x0100), "c" (0x0607));
++	ireg.ax = 0x0100;
++	ireg.cx = 0x0607;
++	intcall(0x10, &ireg, NULL);
+ }
+ 
+ static void vga_set_14font(void)
+ {
+ 	/* Set 9x14 font - 80x28 on VGA */
++	struct biosregs ireg;
++
++	initregs(&ireg);
+ 
+ 	/* Set 9x14 font */
+-	asm volatile(INT10 : : "a" (0x1111), "b" (0));
++	ireg.ax = 0x1111;
++	/* ireg.bl = 0; */
++	intcall(0x10, &ireg, NULL);
+ 
+ 	/* Turn off cursor emulation */
+-	asm volatile(INT10 : : "a" (0x1201), "b" (0x34));
++	ireg.ax = 0x1201;
++	ireg.bl = 0x34;
++	intcall(0x10, &ireg, NULL);
+ 
+ 	/* Cursor is scan lines 11-12 */
+-	asm volatile(INT10 : : "a" (0x0100), "c" (0x0b0c));
++	ireg.ax = 0x0100;
++	ireg.cx = 0x0b0c;
++	intcall(0x10, &ireg, NULL);
+ }
+ 
+ static void vga_set_80x43(void)
+ {
+ 	/* Set 80x43 mode on VGA (not EGA) */
++	struct biosregs ireg;
++
++	initregs(&ireg);
+ 
+ 	/* Set 350 scans */
+-	asm volatile(INT10 : : "a" (0x1201), "b" (0x30));
++	ireg.ax = 0x1201;
++	ireg.bl = 0x30;
++	intcall(0x10, &ireg, NULL);
+ 
+ 	/* Reset video mode */
+-	asm volatile(INT10 : : "a" (0x0003));
++	ireg.ax = 0x0003;
++	intcall(0x10, &ireg, NULL);
+ 
+ 	vga_set_8font();
+ }
+@@ -225,8 +250,6 @@ static int vga_set_mode(struct mode_info *mode)
+  */
+ static int vga_probe(void)
+ {
+-	u16 ega_bx;
+-
+ 	static const char *card_name[] = {
+ 		"CGA/MDA/HGC", "EGA", "VGA"
+ 	};
+@@ -240,26 +263,26 @@ static int vga_probe(void)
+ 		sizeof(ega_modes)/sizeof(struct mode_info),
+ 		sizeof(vga_modes)/sizeof(struct mode_info),
+ 	};
+-	u8 vga_flag;
+ 
+-	asm(INT10
+-	    : "=b" (ega_bx)
+-	    : "a" (0x1200), "b" (0x10) /* Check EGA/VGA */
+-	    : "ecx", "edx", "esi", "edi");
++	struct biosregs ireg, oreg;
++
++	initregs(&ireg);
++
++	ireg.ax = 0x1200;
++	ireg.bl = 0x10;		/* Check EGA/VGA */
++	intcall(0x10, &ireg, &oreg);
+ 
+ #ifndef _WAKEUP
+-	boot_params.screen_info.orig_video_ega_bx = ega_bx;
++	boot_params.screen_info.orig_video_ega_bx = oreg.bx;
+ #endif
+ 
+ 	/* If we have MDA/CGA/HGC then BL will be unchanged at 0x10 */
+-	if ((u8)ega_bx != 0x10) {
++	if (oreg.bl != 0x10) {
+ 		/* EGA/VGA */
+-		asm(INT10
+-		    : "=a" (vga_flag)
+-		    : "a" (0x1a00)
+-		    : "ebx", "ecx", "edx", "esi", "edi");
++		ireg.ax = 0x1a00;
++		intcall(0x10, &ireg, &oreg);
+ 
+-		if (vga_flag == 0x1a) {
++		if (oreg.al == 0x1a) {
+ 			adapter = ADAPTER_VGA;
+ #ifndef _WAKEUP
+ 			boot_params.screen_info.orig_video_isVGA = 1;
+diff --git a/arch/x86/boot/video.c b/arch/x86/boot/video.c
+index 3bef2c1..bad728b 100644
+--- a/arch/x86/boot/video.c
++++ b/arch/x86/boot/video.c
+@@ -2,6 +2,7 @@
+  *
+  *   Copyright (C) 1991, 1992 Linus Torvalds
+  *   Copyright 2007 rPath, Inc. - All Rights Reserved
++ *   Copyright 2009 Intel Corporation; author H. Peter Anvin
+  *
+  *   This file is part of the Linux kernel, and is made available under
+  *   the terms of the GNU General Public License version 2.
+@@ -18,33 +19,29 @@
+ 
+ static void store_cursor_position(void)
+ {
+-	u16 curpos;
+-	u16 ax, bx;
++	struct biosregs ireg, oreg;
+ 
+-	ax = 0x0300;
+-	bx = 0;
+-	asm(INT10
+-	    : "=d" (curpos), "+a" (ax), "+b" (bx)
+-	    : : "ecx", "esi", "edi");
++	initregs(&ireg);
++	ireg.ah = 0x03;
++	intcall(0x10, &ireg, &oreg);
+ 
+-	boot_params.screen_info.orig_x = curpos;
+-	boot_params.screen_info.orig_y = curpos >> 8;
++	boot_params.screen_info.orig_x = oreg.dl;
++	boot_params.screen_info.orig_y = oreg.dh;
+ }
+ 
+ static void store_video_mode(void)
+ {
+-	u16 ax, page;
++	struct biosregs ireg, oreg;
+ 
+ 	/* N.B.: the saving of the video page here is a bit silly,
+ 	   since we pretty much assume page 0 everywhere. */
+-	ax = 0x0f00;
+-	asm(INT10
+-	    : "+a" (ax), "=b" (page)
+-	    : : "ecx", "edx", "esi", "edi");
++	initregs(&ireg);
++	ireg.ah = 0x0f;
++	intcall(0x10, &ireg, &oreg);
+ 
+ 	/* Not all BIOSes are clean with respect to the top bit */
+-	boot_params.screen_info.orig_video_mode = ax & 0x7f;
+-	boot_params.screen_info.orig_video_page = page >> 8;
++	boot_params.screen_info.orig_video_mode = oreg.al & 0x7f;
++	boot_params.screen_info.orig_video_page = oreg.bh;
+ }
+ 
+ /*
+@@ -257,7 +254,7 @@ static void restore_screen(void)
+ 	int y;
+ 	addr_t dst = 0;
+ 	u16 *src = saved.data;
+-	u16 ax, bx, dx;
++	struct biosregs ireg;
+ 
+ 	if (graphic_mode)
+ 		return;		/* Can't restore onto a graphic mode */
+@@ -296,12 +293,11 @@ static void restore_screen(void)
+ 	}
+ 
+ 	/* Restore cursor position */
+-	ax = 0x0200;		/* Set cursor position */
+-	bx = 0;			/* Page number (<< 8) */
+-	dx = (saved.cury << 8)+saved.curx;
+-	asm volatile(INT10
+-		     : "+a" (ax), "+b" (bx), "+d" (dx)
+-		     : : "ecx", "esi", "edi");
++	initregs(&ireg);
++	ireg.ah = 0x02;		/* Set cursor position */
++	ireg.dh = saved.cury;
++	ireg.dl = saved.curx;
++	intcall(0x10, &ireg, NULL);
+ }
+ #else
+ #define save_screen()		((void)0)
+diff --git a/arch/x86/boot/video.h b/arch/x86/boot/video.h
+index ee63f5d..5bb174a 100644
+--- a/arch/x86/boot/video.h
++++ b/arch/x86/boot/video.h
+@@ -112,20 +112,6 @@ extern int force_x, force_y;	/* Don't query the BIOS for cols/rows */
+ extern int do_restore;		/* Restore screen contents */
+ extern int graphic_mode;	/* Graphics mode with linear frame buffer */
+ 
+-/*
+- * int $0x10 is notorious for touching registers it shouldn't.
+- * gcc doesn't like %ebp being clobbered, so define it as a push/pop
+- * sequence here.
+- *
+- * A number of systems, including the original PC can clobber %bp in
+- * certain circumstances, like when scrolling.  There exists at least
+- * one Trident video card which could clobber DS under a set of
+- * circumstances that we are unlikely to encounter (scrolling when
+- * using an extended graphics mode of more than 800x600 pixels), but
+- * it's cheap insurance to deal with that here.
+- */
+-#define INT10 "pushl %%ebp; pushw %%ds; int $0x10; popw %%ds; popl %%ebp"
+-
+ /* Accessing VGA indexed registers */
+ static inline u8 in_idx(u16 port, u8 index)
+ {
+diff --git a/arch/x86/kernel/acpi/realmode/Makefile b/arch/x86/kernel/acpi/realmode/Makefile
+index 1c31cc0..167bc16 100644
+--- a/arch/x86/kernel/acpi/realmode/Makefile
++++ b/arch/x86/kernel/acpi/realmode/Makefile
+@@ -9,7 +9,7 @@
+ always		:= wakeup.bin
+ targets		:= wakeup.elf wakeup.lds
+ 
+-wakeup-y	+= wakeup.o wakemain.o video-mode.o copy.o
++wakeup-y	+= wakeup.o wakemain.o video-mode.o copy.o bioscall.o regs.o
+ 
+ # The link order of the video-*.o modules can matter.  In particular,
+ # video-vga.o *must* be listed first, followed by video-vesa.o.
+diff --git a/arch/x86/kernel/acpi/realmode/bioscall.S b/arch/x86/kernel/acpi/realmode/bioscall.S
+new file mode 100644
+index 0000000..f51eb0b
+--- /dev/null
++++ b/arch/x86/kernel/acpi/realmode/bioscall.S
+@@ -0,0 +1 @@
++#include "../../../boot/bioscall.S"
+diff --git a/arch/x86/kernel/acpi/realmode/regs.c b/arch/x86/kernel/acpi/realmode/regs.c
+new file mode 100644
+index 0000000..6206033
+--- /dev/null
++++ b/arch/x86/kernel/acpi/realmode/regs.c
+@@ -0,0 +1 @@
++#include "../../../boot/regs.c"
