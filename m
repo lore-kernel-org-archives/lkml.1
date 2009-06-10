@@ -1,154 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbZFJJcl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbZFJJf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758546AbZFJJcl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 05:32:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757137AbZFJJcd
+	id S1758046AbZFJJf7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 05:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbZFJJfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 05:32:33 -0400
-Received: from cmpxchg.org ([85.214.51.133]:47488 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756661AbZFJJcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 05:32:33 -0400
-Date: Wed, 10 Jun 2009 11:30:07 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Minchan Kim <minchan.kim@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch v3] swap: virtual swap readahead
-Message-ID: <20090610093007.GA3019@cmpxchg.org>
-References: <20090609190128.GA1785@cmpxchg.org> <20090609193702.GA2017@cmpxchg.org> <20090610050342.GA8867@localhost> <20090610074508.GA1960@cmpxchg.org> <20090610081132.GA27519@localhost> <20090610173249.50e19966.kamezawa.hiroyu@jp.fujitsu.com>
+	Wed, 10 Jun 2009 05:35:51 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:29041 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751911AbZFJJfv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 05:35:51 -0400
+Subject: Re: [PATCHv2] MTD: Add UBI reboot notifier
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Kevin Cernekee <kpc.mtd@gmail.com>
+Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <f5be75d5abc1acd236bedf36c55a860e@localhost>
+References: <1244550775.5847.385.camel@localhost.localdomain>
+	 <f5be75d5abc1acd236bedf36c55a860e@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 10 Jun 2009 12:35:09 +0300
+Message-Id: <1244626509.5847.399.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090610173249.50e19966.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 10 Jun 2009 09:35:10.0157 (UTC) FILETIME=[BF674FD0:01C9E9AE]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 05:32:49PM +0900, KAMEZAWA Hiroyuki wrote:
-> On Wed, 10 Jun 2009 16:11:32 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
+On Tue, 2009-06-09 at 10:59 -0700, Kevin Cernekee wrote:
+> Terminate the UBI background thread prior to restarting the system.
 > 
-> > On Wed, Jun 10, 2009 at 03:45:08PM +0800, Johannes Weiner wrote:
-> > > Hi Fengguang,
-> > > 
-> > > On Wed, Jun 10, 2009 at 01:03:42PM +0800, Wu Fengguang wrote:
-> > > > On Wed, Jun 10, 2009 at 03:37:02AM +0800, Johannes Weiner wrote:
-> > > > > On Tue, Jun 09, 2009 at 09:01:28PM +0200, Johannes Weiner wrote:
-> > > > > > [resend with lists cc'd, sorry]
-> > > > > 
-> > > > > [and fixed Hugh's email.  crap]
-> > > > > 
-> > > > > > Hi,
-> > > > > > 
-> > > > > > here is a new iteration of the virtual swap readahead.  Per Hugh's
-> > > > > > suggestion, I moved the pte collecting to the callsite and thus out
-> > > > > > ouf swap code.  Unfortunately, I had to bound page_cluster due to an
-> > > > > > array of that many swap entries on the stack, but I think it is better
-> > > > > > to limit the cluster size to a sane maximum than using dynamic
-> > > > > > allocation for this purpose.
-> > > > 
-> > > > Hi Johannes,
-> > > > 
-> > > > When stress testing your patch, I found it triggered many OOM kills.
-> > > > Around the time of last OOMs, the memory usage is:
-> > > > 
-> > > >              total       used       free     shared    buffers     cached
-> > > > Mem:           474        468          5          0          0        239
-> > > > -/+ buffers/cache:        229        244
-> > > > Swap:         1023        221        802
-> > > 
-> > > Wow, that really confused me for a second as we shouldn't read more
-> > > pages ahead than without the patch, probably even less under stress.
-> > 
-> > Yup - swap readahead is much more challenging than sequential readahead,
-> > in that it must be accurate enough given some really obscure patterns.
-> > 
-> > > So the problem has to be a runaway reading.  And indeed, severe
-> > > stupidity here:
-> > > 
-> > > +       window = cluster << PAGE_SHIFT;
-> > > +       min = addr & ~(window - 1);
-> > > +       max = min + cluster;
-> > > +       /*
-> > > +        * To keep the locking/highpte mapping simple, stay
-> > > +        * within the PTE range of one PMD entry.
-> > > +        */
-> > > +       limit = addr & PMD_MASK;
-> > > +       if (limit > min)
-> > > +               min = limit;
-> > > +       limit = pmd_addr_end(addr, max);
-> > > +       if (limit < max)
-> > > +               max = limit;
-> > > +       limit = max - min;
-> > > 
-> > > The mistake is at the initial calculation of max.  It should be
-> > > 
-> > > 	max = min + window;
-> > > 
-> > > The resulting problem is that min could get bigger than max when
-> > > cluster is bigger than PMD_SHIFT.  Did you use page_cluster == 5?
-> > 
-> > No I use the default 3.
-> > 
-> > btw, the mistake reflects bad named variables. How about rename
-> >         cluster => pages
-> >         window  => bytes
-> > ?
-
-Proven twice, fixed in v4.
-
-> > > The initial min is aligned to a value below the PMD boundary and max
-> > > based on it with a too small offset, staying below the PMD boundary as
-> > > well.  When min is rounded up, this becomes a bit large:
-> > > 
-> > > 	limit = max - min;
-> > > 
-> > > So if my brain is already functioning, fixing the initial max should
-> > > be enough because either
-> > > 
-> > > 	o window is smaller than PMD_SIZE, than we won't round down
-> > > 	below a PMD boundary in the first place or
-> > > 
-> > > 	o window is bigger than PMD_SIZE, than we can round down below
-> > > 	a PMD boundary but adding window to that is garuanteed to
-> > > 	cross the boundary again
-> > > 
-> > > and thus max is always bigger than min.
-> > > 
-> > > Fengguang, does this make sense?  If so, the patch below should fix
-> > > it.
-> > 
-> > Too bad, a quick test of the below patch freezes the box..
-> > 
+> Changes from v1:
 > 
-> +	window = cluster << PAGE_SHIFT;
-> +	min = addr & ~(window - 1);
-> +	max = min + cluster;
+> Add ubi_sync() at the end, to make sure the underlying MTD device has
+> synchronized its buffers.
 > 
-> max = min + window; # this is fixed. then,
+> Clean up comments and formatting.
 > 
-> +	/*
-> +	 * To keep the locking/highpte mapping simple, stay
-> +	 * within the PTE range of one PMD entry.
-> +	 */
-> +	limit = addr & PMD_MASK;
-> +	if (limit > min)
-> +		min = limit;
-> +	limit = pmd_addr_end(addr, max);
-> +	if (limit < max)
-> +		max = limit;
-> +	limit = max - min;
-> 
-> limit = (max - min) >> PAGE_SHIFT;
+> Signed-off-by: Kevin Cernekee <kpc.mtd@gmail.com>
 
-Head -> desk.
+I've pushed this patch to ubi-2.6.git/master. I've tested it
+even. And I amended comments a little. Please, check it:
 
-Fixed in v4, thank you.
+http://git.infradead.org/ubi-2.6.git?a=commit;h=79c293b2629882a1db3a850ed6b84bd1d8a464a7
 
-	Hannes
+If you are fine with this, I'll put it to ubi-2.6.git/linux-next
+and merge it this merge window.
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
