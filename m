@@ -1,86 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbZFJBqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbZFJBr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756874AbZFJBqM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 21:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZFJBqG
+	id S1757911AbZFJBr3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 21:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbZFJBrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 21:46:06 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:34037 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752205AbZFJBqF (ORCPT
+	Tue, 9 Jun 2009 21:47:21 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60313 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754155AbZFJBrV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 21:46:05 -0400
-Message-ID: <4A2F105C.2040206@snapgear.com>
-Date: Wed, 10 Jun 2009 11:46:04 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 9 Jun 2009 21:47:21 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 3/4] Count the number of times zone_reclaim() scans and fails
+Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>, yanmin.zhang@intel.com,
+       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1244566904-31470-4-git-send-email-mel@csn.ul.ie>
+References: <1244566904-31470-1-git-send-email-mel@csn.ul.ie> <1244566904-31470-4-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090610104635.DDA6.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: uClinux development list <uclinux-dev@uclinux.org>
-CC: linux-kernel@vger.kernel.org, Timofei Bondarenko <tim@ipi.ac.ru>,
-       linux-mtd@lists.infradead.org, uclinux-dist-devel@blackfin.uclinux.org
-Subject: Re: [uClinux-dev] [PATCH 1/2] mtd/maps: uclinux: fix building when
- partition support is disabled
-References: <1243331191-11445-1-git-send-email-vapier@gentoo.org>
-In-Reply-To: <1243331191-11445-1-git-send-email-vapier@gentoo.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 10 Jun 2009 10:47:20 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-Mike Frysinger wrote:
-> From: Timofei Bondarenko <tim@ipi.ac.ru>
-> 
-> The uClinux map driver doesn't even use partitions, so we shouldn't require
-> it in order to work properly.
-> 
-> Signed-off-by: Timofei Bondarenko <tim@ipi.ac.ru>
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-> CC: Greg Ungerer <gerg@uclinux.org>
+I like this patch. thank you mel.
 
-Acked-by: Greg Ungerer <gerg@uclinux.org>
-
-
-> CC: uclinux-dev@uclinux.org
-> CC: linux-mtd@lists.infradead.org
-> ---
->  drivers/mtd/maps/uclinux.c |    8 ++++++++
->  1 files changed, 8 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/mtd/maps/uclinux.c b/drivers/mtd/maps/uclinux.c
-> index 81756e3..57699c2 100644
-> --- a/drivers/mtd/maps/uclinux.c
-> +++ b/drivers/mtd/maps/uclinux.c
-> @@ -87,7 +87,11 @@ static int __init uclinux_mtd_init(void)
->  	mtd->priv = mapp;
+> @@ -2489,6 +2489,10 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  	ret = __zone_reclaim(zone, gfp_mask, order);
+>  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
 >  
->  	uclinux_ram_mtdinfo = mtd;
-> +#ifdef CONFIG_MTD_PARTITIONS
->  	add_mtd_partitions(mtd, uclinux_romfs, NUM_PARTITIONS);
-> +#else
-> +	add_mtd_device(mtd);
-> +#endif
->  
->  	return(0);
->  }
-> @@ -97,7 +101,11 @@ static int __init uclinux_mtd_init(void)
->  static void __exit uclinux_mtd_cleanup(void)
->  {
->  	if (uclinux_ram_mtdinfo) {
-> +#ifdef CONFIG_MTD_PARTITIONS
->  		del_mtd_partitions(uclinux_ram_mtdinfo);
-> +#else
-> +		del_mtd_device(uclinux_ram_mtdinfo);
-> +#endif
->  		map_destroy(uclinux_ram_mtdinfo);
->  		uclinux_ram_mtdinfo = NULL;
->  	}
+> +	if (!ret) {
+> +		count_vm_events(PGSCAN_ZONERECLAIM_FAILED, 1);
+> +	}
+> +
+>  	return ret;
 
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+
+count_vm_event(PGSCAN_ZONERECLAIM_FAILED)?
+
+
+
+
