@@ -1,124 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756818AbZFJHrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbZFJHtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756818AbZFJHrj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 03:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755745AbZFJHrb
+	id S1757339AbZFJHtN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 03:49:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbZFJHs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 03:47:31 -0400
-Received: from cmpxchg.org ([85.214.51.133]:49433 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755059AbZFJHrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 03:47:31 -0400
-Date: Wed, 10 Jun 2009 09:45:08 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andi Kleen <andi@firstfloor.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Minchan Kim <minchan.kim@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [patch v3] swap: virtual swap readahead
-Message-ID: <20090610074508.GA1960@cmpxchg.org>
-References: <20090609190128.GA1785@cmpxchg.org> <20090609193702.GA2017@cmpxchg.org> <20090610050342.GA8867@localhost>
-Mime-Version: 1.0
+	Wed, 10 Jun 2009 03:48:59 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:55514 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753345AbZFJHs6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 03:48:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Bu1iPXmA8A9qo5GrF/uGttZMfJomN8W+0Hr1K+B3qT1H2EFWoY5xLMnmuDRaUoILNX
+         IfJknUu1Ol64Z8CsBBXF+fYTMYMOBvl4hrF6tgccUkCs2ft31mirejF/9PVqdMhvcs4f
+         N5AHI2YZtKEeBR0HRdD1O9RdCo+J/tj2YIAXg=
+Date: Wed, 10 Jun 2009 09:48:56 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Subject: Re: [PATCH 08/11] tracing: add func and symfunc to tag format
+Message-ID: <20090610074855.GB6016@nowhere>
+References: <20090610054206.510574695@goodmis.org> <20090610054254.405148701@goodmis.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090610050342.GA8867@localhost>
+In-Reply-To: <20090610054254.405148701@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Fengguang,
-
-On Wed, Jun 10, 2009 at 01:03:42PM +0800, Wu Fengguang wrote:
-> On Wed, Jun 10, 2009 at 03:37:02AM +0800, Johannes Weiner wrote:
-> > On Tue, Jun 09, 2009 at 09:01:28PM +0200, Johannes Weiner wrote:
-> > > [resend with lists cc'd, sorry]
-> > 
-> > [and fixed Hugh's email.  crap]
-> > 
-> > > Hi,
-> > > 
-> > > here is a new iteration of the virtual swap readahead.  Per Hugh's
-> > > suggestion, I moved the pte collecting to the callsite and thus out
-> > > ouf swap code.  Unfortunately, I had to bound page_cluster due to an
-> > > array of that many swap entries on the stack, but I think it is better
-> > > to limit the cluster size to a sane maximum than using dynamic
-> > > allocation for this purpose.
+On Wed, Jun 10, 2009 at 01:42:14AM -0400, Steven Rostedt wrote:
+> From: Steven Rostedt <srostedt@redhat.com>
 > 
-> Hi Johannes,
+> This adds a way to print out a function name from a pointer the same way
+> that the Linux printf "%pF" does. Well the symfunc tag does.
 > 
-> When stress testing your patch, I found it triggered many OOM kills.
-> Around the time of last OOMs, the memory usage is:
+> If we change kmalloc and kfree formats to:
 > 
->              total       used       free     shared    buffers     cached
-> Mem:           474        468          5          0          0        239
-> -/+ buffers/cache:        229        244
-> Swap:         1023        221        802
+>   TP_FORMAT("call_site=<symfunc:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
+> 
+> and
+> 
+>   TP_FORMAT("call_site=<func:call_site> ptr=<ptr:ptr>")
+> 
+> respectively, we would get something like:
+> 
+>    kmalloc: call_site=__alloc_skb+0x70/0x160 ptr=ffff88003d830800 bytes_req=680
+>    kfree: call_site=skb_release_data ptr=ffff88003d830800
 
-Wow, that really confused me for a second as we shouldn't read more
-pages ahead than without the patch, probably even less under stress.
 
-So the problem has to be a runaway reading.  And indeed, severe
-stupidity here:
+Nice!
 
-+       window = cluster << PAGE_SHIFT;
-+       min = addr & ~(window - 1);
-+       max = min + cluster;
-+       /*
-+        * To keep the locking/highpte mapping simple, stay
-+        * within the PTE range of one PMD entry.
-+        */
-+       limit = addr & PMD_MASK;
-+       if (limit > min)
-+               min = limit;
-+       limit = pmd_addr_end(addr, max);
-+       if (limit < max)
-+               max = limit;
-+       limit = max - min;
+I thought about func and func_offset, but symfunc seems enough.
 
-The mistake is at the initial calculation of max.  It should be
 
-	max = min + window;
+> 
+> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> ---
+>  kernel/trace/trace_output.c      |    2 +-
+>  kernel/trace/trace_output.h      |    4 ++++
+>  kernel/trace/trace_read_binary.c |   27 +++++++++++++++++++++++++--
+>  3 files changed, 30 insertions(+), 3 deletions(-)
+> 
+> diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+> index 7938f3a..39d5eeb 100644
+> --- a/kernel/trace/trace_output.c
+> +++ b/kernel/trace/trace_output.c
+> @@ -326,7 +326,7 @@ static inline const char *kretprobed(const char *name)
+>  }
+>  #endif /* CONFIG_KRETPROBES */
+>  
+> -static int
+> +int
+>  seq_print_sym_short(struct trace_seq *s, const char *fmt, unsigned long address)
+>  {
+>  #ifdef CONFIG_KALLSYMS
+> diff --git a/kernel/trace/trace_output.h b/kernel/trace/trace_output.h
+> index d38bec4..412eee8 100644
+> --- a/kernel/trace/trace_output.h
+> +++ b/kernel/trace/trace_output.h
+> @@ -47,5 +47,9 @@ do {							\
+>  		return TRACE_TYPE_PARTIAL_LINE;		\
+>  } while (0)
+>  
+> +/* until we have a way with sprintf to do this */
+> +int seq_print_sym_short(struct trace_seq *s, const char *fmt,
+> +			unsigned long address);
+> +
+>  #endif
+>  
+> diff --git a/kernel/trace/trace_read_binary.c b/kernel/trace/trace_read_binary.c
+> index f3fdac8..9ff4ed8 100644
+> --- a/kernel/trace/trace_read_binary.c
+> +++ b/kernel/trace/trace_read_binary.c
+> @@ -10,7 +10,7 @@
+>  #include <linux/module.h>
+>  #include <linux/ctype.h>
+>  
+> -#include "trace.h"
+> +#include "trace_output.h"
+>  
+>  static DEFINE_MUTEX(buffer_lock);
+>  static struct trace_seq buffer;
+> @@ -23,7 +23,8 @@ static struct trace_seq buffer;
+>   * COMMAND := <TYPE:FIELD> | <mask:FIELD:DELIM:MASKS> | <sym:FIELD:SYMBOLS> |
+>   *            <if:FIELD:TRUE:FALSE> | <ifmask:FIELD:MASK:TRUE:FALSE> |
+>   *            <nsec2sec:PRECISION:FIELD> | <nsec2usec:PRECISION:FIELD> |
+> - *            <nsec2msec:PRECISION:FIELD> | <major:FIELD> | <minor:FIELD>
+> + *            <nsec2msec:PRECISION:FIELD> | <major:FIELD> | <minor:FIELD> |
+> + *            <func:FIELD> | <symfunc:FIELD>
+>   * TYPE := int | uint | hex | ptr | string | strarray
+>   * FIELD := defined by the event structure
+>   * MASKS := MASK=NAME,MASKS | MASK=NAME
+> @@ -43,6 +44,8 @@ static struct trace_seq buffer;
+>   *  uint      : Same as int, but for unsigned.
+>   *  hex       : Print the field as a hex (ie. 0x4ab)
+>   *  ptr       : Print the field as a hex but without the '0x'.
+> + *  symfunc   : Print a ptr like the "%pF" does.
+> + *  func      : Like symfunc but without the address.
+>   *  string    : Used with dynamic sized strings (__string)
+>   *  strarray  : Used with static sized arrays (__array ( char , item, len)).
+>   *  if        : If the field is non zero, print the TRUE text,
+> @@ -80,6 +83,8 @@ enum field_types {
+>  	FIELD_IS_HEX,
+>  	FIELD_IS_MINOR,
+>  	FIELD_IS_MAJOR,
+> +	FIELD_IS_FUNC,
+> +	FIELD_IS_SYMFUNC,
+>  	FIELD_IS_NSEC2SEC,
+>  	FIELD_IS_NSEC2USEC,
+>  	FIELD_IS_NSEC2MSEC,
+> @@ -412,6 +417,8 @@ handle_field(struct ftrace_event_call *event,
+>  	case FIELD_IS_HEX:
+>  	case FIELD_IS_MINOR:
+>  	case FIELD_IS_MAJOR:
+> +	case FIELD_IS_FUNC:
+> +	case FIELD_IS_SYMFUNC:
+>  	case FIELD_IS_STRING:
+>  	case FIELD_IS_STRARRAY:
+>  		field = find_field(event, fmt, end - fmt);
+> @@ -594,6 +601,12 @@ ftrace_initialize_print(struct ftrace_event_call *event, const char *fmt, ...)
+>  		else if (strncmp(fmt, "ifmask:", 7) == 0)
+>  			field_type = FIELD_IS_IFMASK;
+>  
+> +		else if (strncmp(fmt, "func:", 5) == 0)
+> +			field_type = FIELD_IS_FUNC;
+> +
+> +		else if (strncmp(fmt, "symfunc:", 8) == 0)
+> +			field_type = FIELD_IS_SYMFUNC;
+> +
+>  		else if (strncmp(fmt, "nsec2sec:", 9) == 0)
+>  			field_type = FIELD_IS_NSEC2SEC;
+>  
+> @@ -785,6 +798,8 @@ ftrace_read_binary(struct trace_seq *s, struct ftrace_event_call *event,
+>  		case FIELD_IS_UINT:
+>  		case FIELD_IS_HEX:
+>  		case FIELD_IS_PTR:
+> +		case FIELD_IS_FUNC:
+> +		case FIELD_IS_SYMFUNC:
+>  		case FIELD_IS_MAJOR:
+>  		case FIELD_IS_MINOR:
+>  			field = info->data.field;
+> @@ -837,6 +852,14 @@ ftrace_read_binary(struct trace_seq *s, struct ftrace_event_call *event,
+>  				trace_seq_printf(s, "%u", MINOR(val));
+>  				break;
+>  
+> +			case FIELD_IS_SYMFUNC:
+> +				trace_seq_printf(s, "%pF", (void *)val);
+> +				break;
+> +
+> +			case FIELD_IS_FUNC:
+> +				seq_print_sym_short(s, "%s", val);
 
-The resulting problem is that min could get bigger than max when
-cluster is bigger than PMD_SHIFT.  Did you use page_cluster == 5?
 
-The initial min is aligned to a value below the PMD boundary and max
-based on it with a too small offset, staying below the PMD boundary as
-well.  When min is rounded up, this becomes a bit large:
+May be after the merge window it would be nice to start use %pf (for
+now it's on another branch).
+I'll have more time to do such things in about two weeks.
 
-	limit = max - min;
 
-So if my brain is already functioning, fixing the initial max should
-be enough because either
 
-	o window is smaller than PMD_SIZE, than we won't round down
-	below a PMD boundary in the first place or
+> +				break;
+> +
+>  			default:
+>  				/* hex should only print the size specified */
+>  				if (mask)
+> -- 
+> 1.6.3.1
+> 
+> -- 
 
-	o window is bigger than PMD_SIZE, than we can round down below
-	a PMD boundary but adding window to that is garuanteed to
-	cross the boundary again
-
-and thus max is always bigger than min.
-
-Fengguang, does this make sense?  If so, the patch below should fix
-it.
-
-Thank you,
-
-	Hannes
-
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2467,7 +2467,7 @@ static int swap_readahead_ptes(struct mm
- 
- 	window = cluster << PAGE_SHIFT;
- 	min = addr & ~(window - 1);
--	max = min + cluster;
-+	max = min + window;
- 	/*
- 	 * To keep the locking/highpte mapping simple, stay
- 	 * within the PTE range of one PMD entry.
