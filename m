@@ -1,137 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbZFJFpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbZFJFxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758786AbZFJFpz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 01:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbZFJFnB
+	id S1754883AbZFJFxO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 01:53:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbZFJFw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 01:43:01 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:45704 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755457AbZFJFmx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 01:42:53 -0400
-Message-Id: <20090610054255.029219112@goodmis.org>
-References: <20090610054206.510574695@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 10 Jun 2009 01:42:17 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: [PATCH 11/11] tracing: move > to out of macros and into print statement
-Content-Disposition: inline; filename=0011-tracing-move-to-out-of-macros-and-into-print-stateme.patch
+	Wed, 10 Jun 2009 01:52:59 -0400
+Received: from mga09.intel.com ([134.134.136.24]:20683 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753288AbZFJFw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 01:52:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,338,1241420400"; 
+   d="scan'208";a="420390489"
+Date: Wed, 10 Jun 2009 13:36:23 +0800
+From: Yong Wang <yong.y.wang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip] perf_counter/x86: Correct some event and umask
+	values for Intel processors
+Message-ID: <20090610053623.GC30923@ywang-moblin2.bj.intel.com>
+References: <20090609131553.GA12489@ywang-moblin2.bj.intel.com> <20090609141621.GA32703@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090609141621.GA32703@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Tue, Jun 09, 2009 at 04:16:21PM +0200, Ingo Molnar wrote:
+> 
+> * Yong Wang <yong.y.wang@linux.intel.com> wrote:
+> 
+> > Correct some event and UMASK values according to Intel SDM.
+> 
+> Very nice, thanks!
+> 
+> were you able to test the Atom ones by any chance?
+> 
 
-Frederic Weisbecker stated that it is confusing to see a unmatched
-'<', when the '>' is hidden inside a macro. This patch moves it out
-back to the string.
+You bet I was as I'm working on Moblin;-) However, some work while some
+do not. I'll take a look at the problematic ones. With the previous
+event and umask values, the pmc does not count at all for some events,
+like l1d-write-ops.
 
-Reported-by: Frederic Weisbecker <fweisbec@gmail.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- include/trace/events/irq.h  |    8 +++++---
- include/trace/events/kmem.h |   12 +++++++-----
- 2 files changed, 12 insertions(+), 8 deletions(-)
+Btw, one thing I don't quite understand is why you aliased
+dtlb-write-ops to l1d-write-ops when setting event and umask values. Are
+they the same event?
 
-diff --git a/include/trace/events/irq.h b/include/trace/events/irq.h
-index c6c0ff1..4294a6d 100644
---- a/include/trace/events/irq.h
-+++ b/include/trace/events/irq.h
-@@ -9,7 +9,7 @@
- 
- #define softirq_name(sirq) sirq##_SOFTIRQ, #sirq
- #define show_softirq_name_format(val)					\
--	"%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s>"
-+	"%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s,%d=%s"
- #define show_softirq_name_args()					\
- 		softirq_name(HI),					\
- 		softirq_name(TIMER),					\
-@@ -106,7 +106,8 @@ TRACE_EVENT(softirq_entry,
- 		__entry->vec = (int)(h - vec);
- 	),
- 
--	TP_FORMAT("softirq=<int:vec> action=<sym:vec:" show_softirq_name_format(),
-+	TP_FORMAT("softirq=<int:vec> action=<sym:vec:"
-+		  show_softirq_name_format() ">",
- 		  show_softirq_name_args())
- );
- 
-@@ -135,7 +136,8 @@ TRACE_EVENT(softirq_exit,
- 		__entry->vec = (int)(h - vec);
- 	),
- 
--	TP_FORMAT("softirq=<int:vec> action=<sym:vec:" show_softirq_name_format(),
-+	TP_FORMAT("softirq=<int:vec> action=<sym:vec:"
-+		  show_softirq_name_format() ">",
- 		  show_softirq_name_args())
- );
- 
-diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
-index 5c8f942..32c93da 100644
---- a/include/trace/events/kmem.h
-+++ b/include/trace/events/kmem.h
-@@ -22,7 +22,7 @@
- 	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
- 	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
- 	"0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s,0x%lx=%s," \
--	"0x%lx=%s,0x%lx=%s>"
-+	"0x%lx=%s,0x%lx=%s"
- #define show_gfp_flags_args()						\
- 	(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE", \
- 	(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER",		\
-@@ -76,7 +76,7 @@ TRACE_EVENT(kmalloc,
- 
- 	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
- 		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
--		  show_gfp_flags_format(), show_gfp_flags_args())
-+		  show_gfp_flags_format() ">", show_gfp_flags_args())
- );
- 
- TRACE_EVENT(kmem_cache_alloc,
-@@ -107,7 +107,7 @@ TRACE_EVENT(kmem_cache_alloc,
- 
- 	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
- 		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
--		  show_gfp_flags_format(), show_gfp_flags_args())
-+		  show_gfp_flags_format() ">", show_gfp_flags_args())
- );
- 
- TRACE_EVENT(kmalloc_node,
-@@ -141,7 +141,8 @@ TRACE_EVENT(kmalloc_node,
- 
- 	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
- 		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
--		  show_gfp_flags_format() " node=<int:node>", show_gfp_flags_args())
-+		  show_gfp_flags_format() "> node=<int:node>",
-+		  show_gfp_flags_args())
- );
- 
- TRACE_EVENT(kmem_cache_alloc_node,
-@@ -175,7 +176,8 @@ TRACE_EVENT(kmem_cache_alloc_node,
- 
- 	TP_FORMAT("call_site=<hex:call_site> ptr=<ptr:ptr> bytes_req=<int:bytes_req> "
- 		  "bytes_alloc=<int:bytes_alloc> gfp_flags=<mask:gfp_flags:|:"
--		  show_gfp_flags_format() " node=<int:node>", show_gfp_flags_args())
-+		  show_gfp_flags_format() "> node=<int:node>",
-+		  show_gfp_flags_args())
- );
- 
- TRACE_EVENT(kfree,
--- 
-1.6.3.1
-
--- 
+Thanks
+-Yong
