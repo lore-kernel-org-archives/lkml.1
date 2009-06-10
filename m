@@ -1,76 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750844AbZFJDJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbZFJDKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750844AbZFJDJK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:09:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbZFJDI5
+	id S1753290AbZFJDKS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbZFJDKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:08:57 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:48277 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750749AbZFJDI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:08:57 -0400
-Date: Tue, 9 Jun 2009 22:08:52 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [Patch 04/12] GRU - collect per-context user statistics
-Message-ID: <20090610030852.GD25284@sgi.com>
-References: <20090608171648.988318000@sgi.com> <20090608171953.673876000@sgi.com> <20090608160740.4d57ba5d.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Tue, 9 Jun 2009 23:10:08 -0400
+Received: from mga14.intel.com ([143.182.124.37]:37897 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750749AbZFJDKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:10:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,337,1241420400"; 
+   d="scan'208";a="152553649"
+Date: Wed, 10 Jun 2009 11:10:00 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: [PATCH] HWPOISON: fix tasklist_lock/anon_vma locking order
+Message-ID: <20090610031000.GD6597@localhost>
+References: <20090603846.816684333@firstfloor.org> <20090603184648.2E2131D028F@basil.firstfloor.org> <20090609100922.GF14820@wotan.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090608160740.4d57ba5d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20090609100922.GF14820@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 04:07:40PM -0700, Andrew Morton wrote:
-> On Mon, 08 Jun 2009 12:16:52 -0500
-> steiner@sgi.com wrote:
+On Tue, Jun 09, 2009 at 06:09:22PM +0800, Nick Piggin wrote:
+> On Wed, Jun 03, 2009 at 08:46:47PM +0200, Andi Kleen wrote:
 > 
-> >  /*
-> > + * Fetch GSEG statisticss
+> Why not have this in rmap.c and not export the locking?
+> I don't know.. does Hugh care?
+
+I don't know either :)
+
+> > +/*
+> > + * Collect processes when the error hit an anonymous page.
 > > + */
-> > +long gru_get_gseg_statistics(unsigned long arg)
+> > +static void collect_procs_anon(struct page *page, struct list_head *to_kill,
+> > +			      struct to_kill **tkc)
 > > +{
-> > +	struct gru_thread_state *gts;
-> > +	struct gru_get_gseg_statistics_req req;
+> > +	struct vm_area_struct *vma;
+> > +	struct task_struct *tsk;
+> > +	struct anon_vma *av = page_lock_anon_vma(page);
 > > +
-> > +	if (copy_from_user(&req, (void __user *)arg, sizeof(req)))
-> > +		return -EFAULT;
+> > +	if (av == NULL)	/* Not actually mapped anymore */
+> > +		return;
 > > +
-> > +	gts = gru_find_lock_gts(req.gseg);
-> > +	if (gts) {
-> > +		memcpy(&req.stats, &gts->ustats, sizeof(gts->ustats));
-> > +		gru_unlock_gts(gts);
-> > +	} else {
-> > +		memset(&req.stats, 0, sizeof(gts->ustats));
+> > +	read_lock(&tasklist_lock);
+> > +	for_each_process (tsk) {
+> > +		if (!tsk->mm)
+> > +			continue;
+> > +		list_for_each_entry (vma, &av->head, anon_vma_node) {
+> > +			if (vma->vm_mm == tsk->mm)
+> > +				add_to_kill(tsk, page, vma, to_kill, tkc);
+> > +		}
 > > +	}
-> > +
-> > +	if (copy_to_user((void __user *)arg, &req, sizeof(req)))
-> > +		return -EFAULT;
-> > +
-> > +	return 0;
+> > +	page_unlock_anon_vma(av);
+> > +	read_unlock(&tasklist_lock);
 > > +}
+> > +
+> > +/*
+> > + * Collect processes when the error hit a file mapped page.
+> > + */
+> > +static void collect_procs_file(struct page *page, struct list_head *to_kill,
+> > +			      struct to_kill **tkc)
+> > +{
+> > +	struct vm_area_struct *vma;
+> > +	struct task_struct *tsk;
+> > +	struct prio_tree_iter iter;
+> > +	struct address_space *mapping = page_mapping(page);
+> > +
+> > +	/*
+> > +	 * A note on the locking order between the two locks.
+> > +	 * We don't rely on this particular order.
+> > +	 * If you have some other code that needs a different order
+> > +	 * feel free to switch them around. Or add a reverse link
+> > +	 * from mm_struct to task_struct, then this could be all
+> > +	 * done without taking tasklist_lock and looping over all tasks.
+> > +	 */
+> > +
+> > +	read_lock(&tasklist_lock);
+> > +	spin_lock(&mapping->i_mmap_lock);
 > 
-> So..  what's happening in the super-secret undocumented gts==NULL path?
-> 
-> It _looks_ like userspace passed into this ioctl a handle for something
-> which the kernel doesn't know about.  If so, shouldn't we return
-> -EINVAL or something?  
+> This still has my original complaint that it nests tasklist lock inside
+> anon vma lock and outside inode mmap lock (and anon_vma nests inside i_mmap).
+> I guess the property of our current rw locks means that does not matter,
+> but it could if we had "fair" rw locks, or some tree (-rt tree maybe)
+> changed rw lock to a plain exclusive lock.
 
-It makes sense but certainly needs a comment (will send later) to
-explain the logic.
+Andi must forgot that - he did change the comment on locking order.
+This incremental patch aligns the code with his comment in rmap.c.
 
-User space creates arrays of GRU contexts for threaded processes. The
-library code that prints statistics scans the array & generates
-statistic for each context. If an context was never referenced, there is
-no GTS & all statistics are implicitly zero.
+---
+HWPOISON: fix tasklist_lock/anon_vma locking order
 
-This could have been handled other ways but it is rare than an entry was
-never referenced. A return of -EINVAL current is considered a bug, ie.
-address is not a valid GRU address.
+To avoid possible deadlock. Proposed by Nick Piggin:
 
+  You have tasklist_lock(R) nesting outside i_mmap_lock, and inside anon_vma
+  lock. And anon_vma lock nests inside i_mmap_lock.
 
---- jack
+  This seems fragile. If rwlocks ever become FIFO or tasklist_lock changes
+  type (maybe -rt kernels do it), then you could have a task holding
+  anon_vma lock and waiting for tasklist_lock, and another holding tasklist
+  lock and waiting for i_mmap_lock, and another holding i_mmap_lock and
+  waiting for anon_vma lock.
+
+CC: Nick Piggin <npiggin@suse.de>
+CC: Andi Kleen <andi@firstfloor.org>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ mm/memory-failure.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+--- sound-2.6.orig/mm/memory-failure.c
++++ sound-2.6/mm/memory-failure.c
+@@ -215,12 +215,14 @@ static void collect_procs_anon(struct pa
+ {
+ 	struct vm_area_struct *vma;
+ 	struct task_struct *tsk;
+-	struct anon_vma *av = page_lock_anon_vma(page);
++	struct anon_vma *av;
+ 
++	read_lock(&tasklist_lock);
++
++	av = page_lock_anon_vma(page);
+ 	if (av == NULL)	/* Not actually mapped anymore */
+-		return;
++		goto out;
+ 
+-	read_lock(&tasklist_lock);
+ 	for_each_process (tsk) {
+ 		if (!tsk->mm)
+ 			continue;
+@@ -230,6 +232,7 @@ static void collect_procs_anon(struct pa
+ 		}
+ 	}
+ 	page_unlock_anon_vma(av);
++out:
+ 	read_unlock(&tasklist_lock);
+ }
+ 
