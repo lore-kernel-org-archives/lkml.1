@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759860AbZFJDnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbZFJDna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759860AbZFJDnS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757405AbZFJDfp
+	id S1756967AbZFJDna (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757436AbZFJDfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:35:45 -0400
-Received: from kroah.org ([198.145.64.141]:57158 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:35:50 -0400
+Received: from kroah.org ([198.145.64.141]:57178 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757361AbZFJDfn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:35:43 -0400
+	id S1757466AbZFJDfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:35:48 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:48 2009
-Message-Id: <20090610002347.991977455@blue.kroah.org>
+Message-Id: <20090610002348.220859343@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:14:04 -0700
+Date: Tue, 09 Jun 2009 17:14:05 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,155 +25,78 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 36/60] mac80211: pid, fix memory corruption
+       alan@lxorguk.ukuu.org.uk, Eric Sandeen <sandeen@redhat.com>,
+       linux-ext4@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 37/60] ext4: fix ext4_free_inode() vs.  ext4_claim_inode() race
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=mac80211-pid-fix-memory-corruption.patch
+Content-Disposition: inline; filename=ext4-fix-ext4_free_inode-vs.-ext4_claim_inode-race.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Eric Sandeen <sandeen@redhat.com>
 
-commit a8659597bf744b0f8d2560e2a734b5c941569e0e upstream
+(cherry picked from commit 7ce9d5d1f3c8736511daa413c64985a05b2feee3)
 
-pid doesn't count with some band having more bitrates than the one
-associated the first time.
-Fix that by counting the maximal available bitrate count and allocate
-big enough space.
+I was seeing fsck errors on inode bitmaps after a 4 thread
+dbench run on a 4 cpu machine:
 
-Secondly, fix touching uninitialized memory which causes panics.
-Index sucked from this random memory points to the hell.
-The fix is to sort the rates on each band change.
+Inode bitmap differences: -50736 -(50752--50753) etc...
 
-Also remove a comment which is wrong now.
+I believe that this is because ext4_free_inode() uses atomic
+bitops, and although ext4_new_inode() *used* to also use atomic
+bitops for synchronization, commit
+393418676a7602e1d7d3f6e560159c65c8cbd50e changed this to use
+the sb_bgl_lock, so that we could also synchronize against
+read_inode_bitmap and initialization of uninit inode tables.
 
-This version also contains half of
-mac80211: avoid NULL ptr deref when finding max_rates in PID and minstrel
-patch by John W. Linville, which is namely:
--               if (sband->n_bitrates > max_rates)
-+               if (sband && sband->n_bitrates > max_rates)
-to fix oopses on one band devices.
+However, that change left ext4_free_inode using atomic bitops,
+which I think leaves no synchronization between setting &
+unsetting bits in the inode table.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Cc: John W. Linville <linville@tuxdriver.com>
+The below patch fixes it for me, although I wonder if we're
+getting at all heavy-handed with this spinlock...
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- net/mac80211/rc80211_pid_algo.c |   71 +++++++++++++++++++++-------------------
- 1 file changed, 39 insertions(+), 32 deletions(-)
+ fs/ext4/ialloc.c |   12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
---- a/net/mac80211/rc80211_pid_algo.c
-+++ b/net/mac80211/rc80211_pid_algo.c
-@@ -367,8 +367,40 @@ static void rate_control_pid_rate_init(v
- 	 * Until that method is implemented, we will use the lowest supported
- 	 * rate as a workaround. */
- 	struct ieee80211_supported_band *sband;
-+	struct rc_pid_info *pinfo = priv;
-+	struct rc_pid_rateinfo *rinfo = pinfo->rinfo;
-+	int i, j, tmp;
-+	bool s;
+--- a/fs/ext4/ialloc.c
++++ b/fs/ext4/ialloc.c
+@@ -188,7 +188,7 @@ void ext4_free_inode (handle_t *handle, 
+ 	struct ext4_group_desc * gdp;
+ 	struct ext4_super_block * es;
+ 	struct ext4_sb_info *sbi;
+-	int fatal = 0, err;
++	int fatal = 0, err, cleared;
+ 	ext4_group_t flex_group;
  
- 	sband = local->hw.wiphy->bands[local->hw.conf.channel->band];
-+
-+	/* Sort the rates. This is optimized for the most common case (i.e.
-+	 * almost-sorted CCK+OFDM rates). Kind of bubble-sort with reversed
-+	 * mapping too. */
-+	for (i = 0; i < sband->n_bitrates; i++) {
-+		rinfo[i].index = i;
-+		rinfo[i].rev_index = i;
-+		if (RC_PID_FAST_START)
-+			rinfo[i].diff = 0;
-+		else
-+			rinfo[i].diff = i * pinfo->norm_offset;
-+	}
-+	for (i = 1; i < sband->n_bitrates; i++) {
-+		s = 0;
-+		for (j = 0; j < sband->n_bitrates - i; j++)
-+			if (unlikely(sband->bitrates[rinfo[j].index].bitrate >
-+				     sband->bitrates[rinfo[j + 1].index].bitrate)) {
-+				tmp = rinfo[j].index;
-+				rinfo[j].index = rinfo[j + 1].index;
-+				rinfo[j + 1].index = tmp;
-+				rinfo[rinfo[j].index].rev_index = j;
-+				rinfo[rinfo[j + 1].index].rev_index = j + 1;
-+				s = 1;
-+			}
-+		if (!s)
-+			break;
-+	}
-+
- 	sta->txrate_idx = rate_lowest_index(local, sband, sta);
- 	sta->fail_avg = 0;
- }
-@@ -378,21 +410,23 @@ static void *rate_control_pid_alloc(stru
- 	struct rc_pid_info *pinfo;
- 	struct rc_pid_rateinfo *rinfo;
- 	struct ieee80211_supported_band *sband;
--	int i, j, tmp;
--	bool s;
-+	int i, max_rates = 0;
- #ifdef CONFIG_MAC80211_DEBUGFS
- 	struct rc_pid_debugfs_entries *de;
- #endif
+ 	if (atomic_read(&inode->i_count) > 1) {
+@@ -242,10 +242,12 @@ void ext4_free_inode (handle_t *handle, 
+ 		goto error_return;
  
--	sband = local->hw.wiphy->bands[local->hw.conf.channel->band];
--
- 	pinfo = kmalloc(sizeof(*pinfo), GFP_ATOMIC);
- 	if (!pinfo)
- 		return NULL;
+ 	/* Ok, now we can actually update the inode bitmaps.. */
+-	if (!ext4_clear_bit_atomic(sb_bgl_lock(sbi, block_group),
+-					bit, bitmap_bh->b_data))
+-		ext4_error (sb, "ext4_free_inode",
+-			      "bit already cleared for inode %lu", ino);
++	spin_lock(sb_bgl_lock(sbi, block_group));
++	cleared = ext4_clear_bit(bit, bitmap_bh->b_data);
++	spin_unlock(sb_bgl_lock(sbi, block_group));
++	if (!cleared)
++		ext4_error(sb, "ext4_free_inode",
++			   "bit already cleared for inode %lu", ino);
+ 	else {
+ 		gdp = ext4_get_group_desc (sb, block_group, &bh2);
  
-+	for (i = 0; i < IEEE80211_NUM_BANDS; i++) {
-+		sband = local->hw.wiphy->bands[i];
-+		if (sband && sband->n_bitrates > max_rates)
-+			max_rates = sband->n_bitrates;
-+	}
- 	/* We can safely assume that sband won't change unless we get
- 	 * reinitialized. */
--	rinfo = kmalloc(sizeof(*rinfo) * sband->n_bitrates, GFP_ATOMIC);
-+	rinfo = kmalloc(sizeof(*rinfo) * max_rates, GFP_ATOMIC);
- 	if (!rinfo) {
- 		kfree(pinfo);
- 		return NULL;
-@@ -410,33 +444,6 @@ static void *rate_control_pid_alloc(stru
- 	pinfo->rinfo = rinfo;
- 	pinfo->oldrate = 0;
- 
--	/* Sort the rates. This is optimized for the most common case (i.e.
--	 * almost-sorted CCK+OFDM rates). Kind of bubble-sort with reversed
--	 * mapping too. */
--	for (i = 0; i < sband->n_bitrates; i++) {
--		rinfo[i].index = i;
--		rinfo[i].rev_index = i;
--		if (RC_PID_FAST_START)
--			rinfo[i].diff = 0;
--		else
--			rinfo[i].diff = i * pinfo->norm_offset;
--	}
--	for (i = 1; i < sband->n_bitrates; i++) {
--		s = 0;
--		for (j = 0; j < sband->n_bitrates - i; j++)
--			if (unlikely(sband->bitrates[rinfo[j].index].bitrate >
--				     sband->bitrates[rinfo[j + 1].index].bitrate)) {
--				tmp = rinfo[j].index;
--				rinfo[j].index = rinfo[j + 1].index;
--				rinfo[j + 1].index = tmp;
--				rinfo[rinfo[j].index].rev_index = j;
--				rinfo[rinfo[j + 1].index].rev_index = j + 1;
--				s = 1;
--			}
--		if (!s)
--			break;
--	}
--
- #ifdef CONFIG_MAC80211_DEBUGFS
- 	de = &pinfo->dentries;
- 	de->dir = debugfs_create_dir("rc80211_pid",
 
 
