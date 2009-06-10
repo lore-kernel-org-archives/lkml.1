@@ -1,40 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755639AbZFJJxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760142AbZFJJyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755639AbZFJJxZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 05:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZFJJxS
+	id S1760142AbZFJJyT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 05:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZFJJyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 05:53:18 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:43849 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752367AbZFJJxR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 05:53:17 -0400
-Date: Wed, 10 Jun 2009 05:53:19 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Steven Whitehouse <swhiteho@redhat.com>
-Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 23/24] GFS2: Fix locking issue mounting gfs2meta fs
-Message-ID: <20090610095319.GC25527@infradead.org>
-References: <1244622665-7470-15-git-send-email-swhiteho@redhat.com> <1244622665-7470-16-git-send-email-swhiteho@redhat.com> <1244622665-7470-17-git-send-email-swhiteho@redhat.com> <1244622665-7470-18-git-send-email-swhiteho@redhat.com> <1244622665-7470-19-git-send-email-swhiteho@redhat.com> <1244622665-7470-20-git-send-email-swhiteho@redhat.com> <1244622665-7470-21-git-send-email-swhiteho@redhat.com> <1244622665-7470-22-git-send-email-swhiteho@redhat.com> <1244622665-7470-23-git-send-email-swhiteho@redhat.com> <1244622665-7470-24-git-send-email-swhiteho@redhat.com>
+	Wed, 10 Jun 2009 05:54:11 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:35206 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751128AbZFJJyK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 05:54:10 -0400
+Date: Wed, 10 Jun 2009 10:54:09 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Reintroduce zone_reclaim_interval for when
+	zone_reclaim() scans and fails to avoid CPU spinning at 100% on NUMA
+Message-ID: <20090610095409.GC25943@csn.ul.ie>
+References: <1244466090-10711-2-git-send-email-mel@csn.ul.ie> <20090609015822.GA6740@localhost> <20090609081424.GD18380@csn.ul.ie> <20090609082539.GA6897@localhost> <20090609083153.GG18380@csn.ul.ie> <20090609090735.GC7108@localhost> <20090609094050.GL18380@csn.ul.ie> <20090609133804.GB6583@localhost> <20090609150619.GT18380@csn.ul.ie> <20090610021440.GB6597@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1244622665-7470-24-git-send-email-swhiteho@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20090610021440.GB6597@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 09:31:04AM +0100, Steven Whitehouse wrote:
->  static struct super_block *get_gfs2_sb(const char *dev_name)
->  {
-> -	struct super_block *sb;
+On Wed, Jun 10, 2009 at 10:14:40AM +0800, Wu Fengguang wrote:
+> On Tue, Jun 09, 2009 at 11:06:19PM +0800, Mel Gorman wrote:
+> > On Tue, Jun 09, 2009 at 09:38:04PM +0800, Wu Fengguang wrote:
+> > > On Tue, Jun 09, 2009 at 05:40:50PM +0800, Mel Gorman wrote:
+> > > > 
+> > > > Conceivably though, zone_reclaim_interval could automatically tune
+> > > > itself based on a heuristic like this if the administrator does not give
+> > > > a specific value. I think that would be an interesting follow on once
+> > > > we've brought back zone_reclaim_interval and get a feeling for how often
+> > > > it is actually used.
+> > > 
+> > > Well I don't think that's good practice. There are heuristic
+> > > calculations all over the kernel. Shall we exporting parameters to
+> > > user space just because we are not absolutely sure? Or shall we ship
+> > > the heuristics and do adjustments based on feedbacks and only export
+> > > parameters when we find _known cases_ that cannot be covered by pure
+> > > heuristics?
+> > > 
+> > 
+> > Good question - I don't have a satisfactory answer but I intuitively find
+> > the zone_reclaim_interval easier to deal with than the heuristic.  That said,
+> > I would prefer if neither was required.
+> 
+> Yes - can we rely on the (improved) accounting to make our "failure feedback"
+> patches unnecessary? :)
+> 
 
-Any reason you don't merge get_gfs2_sb into gfs2_get_sb_meta?  That's
-how most other get_sb callbacks are structured, and would also get rid
-of the rather confusing get_gfs2_sb name.
+Am awaiting test results to answer that question :)
 
+> Thanks,
+> Fengguang
+> 
+> > In the patchset, I've added a counter for the number of times that the
+> > scan-avoidance heuristic fails. If the tmpfs problem has been resolved
+> > (patch with bug reporter, am awaiting test), I'll drop zone_reclaim_interval
+> > altogether and we'll use the counter to detect if/when this situation
+> > occurs again.
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
