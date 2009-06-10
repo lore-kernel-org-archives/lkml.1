@@ -1,109 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbZFJQQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760139AbZFJQRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755425AbZFJQQv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 12:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751165AbZFJQQn
+	id S1760139AbZFJQRm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 12:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbZFJQRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 12:16:43 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:56441 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751552AbZFJQQn (ORCPT
+	Wed, 10 Jun 2009 12:17:35 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:50976 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752848AbZFJQRe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 12:16:43 -0400
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       David Rientjes <rientjes@google.com>, Mel Gorman <mel@csn.ul.ie>,
-       Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Wed, 10 Jun 2009 12:17:34 -0400
+Date: Wed, 10 Jun 2009 12:17:35 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Theodore Tso <tytso@mit.edu>
+cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>, npiggin@suse.de,
-       yanmin.zhang@linux.intel.com
-In-Reply-To: <1244649174.6165.0.camel@johannes.local>
-References: <bCxQpon4SCJ.A.RrF.yY7KKB@chimera>
-	 <D9VoutSOyXP.A.hvH.Ha7KKB@chimera> <4A2BBC30.2030300@lwfinger.net>
-	 <84144f020906070640rf5ab14nbf66d3ca7c97675f@mail.gmail.com>
-	 <4A2BCC6F.8090004@redhat.com>
-	 <84144f020906070732l31786156r5d9753a0cabfde79@mail.gmail.com>
-	 <20090608101739.GA15377@csn.ul.ie>
-	 <84144f020906080352k57f12ff9pbd696da5f332ac1a@mail.gmail.com>
-	 <20090608110303.GD15377@csn.ul.ie>
-	 <Pine.LNX.4.64.0906081657001.7036@melkki.cs.Helsinki.FI>
-	 <20090608141212.GE15070@csn.ul.ie> <1244531201.5024.3.camel@penberg-laptop>
-	 <alpine.DEB.2.00.0906090046000.28701@chino.kir.corp.google.com>
-	 <1244534315.5024.34.camel@penberg-laptop>
-	 <alpine.DEB.2.00.0906090105270.28701@chino.kir.corp.google.com>
-	 <1244536124.5024.41.camel@penberg-laptop>  <4A2FC62C.6030407@lwfinger.net>
-	 <1244648659.23799.26.camel@penberg-laptop>
-	 <1244648968.23799.27.camel@penberg-laptop>
-	 <1244649174.6165.0.camel@johannes.local>
-Date: Wed, 10 Jun 2009 19:16:44 +0300
-Message-Id: <1244650604.23799.35.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Subject: Re: [PATCH 00/11] [GIT PULL] more updates for the tag format
+In-Reply-To: <20090610160303.GA10240@mit.edu>
+Message-ID: <alpine.DEB.2.00.0906101214400.30552@gandalf.stny.rr.com>
+References: <20090610054206.510574695@goodmis.org> <20090610092644.GA20889@elte.hu> <c62985530906100411o5a178352n53f7d247f6e9dba9@mail.gmail.com> <20090610130127.GA6647@mit.edu> <alpine.DEB.2.00.0906100911190.30552@gandalf.stny.rr.com>
+ <20090610160303.GA10240@mit.edu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-06-10 at 18:49 +0300, Pekka Enberg wrote:
-> > On Wed, 2009-06-10 at 18:44 +0300, Pekka Enberg wrote:
+
+On Wed, 10 Jun 2009, Theodore Tso wrote:
+
+> On Wed, Jun 10, 2009 at 09:49:29AM -0400, Steven Rostedt wrote:
+> > > 
+> > > Maybe I'm missing something, but looks like the this new format, while
+> > > simpler and easier to read, doesn't have support for using a more
+> > > complicated C expression as a printk argument.  For example:
+> > > 
+> > > 	TP_printk("dev %s ino %lu mode %d uid %u gid %u blocks %llu",
+> > > 		  jbd2_dev_to_name(__entry->dev), __entry->ino, __entry->mode,
+> > > 		  __entry->uid, __entry->gid, __entry->blocks)
+> > > 
+> > > How should I handle the "jbd2_dev_to_name(__entry->dev)" argument to
+> > > TP_printk?  The whole point of calling jbd2_dev_to_name() at TP_printk
+> > > time is to not bloat the ring buffer with a 32 byte devname.
 > > 
-> > > Aha, SLUB thinks the minimum order for 4096 is 1. I guess you have
-> > > CONFIG_SLUB_DEBUG enabled? If yes, something like to following should
-> > > help. Christoph, are you okay with this patch?
-
-On Wed, 2009-06-10 at 17:52 +0200, Johannes Berg wrote:
-> > +	if ((size + MAX_DEBUG_SIZE) >= PAGE_SIZE)
+> > Understood, and the example you just gave also has the flaw that a 
+> > userspace tool could not parse it, because it would not know what to do 
+> > with "jbd2_dev_to_name()".
+> > 
+> > This is why I suggested keeping the TP_printk, for cases like this. Since 
+> > it is also currently useless in userspace.
+> > 
+> > But we really should convert all cases, and I was toying with an idea to 
+> > dynamically make your own data type, and be able to make a way to print 
+> > it.
 > 
-> && size <= PAGE_SIZE
+> Yes, another approach for handling this case would be to take my
+> "jbd2_dev_to_name" function and support it as a first-class tagged
+> type; after all, I'm sure ext4 won't be the only place that would like
+> to take a dev_t and print the device name.  So this could certainly be
+> fixed by adding some kind of "<dev:xxx>" sort of tagged name.
+
+Yep that could be done as long as we know the mapping will never change.
+Userspace needs know what those numbers mean.
+
 > 
-> ? Or is this a path that only happens for small allocations?
+> But I think it would be good to keep TP_printk because otherwise I'll
+> have to scramble and change my marker->tracepoint patches during the
+> merge window, which would invalidate all of the testing to date.
+
+Understood, I made it that both TP_printk and TP_FORMAT can exist
+together, but Christoph Hellwig doesn't like that idea. I'm thinking
+for quick debug sessions, TP_printk() be used. In fact, if we go to
+TP_FORMAT, I'll just make TP_printk no longer show up in the user format.
+
+Then TP_printk() can be used for quick hacks, but if you want something 
+merged, it would need to be added to the tag format.
+
 > 
-> > +		s->flags &= ~(SLAB_POISON|SLAB_RED_ZONE|SLAB_STORE_USER);
-> > +
-> >  	if (!calculate_sizes(s, -1))
-> >  		goto error;
+> I agree that the new tagged format is superior, but I'm wondering
+> whether it really makes sense to try to scramble and try to switch my
+> ext4/jbd2 users in the 36 hours or so before Linus opens the merge
+> window....
 
-Although something like this would probably be even nicer.
+Relax, we already decided this is .32 material ;-)
 
-			Pekka
-
-diff --git a/mm/slub.c b/mm/slub.c
-index 65ffda5..a4206ef 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2334,6 +2334,16 @@ static int calculate_sizes(struct kmem_cache *s, int forced_order)
- 
- }
- 
-+#define MAX_DEBUG_SIZE (3 * sizeof(void *) + 2 * sizeof(struct track))
-+
-+static bool must_disable_debug(size_t size)
-+{
-+	/*
-+	 * Disable debugging if it increases the minimum page order.
-+	 */
-+	return get_order(size + MAX_DEBUG_SIZE) > get_order(size);
-+}
-+
- static int kmem_cache_open(struct kmem_cache *s, gfp_t gfpflags,
- 		const char *name, size_t size,
- 		size_t align, unsigned long flags,
-@@ -2346,6 +2356,9 @@ static int kmem_cache_open(struct kmem_cache *s, gfp_t gfpflags,
- 	s->align = align;
- 	s->flags = kmem_cache_flags(size, flags, name, ctor);
- 
-+	if (must_disable_debug(size))
-+		s->flags &= ~(SLAB_POISON|SLAB_RED_ZONE|SLAB_STORE_USER);
-+
- 	if (!calculate_sizes(s, -1))
- 		goto error;
- 
-
+-- Steve
 
