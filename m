@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753817AbZFJFcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753491AbZFJFhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753817AbZFJFcF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 01:32:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZFJFb4
+	id S1753491AbZFJFhX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 01:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbZFJFhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 01:31:56 -0400
-Received: from mga05.intel.com ([192.55.52.89]:19155 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751860AbZFJFbz (ORCPT
+	Wed, 10 Jun 2009 01:37:11 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:44558 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752769AbZFJFhK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 01:31:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,338,1241420400"; 
-   d="scan'208";a="465030576"
-Date: Wed, 10 Jun 2009 13:15:21 +0800
-From: Yong Wang <yong.y.wang@linux.intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] perf_counter/x86: Fix incorrect default branch
-Message-ID: <20090610051521.GB30923@ywang-moblin2.bj.intel.com>
-References: <20090609074621.GA19290@ywang-moblin2.bj.intel.com> <20090609132313.GE25586@elte.hu> <20090609133232.GA14642@ywang-moblin2.bj.intel.com> <20090609142506.GD32703@elte.hu>
+	Wed, 10 Jun 2009 01:37:10 -0400
+Date: Wed, 10 Jun 2009 01:37:10 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+cc: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
+Subject: Re: [RFC PATCH 2/5] tracing/events: nicer print format for parsing
+In-Reply-To: <4A2F1376.7040500@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0906100135520.30552@gandalf.stny.rr.com>
+References: <20090609014534.790466803@goodmis.org> <20090609014746.481457542@goodmis.org> <20090609192159.GD6057@nowhere> <alpine.DEB.2.00.0906091531090.30552@gandalf.stny.rr.com> <4A2F1376.7040500@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090609142506.GD32703@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 04:25:06PM +0200, Ingo Molnar wrote:
+
+On Wed, 10 Jun 2009, Lai Jiangshan wrote:
 > 
-> They dont have X86_FEATURE_ARCH_PERFMON set, right?
+> I'm trying to write user-space tools. Could you tell me your tools'
+> developing status? And the aim of these tools? Will it be public?
+
+I'm toying with a command line parser, and something to hook with Ingo's 
+perf.
+
 > 
-> I made the switch statement under the assumption that it covers all 
-> existing arch-perfmon CPU models. If not, the 'default:' placement 
-> would indeed be buggy.
-> 
+> I'm wandering whether I should stop this trying.
 
-OK, you are right. X86_FEATURE_ARCH_PERFMON eliminates all the old CPUs.
-However, the logic still seems not correct. Both the Core2 CPUs I'm
-using are recognized as Nehalem/Corei7. /proc/cpuinfo and cpuid outputs
-are given below.
+Well, more ideas the better, anything that is done can probably be used 
+;-)
 
-The first one:
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 23
-model name      : Intel(R) Core(TM)2 Duo CPU     P8400  @ 2.26GHz
-stepping        : 6
+-- Steve
 
-CPUID.0x00000001: eax=0x00010676
-
-The second one:
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Core(TM)2 CPU          6600  @ 2.40GHz
-stepping        : 6
-
-CPUID.0x00000001: eax=0x000006f6
-
-Looks like it's not enough to just look at boot_cpu_data.x86_model.
-
--Yong
