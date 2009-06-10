@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbZFJDid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756204AbZFJDhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758304AbZFJDid (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 23:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbZFJDeT
+	id S1756204AbZFJDhR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 23:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbZFJDeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 23:34:19 -0400
-Received: from kroah.org ([198.145.64.141]:56806 "EHLO coco.kroah.org"
+	Tue, 9 Jun 2009 23:34:04 -0400
+Received: from kroah.org ([198.145.64.141]:56732 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755962AbZFJDeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 23:34:17 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:44 2009
-Message-Id: <20090610002343.849169845@blue.kroah.org>
+	id S1755823AbZFJDeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 23:34:02 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Tue Jun  9 17:23:43 2009
+Message-Id: <20090610002342.886947553@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 09 Jun 2009 17:13:46 -0700
+Date: Tue, 09 Jun 2009 17:13:42 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Adam Radford <aradford@gmail.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       alan@lxorguk.ukuu.org.uk, Florian Westphal <fw@strlen.de>,
+       "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 18/60] [SCSI] 3w-xxxx: scsi_dma_unmap fix
+Subject: [patch 14/60] pktgen: do not access flows[] beyond its length
 References: <20090610001328.251476848@blue.kroah.org>
-Content-Disposition: inline; filename=3w-xxxx-scsi_dma_unmap-fix.patch
+Content-Disposition: inline; filename=pktgen-do-not-access-flows-beyond-its-length.patch
 In-Reply-To: <20090610032135.GA19346@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,60 +39,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: adam radford <aradford@gmail.com>
+From: Florian Westphal <fw@strlen.de>
 
-commit 7b14f58ad65f9d74e4273fb45360cfea824495aa upstream.
+[ Upstream commit 5b5f792a6a9a2f9ae812d151ed621f72e99b1725 ]
 
-This patch fixes the following regression that occurred during the
-scsi_dma_map()/unmap()
-changes when compiling with CONFIG_DMA_API_DEBUG=y :
+typo -- pkt_dev->nflows is for stats only, the number of concurrent
+flows is stored in cflows.
 
-WARNING: at lib/dma-debug.c:496 check_unmap+0x142/0x542()
-Hardware name:
-3w-xxxx 0000:02:02.0: DMA-API: device driver tries to free DMA memory
-it has not allocated [device address=0x0000000000000000] [size=36
-bytes]
-
-Signed-off-by: Adam Radford <aradford@gmail.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Reported-By: Vladimir Ivashchenko <hazard@francoudi.com>
+Signed-off-by: Florian Westphal <fw@strlen.de>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- drivers/scsi/3w-xxxx.c |    5 +++--
- drivers/scsi/3w-xxxx.h |    2 +-
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ net/core/pktgen.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/scsi/3w-xxxx.c
-+++ b/drivers/scsi/3w-xxxx.c
-@@ -6,7 +6,7 @@
-    		     Arnaldo Carvalho de Melo <acme@conectiva.com.br>
-                      Brad Strand <linux@3ware.com>
- 
--   Copyright (C) 1999-2007 3ware Inc.
-+   Copyright (C) 1999-2009 3ware Inc.
- 
-    Kernel compatiblity By: 	Andre Hedrick <andre@suse.com>
-    Non-Copyright (C) 2000	Andre Hedrick <andre@suse.com>
-@@ -1294,7 +1294,8 @@ static void tw_unmap_scsi_data(struct pc
- {
- 	dprintk(KERN_WARNING "3w-xxxx: tw_unmap_scsi_data()\n");
- 
--	scsi_dma_unmap(cmd);
-+	if (cmd->SCp.phase == TW_PHASE_SGLIST)
-+		scsi_dma_unmap(cmd);
- } /* End tw_unmap_scsi_data() */
- 
- /* This function will reset a device extension */
---- a/drivers/scsi/3w-xxxx.h
-+++ b/drivers/scsi/3w-xxxx.h
-@@ -6,7 +6,7 @@
-    		     Arnaldo Carvalho de Melo <acme@conectiva.com.br>
-                      Brad Strand <linux@3ware.com>
- 
--   Copyright (C) 1999-2007 3ware Inc.
-+   Copyright (C) 1999-2009 3ware Inc.
- 
-    Kernel compatiblity By:	Andre Hedrick <andre@suse.com>
-    Non-Copyright (C) 2000	Andre Hedrick <andre@suse.com>
+--- a/net/core/pktgen.c
++++ b/net/core/pktgen.c
+@@ -2449,7 +2449,7 @@ static inline void free_SAs(struct pktge
+ 	if (pkt_dev->cflows) {
+ 		/* let go of the SAs if we have them */
+ 		int i = 0;
+-		for (;  i < pkt_dev->nflows; i++){
++		for (;  i < pkt_dev->cflows; i++) {
+ 			struct xfrm_state *x = pkt_dev->flows[i].x;
+ 			if (x) {
+ 				xfrm_state_put(x);
 
 
