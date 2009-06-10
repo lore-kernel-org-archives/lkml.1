@@ -1,95 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbZFJC1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbZFJCeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754204AbZFJC1o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 9 Jun 2009 22:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZFJC1h
+	id S1753292AbZFJCeZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 9 Jun 2009 22:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbZFJCeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 9 Jun 2009 22:27:37 -0400
-Received: from mga03.intel.com ([143.182.124.21]:32264 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751885AbZFJC1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 9 Jun 2009 22:27:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,337,1241420400"; 
-   d="scan'208";a="152544636"
-Date: Wed, 10 Jun 2009 10:27:36 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "Lee.Schermerhorn@hp.com" <Lee.Schermerhorn@hp.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH] [8/16] HWPOISON: Use bitmask/action code for
-	try_to_unmap behaviour
-Message-ID: <20090610022736.GC6597@localhost>
-References: <20090603846.816684333@firstfloor.org> <20090603184641.868D31D0282@basil.firstfloor.org> <20090609095725.GC14820@wotan.suse.de>
+	Tue, 9 Jun 2009 22:34:18 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:36967 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752040AbZFJCeR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 9 Jun 2009 22:34:17 -0400
+Message-ID: <4A2F1BAA.4070102@snapgear.com>
+Date: Wed, 10 Jun 2009 12:34:18 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090609095725.GC14820@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: uClinux development list <uclinux-dev@uclinux.org>
+CC: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       linux-mtd@lists.infradead.org
+Subject: Re: [uClinux-dev] [PATCH 3/3] mtd/maps: uclinux: do not allow to
+ be	built as a module
+References: <20090526231902.GA6295@linux-sh.org> <1243380798-10089-3-git-send-email-vapier@gentoo.org>
+In-Reply-To: <1243380798-10089-3-git-send-email-vapier@gentoo.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 05:57:25PM +0800, Nick Piggin wrote:
-> On Wed, Jun 03, 2009 at 08:46:41PM +0200, Andi Kleen wrote:
-> > 
-> > try_to_unmap currently has multiple modi (migration, munlock, normal unmap)
-> > which are selected by magic flag variables. The logic is not very straight
-> > forward, because each of these flag change multiple behaviours (e.g.
-> > migration turns off aging, not only sets up migration ptes etc.)
-> > Also the different flags interact in magic ways.
-> > 
-> > A later patch in this series adds another mode to try_to_unmap, so 
-> > this becomes quickly unmanageable.
-> > 
-> > Replace the different flags with a action code (migration, munlock, munmap)
-> > and some additional flags as modifiers (ignore mlock, ignore aging).
-> > This makes the logic more straight forward and allows easier extension
-> > to new behaviours. Change all the caller to declare what they want to 
-> > do.
-> > 
-> > This patch is supposed to be a nop in behaviour. If anyone can prove 
-> > it is not that would be a bug.
-> > 
-> > Cc: Lee.Schermerhorn@hp.com
-> > Cc: npiggin@suse.de
-> > 
-> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> > 
-> > ---
-> >  include/linux/rmap.h |   14 +++++++++++++-
-> >  mm/migrate.c         |    2 +-
-> >  mm/rmap.c            |   40 ++++++++++++++++++++++------------------
-> >  mm/vmscan.c          |    2 +-
-> >  4 files changed, 37 insertions(+), 21 deletions(-)
-> > 
-> > Index: linux/include/linux/rmap.h
-> > ===================================================================
-> > --- linux.orig/include/linux/rmap.h	2009-06-03 19:36:23.000000000 +0200
-> > +++ linux/include/linux/rmap.h	2009-06-03 20:39:50.000000000 +0200
-> > @@ -84,7 +84,19 @@
-> >   * Called from mm/vmscan.c to handle paging out
-> >   */
-> >  int page_referenced(struct page *, int is_locked, struct mem_cgroup *cnt);
-> > -int try_to_unmap(struct page *, int ignore_refs);
-> > +
-> > +enum ttu_flags {
-> > +	TTU_UNMAP = 0,			/* unmap mode */
-> > +	TTU_MIGRATION = 1,		/* migration mode */
-> > +	TTU_MUNLOCK = 2,		/* munlock mode */
-> > +	TTU_ACTION_MASK = 0xff,
-> > +
-> > +	TTU_IGNORE_MLOCK = (1 << 8),	/* ignore mlock */
-> > +	TTU_IGNORE_ACCESS = (1 << 9),	/* don't age */
-> > +};
-> > +#define TTU_ACTION(x) ((x) & TTU_ACTION_MASK)
+
+Mike Frysinger wrote:
+> There isn't any benefit to building the uClinux MTD map as a module as the
+> rootfs it requires in order to actually be usable is appended to the
+> kernel image, not the module.  No known system builds it this way either,
+> so change the option to "bool".
 > 
-> I still think this is nasty and should work like Gfp flags.
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+> CC: Paul Mundt <lethal@linux-sh.org>
+> CC: Greg Ungerer <gerg@uclinux.org>
 
-I don't see big problems here.
+Acked-by: Greg Ungerer <gerg@uclinux.org>
 
-We have page_zone() and gfp_zone(), so why not TTU_ACTION()? We could
-allocate one bit for each action code, but in principle they are exclusive.
+
+> CC: uclinux-dev@uclinux.org
+> CC: linux-mtd@lists.infradead.org
+> ---
+>  drivers/mtd/maps/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+> index 82923bd..907873b 100644
+> --- a/drivers/mtd/maps/Kconfig
+> +++ b/drivers/mtd/maps/Kconfig
+> @@ -501,7 +501,7 @@ config MTD_BFIN_ASYNC
+>  	  If compiled as a module, it will be called bfin-async-flash.
+>  
+>  config MTD_UCLINUX
+> -	tristate "Generic uClinux RAM/ROM filesystem support"
+> +	bool "Generic uClinux RAM/ROM filesystem support"
+>  	depends on MTD_PARTITIONS && MTD_RAM && !MMU
+>  	help
+>  	  Map driver to support image based filesystems for uClinux.
+
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
