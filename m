@@ -1,31 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbZFJMam@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbZFJMgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757403AbZFJMam (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 08:30:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756036AbZFJMaf
+	id S1759382AbZFJMgS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 08:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbZFJMgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 08:30:35 -0400
-Received: from tomts45-srv.bellnexxia.net ([209.226.175.112]:39380 "EHLO
-	tomts45-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754085AbZFJMaf convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 08:30:35 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhBoACdEL0rR4q+G/2dsb2JhbACLTIJ7iHSJRaFIizWDeQU
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [41.219.137.100]
-From: <braininjuryottawavalley@bellnet.ca>
-Reply-To: johncarrick12@btinternet.com
-To: <irish@uk.irish>
-Subject: ***congratulation****
-Date: Wed, 10 Jun 2009 8:29:50 -0400
+	Wed, 10 Jun 2009 08:36:09 -0400
+Received: from mga14.intel.com ([143.182.124.37]:35562 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754773AbZFJMgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 08:36:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,341,1241420400"; 
+   d="scan'208";a="152695783"
+Date: Wed, 10 Jun 2009 20:36:00 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH] [0/16] HWPOISON: Intro
+Message-ID: <20090610123600.GD5657@localhost>
+References: <20090603846.816684333@firstfloor.org> <20090609102014.GG14820@wotan.suse.de> <20090610090703.GF6597@localhost> <20090610091807.GA18582@wotan.suse.de> <20090610094526.GB32584@localhost> <20090610111541.GC3876@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-Id: <20090610123036.PWAV22696.tomts45-srv.bellnexxia.net@toip36-bus.srvr.bell.ca>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090610111541.GC3876@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-£1,350,000.00  have been awarded to you in the IRISH.send us tel/address/country
+On Wed, Jun 10, 2009 at 07:15:41PM +0800, Nick Piggin wrote:
+> On Wed, Jun 10, 2009 at 05:45:26PM +0800, Wu Fengguang wrote:
+> > On Wed, Jun 10, 2009 at 05:18:07PM +0800, Nick Piggin wrote:
+> > > On Wed, Jun 10, 2009 at 05:07:03PM +0800, Wu Fengguang wrote:
+> > > > On Tue, Jun 09, 2009 at 06:20:14PM +0800, Nick Piggin wrote:
+> > > > > On Wed, Jun 03, 2009 at 08:46:31PM +0200, Andi Kleen wrote:
+> > > > > > Also I thought a bit about the fsync() error scenario. It's really
+> > > > > > a problem that can already happen even without hwpoison, e.g.
+> > > > > > when a page is dropped at the wrong time.
+> > > > > 
+> > > > > No, the page will never be "dropped" like that except with
+> > > > > this hwpoison. Errors, sure, might get dropped sometimes
+> > > > > due to implementation bugs, but this is adding semantics that
+> > > > > basically break fsync by-design.
+> > > > 
+> > > > You mean the non persistent EIO is undesirable?
+> > > > 
+> > > > In the other hand, sticky EIO that can only be explicitly cleared by
+> > > > user can also be annoying. How about auto clearing the EIO bit when
+> > > > the last active user closes the file?
+> > > 
+> > > Well the existing EIO semantics IMO are not great, but that
+> > > does not have a big bearing on this new situation. What you
+> > 
+> > Nod.
+> > 
+> > > are doing is deliberately throwing away the dirty data, and
+> > > giving EIO back in some cases. (but perhaps not others, a
+> > > subsequent read or write syscall is not going to get EIO is
+> > > it? only fsync).
+> > 
+> > Right, only fsync/msync and close on nfs will report the error.
+> > 
+> > write() is normally cached, so obviously it cannot report the later IO
+> > error.
+> > 
+> > We can make read() IO succeed even if the relevant pages are corrupted
+> > - they can be isolated transparent to user space readers :-)
+> 
+> But if the page was dirty and you throw out the dirty data,
+> then next read will give inconsistent data.
 
+Yup. That's a big problem - the application won't get any error
+feedback here if it doesn't call fsync() to commit IO.
+
+>  
+> > > So even if we did change existing EIO semantics then the
+> > > memory corruption case of throwing away dirty data is still
+> > > going to be "different" (wrong, I would say).
+> > 
+> > Oh well.
+> 
+> Well I just think SIGKILL is the much safer behaviour to
+> start with (and matches behaviour with mmapped pagecache
+> and anon), and does not introduce these different semantics.
+
+So what?  SIGKILL any future processes visiting the corrupted file?
+Or better to return EIO to them? Either way we'll be maintaining
+a consistent AS_EIO_HWPOISON bit.
+
+>  
+> > > > > I really want to resolve the EIO issue because as I said, it
+> > > > > is a user-abi issue and too many of those just get shoved
+> > > > > through only for someone to care about fundamental breakage
+> > > > > after some years.
+> > > > 
+> > > > Yup.
+> > > > 
+> > > > > You say that SIGKILL is overkill for such pages, but in fact
+> > > > > this is exactly what you do with mapped pages anyway, so why
+> > > > > not with other pages as well? I think it is perfectly fine to
+> > > > > do so (and maybe a new error code can be introduced and that
+> > > > > can be delivered to processes that can handle it rather than
+> > > > > SIGKILL).
+> > > > 
+> > > > We can make it a user selectable policy.
+> > >  
+> > > Really? Does it need to be? Can the admin sanely make that
+> > > choice?
+> > 
+> > I just recalled another fact. See below.
+> > 
+> > > > They are different in that, mapped dirty pages are normally more vital
+> > > > (data structures etc.) for correct execution, while write() operates
+> > > > more often on normal data.
+> > > 
+> > > read and write, remember. That might be somewhat true, but
+> > > definitely there are exceptions both ways. How do you
+> > > quantify that or justify it? Just handwaving? Why not make
+> > > it more consistent overall and just do SIGKILL for everyone?
+> > 
+> > 1) under read IO hwpoison pages can be hidden to user space
+> 
+> I mean for cases where the recovery cannot be transparent
+> (ie. error in dirty page).
+
+OK. That's a good point.
+
+> > 2) under write IO hwpoison pages are normally committed by pdflush,
+> >    so cannot find the impacted application to kill at all.
+> 
+> Correct.
+> 
+> > 3) fsync() users can be caught though. But then the application
+> >    have the option to check its return code. If it doesn't do it,
+> >    it may well don't care. So why kill it?
+> 
+> Well if it does not check, then we cannot find it to kill
+> it anyway. If it does care (and hence check with fsync),
+> then we could kill it.
+
+If it really care, it will check EIO after fsync ;)
+But yes, if it moderately care, it may ignore the return value.
+
+So SIGKILL on fsync() seems to be a good option.
+
+> > Think about a multimedia server. Shall we kill the daemon if some IO
+> > page in the movie get corrupted?
+> 
+> My multimedia server is using mmap for data...
+> 
+> > And a mission critical server? 
+> 
+> Mission critical server should be killed too because it
+> likely does not understand this semantic of throwing out
+> dirty data page. It should be detected and restarted and
+> should recover or fail over to another server.
+
+Sorry for the confusion. I meant one server may want to survive,
+while another want to kill (and restart service).
+
+> > Obviously the admin will want the right to choose.
+> 
+> I don't know if they are equipped to really know. Do they
+> know that their application will correctly handle these
+> semantics of throwing out dirty data? It is potentially
+> much more dangerous to do this exactly because it can confuse
+> the case where it matters most (ie. ones that care about
+> data integrity).
+> 
+> It just seems like killing is far less controversial and
+> simpler. Start with that and it should do the right thing
+> for most people anyway. We could discuss possible ways
+> to recover in another patch if you want to do this
+> EIO thing.
+
+OK, we can
+        - kill fsync() users
+        - and then return EIO for later read()/write()s
+        - forget about the EIO condition on last file close()
+Do you agree?
+
+> > > > > Last request: do you have a panic-on-memory-error option?
+> > > > > I think HA systems and ones with properly designed data
+> > > > > integrity at the application layer will much prefer to
+> > > > > halt the system than attempt ad-hoc recovery that does not
+> > > > > always work and might screw things up worse.
+> > > > 
+> > > > Good suggestion. We'll consider such an option. But unconditionally
+> > > > panic may be undesirable. For example, a corrupted free page or a
+> > > > clean unmapped file page can be simply isolated - they won't impact
+> > > > anything.
+> > > 
+> > > I thought you were worried about introducing races where the
+> > > data can be consumed when doing things such as lock_page and
+> > > wait_on_page_writeback. But if things can definitely be
+> > > discarded with no references or chances of being consumed, yes
+> > > you would not panic for that. But panic for dirty data or
+> > > corrupted kernel memory etc. makes a lot of sense.
+> > 
+> > OK. We can panic on dirty/writeback pages, and do try_lock to check
+> > for active users :)
+> 
+> That would be good. IMO panic should be the safest and sanest
+> option (admin knows exactly what it is and has very simple and
+> clear semantics).
+
+Thanks,
+Fengguang
