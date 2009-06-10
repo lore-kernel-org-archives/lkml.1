@@ -1,48 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757767AbZFJNHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbZFJNHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757767AbZFJNHd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 09:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbZFJNH0
+	id S1756668AbZFJNHs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 09:07:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824AbZFJNHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 09:07:26 -0400
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:52057
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754510AbZFJNHZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 09:07:25 -0400
-X-SpamScore: -15
-X-BigFish: VPS-15(z34a4jz62a3L98dR936eNzz1202hzzz32i6bh17ch43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KL0XS3-01-JK4-01
-Date: Wed, 10 Jun 2009 15:07:16 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Andi Kleen <andi@firstfloor.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-Subject: Re: [PATCH 0/2] oprofile: introduce module parameter
-	oprofile.cpu_type
-Message-ID: <20090610130716.GD18016@erda.amd.com>
-References: <1241613554-31539-1-git-send-email-robert.richter@amd.com> <20090506144720.GQ23223@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090506144720.GQ23223@one.firstfloor.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 10 Jun 2009 13:07:17.0383 (UTC) FILETIME=[616BE170:01C9E9CC]
+	Wed, 10 Jun 2009 09:07:38 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:53757 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754667AbZFJNHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 09:07:37 -0400
+Date: Wed, 10 Jun 2009 23:07:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       "Theodore Ts'o" <tytso@mit.edu>, linux-fsdevel@vger.kernel.org
+Subject: Re: linux-next: next-20090609 hangs in early user mode
+Message-Id: <20090610230728.d56adeff.sfr@canb.auug.org.au>
+In-Reply-To: <20090610130054.GR8633@ZenIV.linux.org.uk>
+References: <20090610180058.99bd3dda.sfr@canb.auug.org.au>
+	<20090610130054.GR8633@ZenIV.linux.org.uk>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__10_Jun_2009_23_07_28_+1000_qa+P5MVEk//kRbza"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06.05.09 16:47:20, Andi Kleen wrote:
-> The force of core2 is nacked from my side.
+--Signature=_Wed__10_Jun_2009_23_07_28_+1000_qa+P5MVEk//kRbza
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I will drop this patch.
+Hi Al,
 
--Robert
+On Wed, 10 Jun 2009 14:00:54 +0100 Al Viro <viro@ZenIV.linux.org.uk> wrote:
+>
+> On Wed, Jun 10, 2009 at 06:00:58PM +1000, Stephen Rothwell wrote:
+>=20
+> > d4fdcb2068eef29c03d6027aa219fa60171c6b87 is first bad commit
+> > commit d4fdcb2068eef29c03d6027aa219fa60171c6b87
+> > Author: Theodore Ts'o <tytso@mit.edu>
+> > Date:   Thu May 21 16:00:59 2009 -0400
+> >=20
+> >     fs: i_flags and i_state in struct inode only need to be unsigned sh=
+ort
+> >    =20
+> >     Currently i_flags and i_state do not need to be an unsigned int and=
+ an
+> >     unsigned long, respectively.  (We currently use 9 i_flags bits, and=
+ 8
+> >     i_state bits.)  Changing them to be an unsigned short saves 4 bytes
+> >     per inode on an x86 platform, and 8 bytes on an x86_64 platform.
+> >    =20
+> >     Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> >     Cc: linux-fsdevel@vger.kernel.org
+> >     Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+>=20
+> *gyah*
+>=20
+> Yes, it's obviously bogus.  Dropped from the tree; I don't think it's
+> really salvagable - even merging into one unsigned long will not be
+> enough, since we will end up with different locking for different bits.
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+OK, thanks.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__10_Jun_2009_23_07_28_+1000_qa+P5MVEk//kRbza
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkovsBAACgkQjjKRsyhoI8zmBQCgk24z24tPwHL58P+uDTqEW4K9
++WwAn35jR3HKzm3o7WRXHjmPih6Lm+p/
+=PXyV
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__10_Jun_2009_23_07_28_+1000_qa+P5MVEk//kRbza--
