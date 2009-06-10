@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbZFJJn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932164AbZFJJne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760243AbZFJJn6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 05:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757637AbZFJJij
+	id S932164AbZFJJne (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 05:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758837AbZFJJih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 05:38:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40351 "EHLO mx2.redhat.com"
+	Wed, 10 Jun 2009 05:38:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40338 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758816AbZFJJiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 05:38:25 -0400
+	id S1757910AbZFJJiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 05:38:21 -0400
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 24/24] GFS2: Fix cache coherency between truncate and O_DIRECT read
-Date: Wed, 10 Jun 2009 09:31:05 +0100
-Message-Id: <1244622665-7470-25-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1244622665-7470-24-git-send-email-swhiteho@redhat.com>
+Cc: Abhijith Das <adas@redhat.com>, Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 21/24] GFS2: smbd proccess hangs with flock() call.
+Date: Wed, 10 Jun 2009 09:31:02 +0100
+Message-Id: <1244622665-7470-22-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1244622665-7470-21-git-send-email-swhiteho@redhat.com>
 References: <1244622665-7470-1-git-send-email-swhiteho@redhat.com>
  <1244622665-7470-2-git-send-email-swhiteho@redhat.com>
  <1244622665-7470-3-git-send-email-swhiteho@redhat.com>
@@ -37,33 +37,34 @@ References: <1244622665-7470-1-git-send-email-swhiteho@redhat.com>
  <1244622665-7470-19-git-send-email-swhiteho@redhat.com>
  <1244622665-7470-20-git-send-email-swhiteho@redhat.com>
  <1244622665-7470-21-git-send-email-swhiteho@redhat.com>
- <1244622665-7470-22-git-send-email-swhiteho@redhat.com>
- <1244622665-7470-23-git-send-email-swhiteho@redhat.com>
- <1244622665-7470-24-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If a page was partially zeroed as the result of a truncate, then it was
-not being correctly marked dirty. This resulted in the deleted data
-reappearing if the file was read back via direct I/O.
+From: Abhijith Das <adas@redhat.com>
 
-Reported-by: Eric Sandeen <sandeen@redhat.com>
+GFS2 currently does not support mandatory flocks. An flock() call with
+LOCK_MAND triggers unexpected behavior because gfs2 is not checking for
+this lock type. This patch corrects that.
+
+Signed-off-by: Abhi Das <adas@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
-index 1153a07..3297635 100644
---- a/fs/gfs2/bmap.c
-+++ b/fs/gfs2/bmap.c
-@@ -1012,7 +1012,7 @@ static int gfs2_block_truncate_page(struct address_space *mapping)
- 		gfs2_trans_add_bh(ip->i_gl, bh, 0);
+diff --git a/fs/gfs2/file.c b/fs/gfs2/file.c
+index 73b6f55..841ddc9 100644
+--- a/fs/gfs2/file.c
++++ b/fs/gfs2/file.c
+@@ -698,8 +698,8 @@ static int gfs2_flock(struct file *file, int cmd, struct file_lock *fl)
  
- 	zero_user(page, offset, length);
--
-+	mark_buffer_dirty(bh);
- unlock:
- 	unlock_page(page);
- 	page_cache_release(page);
+ 	if (!(fl->fl_flags & FL_FLOCK))
+ 		return -ENOLCK;
+-	if (__mandatory_lock(&ip->i_inode))
+-		return -ENOLCK;
++	if (fl->fl_type & LOCK_MAND)
++		return -EOPNOTSUPP;
+ 
+ 	if (fl->fl_type == F_UNLCK) {
+ 		do_unflock(file, fl);
 -- 
 1.6.0.6
 
