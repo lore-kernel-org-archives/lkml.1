@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761934AbZFKC2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761756AbZFKCdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761934AbZFKC2y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 22:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbZFKC2n
+	id S1761756AbZFKCdR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 22:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbZFKCdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 22:28:43 -0400
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:58174 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752040AbZFKC2m convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 22:28:42 -0400
-To: subrata@linux.vnet.ibm.com
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
-       Li Yang <leoli@freescale.com>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-       Linux-Next <linux-next@vger.kernel.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Re:[BUILD FAILURE 04/04] Next June 04:PPC64 randconfig
- [drivers/net/ucc_geth.o]
-References: <20090610174323.28045.70169.sendpatchset@subratamodak.linux.ibm.com>
- <20090611110523.1fd56a41.sfr@canb.auug.org.au>
- <1244685364.6494.14.camel@subratamodak.linux.ibm.com>
-From: Nathan Lynch <ntl@pobox.com>
-Date: Wed, 10 Jun 2009 21:28:30 -0500
-In-Reply-To: <1244685364.6494.14.camel@subratamodak.linux.ibm.com> (Subrata
- Modak's message of "Thu\, 11 Jun 2009 07\:26\:04 +0530")
-Message-ID: <m3d49btsfl.fsf@pobox.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-Pobox-Relay-ID: 95B0F22A-562F-11DE-8372-97731A10BFE7-04752483!a-sasl-fastnet.pobox.com
+	Wed, 10 Jun 2009 22:33:05 -0400
+Received: from mga09.intel.com ([134.134.136.24]:42000 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754184AbZFKCdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 22:33:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,199,1243839600"; 
+   d="scan'208";a="420703621"
+Subject: Re: [PATCH 3/3] ring-buffer: add design document
+From: Huang Ying <ying.huang@intel.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       "Martin J. Bligh" <mbligh@mbligh.org>,
+       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+In-Reply-To: <alpine.DEB.2.00.0906102155420.30552@gandalf.stny.rr.com>
+References: <20090610195311.767699959@goodmis.org>
+	 <20090610195525.429316815@goodmis.org>
+	 <1244681467.8361.654.camel@yhuang-dev.sh.intel.com>
+	 <alpine.DEB.2.00.0906102155420.30552@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Thu, 11 Jun 2009 10:33:01 +0800
+Message-Id: <1244687581.8361.703.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subrata Modak <subrata@linux.vnet.ibm.com> writes:
+On Thu, 2009-06-11 at 09:58 +0800, Steven Rostedt wrote:
+> On Thu, 11 Jun 2009, Huang Ying wrote:
+> 
+> > On Thu, 2009-06-11 at 03:53 +0800, Steven Rostedt wrote:
+> > > +
+> > > +cmpxchg - hardware assisted atomic transaction that performs the following:
+> > > +
+> > > +   A = B iff previous A == C
+> > > +
+> > > +   R = cmpxchg(A, C, B) is saying that we replace A with B if and only if
+> > > +      current A is equal to C, and we put the old (current) A into R
+> > > +
+> > > +   R gets the previous A regardless if A is updated with B or not.
+> > > +
+> > > +   To see if the update was successful a compare of R == C may be used.
+> > 
+> > As far as I know, some architectures have no hardware assisted (NMI
+> > safe) cmpxchg. Is it OK to use cmpxchg in architecture-independent code?
+> 
+> I can fall back to the lock solution for those archs without cmpxchg. It 
+> is NMI safe, because we do spin_trylock() in NMI context. If we fail to 
+> acquire the lock in NMI context, we simply drop the packet.
 
-> On Thu, 2009-06-11 at 11:05 +1000, Stephen Rothwell wrote:
->> Hi Subrata,
->> 
->> On Wed, 10 Jun 2009 23:13:23 +0530 Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
->> >
->> >  	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
->> > -	ph = of_get_property(np, "tbi-handle", NULL);
->> > +	ph = (phandle *)of_get_property(np, "tbi-handle", NULL);
->> 
->> You don't need this cast because of_get_property() returns "void *".
->
-> Stephen,
->
-> True. But without this gcc complains:
->
-> CC [M]  drivers/net/ucc_geth.o
-> drivers/net/ucc_geth.c: In function ‘ucc_geth_probe’:
-> drivers/net/ucc_geth.c:3824: warning: assignment discards qualifiers
-> from pointer target type
+Yes. For users do not care about packet drop, it is acceptable. But
+please select the implementation at run-time instead of build time.
+Because on some architecture such as ARM, whether CPU has cmpxchg
+support is determined at run-time.
 
-ph should be declared const phandle *.  Look at other uses of
-of_get_property.
+> Are these archs without cmpxchg and NMIs, a concern for you?
+
+ARM has no cmpxchg until ARM v6, but it has NMI like mechanism named
+FIQ.
+
+Best Regards,
+Huang Ying
+
 
