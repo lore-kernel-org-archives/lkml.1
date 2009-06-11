@@ -1,112 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbZFKO0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbZFKO13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757876AbZFKO0i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 10:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbZFKO0b
+	id S1759368AbZFKO13 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 10:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbZFKO1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 10:26:31 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:42580 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751860AbZFKO0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 10:26:30 -0400
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: vendor reserved memory type
-Cc: mingo@elte.hu, hpa@zytor.com
-Message-Id: <E1MElFX-0007fY-TR@eag09.americas.sgi.com>
-From: Cliff Wickman <cpw@sgi.com>
-Date: Thu, 11 Jun 2009 09:27:27 -0500
+	Thu, 11 Jun 2009 10:27:22 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:58106 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751923AbZFKO1V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 10:27:21 -0400
+Date: Thu, 11 Jun 2009 10:26:55 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       hannes@cmpxchg.org, mingo@elte.hu, mpm@selenic.com, npiggin@suse.de,
+       yinghai@kernel.org
+Subject: Re: [GIT PULL v2] Early boot SLAB for 2.6.31
+In-Reply-To: <84144f020906110706y8df301bhd930dc48f3188d3c@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0906111024510.29827@gentwo.org>
+References: <Pine.LNX.4.64.0906102311230.30444@melkki.cs.Helsinki.FI>  <alpine.LFD.2.01.0906101331250.6847@localhost.localdomain>  <alpine.LFD.2.01.0906101332440.6847@localhost.localdomain>  <Pine.LNX.4.64.0906111416070.10394@melkki.cs.Helsinki.FI> 
+ <alpine.DEB.1.10.0906110954030.29827@gentwo.org> <84144f020906110706y8df301bhd930dc48f3188d3c@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cliff Wickman <cpw@sgi.com>
+On Thu, 11 Jun 2009, Pekka Enberg wrote:
 
-Create a new e820 memory type (E820_VENDOR_RESERVED) for areas
-of memory reserved by the BIOS in the EFI table.
+> > This function is also called later when kmalloc caches are
+> > created on demand.
+>
+> Where? AFAICT, only kmem_cache_init() calls the function.
 
-(An example use of this functionality is the UV system, which
- will access extremely large areas of memory with a memory engine
- that allows a user to address beyond the processor's range.  Such
- areas are reserved in the EFI table by the BIOS.)
+Right. I thought dma_kmalloc_cache would also call this but it open codes
+create_kmalloc_cache due to the need to trylock on slub_lock.
 
-Without this patch the EFI_RESERVED_TYPE memory reservations will be
-marked usable in the e820 table. There will be a collision between
-kernel use and reserver's use of this memory.
 
-This patch causes the EFI_RESERVED_TYPE memory reservations to be recorded
-in the e820 table as new type E820_VENDOR_RESERVED.
-This patch makes sanitize_e820_map() preserve E820_VENDOR_RESERVED types
-as separate entries.
-
-[The elilo loader may combine regions of like type as it builds the e820
- table in boot_params (regular RAM and vendor reserved areas are combined).
- But this patch makes do_add_efi_memmap() separate the RESERVED regions
- into separate e820 entries.
- Some loaders have a restricted number of entries possible in the e820 table,
- hence the need to record the reservations in the unrestricted EFI table.]
-The call to do_add_efi_memmap() is only made if "add_efi_memmap" is specified
-on the kernel command line.
-
-Diffed against 2.6.30-rc8
-
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
-
----
- arch/x86/include/asm/e820.h |    1 +
- arch/x86/kernel/e820.c      |    7 ++++++-
- arch/x86/kernel/efi.c       |    4 +++-
- 3 files changed, 10 insertions(+), 2 deletions(-)
-
-Index: linux/arch/x86/kernel/e820.c
-===================================================================
---- linux.orig/arch/x86/kernel/e820.c
-+++ linux/arch/x86/kernel/e820.c
-@@ -141,6 +141,9 @@ static void __init e820_print_type(u32 t
- 	case E820_RESERVED:
- 		printk(KERN_CONT "(reserved)");
- 		break;
-+	case E820_VENDOR_RESERVED:
-+		printk(KERN_CONT "(vendor reserved)");
-+		break;
- 	case E820_ACPI:
- 		printk(KERN_CONT "(ACPI data)");
- 		break;
-@@ -355,8 +358,10 @@ int __init sanitize_e820_map(struct e820
- 		/*
- 		 * continue building up new bios map based on this
- 		 * information
-+		 * (do not consolidate the E820_VENDOR_RESERVED ranges)
- 		 */
--		if (current_type != last_type)	{
-+		if ((current_type != last_type) ||
-+		    (current_type == E820_VENDOR_RESERVED)) {
- 			if (last_type != 0)	 {
- 				new_bios[new_bios_entry].size =
- 					change_point[chgidx]->addr - last_addr;
-Index: linux/arch/x86/kernel/efi.c
-===================================================================
---- linux.orig/arch/x86/kernel/efi.c
-+++ linux/arch/x86/kernel/efi.c
-@@ -240,7 +240,9 @@ static void __init do_add_efi_memmap(voi
- 		unsigned long long size = md->num_pages << EFI_PAGE_SHIFT;
- 		int e820_type;
- 
--		if (md->attribute & EFI_MEMORY_WB)
-+		if (md->type == EFI_RESERVED_TYPE)
-+			e820_type = E820_VENDOR_RESERVED;
-+		else if (md->attribute & EFI_MEMORY_WB)
- 			e820_type = E820_RAM;
- 		else
- 			e820_type = E820_RESERVED;
-Index: linux/arch/x86/include/asm/e820.h
-===================================================================
---- linux.orig/arch/x86/include/asm/e820.h
-+++ linux/arch/x86/include/asm/e820.h
-@@ -44,6 +44,7 @@
- #define E820_ACPI	3
- #define E820_NVS	4
- #define E820_UNUSABLE	5
-+#define E820_VENDOR_RESERVED 6
- 
- /* reserved RAM used by kernel itself */
- #define E820_RESERVED_KERN        128
