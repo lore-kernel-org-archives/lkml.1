@@ -1,196 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762691AbZFKXVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763297AbZFKXVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762691AbZFKXVT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 19:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758758AbZFKXVA
+	id S1763297AbZFKXVw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 19:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZFKXVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 19:21:00 -0400
-Received: from ns2.allidaho.com ([66.232.90.194]:52471 "EHLO mail.allidaho.com"
+	Thu, 11 Jun 2009 19:21:45 -0400
+Received: from mga14.intel.com ([143.182.124.37]:30434 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755516AbZFKXU7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 19:20:59 -0400
-X-Greylist: delayed 3164 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Jun 2009 19:20:59 EDT
-From: "Dialup Jon Norstog" <thursday@allidaho.com>
-To: john stultz <johnstul@us.ibm.com>, rth@twiddle.net,
-       ink@jurassic.park.msu.ru
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org
-Subject: Re: [PATCH] Convert alpha to use arch_gettimeoffset()
-Date: Thu, 11 Jun 2009 16:21:51 -0600
-Message-Id: <20090611222122.M49967@allidaho.com>
-In-Reply-To: <1244758210.7192.5.camel@localhost.localdomain>
-References: <1244758210.7192.5.camel@localhost.localdomain>
-X-Mailer: OpenWebMail 2.52 20061019
-X-OriginatingIP: 65.117.241.100 (thursday)
+	id S1758758AbZFKXVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 19:21:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,204,1243839600"; 
+   d="scan'208";a="153363834"
+Date: Fri, 12 Jun 2009 07:21:31 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
+       Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH for mmotm 1/5] cleanp page_remove_rmap()
+Message-ID: <20090611232131.GA5960@localhost>
+References: <20090611192114.6D4A.A69D9226@jp.fujitsu.com> <20090611192514.6D4D.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090611192514.6D4D.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John,
-
-Thank you so much!
-
-
-jn
-
----------- Original Message -----------
-From: john stultz <johnstul@us.ibm.com>
-To: rth@twiddle.net, ink@jurassic.park.msu.ru
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org
-Sent: Thu, 11 Jun 2009 15:10:10 -0700
-Subject: [PATCH] Convert alpha to use arch_gettimeoffset()
-
-> This patch converts alpha to use GENERIC_TIME via the 
-> arch_getoffset() infrastructure, reducing the amount of arch 
-> specific code we need to maintain.
+On Thu, Jun 11, 2009 at 06:26:04PM +0800, KOSAKI Motohiro wrote:
+> Subject: [PATCH] cleanp page_remove_rmap()
 > 
-> I suspect the alpha arch could even be further improved to provide 
-> and rpcc() based clocksource, but not having the hardware, I don't feel
-> comfortable attempting the more complicated conversion (but I'd be glad
-> to help if anyone else is interested).
+> page_remove_rmap() has multiple PageAnon() test and it has
+> a bit deeply nesting.
 > 
-> This patch applies on top of Linus' current -git tree (pre 2.6.31-
-> rc1).
+> cleanup here.
 > 
-> I've taken my best swing at converting this, but I'm not 100% confident
-> I got it right. It does cross compile, so that's hopefully a good sign.
-> Any assistance from arch maintainers or testers to get this merged would
-> be great.
+> note: this patch doesn't have behavior change.
 > 
-> thanks
-> -john
 > 
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> Cc: Wu Fengguang <fengguang.wu@intel.com> 
+
 > ---
+>  mm/rmap.c |   59 ++++++++++++++++++++++++++++++++---------------------------
+>  1 file changed, 32 insertions(+), 27 deletions(-)
 > 
->  Kconfig       |    8 ++++++
->  kernel/time.c |   72 +++--------------------------------------------
-> ----------- 2 files changed, 12 insertions(+), 68 deletions(-)
-> 
-> diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
-> index 9fb8aae..4434481 100644
-> --- a/arch/alpha/Kconfig
-> +++ b/arch/alpha/Kconfig
-> @@ -45,6 +45,14 @@ config GENERIC_CALIBRATE_DELAY
->  	bool
->  	default y
-> 
-> +config GENERIC_TIME
-> +	bool
-> +	default y
-> +
-> +config ARCH_USES_GETTIMEOFFSET
-> +	bool
-> +	default y
-> +
->  config ZONE_DMA
->  	bool
->  	default y
-> diff --git a/arch/alpha/kernel/time.c b/arch/alpha/kernel/time.c
-> index b04e2cb..8f7eb6d 100644
-> --- a/arch/alpha/kernel/time.c
-> +++ b/arch/alpha/kernel/time.c
-> @@ -408,28 +408,17 @@ time_init(void)
->   * part.  So we can't do the "find absolute time in terms of 
-> cycles" thing  * that the other ports do.  */ -void -
-> do_gettimeofday(struct timeval *tv) +u32 arch_gettimeoffset(void) { -
-> 	unsigned long flags; -	unsigned long sec, usec, seq; 	unsigned long 
-> delta_cycles, delta_usec, partial_tick;
-> 
-> -	do {
-> -		seq = read_seqbegin_irqsave(&xtime_lock, flags);
-> -
-> -		delta_cycles = rpcc() - state.last_time;
-> -		sec = xtime.tv_sec;
-> -		usec = (xtime.tv_nsec / 1000);
-> -		partial_tick = state.partial_tick;
-> -
-> -	} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
-> -
->  #ifdef CONFIG_SMP
->  	/* Until and unless we figure out how to get cpu cycle counters
->  	   in sync and keep them there, we can't use the rpcc tricks.  */
->  	delta_usec = 0;
->  #else
-> +	delta_cycles = rpcc() - state.last_time;
-> +	partial_tick = state.partial_tick;
->  	/*
->  	 * usec = cycles * ticks_per_cycle * 2**48 * 1e6 / (2**48 * ticks)
->  	 *	= cycles * (s_t_p_c) * 1e6 / (2**48 * ticks)
-> @@ -448,62 +437,9 @@ do_gettimeofday(struct timeval *tv)
->  	delta_usec = ((delta_usec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1)
->  / 2; #endif
-> 
-> -	usec += delta_usec;
-> -	if (usec >= 1000000) {
-> -		sec += 1;
-> -		usec -= 1000000;
-> -	}
-> -
-> -	tv->tv_sec = sec;
-> -	tv->tv_usec = usec;
-> -}
-> -
-> -EXPORT_SYMBOL(do_gettimeofday);
-> -
-> -int
-> -do_settimeofday(struct timespec *tv)
-> -{
-> -	time_t wtm_sec, sec = tv->tv_sec;
-> -	long wtm_nsec, nsec = tv->tv_nsec;
-> -	unsigned long delta_nsec;
-> -
-> -	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
-> -		return -EINVAL;
-> -
-> -	write_seqlock_irq(&xtime_lock);
-> -
-> -	/* The offset that is added into time in do_gettimeofday above
-> -	   must be subtracted out here to keep a coherent view of the
-> -	   time.  Without this, a full-tick error is possible.  */
-> -
-> -#ifdef CONFIG_SMP
-> -	delta_nsec = 0;
-> -#else
-> -	delta_nsec = rpcc() - state.last_time;
-> -	delta_nsec = (delta_nsec * state.scaled_ticks_per_cycle 
-> -		      + state.partial_tick) * 15625;
-> -	delta_nsec = ((delta_nsec / ((1UL << (FIX_SHIFT-6-1)) * HZ)) + 1)
->  / 2; -	delta_nsec *= 1000; -#endif
-> -
-> -	nsec -= delta_nsec;
-> -
-> -	wtm_sec  = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
-> -	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
-> -
-> -	set_normalized_timespec(&xtime, sec, nsec);
-> -	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
-> -
-> -	ntp_clear();
-> -
-> -	write_sequnlock_irq(&xtime_lock);
-> -	clock_was_set();
-> -	return 0;
-> +	return delta_usec * 1000;
->  }
-> 
-> -EXPORT_SYMBOL(do_settimeofday);
-> -
-> -
->  /*
->   * In order to set the CMOS clock precisely, set_rtc_mmss has to be
->   * called 500 ms after the second nowtime has started, because when
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-
-> alpha" in the body of a message to majordomo@vger.kernel.org More 
-> majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> -- 
-> This message has been scanned for viruses and
-> dangerous content by MailScanner, and is
-> believed to be clean.
-------- End of Original Message -------
+> Index: b/mm/rmap.c
+> ===================================================================
+> --- a/mm/rmap.c
+> +++ b/mm/rmap.c
+> @@ -862,34 +862,39 @@ void page_dup_rmap(struct page *page, st
+>   */
+>  void page_remove_rmap(struct page *page)
+>  {
+> -	if (atomic_add_negative(-1, &page->_mapcount)) {
+> -		/*
+> -		 * Now that the last pte has gone, s390 must transfer dirty
+> -		 * flag from storage key to struct page.  We can usually skip
+> -		 * this if the page is anon, so about to be freed; but perhaps
+> -		 * not if it's in swapcache - there might be another pte slot
+> -		 * containing the swap entry, but page not yet written to swap.
+> -		 */
+> -		if ((!PageAnon(page) || PageSwapCache(page)) &&
+> -		    page_test_dirty(page)) {
+> -			page_clear_dirty(page);
+> -			set_page_dirty(page);
+> -		}
+> -		if (PageAnon(page))
+> -			mem_cgroup_uncharge_page(page);
+> -		__dec_zone_page_state(page,
+> -			PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
+> -		mem_cgroup_update_mapped_file_stat(page, -1);
+> -		/*
+> -		 * It would be tidy to reset the PageAnon mapping here,
+> -		 * but that might overwrite a racing page_add_anon_rmap
+> -		 * which increments mapcount after us but sets mapping
+> -		 * before us: so leave the reset to free_hot_cold_page,
+> -		 * and remember that it's only reliable while mapped.
+> -		 * Leaving it set also helps swapoff to reinstate ptes
+> -		 * faster for those pages still in swapcache.
+> -		 */
+> +	if (!atomic_add_negative(-1, &page->_mapcount)) {
+> +		/* the page is still mapped another one */
+> +		return;
+>  	}
 
+Coding style nitpick.
+I'd prefer to remove the brackets and move the comment above the line:
+
+        /* page still mapped by someone else? */
+	if (!atomic_add_negative(-1, &page->_mapcount))
+                return;
+
+Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
