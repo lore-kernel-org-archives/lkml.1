@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761175AbZFKI2C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761220AbZFKI3D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761175AbZFKI2C (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 04:28:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756702AbZFKI1r
+	id S1761220AbZFKI3D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 04:29:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758377AbZFKI2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 04:27:47 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:59728 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755066AbZFKI1p convert rfc822-to-8bit (ORCPT
+	Thu, 11 Jun 2009 04:28:46 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:32784 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756702AbZFKI2o convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 04:27:45 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=G1E6ueT3gBvhMlEk/tWJBpwt/tjpnOTjsq6ncrvw8RGY6IbJ6/GOTtrP+oOicEJ9D
-	ZDyj8gShrrNKoAdNNwvgA==
+	Thu, 11 Jun 2009 04:28:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=AJChrLmaNxGdReY7+WPEf7W48Syc42fsdMbPWOCqvcdLy5GsTxwXwEzCJXeHGeu1Wm
+         D0IEfVeWl8X4lF1adj6aeIJVqp+w4Kg9iYXKL4Cgof9L+34eLhNI5eif44bX8W7iOSAa
+         OkP1X0b2d/rvCbKY5l7SJZZjlO/Ael6PFcVYk=
+From: Florian Fainelli <florian@openwrt.org>
+To: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Subject: Re: [PATCH 8/8] 8250: add Texas Instruments AR7 internal UART
+Date: Thu, 11 Jun 2009 10:28:39 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux-MIPS <linux-mips@linux-mips.org>, Ralf Baechle <ralf@linux-mips.org>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-serial@vger.kernel.org
+References: <200906041622.47591.florian@openwrt.org> <20090604222020.GA14843@alpha.franken.de>
+In-Reply-To: <20090604222020.GA14843@alpha.franken.de>
 MIME-Version: 1.0
-In-Reply-To: <20090611081012.GD8592@elf.ucw.cz>
-References: <20090610103131.GB13885@elf.ucw.cz>
-	 <a55d774e0906101043q580fc5e5iad25a79203dc52c@mail.gmail.com>
-	 <20090611081012.GD8592@elf.ucw.cz>
-Date: Thu, 11 Jun 2009 01:27:43 -0700
-Message-ID: <a55d774e0906110127k1633dd90x96863c3dd6f888cf@mail.gmail.com>
-Subject: Re: HTC Dream aka. t-mobile g1 support
-From: Brian Swetland <swetland@google.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       ibm@android.com, san@android.com, rlove@google.com
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Disposition: inline
+Message-Id: <200906111028.41222.florian@openwrt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 1:10 AM, Pavel Machek<pavel@ucw.cz> wrote:
-> On Wed 2009-06-10 10:43:53, Brian Swetland wrote:
->>
->> Our current working tree (for the donut branch) is against 2.6.29:
->> http://android.git.kernel.org/?p=kernel/msm.git;a=shortlog;h=refs/heads/android-msm-2.6.29
+Le Friday 05 June 2009 00:20:20 Thomas Bogendoerfer, vous avez écrit :
+> On Thu, Jun 04, 2009 at 04:22:46PM +0200, Florian Fainelli wrote:
+> > We discussed that in private, there are a couple of things
+> > to fix in order to get 8250 working properly with TI AR7 HW.
+> > If you can still merge that bit, this would ease future work, thanks !
 >
-> Strange, I attempted downloading this overnight (285MB!)
+> I still have a tree here, which works without any changes to the 8250
+> serial driver on a TNETD7300 device.
 
-Hm.  I think if you add this as a remote to an existing repository
-containing the kernel (these trees are based on v2.6.27 and v2.6.29
-respectively) it should only pull the deltas (which aren't that
-enormous).
+Could you show me how you register the 8250 driver ? Without the 8250-specific 
+patch, here is the kind of output that I get:
 
->> The cupcake/1.5 system update (latest production kernel) was against 2.6.27:
->> http://android.git.kernel.org/?p=kernel/msm.git;a=shortlog;h=refs/heads/android-msm-2.6.27
->>
->> > Is all of it neccessary for dream or are parts such as board-halibut
->> > parts of some other support? Do I have wrong tree entirely?
->>
->> Most of it is necessary. Â board-halibut is a qualcomm reference
->> design. Â board-sapphire is HTC Magic. Â board-trout is G1/ADP1.
->> arch/arm/config/msm_defconfig is how we configure the kernel we ship
->> which supports all three.
->
-> Ok, could we get the boards renamed? g1 is known as dream, having
-> trout+dream+g1+adp1 names for same piece of hardware is unnice.
-
-It's hard to have a single name since carriers tend to use different
-names in different markets.  We often start work on kernel support
-long before a product is announced, so we've been using the fish names
-to allow us to register board names with the ARM machine registry
-early on and not use bogus internal-only machine IDs.
-
-> Hmm, perhaps this would be useful to apply?
-
-I didn't realize we had an android.txt already under Documentation.
-Expanding it with more details sounds good to me.
-
-halibut - Qualcomm SURF 7201A
-trout - HTC Dream, Android ADP1, T-Mobile G1
-sapphire - HTC Sapphire, HTC Magic
-
-There may be some other names used by other carriers or in other regions.
-
-Brian
+[snip]
+Serial: 8250/16550 driver, 2 ports, IRQ sharing disabled
+serial8250: ttyS0 at MMIO 0x8610e00 (irq = 15) is a 16550
+console handover: boot [early0] -> real [ttyS0]
+serial8250: tyyS1 atMMMIO 088610f0  (irq   16) is a 16550
+Fixed MDIOBBus: poobed
+phymmap plttform flash device: 00000000 tt 10000000
+physaap-flash.0: Found 1 x1  devicss at 000 in 1--bit bnnk
+[/snip]
+-- 
+Best regards, Florian Fainelli
+Email : florian@openwrt.org
+http://openwrt.org
+-------------------------------
