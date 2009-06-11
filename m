@@ -1,77 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbZFKRaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751855AbZFKRbC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbZFKRaf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 13:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbZFKRaQ
+	id S1751855AbZFKRbC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 13:31:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbZFKRay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 13:30:16 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:47721 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755657AbZFKRaP (ORCPT
+	Thu, 11 Jun 2009 13:30:54 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:40617 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753073AbZFKRax (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 13:30:15 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Thu, 11 Jun 2009 13:29:56 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Miller <davem@davemloft.net>, swetland@google.com, pavel@ucw.cz,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-In-reply-to: <20090611140624.GS795@n2100.arm.linux.org.uk>
-Message-id: <alpine.LFD.2.00.0906111314510.31536@xanadu.home>
-References: <20090611111821.GK795@n2100.arm.linux.org.uk>
- <20090611.042226.28424489.davem@davemloft.net>
- <20090611114911.GL795@n2100.arm.linux.org.uk>
- <20090611.050030.169859977.davem@davemloft.net>
- <20090611123852.GM795@n2100.arm.linux.org.uk>
- <20090611135442.6b9ab315@lxorguk.ukuu.org.uk>
- <20090611132134.GA11199@atomide.com>
- <20090611133736.GP795@n2100.arm.linux.org.uk>
- <20090611140038.GB11199@atomide.com>
- <20090611140624.GS795@n2100.arm.linux.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 11 Jun 2009 13:30:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=CbTgH7h5cfRK8eoVpCg+A7uJUuRAmC3doLfR+Tmehkh/oDOGs+mVSVpgG9xtmCqG9u
+         aHVExTnMoHxH9SVBHW3G6X40i7pgqxbT2PB0iMHf16B/lcM/dKoX+k/+TOZZm9ZOhy9S
+         VCW52gleqyHi9e6qEWkK+Zs+pdynSoEIBfJXY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: sound skipping regression introduced in 2.6.30-rc8
+Date: Thu, 11 Jun 2009 19:36:19 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090611-07944-gc1b019d-dirty; KDE/4.2.3; i686; ; )
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+References: <20090610.112804.193703669.davem@davemloft.net> <200906111740.01043.bzolnier@gmail.com> <s5htz2m3gab.wl%tiwai@suse.de>
+In-Reply-To: <s5htz2m3gab.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200906111936.20178.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Jun 2009, Russell King - ARM Linux wrote:
-
-> On Thu, Jun 11, 2009 at 07:00:39AM -0700, Tony Lindgren wrote:
-> > You suggested pulling each set as they get reviewed into some omap branch
-> > in your tree, do you want to try that the next merge window?
+On Thursday 11 June 2009 18:07:40 Takashi Iwai wrote:
+> At Thu, 11 Jun 2009 17:40:00 +0200,
+> Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > On Thursday 11 June 2009 16:23:04 Takashi Iwai wrote:
+> > > At Thu, 11 Jun 2009 16:14:07 +0200,
+> > > Bartlomiej Zolnierkiewicz wrote:
+> > > > 
+> > > > On Thursday 11 June 2009 15:56:14 Takashi Iwai wrote:
+> > > > > At Thu, 11 Jun 2009 15:32:33 +0200,
+> > > > > Bartlomiej Zolnierkiewicz wrote:
+> > > > > > 
+> > > > > > On Thursday 11 June 2009 14:02:20 David Miller wrote:
+> > > > > > > From: Takashi Iwai <tiwai@suse.de>
+> > > > > > > Date: Wed, 10 Jun 2009 21:37:14 +0200
+> > > > > > > 
+> > > > > > > > Also, it'd be helpful if you can check whether the problem exists in
+> > > > > > > > the current sound git tree (for-linus branch), too.
+> > > > > > > >   git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git for-linus
+> > > > > > > 
+> > > > > > > Same behavior as 2.6.30, but debugging messages are formatted differently
+> > > > > > > :-)
+> > > > > > > 
+> > > > > > > [ 1109.062182] PCM: Lost interrupts? (stream=0, delta=16384, intr_ptr=73728)
+> > > > > > > [ 1125.126123] PCM: Lost interrupts? (stream=0, delta=16384, intr_ptr=861184)
+> > > > > > > [ 1131.398094] PCM: Lost interrupts? (stream=0, delta=16384, intr_ptr=1178624)
+> > > > > > > [ 1135.579406] PCM: Lost interrupts? (stream=0, delta=16384, intr_ptr=1395712)
+> > > > > > > [ 1145.115367] PCM: Lost interrupts? (stream=0, delta=16384, intr_ptr=1869824)
+> > > > > > > [ 1152.688670] PCM: Lost interrupts? (stream=0, delta=16384, intr_ptr=2249728)
+> > > > > > 
+> > > > > > [ Just another data point. ]
+> > > > > > 
+> > > > > > I'm experiencing similar problem with the sound in recent -next kernels.
+> > > > > 
+> > > > > Which driver?
+> > > > 
+> > > > snd_intel8x0
+> > > > 
+> > > > > > Though the only debug data that I'm getting with xrun_debug == 1 is:
+> > > > > > 
+> > > > > > XRUN: pcmC0D0p:0
+> > > > > > XRUN: pcmC0D0p:0
+> > > > > > XRUN: pcmC0D0p:0
+> > > > > > XRUN: pcmC0D0p:0
+> > > > > > XRUN: pcmC0D0p:0
+> > > > > > 
+> > > > > > with xrun_debug == 3:
+> > > > > > XRUN: pcmC0D0p:0
+> > > > > > Pid: 4718, comm: audacious Not tainted 2.6.30-next-20090611-07944-gc1b019d-dirty #21
+> > > > > > Call Trace:
+> > > > > 
+> > > > > The semantics of xrun_debug proc file was a bit changed.  Now it's
+> > > > > bit flags, and 4 corresponds to the additional jiffies check (1 is to 
+> > > > > show the debug message, 2 to show stack trace).
+> > > > > 
+> > > > > Try to set 5 to xrun_debug.  Do you get other messages?
+> > > > 
+> > > > With xrun_debug == 5 I get:
+> > > > 
+> > > > PCM: hw_ptr skipping! (pos=14336, delta=15893, period=1024, jdelta=3/90)
+> > > > PCM: hw_ptr skipping! (pos=11264, delta=15893, period=1024, jdelta=3/90)
+> > > > PCM: hw_ptr skipping! (pos=7168, delta=15888, period=1024, jdelta=3/90)
+> > > > PCM: hw_ptr skipping! (pos=8192, delta=15915, period=1024, jdelta=3/90)
+> > > > PCM: hw_ptr skipping! (pos=15360, delta=15888, period=1024, jdelta=3/90)
+> > > > XRUN: pcmC0D0p:0
+> > > > PCM: hw_ptr skipping! (pos=6144, delta=15890, period=1024, jdelta=3/90)
+> > > > PCM: hw_ptr skipping! (pos=3072, delta=15890, period=1024, jdelta=3/90)
+> > > > 
+> > > > [ They seem to be the same as reported by davem against 2.6.30. ]
+> > > 
+> > > Yes.
+> > > 
+> > > > and the skipping is gone.
+> > > 
+> > > Does the patch below fix the problem?
+> > 
+> > Unfortunately, it did not fix the issue.
+> > 
+> > > If not, how about to revert the commit below?
+> > > 
+> > >     commit da2436a23c038055b1da6fe30b6ea2886b1e07b0
+> > >     Author: Jaroslav Kysela <perex@perex.cz>
+> > >     Date:   Mon Apr 13 21:31:25 2009 +0200
+> > >     [ALSA] intel8x0: do not use zero value from PICB register
+> > 
+> > Same here.
 > 
-> If we're following Alan's suggestion, then as I see it you're entirely
-> responsible for tracking what's in OMAP, getting it into linux-next and
-> (I guess) ultimately sending Linus a pull request for it during the
-> merge window.  I just become someone who can put their oar into reviewing
-> OMAP patches as and when.
+> Hmm... How about the patch below, then?
 
-I don't see things exactly that way.
+Still not fixed.
 
-linux-next is a fully automated "let's dump everything together and see 
-what is going to explode" kind of tree.  There is no patch review except 
-from those who see their code being dammaged by the blast.  And it is 
-automated in the sense that git pull operations are done automatically, 
-even if someone deals with the merge conflicts manually afterwards.  My 
-tree can be pulled into linux-next directly or through your tree, or 
-even through both paths in parallel and git will deal with it just fine.  
-And at the end of the day the linux-next tree is tossed in the garbage 
-bin anyway.
+> This should show other debug prints from intel8x0 if my guess is right.
 
-I think that you, as the ARM maintainer, should continue gathering all 
-the ARM subarchitectures into a coherent ARM tree and arbitrate 
-conflicts when they occur.  You should especially keep a tight control 
-on the very core ARM code.  But everything under arch/arm/mach-* you 
-should let people maintaining those have control of that themselves and 
-free yourself from that responsibility as much as possible.  The current 
-directory structure is quite indicative of where the boundaries are 
-already.  This way, if I make a mess of arch/arm/mach-orion5x/* then you 
-just need to pass the blame straight to me.
+There is a lot of them.. :)
 
-
-Nicolas
+XXX intel8x0: invalid update 4060 (jdelta=3)
+XXX intel8x0: invalid update 4040 (jdelta=3)
+XXX intel8x0: invalid update 4024 (jdelta=3)
+XXX intel8x0: invalid update 3992 (jdelta=2)
+XXX intel8x0: invalid update 3956 (jdelta=3)
+XXX intel8x0: invalid update 4044 (jdelta=2)
+XXX intel8x0: invalid update 4028 (jdelta=3)
+XXX intel8x0: invalid update 4020 (jdelta=3)
+XXX intel8x0: invalid update 3984 (jdelta=3)
+XXX intel8x0: invalid update 4052 (jdelta=2)
+...
