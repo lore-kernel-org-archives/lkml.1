@@ -1,226 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757598AbZFKBLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbZFKBMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757598AbZFKBLs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 21:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbZFKBLj
+	id S1755257AbZFKBMa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 21:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753906AbZFKBMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 21:11:39 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:49860 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751708AbZFKBLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 21:11:38 -0400
-Message-ID: <4A305A1A.2010901@cn.fujitsu.com>
-Date: Thu, 11 Jun 2009 09:12:58 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 10 Jun 2009 21:12:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38015 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753778AbZFKBMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 21:12:22 -0400
+Message-ID: <4A305A99.70701@redhat.com>
+Date: Thu, 11 Jun 2009 09:15:05 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/3] ring-buffer: make the buffer a true circular link
- list
-References: <20090610195311.767699959@goodmis.org> <20090610195524.945549278@goodmis.org>
-In-Reply-To: <20090610195524.945549278@goodmis.org>
-Content-Type: text/plain; charset=UTF-8
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: 2.6.31 -mm merge plans
+References: <20090610115140.09c9f4cb.akpm@linux-foundation.org>	<20090610190841.GT8633@ZenIV.linux.org.uk> <20090610121633.d678fc8b.akpm@linux-foundation.org>
+In-Reply-To: <20090610121633.d678fc8b.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> This patch changes the ring buffer data pages from using a link list
-> head pointer, to making each buffer page point to another buffer page
-> and never back to a "head".
-> 
-> This makes the handling of the ring buffer less complex, since the
-> traversing of the ring buffer pages no longer needs to account for the
-> head pointer.
-> 
-> This change also is needed to make the ring buffer lockless.
-> 
-> [ Impact: simplify the ring buffer to help make it lockless ]
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  kernel/trace/ring_buffer.c |   54 ++++++++++++++++++++++++++++++-------------
->  1 files changed, 37 insertions(+), 17 deletions(-)
-> 
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index 2e642b2..d1edd63 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -404,7 +404,7 @@ struct ring_buffer_per_cpu {
->  	spinlock_t			reader_lock; /* serialize readers */
->  	raw_spinlock_t			lock;
->  	struct lock_class_key		lock_key;
-> -	struct list_head		pages;
-> +	struct list_head		*pages;
->  	struct buffer_page		*head_page;	/* read from head */
->  	struct buffer_page		*tail_page;	/* write to tail */
->  	struct buffer_page		*commit_page;	/* committed pages */
-> @@ -494,7 +494,7 @@ EXPORT_SYMBOL_GPL(ring_buffer_normalize_time_stamp);
->   */
->  static int rb_check_pages(struct ring_buffer_per_cpu *cpu_buffer)
->  {
-> -	struct list_head *head = &cpu_buffer->pages;
-> +	struct list_head *head = cpu_buffer->pages;
->  	struct buffer_page *bpage, *tmp;
->  
->  	if (RB_WARN_ON(cpu_buffer, head->next->prev != head))
-> @@ -517,12 +517,13 @@ static int rb_check_pages(struct ring_buffer_per_cpu *cpu_buffer)
->  static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
->  			     unsigned nr_pages)
->  {
-> -	struct list_head *head = &cpu_buffer->pages;
->  	struct buffer_page *bpage, *tmp;
->  	unsigned long addr;
->  	LIST_HEAD(pages);
->  	unsigned i;
->  
-> +	WARN_ON(!nr_pages);
-> +
->  	for (i = 0; i < nr_pages; i++) {
->  		bpage = kzalloc_node(ALIGN(sizeof(*bpage), cache_line_size()),
->  				    GFP_KERNEL, cpu_to_node(cpu_buffer->cpu));
-> @@ -537,7 +538,18 @@ static int rb_allocate_pages(struct ring_buffer_per_cpu *cpu_buffer,
->  		rb_init_page(bpage->page);
->  	}
->  
-> -	list_splice(&pages, head);
-> +	/*
-> +	 * The ring buffer page list is a circular list that does not
-> +	 * start and end with a list head. All page list items point to
-> +	 * other pages. Remove one of the pages, init its list head,
-> +	 * and use list splice to move the rest of the pages to it.
-> +	 */
-> +	bpage = list_entry(pages.next, struct buffer_page, list);
-> +	list_del_init(&bpage->list);
-> +	cpu_buffer->pages = &bpage->list;
-> +
-> +	list_splice(&pages, cpu_buffer->pages);
-> +
+Andrew Morton wrote:
+> (cc's added)
+>
+> On Wed, 10 Jun 2009 20:08:41 +0100
+> Al Viro <viro@ZenIV.linux.org.uk> wrote:
+>
+>   
+>> On Wed, Jun 10, 2009 at 11:51:40AM -0700, Andrew Morton wrote:
+>>
+>>     
+>>> proc-merge-arrayc-into-basec.patch
+>>> proc-merge-arrayc-into-basec-checkpatch-fixes.patch
+>>>       
+>> I'm not sure that there's any point in that.  Sure, we can slap two
+>> files together; what the hell for?  Both are quite large, there's
+>> a (relatively) sane separation of code between them (misc. files
+>> contents in /proc/<pid>/ vs. directory structure and symlinks in
+>> there, more or less) and I don't see any benefit in mashing them
+>> together.  Up to Alexey, but IMO that's pointless.
+>>     
+>
+> No strong opinions here.
+>   
 
-Is it proper?
+Hi, Al.
 
-	cpu_buffer->pages = pages.next;
-	list_del(&pages);
+Just as what I said in the description of that patch, one only has 
+extern functions that are _only_ used in another as function pointers.
 
->  
->  	rb_check_pages(cpu_buffer);
->  
-> @@ -569,7 +581,6 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
->  	spin_lock_init(&cpu_buffer->reader_lock);
->  	lockdep_set_class(&cpu_buffer->reader_lock, buffer->reader_lock_key);
->  	cpu_buffer->lock = (raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
-> -	INIT_LIST_HEAD(&cpu_buffer->pages);
->  
->  	bpage = kzalloc_node(ALIGN(sizeof(*bpage), cache_line_size()),
->  			    GFP_KERNEL, cpu_to_node(cpu));
-> @@ -590,7 +601,7 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
->  		goto fail_free_reader;
->  
->  	cpu_buffer->head_page
-> -		= list_entry(cpu_buffer->pages.next, struct buffer_page, list);
-> +		= list_entry(cpu_buffer->pages, struct buffer_page, list);
->  	cpu_buffer->tail_page = cpu_buffer->commit_page = cpu_buffer->head_page;
->  
->  	return cpu_buffer;
-> @@ -605,15 +616,20 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
->  
->  static void rb_free_cpu_buffer(struct ring_buffer_per_cpu *cpu_buffer)
->  {
-> -	struct list_head *head = &cpu_buffer->pages;
-> +	struct list_head *head = cpu_buffer->pages;
->  	struct buffer_page *bpage, *tmp;
->  
->  	free_buffer_page(cpu_buffer->reader_page);
->  
-> -	list_for_each_entry_safe(bpage, tmp, head, list) {
-> -		list_del_init(&bpage->list);
-> +	if (head) {
-> +		list_for_each_entry_safe(bpage, tmp, head, list) {
-> +			list_del_init(&bpage->list);
-> +			free_buffer_page(bpage);
-> +		}
-> +		bpage = list_entry(head, struct buffer_page, list);
->  		free_buffer_page(bpage);
->  	}
-> +
->  	kfree(cpu_buffer);
->  }
->  
-> @@ -767,14 +783,14 @@ rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned nr_pages)
->  	synchronize_sched();
->  
->  	for (i = 0; i < nr_pages; i++) {
-> -		if (RB_WARN_ON(cpu_buffer, list_empty(&cpu_buffer->pages)))
-> +		if (RB_WARN_ON(cpu_buffer, list_empty(cpu_buffer->pages)))
->  			return;
-> -		p = cpu_buffer->pages.next;
-> +		p = cpu_buffer->pages->next;
->  		bpage = list_entry(p, struct buffer_page, list);
->  		list_del_init(&bpage->list);
->  		free_buffer_page(bpage);
->  	}
-> -	if (RB_WARN_ON(cpu_buffer, list_empty(&cpu_buffer->pages)))
-> +	if (RB_WARN_ON(cpu_buffer, list_empty(cpu_buffer->pages)))
->  		return;
->  
->  	rb_reset_cpu(cpu_buffer);
-> @@ -802,7 +818,7 @@ rb_insert_pages(struct ring_buffer_per_cpu *cpu_buffer,
->  		p = pages->next;
->  		bpage = list_entry(p, struct buffer_page, list);
->  		list_del_init(&bpage->list);
-> -		list_add_tail(&bpage->list, &cpu_buffer->pages);
-> +		list_add_tail(&bpage->list, cpu_buffer->pages);
->  	}
->  	rb_reset_cpu(cpu_buffer);
->  
-> @@ -999,9 +1015,6 @@ static inline void rb_inc_page(struct ring_buffer_per_cpu *cpu_buffer,
->  {
->  	struct list_head *p = (*bpage)->list.next;
->  
-> -	if (p == &cpu_buffer->pages)
-> -		p = p->next;
-> -
->  	*bpage = list_entry(p, struct buffer_page, list);
->  }
->  
-> @@ -2212,6 +2225,13 @@ rb_get_reader_page(struct ring_buffer_per_cpu *cpu_buffer)
->  	cpu_buffer->reader_page->list.next = reader->list.next;
->  	cpu_buffer->reader_page->list.prev = reader->list.prev;
->  
-> +	/*
-> +	 * cpu_buffer->pages just needs to point to the buffer, it
-> +	 *  has no specific buffer page to point to. Lets move it out
-> +	 *  of our way so we don't accidently swap it.
-> +	 */
-> +	cpu_buffer->pages = reader->list.prev;
-> +
->  	local_set(&cpu_buffer->reader_page->write, 0);
->  	local_set(&cpu_buffer->reader_page->entries, 0);
->  	local_set(&cpu_buffer->reader_page->page->commit, 0);
-> @@ -2656,7 +2676,7 @@ static void
->  rb_reset_cpu(struct ring_buffer_per_cpu *cpu_buffer)
->  {
->  	cpu_buffer->head_page
-> -		= list_entry(cpu_buffer->pages.next, struct buffer_page, list);
-> +		= list_entry(cpu_buffer->pages, struct buffer_page, list);
->  	local_set(&cpu_buffer->head_page->write, 0);
->  	local_set(&cpu_buffer->head_page->entries, 0);
->  	local_set(&cpu_buffer->head_page->page->commit, 0);
+And the size of code can't be a reason why they are seperated, we have
+much more source files larger than this one. :)
+
+Thanks.
 
 
