@@ -1,80 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762029AbZFKOyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762893AbZFKOy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762029AbZFKOyK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 10:54:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759474AbZFKOxz
+	id S1762893AbZFKOy1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 10:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761466AbZFKOx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 10:53:55 -0400
+	Thu, 11 Jun 2009 10:53:56 -0400
 Received: from mga14.intel.com ([143.182.124.37]:31949 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757897AbZFKOxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761647AbZFKOxx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Jun 2009 10:53:53 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,203,1243839600"; 
-   d="scan'208";a="153176989"
-Message-Id: <20090611144430.540500784@intel.com>
-References: <20090611142239.192891591@intel.com>
+   d="scan'208";a="153176986"
+Message-Id: <20090611142239.192891591@intel.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 11 Jun 2009 22:22:41 +0800
+Date: Thu, 11 Jun 2009 22:22:39 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-       Wu Fengguang <fengguang.wu@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
 cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+cc: Nick Piggin <npiggin@suse.de>
 CC: Andi Kleen <andi@firstfloor.org>, "riel@redhat.com" <riel@redhat.com>,
        "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [PATCH 2/5] HWPOISON: fix tasklist_lock/anon_vma locking order
-Content-Disposition: inline; filename=hwpoison-lock-order.patch
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "Wu, Fengguang" <fengguang.wu@intel.com>
+Subject: [PATCH 0/5] [RFC] HWPOISON incremental fixes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To avoid possible deadlock. Proposed by Nick Piggin:
+Hi all,
 
-  You have tasklist_lock(R) nesting outside i_mmap_lock, and inside anon_vma
-  lock. And anon_vma lock nests inside i_mmap_lock.
+Here are the hwpoison fixes that aims to address Nick and Hugh's concerns.
+Note that
+- the early kill option is dropped for .31. It's obscure option and complex
+  code and is not must have for .31. Maybe Andi also aims this option for
+  notifying KVM, but right now KVM is not ready to handle that.
+- It seems that even fsync() processes are not easy to catch, so I abandoned
+  the SIGKILL on fsync() idea. Instead, I choose to fail any attempt to
+  populate the poisoned file with new pages, so that the corrupted page offset
+  won't be repopulated with outdated data. This seems to be a safe way to allow
+  the process to continue running while still be able to promise good (but not
+  complete) data consistency.
+- I didn't implement the PANIC-on-corrupted-data option. Instead, I guess
+  sending uevent notification to user space will be a more flexible scheme?
 
-  This seems fragile. If rwlocks ever become FIFO or tasklist_lock changes
-  type (maybe -rt kernels do it), then you could have a task holding
-  anon_vma lock and waiting for tasklist_lock, and another holding tasklist
-  lock and waiting for i_mmap_lock, and another holding i_mmap_lock and
-  waiting for anon_vma lock.
-
-CC: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/memory-failure.c |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
---- sound-2.6.orig/mm/memory-failure.c
-+++ sound-2.6/mm/memory-failure.c
-@@ -215,12 +215,14 @@ static void collect_procs_anon(struct pa
- {
- 	struct vm_area_struct *vma;
- 	struct task_struct *tsk;
--	struct anon_vma *av = page_lock_anon_vma(page);
-+	struct anon_vma *av;
- 
-+	read_lock(&tasklist_lock);
-+
-+	av = page_lock_anon_vma(page);
- 	if (av == NULL) /* Not actually mapped anymore */
--		return;
-+		goto out;
- 
--	read_lock(&tasklist_lock);
- 	for_each_process (tsk) {
- 		if (!tsk->mm)
- 			continue;
-@@ -230,6 +232,7 @@ static void collect_procs_anon(struct pa
- 		}
- 	}
- 	page_unlock_anon_vma(av);
-+out:
- 	read_unlock(&tasklist_lock);
- }
- 
-
+Thanks,
+Fengguang
 -- 
 
