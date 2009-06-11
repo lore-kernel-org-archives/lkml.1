@@ -1,72 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758717AbZFKSwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758421AbZFKSw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758717AbZFKSwN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 14:52:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757051AbZFKSv7
+	id S1758421AbZFKSw2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 14:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbZFKSwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 14:51:59 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:39732 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755735AbZFKSv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 14:51:58 -0400
-Date: Thu, 11 Jun 2009 20:52:00 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tejun Heo <tj@kernel.org>, Steven Rostedt <srostedt@redhat.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] first block round for 2.6.31
-Message-ID: <20090611185200.GZ11363@kernel.dk>
-References: <20090611111339.GQ11363@kernel.dk> <alpine.LFD.2.01.0906111105021.3573@localhost.localdomain> <20090611182657.GY11363@kernel.dk> <alpine.LFD.2.01.0906111134180.3573@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906111134180.3573@localhost.localdomain>
+	Thu, 11 Jun 2009 14:52:19 -0400
+Received: from vms173007pub.verizon.net ([206.46.173.7]:40418 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759124AbZFKSwT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 14:52:19 -0400
+Message-id: <4A314526.5030704@acm.org>
+Date: Thu, 11 Jun 2009 12:55:50 -0500
+From: Corey Minyard <minyard@acm.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-version: 1.0
+To: Chaitanya Lala <clala@riverbed.com>
+Cc: martin.wilck@ts.fujitsu.com, linux-kernel@vger.kernel.org
+Subject: Re: Regarding patchwork patch #28003
+References: <20090611173312.GA7450@clala-laptop>
+In-reply-to: <20090611173312.GA7450@clala-laptop>
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11 2009, Linus Torvalds wrote:
-> 
-> 
-> On Thu, 11 Jun 2009, Jens Axboe wrote:
-> > 
-> > > Btw, Jens: in your tree, you've committed Tejun's changes without adding 
-> > > your own sign-off. Not good!
-> > 
-> > That's for the patches that I pulled from his git tree. It should list
-> > him as committer too.
-> 
-> NO!
-> 
-> It sounds like you have done a _major_ no-no, which is to pull from his 
-> tree, and then rebase it. 
-> 
-> DO NOT DO THAT! NOT EVER!
-> 
-> If you pull from somebody elses tree, you can no longer touch the commit. 
-> It absolutely has to stay the same. Otherwise we see this kind of insane 
-> duplication. 
-> 
-> You're doing something seriously wrong here. I wrote a long rant about 
-> what the rules were last release cycle, but now I can't find it. 
-> Basically, if you're not the committer, you really must never EVER touch 
-> it. 
-> 
-> [ Anybody with enough google-fu to find my rant, so I don't have to 
->   re-rant? ]
+Chaitanya Lala wrote:
+> Hi,
+> I have been facing the issue of the kipmid's CPU usage spiking since a long time.
+> I have tested the patch sent by Martin (limit CPU time spent in kipmid (version 4)) and it solves the issue for me.
+> I do not see any activity/feedback on the patch.
+> Can I help in some-way to ensure that this patch is merged ?
+>   
+I will add this to the patchset I put out for 2.6.30, and if that goes 
+well it will go into the mainstream kernel.
 
-I pulled from his tree, don't think I ever rebased it. To be honest, I
-rebase a lot, and I used to do that for the 'export' branches as well.
-But for this cycle I have kept it clean and pulled in your tree when I
-knew a conflict at arisen. More trees are now based off the block tree,
-so I wanted to make sure that they were able to pull cleanly when they
-wanted to. I usually also always apply the patches manually instead of
-pulling it in, since I go over the patches anyway.
-
-So I fully agree with what you are saying, if anything was rebased this
-time then it was a mistake (that I don't recollect)...
-
--- 
-Jens Axboe
-
+-corey
