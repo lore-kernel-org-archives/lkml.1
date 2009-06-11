@@ -1,59 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbZFKRN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbZFKROr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754496AbZFKRN1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 13:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZFKRNT
+	id S1754721AbZFKROr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 13:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbZFKROj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 13:13:19 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:38964 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752260AbZFKRNT (ORCPT
+	Thu, 11 Jun 2009 13:14:39 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:56023 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752143AbZFKROi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 13:13:19 -0400
-Date: Thu, 11 Jun 2009 18:12:59 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
-       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT PULL] Performance Counters for Linux
-Message-ID: <20090611171259.GW8633@ZenIV.linux.org.uk>
-References: <20090611160329.GA3366@elte.hu> <20090611161714.GA5008@infradead.org> <alpine.LFD.2.01.0906110922080.3573@localhost.localdomain> <20090611165226.GV8633@ZenIV.linux.org.uk> <1244739378.6691.540.camel@laptop> <20090611170015.GA3651@infradead.org> <2c0942db0906111005g5e9cd1c7te603bcdb8c6cc921@mail.gmail.com>
+	Thu, 11 Jun 2009 13:14:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iaakkaUwPQHeNaRHYlKXL+Ki2rmz4Z+FGDq057Uzf/lj8ajrhWhd/qEMmLqNifmgUa
+         d4K4wFJsNrpul01wYDbevVZ8ymPDfaE2pkn2qmQ7OPeEhlfQKvIeFK4VSbXcD77sBu4B
+         BwZG6kJz78+rDWYNu1r38sv8B2MPJMnTN5x9g=
+Date: Thu, 11 Jun 2009 19:14:36 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Subject: Re: [PATCH 00/11] [GIT PULL] more updates for the tag format
+Message-ID: <20090611171434.GA6011@nowhere>
+References: <20090610054206.510574695@goodmis.org> <20090610092644.GA20889@elte.hu> <c62985530906100411o5a178352n53f7d247f6e9dba9@mail.gmail.com> <20090610130127.GA6647@mit.edu> <alpine.DEB.2.00.0906100911190.30552@gandalf.stny.rr.com> <20090610160303.GA10240@mit.edu> <20090611130318.GB14220@infradead.org> <20090611154751.GD9275@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2c0942db0906111005g5e9cd1c7te603bcdb8c6cc921@mail.gmail.com>
+In-Reply-To: <20090611154751.GD9275@mit.edu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 10:05:02AM -0700, Ray Lee wrote:
-> On Thu, Jun 11, 2009 at 10:00 AM, Christoph Hellwig<hch@infradead.org> wrote:
-> > On Thu, Jun 11, 2009 at 06:56:18PM +0200, Peter Zijlstra wrote:
-> >> No, once a kernel with this syscall gets released we most certainly
-> >> intend to maintain its ABI.
-> >
-> > So what point is there in keeping it in-tree except making life hell for
-> > packagers?
+On Thu, Jun 11, 2009 at 11:47:51AM -0400, Theodore Tso wrote:
+> On Thu, Jun 11, 2009 at 09:03:18AM -0400, Christoph Hellwig wrote:
+> > On Wed, Jun 10, 2009 at 12:03:03PM -0400, Theodore Tso wrote:
+> > > Yes, another approach for handling this case would be to take my
+> > > "jbd2_dev_to_name" function and support it as a first-class tagged
+> > > type; after all, I'm sure ext4 won't be the only place that would like
+> > > to take a dev_t and print the device name.  So this could certainly be
+> > > fixed by adding some kind of "<dev:xxx>" sort of tagged name.
+> > 
+> > We should absolutely agree on one way to represent block device for
+> > tracers.  At this point xfs, gfs2 and the block tracer all use
+> > major/minor.  I agree that having a name would be nicer for text output,
+> > but I really want to keep the dev_t for the binary output.  We should
+> > also make sure we agree on a field name so that filtering will work
+> > the same for all block-related tracers (especially important if we want
+> > to trace something from the filesystem down to the block layer).
 > 
-> Packagers are quite used to taking a single source tree and building
-> multiple packages out of it. This isn't rocket science. It's the
-> multiple separate trees that need to be released in lock-step that are
-> headaches.
+> And I want to keep the dev_t as what stored in the ring buffer for
+> space reasons; but the text name is far more convient in terms of
+> being human-readable, *especially* given there are some crazy people
+> out there wanting to make major/minor numbers be completely random.
+> The problem with that is that a log trace file might not be useful
+> after a reboot, unless someone had enough foresight to save the device
+> mappings which were in effect at the that the trace was taken.
+> 
+> So if we store the dev_t in the ring buffer, and have a way of
+> translating the dev_t into a human-friendly name at printk happen, I
+> think that meets both of our goals.  That would imply that filtering
+> would be using a device number, which would certainly be more
+> efficient than doing a string compare.
+> 
+> 					- Ted
 
-Wrong.  Remember the fun bisecting around sysfs/udev incompatible change?
-Oops, went back past the cutoff line, got to downgrade udev for the next
-boot.  Oh, it oopses?  Too fucking bad, can't just boot the previous kernel,
-should've kept _two_ working ones so that with any userland state we could
-come back to working system.
 
-This isn't a rocket science, this is a goddamn load of horse manure.
-Packages that need to be updated in the lock-step *are* headaches from
-hell when you are trying to do development.  Even if you have all of
-them already built.
+For the filters, we could enter the text name which would be
+internally converted into a dev_t, there should be no problem.
+
+Also the raw dev_t can be stored and then human-friendly printed on
+print time.
+
+Both seem about trivial to add.
+ 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
