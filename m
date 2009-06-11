@@ -1,90 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762932AbZFKWws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763434AbZFKWw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762932AbZFKWws (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 18:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbZFKWwk
+	id S1763434AbZFKWw7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 18:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760927AbZFKWwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 18:52:40 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:4947 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757595AbZFKWwj convert rfc822-to-8bit (ORCPT
+	Thu, 11 Jun 2009 18:52:42 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:41442 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759657AbZFKWwl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 18:52:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=K2MiX6zTRyQPwv2GwnFhSlkLSHYHQmLtin274x1xZBVhrpbWLO03GMnjInCtc+PtSu
-         tE9FB70FszVbYxUXQ6pm0KqkpSK77NV6GIWY+bzd33ViAydud0Kc6ebXsp9vdg4faje4
-         f8x47gCLwQ4Oh3FvA1rB6M7lwGH2I283EjHlg=
-MIME-Version: 1.0
-In-Reply-To: <28c262360906110218t6a3ed908g9a4fba7fa7dd7b22@mail.gmail.com>
-References: <20090611165535.cf46bf29.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090611170018.c3758488.kamezawa.hiroyu@jp.fujitsu.com>
-	 <28c262360906110218t6a3ed908g9a4fba7fa7dd7b22@mail.gmail.com>
-Date: Fri, 12 Jun 2009 07:52:41 +0900
-Message-ID: <28c262360906111552h774888a5l895085a8cf724579@mail.gmail.com>
-Subject: Re: [PATCH 1/3] remove wrong rotation at lumpy reclaim
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       apw@canonical.com, riel@redhat.com, mel@csn.ul.ie
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 11 Jun 2009 18:52:41 -0400
+Subject: [PATCH] Convert m32r to use arch_gettimeoffset()
+From: john stultz <johnstul@us.ibm.com>
+To: takata@linux-m32r.org
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-m32r@ml.linux-m32r.org
+In-Reply-To: <1244758210.7192.5.camel@localhost.localdomain>
+References: <1244758210.7192.5.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 11 Jun 2009 15:52:24 -0700
+Message-Id: <1244760744.7192.29.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Otherwise, Looks good to me.
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+This patch converts m32r to use GENERIC_TIME via the arch_getoffset()
+infrastructure, reducing the amount of arch specific code we need to
+maintain.
 
-On Thu, Jun 11, 2009 at 6:18 PM, Minchan Kim<minchan.kim@gmail.com> wrote:
-> On Thu, Jun 11, 2009 at 5:00 PM, KAMEZAWA
-> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>
->> At lumpy reclaim, a page failed to be taken by __isolate_lru_page() can
->> be pushed back to "src" list by list_move(). But the page may not be from
->> "src" list. And list_move() itself is unnecessary because the page is
->> not on top of LRU. Then, leave it as it is if __isolate_lru_page() fails.
->>
->> This patch doesn't change the logic as "we should exit loop or not" and
->> just fixes buggy list_move().
->>
->> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->> ---
->>  mm/vmscan.c |    9 +--------
->>  1 file changed, 1 insertion(+), 8 deletions(-)
->>
->> Index: lumpy-reclaim-trial/mm/vmscan.c
->> ===================================================================
->> --- lumpy-reclaim-trial.orig/mm/vmscan.c
->> +++ lumpy-reclaim-trial/mm/vmscan.c
->> @@ -936,18 +936,11 @@ static unsigned long isolate_lru_pages(u
->>                        /* Check that we have not crossed a zone boundary. */
->>                        if (unlikely(page_zone_id(cursor_page) != zone_id))
->>                                continue;
->> -                       switch (__isolate_lru_page(cursor_page, mode, file)) {
->> -                       case 0:
->> +                       if (__isolate_lru_page(cursor_page, mode, file) == 0) {
->>                                list_move(&cursor_page->lru, dst);
->>                                nr_taken++;
->>                                scan++;
->>                                break;
->
-> break ??
->
-> Kinds regards,
-> Minchan Kim
->
+I also noted that m32r doesn't seem to be taking the xtime write lock
+before calling do_timer()!  That looks like a pretty bad bug to me. If
+folks agree, let me know and I can move the lock grab to the correct
+spot.
+
+This patch applies on top of Linus' current -git tree (pre 2.6.31-rc1).
+
+I've taken my best swing at converting this, but I'm not 100% confident
+I got it right. It does cross compile, so that's hopefully a good sign.
+Any assistance from arch maintainers or testers to get this merged would
+be great.
+
+thanks
+-john
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+---
+ Kconfig       |    6 ++++
+ kernel/time.c |   74 ++--------------------------------------------------------
+ 2 files changed, 9 insertions(+), 71 deletions(-)
+
+diff --git a/arch/m32r/Kconfig b/arch/m32r/Kconfig
+index cabba33..c41234f 100644
+--- a/arch/m32r/Kconfig
++++ b/arch/m32r/Kconfig
+@@ -41,6 +41,12 @@ config HZ
+ 	int
+ 	default 100
+ 
++config GENERIC_TIME
++	def_bool y
++
++config ARCH_USES_GETTIMEOFFSET
++	def_bool y
++
+ source "init/Kconfig"
+ 
+ source "kernel/Kconfig.freezer"
+diff --git a/arch/m32r/kernel/time.c b/arch/m32r/kernel/time.c
+index cada3ba..ba61c4c 100644
+--- a/arch/m32r/kernel/time.c
++++ b/arch/m32r/kernel/time.c
+@@ -48,7 +48,7 @@ extern void smp_local_timer_interrupt(void);
+ 
+ static unsigned long latch;
+ 
+-static unsigned long do_gettimeoffset(void)
++u32 arch_gettimeoffset(void)
+ {
+ 	unsigned long  elapsed_time = 0;  /* [us] */
+ 
+@@ -93,79 +93,10 @@ static unsigned long do_gettimeoffset(void)
+ #error no chip configuration
+ #endif
+ 
+-	return elapsed_time;
++	return elapsed_time * 1000;
+ }
+ 
+ /*
+- * This version of gettimeofday has near microsecond resolution.
+- */
+-void do_gettimeofday(struct timeval *tv)
+-{
+-	unsigned long seq;
+-	unsigned long usec, sec;
+-	unsigned long max_ntp_tick = tick_usec - tickadj;
+-
+-	do {
+-		seq = read_seqbegin(&xtime_lock);
+-
+-		usec = do_gettimeoffset();
+-
+-		/*
+-		 * If time_adjust is negative then NTP is slowing the clock
+-		 * so make sure not to go into next possible interval.
+-		 * Better to lose some accuracy than have time go backwards..
+-		 */
+-		if (unlikely(time_adjust < 0))
+-			usec = min(usec, max_ntp_tick);
+-
+-		sec = xtime.tv_sec;
+-		usec += (xtime.tv_nsec / 1000);
+-	} while (read_seqretry(&xtime_lock, seq));
+-
+-	while (usec >= 1000000) {
+-		usec -= 1000000;
+-		sec++;
+-	}
+-
+-	tv->tv_sec = sec;
+-	tv->tv_usec = usec;
+-}
+-
+-EXPORT_SYMBOL(do_gettimeofday);
+-
+-int do_settimeofday(struct timespec *tv)
+-{
+-	time_t wtm_sec, sec = tv->tv_sec;
+- 	long wtm_nsec, nsec = tv->tv_nsec;
+-
+-	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
+-		return -EINVAL;
+-
+-	write_seqlock_irq(&xtime_lock);
+-	/*
+-	 * This is revolting. We need to set "xtime" correctly. However, the
+-	 * value in this location is the value at the most recent update of
+-	 * wall time.  Discover what correction gettimeofday() would have
+-	 * made, and then undo it!
+-	 */
+-	nsec -= do_gettimeoffset() * NSEC_PER_USEC;
+-
+-	wtm_sec = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
+-	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
+-
+-	set_normalized_timespec(&xtime, sec, nsec);
+-	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
+-
+-	ntp_clear();
+-	write_sequnlock_irq(&xtime_lock);
+-	clock_was_set();
+-
+-	return 0;
+-}
+-
+-EXPORT_SYMBOL(do_settimeofday);
+-
+-/*
+  * In order to set the CMOS clock precisely, set_rtc_mmss has to be
+  * called 500 ms after the second nowtime has started, because when
+  * nowtime is written into the registers of the CMOS clock, it will
+@@ -192,6 +123,7 @@ static irqreturn_t timer_interrupt(int irq, void *dev_id)
+ #ifndef CONFIG_SMP
+ 	profile_tick(CPU_PROFILING);
+ #endif
++	/* XXX FIXME. Uh, the xtime_lock should be held here, no? */
+ 	do_timer(1);
+ 
+ #ifndef CONFIG_SMP
 
 
-
--- 
-Kinds regards,
-Minchan Kim
