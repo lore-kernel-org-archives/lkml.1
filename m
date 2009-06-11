@@ -1,100 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762975AbZFKLdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763107AbZFKLeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762975AbZFKLdS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 07:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758048AbZFKLdD
+	id S1763107AbZFKLeP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 07:34:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762599AbZFKLd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 07:33:03 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45700 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108AbZFKLdB (ORCPT
+	Thu, 11 Jun 2009 07:33:59 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60226 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751463AbZFKLd7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 07:33:01 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 3/3] Count the number of times zone_reclaim() scans and fails
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1244717273-15176-4-git-send-email-mel@csn.ul.ie>
-References: <1244717273-15176-1-git-send-email-mel@csn.ul.ie> <1244717273-15176-4-git-send-email-mel@csn.ul.ie>
-Message-Id: <20090611203232.6D65.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Thu, 11 Jun 2009 07:33:59 -0400
+Date: Thu, 11 Jun 2009 12:34:55 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Pavel Machek <pavel@ucw.cz>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       ibm@android.com, swetland@google.com, san@android.com, rlove@google.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090611123455.6c066db6@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090611103457.GG795@n2100.arm.linux.org.uk>
+References: <20090610103131.GB13885@elf.ucw.cz>
+	<20090610194852.GA28787@n2100.arm.linux.org.uk>
+	<20090611.000219.206893038.davem@davemloft.net>
+	<20090611073740.GB8592@elf.ucw.cz>
+	<20090611103457.GG795@n2100.arm.linux.org.uk>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 11 Jun 2009 20:33:00 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On NUMA machines, the administrator can configure zone_reclaim_mode that
-> is a more targetted form of direct reclaim. On machines with large NUMA
-> distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
-> unmapped pages will be reclaimed if the zone watermarks are not being met.
-> 
-> There is a heuristic that determines if the scan is worthwhile but it is
-> possible that the heuristic will fail and the CPU gets tied up scanning
-> uselessly. Detecting the situation requires some guesswork and experimentation
-> so this patch adds a counter "zreclaim_failed" to /proc/vmstat. If during
-> high CPU utilisation this counter is increasing rapidly, then the resolution
-> to the problem may be to set /proc/sys/vm/zone_reclaim_mode to 0.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> Reviewed-by: Rik van Riel <riel@redhat.com>
-> ---
->  include/linux/vmstat.h |    3 +++
->  mm/vmscan.c            |    3 +++
->  mm/vmstat.c            |    3 +++
->  3 files changed, 9 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
-> index ff4696c..416f748 100644
-> --- a/include/linux/vmstat.h
-> +++ b/include/linux/vmstat.h
-> @@ -36,6 +36,9 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
->  		FOR_ALL_ZONES(PGSTEAL),
->  		FOR_ALL_ZONES(PGSCAN_KSWAPD),
->  		FOR_ALL_ZONES(PGSCAN_DIRECT),
-> +#ifdef CONFIG_NUMA
-> +		PGSCAN_ZONERECLAIM_FAILED,
-> +#endif
->  		PGINODESTEAL, SLABS_SCANNED, KSWAPD_STEAL, KSWAPD_INODESTEAL,
->  		PAGEOUTRUN, ALLOCSTALL, PGROTATED,
->  #ifdef CONFIG_HUGETLB_PAGE
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 7b8eb3f..42c1013 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -2492,6 +2492,9 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
->  	ret = __zone_reclaim(zone, gfp_mask, order);
->  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
->  
-> +	if (!ret)
-> +		count_vm_event(PGSCAN_ZONERECLAIM_FAILED);
-> +
->  	return ret;
->  }
->  #endif
-> diff --git a/mm/vmstat.c b/mm/vmstat.c
-> index 1e3aa81..02677d1 100644
-> --- a/mm/vmstat.c
-> +++ b/mm/vmstat.c
-> @@ -673,6 +673,9 @@ static const char * const vmstat_text[] = {
->  	TEXTS_FOR_ZONES("pgscan_kswapd")
->  	TEXTS_FOR_ZONES("pgscan_direct")
->  
-> +#ifdef CONFIG_NUMA
-> +	"zreclaim_failed",
-> +#endif
->  	"pginodesteal",
->  	"slabs_scanned",
->  	"kswapd_steal",
+> Now, ask yourself this question: why should I have to be the one to
+> review things like ARM <-> DSP communication channel code?  Hint: I
 
-Looks good.
-	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Because you claim to be ARM maintainer and you force all the ARM stuff to
+go via you ? 
 
+We have the -next tree these days so if you cut ARM back to common core
+shared ARM code and all the platform people had their own maintainer (at
+least those who are competent to do so which is a fair share of them)
+then you could resolve any collisions in -next. There will probably be a
+few explosions on the way because code developed under such a tight
+control model tends to have poor separation in places nobody thought
+about but they'll fix pretty fast.
 
+If you don't want to be reviewing some of the stuff then restructure
+things so that they don't go through you and you are not the gatekeeper
+for them.
 
+Alan
