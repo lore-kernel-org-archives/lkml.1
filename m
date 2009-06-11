@@ -1,54 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbZFKNMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbZFKNNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755999AbZFKNMs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 09:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZFKNMl
+	id S1754705AbZFKNNU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 09:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbZFKNNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 09:12:41 -0400
-Received: from mail-fx0-f213.google.com ([209.85.220.213]:36403 "EHLO
-	mail-fx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751061AbZFKNMk convert rfc822-to-8bit (ORCPT
+	Thu, 11 Jun 2009 09:13:08 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58793 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753813AbZFKNNH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 09:12:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=nyYkaUrEcEP4en5qyoT3/gTbTz8YfhV93O3DiVNMh5ZTt7GtxJyejfJMdcAAGE1Taa
-         VcEQjMI+JbNpsU/HfRaBVkxqdOWhSz8CGUHaSBMbMlruJnaZjSPIJryMMhH2cUEM1V1s
-         SxVtqLGZAiuF8OhXp9c5Ip7cBMx2htqE8qDpU=
+	Thu, 11 Jun 2009 09:13:07 -0400
+Date: Thu, 11 Jun 2009 14:12:45 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Miller <davem@davemloft.net>, swetland@google.com, pavel@ucw.cz,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       san@android.com, rlove@google.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090611131245.GN795@n2100.arm.linux.org.uk>
+References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk> <20090611135442.6b9ab315@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-In-Reply-To: <a4423d670906110603s42bf0287p848b00c2cc786cc1@mail.gmail.com>
-References: <a4423d670906110603s42bf0287p848b00c2cc786cc1@mail.gmail.com>
-Date: Thu, 11 Jun 2009 16:12:41 +0300
-X-Google-Sender-Auth: 7dd28f42989f7d30
-Message-ID: <84144f020906110612t3102efdev39e77b6429013176@mail.gmail.com>
-Subject: Re: next-20090611: SLUB: Unable to allocate memory on node -1
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: linux-next <linux-next@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090611135442.6b9ab315@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 4:03 PM, Alexander
-Beregalov<a.beregalov@gmail.com> wrote:
-> Hi
+On Thu, Jun 11, 2009 at 01:54:42PM +0100, Alan Cox wrote:
+> Make your tree the core ARM code only, any other patches you don't
+> accept. Aggressively push stuff out to platform code, and if people want
+> to change core code "because our platform is different" make them extract
+> it into the platform layer not carry it in the core bits.
 
-There should be a stack trace here printed out by the page allocator.
-Can you post that too?
-
-> SLUB: Unable to allocate memory on node -1 (gfp=11200)
->  cache: kmalloc-2048, object size: 2048, buffer size: 2048, default
-> order: 3, min order: 0
->  node 0: slabs: 407, objs: 1724, free: 0
-> SLUB: Unable to allocate memory on node -1 (gfp=11200)
->  cache: kmalloc-2048, object size: 2048, buffer size: 2048, default
-> order: 3, min order: 0
->  node 0: slabs: 407, objs: 1724, free: 0
->
-> It is 4-way (2*2) SMP with 2Gb RAM
+I'm all for giving this a try after this merge window is over.
