@@ -1,128 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbZFKFSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbZFKFUD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757841AbZFKFSz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 01:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZFKFSp
+	id S1756605AbZFKFUD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 01:20:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756336AbZFKFTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 01:18:45 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:2200 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753432AbZFKFSo convert rfc822-to-8bit (ORCPT
+	Thu, 11 Jun 2009 01:19:54 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:39251 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754882AbZFKFTy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 01:18:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=v+POiuU6fuYxGT9Gm9hMlIyxsmBE/wLLXC7CKYmclf6/+bqVqk3bAUUJzEo/gmMOFt
-         2YnjMNWFpfkbmzJx7LCfZUk3tRChmt0bJF0+QYKFjw7BUb7Miibam9NSJZmOevlSPNcg
-         5/itVHnd4J0txT2JMUthgTfaDr5+r13jY1pKY=
-MIME-Version: 1.0
-In-Reply-To: <200906101029.27529.rjw@sisk.pl>
-References: <Pine.LNX.4.44L0.0906082233490.19072-100000@netrider.rowland.org>
-	 <200906100057.04473.rjw@sisk.pl> <200906101029.27529.rjw@sisk.pl>
-Date: Thu, 11 Jun 2009 14:18:46 +0900
-Message-ID: <aec7e5c30906102218j2f8f38dbt5d05a3928ca46c15@mail.gmail.com>
-Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: 
-	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
-From: Magnus Damm <magnus.damm@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
-       linux-pm@lists.linux-foundation.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 11 Jun 2009 01:19:54 -0400
+Date: Thu, 11 Jun 2009 08:19:54 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, hannes@cmpxchg.org,
+       torvalds@linux-foundation.org, yinghai@kernel.org
+Subject: [PATCH 1/4] x86: remove some alloc_bootmem_cpumask_var calling
+Message-ID: <Pine.LNX.4.64.0906110819320.2258@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael,
+From: Yinghai Lu <yinghai@kernel.org>
 
-On Wed, Jun 10, 2009 at 5:29 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
->> I tried to address your comments and the Oliver's comments too in the new
->> version of the patch below.  Please have a look and tell me what you think.
->
-> Argh, I forgot about some important things.
->
-> First, there are devices with no parent (actually, it would be much easier if
-> they had a default dummy parent, but that's a separate issue).
->
-> Second, the parent has to be taken into account in the asynchronous resume
-> path too (which BTW is more complicated).
->
-> Finally, I decided to follow the Oliver's suggestion that some error codes returned
-> by ->autosuspend() and ->autoresume() may be regarded as "go back to the
-> previous state" information.  I chose to use -EAGAIN and -EBUSY for this
-> purpose.
->
-> Updated patch follows, sorry for the confusion.
+Now that we set up the slab allocator earlier, we can get rid of some
+alloc_bootmem_cpumask_var() calls in boot code.
 
-Thanks for your work on this. I think the patch looks very good in
-general so I will not comment on the code itself. I do however have a
-few high level questions:
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ arch/x86/kernel/apic/io_apic.c |    4 ++--
+ include/linux/irq.h            |   18 +++++++-----------
+ kernel/cpuset.c                |    2 +-
+ kernel/profile.c               |    6 ------
+ lib/cpumask.c                  |   11 ++---------
+ 5 files changed, 12 insertions(+), 29 deletions(-)
 
-Q1) Regarding pm_request_suspend(), would it be possible to get a
-synchronous version or to make use of the completion somehow?
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 1946fac..139201a 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -185,8 +185,8 @@ int __init arch_early_irq_init(void)
+ 	for (i = 0; i < count; i++) {
+ 		desc = irq_to_desc(i);
+ 		desc->chip_data = &cfg[i];
+-		alloc_bootmem_cpumask_var(&cfg[i].domain);
+-		alloc_bootmem_cpumask_var(&cfg[i].old_domain);
++		alloc_cpumask_var(&cfg[i].domain, GFP_NOWAIT);
++		alloc_cpumask_var(&cfg[i].old_domain, GFP_NOWAIT);
+ 		if (i < NR_IRQS_LEGACY)
+ 			cpumask_setall(cfg[i].domain);
+ 	}
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index eedbb8e..1e50c34 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -430,23 +430,19 @@ extern int set_irq_msi(unsigned int irq, struct msi_desc *entry);
+  * Returns true if successful (or not required).
+  */
+ static inline bool alloc_desc_masks(struct irq_desc *desc, int node,
+-								bool boot)
++							bool boot)
+ {
+-#ifdef CONFIG_CPUMASK_OFFSTACK
+-	if (boot) {
+-		alloc_bootmem_cpumask_var(&desc->affinity);
++	gfp_t gfp = GFP_ATOMIC;
+ 
+-#ifdef CONFIG_GENERIC_PENDING_IRQ
+-		alloc_bootmem_cpumask_var(&desc->pending_mask);
+-#endif
+-		return true;
+-	}
++	if (boot)
++		gfp = GFP_NOWAIT;
+ 
+-	if (!alloc_cpumask_var_node(&desc->affinity, GFP_ATOMIC, node))
++#ifdef CONFIG_CPUMASK_OFFSTACK
++	if (!alloc_cpumask_var_node(&desc->affinity, gfp, node))
+ 		return false;
+ 
+ #ifdef CONFIG_GENERIC_PENDING_IRQ
+-	if (!alloc_cpumask_var_node(&desc->pending_mask, GFP_ATOMIC, node)) {
++	if (!alloc_cpumask_var_node(&desc->pending_mask, gfp, node)) {
+ 		free_cpumask_var(desc->affinity);
+ 		return false;
+ 	}
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index 026facc..d5a7e17 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -1857,7 +1857,7 @@ struct cgroup_subsys cpuset_subsys = {
+ 
+ int __init cpuset_init_early(void)
+ {
+-	alloc_bootmem_cpumask_var(&top_cpuset.cpus_allowed);
++	alloc_cpumask_var(&top_cpuset.cpus_allowed, GFP_NOWAIT);
+ 
+ 	top_cpuset.mems_generation = cpuset_mems_generation++;
+ 	return 0;
+diff --git a/kernel/profile.c b/kernel/profile.c
+index 7724e04..28cf26a 100644
+--- a/kernel/profile.c
++++ b/kernel/profile.c
+@@ -111,12 +111,6 @@ int __ref profile_init(void)
+ 	/* only text is profiled */
+ 	prof_len = (_etext - _stext) >> prof_shift;
+ 	buffer_bytes = prof_len*sizeof(atomic_t);
+-	if (!slab_is_available()) {
+-		prof_buffer = alloc_bootmem(buffer_bytes);
+-		alloc_bootmem_cpumask_var(&prof_cpu_mask);
+-		cpumask_copy(prof_cpu_mask, cpu_possible_mask);
+-		return 0;
+-	}
+ 
+ 	if (!alloc_cpumask_var(&prof_cpu_mask, GFP_KERNEL))
+ 		return -ENOMEM;
+diff --git a/lib/cpumask.c b/lib/cpumask.c
+index eb23aaa..7bb4142 100644
+--- a/lib/cpumask.c
++++ b/lib/cpumask.c
+@@ -92,15 +92,8 @@ int cpumask_any_but(const struct cpumask *mask, unsigned int cpu)
+  */
+ bool alloc_cpumask_var_node(cpumask_var_t *mask, gfp_t flags, int node)
+ {
+-	if (likely(slab_is_available()))
+-		*mask = kmalloc_node(cpumask_size(), flags, node);
+-	else {
+-#ifdef CONFIG_DEBUG_PER_CPU_MAPS
+-		printk(KERN_ERR
+-			"=> alloc_cpumask_var: kmalloc not available!\n");
+-#endif
+-		*mask = NULL;
+-	}
++	*mask = kmalloc_node(cpumask_size(), flags, node);
++
+ #ifdef CONFIG_DEBUG_PER_CPU_MAPS
+ 	if (!*mask) {
+ 		printk(KERN_ERR "=> alloc_cpumask_var: failed!\n");
+-- 
+1.6.0.4
 
-Q2) As pm_request_suspend() works today, the device is marked as
-RPM_IDLE and the delayed work is queued up. There is no real decision
-making going on except the time out. I'd like to let the bus code
-decide when to autosuspend a buch of devices. Maybe the idle handling
-should be broken out into a pm_request_idle() and pm_request_suspend()
-can be modified to synchronously suspend devices marked with
-pm_request_idle()?
-
-Q3) Have you thought about how device drivers can inform the Runtime
-PM that the device are idle and that they need the hardware to be
-woken up? I'd like something similar to my "[PATCH 02/04] Driver Core:
-Add idle and wakeup functions" patch but maybe not specific to
-platform devices. We talked about adding some hooks to the bus_type
-for this. Any ideas?
-
-This is how I'm thinking of integrating your Runtime PM code with our
-SuperH platform devices:
-
-Device Idle Handling:
-
-1) Device drivers call pm_device_idle() (See Q3) which invokes arch
-specific platform bus code in the case of our SoC platform devices.
-This bus code marks the device as idle using pm_request_idle(). (See
-Q2). At this point light weight power management like clock stopping
-may be performed as well.
-
-2) The arch specific bus code knows how the platform devices are
-grouped together (thanks to the data area in "[PATCH] Driver Core: Add
-platform device arch data V3"), and when all devices in one power
-domain are marked as idle the bus code calls the synchronous
-pm_request_suspend() (no delay).
-
-3) When all devices in the power domain are suspended the bus code can
-turn off the power. The reason why I'd like to only autosuspend when
-all devices are idle is simply that we don't get any power savings
-from the per device autosuspend() callbacks, only from turning off
-power to the entire per-domain. So bindly autosuspending and
-autoresuming devices is just pure overhead unless we know we can do it
-for all devices in the domain.
-
-4) Over time when the code in 2) should be extended to handle latencies.
-
-Device Wakeup Handling:
-
-1) Device drivers call pm_device_wakeup() (See Q3). This invokes arch
-specific bus code for our SoC platform devices. The bus code enables
-clocks if needed and also calls pm_resume_sync().
-
-2) After the call to pm_resume_sync() the pm_device_wakeup() call
-returns and the device driver can access the hardware as usual.
-
-That's it! Far from perfect but maybe a good start at least.
-
-I have seen quite a few patches from you lately, nice work. To make
-tracking of the Runtime PM patches easier, can you pleae consider
-including the version of the patch in the subject when you post new
-versions?
-
-Thanks!
-
-/ magnus
