@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932457AbZFKK4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761821AbZFKLAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932457AbZFKK4R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 06:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932346AbZFKK4D
+	id S1761821AbZFKLAM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 07:00:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbZFKLAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 06:56:03 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:37185 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932296AbZFKK4B (ORCPT
+	Thu, 11 Jun 2009 07:00:01 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:34958 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754755AbZFKLAA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 06:56:01 -0400
-Date: Thu, 11 Jun 2009 11:55:51 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: pavel@ucw.cz, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, ibm@android.com,
-       swetland@google.com, san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090611105551.GI795@n2100.arm.linux.org.uk>
-References: <20090611.000219.206893038.davem@davemloft.net> <20090611073740.GB8592@elf.ucw.cz> <20090611103457.GG795@n2100.arm.linux.org.uk> <20090611.034421.180842375.davem@davemloft.net>
+	Thu, 11 Jun 2009 07:00:00 -0400
+Date: Thu, 11 Jun 2009 11:59:59 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+Cc: Robert Hancock <hancockrwd@gmail.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Macbook 4G only see 3G
+Message-ID: <20090611105959.GA20801@srcf.ucam.org>
+References: <9b1675090906101747u4ab8cc89t764ba80b4eb3dcb2@mail.gmail.com> <86802c440906101754g496da536t48ade9b1b220449a@mail.gmail.com> <9b1675090906101943x10dff40ak32341383a516ae7c@mail.gmail.com> <4A3086B2.2010900@gmail.com> <9b1675090906102148m5634e652y34c101e28e4aab83@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090611.034421.180842375.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <9b1675090906102148m5634e652y34c101e28e4aab83@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 03:44:21AM -0700, David Miller wrote:
-> From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-> Date: Thu, 11 Jun 2009 11:34:57 +0100
-> > Around the time of their second submission, someone who used to be more
-> > active in the ARM community started making accusations against Google
-> > for "throwing their code over the wall and disappearing" and "claiming
-> > that their code is on kernel.org now".  They went on to say (and I'm
-> > quoting) "i don't think they give a shit about what you or i have to
-> > say about it".
-> > 
-> > Having dealt with Brian's kernel submissions and provided feedback on
-> > them, I took issue with those comments because that wasn't how I (or even
-> > akpm) saw the situation.  The result of that was the person making those
-> > accusations fell out with me.
+On Wed, Jun 10, 2009 at 10:48:00PM -0600, Trenton D. Adams wrote:
+> On Wed, Jun 10, 2009 at 10:23 PM, Robert Hancock<hancockrwd@gmail.com> wrote:
+> > Your dmesg shows your chiset is 945GM.
+> > ==
+> > intelfb 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+> > intelfb: 00:02.0: Intel(R) 945GM, aperture size 256MB, stolen memory 16124kB
+> > intelfb: Non-CRT device is enabled ( LVDS port ).  Disabling mode switching.
+> > intelfb: Video mode must be programmed at boot time.
+> > ==
+> > As far as I can found in English/Japanese forum, 945GM/PM? series can't handle
+> > 4G memory. (Then, 64bit Vista can't handle it, either)
 > 
-> You should give full disclosure and say where and in what context
-> those statements were made.
+> That's my graphics card though, not my motherboard chipset.  The
+> chipset is ICH7.
 
-Yes, the bits I paraphrased above in quotes were from IRC, and I have
-no problem saying so.  What I don't want to do is to quote precisely
-what was said or provide the identity of the person making those
-statements on a public mailing list (certainly not without permission.)
+ICH7 is the southbridge. 945 is the northbridge and includes the memory 
+controller. It can only access 4GB of address space, which includes PCI 
+and any other memory mapped resources. This means that it's not possible 
+to use 4GB of RAM.
 
-> And then then YOU took it to private email with various people.
-
-No, you are just totally wrong there.  It was ALREADY in private
-*constructive* email between Andrew and myself at the time the comments
-were made, with Andrew trying to find a solution to allow review of the
-code to take place.
-
-Now, you can carry on blaming me for the android situation in your own
-world of lies, or you can wake up to reality and find out some reliable
-facts from someone like Andrew Morton before continuing to assign blame
-and malace.  Which will it be?
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
