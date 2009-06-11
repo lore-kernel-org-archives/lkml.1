@@ -1,66 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757502AbZFKSYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbZFKS0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757502AbZFKSYc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 14:24:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbZFKSYZ
+	id S1757057AbZFKS0k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 14:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbZFKS0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 14:24:25 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:4823 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753382AbZFKSYY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 14:24:24 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=aJYPsP75dHUXpq7t1+UlPefl0PsqKpGYzaN+hHABmyRFJOgGDGxS58/8gLD4NzXKy
-	taaur5MKGk5WEgzpj6i2g==
+	Thu, 11 Jun 2009 14:26:32 -0400
+Received: from h155.mvista.com ([63.81.120.155]:3480 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754820AbZFKS0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 14:26:32 -0400
+Message-ID: <4A314CB6.5090004@ru.mvista.com>
+Date: Thu, 11 Jun 2009 22:28:06 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain>
-References: <20090611160329.GA3366@elte.hu>
-	 <20090611161714.GA5008@infradead.org>
-	 <alpine.LFD.2.01.0906110922080.3573@localhost.localdomain>
-	 <20090611165226.GV8633@ZenIV.linux.org.uk>
-	 <1244739378.6691.540.camel@laptop>
-	 <20090611170015.GA3651@infradead.org>
-	 <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain>
-Date: Thu, 11 Jun 2009 11:24:20 -0700
-Message-ID: <33307c790906111124m17e57332oc38c89fa70e39231@mail.gmail.com>
-Subject: Re: [GIT PULL] Performance Counters for Linux
-From: Martin Bligh <mbligh@google.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Al Viro <viro@zeniv.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 2/2 resend] libata-sff: avoid byte swapping in ata_sff_data_xfer()
+References: <200902152230.38271.sshtylyov@ru.mvista.com> <49DB199C.3040305@ru.mvista.com> <4A242C81.3080309@ru.mvista.com> <4A314AC7.40300@pobox.com>
+In-Reply-To: <4A314AC7.40300@pobox.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> So what point is there in keeping it in-tree except making life hell for
->> packagers?
->
-> Give it up. Packagers can trivially generate their own sub-packages. They
-> do it all the time. They already do it for the user-mode header files,
-> extracted from the kernel - something you've worked on yourself.
->
-> So your point is clearly bogus, and dishonest.
->
-> You haven't actually looked the real problem in the eye, and acknowledged
-> the disaster that is oprofile. Let's give a _new_ approach a chance, and
-> see if we can avoid the mistakes of yesteryear this time.
+Hello.
 
-We actually ended up coming to the same conclusion as you for some of the
-internal tools we use that are tightly tied to the kernel. There is one hitch,
-which is that if you boot between different kernel versions, you need multiple
-userspace versions of the tools, so you may need to put them in
-/lib/modules/<kernel-version> or something equivalent, not one fixed place.
+Jeff Garzik wrote:
 
-M.
+>> Hello, I wrote:
+
+>>>> Handling of the trailing byte in ata_sff_data_xfer() is suboptimal 
+>>>> bacause:
+
+>>>> - it always initializes the padding buffer to 0 which is not really 
+>>>> needed in
+>>>>   both the read and write cases;
+
+>>>> - it has to use memcpy() to transfer a single byte from/to the 
+>>>> padding buffer;
+
+>>>> - it uses io{read|write}16() accessors which swap bytes on the big 
+>>>> endian CPUs
+>>>>   and so have to additionally convert the data from/to the little 
+>>>> endian format
+>>>>   instead of using io{read|write}16_rep() accessors which are not 
+>>>> supposed to
+>>>>   change the byte ordering.
+>>>>
+>>>> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+>>>   Jeff, have you forgotten about this one?
+
+>>    PING.
+
+> This has been queued to libata-dev.git#upstream, i.e. linux-next queue, 
+
+    Ah, haven't looked there, so it appeared as forgotten since I know you 
+usually reply with 'applied'.
+
+> for a long time.  Apologies if I forgot the 'applied' reply.
+
+> Just sent this upstream, as linux-ide should show.
+
+    Thanks. I began to think of reworking it to avoid even io*_rep() as per 
+my followup mail and resending... well, it's good enogh as is. :-)
+
+>     Jeff
+
+MBR, Sergei
