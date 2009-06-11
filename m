@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbZFKAvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760682AbZFKAyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760953AbZFKAvS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 20:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756408AbZFKAvK
+	id S1760682AbZFKAyo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 20:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbZFKAyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 20:51:10 -0400
-Received: from mga02.intel.com ([134.134.136.20]:11641 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756809AbZFKAvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 20:51:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,198,1243839600"; 
-   d="scan'208";a="523454056"
-Subject: Re: [PATCH 3/3] ring-buffer: add design document
-From: Huang Ying <ying.huang@intel.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-In-Reply-To: <20090610195525.429316815@goodmis.org>
-References: <20090610195311.767699959@goodmis.org>
-	 <20090610195525.429316815@goodmis.org>
-Content-Type: text/plain
-Date: Thu, 11 Jun 2009 08:51:07 +0800
-Message-Id: <1244681467.8361.654.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Jun 2009 20:54:37 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:39294 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755424AbZFKAyh convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 20:54:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=b4GWkxbzFsf5CBjSY7QHxtYxMk3LQNGp0is4p/ixNwrjWPVn5l+xO0FrCAnaMAKFlg
+         x9a4efknbgdoFQxhm0bhfSGrsjneGMuc/uDnj17pTggWPDcDoIlR3oNE6zF6ms9KgC71
+         C0ixvl70s0v1un979B6IaPkmYvjjjL38vOh6o=
+MIME-Version: 1.0
+In-Reply-To: <9b1675090906101747u4ab8cc89t764ba80b4eb3dcb2@mail.gmail.com>
+References: <9b1675090906101747u4ab8cc89t764ba80b4eb3dcb2@mail.gmail.com>
+Date: Wed, 10 Jun 2009 17:54:39 -0700
+Message-ID: <86802c440906101754g496da536t48ade9b1b220449a@mail.gmail.com>
+Subject: Re: Macbook 4G only see 3G
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-11 at 03:53 +0800, Steven Rostedt wrote:
-> +
-> +cmpxchg - hardware assisted atomic transaction that performs the following:
-> +
-> +   A = B iff previous A == C
-> +
-> +   R = cmpxchg(A, C, B) is saying that we replace A with B if and only if
-> +      current A is equal to C, and we put the old (current) A into R
-> +
-> +   R gets the previous A regardless if A is updated with B or not.
-> +
-> +   To see if the update was successful a compare of R == C may be used.
+On Wed, Jun 10, 2009 at 5:47 PM, Trenton D.
+Adams<trenton.d.adams@gmail.com> wrote:
+> Hi Guys,
+>
+> Has anyone been doing any development in the area of enabling 4G for
+> any PC that doesn't have an option in the BIOS?  The Mac OS X sees the
+> full 4G, but Linux does not.
+>
+> tdamac ~ # uname -a
+> Linux tdamac 2.6.30-rc7-dirty #3 SMP Fri Jun 5 21:24:29 MDT 2009
+> x86_64 Intel(R) Core(TM)2 CPU T7400 @ 2.16GHz GenuineIntel GNU/Linux
 
-As far as I know, some architectures have no hardware assisted (NMI
-safe) cmpxchg. Is it OK to use cmpxchg in architecture-independent code?
+boot log?
 
-Best Regards,
-Huang Ying
-
-
+YH
