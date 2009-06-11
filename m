@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757468AbZFKPVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbZFKPWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757468AbZFKPVH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 11:21:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbZFKPU4
+	id S1757238AbZFKPWU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 11:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZFKPWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 11:20:56 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:45604 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753354AbZFKPU4 (ORCPT
+	Thu, 11 Jun 2009 11:22:05 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:45612 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753559AbZFKPWE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 11:20:56 -0400
-Date: Thu, 11 Jun 2009 11:20:50 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: linux-kernel@vger.kernel.org, mel@csn.ul.ie, Larry.Finger@lwfinger.net
-Subject: Re: [PATCH 2/2] SLUB: Disable debugging if it increases the minimum
- page order
-In-Reply-To: <1244733119.17483.56.camel@penberg-laptop>
-Message-ID: <alpine.DEB.1.10.0906111118350.14020@gentwo.org>
-References: <Pine.LNX.4.64.0906111143490.6132@melkki.cs.Helsinki.FI>  <alpine.DEB.1.10.0906110941520.29827@gentwo.org>  <1244728824.17483.51.camel@penberg-laptop>  <alpine.DEB.1.10.0906111021340.29827@gentwo.org> <1244733119.17483.56.camel@penberg-laptop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 11 Jun 2009 11:22:04 -0400
+Date: Thu, 11 Jun 2009 11:22:06 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux-pm mailing list <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re:
+ [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+In-Reply-To: <200906111706.16848.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0906111120260.3040-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Jun 2009, Pekka Enberg wrote:
+On Thu, 11 Jun 2009, Oliver Neukum wrote:
 
-> I think my patch is the simplest solution here: it turns off debugging
-> for those caches where the metadata bumps up the minimum allocation
-> order and I suspect that we disable cache only for 4096 in practice.
+> Am Donnerstag, 11. Juni 2009 16:52:03 schrieb Alan Stern:
+> > > Under this definition all devices behind an inactive link are suspended,
+> > > because they can't do any I/O.  Which appears to makes sense, because
+> > > their drivers have to be notified before the link is suspended and the
+> > > link has to be turned on for the devices to be able to communicate with
+> > > the CPU and RAM.
+> > >
+> > > If this definition is adopted, then it's quite clear that the device can
+> > > only be suspended if all of its children are suspended and it's always
+> > > necessary to resume the parent of a device in order to resume the device
+> > > itself.
+> >
+> > Okay, I'll agree to that.  It should be made clear that a device which
+> > is "suspended" according to this definition is not necessarily in a
+> > low-power state.  For example, before powering down the link to a disk
+> > drive you might want the drive's suspend method to flush the drive's
+> > cache, but it wouldn't have to spin the drive down.
+> 
+> This precludes handling busses that have low power states that are
+> left automatically. If such links are stacked the management of acceptable
+> latencies cannot be left to the busses.
+> An actual example are the link states of USB 3.0
 
-There could be other slab caches that would randomly be affected by this.
-I ran a couple of times into situations where I had to hack slab to do
-debugging of exempted slabs.
+I don't understand.  Can you explain more fully?
 
-> Also note that when we switch back to more aggressive page allocator
-> pass-through, we lose SLUB debugging support.
-
-Debugging options can have side effects. Slab debugging is not something
-suitable by default for production environments.
+Alan Stern
 
