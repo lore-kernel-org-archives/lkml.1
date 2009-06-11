@@ -1,84 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761983AbZFKDTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761207AbZFKDY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761983AbZFKDTm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 23:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756670AbZFKDTe
+	id S1761207AbZFKDY3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 23:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754155AbZFKDYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 23:19:34 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:34494 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755183AbZFKDTe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 23:19:34 -0400
-Message-ID: <4A307771.10303@ct.jp.nec.com>
-Date: Thu, 11 Jun 2009 12:18:09 +0900
-From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 10 Jun 2009 23:24:22 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64043 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753018AbZFKDYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 23:24:21 -0400
+Message-ID: <4A30793C.6090208@cn.fujitsu.com>
+Date: Thu, 11 Jun 2009 11:25:48 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: Tejun Heo <tj@kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org,
-       device-mapper development <dm-devel@redhat.com>,
-       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>, k-ueda@ct.jp.nec.com
-Subject: Re: [PATCH block#for-2.6.31] block: add request clone interface
-References: <4A2E1490.7060902@ct.jp.nec.com> <20090609180344.GQ11363@kernel.dk> <4A2F1741.8090100@ct.jp.nec.com> <4A2F66ED.80206@panasas.com>
-In-Reply-To: <4A2F66ED.80206@panasas.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Martin J. Bligh" <mbligh@mbligh.org>,
+       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/3] ring-buffer: make the buffer a true circular link
+ list
+References: <20090610195311.767699959@goodmis.org> <20090610195524.945549278@goodmis.org> <4A305A1A.2010901@cn.fujitsu.com> <alpine.DEB.2.00.0906102200180.30552@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0906102200180.30552@gandalf.stny.rr.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Boaz,
-
-On 06/10/2009 04:55 PM +0900, Boaz Harrosh wrote:
-> On 06/10/2009 05:15 AM, Kiyoshi Ueda wrote:
->> On 06/10/2009 03:03 AM +0900, Jens Axboe wrote:
->>> On Tue, Jun 09 2009, Kiyoshi Ueda wrote:
->>>> Hi Jens,
->>>>
->>>> +/*
->>>> + * Copy request information of the original request to the clone request.
->>>> + */
->>>> +static void __blk_rq_prep_clone(struct request *dst, struct request *src)
->>>> +{
->>>> +	dst->cpu = src->cpu;
->>>> +	dst->cmd_flags = (rq_data_dir(src) | REQ_NOMERGE);
->>>> +	dst->cmd_type = src->cmd_type;
->>>> +	dst->__sector = blk_rq_pos(src);
->>>> +	dst->__data_len = blk_rq_bytes(src);
->>>> +	dst->nr_phys_segments = src->nr_phys_segments;
->>>> +	dst->ioprio = src->ioprio;
->>>> +	dst->buffer = src->buffer;
->>>> +	dst->cmd_len = src->cmd_len;
->>>> +	dst->cmd = src->cmd;
->>> Are you making sure that 'src' always exists while 'dst' is alive?
->> Yes.
->> Request-based dm is the owner of 'src' (original) and
->> it never frees 'src' until the 'dst' (clone) are completed.
+Steven Rostedt wrote:
+> On Thu, 11 Jun 2009, Lai Jiangshan wrote:
+> 
+>>> -	list_splice(&pages, head);
+>>> +	/*
+>>> +	 * The ring buffer page list is a circular list that does not
+>>> +	 * start and end with a list head. All page list items point to
+>>> +	 * other pages. Remove one of the pages, init its list head,
+>>> +	 * and use list splice to move the rest of the pages to it.
+>>> +	 */
+>>> +	bpage = list_entry(pages.next, struct buffer_page, list);
+>>> +	list_del_init(&bpage->list);
+>>> +	cpu_buffer->pages = &bpage->list;
+>>> +
+>>> +	list_splice(&pages, cpu_buffer->pages);
+>>> +
+>> Is it proper?
 >>
->> I avoided deep-copying __cmd/buffer/sense as it's costly
->> (additional allocation and memcpy).
+>> 	cpu_buffer->pages = pages.next;
+>> 	list_del(&pages);
+>>
 > 
-> For my needs for example dst->cmd will be different then
-> src->cmd. Could be untouched. The caller will set what he
-> needs.
+> Not sure what you are asking here?
 > 
-> dst->sense should be untouched, caller can set to src->sense
-> if he wants to. Or like me he already have another buffer.
-> 
-> dst->buffer is always NULL in my path so I don't know
-> what that is. Tejun?
-> 
-> It should only be about bios and lengths.
-> 
-> And a big fat comment about what it does and what it
-> does not.
 
-OK, I removed ->cmd, ->sense and ->buffer from __blk_rq_prep_clone()
-and added some documents.
-Please see the updated patch:
-    http://marc.info/?l=dm-devel&m=124468991432260&w=2
 
-Thanks,
-Kiyoshi Ueda
+I'm not sure whether these 4 lines:
+	bpage = list_entry(pages.next, struct buffer_page, list);
+	list_del_init(&bpage->list);
+	cpu_buffer->pages = &bpage->list;
+
+	list_splice(&pages, cpu_buffer->pages);
+equal to these 2 lines:
+ 	cpu_buffer->pages = pages.next;
+ 	list_del(&pages);
+
+If there are equivalent, I think the second one
+are simpler. It may be not a really necessarily cleanup.
+
+What I asked is: if there are equivalent, could you use these two line:
+ 	cpu_buffer->pages = pages.next;
+ 	list_del(&pages);
+
+Lai.
+
