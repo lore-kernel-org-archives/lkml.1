@@ -1,41 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbZFKQAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761082AbZFKQAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759471AbZFKQAG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 12:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbZFKP75
+	id S1761082AbZFKQAe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 12:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbZFKQAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 11:59:57 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:43091 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752379AbZFKP75 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 11:59:57 -0400
-Date: Thu, 11 Jun 2009 16:59:38 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Miller <davem@davemloft.net>, swetland@google.com,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090611155938.GB20460@n2100.arm.linux.org.uk>
-References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk> <20090611135442.6b9ab315@lxorguk.ukuu.org.uk> <20090611132134.GA11199@atomide.com> <20090611133736.GP795@n2100.arm.linux.org.uk> <20090611144735.GC2572@ucw.cz>
+	Thu, 11 Jun 2009 12:00:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46351 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753929AbZFKQAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 12:00:20 -0400
+Message-ID: <4A3129E3.3010309@redhat.com>
+Date: Thu, 11 Jun 2009 11:59:31 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090611144735.GC2572@ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andi Kleen <andi@firstfloor.org>,
+       "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 2/5] HWPOISON: fix tasklist_lock/anon_vma locking order
+References: <20090611142239.192891591@intel.com> <20090611144430.540500784@intel.com>
+In-Reply-To: <20090611144430.540500784@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 04:47:35PM +0200, Pavel Machek wrote:
-> Well, usually Acked-by: and Reviewed-by: tags solve that, no?
+Wu Fengguang wrote:
+> To avoid possible deadlock. Proposed by Nick Piggin:
 > 
-> If it has my acked-by: it is okay and can be applied. Otherwise I did
-> not review it before and need to check it...
+>   You have tasklist_lock(R) nesting outside i_mmap_lock, and inside anon_vma
+>   lock. And anon_vma lock nests inside i_mmap_lock.
+> 
+>   This seems fragile. If rwlocks ever become FIFO or tasklist_lock changes
+>   type (maybe -rt kernels do it), then you could have a task holding
+>   anon_vma lock and waiting for tasklist_lock, and another holding tasklist
+>   lock and waiting for i_mmap_lock, and another holding i_mmap_lock and
+>   waiting for anon_vma lock.
+> 
+> CC: Nick Piggin <npiggin@suse.de>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 
-It would be nice if git pull messages included that information, but
-they don't.  The only way to get at that from a pull message is to
-pull the tree and then check it, or track down whatever random gitweb
-URL corresponds with the tree and check it there.
+Acked-by: Rik van Riel <riel@redhat.com>
+
+-- 
+All rights reversed.
