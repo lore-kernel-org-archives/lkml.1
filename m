@@ -1,72 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752720AbZFKVY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbZFKV2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752720AbZFKVY0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 17:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbZFKVYT
+	id S1753675AbZFKV2j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 17:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbZFKV2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 17:24:19 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:60993 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750758AbZFKVYS (ORCPT
+	Thu, 11 Jun 2009 17:28:32 -0400
+Received: from 130.120.124.202.static.snap.net.nz ([202.124.120.130]:36923
+	"EHLO hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752065AbZFKV2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 17:24:18 -0400
-Date: Thu, 11 Jun 2009 23:26:35 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Bligh <mbligh@google.com>, Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT PULL] Performance Counters for Linux
-Message-ID: <20090611212635.GA9446@uranus.ravnborg.org>
-References: <20090611165226.GV8633@ZenIV.linux.org.uk> <1244739378.6691.540.camel@laptop> <20090611170015.GA3651@infradead.org> <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain> <33307c790906111124m17e57332oc38c89fa70e39231@mail.gmail.com> <alpine.LFD.2.01.0906111127520.3573@localhost.localdomain> <20090611202341.GA23590@elte.hu> <1244753357.27363.82.camel@violet> <20090611210810.GA9317@uranus.ravnborg.org> <1244755036.27363.93.camel@violet>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244755036.27363.93.camel@violet>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 11 Jun 2009 17:28:31 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Thu, 11 Jun 2009 17:28:31 EDT
+Message-ID: <4A3175AC.9070100@bluewatersys.com>
+Date: Fri, 12 Jun 2009 09:22:52 +1200
+From: Ryan Mallon <ryan@bluewatersys.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Nicolas Pitre <nico@cam.org>
+CC: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Miller <davem@davemloft.net>, swetland@google.com, pavel@ucw.cz,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       san@android.com, rlove@google.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
+References: <20090611111821.GK795@n2100.arm.linux.org.uk>	<20090611.042226.28424489.davem@davemloft.net>	<20090611114911.GL795@n2100.arm.linux.org.uk>	<20090611.050030.169859977.davem@davemloft.net>	<20090611123852.GM795@n2100.arm.linux.org.uk>	<20090611135442.6b9ab315@lxorguk.ukuu.org.uk>	<20090611132134.GA11199@atomide.com>	<20090611133736.GP795@n2100.arm.linux.org.uk>	<20090611140038.GB11199@atomide.com>	<20090611140624.GS795@n2100.arm.linux.org.uk> <alpine.LFD.2.00.0906111314510.31536@xanadu.home>
+In-Reply-To: <alpine.LFD.2.00.0906111314510.31536@xanadu.home>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 11:17:16PM +0200, Marcel Holtmann wrote:
-> Hi Sam,
+Nicolas Pitre wrote:
+> On Thu, 11 Jun 2009, Russell King - ARM Linux wrote:
+>
+> I think that you, as the ARM maintainer, should continue gathering all 
+> the ARM subarchitectures into a coherent ARM tree and arbitrate 
+> conflicts when they occur.  You should especially keep a tight control 
+> on the very core ARM code.  But everything under arch/arm/mach-* you 
+> should let people maintaining those have control of that themselves and 
+> free yourself from that responsibility as much as possible.  The current 
+> directory structure is quite indicative of where the boundaries are 
+> already.  This way, if I make a mess of arch/arm/mach-orion5x/* then you 
+> just need to pass the blame straight to me.
 > 
-> > > So you are saying that only good code comes from including it into
-> > > linux-2.6.git and otherwise you will never get there. Have you actually
-> > > tried to maintain this in a separate repository on kernel.org?
-> > 
-> > Could you please remind us what the arguments agains including a few
-> > seleted tools within the kernel source tree was.
-> > 
-> > I ask because I really cannot see why so much nosie is generated?
-> > As a naive user that like easy access to the stuff I work with
-> > this looks like an optimal place to find the kernel-hacking
-> > tools I need. Why should I hunt somewhere else to find it?
-> 
-> I personally would expect a perf.git on kernel.org for the userspace
-> tools for it. Like we have udev.git there, iproute2.git and others.
-> 
-> Seems to be working perfectly fine (except of course oprofile) and makes
-> packaging and security updates a lot easier.
-There is nothing preventing us from adding support for rpm and source rpms.
-So you just grab the relevant tre and issue a few cammnds and you have your
-packages.
-And for security fixes we have the stable kernels.
 
-> The distros have always a
-> really hard problem with releasing new kernel packages.
-There is nothing that say that because the code live inside
-the kernel tree you _have_to_ release the full kernel source
-to release a tool.
+That works okay for the more popular sub-architectures like pxa, etc,
+where there are a lot of people to review code and sort out issues
+between themselves. However, for the architecture I do most of my work
+on, ep93xx, there are basically two of us, Hartley and myself, doing
+active work.
 
-You mix up the fact that the source for the tool live inside the
-kernel with the way tools are packaged.
+It seems a bit dodgy if all the patches to ep93xx are written by one of
+us and acked by the other with no input from anybody else. It would be
+very easy for the ep93xx code to become and complete mess, and lack any
+coherency with the other sub-archs. I prefer having Russell, or somebody
+else, at least have a glance at the patches before they get applied.
 
-	Sam
+~Ryan
+
+-- 
+Bluewater Systems Ltd - ARM Technology Solution Centre
+
+       Ryan Mallon                              Unit 5, Amuri Park
+       Phone: +64 3 3779127                     404 Barbadoes St
+       Fax:   +64 3 3779135                     PO Box 13 889
+       Email: ryan@bluewatersys.com             Christchurch, 8013
+       Web:   http://www.bluewatersys.com       New Zealand
+       Freecall Australia  1800 148 751         USA 1800 261 2934
