@@ -1,54 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761821AbZFKLAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762772AbZFKLCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761821AbZFKLAM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 07:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbZFKLAB
+	id S1762772AbZFKLCE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 07:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762095AbZFKLBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 07:00:01 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:34958 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754755AbZFKLAA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 07:00:00 -0400
-Date: Thu, 11 Jun 2009 11:59:59 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Macbook 4G only see 3G
-Message-ID: <20090611105959.GA20801@srcf.ucam.org>
-References: <9b1675090906101747u4ab8cc89t764ba80b4eb3dcb2@mail.gmail.com> <86802c440906101754g496da536t48ade9b1b220449a@mail.gmail.com> <9b1675090906101943x10dff40ak32341383a516ae7c@mail.gmail.com> <4A3086B2.2010900@gmail.com> <9b1675090906102148m5634e652y34c101e28e4aab83@mail.gmail.com>
+	Thu, 11 Jun 2009 07:01:55 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:33783 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761821AbZFKLBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 07:01:54 -0400
+Date: Thu, 11 Jun 2009 12:01:54 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH for mmotm 1/5] cleanp page_remove_rmap()
+Message-ID: <20090611110154.GD7302@csn.ul.ie>
+References: <20090611192114.6D4A.A69D9226@jp.fujitsu.com> <20090611192514.6D4D.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <9b1675090906102148m5634e652y34c101e28e4aab83@mail.gmail.com>
+In-Reply-To: <20090611192514.6D4D.A69D9226@jp.fujitsu.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 10:48:00PM -0600, Trenton D. Adams wrote:
-> On Wed, Jun 10, 2009 at 10:23 PM, Robert Hancock<hancockrwd@gmail.com> wrote:
-> > Your dmesg shows your chiset is 945GM.
-> > ==
-> > intelfb 0000:00:02.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-> > intelfb: 00:02.0: Intel(R) 945GM, aperture size 256MB, stolen memory 16124kB
-> > intelfb: Non-CRT device is enabled ( LVDS port ).  Disabling mode switching.
-> > intelfb: Video mode must be programmed at boot time.
-> > ==
-> > As far as I can found in English/Japanese forum, 945GM/PM? series can't handle
-> > 4G memory. (Then, 64bit Vista can't handle it, either)
+On Thu, Jun 11, 2009 at 07:26:04PM +0900, KOSAKI Motohiro wrote:
+> Subject: [PATCH] cleanp page_remove_rmap()
 > 
-> That's my graphics card though, not my motherboard chipset.  The
-> chipset is ICH7.
+> page_remove_rmap() has multiple PageAnon() test and it has
+> a bit deeply nesting.
+> 
+> cleanup here.
+> 
+> note: this patch doesn't have behavior change.
+> 
+> 
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> Cc: Wu Fengguang <fengguang.wu@intel.com> 
+> ---
+>  mm/rmap.c |   59 ++++++++++++++++++++++++++++++++---------------------------
+>  1 file changed, 32 insertions(+), 27 deletions(-)
+> 
+> Index: b/mm/rmap.c
+> ===================================================================
+> --- a/mm/rmap.c
+> +++ b/mm/rmap.c
+> @@ -862,34 +862,39 @@ void page_dup_rmap(struct page *page, st
+>   */
+>  void page_remove_rmap(struct page *page)
+>  {
+> -	if (atomic_add_negative(-1, &page->_mapcount)) {
+> -		/*
+> -		 * Now that the last pte has gone, s390 must transfer dirty
+> -		 * flag from storage key to struct page.  We can usually skip
+> -		 * this if the page is anon, so about to be freed; but perhaps
+> -		 * not if it's in swapcache - there might be another pte slot
+> -		 * containing the swap entry, but page not yet written to swap.
+> -		 */
+> -		if ((!PageAnon(page) || PageSwapCache(page)) &&
+> -		    page_test_dirty(page)) {
+> -			page_clear_dirty(page);
+> -			set_page_dirty(page);
+> -		}
+> -		if (PageAnon(page))
+> -			mem_cgroup_uncharge_page(page);
+> -		__dec_zone_page_state(page,
+> -			PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
+> -		mem_cgroup_update_mapped_file_stat(page, -1);
+> -		/*
+> -		 * It would be tidy to reset the PageAnon mapping here,
+> -		 * but that might overwrite a racing page_add_anon_rmap
+> -		 * which increments mapcount after us but sets mapping
+> -		 * before us: so leave the reset to free_hot_cold_page,
+> -		 * and remember that it's only reliable while mapped.
+> -		 * Leaving it set also helps swapoff to reinstate ptes
+> -		 * faster for those pages still in swapcache.
+> -		 */
+> +	if (!atomic_add_negative(-1, &page->_mapcount)) {
+> +		/* the page is still mapped another one */
+> +		return;
+>  	}
+> +
+> +	/*
+> +	 * Now that the last pte has gone, s390 must transfer dirty
+> +	 * flag from storage key to struct page.  We can usually skip
+> +	 * this if the page is anon, so about to be freed; but perhaps
+> +	 * not if it's in swapcache - there might be another pte slot
+> +	 * containing the swap entry, but page not yet written to swap.
+> +	 */
+> +	if ((!PageAnon(page) || PageSwapCache(page)) &&
+> +		page_test_dirty(page)) {
+> +		page_clear_dirty(page);
+> +		set_page_dirty(page);
+> +	}
 
-ICH7 is the southbridge. 945 is the northbridge and includes the memory 
-controller. It can only access 4GB of address space, which includes PCI 
-and any other memory mapped resources. This means that it's not possible 
-to use 4GB of RAM.
+Pure nitpick. It looks like page_test_dirty() can merge with the line
+above it now. Then the condition won't be at the same indentation as the
+statements.
+
+
+> +	if (PageAnon(page)) {
+> +		mem_cgroup_uncharge_page(page);
+> +		__dec_zone_page_state(page, NR_ANON_PAGES);
+> +	} else {
+> +		__dec_zone_page_state(page, NR_FILE_MAPPED);
+> +	}
+
+Ok, first actual change and it looks functionally equivalent and avoids a
+second PageAnon test. I suspect it fractionally increases text size but as
+PageAnon is an atomic bit opreation, we want to avoid calling that twice too.
+
+> +	mem_cgroup_update_mapped_file_stat(page, -1);
+> +	/*
+> +	 * It would be tidy to reset the PageAnon mapping here,
+> +	 * but that might overwrite a racing page_add_anon_rmap
+> +	 * which increments mapcount after us but sets mapping
+> +	 * before us: so leave the reset to free_hot_cold_page,
+> +	 * and remember that it's only reliable while mapped.
+> +	 * Leaving it set also helps swapoff to reinstate ptes
+> +	 * faster for those pages still in swapcache.
+> +	 */
+>  }
+>  
+
+Ok, patch looks good to me. I'm not seeing what it has to do with the
+zone_reclaim() problem though so you might want to send it separate from
+the set for clarity.
+
+Acked-by: Mel Gorman <mel@csn.ul.ie>
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
