@@ -1,67 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbZFKNs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbZFKNtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755830AbZFKNs2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 09:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZFKNsU
+	id S1754511AbZFKNtQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 09:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbZFKNtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 09:48:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52831 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751013AbZFKNsU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 09:48:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
-Date: Thu, 11 Jun 2009 15:48:33 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Oliver Neukum <oliver@neukum.org>, linux-pm@lists.linux-foundation.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+	Thu, 11 Jun 2009 09:49:00 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:58449 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751529AbZFKNtA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 09:49:00 -0400
+Date: Thu, 11 Jun 2009 09:48:53 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>,
+       linuxram@us.ibm.com, linux-mm <linux-mm@kvack.org>,
        LKML <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0906101942280.29717-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0906101942280.29717-100000@netrider.rowland.org>
+Subject: Re: [PATCH 2/3] Do not unconditionally treat zones that fail
+ zone_reclaim() as full
+In-Reply-To: <1244717273-15176-3-git-send-email-mel@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0906110948080.29827@gentwo.org>
+References: <1244717273-15176-1-git-send-email-mel@csn.ul.ie> <1244717273-15176-3-git-send-email-mel@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906111548.33751.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 June 2009, Alan Stern wrote:
-> On Thu, 11 Jun 2009, Oliver Neukum wrote:
-> 
-> > Am Donnerstag, 11. Juni 2009 00:01:20 schrieb Rafael J. Wysocki:
-> > > We have queued up resume requests for the device's parent, its parent etc.,
-> > > the topmost one goes first.  The workqueue is singlethread, so
-> > > pm_autoresume() is going to be run for all parents before the device
-> > > itself, so if that were the only resume mechanism, it would be enough to
-> > > check if the parent is RPM_ACTIVE.
-> > 
-> >             A (IDLE)
-> >     /                                \
-> > B (SUSPENDED)         C (SUSPENDED)
-> > 
-> > Suppose C is to be resumed. This means first in case of A the request
-> > to suspend would be cancelled. Here you drop the locks:
-> > 
-> > +           && (dev->parent->power.runtime_status == RPM_IDLE
-> > +             || dev->parent->power.runtime_status == RPM_SUSPENDING
-> > +             || dev->parent->power.runtime_status == RPM_SUSPENDED)) {
-> > +               spin_unlock_irqrestore(&dev->power.lock, flags);
-> > +               spin_unlock_irqrestore(&dev->parent->power.lock, parent_flags);
-> > +
-> > +               /* We have to resume the parent first. */
-> > +               pm_request_resume(dev->parent);
-> > 
-> > But after pm_request_resume() returns there's no means to make sure
-> > nothing alters it back to RPM_SUSPENDED. The workqueue doesn't help
-> > you because you've scheduled nothing by that time. The suspension will
-> > work because C is still in RPM_SUSPENDED.
-> 
-> This is an example where usage counters come in handy.
+It needs to be mentioned that this fixes a bug introduced in 2.6.19.
+Possibly a portion of this code needs to be backported to stable.
 
-Do you mean we can count suspend/resume requests for a device?
+On Thu, 11 Jun 2009, Mel Gorman wrote:
 
-Rafael
+> On NUMA machines, the administrator can configure zone_reclaim_mode that
+> is a more targetted form of direct reclaim. On machines with large NUMA
+> distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
+> unmapped pages will be reclaimed if the zone watermarks are not being
+> met. The problem is that zone_reclaim() failing at all means the zone
+> gets marked full.
+>
+> This can cause situations where a zone is usable, but is being skipped
+> because it has been considered full. Take a situation where a large tmpfs
+> mount is occuping a large percentage of memory overall. The pages do not
+> get cleaned or reclaimed by zone_reclaim(), but the zone gets marked full
+> and the zonelist cache considers them not worth trying in the future.
+>
+> This patch makes zone_reclaim() return more fine-grained information about
+> what occured when zone_reclaim() failued. The zone only gets marked full if
+> it really is unreclaimable. If it's a case that the scan did not occur or
+> if enough pages were not reclaimed with the limited reclaim_mode, then the
+> zone is simply skipped.
+>
+> There is a side-effect to this patch. Currently, if zone_reclaim()
+> successfully reclaimed SWAP_CLUSTER_MAX, an allocation attempt would
+> go ahead. With this patch applied, zone watermarks are rechecked after
+> zone_reclaim() does some work.
+>
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+> Reviewed-by: Rik van Riel <riel@redhat.com>
+> Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  mm/internal.h   |    4 ++++
+>  mm/page_alloc.c |   26 ++++++++++++++++++++++----
+>  mm/vmscan.c     |   11 ++++++-----
+>  3 files changed, 32 insertions(+), 9 deletions(-)
+>
+> diff --git a/mm/internal.h b/mm/internal.h
+> index f02c750..f290c4d 100644
+> --- a/mm/internal.h
+> +++ b/mm/internal.h
+> @@ -259,4 +259,8 @@ int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+>  		     unsigned long start, int len, int flags,
+>  		     struct page **pages, struct vm_area_struct **vmas);
+>
+> +#define ZONE_RECLAIM_NOSCAN	-2
+> +#define ZONE_RECLAIM_FULL	-1
+> +#define ZONE_RECLAIM_SOME	0
+> +#define ZONE_RECLAIM_SUCCESS	1
+>  #endif
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index d35e753..667ffbb 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1477,15 +1477,33 @@ zonelist_scan:
+>  		BUILD_BUG_ON(ALLOC_NO_WATERMARKS < NR_WMARK);
+>  		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+>  			unsigned long mark;
+> +			int ret;
+> +
+>  			mark = zone->watermark[alloc_flags & ALLOC_WMARK_MASK];
+> -			if (!zone_watermark_ok(zone, order, mark,
+> -				    classzone_idx, alloc_flags)) {
+> -				if (!zone_reclaim_mode ||
+> -				    !zone_reclaim(zone, gfp_mask, order))
+> +			if (zone_watermark_ok(zone, order, mark,
+> +				    classzone_idx, alloc_flags))
+> +				goto try_this_zone;
+> +
+> +			if (zone_reclaim_mode == 0)
+> +				goto this_zone_full;
+> +
+> +			ret = zone_reclaim(zone, gfp_mask, order);
+> +			switch (ret) {
+> +			case ZONE_RECLAIM_NOSCAN:
+> +				/* did not scan */
+> +				goto try_next_zone;
+> +			case ZONE_RECLAIM_FULL:
+> +				/* scanned but unreclaimable */
+> +				goto this_zone_full;
+> +			default:
+> +				/* did we reclaim enough */
+> +				if (!zone_watermark_ok(zone, order, mark,
+> +						classzone_idx, alloc_flags))
+>  					goto this_zone_full;
+>  			}
+>  		}
+>
+> +try_this_zone:
+>  		page = buffered_rmqueue(preferred_zone, zone, order,
+>  						gfp_mask, migratetype);
+>  		if (page)
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index d832ba8..7b8eb3f 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2465,16 +2465,16 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  	 */
+>  	if (zone_pagecache_reclaimable(zone) <= zone->min_unmapped_pages &&
+>  	    zone_page_state(zone, NR_SLAB_RECLAIMABLE) <= zone->min_slab_pages)
+> -		return 0;
+> +		return ZONE_RECLAIM_FULL;
+>
+>  	if (zone_is_all_unreclaimable(zone))
+> -		return 0;
+> +		return ZONE_RECLAIM_FULL;
+>
+>  	/*
+>  	 * Do not scan if the allocation should not be delayed.
+>  	 */
+>  	if (!(gfp_mask & __GFP_WAIT) || (current->flags & PF_MEMALLOC))
+> -			return 0;
+> +		return ZONE_RECLAIM_NOSCAN;
+>
+>  	/*
+>  	 * Only run zone reclaim on the local zone or on zones that do not
+> @@ -2484,10 +2484,11 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  	 */
+>  	node_id = zone_to_nid(zone);
+>  	if (node_state(node_id, N_CPU) && node_id != numa_node_id())
+> -		return 0;
+> +		return ZONE_RECLAIM_NOSCAN;
+>
+>  	if (zone_test_and_set_flag(zone, ZONE_RECLAIM_LOCKED))
+> -		return 0;
+> +		return ZONE_RECLAIM_NOSCAN;
+> +
+>  	ret = __zone_reclaim(zone, gfp_mask, order);
+>  	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
+>
+>
