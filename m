@@ -1,87 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763198AbZFKLge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763260AbZFKLhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763198AbZFKLge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 07:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762918AbZFKLg0
+	id S1763260AbZFKLhY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 07:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758634AbZFKLhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 07:36:26 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51821 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761644AbZFKLgZ (ORCPT
+	Thu, 11 Jun 2009 07:37:09 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45857 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755158AbZFKLhH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 07:36:25 -0400
-Subject: Re: Bug: fio traps into kernel without exiting because futex has a
- deadloop
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Darren Hart <dvhltc@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1244709196.2560.287.camel@ymzhang>
-References: <1244689688.2560.268.camel@ymzhang>
-	 <1244699756.6691.4.camel@laptop>  <1244701128.6691.5.camel@laptop>
-	 <1244709196.2560.287.camel@ymzhang>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 11 Jun 2009 13:36:23 +0200
-Message-Id: <1244720183.6691.214.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+	Thu, 11 Jun 2009 07:37:07 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 1/3] Properly account for the number of page cache pages zone_reclaim() can reclaim
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, linuxram@us.ibm.com,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1244717273-15176-2-git-send-email-mel@csn.ul.ie>
+References: <1244717273-15176-1-git-send-email-mel@csn.ul.ie> <1244717273-15176-2-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090611203349.6D68.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 11 Jun 2009 20:37:04 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-11 at 16:33 +0800, Zhang, Yanmin wrote:
-> On Thu, 2009-06-11 at 08:18 +0200, Peter Zijlstra wrote:
-> > On Thu, 2009-06-11 at 07:55 +0200, Peter Zijlstra wrote:
-> > > On Thu, 2009-06-11 at 11:08 +0800, Zhang, Yanmin wrote:
-> > > > I investigate a fio hang issue. When I run fio multi-process
-> > > > testing on many disks, fio traps into kernel and doesn't exit
-> > > > (mostly hit once after runing sub test cases for ﻿hundreds of times).
-> > > > 
-> > > > Oprofile data shows kernel consumes time with some futex functions.
-> > > > Command kill couldn't kill the process and machine reboot also hangs.
-> > > > 
-> > > > Eventually, I locate the root cause as a bug of futex. Kernel enters
-> > > > a deadloop between 'retry' and 'goto retry' in function futex_wake_op.
-> > > > By unknown reason (might be an issue of fio or glibc), parameter uaddr2
-> > > > points to an area which is READONLY. So futex_atomic_op_inuser returns
-> > > > -EFAULT when trying to changing the data at uaddr2, but later get_user
-> > > > still succeeds becasue the area is READONLY. Then go back to retry.
-> > > > 
-> > > > I create a simple test case to trigger it, which just shmat an READONLY
-> > > > area for address uaddr2.
-> > > > 
-> > > > It could be used as a DOS attack.
-> > 
-> > /me has morning juice and notices he sent the wrong commit...
-> > 
-> > commit 64d1304a64477629cb16b75491a77bafe6f86963
-> > Author: Thomas Gleixner <tglx@linutronix.de>
-> > Date:   Mon May 18 21:20:10 2009 +0200
-> 2.6.30 includes the new commit. I did a quick testing with my simple
-> test case and it traps into kernel without exiting.
+> On NUMA machines, the administrator can configure zone_reclaim_mode that
+> is a more targetted form of direct reclaim. On machines with large NUMA
+> distances for example, a zone_reclaim_mode defaults to 1 meaning that clean
+> unmapped pages will be reclaimed if the zone watermarks are not being met.
 > 
-> The reason is I use flag FUTEX_PRIVATE_FLAG. So the fshared part in function
-> get_futex_key should be deleted. That might hurt performance.
+> There is a heuristic that determines if the scan is worthwhile but the problem
+> is that the heuristic is not being properly applied and is basically assuming
+> zone_reclaim_mode is 1 if it is enabled. The lack of proper detection can
+> manfiest as high CPU usage as the LRU list is scanned uselessly.
+> 
+> Historically, once enabled it was depending on NR_FILE_PAGES which may
+> include swapcache pages that the reclaim_mode cannot deal with.  Patch
+> vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch by
+> Kosaki Motohiro noted that zone_page_state(zone, NR_FILE_PAGES) included
+> pages that were not file-backed such as swapcache and made a calculation
+> based on the inactive, active and mapped files. This is far superior
+> when zone_reclaim==1 but if RECLAIM_SWAP is set, then NR_FILE_PAGES is a
+> reasonable starting figure.
+> 
+> This patch alters how zone_reclaim() works out how many pages it might be
+> able to reclaim given the current reclaim_mode. If RECLAIM_SWAP is set
+> in the reclaim_mode it will either consider NR_FILE_PAGES as potential
+> candidates or else use NR_{IN}ACTIVE}_PAGES-NR_FILE_MAPPED to discount
+> swapcache and other non-file-backed pages.  If RECLAIM_WRITE is not set,
+> then NR_FILE_DIRTY number of pages are not candidates. If RECLAIM_SWAP is
+> not set, then NR_FILE_MAPPED are not.
+> 
+> [mmotm note: This patch should be merged with or replace
+> vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.  Kosaki?]
+> 
+> [kosaki.motohiro@jp.fujitsu.com: Estimate unmapped pages minus tmpfs pages]
+> [fengguang.wu@intel.com: Fix underflow problem in Kosaki's estimate]
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Reviewed-by: Rik van Riel <riel@redhat.com>
+> Acked-by: Christoph Lameter <cl@linux-foundation.org>
+> ---
+>  mm/vmscan.c |   55 +++++++++++++++++++++++++++++++++++++++++--------------
+>  1 files changed, 41 insertions(+), 14 deletions(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 2ddcfc8..d832ba8 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -2333,6 +2333,44 @@ int sysctl_min_unmapped_ratio = 1;
+>   */
+>  int sysctl_min_slab_ratio = 5;
+>  
+> +static inline unsigned long zone_unmapped_file_pages(struct zone *zone)
+> +{
+> +	unsigned long file_mapped = zone_page_state(zone, NR_FILE_MAPPED);
+> +	unsigned long file_lru = zone_page_state(zone, NR_INACTIVE_FILE) +
+> +		zone_page_state(zone, NR_ACTIVE_FILE);
+> +
+> +	/*
+> +	 * It's possible for there to be more file mapped pages than
+> +	 * accounted for by the pages on the file LRU lists because
+> +	 * tmpfs pages accounted for as ANON can also be FILE_MAPPED
+> +	 */
+> +	return (file_lru > file_mapped) ? (file_lru - file_mapped) : 0;
+> +}
+> +
+> +/* Work out how many page cache pages we can reclaim in this reclaim_mode */
+> +static long zone_pagecache_reclaimable(struct zone *zone)
+> +{
+> +	long nr_pagecache_reclaimable;
+> +	long delta = 0;
+> +
+> +	/*
+> +	 * If RECLAIM_SWAP is set, then all file pages are considered
+> +	 * potentially reclaimable. Otherwise, we have to worry about
+> +	 * pages like swapcache and zone_unmapped_file_pages() provides
+> +	 * a better estimate
+> +	 */
+> +	if (zone_reclaim_mode & RECLAIM_SWAP)
+> +		nr_pagecache_reclaimable = zone_page_state(zone, NR_FILE_PAGES);
+> +	else
+> +		nr_pagecache_reclaimable = zone_unmapped_file_pages(zone);
+> +
+> +	/* If we can't clean pages, remove dirty pages from consideration */
+> +	if (!(zone_reclaim_mode & RECLAIM_WRITE))
+> +		delta += zone_page_state(zone, NR_FILE_DIRTY);
 
-FWIW, using a private futex on a shm section is wrong in and of itself.
+no use delta?
 
-tglx: should we create CONFIG_DEBUG_FUTEX and do a vma lookup to
-validate that private futexes are indeed in private anonymous memory?
+> +
+> +	return nr_pagecache_reclaimable;
+> +}
+> +
+>  /*
+>   * Try to free up some pages from this zone through reclaim.
+>   */
+> @@ -2355,7 +2393,6 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  		.isolate_pages = isolate_pages_global,
+>  	};
+>  	unsigned long slab_reclaimable;
+> -	long nr_unmapped_file_pages;
+>  
+>  	disable_swap_token();
+>  	cond_resched();
+> @@ -2368,11 +2405,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  	reclaim_state.reclaimed_slab = 0;
+>  	p->reclaim_state = &reclaim_state;
+>  
+> -	nr_unmapped_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +
+> -				 zone_page_state(zone, NR_ACTIVE_FILE) -
+> -				 zone_page_state(zone, NR_FILE_MAPPED);
+> -
+> -	if (nr_unmapped_file_pages > zone->min_unmapped_pages) {
+> +	if (zone_pagecache_reclaimable(zone) > zone->min_unmapped_pages) {
 
-But you would be able to trigger the same using an PROT_READ anonymous
-mmap().
+Documentation/sysctl/vm.txt says
+=============================================================
 
-It appears access_ok() isn't as strict as we'd like it to be:
+min_unmapped_ratio:
 
-/*
-...
- * Note that, depending on architecture, this function probably just
- * checks that the pointer is in the user space range - after calling
- * this function, memory access functions may still return -EFAULT.
- */
-#define access_ok(type, addr, size) (likely(__range_not_ok(addr, size) == 0))
+This is available only on NUMA kernels.
 
-Thomas is working on a fix for this.
+A percentage of the total pages in each zone.  Zone reclaim will only
+occur if more than this percentage of pages are file backed and unmapped.
+This is to insure that a minimal amount of local pages is still available for
+file I/O even if the node is overallocated.
+
+The default is 1 percent.
+
+==============================================================
+
+but your code condider more addional thing. Can you please change document too?
+
+
+>  		/*
+>  		 * Free memory by calling shrink zone with increasing
+>  		 * priorities until we have enough memory freed.
+> @@ -2419,8 +2452,6 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  {
+>  	int node_id;
+>  	int ret;
+> -	long nr_unmapped_file_pages;
+> -	long nr_slab_reclaimable;
+>  
+>  	/*
+>  	 * Zone reclaim reclaims unmapped file backed pages and
+> @@ -2432,12 +2463,8 @@ int zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>  	 * if less than a specified percentage of the zone is used by
+>  	 * unmapped file backed pages.
+>  	 */
+> -	nr_unmapped_file_pages = zone_page_state(zone, NR_INACTIVE_FILE) +
+> -				 zone_page_state(zone, NR_ACTIVE_FILE) -
+> -				 zone_page_state(zone, NR_FILE_MAPPED);
+> -	nr_slab_reclaimable = zone_page_state(zone, NR_SLAB_RECLAIMABLE);
+> -	if (nr_unmapped_file_pages <= zone->min_unmapped_pages &&
+> -	    nr_slab_reclaimable <= zone->min_slab_pages)
+> +	if (zone_pagecache_reclaimable(zone) <= zone->min_unmapped_pages &&
+> +	    zone_page_state(zone, NR_SLAB_RECLAIMABLE) <= zone->min_slab_pages)
+>  		return 0;
+>  
+>  	if (zone_is_all_unreclaimable(zone))
+> -- 
+> 1.5.6.5
+> 
+
+
 
