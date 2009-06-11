@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbZFKPPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763830AbZFKPQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758009AbZFKPPg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 11:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758580AbZFKPP3
+	id S1763830AbZFKPQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 11:16:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755590AbZFKPQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 11:15:29 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3749 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753699AbZFKPP2 (ORCPT
+	Thu, 11 Jun 2009 11:16:21 -0400
+Received: from bhuna.collabora.co.uk ([93.93.131.97]:58977 "EHLO
+	bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754773AbZFKPQU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 11:15:28 -0400
-Subject: Re: HTC Dream aka. t-mobile g1 support
-From: Joe Perches <joe@perches.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: David Miller <davem@davemloft.net>, swetland@google.com, pavel@ucw.cz,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       san@android.com, rlove@google.com
-In-Reply-To: <20090611123852.GM795@n2100.arm.linux.org.uk>
-References: <20090611111821.GK795@n2100.arm.linux.org.uk>
-	 <20090611.042226.28424489.davem@davemloft.net>
-	 <20090611114911.GL795@n2100.arm.linux.org.uk>
-	 <20090611.050030.169859977.davem@davemloft.net>
-	 <20090611123852.GM795@n2100.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Thu, 11 Jun 2009 08:15:10 -0700
-Message-Id: <1244733310.895.60.camel@Joe-Laptop.home>
+	Thu, 11 Jun 2009 11:16:20 -0400
+Date: Thu, 11 Jun 2009 11:16:10 -0400
+From: Andres Salomon <dilinger@collabora.co.uk>
+To: Tobias_Mueller@twam.info
+Cc: akpm@linux-foundation.org, Randy Dunlap <randy.dunlap@oracle.com>,
+       deepak@laptop.org, Takashi Iwai <tiwai@suse.de>,
+       linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org,
+       jordan@cosmicpenguin.net, cjb@laptop.org
+Subject: Re: [PATCH 1/2] cs5535-gpio: add AMD CS5535/CS5536 GPIO driver  
+ support
+Message-ID: <20090611111610.0667898a@mycelium.queued.net>
+In-Reply-To: <17be05570906110746l214f88cdh8570488e1be51b30@mail.gmail.com>
+References: <20090610001033.27b7f69f@mycelium.queued.net>
+	<17be05570906110746l214f88cdh8570488e1be51b30@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-11 at 13:38 +0100, Russell King - ARM Linux wrote:
-> On Thu, Jun 11, 2009 at 05:00:30AM -0700, David Miller wrote:
-> > From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-> > Date: Thu, 11 Jun 2009 12:49:12 +0100
-> > 
-> > > I can not keep up with the number of patches that need to be
-> > > reviewed and ultimately merged.  I know this, and I freely admit it,
-> > > and I have done so on many occasions.
-> > 
-> > Then split up the responsibilities to other people instead of being
-> > the choke point.  Controlling everything isn't so important.
-> 
-> Don't you think that I've been trying to get other people to be more
-> involved?
-> 
-> - I've been pushing people to send patches to the relevent mailing
->   list(s) and maintainer(s) for years.
-> 
-> - I've been pushing people to send their ARM patches to the ARM
->   mailing list rather than directly into the patch system for review
->   (it even has a comment telling people this) so that others can get
->   involved in reviewing them, and sharing that work load.
-> 
-> Do you think either have been anywhere near successful?
-[]
-> I've been trying to get greater participation
-> but it's just not happening.
+On Thu, 11 Jun 2009 16:46:35 +0200
+Tobias Müller <Tobias_Mueller@twam.info> wrote:
 
-I suggest you stop using subscriber-only mailing lists and
-use linux-arm@vger.kernel.org.
+> 2009/6/10 Andres Salomon <dilinger@collabora.co.uk>:
+> > +config GPIO_CS5535
+> > +       tristate "AMD CS5535/CS5536 GPIO support"
+> > +       depends on PCI && !CS5535_GPIO && !MGEODE_LX
+> > +       help
+> > +         The AMD CS5535 and CS5536 southbridges support 28 GPIO
+> > pins that
+> > +         can be used for quite a number of things.  The CS5535/6
+> > is found on
+> > +         AMD Geode and Lemote Yeeloong devices.
+> 
+> Why do you depend on !MGEODE_LX? Are there any problems?
 
+Because arch/x86/kernel/{mfgpt,geode}_32.c are built if
+CONFIG_MGEODE_LX is set, and they will happily clobber each other.  We
+need to get a broken-out mfgpt driver completed, and then we can rework
+or remove the arch/x86/kernel/{mfgpt,geode}_32.c stuff.
 
+It's probably possible to add a separate config for that
+(CONFIG_GEODE_LEGACY or something?) rather than having it depend upon
+CONFIG_MGEODE_LX, but I haven't looked into it.  I'd rather spend the
+time fixing it correctly than fretting about with the various config
+permutations. :)
