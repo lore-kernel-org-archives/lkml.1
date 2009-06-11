@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763167AbZFKXWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762075AbZFKXZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763167AbZFKXWj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 19:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758758AbZFKXWc
+	id S1762075AbZFKXZb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 19:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758044AbZFKXZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 19:22:32 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51647 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758044AbZFKXWb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 19:22:31 -0400
-Date: Fri, 12 Jun 2009 01:22:25 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate file.
-Message-ID: <20090611232224.GB18682@elf.ucw.cz>
-References: <20090604161847.513682672@de.ibm.com> <200906112346.28782.rjw@sisk.pl> <20090611220517.GF27376@elf.ucw.cz> <200906120030.00425.rjw@sisk.pl>
+	Thu, 11 Jun 2009 19:25:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35114 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754733AbZFKXZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 19:25:23 -0400
+Date: Thu, 11 Jun 2009 19:25:17 -0400
+From: Dave Jones <davej@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, mark.langsdorf@amd.com
+Subject: Re: [PATCH 3/6] cpumask: avoid playing with cpus_allowed in
+	powernow-k8.c
+Message-ID: <20090611232517.GA32486@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Rusty Russell <rusty@rustcorp.com.au>, cpufreq@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+	mark.langsdorf@amd.com
+References: <20090611225928.E6FF4DDDA1@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906120030.00425.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090611225928.E6FF4DDDA1@ozlabs.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > > Other architectures will see this build error:
-> > > > > 
-> > > > > drivers/built-in.o: In function `sysdev_suspend':
-> > > > > (.text+0x15138): undefined reference to `check_wakeup_irqs'
-> > > > > drivers/built-in.o: In function `device_power_up':
-> > > > > (.text+0x1cb66): undefined reference to `resume_device_irqs'
-> > > > > drivers/built-in.o: In function `device_power_down':
-> > > > > (.text+0x1cb92): undefined reference to `suspend_device_irqs'
-> > > > > 
-> > > > > To fix this add some empty inline functions for !GENERIC_HARDIRQS.
-> > > > 
-> > > > I don't think that's right fix. If architecture does not use
-> > > > GENERIC_HARDIRQS, it may want to implement *_device_irqs()
-> > > > itself. Before your patch, it could, after your patch, it can not.
-> > > > 
-> > > > Better put those empty functions in arch/s390/include?
-> > > 
-> > > If any of the affected architectures wants to implement *_device_irqs()
-> > > itself, it can do the appropriate change in future.  For now, let's not break
-> > > compilation on them, shall we?
-> > 
-> > Well, if one of those architectures will want to implement
-> > *_device_irqs(), it will have to either modify s390, and all other
-> > !GENERIC_HARDIRQS architectures.
-> 
-> Why will it?  I think it will be sufficient to modify the header changed by
-> this patch and the architecture in question.
+On Thu, Jun 11, 2009 at 10:59:58PM +0930, Rusty Russell wrote:
+ > From: Rusty Russell <rusty@rustcorp.com.au>
+ > 
+ > It's generally a very bad idea to mug some process's cpumask: it could
+ > legitimately and reasonably be changed by root, which could break us
+ > (if done before our code) or them (if we restore the wrong value).
+ > 
+ > I did not replace powernowk8_target; it needs fixing, but it grabs a
+ > mutex (so no smp_call_function_single here) but Mark points out it can
+ > be called multiple times per second, so work_on_cpu is too heavy.
 
-Hmm, how? Putting #ifndef MY_ARCH into generic header? Inventing
-CONFIG_NON_GENERIC_HARDIRQS_BUT_I_NEED_DEVICE_IRQS?
-									Pavel
+This one clashes with some diffs I merged earlier in cpufreq.git.
+Can you rebase on top of that please?
+(The other two were fine).
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Otherwise, they all look ok to me. As long as they survive testing I
+see no reason not to push them for .31.
+
+Thanks,
+
+	Dave
+
