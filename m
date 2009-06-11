@@ -1,38 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbZFKPF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758177AbZFKPFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757602AbZFKPF0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 11:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbZFKPFP
+	id S1758177AbZFKPFj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 11:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbZFKPF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 11:05:15 -0400
-Received: from pindarots.xs4all.nl ([80.101.128.228]:33697 "EHLO
-	pindarots.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388AbZFKPFO (ORCPT
+	Thu, 11 Jun 2009 11:05:29 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:56941 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762060AbZFKPF2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 11:05:14 -0400
-Message-ID: <4A311D2A.808@xs4all.nl>
-Date: Thu, 11 Jun 2009 17:05:14 +0200
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 11 Jun 2009 11:05:28 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: [RFC][PATCH 0/2] PM: Rearrange core suspend code)
+Date: Thu, 11 Jun 2009 17:06:16 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.30-rc7-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0906111041020.3040-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0906111041020.3040-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-rt@vger.kernel.org
-Subject: NOHZ: local_softirq_pending 10
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200906111706.16848.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Am Donnerstag, 11. Juni 2009 16:52:03 schrieb Alan Stern:
+> > Under this definition all devices behind an inactive link are suspended,
+> > because they can't do any I/O.  Which appears to makes sense, because
+> > their drivers have to be notified before the link is suspended and the
+> > link has to be turned on for the devices to be able to communicate with
+> > the CPU and RAM.
+> >
+> > If this definition is adopted, then it's quite clear that the device can
+> > only be suspended if all of its children are suspended and it's always
+> > necessary to resume the parent of a device in order to resume the device
+> > itself.
+>
+> Okay, I'll agree to that.  It should be made clear that a device which
+> is "suspended" according to this definition is not necessarily in a
+> low-power state.  For example, before powering down the link to a disk
+> drive you might want the drive's suspend method to flush the drive's
+> cache, but it wouldn't have to spin the drive down.
 
-I found a few of these in my 2.6.29.4-rt16 logs:
+This precludes handling busses that have low power states that are
+left automatically. If such links are stacked the management of acceptable
+latencies cannot be left to the busses.
+An actual example are the link states of USB 3.0
 
-NOHZ: local_softirq_pending 10
+	Regards
+		Oliver
 
-Are they rt-related?
-(I saw them in older kernels without -rt as well)
-How serious? How to fix?
-
-Kind regards,
-Udo
