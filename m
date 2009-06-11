@@ -1,162 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760370AbZFKIdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761298AbZFKIkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760370AbZFKIdV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 04:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755791AbZFKIdL
+	id S1761298AbZFKIkB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 04:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757954AbZFKIjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 04:33:11 -0400
-Received: from mga09.intel.com ([134.134.136.24]:51501 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754500AbZFKIdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 04:33:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,201,1243839600"; 
-   d="c'?scan'208";a="420781504"
-Subject: Re: Bug: fio traps into kernel without exiting because futex has a
-	deadloop
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Darren Hart <dvhltc@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1244701128.6691.5.camel@laptop>
-References: <1244689688.2560.268.camel@ymzhang>
-	 <1244699756.6691.4.camel@laptop>  <1244701128.6691.5.camel@laptop>
-Content-Type: multipart/mixed; boundary="=-ua7M3esfpWTJ1MpnUhOY"
-Date: Thu, 11 Jun 2009 16:33:16 +0800
-Message-Id: <1244709196.2560.287.camel@ymzhang>
+	Thu, 11 Jun 2009 04:39:53 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38807 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757615AbZFKIjw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 04:39:52 -0400
+Date: Thu, 11 Jun 2009 17:38:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       apw@canonical.com, riel@redhat.com, minchan.kim@gmail.com,
+       mel@csn.ul.ie
+Subject: [PATCH 2/3] check unevictable flag in lumy reclaim v2
+Message-Id: <20090611173819.0f76e431.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090611172249.6D3C.A69D9226@jp.fujitsu.com>
+References: <20090611165535.cf46bf29.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090611170152.7a43b13b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090611172249.6D3C.A69D9226@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+How about this ?
 
---=-ua7M3esfpWTJ1MpnUhOY
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-On Thu, 2009-06-11 at 08:18 +0200, Peter Zijlstra wrote:
-> On Thu, 2009-06-11 at 07:55 +0200, Peter Zijlstra wrote:
-> > On Thu, 2009-06-11 at 11:08 +0800, Zhang, Yanmin wrote:
-> > > I investigate a fio hang issue. When I run fio multi-process
-> > > testing on many disks, fio traps into kernel and doesn't exit
-> > > (mostly hit once after runing sub test cases for ﻿hundreds of times).
-> > > 
-> > > Oprofile data shows kernel consumes time with some futex functions.
-> > > Command kill couldn't kill the process and machine reboot also hangs.
-> > > 
-> > > Eventually, I locate the root cause as a bug of futex. Kernel enters
-> > > a deadloop between 'retry' and 'goto retry' in function futex_wake_op.
-> > > By unknown reason (might be an issue of fio or glibc), parameter uaddr2
-> > > points to an area which is READONLY. So futex_atomic_op_inuser returns
-> > > -EFAULT when trying to changing the data at uaddr2, but later get_user
-> > > still succeeds becasue the area is READONLY. Then go back to retry.
-> > > 
-> > > I create a simple test case to trigger it, which just shmat an READONLY
-> > > area for address uaddr2.
-> > > 
-> > > It could be used as a DOS attack.
-> 
-> /me has morning juice and notices he sent the wrong commit...
-> 
-> commit 64d1304a64477629cb16b75491a77bafe6f86963
-> Author: Thomas Gleixner <tglx@linutronix.de>
-> Date:   Mon May 18 21:20:10 2009 +0200
-2.6.30 includes the new commit. I did a quick testing with my simple
-test case and it traps into kernel without exiting.
+Lumpy reclaim check pages from their pfn. Then, it can find unevictable pages
+in its loop.
+Abort lumpy reclaim when we find Unevictable page, we never get a lump
+of pages for requested order.
 
-The reason is I use flag FUTEX_PRIVATE_FLAG. So the fshared part in function
-get_futex_key should be deleted. That might hurt performance.
+Changelog: v1->v2
+ - rewrote commet.
 
-Yanmin
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/vmscan.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-
---=-ua7M3esfpWTJ1MpnUhOY
-Content-Disposition: attachment; filename=my_futex.c
-Content-Type: text/x-csrc; name=my_futex.c; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <linux/futex.h>
-#include <sys/time.h>
-#define _GNU_SOURCE        /* or _BSD_SOURCE or _SVID_SOURCE */
-#include <unistd.h>
-#include <sys/syscall.h>   /* For SYS_xxx definitions */
-#include <sys/types.h>
-#include <sys/shm.h>
-#include <sys/types.h>
-#include <sys/mman.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/wait.h>
-#include <sys/utsname.h>
-
-
-#define PAGE_SIZE	(4096)
-int addr1=1;
-
-
-int my_shmget(key_t key, int page_count, int *shmid, void **shmaddr)
-{
-	int     i, j, k;
-	void    *start_addr = NULL;
-
-	if ((*shmid =shmget(key, PAGE_SIZE*page_count, IPC_CREAT|0666 )) < 0) {
-		perror("Failure:");
-		return -1;
-	}
-
-	*shmaddr = shmat(*shmid, start_addr, SHM_RDONLY) ;
-	if (*shmaddr == (void *) -1) {
-		perror("shmget:Shared Memory Attach Failure:");
-		shmctl(*shmid, IPC_RMID, NULL);
-		return -1;
-	}
-
-	return 0;
-}
-
-int my_shmput(int shmid, void *shmaddr)
-{
-	if (shmdt((const void *)shmaddr) != 0) {
-		perror("Detached Failure:");
-		return -1;
-	}
-	if(shmctl(shmid, IPC_RMID, NULL) != 0) {
-		perror("Remove shm id of htlb page failure!\n");
-		return -1;
-	}
-
-	return 0;
-}
-
-int main()
-{
-	int * uaddr = &addr1, *uaddr2;
-	void * lp;
-	int ret;
-	int shmid;
-	void *shmaddr;
-
-	if(my_shmget(10673861, 10, &shmid, &shmaddr))
-		exit(0);
-
-	uaddr2 = shmaddr;
-
-	//uaddr2 = 0;
-
-	ret = syscall(__NR_futex, uaddr, FUTEX_WAKE_OP|FUTEX_PRIVATE_FLAG, 1, NULL, uaddr2, 1);
-
-	printf("ret=%d\n", ret);
-
-	my_shmput(shmid, shmaddr);
-
-	return 0;
-}
-
-
---=-ua7M3esfpWTJ1MpnUhOY--
+Index: lumpy-reclaim-trial/mm/vmscan.c
+===================================================================
+--- lumpy-reclaim-trial.orig/mm/vmscan.c
++++ lumpy-reclaim-trial/mm/vmscan.c
+@@ -936,6 +936,15 @@ static unsigned long isolate_lru_pages(u
+ 			/* Check that we have not crossed a zone boundary. */
+ 			if (unlikely(page_zone_id(cursor_page) != zone_id))
+ 				continue;
++			/*
++			 * We tries to free all pages in this range to create
++			 * a free large page. Then, if the range includes a page
++			 * never be reclaimed, we have no reason to do more.
++			 * PageUnevictable page is not a page which can be
++			 * easily freed. Abort this scan now.
++			 */
++			if (unlikely(PageUnevictable(cursor_page)))
++				break;
+ 			if (__isolate_lru_page(cursor_page, mode, file) == 0) {
+ 				list_move(&cursor_page->lru, dst);
+ 				nr_taken++;
 
