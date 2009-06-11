@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbZFKFql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbZFKFrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760016AbZFKFql (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 01:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbZFKFqc
+	id S1762138AbZFKFrA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 01:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbZFKFqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 01:46:32 -0400
+	Thu, 11 Jun 2009 01:46:51 -0400
 Received: from courier.cs.helsinki.fi ([128.214.9.1]:47927 "EHLO
 	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbZFKFqb (ORCPT
+	with ESMTP id S1752317AbZFKFqv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 01:46:31 -0400
-Date: Thu, 11 Jun 2009 08:46:32 +0300 (EEST)
+	Thu, 11 Jun 2009 01:46:51 -0400
+Date: Thu, 11 Jun 2009 08:46:53 +0300 (EEST)
 From: Pekka J Enberg <penberg@cs.helsinki.fi>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org,
        yinghai@kernel.org
-Subject: [PATCH 1/2] sched: use alloc_cpumask_var() instead of
- alloc_bootmem_cpumask_var()
-Message-ID: <Pine.LNX.4.64.0906110846110.2617@melkki.cs.Helsinki.FI>
+Subject: [PATCH 2/2] sched: use slab in cpupri_init()
+Message-ID: <Pine.LNX.4.64.0906110846330.2617@melkki.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -26,38 +25,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Slab is initialized when sched_init() runs now so lets use alloc_cpumask_var().
+Lets not use the bootmem allocator in cpupri_init() as slab is already up when
+it is run.
 
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Yinghai Lu <yinghai@kernel.org>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- kernel/sched.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ kernel/sched.c        |    2 +-
+ kernel/sched_cpupri.c |    8 +++++---
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index a9ff953..12cc09c 100644
+index 12cc09c..dcf2dc2 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -9310,13 +9310,13 @@ void __init sched_init(void)
- 	current->sched_class = &fair_sched_class;
+@@ -7795,7 +7795,7 @@ static int __init_refok init_rootdomain(struct root_domain *rd, bool bootmem)
+ 	if (!alloc_cpumask_var(&rd->rto_mask, gfp))
+ 		goto free_online;
  
- 	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
--	alloc_bootmem_cpumask_var(&nohz_cpu_mask);
-+	alloc_cpumask_var(&nohz_cpu_mask, GFP_NOWAIT);
- #ifdef CONFIG_SMP
- #ifdef CONFIG_NO_HZ
--	alloc_bootmem_cpumask_var(&nohz.cpu_mask);
--	alloc_bootmem_cpumask_var(&nohz.ilb_grp_nohz_mask);
-+	alloc_cpumask_var(&nohz.cpu_mask, GFP_NOWAIT);
-+	alloc_cpumask_var(&nohz.ilb_grp_nohz_mask, GFP_NOWAIT);
- #endif
--	alloc_bootmem_cpumask_var(&cpu_isolated_map);
-+	alloc_cpumask_var(&cpu_isolated_map, GFP_NOWAIT);
- #endif /* SMP */
+-	if (cpupri_init(&rd->cpupri, false) != 0)
++	if (cpupri_init(&rd->cpupri, bootmem) != 0)
+ 		goto free_rto_mask;
+ 	return 0;
  
- 	scheduler_running = 1;
+diff --git a/kernel/sched_cpupri.c b/kernel/sched_cpupri.c
+index 344712a..7deffc9 100644
+--- a/kernel/sched_cpupri.c
++++ b/kernel/sched_cpupri.c
+@@ -154,8 +154,12 @@ void cpupri_set(struct cpupri *cp, int cpu, int newpri)
+  */
+ int __init_refok cpupri_init(struct cpupri *cp, bool bootmem)
+ {
++	gfp_t gfp = GFP_KERNEL;
+ 	int i;
+ 
++	if (bootmem)
++		gfp = GFP_NOWAIT;
++
+ 	memset(cp, 0, sizeof(*cp));
+ 
+ 	for (i = 0; i < CPUPRI_NR_PRIORITIES; i++) {
+@@ -163,9 +167,7 @@ int __init_refok cpupri_init(struct cpupri *cp, bool bootmem)
+ 
+ 		spin_lock_init(&vec->lock);
+ 		vec->count = 0;
+-		if (bootmem)
+-			alloc_bootmem_cpumask_var(&vec->mask);
+-		else if (!zalloc_cpumask_var(&vec->mask, GFP_KERNEL))
++		if (!zalloc_cpumask_var(&vec->mask, gfp))
+ 			goto cleanup;
+ 	}
+ 
 -- 
 1.6.0.4
 
