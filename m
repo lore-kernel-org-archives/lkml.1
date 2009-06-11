@@ -1,137 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763889AbZFKXBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763777AbZFKXBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763889AbZFKXBX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 19:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762612AbZFKW7h
+	id S1763777AbZFKXBh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 19:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762860AbZFKXAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 18:59:37 -0400
-Received: from ozlabs.org ([203.10.76.45]:37894 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760927AbZFKW72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 18:59:28 -0400
-CC: linux-kernel@vger.kernel.org
-To: Ingo Molnar <mingo@redhat.com>
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Thu, 11 Jun 2009 22:59:57 +0930
-Subject: [PATCH 1/6] use smp_call_function_single() in arch/x86/kernel/acpi/cstate.c
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Zhao Yakui <yakui.zhao@intel.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Message-Id: <20090611225929.5FD71DDDB2@ozlabs.org>
+	Thu, 11 Jun 2009 19:00:15 -0400
+Received: from fmmailgate02.web.de ([217.72.192.227]:53030 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763488AbZFKXAN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 19:00:13 -0400
+From: Markus Heidelberg <markus.heidelberg@web.de>
+To: Jiri Kosina <trivial@kernel.org>
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       Markus Heidelberg <markus.heidelberg@web.de>
+Subject: [PATCH] trivial: update the Kernel Janitors' web-page URL
+Date: Fri, 12 Jun 2009 01:00:28 +0200
+Message-Id: <1244761228-32644-1-git-send-email-markus.heidelberg@web.de>
+X-Mailer: git-send-email 1.6.3.2.236.ge505d
+X-Provags-ID: V01U2FsdGVkX19kVhidI5VsO6RNQtanM16KNGZL7mBRO1r72kdT
+	jgZ2XUCizbTHS17OrroAcZE3IMumP+OfmdEU/4uTW8NbXIHJoN
+	ekwYIw2KMfPwWxySfjOQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
+The former address cannot be resolved.
 
-Attempting to rid us of the problematic work_on_cpu().  Just use
-smp_call_function_single() here.
-
-(Includes fix from Wu Fengguang <fengguang.wu@intel.com>)
-
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Zhao Yakui <yakui.zhao@intel.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Markus Heidelberg <markus.heidelberg@web.de>
 ---
- arch/x86/kernel/acpi/cstate.c |   36 ++++++++++++++++++++++++------------
- 1 file changed, 24 insertions(+), 12 deletions(-)
+ MAINTAINERS |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
---- a/arch/x86/kernel/acpi/cstate.c
-+++ b/arch/x86/kernel/acpi/cstate.c
-@@ -53,6 +53,12 @@ struct cstate_entry {
- };
- static struct cstate_entry *cpu_cstate_entry;	/* per CPU ptr */
+diff --git a/MAINTAINERS b/MAINTAINERS
+index ccdb575..d37b6a0 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3267,7 +3267,7 @@ F:	scripts/Makefile.*
+ KERNEL JANITORS
+ P:	Several
+ L:	kernel-janitors@vger.kernel.org
+-W:	http://www.kerneljanitors.org/
++W:	http://janitor.kernelnewbies.org/
+ S:	Maintained
  
-+/* Used for the cross-CPU calls */
-+struct acpi_processor_cx_cross_cpu {
-+	struct acpi_processor_cx *cx;
-+	long retval;
-+};
-+
- static short mwait_supported[ACPI_PROCESSOR_MAX_POWER];
- 
- #define MWAIT_SUBSTATE_MASK	(0xf)
-@@ -67,10 +73,10 @@ static short mwait_supported[ACPI_PROCES
- 
- #define NATIVE_CSTATE_BEYOND_HALT	(2)
- 
--static long acpi_processor_ffh_cstate_probe_cpu(void *_cx)
-+static void acpi_processor_ffh_cstate_probe_cpu(void *_cxcc)
- {
--	struct acpi_processor_cx *cx = _cx;
--	long retval;
-+	struct acpi_processor_cx_cross_cpu *cxcc = _cxcc;
-+	struct acpi_processor_cx *cx = cxcc->cx;
- 	unsigned int eax, ebx, ecx, edx;
- 	unsigned int edx_part;
- 	unsigned int cstate_type; /* C-state type and not ACPI C-state type */
-@@ -84,16 +90,16 @@ static long acpi_processor_ffh_cstate_pr
- 	edx_part = edx >> (cstate_type * MWAIT_SUBSTATE_SIZE);
- 	num_cstate_subtype = edx_part & MWAIT_SUBSTATE_MASK;
- 
--	retval = 0;
-+	cxcc->retval = 0;
- 	if (num_cstate_subtype < (cx->address & MWAIT_SUBSTATE_MASK)) {
--		retval = -1;
-+		cxcc->retval = -1;
- 		goto out;
- 	}
- 
- 	/* mwait ecx extensions INTERRUPT_BREAK should be supported for C2/C3 */
- 	if (!(ecx & CPUID5_ECX_EXTENSIONS_SUPPORTED) ||
- 	    !(ecx & CPUID5_ECX_INTERRUPT_BREAK)) {
--		retval = -1;
-+		cxcc->retval = -1;
- 		goto out;
- 	}
- 
-@@ -107,7 +113,7 @@ static long acpi_processor_ffh_cstate_pr
- 			ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
- 			cx->address);
- out:
--	return retval;
-+	return;
- }
- 
- int acpi_processor_ffh_cstate_probe(unsigned int cpu,
-@@ -115,6 +121,7 @@ int acpi_processor_ffh_cstate_probe(unsi
- {
- 	struct cstate_entry *percpu_entry;
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
-+	struct acpi_processor_cx_cross_cpu cxcc = { .cx = cx, };
- 	long retval;
- 
- 	if (!cpu_cstate_entry || c->cpuid_level < CPUID_MWAIT_LEAF)
-@@ -127,13 +134,18 @@ int acpi_processor_ffh_cstate_probe(unsi
- 	percpu_entry->states[cx->index].eax = 0;
- 	percpu_entry->states[cx->index].ecx = 0;
- 
--	/* Make sure we are running on right CPU */
-+	/* Run acpi_processor_ffh_cstate_probe_cpu() on the target CPU */
- 
--	retval = work_on_cpu(cpu, acpi_processor_ffh_cstate_probe_cpu, cx);
-+	retval = smp_call_function_single(cpu,
-+				acpi_processor_ffh_cstate_probe_cpu, &cxcc, 1);
- 	if (retval == 0) {
--		/* Use the hint in CST */
--		percpu_entry->states[cx->index].eax = cx->address;
--		percpu_entry->states[cx->index].ecx = MWAIT_ECX_INTERRUPT_BREAK;
-+		retval = cxcc.retval;
-+		if (retval == 0) {
-+			/* Use the hint in CST */
-+			percpu_entry->states[cx->index].eax = cx->address;
-+			percpu_entry->states[cx->index].ecx =
-+					MWAIT_ECX_INTERRUPT_BREAK;
-+		}
- 	}
- 	return retval;
- }
+ KERNEL NFSD, SUNRPC, AND LOCKD SERVERS
+-- 
+1.6.3.2.236.ge505d
 
