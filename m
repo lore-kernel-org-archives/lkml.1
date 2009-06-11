@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbZFKMpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbZFKMwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758102AbZFKMpm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 08:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZFKMpf
+	id S1756398AbZFKMwo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 08:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZFKMwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 08:45:35 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:37481 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751155AbZFKMpe (ORCPT
+	Thu, 11 Jun 2009 08:52:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44220 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751315AbZFKMwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 08:45:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Gdm+TWiTFL+E7pabWV0NWv63MLI44bcwWq+kYBpadgDBibSBjjph1uNxWPEwDkVeOb
-         wbAxY/yADrvVSJf3Z9sI75Dc5OzX3frn+KUVcuSBIIsHLxhXr1SJ0PnPBLhvBl0wQd2y
-         G7vTRWs0RCdyVIiX/YUrHuu7jWJbBJjva7T6I=
+	Thu, 11 Jun 2009 08:52:36 -0400
+Date: Thu, 11 Jun 2009 08:52:27 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
+       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>
+Subject: Re: [PATCH][GIT PULL] tracing: do not translate event helper
+	macros in print format
+Message-ID: <20090611125227.GA14220@infradead.org>
+References: <20090609014534.790466803@goodmis.org> <20090609014746.481457542@goodmis.org> <20090609192159.GD6057@nowhere> <20090610094819.GA25527@infradead.org> <20090610101124.GA25042@elte.hu> <alpine.DEB.2.00.0906100812370.30552@gandalf.stny.rr.com> <20090610171648.GD31096@elte.hu> <alpine.DEB.2.00.0906101353200.30552@gandalf.stny.rr.com> <alpine.DEB.2.00.0906101436340.30552@gandalf.stny.rr.com> <20090610204801.GB8147@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <20090611110946.GA7523@elf.ucw.cz>
-References: <20090610103131.GB13885@elf.ucw.cz>
-	 <a55d774e0906101043q580fc5e5iad25a79203dc52c@mail.gmail.com>
-	 <20090611081012.GD8592@elf.ucw.cz>
-	 <a55d774e0906110127k1633dd90x96863c3dd6f888cf@mail.gmail.com>
-	 <20090611110946.GA7523@elf.ucw.cz>
-Date: Thu, 11 Jun 2009 08:45:36 -0400
-X-Google-Sender-Auth: 2231c7851f0fb1b7
-Message-ID: <b6c5339f0906110545l5ced1039tf7baac3fab2450e2@mail.gmail.com>
-Subject: Re: HTC Dream aka. t-mobile g1 support
-From: Bob Copeland <me@bobcopeland.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       ibm@android.com, san@android.com, rlove@google.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090610204801.GB8147@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 7:09 AM, Pavel Machek<pavel@ucw.cz> wrote:
-> Anyway, now I have a tree, and yes it compiles. (After some
-> "interesting" questions; perhaps defconfig should be updated?)
+On Wed, Jun 10, 2009 at 10:48:02PM +0200, Ingo Molnar wrote:
+> > This looks like it changed more than it really did, I only moved 
+> > the one macro above another and added a few lines:
+> > 
+> >  +#undef __print_symbolic
+> >  +#undef __get_dynamic_array
+> >  +#undef __get_str
 
-> ...and I just selected "3" being default. No help available :-(. I
-> have cupcake installed, and I believe I installed radio update
-> required for cupcake. Can someone help?
+> >     tracing: do not translate event helper macros in print format
+> >     
+> >     By moving the macro that creates the print format code above the
+> >     defining of the event macro helpers (__get_str, __print_symbolic,
+> >     and __get_dynamic_array), we get a little cleaner print format.
 
-I can send you my .config if you want, I have it working.
+__print_flags should also be added, shouldn't it?
 
-Note you need the latest userland because the initrd details changed
-a bit (e.g. a 2.6.29 kernel will not work on the 1.1 userland, but
-will work on 1.5, something to do with mounting the filesystems, I
-can't remember exactly from my serial traces.)
+Maybe also le/be*_to_cpu/cpu_to_le/be*? and major/minor?
 
--- 
-Bob Copeland %% www.bobcopeland.com
+We should also document those helpers that need special treatment
+somewhere?
+
