@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbZFKGsI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759757AbZFKGsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759493AbZFKGsI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 02:48:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758933AbZFKGrz
+	id S1759757AbZFKGsn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 02:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758144AbZFKGsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 02:47:55 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33268
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758313AbZFKGrz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 02:47:55 -0400
-Date: Wed, 10 Jun 2009 23:47:57 -0700 (PDT)
-Message-Id: <20090610.234757.215116002.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       slapin@ossfans.org
-Subject: Re: linux-next: net tree build warnings
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090611145541.2570a43d.sfr@canb.auug.org.au>
-References: <20090611145541.2570a43d.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 11 Jun 2009 02:48:36 -0400
+Received: from mga01.intel.com ([192.55.52.88]:61636 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757212AbZFKGsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 02:48:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,200,1243839600"; 
+   d="scan'208";a="465380379"
+Subject: Re: [PATCH -v5] x86: MCE: Re-implement MCE log ring buffer as
+ per-CPU ring buffer
+From: Huang Ying <ying.huang@intel.com>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A30A779.4040101@jp.fujitsu.com>
+References: <1244445115.8361.576.camel@yhuang-dev.sh.intel.com>
+	 <4A30A779.4040101@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Thu, 11 Jun 2009 14:48:25 +0800
+Message-Id: <1244702905.5320.9.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 11 Jun 2009 14:55:41 +1000
-
-> Today's linux-next build (x86_64 allmodconfig) produced these warnings:
+On Thu, 2009-06-11 at 14:43 +0800, Hidetoshi Seto wrote:
+> Huang Ying wrote:
+> > Re-implement MCE log ring buffer as per-CPU ring buffer for better
+> > scalability.
 > 
-> net/ieee802154/raw.c: In function 'raw_sendmsg':
-> net/ieee802154/raw.c:135: warning: format '%u' expects type 'unsigned int', but argument 2 has type 'size_t'
-> net/ieee802154/dgram.c: In function 'dgram_sendmsg':
-> net/ieee802154/dgram.c:251: warning: format '%u' expects type 'unsigned int', but argument 2 has type 'size_t'
+> It seems your patch implicitly includes some bug fix for tip/mce3.
+> Still discussion of generic lockless ring buffer is going on, so how
+> about dividing the patch into 2 pieces, for improvement and for bug fix?
 > 
-> Introduced by commit 9ec7671603573ede31207eb5b0b3e1aa211b2854 ("net: add
-> IEEE 802.15.4 socket family implementation").
+> Maybe improvement part need to be reworked, so I pulled out the bug fix
+> part from your patch.
+> 
+> If it's all right, I'd like to put this on top of tip/mce3 asap.
 
-Similar to what you reported yesterday :-)
+It is OK for me.
 
-I'll get this fixed.
+Best Regards,
+Huang Ying
 
