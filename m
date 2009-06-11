@@ -1,107 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932172AbZFKL2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932434AbZFKL3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932172AbZFKL2u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 07:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752871AbZFKL2m
+	id S932434AbZFKL3F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 07:29:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932134AbZFKL2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 07:28:42 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:61188 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750990AbZFKL2m convert rfc822-to-8bit (ORCPT
+	Thu, 11 Jun 2009 07:28:46 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55060
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762832AbZFKL2p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 07:28:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=k4iuUDYskA5RPTs93q689mFY/s2RllLICx2qrhG2CCGEdeNYZ0GiwAPrJ7lRaJJXjM
-         CwDZDGrrNBYRB+RMoSGrK5gftFFZDCLWE8LCPV9Q874nBE0Qub0gZN8u/Lm4PS9T6Jgq
-         OY3WxylOJgPGARMzod6EZkJrouZQPXYbLn5s0=
-MIME-Version: 1.0
-In-Reply-To: <4c72e5b8de091845036fe2b5227168f5.squirrel@webmail-b.css.fujitsu.com>
-References: <20090611165535.cf46bf29.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090611170018.c3758488.kamezawa.hiroyu@jp.fujitsu.com>
-	 <28c262360906110218t6a3ed908g9a4fba7fa7dd7b22@mail.gmail.com>
-	 <4c72e5b8de091845036fe2b5227168f5.squirrel@webmail-b.css.fujitsu.com>
-Date: Thu, 11 Jun 2009 20:20:42 +0900
-Message-ID: <28c262360906110420g666df03cl49d008dd7a608ae6@mail.gmail.com>
-Subject: Re: [PATCH 1/3] remove wrong rotation at lumpy reclaim
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       apw@canonical.com, riel@redhat.com, mel@csn.ul.ie
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 11 Jun 2009 07:28:45 -0400
+Date: Thu, 11 Jun 2009 04:28:48 -0700 (PDT)
+Message-Id: <20090611.042848.193715083.davem@davemloft.net>
+To: tiwai@suse.de
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: sound skipping regression introduced in 2.6.30-rc8
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <s5hzlcflw2d.wl%tiwai@suse.de>
+References: <20090610.112804.193703669.davem@davemloft.net>
+	<s5hzlcflw2d.wl%tiwai@suse.de>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/11 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
-> Minchan Kim wrote:
->> On Thu, Jun 11, 2009 at 5:00 PM, KAMEZAWA
->> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->>> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>>
->>> At lumpy reclaim, a page failed to be taken by __isolate_lru_page() can
->>> be pushed back to "src" list by list_move(). But the page may not be
->>> from
->>> "src" list. And list_move() itself is unnecessary because the page is
->>> not on top of LRU. Then, leave it as it is if __isolate_lru_page()
->>> fails.
->>>
->>> This patch doesn't change the logic as "we should exit loop or not" and
->>> just fixes buggy list_move().
->>>
->>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>> ---
->>> ?mm/vmscan.c | ? ?9 +--------
->>> ?1 file changed, 1 insertion(+), 8 deletions(-)
->>>
->>> Index: lumpy-reclaim-trial/mm/vmscan.c
->>> ===================================================================
->>> --- lumpy-reclaim-trial.orig/mm/vmscan.c
->>> +++ lumpy-reclaim-trial/mm/vmscan.c
->>> @@ -936,18 +936,11 @@ static unsigned long isolate_lru_pages(u
->>> ? ? ? ? ? ? ? ? ? ? ? ?/* Check that we have not crossed a zone
->>> boundary. */
->>> ? ? ? ? ? ? ? ? ? ? ? ?if (unlikely(page_zone_id(cursor_page) !=
->>> zone_id))
->>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?continue;
->>> - ? ? ? ? ? ? ? ? ? ? ? switch (__isolate_lru_page(cursor_page, mode,
->>> file)) {
->>> - ? ? ? ? ? ? ? ? ? ? ? case 0:
->>> + ? ? ? ? ? ? ? ? ? ? ? if (__isolate_lru_page(cursor_page, mode, file)
->>> == 0) {
->>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?list_move(&cursor_page->lru, dst);
->>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?nr_taken++;
->>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?scan++;
->>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?break;
->>
->> break ??
->>
-> good catch. I'll post updated one tomorrow.
-> I'm very sorry ;(
+From: Takashi Iwai <tiwai@suse.de>
+Date: Wed, 10 Jun 2009 21:37:14 +0200
 
-Never mind.  :)
+> Could you set CONFIG_SND_PCM_XRUN_DEBUG=y and do
+> 	# echo 1 > /proc/asound/card0/pcm0p/xrun_debug
+> then check your app?  Does it work better, and get any kernel messages?
 
-> Thanks,
-> -Kame
->
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
+Yes, the skipping goes away and I get hw_ptr skipping kernel messages:
 
+[61581.519051] PCM: hw_ptr skipping! (pos=10240, delta=15368, period=1024, jdelta=0/32)
+[61584.420358] PCM: hw_ptr skipping! (pos=2048, delta=16328, period=1024, jdelta=2/34)
+[61593.956318] PCM: hw_ptr skipping! (pos=1024, delta=15368, period=1024, jdelta=0/32)
+[61596.964300] PCM: hw_ptr skipping! (pos=14336, delta=15368, period=1024, jdelta=0/32)
+[61600.036292] PCM: hw_ptr skipping! (pos=14336, delta=15368, period=1024, jdelta=0/32)
+[61605.454947] PCM: hw_ptr skipping! (pos=12288, delta=15368, period=1024, jdelta=0/32)
 
+> Also, it'd be helpful if you can check whether the problem exists in
+> the current sound git tree (for-linus branch), too.
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git for-linus
 
--- 
-Kinds regards,
-Minchan Kim
+I'm building this to test right now, will report when I try it out.
