@@ -1,72 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762699AbZFKK0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932104AbZFKK0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762699AbZFKK0f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 06:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761897AbZFKK00
+	id S932104AbZFKK0r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 06:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762125AbZFKK01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 06:26:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50532 "EHLO mx2.mail.elte.hu"
+	Thu, 11 Jun 2009 06:26:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50935 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758083AbZFKK0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 06:26:25 -0400
-Date: Thu, 11 Jun 2009 12:26:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	id S1761868AbZFKK00 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 06:26:26 -0400
+Subject: Re: [git-pull -tip] headers_check fix patches 20090610
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Greg Ungerer <gerg@snapgear.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
+       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Subject: Re: [GIT PULL] tracing/urgent for v2.6.31
-Message-ID: <20090611102620.GB31719@elte.hu>
-References: <20090610230450.GA8964@elte.hu> <alpine.LFD.2.01.0906102002260.6847@localhost.localdomain> <alpine.DEB.2.00.0906102327050.30552@gandalf.stny.rr.com> <alpine.LFD.2.01.0906102045420.6847@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906102045420.6847@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       David Howells <dhowells@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-am33-list@redhat.com,
+       yasutake.koichi@jp.panasonic.com
+In-Reply-To: <4A305F7C.9000308@snapgear.com>
+References: <1244640630.20890.22.camel@ht.satnam>
+	 <20090611001957.61b5530b.sfr@canb.auug.org.au>
+	 <1244647176.3070.8.camel@ht.satnam>  <4A305F7C.9000308@snapgear.com>
+Content-Type: text/plain
+Date: Thu, 11 Jun 2009 15:56:01 +0530
+Message-Id: <1244715961.6923.8.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Wed, 10 Jun 2009, Steven Rostedt wrote:
-> > 
-> > Well it was:
-> > 
-> > 	default y if DEBUG_KERNEL
-> > 
-> > Where the rational was that if you want to debug the kernel, you 
-> > might want to see some tracing features that are available to 
-> > you.
+On Thu, 2009-06-11 at 11:35 +1000, Greg Ungerer wrote:
+> Hi Jaswinder,
 > 
-> Sure. I think that FTRACE config is borderline fine, although I 
-> think tracing is pretty different from the debug options that 
-> don't need the user to actually do anything (like 
-> PAGEALLOC_DEBUG).
+> Jaswinder Singh Rajput wrote:
+> > Hello Stephen,
+> > 
+> > On Thu, 2009-06-11 at 00:19 +1000, Stephen Rothwell wrote:
+> >> Hi Jaswinder,
+> >>
+> >> On Wed, 10 Jun 2009 19:00:30 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> >>> The following changes since commit e271e1343a94e081723cb4180af3fdb5fecc1a49:
+> >>>   Ingo Molnar (1):
+> >>>         Merge branch 'x86/mce4'
+> >>>
+> >>> are available in the git repository at:
+> >>>
+> >>>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-top.git master
+> >>>
+> >>> Jaswinder Singh Rajput (3):
+> >>>       headers_check fix: m68k, swab.h
+> >>>       headers_check fix: mn10300, ptrace.h
+> >>>       headers_check fix: mn10300, setup.h
+> >>>
+> >>>  arch/m68k/include/asm/swab.h      |    2 +-
+> >>>  arch/mn10300/include/asm/ptrace.h |    5 ++---
+> >>>  arch/mn10300/include/asm/setup.h  |    3 ++-
+> >>>  3 files changed, 5 insertions(+), 5 deletions(-)
+> >> Is there some reason that these fixes are not just sent to the appropriate linux-am33-list@redhat.com
+> >> maintainers?  That way we would avoid unnecessary conflicts cropping up.
+> >>
+> > 
+> > Maintainers are also in CC.
+> > Patches were already sent on :
+> > 
+> > Subject: [PATCH 0/6] headers_check fix patches 20090604
+> > 
+> > Interested maintainers already pulled and applied patches. These are
+> > left-over patches. I am sending to Ingo hoping that he will merge it
+> > otherwise last option for me will be to prepare headers-check tree and
+> > send to linux-next ;-)
 > 
-> It's the other ones I think were clearly dubious (ok, the MARKERS 
-> one isn't "clearly" dubious, since I have no idea why it got 
-> enabled, so I guess it would count as "unclearly dubious" then).
+> I am happy to take the m68k change and push that upstream.
+> If it hasn't already been picked up by someone else.
+> 
 
-I agree that we have too many default-y options - we'll have a sweep 
-of all options and will default-disable the dubious (and unclearly 
-dubious) ones in a way that truly re-triggers user selection even if 
-the option is already enabled in the .config.
+Sure, take it.
 
-This particular new menu didnt actually change any of the existing 
-options or defaults: it just organized/grouped an already existing, 
-somewhat disorganized set of options and made it easier to disable 
-them summarily. Making _that_ default-n could have caused people to 
-accidentally disable a lot of options they had enabled in their 
-configs intentionally.
+So now only mn10300 patches left :-)
 
-	Ingo
+Thanks,
+--
+JSR
+
