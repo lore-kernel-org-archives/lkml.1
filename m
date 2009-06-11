@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757614AbZFKSoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758163AbZFKSo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757614AbZFKSoN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 14:44:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755129AbZFKSn7
+	id S1758163AbZFKSo3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 14:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756034AbZFKSoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 14:43:59 -0400
-Received: from mga01.intel.com ([192.55.52.88]:15315 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754534AbZFKSn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 14:44:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35237 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754316AbZFKSn6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Jun 2009 14:43:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,203,1243839600"; 
-   d="scan'208";a="698570985"
-Date: Thu, 11 Jun 2009 11:43:17 -0700
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH 1/4] PCI: Add pci_bus_set_ops
-Message-ID: <20090611114317.1b9a7d74@jbarnes-g45>
-In-Reply-To: <1240541117.6842.676.camel@yhuang-dev.sh.intel.com>
-References: <1240541117.6842.676.camel@yhuang-dev.sh.intel.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Date: Thu, 11 Jun 2009 11:42:04 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Tejun Heo <tj@kernel.org>, Steven Rostedt <srostedt@redhat.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] first block round for 2.6.31
+In-Reply-To: <20090611182657.GY11363@kernel.dk>
+Message-ID: <alpine.LFD.2.01.0906111134180.3573@localhost.localdomain>
+References: <20090611111339.GQ11363@kernel.dk> <alpine.LFD.2.01.0906111105021.3573@localhost.localdomain> <20090611182657.GY11363@kernel.dk>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Apr 2009 10:45:17 +0800
-Huang Ying <ying.huang@intel.com> wrote:
 
-> pci_bus_set_ops changes pci_ops associated with a pci_bus. This can be
-> used by some debug tool such as PCIE AER error injection to fake some
-> PCI configuration registers.
+
+On Thu, 11 Jun 2009, Jens Axboe wrote:
 > 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
+> > Btw, Jens: in your tree, you've committed Tejun's changes without adding 
+> > your own sign-off. Not good!
+> 
+> That's for the patches that I pulled from his git tree. It should list
+> him as committer too.
 
-Applied to linux-next, thanks.
+NO!
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+It sounds like you have done a _major_ no-no, which is to pull from his 
+tree, and then rebase it. 
+
+DO NOT DO THAT! NOT EVER!
+
+If you pull from somebody elses tree, you can no longer touch the commit. 
+It absolutely has to stay the same. Otherwise we see this kind of insane 
+duplication. 
+
+You're doing something seriously wrong here. I wrote a long rant about 
+what the rules were last release cycle, but now I can't find it. 
+Basically, if you're not the committer, you really must never EVER touch 
+it. 
+
+[ Anybody with enough google-fu to find my rant, so I don't have to 
+  re-rant? ]
+
+		Linus
