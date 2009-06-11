@@ -1,99 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761191AbZFKILE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759678AbZFKINB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761191AbZFKILE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 04:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760272AbZFKIKr
+	id S1759678AbZFKINB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 04:13:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbZFKIMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 04:10:47 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:15627 "EHLO
-	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759144AbZFKIKo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 04:10:44 -0400
-X-SpamScore: -28
-X-BigFish: VPS-28(zz1432R98dR936eN1805Mzz1202hzzz32i6bh17ch43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KL2EPM-04-YC2-01
-Date: Thu, 11 Jun 2009 10:10:32 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-       lethal@linux-sh.org, hancockrwd@gmail.com, jens.axboe@oracle.com,
-       bharrosh@panasas.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] dma-debug: disable DMA_API_DEBUG for now
-Message-ID: <20090611081032.GN5139@amd.com>
-References: <20090605173232N.fujita.tomonori@lab.ntt.co.jp> <20090605104132.GE24836@amd.com> <64bb37e0906101341j341f5179o9abfa888a6b96fc3@mail.gmail.com>
+	Thu, 11 Jun 2009 04:12:46 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61262 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751564AbZFKIMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 04:12:44 -0400
+Message-ID: <4A30BC0F.3000401@cn.fujitsu.com>
+Date: Thu, 11 Jun 2009 16:10:55 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <64bb37e0906101341j341f5179o9abfa888a6b96fc3@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 11 Jun 2009 08:10:33.0348 (UTC) FILETIME=[17CD7C40:01C9EA6C]
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 10/19] io-conroller: Prepare elevator layer for single
+ queue schedulers
+References: <1244513342-11758-1-git-send-email-vgoyal@redhat.com> <1244513342-11758-11-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1244513342-11758-11-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 10:41:53PM +0200, Torsten Kaiser wrote:
-> I applied this patch to the just released 2.6.30, but it does not fix
-> the false warning on my System.
-> 
-> Jun 10 21:10:14 treogen [ 2611.715341] ------------[ cut here ]------------
-> Jun 10 21:10:14 treogen [ 2611.715359] WARNING: at lib/dma-debug.c:565
-> check_unmap+0x536/0x620()
-> Jun 10 21:10:14 treogen [ 2611.715363] Hardware name: KFN5-D SLI
-> Jun 10 21:10:14 treogen [ 2611.715369] sata_sil24 0000:04:00.0:
-> DMA-API: device driver frees DMA sg list with different entry count [map count=2] [unmap count=1]
+Vivek Goyal wrote:
+...
+>  
+>  /*
+> @@ -1296,6 +1302,13 @@ void io_group_chain_link(struct request_queue *q, void *key,
+>  		iog = io_cgroup_lookup_group(iocg, key);
+>  		io_group_set_parent(prev, iog);
+>  	}
+> +
+> +	if (unlikely(efqd->only_root_group))
+> +		/*
+> +		 * TODO: Take care of force expiry of existing queue before
+> +		 * new queue is queued.
+> +		 */
+> +		efqd->only_root_group = 0;
 
-Ok, thats because we need also to check for sg_call_ents in the best-fit
-checks. Can you please test if you can reproduce it with the attached
-patch?
+  Hi Vivek,
 
->From 1e83c7eab546314ad9dbe08602d243bb83e93b50 Mon Sep 17 00:00:00 2001
-From: Joerg Roedel <joerg.roedel@amd.com>
-Date: Thu, 11 Jun 2009 10:03:42 +0200
-Subject: [PATCH] dma-debug: check for sg_call_ents in best-fit algorithm too
+  This flag isn't set back when all child groups go away. Am i missing something?
+  BTW, why not just determine "only root group" by cgroup itself? Although there might be 
+  some impact if cgroup is built but no request goes into it. but i think this isn't a big
+  deal. How about the following patch?
 
-If we don't check for sg_call_ents the hash_bucket_find function might
-still return the wrong dma_debug_entry for sg mappings.
-
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 ---
- lib/dma-debug.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ block/elevator-fq.c |   21 ++++++++++-----------
+ block/elevator-fq.h |    1 -
+ 2 files changed, 10 insertions(+), 12 deletions(-)
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index ad65fc0..eb86ec3 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -262,11 +262,12 @@ static struct dma_debug_entry *hash_bucket_find(struct hash_bucket *bucket,
- 		 */
- 		matches += 1;
- 		match_lvl = 0;
--		entry->size      == ref->size      ? ++match_lvl : match_lvl;
--		entry->type      == ref->type      ? ++match_lvl : match_lvl;
--		entry->direction == ref->direction ? ++match_lvl : match_lvl;
-+		entry->size         == ref->size         ? ++match_lvl : 0;
-+		entry->type         == ref->type         ? ++match_lvl : 0;
-+		entry->direction    == ref->direction    ? ++match_lvl : 0;
-+		entry->sg_call_ents == ref->sg_call_ents ? ++match_lvl : 0;
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index a516dce..f33155c 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -76,7 +76,6 @@ void elv_del_ioq_busy(struct elevator_queue *e, struct io_queue *ioq,
+ void elv_activate_ioq(struct io_queue *ioq, int add_front);
+ void elv_deactivate_ioq(struct elv_fq_data *efqd, struct io_queue *ioq,
+ 					int requeue);
+-
+ static int bfq_update_next_active(struct io_sched_data *sd)
+ {
+ 	struct io_group *iog;
+@@ -1131,6 +1130,14 @@ struct io_cgroup io_root_cgroup = {
+ 	.ioprio_class = IO_DEFAULT_GRP_CLASS,
+ };
  
--		if (match_lvl == 3) {
-+		if (match_lvl == 4) {
- 			/* perfect-fit - return the result */
- 			return entry;
- 		} else if (match_lvl > last_lvl) {
++static int is_only_root_group(void)
++{
++	if (list_empty(&io_root_cgroup.css.cgroup->children))
++		return 1;
++
++	return 0;
++}
++
+ void bfq_init_entity(struct io_entity *entity, struct io_group *iog)
+ {
+ 	entity->ioprio = entity->new_ioprio;
+@@ -1543,13 +1550,6 @@ void io_group_chain_link(struct request_queue *q, void *key,
+ 		iog = io_cgroup_lookup_group(iocg, key);
+ 		io_group_set_parent(prev, iog);
+ 	}
+-
+-	if (unlikely(efqd->only_root_group))
+-		/*
+-		 * TODO: Take care of force expiry of existing queue before
+-		 * new queue is queued.
+-		 */
+-		efqd->only_root_group = 0;
+ }
+ 
+ /**
+@@ -3601,7 +3601,7 @@ void *elv_fq_select_ioq(struct request_queue *q, int force)
+ 	 * overhead.
+ 	 */
+ 
+-	if (efqd->only_root_group && elv_iosched_single_ioq(q->elevator)) {
++	if (is_only_root_group() && elv_iosched_single_ioq(q->elevator)) {
+ 		elv_log_ioq(efqd, ioq, "select: only root group, no expiry");
+ 		goto keep_queue;
+ 	}
+@@ -3872,7 +3872,7 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+ 		 * unnecessary overhead.
+ 		 */
+ 
+-		if (efqd->only_root_group &&
++		if (is_only_root_group() &&
+ 			elv_iosched_single_ioq(q->elevator)) {
+ 			elv_log_ioq(efqd, ioq, "select: only root group,"
+ 					" no expiry");
+@@ -4019,7 +4019,6 @@ int elv_init_fq_data(struct request_queue *q, struct elevator_queue *e)
+ 
+ 	/* For the time being keep fairness enabled by default */
+ 	efqd->fairness = 1;
+-	efqd->only_root_group = 1;
+ 	return 0;
+ }
+ 
+diff --git a/block/elevator-fq.h b/block/elevator-fq.h
+index 1b1fb0b..0939735 100644
+--- a/block/elevator-fq.h
++++ b/block/elevator-fq.h
+@@ -368,7 +368,6 @@ struct elv_fq_data {
+ 	 * queues.
+ 	 */
+ 	unsigned int fairness;
+-	int only_root_group;
+ };
+ 
+ extern int elv_slice_idle;
 -- 
-1.6.3.1
+1.5.4.rc3
 
 
--- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
+
 
