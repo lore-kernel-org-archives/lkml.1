@@ -1,85 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759165AbZFKBgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761491AbZFKBjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759165AbZFKBgI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 21:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbZFKBf4
+	id S1761491AbZFKBjm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 21:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZFKBje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 21:35:56 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:38591 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753294AbZFKBfz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 21:35:55 -0400
-Message-ID: <4A305F7C.9000308@snapgear.com>
-Date: Thu, 11 Jun 2009 11:35:56 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       David Howells <dhowells@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip] headers_check fix patches 20090610
-References: <1244640630.20890.22.camel@ht.satnam>	 <20090611001957.61b5530b.sfr@canb.auug.org.au> <1244647176.3070.8.camel@ht.satnam>
-In-Reply-To: <1244647176.3070.8.camel@ht.satnam>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 10 Jun 2009 21:39:34 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:40463 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753814AbZFKBje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 21:39:34 -0400
+Date: Thu, 11 Jun 2009 11:39:30 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>, <linuxppc-dev@ozlabs.org>
+Subject: linux-next: powerpc tree build warning
+Message-Id: <20090611113930.78a42893.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__11_Jun_2009_11_39_30_+1000_3fVsuLRs9p7_AnqZ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jaswinder,
+--Signature=_Thu__11_Jun_2009_11_39_30_+1000_3fVsuLRs9p7_AnqZ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Jaswinder Singh Rajput wrote:
-> Hello Stephen,
-> 
-> On Thu, 2009-06-11 at 00:19 +1000, Stephen Rothwell wrote:
->> Hi Jaswinder,
->>
->> On Wed, 10 Jun 2009 19:00:30 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
->>> The following changes since commit e271e1343a94e081723cb4180af3fdb5fecc1a49:
->>>   Ingo Molnar (1):
->>>         Merge branch 'x86/mce4'
->>>
->>> are available in the git repository at:
->>>
->>>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-top.git master
->>>
->>> Jaswinder Singh Rajput (3):
->>>       headers_check fix: m68k, swab.h
->>>       headers_check fix: mn10300, ptrace.h
->>>       headers_check fix: mn10300, setup.h
->>>
->>>  arch/m68k/include/asm/swab.h      |    2 +-
->>>  arch/mn10300/include/asm/ptrace.h |    5 ++---
->>>  arch/mn10300/include/asm/setup.h  |    3 ++-
->>>  3 files changed, 5 insertions(+), 5 deletions(-)
->> Is there some reason that these fixes are not just sent to the appropriate
->> maintainers?  That way we would avoid unnecessary conflicts cropping up.
->>
-> 
-> Maintainers are also in CC.
-> Patches were already sent on :
-> 
-> Subject: [PATCH 0/6] headers_check fix patches 20090604
-> 
-> Interested maintainers already pulled and applied patches. These are
-> left-over patches. I am sending to Ingo hoping that he will merge it
-> otherwise last option for me will be to prepare headers-check tree and
-> send to linux-next ;-)
+Hi Ben,
 
-I am happy to take the m68k change and push that upstream.
-If it hasn't already been picked up by someone else.
+Today's linux-next build (powerpc ppc64_defconfig) produced this warning:
 
-Regards
-Greg
+arch/powerpc/platforms/Kconfig.cputype:60:warning: defaults for choice valu=
+es not supported
 
+We appear to have CONFIG_PPC_BOOK3S int two places which is confusing
+Kconfig.
 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__11_Jun_2009_11_39_30_+1000_3fVsuLRs9p7_AnqZ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkowYFIACgkQjjKRsyhoI8wSsQCghdrWz+5H8AzA/EKnpZyCGK/e
+1P4An2KGXrfT4V5CFWJ24NN9+lP7Es/J
+=m21z
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__11_Jun_2009_11_39_30_+1000_3fVsuLRs9p7_AnqZ--
