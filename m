@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759992AbZFKTVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760077AbZFKTV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759992AbZFKTVO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 15:21:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755091AbZFKTUq
+	id S1760077AbZFKTV0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 15:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756356AbZFKTUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 11 Jun 2009 15:20:46 -0400
-Received: from claw.goop.org ([74.207.240.146]:44159 "EHLO claw.goop.org"
+Received: from claw.goop.org ([74.207.240.146]:44162 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753120AbZFKTUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753356AbZFKTUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 11 Jun 2009 15:20:45 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Alok Kataria <akataria@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [PATCH 4/5] x86-64: move unlazy_fpu() into lazy cpu state part of context switch
-Date: Thu, 11 Jun 2009 12:20:39 -0700
-Message-Id: <1244748040-27185-5-git-send-email-jeremy@goop.org>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/5] x86/paravirt: clean up paravirt.h and optimise FPU context switch
+Date: Thu, 11 Jun 2009 12:20:35 -0700
+Message-Id: <1244748040-27185-1-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.2.2
-In-Reply-To: <1244748040-27185-1-git-send-email-jeremy@goop.org>
-References: <1244748040-27185-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Hi Ingo,
 
-Make sure that unlazy_fpu()'s stts gets batched along with the other
-cpu state changes during context switch.  (32-bit already does this.)
+This series:
+ - splits asm/paravirt.h into paravirt.h and paravirt_types.h
+ - splits out the context switch core of math_state_restore into __math_state_restore
+ - rearranges 32 and 64 bit context switch to be the same and to properly
+   batch FPU context switches when running paravirtualized
 
-This makes sure it gets batched when running paravirtualized.
+There should be no performance side-effects of these changes.  They amount
+to a small rearrangement of the existing code (and bringing the 64-bit
+code a bit closer to 32-bit, countering some genetic drift).
 
-[ Impact: optimise paravirtual FPU context switch ]
+I think these are probably safe to go into this merge window, but I
+don't think I've posted these before, so I understand if you're hesitant
+(I've had them applied locally for some time with no ill-effects).
+The paravirt cleanup is pure movement between headers, so I don't think
+there's much risk there at all.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Alok Kataria <akataria@vmware.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
----
- arch/x86/kernel/process_64.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/i387.h           |    1 +
+ arch/x86/include/asm/paravirt.h       |  711 +--------------------------------
+ arch/x86/include/asm/paravirt_types.h |  720 +++++++++++++++++++++++++++++++++
+ arch/x86/kernel/process_32.c          |   27 +-
+ arch/x86/kernel/process_64.c          |   33 +-
+ arch/x86/kernel/traps.c               |   33 +-
+ 6 files changed, 782 insertions(+), 743 deletions(-)
 
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index 89c46f1..6ed1c57 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -432,6 +432,9 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 
- 	load_TLS(next, cpu);
- 
-+	/* Must be after DS reload */
-+	unlazy_fpu(prev_p);
-+
- 	/*
- 	 * Leave lazy mode, flushing any hypercalls made here.
- 	 * This must be done before restoring TLS segments so
-@@ -472,9 +475,6 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 		wrmsrl(MSR_KERNEL_GS_BASE, next->gs);
- 	prev->gsindex = gsindex;
- 
--	/* Must be after DS reload */
--	unlazy_fpu(prev_p);
--
- 	/*
- 	 * Switch the PDA and FPU contexts.
- 	 */
--- 
-1.6.2.2
+Thanks,
+	J
 
