@@ -1,61 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758561AbZFKMNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762753AbZFKMSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758561AbZFKMNT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 08:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbZFKMNE
+	id S1762753AbZFKMSd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 08:18:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbZFKMSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 08:13:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47989 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752075AbZFKMNC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 08:13:02 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] slow_work_thread() should do the exclusive wait
-To: torvalds@osdl.org
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@redhat.com>, David Howells <dhowells@redhat.com>
-Date: Thu, 11 Jun 2009 13:12:55 +0100
-Message-ID: <20090611121255.23701.94984.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Thu, 11 Jun 2009 08:18:25 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46947 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751885AbZFKMSZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 08:18:25 -0400
+Message-ID: <d3a71da3a374d278e5fb0b1f2cdff71e.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <28c262360906110459s923d7a6p4e555344e8bbd265@mail.gmail.com>
+References: <20090611165535.cf46bf29.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090611170152.7a43b13b.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090611172249.6D3C.A69D9226@jp.fujitsu.com>
+    <20090611173819.0f76e431.kamezawa.hiroyu@jp.fujitsu.com>
+    <28c262360906110237u1f3d1877hae54a51575955549@mail.gmail.com>
+    <9d4a7c0691aa5e13247f694f2dfe55ad.squirrel@webmail-b.css.fujitsu.com>
+    <28c262360906110459s923d7a6p4e555344e8bbd265@mail.gmail.com>
+Date: Thu, 11 Jun 2009 21:18:22 +0900 (JST)
+Subject: Re: [PATCH 2/3] check unevictable flag in lumy reclaim v2
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Minchan Kim" <minchan.kim@gmail.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       apw@canonical.com, riel@redhat.com, mel@csn.ul.ie,
+       "Lee Schermerhorn" <lee.schermerhorn@hp.com>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;charset=iso-2022-jp
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Oleg Nesterov <oleg@redhat.com>
+Minchan Kim wrote:
+> 2009/6/11 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
+>> Minchan Kim さん wrote:
+>>> On Thu, Jun 11, 2009 at 5:38 PM, KAMEZAWA
+>>> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>>>> How about this ?
+>>>>
+>>>> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>>>
+>>>> Lumpy reclaim check pages from their pfn. Then, it can find
+>>>> unevictable
+>>>> pages
+>>>> in its loop.
+>>>> Abort lumpy reclaim when we find Unevictable page, we never get a lump
+>>>> of pages for requested order.
+>>>>
+>>>> Changelog: v1->v2
+>>>> ?- rewrote commet.
+>>>>
+>>>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>>> ---
+>>>> ?mm/vmscan.c | ? ?9 +++++++++
+>>>> ?1 file changed, 9 insertions(+)
+>>>>
+>>>> Index: lumpy-reclaim-trial/mm/vmscan.c
+>>>> ===================================================================
+>>>> --- lumpy-reclaim-trial.orig/mm/vmscan.c
+>>>> +++ lumpy-reclaim-trial/mm/vmscan.c
+>>>> @@ -936,6 +936,15 @@ static unsigned long isolate_lru_pages(u
+>>>> ? ? ? ? ? ? ? ? ? ? ? ?/* Check that we have not crossed a zone
+>>>> boundary. */
+>>>> ? ? ? ? ? ? ? ? ? ? ? ?if (unlikely(page_zone_id(cursor_page) !=
+>>>> zone_id))
+>>>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?continue;
+>>>> + ? ? ? ? ? ? ? ? ? ? ? /*
+>>>> + ? ? ? ? ? ? ? ? ? ? ? ?* We tries to free all pages in this range to
+>>>> create
+>>>> + ? ? ? ? ? ? ? ? ? ? ? ?* a free large page. Then, if the range
+>>>> includes a page
+>>>> + ? ? ? ? ? ? ? ? ? ? ? ?* never be reclaimed, we have no reason to do
+>>>> more.
+>>>> + ? ? ? ? ? ? ? ? ? ? ? ?* PageUnevictable page is not a page which
+>>>> can
+>>>> be
+>>>> + ? ? ? ? ? ? ? ? ? ? ? ?* easily freed. Abort this scan now.
+>>>> + ? ? ? ? ? ? ? ? ? ? ? ?*/
+>>>> + ? ? ? ? ? ? ? ? ? ? ? if (unlikely(PageUnevictable(cursor_page)))
+>>>> + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? break;
+>>>
+>>> __isolate_lru_pages already checked PageUnevictable to return error.
+>>> I want to remove repeated check although it is trivial.
+>>>
+>>> By your patch, It seems to remove PageUnevictable check in
+>>> __isolate_lru_pages.
+>>>
+>> yes.
+>>
+>>> But I know that. If we remove PageUnevictable check in
+>>> __isolate_lru_pages, it can't go into BUG in non-lumpy case. ( I
+>>> mentioned following as code)
+>>>
+>> In non-lumpy case, we'll never see Unevictable, maybe.
+>
+> I think so if it doesn't happen RAM failure.
+> AFAIK, Unevictable check didn't related with RAM failure.
+>
+>>
+>>> ? ? ? ? ? ? ? ? case -EBUSY:
+>>> ? ? ? ? ? ? ? ? ? ? ? ? /* else it is being freed elsewhere */
+>>> ? ? ? ? ? ? ? ? ? ? ? ? list_move(&page->lru, src);
+>>> ? ? ? ? ? ? ? ? ? ? ? ? continue;
+>>>
+>>> ? ? ? ? ? ? ? ? default:
+>>> ? ? ? ? ? ? ? ? ? ? ? ? BUG();
+>>> ? ? ? ? ? ? ? ? }
+>>>
+>>>
+>>> It means we can remove BUG in non-lumpy case and then add BUG into
+>>> __isolate_lru_pages directly.
+>>>
+>>> If we can do it, we can remove unnecessary PageUnevictable check in
+>>> __isolate_lru_page.
+>>>
+>> Hmm, but Unevicable check had tons of troubles at its implementation
+>> and I don't want to do it at once.
+>
+> I think it's not a big problem.
+> As comment said, the check's goal is to prevent in lumpy case.
+>         /*
+>          * When this function is being called for lumpy reclaim, we
+>          * initially look into all LRU pages, active, inactive and
+>          * unevictable; only give shrink_page_list evictable pages.
+>          */
+>         if (PageUnevictable(page))
+>                 return ret;
+>
+> So I think we can remove this check.
+>
+agreed.
 
-slow_work_thread() sleeps on slow_work_thread_wq without WQ_FLAG_EXCLUSIVE,
-this means that slow_work_enqueue()->__wake_up(nr_exclusive => 1) wakes up all
-kslowd threads.  This is not what we want, so we change slow_work_thread() to
-use prepare_to_wait_exclusive() instead.
+>>> I am not sure this is right in case of memcg.
+>>>
+>> I think we don't see Unevictable in memcg's path if my memcg-lru code
+>> works as designed.
+>>
+>> I'll postpone this patch for a while until my brain works well.
+>
+> If you have a concern about that, how about this ?
+> (This code will be hunk since gmail webserver always mangle. Pz,forgive
+> me)
+> Also, we can CC original authors.
+>
+I'll schedule this optimization/clean up for unevictable case in queue.
+Thank you for inputs.
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+But it's now merge-window, I'd like to push bugfix first.(1/3 and 3/3)
+I'd like to scheule Unevictable case fix after rc1(when mmotm stack seems
+to be pushed out to Linus.)
+And I'll add
+int __isolate_lru_page(...)
+{
+     VM_BUG_ON(PageUnevictable(page));
+}
+as sanity check for mmotm test time.
 
- kernel/slow-work.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-
-diff --git a/kernel/slow-work.c b/kernel/slow-work.c
-index b28d191..521ed20 100644
---- a/kernel/slow-work.c
-+++ b/kernel/slow-work.c
-@@ -372,8 +372,8 @@ static int slow_work_thread(void *_data)
- 		vsmax *= atomic_read(&slow_work_thread_count);
- 		vsmax /= 100;
- 
--		prepare_to_wait(&slow_work_thread_wq, &wait,
--				TASK_INTERRUPTIBLE);
-+		prepare_to_wait_exclusive(&slow_work_thread_wq, &wait,
-+					  TASK_INTERRUPTIBLE);
- 		if (!freezing(current) &&
- 		    !slow_work_threads_should_exit &&
- 		    !slow_work_available(vsmax) &&
+Thank you for all your help.
+-Kame
 
