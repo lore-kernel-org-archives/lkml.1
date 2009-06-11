@@ -1,62 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbZFKQ6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbZFKQ7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754264AbZFKQ6r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 12:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbZFKQ6j
+	id S1754461AbZFKQ7G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 12:59:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbZFKQ6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 12:58:39 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:43552 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751265AbZFKQ6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 12:58:39 -0400
-To: torvalds@linux-foundation.org
-Subject: [GIT PULL] jfs update
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Message-Id: <20090611165837.37CC84C9BAD@norville.austin.ibm.com>
-Date: Thu, 11 Jun 2009 11:58:37 -0500 (CDT)
-From: shaggy@linux.vnet.ibm.com
+	Thu, 11 Jun 2009 12:58:42 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:14242 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753351AbZFKQ6l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 12:58:41 -0400
+X-Trace: 209746304/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.77.176/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.77.176
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvIEADrUMEpPRU2w/2dsb2JhbACBT883hAoF
+X-IronPort-AV: E=Sophos;i="4.42,203,1243810800"; 
+   d="scan'208";a="209746304"
+Date: Thu, 11 Jun 2009 17:57:47 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Izik Eidus <ieidus@redhat.com>
+cc: aarcange@redhat.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
+       chrisw@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 0/4] RFC - ksm api change into madvise
+In-Reply-To: <20090610092855.43be2405@woof.tlv.redhat.com>
+Message-ID: <Pine.LNX.4.64.0906111700390.18609@sister.anvils>
+References: <1242261048-4487-1-git-send-email-ieidus@redhat.com>
+ <Pine.LNX.4.64.0906081555360.22943@sister.anvils> <4A2D47C1.5020302@redhat.com>
+ <Pine.LNX.4.64.0906081902520.9518@sister.anvils> <4A2D7036.1010800@redhat.com>
+ <20090609074848.5357839a@woof.tlv.redhat.com> <Pine.LNX.4.64.0906091807300.20120@sister.anvils>
+ <Pine.LNX.4.64.0906092013580.31606@sister.anvils> <20090610092855.43be2405@woof.tlv.redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+On Wed, 10 Jun 2009, Izik Eidus wrote:
+> 
+> Great!, what you think about below?
 
-git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6.git for-linus
+A couple of things: please use #ifdef CONFIG_KSM throughout
+now that you can, rather than #if defined(CONFIG_KSM).
 
-This will update the following files:
+And we ought to add a comment above the write_protect_page() call:
+	/*
+	 * If this anonymous page is mapped only here, its pte may need
+	 * to be write-protected.  If it's mapped elsewhere, all its
+	 * ptes are necessarily already write-protected.  In either
+	 * case, we need to lock and check page_count is not raised.
+	 */
 
- fs/jfs/jfs_imap.c |    1 +
- fs/jfs/super.c    |    4 +++-
- 2 files changed, 4 insertions(+), 1 deletions(-)
+> another thing we want to add or to start sending it to Andrew?
 
-through these ChangeSets:
+Umm, umm, umm, let's hold off sending Andrew for now.  It would be
+a bit silly to send him 2/2, when what's actually required is to
+withdraw ksm-add-page_wrprotect-write-protecting-page.patch,
+providing adjustments as necessary to the other patches.
 
-commit 79f52b77b89e8b7aa9fbe62135eea198a2ecbd5b
-Author: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Date:   Sat May 23 20:28:41 2009 -0500
+But I don't want us fiddling with Andrew's collection every day
+or two (forget my earlier scan fix if you prefer, if you're sure
+you caught all of that in what you have now); and I rather doubt
+mmotm's KSM is getting much testing at present.  It would be nice
+to get the withdrawn rmap.c changes out of everybody else's face,
+but not worth messing mmotm around for that right now.
 
-    jfs: Add missing mutex_unlock call to error path
-    
-    Jan Kucera found an missing call to mutex_unlock() with his static code
-    checker.  It's an unlikely error path to hit in the real world, but it
-    should be fixed.
-    
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-    Reported-by: Jan Kucera <kucera.jan.cz@gmail.com>
+Whilst we can't let our divergence drift on very long, I think
+it's better we give him a new collection of patches once we've
+more or less settled the madvise switchover.  That new collection
+won't contain much in mm/rmap.c if at all.
 
-commit 9c83633ad38138855181af6936e8ac570ef7e2cb
-Author: Dan Carpenter <error27@gmail.com>
-Date:   Tue Apr 7 14:48:16 2009 +0300
+Unless you or Andrew feel strongly that I'm wrong on this.
 
-    missing unlock in jfs_quota_write()
-    
-    We should unlock &inode->i_mutex on the error path.  This bug was
-    in ext2_quota_write().  I sent a patch to them today as well.
-    
-    Found by smatch (http://repo.or.cz/w/smatch.git).  Compile tested.
-    
-    regards,
-    dan carpenter
-    
-    Signed-off-by: Dan Carpenter <error27@gmail.com>
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> 
+> btw may i add your signed-off to this patch?
+
+If you've tested and found it works, please, by all means.
+If you've not tested, or found it broken, then I deny all
+knowledge of these changes ;)  But it's hypothetical: the
+replacement collection to Andrew won't contain either of
+these patches as such.
+
+> (the only thing that i changed was taking down the *orig_pte = *ptep,
+> so we will merge write_protected pages, and add orig_pte = __pte(0) to
+> avoid annoying warning message about being used uninitialized)
+
+Okay.  We do have a macro to annotate such pacifying initializations,
+but I've not used it before, and forget what it is or where to look
+for an example, I don't see it in kernel.h or compiler.h.  Maybe
+Andrew will chime in and remind us.
+
+Hugh
