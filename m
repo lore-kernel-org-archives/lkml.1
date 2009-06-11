@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758581AbZFKTuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757495AbZFKTxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758581AbZFKTuZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 15:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZFKTuP
+	id S1757495AbZFKTxL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 15:53:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZFKTw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 15:50:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56788 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753808AbZFKTuO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 15:50:14 -0400
-Date: Thu, 11 Jun 2009 12:49:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Newall <davidn@davidnewall.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Al Viro <viro@zeniv.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT PULL] Performance Counters for Linux
-In-Reply-To: <4A315C9F.8050908@davidnewall.com>
-Message-ID: <alpine.LFD.2.01.0906111247270.3535@localhost.localdomain>
-References: <20090611160329.GA3366@elte.hu>  <20090611161714.GA5008@infradead.org>  <alpine.LFD.2.01.0906110922080.3573@localhost.localdomain>  <20090611165226.GV8633@ZenIV.linux.org.uk>  <1244739378.6691.540.camel@laptop>  <20090611170015.GA3651@infradead.org>
-  <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain> <84144f020906111059g6e25a090y4434cfd698f84fb4@mail.gmail.com> <4A3148AA.9000007@davidnewall.com> <alpine.LFD.2.01.0906111120100.3573@localhost.localdomain> <4A314F37.2080202@davidnewall.com>
- <alpine.LFD.2.01.0906111142390.3573@localhost.localdomain> <4A3155E3.3030603@davidnewall.com> <alpine.LFD.2.01.0906111223250.3573@localhost.localdomain> <alpine.LFD.2.01.0906111226130.3573@localhost.localdomain> <4A315C9F.8050908@davidnewall.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 11 Jun 2009 15:52:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:53824 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755306AbZFKTw5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 15:52:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Subject: Re: [PATCH 2/2] PCI PM: Read device power state from register after updating it
+Date: Thu, 11 Jun 2009 21:53:16 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>
+References: <200905182246.41129.rjw@sisk.pl> <200905262152.29489.rjw@sisk.pl> <20090611115458.66650e04@jbarnes-g45>
+In-Reply-To: <20090611115458.66650e04@jbarnes-g45>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906112153.16853.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 12 Jun 2009, David Newall wrote:
-
-> Linus Torvalds wrote:
-> > To take the oprofile example that decided it for me: the code to actually 
-> > support new processors was all done by basically kernel developers. And it 
-> > didn't hit user land for almost a year, because the user-land tools didn't 
-> > take the patch and propagate it up.
+On Thursday 11 June 2009, Jesse Barnes wrote:
+> On Tue, 26 May 2009 21:52:29 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> Bad developer, Spot, you only did half the job. Not sure there's much
-> more one can say.
+> > On Monday 18 May 2009, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > After attempting to change the power state of a PCI device
+> > > pci_raw_set_power_state() doesn't check if the value it wrote into
+> > > the device's PCI_PM_CTRL register has been stored in there.  Still,
+> > > it modifies the device's current_state field as though that's the
+> > > case.  This may cause the driver of the device to think that its
+> > > power state has been changed while in fact it hasn't.
+> > > 
+> > > To prevent such situations from happening modify
+> > > pci_raw_set_power_state() so that it reads the device's PCI_PM_CTRL
+> > > register after writing into it and uses the value read from the
+> > > register to update the device's current_state field.  Also make it
+> > > return -EIO if the new state of the device is not equal to the state
+> > > requested by the called.
+> > > 
+> > > To distinguish this error condition from the other ones make
+> > > pci_raw_set_power_state() return -ENOSYS instead of -EIO when it is
+> > > impossible to change the power state of the device, because it
+> > > doesn't support the native PCI PM at all or the requested target
+> > > state is not supported by it.
+> > 
+> > Having reconsidered it I think that -ENODEV is probably better than
+> > -ENOSYS for this purpose.  Updated patch follows.
+> 
+> Applied to linux-next, thanks Rafael.
 
-Umm. The kernel developer _did_ do the job. The patch to the user land 
-side was available for that whole year. It just didn't get merged, and 
-then didn't get merged some more, and then got merged but only in a SVN 
-tree, not a release, and then finally when I did a bugzilla request to 
-fedora, they took the patch and put it in their distro.
+Please drop.  It has been reported by Jiri to cause a regression to happen.
 
-Anyway, it's clearly not worth discussing this with you. I've tried. I 
-give up. Happily, I don't _need_ to convince you.
-
-		Linus
+Best,
+Rafael
