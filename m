@@ -1,128 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760757AbZFKIbG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760370AbZFKIdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760757AbZFKIbG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 04:31:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761175AbZFKIai
+	id S1760370AbZFKIdV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 04:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755791AbZFKIdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 04:30:38 -0400
-Received: from mga14.intel.com ([143.182.124.37]:23347 "EHLO mga14.intel.com"
+	Thu, 11 Jun 2009 04:33:11 -0400
+Received: from mga09.intel.com ([134.134.136.24]:51501 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761039AbZFKIae convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 04:30:34 -0400
+	id S1754500AbZFKIdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 04:33:09 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,201,1243839600"; 
-   d="scan'208";a="153066776"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+   d="c'?scan'208";a="420781504"
+Subject: Re: Bug: fio traps into kernel without exiting because futex has a
+	deadloop
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
 To: Peter Zijlstra <peterz@infradead.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-tip-commits@vger.kernel.org" 
-	<linux-tip-commits@vger.kernel.org>
-Date: Thu, 11 Jun 2009 09:30:08 +0100
-Subject: RE: [tip:tracing/core] Revert "x86, bts: reenable ptrace branch
- trace support"
-Thread-Topic: [tip:tracing/core] Revert "x86, bts: reenable ptrace branch
- trace support"
-Thread-Index: Acnqa+iTJVdj3N4AShSheST24T84KAAAMTeg
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EBBC654C0@irsmsx504.ger.corp.intel.com>
-References: <tip-511b01bdf64ad8a38414096eab283c7784aebfc4@git.kernel.org>
-	 <928CFBE8E7CB0040959E56B4EA41A77EBBC6544B@irsmsx504.ger.corp.intel.com>
-	 <1244702183.6691.8.camel@laptop>
-	 <928CFBE8E7CB0040959E56B4EA41A77EBBC6546E@irsmsx504.ger.corp.intel.com>
- <1244707735.6691.16.camel@laptop>
-In-Reply-To: <1244707735.6691.16.camel@laptop>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Cc: Darren Hart <dvhltc@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1244701128.6691.5.camel@laptop>
+References: <1244689688.2560.268.camel@ymzhang>
+	 <1244699756.6691.4.camel@laptop>  <1244701128.6691.5.camel@laptop>
+Content-Type: multipart/mixed; boundary="=-ua7M3esfpWTJ1MpnUhOY"
+Date: Thu, 11 Jun 2009 16:33:16 +0800
+Message-Id: <1244709196.2560.287.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Peter Zijlstra [mailto:peterz@infradead.org]
->Sent: Thursday, June 11, 2009 10:09 AM
->To: Metzger, Markus T
->Cc: linux-kernel@vger.kernel.org; mingo@redhat.com; hpa@zytor.com; oleg@redhat.com;
->tglx@linutronix.de; mingo@elte.hu; linux-tip-commits@vger.kernel.org
->Subject: RE: [tip:tracing/core] Revert "x86, bts: reenable ptrace branch trace support"
->
->On Thu, 2009-06-11 at 08:17 +0100, Metzger, Markus T wrote:
->> >That would indeed keep the proposed ABI workable, what I'm still not
->> >liking is that this buffer is in-kernel, but I guess that might be
->> >something for other people to have an opinion on.
->>
->> The alternative would be to give a user-allocated buffer to the tracing h/w.
->>
->> We would need to take precautions to prevent the user from messing around
->> with that buffer while the h/w is writing to it. Other code uses the kernel-
->> allocated buffer plus copy_to_user() approach, as well.
->>
->> Further, it would require the user to interpret the various tracing formats,
->> whereas the existing interface provides an architecture-independent format.
->>
->>
->> Does anybody have concerns on using an in-kernel buffer and providing a
->> copy_to_user() interface?
->
->Ah, if you mmap() you can do without copy_to_user().
 
-The user would still need to call the kernel to interpret the trace data,
-which would then require copy_to_user() for the interpreted data.
+--=-ua7M3esfpWTJ1MpnUhOY
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+On Thu, 2009-06-11 at 08:18 +0200, Peter Zijlstra wrote:
+> On Thu, 2009-06-11 at 07:55 +0200, Peter Zijlstra wrote:
+> > On Thu, 2009-06-11 at 11:08 +0800, Zhang, Yanmin wrote:
+> > > I investigate a fio hang issue. When I run fio multi-process
+> > > testing on many disks, fio traps into kernel and doesn't exit
+> > > (mostly hit once after runing sub test cases for ﻿hundreds of times).
+> > > 
+> > > Oprofile data shows kernel consumes time with some futex functions.
+> > > Command kill couldn't kill the process and machine reboot also hangs.
+> > > 
+> > > Eventually, I locate the root cause as a bug of futex. Kernel enters
+> > > a deadloop between 'retry' and 'goto retry' in function futex_wake_op.
+> > > By unknown reason (might be an issue of fio or glibc), parameter uaddr2
+> > > points to an area which is READONLY. So futex_atomic_op_inuser returns
+> > > -EFAULT when trying to changing the data at uaddr2, but later get_user
+> > > still succeeds becasue the area is READONLY. Then go back to retry.
+> > > 
+> > > I create a simple test case to trigger it, which just shmat an READONLY
+> > > area for address uaddr2.
+> > > 
+> > > It could be used as a DOS attack.
+> 
+> /me has morning juice and notices he sent the wrong commit...
+> 
+> commit 64d1304a64477629cb16b75491a77bafe6f86963
+> Author: Thomas Gleixner <tglx@linutronix.de>
+> Date:   Mon May 18 21:20:10 2009 +0200
+2.6.30 includes the new commit. I did a quick testing with my simple
+test case and it traps into kernel without exiting.
 
->Either way, you have to make sure the buffer is mlocked() anyway, since
->you're wanting to fill it from interrupt context.
->
->The advantage (imo) from letting the user set it up is that you don't
->need those separate allocation routines.
+The reason is I use flag FUTEX_PRIVATE_FLAG. So the fshared part in function
+get_futex_key should be deleted. That might hurt performance.
 
-I would still need to mlock() the buffer. Those separate allocation routines
-do the accounting work of mlock() on an already non-pageable buffer.
-
-If you don't like those separate allocation routines, we could extract the
-accounting part from mlock() into separate functions and I could use those.
-These changes would again be in-kernel without impacting the API.
+Yanmin
 
 
->But yes, it would expose the data to the user, but one could keep it
->opaque data, without requiring the user to be able to interpret it.
+--=-ua7M3esfpWTJ1MpnUhOY
+Content-Disposition: attachment; filename=my_futex.c
+Content-Type: text/x-csrc; name=my_futex.c; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-See above, the user would then need to call the kernel to interpret the data.
-We would achieve exactly the same thing in a more complicated way:
-- there's a buffer which the user cannot use directly
-- the buffer must be locked and must not go away
-- the user needs to call the kernel to read trace records from the buffer
+#include <stdio.h>
+#include <stdlib.h>
+#include <linux/futex.h>
+#include <sys/time.h>
+#define _GNU_SOURCE        /* or _BSD_SOURCE or _SVID_SOURCE */
+#include <unistd.h>
+#include <sys/syscall.h>   /* For SYS_xxx definitions */
+#include <sys/types.h>
+#include <sys/shm.h>
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/wait.h>
+#include <sys/utsname.h>
 
-If we let the user setup the buffer, all we gain is some additional overhead.
-The user needs to request pages from the kernel. Malloc needs to administrate
-this memory. The user then gives the memory back to the kernel, which locks it
-and gives it to the h/w.
+
+#define PAGE_SIZE	(4096)
+int addr1=1;
 
 
-regards,
-markus.
+int my_shmget(key_t key, int page_count, int *shmid, void **shmaddr)
+{
+	int     i, j, k;
+	void    *start_addr = NULL;
 
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+	if ((*shmid =shmget(key, PAGE_SIZE*page_count, IPC_CREAT|0666 )) < 0) {
+		perror("Failure:");
+		return -1;
+	}
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+	*shmaddr = shmat(*shmid, start_addr, SHM_RDONLY) ;
+	if (*shmaddr == (void *) -1) {
+		perror("shmget:Shared Memory Attach Failure:");
+		shmctl(*shmid, IPC_RMID, NULL);
+		return -1;
+	}
+
+	return 0;
+}
+
+int my_shmput(int shmid, void *shmaddr)
+{
+	if (shmdt((const void *)shmaddr) != 0) {
+		perror("Detached Failure:");
+		return -1;
+	}
+	if(shmctl(shmid, IPC_RMID, NULL) != 0) {
+		perror("Remove shm id of htlb page failure!\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+int main()
+{
+	int * uaddr = &addr1, *uaddr2;
+	void * lp;
+	int ret;
+	int shmid;
+	void *shmaddr;
+
+	if(my_shmget(10673861, 10, &shmid, &shmaddr))
+		exit(0);
+
+	uaddr2 = shmaddr;
+
+	//uaddr2 = 0;
+
+	ret = syscall(__NR_futex, uaddr, FUTEX_WAKE_OP|FUTEX_PRIVATE_FLAG, 1, NULL, uaddr2, 1);
+
+	printf("ret=%d\n", ret);
+
+	my_shmput(shmid, shmaddr);
+
+	return 0;
+}
+
+
+--=-ua7M3esfpWTJ1MpnUhOY--
 
