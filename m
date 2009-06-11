@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbZFKTB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758485AbZFKTCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759565AbZFKTB3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 15:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758688AbZFKTBE
+	id S1758485AbZFKTCE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 15:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758443AbZFKTBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 15:01:04 -0400
-Received: from mga02.intel.com ([134.134.136.20]:48060 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759371AbZFKTBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 15:01:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,203,1243839600"; 
-   d="scan'208";a="523695609"
-Date: Thu, 11 Jun 2009 12:00:24 -0700
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH 4/4] PCI: PCIE AER: Document for PCIE AER software error
- injection
-Message-ID: <20090611120024.598f68cf@jbarnes-g45>
-In-Reply-To: <1240541131.6842.682.camel@yhuang-dev.sh.intel.com>
-References: <1240541131.6842.682.camel@yhuang-dev.sh.intel.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Jun 2009 15:01:44 -0400
+Received: from smtp.riverbed.com ([208.70.196.45]:54609 "EHLO
+	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759492AbZFKTBn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 15:01:43 -0400
+Message-ID: <4A3154D8.10807@riverbed.com>
+Date: Thu, 11 Jun 2009 12:02:48 -0700
+From: Chaitanya Lala <clala@riverbed.com>
+Reply-To: clala@riverbed.com
+Organization: Riverbed Technology, Inc.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+MIME-Version: 1.0
+To: Corey Minyard <minyard@acm.org>
+CC: Chaitanya Lala <Chaitanya.Lala@riverbed.com>,
+       "martin.wilck@ts.fujitsu.com" <martin.wilck@ts.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Regarding patchwork patch #28003
+References: <20090611173312.GA7450@clala-laptop> <4A314526.5030704@acm.org>
+In-Reply-To: <4A314526.5030704@acm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Apr 2009 10:45:31 +0800
-Huang Ying <ying.huang@intel.com> wrote:
+Corey Minyard wrote:
+> Chaitanya Lala wrote:
+>   
+>> Hi,
+>> I have been facing the issue of the kipmid's CPU usage spiking since a long time.
+>> I have tested the patch sent by Martin (limit CPU time spent in kipmid (version 4)) and it solves the issue for me.
+>> I do not see any activity/feedback on the patch.
+>> Can I help in some-way to ensure that this patch is merged ?
+>>   
+>>     
+> I will add this to the patchset I put out for 2.6.30, and if that goes 
+> well it will go into the mainstream kernel.
+>   
 
-> This patch add a minimal HOWTO for PCIE AER software error injection
-> in Documentation/PCI/pcieaer-howto.txt.
-> 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> 
-> ---
->  Documentation/PCI/pcieaer-howto.txt |   21 +++++++++++++++++++++
->  1 file changed, 21 insertions(+)
+Thanks for the response. Will look forward to it.
 
-Applied this one (though it doesn't make much sense until the other
-one is applied too :).
+Thanks,
+Chaitanya
 
--- Jesse Barnes, Intel Open Source Technology Center
+> -corey
+>   
+
