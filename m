@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762850AbZFKLF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762772AbZFKLJR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762850AbZFKLF4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 07:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758142AbZFKLFt
+	id S1762772AbZFKLJR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 07:09:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755444AbZFKLJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 07:05:49 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47363 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756265AbZFKLFs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 07:05:48 -0400
-Date: Thu, 11 Jun 2009 12:05:39 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: pavel@ucw.cz, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, swetland@google.com,
-       san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090611110539.GJ795@n2100.arm.linux.org.uk>
-References: <20090611073740.GB8592@elf.ucw.cz> <20090611103457.GG795@n2100.arm.linux.org.uk> <20090611.034421.180842375.davem@davemloft.net> <20090611.034732.147822760.davem@davemloft.net>
+	Thu, 11 Jun 2009 07:09:03 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:46158 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752841AbZFKLJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 07:09:01 -0400
+Date: Thu, 11 Jun 2009 13:09:03 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org,
+       device-mapper development <dm-devel@redhat.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>
+Subject: Re: [PATCH block#for-2.6.31] block: add request clone interface
+	(v2)
+Message-ID: <20090611110903.GO11363@kernel.dk>
+References: <4A3075B2.9040208@ct.jp.nec.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090611.034732.147822760.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A3075B2.9040208@ct.jp.nec.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 03:47:32AM -0700, David Miller wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Thu, 11 Jun 2009 03:44:21 -0700 (PDT)
+On Thu, Jun 11 2009, Kiyoshi Ueda wrote:
+> Hi Jens,
 > 
-> > It's not like this was stated on a public mailing list or on some
-> > public web site.  It was IRC for heaven's sake.
+> This patch adds the following 2 interfaces for request-stacking drivers:
 > 
-> And BTW something you said in the same IRC arena shortly
-> thereafterwards:
+>   - blk_rq_prep_clone(struct request *clone, struct request *orig,
+> 		      struct bio_set *bs, gfp_t gfp_mask,
+> 		      int (*bio_ctr)(struct bio *, struct bio*, void *),
+> 		      void *data)
+>       * Clones bios in the original request to the clone request
+>         (bio_ctr is called for each cloned bios.)
+>       * Copies attributes of the original request to the clone request.
+>         The actual data parts (e.g. ->cmd, ->buffer, ->sense) are not
+>         copied.
 > 
-> <rmk> in hind sight, xxxxxxx was effectively right when he said on here a while ago
-> <rmk> 22:34 <xxxxxx> jejb: google also just pretty much threw their ARM code over the wall and disappeared
+>   - blk_rq_unprep_clone(struct request *clone)
+>       * Frees cloned bios from the clone request.
 > 
-> There you are quoting this person, the same way you are quoting him
-> here and demeaning him in this very email thread.
+> Request stacking drivers (e.g. request-based dm) need to make a clone
+> request for a submitted request and dispatch it to other devices.
 > 
-> And yet there you are agreeing with him.
+> To allocate request for the clone, request stacking drivers may not
+> be able to use blk_get_request() because the allocation may be done
+> in an irq-disabled context.
+> So blk_rq_prep_clone() takes a request allocated by the caller
+> as an argument.
 > 
-> You're such a hypocrite Russell.
+> For each clone bio in the clone request, request stacking drivers
+> should be able to set up their own completion handler.
+> So blk_rq_prep_clone() takes a callback function which is called
+> for each clone bio, and a pointer for private data which is passed
+> to the callback.
+> 
+> NOTE:
+> blk_rq_prep_clone() doesn't copy any actual data of the original
+> request.  Pages are shared between original bios and cloned bios.
+> So caller must not complete the original request before the clone
+> request.
 
-I'm sorry, that's the precise same channel and network which those
-comments were first made by the person who made them.
+This looks good to me now, I've applied it.
 
-And now read precisely what I said rather than twisting it to your own
-agenda.
+-- 
+Jens Axboe
 
-Particularly the bit where I wrote "in hind sight".  There's lots of
-things everyone would do differently if they knew what happens in the
-future. Unfortunately, we live in a causal universe where we can't
-predict with certaintly what will happen.
-
-At the time the comments were first made, Brian _was_ making an effort,
-and the comments seemed to be unfounded accusations.
