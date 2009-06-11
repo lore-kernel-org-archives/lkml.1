@@ -1,177 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761132AbZFKLu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762914AbZFKLxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761132AbZFKLu2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 07:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763398AbZFKLuK
+	id S1762914AbZFKLxU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 07:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZFKLxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 07:50:10 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59917 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762823AbZFKLuJ (ORCPT
+	Thu, 11 Jun 2009 07:53:12 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:17321 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751446AbZFKLxL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 07:50:09 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH for mmotm 2/5]
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090611111341.GE7302@csn.ul.ie>
-References: <20090611192600.6D50.A69D9226@jp.fujitsu.com> <20090611111341.GE7302@csn.ul.ie>
-Message-Id: <20090611204208.6D6B.A69D9226@jp.fujitsu.com>
+	Thu, 11 Jun 2009 07:53:11 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=aUP5Ai8O/KiYr7XS8/178wDNEpw/9/n+Y1qCaHRWA95iT4pwO1aUMlJEQ71syriO/
+	iPKA9GBVyudTUPUvGpVWQ==
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 11 Jun 2009 20:50:06 +0900 (JST)
+In-Reply-To: <20090611114825.GD7523@elf.ucw.cz>
+References: <20090610103131.GB13885@elf.ucw.cz>
+	 <a55d774e0906101043q580fc5e5iad25a79203dc52c@mail.gmail.com>
+	 <20090611081012.GD8592@elf.ucw.cz>
+	 <a55d774e0906110127k1633dd90x96863c3dd6f888cf@mail.gmail.com>
+	 <20090611110946.GA7523@elf.ucw.cz>
+	 <a55d774e0906110424q631c83d5l5a5ba8bc0a1093b8@mail.gmail.com>
+	 <20090611114825.GD7523@elf.ucw.cz>
+Date: Thu, 11 Jun 2009 04:53:10 -0700
+Message-ID: <a55d774e0906110453g517d11of810e951a4a894f@mail.gmail.com>
+Subject: Re: HTC Dream aka. t-mobile g1 support
+From: Brian Swetland <swetland@google.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       san@android.com, rlove@google.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, Jun 11, 2009 at 07:26:48PM +0900, KOSAKI Motohiro wrote:
-> > Changes since Wu's original patch
-> >   - adding vmstat
-> >   - rename NR_TMPFS_MAPPED to NR_SWAP_BACKED_FILE_MAPPED
-> > 
-> > 
-> > ----------------------
-> > Subject: [PATCH] introduce NR_SWAP_BACKED_FILE_MAPPED zone stat
-> 
-> This got lost in the actual subject line.
-> 
-> > Desirable zone reclaim implementaion want to know the number of
-> > file-backed and unmapped pages.
-> > 
-> 
-> There needs to be more justification for this. We need an example
-> failure case that this addresses. For example, Patch 1 of my series was
-> to address the following problem included with the patchset leader
-> 
-> "The reported problem was that malloc() stalled for a long time (minutes
-> in some cases) if a large tmpfs mount was occupying a large percentage of
-> memory overall. The pages did not get cleaned or reclaimed by zone_reclaim()
-> because the zone_reclaim_mode was unsuitable, but the lists are uselessly
-> scanned frequencly making the CPU spin at near 100%."
-> 
-> We should have a similar case.
-> 
-> What "desirable" zone_reclaim() should be spelled out as well. Minimally
-> something like
-> 
-> "For zone_reclaim() to be efficient, it must be able to detect in advance
-> if the LRU scan will reclaim the necessary pages with the limitations of
-> the current zone_reclaim_mode. Otherwise, the CPU usage is increases as
-> zone_reclaim() uselessly scans the LRU list.
-> 
-> The problem with the heuristic is ....
-> 
-> This patch fixes the heuristic by ...."
-> 
-> etc?
-> 
-> I'm not trying to be awkward. I believe I provided similar reasoning
-> with my own patchset.
+On Thu, Jun 11, 2009 at 4:48 AM, Pavel Machek<pavel@ucw.cz> wrote:
+>>
+>> You'll need to fastboot boot arch/arm/boot/zImage ramdisk.img
+>
+> Aha, fastboot implies that ramdisk is optional.. apparently it is not.
 
-You are right. my intention is not actual issue, it only fix
-documentation lie.
+Well, it *is* optional -- but the kernel as we build it needs an
+initrd to do much that's visible.  Could probably enable fb console
+and provide a commandline that points console there (-c "kernel
+commandline"  argument to fastboot).
 
-Documentation/sysctl/vm.txt says
-=============================================================
+>> Extracting the ramdisk.img from the boot.img in the boot partition on
+>> an existing device is a pain.  If you happen to have a cupcake
+>> userspace built from source that ramdisk.img should be suitable.  If
+>> not, I'll try to dig up a suitable ramdisk image tomorrow -- it's just
+>> init, init.rc, and adb, but it is necessary to boot.
+>
+> I tried using ramdisk.img from sdk:
+>
+> root@amd:/data/l/android# ./fastboot boot
+> /data/l/linux-msm/arch/arm/boot/uImage
+> /data/l/android/sdk/platforms/android-1.5/images/ramdisk.img
+>
+> ...no luck :-(.
 
-min_unmapped_ratio:
+Is a uImage compatible with zImage (if the bootloader copies it to
+0x10008000 and jumps there will it start?)
 
-This is available only on NUMA kernels.
+> Better Kconfig description would certainly be nice. Renaming
+> board-trout* to board-dream* would be also nice (and should be doable
+> without any intrusive changes...?)
 
-A percentage of the total pages in each zone.  Zone reclaim will only
-occur if more than this percentage of pages are file backed and unmapped.
-This is to insure that a minimal amount of local pages is still available for
-file I/O even if the node is overallocated.
+Ah, I see.  Yes, renaming the files would be easy to do and that's
+totally reasonable.  I thought you wanted the machine type name
+changed.
 
-The default is 1 percent.
-==============================================================
-
-but actual code don't account "percentage of file backed and unmapped".
-Administrator can't imazine current implementation form this documentation.
-
-Plus, I don't think this patch is too messy. thus I did decide to make
-this fix.
-
-if anyone provide good documentation fix, my worry will vanish.
-
-
-
-> > Thus, we need to know number of swap-backed mapped pages for
-> > calculate above number.
-> > 
-> > 
-> > Cc: Mel Gorman <mel@csn.ul.ie>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > ---
-> >  include/linux/mmzone.h |    2 ++
-> >  mm/rmap.c              |    7 +++++++
-> >  mm/vmstat.c            |    1 +
-> >  3 files changed, 10 insertions(+)
-> > 
-> > Index: b/include/linux/mmzone.h
-> > ===================================================================
-> > --- a/include/linux/mmzone.h
-> > +++ b/include/linux/mmzone.h
-> > @@ -88,6 +88,8 @@ enum zone_stat_item {
-> >  	NR_ANON_PAGES,	/* Mapped anonymous pages */
-> >  	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
-> >  			   only modified from process context */
-> > +	NR_SWAP_BACKED_FILE_MAPPED, /* Similar to NR_FILE_MAPPED. but
-> > +				       only account swap-backed pages */
-> >  	NR_FILE_PAGES,
-> >  	NR_FILE_DIRTY,
-> >  	NR_WRITEBACK,
-> > Index: b/mm/rmap.c
-> > ===================================================================
-> > --- a/mm/rmap.c
-> > +++ b/mm/rmap.c
-> > @@ -829,6 +829,10 @@ void page_add_file_rmap(struct page *pag
-> >  {
-> >  	if (atomic_inc_and_test(&page->_mapcount)) {
-> >  		__inc_zone_page_state(page, NR_FILE_MAPPED);
-> > +		if (PageSwapBacked(page))
-> > +			__inc_zone_page_state(page,
-> > +					      NR_SWAP_BACKED_FILE_MAPPED);
-> > +
-> >  		mem_cgroup_update_mapped_file_stat(page, 1);
-> >  	}
-> >  }
-> > @@ -884,6 +888,9 @@ void page_remove_rmap(struct page *page)
-> >  		__dec_zone_page_state(page, NR_ANON_PAGES);
-> >  	} else {
-> >  		__dec_zone_page_state(page, NR_FILE_MAPPED);
-> > +		if (PageSwapBacked(page))
-> > +			__dec_zone_page_state(page,
-> > +					NR_SWAP_BACKED_FILE_MAPPED);
-> >  	}
-> >  	mem_cgroup_update_mapped_file_stat(page, -1);
-> >  	/*
-> > Index: b/mm/vmstat.c
-> > ===================================================================
-> > --- a/mm/vmstat.c
-> > +++ b/mm/vmstat.c
-> > @@ -633,6 +633,7 @@ static const char * const vmstat_text[] 
-> >  	"nr_mlock",
-> >  	"nr_anon_pages",
-> >  	"nr_mapped",
-> > +	"nr_swap_backed_file_mapped",
-> >  	"nr_file_pages",
-> >  	"nr_dirty",
-> >  	"nr_writeback",
-> > 
-> 
-> Otherwise the patch seems reasonable.
-> 
-> -- 
-> Mel Gorman
-> Part-time Phd Student                          Linux Technology Center
-> University of Limerick                         IBM Dublin Software Lab
-
-
-
+Brian
