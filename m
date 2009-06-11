@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbZFKTL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbZFKTRE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757345AbZFKTL7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 15:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755337AbZFKTLw
+	id S1758159AbZFKTRE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 15:17:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752311AbZFKTQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 15:11:52 -0400
-Received: from thunk.org ([69.25.196.29]:42745 "EHLO thunker.thunk.org"
+	Thu, 11 Jun 2009 15:16:54 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:56662 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754850AbZFKTLw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 15:11:52 -0400
-Date: Thu, 11 Jun 2009 15:11:52 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: IO latency - a special case
-Message-ID: <20090611191152.GD16787@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Trenton D. Adams" <trenton.d.adams@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <9b1675090904041103v477913a5of06fa5c10ebee05f@mail.gmail.com> <9b1675090904041131u28635d8dnc3d13e88000394b4@mail.gmail.com> <20090405011355.GE7553@mit.edu> <9b1675090904042117k77463227y66a872d52d027e7e@mail.gmail.com> <9b1675090904042125g708076e6v665f5ecc7fa020a4@mail.gmail.com> <9b1675090904042313rb8178b6v1da3aeddfa57a869@mail.gmail.com> <20090405062626.GA7760@mit.edu> <9b1675090904051542o42a0ca11y1ce3b691ed6d8ebb@mail.gmail.com> <9b1675090906062014h2ce44d8apc50f73aa036d9139@mail.gmail.com>
+	id S1751093AbZFKTQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 15:16:54 -0400
+Date: Thu, 11 Jun 2009 20:16:54 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Larry.Finger@lwfinger.net
+Subject: Re: [PATCH 2/2] SLUB: Disable debugging if it increases the
+	minimum page order
+Message-ID: <20090611191653.GK7302@csn.ul.ie>
+References: <Pine.LNX.4.64.0906111143490.6132@melkki.cs.Helsinki.FI> <alpine.DEB.1.10.0906110941520.29827@gentwo.org> <1244728824.17483.51.camel@penberg-laptop> <alpine.DEB.1.10.0906111021340.29827@gentwo.org> <1244733119.17483.56.camel@penberg-laptop> <alpine.DEB.1.10.0906111118350.14020@gentwo.org> <1244734086.17483.59.camel@penberg-laptop> <alpine.DEB.1.10.0906111140080.24376@gentwo.org> <20090611180422.GJ7302@csn.ul.ie> <alpine.DEB.1.10.0906111422360.11973@gentwo.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <9b1675090906062014h2ce44d8apc50f73aa036d9139@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <alpine.DEB.1.10.0906111422360.11973@gentwo.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jun 06, 2009 at 09:14:43PM -0600, Trenton D. Adams wrote:
-> I'm back into doing some Java development, and it's happening again.
-> I'm running 2.6.30-rc7, and I did a SysReq+T, I hope this is helpful.
-> I've attached a txt.gz file, because it's 367K to my
-> /var/log/messages.
+On Thu, Jun 11, 2009 at 02:26:02PM -0400, Christoph Lameter wrote:
+> On Thu, 11 Jun 2009, Mel Gorman wrote:
 > 
-> The important stuff, I believe, is the Java related stuff.  As a quick
-> refresher to this problem, it appears to be related to how my Java IDE
-> saves the file, and perhaps something doesn't release the futex right
-> away?
-
-Have you checked your memory usage via SysReq-m, or /proc/meminfo or
-simply using "free".  I'm seeing a lot of processes in do_page_fault,
-which is interesting, especially in the non-Java processes.  
-
-Back in April, your vmstat output didn't show much swapping activity,
-but maybe there was more paging activity that didn't show up there?   
-
-> I've also seen these symptoms previously...
+> > "With SLUB_DEBUG, enable debug on all caches unless the increased meta-data
+> > would force the minimum order up on order due to object sizes being near or
+> > equal the PAGE_SIZE. If SLUB_DEBUG must be enabled, specify slub_debug=A for
+> > 'All caches enable debug regardless'"
 > 
-> 1. Problem arises, I Ctrl-C the process when I notice the system
-> getting really sluggish.
-> 2. Start process again, and it locks up the machine for about an hour
+> Hmmm... No SLUB_DEBUG just compiles the code in for debugging. Does not
+> enable anything.
+> 
+> But we could make SLUB_DEBUG_ON enable debugging except on those slabs
+> where the order increases (for which it does a printk saying that the
+> debugging was disabled) and then have a slub_debug=A option that
+> overrides the order check.
 
-What sort of process where you typicalling trying to kill using ^C?
+Sorry, this is what I meant and I failed to explain myself properly.
 
-     	     	     	       		   	  - Ted
+> Generally if you know that you have memory
+> corruption you would want to boot with slub_debug=A. If you just want
+> continuous checks then SLUB_DEBUG_ON would do the trick.
+> 
+
+That's the general idea.  It would catch a number of bugs that SLUB_DEBUG_ON
+catches without creating a different class of bug report such as this
+atomic-order-1 problem.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
