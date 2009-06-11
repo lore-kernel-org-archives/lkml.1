@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761970AbZFKDtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759459AbZFKDvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761970AbZFKDtU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 23:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbZFKDtL
+	id S1759459AbZFKDvJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 23:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756033AbZFKDux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 23:49:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49418 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754005AbZFKDtL (ORCPT
+	Wed, 10 Jun 2009 23:50:53 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:58579 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754783AbZFKDuw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 23:49:11 -0400
-Date: Wed, 10 Jun 2009 20:49:03 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Steven Rostedt <rostedt@goodmis.org>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-Subject: Re: [GIT PULL] tracing/urgent for v2.6.31
-In-Reply-To: <alpine.DEB.2.00.0906102327050.30552@gandalf.stny.rr.com>
-Message-ID: <alpine.LFD.2.01.0906102045420.6847@localhost.localdomain>
-References: <20090610230450.GA8964@elte.hu> <alpine.LFD.2.01.0906102002260.6847@localhost.localdomain> <alpine.DEB.2.00.0906102327050.30552@gandalf.stny.rr.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 10 Jun 2009 23:50:52 -0400
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: netdev@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linux-Next <linux-next@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Subrata Modak <subrata@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Date: Thu, 11 Jun 2009 09:20:46 +0530
+Message-Id: <20090611035046.22125.26641.sendpatchset@subratamodak.linux.ibm.com>
+Subject: [PATCH][BUILD FAILURE 03/04] Next June 04:PPC64 randconfig [drivers/net/lance.o]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Benjamin/Paul,
 
+>On Thu, 2009-06-04 at 19:02 +0530, Subrata Modak wrote:
+>CC      drivers/net/lance.o
+> drivers/net/lance.c: In function 'lance_probe1':
+> drivers/net/lance.c:575: error: implicit declaration of function 'isa_virt_to_bus'
+> drivers/net/lance.c: In function 'lance_rx':
+> drivers/net/lance.c:1197: error: implicit declaration of function 'isa_bus_to_virt'
+> make[2]: *** [drivers/net/lance.o] Error 1
+> make[1]: *** [drivers/net] Error 2
+> make: *** [drivers] Error 2
 
-On Wed, 10 Jun 2009, Steven Rostedt wrote:
-> 
-> Well it was:
-> 
-> 	default y if DEBUG_KERNEL
-> 
-> Where the rational was that if you want to debug the kernel, you might 
-> want to see some tracing features that are available to you.
+Reference: http://lkml.org/lkml/2009/6/4/240,
+To fix the following build error:
 
-Sure. I think that FTRACE config is borderline fine, although I think 
-tracing is pretty different from the debug options that don't need the 
-user to actually do anything (like PAGEALLOC_DEBUG).
+drivers/net/lance.c: In function 'lance_probe1':
+drivers/net/lance.c:575: error: implicit declaration of function 'isa_virt_to_bus'
+drivers/net/lance.c: In function 'lance_rx':
+drivers/net/lance.c:1197: error: implicit declaration of function 'isa_bus_to_virt'
+make[2]: *** [drivers/net/lance.o] Error 1
+make[1]: *** [drivers/net] Error 2
+make: *** [drivers] Error 2
 
-It's the other ones I think were clearly dubious (ok, the MARKERS one 
-isn't "clearly" dubious, since I have no idea why it got enabled, so I 
-guess it would count as "unclearly dubious" then).
+I would like to propose the following patch. The prototypes for the functions:
+'isa_virt_to_bus' & 'isa_virt_to_bus' are existing for some archs like the
+mips, x86, parisc, arm & alpha, but, is missing for powerpc. Is it safe to
+introduce the following soultion for powerpc ? It fixes the build problem
+i reported earlier.
 
-			Linus
+Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+---
+
+--- linux-2.6.30-rc8/arch/powerpc/include/asm/io.h.orig	2009-06-10 21:56:49.000000000 -0500
++++ linux-2.6.30-rc8/arch/powerpc/include/asm/io.h	2009-06-10 22:21:35.000000000 -0500
+@@ -680,6 +680,9 @@ extern void __iounmap_at(void *ea, unsig
+ #define mmio_outsw(addr, src, count)	writesw(addr, src, count)
+ #define mmio_outsl(addr, src, count)	writesl(addr, src, count)
+ 
++#define isa_virt_to_bus		virt_to_phys
++#define isa_bus_to_virt		phys_to_virt
++
+ /**
+  *	virt_to_phys	-	map virtual addresses to physical
+  *	@address: address to remap
+
+---
+Regards--
+Subrata
+
