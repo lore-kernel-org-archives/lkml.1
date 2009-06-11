@@ -1,70 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761587AbZFKDf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762012AbZFKDh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761587AbZFKDf0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 23:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbZFKDfQ
+	id S1762012AbZFKDh2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 23:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758149AbZFKDhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 23:35:16 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:57900 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753104AbZFKDfP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 23:35:15 -0400
-Date: Wed, 10 Jun 2009 23:35:16 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/3] ring-buffer: make the buffer a true circular link
- list
-In-Reply-To: <4A30793C.6090208@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0906102332390.30552@gandalf.stny.rr.com>
-References: <20090610195311.767699959@goodmis.org> <20090610195524.945549278@goodmis.org> <4A305A1A.2010901@cn.fujitsu.com> <alpine.DEB.2.00.0906102200180.30552@gandalf.stny.rr.com> <4A30793C.6090208@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 10 Jun 2009 23:37:13 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:60063 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752817AbZFKDhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 23:37:12 -0400
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: Tony Breeds <tony@bakeyournoodle.com>, netdev@vger.kernel.org,
+       michael@ellerman.id.au, Li Yang <leoli@freescale.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, Nathan Lynch <ntl@pobox.com>
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Linux-Next <linux-next@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Subrata Modak <subrata@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Date: Thu, 11 Jun 2009 09:07:05 +0530
+Message-Id: <20090611033705.20842.75501.sendpatchset@subratamodak.linux.ibm.com>
+Subject: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64 randconfig [drivers/net/ucc_geth.o]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Nathan,
 
-On Thu, 11 Jun 2009, Lai Jiangshan wrote:
+>On Wed, 2009-06-10 at 21:28 -0500, Nathan Lynch wrote:
+>Subrata Modak <subrata@linux.vnet.ibm.com> writes:
 > 
-> I'm not sure whether these 4 lines:
-> 	bpage = list_entry(pages.next, struct buffer_page, list);
-> 	list_del_init(&bpage->list);
-> 	cpu_buffer->pages = &bpage->list;
+> > On Thu, 2009-06-11 at 11:05 +1000, Stephen Rothwell wrote:
+> >> Hi Subrata,
+> >> 
+> >> On Wed, 10 Jun 2009 23:13:23 +0530 Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
+> >> >
+> >> >  	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
+> >> > -	ph = of_get_property(np, "tbi-handle", NULL);
+> >> > +	ph = (phandle *)of_get_property(np, "tbi-handle", NULL);
+> >> 
+> >> You don't need this cast because of_get_property() returns "void *".
+> >
+> > Stephen,
+> >
+> > True. But without this gcc complains:
+> >
+> > CC [M]  drivers/net/ucc_geth.o
+> > drivers/net/ucc_geth.c: In function ‘ucc_geth_probe’:
+> > drivers/net/ucc_geth.c:3824: warning: assignment discards qualifiers
+> > from pointer target type
 > 
-> 	list_splice(&pages, cpu_buffer->pages);
+> ph should be declared const phandle *.  Look at other uses of
+> of_get_property.
+>
 
-> equal to these 2 lines:
->  	cpu_buffer->pages = pages.next;
->  	list_del(&pages);
-> 
-> If there are equivalent, I think the second one
-> are simpler. It may be not a really necessarily cleanup.
-> 
-> What I asked is: if there are equivalent, could you use these two line:
->  	cpu_buffer->pages = pages.next;
->  	list_del(&pages);
+Ok fine. Here is a revised patch again.
 
-OK, now I understand.
+Subject: [PATCH][Resend 2][BUILD FAILURE 04/04] Next June 04:PPC64 randconfig [drivers/net/ucc_geth.o]
+Reference(s):
+http://lkml.org/lkml/2009/6/4/241,
+http://lkml.org/lkml/2009/6/10/338,
 
-Hmm, that may be so. I'll have to look deeper at that.
+Fix the following build error:
 
-Thanks,
+drivers/net/ucc_geth.c: In function bucc_geth_probeb:
+drivers/net/ucc_geth.c:3822: error: 'ph' undeclared (first use in this function)
+drivers/net/ucc_geth.c:3822: error: (Each undeclared identifier is reported only once
+drivers/net/ucc_geth.c:3822: error: for each function it appears in.)
+drivers/net/ucc_geth.c:3832: error: 'mdio' undeclared (first use in this function)
+make[2]: *** [drivers/net/ucc_geth.o] Error 1
 
--- Steve
+Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
+---
+
+--- linux-2.6.30-rc8/drivers/net/ucc_geth.c.orig	2009-06-10 11:58:39.000000000 -0500
++++ linux-2.6.30-rc8/drivers/net/ucc_geth.c	2009-06-10 22:28:13.000000000 -0500
+@@ -3595,6 +3595,8 @@ static const struct net_device_ops ucc_g
+ 
+ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *match)
+ {
++	struct device_node *mdio;
++	const phandle *ph;
+ 	struct device *device = &ofdev->dev;
+ 	struct device_node *np = ofdev->node;
+ 	struct net_device *dev = NULL;
+
+---
+Regards--
+Subrata
 
