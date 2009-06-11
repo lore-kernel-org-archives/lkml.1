@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762191AbZFKDwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759345AbZFKD4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762191AbZFKDwz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 23:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbZFKDwo
+	id S1759345AbZFKD4y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 23:56:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756619AbZFKD4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 23:52:44 -0400
-Received: from build.ossfans.org ([67.223.233.67]:59852 "EHLO
-	build.ossfans.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756033AbZFKDwn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 23:52:43 -0400
-Date: Thu, 11 Jun 2009 07:52:35 +0400
-From: Sergey Lapin <slapin@ossfans.org>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, dbaryshkov@gmail.com, sfr@canb.auug.org.au
-Subject: Re: [PULL REQUEST] IEEE 802.15.4 stack: generic parts v4
-Message-ID: <20090611035234.GC17271@build.ossfans.org>
-References: <cover.1244498867.git.slapin@ossfans.org> <20090609.050706.241520518.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090609.050706.241520518.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 10 Jun 2009 23:56:46 -0400
+Received: from gate.crashing.org ([63.228.1.57]:33717 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756306AbZFKD4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 23:56:45 -0400
+From: Kumar Gala <galak@kernel.crashing.org>
+To: jeff@garzik.org
+Cc: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Dave Liu <daveliu@freescale.com>
+Subject: [PATCH] sata_fsl: Add power mgmt support
+Date: Wed, 10 Jun 2009 22:53:37 -0500
+Message-Id: <1244692417-18484-1-git-send-email-galak@kernel.crashing.org>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jun 09, 2009 at 05:07:06AM -0700, David Miller wrote:
-> From: Sergey Lapin <slapin@ossfans.org>
-> Date: Tue,  9 Jun 2009 02:18:46 +0400
-> 
-> > Major changes from previous post:
-> >  * Changed net/ieee802154/Makefile according to Sam Ravnborg suggestion
-> > 
-> > The following changes since commit 81ee1bad86bd6752c626018d43a74e3f81f1ae72:
-> >   Linus Torvalds (1):
-> >         Merge branch 'for-linus' of git://git.kernel.org/.../viro/vfs-2.6
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/slapin/lowpan.git for-next
-> 
-> I can't pull from a tree that is prepared like this.
-> 
-> You have to make a clean clone of the net-next-2.6 GIT tree and
-> add your changes on top of that.  When you use a clone of
-> Linus's tree, I'm going to end up getting all kinds of changes
-> from upstream that I haven't merged into net-next-2.6 yet which
-> creates a complete mess.
-Sorry, we did not know about that. But we'll do that next time.
+From: Dave Liu <daveliu@freescale.com>
 
-> 
-> I'm going to apply these changes by hand.
-Thanks a lot!
+Signed-off-by: Dave Liu <daveliu@freescale.com>
+Signed-off-by: Liu Yu <yu.liu@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/ata/sata_fsl.c |   35 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 35 insertions(+), 0 deletions(-)
 
-S.
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index 36b8629..94eaa43 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -1378,6 +1378,37 @@ static int sata_fsl_remove(struct of_device *ofdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PM
++static int sata_fsl_suspend(struct of_device *op, pm_message_t state)
++{
++	struct ata_host *host = dev_get_drvdata(&op->dev);
++	return ata_host_suspend(host, state);
++}
++
++static int sata_fsl_resume(struct of_device *op)
++{
++	struct ata_host *host = dev_get_drvdata(&op->dev);
++	struct sata_fsl_host_priv *host_priv = host->private_data;
++	int ret;
++	void __iomem *hcr_base = host_priv->hcr_base;
++	struct ata_port *ap = host->ports[0];
++	struct sata_fsl_port_priv *pp = ap->private_data;
++
++	ret = sata_fsl_init_controller(host);
++	if (ret) {
++		dev_printk(KERN_ERR, &op->dev,
++			"Error initialize hardware\n");
++		return ret;
++	}
++
++	/* Recovery the CHBA register in host controller cmd register set */
++	iowrite32(pp->cmdslot_paddr & 0xffffffff, hcr_base + CHBA);
++
++	ata_host_resume(host);
++	return 0;
++}
++#endif
++
+ static struct of_device_id fsl_sata_match[] = {
+ 	{
+ 		.compatible = "fsl,pq-sata",
+@@ -1392,6 +1423,10 @@ static struct of_platform_driver fsl_sata_driver = {
+ 	.match_table	= fsl_sata_match,
+ 	.probe		= sata_fsl_probe,
+ 	.remove		= sata_fsl_remove,
++#ifdef CONFIG_PM
++	.suspend	= sata_fsl_suspend,
++	.resume		= sata_fsl_resume,
++#endif
+ };
+ 
+ static int __init sata_fsl_init(void)
+-- 
+1.6.0.6
 
