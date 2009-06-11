@@ -1,167 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760976AbZFKOnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762433AbZFKOnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760976AbZFKOnQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 10:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbZFKOnI
+	id S1762433AbZFKOnk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 10:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbZFKOnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 10:43:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52734 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751505AbZFKOnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 10:43:07 -0400
-Date: Thu, 11 Jun 2009 10:41:36 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 10/19] io-conroller: Prepare elevator layer for single
-	queue schedulers
-Message-ID: <20090611144136.GC27892@redhat.com>
-References: <1244513342-11758-1-git-send-email-vgoyal@redhat.com> <1244513342-11758-11-git-send-email-vgoyal@redhat.com> <4A30BC0F.3000401@cn.fujitsu.com>
+	Thu, 11 Jun 2009 10:43:32 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44306 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751230AbZFKOnb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 10:43:31 -0400
+Date: Thu, 11 Jun 2009 16:43:27 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] printk: add halt_delay parameter for printk delay in
+	halt phase
+Message-ID: <20090611144326.GB2572@ucw.cz>
+References: <a8e1da0906020254s34dd0cd9id1b88655cab6d72d@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A30BC0F.3000401@cn.fujitsu.com>
+In-Reply-To: <a8e1da0906020254s34dd0cd9id1b88655cab6d72d@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 04:10:55PM +0800, Gui Jianfeng wrote:
-> Vivek Goyal wrote:
-> ...
-> >  
-> >  /*
-> > @@ -1296,6 +1302,13 @@ void io_group_chain_link(struct request_queue *q, void *key,
-> >  		iog = io_cgroup_lookup_group(iocg, key);
-> >  		io_group_set_parent(prev, iog);
-> >  	}
-> > +
-> > +	if (unlikely(efqd->only_root_group))
-> > +		/*
-> > +		 * TODO: Take care of force expiry of existing queue before
-> > +		 * new queue is queued.
-> > +		 */
-> > +		efqd->only_root_group = 0;
+On Tue 2009-06-02 17:54:52, Dave Young wrote:
+> Add a halt_delay module parameter in printk.c used to read the printk
+> messages in halt/poweroff/restart phase, delay each printk messages
+> by halt_delay milliseconds. It is useful for debugging if there's no
+> other way to dump kernel messages that time.
 > 
->   Hi Vivek,
+> halt_delay default value is 0, change it by:
 > 
->   This flag isn't set back when all child groups go away. Am i missing something?
->   BTW, why not just determine "only root group" by cgroup itself? Although there might be 
->   some impact if cgroup is built but no request goes into it. but i think this isn't a big
->   deal. How about the following patch?
-> 
+> echo xxx > /sys/module/printk/parameters/halt_delay
 
-Hi Gui,
+Well, stopping oopses from scrolling offscreen was very useful for me
+in past.
 
-Determining if there are any children present or not from cgroup sounds like
-a good idea. Just that cost of the operation now has increased. I am not
-sure how significant that is. But for the time being we can stick to your
-implementation. 
-
-One question inline below.
-
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> ---
->  block/elevator-fq.c |   21 ++++++++++-----------
->  block/elevator-fq.h |    1 -
->  2 files changed, 10 insertions(+), 12 deletions(-)
-> 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index a516dce..f33155c 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -76,7 +76,6 @@ void elv_del_ioq_busy(struct elevator_queue *e, struct io_queue *ioq,
->  void elv_activate_ioq(struct io_queue *ioq, int add_front);
->  void elv_deactivate_ioq(struct elv_fq_data *efqd, struct io_queue *ioq,
->  					int requeue);
-> -
->  static int bfq_update_next_active(struct io_sched_data *sd)
->  {
->  	struct io_group *iog;
-> @@ -1131,6 +1130,14 @@ struct io_cgroup io_root_cgroup = {
->  	.ioprio_class = IO_DEFAULT_GRP_CLASS,
->  };
->  
-> +static int is_only_root_group(void)
+> +static inline void halt_delay_msec(void)
 > +{
-> +	if (list_empty(&io_root_cgroup.css.cgroup->children))
-> +		return 1;
+> +	if (halt_delay == 0 || !(system_state == SYSTEM_HALT
+> +				|| system_state == SYSTEM_POWER_OFF
+> +				|| system_state == SYSTEM_RESTART))
+> +		return;
 > +
+> +	mdelay(halt_delay);
 
-Do we need some kind of locking here to make sure cgroup->children list is not
-being modified?
+...but this will not trigger for oops, right?
+								Pavel
 
-Thanks
-Vivek
-
-> +	return 0;
-> +}
-> +
->  void bfq_init_entity(struct io_entity *entity, struct io_group *iog)
->  {
->  	entity->ioprio = entity->new_ioprio;
-> @@ -1543,13 +1550,6 @@ void io_group_chain_link(struct request_queue *q, void *key,
->  		iog = io_cgroup_lookup_group(iocg, key);
->  		io_group_set_parent(prev, iog);
->  	}
-> -
-> -	if (unlikely(efqd->only_root_group))
-> -		/*
-> -		 * TODO: Take care of force expiry of existing queue before
-> -		 * new queue is queued.
-> -		 */
-> -		efqd->only_root_group = 0;
->  }
->  
->  /**
-> @@ -3601,7 +3601,7 @@ void *elv_fq_select_ioq(struct request_queue *q, int force)
->  	 * overhead.
->  	 */
->  
-> -	if (efqd->only_root_group && elv_iosched_single_ioq(q->elevator)) {
-> +	if (is_only_root_group() && elv_iosched_single_ioq(q->elevator)) {
->  		elv_log_ioq(efqd, ioq, "select: only root group, no expiry");
->  		goto keep_queue;
->  	}
-> @@ -3872,7 +3872,7 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
->  		 * unnecessary overhead.
->  		 */
->  
-> -		if (efqd->only_root_group &&
-> +		if (is_only_root_group() &&
->  			elv_iosched_single_ioq(q->elevator)) {
->  			elv_log_ioq(efqd, ioq, "select: only root group,"
->  					" no expiry");
-> @@ -4019,7 +4019,6 @@ int elv_init_fq_data(struct request_queue *q, struct elevator_queue *e)
->  
->  	/* For the time being keep fairness enabled by default */
->  	efqd->fairness = 1;
-> -	efqd->only_root_group = 1;
->  	return 0;
->  }
->  
-> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-> index 1b1fb0b..0939735 100644
-> --- a/block/elevator-fq.h
-> +++ b/block/elevator-fq.h
-> @@ -368,7 +368,6 @@ struct elv_fq_data {
->  	 * queues.
->  	 */
->  	unsigned int fairness;
-> -	int only_root_group;
->  };
->  
->  extern int elv_slice_idle;
-> -- 
-> 1.5.4.rc3
-> 
-> 
-> 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
