@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758485AbZFKTCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760077AbZFKTCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758485AbZFKTCE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 15:02:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758443AbZFKTBo
+	id S1760077AbZFKTCb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 15:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758834AbZFKTBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 15:01:44 -0400
-Received: from smtp.riverbed.com ([208.70.196.45]:54609 "EHLO
-	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759492AbZFKTBn (ORCPT
+	Thu, 11 Jun 2009 15:01:48 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:37499 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759520AbZFKTBq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 15:01:43 -0400
-Message-ID: <4A3154D8.10807@riverbed.com>
-Date: Thu, 11 Jun 2009 12:02:48 -0700
-From: Chaitanya Lala <clala@riverbed.com>
-Reply-To: clala@riverbed.com
-Organization: Riverbed Technology, Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+	Thu, 11 Jun 2009 15:01:46 -0400
+Date: Thu, 11 Jun 2009 14:26:02 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Larry.Finger@lwfinger.net
+Subject: Re: [PATCH 2/2] SLUB: Disable debugging if it increases the minimum
+ page order
+In-Reply-To: <20090611180422.GJ7302@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0906111422360.11973@gentwo.org>
+References: <Pine.LNX.4.64.0906111143490.6132@melkki.cs.Helsinki.FI> <alpine.DEB.1.10.0906110941520.29827@gentwo.org> <1244728824.17483.51.camel@penberg-laptop> <alpine.DEB.1.10.0906111021340.29827@gentwo.org> <1244733119.17483.56.camel@penberg-laptop>
+ <alpine.DEB.1.10.0906111118350.14020@gentwo.org> <1244734086.17483.59.camel@penberg-laptop> <alpine.DEB.1.10.0906111140080.24376@gentwo.org> <20090611180422.GJ7302@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Corey Minyard <minyard@acm.org>
-CC: Chaitanya Lala <Chaitanya.Lala@riverbed.com>,
-       "martin.wilck@ts.fujitsu.com" <martin.wilck@ts.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Regarding patchwork patch #28003
-References: <20090611173312.GA7450@clala-laptop> <4A314526.5030704@acm.org>
-In-Reply-To: <4A314526.5030704@acm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corey Minyard wrote:
-> Chaitanya Lala wrote:
->   
->> Hi,
->> I have been facing the issue of the kipmid's CPU usage spiking since a long time.
->> I have tested the patch sent by Martin (limit CPU time spent in kipmid (version 4)) and it solves the issue for me.
->> I do not see any activity/feedback on the patch.
->> Can I help in some-way to ensure that this patch is merged ?
->>   
->>     
-> I will add this to the patchset I put out for 2.6.30, and if that goes 
-> well it will go into the mainstream kernel.
->   
+On Thu, 11 Jun 2009, Mel Gorman wrote:
 
-Thanks for the response. Will look forward to it.
+> "With SLUB_DEBUG, enable debug on all caches unless the increased meta-data
+> would force the minimum order up on order due to object sizes being near or
+> equal the PAGE_SIZE. If SLUB_DEBUG must be enabled, specify slub_debug=A for
+> 'All caches enable debug regardless'"
 
-Thanks,
-Chaitanya
+Hmmm... No SLUB_DEBUG just compiles the code in for debugging. Does not
+enable anything.
 
-> -corey
->   
+But we could make SLUB_DEBUG_ON enable debugging except on those slabs
+where the order increases (for which it does a printk saying that the
+debugging was disabled) and then have a slub_debug=A option that
+overrides the order check. Generally if you know that you have memory
+corruption you would want to boot with slub_debug=A. If you just want
+continuous checks then SLUB_DEBUG_ON would do the trick.
 
