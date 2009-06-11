@@ -1,42 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760362AbZFKOG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759472AbZFKOJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760362AbZFKOG6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 10:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbZFKOGr
+	id S1759472AbZFKOJA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 10:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZFKOIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 10:06:47 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55181 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516AbZFKOGq (ORCPT
+	Thu, 11 Jun 2009 10:08:51 -0400
+Received: from mail-ew0-f210.google.com ([209.85.219.210]:60229 "EHLO
+	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750869AbZFKOIv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 10:06:46 -0400
-Date: Thu, 11 Jun 2009 15:06:24 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Tony Lindgren <tony@atomide.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Miller <davem@davemloft.net>,
-       swetland@google.com, pavel@ucw.cz, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
-       rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090611140624.GS795@n2100.arm.linux.org.uk>
-References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk> <20090611135442.6b9ab315@lxorguk.ukuu.org.uk> <20090611132134.GA11199@atomide.com> <20090611133736.GP795@n2100.arm.linux.org.uk> <20090611140038.GB11199@atomide.com>
+	Thu, 11 Jun 2009 10:08:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=eXAsPxTgHFeCG+mMCrdCy41mluw7rEa2xHF2hmzkbW2lcukoTZukrAjTNj7a+eiDST
+         5WCRPzjX5hjqf6MgjC9Y78APktUbPAcPKYGZnsw8yQFgNpTEuljlOY6QqViAQ12w44Fd
+         N8oLg+NcgDU9YeYTjELOUPwe479H2qIelq3Jc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: sound skipping regression introduced in 2.6.30-rc8
+Date: Thu, 11 Jun 2009 16:14:07 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090611-07944-gc1b019d-dirty; KDE/4.2.3; i686; ; )
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+References: <20090610.112804.193703669.davem@davemloft.net> <200906111532.34169.bzolnier@gmail.com> <s5hocsu50xt.wl%tiwai@suse.de>
+In-Reply-To: <s5hocsu50xt.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090611140038.GB11199@atomide.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200906111614.07525.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 07:00:39AM -0700, Tony Lindgren wrote:
-> You suggested pulling each set as they get reviewed into some omap branch
-> in your tree, do you want to try that the next merge window?
+On Thursday 11 June 2009 15:56:14 Takashi Iwai wrote:
+> At Thu, 11 Jun 2009 15:32:33 +0200,
+> Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > On Thursday 11 June 2009 14:02:20 David Miller wrote:
+> > > From: Takashi Iwai <tiwai@suse.de>
+> > > Date: Wed, 10 Jun 2009 21:37:14 +0200
+> > > 
+> > > > Also, it'd be helpful if you can check whether the problem exists in
+> > > > the current sound git tree (for-linus branch), too.
+> > > >   git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git for-linus
+> > > 
+> > > Same behavior as 2.6.30, but debugging messages are formatted differently
+> > > :-)
+> > > 
+> > > [ 1109.062182] PCM: Lost interrupts? (stream=0, delta=16384, intr_ptr=73728)
+> > > [ 1125.126123] PCM: Lost interrupts? (stream=0, delta=16384, intr_ptr=861184)
+> > > [ 1131.398094] PCM: Lost interrupts? (stream=0, delta=16384, intr_ptr=1178624)
+> > > [ 1135.579406] PCM: Lost interrupts? (stream=0, delta=16384, intr_ptr=1395712)
+> > > [ 1145.115367] PCM: Lost interrupts? (stream=0, delta=16384, intr_ptr=1869824)
+> > > [ 1152.688670] PCM: Lost interrupts? (stream=0, delta=16384, intr_ptr=2249728)
+> > 
+> > [ Just another data point. ]
+> > 
+> > I'm experiencing similar problem with the sound in recent -next kernels.
+> 
+> Which driver?
 
-If we're following Alan's suggestion, then as I see it you're entirely
-responsible for tracking what's in OMAP, getting it into linux-next and
-(I guess) ultimately sending Linus a pull request for it during the
-merge window.  I just become someone who can put their oar into reviewing
-OMAP patches as and when.
+snd_intel8x0
 
-So the question is: do you want to give this a go?
+> > Though the only debug data that I'm getting with xrun_debug == 1 is:
+> > 
+> > XRUN: pcmC0D0p:0
+> > XRUN: pcmC0D0p:0
+> > XRUN: pcmC0D0p:0
+> > XRUN: pcmC0D0p:0
+> > XRUN: pcmC0D0p:0
+> > 
+> > with xrun_debug == 3:
+> > XRUN: pcmC0D0p:0
+> > Pid: 4718, comm: audacious Not tainted 2.6.30-next-20090611-07944-gc1b019d-dirty #21
+> > Call Trace:
+> 
+> The semantics of xrun_debug proc file was a bit changed.  Now it's
+> bit flags, and 4 corresponds to the additional jiffies check (1 is to 
+> show the debug message, 2 to show stack trace).
+> 
+> Try to set 5 to xrun_debug.  Do you get other messages?
+
+With xrun_debug == 5 I get:
+
+PCM: hw_ptr skipping! (pos=14336, delta=15893, period=1024, jdelta=3/90)
+PCM: hw_ptr skipping! (pos=11264, delta=15893, period=1024, jdelta=3/90)
+PCM: hw_ptr skipping! (pos=7168, delta=15888, period=1024, jdelta=3/90)
+PCM: hw_ptr skipping! (pos=8192, delta=15915, period=1024, jdelta=3/90)
+PCM: hw_ptr skipping! (pos=15360, delta=15888, period=1024, jdelta=3/90)
+XRUN: pcmC0D0p:0
+PCM: hw_ptr skipping! (pos=6144, delta=15890, period=1024, jdelta=3/90)
+PCM: hw_ptr skipping! (pos=3072, delta=15890, period=1024, jdelta=3/90)
+
+[ They seem to be the same as reported by davem against 2.6.30. ]
+
+and the skipping is gone.
