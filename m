@@ -1,116 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762667AbZFKKvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932411AbZFKKwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762667AbZFKKvi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 06:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758252AbZFKKvb
+	id S932411AbZFKKwt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 06:52:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761964AbZFKKwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 06:51:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37500 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757940AbZFKKva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 06:51:30 -0400
-Subject: GFS2: Pull request
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: torvalds@linux-foundation.org
-Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
- 3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
- Street, Windsor, Berkshire, SL4 ITE
-Date: Thu, 11 Jun 2009 11:51:29 +0100
-Message-Id: <1244717489.29604.805.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Thu, 11 Jun 2009 06:52:41 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:35285 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759069AbZFKKwl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 06:52:41 -0400
+Message-ID: <4A30E1F8.3090806@snapgear.com>
+Date: Thu, 11 Jun 2009 20:52:40 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
+       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       David Howells <dhowells@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-am33-list@redhat.com,
+       yasutake.koichi@jp.panasonic.com
+Subject: Re: [git-pull -tip] headers_check fix patches 20090610
+References: <1244640630.20890.22.camel@ht.satnam>	 <20090611001957.61b5530b.sfr@canb.auug.org.au>	 <1244647176.3070.8.camel@ht.satnam>  <4A305F7C.9000308@snapgear.com> <1244715961.6923.8.camel@ht.satnam>
+In-Reply-To: <1244715961.6923.8.camel@ht.satnam>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Please consider pulling the following changes. I have one other patch (not
-in this tree) for the current merge window and I'll send that once the
-tracing code upon which it depends has been merged,
+Hi Jaswinder,
 
-Steve.
+Jaswinder Singh Rajput wrote:
+> On Thu, 2009-06-11 at 11:35 +1000, Greg Ungerer wrote:
+>> Hi Jaswinder,
+>>
+>> Jaswinder Singh Rajput wrote:
+>>> Hello Stephen,
+>>>
+>>> On Thu, 2009-06-11 at 00:19 +1000, Stephen Rothwell wrote:
+>>>> Hi Jaswinder,
+>>>>
+>>>> On Wed, 10 Jun 2009 19:00:30 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+>>>>> The following changes since commit e271e1343a94e081723cb4180af3fdb5fecc1a49:
+>>>>>   Ingo Molnar (1):
+>>>>>         Merge branch 'x86/mce4'
+>>>>>
+>>>>> are available in the git repository at:
+>>>>>
+>>>>>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-top.git master
+>>>>>
+>>>>> Jaswinder Singh Rajput (3):
+>>>>>       headers_check fix: m68k, swab.h
+>>>>>       headers_check fix: mn10300, ptrace.h
+>>>>>       headers_check fix: mn10300, setup.h
+>>>>>
+>>>>>  arch/m68k/include/asm/swab.h      |    2 +-
+>>>>>  arch/mn10300/include/asm/ptrace.h |    5 ++---
+>>>>>  arch/mn10300/include/asm/setup.h  |    3 ++-
+>>>>>  3 files changed, 5 insertions(+), 5 deletions(-)
+>>>> Is there some reason that these fixes are not just sent to the appropriate linux-am33-list@redhat.com
+>>>> maintainers?  That way we would avoid unnecessary conflicts cropping up.
+>>>>
+>>> Maintainers are also in CC.
+>>> Patches were already sent on :
+>>>
+>>> Subject: [PATCH 0/6] headers_check fix patches 20090604
+>>>
+>>> Interested maintainers already pulled and applied patches. These are
+>>> left-over patches. I am sending to Ingo hoping that he will merge it
+>>> otherwise last option for me will be to prepare headers-check tree and
+>>> send to linux-next ;-)
+>> I am happy to take the m68k change and push that upstream.
+>> If it hasn't already been picked up by someone else.
+>>
+> 
+> Sure, take it.
 
---------------------------------------------------------------------------------
-The following changes since commit a4d7749be5de4a7261bcbe3c7d96c748792ec455:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../gregkh/staging-2.6
+Ok, done. That one m68k patch is now in:
 
-are available in the git repository at:
+git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-linus
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-nmw.git master
+I will be pushing that to Linus some time in the next few days.
 
-Abhijith Das (2):
-      GFS2: Fix timestamps on write
-      GFS2: smbd proccess hangs with flock() call.
-
-Steven Whitehouse (23):
-      GFS2: Update the rw flags
-      GFS2: Optimise writepage for metadata
-      GFS2: Something nonlinear this way comes!
-      GFS2: Move journal live test at transaction start
-      GFS2: Add commit= mount option
-      GFS2: Remove a couple of unused sysfs entries
-      GFS2: Umount recovery race fix
-      GFS2: Update docs
-      GFS2: Don't warn when delete inode fails on ro filesystem
-      GFS2: Improve resource group error handling
-      GFS2: Add a rgrp bitmap full flag
-      GFS2: Be more aggressive in reclaiming unlinked inodes
-      GFS2: Clean up some file names
-      GFS2: Merge mount.c and ops_super.c into super.c
-      GFS2: Move gfs2_rmdiri into ops_inode.c
-      GFS2: Move gfs2_readlinki into ops_inode.c
-      GFS2: Move gfs2_unlink_ok into ops_inode.c
-      GFS2: Remove lockstruct subdir from gfs2 sysfs files
-      GFS2: Remove args subdir from gfs2 sysfs files
-      GFS2: Remove unused variable
-      GFS2: Fix locking issue mounting gfs2meta fs
-      GFS2: Fix cache coherency between truncate and O_DIRECT read
-      GFS2: Merge gfs2_get_sb into gfs2_get_sb_meta
-
- Documentation/filesystems/gfs2-glocks.txt |    2 +-
- Documentation/filesystems/gfs2.txt        |   19 +-
- fs/gfs2/Kconfig                           |    1 +
- fs/gfs2/Makefile                          |    4 +-
- fs/gfs2/{ops_address.c => aops.c}         |   21 +-
- fs/gfs2/bmap.c                            |   12 +-
- fs/gfs2/{ops_dentry.c => dentry.c}        |    0
- fs/gfs2/dir.c                             |   11 +-
- fs/gfs2/eattr.c                           |   14 +-
- fs/gfs2/{ops_export.c => export.c}        |    0
- fs/gfs2/{ops_file.c => file.c}            |   36 +-
- fs/gfs2/glock.c                           |   21 +-
- fs/gfs2/glops.c                           |   20 +-
- fs/gfs2/incore.h                          |   27 +-
- fs/gfs2/inode.c                           |  150 +-----
- fs/gfs2/inode.h                           |   52 +-
- fs/gfs2/log.c                             |    6 +-
- fs/gfs2/lops.c                            |   14 +-
- fs/gfs2/main.c                            |    8 +
- fs/gfs2/meta_io.c                         |  105 +++-
- fs/gfs2/mount.c                           |  185 ------
- fs/gfs2/ops_address.h                     |   23 -
- fs/gfs2/ops_fstype.c                      |   68 +--
- fs/gfs2/ops_inode.c                       |  146 +++++
- fs/gfs2/ops_super.c                       |  723 -----------------------
- fs/gfs2/quota.c                           |    1 -
- fs/gfs2/recovery.c                        |  102 +---
- fs/gfs2/recovery.h                        |    2 +-
- fs/gfs2/rgrp.c                            |  141 +++--
- fs/gfs2/rgrp.h                            |   47 +-
- fs/gfs2/super.c                           |  903 ++++++++++++++++++++++++++++-
- fs/gfs2/sys.c                             |  245 +++------
- fs/gfs2/trans.c                           |    9 +-
- 33 files changed, 1534 insertions(+), 1584 deletions(-)
- rename fs/gfs2/{ops_address.c => aops.c} (98%)
- rename fs/gfs2/{ops_dentry.c => dentry.c} (100%)
- rename fs/gfs2/{ops_export.c => export.c} (100%)
- rename fs/gfs2/{ops_file.c => file.c} (97%)
- delete mode 100644 fs/gfs2/mount.c
- delete mode 100644 fs/gfs2/ops_address.h
- delete mode 100644 fs/gfs2/ops_super.c
+Regards
+Greg
 
 
+
+> So now only mn10300 patches left :-)
+> 
+> Thanks,
+> --
+> JSR
+> 
+> 
+
+
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
