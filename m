@@ -1,109 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932411AbZFKKwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932435AbZFKKxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932411AbZFKKwt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 06:52:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761964AbZFKKwl
+	id S932435AbZFKKxR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 06:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932331AbZFKKxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 06:52:41 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:35285 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759069AbZFKKwl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 06:52:41 -0400
-Message-ID: <4A30E1F8.3090806@snapgear.com>
-Date: Thu, 11 Jun 2009 20:52:40 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 11 Jun 2009 06:53:01 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37776 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932275AbZFKKw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 06:52:59 -0400
+Date: Thu, 11 Jun 2009 11:53:00 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH for mmotm 0/5] introduce swap-backed-file-mapped count
+	and fix
+	vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch
+Message-ID: <20090611105259.GC7302@csn.ul.ie>
+References: <20090611192114.6D4A.A69D9226@jp.fujitsu.com> <20090611103837.GB7302@csn.ul.ie> <20090611194141.6D5C.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       Sam Ravnborg <sam@ravnborg.org>, x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       David Howells <dhowells@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-am33-list@redhat.com,
-       yasutake.koichi@jp.panasonic.com
-Subject: Re: [git-pull -tip] headers_check fix patches 20090610
-References: <1244640630.20890.22.camel@ht.satnam>	 <20090611001957.61b5530b.sfr@canb.auug.org.au>	 <1244647176.3070.8.camel@ht.satnam>  <4A305F7C.9000308@snapgear.com> <1244715961.6923.8.camel@ht.satnam>
-In-Reply-To: <1244715961.6923.8.camel@ht.satnam>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090611194141.6D5C.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi Jaswinder,
-
-Jaswinder Singh Rajput wrote:
-> On Thu, 2009-06-11 at 11:35 +1000, Greg Ungerer wrote:
->> Hi Jaswinder,
->>
->> Jaswinder Singh Rajput wrote:
->>> Hello Stephen,
->>>
->>> On Thu, 2009-06-11 at 00:19 +1000, Stephen Rothwell wrote:
->>>> Hi Jaswinder,
->>>>
->>>> On Wed, 10 Jun 2009 19:00:30 +0530 Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
->>>>> The following changes since commit e271e1343a94e081723cb4180af3fdb5fecc1a49:
->>>>>   Ingo Molnar (1):
->>>>>         Merge branch 'x86/mce4'
->>>>>
->>>>> are available in the git repository at:
->>>>>
->>>>>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-top.git master
->>>>>
->>>>> Jaswinder Singh Rajput (3):
->>>>>       headers_check fix: m68k, swab.h
->>>>>       headers_check fix: mn10300, ptrace.h
->>>>>       headers_check fix: mn10300, setup.h
->>>>>
->>>>>  arch/m68k/include/asm/swab.h      |    2 +-
->>>>>  arch/mn10300/include/asm/ptrace.h |    5 ++---
->>>>>  arch/mn10300/include/asm/setup.h  |    3 ++-
->>>>>  3 files changed, 5 insertions(+), 5 deletions(-)
->>>> Is there some reason that these fixes are not just sent to the appropriate linux-am33-list@redhat.com
->>>> maintainers?  That way we would avoid unnecessary conflicts cropping up.
->>>>
->>> Maintainers are also in CC.
->>> Patches were already sent on :
->>>
->>> Subject: [PATCH 0/6] headers_check fix patches 20090604
->>>
->>> Interested maintainers already pulled and applied patches. These are
->>> left-over patches. I am sending to Ingo hoping that he will merge it
->>> otherwise last option for me will be to prepare headers-check tree and
->>> send to linux-next ;-)
->> I am happy to take the m68k change and push that upstream.
->> If it hasn't already been picked up by someone else.
->>
+On Thu, Jun 11, 2009 at 07:42:33PM +0900, KOSAKI Motohiro wrote:
+> > On Thu, Jun 11, 2009 at 07:25:09PM +0900, KOSAKI Motohiro wrote:
+> > > Recently, Wu Fengguang pointed out vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch
+> > > has underflow problem.
+> > > 
+> > 
+> > Can you drop this aspect of the patchset please? I'm doing a final test
+> > on the scan-avoidance heuristic that incorporates this patch and the
+> > underflow fix. Ram (the tester of the malloc()-stall) confirms the patch
+> > fixes his problem.
 > 
-> Sure, take it.
-
-Ok, done. That one m68k patch is now in:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu.git for-linus
-
-I will be pushing that to Linus some time in the next few days.
-
-Regards
-Greg
-
-
-
-> So now only mn10300 patches left :-)
-> 
-> Thanks,
-> --
-> JSR
-> 
+> OK.
+> insted, I'll join to review your patch :)
 > 
 
+Thanks. You should have it now. In particular, I'm interested in hearing you
+opinion about patch 1 of the series "Fix malloc() stall in zone_reclaim()
+and bring behaviour more in line with expectations V3" and if addresses;
+
+1. Does patch 1 address the problem that first led you to develop the patch
+vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch?
+
+2. Do you think patch 1 should merge with and replace
+vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch?
+
+> > > This patch series introduce new vmstat of swap-backed-file-mapped and fix above
+> > > patch by it.
+> 
+
+I don't think the patch above needs to be fixed by another counter. At
+least, once the underflow was fixed up, it handled the malloc-stall without
+additional counters. If we need to account swap-backed-file-mapped, we need
+another failure case that it addresses to be sure we're doing the right thing.
 
 -- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
-SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
