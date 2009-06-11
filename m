@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbZFKQ5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbZFKQ6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754060AbZFKQ5u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 12:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbZFKQ5n
+	id S1754264AbZFKQ6r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 12:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbZFKQ6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 12:57:43 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:17961 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751265AbZFKQ5n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 12:57:43 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Thu, 11 Jun 2009 12:57:19 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, David Miller <davem@davemloft.net>,
-       swetland@google.com, pavel@ucw.cz, lkml <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk, san@android.com,
-       rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-In-reply-to: <87my8erb2b.fsf@deeprootsystems.com>
-Message-id: <alpine.LFD.2.00.0906111249110.31536@xanadu.home>
-References: <20090611111821.GK795@n2100.arm.linux.org.uk>
- <20090611.042226.28424489.davem@davemloft.net>
- <20090611114911.GL795@n2100.arm.linux.org.uk>
- <20090611.050030.169859977.davem@davemloft.net>
- <20090611123852.GM795@n2100.arm.linux.org.uk>
- <20090611135442.6b9ab315@lxorguk.ukuu.org.uk>
- <20090611131245.GN795@n2100.arm.linux.org.uk>
- <87my8erb2b.fsf@deeprootsystems.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 11 Jun 2009 12:58:39 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:43552 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751265AbZFKQ6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 12:58:39 -0400
+To: torvalds@linux-foundation.org
+Subject: [GIT PULL] jfs update
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Message-Id: <20090611165837.37CC84C9BAD@norville.austin.ibm.com>
+Date: Thu, 11 Jun 2009 11:58:37 -0500 (CDT)
+From: shaggy@linux.vnet.ibm.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Jun 2009, Kevin Hilman wrote:
+Linus, please pull from
 
-> Russell King - ARM Linux <linux@arm.linux.org.uk> writes:
-> 
-> > On Thu, Jun 11, 2009 at 01:54:42PM +0100, Alan Cox wrote:
-> >> Make your tree the core ARM code only, any other patches you don't
-> >> accept. Aggressively push stuff out to platform code, and if people want
-> >> to change core code "because our platform is different" make them extract
-> >> it into the platform layer not carry it in the core bits.
-> >
-> > I'm all for giving this a try after this merge window is over.
-> 
-> Speaking as maintainer of one ARM subarch (davinci) and active
-> contributor to another (OMAP), I would gladly give this a try as well.
+git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6.git for-linus
 
-Speaking as maintainer of a couple other ARM subarchs (Orion, Kirkwood, 
-MV78xx0, ...) I would gladly accept full responsibility (and blame) for 
-them as well.  I think Russell could avoid astraining to himself full 
-review for every patch concerning those that I send his way, and merely 
-look at the diffstat to be sure I'm not crapping onto the core ARM code.  
-Linus certainly doesn't do much more than that on his end already.
+This will update the following files:
 
-It's been a couple merge windows now that RMK started accepting git pull 
-requests from a couple people in addition to his patch system, and that 
-has worked pretty well overall.
+ fs/jfs/jfs_imap.c |    1 +
+ fs/jfs/super.c    |    4 +++-
+ 2 files changed, 4 insertions(+), 1 deletions(-)
 
+through these ChangeSets:
 
-Nicolas
+commit 79f52b77b89e8b7aa9fbe62135eea198a2ecbd5b
+Author: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Date:   Sat May 23 20:28:41 2009 -0500
+
+    jfs: Add missing mutex_unlock call to error path
+    
+    Jan Kucera found an missing call to mutex_unlock() with his static code
+    checker.  It's an unlikely error path to hit in the real world, but it
+    should be fixed.
+    
+    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+    Reported-by: Jan Kucera <kucera.jan.cz@gmail.com>
+
+commit 9c83633ad38138855181af6936e8ac570ef7e2cb
+Author: Dan Carpenter <error27@gmail.com>
+Date:   Tue Apr 7 14:48:16 2009 +0300
+
+    missing unlock in jfs_quota_write()
+    
+    We should unlock &inode->i_mutex on the error path.  This bug was
+    in ext2_quota_write().  I sent a patch to them today as well.
+    
+    Found by smatch (http://repo.or.cz/w/smatch.git).  Compile tested.
+    
+    regards,
+    dan carpenter
+    
+    Signed-off-by: Dan Carpenter <error27@gmail.com>
+    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
