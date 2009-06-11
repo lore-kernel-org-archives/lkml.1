@@ -1,73 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759462AbZFKFdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762307AbZFKFda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759462AbZFKFdP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 01:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbZFKFdA
+	id S1762307AbZFKFda (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 01:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759494AbZFKFdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 01:33:00 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41021 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751815AbZFKFc7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 01:32:59 -0400
-Date: Thu, 11 Jun 2009 14:31:22 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.org.uk>,
-       Andi Kleen <andi@firstfloor.org>, Wu Fengguang <fengguang.wu@intel.com>,
-       Minchan Kim <minchan.kim@gmail.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch v3] swap: virtual swap readahead
-Message-Id: <20090611143122.108468f1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090609190128.GA1785@cmpxchg.org>
-References: <20090609190128.GA1785@cmpxchg.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Thu, 11 Jun 2009 01:33:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42388 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755738AbZFKFdO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 01:33:14 -0400
+Subject: Re: [PATCH -tip] x86: perf_counter AMD supports performance
+ monitoring for K7
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090611001341.GA5631@elte.hu>
+References: <1244659775.4255.1.camel@ht.satnam>
+	 <20090611001341.GA5631@elte.hu>
+Content-Type: text/plain
+Date: Thu, 11 Jun 2009 11:03:58 +0530
+Message-Id: <1244698438.2479.4.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 9 Jun 2009 21:01:28 +0200
-Johannes Weiner <hannes@cmpxchg.org> wrote:
-> [resend with lists cc'd, sorry]
+On Thu, 2009-06-11 at 02:13 +0200, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > 
-> +static int swap_readahead_ptes(struct mm_struct *mm,
-> +			unsigned long addr, pmd_t *pmd,
-> +			swp_entry_t *entries,
-> +			unsigned long cluster)
-> +{
-> +	unsigned long window, min, max, limit;
-> +	spinlock_t *ptl;
-> +	pte_t *ptep;
-> +	int i, nr;
-> +
-> +	window = cluster << PAGE_SHIFT;
-> +	min = addr & ~(window - 1);
-> +	max = min + cluster;
+> > 
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > ---
+> >  arch/x86/kernel/cpu/perf_counter.c |    4 ++++
+> >  1 files changed, 4 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+> > index 240ca56..5d56742 100644
+> > --- a/arch/x86/kernel/cpu/perf_counter.c
+> > +++ b/arch/x86/kernel/cpu/perf_counter.c
+> > @@ -1436,6 +1436,10 @@ static int intel_pmu_init(void)
+> >  
+> >  static int amd_pmu_init(void)
+> >  {
+> > +	/* performance-monitoring supported from K7 */
+> > +	if (boot_cpu_data.x86 < 7)
+> > +		return -ENODEV;
+> > +
+> >  	x86_pmu = amd_pmu;
+> >  
+> >  	switch (boot_cpu_data.x86) {
+> 
+> A commit under Linux consists of three parts:
+> 
+>   1) the title
+>   2) the changlog
+>   3) the body
+> 
+> This sloppy patch of yours manages to get _all_ three wrong:
+> 
+>   - the title is wrong (it is incorrect)
+>   - the changelog is wrong (it is missing)
+>   - the body is wrong (it is broken - K7 != family 7)
+> 
 
-Johannes, I wonder there is no reason to use "alignment".
-I think we just need to read "nearby" pages. Then, this function's
-scan range should be
+oops, sorry here is updated patch :
 
-	[addr - window/2, addr + window/2)
-or some.
+[PATCH -tip] x86: perf_counter check AMD performance monitoring support
 
-And here, too
-> +	if (!entries)	/* XXX: shmem case */
-> +		return swapin_readahead_phys(entry, gfp_mask, vma, addr);
-> +	pmin = swp_offset(entry) & ~(cluster - 1);
-> +	pmax = pmin + cluster;
+AMD supports performance monitoring from K7.
 
-pmin = swp_offset(entry) - cluster/2.
-pmax = swp_offset(entry) + cluster/2.
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/cpu/perf_counter.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-I'm sorry if I miss a reason for using "alignment".
+diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
+index 57ae1be..719a7d5 100644
+--- a/arch/x86/kernel/cpu/perf_counter.c
++++ b/arch/x86/kernel/cpu/perf_counter.c
+@@ -1452,6 +1452,10 @@ static int intel_pmu_init(void)
+ 
+ static int amd_pmu_init(void)
+ {
++	/* performance-monitoring supported from K7 */
++	if (boot_cpu_data.x86 < 6)
++		return -ENODEV;
++
+ 	x86_pmu = amd_pmu;
+ 
+ 	switch (boot_cpu_data.x86) {
+-- 
+1.6.3.2
+
+
+> What the heck is going on here?
+> 
+
+hmm, I am really surprise how I wrote Signed-off-by line correct, I was
+really very upset at that time, and you know the reason, Please help
+me ;-)
 
 Thanks,
--Kame
-
+--
+JSR
 
