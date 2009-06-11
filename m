@@ -1,49 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763037AbZFKLSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763222AbZFKLT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763037AbZFKLSt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 07:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763213AbZFKLSj
+	id S1763222AbZFKLT7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 07:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761825AbZFKLTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 07:18:39 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46144 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763212AbZFKLSi (ORCPT
+	Thu, 11 Jun 2009 07:19:51 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60244 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757681AbZFKLTu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 07:18:38 -0400
-Date: Thu, 11 Jun 2009 12:18:22 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Brian Swetland <swetland@google.com>
-Cc: Pavel Machek <pavel@ucw.cz>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       ibm@android.com, san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090611111821.GK795@n2100.arm.linux.org.uk>
-References: <20090610103131.GB13885@elf.ucw.cz> <20090610194852.GA28787@n2100.arm.linux.org.uk> <20090611.000219.206893038.davem@davemloft.net> <20090611073740.GB8592@elf.ucw.cz> <20090611103457.GG795@n2100.arm.linux.org.uk> <a55d774e0906110412w7121d6d3t526ebd9c04d2d205@mail.gmail.com>
+	Thu, 11 Jun 2009 07:19:50 -0400
+Message-ID: <9d4a7c0691aa5e13247f694f2dfe55ad.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <28c262360906110237u1f3d1877hae54a51575955549@mail.gmail.com>
+References: <20090611165535.cf46bf29.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090611170152.7a43b13b.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090611172249.6D3C.A69D9226@jp.fujitsu.com>
+    <20090611173819.0f76e431.kamezawa.hiroyu@jp.fujitsu.com>
+    <28c262360906110237u1f3d1877hae54a51575955549@mail.gmail.com>
+Date: Thu, 11 Jun 2009 20:19:45 +0900 (JST)
+Subject: Re: [PATCH 2/3] check unevictable flag in lumy reclaim v2
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Minchan Kim" <minchan.kim@gmail.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       apw@canonical.com, riel@redhat.com, mel@csn.ul.ie
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a55d774e0906110412w7121d6d3t526ebd9c04d2d205@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 04:12:39AM -0700, Brian Swetland wrote:
-> I think Andrew's idea is a good one, but we just haven't had the time
-> to try to sort this out.  I'll have to see what we can do here.
-> Recently, we've been involved in omap3 work as well and have been
-> interacting more with folks in the omap kernel community as a result.
+Minchan Kim さん wrote:
+> On Thu, Jun 11, 2009 at 5:38 PM, KAMEZAWA
+> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> How about this ?
+>>
+>> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>
+>> Lumpy reclaim check pages from their pfn. Then, it can find unevictable
+>> pages
+>> in its loop.
+>> Abort lumpy reclaim when we find Unevictable page, we never get a lump
+>> of pages for requested order.
+>>
+>> Changelog: v1->v2
+>> ?- rewrote commet.
+>>
+>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>> ---
+>> ?mm/vmscan.c | ? ?9 +++++++++
+>> ?1 file changed, 9 insertions(+)
+>>
+>> Index: lumpy-reclaim-trial/mm/vmscan.c
+>> ===================================================================
+>> --- lumpy-reclaim-trial.orig/mm/vmscan.c
+>> +++ lumpy-reclaim-trial/mm/vmscan.c
+>> @@ -936,6 +936,15 @@ static unsigned long isolate_lru_pages(u
+>> ? ? ? ? ? ? ? ? ? ? ? ?/* Check that we have not crossed a zone
+>> boundary. */
+>> ? ? ? ? ? ? ? ? ? ? ? ?if (unlikely(page_zone_id(cursor_page) !=
+>> zone_id))
+>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?continue;
+>> + ? ? ? ? ? ? ? ? ? ? ? /*
+>> + ? ? ? ? ? ? ? ? ? ? ? ?* We tries to free all pages in this range to
+>> create
+>> + ? ? ? ? ? ? ? ? ? ? ? ?* a free large page. Then, if the range
+>> includes a page
+>> + ? ? ? ? ? ? ? ? ? ? ? ?* never be reclaimed, we have no reason to do
+>> more.
+>> + ? ? ? ? ? ? ? ? ? ? ? ?* PageUnevictable page is not a page which can
+>> be
+>> + ? ? ? ? ? ? ? ? ? ? ? ?* easily freed. Abort this scan now.
+>> + ? ? ? ? ? ? ? ? ? ? ? ?*/
+>> + ? ? ? ? ? ? ? ? ? ? ? if (unlikely(PageUnevictable(cursor_page)))
+>> + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? break;
+>
+> __isolate_lru_pages already checked PageUnevictable to return error.
+> I want to remove repeated check although it is trivial.
+>
+> By your patch, It seems to remove PageUnevictable check in
+> __isolate_lru_pages.
+>
+yes.
 
-Brian,
+> But I know that. If we remove PageUnevictable check in
+> __isolate_lru_pages, it can't go into BUG in non-lumpy case. ( I
+> mentioned following as code)
+>
+In non-lumpy case, we'll never see Unevictable, maybe.
 
-Can you clear up this thread, which seems to be descending into absurdness.
+>                 case -EBUSY:
+>                         /* else it is being freed elsewhere */
+>                         list_move(&page->lru, src);
+>                         continue;
+>
+>                 default:
+>                         BUG();
+>                 }
+>
+>
+> It means we can remove BUG in non-lumpy case and then add BUG into
+> __isolate_lru_pages directly.
+>
+> If we can do it, we can remove unnecessary PageUnevictable check in
+> __isolate_lru_page.
+>
+Hmm, but Unevicable check had tons of troubles at its implementation
+and I don't want to do it at once.
 
-David Miller seems to be of the opinion that I was rude or otherwise
-insulting to you.  Was this the case?
+> I am not sure this is right in case of memcg.
+>
+I think we don't see Unevictable in memcg's path if my memcg-lru code
+works as designed.
 
-Was the only problem you had interacting with me to do with the time it
-takes to receive feedback on patches which you'd submitted and getting
-them merged?  I believe that caused you to question several times whether
-you were doing things in the right way.
+I'll postpone this patch for a while until my brain works well.
 
-Thanks.
+Thanks,
+-Kame
+
