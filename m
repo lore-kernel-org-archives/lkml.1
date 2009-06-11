@@ -1,99 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbZFKQ7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbZFKQ7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754461AbZFKQ7G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 12:59:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753231AbZFKQ6m
+	id S1754181AbZFKQ7e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 12:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbZFKQ6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 12:58:42 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:14242 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753351AbZFKQ6l (ORCPT
+	Thu, 11 Jun 2009 12:58:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58195 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754182AbZFKQ6x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 12:58:41 -0400
-X-Trace: 209746304/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.77.176/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.77.176
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AvIEADrUMEpPRU2w/2dsb2JhbACBT883hAoF
-X-IronPort-AV: E=Sophos;i="4.42,203,1243810800"; 
-   d="scan'208";a="209746304"
-Date: Thu, 11 Jun 2009 17:57:47 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Izik Eidus <ieidus@redhat.com>
-cc: aarcange@redhat.com, akpm@linux-foundation.org, nickpiggin@yahoo.com.au,
-       chrisw@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 0/4] RFC - ksm api change into madvise
-In-Reply-To: <20090610092855.43be2405@woof.tlv.redhat.com>
-Message-ID: <Pine.LNX.4.64.0906111700390.18609@sister.anvils>
-References: <1242261048-4487-1-git-send-email-ieidus@redhat.com>
- <Pine.LNX.4.64.0906081555360.22943@sister.anvils> <4A2D47C1.5020302@redhat.com>
- <Pine.LNX.4.64.0906081902520.9518@sister.anvils> <4A2D7036.1010800@redhat.com>
- <20090609074848.5357839a@woof.tlv.redhat.com> <Pine.LNX.4.64.0906091807300.20120@sister.anvils>
- <Pine.LNX.4.64.0906092013580.31606@sister.anvils> <20090610092855.43be2405@woof.tlv.redhat.com>
+	Thu, 11 Jun 2009 12:58:53 -0400
+Date: Thu, 11 Jun 2009 09:58:17 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT PULL] Performance Counters for Linux
+In-Reply-To: <20090611165226.GV8633@ZenIV.linux.org.uk>
+Message-ID: <alpine.LFD.2.01.0906110956270.3573@localhost.localdomain>
+References: <20090611160329.GA3366@elte.hu> <20090611161714.GA5008@infradead.org> <alpine.LFD.2.01.0906110922080.3573@localhost.localdomain> <20090611165226.GV8633@ZenIV.linux.org.uk>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Jun 2009, Izik Eidus wrote:
+
+
+On Thu, 11 Jun 2009, Al Viro wrote:
 > 
-> Great!, what you think about below?
+> Yes.  So's sysfs, so's udev, so's hal, so's any number of revolting
+> strings of intertwined copulating tapeworms hanging off the kernel's arse.
 
-A couple of things: please use #ifdef CONFIG_KSM throughout
-now that you can, rather than #if defined(CONFIG_KSM).
+Those are about a different thing, though - they are largely about policy. 
+Very different from something like profiling (or graphics acceleration).
 
-And we ought to add a comment above the write_protect_page() call:
-	/*
-	 * If this anonymous page is mapped only here, its pte may need
-	 * to be write-protected.  If it's mapped elsewhere, all its
-	 * ptes are necessarily already write-protected.  In either
-	 * case, we need to lock and check page_count is not raised.
-	 */
+I do like your visuals, though.
 
-> another thing we want to add or to start sending it to Andrew?
-
-Umm, umm, umm, let's hold off sending Andrew for now.  It would be
-a bit silly to send him 2/2, when what's actually required is to
-withdraw ksm-add-page_wrprotect-write-protecting-page.patch,
-providing adjustments as necessary to the other patches.
-
-But I don't want us fiddling with Andrew's collection every day
-or two (forget my earlier scan fix if you prefer, if you're sure
-you caught all of that in what you have now); and I rather doubt
-mmotm's KSM is getting much testing at present.  It would be nice
-to get the withdrawn rmap.c changes out of everybody else's face,
-but not worth messing mmotm around for that right now.
-
-Whilst we can't let our divergence drift on very long, I think
-it's better we give him a new collection of patches once we've
-more or less settled the madvise switchover.  That new collection
-won't contain much in mm/rmap.c if at all.
-
-Unless you or Andrew feel strongly that I'm wrong on this.
-
-> 
-> btw may i add your signed-off to this patch?
-
-If you've tested and found it works, please, by all means.
-If you've not tested, or found it broken, then I deny all
-knowledge of these changes ;)  But it's hypothetical: the
-replacement collection to Andrew won't contain either of
-these patches as such.
-
-> (the only thing that i changed was taking down the *orig_pte = *ptep,
-> so we will merge write_protected pages, and add orig_pte = __pte(0) to
-> avoid annoying warning message about being used uninitialized)
-
-Okay.  We do have a macro to annotate such pacifying initializations,
-but I've not used it before, and forget what it is or where to look
-for an example, I don't see it in kernel.h or compiler.h.  Maybe
-Andrew will chime in and remind us.
-
-Hugh
+			Linus
