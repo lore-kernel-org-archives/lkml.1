@@ -1,42 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755986AbZFKNcF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbZFKNdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755986AbZFKNcF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 09:32:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZFKNbz
+	id S1756277AbZFKNdS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 09:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbZFKNdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 09:31:55 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38539 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751396AbZFKNbz (ORCPT
+	Thu, 11 Jun 2009 09:33:06 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:36810 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751396AbZFKNdE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 09:31:55 -0400
-Date: Thu, 11 Jun 2009 14:32:59 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: David Miller <davem@davemloft.net>, swetland@google.com, pavel@ucw.cz,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090611143259.384842fb@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090611132846.GO795@n2100.arm.linux.org.uk>
-References: <20090611111821.GK795@n2100.arm.linux.org.uk>
-	<20090611.042226.28424489.davem@davemloft.net>
-	<20090611114911.GL795@n2100.arm.linux.org.uk>
-	<20090611.050030.169859977.davem@davemloft.net>
-	<20090611123852.GM795@n2100.arm.linux.org.uk>
-	<20090611135442.6b9ab315@lxorguk.ukuu.org.uk>
-	<20090611132846.GO795@n2100.arm.linux.org.uk>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Jun 2009 09:33:04 -0400
+Date: Thu, 11 Jun 2009 15:32:18 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Pavel Machek <pavel@ucw.cz>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate file.
+Message-ID: <20090611133218.GB3146@osiris.boeblingen.de.ibm.com>
+References: <20090604161847.513682672@de.ibm.com> <200906082048.28779.rjw@sisk.pl> <20090609104003.50830165@gondolin> <200906100109.20470.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200906100109.20470.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I do hope you don't think I still run that unmanagable -rmk tree that
-> was around when you did the -ac series kernels.  I gave that up as a
-> bad approach a very long time ago.
+On Wed, Jun 10, 2009 at 01:09:19AM +0200, Rafael J. Wysocki wrote:
+> On Tuesday 09 June 2009, Cornelia Huck wrote:
+> > The *_nvs_* routines in swsusp.c make use of the io*map()
+> > functions, which are only provided for HAS_IOMEM, thus
+> > breaking compilation if HAS_IOMEM is not set. Fix this
+> > by moving the *_nvs_* routines into hibernation_nvs.c, which
+> > is only compiled if HAS_IOMEM is set.
+> > 
+> > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> 
+> Thanks, I added the GPLv2 line to the header comment and changed the name
+> of the file to hibernate_nvs.c (to match the other changes in the works).
+> 
+> I'll carry out some compilation testing on it and put it into the tree shortly.
 
-No I didn't think that. You'd either have expired by now or be found
-screaming in a small room with soft walls if you did ;)
+Rafael, could you add the patch below as well?
+Or should that go in via git390?
+
+Subject: [PATCH] PM: add empty suspend/resume device irq functions
+
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+
+git commit 0a0c5168 "PM: Introduce functions for suspending and resuming
+device interrupts" introduced some helper functions. However these
+functions are only available for architectures which support
+GENERIC_HARDIRQS.
+
+Other architectures will see this build error:
+
+drivers/built-in.o: In function `sysdev_suspend':
+(.text+0x15138): undefined reference to `check_wakeup_irqs'
+drivers/built-in.o: In function `device_power_up':
+(.text+0x1cb66): undefined reference to `resume_device_irqs'
+drivers/built-in.o: In function `device_power_down':
+(.text+0x1cb92): undefined reference to `suspend_device_irqs'
+
+To fix this add some empty inline functions for !GENERIC_HARDIRQS.
+
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+
+ include/linux/interrupt.h |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff -urpN linux-2.6/include/linux/interrupt.h linux-2.6-patched/include/linux/interrupt.h
+--- linux-2.6/include/linux/interrupt.h	2009-06-11 13:07:46.000000000 +0200
++++ linux-2.6-patched/include/linux/interrupt.h	2009-06-11 13:08:31.000000000 +0200
+@@ -183,6 +183,7 @@ extern void disable_irq(unsigned int irq
+ extern void enable_irq(unsigned int irq);
+ 
+ /* The following three functions are for the core kernel use only. */
++#ifdef CONFIG_GENERIC_HARDIRQS
+ extern void suspend_device_irqs(void);
+ extern void resume_device_irqs(void);
+ #ifdef CONFIG_PM_SLEEP
+@@ -190,6 +191,11 @@ extern int check_wakeup_irqs(void);
+ #else
+ static inline int check_wakeup_irqs(void) { return 0; }
+ #endif
++#else
++static inline void suspend_device_irqs(void) { };
++static inline void resume_device_irqs(void) { };
++static inline int check_wakeup_irqs(void) { return 0; }
++#endif
+ 
+ #if defined(CONFIG_SMP) && defined(CONFIG_GENERIC_HARDIRQS)
+ 
