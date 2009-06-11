@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759678AbZFKHKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759487AbZFKHLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759678AbZFKHKy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 03:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758822AbZFKHKi
+	id S1759487AbZFKHLQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 03:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758774AbZFKHKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 03:10:38 -0400
-Received: from mga01.intel.com ([192.55.52.88]:26953 "EHLO mga01.intel.com"
+	Thu, 11 Jun 2009 03:10:43 -0400
+Received: from mga02.intel.com ([134.134.136.20]:18093 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759076AbZFKHKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 03:10:35 -0400
+	id S1759247AbZFKHKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 03:10:40 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.42,201,1243839600"; 
-   d="scan'208";a="465385100"
-Subject: [RFC 5/7] crypto: cryptd: Add support to access underlaying shash
+   d="scan'208";a="420760982"
+Subject: [RFC 4/7] crypto: use crypto_shash instead of crypto_hash in
+ cryptd hash
 From: Huang Ying <ying.huang@intel.com>
 To: Herbert Xu <herbert@gondor.apana.org.au>
 Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
 Content-Type: text/plain
-Date: Thu, 11 Jun 2009 15:10:34 +0800
-Message-Id: <1244704234.5320.128.camel@yhuang-dev.sh.intel.com>
+Date: Thu, 11 Jun 2009 15:10:32 +0800
+Message-Id: <1244704232.5320.127.camel@yhuang-dev.sh.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
@@ -26,91 +27,266 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cryptd_alloc_ahash() will allocate a cryptd-ed ahash for specified
-algorithm name. The new allocated one is guaranteed to be cryptd-ed
-ahash, so the shash underlying can be gotten via cryptd_ahash_child().
+crypto_hash interface has some issue and will be replaced by
+crypto_shash. This patch replace crypto_hash in cryptd hash with
+crypto_shash.
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
 
 ---
- crypto/cryptd.c         |   35 +++++++++++++++++++++++++++++++++++
- include/crypto/cryptd.h |   17 +++++++++++++++++
- 2 files changed, 52 insertions(+)
+ crypto/cryptd.c |  118 ++++++++++++++++++++++++++++++++++----------------------
+ 1 file changed, 73 insertions(+), 45 deletions(-)
 
 --- a/crypto/cryptd.c
 +++ b/crypto/cryptd.c
-@@ -648,6 +648,41 @@ void cryptd_free_ablkcipher(struct crypt
- }
- EXPORT_SYMBOL_GPL(cryptd_free_ablkcipher);
+@@ -14,12 +14,12 @@
+ #include <crypto/internal/hash.h>
+ #include <crypto/cryptd.h>
+ #include <crypto/crypto_wq.h>
++#include <crypto/scatterwalk.h>
+ #include <linux/err.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
+ #include <linux/module.h>
+-#include <linux/scatterlist.h>
+ #include <linux/sched.h>
+ #include <linux/slab.h>
  
-+struct cryptd_ahash *cryptd_alloc_ahash(const char *alg_name,
-+					u32 type, u32 mask)
-+{
-+	char cryptd_alg_name[CRYPTO_MAX_ALG_NAME];
-+	struct crypto_ahash *tfm;
+@@ -48,11 +48,12 @@ struct cryptd_blkcipher_request_ctx {
+ };
+ 
+ struct cryptd_hash_ctx {
+-	struct crypto_hash *child;
++	struct crypto_shash *child;
+ };
+ 
+ struct cryptd_hash_request_ctx {
+ 	crypto_completion_t complete;
++	struct shash_desc desc;
+ };
+ 
+ static void cryptd_queue_worker(struct work_struct *work);
+@@ -334,15 +335,15 @@ static int cryptd_hash_init_tfm(struct c
+ 	struct cryptd_instance_ctx *ictx = crypto_instance_ctx(inst);
+ 	struct crypto_spawn *spawn = &ictx->spawn;
+ 	struct cryptd_hash_ctx *ctx = crypto_tfm_ctx(tfm);
+-	struct crypto_hash *cipher;
++	struct crypto_shash *cipher;
+ 
+-	cipher = crypto_spawn_hash(spawn);
++	cipher = crypto_spawn_shash(spawn);
+ 	if (IS_ERR(cipher))
+ 		return PTR_ERR(cipher);
+ 
+ 	ctx->child = cipher;
+-	tfm->crt_ahash.reqsize =
+-		sizeof(struct cryptd_hash_request_ctx);
++	tfm->crt_ahash.reqsize = sizeof(struct cryptd_hash_request_ctx) +
++		crypto_shash_descsize(cipher);
+ 	return 0;
+ }
+ 
+@@ -350,22 +351,22 @@ static void cryptd_hash_exit_tfm(struct 
+ {
+ 	struct cryptd_hash_ctx *ctx = crypto_tfm_ctx(tfm);
+ 
+-	crypto_free_hash(ctx->child);
++	crypto_free_shash(ctx->child);
+ }
+ 
+ static int cryptd_hash_setkey(struct crypto_ahash *parent,
+ 				   const u8 *key, unsigned int keylen)
+ {
+ 	struct cryptd_hash_ctx *ctx   = crypto_ahash_ctx(parent);
+-	struct crypto_hash     *child = ctx->child;
++	struct crypto_shash    *child = ctx->child;
+ 	int err;
+ 
+-	crypto_hash_clear_flags(child, CRYPTO_TFM_REQ_MASK);
+-	crypto_hash_set_flags(child, crypto_ahash_get_flags(parent) &
+-					  CRYPTO_TFM_REQ_MASK);
+-	err = crypto_hash_setkey(child, key, keylen);
+-	crypto_ahash_set_flags(parent, crypto_hash_get_flags(child) &
+-					    CRYPTO_TFM_RES_MASK);
++	crypto_shash_clear_flags(child, CRYPTO_TFM_REQ_MASK);
++	crypto_shash_set_flags(child, crypto_ahash_get_flags(parent) &
++			       CRYPTO_TFM_REQ_MASK);
++	err = crypto_shash_setkey(child, key, keylen);
++	crypto_ahash_set_flags(parent, crypto_shash_get_flags(child) &
++			       CRYPTO_TFM_RES_MASK);
+ 	return err;
+ }
+ 
+@@ -386,20 +387,21 @@ static int cryptd_hash_enqueue(struct ah
+ static void cryptd_hash_init(struct crypto_async_request *req_async, int err)
+ {
+ 	struct cryptd_hash_ctx *ctx   = crypto_tfm_ctx(req_async->tfm);
+-	struct crypto_hash     *child = ctx->child;
++	struct crypto_shash    *child = ctx->child;
+ 	struct ahash_request    *req = ahash_request_cast(req_async);
+ 	struct cryptd_hash_request_ctx *rctx;
+-	struct hash_desc desc;
++	struct shash_desc *desc;
+ 
+ 	rctx = ahash_request_ctx(req);
+ 
+ 	if (unlikely(err == -EINPROGRESS))
+ 		goto out;
+ 
+-	desc.tfm = child;
+-	desc.flags = CRYPTO_TFM_REQ_MAY_SLEEP;
++	desc = &rctx->desc;
++	desc->tfm = child;
++	desc->flags = req->base.flags | CRYPTO_TFM_REQ_MAY_SLEEP;
+ 
+-	err = crypto_hash_crt(child)->init(&desc);
++	err = crypto_shash_init(desc);
+ 
+ 	req->base.complete = rctx->complete;
+ 
+@@ -416,23 +418,23 @@ static int cryptd_hash_init_enqueue(stru
+ 
+ static void cryptd_hash_update(struct crypto_async_request *req_async, int err)
+ {
+-	struct cryptd_hash_ctx *ctx   = crypto_tfm_ctx(req_async->tfm);
+-	struct crypto_hash     *child = ctx->child;
+ 	struct ahash_request    *req = ahash_request_cast(req_async);
+ 	struct cryptd_hash_request_ctx *rctx;
+-	struct hash_desc desc;
++	struct shash_desc *desc;
++	struct crypto_hash_walk walk;
++	int nbytes;
+ 
+ 	rctx = ahash_request_ctx(req);
+ 
+ 	if (unlikely(err == -EINPROGRESS))
+ 		goto out;
+ 
+-	desc.tfm = child;
+-	desc.flags = CRYPTO_TFM_REQ_MAY_SLEEP;
++	desc = &rctx->desc;
+ 
+-	err = crypto_hash_crt(child)->update(&desc,
+-						req->src,
+-						req->nbytes);
++	for (nbytes = crypto_hash_walk_first(req, &walk); nbytes > 0;
++	     nbytes = crypto_hash_walk_done(&walk, nbytes))
++		nbytes = crypto_shash_update(desc, walk.data, nbytes);
++	err = nbytes;
+ 
+ 	req->base.complete = rctx->complete;
+ 
+@@ -449,21 +451,18 @@ static int cryptd_hash_update_enqueue(st
+ 
+ static void cryptd_hash_final(struct crypto_async_request *req_async, int err)
+ {
+-	struct cryptd_hash_ctx *ctx   = crypto_tfm_ctx(req_async->tfm);
+-	struct crypto_hash     *child = ctx->child;
+ 	struct ahash_request    *req = ahash_request_cast(req_async);
+ 	struct cryptd_hash_request_ctx *rctx;
+-	struct hash_desc desc;
++	struct shash_desc *desc;
+ 
+ 	rctx = ahash_request_ctx(req);
+ 
+ 	if (unlikely(err == -EINPROGRESS))
+ 		goto out;
+ 
+-	desc.tfm = child;
+-	desc.flags = CRYPTO_TFM_REQ_MAY_SLEEP;
++	desc = &rctx->desc;
+ 
+-	err = crypto_hash_crt(child)->final(&desc, req->result);
++	err = crypto_shash_final(desc, req->result);
+ 
+ 	req->base.complete = rctx->complete;
+ 
+@@ -481,23 +480,49 @@ static int cryptd_hash_final_enqueue(str
+ static void cryptd_hash_digest(struct crypto_async_request *req_async, int err)
+ {
+ 	struct cryptd_hash_ctx *ctx   = crypto_tfm_ctx(req_async->tfm);
+-	struct crypto_hash     *child = ctx->child;
+-	struct ahash_request    *req = ahash_request_cast(req_async);
++	struct crypto_shash    *child = ctx->child;
++	struct ahash_request   *req = ahash_request_cast(req_async);
+ 	struct cryptd_hash_request_ctx *rctx;
+-	struct hash_desc desc;
++	struct shash_desc *desc;
++	struct crypto_hash_walk walk;
++	int nbytes;
++	unsigned int n = req->nbytes;
++	struct scatterlist *sg = req->src;
++	unsigned int offset = sg->offset;
+ 
+ 	rctx = ahash_request_ctx(req);
+ 
+ 	if (unlikely(err == -EINPROGRESS))
+ 		goto out;
+ 
+-	desc.tfm = child;
+-	desc.flags = CRYPTO_TFM_REQ_MAY_SLEEP;
++	desc = &rctx->desc;
++	desc->tfm = child;
++	desc->flags = req->base.flags | CRYPTO_TFM_REQ_MAY_SLEEP;
 +
-+	if (snprintf(cryptd_alg_name, CRYPTO_MAX_ALG_NAME,
-+		     "cryptd(%s)", alg_name) >= CRYPTO_MAX_ALG_NAME)
-+		return ERR_PTR(-EINVAL);
-+	tfm = crypto_alloc_ahash(cryptd_alg_name, type, mask);
-+	if (IS_ERR(tfm))
-+		return ERR_CAST(tfm);
-+	if (tfm->base.__crt_alg->cra_module != THIS_MODULE) {
-+		crypto_free_ahash(tfm);
-+		return ERR_PTR(-EINVAL);
++	if (n < min(sg->length, ((unsigned int)(PAGE_SIZE)) - offset)) {
++		void *data;
++
++		data = crypto_kmap(sg_page(sg), 0);
++		err = crypto_shash_digest(desc, data + offset, n,
++					  req->result);
++		crypto_kunmap(data, 0);
++		crypto_yield(desc->flags);
++		goto out;
++	}
+ 
+-	err = crypto_hash_crt(child)->digest(&desc,
+-						req->src,
+-						req->nbytes,
+-						req->result);
++	err = crypto_shash_init(desc);
++	if (err)
++		goto out;
++
++	for (nbytes = crypto_hash_walk_first(req, &walk); nbytes > 0;
++	     nbytes = crypto_hash_walk_done(&walk, nbytes))
++		nbytes = crypto_shash_update(desc, walk.data, nbytes);
++	if (nbytes) {
++		err = nbytes;
++		goto out;
 +	}
 +
-+	return __cryptd_ahash_cast(tfm);
-+}
-+EXPORT_SYMBOL_GPL(cryptd_alloc_ahash);
-+
-+struct crypto_shash *cryptd_ahash_child(struct cryptd_ahash *tfm)
-+{
-+	struct cryptd_hash_ctx *ctx = crypto_ahash_ctx(&tfm->base);
-+
-+	return ctx->child;
-+}
-+EXPORT_SYMBOL_GPL(cryptd_ahash_child);
-+
-+void cryptd_free_ahash(struct cryptd_ahash *tfm)
-+{
-+	crypto_free_ahash(&tfm->base);
-+}
-+EXPORT_SYMBOL_GPL(cryptd_free_ahash);
-+
- static int __init cryptd_init(void)
++	err = crypto_shash_final(desc, req->result);
+ 
+ 	req->base.complete = rctx->complete;
+ 
+@@ -517,12 +542,15 @@ static struct crypto_instance *cryptd_al
  {
- 	int err;
---- a/include/crypto/cryptd.h
-+++ b/include/crypto/cryptd.h
-@@ -7,6 +7,7 @@
+ 	struct crypto_instance *inst;
+ 	struct crypto_alg *alg;
++	struct shash_alg *salg;
  
- #include <linux/crypto.h>
- #include <linux/kernel.h>
-+#include <crypto/hash.h>
+-	alg = crypto_get_attr_alg(tb, CRYPTO_ALG_TYPE_HASH,
+-				  CRYPTO_ALG_TYPE_HASH_MASK);
++	alg = crypto_get_attr_alg(tb, CRYPTO_ALG_TYPE_SHASH,
++				  CRYPTO_ALG_TYPE_MASK);
+ 	if (IS_ERR(alg))
+ 		return ERR_PTR(PTR_ERR(alg));
  
- struct cryptd_ablkcipher {
- 	struct crypto_ablkcipher base;
-@@ -24,4 +25,20 @@ struct cryptd_ablkcipher *cryptd_alloc_a
- struct crypto_blkcipher *cryptd_ablkcipher_child(struct cryptd_ablkcipher *tfm);
- void cryptd_free_ablkcipher(struct cryptd_ablkcipher *tfm);
++	salg = __crypto_shash_alg(alg);
++
+ 	inst = cryptd_alloc_instance(alg, queue);
+ 	if (IS_ERR(inst))
+ 		goto out_put_alg;
+@@ -530,7 +558,7 @@ static struct crypto_instance *cryptd_al
+ 	inst->alg.cra_flags = CRYPTO_ALG_TYPE_AHASH | CRYPTO_ALG_ASYNC;
+ 	inst->alg.cra_type = &crypto_ahash_type;
  
-+struct cryptd_ahash {
-+	struct crypto_ahash base;
-+};
-+
-+static inline struct cryptd_ahash *__cryptd_ahash_cast(
-+	struct crypto_ahash *tfm)
-+{
-+	return (struct cryptd_ahash *)tfm;
-+}
-+
-+/* alg_name should be algorithm to be cryptd-ed */
-+struct cryptd_ahash *cryptd_alloc_ahash(const char *alg_name,
-+					u32 type, u32 mask);
-+struct crypto_shash *cryptd_ahash_child(struct cryptd_ahash *tfm);
-+void cryptd_free_ahash(struct cryptd_ahash *tfm);
-+
- #endif
+-	inst->alg.cra_ahash.digestsize = alg->cra_hash.digestsize;
++	inst->alg.cra_ahash.digestsize = salg->digestsize;
+ 	inst->alg.cra_ctxsize = sizeof(struct cryptd_hash_ctx);
+ 
+ 	inst->alg.cra_init = cryptd_hash_init_tfm;
 
 
