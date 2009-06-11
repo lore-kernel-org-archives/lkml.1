@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZFKSWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbZFKSWs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757275AbZFKSWh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 14:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbZFKSWa
+	id S1757481AbZFKSWs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 14:22:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbZFKSWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 14:22:30 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:56684 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753356AbZFKSW3 (ORCPT
+	Thu, 11 Jun 2009 14:22:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33404 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755261AbZFKSWb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 14:22:29 -0400
-Date: Thu, 11 Jun 2009 20:24:45 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Joe Perches <joe@perches.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       David Miller <davem@davemloft.net>, swetland@google.com, pavel@ucw.cz,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       san@android.com, rlove@google.com
-Subject: Re: HTC Dream aka. t-mobile g1 support
-Message-ID: <20090611182445.GA7658@uranus.ravnborg.org>
-References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk> <1244733310.895.60.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244733310.895.60.camel@Joe-Laptop.home>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 11 Jun 2009 14:22:31 -0400
+Date: Thu, 11 Jun 2009 11:21:46 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: David Newall <davidn@davidnewall.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Al Viro <viro@zeniv.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT PULL] Performance Counters for Linux
+In-Reply-To: <4A3148AA.9000007@davidnewall.com>
+Message-ID: <alpine.LFD.2.01.0906111120100.3573@localhost.localdomain>
+References: <20090611160329.GA3366@elte.hu>  <20090611161714.GA5008@infradead.org>  <alpine.LFD.2.01.0906110922080.3573@localhost.localdomain>  <20090611165226.GV8633@ZenIV.linux.org.uk>  <1244739378.6691.540.camel@laptop>  <20090611170015.GA3651@infradead.org>
+  <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain> <84144f020906111059g6e25a090y4434cfd698f84fb4@mail.gmail.com> <4A3148AA.9000007@davidnewall.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 08:15:10AM -0700, Joe Perches wrote:
-> On Thu, 2009-06-11 at 13:38 +0100, Russell King - ARM Linux wrote:
-> > On Thu, Jun 11, 2009 at 05:00:30AM -0700, David Miller wrote:
-> > > From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-> > > Date: Thu, 11 Jun 2009 12:49:12 +0100
-> > > 
-> > > > I can not keep up with the number of patches that need to be
-> > > > reviewed and ultimately merged.  I know this, and I freely admit it,
-> > > > and I have done so on many occasions.
-> > > 
-> > > Then split up the responsibilities to other people instead of being
-> > > the choke point.  Controlling everything isn't so important.
-> > 
-> > Don't you think that I've been trying to get other people to be more
-> > involved?
-> > 
-> > - I've been pushing people to send patches to the relevent mailing
-> >   list(s) and maintainer(s) for years.
-> > 
-> > - I've been pushing people to send their ARM patches to the ARM
-> >   mailing list rather than directly into the patch system for review
-> >   (it even has a comment telling people this) so that others can get
-> >   involved in reviewing them, and sharing that work load.
-> > 
-> > Do you think either have been anywhere near successful?
-> []
-> > I've been trying to get greater participation
-> > but it's just not happening.
+
+
+On Fri, 12 Jun 2009, David Newall wrote:
 > 
-> I suggest you stop using subscriber-only mailing lists and
-> use linux-arm@vger.kernel.org.
+> What I'm saying is that this doesn't sound like something that needs
+> user-space in lock-step with kernel.
 
-This is main point here is to offload Russell.
-One way to offload Russell is to have competent people reviewing platform
-code for ARM. This is best done by other platform people.
-Me and you - we can helpt. But the people where we need higher
-involvement are already on the list.
+Give it a rest.
 
-	Sam
+If that's true, then in a year or two we can just split it up already.
+
+But I note (once more) how _nobody_ has actually been able to accept the 
+fact that oprofile was an abject failure as it was split up. Instead, you 
+all dance around totally irrelevant issues.
+
+			Linus
