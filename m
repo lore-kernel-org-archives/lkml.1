@@ -1,53 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761437AbZFKIkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761381AbZFKInz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761437AbZFKIkb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 04:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759493AbZFKIkV
+	id S1761381AbZFKInz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 04:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755661AbZFKInr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 04:40:21 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64184 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1759231AbZFKIkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 04:40:20 -0400
-Message-ID: <4A30C346.8070406@cn.fujitsu.com>
-Date: Thu, 11 Jun 2009 16:41:42 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, paulmck@linux.vnet.ibm.com
-CC: ego@in.ibm.com, rusty@rustcorp.com.au, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, peterz@infradead.org, oleg@redhat.com,
-       dipankar@in.ibm.com
-Subject: Re: [PATCH -mm resend] cpuhotplug: introduce try_get_online_cpus()
- take 3
-References: <4A1F9CEA.1070705@cn.fujitsu.com>	<20090530015342.GA21502@linux.vnet.ibm.com>	<20090530043739.GA12157@in.ibm.com>	<4A27708C.6030703@cn.fujitsu.com>	<20090605153714.GB6778@linux.vnet.ibm.com>	<20090608041934.GB17979@in.ibm.com>	<20090608142520.GA6961@linux.vnet.ibm.com>	<4A2E506D.9090107@cn.fujitsu.com>	<20090609123438.b936137e.akpm@linux-foundation.org>	<20090609234757.GH16117@linux.vnet.ibm.com>	<4A2F08D6.6060309@cn.fujitsu.com> <20090609184238.06b38c3e.akpm@linux-foundation.org>
-In-Reply-To: <20090609184238.06b38c3e.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 11 Jun 2009 04:43:47 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:44894 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751529AbZFKInq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 04:43:46 -0400
+Date: Thu, 11 Jun 2009 11:43:46 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: linux-kernel@vger.kernel.org
+cc: cl@linux-foundation.org, mel@csn.ul.ie, Larry.Finger@lwfinger.net
+Subject: [PATCH 1/2] SLUB: Out-of-memory diagnostics
+Message-ID: <Pine.LNX.4.64.0906111142350.6132@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> 
-> I still think we should really avoid having to do this.  trylocks are
-> nasty things.
-> 
-> Looking at the above, one would think that a correct fix would be to fix
-> the bug in "thread 2": take the locks in the correct order?  As
-> try_get_online_cpus() doesn't actually have any callers, it's hard to
-> take that thought any further.
-> 
-> 
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Sometimes, we can not reorder the locks' order.
-try_get_online_cpus() is really needless when no one uses it.
+As suggested by Mel Gorman, add out-of-memory diagnostics to the SLUB allocator
+to make debugging OOM conditions easier. This patch helped hunt down a nasty
+OOM issue that popped up every now that was caused by SLUB debugging code which
+forced 4096 byte allocations to use order 1 pages even in the fallback case.
 
-Paul's expedited RCU V7 may need it:
-http://lkml.org/lkml/2009/5/22/332
+An example print out looks like this:
 
-So this patch can be omitted when Paul does not use it.
-It's totally OK for me.
+  <snip page allocator out-of-memory message>
+  SLUB: Unable to allocate memory on node -1 (gfp=20)
+    cache: kmalloc-4096, object size: 4096, buffer size: 4168, default order: 3, min order: 1
+    node 0: slabs: 95, objs: 665, free: 0
 
-Lai
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+Tested-by: Larry Finger <Larry.Finger@lwfinger.net>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ mm/slub.c |   70 ++++++++++++++++++++++++++++++++++++++++++++----------------
+ 1 files changed, 51 insertions(+), 19 deletions(-)
+
+diff --git a/mm/slub.c b/mm/slub.c
+index 65ffda5..2bbacfc 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1484,6 +1484,56 @@ static inline int node_match(struct kmem_cache_cpu *c, int node)
+ 	return 1;
+ }
+ 
++static int count_free(struct page *page)
++{
++	return page->objects - page->inuse;
++}
++
++static unsigned long count_partial(struct kmem_cache_node *n,
++					int (*get_count)(struct page *))
++{
++	unsigned long flags;
++	unsigned long x = 0;
++	struct page *page;
++
++	spin_lock_irqsave(&n->list_lock, flags);
++	list_for_each_entry(page, &n->partial, lru)
++		x += get_count(page);
++	spin_unlock_irqrestore(&n->list_lock, flags);
++	return x;
++}
++
++static noinline void
++slab_out_of_memory(struct kmem_cache *s, gfp_t gfpflags, int nid)
++{
++	int node;
++
++	printk(KERN_WARNING
++		"SLUB: Unable to allocate memory on node %d (gfp=%x)\n",
++		nid, gfpflags);
++	printk(KERN_WARNING "  cache: %s, object size: %d, buffer size: %d, "
++		"default order: %d, min order: %d\n", s->name, s->objsize,
++		s->size, oo_order(s->oo), oo_order(s->min));
++
++	for_each_online_node(node) {
++		struct kmem_cache_node *n = get_node(s, node);
++		unsigned long nr_slabs;
++		unsigned long nr_objs;
++		unsigned long nr_free;
++
++		if (!n)
++			continue;
++
++		nr_slabs = atomic_long_read(&n->nr_slabs);
++		nr_objs = atomic_long_read(&n->total_objects);
++		nr_free = count_partial(n, count_free);
++
++		printk(KERN_WARNING
++			"  node %d: slabs: %ld, objs: %ld, free: %ld\n",
++			node, nr_slabs, nr_objs, nr_free);
++	}
++}
++
+ /*
+  * Slow path. The lockless freelist is empty or we need to perform
+  * debugging duties.
+@@ -1565,6 +1615,7 @@ new_slab:
+ 		c->page = new;
+ 		goto load_freelist;
+ 	}
++	slab_out_of_memory(s, gfpflags, node);
+ 	return NULL;
+ debug:
+ 	if (!alloc_debug_processing(s, c->page, object, addr))
+@@ -3318,20 +3369,6 @@ void *__kmalloc_node_track_caller(size_t size, gfp_t gfpflags,
+ }
+ 
+ #ifdef CONFIG_SLUB_DEBUG
+-static unsigned long count_partial(struct kmem_cache_node *n,
+-					int (*get_count)(struct page *))
+-{
+-	unsigned long flags;
+-	unsigned long x = 0;
+-	struct page *page;
+-
+-	spin_lock_irqsave(&n->list_lock, flags);
+-	list_for_each_entry(page, &n->partial, lru)
+-		x += get_count(page);
+-	spin_unlock_irqrestore(&n->list_lock, flags);
+-	return x;
+-}
+-
+ static int count_inuse(struct page *page)
+ {
+ 	return page->inuse;
+@@ -3342,11 +3379,6 @@ static int count_total(struct page *page)
+ 	return page->objects;
+ }
+ 
+-static int count_free(struct page *page)
+-{
+-	return page->objects - page->inuse;
+-}
+-
+ static int validate_slab(struct kmem_cache *s, struct page *page,
+ 						unsigned long *map)
+ {
+-- 
+1.6.0.4
 
