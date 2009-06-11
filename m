@@ -1,54 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762927AbZFKLLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762970AbZFKLMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762927AbZFKLLS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 07:11:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761240AbZFKLLJ
+	id S1762970AbZFKLMs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 07:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755399AbZFKLMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 07:11:09 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56701
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756953AbZFKLLI (ORCPT
+	Thu, 11 Jun 2009 07:12:41 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:17363 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754639AbZFKLMk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 07:11:08 -0400
-Date: Thu, 11 Jun 2009 04:11:11 -0700 (PDT)
-Message-Id: <20090611.041111.85388178.davem@davemloft.net>
-To: linux@arm.linux.org.uk
-Cc: pavel@ucw.cz, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, swetland@google.com,
-       san@android.com, rlove@google.com
+	Thu, 11 Jun 2009 07:12:40 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=DTf8LePVxpc0vWnm1uoQC0h8a6PalDM2aZ1jPR2JYtKQqKbbB2puCb+Kgish4Yc4Y
+	EwGwkS9+LhRvv/KfBFQEg==
+MIME-Version: 1.0
+In-Reply-To: <20090611103457.GG795@n2100.arm.linux.org.uk>
+References: <20090610103131.GB13885@elf.ucw.cz>
+	 <20090610194852.GA28787@n2100.arm.linux.org.uk>
+	 <20090611.000219.206893038.davem@davemloft.net>
+	 <20090611073740.GB8592@elf.ucw.cz>
+	 <20090611103457.GG795@n2100.arm.linux.org.uk>
+Date: Thu, 11 Jun 2009 04:12:39 -0700
+Message-ID: <a55d774e0906110412w7121d6d3t526ebd9c04d2d205@mail.gmail.com>
 Subject: Re: HTC Dream aka. t-mobile g1 support
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090611110539.GJ795@n2100.arm.linux.org.uk>
-References: <20090611.034421.180842375.davem@davemloft.net>
-	<20090611.034732.147822760.davem@davemloft.net>
-	<20090611110539.GJ795@n2100.arm.linux.org.uk>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+From: Brian Swetland <swetland@google.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Pavel Machek <pavel@ucw.cz>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       ibm@android.com, san@android.com, rlove@google.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Date: Thu, 11 Jun 2009 12:05:39 +0100
+On Thu, Jun 11, 2009 at 3:34 AM, Russell King - ARM
+Linux<linux@arm.linux.org.uk> wrote:
+>
+> However, as a result of the complete lack of effort to update patches
+> as a result of feedback coupled with my lack of bandwidth to review
+> complex code implementing things like cross-bridge APIs (eg, ARM <->
+> DSP communications channels), Brian basically gave up trying to get
+> stuff into mainline.
 
-> On Thu, Jun 11, 2009 at 03:47:32AM -0700, David Miller wrote:
->> <rmk> in hind sight, xxxxxxx was effectively right when he said on here a while ago
->> <rmk> 22:34 <xxxxxx> jejb: google also just pretty much threw their ARM code over the wall and disappeared
- ...
-> I'm sorry, that's the precise same channel and network which those
-> comments were first made by the person who made them.
-> 
-> And now read precisely what I said rather than twisting it to your own
-> agenda.
+Well, "gave up" feels a little final to me.  We still would like to
+get stuff upstream.  I will admit to finding the process discouraging
+at times, but a larger part of it is just finding the time to sit
+down, tidy up the current state of our world against the tip-of-tree
+on mainline, and push out another round of patches.  I'm hoping to
+find some larger windows of time to devote to this later this year.
 
-You're the one who can't read.
+Since we also have to maintain a stable, shippable tree for products
+going out the door and to provide baseline support for the platform,
+we end up having to maintain multiple trees -- it's obviously not
+realistic to expect that we're going to get 30000-50000 lines of new
+code reviewed quickly, but we do need all the functionality there to
+actually support shipping devices.  When time gets tight (more often
+than I like), the towards-mainline stuff gets backburnered.
+Obviously, we suffer for this in that we end up having more to rebase
+every time we move forward, so it would be to our benefit to get
+better at pushing this stuff upstream and reduce the delta between
+mainline and our tree.
 
-The words "was" and "when" were used, which indicate a point in time
-(not only for the statement but also when it applies).
+> Now, ask yourself this question: why should I have to be the one to
+> review things like ARM <-> DSP communication channel code?  Hint: I
+> don't want to because I know nothing about the subject.  Where should
+> I send these people to get such code reviewed?  No idea, there seems
+> to be no one _anywhere_ who would seem to be interested in it.
 
-You didn't say "his comments back then actually do apply now".
-But it may be convenient for you to portray things this way.
+The drivers/staging system looks like it has some potential to help
+here.  Greg has been scooping our generic code into there recently,
+and I know Arve's seen patches for binder issues go by, etc.  It feels
+(if I'm understanding the intent) a bit more like the model I'm more
+used to (get a relatively clean piece of code that is functional
+checked in, and then refine it).
 
-Russell, if you only knew how people speak of you in private....
+> Andrew tried to resolve this review problem by getting some co-operation
+> between various members of the ARM community - so that two or three
+> people with large code bases would do mutual reviews and gain from
+> each others efforts.  The result of that was... precisely nothing.  No
+> interest in lifting a finger to help someone else.
+
+I think Andrew's idea is a good one, but we just haven't had the time
+to try to sort this out.  I'll have to see what we can do here.
+Recently, we've been involved in omap3 work as well and have been
+interacting more with folks in the omap kernel community as a result.
+
+Brian
