@@ -1,174 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763434AbZFKWw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761384AbZFKWzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763434AbZFKWw7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 18:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760927AbZFKWwm
+	id S1761384AbZFKWzu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 18:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbZFKWzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 18:52:42 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:41442 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759657AbZFKWwl (ORCPT
+	Thu, 11 Jun 2009 18:55:43 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:60462 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755068AbZFKWzm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 18:52:41 -0400
-Subject: [PATCH] Convert m32r to use arch_gettimeoffset()
-From: john stultz <johnstul@us.ibm.com>
-To: takata@linux-m32r.org
-Cc: lkml <linux-kernel@vger.kernel.org>, linux-m32r@ml.linux-m32r.org
-In-Reply-To: <1244758210.7192.5.camel@localhost.localdomain>
-References: <1244758210.7192.5.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 11 Jun 2009 15:52:24 -0700
-Message-Id: <1244760744.7192.29.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Jun 2009 18:55:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=BytrSfvNAytHQ3htuC6TDBb3ts26b2OzrQSe3duffFDJNQA84NZz6xOxSc1sknTAlw
+         0vfXO00grIikjiKf+Y6YAghGqvA3OElMVpZA8Ka5OMeBWgvo07Ap++fnGqmfC8bnh5Ya
+         5MZtGxutdE0Pv5ND1CoB11IvAXpTg1eYx7Ze0=
+MIME-Version: 1.0
+In-Reply-To: <d3a71da3a374d278e5fb0b1f2cdff71e.squirrel@webmail-b.css.fujitsu.com>
+References: <20090611165535.cf46bf29.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090611170152.7a43b13b.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090611172249.6D3C.A69D9226@jp.fujitsu.com>
+	 <20090611173819.0f76e431.kamezawa.hiroyu@jp.fujitsu.com>
+	 <28c262360906110237u1f3d1877hae54a51575955549@mail.gmail.com>
+	 <9d4a7c0691aa5e13247f694f2dfe55ad.squirrel@webmail-b.css.fujitsu.com>
+	 <28c262360906110459s923d7a6p4e555344e8bbd265@mail.gmail.com>
+	 <d3a71da3a374d278e5fb0b1f2cdff71e.squirrel@webmail-b.css.fujitsu.com>
+Date: Fri, 12 Jun 2009 07:55:44 +0900
+Message-ID: <28c262360906111555p19ca20b1m2785abddb41678dc@mail.gmail.com>
+Subject: Re: [PATCH 2/3] check unevictable flag in lumy reclaim v2
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       apw@canonical.com, riel@redhat.com, mel@csn.ul.ie,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch converts m32r to use GENERIC_TIME via the arch_getoffset()
-infrastructure, reducing the amount of arch specific code we need to
-maintain.
+2009/6/11 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
+> Minchan Kim wrote:
+>> 2009/6/11 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>:
+>>> Minchan Kim さん wrote:
+>>>> On Thu, Jun 11, 2009 at 5:38 PM, KAMEZAWA
+>>>> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>>>>> How about this ?
+>>>>>
+>>>>> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>>>>
+>>>>> Lumpy reclaim check pages from their pfn. Then, it can find
+>>>>> unevictable
+>>>>> pages
+>>>>> in its loop.
+>>>>> Abort lumpy reclaim when we find Unevictable page, we never get a lump
+>>>>> of pages for requested order.
+>>>>>
+>>>>> Changelog: v1->v2
+>>>>> ?- rewrote commet.
+>>>>>
+>>>>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>>>> ---
+>>>>> ?mm/vmscan.c | ? ?9 +++++++++
+>>>>> ?1 file changed, 9 insertions(+)
+>>>>>
+>>>>> Index: lumpy-reclaim-trial/mm/vmscan.c
+>>>>> ===================================================================
+>>>>> --- lumpy-reclaim-trial.orig/mm/vmscan.c
+>>>>> +++ lumpy-reclaim-trial/mm/vmscan.c
+>>>>> @@ -936,6 +936,15 @@ static unsigned long isolate_lru_pages(u
+>>>>> ? ? ? ? ? ? ? ? ? ? ? ?/* Check that we have not crossed a zone
+>>>>> boundary. */
+>>>>> ? ? ? ? ? ? ? ? ? ? ? ?if (unlikely(page_zone_id(cursor_page) !=
+>>>>> zone_id))
+>>>>> ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ?continue;
+>>>>> + ? ? ? ? ? ? ? ? ? ? ? /*
+>>>>> + ? ? ? ? ? ? ? ? ? ? ? ?* We tries to free all pages in this range to
+>>>>> create
+>>>>> + ? ? ? ? ? ? ? ? ? ? ? ?* a free large page. Then, if the range
+>>>>> includes a page
+>>>>> + ? ? ? ? ? ? ? ? ? ? ? ?* never be reclaimed, we have no reason to do
+>>>>> more.
+>>>>> + ? ? ? ? ? ? ? ? ? ? ? ?* PageUnevictable page is not a page which
+>>>>> can
+>>>>> be
+>>>>> + ? ? ? ? ? ? ? ? ? ? ? ?* easily freed. Abort this scan now.
+>>>>> + ? ? ? ? ? ? ? ? ? ? ? ?*/
+>>>>> + ? ? ? ? ? ? ? ? ? ? ? if (unlikely(PageUnevictable(cursor_page)))
+>>>>> + ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? break;
+>>>>
+>>>> __isolate_lru_pages already checked PageUnevictable to return error.
+>>>> I want to remove repeated check although it is trivial.
+>>>>
+>>>> By your patch, It seems to remove PageUnevictable check in
+>>>> __isolate_lru_pages.
+>>>>
+>>> yes.
+>>>
+>>>> But I know that. If we remove PageUnevictable check in
+>>>> __isolate_lru_pages, it can't go into BUG in non-lumpy case. ( I
+>>>> mentioned following as code)
+>>>>
+>>> In non-lumpy case, we'll never see Unevictable, maybe.
+>>
+>> I think so if it doesn't happen RAM failure.
+>> AFAIK, Unevictable check didn't related with RAM failure.
+>>
+>>>
+>>>> ? ? ? ? ? ? ? ? case -EBUSY:
+>>>> ? ? ? ? ? ? ? ? ? ? ? ? /* else it is being freed elsewhere */
+>>>> ? ? ? ? ? ? ? ? ? ? ? ? list_move(&page->lru, src);
+>>>> ? ? ? ? ? ? ? ? ? ? ? ? continue;
+>>>>
+>>>> ? ? ? ? ? ? ? ? default:
+>>>> ? ? ? ? ? ? ? ? ? ? ? ? BUG();
+>>>> ? ? ? ? ? ? ? ? }
+>>>>
+>>>>
+>>>> It means we can remove BUG in non-lumpy case and then add BUG into
+>>>> __isolate_lru_pages directly.
+>>>>
+>>>> If we can do it, we can remove unnecessary PageUnevictable check in
+>>>> __isolate_lru_page.
+>>>>
+>>> Hmm, but Unevicable check had tons of troubles at its implementation
+>>> and I don't want to do it at once.
+>>
+>> I think it's not a big problem.
+>> As comment said, the check's goal is to prevent in lumpy case.
+>>         /*
+>>          * When this function is being called for lumpy reclaim, we
+>>          * initially look into all LRU pages, active, inactive and
+>>          * unevictable; only give shrink_page_list evictable pages.
+>>          */
+>>         if (PageUnevictable(page))
+>>                 return ret;
+>>
+>> So I think we can remove this check.
+>>
+> agreed.
+>
+>>>> I am not sure this is right in case of memcg.
+>>>>
+>>> I think we don't see Unevictable in memcg's path if my memcg-lru code
+>>> works as designed.
+>>>
+>>> I'll postpone this patch for a while until my brain works well.
+>>
+>> If you have a concern about that, how about this ?
+>> (This code will be hunk since gmail webserver always mangle. Pz,forgive
+>> me)
+>> Also, we can CC original authors.
+>>
+> I'll schedule this optimization/clean up for unevictable case in queue.
+> Thank you for inputs.
+>
+> But it's now merge-window, I'd like to push bugfix first.(1/3 and 3/3)
 
-I also noted that m32r doesn't seem to be taking the xtime write lock
-before calling do_timer()!  That looks like a pretty bad bug to me. If
-folks agree, let me know and I can move the lock grab to the correct
-spot.
+I agree. It's more important now.
 
-This patch applies on top of Linus' current -git tree (pre 2.6.31-rc1).
+> I'd like to scheule Unevictable case fix after rc1(when mmotm stack seems
+> to be pushed out to Linus.)
+> And I'll add
+> int __isolate_lru_page(...)
+> {
+>     VM_BUG_ON(PageUnevictable(page));
+> }
+> as sanity check for mmotm test time.
+>
+> Thank you for all your help.
 
-I've taken my best swing at converting this, but I'm not 100% confident
-I got it right. It does cross compile, so that's hopefully a good sign.
-Any assistance from arch maintainers or testers to get this merged would
-be great.
+I also thanks you for considering my comment.
 
-thanks
--john
+You may add my review sign. :)
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
----
- Kconfig       |    6 ++++
- kernel/time.c |   74 ++--------------------------------------------------------
- 2 files changed, 9 insertions(+), 71 deletions(-)
-
-diff --git a/arch/m32r/Kconfig b/arch/m32r/Kconfig
-index cabba33..c41234f 100644
---- a/arch/m32r/Kconfig
-+++ b/arch/m32r/Kconfig
-@@ -41,6 +41,12 @@ config HZ
- 	int
- 	default 100
- 
-+config GENERIC_TIME
-+	def_bool y
-+
-+config ARCH_USES_GETTIMEOFFSET
-+	def_bool y
-+
- source "init/Kconfig"
- 
- source "kernel/Kconfig.freezer"
-diff --git a/arch/m32r/kernel/time.c b/arch/m32r/kernel/time.c
-index cada3ba..ba61c4c 100644
---- a/arch/m32r/kernel/time.c
-+++ b/arch/m32r/kernel/time.c
-@@ -48,7 +48,7 @@ extern void smp_local_timer_interrupt(void);
- 
- static unsigned long latch;
- 
--static unsigned long do_gettimeoffset(void)
-+u32 arch_gettimeoffset(void)
- {
- 	unsigned long  elapsed_time = 0;  /* [us] */
- 
-@@ -93,79 +93,10 @@ static unsigned long do_gettimeoffset(void)
- #error no chip configuration
- #endif
- 
--	return elapsed_time;
-+	return elapsed_time * 1000;
- }
- 
- /*
-- * This version of gettimeofday has near microsecond resolution.
-- */
--void do_gettimeofday(struct timeval *tv)
--{
--	unsigned long seq;
--	unsigned long usec, sec;
--	unsigned long max_ntp_tick = tick_usec - tickadj;
--
--	do {
--		seq = read_seqbegin(&xtime_lock);
--
--		usec = do_gettimeoffset();
--
--		/*
--		 * If time_adjust is negative then NTP is slowing the clock
--		 * so make sure not to go into next possible interval.
--		 * Better to lose some accuracy than have time go backwards..
--		 */
--		if (unlikely(time_adjust < 0))
--			usec = min(usec, max_ntp_tick);
--
--		sec = xtime.tv_sec;
--		usec += (xtime.tv_nsec / 1000);
--	} while (read_seqretry(&xtime_lock, seq));
--
--	while (usec >= 1000000) {
--		usec -= 1000000;
--		sec++;
--	}
--
--	tv->tv_sec = sec;
--	tv->tv_usec = usec;
--}
--
--EXPORT_SYMBOL(do_gettimeofday);
--
--int do_settimeofday(struct timespec *tv)
--{
--	time_t wtm_sec, sec = tv->tv_sec;
-- 	long wtm_nsec, nsec = tv->tv_nsec;
--
--	if ((unsigned long)tv->tv_nsec >= NSEC_PER_SEC)
--		return -EINVAL;
--
--	write_seqlock_irq(&xtime_lock);
--	/*
--	 * This is revolting. We need to set "xtime" correctly. However, the
--	 * value in this location is the value at the most recent update of
--	 * wall time.  Discover what correction gettimeofday() would have
--	 * made, and then undo it!
--	 */
--	nsec -= do_gettimeoffset() * NSEC_PER_USEC;
--
--	wtm_sec = wall_to_monotonic.tv_sec + (xtime.tv_sec - sec);
--	wtm_nsec = wall_to_monotonic.tv_nsec + (xtime.tv_nsec - nsec);
--
--	set_normalized_timespec(&xtime, sec, nsec);
--	set_normalized_timespec(&wall_to_monotonic, wtm_sec, wtm_nsec);
--
--	ntp_clear();
--	write_sequnlock_irq(&xtime_lock);
--	clock_was_set();
--
--	return 0;
--}
--
--EXPORT_SYMBOL(do_settimeofday);
--
--/*
-  * In order to set the CMOS clock precisely, set_rtc_mmss has to be
-  * called 500 ms after the second nowtime has started, because when
-  * nowtime is written into the registers of the CMOS clock, it will
-@@ -192,6 +123,7 @@ static irqreturn_t timer_interrupt(int irq, void *dev_id)
- #ifndef CONFIG_SMP
- 	profile_tick(CPU_PROFILING);
- #endif
-+	/* XXX FIXME. Uh, the xtime_lock should be held here, no? */
- 	do_timer(1);
- 
- #ifndef CONFIG_SMP
+> -Kame
+>
+>
 
 
+
+-- 
+Kinds regards,
+Minchan Kim
