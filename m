@@ -1,115 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757835AbZFKWAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760758AbZFKWB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757835AbZFKWAB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 18:00:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755426AbZFKV7p
+	id S1760758AbZFKWB2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 18:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759388AbZFKWBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 17:59:45 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:35129 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754744AbZFKV7n (ORCPT
+	Thu, 11 Jun 2009 18:01:11 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:46175 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760124AbZFKWBK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 17:59:43 -0400
-Date: Thu, 11 Jun 2009 17:59:41 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Martin Bligh <mbligh@google.com>, Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT PULL] Performance Counters for Linux
-Message-ID: <20090611215941.GA14053@goodmis.org>
-References: <20090611165226.GV8633@ZenIV.linux.org.uk> <1244739378.6691.540.camel@laptop> <20090611170015.GA3651@infradead.org> <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain> <33307c790906111124m17e57332oc38c89fa70e39231@mail.gmail.com> <alpine.LFD.2.01.0906111127520.3573@localhost.localdomain> <20090611202341.GA23590@elte.hu> <1244753357.27363.82.camel@violet> <20090611210810.GA9317@uranus.ravnborg.org> <1244755036.27363.93.camel@violet>
+	Thu, 11 Jun 2009 18:01:10 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1244755036.27363.93.camel@violet>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090603132217.GA18353@oksana.dev.rtsoft.ru>
+References: <4A255B21.8040002@gersys.de> <20090602171527.GA8745@oksana.dev.rtsoft.ru> 
+	<4A266FB2.2040902@gersys.de> <20090603132217.GA18353@oksana.dev.rtsoft.ru>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 11 Jun 2009 16:00:51 -0600
+Message-ID: <fa686aa40906111500w1760290bm890f3ee132500b1d@mail.gmail.com>
+Subject: Re: PWM class? (was: Re: MPC52xx simple GPIO support)
+To: avorontsov@ru.mvista.com
+Cc: Stefan Strobl <nst@gersys.de>, ppc-dev <linuxppc-dev@ozlabs.org>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 11:17:16PM +0200, Marcel Holtmann wrote:
-> Hi Sam,
-> 
-> > > So you are saying that only good code comes from including it into
-> > > linux-2.6.git and otherwise you will never get there. Have you actually
-> > > tried to maintain this in a separate repository on kernel.org?
-> > 
-> > Could you please remind us what the arguments agains including a few
-> > seleted tools within the kernel source tree was.
-> > 
-> > I ask because I really cannot see why so much nosie is generated?
-> > As a naive user that like easy access to the stuff I work with
-> > this looks like an optimal place to find the kernel-hacking
-> > tools I need. Why should I hunt somewhere else to find it?
-> 
-> I personally would expect a perf.git on kernel.org for the userspace
-> tools for it. Like we have udev.git there, iproute2.git and others.
-> 
-> Seems to be working perfectly fine (except of course oprofile) and makes
-> packaging and security updates a lot easier. The distros have always a
-> really hard problem with releasing new kernel packages. And as long as
-> the source changes the whole set of binary packages needs to be rebuilt
-> and in theory if you install a new kernel, you should reboot. So if
-> there is an issue in perf userspace, then the current processes in most
-> distros will propose the user a reboot for no good reason.
-> 
-> There is nothing wrong with trying something new, but to be honest I
-> don't buy into the arguments why we do it. It seems like it is all based
-> on bad experience with some userspace maintainers and not really
-> technical grounds why it is a must to have this inside the kernel source
-> code. Of course you can make the argument the other way around and say
-> why not. And I give Linus that he wants to try. However all the
-> arguments from Ingo are a joke and basically tells that all userspace
-> developers have no clue and can't get right anyway.
+On Wed, Jun 3, 2009 at 7:22 AM, Anton Vorontsov<avorontsov@ru.mvista.com> wrote:
+> On Wed, Jun 03, 2009 at 02:42:26PM +0200, Stefan Strobl wrote:
+> [...]
+>> The led class provides support for setting the brightness, which
+>> obviously the gpio driver doesn't support. The hardware (mpc52xx_gpt)
+>> would support it in PWM mode though. I'm now wandering how this could be
+>> best implemented.
+>>
+>> 1) - Create some PWM class similar to the GPIO class
+>>    - Add support for PWM mode in mpc52xx_gpt.c that uses that PWM class
+>>    - And add an interface for the LED to use the PWM class
+>>
+>> 2) - Create an LED driver that accesses the mpc52xx_gpt directly.
+>>
+>> I think I would be overwhelmed trying to implement (1) but am confident
+>> to do (2). What do you think is the right approach?
+>
+> I'd suggest creating a generic PWM class, i.e. PWMLIB, alike to
+> GPIOLIB. (2) can be an acceptable approach for now, but for the
+> long-term solution (1) is the way to go.
+>
+> The non-lib PWM API is already there, see include/linux/pwm.h,
+> and arch/arm/mach-pxa/pwm.c as an implementation example.
+>
+> Note that PXA implementation is SOC-specific, which is not very
+> good.
+>
+> So I'd suggest creating drivers/pwm/pwmlib.c, borrowing
+> ideas from gpiolib. And then we can reuse drivers/leds/leds-pwm.c
+> driver (of course, after adding appropriate OF code into it).
 
-Here's another point that I have not really seen anyone make. The tools that
-would be packaged with the kernel are the ones that I would expect the average
-kernel developer to use. Things to help us in developing better code.
+Ugh.  The referenced pwm api is about as trivial as it gets; it is an
+anonymous context pointer (anonymous struct pwm_device *) with a set
+of accessor functions.  PWMs are also not nearly as common as GPIO
+pins, and I am not interested in gpiolib being duplicated for PWMs, at
+least not until there are more that just two examples of use to draw
+from.
 
-The tools you mentioned
+If anything, I'd rather struct pwm_device be non-anonymous and contain
+a set of ops which call directly into the driver.  That way is at
+least multiplatform friendly.  I don't think the gpio API is the
+example to follow here.  But even then I think it is premature to try
+and define a PWM api.  Personally, I'd modify mpc52xx_gpt to export
+its own PWM interface for the time being using the existing GPIO
+infrastructure to find the appropriate pin.
 
-  "ip, iw, rfkill, crda, the WiMAX"
+If you do decide to do a generic PWM api, then I think the way to go
+is to build it as an extension to gpiolib.
 
-I have no idea what they do. I don't think I would use them as I don't
-work on bluetooth, and I don't see how they would help me with what I do
-work on.
+Cheers,
+g.
 
-I use 'udev' only to boot my machine, and I only notice it when it doesn't
-work.
-
-As for something like perf, that is something I can see myself using to
-analyze my own code. And I can see other developers (even you) using it for
-the same purpose. This is a tool that I would like to have the latest version
-for the latest version of the kernel I am developing on. That is, if the
-latest kernel had a new feature that perf can take advantage of, it would be
-nice to have it with the new kernel I just pulled.
-
-This could also work with a perf.git, but I would probably not bother with
-it if I had to keep checking the perf.git repo to see if it uses the
-new features that are in the kernel. I constantly do 'git pull' for the
-kernel and I would get the latest perf with the latest kernel and I 
-would not need to bother checking someplace else.
-
-Actually, I can also see that if a new feature in the kernel was added that
-perf uses, I would probably notice it first with compiling perf and doing
-a perf --help.
-
-> 
-> Maybe it is just a sneaky attempt to get a higher hit in Greg's
-> statistics by just writing some userspace code which otherwise would not
-> be counted ;)
-
-No, that would be something that I do ;-)
-
-/me plans on sending patches for perf.
-
--- Steve
-
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
