@@ -1,45 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760287AbZFKJSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760646AbZFKJTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760287AbZFKJSS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 05:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbZFKJSJ
+	id S1760646AbZFKJTU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 05:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbZFKJTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 05:18:09 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:23841 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753478AbZFKJSI (ORCPT
+	Thu, 11 Jun 2009 05:19:12 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:39834 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752650AbZFKJTL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 05:18:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=W5PKhafQFJwzwO9q6rUizh4vZWoivrusGHwajxv3UWL/Z7q0PxEmj3k+YP2DOhRdEq
-         9ktL5hX0XqTJFOAX/1H5AzakrSz8L7mAH1SFzDzUtpCQyMrJBCK80Z1rlLm6QoeDWEy7
-         OtXOWKQ3y859qyFan7hOVjgeXgo2oJMHMhX/Q=
-MIME-Version: 1.0
-In-Reply-To: <20090611170018.c3758488.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090611165535.cf46bf29.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20090611170018.c3758488.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Thu, 11 Jun 2009 18:18:10 +0900
-Message-ID: <28c262360906110218t6a3ed908g9a4fba7fa7dd7b22@mail.gmail.com>
-Subject: Re: [PATCH 1/3] remove wrong rotation at lumpy reclaim
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       apw@canonical.com, riel@redhat.com, mel@csn.ul.ie
-Content-Type: text/plain; charset=UTF-8
+	Thu, 11 Jun 2009 05:19:11 -0400
+From: Jani Nikula <ext-jani.1.nikula@nokia.com>
+To: david-b@pacbell.net, linux-kernel@vger.kernel.org
+Cc: ext-jani.1.nikula@nokia.com
+Subject: [PATCH] gpiolib: allow exported GPIO nodes to be named using sysfs links
+Date: Thu, 11 Jun 2009 12:19:03 +0300
+Message-Id: <1244711943-15364-1-git-send-email-ext-jani.1.nikula@nokia.com>
+X-Mailer: git-send-email 1.6.3.2
+X-OriginalArrivalTime: 11 Jun 2009 09:19:05.0782 (UTC) FILETIME=[AB011D60:01C9EA75]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n5B9Is54017404
 
-On Thu, Jun 11, 2009 at 5:00 PM, KAMEZAWAHiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>>> At lumpy reclaim, a page failed to be taken by __isolate_lru_page() can> be pushed back to "src" list by list_move(). But the page may not be from> "src" list. And list_move() itself is unnecessary because the page is> not on top of LRU. Then, leave it as it is if __isolate_lru_page() fails.>> This patch doesn't change the logic as "we should exit loop or not" and> just fixes buggy list_move().>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>> ---> Â mm/vmscan.c | Â  Â 9 +--------> Â 1 file changed, 1 insertion(+), 8 deletions(-)>> Index: lumpy-reclaim-trial/mm/vmscan.c> ===================================================================> --- lumpy-reclaim-trial.orig/mm/vmscan.c> +++ lumpy-reclaim-trial/mm/vmscan.c> @@ -936,18 +936,11 @@ static unsigned long isolate_lru_pages(u> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â /* Check that we have not crossed a zone boundary. */> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â if (unlikely(page_zone_id(cursor_page) != zone_id))> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â continue;> - Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  switch (__isolate_lru_page(cursor_page, mode, file)) {> - Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  case 0:> + Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  if (__isolate_lru_page(cursor_page, mode, file) == 0) {> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â list_move(&cursor_page->lru, dst);> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â nr_taken++;> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â scan++;> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â break;
-break ??
--- Kinds regards,Minchan Kimÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Commit 926b663ce8215ba448960e1ff6e58b67a2c3b99b (gpiolib: allow GPIOs to
+be named) already provides naming on the chip level. This patch provides
+more flexibility by allowing multiple names where ever in sysfs on a per
+GPIO basis.
+
+Adapted from David Brownell's comments on a similar concept:
+http://lkml.org/lkml/2009/4/20/203.
+
+Signed-off-by: Jani Nikula <ext-jani.1.nikula@nokia.com>
+---
+ Documentation/gpio.txt     |   10 +++++++++
+ drivers/gpio/gpiolib.c     |   48 ++++++++++++++++++++++++++++++++++++++++++++
+ include/asm-generic/gpio.h |    8 +++++++
+ include/linux/gpio.h       |    9 ++++++++
+ 4 files changed, 75 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/gpio.txt b/Documentation/gpio.txt
+index 145c25a..decd2ef 100644
+--- a/Documentation/gpio.txt
++++ b/Documentation/gpio.txt
+@@ -555,6 +555,11 @@ requested using gpio_request():
+ 	/* reverse gpio_export() */
+ 	void gpio_unexport();
+ 
++	/* create a sysfs link to an exported GPIO node */
++	int gpio_export_link(struct device *dev, const char *name,
++		unsigned gpio)
++
++
+ After a kernel driver requests a GPIO, it may only be made available in
+ the sysfs interface by gpio_export().  The driver can control whether the
+ signal direction may change.  This helps drivers prevent userspace code
+@@ -563,3 +568,8 @@ from accidentally clobbering important system state.
+ This explicit exporting can help with debugging (by making some kinds
+ of experiments easier), or can provide an always-there interface that's
+ suitable for documenting as part of a board support package.
++
++After the GPIO has been exported, gpio_export_link() allows creating
++symlinks from elsewhere in sysfs to the GPIO sysfs node.  Drivers can
++use this to provide the interface under their own device in sysfs with
++a descriptive name.
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 51a8d41..860fb95 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -505,6 +505,54 @@ static int match_export(struct device *dev, void *data)
+ }
+ 
+ /**
++ * gpio_export_link - create a sysfs link to an exported GPIO node
++ * @dev: device under which to create symlink
++ * @name: name of the symlink
++ * @gpio: gpio to create symlink to, already exported
++ *
++ * Set up a symlink from /sys/.../dev/name to /sys/class/gpio/gpioN
++ * node. Caller is responsible for unlinking.
++ *
++ * Returns zero on success, else an error.
++ */
++int gpio_export_link(struct device *dev, const char *name, unsigned gpio)
++{
++	struct gpio_desc	*desc;
++	int			status = -EINVAL;
++
++	BUG_ON(dev == NULL);
++	BUG_ON(name == NULL);
++
++	if (!gpio_is_valid(gpio))
++		goto done;
++
++	mutex_lock(&sysfs_lock);
++
++	desc = &gpio_desc[gpio];
++
++	if (test_bit(FLAG_EXPORT, &desc->flags)) {
++		struct device *tdev;
++
++		tdev = class_find_device(&gpio_class, NULL, desc, match_export);
++		if (tdev != NULL) {
++			status = sysfs_create_link(&dev->kobj, &tdev->kobj,
++						name);
++		} else {
++			status = -ENODEV;
++		}
++	}
++
++	mutex_unlock(&sysfs_lock);
++
++done:
++	if (status)
++		pr_debug("%s: gpio%d status %d\n", __func__, gpio, status);
++
++	return status;
++}
++EXPORT_SYMBOL_GPL(gpio_export_link);
++
++/**
+  * gpio_unexport - reverse effect of gpio_export()
+  * @gpio: gpio to make unavailable
+  *
+diff --git a/include/asm-generic/gpio.h b/include/asm-generic/gpio.h
+index d6c379d..9cca378 100644
+--- a/include/asm-generic/gpio.h
++++ b/include/asm-generic/gpio.h
+@@ -141,6 +141,8 @@ extern int __gpio_to_irq(unsigned gpio);
+  * but more typically is configured entirely from userspace.
+  */
+ extern int gpio_export(unsigned gpio, bool direction_may_change);
++extern int gpio_export_link(struct device *dev, const char *name,
++			unsigned gpio);
+ extern void gpio_unexport(unsigned gpio);
+ 
+ #endif	/* CONFIG_GPIO_SYSFS */
+@@ -185,6 +187,12 @@ static inline int gpio_export(unsigned gpio, bool direction_may_change)
+ 	return -ENOSYS;
+ }
+ 
++static inline int gpio_export_link(struct device *dev, const char *name,
++				unsigned gpio)
++{
++	return -ENOSYS;
++}
++
+ static inline void gpio_unexport(unsigned gpio)
+ {
+ }
+diff --git a/include/linux/gpio.h b/include/linux/gpio.h
+index e10c49a..ff374ce 100644
+--- a/include/linux/gpio.h
++++ b/include/linux/gpio.h
+@@ -89,6 +89,15 @@ static inline int gpio_export(unsigned gpio, bool direction_may_change)
+ 	return -EINVAL;
+ }
+ 
++static inline int gpio_export_link(struct device *dev, const char *name,
++				unsigned gpio)
++{
++	/* GPIO can never have been exported */
++	WARN_ON(1);
++	return -EINVAL;
++}
++
++
+ static inline void gpio_unexport(unsigned gpio)
+ {
+ 	/* GPIO can never have been exported */
+-- 
+1.6.0.4
+
