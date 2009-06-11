@@ -1,55 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759319AbZFKOYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbZFKO0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759319AbZFKOYs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 10:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZFKOYk
+	id S1757876AbZFKO0i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 10:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752633AbZFKO0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 10:24:40 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:36875 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751505AbZFKOYk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 10:24:40 -0400
-Date: Thu, 11 Jun 2009 10:24:35 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: linux-kernel@vger.kernel.org, mel@csn.ul.ie, Larry.Finger@lwfinger.net
-Subject: Re: [PATCH 2/2] SLUB: Disable debugging if it increases the minimum
- page order
-In-Reply-To: <1244728824.17483.51.camel@penberg-laptop>
-Message-ID: <alpine.DEB.1.10.0906111021340.29827@gentwo.org>
-References: <Pine.LNX.4.64.0906111143490.6132@melkki.cs.Helsinki.FI>  <alpine.DEB.1.10.0906110941520.29827@gentwo.org> <1244728824.17483.51.camel@penberg-laptop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 11 Jun 2009 10:26:31 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:42580 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751860AbZFKO0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 10:26:30 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: vendor reserved memory type
+Cc: mingo@elte.hu, hpa@zytor.com
+Message-Id: <E1MElFX-0007fY-TR@eag09.americas.sgi.com>
+From: Cliff Wickman <cpw@sgi.com>
+Date: Thu, 11 Jun 2009 09:27:27 -0500
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Jun 2009, Pekka Enberg wrote:
+From: Cliff Wickman <cpw@sgi.com>
 
-> On Thu, 2009-06-11 at 09:43 -0400, Christoph Lameter wrote:
-> > We have had that with SLAB. NO! This leads to the situation that some
-> > slabs have debug on and some have not. You just do not know which.
->
-> I do see your point but surely we don't want to use order 1 allocations
-> in the fall-back case for kmalloc-4096? Couldn't we just add a printk
-> saying that debug was disabled for the cache? After all, my patch is
-> much better than what SLAB does.
+Create a new e820 memory type (E820_VENDOR_RESERVED) for areas
+of memory reserved by the BIOS in the EFI table.
 
-If we are enabling global debugging then we are looking for memory
-corruption in *all* slab caches. Disabling debugging of some cache behind
-the scenes is bad even if this leads to order 1 allocations.
+(An example use of this functionality is the UV system, which
+ will access extremely large areas of memory with a memory engine
+ that allows a user to address beyond the processor's range.  Such
+ areas are reserved in the EFI table by the BIOS.)
 
-We could refine the way to specify groups of slab caches that should have
-debugging on.
+Without this patch the EFI_RESERVED_TYPE memory reservations will be
+marked usable in the e820 table. There will be a collision between
+kernel use and reserver's use of this memory.
 
-> On Thu, 2009-06-11 at 09:43 -0400, Christoph Lameter wrote:
-> > Note that CONFIG_SLUB_DEBUG only enables the code to debug a slab. It does
-> > not enable debugging for each slab. CONFIG_SLUB_DEBUG_ON does that.
->
-> True. Larry, do you have CONFIG_SLUB_DEBUG_ON enabled or are you passing
-> SLUB debugging options to the kernel?
+This patch causes the EFI_RESERVED_TYPE memory reservations to be recorded
+in the e820 table as new type E820_VENDOR_RESERVED.
+This patch makes sanitize_e820_map() preserve E820_VENDOR_RESERVED types
+as separate entries.
 
+[The elilo loader may combine regions of like type as it builds the e820
+ table in boot_params (regular RAM and vendor reserved areas are combined).
+ But this patch makes do_add_efi_memmap() separate the RESERVED regions
+ into separate e820 entries.
+ Some loaders have a restricted number of entries possible in the e820 table,
+ hence the need to record the reservations in the unrestricted EFI table.]
+The call to do_add_efi_memmap() is only made if "add_efi_memmap" is specified
+on the kernel command line.
 
+Diffed against 2.6.30-rc8
+
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
+
+---
+ arch/x86/include/asm/e820.h |    1 +
+ arch/x86/kernel/e820.c      |    7 ++++++-
+ arch/x86/kernel/efi.c       |    4 +++-
+ 3 files changed, 10 insertions(+), 2 deletions(-)
+
+Index: linux/arch/x86/kernel/e820.c
+===================================================================
+--- linux.orig/arch/x86/kernel/e820.c
++++ linux/arch/x86/kernel/e820.c
+@@ -141,6 +141,9 @@ static void __init e820_print_type(u32 t
+ 	case E820_RESERVED:
+ 		printk(KERN_CONT "(reserved)");
+ 		break;
++	case E820_VENDOR_RESERVED:
++		printk(KERN_CONT "(vendor reserved)");
++		break;
+ 	case E820_ACPI:
+ 		printk(KERN_CONT "(ACPI data)");
+ 		break;
+@@ -355,8 +358,10 @@ int __init sanitize_e820_map(struct e820
+ 		/*
+ 		 * continue building up new bios map based on this
+ 		 * information
++		 * (do not consolidate the E820_VENDOR_RESERVED ranges)
+ 		 */
+-		if (current_type != last_type)	{
++		if ((current_type != last_type) ||
++		    (current_type == E820_VENDOR_RESERVED)) {
+ 			if (last_type != 0)	 {
+ 				new_bios[new_bios_entry].size =
+ 					change_point[chgidx]->addr - last_addr;
+Index: linux/arch/x86/kernel/efi.c
+===================================================================
+--- linux.orig/arch/x86/kernel/efi.c
++++ linux/arch/x86/kernel/efi.c
+@@ -240,7 +240,9 @@ static void __init do_add_efi_memmap(voi
+ 		unsigned long long size = md->num_pages << EFI_PAGE_SHIFT;
+ 		int e820_type;
+ 
+-		if (md->attribute & EFI_MEMORY_WB)
++		if (md->type == EFI_RESERVED_TYPE)
++			e820_type = E820_VENDOR_RESERVED;
++		else if (md->attribute & EFI_MEMORY_WB)
+ 			e820_type = E820_RAM;
+ 		else
+ 			e820_type = E820_RESERVED;
+Index: linux/arch/x86/include/asm/e820.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/e820.h
++++ linux/arch/x86/include/asm/e820.h
+@@ -44,6 +44,7 @@
+ #define E820_ACPI	3
+ #define E820_NVS	4
+ #define E820_UNUSABLE	5
++#define E820_VENDOR_RESERVED 6
+ 
+ /* reserved RAM used by kernel itself */
+ #define E820_RESERVED_KERN        128
