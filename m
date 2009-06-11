@@ -1,97 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763438AbZFKLuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761132AbZFKLu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763438AbZFKLuA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 07:50:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762823AbZFKLtw
+	id S1761132AbZFKLu2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 07:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763398AbZFKLuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 07:49:52 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:39161 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761424AbZFKLtv (ORCPT
+	Thu, 11 Jun 2009 07:50:10 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59917 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762823AbZFKLuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 07:49:51 -0400
-Date: Thu, 11 Jun 2009 14:49:52 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, hannes@cmpxchg.org, mpm@selenic.com,
-       npiggin@suse.de, yinghai@kernel.org
-Subject: Re: [GIT PULL v2] Early boot SLAB for 2.6.31
-In-Reply-To: <20090611114032.GA8856@elte.hu>
-Message-ID: <Pine.LNX.4.64.0906111448510.11179@melkki.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0906102311230.30444@melkki.cs.Helsinki.FI>
- <alpine.LFD.2.01.0906101331250.6847@localhost.localdomain>
- <alpine.LFD.2.01.0906101332440.6847@localhost.localdomain>
- <Pine.LNX.4.64.0906111416070.10394@melkki.cs.Helsinki.FI> <20090611113512.GA6971@elte.hu>
- <20090611114032.GA8856@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 11 Jun 2009 07:50:09 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH for mmotm 2/5]
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090611111341.GE7302@csn.ul.ie>
+References: <20090611192600.6D50.A69D9226@jp.fujitsu.com> <20090611111341.GE7302@csn.ul.ie>
+Message-Id: <20090611204208.6D6B.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 11 Jun 2009 20:50:06 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Jun 2009, Ingo Molnar wrote:
-> Wasnt this supposed to have gone away with this tree?
+> On Thu, Jun 11, 2009 at 07:26:48PM +0900, KOSAKI Motohiro wrote:
+> > Changes since Wu's original patch
+> >   - adding vmstat
+> >   - rename NR_TMPFS_MAPPED to NR_SWAP_BACKED_FILE_MAPPED
+> > 
+> > 
+> > ----------------------
+> > Subject: [PATCH] introduce NR_SWAP_BACKED_FILE_MAPPED zone stat
+> 
+> This got lost in the actual subject line.
+> 
+> > Desirable zone reclaim implementaion want to know the number of
+> > file-backed and unmapped pages.
+> > 
+> 
+> There needs to be more justification for this. We need an example
+> failure case that this addresses. For example, Patch 1 of my series was
+> to address the following problem included with the patchset leader
+> 
+> "The reported problem was that malloc() stalled for a long time (minutes
+> in some cases) if a large tmpfs mount was occupying a large percentage of
+> memory overall. The pages did not get cleaned or reclaimed by zone_reclaim()
+> because the zone_reclaim_mode was unsuitable, but the lists are uselessly
+> scanned frequencly making the CPU spin at near 100%."
+> 
+> We should have a similar case.
+> 
+> What "desirable" zone_reclaim() should be spelled out as well. Minimally
+> something like
+> 
+> "For zone_reclaim() to be efficient, it must be able to detect in advance
+> if the LRU scan will reclaim the necessary pages with the limitations of
+> the current zone_reclaim_mode. Otherwise, the CPU usage is increases as
+> zone_reclaim() uselessly scans the LRU list.
+> 
+> The problem with the heuristic is ....
+> 
+> This patch fixes the heuristic by ...."
+> 
+> etc?
+> 
+> I'm not trying to be awkward. I believe I provided similar reasoning
+> with my own patchset.
 
-Yes, if I hadn't messed up the merge conflict fixup. :-) I am not hitting 
-that with my configuration, btw.
+You are right. my intention is not actual issue, it only fix
+documentation lie.
 
-			Pekka
+Documentation/sysctl/vm.txt says
+=============================================================
 
->From fc1ebbcad1d86b67deed4442df9445cc81061c85 Mon Sep 17 00:00:00 2001
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-Date: Thu, 11 Jun 2009 14:46:49 +0300
-Subject: [PATCH] irq: use kcalloc() instead of the bootmem allocator
+min_unmapped_ratio:
 
-Fixes the following problem:
+This is available only on NUMA kernels.
 
-[    0.000000] Experimental hierarchical RCU init done.
-[    0.000000] NR_IRQS:4352 nr_irqs:256
-[    0.000000] ------------[ cut here ]------------
-[    0.000000] WARNING: at mm/bootmem.c:537 alloc_arch_preferred_bootmem+0x40/0x7e()
-[    0.000000] Hardware name: To Be Filled By O.E.M.
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.30-tip-02161-g7a74539-dirty #59709
-[    0.000000] Call Trace:
-[    0.000000]  [<ffffffff823f8c8e>] ? alloc_arch_preferred_bootmem+0x40/0x7e
-[    0.000000]  [<ffffffff81067168>] warn_slowpath_common+0x88/0xcb
-[    0.000000]  [<ffffffff810671d2>] warn_slowpath_null+0x27/0x3d
-[    0.000000]  [<ffffffff823f8c8e>] alloc_arch_preferred_bootmem+0x40/0x7e
-[    0.000000]  [<ffffffff823f9307>] ___alloc_bootmem_nopanic+0x4e/0xec
-[    0.000000]  [<ffffffff823f93c5>] ___alloc_bootmem+0x20/0x61
-[    0.000000]  [<ffffffff823f962e>] __alloc_bootmem+0x1e/0x34
-[    0.000000]  [<ffffffff823f757c>] early_irq_init+0x6d/0x118
-[    0.000000]  [<ffffffff823e0140>] ? early_idt_handler+0x0/0x71
-[    0.000000]  [<ffffffff823e0cf7>] start_kernel+0x192/0x394
-[    0.000000]  [<ffffffff823e0140>] ? early_idt_handler+0x0/0x71
-[    0.000000]  [<ffffffff823e02ad>] x86_64_start_reservations+0xb4/0xcf
-[    0.000000]  [<ffffffff823e0000>] ? __init_begin+0x0/0x140
-[    0.000000]  [<ffffffff823e0420>] x86_64_start_kernel+0x158/0x17b
-[    0.000000] ---[ end trace a7919e7f17c0a725 ]---
-[    0.000000] Fast TSC calibration using PIT
-[    0.000000] Detected 2002.510 MHz processor.
-[    0.004000] Console: colour VGA+ 80x25
+A percentage of the total pages in each zone.  Zone reclaim will only
+occur if more than this percentage of pages are file backed and unmapped.
+This is to insure that a minimal amount of local pages is still available for
+file I/O even if the node is overallocated.
 
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- kernel/irq/handle.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+The default is 1 percent.
+==============================================================
 
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index e161999..1045785 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -164,7 +164,7 @@ int __init early_irq_init(void)
-  	node = first_online_node;
- 
- 	/* allocate irq_desc_ptrs array based on nr_irqs */
--	irq_desc_ptrs = alloc_bootmem(nr_irqs * sizeof(void *));
-+	irq_desc_ptrs = kcalloc(nr_irqs, sizeof(void *), GFP_NOWAIT);
- 
- 	/* allocate based on nr_cpu_ids */
- 	kstat_irqs_legacy = kzalloc_node(NR_IRQS_LEGACY * nr_cpu_ids *
--- 
-1.6.0.4
+but actual code don't account "percentage of file backed and unmapped".
+Administrator can't imazine current implementation form this documentation.
+
+Plus, I don't think this patch is too messy. thus I did decide to make
+this fix.
+
+if anyone provide good documentation fix, my worry will vanish.
+
+
+
+> > Thus, we need to know number of swap-backed mapped pages for
+> > calculate above number.
+> > 
+> > 
+> > Cc: Mel Gorman <mel@csn.ul.ie>
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > ---
+> >  include/linux/mmzone.h |    2 ++
+> >  mm/rmap.c              |    7 +++++++
+> >  mm/vmstat.c            |    1 +
+> >  3 files changed, 10 insertions(+)
+> > 
+> > Index: b/include/linux/mmzone.h
+> > ===================================================================
+> > --- a/include/linux/mmzone.h
+> > +++ b/include/linux/mmzone.h
+> > @@ -88,6 +88,8 @@ enum zone_stat_item {
+> >  	NR_ANON_PAGES,	/* Mapped anonymous pages */
+> >  	NR_FILE_MAPPED,	/* pagecache pages mapped into pagetables.
+> >  			   only modified from process context */
+> > +	NR_SWAP_BACKED_FILE_MAPPED, /* Similar to NR_FILE_MAPPED. but
+> > +				       only account swap-backed pages */
+> >  	NR_FILE_PAGES,
+> >  	NR_FILE_DIRTY,
+> >  	NR_WRITEBACK,
+> > Index: b/mm/rmap.c
+> > ===================================================================
+> > --- a/mm/rmap.c
+> > +++ b/mm/rmap.c
+> > @@ -829,6 +829,10 @@ void page_add_file_rmap(struct page *pag
+> >  {
+> >  	if (atomic_inc_and_test(&page->_mapcount)) {
+> >  		__inc_zone_page_state(page, NR_FILE_MAPPED);
+> > +		if (PageSwapBacked(page))
+> > +			__inc_zone_page_state(page,
+> > +					      NR_SWAP_BACKED_FILE_MAPPED);
+> > +
+> >  		mem_cgroup_update_mapped_file_stat(page, 1);
+> >  	}
+> >  }
+> > @@ -884,6 +888,9 @@ void page_remove_rmap(struct page *page)
+> >  		__dec_zone_page_state(page, NR_ANON_PAGES);
+> >  	} else {
+> >  		__dec_zone_page_state(page, NR_FILE_MAPPED);
+> > +		if (PageSwapBacked(page))
+> > +			__dec_zone_page_state(page,
+> > +					NR_SWAP_BACKED_FILE_MAPPED);
+> >  	}
+> >  	mem_cgroup_update_mapped_file_stat(page, -1);
+> >  	/*
+> > Index: b/mm/vmstat.c
+> > ===================================================================
+> > --- a/mm/vmstat.c
+> > +++ b/mm/vmstat.c
+> > @@ -633,6 +633,7 @@ static const char * const vmstat_text[] 
+> >  	"nr_mlock",
+> >  	"nr_anon_pages",
+> >  	"nr_mapped",
+> > +	"nr_swap_backed_file_mapped",
+> >  	"nr_file_pages",
+> >  	"nr_dirty",
+> >  	"nr_writeback",
+> > 
+> 
+> Otherwise the patch seems reasonable.
+> 
+> -- 
+> Mel Gorman
+> Part-time Phd Student                          Linux Technology Center
+> University of Limerick                         IBM Dublin Software Lab
+
+
 
