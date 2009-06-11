@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759249AbZFKND2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762699AbZFKNDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759249AbZFKND2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 09:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbZFKNDU
+	id S1762699AbZFKNDs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 09:03:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbZFKNDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 09:03:20 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55414 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751119AbZFKNDU (ORCPT
+	Thu, 11 Jun 2009 09:03:38 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:36328 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751238AbZFKNDh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 09:03:20 -0400
-Date: Thu, 11 Jun 2009 09:03:18 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Theodore Tso <tytso@mit.edu>, Steven Rostedt <rostedt@goodmis.org>,
-       Fr?d?ric Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Minchan Kim <minchan.kim@gmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Hellwig <hch@infradead.org>, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jason Baron <jbaron@redhat.com>, Jiaying Zhang <jiayingz@google.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: Re: [PATCH 00/11] [GIT PULL] more updates for the tag format
-Message-ID: <20090611130318.GB14220@infradead.org>
-References: <20090610054206.510574695@goodmis.org> <20090610092644.GA20889@elte.hu> <c62985530906100411o5a178352n53f7d247f6e9dba9@mail.gmail.com> <20090610130127.GA6647@mit.edu> <alpine.DEB.2.00.0906100911190.30552@gandalf.stny.rr.com> <20090610160303.GA10240@mit.edu>
+	Thu, 11 Jun 2009 09:03:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=ulw8mLzcUkmDZWnot2EtjsNV0FWFKP/tS+hdOzn94E7MBObPu9iY+Ktyzie967+T1X
+         7TTFKQY3PXC6HL8UmgNqbHByscbI5msn6nQtqbeifnuBQDvVMPDasSx6SL3sP1BCHWJe
+         mve/e5ZOcJsnL3C0/XJmZ0gqVVwyE4CtA0e0I=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090610160303.GA10240@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Date: Thu, 11 Jun 2009 17:03:38 +0400
+Message-ID: <a4423d670906110603s42bf0287p848b00c2cc786cc1@mail.gmail.com>
+Subject: next-20090611: SLUB: Unable to allocate memory on node -1
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: linux-next <linux-next@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jun 10, 2009 at 12:03:03PM -0400, Theodore Tso wrote:
-> Yes, another approach for handling this case would be to take my
-> "jbd2_dev_to_name" function and support it as a first-class tagged
-> type; after all, I'm sure ext4 won't be the only place that would like
-> to take a dev_t and print the device name.  So this could certainly be
-> fixed by adding some kind of "<dev:xxx>" sort of tagged name.
+Hi
 
-We should absolutely agree on one way to represent block device for
-tracers.  At this point xfs, gfs2 and the block tracer all use
-major/minor.  I agree that having a name would be nicer for text output,
-but I really want to keep the dev_t for the binary output.  We should
-also make sure we agree on a field name so that filtering will work
-the same for all block-related tracers (especially important if we want
-to trace something from the filesystem down to the block layer).
+SLUB: Unable to allocate memory on node -1 (gfp=11200)
+  cache: kmalloc-2048, object size: 2048, buffer size: 2048, default
+order: 3, min order: 0
+  node 0: slabs: 407, objs: 1724, free: 0
+SLUB: Unable to allocate memory on node -1 (gfp=11200)
+  cache: kmalloc-2048, object size: 2048, buffer size: 2048, default
+order: 3, min order: 0
+  node 0: slabs: 407, objs: 1724, free: 0
 
+It is 4-way (2*2) SMP with 2Gb RAM
+
+After ohe hour:
+
+SysRq : Show Memory
+Mem-Info:
+DMA per-cpu:
+CPU    0: hi:    0, btch:   1 usd:   0
+CPU    1: hi:    0, btch:   1 usd:   0
+CPU    2: hi:    0, btch:   1 usd:   0
+CPU    3: hi:    0, btch:   1 usd:   0
+DMA32 per-cpu:
+CPU    0: hi:  186, btch:  31 usd:  33
+CPU    1: hi:  186, btch:  31 usd:   6
+CPU    2: hi:  186, btch:  31 usd:  32
+CPU    3: hi:  186, btch:  31 usd: 128
+Active_anon:17806 active_file:125950 inactive_anon:867
+ inactive_file:184832 unevictable:0 dirty:6551 writeback:0 unstable:0
+ free:114704 slab:50538 mapped:1397 pagetables:488 bounce:0
+DMA free:11688kB min:28kB low:32kB high:40kB active_anon:0kB
+inactive_anon:0kB active_file:32kB inactive_file:120kB unevictable:0kB
+present:11072kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 1975 1975 1975
+DMA32 free:443780kB min:5672kB low:7088kB high:8508kB
+active_anon:74536kB inactive_anon:3468kB active_file:503768kB
+inactive_file:739208kB unevictable:0kB present:2023256kB
+pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0 0
+DMA: 18*4kB 8*8kB 10*16kB 10*32kB 9*64kB 8*128kB 5*256kB 4*512kB
+2*1024kB 0*2048kB 1*4096kB = 11688kB
+DMA32: 13673*4kB 20022*8kB 12589*16kB 832*32kB 3*64kB 0*128kB 0*256kB
+1*512kB 0*1024kB 0*2048kB 0*4096kB = 443620kB
+310848 total pagecache pages
+56 pages in swap cache
+Swap cache stats: add 736, delete 680, find 10/15
+Free swap  = 3909060kB
+Total swap = 3911788kB
+523088 pages RAM
+24077 pages reserved
+230011 pages shared
+162325 pages non-shared
