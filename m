@@ -1,86 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762112AbZFKDZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbZFKD0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762112AbZFKDZy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 23:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756968AbZFKDZq
+	id S1762063AbZFKD0U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 23:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbZFKD0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 23:25:46 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41587 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754155AbZFKDZq (ORCPT
+	Wed, 10 Jun 2009 23:26:11 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40256 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754155AbZFKD0K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 23:25:46 -0400
-Date: Wed, 10 Jun 2009 23:25:46 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>,
-       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH 3/3] ring-buffer: add design document
-In-Reply-To: <4A3076C9.2030203@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0906102324140.30552@gandalf.stny.rr.com>
-References: <20090610195311.767699959@goodmis.org> <20090610195525.429316815@goodmis.org> <4A3076C9.2030203@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 10 Jun 2009 23:26:10 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH 1/4] Properly account for the number of page cache pages zone_reclaim() can reclaim
+Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "linuxram@us.ibm.com" <linuxram@us.ibm.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090610115944.GB5657@localhost>
+References: <20090610103152.GG25943@csn.ul.ie> <20090610115944.GB5657@localhost>
+Message-Id: <20090611122206.591B.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 11 Jun 2009 12:26:10 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 11 Jun 2009, Hidetoshi Seto wrote:
-> Steven Rostedt wrote:
-> > +
-> > +  +------+
-> > +  |reader|          RING BUFFER
-> > +  |page  |-------------------+
-> > +  +------+ <---------------+ v
-> > +    |  ^          +---+   +---+   +---+
-> > +    |  |          |   |-->|   |-->|   |
-> > +    |  |          |   |<--|   |<--|   |<-+
-> > +    |  |          +---+   +---+   +---+  |
-> > +    |  |             |             ^ |   |
-> > +    |  |             +-------------+ |   |
-> > +    |  +-----------------------------+   |
-> > +    +------------------------------------+
+> We are not talking about NR_TMPFS_PAGES, but NR_TMPFS_MAPPED :)
 > 
-> It seems the middle of three pages have 2 prev arrows... ?
-
-Yes that is a mistake. Thanks, I'll fix it.
-> > +
-> > +It does a cmpxchg with the pointer to the previous head page to make it
-> > +point to the reader page. Note that the new pointer does not have the HEADER
-> > +flag set.  This action atomically moves the head page forward.
-> > +
-> > +  +------+
-> > +  |reader|          RING BUFFER
-> > +  |page  |-------H-----------+
-> > +  +------+ <---------------+ v
-> > +    |  ^          +---+   +---+   +---+
-> > +    |  |          |   |-->|   |-->|   |
-> > +    |  |          |   |<--|   |<--|   |<-+
-> > +    |  |          +---+   +---+   +---+  |
-> > +    |  |             |             ^ |   |
-> > +    |  |             +-------------+ |   |
-> > +    |  +-----------------------------+   |
-> > +    +------------------------------------+
-> > +
+> We only need to account it in page_add_file_rmap() and page_remove_rmap(),
+> I don't think they are too hot paths. And the relative cost is low enough.
 > 
-> Ditto.
+> It will look like this.
+> 
+> ---
+>  include/linux/mmzone.h |    1 +
+>  mm/rmap.c              |    4 ++++
+>  2 files changed, 5 insertions(+)
+> 
+> --- linux.orig/include/linux/mmzone.h
+> +++ linux/include/linux/mmzone.h
+> @@ -99,6 +99,7 @@ enum zone_stat_item {
+>  	NR_VMSCAN_WRITE,
+>  	/* Second 128 byte cacheline */
+>  	NR_WRITEBACK_TEMP,	/* Writeback using temporary buffers */
+> +	NR_TMPFS_MAPPED,
+>  #ifdef CONFIG_NUMA
+>  	NUMA_HIT,		/* allocated in intended node */
+>  	NUMA_MISS,		/* allocated in non intended node */
+> --- linux.orig/mm/rmap.c
+> +++ linux/mm/rmap.c
+> @@ -844,6 +844,8 @@ void page_add_file_rmap(struct page *pag
+>  {
+>  	if (atomic_inc_and_test(&page->_mapcount)) {
+>  		__inc_zone_page_state(page, NR_FILE_MAPPED);
+> +		if (PageSwapBacked(page))
+> +			__inc_zone_page_state(page, NR_TMPFS_MAPPED);
+>  		mem_cgroup_update_mapped_file_stat(page, 1);
+>  	}
+>  }
+> @@ -894,6 +896,8 @@ void page_remove_rmap(struct page *page)
+>  			mem_cgroup_uncharge_page(page);
+>  		__dec_zone_page_state(page,
+>  			PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
+> +		if (!PageAnon(page) && PageSwapBacked(page))
+> +			__dec_zone_page_state(page, NR_TMPFS_MAPPED);
+>  		mem_cgroup_update_mapped_file_stat(page, -1);
+>  		/*
+>  		 * It would be tidy to reset the PageAnon mapping here,
 
-Ditto too ;-)
+I think this patch looks good. thanks :)
 
-Thanks,
+but I have one request. 
+Could you please rename NR_FILE_MAPPED to NR_SWAP_BACKED_FILE_MAPPED?
 
--- Steve
+I mean, mm/shmem isn't only used for tmpfs, but also be used ipc/shm and
+/dev/zero.
+NR_TMPFS_MAPPED seems a bit misleading.
+
+
 
