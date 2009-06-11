@@ -1,63 +1,399 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759912AbZFKE4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbZFKE4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759912AbZFKE4A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 00:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751641AbZFKEzt
+	id S1756937AbZFKE4V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 00:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758060AbZFKEz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 00:55:49 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:39088 "EHLO smtps.tip.net.au"
+	Thu, 11 Jun 2009 00:55:57 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:42216 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751275AbZFKEzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 00:55:48 -0400
-Date: Thu, 11 Jun 2009 14:55:41 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Sergey Lapin <slapin@ossfans.org>
-Subject: linux-next: net tree build warnings
-Message-Id: <20090611145541.2570a43d.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__11_Jun_2009_14_55_41_+1000_LJC_j=diE6zxirMu"
+	id S1760461AbZFKEzz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 00:55:55 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18992.36329.189378.17992@drongo.ozlabs.ibm.com>
+Date: Thu, 11 Jun 2009 14:54:01 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] perf_counters: powerpc: Add support for POWER7 processors
+X-Mailer: VM 8.0.12 under 22.3.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__11_Jun_2009_14_55_41_+1000_LJC_j=diE6zxirMu
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This adds the back-end for the PMU on POWER7 processors.  POWER7
+has 4 fully-programmable counters and two fixed-function counters
+(which do respect the freeze conditions, can generate interrupts,
+and are writable, unlike PMC5/6 on POWER5+/6).
 
-Hi Dave,
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/kernel/Makefile       |    3 +-
+ arch/powerpc/kernel/perf_counter.c |    4 +
+ arch/powerpc/kernel/power7-pmu.c   |  316 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 322 insertions(+), 1 deletions(-)
+ create mode 100644 arch/powerpc/kernel/power7-pmu.c
 
-Today's linux-next build (x86_64 allmodconfig) produced these warnings:
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 9ba1bb7..a2c6834 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -95,7 +95,8 @@ obj64-$(CONFIG_AUDIT)		+= compat_audit.o
+ obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
+ obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
+ obj-$(CONFIG_PERF_COUNTERS)	+= perf_counter.o power4-pmu.o ppc970-pmu.o \
+-				   power5-pmu.o power5+-pmu.o power6-pmu.o
++				   power5-pmu.o power5+-pmu.o power6-pmu.o \
++				   power7-pmu.o
+ 
+ obj-$(CONFIG_8XX_MINIMAL_FPEMU) += softemu8xx.o
+ 
+diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
+index 4990ce2..5d12e68 100644
+--- a/arch/powerpc/kernel/perf_counter.c
++++ b/arch/powerpc/kernel/perf_counter.c
+@@ -1181,6 +1181,7 @@ extern struct power_pmu ppc970_pmu;
+ extern struct power_pmu power5_pmu;
+ extern struct power_pmu power5p_pmu;
+ extern struct power_pmu power6_pmu;
++extern struct power_pmu power7_pmu;
+ 
+ static int init_perf_counters(void)
+ {
+@@ -1207,6 +1208,9 @@ static int init_perf_counters(void)
+ 	case 0x3e:
+ 		ppmu = &power6_pmu;
+ 		break;
++	case 0x3f:
++		ppmu = &power7_pmu;
++		break;
+ 	}
+ 
+ 	/*
+diff --git a/arch/powerpc/kernel/power7-pmu.c b/arch/powerpc/kernel/power7-pmu.c
+new file mode 100644
+index 0000000..89be745
+--- /dev/null
++++ b/arch/powerpc/kernel/power7-pmu.c
+@@ -0,0 +1,316 @@
++/*
++ * Performance counter support for POWER7 processors.
++ *
++ * Copyright 2009 Paul Mackerras, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#include <linux/kernel.h>
++#include <linux/perf_counter.h>
++#include <asm/reg.h>
++
++/*
++ * Bits in event code for POWER7
++ */
++#define PM_PMC_SH	16	/* PMC number (1-based) for direct events */
++#define PM_PMC_MSK	0xf
++#define PM_PMC_MSKS	(PM_PMC_MSK << PM_PMC_SH)
++#define PM_UNIT_SH	12	/* TTMMUX number and setting - unit select */
++#define PM_UNIT_MSK	0xf
++#define PM_COMBINE_SH	11	/* Combined event bit */
++#define PM_COMBINE_MSK	1
++#define PM_COMBINE_MSKS	0x800
++#define PM_L2SEL_SH	8	/* L2 event select */
++#define PM_L2SEL_MSK	7
++#define PM_PMCSEL_MSK	0xff
++
++/*
++ * Bits in MMCR1 for POWER7
++ */
++#define MMCR1_TTM0SEL_SH	60
++#define MMCR1_TTM1SEL_SH	56
++#define MMCR1_TTM2SEL_SH	52
++#define MMCR1_TTM3SEL_SH	48
++#define MMCR1_TTMSEL_MSK	0xf
++#define MMCR1_L2SEL_SH		45
++#define MMCR1_L2SEL_MSK		7
++#define MMCR1_PMC1_COMBINE_SH	35
++#define MMCR1_PMC2_COMBINE_SH	34
++#define MMCR1_PMC3_COMBINE_SH	33
++#define MMCR1_PMC4_COMBINE_SH	32
++#define MMCR1_PMC1SEL_SH	24
++#define MMCR1_PMC2SEL_SH	16
++#define MMCR1_PMC3SEL_SH	8
++#define MMCR1_PMC4SEL_SH	0
++#define MMCR1_PMCSEL_SH(n)	(MMCR1_PMC1SEL_SH - (n) * 8)
++#define MMCR1_PMCSEL_MSK	0xff
++
++/*
++ * Bits in MMCRA
++ */
++
++/*
++ * Layout of constraint bits:
++ * 6666555555555544444444443333333333222222222211111111110000000000
++ * 3210987654321098765432109876543210987654321098765432109876543210
++ *                                                 [  ><><><><><><>
++ *                                                  NC P6P5P4P3P2P1
++ *
++ * NC - number of counters
++ *     15: NC error 0x8000
++ *     12-14: number of events needing PMC1-4 0x7000
++ *
++ * P6
++ *     11: P6 error 0x800
++ *     10-11: Count of events needing PMC6
++ *
++ * P1..P5
++ *     0-9: Count of events needing PMC1..PMC5
++ */
++
++static int power7_get_constraint(u64 event, u64 *maskp, u64 *valp)
++{
++	int pmc, sh;
++	u64 mask = 0, value = 0;
++
++	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
++	if (pmc) {
++		if (pmc > 6)
++			return -1;
++		sh = (pmc - 1) * 2;
++		mask |= 2 << sh;
++		value |= 1 << sh;
++		if (pmc >= 5 && !(event == 0x500fa || event == 0x600f4))
++			return -1;
++	}
++	if (pmc < 5) {
++		/* need a counter from PMC1-4 set */
++		mask  |= 0x8000;
++		value |= 0x1000;
++	}
++	*maskp = mask;
++	*valp = value;
++	return 0;
++}
++
++#define MAX_ALT	2	/* at most 2 alternatives for any event */
++
++static const unsigned int event_alternatives[][MAX_ALT] = {
++	{ 0x200f2, 0x300f2 },		/* PM_INST_DISP */
++	{ 0x200f4, 0x600f4 },		/* PM_RUN_CYC */
++	{ 0x400fa, 0x500fa },		/* PM_RUN_INST_CMPL */
++};
++
++/*
++ * Scan the alternatives table for a match and return the
++ * index into the alternatives table if found, else -1.
++ */
++static int find_alternative(u64 event)
++{
++	int i, j;
++
++	for (i = 0; i < ARRAY_SIZE(event_alternatives); ++i) {
++		if (event < event_alternatives[i][0])
++			break;
++		for (j = 0; j < MAX_ALT && event_alternatives[i][j]; ++j)
++			if (event == event_alternatives[i][j])
++				return i;
++	}
++	return -1;
++}
++
++static s64 find_alternative_decode(u64 event)
++{
++	int pmc, psel;
++
++	/* this only handles the 4x decode events */
++	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
++	psel = event & PM_PMCSEL_MSK;
++	if ((pmc == 2 || pmc == 4) && (psel & ~7) == 0x40)
++		return event - (1 << PM_PMC_SH) + 8;
++	if ((pmc == 1 || pmc == 3) && (psel & ~7) == 0x48)
++		return event + (1 << PM_PMC_SH) - 8;
++	return -1;
++}
++
++static int power7_get_alternatives(u64 event, unsigned int flags, u64 alt[])
++{
++	int i, j, nalt = 1;
++	s64 ae;
++
++	alt[0] = event;
++	nalt = 1;
++	i = find_alternative(event);
++	if (i >= 0) {
++		for (j = 0; j < MAX_ALT; ++j) {
++			ae = event_alternatives[i][j];
++			if (ae && ae != event)
++				alt[nalt++] = ae;
++		}
++	} else {
++		ae = find_alternative_decode(event);
++		if (ae > 0)
++			alt[nalt++] = ae;
++	}
++
++	if (flags & PPMU_ONLY_COUNT_RUN) {
++		/*
++		 * We're only counting in RUN state,
++		 * so PM_CYC is equivalent to PM_RUN_CYC
++		 * and PM_INST_CMPL === PM_RUN_INST_CMPL.
++		 * This doesn't include alternatives that don't provide
++		 * any extra flexibility in assigning PMCs.
++		 */
++		j = nalt;
++		for (i = 0; i < nalt; ++i) {
++			switch (alt[i]) {
++			case 0x1e:	/* PM_CYC */
++				alt[j++] = 0x600f4;	/* PM_RUN_CYC */
++				break;
++			case 0x600f4:	/* PM_RUN_CYC */
++				alt[j++] = 0x1e;
++				break;
++			case 0x2:	/* PM_PPC_CMPL */
++				alt[j++] = 0x500fa;	/* PM_RUN_INST_CMPL */
++				break;
++			case 0x500fa:	/* PM_RUN_INST_CMPL */
++				alt[j++] = 0x2;	/* PM_PPC_CMPL */
++				break;
++			}
++		}
++		nalt = j;
++	}
++
++	return nalt;
++}
++
++/*
++ * Returns 1 if event counts things relating to marked instructions
++ * and thus needs the MMCRA_SAMPLE_ENABLE bit set, or 0 if not.
++ */
++static int power7_marked_instr_event(u64 event)
++{
++	int pmc, psel;
++	int unit;
++
++	pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
++	unit = (event >> PM_UNIT_SH) & PM_UNIT_MSK;
++	psel = event & PM_PMCSEL_MSK & ~1;	/* trim off edge/level bit */
++	if (pmc >= 5)
++		return 0;
++
++	switch (psel >> 4) {
++	case 2:
++		return pmc == 2 || pmc == 4;
++	case 3:
++		if (psel == 0x3c)
++			return pmc == 1;
++		if (psel == 0x3e)
++			return pmc != 2;
++		return 1;
++	case 4:
++	case 5:
++		return unit == 0xd;
++	case 6:
++		if (psel == 0x64)
++			return pmc >= 3;
++	case 8:
++		return unit == 0xd;
++	}
++	return 0;
++}
++
++static int power7_compute_mmcr(u64 event[], int n_ev,
++			       unsigned int hwc[], u64 mmcr[])
++{
++	u64 mmcr1 = 0;
++	u64 mmcra = 0;
++	unsigned int pmc, unit, combine, l2sel, psel;
++	unsigned int pmc_inuse = 0;
++	int i;
++
++	/* First pass to count resource use */
++	for (i = 0; i < n_ev; ++i) {
++		pmc = (event[i] >> PM_PMC_SH) & PM_PMC_MSK;
++		if (pmc) {
++			if (pmc > 6)
++				return -1;
++			if (pmc_inuse & (1 << (pmc - 1)))
++				return -1;
++			pmc_inuse |= 1 << (pmc - 1);
++		}
++	}
++
++	/* Second pass: assign PMCs, set all MMCR1 fields */
++	for (i = 0; i < n_ev; ++i) {
++		pmc = (event[i] >> PM_PMC_SH) & PM_PMC_MSK;
++		unit = (event[i] >> PM_UNIT_SH) & PM_UNIT_MSK;
++		combine = (event[i] >> PM_COMBINE_SH) & PM_COMBINE_MSK;
++		l2sel = (event[i] >> PM_L2SEL_SH) & PM_L2SEL_MSK;
++		psel = event[i] & PM_PMCSEL_MSK;
++		if (!pmc) {
++			/* Bus event or any-PMC direct event */
++			for (pmc = 0; pmc < 4; ++pmc) {
++				if (!(pmc_inuse & (1 << pmc)))
++					break;
++			}
++			if (pmc >= 4)
++				return -1;
++			pmc_inuse |= 1 << pmc;
++		} else {
++			/* Direct or decoded event */
++			--pmc;
++		}
++		if (pmc <= 3) {
++			mmcr1 |= (u64) unit << (MMCR1_TTM0SEL_SH - 4 * pmc);
++			mmcr1 |= (u64) combine << (MMCR1_PMC1_COMBINE_SH - pmc);
++			mmcr1 |= psel << MMCR1_PMCSEL_SH(pmc);
++			if (unit == 6)	/* L2 events */
++				mmcr1 |= (u64) l2sel << MMCR1_L2SEL_SH;
++		}
++		if (power7_marked_instr_event(event[i]))
++			mmcra |= MMCRA_SAMPLE_ENABLE;
++		hwc[i] = pmc;
++	}
++
++	/* Return MMCRx values */
++	mmcr[0] = 0;
++	if (pmc_inuse & 1)
++		mmcr[0] = MMCR0_PMC1CE;
++	if (pmc_inuse & 0x3e)
++		mmcr[0] |= MMCR0_PMCjCE;
++	mmcr[1] = mmcr1;
++	mmcr[2] = mmcra;
++	return 0;
++}
++
++static void power7_disable_pmc(unsigned int pmc, u64 mmcr[])
++{
++	if (pmc <= 3)
++		mmcr[1] &= ~(0xffULL << MMCR1_PMCSEL_SH(pmc));
++}
++
++static int power7_generic_events[] = {
++	[PERF_COUNT_CPU_CYCLES] = 0x1e,
++	[PERF_COUNT_INSTRUCTIONS] = 2,
++	[PERF_COUNT_CACHE_REFERENCES] = 0xc880,		/* LD_REF_L1_LSU */
++	[PERF_COUNT_CACHE_MISSES] = 0x400f0,		/* LD_MISS_L1 */
++	[PERF_COUNT_BRANCH_INSTRUCTIONS] = 0x10068,	/* BRU_FIN */
++	[PERF_COUNT_BRANCH_MISSES] = 0x400f6,		/* BR_MPRED */
++};
++
++struct power_pmu power7_pmu = {
++	.n_counter = 6,
++	.max_alternatives = MAX_ALT + 1,
++	.add_fields = 0x1555ull,
++	.test_adder = 0x3000ull,
++	.compute_mmcr = power7_compute_mmcr,
++	.get_constraint = power7_get_constraint,
++	.get_alternatives = power7_get_alternatives,
++	.disable_pmc = power7_disable_pmc,
++	.n_generic = ARRAY_SIZE(power7_generic_events),
++	.generic_events = power7_generic_events,
++};
+-- 
+1.5.5.rc3.7.gba13
 
-net/ieee802154/raw.c: In function 'raw_sendmsg':
-net/ieee802154/raw.c:135: warning: format '%u' expects type 'unsigned int',=
- but argument 2 has type 'size_t'
-net/ieee802154/dgram.c: In function 'dgram_sendmsg':
-net/ieee802154/dgram.c:251: warning: format '%u' expects type 'unsigned int=
-', but argument 2 has type 'size_t'
-
-Introduced by commit 9ec7671603573ede31207eb5b0b3e1aa211b2854 ("net: add
-IEEE 802.15.4 socket family implementation").
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__11_Jun_2009_14_55_41_+1000_LJC_j=diE6zxirMu
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkowjk0ACgkQjjKRsyhoI8zGpACfUpW/mT9nbl/1sbC2ockEMvnw
-CjQAn2VRcsLTbeOEU4rvV4i6NymnHXT7
-=9hny
------END PGP SIGNATURE-----
-
---Signature=_Thu__11_Jun_2009_14_55_41_+1000_LJC_j=diE6zxirMu--
