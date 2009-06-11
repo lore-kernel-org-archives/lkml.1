@@ -1,92 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZFKWFl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761780AbZFKWHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbZFKWFl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 18:05:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZFKWF0
+	id S1761780AbZFKWHM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 18:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759158AbZFKWG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 18:05:26 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45928 "EHLO
+	Thu, 11 Jun 2009 18:06:59 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35587 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759621AbZFKWFZ (ORCPT
+	with ESMTP id S1758869AbZFKWG6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 18:05:25 -0400
-Date: Fri, 12 Jun 2009 00:05:17 +0200
+	Thu, 11 Jun 2009 18:06:58 -0400
+Date: Fri, 12 Jun 2009 00:06:52 +0200
 From: Pavel Machek <pavel@ucw.cz>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate file.
-Message-ID: <20090611220517.GF27376@elf.ucw.cz>
-References: <20090604161847.513682672@de.ibm.com> <20090611133218.GB3146@osiris.boeblingen.de.ibm.com> <20090611211157.GD27376@elf.ucw.cz> <200906112346.28782.rjw@sisk.pl>
+Cc: Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, Magnus Damm <damm@igel.co.jp>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Sergio Luis <sergio@larces.uece.br>,
+       Lauro Salmito <laurosalmito@gmail.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Nigel Cunningham <nigel@tuxonice.net>
+Subject: Re: [PATCH 00/19] What's in the suspend tree for 2.6.31
+Message-ID: <20090611220652.GA18682@elf.ucw.cz>
+References: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200906112346.28782.rjw@sisk.pl>
+In-Reply-To: <0615007ad8090a890586d530b5d3bb98da566014.1244752872.git.rjw@sisk.pl>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-06-11 23:46:27, Rafael J. Wysocki wrote:
-> On Thursday 11 June 2009, Pavel Machek wrote:
-> > On Thu 2009-06-11 15:32:18, Heiko Carstens wrote:
-> > > On Wed, Jun 10, 2009 at 01:09:19AM +0200, Rafael J. Wysocki wrote:
-> > > > On Tuesday 09 June 2009, Cornelia Huck wrote:
-> > > > > The *_nvs_* routines in swsusp.c make use of the io*map()
-> > > > > functions, which are only provided for HAS_IOMEM, thus
-> > > > > breaking compilation if HAS_IOMEM is not set. Fix this
-> > > > > by moving the *_nvs_* routines into hibernation_nvs.c, which
-> > > > > is only compiled if HAS_IOMEM is set.
-> > > > > 
-> > > > > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-> > > > 
-> > > > Thanks, I added the GPLv2 line to the header comment and changed the name
-> > > > of the file to hibernate_nvs.c (to match the other changes in the works).
-> > > > 
-> > > > I'll carry out some compilation testing on it and put it into the tree shortly.
-> > > 
-> > > Rafael, could you add the patch below as well?
-> > > Or should that go in via git390?
-> > > 
-> > > Subject: [PATCH] PM: add empty suspend/resume device irq functions
-> > > 
-> > > From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > > 
-> > > git commit 0a0c5168 "PM: Introduce functions for suspending and resuming
-> > > device interrupts" introduced some helper functions. However these
-> > > functions are only available for architectures which support
-> > > GENERIC_HARDIRQS.
-> > > 
-> > > Other architectures will see this build error:
-> > > 
-> > > drivers/built-in.o: In function `sysdev_suspend':
-> > > (.text+0x15138): undefined reference to `check_wakeup_irqs'
-> > > drivers/built-in.o: In function `device_power_up':
-> > > (.text+0x1cb66): undefined reference to `resume_device_irqs'
-> > > drivers/built-in.o: In function `device_power_down':
-> > > (.text+0x1cb92): undefined reference to `suspend_device_irqs'
-> > > 
-> > > To fix this add some empty inline functions for !GENERIC_HARDIRQS.
-> > 
-> > I don't think that's right fix. If architecture does not use
-> > GENERIC_HARDIRQS, it may want to implement *_device_irqs()
-> > itself. Before your patch, it could, after your patch, it can not.
-> > 
-> > Better put those empty functions in arch/s390/include?
+On Thu 2009-06-11 21:41:10, Rafael J. Wysocki wrote:
+> Hi,
 > 
-> If any of the affected architectures wants to implement *_device_irqs()
-> itself, it can do the appropriate change in future.  For now, let's not break
-> compilation on them, shall we?
+> The following patches are in the linux-next branch of the
+> suspend-2.6 tree and they are candidates for merging into
+> 2.6.31.
+> 
+> Please let me know of any urgent PM patches that need to go into
+> 2.6.31 and are not present in this series.
 
-Well, if one of those architectures will want to implement
-*_device_irqs(), it will have to either modify s390, and all other
-!GENERIC_HARDIRQS architectures. Not exactly easy task; better do it
-right from beggining?
-								Pavel
+Something is very wrong with the series. 06/19 is missing subject line
+(it is not in mail header) and all message-ids are same or something.
+
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
