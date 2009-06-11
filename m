@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbZFKCq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760168AbZFKCrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758602AbZFKCq7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 22:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZFKCqu
+	id S1760168AbZFKCrq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 22:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZFKCri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 22:46:50 -0400
-Received: from gate.crashing.org ([63.228.1.57]:54960 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751749AbZFKCqt convert rfc822-to-8bit (ORCPT
+	Wed, 10 Jun 2009 22:47:38 -0400
+Received: from louise.pinerecords.com ([213.168.176.16]:60121 "EHLO
+	louise.pinerecords.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753533AbZFKCrh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 22:46:49 -0400
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Message-Id: <3167CCB7-E635-416C-AA99-62033E73AF87@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: =?ISO-8859-1?Q?Rog=E9rio_Brito?= <rbrito@ime.usp.br>
-In-Reply-To: <20090516160453.GA15138@ime.usp.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: [PATCH] powerpc: minimizing the configuration of linkstation_defconfig
-Date: Wed, 10 Jun 2009 21:46:38 -0500
-References: <20090424065816.GA15525@ime.usp.br> <Pine.LNX.4.64.0904242158210.8309@axis700.grange> <20090424223355.GB7858@ime.usp.br> <2CE2BC61-1C6B-4D01-870B-BC460730AD79@kernel.crashing.org> <20090428133200.GB12828@ime.usp.br> <20090516160453.GA15138@ime.usp.br>
-X-Mailer: Apple Mail (2.935.3)
+	Wed, 10 Jun 2009 22:47:37 -0400
+Date: Thu, 11 Jun 2009 04:40:19 +0200
+From: =?utf-8?B?VG9tw6HFoSBTesOpcGU=?= <szepe@pinerecords.com>
+To: gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: [2.6.28.x FIX] CONFIG_FILE_LOCKING should not depend on CONFIG_BLOCK
+Message-ID: <20090611024019.GC25384@louise.pinerecords.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-On May 16, 2009, at 11:04 AM, RogÈrio Brito wrote:
+Fix: CONFIG_FILE_LOCKING should not depend on CONFIG_BLOCK.
+Patch against 2.6.28.10.
 
-> Hi, Kumar, Guennadi, and Co.
->
->
-> This patch addresses the following issues:
->
-> 01. makes CFQ the default scheduler, to be in line with the rest of
-> the kernel.
->
-> 02. since linkstations are meant to store files, enable large blk
-> devices.
->
-> 03. disable CONFIG_MIGRATION in in such low memory devices.
->
-> 04. disable CONFIG_BLK_DEV_RAM.
->
-> 05. disable CONFIG_SCSI_LOWLEVEL, as no device under that tree is
-> used.
->
-> 06. idem for CONFIG_NETDEV_10000.
->
-> 07. idem for CONFIG_WIRELESS.
->
-> 08. idem for CONFIG_HWMON.
->
-> 09. idem for CONFIG_CRYPTO_HW.
->
-> 10. disable CONFIG_VIDEO_OUTPUT_CONTROL.
->
-> 11. keep consistency and disable extended attributes in CIFS, ext3,
-> and NFS.
->
-> 12. enable CONFIG_PRINTK_TIME.
->
-> Signed-off-by: RogÈrio Brito <rbrito@ime.usp.br>
->
-> ---
->
-> This is the patch for tidying the defconfig. I'm still having issues
-> with the MTD devices, it seems. :-( I will investigate this now.
->
-> I can send a similar patch to storcenter.
+inlined please find a trivial fix that makes it possible to run
+complete systems out of an initramfs on 2.6.28.10 again (this
+broke somewhere between 2.6.27 and 2.6.28).
 
-Did you ever resolve the MTD issue?
+-- 
+Tom√°≈° Sz√©pe <szepe@pinerecords.com>
 
-- k
+diff -urN a/fs/Kconfig b/fs/Kconfig
+--- a/fs/Kconfig	2008-12-25 00:26:37 +0100
++++ b/fs/Kconfig	2009-06-11 04:23:12 +0200
+@@ -172,14 +172,6 @@
+ 	bool
+ 	default n
+ 
+-config FILE_LOCKING
+-	bool "Enable POSIX file locking API" if EMBEDDED
+-	default y
+-	help
+-	  This option enables standard file locking support, required
+-          for filesystems like NFS and for the flock() system
+-          call. Disabling this option saves about 11k.
+-
+ source "fs/xfs/Kconfig"
+ source "fs/gfs2/Kconfig"
+ 
+@@ -270,6 +262,14 @@
+ 
+ endif # BLOCK
+ 
++config FILE_LOCKING
++	bool "Enable POSIX file locking API" if EMBEDDED
++	default y
++	help
++	  This option enables standard file locking support, required
++          for filesystems like NFS and for the flock() system
++          call. Disabling this option saves about 11k.
++
+ config DNOTIFY
+ 	bool "Dnotify support"
+ 	default y
