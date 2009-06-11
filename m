@@ -1,162 +1,304 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760535AbZFJXtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932316AbZFKAGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760535AbZFJXtz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 19:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZFJXtr
+	id S932316AbZFKAGm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 20:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932270AbZFKAG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 19:49:47 -0400
-Received: from tundra.namei.org ([65.99.196.166]:45983 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753024AbZFJXtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 19:49:46 -0400
-Date: Thu, 11 Jun 2009 09:49:48 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: linux-security-module@vger.kernel.org
-cc: linux-kernel@vger.kernel.org
-Subject: What's in the security-testing tree for 2.6.31
-Message-ID: <alpine.LRH.2.00.0906110945450.29166@tundra.namei.org>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 10 Jun 2009 20:06:27 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59800 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932268AbZFKAGZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 20:06:25 -0400
+Date: Thu, 11 Jun 2009 09:04:53 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       apw@canonical.com, riel@redhat.com, minchan.kim@gmail.com
+Subject: Re: [PATCH 1/2] lumpy reclaim: clean up and write lumpy reclaim
+Message-Id: <20090611090453.e7a035af.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090610133543.GM25943@csn.ul.ie>
+References: <20090610142443.9370aff8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090610095140.GB25943@csn.ul.ie>
+	<ce0400fcfccf8be455dced006ba15592.squirrel@webmail-b.css.fujitsu.com>
+	<20090610133543.GM25943@csn.ul.ie>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's what's queued in the 'next' branch for 2.6.31.
+At first, I'll do minimum change in this turn.
 
-(Note that Linus has asked people to test 2.6.30 for a week before opening 
-the merge window).
+On Wed, 10 Jun 2009 14:35:43 +0100
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-Eric Paris (12):
-      SELinux: drop secondary_ops->sysctl
-      IMA: use current_cred() instead of current->cred
-      IMA: Handle dentry_open failures
-      IMA: open all files O_LARGEFILE
-      securityfs: securityfs_remove should handle IS_ERR pointers
-      TPM: get_event_name stack corruption
-      IMA: remove read permissions on the ima policy file
-      IMA: do not measure everything opened by root by default
-      SELinux: move SELINUX_MAGIC into magic.h
-      IMA: Minimal IMA policy and boot param for TCB IMA policy
-      IMA: Add __init notation to ima functions
-      SELinux: define audit permissions for audit tree netlink messages
+> On Wed, Jun 10, 2009 at 08:36:36PM +0900, KAMEZAWA Hiroyuki wrote:
+> > Thank you for review, at first.
+> > 
+> > Mel Gorman wrote:
+> > >> ==
+> > >> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > >>
+> > >> In lumpty reclaim, "cursor_page" is found just by pfn. Then, we don't
+> > >> know
+> > >> where "cursor" page came from. Then, putback it to "src" list is BUG.
+> > >> And as pointed out, current lumpy reclaim doens't seem to
+> > >> work as originally designed and a bit complicated.
+> > >
+> > > What thread was this discussed in?
+> > >
+> >
+> > http://marc.info/?t=124453903700003&r=1&w=2
+> > The original problem I found was a simple one...I wonder whether I should
+> > go ahead or not ;) So, I may abort this work and just post simple patches.
+> > 
+> 
+> Comments on that
+> 
+>   o The -EBUSY case does end up rotating the page on the LRU which is
+> 	unnecessary. This logic was copied from the normal case where we are
+> 	reclaiming a page from the end of the LRU. Lumpy reclaim rotating
+> 	non-cursor pages is probably overkill
+> 
+Sure.
 
-Tetsuo Handa (9):
-      tomoyo: remove "undelete domain" command.
-      rootplug: Remove redundant initialization.
-      smack: Remove redundant initialization.
-      TOMOYO: Remove unused mutex.
-      TOMOYO: Remove redundant markers.
-      TOMOYO: Simplify policy reader.
-      TOMOYO: Remove unused parameter.
-      TOMOYO: Remove unused field.
-      TOMOYO: Add description of lists and structures.
+>   o It's reasonable to abort lumpy reclaim if a page within the
+> 	order-aligned block being lumpy reclaimed is encountered and
+> 	backout.
+> 
+> Both of these should be separate patches in a series.
+> 
+Hmm. but this lumpy reclaim's loop breaks even if it founds a "free" page
+(or a page on pcp). So I added "do_aggressive".
+I leave this part as homework and revisit this after merge-window.
 
-Mimi Zohar (7):
-      integrity: lsm audit rule matching fix
-      integrity: use audit_log_string
-      integrity: remove __setup auditing msgs
-      integrity: path_check update
-      integrity: move ima_counts_get
-      integrity: nfsd imbalance bug fix
-      integrity: ima audit dentry_open failure
+What I feel now is following
+  - isolate_inactive_list() checks at most SWAP_CLUSETER_MAX pages in each turn.
+  - If lumpy reclaim catches some number of pages incompleltely but it doesn't do
+    push-back, lumpy reclaim will exit loop very easily without any progress in
+    "requested order".
+  - Then, exit-loop here or not is a difficult problem in current logic.
 
-David Howells (3):
-      SELinux: Don't flush inherited SIGKILL during execve()
-      CRED: Rename cred_exec_mutex to reflect that it's a guard against ptrace
-      CRED: Guard the setprocattr security hook against ptrace
 
-Etienne Basset (2):
-      smack: implement logging V3
-      smack: implement logging V3
+> > >> +	 * create free continous pages. This algorithm tries to start
+> > >> +	 * from order 0 and scan buddy pages up to request_order.
+> > >> +	 * If you are unsure about buddy position calclation, please see
+> > >> +	 * mm/page_alloc.c
+> > >> +	 */
+> > >
+> > > Why would we start at order 0 and scan buddy pages up to the request
+> > > order? The intention was that the order-aligned block of pages the
+> > > cursor page resides in be examined.
+> > >
+> > > Lumpy reclaim is most important for direct reclaimers and it specifies
+> > > what its desired order is. Contiguous pages lower than that order are
+> > > simply not interesting for direct reclaim.
+> > >
+> >
+> > The order is not important. This code's point is "which pages are selected?"
+> > Assume "A" as the target page on the top of LRU. and we'll remove
+> > pages _around_ "A".
+> > 
+> >     [A-X,A-X+1,.....A, A+1, A+2, .....,A+Y]
+> > 
+> > In original logic, the pages are got from A-X, A-X+1, A-X+2...order
+> 
+> Yes, because the pages for lumpy reclaim have to be contiguous *and*
+> order-aligned for the buddy allocator to coalesce them.
+> 
+> > In my logic, the pages are got from A+1,A+2,A+3(or some reverse)...order
+> > 
+> 
+> I'm don't believe I am seeing the advantage. If it runs to completion and
+> the pages are successfully reclaimed, the contiguous pages are free
+> regardless of what order you reclaimed them in.
+> 
+> > Because we don't have "pushback all at failure" logic, I selected this
+> > order to select nearby pages as much as possible to make large order chunks
+> > around the page on the top of LRU.
+> > I tried to add "pusback all" but it adds unnecessary/unexpected
+> > LRU rotation. So, I don't do that but reclaim a lump around "A".
+> > 
+> 
+> I see. I believe you are making assumptions on the distance between pages
+> in the order-aligned block and their position in the LRU. While there is
+> likely a correlation for processes that started early in the lifetime of
+> the system, I'm not sure how accurate that is in general.
+> 
+> Certainly this patch needs to be all out on it's own. 
+I agree here.
 
-Oleg Nesterov (2):
-      selinux: selinux_bprm_committed_creds() should wake up ->real_parent, not ->parent.
-      do_wait: do take security_task_wait() into account
+> FWIW, once it is,
+> I can shove the resulting patch through the anti-fragmentation testcases.
+> I still have knocking around somewhere although I'm less sure that I have
+> access to suitable machines currently to test on. Regardless, I would like
+> to deal with this sort of modification separate from the other clearer issues
+> you have identified.
+> 
+> > To do push back all, I wonder atomic ops for taking range of pages without
+> > removing from LRU is necessary. But I think we can't.
+> > 
+> 
+> Probably not. The fact of the matter is that lumpy reclaim can mess up the LRU
+> ordering in an undesirable manner when it fails to reclaim the pages it wants.
+> 
+I'll revisit this problem in my long term work.
 
-Serge E. Hallyn (2):
-      don't raise all privs on setuid-root file with fE set (v2)
-      tomoyo: avoid get+put of task_struct
 
-Christoph Lameter (1):
-      security: use mmap_min_addr indepedently of security models
+> > >> +	zone_id = page_zone_id(page);
+> > >> +	page_pfn = page_to_pfn(page);
+> > >> +	buddy_base = page_pfn & ~((1 << MAX_ORDER) - 1);
+> > >> +
+> > >> +	/* Can we expect succesful reclaim ? */
+> > >> +	type = get_pageblock_migratetype(page);
+> > >> +	if ((type == MIGRATE_MOVABLE) || (type == MIGRATE_RECLAIMABLE))
+> > >> +		do_aggressive = 1;
+> > >> +
+> > >
+> > > There is a case for doing lumpy reclaim even within the other blocks.
+> > >
+> > > 1. The block might have recently changed type because of
+> > > anti-fragmentation
+> > > 	fallback. It's perfectly possible for MIGRATE_UNMOVABLE to have a
+> > > 	large number of reclaimable pages within it.
+> > >
+> > yes, I know.
+> > 
+> > > 2. If a MIGRATE_UNMOVABLE block has LRU pages in it, it's again likely
+> > > 	due to anti-fragmentation fallback. In the event movable pages are
+> > > 	encountered here, it's benefical to reclaim them when encountered so
+> > > 	that unmovable pages are allocated within MIGRATE_UNMOVABLE blocks
+> > > 	as much as possible
+> > >
+> > > Hence, this check is likely not as beneficial as you believe.
+> > >
+> > Hmm, then I should reclaim the range of pages brutally even if
+> > the range includes page for the kernel ?
+> > 
+> 
+> Yes.  You don't know in advance how many pages there are belonging to the
+> kernel. However, if there are any, it's best to reclaim the pages that
+> are near it and within the same pageblock so that future unmovable kernel
+> allocations can be allocated from the same block. This is more important
+> from an anti-fragmentation perspective than lumpy-reclaim.
+> 
+Hmm, ok.
 
-KaiGai Kohei (1):
-      Permissive domain in userspace object manager
+> If there happens to be a significant number of movable pages near that
+> one kernel page, there is an outside chance that the kernel page will free
+> naturally, particularly if it turned out it was holding metadata related to
+> the reclaimable data being freed.
+> 
+I doubts this ;)
 
-Kees Cook (1):
-      modules: sysctl to block module loading
+> > We have no way to check "the pages are for users" if the page is
+> > not on LRU. (tend to happen when shrink_list() works.)
+> > 
+> > Or do you think following check works well at the page seems busy ?
+> > 
+> >       page_count(page) == 0 -> continue.
+> >       __isolate_lru_page() -> busy
+> >         PageUnevictable(page) -> abort
+> >         PageSwapBacked(page)  -> continue. #1
+> >         PageWriteback(page)   -> continue. #2
+> >         PageSwapBacked(page)  -> continue. #3
+> >         PageIsFileBacked(page)-> cont. #4 use some magical logic...
+> > 
+> > I wonder PG_reclaim or some should be set if shrink_list() extract it
+> > from LRU Then, #1, #2, #3, #4 can be cheked at once.
+> > 
+> 
+> The logic seems fine but leave the existing agressive decision as it is
+> for the moment please and handle the other more straight-forward issues.
+Okay.
 
-Paul Mundt (1):
-      nommu: Provide mmap_min_addr definition.
+> I'll try and get the anti-fragementation test cases in place in the meantime
+> and see can we do a comparison. It's been a several months since I tested
+> anti-fragmentation so it's time for a recheck anyway.
+> 
+Thanks.
 
-Roel Kluin (1):
-      smack: do not beyond ARRAY_SIZE of data
+> > >> +		/* scan range [buddy_start_pfn...buddy_end_pfn) */
+> > >> +		for (pfn = buddy_start_pfn; pfn < buddy_end_pfn; ++pfn) {
+> > >> +			/* Avoid holes within the zone. */
+> > >> +			if (unlikely(!pfn_valid_within(pfn)))
+> > >> +				break;
+> > >> +			page = pfn_to_page(pfn);
+> > >> +			/*
+> > >> +			 * Check that we have not crossed a zone boundary.
+> > >> +			 * Some arch have zones not aligned to MAX_ORDER.
+> > >> +			 */
+> > >> +			if (unlikely(page_zone_id(page) != zone_id))
+> > >> +				break;
+> > >> +
+> > >> +			/* we are always under ISOLATE_BOTH */
+> > >
+> > > Once upon a time, we weren't. I'm not sure this assumption is accurate.
+> > >
+> > To do sucessful lumpy reclaim, ISOLATE_BOTH is required, anyway.
+> > 
+> 
+> Again, not necessarily. The decision to only consider active pages was to
+> avoid serious disruption to the LRU ordering where possible. As lumpy reclaim
+> rotated active pages en-masse to the inactive list, there was a chance that
+> contiguous pages would all be of a similar activity when considered.
+> 
+ok.
 
-Stephen Rothwell (1):
-      modules: Fix up build when CONFIG_MODULE_UNLOAD=n.
+> > 
+> > >> +			if (__isolate_lru_page(page, ISOLATE_BOTH, 0) == 0) {
+> > >> +				list_move(&page->lru, dst);
+> > >> +				nr++;
+> > >> +			} else if (do_aggressive && !PageUnevictable(page))
+> > >> +					continue;
+> > >
+> > > Surely if the page was unevitable, we should have aborted the lumpy
+> > > reclaim
+> > > and continued. Minimally, I would like to see the PageUnevictable check to
+> > > be placed in the existing lumpy reclaim code as patch 1.
+> > >
+> > ok, I'll schedule PageUnevictable() patch as indepnedent one.
+> > 
+> 
+> Thanks, so that will be patch 3 then.
+> 
+will do.
 
-Stephen Smalley (1):
-      selinux: remove obsolete read buffer limit from sel_read_bool
 
- Documentation/Smack.txt             |   20 +
- Documentation/kernel-parameters.txt |    6 
- Documentation/sysctl/kernel.txt     |   11 
- drivers/char/tpm/tpm_bios.c         |    3 
- fs/compat.c                         |    6 
- fs/exec.c                           |   15 -
- fs/hugetlbfs/inode.c                |    2 
- fs/namei.c                          |    6 
- fs/nfsd/vfs.c                       |   14 +
- fs/proc/base.c                      |    6 
- include/linux/ima.h                 |   11 
- include/linux/init_task.h           |    4 
- include/linux/lsm_audit.h           |  111 +++++++++
- include/linux/magic.h               |    1 
- include/linux/mm.h                  |    2 
- include/linux/sched.h               |    5 
- include/linux/security.h            |    2 
- ipc/shm.c                           |    5 
- kernel/cred.c                       |    4 
- kernel/exit.c                       |    1 
- kernel/module.c                     |   13 -
- kernel/ptrace.c                     |    9 
- kernel/signal.c                     |   11 
- kernel/sysctl.c                     |   14 +
- mm/Kconfig                          |   19 +
- mm/mmap.c                           |    3 
- mm/nommu.c                          |    3 
- mm/shmem.c                          |    4 
- security/Kconfig                    |   22 -
- security/Makefile                   |    3 
- security/commoncap.c                |   32 ++
- security/inode.c                    |    2 
- security/integrity/ima/ima_audit.c  |   32 --
- security/integrity/ima/ima_crypto.c |    4 
- security/integrity/ima/ima_fs.c     |    8 
- security/integrity/ima/ima_iint.c   |    2 
- security/integrity/ima/ima_init.c   |    4 
- security/integrity/ima/ima_main.c   |   92 ++++----
- security/integrity/ima/ima_policy.c |   50 +++-
- security/lsm_audit.c                |  386 ++++++++++++++++++++++++++++++++++
- security/root_plug.c                |   12 -
- security/security.c                 |    3 
- security/selinux/avc.c              |    2 
- security/selinux/hooks.c            |   24 --
- security/selinux/include/security.h |    7 
- security/selinux/nlmsgtab.c         |    2 
- security/selinux/selinuxfs.c        |    8 
- security/selinux/ss/services.c      |   30 --
- security/smack/smack.h              |  108 +++++++++
- security/smack/smack_access.c       |  143 +++++++++++-
- security/smack/smack_lsm.c          |  405 ++++++++++++++++++++++++++----------
- security/smack/smackfs.c            |   68 +++++-
- security/tomoyo/common.c            |  126 +++++++----
- security/tomoyo/common.h            |  142 ++++++++++--
- security/tomoyo/domain.c            |  330 ++++++++++++++++++-----------
- security/tomoyo/file.c              |  156 +++++++++++--
- security/tomoyo/realpath.c          |   23 +-
- security/tomoyo/tomoyo.c            |    4 
- security/tomoyo/tomoyo.h            |   13 -
- 59 files changed, 1965 insertions(+), 589 deletions(-)
+> > I know that logic. I don't think lumpy reclaim is required for order-1
+> > pages if priority is low.
+> > 
+> 
+> I can't remember if we generated exact figures for it or not but assuming
+> pages on an LRU were randomly located throughout memory, Andy did show
+> statistically that lumpy reclaim of order-1 pages would reduce the number of
+> pages that needed to be reclaimed overall. The effect at order-1 is small
+> and in practive pages are not randomly located, but it was enough of a
+> reason to lead to the logic we currently have.
+> 
+I looked into this logic at considering "how to implement softlimit-for-memcg"
+and I wanted to avoid unnecessary memory freeing from random reegion AMAP.
+But I know softlimit-for-memcg will be a long term work and am not in hurry.
+I'll revisit here in future anyway.
+
+> > 
+> > > I'm sorry, I'm not keen on this patch. I would prefer to see the check
+> > > for PageUnevitable done as a standalone patch against the existing lumpy
+> > > reclaim code.
+> > >
+> > ok. I'll just do bug fix.
+> > 
+> 
+> Thanks very much.
+> 
+Thank you very much, too.
+
+Thanks,
+-Kame
 
