@@ -1,56 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760053AbZFKWuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762932AbZFKWws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760053AbZFKWuj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 18:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758420AbZFKWub
+	id S1762932AbZFKWws (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 18:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbZFKWwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 18:50:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56315 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757552AbZFKWua (ORCPT
+	Thu, 11 Jun 2009 18:52:40 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:4947 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757595AbZFKWwj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 18:50:30 -0400
-Date: Thu, 11 Jun 2009 15:49:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Marcel Holtmann <marcel@holtmann.org>, Ingo Molnar <mingo@elte.hu>,
-       Martin Bligh <mbligh@google.com>, Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT PULL] Performance Counters for Linux
-In-Reply-To: <20090611233803.4876b1fb@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.01.0906111548250.3535@localhost.localdomain>
-References: <20090611165226.GV8633@ZenIV.linux.org.uk> <1244739378.6691.540.camel@laptop> <20090611170015.GA3651@infradead.org> <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain> <33307c790906111124m17e57332oc38c89fa70e39231@mail.gmail.com>
- <alpine.LFD.2.01.0906111127520.3573@localhost.localdomain> <20090611202341.GA23590@elte.hu> <1244753357.27363.82.camel@violet> <20090611210810.GA9317@uranus.ravnborg.org> <1244755036.27363.93.camel@violet> <20090611212635.GA9446@uranus.ravnborg.org>
- <4A3182C6.803@gmail.com> <alpine.LFD.2.01.0906111521210.3535@localhost.localdomain> <20090611233803.4876b1fb@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Thu, 11 Jun 2009 18:52:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=K2MiX6zTRyQPwv2GwnFhSlkLSHYHQmLtin274x1xZBVhrpbWLO03GMnjInCtc+PtSu
+         tE9FB70FszVbYxUXQ6pm0KqkpSK77NV6GIWY+bzd33ViAydud0Kc6ebXsp9vdg4faje4
+         f8x47gCLwQ4Oh3FvA1rB6M7lwGH2I283EjHlg=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <28c262360906110218t6a3ed908g9a4fba7fa7dd7b22@mail.gmail.com>
+References: <20090611165535.cf46bf29.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090611170018.c3758488.kamezawa.hiroyu@jp.fujitsu.com>
+	 <28c262360906110218t6a3ed908g9a4fba7fa7dd7b22@mail.gmail.com>
+Date: Fri, 12 Jun 2009 07:52:41 +0900
+Message-ID: <28c262360906111552h774888a5l895085a8cf724579@mail.gmail.com>
+Subject: Re: [PATCH 1/3] remove wrong rotation at lumpy reclaim
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       apw@canonical.com, riel@redhat.com, mel@csn.ul.ie
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Otherwise, Looks good to me.
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+
+On Thu, Jun 11, 2009 at 6:18 PM, Minchan Kim<minchan.kim@gmail.com> wrote:
+> On Thu, Jun 11, 2009 at 5:00 PM, KAMEZAWA
+> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>
+>> At lumpy reclaim, a page failed to be taken by __isolate_lru_page() can
+>> be pushed back to "src" list by list_move(). But the page may not be from
+>> "src" list. And list_move() itself is unnecessary because the page is
+>> not on top of LRU. Then, leave it as it is if __isolate_lru_page() fails.
+>>
+>> This patch doesn't change the logic as "we should exit loop or not" and
+>> just fixes buggy list_move().
+>>
+>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>> ---
+>>  mm/vmscan.c |    9 +--------
+>>  1 file changed, 1 insertion(+), 8 deletions(-)
+>>
+>> Index: lumpy-reclaim-trial/mm/vmscan.c
+>> ===================================================================
+>> --- lumpy-reclaim-trial.orig/mm/vmscan.c
+>> +++ lumpy-reclaim-trial/mm/vmscan.c
+>> @@ -936,18 +936,11 @@ static unsigned long isolate_lru_pages(u
+>>                        /* Check that we have not crossed a zone boundary. */
+>>                        if (unlikely(page_zone_id(cursor_page) != zone_id))
+>>                                continue;
+>> -                       switch (__isolate_lru_page(cursor_page, mode, file)) {
+>> -                       case 0:
+>> +                       if (__isolate_lru_page(cursor_page, mode, file) == 0) {
+>>                                list_move(&cursor_page->lru, dst);
+>>                                nr_taken++;
+>>                                scan++;
+>>                                break;
+>
+> break ??
+>
+> Kinds regards,
+> Minchan Kim
+>
 
 
-On Thu, 11 Jun 2009, Alan Cox wrote:
-> 
-> That misses the point, at least for the systems as the work now. Having a
-> single source package to multiple binaries is easy. Managing setups where
-> you push only some of those binaries into the system gets really ugly.
 
-Umm. But what's the problem?
-
-Sure, you'd always update the 'kernel-perftool' package (or whatever you'd 
-call it) when you update the kernel. But so what? It's going to be tiny. 
-And appropriate.
-
-IOW, where's the downside?
-
-			Linus
+-- 
+Kinds regards,
+Minchan Kim
