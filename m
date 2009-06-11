@@ -1,92 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759678AbZFKJ3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760978AbZFKJai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759678AbZFKJ3z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 05:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757102AbZFKJ3q
+	id S1760978AbZFKJai (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 05:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758378AbZFKJaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 05:29:46 -0400
-Received: from h155.mvista.com ([63.81.120.155]:57508 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755648AbZFKJ3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 05:29:45 -0400
-Message-ID: <4A30CE85.40508@ru.mvista.com>
-Date: Thu, 11 Jun 2009 13:29:41 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 11 Jun 2009 05:30:30 -0400
+Received: from elvis.franken.de ([193.175.24.41]:48570 "EHLO elvis.franken.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757102AbZFKJa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 05:30:29 -0400
+Date: Thu, 11 Jun 2009 11:30:22 +0200
+From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+To: Florian Fainelli <florian@openwrt.org>
+Cc: Linux-MIPS <linux-mips@linux-mips.org>, Ralf Baechle <ralf@linux-mips.org>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-serial@vger.kernel.org
+Subject: Re: [PATCH 8/8] 8250: add Texas Instruments AR7 internal UART
+Message-ID: <20090611093022.GA14510@alpha.franken.de>
+References: <200906041622.47591.florian@openwrt.org> <20090604222020.GA14843@alpha.franken.de> <200906111028.41222.florian@openwrt.org>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: jeff@garzik.org, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Dave Liu <daveliu@freescale.com>
-Subject: Re: [PATCH] sata_fsl: Add power mgmt support
-References: <1244692417-18484-1-git-send-email-galak@kernel.crashing.org>
-In-Reply-To: <1244692417-18484-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200906111028.41222.florian@openwrt.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, Jun 11, 2009 at 10:28:39AM +0200, Florian Fainelli wrote:
+> Le Friday 05 June 2009 00:20:20 Thomas Bogendoerfer, vous avez écrit :
+> > On Thu, Jun 04, 2009 at 04:22:46PM +0200, Florian Fainelli wrote:
+> > > We discussed that in private, there are a couple of things
+> > > to fix in order to get 8250 working properly with TI AR7 HW.
+> > > If you can still merge that bit, this would ease future work, thanks !
+> >
+> > I still have a tree here, which works without any changes to the 8250
+> > serial driver on a TNETD7300 device.
+> 
+> Could you show me how you register the 8250 driver ? Without the 8250-specific 
 
-Kumar Gala wrote:
+static struct plat_serial8250_port uart0_data = {
+        .mapbase = AR7_REGS_UART0,
+        .irq = AR7_IRQ_UART0,
+        .regshift = 2,
+        .iotype = UPIO_MEM,
+        .flags = UPF_BOOT_AUTOCONF | UPF_IOREMAP,
+};
 
-> From: Dave Liu <daveliu@freescale.com>
->
-> Signed-off-by: Dave Liu <daveliu@freescale.com>
-> Signed-off-by: Liu Yu <yu.liu@freescale.com>
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
->  drivers/ata/sata_fsl.c |   35 +++++++++++++++++++++++++++++++++++
->  1 files changed, 35 insertions(+), 0 deletions(-)
->
-> diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-> index 36b8629..94eaa43 100644
-> --- a/drivers/ata/sata_fsl.c
-> +++ b/drivers/ata/sata_fsl.c
-> @@ -1378,6 +1378,37 @@ static int sata_fsl_remove(struct of_device *ofdev)
->  	return 0;
->  }
->  
-> +#ifdef CONFIG_PM
-> +static int sata_fsl_suspend(struct of_device *op, pm_message_t state)
-> +{
-> +	struct ata_host *host = dev_get_drvdata(&op->dev);
-> +	return ata_host_suspend(host, state);
-> +}
-> +
-> +static int sata_fsl_resume(struct of_device *op)
-> +{
-> +	struct ata_host *host = dev_get_drvdata(&op->dev);
-> +	struct sata_fsl_host_priv *host_priv = host->private_data;
-> +	int ret;
-> +	void __iomem *hcr_base = host_priv->hcr_base;
-> +	struct ata_port *ap = host->ports[0];
-> +	struct sata_fsl_port_priv *pp = ap->private_data;
-> +
-> +	ret = sata_fsl_init_controller(host);
-> +	if (ret) {
-> +		dev_printk(KERN_ERR, &op->dev,
-> +			"Error initialize hardware\n");
->   
-
-   May be "initializing"?
-
-> +		return ret;
-> +	}
-> +
-> +	/* Recovery the CHBA register in host controller cmd register set */
->   
-
-   Maybe "Recover"?
-
-> +	iowrite32(pp->cmdslot_paddr & 0xffffffff, hcr_base + CHBA);
-> +
-> +	ata_host_resume(host);
-> +	return 0;
-> +}
-> +#endif
->   
-
-MBR, Sergei
+        uart_port[0].type = PORT_16550A;
+        uart_port[0].line = 0;
+        uart_port[0].irq = AR7_IRQ_UART0;
+        uart_port[0].uartclk = ar7_bus_freq() / 2;
+        uart_port[0].iotype = UPIO_MEM;
+        uart_port[0].mapbase = AR7_REGS_UART0 + 3;
+        uart_port[0].membase = ioremap(uart_port[0].mapbase, 256);
+        uart_port[0].regshift = 2;
+        res = early_serial_setup(&uart_port[0]);
+        if (res)
+                return res;
 
 
+the +3 comes from the fact, that this machine is configured to run big
+endian.
+
+Here is the boot log:
+
+Serial: 8250/16550 driver $Revision: 1.90 $ 2 ports, IRQ sharing disabled
+serial8250: ttyS0 at MMIO 0x8610e03 (irq = 15) is a 16550A
+console handover: boot [early0] -> real [ttyS0]
+serial8250: ttyS1 at MMIO 0x8610f00 (irq = 19) is a 16550A
+loop: module loaded
+Fixed MDIO Bus: probed
+
+
+ttyS1 uses the wrong address, but there is nothing connected to
+that port on the box.
+
+Do you see the problem on TNETD7200 devices as well ?
+
+Thomas.
+
+-- 
+Crap can work. Given enough thrust pigs will fly, but it's not necessary a
+good idea.                                                [ RFC1925, 2.3 ]
