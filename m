@@ -1,117 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbZFKVgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757719AbZFKVia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755161AbZFKVgF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 17:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZFKVfz
+	id S1757719AbZFKVia (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 17:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZFKViV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 17:35:55 -0400
-Received: from mail-ew0-f210.google.com ([209.85.219.210]:42786 "EHLO
-	mail-ew0-f210.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751567AbZFKVfy convert rfc822-to-8bit (ORCPT
+	Thu, 11 Jun 2009 17:38:21 -0400
+Received: from mail.uni-paderborn.de ([131.234.142.9]:22868 "EHLO
+	mail.uni-paderborn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751881AbZFKViU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 17:35:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:sender:reply-to:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=e2ZFZQEtUp3+RSna8Msf745CrzBg5yitZvatpqDQBQ+KgQYZ9mVcSnz8gHdg/fHL2H
-         VQEl+AgQ9SRkGehkoAJ9AxEuguppi4a38qpiBiRzQ9ABSYXkl1+XwCgk9OOFALZI6OxW
-         Gb1lEHAUHhGekTqJkoIoCdKhP2fCm8WnrbgN0=
+	Thu, 11 Jun 2009 17:38:20 -0400
+Message-ID: <4A317949.9090301@gmail.com>
+Date: Thu, 11 Jun 2009 23:38:17 +0200
+From: =?ISO-8859-1?Q?Sven_K=F6hler?= <sven.koehler@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090509)
 MIME-Version: 1.0
-Reply-To: Tobias_Mueller@twam.info
-In-Reply-To: <20090611172850.6c418b1d@mycelium.queued.net>
-References: <20090610001033.27b7f69f@mycelium.queued.net>
-	 <17be05570906111152j3ecb0102qfd6f53221c7ae9f9@mail.gmail.com>
-	 <20090611160059.6d70f54a@mycelium.queued.net>
-	 <17be05570906111311s717f126cyd4edf0847b839eef@mail.gmail.com>
-	 <20090611172850.6c418b1d@mycelium.queued.net>
-Date: Thu, 11 Jun 2009 23:35:55 +0200
-X-Google-Sender-Auth: 57bad158ba451854
-Message-ID: <17be05570906111435p3d4dfb52p67669e8a82a1ab56@mail.gmail.com>
-Subject: Re: [PATCH 1/2] cs5535-gpio: add AMD CS5535/CS5536 GPIO driver 
-	support
-From: =?UTF-8?Q?Tobias_M=C3=BCller?= <Tobias_Mueller@twam.info>
-To: Andres Salomon <dilinger@collabora.co.uk>
-Cc: akpm@linux-foundation.org, Randy Dunlap <randy.dunlap@oracle.com>,
-       deepak@laptop.org, Takashi Iwai <tiwai@suse.de>,
-       linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org,
-       jordan@cosmicpenguin.net, cjb@laptop.org,
-       David Brownell <david-b@pacbell.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Newsgroups: gmane.linux.kernel
+To: Takashi Iwai <tiwai@suse.de>
+CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: sound skipping regression introduced in 2.6.30-rc8
+References: <20090610.112804.193703669.davem@davemloft.net>	<4A300B85.2010106@gmail.com>	<s5hr5xrvb5m.wl%tiwai@suse.de>	<4A30A882.5080206@gmail.com> <s5h7hzjtc87.wl%tiwai@suse.de>
+In-Reply-To: <s5h7hzjtc87.wl%tiwai@suse.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-IMT-Spam-Score: 0.0 ()
+X-PMX-Version: 5.5.5.374460, Antispam-Engine: 2.7.1.369594, Antispam-Data: 2009.6.11.212830
+X-IMT-Authenticated-Sender: uid=skoehler,ou=People,o=upb,c=de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> /**
->> * Some GPIO pins
->> *  31-29,23 : reserved (always mask out)
->> *  28       : Power Button
->> *  26       : PME#
->> *  22-16    : LPC
->> *  14,15    : SMBus
->> *  9,8      : UART1
->> *  7        : PCI INTB
->> *  3,4      : UART2/DDC
->> *  2        : IDE_IRQ0
->> *  1        : AC_BEEP
->> *  0        : PCI INTA
->> *
->> * If a mask was not specified, be conservative and only allow:
->> *  1,2,5,6,10-13,24,25,27
->> */
->>
->> I'll add this in my patch to clear it out.
->>
->
-> But why are you being conservative in the first place?  If something's
-> using GPIOs, unless they're unmapped, you should allow it to use them
-> without requiring a boot arg.
->
-> For example, OLPC uses GPIO 7 for its DCON IRQ.  With the masking
-> scheme, OLPC will need to set that mask from the default.  I don't see
-> the point of having the mask at all if other drivers in the kernel are
-> going to be requesting GPIOs (presumably they know what they're doing).
-Hmm... OK, this makes sense. So default mask allow everything exept
-reserved pins and pin 28 (power button).
+>>>> Can somebody point out, how I can set this xrun_debug thing or can
+>>>> somebody provide a patch that reverts the change?
+>>> Did you read my reply to David?
+>> I will try, what is described there and I will report back if I get any
+>> debug output.
+> 
+> Thanks, that'll be be helpful.
 
-I think the mask is quite useful if you've critical things on GPIO pins
-and they should be changeable (especially from userspace and when
-non-root users are allowed to use userspace gpio).
+Below is the output. Note, that audacious 2.x was not only skipping a
+little bit. In fact, the clock that was showing the time of audio played
+was running twice as fast or even 4 times as fast. The sound was played
+at the right samplerate but in fast it seems, that much of the audio
+data was skipped and I only heard a series of short fragments of what
+should have been the song I'm listening to.
 
->> >> +     /* disable output aux 1 & 2 on this pin */
->> >> +     __cs5535_gpio_clear(chip, offset, GPIO_OUTPUT_AUX1);
->> >> +     __cs5535_gpio_clear(chip, offset, GPIO_OUTPUT_AUX2);
->> >> +
->> >> +     /* disable input aux 1 on this pin */
->> >> +     __cs5535_gpio_clear(chip, offset, GPIO_INPUT_AUX1);
->> >> +
->> >> +     /* disable output */
->> >> +     __cs5535_gpio_clear(chip, offset, GPIO_OUTPUT_ENABLE);
->> >> +
->> >> +     /* enable input */
->> >> +     __cs5535_gpio_set(chip, offset, GPIO_INPUT_ENABLE);
->> >
->> > I don't think this is the right place for all of this.  Your earlier
->> > email mentioned disabling OUT_AUX{1,2} for outputs, and IN_AUX for
->> > inputs.  I'm fine with doing that here, but I don't see why you're
->> > also disabling output and enabling input by default.
->>
->> I mentioned this in an ealier mail too. When I request the GPIO from
->> userspace the direction file always contains "in", so I thought
->> this is the standard direction after resetting as I should be in a
->> defined state after requesting. But I didn't found anything
->> about this in GPIO lib documentation, so I would be fine to change
->> this if there is any common default behavoir.
->
-> To be honest, I'd have to play around with it a bit before I
-> knew whether it actually breaks anything or not. I'm not sure if
-> it would break anything on OLPC, and I don't have any other geode
-> machines that do anything interesting w/ GPIOs.
->
-> Maybe David can clear up whether this behavior is correct from the
-> userspace GPIO usage standpoint..
-This would be nice. But I wouldn't have a problem when those
-two statements are removed. I just thought it's better to put them
-in a defined state.
+
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=4096, delta=7611, period=1024, jdelta=10/158)
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=6144, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=3072, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=5120, delta=7630, period=1024, jdelta=10/158)
+PCM: hw_ptr skipping! (pos=3072, delta=7629, period=1024, jdelta=10/158)
+PCM: hw_ptr skipping! (pos=6144, delta=7609, period=1024, jdelta=9/158)
+PCM: hw_ptr skipping! (pos=5120, delta=7618, period=1024, jdelta=10/158)
+PCM: hw_ptr skipping! (pos=1024, delta=7620, period=1024, jdelta=9/158)
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=3072, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=0, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=7168, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=1024, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=6144, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=6144, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=3072, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=5120, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=6144, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=7168, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=0, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=1024, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=2048, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=3072, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+__ratelimit: 202 callbacks suppressed
+PCM: hw_ptr skipping! (pos=7168, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=0, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=1024, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=2048, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=3072, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=5120, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=6144, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=7168, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=0, delta=7169, period=1024, jdelta=0/149)
+__ratelimit: 202 callbacks suppressed
+PCM: hw_ptr skipping! (pos=3072, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=5120, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=6144, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=7168, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=1024, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=2048, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=3072, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=5120, delta=7169, period=1024, jdelta=0/149)
+__ratelimit: 196 callbacks suppressed
+PCM: hw_ptr skipping! (pos=7168, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=0, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=1024, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=2048, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=3072, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=5120, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=6144, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=7168, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=0, delta=7169, period=1024, jdelta=0/149)
+__ratelimit: 201 callbacks suppressed
+PCM: hw_ptr skipping! (pos=3072, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=5120, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=6144, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=7168, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=0, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=1024, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=2048, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=3072, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+__ratelimit: 199 callbacks suppressed
+PCM: hw_ptr skipping! (pos=7168, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=0, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=1024, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=2048, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=3072, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=5120, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=6144, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=7168, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=0, delta=7169, period=1024, jdelta=0/149)
+__ratelimit: 199 callbacks suppressed
+PCM: hw_ptr skipping! (pos=3072, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=5120, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=6144, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=7168, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=0, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=1024, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=2048, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=3072, delta=7169, period=1024, jdelta=0/149)
+PCM: hw_ptr skipping! (pos=4096, delta=7169, period=1024, jdelta=0/149)
+__ratelimit: 12 callbacks suppressed
+PCM: hw_ptr skipping! (pos=4096, delta=7610, period=1024, jdelta=9/158)
+PCM: hw_ptr skipping! (pos=4096, delta=7611, period=1024, jdelta=9/158)
+
+
+
+Regards,
+  Sven
