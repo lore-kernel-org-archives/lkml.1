@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761861AbZFKCYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761934AbZFKC2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761861AbZFKCYA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 22:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761966AbZFKCXv
+	id S1761934AbZFKC2y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 22:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbZFKC2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 22:23:51 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60650 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761868AbZFKCXu (ORCPT
+	Wed, 10 Jun 2009 22:28:43 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:58174 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752040AbZFKC2m convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 22:23:50 -0400
-Date: Thu, 11 Jun 2009 11:21:59 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: "Trenton D. Adams" <trenton.d.adams@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Macbook 4G only see 3G
-Message-Id: <20090611112159.9be7477f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <86802c440906101754g496da536t48ade9b1b220449a@mail.gmail.com>
-References: <9b1675090906101747u4ab8cc89t764ba80b4eb3dcb2@mail.gmail.com>
-	<86802c440906101754g496da536t48ade9b1b220449a@mail.gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Wed, 10 Jun 2009 22:28:42 -0400
+To: subrata@linux.vnet.ibm.com
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, netdev@vger.kernel.org,
+       Li Yang <leoli@freescale.com>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+       Linux-Next <linux-next@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Re:[BUILD FAILURE 04/04] Next June 04:PPC64 randconfig
+ [drivers/net/ucc_geth.o]
+References: <20090610174323.28045.70169.sendpatchset@subratamodak.linux.ibm.com>
+ <20090611110523.1fd56a41.sfr@canb.auug.org.au>
+ <1244685364.6494.14.camel@subratamodak.linux.ibm.com>
+From: Nathan Lynch <ntl@pobox.com>
+Date: Wed, 10 Jun 2009 21:28:30 -0500
+In-Reply-To: <1244685364.6494.14.camel@subratamodak.linux.ibm.com> (Subrata
+ Modak's message of "Thu\, 11 Jun 2009 07\:26\:04 +0530")
+Message-ID: <m3d49btsfl.fsf@pobox.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Pobox-Relay-ID: 95B0F22A-562F-11DE-8372-97731A10BFE7-04752483!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 10 Jun 2009 17:54:39 -0700
-Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+Subrata Modak <subrata@linux.vnet.ibm.com> writes:
 
-> On Wed, Jun 10, 2009 at 5:47 PM, Trenton D.
-> Adams<trenton.d.adams@gmail.com> wrote:
-> > Hi Guys,
-> >
-> > Has anyone been doing any development in the area of enabling 4G for
-> > any PC that doesn't have an option in the BIOS?  The Mac OS X sees the
-> > full 4G, but Linux does not.
-> >
-> > tdamac ~ # uname -a
-> > Linux tdamac 2.6.30-rc7-dirty #3 SMP Fri Jun 5 21:24:29 MDT 2009
-> > x86_64 Intel(R) Core(TM)2 CPU T7400 @ 2.16GHz GenuineIntel GNU/Linux
-> 
-> boot log?
-> 
-I bet you should set CONFIG_HIGHMEM64G or use x86-64 kernel because of
-1G of memory hole somewhere below 4G.
+> On Thu, 2009-06-11 at 11:05 +1000, Stephen Rothwell wrote:
+>> Hi Subrata,
+>> 
+>> On Wed, 10 Jun 2009 23:13:23 +0530 Subrata Modak <subrata@linux.vnet.ibm.com> wrote:
+>> >
+>> >  	/* Find the TBI PHY.  If it's not there, we don't support SGMII */
+>> > -	ph = of_get_property(np, "tbi-handle", NULL);
+>> > +	ph = (phandle *)of_get_property(np, "tbi-handle", NULL);
+>> 
+>> You don't need this cast because of_get_property() returns "void *".
+>
+> Stephen,
+>
+> True. But without this gcc complains:
+>
+> CC [M]  drivers/net/ucc_geth.o
+> drivers/net/ucc_geth.c: In function ‘ucc_geth_probe’:
+> drivers/net/ucc_geth.c:3824: warning: assignment discards qualifiers
+> from pointer target type
 
-Thanks,
--Kame
-
-> YH
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+ph should be declared const phandle *.  Look at other uses of
+of_get_property.
 
