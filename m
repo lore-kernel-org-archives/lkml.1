@@ -1,121 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762362AbZFKK0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762699AbZFKK0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762362AbZFKK0R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 06:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758083AbZFKK0G
+	id S1762699AbZFKK0f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 06:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761897AbZFKK00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 06:26:06 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57549 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581AbZFKK0E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 06:26:04 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH for mmotm 1/5] cleanp page_remove_rmap()
-Cc: kosaki.motohiro@jp.fujitsu.com, Mel Gorman <mel@csn.ul.ie>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090611192114.6D4A.A69D9226@jp.fujitsu.com>
-References: <20090611192114.6D4A.A69D9226@jp.fujitsu.com>
-Message-Id: <20090611192514.6D4D.A69D9226@jp.fujitsu.com>
+	Thu, 11 Jun 2009 06:26:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50532 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758083AbZFKK0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 06:26:25 -0400
+Date: Thu, 11 Jun 2009 12:26:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: [GIT PULL] tracing/urgent for v2.6.31
+Message-ID: <20090611102620.GB31719@elte.hu>
+References: <20090610230450.GA8964@elte.hu> <alpine.LFD.2.01.0906102002260.6847@localhost.localdomain> <alpine.DEB.2.00.0906102327050.30552@gandalf.stny.rr.com> <alpine.LFD.2.01.0906102045420.6847@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 11 Jun 2009 19:26:04 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0906102045420.6847@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] cleanp page_remove_rmap()
 
-page_remove_rmap() has multiple PageAnon() test and it has
-a bit deeply nesting.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-cleanup here.
+> On Wed, 10 Jun 2009, Steven Rostedt wrote:
+> > 
+> > Well it was:
+> > 
+> > 	default y if DEBUG_KERNEL
+> > 
+> > Where the rational was that if you want to debug the kernel, you 
+> > might want to see some tracing features that are available to 
+> > you.
+> 
+> Sure. I think that FTRACE config is borderline fine, although I 
+> think tracing is pretty different from the debug options that 
+> don't need the user to actually do anything (like 
+> PAGEALLOC_DEBUG).
+> 
+> It's the other ones I think were clearly dubious (ok, the MARKERS 
+> one isn't "clearly" dubious, since I have no idea why it got 
+> enabled, so I guess it would count as "unclearly dubious" then).
 
-note: this patch doesn't have behavior change.
+I agree that we have too many default-y options - we'll have a sweep 
+of all options and will default-disable the dubious (and unclearly 
+dubious) ones in a way that truly re-triggers user selection even if 
+the option is already enabled in the .config.
 
+This particular new menu didnt actually change any of the existing 
+options or defaults: it just organized/grouped an already existing, 
+somewhat disorganized set of options and made it easier to disable 
+them summarily. Making _that_ default-n could have caused people to 
+accidentally disable a lot of options they had enabled in their 
+configs intentionally.
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: Wu Fengguang <fengguang.wu@intel.com> 
----
- mm/rmap.c |   59 ++++++++++++++++++++++++++++++++---------------------------
- 1 file changed, 32 insertions(+), 27 deletions(-)
-
-Index: b/mm/rmap.c
-===================================================================
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -862,34 +862,39 @@ void page_dup_rmap(struct page *page, st
-  */
- void page_remove_rmap(struct page *page)
- {
--	if (atomic_add_negative(-1, &page->_mapcount)) {
--		/*
--		 * Now that the last pte has gone, s390 must transfer dirty
--		 * flag from storage key to struct page.  We can usually skip
--		 * this if the page is anon, so about to be freed; but perhaps
--		 * not if it's in swapcache - there might be another pte slot
--		 * containing the swap entry, but page not yet written to swap.
--		 */
--		if ((!PageAnon(page) || PageSwapCache(page)) &&
--		    page_test_dirty(page)) {
--			page_clear_dirty(page);
--			set_page_dirty(page);
--		}
--		if (PageAnon(page))
--			mem_cgroup_uncharge_page(page);
--		__dec_zone_page_state(page,
--			PageAnon(page) ? NR_ANON_PAGES : NR_FILE_MAPPED);
--		mem_cgroup_update_mapped_file_stat(page, -1);
--		/*
--		 * It would be tidy to reset the PageAnon mapping here,
--		 * but that might overwrite a racing page_add_anon_rmap
--		 * which increments mapcount after us but sets mapping
--		 * before us: so leave the reset to free_hot_cold_page,
--		 * and remember that it's only reliable while mapped.
--		 * Leaving it set also helps swapoff to reinstate ptes
--		 * faster for those pages still in swapcache.
--		 */
-+	if (!atomic_add_negative(-1, &page->_mapcount)) {
-+		/* the page is still mapped another one */
-+		return;
- 	}
-+
-+	/*
-+	 * Now that the last pte has gone, s390 must transfer dirty
-+	 * flag from storage key to struct page.  We can usually skip
-+	 * this if the page is anon, so about to be freed; but perhaps
-+	 * not if it's in swapcache - there might be another pte slot
-+	 * containing the swap entry, but page not yet written to swap.
-+	 */
-+	if ((!PageAnon(page) || PageSwapCache(page)) &&
-+		page_test_dirty(page)) {
-+		page_clear_dirty(page);
-+		set_page_dirty(page);
-+	}
-+	if (PageAnon(page)) {
-+		mem_cgroup_uncharge_page(page);
-+		__dec_zone_page_state(page, NR_ANON_PAGES);
-+	} else {
-+		__dec_zone_page_state(page, NR_FILE_MAPPED);
-+	}
-+	mem_cgroup_update_mapped_file_stat(page, -1);
-+	/*
-+	 * It would be tidy to reset the PageAnon mapping here,
-+	 * but that might overwrite a racing page_add_anon_rmap
-+	 * which increments mapcount after us but sets mapping
-+	 * before us: so leave the reset to free_hot_cold_page,
-+	 * and remember that it's only reliable while mapped.
-+	 * Leaving it set also helps swapoff to reinstate ptes
-+	 * faster for those pages still in swapcache.
-+	 */
- }
- 
- /*
-
-
+	Ingo
