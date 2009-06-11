@@ -1,87 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbZFKFHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbZFKFSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757841AbZFKFHH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 01:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbZFKFG5
+	id S1757841AbZFKFSz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 01:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZFKFSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 01:06:57 -0400
-Received: from mail-pz0-f172.google.com ([209.85.222.172]:53278 "EHLO
-	mail-pz0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754849AbZFKFG4 (ORCPT
+	Thu, 11 Jun 2009 01:18:45 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:2200 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753432AbZFKFSo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 01:06:56 -0400
+	Thu, 11 Jun 2009 01:18:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=Ehtwa9uTj4qwsxvBqM01WDNkw3IDI6rEtagva7AQau0Tv2mxRu0I0va/F84mo4jSZs
-         WSHK9IcOOn+8n9trWLpauymr82ugOn/l32x+thxdx9aYDmCtVn4XQaQbTA0zR+IFwIE6
-         7sD4Wl1D16xc2Izw7gOavuh9CyFm6Egg9QOhY=
-Date: Thu, 11 Jun 2009 13:09:29 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       Tao Ma <tao.ma@oracle.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: /proc/kcore has a unreasonable size(281474974617600) in x86_64
-	2.6.30-rc8.
-Message-ID: <20090611050929.GA2706@cr0.nay.redhat.com>
-References: <4A292B0D.8030807@oracle.com> <4A295AFB.80909@kernel.org> <4A2A7F33.4030807@oracle.com> <4A2AEBE3.4000100@kernel.org> <20090608015242.GB2596@cr0.nay.redhat.com> <4A2CA96D.3090502@oracle.com> <2375c9f90906072341o2cded749m45bdddfdb499469@mail.gmail.com> <4A2CC52B.9010602@oracle.com> <2375c9f90906081743p77934f47n8ba1a018d333b95b@mail.gmail.com> <m1ab4i11zx.fsf@fess.ebiederm.org>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=v+POiuU6fuYxGT9Gm9hMlIyxsmBE/wLLXC7CKYmclf6/+bqVqk3bAUUJzEo/gmMOFt
+         2YnjMNWFpfkbmzJx7LCfZUk3tRChmt0bJF0+QYKFjw7BUb7Miibam9NSJZmOevlSPNcg
+         5/itVHnd4J0txT2JMUthgTfaDr5+r13jY1pKY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <m1ab4i11zx.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200906101029.27529.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0906082233490.19072-100000@netrider.rowland.org>
+	 <200906100057.04473.rjw@sisk.pl> <200906101029.27529.rjw@sisk.pl>
+Date: Thu, 11 Jun 2009 14:18:46 +0900
+Message-ID: <aec7e5c30906102218j2f8f38dbt5d05a3928ca46c15@mail.gmail.com>
+Subject: Re: [patch update] Re: [linux-pm] Run-time PM idea (was: Re: 
+	[RFC][PATCH 0/2] PM: Rearrange core suspend code)
+From: Magnus Damm <magnus.damm@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
+       linux-pm@lists.linux-foundation.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jun 08, 2009 at 09:10:10PM -0700, Eric W. Biederman wrote:
->Am√©rico Wang <xiyou.wangcong@gmail.com> writes:
+Hi Rafael,
+
+On Wed, Jun 10, 2009 at 5:29 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+>> I tried to address your comments and the Oliver's comments too in the new
+>> version of the patch below. †Please have a look and tell me what you think.
 >
->> On Mon, Jun 8, 2009 at 4:00 PM, Tao Ma<tao.ma@oracle.com> wrote:
->>>>>
->>>>> But the result is the same
->>>>
->>>> Yes?
->>>> Your printk() shows kcore size is: 5301604352, and in your subject it is
->>>> 281474974617600...
->>>>
->>>> Or they happened in the same time?
->>>
->>> yes. the same box and the same linux version.
->>> A bit strange.
->>>
->>> [taoma@ocfs2-test2 ~]$ dmesg|grep "high memory"
->>> high memory ffff88013c000000, size 5301604352
->>> [taoma@ocfs2-test2 ~]$ ll /proc/kcore
->>> -r-------- 1 root root 281474974617600 Jun ¬†8 15:20 /proc/kcore
->>
->> Really weird...
->> They should be the same. This means we have some problem in our procfs.
->>
->> And, we have no problem on i386, I, myself, even can't reproduce this on my
->> x86_64 box...
->>
->> Drop Cc to x86 people, add some Cc to proc people. :)
->>
->> Eric, Alexey, any ideas?
->>
->> Tao, would you like to send us your .config? Thanks.
+> Argh, I forgot about some important things.
 >
->Short of some strange patch applied I would guess that a non-sense /proc/kcore
->size is related to a kernel memory stomp, stepping on the high_memory variable.
+> First, there are devices with no parent (actually, it would be much easier if
+> they had a default dummy parent, but that's a separate issue).
+>
+> Second, the parent has to be taken into account in the asynchronous resume
+> path too (which BTW is more complicated).
+>
+> Finally, I decided to follow the Oliver's suggestion that some error codes returned
+> by ->autosuspend() and ->autoresume() may be regarded as "go back to the
+> previous state" information. †I chose to use -EAGAIN and -EBUSY for this
+> purpose.
+>
+> Updated patch follows, sorry for the confusion.
 
-Hello, Eric.
+Thanks for your work on this. I think the patch looks very good in
+general so I will not comment on the code itself. I do however have a
+few high level questions:
 
-I see the problem now, I think the documentation of /proc/kcore
-is wrong, the size of kcore can be more than the size of physical
-memory, because it also contains the info of kernel modules which
-stay above the mapping of phy memory, see arch/x86/mm/init_64.c.
+Q1) Regarding pm_request_suspend(), would it be possible to get a
+synchronous version or to make use of the completion somehow?
 
-What do you think?
+Q2) As pm_request_suspend() works today, the device is marked as
+RPM_IDLE and the delayed work is queued up. There is no real decision
+making going on except the time out. I'd like to let the bus code
+decide when to autosuspend a buch of devices. Maybe the idle handling
+should be broken out into a pm_request_idle() and pm_request_suspend()
+can be modified to synchronously suspend devices marked with
+pm_request_idle()?
+
+Q3) Have you thought about how device drivers can inform the Runtime
+PM that the device are idle and that they need the hardware to be
+woken up? I'd like something similar to my "[PATCH 02/04] Driver Core:
+Add idle and wakeup functions" patch but maybe not specific to
+platform devices. We talked about adding some hooks to the bus_type
+for this. Any ideas?
+
+This is how I'm thinking of integrating your Runtime PM code with our
+SuperH platform devices:
+
+Device Idle Handling:
+
+1) Device drivers call pm_device_idle() (See Q3) which invokes arch
+specific platform bus code in the case of our SoC platform devices.
+This bus code marks the device as idle using pm_request_idle(). (See
+Q2). At this point light weight power management like clock stopping
+may be performed as well.
+
+2) The arch specific bus code knows how the platform devices are
+grouped together (thanks to the data area in "[PATCH] Driver Core: Add
+platform device arch data V3"), and when all devices in one power
+domain are marked as idle the bus code calls the synchronous
+pm_request_suspend() (no delay).
+
+3) When all devices in the power domain are suspended the bus code can
+turn off the power. The reason why I'd like to only autosuspend when
+all devices are idle is simply that we don't get any power savings
+from the per device autosuspend() callbacks, only from turning off
+power to the entire per-domain. So bindly autosuspending and
+autoresuming devices is just pure overhead unless we know we can do it
+for all devices in the domain.
+
+4) Over time when the code in 2) should be extended to handle latencies.
+
+Device Wakeup Handling:
+
+1) Device drivers call pm_device_wakeup() (See Q3). This invokes arch
+specific bus code for our SoC platform devices. The bus code enables
+clocks if needed and also calls pm_resume_sync().
+
+2) After the call to pm_resume_sync() the pm_device_wakeup() call
+returns and the device driver can access the hardware as usual.
+
+That's it! Far from perfect but maybe a good start at least.
+
+I have seen quite a few patches from you lately, nice work. To make
+tracking of the Runtime PM patches easier, can you pleae consider
+including the version of the patch in the subject when you post new
+versions?
 
 Thanks!
 
+/ magnus
