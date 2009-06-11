@@ -1,71 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbZFKJgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761683AbZFKJhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761539AbZFKJgg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 05:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759079AbZFKJg2
+	id S1761683AbZFKJhr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 05:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760825AbZFKJhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 05:36:28 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44694 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756630AbZFKJg2 (ORCPT
+	Thu, 11 Jun 2009 05:37:39 -0400
+Received: from mail-gx0-f214.google.com ([209.85.217.214]:53384 "EHLO
+	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757008AbZFKJhj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 05:36:28 -0400
-Subject: Re: Bug: fio traps into kernel without exiting because futex has a
- deadloop
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Darren Hart <dvhltc@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1244709196.2560.287.camel@ymzhang>
-References: <1244689688.2560.268.camel@ymzhang>
-	 <1244699756.6691.4.camel@laptop>  <1244701128.6691.5.camel@laptop>
-	 <1244709196.2560.287.camel@ymzhang>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 11 Jun 2009 11:36:20 +0200
-Message-Id: <1244712980.6691.84.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+	Thu, 11 Jun 2009 05:37:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=VhH7R+ZXMTCFg+m+L/xLY/8WsJCVB4MIeZGX9yiUqg3oUDqE4jlEhsRjzPNYjXF56r
+         N7E9M3XaRjKJ51rr8o0uCW8pTSXc1cgLHRwmKUgqLT/PCTn2CTgQoQ3KfTS4rZQtFP0y
+         nKHNuDH0hATlosId4li0qNct+1jRvEtDMMOik=
+MIME-Version: 1.0
+In-Reply-To: <20090611173819.0f76e431.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090611165535.cf46bf29.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090611170152.7a43b13b.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090611172249.6D3C.A69D9226@jp.fujitsu.com>
+	 <20090611173819.0f76e431.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Thu, 11 Jun 2009 18:37:40 +0900
+Message-ID: <28c262360906110237u1f3d1877hae54a51575955549@mail.gmail.com>
+Subject: Re: [PATCH 2/3] check unevictable flag in lumy reclaim v2
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       apw@canonical.com, riel@redhat.com, mel@csn.ul.ie
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-06-11 at 16:33 +0800, Zhang, Yanmin wrote:
-> On Thu, 2009-06-11 at 08:18 +0200, Peter Zijlstra wrote:
-> > On Thu, 2009-06-11 at 07:55 +0200, Peter Zijlstra wrote:
-> > > On Thu, 2009-06-11 at 11:08 +0800, Zhang, Yanmin wrote:
-> > > > I investigate a fio hang issue. When I run fio multi-process
-> > > > testing on many disks, fio traps into kernel and doesn't exit
-> > > > (mostly hit once after runing sub test cases for ﻿hundreds of times).
-> > > > 
-> > > > Oprofile data shows kernel consumes time with some futex functions.
-> > > > Command kill couldn't kill the process and machine reboot also hangs.
-> > > > 
-> > > > Eventually, I locate the root cause as a bug of futex. Kernel enters
-> > > > a deadloop between 'retry' and 'goto retry' in function futex_wake_op.
-> > > > By unknown reason (might be an issue of fio or glibc), parameter uaddr2
-> > > > points to an area which is READONLY. So futex_atomic_op_inuser returns
-> > > > -EFAULT when trying to changing the data at uaddr2, but later get_user
-> > > > still succeeds becasue the area is READONLY. Then go back to retry.
-> > > > 
-> > > > I create a simple test case to trigger it, which just shmat an READONLY
-> > > > area for address uaddr2.
-> > > > 
-> > > > It could be used as a DOS attack.
-> > 
-> > /me has morning juice and notices he sent the wrong commit...
-> > 
-> > commit 64d1304a64477629cb16b75491a77bafe6f86963
-> > Author: Thomas Gleixner <tglx@linutronix.de>
-> > Date:   Mon May 18 21:20:10 2009 +0200
-> 2.6.30 includes the new commit. I did a quick testing with my simple
-> test case and it traps into kernel without exiting.
-> 
-> The reason is I use flag FUTEX_PRIVATE_FLAG. So the fshared part in function
-> get_futex_key should be deleted. That might hurt performance.
+On Thu, Jun 11, 2009 at 5:38 PM, KAMEZAWA
+Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> How about this ?
+>
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>
+> Lumpy reclaim check pages from their pfn. Then, it can find unevictable pages
+> in its loop.
+> Abort lumpy reclaim when we find Unevictable page, we never get a lump
+> of pages for requested order.
+>
+> Changelog: v1->v2
+>  - rewrote commet.
+>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  mm/vmscan.c |    9 +++++++++
+>  1 file changed, 9 insertions(+)
+>
+> Index: lumpy-reclaim-trial/mm/vmscan.c
+> ===================================================================
+> --- lumpy-reclaim-trial.orig/mm/vmscan.c
+> +++ lumpy-reclaim-trial/mm/vmscan.c
+> @@ -936,6 +936,15 @@ static unsigned long isolate_lru_pages(u
+>                        /* Check that we have not crossed a zone boundary. */
+>                        if (unlikely(page_zone_id(cursor_page) != zone_id))
+>                                continue;
+> +                       /*
+> +                        * We tries to free all pages in this range to create
+> +                        * a free large page. Then, if the range includes a page
+> +                        * never be reclaimed, we have no reason to do more.
+> +                        * PageUnevictable page is not a page which can be
+> +                        * easily freed. Abort this scan now.
+> +                        */
+> +                       if (unlikely(PageUnevictable(cursor_page)))
+> +                               break;
 
-No reason to, the easiest fix would be to simply propagate that -EFAULT
-to userspace and let them chew on it, there's really nothing you can do
-with a RO mapping.
+__isolate_lru_pages already checked PageUnevictable to return error.
+I want to remove repeated check although it is trivial.
 
+By your patch, It seems to remove PageUnevictable check in __isolate_lru_pages.
+
+But I know that. If we remove PageUnevictable check in
+__isolate_lru_pages, it can't go into BUG in non-lumpy case. ( I
+mentioned following as code)
+
+                case -EBUSY:
+                        /* else it is being freed elsewhere */
+                        list_move(&page->lru, src);
+                        continue;
+
+                default:
+                        BUG();
+                }
+
+
+It means we can remove BUG in non-lumpy case and then add BUG into
+__isolate_lru_pages directly.
+
+If we can do it, we can remove unnecessary PageUnevictable check in
+__isolate_lru_page.
+
+I am not sure this is right in case of memcg.
+
+-- 
+Kinds regards,
+Minchan Kim
