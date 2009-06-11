@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763627AbZFKXa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763769AbZFKXbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763627AbZFKXa6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 19:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759719AbZFKXau
+	id S1763769AbZFKXbi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 19:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759719AbZFKXbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 19:30:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56320 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758212AbZFKXau (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 19:30:50 -0400
-Date: Thu, 11 Jun 2009 16:30:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: mel@csn.ul.ie, kosaki.motohiro@jp.fujitsu.com, riel@redhat.com,
-       cl@linux-foundation.org, fengguang.wu@intel.com, linuxram@us.ibm.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] Fix malloc() stall in zone_reclaim() and bring
- behaviour more in line with expectations V3
-Message-Id: <20090611163006.e985639f.akpm@linux-foundation.org>
-In-Reply-To: <1244717273-15176-1-git-send-email-mel@csn.ul.ie>
-References: <1244717273-15176-1-git-send-email-mel@csn.ul.ie>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 11 Jun 2009 19:31:31 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37493 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758212AbZFKXba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 19:31:30 -0400
+Date: Thu, 11 Jun 2009 19:31:25 -0400
+From: Dave Jones <davej@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>, Dominik Brodowski <linux@brodo.de>
+Subject: Re: [PATCH 2/6] cpumask: avoid playing with cpus_allowed in
+	speedstep-ich.c
+Message-ID: <20090611233125.GB32486@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Rusty Russell <rusty@rustcorp.com.au>, cpufreq@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+	Dominik Brodowski <linux@brodo.de>
+References: <20090611225927.E324ADDD04@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090611225927.E324ADDD04@ozlabs.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 11 Jun 2009 11:47:50 +0100
-Mel Gorman <mel@csn.ul.ie> wrote:
+On Thu, Jun 11, 2009 at 10:59:58PM +0930, Rusty Russell wrote:
 
-> The big change with this release is that the patch reintroducing
-> zone_reclaim_interval has been dropped as Ram reports the malloc() stalls
-> have been resolved. If this bug occurs again, the counter will be there to
-> help us identify the situation.
 
-What is the exact relationship between this work and the somewhat
-mangled "[PATCH for mmotm 0/5] introduce swap-backed-file-mapped count
-and fix
-vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch"
-series?
+Minor nit (and this was there before your change, but because
+you moved it, checkpatch now whines..)
 
-That five-patch series had me thinking that it was time to drop 
+ > +static void get_freqs_on_cpu(void *_get_freqs)
+ > +{
+ > +	struct get_freqs *get_freqs = _get_freqs;
+ > +
+ > +	get_freqs->ret =
+ > +		speedstep_get_freqs(speedstep_processor,
+ > +				    &speedstep_freqs[SPEEDSTEP_LOW].frequency,
+ > +				    &speedstep_freqs[SPEEDSTEP_HIGH].frequency,
+ > +				    &get_freqs->policy->cpuinfo.transition_latency,
+ > +				    &speedstep_set_state);
+ > +}
 
-vmscan-change-the-number-of-the-unmapped-files-in-zone-reclaim.patch
-vmscan-drop-pf_swapwrite-from-zone_reclaim.patch
-vmscan-zone_reclaim-use-may_swap.patch
+line over 80 characters. 
+I'll just pull it back one tab.
 
-(they can be removed cleanly, but I haven't tried compiling the result)
+Perhaps some variable renaming in this file is called for to reduce
+some of the redundancy in such lines.
 
-but your series is based on those.
+	Dave
 
-We have 142 MM patches queued, and we need to merge next week.
