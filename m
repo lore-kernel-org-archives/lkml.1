@@ -1,87 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbZFKVIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760453AbZFKVMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbZFKVIT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 17:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbZFKVID
+	id S1760453AbZFKVMT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 17:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbZFKVMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 17:08:03 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35628 "EHLO
+	Thu, 11 Jun 2009 17:12:06 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40684 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753319AbZFKVIB (ORCPT
+	with ESMTP id S1753319AbZFKVME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 17:08:01 -0400
-Date: Thu, 11 Jun 2009 23:07:55 +0200
+	Thu, 11 Jun 2009 17:12:04 -0400
+Date: Thu, 11 Jun 2009 23:11:57 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: linux-kernel@vger.kernel.org, Eric Piel <eric.piel@tremplin-utc.net>
-Subject: Re: [PATCH] lis3: add click function
-Message-ID: <20090611210755.GC27376@elf.ucw.cz>
-References: <1244750146-31215-1-git-send-email-daniel@caiaq.de>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate file.
+Message-ID: <20090611211157.GD27376@elf.ucw.cz>
+References: <20090604161847.513682672@de.ibm.com> <200906082048.28779.rjw@sisk.pl> <20090609104003.50830165@gondolin> <200906100109.20470.rjw@sisk.pl> <20090611133218.GB3146@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1244750146-31215-1-git-send-email-daniel@caiaq.de>
+In-Reply-To: <20090611133218.GB3146@osiris.boeblingen.de.ibm.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-06-11 21:55:46, Daniel Mack wrote:
-> The LIS3 accelerometer chip has a 'click' feature which can be used to
-> detect sudden motion on any of the three axis. Configuration data is
-> passed via spi platform_data and no action is taken if that's not
-> specified, so it won't harm any existing platform.
+On Thu 2009-06-11 15:32:18, Heiko Carstens wrote:
+> On Wed, Jun 10, 2009 at 01:09:19AM +0200, Rafael J. Wysocki wrote:
+> > On Tuesday 09 June 2009, Cornelia Huck wrote:
+> > > The *_nvs_* routines in swsusp.c make use of the io*map()
+> > > functions, which are only provided for HAS_IOMEM, thus
+> > > breaking compilation if HAS_IOMEM is not set. Fix this
+> > > by moving the *_nvs_* routines into hibernation_nvs.c, which
+> > > is only compiled if HAS_IOMEM is set.
+> > > 
+> > > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> > 
+> > Thanks, I added the GPLv2 line to the header comment and changed the name
+> > of the file to hibernate_nvs.c (to match the other changes in the works).
+> > 
+> > I'll carry out some compilation testing on it and put it into the tree shortly.
 > 
-> To make the configuration effective, the IRQ lines need to be set up
-> appropriately. This patch also adds a way to do that from board support
-> code.
+> Rafael, could you add the patch below as well?
+> Or should that go in via git390?
 > 
-> The DD_* definitions were removed because I couldn't find any reference
-> of them in the datasheet and the overlapped with the CLICK_ register
-> space.
+> Subject: [PATCH] PM: add empty suspend/resume device irq functions
 > 
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Eric Piel <eric.piel@tremplin-utc.net>
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> git commit 0a0c5168 "PM: Introduce functions for suspending and resuming
+> device interrupts" introduced some helper functions. However these
+> functions are only available for architectures which support
+> GENERIC_HARDIRQS.
+> 
+> Other architectures will see this build error:
+> 
+> drivers/built-in.o: In function `sysdev_suspend':
+> (.text+0x15138): undefined reference to `check_wakeup_irqs'
+> drivers/built-in.o: In function `device_power_up':
+> (.text+0x1cb66): undefined reference to `resume_device_irqs'
+> drivers/built-in.o: In function `device_power_down':
+> (.text+0x1cb92): undefined reference to `suspend_device_irqs'
+> 
+> To fix this add some empty inline functions for !GENERIC_HARDIRQS.
 
-Well, patch looks mostly okay, but it would be nice to separate
-cleanups onto separate patch... 
- 
-> index 07ae74b..8d50ef2 100644
-> --- a/drivers/hwmon/lis3lv02d_spi.c
-> +++ b/drivers/hwmon/lis3lv02d_spi.c
-> @@ -66,21 +66,22 @@ static int __devinit lis302dl_spi_probe(struct spi_device *spi)
->  	if (ret < 0)
->  		return ret;
->  
-> -	lis3_dev.bus_priv = spi;
-> -	lis3_dev.init = lis3_spi_init;
-> -	lis3_dev.read = lis3_spi_read;
-> -	lis3_dev.write = lis3_spi_write;
-> -	lis3_dev.irq = spi->irq;
-> -	lis3_dev.ac = lis3lv02d_axis_normal;
-> +	lis3_dev.bus_priv	= spi;
-> +	lis3_dev.init		= lis3_spi_init;
-> +	lis3_dev.read		= lis3_spi_read;
-> +	lis3_dev.write		= lis3_spi_write;
-> +	lis3_dev.irq		= spi->irq;
-> +	lis3_dev.ac		= lis3lv02d_axis_normal;
-> +	lis3_dev.pdata		= spi->dev.platform_data;
->  	spi_set_drvdata(spi, &lis3_dev);
->  
-> -	ret = lis3lv02d_init_device(&lis3_dev);
-> -	return ret;
-> +	return lis3lv02d_init_device(&lis3_dev);
->  }
->  
->  static int __devexit lis302dl_spi_remove(struct spi_device *spi)
->  {
->  	struct lis3lv02d *lis3 = spi_get_drvdata(spi);
-> +
->  	lis3lv02d_joystick_disable();
->  	lis3lv02d_poweroff(lis3);
->  	return 0;
+I don't think that's right fix. If architecture does not use
+GENERIC_HARDIRQS, it may want to implement *_device_irqs()
+itself. Before your patch, it could, after your patch, it can not.
+
+Better put those empty functions in arch/s390/include?
+								Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
