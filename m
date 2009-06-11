@@ -1,221 +1,273 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763582AbZFKXAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763675AbZFKXAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763582AbZFKXAc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 19:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761986AbZFKW73
+	id S1763675AbZFKXAw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 19:00:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762829AbZFKW7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 18:59:29 -0400
-Received: from ozlabs.org ([203.10.76.45]:37881 "EHLO ozlabs.org"
+	Thu, 11 Jun 2009 18:59:34 -0400
+Received: from ozlabs.org ([203.10.76.45]:37887 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760614AbZFKW70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 18:59:26 -0400
+	id S1760810AbZFKW71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 18:59:27 -0400
 CC: linux-kernel@vger.kernel.org
 To: davej@redhat.com
 To: cpufreq@vger.kernel.org
 CC: Ingo Molnar <mingo@redhat.com>
 From: Rusty Russell <rusty@rustcorp.com.au>
 Date: Thu, 11 Jun 2009 22:59:58 +0930
-Subject: [PATCH 2/6] cpumask: avoid playing with cpus_allowed in speedstep-ich.c
-Cc: Dominik Brodowski <linux@brodo.de>
-Message-Id: <20090611225927.E324ADDD04@ozlabs.org>
+Subject: [PATCH 3/6] cpumask: avoid playing with cpus_allowed in powernow-k8.c
+Cc: mark.langsdorf@amd.com
+Message-Id: <20090611225928.E6FF4DDDA1@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Impact: don't play with current's cpumask
+From: Rusty Russell <rusty@rustcorp.com.au>
 
 It's generally a very bad idea to mug some process's cpumask: it could
 legitimately and reasonably be changed by root, which could break us
 (if done before our code) or them (if we restore the wrong value).
 
-We use smp_call_function_single: this had the advantage of being more
-efficient, too.
+I did not replace powernowk8_target; it needs fixing, but it grabs a
+mutex (so no smp_call_function_single here) but Mark points out it can
+be called multiple times per second, so work_on_cpu is too heavy.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 To: davej@redhat.com
 To: cpufreq@vger.kernel.org
-Cc: Dominik Brodowski <linux@brodo.de>
+Cc: mark.langsdorf@amd.com
 ---
- arch/x86/kernel/cpu/cpufreq/speedstep-ich.c |   91 ++++++++++++++++------------
- arch/x86/kernel/cpu/cpufreq/speedstep-lib.c |    1 
- 2 files changed, 54 insertions(+), 38 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |  156 +++++++++++++++---------------
+ 1 file changed, 82 insertions(+), 74 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c b/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
---- a/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
-+++ b/arch/x86/kernel/cpu/cpufreq/speedstep-ich.c
-@@ -89,7 +89,8 @@ static int speedstep_find_register(void)
-  * speedstep_set_state - set the SpeedStep state
-  * @state: new processor frequency state (SPEEDSTEP_LOW or SPEEDSTEP_HIGH)
-  *
-- *   Tries to change the SpeedStep state.
-+ *   Tries to change the SpeedStep state.  Can be called from
-+ *   smp_call_function_single.
-  */
- static void speedstep_set_state(unsigned int state)
- {
-@@ -143,6 +144,11 @@ static void speedstep_set_state(unsigned
- 	return;
- }
- 
-+/* Wrapper for smp_call_function_single. */
-+static void _speedstep_set_state(void *_state)
-+{
-+	speedstep_set_state(*(unsigned int *)_state);
-+}
- 
- /**
-  * speedstep_activate - activate SpeedStep control in the chipset
-@@ -226,22 +232,28 @@ static unsigned int speedstep_detect_chi
+diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+--- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -510,41 +510,34 @@ static int core_voltage_post_transition(
  	return 0;
  }
  
--static unsigned int _speedstep_get(const struct cpumask *cpus)
-+struct get_freq_data {
-+	unsigned int speed;
-+	unsigned int processor;
-+};
-+
-+static void get_freq_data(void *_data)
+-static int check_supported_cpu(unsigned int cpu)
++static void check_supported_cpu(void *_rc)
  {
--	unsigned int speed;
--	cpumask_t cpus_allowed;
-+	struct get_freq_data *data = _data;
+-	cpumask_t oldmask;
+ 	u32 eax, ebx, ecx, edx;
+-	unsigned int rc = 0;
++	int *rc = _rc;
  
--	cpus_allowed = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, cpus);
--	speed = speedstep_get_frequency(speedstep_processor);
--	set_cpus_allowed_ptr(current, &cpus_allowed);
--	dprintk("detected %u kHz as current frequency\n", speed);
--	return speed;
-+	data->speed = speedstep_get_frequency(data->processor);
- }
- 
- static unsigned int speedstep_get(unsigned int cpu)
- {
--	return _speedstep_get(cpumask_of(cpu));
-+	struct get_freq_data data = { .processor = cpu };
-+
-+	/* You're supposed to ensure CPU is online. */
-+	if (smp_call_function_single(cpu, get_freq_data, &data, 1) != 0)
-+		BUG();
-+
-+	dprintk("detected %u kHz as current frequency\n", data.speed);
-+	return data.speed;
- }
- 
- /**
-@@ -257,16 +269,16 @@ static int speedstep_target(struct cpufr
- 			     unsigned int target_freq,
- 			     unsigned int relation)
- {
--	unsigned int newstate = 0;
-+	unsigned int newstate = 0, policy_cpu;
- 	struct cpufreq_freqs freqs;
--	cpumask_t cpus_allowed;
- 	int i;
- 
- 	if (cpufreq_frequency_table_target(policy, &speedstep_freqs[0],
- 				target_freq, relation, &newstate))
- 		return -EINVAL;
- 
--	freqs.old = _speedstep_get(policy->cpus);
-+	policy_cpu = cpumask_any_and(policy->cpus, cpu_online_mask);
-+	freqs.old = speedstep_get(policy_cpu);
- 	freqs.new = speedstep_freqs[newstate].frequency;
- 	freqs.cpu = policy->cpu;
- 
-@@ -276,20 +288,13 @@ static int speedstep_target(struct cpufr
- 	if (freqs.old == freqs.new)
- 		return 0;
- 
--	cpus_allowed = current->cpus_allowed;
+-	oldmask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
 -
- 	for_each_cpu(i, policy->cpus) {
- 		freqs.cpu = i;
- 		cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+-	if (smp_processor_id() != cpu) {
+-		printk(KERN_ERR PFX "limiting to cpu %u failed\n", cpu);
+-		goto out;
+-	}
++	*rc = -ENODEV;
+ 
+ 	if (current_cpu_data.x86_vendor != X86_VENDOR_AMD)
+-		goto out;
++		return;
+ 
+ 	eax = cpuid_eax(CPUID_PROCESSOR_SIGNATURE);
+ 	if (((eax & CPUID_XFAM) != CPUID_XFAM_K8) &&
+ 	    ((eax & CPUID_XFAM) < CPUID_XFAM_10H))
+-		goto out;
++		return;
+ 
+ 	if ((eax & CPUID_XFAM) == CPUID_XFAM_K8) {
+ 		if (((eax & CPUID_USE_XFAM_XMOD) != CPUID_USE_XFAM_XMOD) ||
+ 		    ((eax & CPUID_XMOD) > CPUID_XMOD_REV_MASK)) {
+ 			printk(KERN_INFO PFX
+ 				"Processor cpuid %x not supported\n", eax);
+-			goto out;
++			return;
+ 		}
+ 
+ 		eax = cpuid_eax(CPUID_GET_MAX_CAPABILITIES);
+ 		if (eax < CPUID_FREQ_VOLT_CAPABILITIES) {
+ 			printk(KERN_INFO PFX
+ 			       "No frequency change capabilities detected\n");
+-			goto out;
++			return;
+ 		}
+ 
+ 		cpuid(CPUID_FREQ_VOLT_CAPABILITIES, &eax, &ebx, &ecx, &edx);
+@@ -552,21 +545,17 @@ static int check_supported_cpu(unsigned 
+ 			!= P_STATE_TRANSITION_CAPABLE) {
+ 			printk(KERN_INFO PFX
+ 				"Power state transitions not supported\n");
+-			goto out;
++			return;
+ 		}
+ 	} else { /* must be a HW Pstate capable processor */
+ 		cpuid(CPUID_FREQ_VOLT_CAPABILITIES, &eax, &ebx, &ecx, &edx);
+ 		if ((edx & USE_HW_PSTATE) == USE_HW_PSTATE)
+ 			cpu_family = CPU_HW_PSTATE;
+ 		else
+-			goto out;
++			return;
  	}
  
--	/* switch to physical CPU where state is to be changed */
--	set_cpus_allowed_ptr(current, policy->cpus);
+-	rc = 1;
 -
--	speedstep_set_state(newstate);
--
--	/* allow to be run on all CPUs */
--	set_cpus_allowed_ptr(current, &cpus_allowed);
-+	smp_call_function_single(policy_cpu, _speedstep_set_state, &newstate,
-+				 true);
- 
- 	for_each_cpu(i, policy->cpus) {
- 		freqs.cpu = i;
-@@ -312,33 +317,43 @@ static int speedstep_verify(struct cpufr
- 	return cpufreq_frequency_table_verify(policy, &speedstep_freqs[0]);
+-out:
+-	set_cpus_allowed_ptr(current, &oldmask);
+-	return rc;
++	*rc = 0;
  }
  
-+struct get_freqs {
-+	struct cpufreq_policy *policy;
-+	int ret;
+ static int check_pst_table(struct powernow_k8_data *data, struct pst_s *pst,
+@@ -1235,6 +1230,32 @@ static int powernowk8_verify(struct cpuf
+ 	return cpufreq_frequency_table_verify(pol, data->powernow_table);
+ }
+ 
++struct init_on_cpu {
++	struct powernow_k8_data *data;
++	int rc;
 +};
 +
-+static void get_freqs_on_cpu(void *_get_freqs)
++static void __cpuinit powernowk8_cpu_init_on_cpu(void *_init_on_cpu)
 +{
-+	struct get_freqs *get_freqs = _get_freqs;
++	struct init_on_cpu *init_on_cpu = _init_on_cpu;
 +
-+	get_freqs->ret =
-+		speedstep_get_freqs(speedstep_processor,
-+				    &speedstep_freqs[SPEEDSTEP_LOW].frequency,
-+				    &speedstep_freqs[SPEEDSTEP_HIGH].frequency,
-+				    &get_freqs->policy->cpuinfo.transition_latency,
-+				    &speedstep_set_state);
++	if (pending_bit_stuck()) {
++		printk(KERN_ERR PFX "failing init, change pending bit set\n");
++		init_on_cpu->rc = -ENODEV;
++		return;
++	}
++
++	if (query_current_values_with_pending_wait(init_on_cpu->data)) {
++		init_on_cpu->rc = -ENODEV;
++		return;
++	}
++
++	if (cpu_family == CPU_OPTERON)
++		fidvid_msr_init();
++
++	init_on_cpu->rc = 0;
 +}
- 
- static int speedstep_cpu_init(struct cpufreq_policy *policy)
++
+ static const char ACPI_PSS_BIOS_BUG_MSG[] =
+ 	KERN_ERR FW_BUG PFX "No compatible ACPI _PSS objects found.\n"
+ 	KERN_ERR FW_BUG PFX "Try again with latest BIOS.\n";
+@@ -1243,13 +1264,14 @@ static const char ACPI_PSS_BIOS_BUG_MSG[
+ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
  {
--	int result = 0;
--	unsigned int speed;
--	cpumask_t cpus_allowed;
-+	int result;
-+	unsigned int policy_cpu, speed;
-+	struct get_freqs gf;
+ 	struct powernow_k8_data *data;
+-	cpumask_t oldmask;
++	struct init_on_cpu init_on_cpu;
+ 	int rc;
  
- 	/* only run on CPU to be set, or on its sibling */
- #ifdef CONFIG_SMP
- 	cpumask_copy(policy->cpus, cpu_sibling_mask(policy->cpu));
- #endif
+ 	if (!cpu_online(pol->cpu))
+ 		return -ENODEV;
+ 
+-	if (!check_supported_cpu(pol->cpu))
++	smp_call_function_single(pol->cpu, check_supported_cpu, &rc, 1);
++	if (rc)
+ 		return -ENODEV;
+ 
+ 	data = kzalloc(sizeof(struct powernow_k8_data), GFP_KERNEL);
+@@ -1289,27 +1311,12 @@ static int __cpuinit powernowk8_cpu_init
+ 		pol->cpuinfo.transition_latency = get_transition_latency(data);
+ 
+ 	/* only run on specific CPU from here on */
+-	oldmask = current->cpus_allowed;
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pol->cpu));
 -
--	cpus_allowed = current->cpus_allowed;
--	set_cpus_allowed_ptr(current, policy->cpus);
-+	policy_cpu = cpumask_any_and(policy->cpus, cpu_online_mask);
+-	if (smp_processor_id() != pol->cpu) {
+-		printk(KERN_ERR PFX "limiting to cpu %u failed\n", pol->cpu);
+-		goto err_out_unmask;
+-	}
+-
+-	if (pending_bit_stuck()) {
+-		printk(KERN_ERR PFX "failing init, change pending bit set\n");
+-		goto err_out_unmask;
+-	}
+-
+-	if (query_current_values_with_pending_wait(data))
+-		goto err_out_unmask;
+-
+-	if (cpu_family == CPU_OPTERON)
+-		fidvid_msr_init();
+-
+-	/* run on any CPU again */
+-	set_cpus_allowed_ptr(current, &oldmask);
++	init_on_cpu.data = data;
++	smp_call_function_single(data->cpu, powernowk8_cpu_init_on_cpu,
++				 &init_on_cpu, 1);
++	rc = init_on_cpu.rc;
++	if (rc != 0)
++		goto err_out_exit_acpi;
  
- 	/* detect low and high frequency and transition latency */
--	result = speedstep_get_freqs(speedstep_processor,
--				     &speedstep_freqs[SPEEDSTEP_LOW].frequency,
--				     &speedstep_freqs[SPEEDSTEP_HIGH].frequency,
--				     &policy->cpuinfo.transition_latency,
--				     &speedstep_set_state);
--	set_cpus_allowed_ptr(current, &cpus_allowed);
--	if (result)
--		return result;
-+	gf.policy = policy;
-+	smp_call_function_single(policy_cpu, get_freqs_on_cpu, &gf, 1);
-+	if (gf.ret)
-+		return gf.ret;
+ 	if (cpu_family == CPU_HW_PSTATE)
+ 		cpumask_copy(pol->cpus, cpumask_of(pol->cpu));
+@@ -1346,8 +1353,7 @@ static int __cpuinit powernowk8_cpu_init
  
- 	/* get current speed setting */
--	speed = _speedstep_get(policy->cpus);
-+	speed = speedstep_get(policy_cpu);
- 	if (!speed)
- 		return -EIO;
+ 	return 0;
  
-diff --git a/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c b/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c
---- a/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c
-+++ b/arch/x86/kernel/cpu/cpufreq/speedstep-lib.c
-@@ -226,6 +226,7 @@ static unsigned int pentium4_get_frequen
+-err_out_unmask:
+-	set_cpus_allowed_ptr(current, &oldmask);
++err_out_exit_acpi:
+ 	powernow_k8_cpu_exit_acpi(data);
+ 
+ err_out:
+@@ -1372,12 +1378,20 @@ static int __devexit powernowk8_cpu_exit
+ 	return 0;
  }
  
- 
-+/* Warning: may get called from smp_call_function_single. */
- unsigned int speedstep_get_frequency(unsigned int processor)
++static void query_values_on_cpu(void *_err)
++{
++	int *err = _err;
++	struct powernow_k8_data *data = __get_cpu_var(powernow_data);
++
++	*err = query_current_values_with_pending_wait(data);
++}
++
+ static unsigned int powernowk8_get(unsigned int cpu)
  {
- 	switch (processor) {
+ 	struct powernow_k8_data *data;
+-	cpumask_t oldmask = current->cpus_allowed;
+ 	unsigned int khz = 0;
+ 	unsigned int first;
++	int err;
+ 
+ 	first = cpumask_first(cpu_core_mask(cpu));
+ 	data = per_cpu(powernow_data, first);
+@@ -1385,15 +1399,8 @@ static unsigned int powernowk8_get(unsig
+ 	if (!data)
+ 		return -EINVAL;
+ 
+-	set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
+-	if (smp_processor_id() != cpu) {
+-		printk(KERN_ERR PFX
+-			"limiting to CPU %d failed in powernowk8_get\n", cpu);
+-		set_cpus_allowed_ptr(current, &oldmask);
+-		return 0;
+-	}
+-
+-	if (query_current_values_with_pending_wait(data))
++	smp_call_function_single(first, query_values_on_cpu, &err, true);
++	if (err)
+ 		goto out;
+ 
+ 	if (cpu_family == CPU_HW_PSTATE)
+@@ -1404,7 +1411,6 @@ static unsigned int powernowk8_get(unsig
+ 
+ 
+ out:
+-	set_cpus_allowed_ptr(current, &oldmask);
+ 	return khz;
+ }
+ 
+@@ -1430,7 +1436,9 @@ static int __cpuinit powernowk8_init(voi
+ 	unsigned int i, supported_cpus = 0;
+ 
+ 	for_each_online_cpu(i) {
+-		if (check_supported_cpu(i))
++		int rc;
++		smp_call_function_single(i, check_supported_cpu, &rc, 1);
++		if (rc == 0)
+ 			supported_cpus++;
+ 	}
+ 
 
