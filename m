@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761680AbZFKAr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbZFKAvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761680AbZFKAr5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 10 Jun 2009 20:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037AbZFKAru
+	id S1760953AbZFKAvS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 10 Jun 2009 20:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756408AbZFKAvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 10 Jun 2009 20:47:50 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:64809 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752668AbZFKArt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 10 Jun 2009 20:47:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=doGmbseKzD0Z68+GgH7+pwhpcgK6WRsTy1px6RL/gKIxSVQ/qoSXPU6plQZ50E5evT
-         awWLh7eN4UZpI/9IQu9sXoYhict/bfRisDyEGVfvsuApaqKuShL7dn93o0sJcfqq3ZUl
-         1WlLCw5fYOYRphMLJYjlVrUlMsrQ6w2ZfwK7c=
-MIME-Version: 1.0
-Date: Wed, 10 Jun 2009 18:47:50 -0600
-Message-ID: <9b1675090906101747u4ab8cc89t764ba80b4eb3dcb2@mail.gmail.com>
-Subject: Macbook 4G only see 3G
-From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 10 Jun 2009 20:51:10 -0400
+Received: from mga02.intel.com ([134.134.136.20]:11641 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756809AbZFKAvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 10 Jun 2009 20:51:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.42,198,1243839600"; 
+   d="scan'208";a="523454056"
+Subject: Re: [PATCH 3/3] ring-buffer: add design document
+From: Huang Ying <ying.huang@intel.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       "Martin J. Bligh" <mbligh@mbligh.org>,
+       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+In-Reply-To: <20090610195525.429316815@goodmis.org>
+References: <20090610195311.767699959@goodmis.org>
+	 <20090610195525.429316815@goodmis.org>
+Content-Type: text/plain
+Date: Thu, 11 Jun 2009 08:51:07 +0800
+Message-Id: <1244681467.8361.654.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Guys,
+On Thu, 2009-06-11 at 03:53 +0800, Steven Rostedt wrote:
+> +
+> +cmpxchg - hardware assisted atomic transaction that performs the following:
+> +
+> +   A = B iff previous A == C
+> +
+> +   R = cmpxchg(A, C, B) is saying that we replace A with B if and only if
+> +      current A is equal to C, and we put the old (current) A into R
+> +
+> +   R gets the previous A regardless if A is updated with B or not.
+> +
+> +   To see if the update was successful a compare of R == C may be used.
 
-Has anyone been doing any development in the area of enabling 4G for
-any PC that doesn't have an option in the BIOS?  The Mac OS X sees the
-full 4G, but Linux does not.
+As far as I know, some architectures have no hardware assisted (NMI
+safe) cmpxchg. Is it OK to use cmpxchg in architecture-independent code?
 
-tdamac ~ # uname -a
-Linux tdamac 2.6.30-rc7-dirty #3 SMP Fri Jun 5 21:24:29 MDT 2009
-x86_64 Intel(R) Core(TM)2 CPU T7400 @ 2.16GHz GenuineIntel GNU/Linux
+Best Regards,
+Huang Ying
 
-I'm curious if there's some simple piece of code that can disable
-legacy PCI assignment of that extra 1G that Mac OS X does, but not the
-Linux kernel?  I know I disabled something called legacy mode or
-something, in one of my 64 bit machines, and the 4G then showed up.
-But, seeing the Mac uses EFI, I'm unable to do that.
 
-If no one has done any development in that area, does anyone have any
-idea where to look up the technical aspects of adding this code, and
-where in the kernel I would put it if I found out how to do it?
-
-Thanks.
