@@ -1,112 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbZFKRTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753786AbZFKRWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216AbZFKRTf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 13:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752511AbZFKRT2
+	id S1753786AbZFKRWu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 13:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbZFKRWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 13:19:28 -0400
-Received: from mail-gx0-f214.google.com ([209.85.217.214]:51044 "EHLO
-	mail-gx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751042AbZFKRT1 convert rfc822-to-8bit (ORCPT
+	Thu, 11 Jun 2009 13:22:42 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:7459 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbZFKRWm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 13:19:27 -0400
+	Thu, 11 Jun 2009 13:22:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fB1V58xNrutIlJDAmurJR/H1Z8LesmpYpdCXLbCLlu9tjn9I2kwTEprNx/XdhRP5mn
-         EyrY3uKjf3vyRxXf7bg/3BqXVv8sh8zNJGduIN0sgk6ZgR2agjZ7O/a+JwSoYxL4L4d4
-         ol6MKhrCWsJg244R/1qR5PkWsRS6nE76Zw6ds=
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=tzFARPfdhPP8nAYPSO5ULqL3cgYp2nj3NsTz1Bo7gw9BW+50i1hwFRX1gq4UOFZOLO
+         /tZ8WG+W8AD5ZHZFnSX4CB4s7wxkUetZRR4PiRAEWccW1GoYVixO3v2QenUKqBygJAxs
+         VOoHe9bv4E6/cpF5SPjtypkmD4jK2b1QVIbBQ=
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0906111512400.3372@localhost.localdomain>
-References: <20090611112746.802a24cb.sfr@canb.auug.org.au>
-	 <20090611102927.GE12431@alberich.amd.com>
-	 <alpine.LFD.2.00.0906111512400.3372@localhost.localdomain>
-Date: Thu, 11 Jun 2009 10:19:28 -0700
-Message-ID: <86802c440906111019o5829933fnfffcea5cd0e3c862@mail.gmail.com>
-Subject: Re: [PATCH] x86: memtest: fix compile warning
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090611171259.GW8633@ZenIV.linux.org.uk>
+References: <20090611160329.GA3366@elte.hu> <20090611161714.GA5008@infradead.org> 
+	<alpine.LFD.2.01.0906110922080.3573@localhost.localdomain> 
+	<20090611165226.GV8633@ZenIV.linux.org.uk> <1244739378.6691.540.camel@laptop> 
+	<20090611170015.GA3651@infradead.org> <2c0942db0906111005g5e9cd1c7te603bcdb8c6cc921@mail.gmail.com> 
+	<20090611171259.GW8633@ZenIV.linux.org.uk>
+From: Ray Lee <ray-lk@madrabbit.org>
+Date: Thu, 11 Jun 2009 10:22:23 -0700
+X-Google-Sender-Auth: 5c3c1cf23ac93af0
+Message-ID: <2c0942db0906111022s442be8fbl47656a60e2619b9d@mail.gmail.com>
+Subject: Re: [GIT PULL] Performance Counters for Linux
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>,
+       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
+       Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 7:21 AM, Thomas Gleixner<tglx@linutronix.de> wrote:
-> On Thu, 11 Jun 2009, Andreas Herrmann wrote:
+On Thu, Jun 11, 2009 at 10:12 AM, Al Viro<viro@zeniv.linux.org.uk> wrote:
+> On Thu, Jun 11, 2009 at 10:05:02AM -0700, Ray Lee wrote:
+>> Packagers are quite used to taking a single source tree and building
+>> multiple packages out of it. This isn't rocket science. It's the
+>> multiple separate trees that need to be released in lock-step that are
+>> headaches.
 >
->> Commit c9690998ef48ffefeccb91c70a7739eebdea57f9
->> (x86: memtest: remove 64-bit division) introduced following compile warning:
->>
->>  arch/x86/mm/memtest.c: In function 'memtest':
->>  arch/x86/mm/memtest.c:56: warning: comparison of distinct pointer types lacks a cast
->>  arch/x86/mm/memtest.c:58: warning: comparison of distinct pointer types lacks a cast
->>
->> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
->> ---
->>  arch/x86/mm/memtest.c |    4 ++--
->>  1 files changed, 2 insertions(+), 2 deletions(-)
->>
->> Sorry.
->> Please apply.
+> Wrong. Â Remember the fun bisecting around sysfs/udev incompatible change?
+> Oops, went back past the cutoff line, got to downgrade udev for the next
+> boot. Â Oh, it oopses? Â Too fucking bad, can't just boot the previous kernel,
+> should've kept _two_ working ones so that with any userland state we could
+> come back to working system.
 >
-> I applied it already, but zapped it right away, as it is bad style to
-> do the type casting in the loops. The proper fix is below.
->
-> But aside of that this code is confusing.
->
->        start_phys_aligned = ALIGN(start_phys, incr);
->
-> Why do we have to fiddle with the alignment. Are you really seing e820
-> entries which are not 8 byte aligned ?
->
->        for (p = start; p < end; p++, start_phys_aligned += incr) {
->                if (*p == pattern)
->                        continue;
->                if (start_phys_aligned == last_bad + incr) {
->                        last_bad += incr;
->                        continue;
->                }
->                if (start_bad)
->                        reserve_bad_mem(pattern, start_bad, last_bad + incr);
->                start_bad = last_bad = start_phys_aligned;
->        }
->        if (start_bad)
->                reserve_bad_mem(pattern, start_bad, last_bad + incr);
->
-> I really had to look more than once to understand what the heck
-> start_phys_aligned and last_bad + incr are doing. Really non
-> intuitive.
->
-> But the reserve_bad_mem() semantics are even more scary:
->
-> - if you hit flaky memory, which gives you bad and good results here
->  and there, you call reserve_bad_mem() totally unbound which is
->  likely to overflow the early reservation space and panics the
->  machine. You need to keep track of those events somehow (e.g. in a
->  bitmap) so you can detect such problems and mark the whole affected
->  region bad in one go.
-if one pass found bad, it is reserved.
-second pass will use find_e820_area_size() to get new range, so bad
-one will not be used.
->
-> - you call reserve_early() which calls __reserve_early(....,
->  overrun_ok = 0) so if you do the default multi pattern scan and each
->  run sees the same region of broken memory you will trigger the
->  "Overlapping early reservations" panic in __reserve_early() when you
->  reserve that region the second time. Why do you run the test twice
->  when the first one failed already ? Also there is no need to do the
->  wipeout run in that case, which will trigger it as well!
+> This isn't a rocket science, this is a goddamn load of horse manure.
+> Packages that need to be updated in the lock-step *are* headaches from
+> hell when you are trying to do development. Â Even if you have all of
+> them already built.
 
-current problem in that: we could run out of res_reserve array.
-solution will be make res_reserve array dynamically.
-  when can not find slot, need use find_e820_area to get double sized,
-and copy the old to new one.
-  then free the old one.
+Well, welcome to our new world order of Xorg and udev and hal. I have
+had to deal with bisecting the problem just as you have, and dealt
+with the fallout.
 
-YH
+The choices are:
+
+ - Don't bisect, throw up your hands and hope someone else deals with it
+
+ - keep the old versions around for installs, as you point out (I do
+this regularly)
+
+ - build all the packages every time
+
+The last one is the most reasonable and I'd argue it's the right thing
+to do. But it's tricky with multiple source trees -- which version of
+udev works with this kernel again? A single source tree for packages
+that are kept in lock-step, as so many seem to be, makes that a hell
+of a lot easier on me.
+
+But perhaps I'm an odd-ball.
+
+I think your complaint is "Why the hell can't they have a stable ABI?"
+Probably for the same reason anything so close to the hardware hasn't
+had a stable ABI. I'm sure udev/hal/Xorg will have a stable
+kernel-userland interface any day now. Once they do, I'm sure
+everything else that touches the hardware so intimately will have a
+stable ABI too.
+
+Sheesh.
