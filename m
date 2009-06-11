@@ -1,119 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbZFKFwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753152AbZFKF4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758112AbZFKFwB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 01:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbZFKFvy
+	id S1753152AbZFKF4N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 01:56:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZFKFz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 01:51:54 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:18696 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752410AbZFKFvx convert rfc822-to-8bit (ORCPT
+	Thu, 11 Jun 2009 01:55:59 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39992 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbZFKFz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 01:51:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Dj9eqYAeY8S0wnRoaI4+OQukdxLokM2ao0lfhsU7B9IeKfmtmwTNqZ12+VBgV9y3dn
-         7HFizJpRJr+Na62/SbUffrx/yinVq8v6J0D3mVLDFj/nqdWu+5xvLYNbn0sTDRZEPq3/
-         fBwlyeuW2yeJvsj6koV9Sfi4xMQYVM/ZYjnpE=
-MIME-Version: 1.0
-In-Reply-To: <1244667895.8085.20.camel@localhost.localdomain>
-References: <20090501054546.8193.10688.sendpatchset@rx1.opensource.se>
-	 <1244667895.8085.20.camel@localhost.localdomain>
-Date: Thu, 11 Jun 2009 14:51:54 +0900
-Message-ID: <aec7e5c30906102251n36bbe6f9x9b384131f332d4d9@mail.gmail.com>
-Subject: Re: [PATCH] clocksource: setup mult_orig in clocksource_enable()
-From: Magnus Damm <magnus.damm@gmail.com>
-To: john stultz <johnstul@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, lethal@linux-sh.org,
-       tglx@linutronix.de, akpm@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 11 Jun 2009 01:55:59 -0400
+Subject: Re: Bug: fio traps into kernel without exiting because futex has a
+ deadloop
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Darren Hart <dvhltc@us.ibm.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1244689688.2560.268.camel@ymzhang>
+References: <1244689688.2560.268.camel@ymzhang>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 11 Jun 2009 07:55:56 +0200
+Message-Id: <1244699756.6691.4.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi John,
+On Thu, 2009-06-11 at 11:08 +0800, Zhang, Yanmin wrote:
+> I investigate a fio hang issue. When I run fio multi-process
+> testing on many disks, fio traps into kernel and doesn't exit
+> (mostly hit once after runing sub test cases for ï»¿hundreds of times).
+> 
+> Oprofile data shows kernel consumes time with some futex functions.
+> Command kill couldn't kill the process and machine reboot also hangs.
+> 
+> Eventually, I locate the root cause as a bug of futex. Kernel enters
+> a deadloop between 'retry' and 'goto retry' in function futex_wake_op.
+> By unknown reason (might be an issue of fio or glibc), parameter uaddr2
+> points to an area which is READONLY. So futex_atomic_op_inuser returns
+> -EFAULT when trying to changing the data at uaddr2, but later get_user
+> still succeeds becasue the area is READONLY. Then go back to retry.
+> 
+> I create a simple test case to trigger it, which just shmat an READONLY
+> area for address uaddr2.
+> 
+> It could be used as a DOS attack.
 
-On Thu, Jun 11, 2009 at 6:04 AM, john stultz<johnstul@us.ibm.com> wrote:
-> On Fri, 2009-05-01 at 14:45 +0900, Magnus Damm wrote:
->> From: Magnus Damm <damm@igel.co.jp>
->>
->> Setup clocksource mult_orig in clocksource_enable().
->
-> Hey Magnus,
-> Sorry I missed this earlier, I just noticed it in the -tip tree.
+commit 2070887fdeacd9c13f3e805e3f0086c9f22a4d93
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Tue May 19 23:04:59 2009 +0200
 
-No worries!
+    futex: fix restart in wait_requeue_pi
 
-> I've some concerns below.
->
->> Clocksource drivers can save power by using keeping the
->> device clock disabled while the clocksource is unused.
->>
->> In practice this means that the enable() and disable()
->> callbacks perform clk_enable() and clk_disable().
->>
->> The enable() callback may also use clk_get_rate() to get
->> the clock rate from the clock framework. This information
->> can then be used to calculate the shift and mult variables.
->
-> Hrmmm.. So when the clocksource code was designed, it was expected that
-> the clocksource mult value would be set prior to registration, and then
-> would not be modified by any user other then the timekeeping core. As
-> changing the mult value directly (on a clocksource thats being used)
-> could cause time inconsistencies.
+    If the waiter has been requeued to the outer PI futex and is
+    interrupted by a signal and the thread handles the signal then
+    ERESTART_RESTARTBLOCK is changed to EINTR and the restart block is
+    discarded. That way we return an unexcpected EINTR to user space
+    instead of ending up in futex_lock_pi_restart.
 
-But no one is changing the mult value on a clocksource that is being
-used in this case, no? I may remember wrong, but isn't
-clocksource_enable() called on unused clocksources that soon will
-become used?
+    But we do not need to restart the syscall because we know that the
+    condition has changed since we have been requeued. If we would simply
+    restart the syscall then we would drop out via the comparison of the
+    user space value with EWOULDBLOCK.
 
->> Currently the mult_orig variable is setup from mult at
->> registration time only. This is conflicting with the above
->> case since the clock is disabled and the mult variable is
->> not yet calculated at the time of registration.
->
-> Is there really no way to calculate the mult value prior to
-> registration? Maybe quickly enabling, getting the freq, and then
-> disabling?
+    The user space side needs to handle EWOULDBLOCK anyway as the
+    enqueueing on the inner futex can race with a requeue/wake. So we can
+    simply return EWOULDBLOCK to user space which also signals that we did
+    not take the outer futex and let user space handle it in the same way
+    it has to handle the requeue/wake race.
 
-I can't think of any way that would work. The clock frequency can be
-changed while the clock is disabled. And we can only know the rate
-after enabling the clock, see these lines from include/linux/clk.h:
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-/**
- * clk_get_rate - obtain the current clock rate (in Hz) for a clock source.
- *		  This is only valid once the clock source has been enabled.
- * @clk: clock source
- */
-unsigned long clk_get_rate(struct clk *clk);
 
->> --- 0001/include/linux/clocksource.h
->> +++ work/include/linux/clocksource.h  2009-05-01 12:59:27.000000000 +0900
->> @@ -288,7 +288,15 @@ static inline cycle_t clocksource_read(s
->>   */
->>  static inline int clocksource_enable(struct clocksource *cs)
->>  {
->> -     return cs->enable ? cs->enable(cs) : 0;
->> +     int ret = 0;
->> +
->> +     if (cs->enable)
->> +             ret = cs->enable(cs);
->> +
->> +     /* save mult_orig on enable */
->> +     cs->mult_orig = cs->mult;
->> +
->> +     return ret;
->>  }
->
-> So this seems like it will break if a clocksource is switched away from
-> and then back to (the reason we added mult_orig in the first place).
-> Since the re-enabled clocksource would then save off its modified mult
-> value into mult_orig.
-
-Oh, I see. Sorry about that. I wonder if adding a "cs->mult =
-cs->orig_mult;" to clock_disable() would help?
-
-/ magnus
