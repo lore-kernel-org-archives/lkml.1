@@ -1,62 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbZFKSol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758328AbZFKSpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757012AbZFKSol (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 14:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758149AbZFKSoW
+	id S1758328AbZFKSpd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 14:45:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756284AbZFKSpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 14:44:22 -0400
-Received: from mga09.intel.com ([134.134.136.24]:40941 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758130AbZFKSoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 14:44:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.42,203,1243839600"; 
-   d="scan'208";a="420943102"
-Date: Thu, 11 Jun 2009 11:43:39 -0700
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Andrew Patterson <andrew.patterson@hp.com>
-Cc: linux-pci@vger.kernel.org, andrew.patterson@hp.com,
-       linux-kernel@vger.kernel.org, kaneshige.kenji@jp.fujitsu.com
-Subject: Re: [PATCH v3] PCI: Add support for turning PCIe ECRC on or off
-Message-ID: <20090611114339.23c0106e@jbarnes-g45>
-In-Reply-To: <20090422225208.16081.73220.stgit@bluto.andrew>
-References: <20090422225203.16081.94717.stgit@bluto.andrew>
-	<20090422225208.16081.73220.stgit@bluto.andrew>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 11 Jun 2009 14:45:22 -0400
+Received: from mail-bw0-f213.google.com ([209.85.218.213]:33450 "EHLO
+	mail-bw0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750968AbZFKSpV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 14:45:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=S04v8E7TK17UtiNxawc9QRK+hwipDE7QVFQkN4NodKFi5wQa5pmcTfMJ0v6m2yxeI6
+         L/WLkmDVknhPV/yCgAqB0XGPs9PeSLnzmnow1DtXOQJH3S1mqqydvVZaNelByIz8wji2
+         NKOYBv+BGnidGMwEGLM8Vqq6gEihzOZo5/7C4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Subject: [PATCH staging] Staging: rtl8192su: convert to net_device_ops
+Date: Thu, 11 Jun 2009 20:49:07 +0200
+User-Agent: KMail/1.11.3 (Linux/2.6.30-next-20090611-07944-gc1b019d-dirty; KDE/4.2.3; i686; ; )
+Cc: Alexander Beregalov <a.beregalov@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200906112049.08607.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Apr 2009 16:52:09 -0600
-Andrew Patterson <andrew.patterson@hp.com> wrote:
+commit e3804cbebb67887879102925961d41b503f7fbe3 removed
+COMPAT_NET_DEV_OPS so this change is needed to make rtl8192su
+buildable again.
 
-> PCI: Add support for turning PCIe ECRC on or off
-> 
-> Adds support for PCI Express transaction layer end-to-end CRC checking
-> (ECRC).  This patch will enable/disable ECRC checking by
-> setting/clearing the ECRC Check Enable and/or ECRC Generation Enable
-> bits for devices that support ECRC.
-> 
-> The ECRC setting is controlled by the "pci=ecrc=<policy>" command-line
-> option. If this option is not set or is set to 'bios", the enable and
-> generation bits are left in whatever state that firmware/BIOS set
-> them to. The "off" setting turns them off, and the "on" option turns
-> them on (if the device supports it).
-> 
-> Turning ECRC on or off can be a data integrity versus performance
-> tradeoff.  In theory, turning it on will catch more data errors,
-> turning it off means possibly better performance since CRC does not
-> need to be calculated by the PCIe hardware and packet sizes are
-> reduced.
-> 
-> Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
-> ---
-> 
+Loosely based on Alexander's patch for rtl8187se, untested.
 
-Applied to linux-next, thanks.
+Cc: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: David S. Miller <davem@davemloft.net>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+against next-20090611
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+ drivers/staging/rtl8192su/Kconfig                      |    2 -
+ drivers/staging/rtl8192su/ieee80211/ieee80211_module.c |    1 
+ drivers/staging/rtl8192su/r8192U_core.c                |   23 ++++++++++-------
+ drivers/staging/rtl8192su/r8192U_pm.c                  |    8 ++++-
+ 4 files changed, 21 insertions(+), 13 deletions(-)
+
+Index: b/drivers/staging/rtl8192su/Kconfig
+===================================================================
+--- a/drivers/staging/rtl8192su/Kconfig
++++ b/drivers/staging/rtl8192su/Kconfig
+@@ -1,6 +1,6 @@
+ config RTL8192SU
+ 	tristate "RealTek RTL8192SU Wireless LAN NIC driver"
+ 	depends on PCI
+-	depends on WIRELESS_EXT && COMPAT_NET_DEV_OPS
++	depends on WIRELESS_EXT
+ 	default N
+ 	---help---
+Index: b/drivers/staging/rtl8192su/ieee80211/ieee80211_module.c
+===================================================================
+--- a/drivers/staging/rtl8192su/ieee80211/ieee80211_module.c
++++ b/drivers/staging/rtl8192su/ieee80211/ieee80211_module.c
+@@ -118,7 +118,6 @@ struct net_device *alloc_ieee80211(int s
+ #else
+ 	ieee = (struct ieee80211_device *)dev->priv;
+ #endif
+-	dev->hard_start_xmit = ieee80211_xmit;
+ 
+ 	memset(ieee, 0, sizeof(struct ieee80211_device)+sizeof_priv);
+ 	ieee->dev = dev;
+Index: b/drivers/staging/rtl8192su/r8192U_core.c
+===================================================================
+--- a/drivers/staging/rtl8192su/r8192U_core.c
++++ b/drivers/staging/rtl8192su/r8192U_core.c
+@@ -12132,6 +12132,19 @@ static void HalUsbSetQueuePipeMapping819
+ }
+ #endif
+ 
++static const struct net_device_ops rtl8192_netdev_ops = {
++	.ndo_open		= rtl8192_open,
++	.ndo_stop		= rtl8192_close,
++	.ndo_get_stats		= rtl8192_stats,
++	.ndo_tx_timeout		= tx_timeout,
++	.ndo_do_ioctl		= rtl8192_ioctl,
++	.ndo_set_multicast_list	= r8192_set_multicast,
++	.ndo_set_mac_address	= r8192_set_mac_adr,
++	.ndo_validate_addr	= eth_validate_addr,
++	.ndo_change_mtu		= eth_change_mtu,
++	.ndo_start_xmit		= ieee80211_xmit,
++};
++
+ #if LINUX_VERSION_CODE > KERNEL_VERSION(2,5,0)
+ static int __devinit rtl8192_usb_probe(struct usb_interface *intf,
+ 			 const struct usb_device_id *id)
+@@ -12186,15 +12199,7 @@ static void * __devinit rtl8192_usb_prob
+ 	priv->ops = &rtl8192u_ops;
+ #endif
+ 
+-	dev->open = rtl8192_open;
+-	dev->stop = rtl8192_close;
+-	//dev->hard_start_xmit = rtl8192_8023_hard_start_xmit;
+-	dev->tx_timeout = tx_timeout;
+-	//dev->wireless_handlers = &r8192_wx_handlers_def;
+-	dev->do_ioctl = rtl8192_ioctl;
+-	dev->set_multicast_list = r8192_set_multicast;
+-	dev->set_mac_address = r8192_set_mac_adr;
+-	dev->get_stats = rtl8192_stats;
++	dev->netdev_ops = &rtl8192_netdev_ops;
+ 
+          //DMESG("Oops: i'm coming\n");
+ #if WIRELESS_EXT >= 12
+Index: b/drivers/staging/rtl8192su/r8192U_pm.c
+===================================================================
+--- a/drivers/staging/rtl8192su/r8192U_pm.c
++++ b/drivers/staging/rtl8192su/r8192U_pm.c
+@@ -35,7 +35,9 @@ int rtl8192U_suspend(struct usb_interfac
+ 		      return 0;
+ 		 }
+ 
+-		dev->stop(dev);
++		if (dev->netdev_ops->ndo_stop)
++			dev->netdev_ops->ndo_stop(dev);
++
+ 		mdelay(10);
+ 
+ 		netif_device_detach(dev);
+@@ -61,7 +63,9 @@ int rtl8192U_resume (struct usb_interfac
+ 		}
+ 
+ 		netif_device_attach(dev);
+-		dev->open(dev);
++
++		if (dev->netdev_ops->ndo_open)
++			dev->netdev_ops->ndo_open(dev);
+ 	}
+ 
+         return 0;
