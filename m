@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbZFKSUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbZFKSUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755707AbZFKSUE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 14:20:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbZFKSTy
+	id S1757251AbZFKSUX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 14:20:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756808AbZFKSUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 14:19:54 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:32970 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750968AbZFKSTy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 14:19:54 -0400
-Message-ID: <4A314AC7.40300@pobox.com>
-Date: Thu, 11 Jun 2009 14:19:51 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 11 Jun 2009 14:20:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36245 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753958AbZFKSUI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 14:20:08 -0400
+Date: Thu, 11 Jun 2009 11:18:41 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jens Axboe <jens.axboe@oracle.com>, Tejun Heo <tj@kernel.org>,
+       Steven Rostedt <srostedt@redhat.com>, Li Zefan <lizf@cn.fujitsu.com>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] first block round for 2.6.31
+In-Reply-To: <20090611111339.GQ11363@kernel.dk>
+Message-ID: <alpine.LFD.2.01.0906111105021.3573@localhost.localdomain>
+References: <20090611111339.GQ11363@kernel.dk>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/2 resend] libata-sff: avoid byte swapping in ata_sff_data_xfer()
-References: <200902152230.38271.sshtylyov@ru.mvista.com> <49DB199C.3040305@ru.mvista.com> <4A242C81.3080309@ru.mvista.com>
-In-Reply-To: <4A242C81.3080309@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergei Shtylyov wrote:
-> Hello, I wrote:
+
+
+On Thu, 11 Jun 2009, Jens Axboe wrote:
 > 
->>> Handling of the trailing byte in ata_sff_data_xfer() is suboptimal 
->>> bacause:
+> This is the bulk of the block changes for 2.6.31, please pull.
 > 
->>> - it always initializes the padding buffer to 0 which is not really 
->>> needed in
->>>   both the read and write cases;
-> 
->>> - it has to use memcpy() to transfer a single byte from/to the 
->>> padding buffer;
-> 
->>> - it uses io{read|write}16() accessors which swap bytes on the big 
->>> endian CPUs
->>>   and so have to additionally convert the data from/to the little 
->>> endian format
->>>   instead of using io{read|write}16_rep() accessors which are not 
->>> supposed to
->>>   change the byte ordering.
->>>
->>> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> 
->>   Jeff, have you forgotten about this one?
-> 
->    PING.
+>   git://git.kernel.dk/linux-2.6-block.git for-2.6.31
 
-This has been queued to libata-dev.git#upstream, i.e. linux-next queue, 
-for a long time.  Apologies if I forgot the 'applied' reply.
+Ok, this clashed pretty badly with both the tracing tree (which obviously 
+has block tracers) and with my pull ide pull from Bartlomiej (which 
+obviously has ide driver changes).
 
-Just sent this upstream, as linux-ide should show.
+I fixed everything up, and it _looks_ ok, including a "allyesconfig" build 
+etc. It wasn't totally trivial, though - in the sense that it's entirely 
+possible that I fixed something up incorrectly. Also, in the tracer code, 
+I kept the checks for whether something is a "pc" of "fs" request, so it 
+now looks like
 
-	Jeff
+	__entry->sector    = blk_pc_request(rq) ? 0 : blk_rq_pos(rq);
 
+and I suspect that it could just be an unconditional
 
+	__entry->sector    = blk_rq_pos(rq);
 
+instead, but somebody involved with the whole block tracing thing needs to 
+check that out. 
 
+The ide-tape.c changes also need some expert tender loving checks. I 
+neither know the code, nor have the hardware to check my fixups. Almost 
+all the changes are actually by the same person - it's almost all Tejun's 
+code (and mostly the same patches), just coming in through two different 
+trees. Not very nice.
+
+Btw, Jens: in your tree, you've committed Tejun's changes without adding 
+your own sign-off. Not good!
+
+			Linus
