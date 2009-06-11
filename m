@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758306AbZFKSvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758717AbZFKSwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758306AbZFKSvf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 14:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756999AbZFKSv2
+	id S1758717AbZFKSwN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 14:52:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757051AbZFKSv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 14:51:28 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42699 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754975AbZFKSv1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 14:51:27 -0400
-Date: Thu, 11 Jun 2009 14:51:17 -0400
-From: Christoph Hellwig <hch@infradead.org>
+	Thu, 11 Jun 2009 14:51:59 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:39732 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755735AbZFKSv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 14:51:58 -0400
+Date: Thu, 11 Jun 2009 20:52:00 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Newall <davidn@davidnewall.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Hellwig <hch@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Al Viro <viro@zeniv.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephane Eranian <eranian@googlemail.com>, linux-kernel@vger.kernel.org,
-       Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT PULL] Performance Counters for Linux
-Message-ID: <20090611185117.GA27411@infradead.org>
-References: <20090611160329.GA3366@elte.hu> <20090611161714.GA5008@infradead.org> <alpine.LFD.2.01.0906110922080.3573@localhost.localdomain> <20090611165226.GV8633@ZenIV.linux.org.uk> <1244739378.6691.540.camel@laptop> <20090611170015.GA3651@infradead.org> <alpine.LFD.2.01.0906111005020.3573@localhost.localdomain> <84144f020906111059g6e25a090y4434cfd698f84fb4@mail.gmail.com> <4A3148AA.9000007@davidnewall.com> <alpine.LFD.2.01.0906111120100.3573@localhost.localdomain>
+Cc: Tejun Heo <tj@kernel.org>, Steven Rostedt <srostedt@redhat.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] first block round for 2.6.31
+Message-ID: <20090611185200.GZ11363@kernel.dk>
+References: <20090611111339.GQ11363@kernel.dk> <alpine.LFD.2.01.0906111105021.3573@localhost.localdomain> <20090611182657.GY11363@kernel.dk> <alpine.LFD.2.01.0906111134180.3573@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0906111120100.3573@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <alpine.LFD.2.01.0906111134180.3573@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jun 11, 2009 at 11:21:46AM -0700, Linus Torvalds wrote:
-> But I note (once more) how _nobody_ has actually been able to accept the 
-> fact that oprofile was an abject failure as it was split up. Instead, you 
-> all dance around totally irrelevant issues.
+On Thu, Jun 11 2009, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 11 Jun 2009, Jens Axboe wrote:
+> > 
+> > > Btw, Jens: in your tree, you've committed Tejun's changes without adding 
+> > > your own sign-off. Not good!
+> > 
+> > That's for the patches that I pulled from his git tree. It should list
+> > him as committer too.
+> 
+> NO!
+> 
+> It sounds like you have done a _major_ no-no, which is to pull from his 
+> tree, and then rebase it. 
+> 
+> DO NOT DO THAT! NOT EVER!
+> 
+> If you pull from somebody elses tree, you can no longer touch the commit. 
+> It absolutely has to stay the same. Otherwise we see this kind of insane 
+> duplication. 
+> 
+> You're doing something seriously wrong here. I wrote a long rant about 
+> what the rules were last release cycle, but now I can't find it. 
+> Basically, if you're not the committer, you really must never EVER touch 
+> it. 
+> 
+> [ Anybody with enough google-fu to find my rant, so I don't have to 
+>   re-rant? ]
 
-I don't think oprofile has been a desaster because of any kind of split,
-but because the design has been a failure from day 1.
+I pulled from his tree, don't think I ever rebased it. To be honest, I
+rebase a lot, and I used to do that for the 'export' branches as well.
+But for this cycle I have kept it clean and pulled in your tree when I
+knew a conflict at arisen. More trees are now based off the block tree,
+so I wanted to make sure that they were able to pull cleanly when they
+wanted to. I usually also always apply the patches manually instead of
+pulling it in, since I go over the patches anyway.
+
+So I fully agree with what you are saying, if anything was rebased this
+time then it was a mistake (that I don't recollect)...
+
+-- 
+Jens Axboe
 
