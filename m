@@ -1,85 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756412AbZFKVqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759162AbZFKVr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756412AbZFKVqD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 17:46:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751128AbZFKVpy
+	id S1759162AbZFKVr2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 17:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbZFKVrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 17:45:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54162 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750851AbZFKVpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 17:45:54 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2] pm: Move nvs routines into a seperate file.
-Date: Thu, 11 Jun 2009 23:46:27 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc8-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>
-References: <20090604161847.513682672@de.ibm.com> <20090611133218.GB3146@osiris.boeblingen.de.ibm.com> <20090611211157.GD27376@elf.ucw.cz>
-In-Reply-To: <20090611211157.GD27376@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Thu, 11 Jun 2009 17:47:19 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:41863 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751128AbZFKVrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 11 Jun 2009 17:47:19 -0400
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com
+Message-Id: <8EE3C044-FB47-46BC-A06F-DA0EF65D8236@sgi.com>
+From: Felix Blyakher <felixb@sgi.com>
+To: Eric Sandeen <sandeen@sandeen.net>
+In-Reply-To: <4A313F84.20900@sandeen.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200906112346.28782.rjw@sisk.pl>
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: Kernel 2.6.30: Memory/XFS leak, OOM killer kills many processes
+Date: Thu, 11 Jun 2009 14:02:53 -0500
+References: <alpine.DEB.2.00.0906111158470.2563@p34.internal.lan> <alpine.DEB.2.00.0906111255280.6809@p34.internal.lan> <4A313F84.20900@sandeen.net>
+X-Mailer: Apple Mail (2.926)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 11 June 2009, Pavel Machek wrote:
-> On Thu 2009-06-11 15:32:18, Heiko Carstens wrote:
-> > On Wed, Jun 10, 2009 at 01:09:19AM +0200, Rafael J. Wysocki wrote:
-> > > On Tuesday 09 June 2009, Cornelia Huck wrote:
-> > > > The *_nvs_* routines in swsusp.c make use of the io*map()
-> > > > functions, which are only provided for HAS_IOMEM, thus
-> > > > breaking compilation if HAS_IOMEM is not set. Fix this
-> > > > by moving the *_nvs_* routines into hibernation_nvs.c, which
-> > > > is only compiled if HAS_IOMEM is set.
-> > > > 
-> > > > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-> > > 
-> > > Thanks, I added the GPLv2 line to the header comment and changed the name
-> > > of the file to hibernate_nvs.c (to match the other changes in the works).
-> > > 
-> > > I'll carry out some compilation testing on it and put it into the tree shortly.
-> > 
-> > Rafael, could you add the patch below as well?
-> > Or should that go in via git390?
-> > 
-> > Subject: [PATCH] PM: add empty suspend/resume device irq functions
-> > 
-> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > 
-> > git commit 0a0c5168 "PM: Introduce functions for suspending and resuming
-> > device interrupts" introduced some helper functions. However these
-> > functions are only available for architectures which support
-> > GENERIC_HARDIRQS.
-> > 
-> > Other architectures will see this build error:
-> > 
-> > drivers/built-in.o: In function `sysdev_suspend':
-> > (.text+0x15138): undefined reference to `check_wakeup_irqs'
-> > drivers/built-in.o: In function `device_power_up':
-> > (.text+0x1cb66): undefined reference to `resume_device_irqs'
-> > drivers/built-in.o: In function `device_power_down':
-> > (.text+0x1cb92): undefined reference to `suspend_device_irqs'
-> > 
-> > To fix this add some empty inline functions for !GENERIC_HARDIRQS.
-> 
-> I don't think that's right fix. If architecture does not use
-> GENERIC_HARDIRQS, it may want to implement *_device_irqs()
-> itself. Before your patch, it could, after your patch, it can not.
-> 
-> Better put those empty functions in arch/s390/include?
 
-If any of the affected architectures wants to implement *_device_irqs()
-itself, it can do the appropriate change in future.  For now, let's not break
-compilation on them, shall we?
+On Jun 11, 2009, at 12:31 PM, Eric Sandeen wrote:
 
-Thanks,
-Rafael
+> Justin Piszcz wrote:
+>>
+>> On Thu, 11 Jun 2009, Justin Piszcz wrote:
+>>
+>>> Hello,
+>>>
+>>> I have a daily cron that backs up my root filesystem using  
+>>> xfsdump, it has
+>>> remain unchanged for at least 7-10 kernel versions.  When I  
+>>> migrated to
+>>> 2.6.30, when the xfsdump ran at its scheduled time, nearly all of my
+>>> processes were killed due to an OOM situation, I can reproduce the  
+>>> situation.
+>>>
+>>> Kernel: 2.6.30
+>>> Dist: Debian Testing
+>>> xfsdump: 2.2.48-1
+>>
+>> Kernel 2.6.29.4 does not exhibit this problem:
+>>
+>> xfsdump: estimated dump size: 8694781376 bytes
+>> xfsdump: creating dump session media file 0 (media 0, file 0)
+>> xfsdump: dumping ino map
+>> xfsdump: dumping directories
+>> xfsdump: dumping non-directory files
+>> xfsdump: ending media file
+>> xfsdump: media file size 8294709848 bytes
+>> xfsdump: dump size (non-dir files) : 8208863560 bytes
+>> xfsdump: dump complete: 102 seconds elapsed
+>> xfsdump: Dump Status: SUCCESS
+>>
+>> XFS(?) bug in 2.6.30.
+>
+> Any chance for a bisect run? :)
+
+Well, Hedi (@sgi) pointed out to the problem without
+bisect :)
+
+commit 28e211700a81b0a934b6c7a4b8e7dda843634d2f
+Author: Christoph Hellwig <hch@infradead.org>
+Date:   Tue Feb 24 08:39:02 2009 -0500
+
+    xfs: fix getbmap vs mmap deadlock
+
+
+we do allocate memory for out
+
+    out = kmem_zalloc(bmv->bmv_count * sizeof(struct getbmapx),  
+KM_MAYFAIL);
+
+but I am not seeing where it's being released.
+
+If I am reading the code correctly we need to handle the freeing in
+in out_unlock_iolock.
+
+The following should fix it:
+
+diff --git a/fs/xfs/xfs_bmap.c b/fs/xfs/xfs_bmap.c
+index 4b0f6ef..7928b99 100644
+--- a/fs/xfs/xfs_bmap.c
++++ b/fs/xfs/xfs_bmap.c
+@@ -6086,6 +6086,7 @@ xfs_getbmap(
+                         break;
+         }
+
++       kmem_free(out);
+         return error;
+  }
+
+
+Felix
+
+>
+> Or, just as a thought, watch slabtop while you run the dump?
+>
+> -Eric
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux- 
+> kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
