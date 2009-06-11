@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761817AbZFKOql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbZFKOrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761817AbZFKOql (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 10:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZFKOqf
+	id S1756791AbZFKOrs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 10:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZFKOrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 10:46:35 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:62752 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751088AbZFKOqe convert rfc822-to-8bit (ORCPT
+	Thu, 11 Jun 2009 10:47:41 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36274 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751878AbZFKOrl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 10:46:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:sender:reply-to:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=gRVVL06iK932QW7Kkm4uzH1K4sszT3rYqAf3yivEXFOgZ7OVh+BT/mDgVQpmGol0hp
-         nTMv2+0iOqAokoHrdNw69FQXwWYT0xpRO8Ge2dqzqsFodvvGptkC1yjDt+za5N1FgDnx
-         AIEGmdBpcfQ6ETrK4+jv+zUBNmJ26/3xt1XnM=
+	Thu, 11 Jun 2009 10:47:41 -0400
+Date: Thu, 11 Jun 2009 16:47:35 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Tony Lindgren <tony@atomide.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Miller <davem@davemloft.net>, swetland@google.com,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       san@android.com, rlove@google.com
+Subject: Re: HTC Dream aka. t-mobile g1 support
+Message-ID: <20090611144735.GC2572@ucw.cz>
+References: <20090611111821.GK795@n2100.arm.linux.org.uk> <20090611.042226.28424489.davem@davemloft.net> <20090611114911.GL795@n2100.arm.linux.org.uk> <20090611.050030.169859977.davem@davemloft.net> <20090611123852.GM795@n2100.arm.linux.org.uk> <20090611135442.6b9ab315@lxorguk.ukuu.org.uk> <20090611132134.GA11199@atomide.com> <20090611133736.GP795@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Reply-To: Tobias_Mueller@twam.info
-In-Reply-To: <20090610001033.27b7f69f@mycelium.queued.net>
-References: <20090610001033.27b7f69f@mycelium.queued.net>
-Date: Thu, 11 Jun 2009 16:46:35 +0200
-X-Google-Sender-Auth: a4bb78b434e0cf9f
-Message-ID: <17be05570906110746l214f88cdh8570488e1be51b30@mail.gmail.com>
-Subject: Re: [PATCH 1/2] cs5535-gpio: add AMD CS5535/CS5536 GPIO driver 
-	support
-From: =?UTF-8?Q?Tobias_M=C3=BCller?= <Tobias_Mueller@twam.info>
-To: Andres Salomon <dilinger@collabora.co.uk>
-Cc: akpm@linux-foundation.org, Randy Dunlap <randy.dunlap@oracle.com>,
-       deepak@laptop.org, Takashi Iwai <tiwai@suse.de>,
-       linux-kernel@vger.kernel.org, linux-geode@lists.infradead.org,
-       jordan@cosmicpenguin.net, cjb@laptop.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090611133736.GP795@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/6/10 Andres Salomon <dilinger@collabora.co.uk>:
-> +config GPIO_CS5535
-> +       tristate "AMD CS5535/CS5536 GPIO support"
-> +       depends on PCI && !CS5535_GPIO && !MGEODE_LX
-> +       help
-> +         The AMD CS5535 and CS5536 southbridges support 28 GPIO pins that
-> +         can be used for quite a number of things.  The CS5535/6 is found on
-> +         AMD Geode and Lemote Yeeloong devices.
+Hi!
 
-Why do you depend on !MGEODE_LX? Are there any problems?
+> What you apparantly decided (and I'm saying this from how it appeared
+> on the receiving end and sort-of had it confirmed by Kevin in conference)
+> is that you'd send a patch set for me to review, I'd review it, and then
+> you'd merge it within your git tree into a branch for me.  You'd then do
+> the same thing with the next patch set, and so forth.
+> 
+> Eventually, near the merge window, you sent a pull request for the
+> entire lot, by which time I looked at the list of changes and wondered
+> whether that encompassed everything you'd asked me to review, or whether
+> it contained extra stuff, or whether it was for something quite different,
+> or what.
+
+Well, usually Acked-by: and Reviewed-by: tags solve that, no?
+
+If it has my acked-by: it is okay and can be applied. Otherwise I did
+not review it before and need to check it...
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
