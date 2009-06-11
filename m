@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762032AbZFKWdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762031AbZFKWeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762032AbZFKWdP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 11 Jun 2009 18:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758594AbZFKWdA
+	id S1762031AbZFKWeg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 11 Jun 2009 18:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757528AbZFKWe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 11 Jun 2009 18:33:00 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:40936 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755720AbZFKWc7 (ORCPT
+	Thu, 11 Jun 2009 18:34:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51674 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755720AbZFKWe2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 11 Jun 2009 18:32:59 -0400
-Message-ID: <4A318519.2080708@oracle.com>
-Date: Thu, 11 Jun 2009 15:28:41 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       marcel@holtmann.org, Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: linux-next: Tree for June 11 (bluetooth/rfkill)
-References: <20090611191420.1f4d5e4f.sfr@canb.auug.org.au>
-In-Reply-To: <20090611191420.1f4d5e4f.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 11 Jun 2009 18:34:28 -0400
+Date: Thu, 11 Jun 2009 15:32:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tomaz Mertelj <tomaz.mertelj@guest.arnes.si>
+Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+       Harald Welte <HaraldWelte@viatech.com>
+Subject: Re: [PATCH] hwmon: Add driver for VIA CPU core temperature
+Message-Id: <20090611153255.ba8d6c54.akpm@linux-foundation.org>
+In-Reply-To: <loom.20090610T172830-164@post.gmane.org>
+References: <20090609083406.GE25316@prithivi.gnumonks.org>
+	<loom.20090610T172830-164@post.gmane.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt009.oracle.com [141.146.116.18]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A01020A.4A3185F1.014B:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi all,
+On Wed, 10 Jun 2009 17:40:31 +0000 (UTC)
+Tomaz Mertelj <tomaz.mertelj@guest.arnes.si> wrote:
+
+> Harald Welte <HaraldWelte <at> viatech.com> writes:
 > 
-> Changes since 20090610:
+> > 
+> > This is a driver for the on-die digital temperature sensor of
+> > VIA's recent CPU models.
+> > 
+> > Signed-off-by: Harald Welte <HaraldWelte <at> viatech.com>
+> > 
+> 
+> Harald,
 
+You carefully removed Harald from Cc: so he probably didn't read your
+email.
 
-CONFIG_RFKILL=m
-CONFIG_BT=y
+> I tested it on 2.6.28.3 kernel on VIA VB7002 motherboard and it does not work 
+> correctly.
+> 
+> Output form sensors:
+> 
+> via-cputemp-isa-0000
+> Adapter: ISA adapter
+> Core 0:       +0.0 C
+> 
+> On the other hand 
+> cat '/sys/class/hwmon/hwmon2/device/driver/via-cputemp.0/temp1_input' outputs 
+> numbers between 25-27. 
+> 
 
-(.text+0xb7bf7): undefined reference to `rfkill_unregister'
-(.text+0xb7c03): undefined reference to `rfkill_destroy'
-(.text+0xb962f): undefined reference to `rfkill_blocked'
-(.text+0xba173): undefined reference to `rfkill_alloc'
-(.text+0xba187): undefined reference to `rfkill_register'
-(.text+0xba197): undefined reference to `rfkill_destroy'
+Thanks for testing it.
 
+Harald, please cc myself on updates to this patch.
 
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+<looks quickly at the patch>
+
+It has a few trivial coding-style glitches.  Please use checkpatch.
+
+Please take a look at using hotcpu_notifier() rather than a bare
+register_hotcpu_notifier().  Many ifdefs should fall away as a result.
+
